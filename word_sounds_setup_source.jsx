@@ -773,12 +773,44 @@ function createWordSoundsCore(options = {}) {
     const wordMatching=!imageAvailable || answerRevealed;
     return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
   };
-  // Progress keys follow the displayed sound label for both legacy strings
-  // and prepared pronunciation objects. One response counts once per label.
-  const phonemeLabels = phonemes => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
-    const label = typeof value === 'string' ? value : value && typeof value === 'object'
-      ? [value.grapheme, value.phoneme, value.ipa].find(v => typeof v === 'string' && v.trim()) : '';
-    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+  // Grading for a typed or chosen sound: each alternate spelling maps to ONE
+  // canonical form. Self-contained on purpose: the take-home player embeds
+  // this exact function, so the app and a downloaded file grade alike.
+  function soundAnswerMatches(answer, expected) {
+    var EQUIV = { oy: 'oi', au: 'aw', ew: 'oo', oe: 'oa', ai: 'ay', ea: 'ee', ir: 'er', ur: 'er', igh: 'ie', ou: 'ow', ck: 'k', ph: 'f', wr: 'r', kn: 'n' };
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var e = String(expected == null ? '' : expected).toLowerCase().trim();
+    if (!e) return false;
+    return a === e || (EQUIV[a] || a) === (EQUIV[e] || e);
+  }
+  // Which phoneme-bank recordings can voice a sound label, in the order the
+  // player tries them. Mirrors handleAudio's specialMap + phonemeMatches;
+  // tests/word_sounds_take_home.test.js pins both tables to the player's.
+  const PHONEME_BANK_SPECIAL = {au:'aw','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',ae:'ay',ai:'ay',a_e:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',igh:'ie',y:'ee',o_e:'oa',ow:'ow',ew:'oo',u_e:'oo',ue:'oo',ui:'oo','long u':'oo','short u':'u','ə':'schwa',schwa:'schwa'};
+  const PHONEME_BANK_MATCHES = {'ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',kn:'n',wr:'r',gn:'n',mb:'m',gh:'g',qu:'k',igh:'ie',tch:'ch',dge:'j',ai:'ay',a_e:'ay',ae:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',y:'ee',o_e:'oa',ue:'oo',ew:'oo',u_e:'oo',ui:'oo',oi:'oy',au:'aw',ou:'ow',ir:'er',ur:'er',c:'k',q:'k',x:'s',ph:'f',ck:'k',ce:'s',ci:'s',cy:'s',ge:'j',gi:'j',gy:'j','ə':'schwa','ɔɪ':'oy','aʊ':'ow','əʊ':'oa','eɪ':'ay','aɪ':'ie','iː':'ee','uː':'oo','ɑː':'ar','ɔː':'or','ɜː':'er','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ʌ':'u','ʊ':'oo','θ':'th','ð':'th','ʃ':'sh','ʒ':'sh','ŋ':'ng','tʃ':'ch','dʒ':'j','ɪə':'ear','eə':'air','ʊə':'oo'};
+  const phonemeBankCandidates = text => {
+    const lower = String(text == null ? '' : text).toLowerCase();
+    let key = lower.trim();
+    const out = [];
+    if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
+    else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
+    else if (key.endsWith(' short')) key = key.replace(' short', '');
+    const special = PHONEME_BANK_SPECIAL[key] || key;
+    out.push(special, lower);
+    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    if (match) out.push(match);
+    return [...new Set(out.filter(Boolean))];
+  };
+  // A lesson activity's item count is a minimum; this is where it must stop even
+  // if the mastery streak never comes. Never below the streak itself, or a
+  // one-item plan could not show one.
+  const lessonItemCeiling = (count, masteryThreshold) => Math.max((Number(count) || 5) * 2, Number(masteryThreshold) || 3);
+  // Progress keys are SOUNDS, the same label the learner sees, for both legacy
+  // strings and prepared pronunciation objects: c as /k/ and c as /s/ stay apart,
+  // and c, k and ck as /k/ stay together. One response counts once per label.
+  const phonemeLabels = (phonemes, isEnglish = true) => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
+    const label = phonemeLabel(value, isEnglish);
+    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label : '';
   }).filter(Boolean))];
   // Capture the supports present when answering, before success feedback can
   // reveal the word. Preserve the more specific connected-text evidence.
@@ -1458,7 +1490,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -3702,6 +3734,23 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
 
     // The host owns this session so approved work survives leaving setup.
     // Unfinished editor drafts remain governed by the explicit discard choice.
+    const WS_LESSON_MASTERY_THRESHOLD = 3;
+    // A reopened saved lesson starts from its own plan, not a blank one.
+    function restoreSavedLessonPlan(saved, defaults) {
+        const next = { ...defaults };
+        (saved && Array.isArray(saved.activities) ? saved.activities : []).forEach(activity => {
+            if (!activity || !next[activity.id]) return;
+            const count = Math.round(Number(activity.count));
+            next[activity.id] = { enabled: true, count: count >= 1 && count <= 20 ? count : next[activity.id].count };
+        });
+        return next;
+    }
+    function restoreSavedLessonPlanOrder(saved, defaults) {
+        const order = saved && Array.isArray(saved.order) ? saved.order : [];
+        const known = order.filter((id, index) => defaults.includes(id) && order.indexOf(id) === index);
+        return [...known, ...defaults.filter(id => !known.includes(id))];
+    }
+
     function useWordSoundsSetupReviewState(session, field, initial = () => ({})) {
         const read = () => Object.prototype.hasOwnProperty.call(session, field) ? session[field] : initial();
         const [snapshot, setSnapshot] = React.useState(() => ({ session, value: read() }));
@@ -3805,7 +3854,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         return { wordsToProcess, sourceOccurrences, sourceOccurrenceIds };
     }
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, syllableReviewSession, onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice: appVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, preparedLessonPlan = null, syllableReviewSession, onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice: appVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
         const localReviewSession = React.useRef({});
         const reviewSession = syllableReviewSession || localReviewSession.current;
         // Keep the complete setup with the host's authoring session, alongside
@@ -3908,7 +3957,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         // an existing child a click instead of a re-typing exercise.
         const [probeStudent, setProbeStudent] = useSetupState('probeStudent', () => '');
         const probeStudentTrimmed = String(probeStudent || '').trim();
-        const [includeLessonPlan, setIncludeLessonPlan] = useSetupState('includeLessonPlan', () => false);
+        const [includeLessonPlan, setIncludeLessonPlan] = useSetupState('includeLessonPlan', () => !!(preparedLessonPlan && Array.isArray(preparedLessonPlan.activities) && preparedLessonPlan.activities.length));
         const [prepareScope, setPrepareScope] = useSetupState('prepareScope', () => 'all');
         React.useEffect(() => { if (!includeLessonPlan) setPrepareScope('all'); }, [includeLessonPlan]);
         const [taughtPatternsText, setTaughtPatternsText] = useSetupState('taughtPatternsText', () => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(', '));
@@ -3917,7 +3966,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             taughtPatterns: taughtPatternsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
             knownWords: knownWordsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
         }), [taughtPatternsText, knownWordsText]);
-        const [lessonPlan, setLessonPlan] = useSetupState('lessonPlan', () => ({
+        const [lessonPlan, setLessonPlan] = useSetupState('lessonPlan', () => restoreSavedLessonPlan(preparedLessonPlan, {
             isolation: { enabled: false, count: 5 },
             blending: { enabled: false, count: 5 },
             segmentation: { enabled: false, count: 5 },
@@ -3939,11 +3988,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             read_passage: { enabled: false, count: 5 },
             sentence_match: { enabled: false, count: 5 },
         }));
-        const [lessonPlanOrder, setLessonPlanOrder] = useSetupState('lessonPlanOrder', () => [
+        const [lessonPlanOrder, setLessonPlanOrder] = useSetupState('lessonPlanOrder', () => restoreSavedLessonPlanOrder(preparedLessonPlan, [
             'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
             'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
             'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage', 'sentence_match'
-        ]);
+        ]));
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
         const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
@@ -5520,7 +5569,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              }
              const lessonPlanConfig = useLessonPlan ? {
                  masteryMode: 'consecutive',
-                 masteryThreshold: 3,
+                 masteryThreshold: WS_LESSON_MASTERY_THRESHOLD,
                  activities: enabledActivities,
                  order: lessonPlanOrder.filter(lessonPlanActivityOn),
                  totalItems: sequence.length,
@@ -5567,8 +5616,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)` +
                    (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
                  : (lessonPlanConfig
-                     ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
-                       enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
+                     ? `Goal: ${lessonPlanConfig.masteryThreshold} in a row • ` +
+                       enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(' → ') +
                        ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
                      : 'Quick Practice Mode');
              // The optional fifth and sixth arguments preserve compatibility with
@@ -6140,6 +6189,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     {includeLessonPlan && (
                                         <div className="space-y-3 pl-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order">
                                             <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
+                                            <p className="text-xs text-slate-600" data-ws-lesson-minimum-note="true">{tf('word_sounds.lesson_plan_min_note', 'Each number is a minimum, and an activity stops at about double that at most. In between, it keeps going until the child gets {streak} in a row right on the first try, using different words. Missed words may come back at the end, and the session goal can end it sooner.', { streak: WS_LESSON_MASTERY_THRESHOLD })}</p>
                                             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
                                             {!soundSwapAvailable && <p className="text-xs text-slate-600" data-ws-sound-swap-hidden="true">{tf('word_sounds.sound_swap_hidden_note', 'Sound Swap is hidden: none of the selected words has a checked one-sound change.')}</p>}
                                             {lessonPlanOrder.map((actId, activityIndex) => {
@@ -6211,7 +6261,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                         <div className="flex items-center gap-1" role="group" aria-label={`Reorder ${activity.label}`}>
                                                             {lessonPlan[activity.id].enabled && (
                                                                 <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                                                                    {lessonPlan[activity.id].count}x
+                                                                    {lessonPlan[activity.id].count}-{WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, WS_LESSON_MASTERY_THRESHOLD)}
                                                                 </span>
                                                             )}
                                                             <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'up')} disabled={activityIndex === 0} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} up`}><span aria-hidden="true">↑</span></button>
@@ -6219,7 +6269,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                         </div>
                                                     </div>
                                                     {lessonPlan[activity.id].enabled && (
-                                                        <input aria-label={tf('word_sounds.activity_item_count', '{activity}: item count', { activity: activity.label })}
+                                                        <input aria-label={tf('word_sounds.activity_min_items', '{activity}: minimum items', { activity: activity.label })}
                                                             type="range" min="1" max="20" step="1"
                                                             value={lessonPlan[activity.id].count}
                                                             onChange={(e) => setLessonPlan(prev => ({

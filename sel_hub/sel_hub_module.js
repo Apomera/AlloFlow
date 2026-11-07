@@ -16,6 +16,34 @@
     if (fn) { try { v = fn(key); } catch (e) { v = null; } }
     return (typeof v === 'string' && v && v !== key) ? v : fallback;
   };
+  // Usable AI? True for a blocked host fn too if checked by typeof alone (2026-11-03 AI-off sweep).
+  var _selAiUsable = function (kind, fn) {
+    try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+  };
+  // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+  var _selStudentDeviceVoice = function (text, rate) {
+    if (window.__alloStudentAiDisabled !== true) return false;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false; } catch (_) {}
+    try { if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false; } catch (_) {}
+    var synth = window.speechSynthesis;
+    var phrase = String(text == null ? '' : text).trim();
+    if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+    try {
+      var u = new SpeechSynthesisUtterance(phrase);
+      var r = Number(rate) > 0 ? Number(rate) : (Number(window.__alloPlaybackRate) || 1);
+      u.rate = Math.max(0.5, Math.min(2, r));
+      if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+      synth.cancel();
+      synth.speak(u);
+      return true;
+    } catch (_) { return false; }
+  };
+  // Tools whose core loop is AI: not offered without it.
+  // Empty since 2026-11-04: Conflict Theater (scripted scenes) and Culture Explorer (Culture Card) play without AI.
+  var _SEL_AI_ONLY_TOOLS = {};
+  // Card copy for tools whose card promises AI; shown when AI is off.
+  var _SEL_NO_AI_DESC = { sociallab: 'Practice social scenarios in scripted conversations: choose what to say and see how others react.', conflicttheater: 'Practice a fictional conflict in scripted scenes: choose what to say and see how each person reacts, or write your own scene. For practice only; do not use it to mediate active harm.' };
   var _selFill = function (text, params) {
     var out = String(text == null ? '' : text);
     Object.keys(params || {}).forEach(function (name) { out = out.split('{' + name + '}').join(String(params[name])); });
@@ -1954,6 +1982,8 @@
           paraLines.push(lines[i]);
           i++;
         }
+        // A bare "# " is no heading and stops the loop above, so move past it here.
+        if (paraLines.length === 0) { paraLines.push(lines[i]); i++; }
         if (paraLines.length > 0) {
           blocks.push(h('p', {
             key: 'b' + blocks.length,
@@ -2033,6 +2063,290 @@
     // API the call throws. The shell publishes window.alloCopyText (Clipboard
     // API, then execCommand). This is the one path SEL tools use: shell helper,
     // then the API, then execCommand; resolves true or false, never throws.
+    // ─── Teacher-written practice scenes (2026-11-04) ─────────────────────
+    // One implementation for every tool that plays AdventureOffline stories:
+    // station.toolConfig[toolId] = { version: 1, scenes: [{ id, story, intro }] }.
+    // scenesFrom re-checks on every read, so only valid scenes reach students.
+    // bind() gives a tool the student list and, only when ctx.setToolConfig
+    // exists, the teacher editor. Each tool plays a scene in its own player, so
+    // its reflection box, safety check and XP are the same as its built-in
+    // scripts. Students make no AI calls: only the editor can draft with AI.
+    if (!window.SelHub.teacherScenes) {
+      window.SelHub.teacherScenes = (function () {
+        var MAX = 10;
+        var KEY_PREFIX = 'teacher:';
+        var CONTENT_STANDARD = 'Content standard: realistic, age-appropriate, non-judgemental; restorative and strengths framing; no shaming endings; no clinical or diagnostic language; inclusive made-up names, never real students; less helpful choices model common mistakes (blaming, dismissing), never ones that correctly name harm; never quote slurs. Every choice shows how the other person reacts, and every ending closes with a short "What worked:" debrief.';
+        // Draft requests still in flight, per tool: Cancel drops the reply.
+        var pendingDraft = {};
+
+        function starter() {
+          var row = function (id, choices) {
+            return { id: id, text: '', ending: !choices, choices: (choices || []).map(function (to) { return { label: '', to: to }; }) };
+          };
+          return { version: 1, title: '', start: 's1', scenes: [row('s1', ['s2', 's3']), row('s2'), row('s3')] };
+        }
+        // Minimal check for a host without AdventureOffline: start exists, links resolve, an ending exists.
+        function basicValid(story) {
+          if (!story || !Array.isArray(story.scenes) || !story.scenes.length) return false;
+          var ids = {};
+          story.scenes.forEach(function (s) { if (s && s.id) ids[s.id] = s; });
+          if (!ids[story.start]) return false;
+          return story.scenes.some(function (s) { return s && s.ending; }) && story.scenes.every(function (s) {
+            return s && s.id && String(s.text || '').trim() && (s.ending || (Array.isArray(s.choices) && s.choices.length && s.choices.every(function (c) { return c && c.label && ids[c.to]; })));
+          });
+        }
+        function scenesFrom(cfg, AO) {
+          var list = cfg && typeof cfg === 'object' && Array.isArray(cfg.scenes) ? cfg.scenes : [];
+          var seen = {};
+          return list.slice(0, MAX).map(function (raw, i) {
+            var src = raw && typeof raw === 'object' ? raw : {};
+            var story = AO && typeof AO.normalize === 'function' ? AO.normalize(src.story) : (src.story && typeof src.story === 'object' ? src.story : null);
+            var ok = !!story && (AO && typeof AO.validate === 'function' ? AO.validate(story).ok : basicValid(story));
+            var id = (typeof src.id === 'string' && src.id) ? src.id.slice(0, 60) : 'ts_' + i;
+            return { id: id, key: KEY_PREFIX + id, story: story, ok: ok, intro: typeof src.intro === 'string' ? src.intro.slice(0, 600) : '', title: (story && story.title) || '', aiDrafted: src.aiDrafted === true };
+          }).filter(function (s) { if (seen[s.id]) return false; seen[s.id] = true; return true; });
+        }
+        function aiUsable(ctx, fn) {
+          if (ctx.aiAvailable === false) return false;
+          try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {}
+          return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+        }
+        // Dark-base hexes, remapped for the host theme. A tool may pass its own fg/bg/bd.
+        function themeMappers(theme) {
+          var th = theme || {}, hc = !!th.isContrast, light = !hc && !th.isDark;
+          var FGL = { '#f1f5f9': '#0f172a', '#e2e8f0': '#1e293b', '#cbd5e1': '#334155', '#94a3b8': '#475569', '#7dd3fc': '#075985', '#fde68a': '#92400e' };
+          var BGL = { '#1e293b': '#ffffff', '#0f172a': '#f8fafc' };
+          var BDL = { '#334155': '#cbd5e1', '#475569': '#64748b', '#14b8a6': '#0f766e' };
+          return {
+            hc: hc,
+            fg: function (x) { return hc ? '#ffff00' : (light ? (FGL[x] || x) : x); },
+            bg: function (x) { return hc ? '#000000' : (x === '#14b8a6' ? '#0f766e' : (light ? (BGL[x] || x) : x)); },
+            bd: function (x) { return hc ? '#ffff00' : (light ? (BDL[x] || x) : x); }
+          };
+        }
+
+        // o: { ctx, h, toolId, d, set(patch), announce, theme, fg, bg, bd, attr, idBase, copy,
+        //      openPatch, closePatch, aiTopic, aiExtra, ideaPrefix, review, editorNote, extraChecks }
+        function bind(o) {
+          var ctx = o.ctx, h = o.h, d = o.d || {}, set = o.set, toolId = o.toolId;
+          var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+          var tr = typeof ctx.t === 'function' ? ctx.t : function (k) { return k; };
+          var tx = function (key, fb) { var v = null; try { v = tr(key); } catch (e) { v = null; } return (typeof v === 'string' && v && v !== key) ? v : fb; };
+          var say = function (msg) { if (typeof o.announce === 'function') { try { o.announce(msg); } catch (_) {} } };
+          var ownTheme = typeof o.fg !== 'function';
+          var themed = ownTheme ? themeMappers(o.theme || ctx.theme) : { hc: false, fg: o.fg, bg: o.bg, bd: o.bd || function (x) { return x; } };
+          var fg = themed.fg, bg = themed.bg, bd = themed.bd;
+          var th = o.theme || ctx.theme || {};
+          var aoTheme = th.isContrast ? 'contrast' : (th.isDark ? 'dark' : 'light');
+          var attr = o.attr || 'ts-';
+          var idBase = o.idBase || ('ts-' + toolId);
+          var da = function (name, value) { var a = {}; a['data-' + attr + 'teacher-' + name] = value; return a; };
+          var copy = o.copy || {};
+          var reviewOn = o.review !== false;
+          var callGemini = ctx.callGemini;
+          var aiOn = aiUsable(ctx, callGemini);
+
+          var cfg = (ctx.toolConfig && typeof ctx.toolConfig === 'object') ? ctx.toolConfig[toolId] : null;
+          var all = scenesFrom(cfg, AO);
+          var ready = all.filter(function (s) { return s.ok; });
+          var canAuthor = typeof ctx.setToolConfig === 'function';
+          var from = tx('sel.conflicttheater.teacher.from', 'From your teacher');
+
+          var card = { background: bg('#1e293b'), border: '1px solid ' + bd('#334155'), borderRadius: 12, padding: 14, marginBottom: 12 };
+          var btn = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid ' + bd('#475569'), background: 'transparent', color: fg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+          var btnMain = Object.assign({}, btn, { border: themed.hc ? '2px solid #ffff00' : 'none', background: bg('#14b8a6'), color: fg('#fff') });
+          var btnSmall = Object.assign({}, btn, { minHeight: 32, padding: '4px 12px', fontSize: 12 });
+          var dim = function (style, off) { return (off && ownTheme) ? Object.assign({}, style, { opacity: 0.6, cursor: 'not-allowed' }) : style; };
+
+          function byKey(key) {
+            if (typeof key !== 'string' || key.indexOf(KEY_PREFIX) !== 0) return null;
+            var id = key.slice(KEY_PREFIX.length);
+            return ready.filter(function (s) { return s.id === id; })[0] || null;
+          }
+          function renderList(opts) {
+            if (!ready.length) return null;
+            var onPlay = opts && opts.onPlay;
+            return h('section', Object.assign(da('scenes', 'true'), { 'aria-labelledby': idBase + '-teacher-scenes-title', style: { marginBottom: 14 } }),
+              h('h3', { id: idBase + '-teacher-scenes-title', style: { fontSize: 14, fontWeight: 800, color: fg('#f1f5f9'), margin: '0 0 8px' } }, '📌 ' + from),
+              h('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
+                ready.map(function (ts) {
+                  var ends = ts.story.scenes.filter(function (s) { return s.ending; }).length;
+                  return h('button', Object.assign(da('play', ts.id), { key: ts.id, role: 'listitem', 'aria-label': from + ': ' + (ts.title || ts.id),
+                    onClick: function () { if (typeof onPlay === 'function') onPlay(ts); },
+                    style: { textAlign: 'left', padding: 12, borderRadius: 12, border: '2px solid ' + bd('#14b8a6'), background: bg('#1e293b'), color: fg('#e2e8f0'), cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 } }),
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: fg('#f1f5f9') } }, ts.title || from),
+                    ts.intro ? h('p', { style: { fontSize: 11, color: fg('#cbd5e1'), margin: 0, lineHeight: 1.5 } }, ts.intro.length > 140 ? ts.intro.slice(0, 140) + '...' : ts.intro) : null,
+                    h('div', { style: { fontSize: 10, color: fg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, from + ' · ' + ends + ' ' + tx('sel.conflicttheater.teacher.endings', 'endings'))
+                  );
+                })
+              )
+            );
+          }
+          function write(list, msg) {
+            var clean = list.map(function (s) { return { id: s.id, story: s.story, intro: s.intro || '', aiDrafted: s.aiDrafted === true, updatedAt: s.updatedAt || new Date().toISOString() }; });
+            var ok = ctx.setToolConfig(toolId, clean.length ? { version: 1, scenes: clean } : null);
+            var note = ok !== false ? msg : tx('sel.conflicttheater.teacher.save_failed', 'The scene could not be saved. Try a shorter scene.');
+            set({ tsNotice: note });
+            say(note);
+            return ok !== false;
+          }
+          function openEditor(draft) {
+            set(Object.assign({ tsDraft: draft, tsPreview: false, tsNotice: '', tsConfirmRemove: null }, o.openPatch || {}));
+          }
+          function closeEditor() {
+            delete pendingDraft[toolId];
+            set(Object.assign({ tsDraft: null, tsPreview: false }, o.closePatch || {}));
+          }
+          function renderAuthor() {
+            if (!canAuthor) {
+              if (ctx.isTeacherView !== true) return null;
+              return h('p', Object.assign(da('hint', 'true'), { style: { fontSize: 11, color: fg('#94a3b8'), margin: '0 0 12px', textAlign: 'center', lineHeight: 1.5 } }),
+                copy.station_hint || tx('sel.teacherScenes.station_hint', 'To give students your own scenes that work without AI, start an SEL Station that includes this tool, then open it here.'));
+            }
+            return h('section', Object.assign(da('author', 'true'), { 'aria-labelledby': idBase + '-teacher-author-title', style: Object.assign({}, card, { borderColor: bd('#14b8a6') }) }),
+              h('h3', { id: idBase + '-teacher-author-title', style: { fontSize: 14, fontWeight: 800, color: fg('#f1f5f9'), margin: '0 0 6px' } }, '🧑‍🏫 ' + tx('sel.conflicttheater.teacher.author_title', 'Teacher: scenes for this station')),
+              h('p', { style: { fontSize: 12, color: fg('#cbd5e1'), margin: '0 0 8px', lineHeight: 1.5 } }, tx('sel.conflicttheater.teacher.author_hint', 'Students play these first, beside the built-in scenes, with no AI. A scene reaches students only when it passes the story check.')),
+              d.tsNotice ? h('p', { role: 'status', style: { fontSize: 12, fontWeight: 700, color: fg('#7dd3fc'), margin: '0 0 8px' } }, d.tsNotice) : null,
+              all.length ? h('ul', { style: { listStyle: 'none', padding: 0, margin: '0 0 8px', display: 'grid', gap: 6 } }, all.map(function (ts) {
+                return h('li', { key: ts.id, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 13, color: fg('#e2e8f0') } },
+                  h('span', { style: { flex: 1, fontWeight: 700 } }, (ts.title || ts.id) + ' · ' + (ts.ok ? tx('sel.conflicttheater.teacher.ready', 'students can play it') : tx('sel.conflicttheater.teacher.not_ready', 'needs fixing before students see it'))),
+                  h('button', Object.assign(da('edit', ts.id), { onClick: function () { openEditor({ id: ts.id, story: ts.story, intro: ts.intro, aiDrafted: ts.aiDrafted }); }, style: btnSmall }), tx('sel.conflicttheater.teacher.edit', 'Edit')),
+                  h('button', Object.assign(da('remove', ts.id), { onClick: function () {
+                    if (d.tsConfirmRemove !== ts.id) { set({ tsConfirmRemove: ts.id }); return; }
+                    if (write(all.filter(function (x) { return x.id !== ts.id; }), tx('sel.conflicttheater.teacher.removed', 'Scene removed.'))) set({ tsConfirmRemove: null });
+                  }, style: btnSmall }), d.tsConfirmRemove === ts.id ? tx('sel.conflicttheater.teacher.remove_confirm', 'Remove for everyone?') : tx('sel.conflicttheater.teacher.remove', 'Remove'))
+                );
+              })) : null,
+              h('button', Object.assign(da('new', 'true'), { disabled: all.length >= MAX, onClick: function () { openEditor({ story: starter(), intro: '' }); }, style: dim(btnMain, all.length >= MAX) }), '+ ' + tx('sel.conflicttheater.teacher.new', 'Write a scene'))
+            );
+          }
+          function reviewChecks() {
+            return [
+              { id: 'read', text: tx('sel.teacherScenes.check_read', 'I read every scene and every choice.') },
+              { id: 'standard', text: tx('sel.teacherScenes.check_standard', 'It is realistic and age-appropriate, with no shaming endings, diagnoses or slurs.') },
+              { id: 'names', text: tx('sel.teacherScenes.check_names', 'Every name is made up, and nothing points to a real student or family.') }
+            ].concat(Array.isArray(o.extraChecks) ? o.extraChecks : []);
+          }
+          function renderEditor() {
+            var draft = (d.tsDraft && typeof d.tsDraft === 'object') ? d.tsDraft : { story: starter(), intro: '' };
+            var canEdit = !!(AO && typeof AO.Editor === 'function' && typeof AO.normalize === 'function' && typeof AO.validate === 'function');
+            var draftStory = canEdit ? AO.normalize(draft.story) : null;
+            // The editor gets the raw draft (normalize trims, which would eat a typed trailing space).
+            var editorStory = draft.story && Array.isArray(draft.story.scenes) && draft.story.scenes.every(function (s) { return s && Array.isArray(s.choices); }) ? draft.story : draftStory;
+            var draftOk = !!draftStory && AO.validate(draftStory).ok;
+            // An AI draft needs the teacher's review before it can be saved; hand-written scenes do not.
+            var needsReview = reviewOn && draft.aiDrafted === true;
+            var checks = (draft.checks && typeof draft.checks === 'object') ? draft.checks : {};
+            var checkList = needsReview ? reviewChecks() : [];
+            var reviewed = checkList.every(function (c) { return checks[c.id] === true; });
+            var canSave = draftOk && reviewed;
+            var door = null;
+            if (!aiOn) { try { door = typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', tr) : null; } catch (e) { door = null; } }
+            var Notice = (!aiOn && typeof window.AlloAiSetupNotice === 'function') ? window.AlloAiSetupNotice : null;
+            var setDraft = function (patch) { set({ tsDraft: Object.assign({}, draft, patch) }); };
+            var aiFailed = function () { return tx('sel.conflicttheater.teacher.ai_failed', 'The AI draft could not be used. Write the scene yourself or try again.'); };
+            var draftWithAi = function () {
+              var idea = String(draft.idea || '').trim();
+              if (!aiOn || !canEdit || typeof AO.generate !== 'function' || d.tsBusy || !idea) return;
+              var token = {};
+              pendingDraft[toolId] = token;
+              set({ tsBusy: true, tsNotice: tx('sel.conflicttheater.teacher.ai_busy', 'Drafting the scene…') });
+              Promise.resolve().then(function () {
+                return AO.generate({ callGemini: callGemini, topic: o.aiTopic || 'a realistic everyday situation a student practises handling', gradeLevel: ctx.gradeLevel || '', language: 'English',
+                  customInstructions: CONTENT_STANDARD + (o.aiExtra ? ' ' + o.aiExtra : ''), sourceText: (o.ideaPrefix || "Teacher's idea for the scene: ") + idea.slice(0, 1500), continueLabel: 'Continue' });
+              }).then(function (result) {
+                if (pendingDraft[toolId] !== token) { set({ tsBusy: false }); return; }
+                delete pendingDraft[toolId];
+                if (result && result.story && result.story.scenes && result.story.scenes.length) {
+                  set({ tsBusy: false, tsPreview: false, tsDraft: Object.assign({}, draft, { story: result.story, aiDrafted: true, checks: {} }),
+                    tsNotice: result.validation && result.validation.ok ? tx('sel.conflicttheater.teacher.ai_done', 'AI draft ready. Read every scene and edit it before you save.') : tx('sel.conflicttheater.teacher.ai_partial', 'The AI draft still has problems. Fix them below, or try again.') });
+                } else {
+                  set({ tsBusy: false, tsNotice: aiFailed() });
+                }
+              }).catch(function () {
+                if (pendingDraft[toolId] !== token) { set({ tsBusy: false }); return; }
+                delete pendingDraft[toolId];
+                set({ tsBusy: false, tsNotice: aiFailed() });
+              });
+            };
+            var save = function () {
+              if (!canSave) return;
+              var id = draft.id || ('ts_' + Date.now().toString(36));
+              var entry = { id: id, story: draftStory, intro: String(draft.intro || '').slice(0, 600), aiDrafted: draft.aiDrafted === true, updatedAt: new Date().toISOString() };
+              var exists = all.some(function (s) { return s.id === id; });
+              var next = exists ? all.map(function (s) { return s.id === id ? entry : s; }) : all.concat([entry]).slice(-MAX);
+              if (write(next, tx('sel.conflicttheater.teacher.saved', 'Scene saved. Students in this station can play it now.'))) closeEditor();
+            };
+            var field = { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid ' + bd('#475569'), background: bg('#0f172a'), color: fg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' };
+            var label = { display: 'block', fontSize: 12, fontWeight: 800, color: fg('#f1f5f9') };
+            var aiOff = !aiOn || !canEdit || !!d.tsBusy || !String(draft.idea || '').trim();
+            return h('div', Object.assign(da('editor', 'true'), { style: { padding: 16, maxWidth: 820, margin: '0 auto' } }),
+              h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+                h('button', { onClick: closeEditor, style: Object.assign({}, btn, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: fg('#94a3b8') }) }, '← ' + tx('sel.conflicttheater.teacher.cancel', 'Cancel')),
+                h('h2', { id: idBase + '-teacher-edit-heading', style: { fontSize: 20, fontWeight: 800, color: fg('#f1f5f9'), margin: '10px 0 4px' } }, '🧑‍🏫 ' + (copy.editor_title || tx('sel.teacherScenes.editor_title', 'Write a practice scene')))
+              ),
+              h('div', { style: card },
+                h('p', { style: { margin: '0 0 6px', fontSize: 12, color: fg('#cbd5e1'), lineHeight: 1.6 } }, copy.guide || tx('sel.teacherScenes.guide', 'Write a realistic everyday situation with made-up names. Less helpful choices show common mistakes, like blaming or brushing feelings off. Every choice shows what happens next. End with at least two endings, each with a short "What worked:" debrief. Keep it restorative: no shaming endings, no diagnoses, never quote slurs.')),
+                o.editorNote ? h('p', Object.assign(da('note', 'true'), { role: 'note', style: { margin: '6px 0', padding: 10, borderRadius: 10, border: '2px solid ' + bd('#14b8a6'), fontSize: 12, fontWeight: 700, color: fg('#f1f5f9'), lineHeight: 1.6 } }), o.editorNote) : null,
+                h('label', { htmlFor: idBase + '-ts-intro', style: Object.assign({}, label, { margin: '8px 0 4px' }) }, tx('sel.conflicttheater.teacher.intro_label', 'Setup students read first (optional)')),
+                h('textarea', { id: idBase + '-ts-intro', rows: 2, maxLength: 600, value: draft.intro || '', onChange: function (e) { setDraft({ intro: e.target.value }); }, style: field })
+              ),
+              h('div', { style: card },
+                h('label', { htmlFor: idBase + '-ts-idea', style: Object.assign({}, label, { marginBottom: 4 }) }, copy.idea_label || tx('sel.teacherScenes.idea_label', 'Optional: describe the situation and let AI draft the scenes')),
+                h('textarea', { id: idBase + '-ts-idea', rows: 2, maxLength: 1500, value: draft.idea || '', onChange: function (e) { setDraft({ idea: e.target.value }); }, style: field }),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 8 } },
+                  h('button', Object.assign(da('ai', 'true'), { disabled: aiOff, 'aria-busy': d.tsBusy ? 'true' : undefined, title: door && door.disabled ? door.title : undefined, onClick: draftWithAi, style: dim(btnMain, aiOff) }), '✨ ' + tx('sel.conflicttheater.teacher.ai_draft', 'Draft with AI, then edit')),
+                  Notice ? h('div', da('ai-setup', 'true'), h(Notice, { t: tr })) : null
+                ),
+                draft.aiDrafted ? h('p', { style: { margin: '8px 0 0', fontSize: 12, color: fg('#fde68a'), lineHeight: 1.5 } }, tx('sel.conflicttheater.teacher.ai_review', 'Parts of this scene were drafted by AI. Read every scene and choice against the content standard before you save.')) : null
+              ),
+              d.tsNotice ? h('p', { role: 'status', style: { fontSize: 12, fontWeight: 700, color: fg('#7dd3fc'), margin: '0 0 10px' } }, d.tsNotice) : null,
+              !canEdit ? h('div', Object.assign(da('editor-loading', 'true'), { role: 'status', style: Object.assign({}, card, { fontSize: 13, color: fg('#cbd5e1') }) }), tx('sel.conflicttheater.teacher.editor_loading', 'The scene editor is still loading. Try again in a moment.'))
+                : (d.tsPreview && draftOk
+                  ? h(AO.Player, { key: 'ts-preview', story: draftStory, t: tr, theme: aoTheme, onExit: function () { set({ tsPreview: false }); } })
+                  : h('div', { style: Object.assign({}, card, { background: 'transparent' }) }, h(AO.Editor, { story: editorStory, t: tr, onChange: function (next) { setDraft({ story: next }); } }))),
+              checkList.length ? h('fieldset', Object.assign(da('review', 'true'), { style: Object.assign({}, card, { marginTop: 12, marginBottom: 0 }) }),
+                h('legend', { style: { fontSize: 12, fontWeight: 800, color: fg('#f1f5f9'), padding: '0 6px' } }, tx('sel.teacherScenes.check_legend', 'Before students see this AI draft')),
+                checkList.map(function (c) {
+                  return h('label', { key: c.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: fg('#e2e8f0'), lineHeight: 1.5, marginTop: 6, cursor: 'pointer' } },
+                    h('input', Object.assign(da('check', c.id), { type: 'checkbox', checked: checks[c.id] === true, style: { marginTop: 3 }, onChange: function (e) { var nc = Object.assign({}, checks); nc[c.id] = e.target.checked; setDraft({ checks: nc }); } })),
+                    h('span', null, c.text));
+                })
+              ) : null,
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
+                canEdit ? h('button', Object.assign(da('preview', 'true'), { 'aria-pressed': d.tsPreview ? 'true' : 'false', disabled: !draftOk, onClick: function () { set({ tsPreview: !d.tsPreview }); }, style: dim(btn, !draftOk) }), tx('sel.conflicttheater.teacher.preview', 'Preview')) : null,
+                h('button', Object.assign(da('save', 'true'), { disabled: !canSave, onClick: save, style: dim(btnMain, !canSave) }), tx('sel.conflicttheater.teacher.save', 'Save for students')),
+                !draftOk && canEdit ? h('span', { style: { fontSize: 12, color: fg('#94a3b8'), alignSelf: 'center' } }, tx('sel.conflicttheater.teacher.save_hint', 'Fix the story checklist above to save.'))
+                  : (draftOk && !reviewed ? h('span', { style: { fontSize: 12, color: fg('#94a3b8'), alignSelf: 'center' } }, tx('sel.teacherScenes.review_hint', 'Tick each check to save this AI draft.')) : null)
+              )
+            );
+          }
+          // The editor while a teacher is writing; otherwise the student list, then the teacher's entry.
+          function renderSection(opts) {
+            if (canAuthor && d.tsDraft && typeof d.tsDraft === 'object') return renderEditor();
+            var list = renderList(opts), author = renderAuthor();
+            return (list || author) ? h('div', da('section', 'true'), list, author) : null;
+          }
+          // For a tool with tabs: a pointer from any other tab to the teacher's scenes.
+          function renderJump(opts) {
+            if (!ready.length) return null;
+            return h('div', { style: { padding: '8px 12px 0', textAlign: 'center' } },
+              h('button', Object.assign(da('jump', 'true'), { type: 'button', onClick: opts && opts.onOpen, style: Object.assign({}, btnSmall, { borderColor: bd('#14b8a6'), background: bg('#1e293b'), color: fg('#f1f5f9') }) }), '📌 ' + from + ' (' + ready.length + ')'));
+          }
+          function renderIntro(scene) {
+            return scene && scene.intro ? h('p', Object.assign(da('intro', 'true'), { style: { background: bg('#1e293b'), border: '1px solid ' + bd('#334155'), borderRadius: 12, padding: 14, margin: '0 0 12px', fontSize: 13, color: fg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } }), scene.intro) : null;
+          }
+          return {
+            all: all, ready: ready, from: from, canAuthor: canAuthor,
+            editing: canAuthor && !!(d.tsDraft && typeof d.tsDraft === 'object'),
+            byKey: byKey, renderList: renderList, renderAuthor: renderAuthor, renderEditor: renderEditor,
+            renderSection: renderSection, renderJump: renderJump, renderIntro: renderIntro
+          };
+        }
+        return { MAX: MAX, KEY_PREFIX: KEY_PREFIX, CONTENT_STANDARD: CONTENT_STANDARD, starter: starter, basicValid: basicValid, scenesFrom: scenesFrom, bind: bind };
+      })();
+    }
+
     if (!window.SelHub.copyText) {
       window.SelHub.copyText = function (text) {
         var str = text == null ? '' : String(text);
@@ -2194,6 +2508,8 @@
       var callTTS         = props.callTTS;
       var callImagen      = props.callImagen;
       var callGeminiVision = props.callGeminiVision;
+      var _selAiOn        = _selAiUsable('text', callGemini);
+      var _selToolNeedsMissingAi = function (id) { return !_selAiOn && !!_SEL_AI_ONLY_TOOLS[id]; };
       var onSafetyFlag    = props.onSafetyFlag || null; // connects to main app's handleAiSafetyFlag
       var studentCodename = props.studentCodename || 'student';
       var selectedVoice   = props.selectedVoice || null;
@@ -2334,6 +2650,7 @@
       // Only a card click used to request the module, so those waited on "Loading tool..." forever.
       React.useEffect(function () {
         if (!selHubTool) return;
+        if (_selToolNeedsMissingAi(selHubTool)) { if (typeof setSelHubTool === 'function') setSelHubTool(null); return; }
         try {
           if (window.SelHub && window.SelHub.isRegistered(selHubTool)) return;
           if (typeof window.__alloEnsureSelPluginLoaded === 'function') window.__alloEnsureSelPluginLoaded(selHubTool);
@@ -2783,6 +3100,7 @@
         draftRemovalPending.current = !writeLocalSel('alloflow_sel_builder_draft', null, true);
         if (!draftRemovalPending.current) setRecoverableDraft(null);
         setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); setBuilderUndo([]);
+        _builderToolConfigRef.current = null;
         // Cancelling returns to the panel the builder was opened FROM, so keep
         // it expanded. Without this a teacher with no saved stations cancels
         // into a collapsed panel and cannot find "Build a Custom Station".
@@ -2826,8 +3144,11 @@
           });
         });
       }
+      // Teacher content a copied station carries (station.toolConfig, see _selSetStationToolConfig).
+      var _builderToolConfigRef = React.useRef(null);
       function adaptStationCopy(station) {
         if (builderOpen || recoverableDraft) return;
+        _builderToolConfigRef.current = station.toolConfig && typeof station.toolConfig === 'object' && !Array.isArray(station.toolConfig) ? station.toolConfig : null;
         setBuilderUndo([]);
         var selected = {};
         (station.tools || []).forEach(function (id) { selected[id] = true; });
@@ -2965,7 +3286,7 @@
       }
 
       function openSelToolById(toolId, label) {
-        if (!toolId) return;
+        if (!toolId || _selToolNeedsMissingAi(toolId)) return;
         if (window.SelHub && window.SelHub.isRegistered(toolId)) {
           _alloLastToolCardId = toolId;
           trackToolOpen(toolId);
@@ -3197,6 +3518,40 @@
         }
       }
 
+      // ── Teacher content for tools (2026-11-04) ──
+      // station.toolConfig = { [toolId]: plain JSON } rides the station everywhere it
+      // goes (project file both modes, AlloPack selStations, Canvas recovery), so a tool
+      // in an active station reads ctx.toolConfig[toolId] with no AI. Only the teacher
+      // view of a station that includes the tool can write it; null clears it.
+      var SEL_TOOL_CONFIG_MAX = 400000;
+      function _selStationToolConfigMap(station) {
+        var map = station && station.toolConfig;
+        return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+      }
+      function _selSetStationToolConfig(stationId, toolId, cfg) {
+        if (!stationId || typeof toolId !== 'string' || !toolId) return false;
+        var clean = null;
+        if (cfg != null) {
+          try {
+            var raw = JSON.stringify(cfg);
+            if (!raw || raw.length > SEL_TOOL_CONFIG_MAX) return false;
+            clean = JSON.parse(raw);
+          } catch (e) { return false; }
+          if (!clean || typeof clean !== 'object' || Array.isArray(clean)) return false;
+        }
+        setSavedStations(function (prev) {
+          return (Array.isArray(prev) ? prev : []).map(function (st) {
+            if (!st || st.id !== stationId) return st;
+            var map = Object.assign({}, _selStationToolConfigMap(st));
+            if (clean) map[toolId] = clean; else delete map[toolId];
+            var next = Object.assign({}, st, { updatedAt: new Date().toISOString() });
+            if (Object.keys(map).length) next.toolConfig = map; else delete next.toolConfig;
+            return next;
+          });
+        });
+        return true;
+      }
+
       // Re-entrancy guard: a fast double-click on Save would otherwise create
       // two stations with different Date.now() ids but identical content.
       var _savingStation = React.useRef(false);
@@ -3224,6 +3579,12 @@
             createdAt: new Date().toISOString(),
             source: 'sel-hub-builder'
           };
+          var carriedConfig = _builderToolConfigRef.current;
+          if (carriedConfig) {
+            var keptConfig = {};
+            selectedToolIds.forEach(function (id) { if (carriedConfig[id] && typeof carriedConfig[id] === 'object') keptConfig[id] = carriedConfig[id]; });
+            if (Object.keys(keptConfig).length) station.toolConfig = keptConfig;
+          }
           setSavedStations(savedStations.concat([station]));
           setActiveStationId(station.id);
           // Reset builder
@@ -3491,7 +3852,7 @@
         { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Advocacy Practice', desc: 'Rehearse general scripts for expressing needs, asking for support, and speaking up in everyday situations.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
         { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\uD83E\uDDE9', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
-        { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
+        { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Explore world cultures, and build culture cards from your family and community.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'practiceJourneys', icon: '📖', label: 'Practice Journeys (Pilot)', desc: 'Practice asking for support through four connected encounters. Respond with choices, your own words, or both. Keep a journal and try another path.', color: 'indigo', recommendedRange: '5-12', _cat: 'relationship-skills' },
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Roleplay', desc: 'Practice social scenarios and AI peer roleplay with branching dialogue.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
@@ -3540,6 +3901,9 @@
         _allSelTools.push(dt);
       });
       _allSelTools = _allSelTools.map(_selLocTool);
+      if (!_selAiOn) _allSelTools = _allSelTools.filter(function (t) { return !_SEL_AI_ONLY_TOOLS[t.id]; }).map(function (t) {
+        return _SEL_NO_AI_DESC[t.id] ? Object.assign({}, t, { desc: __alloT('sel.hub.tool.' + t.id + '.desc_no_ai', _SEL_NO_AI_DESC[t.id]), descEn: _SEL_NO_AI_DESC[t.id] }) : t;
+      });
 
       // ══════════════════════════════════════════════════════════════
       // ── Evidence-base convention ──
@@ -3802,7 +4166,7 @@
       // tools stay openable even if the loader is missing, so an older host that
       // still batch-loads behaves exactly as before.
       function _selToolIsOpenable(toolId) {
-        if (!toolId) return false;
+        if (!toolId || _selToolNeedsMissingAi(toolId)) return false;
         // try/catch: this runs inside the card-grid map, so a registry that
         // throws would propagate out and blank the ENTIRE hub rather than
         // affect one card. A registry error means "cannot confirm it is
@@ -6430,7 +6794,7 @@
       // window.SelHub.renderTool(toolId, ctx).
       // ══════════════════════════════════════════════════════════════
       var toolContent = null;
-      if (selHubTool && window.SelHub && window.SelHub.isRegistered(selHubTool)) {
+      if (selHubTool && !_selToolNeedsMissingAi(selHubTool) && window.SelHub && window.SelHub.isRegistered(selHubTool)) {
         var _ctx = {
           React: React,
 
@@ -6487,15 +6851,19 @@
           },
 
           // ── AI integration ──
-          callGemini: typeof callGemini === 'function' ? callGemini : null,
+          // Null any fn the host says is unusable (blocked fns are truthy), like the STEM ctx.
+          callGemini: _selAiOn ? callGemini : null,
+          // Tools hide AI controls on this, never on typeof callGemini (a blocked fn is truthy).
+          aiAvailable: _selAiOn,
           callTTS: typeof callTTS === 'function' ? function selSpeakTTS(text, voice, speed) {
             return callTTS(text, voice, speed).then(function(url) {
               if (url) { var a = new Audio(url); a.play().catch(function() {}); }
+              else _selStudentDeviceVoice(text, speed);
               return url;
             }).catch(function(e) { console.warn('[SEL TTS]', e && e.message); return null; });
           } : null,
-          callImagen: typeof callImagen === 'function' ? callImagen : null,
-          callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
+          callImagen: _selAiUsable('images', callImagen) ? callImagen : null,
+          callGeminiVision: _selAiUsable('vision', callGeminiVision) ? callGeminiVision : null,
           onSafetyFlag: onSafetyFlag,
           studentCodename: studentCodename,
           selectedVoice: selectedVoice,
@@ -6509,6 +6877,16 @@
             Heart: Heart,
             GripVertical: GripVertical
           },
+
+          // ── Teacher content from the active station (station.toolConfig) ──
+          // Tools read ctx.toolConfig[toolId]; setToolConfig is null unless this is the
+          // teacher view of an active station that includes the open tool.
+          toolConfig: _selStationToolConfigMap(activeStation),
+          toolConfigStation: activeStation ? { id: activeStation.id, name: activeStation.name || '', includesTool: (activeStation.tools || []).indexOf(selHubTool) >= 0 } : null,
+          isTeacherView: selTeacherView,
+          setToolConfig: (selTeacherView && activeStation && (activeStation.tools || []).indexOf(selHubTool) >= 0) ? (function (stationId) {
+            return function (toolId, cfg) { return _selSetStationToolConfig(stationId, toolId, cfg); };
+          })(activeStation.id) : null,
 
           // ── Grade / complexity ──
           gradeLevel: toolGradeLevel,

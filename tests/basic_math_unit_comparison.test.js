@@ -30,7 +30,8 @@ describe('unit comparison mathematics',()=>{
 
 describe('unit comparison learning flow',()=>{
   it('connects both quantities through unitization and shows a common cost scale',async()=>{
-    await mount();await click('Use A quantity');const rows=panel().querySelectorAll('[data-unit-scaling]');
+    // 2026-11-04: the explore no longer opens on the lesson's own 12 oz / 20 oz numbers (an answer leak), so this flow seeds them.
+    await mount({amountA:12,costA:3.6,amountB:20,costB:5.4});await click('Use A quantity');const rows=panel().querySelectorAll('[data-unit-scaling]');
     expect(rows[0].textContent).toContain('12 units ↔ $3.6');expect(rows[1].textContent).toContain('÷ 20 → both quantities');expect(rows[1].textContent).toContain('× 12 → both quantities');expect(rows[1].textContent).toContain('12 units ↔ $3.24');
     expect(parseFloat(panel().querySelector('[data-unit-cost-bar="1"]').style.width)).toBeCloseTo(90,10);expect(panel().textContent).toContain('Buying only whole packages');expect(panel().querySelector('[data-unit-package-insight]')).not.toBeNull();
   });

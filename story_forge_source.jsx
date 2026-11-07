@@ -2367,6 +2367,8 @@ const StoryForge = React.memo(({
     const v = t(key, params);
     return typeof v === 'string' ? v : String(key || '');
   };
+  // The host may hand a blocked fn (truthy), and a keyless teacher's call returns nothing: ask the host.
+  const sfTextAi = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!onCallGemini && !!window.__alloAiUsable('text', onCallGemini); } catch (_) {} return !!onCallGemini && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); })();
   const notifyAiUnavailable = () => {
     const message = ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.');
     if (addToast) addToast(message, 'info');
@@ -6870,7 +6872,7 @@ Return ONLY JSON:
     if (layoutMode !== 'comic') return;
     setComicFlowLoading(true);
     const snapshot = buildComicFlowSnapshot();
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       setComicFlowReport(snapshot);
       setReviewedDraftSignature(currentReviewDraftSignature);
       setComicFlowLoading(false);
@@ -9465,7 +9467,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   >
                     <Target size={14} /> {focusMode ? 'Focus ON' : 'Focus Mode'}
                   </button>
-                  {totalWords >= 30 && (
+                  {totalWords >= 30 && sfTextAi && (
                     <button type="button"
                       onClick={checkGrammarAndStyle}
                       disabled={grammarLoading || isProcessing}
@@ -11029,7 +11031,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     >
                       {VOICE_POOL.map(v => <option key={v} value={v}>{v}</option>)}
                     </select>
-                    {characters.length === 0 && (
+                    {characters.length === 0 && sfTextAi && (
                       <button type="button" onClick={detectCharacters} disabled={isProcessing} className="w-full sm:w-auto justify-center px-4 py-2 bg-white text-indigo-700 border border-indigo-200 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50 flex items-center gap-2">
                         <Eye size={14} /> Detect character voices
                       </button>
@@ -11234,27 +11236,28 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </button>
                   {showReviewTools && (
                   <>
-                  {!gradingResult && (
+                  {!gradingResult && !sfTextAi && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} />}
+                  {!gradingResult && sfTextAi && (
                     <button type="button" onClick={checkSenses} disabled={!onCallGemini || sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
-                  {!gradingResult && (
+                  {!gradingResult && sfTextAi && (
                     <button type="button" onClick={findMentorStory} disabled={!onCallGemini || mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
                       🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
-                  {!gradingResult && (
+                  {!gradingResult && sfTextAi && (
                     <button type="button" onClick={analyzeShowTell} disabled={!onCallGemini || showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
                       🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
-                  {!gradingResult && (
+                  {!gradingResult && sfTextAi && (
                     <button type="button" onClick={analyzeCharacterArcs} disabled={!onCallGemini || arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
-                  {!gradingResult && (
+                  {!gradingResult && sfTextAi && (
                     <button type="button" onClick={analyzeDialogue} disabled={!onCallGemini || dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
                       💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>

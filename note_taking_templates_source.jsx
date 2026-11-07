@@ -7,6 +7,14 @@
 // this lives as a standalone CDN module, NOT inline in AlloFlowANTI.txt.
 
 // ── Helpers ─────────────────────────────────────────────────────────────
+// Student AI-off: usable only when this AI kind can run (null, host-blocked fn
+// or policy off all count as unusable). Falls back on older hosts.
+function _ntAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
 const _genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
 // Loose comparison for Guided Notes self-check: case/space/punctuation/accent-insensitive
@@ -412,7 +420,7 @@ function _useNotesFeedback(props, templateType) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [xpEarned, setXpEarned] = React.useState(0);
   const generatedContent = props.generatedContent;
-  const callGemini = props.allowRuntimeAi !== false && !props.isTeacherMode ? props.callGemini : null;
+  const callGemini = props.allowRuntimeAi !== false && !props.isTeacherMode && _ntAiUsable('text', props.callGemini) ? props.callGemini : null;
   const addToast = props.addToast || (() => {});
   const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
   const inputText = props.inputText || '';
@@ -501,7 +509,7 @@ function _useNotesFeedback(props, templateType) {
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
 
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource:!!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint!==current.current.sourceScope.sourceFingerprint };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', hideRequest: !props.isTeacherMode && typeof callGemini !== 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource:!!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint!==current.current.sourceScope.sourceFingerprint };
 }
 
 // Optional elaboration scaffold shared across templates that don't already
@@ -531,7 +539,8 @@ const _ConnectionsSection = ({ value, onChange, hint, t }) => {
 };
 
 // Inline "Get AI Feedback" button used by each view above the footer.
-const _GetFeedbackButton = ({ onClick, isLoading, disabled, t, colorClass = 'emerald' }) => {
+const _GetFeedbackButton = ({ onClick, isLoading, disabled, hidden, t, colorClass = 'emerald' }) => {
+  if (hidden) return null;
   const palette = ({
     emerald: 'bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700',
     sky: 'bg-sky-700 hover:bg-sky-800 text-white border-sky-700',
@@ -680,7 +689,7 @@ const CornellNotesView = React.memo((props) => {
         />
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="emerald" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{hasGuidance ? _noteText(t, 'note_taking.cornell_footer_guided', "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, 'note_taking.cornell_footer', "Cornell Notes: cues on the left, notes on the right, summary below.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -831,7 +840,7 @@ const LabReportView = React.memo((props) => {
         />
       </_CardSection>
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint={_noteText(t, 'note_taking.lab_connections_hint', "Optional — how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too.")} t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="sky" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="sky" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.lab_footer', "Return to this Lab Report to keep adding observations across days.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -951,7 +960,7 @@ const ReadingResponseView = React.memo((props) => {
           data-help-key="reading_response_open_question_field"
         />
       </_CardSection>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="violet" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="violet" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.reading_response_footer', "Browse your Reading Responses to build a record of your reading life.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -1052,7 +1061,7 @@ const DoubleEntryView = React.memo((props) => {
           data-help-key="double_entry_add_row_button"
         >+ {_noteText(t, 'note_taking.add_entry', "Add entry")}</button>
       </div>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="rose" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="rose" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.double_entry_footer', "Double-Entry Journal: quotes on the left, your thinking on the right.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -1171,7 +1180,7 @@ const GuidedNotesView = React.memo((props) => {
           data-help-key="guided_notes_own_notes_field"
         />
       </_CardSection>
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="emerald" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="emerald" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.guided_footer', "The blanks are the key terms — revisit them to study.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -1296,7 +1305,7 @@ const QAndAView = React.memo((props) => {
         </>
       )}
       <_ConnectionsSection value={data.connections} onChange={(e) => handleNoteUpdate('connections', e.target.value)} hint={_noteText(t, 'note_taking.qa_connections_hint', "Optional — connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer.")} t={t} />
-      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} t={t} colorClass="cyan" />
+      <_GetFeedbackButton onClick={fb.requestFeedback} isLoading={fb.isLoading} disabled={!fb.canRequest} hidden={fb.hideRequest} t={t} colorClass="cyan" />
       <_NotesFeedbackPanel feedback={fb.feedback} xpEarned={fb.xpEarned} onDismiss={fb.dismiss} t={t} earlierDraft={fb.isEarlierDraft} earlierSource={fb.isEarlierSource} />
       <div className="text-[11px] text-slate-500 italic text-center">{_noteText(t, 'note_taking.qa_footer', "Switch to Quiz me to self-test with active recall.")} {_noteText(t,'studio_response.check_save_status','Check the workspace save status before leaving.')}</div>
     </div>
@@ -1677,7 +1686,7 @@ const NotebookOverlay = React.memo((props) => {
   const history = Array.isArray(props.history) ? props.history : [];
   const onSelectEntry = props.onSelectEntry || (() => {});
   const t = props.t || ((k, d) => d || k);
-  const callGemini = props.allowRuntimeAi !== false ? props.callGemini : null;
+  const callGemini = props.allowRuntimeAi !== false && _ntAiUsable('text', props.callGemini) ? props.callGemini : null;
   const addToast = props.addToast || (() => {});
   const [activeFilter, setActiveFilter] = React.useState('all');
   const [insightsOpen, setInsightsOpen] = React.useState(false);
@@ -1821,7 +1830,7 @@ const NotebookOverlay = React.memo((props) => {
             );
           })}
           <div className="ml-auto flex items-center gap-2">
-            <button type="button"
+            {typeof callGemini === 'function' && <button type="button"
               onClick={handleGenerateInsights}
               disabled={insightsLoading || noteEntries.length < 2 || typeof callGemini !== 'function'}
               className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -1830,7 +1839,7 @@ const NotebookOverlay = React.memo((props) => {
               data-help-key="note_insights_button"
             >
               {insightsLoading ? '⏳' : '📊'} {t('note_insights.button') || 'Insights'}
-            </button>
+            </button>}
             <button type="button"
               onClick={handlePrintAll}
               className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 rounded-full hover:bg-slate-200"

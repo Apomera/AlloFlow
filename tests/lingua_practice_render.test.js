@@ -1899,8 +1899,8 @@ describe('Lingua Practice AI illustrations', () => {
     await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
 
     expect(button('Add pictures')).toBeUndefined();
-    await act(async () => { button('Describe').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-    expect(host.textContent).toContain('Picture generation is not available in this session.');
+    // Learners without image generation do not get the Picture tab at all.
+    expect(button('Describe')).toBeUndefined();
     expect(button('Create a picture')).toBeUndefined();
   });
 

@@ -55,7 +55,7 @@ function _timelineTranslationAttributes(artifact) {
         if (!Field || !item || !item.image || typeof change !== 'function') return null;
         const stale = !!(A && item.altHash && A.hashImage(item.image) !== item.altHash);
         const regenerate = async () => {
-            const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
+            const vision = (() => { const fn = window.callGeminiVision; try { if (typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('vision', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })() ? window.callGeminiVision : null;
             if (!A || !vision || altRequestRef.current) return;
             const resource = props.generatedContent;
             const request = { resourceId: resource.id, snapshot: JSON.stringify(resource), itemSnapshot: JSON.stringify(item) };

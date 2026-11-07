@@ -125,7 +125,8 @@ describe('Printing Press SVG alternatives', () => {
       }
     });
 
-    expect(declarations).toHaveLength(53);
+    // 53 + the hands-on labs (halftone, Petrucci, Mercator, banknote, ink, pamphlet, poster, comics, gag strip, perforations, Audubon, Galileo, Byrne, flip book, book condition, recycling, bookplate, exposure, 3D layers, page canon, phonautogram, Snow map, blueprint, raking light, sheet folds, journey days, oven dial, picture-book page map, chromolithograph card, radio wave, September 1752, pamphlet sheets, stripped paperbacks, Douglass voices, newsstand cover, webcomic, tarot stencil sheet, sermon speed bars), 2026-11-03.
+    expect(declarations).toHaveLength(91);
     for (const declaration of declarations) {
       expect(
         /aria-label|role\s*:\s*['"]img['"]|aria-hidden/.test(

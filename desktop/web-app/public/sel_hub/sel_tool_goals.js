@@ -1182,6 +1182,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
+      var _goAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var t = ctx.t || function(k) { return k; };
@@ -1203,6 +1204,7 @@ window.SelHub = window.SelHub || {
         })();
 
         var tab = d.tab || 'goals';
+        if (!_goAiOn && tab === 'coach') tab = 'goals';
         var goals = d.goals || [];
         var editingGoal = d.editingGoal || null;
         var showTemplates = d.showTemplates || false;
@@ -1491,7 +1493,7 @@ window.SelHub = window.SelHub || {
         };
 
         var askAI = function() {
-          if (!callGemini || aiLoading) return;
+          if (!_goAiOn || aiLoading) return;
           sfxClick();
           var question = aiInput.trim() || 'Help me with my goals.';
           // Safety pre-check on free-text question.
@@ -1510,7 +1512,9 @@ window.SelHub = window.SelHub || {
             (band === 'elementary' ? 'Use simple, warm language.' : band === 'middle' ? 'Be relatable and motivating.' : 'Be thoughtful and strategic.');
           upd({ aiLoading: true, aiInput: '' });
           callGemini(prompt, false, false, 0.8).then(function(resp) {
-            upd({ aiResponse: resp || 'Keep going! Every step counts.', aiLoading: false, aiAsked: true });
+            // An empty reply (boot stub) is a failure, not a coach answer.
+            if (typeof resp !== 'string' || !resp.trim()) throw new Error('empty AI reply');
+            upd({ aiResponse: resp, aiLoading: false, aiAsked: true });
           }).catch(function() {
             upd({ aiResponse: 'Coach unavailable. Remember: progress > perfection!', aiLoading: false });
           });
@@ -2003,7 +2007,7 @@ window.SelHub = window.SelHub || {
           { id: 'coach', label: '\uD83E\uDD16 Coach' },
           { id: 'checkin', label: '\uD83D\uDCDD Check-In' },
           { id: 'progress', label: '\uD83D\uDCCA Progress' }
-        ];
+        ].filter(function (gt) { return _goAiOn || gt.id !== 'coach'; });
         // ═══════════════════════════════════════════════════════════
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
@@ -2569,7 +2573,7 @@ window.SelHub = window.SelHub || {
             ) : null,
 
             // ── COACH TAB ──
-            tab === 'coach' ? h('div', null,
+            tab === 'coach' && _goAiOn ? h('div', null,
               h('div', { style: { textAlign: 'center', padding: 16 } },
                 h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83E\uDD16'),
                 h('p', { style: { fontSize: 12, color: _goaFg('#94a3b8'), maxWidth: 400, margin: '0 auto 12px', lineHeight: 1.6 } },

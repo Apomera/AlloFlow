@@ -1081,7 +1081,9 @@ try {
     if (isNaN(d.getTime())) return '';
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
-  // The labels Word Sounds keys phonemeMastery by (WS_CORE.phonemeLabels).
+  // Rows saved before Word Sounds keyed mastery by sound hold no soundLabels.
+  // This reads those rows the old way, which matches the mastery keys of the
+  // same era. Newer rows carry the exact keys (WS_CORE.phonemeLabels).
   function _acWsSoundLabels(phonemes) {
     var out = [];
     (Array.isArray(phonemes) ? phonemes : []).forEach(function(value) {
@@ -1107,7 +1109,7 @@ try {
       (ws && Array.isArray(ws.history) ? ws.history : []).forEach(function(h) {
         var when = h ? new Date(h.timestamp || h.date).getTime() : NaN;
         if (!Number.isFinite(when)) return;
-        _acWsSoundLabels(h.phonemes).forEach(function(sound) { if (!(last[sound] >= when)) last[sound] = when; });
+        (Array.isArray(h.soundLabels) ? h.soundLabels : _acWsSoundLabels(h.phonemes)).forEach(function(sound) { if (!(last[sound] >= when)) last[sound] = when; });
       });
       var mine = [];
       Object.keys(mastery).sort(byLabel).forEach(function(sound) {

@@ -258,7 +258,7 @@ test.describe('Raptor strike presentation and caught animal lifecycle', () => {
       w.watchCarry(); return { snapshot: c._rhSnapshot(), pose: w.carryPose(), rings: w.ringPositions() };
     });
     expect(immediate.snapshot.missionCatches).toBe(1);
-    expect(immediate.snapshot.carriedPreyMs).toBe(1100);
+    expect(immediate.snapshot.carriedPreyMs).toBe(4200);
     // A caught animal and its contact effect must be visible without another frame.
     expect(immediate.rings).toHaveLength(1);
     expect(immediate.rings[0][1]).toBeGreaterThan(20);
@@ -266,13 +266,13 @@ test.describe('Raptor strike presentation and caught animal lifecycle', () => {
     await expect(page.locator('[data-raptor-metric="mission"] .rh-flight-metric-value')).toHaveText('1 catch this flight');
     const immediateFrozen = await canvas(page).evaluate((c: any) => { (window as any).stepStrike(60000); return c._rhSnapshot(); });
     expect(immediateFrozen.missionCatches).toBe(1);
-    expect(immediateFrozen.carriedPreyMs).toBe(1100);
+    expect(immediateFrozen.carriedPreyMs).toBe(4200);
     expect(immediateFrozen.motionTimeMs).toBe(immediate.snapshot.motionTimeMs);
     const catchState = await canvas(page).evaluate((c: any) => {
       const w = window as any; c._rhCommand('pause'); w.stepStrike(50); c._rhCommand('pause');
       return { snapshot: c._rhSnapshot(), pose: w.carryPose(), rings: w.ringPositions() };
     });
-    expect(catchState.snapshot.missionCatches).toBe(1); expect(catchState.snapshot.carriedPreyMs).toBe(1050); expect(catchState.snapshot.carriedPreyLabel).toBeTruthy();
+    expect(catchState.snapshot.missionCatches).toBe(1); expect(catchState.snapshot.carriedPreyMs).toBe(4150); expect(catchState.snapshot.carriedPreyLabel).toBeTruthy();
     expect(catchState.pose.parent).toBe('raptor-feet'); expect(catchState.pose.beaconsHidden).toBe(true); expect(Math.max(...catchState.pose.size)).toBeLessThanOrEqual(0.72); expect(catchState.pose.top).toBeLessThan(-0.29); expect(catchState.pose.top).toBeGreaterThan(-0.46);
     expect(catchState.rings.length).toBe(1); expect(catchState.rings[0][1]).toBeGreaterThan(20);
     await capture(page, 'raptor-strike-catch');
@@ -280,7 +280,7 @@ test.describe('Raptor strike presentation and caught animal lifecycle', () => {
       const w = window as any; c._rhCommand('pause'); w.advanceStrike(100); c._rhCommand('pause');
       return { snapshot: c._rhSnapshot(), pose: w.carryPose() };
     });
-    expect(settledCatch.snapshot.carriedPreyMs).toBe(950);
+    expect(settledCatch.snapshot.carriedPreyMs).toBe(4050);
     await capture(page, 'raptor-strike-catch-150ms');
     const frozen = await canvas(page).evaluate((c: any) => { const w = window as any; w.stepStrike(60000); return { snapshot: c._rhSnapshot(), pose: w.carryPose() }; });
     for (const key of ['carriedPreyLabel', 'carriedPreyMs', 'talonExtension', 'motionTimeMs']) expect(frozen.snapshot[key]).toEqual(settledCatch.snapshot[key]);
@@ -337,7 +337,7 @@ test.describe('Raptor strike presentation and caught animal lifecycle', () => {
     await expect(page.locator('.rh-flight-pause')).toHaveAttribute('data-visible', 'false');
     await capture(page, 'raptor-strike-carry-settled-live');
     const held = await canvas(page).evaluate((c: any) => {
-      const w = window as any; w.advanceStrike(650);
+      const w = window as any; w.advanceStrike(3750);
       return { snapshot: c._rhSnapshot(), materials: w.carryMaterials() };
     });
     expect(held.snapshot.carriedPreyMs).toBe(200);
@@ -374,7 +374,7 @@ test.describe('Raptor strike presentation and caught animal lifecycle', () => {
   test('restores each motion preference immediately during a paused carry fade', async ({ page }) => {
     await mount(page);
     const faded = await canvas(page).evaluate((c: any) => {
-      const w = window as any; w.placeStrikePrey(3); c._rhCommand('strike'); w.advanceStrike(1000); c._rhCommand('pause');
+      const w = window as any; w.placeStrikePrey(3); c._rhCommand('strike'); w.advanceStrike(4100); c._rhCommand('pause');
       return { snapshot: c._rhSnapshot(), materials: w.carryMaterials() };
     });
     expect(faded.snapshot.carriedPreyMs).toBe(100);

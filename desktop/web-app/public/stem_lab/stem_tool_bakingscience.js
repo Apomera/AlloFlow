@@ -2124,6 +2124,8 @@
         }
 
         function makeAiPanel() {
+          // Hidden when ctx hands no usable callGemini (AI off / blocked for students).
+          if (typeof callGemini !== 'function') return null;
           var aiLevel = d.aiLevel || 'grade5';
           // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
           var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';

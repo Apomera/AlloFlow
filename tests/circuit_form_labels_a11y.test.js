@@ -15,7 +15,7 @@ describe('Circuit Lab form labels', () => {
   });
 
   it('names the AI tutor question field independently of its placeholder', () => {
-    const html = renderTool('circuit', { _circuit: { showAI: true } });
+    const html = renderTool('circuit', { _circuit: { showAI: true } }, { callGemini: () => Promise.resolve('') });
     expect(html).toContain('id="circuit-ai-question"');
     expect(html).toContain('aria-label="Question for the AI Circuit Tutor"');
   });

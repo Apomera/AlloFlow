@@ -12,6 +12,13 @@
   var React = window.React;
   if (!React) { console.error('[HeaderBar] React not found on window'); return; }
 
+function _aiUsable(kind, fn) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+}
 const _headerUseFocusTrap = typeof window !== "undefined" && window.__alloHooks && window.__alloHooks.useFocusTrap || function() {
 };
 const _headerPortal = (node) => {
@@ -394,14 +401,15 @@ function HeaderBar(props) {
         const resolved = window.__alloResolveGeminiAudioCapability();
         if (resolved && typeof resolved.available === "boolean") return resolved;
       }
-      return { available: typeof window.callGeminiAudio === "function", reason: "bridge-only" };
+      return { available: _aiUsable("audio", window.callGeminiAudio), reason: "bridge-only" };
     } catch (_) {
       return { available: false, reason: "configuration-unavailable" };
     }
   })();
   const canConfigureGeminiAudio = !_isCanvasEnv && typeof setShowAIBackendModal === "function" && (isTeacherMode || !!window.__alloStudentAiSetupAllowed);
+  const voiceLocalOnly = !!(window.AlloFlowVoice && typeof window.AlloFlowVoice.isLocalSpeechOnly === "function" && window.AlloFlowVoice.isLocalSpeechOnly());
   const voiceInputDescriptions = {
-    auto: "Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.",
+    auto: voiceLocalOnly ? "Uses on-device Whisper after you download it in Speech setup. Audio stays on this device." : "Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.",
     whisper: "Private on-device transcription. The speech model may download before the first listening session.",
     webspeech: "Uses this browser's speech service. The browser may send audio to its provider.",
     gemini: "Sends each completed spoken turn to Gemini for cloud transcription. Requires internet access and a configured Gemini key.",
@@ -446,7 +454,7 @@ function HeaderBar(props) {
   const suggestPollTimes = async () => {
     const ask = String(pollAsk || "").trim();
     if (!ask || pollAiBusy) return;
-    if (typeof window.callGemini !== "function") {
+    if (!_aiUsable("text", window.callGemini)) {
       if (typeof addToast === "function") addToast(t("header.assistant_unavailable_type_options") || "The assistant is not available right now. You can still type the options yourself.", "info");
       return;
     }
@@ -626,7 +634,8 @@ function HeaderBar(props) {
     const isIOS = /iPad|iPhone|iPod/.test(ua) || /Macintosh/.test(ua) && typeof window.navigator?.maxTouchPoints === "number" && window.navigator.maxTouchPoints > 1;
     return { ok: true, isIOS };
   }, [t]);
-  const canUseKokoroVoicePicker = kokoroCapability.ok;
+  const studentDeviceVoiceOnly = !isTeacherMode && typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+  const canUseKokoroVoicePicker = kokoroCapability.ok && !studentDeviceVoiceOnly;
   let speechProvider = "auto";
   try {
     speechProvider = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").ttsProvider || "auto";
@@ -669,6 +678,9 @@ function HeaderBar(props) {
       live = false;
     };
   }, [showVoiceSettings, selectedVoice]);
+  const studentOnDeviceKokoro = studentDeviceVoiceOnly && kokoroCapability.ok && (!!window._kokoroTTS?.ready || kokoroSavedOnDevice === true);
+  const studentVoiceValue = studentOnDeviceKokoro && KOKORO_VOICES.some((v) => v.id === selectedVoice) ? selectedVoice : "browser";
+  const renderStudentOnDeviceGroup = () => /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} " + (window._kokoroTTS?.ready ? t("header.voice_kokoro_ready_group") || "On-device voice (Kokoro): ready, works offline" : t("header.voice_kokoro_group") || "On-device voice (Kokoro)") }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label)));
   const renderKokoroVoiceGroup = () => {
     if (!kokoroCapability.ok) {
       return /* @__PURE__ */ React.createElement("optgroup", { label: (t("header.voice_kokoro_group") || "On-device voice (Kokoro)") + " (" + kokoroCapability.reason + ")" }, /* @__PURE__ */ React.createElement("option", { value: "__kokoro_unavailable", disabled: true }, t("header.voice_kokoro_cannot_run") || "Cannot run on this device"));
@@ -1204,20 +1216,23 @@ function HeaderBar(props) {
       {
         id: "header-voice-input-engine",
         "aria-describedby": "header-voice-input-engine-help",
-        value: voiceInputEngine,
+        value: voiceInputEngine === "webspeech" && voiceLocalOnly ? "auto" : voiceInputEngine,
         onChange: (event) => chooseVoiceInputEngine(event.target.value),
         className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
       },
       /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("header.voice_engine_auto") || "Auto (private-first)"),
       /* @__PURE__ */ React.createElement("option", { value: "whisper" }, t("header.voice_engine_whisper") || "On-device Whisper"),
-      /* @__PURE__ */ React.createElement("option", { value: "webspeech" }, t("header.voice_engine_webspeech") || "Browser speech service"),
+      !voiceLocalOnly && /* @__PURE__ */ React.createElement("option", { value: "webspeech" }, t("header.voice_engine_webspeech") || "Browser speech service"),
       /* @__PURE__ */ React.createElement("option", { value: "gemini" }, t("header.voice_engine_gemini") || "Gemini cloud transcription"),
       /* @__PURE__ */ React.createElement("option", { value: "off" }, t("header.voice_engine_off") || "Off")
-    ), /* @__PURE__ */ React.createElement("p", { id: "header-voice-input-engine-help", className: `mt-1 text-[11px] leading-tight ${_skin.label}` }, voiceInputDescriptions[voiceInputEngine]), voiceInputEngine === "gemini" && !geminiAudioCapability.available && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-lg border p-2 ${_skin.note}` }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] font-bold leading-tight ${_skin.noteHead}` }, canConfigureGeminiAudio ? t("header.gemini_key_missing") || "Gemini transcription is selected, but no Gemini cloud-services key is configured." : t("header.gemini_unavailable_activity") || "Gemini cloud transcription is unavailable in this activity."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" }, canConfigureGeminiAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openGeminiAudioConfiguration, "data-help-key": "header_voice_configure_gemini", className: "rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, t("header.configure_gemini_access") || "Configure Gemini access"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => chooseVoiceInputEngine("auto"), className: `rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, t("header.use_auto_instead") || "Use Auto instead")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-spoken-output-voice", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.spoken_output_voice") || "Spoken-output voice"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { id: "header-voice-input-engine-help", className: `mt-1 text-[11px] leading-tight ${_skin.label}` }, voiceInputDescriptions[voiceInputEngine === "webspeech" && voiceLocalOnly ? "auto" : voiceInputEngine]), window.__alloSpeechSetupHost === true && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      handleSetShowVoiceSettingsToFalse();
+      window.dispatchEvent(new window.CustomEvent("alloflow:open-speech-setup"));
+    }, className: `mt-2 w-full rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, t("speech_setup.open") || "Speech setup: download, size, mic test"), voiceInputEngine === "gemini" && !geminiAudioCapability.available && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-lg border p-2 ${_skin.note}` }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] font-bold leading-tight ${_skin.noteHead}` }, canConfigureGeminiAudio ? t("header.gemini_key_missing") || "Gemini transcription is selected, but no Gemini cloud-services key is configured." : t("header.gemini_unavailable_activity") || "Gemini cloud transcription is unavailable in this activity."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5" }, canConfigureGeminiAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: openGeminiAudioConfiguration, "data-help-key": "header_voice_configure_gemini", className: "rounded-md bg-sky-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" }, t("header.configure_gemini_access") || "Configure Gemini access"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => chooseVoiceInputEngine("auto"), className: `rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}` }, t("header.use_auto_instead") || "Use Auto instead")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-spoken-output-voice", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.spoken_output_voice") || "Spoken-output voice"), /* @__PURE__ */ React.createElement(
       "select",
       {
         id: "header-spoken-output-voice",
-        value: selectedVoice,
+        value: studentDeviceVoiceOnly ? studentVoiceValue : selectedVoice,
         onChange: (e) => {
           const voice = e.target.value;
           if (voice === "__kokoro_unavailable") return;
@@ -1227,15 +1242,15 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_voice_select",
         className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
       },
-      _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup()) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, renderKokoroVoiceGroup(), /* @__PURE__ */ React.createElement("optgroup", { label: t("header.edge_tts_voices") || "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderDeviceVoiceGroup()) : (
+      studentDeviceVoiceOnly ? /* @__PURE__ */ React.createElement(React.Fragment, null, studentOnDeviceKokoro && renderStudentOnDeviceGroup(), renderDeviceVoiceGroup()) : _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup()) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, renderKokoroVoiceGroup(), /* @__PURE__ */ React.createElement("optgroup", { label: t("header.edge_tts_voices") || "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderDeviceVoiceGroup()) : (
         /* Every other surface — the hosted web app, which is what a
            phone loads. This branch used to be cloud voices only. */
         /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
       )
-    ), /^[ab][fm]_/i.test(selectedVoice || "") && (speechProvider === "browser" || speechProvider === "off") && /* @__PURE__ */ React.createElement("p", { role: "status", className: `mt-2 text-xs ${_skin.label}` }, speechProvider === "browser" ? t("header.kokoro_browser_provider") || "The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro." : t("header.kokoro_disabled_provider") || "Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro."), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) is preparing. Try reading again when the voice is ready." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it."), !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && !kokoroSavedOnDevice && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    ), !studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || "") && (speechProvider === "browser" || speechProvider === "off") && /* @__PURE__ */ React.createElement("p", { role: "status", className: `mt-2 text-xs ${_skin.label}` }, speechProvider === "browser" ? t("header.kokoro_browser_provider") || "The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro." : t("header.kokoro_disabled_provider") || "Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro."), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) is preparing. Try reading again when the voice is ready." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it."), !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && !kokoroSavedOnDevice && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       startKokoroVoiceDownload();
       setKokoroSavedOnDevice(null);
-    }, "data-kokoro-get-voice": true, className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}` }, t("header.voice_model_get") || "Get the voice (88 MB)")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    }, "data-kokoro-get-voice": true, className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}` }, t("header.voice_model_get") || "Get the voice (88 MB)")), !studentDeviceVoiceOnly && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -1260,7 +1275,7 @@ function HeaderBar(props) {
         },
         "aria-label": t("header.browser_tts_fallback_aria") || "Use browser voice as fallback when Gemini TTS refuses or fails"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-speed", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_speed") || "Speed", ": ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), !studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-speed", className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_speed") || "Speed", ": ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "header-voice-speed",

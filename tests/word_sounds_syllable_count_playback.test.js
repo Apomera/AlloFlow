@@ -22,6 +22,8 @@ const createCore = new Function(readFileSync('word_sounds_core.js', 'utf8') + '\
 const core = createCore();
 const helpersSource = source.slice(source.indexOf('    const syllableCountWordKey ='), source.indexOf('    // SyllableCountingView'));
 const helpers = new Function('WS_CORE', 'window', helpersSource + '\nreturn { syllableCountWordKey, syllableCountContextKey, syllableCountDeliveryReady };')(core, {});
+const deviceVoiceSource = source.slice(source.indexOf('  function wsStudentDeviceVoiceOnly() {'), source.indexOf('  function wsAnnounce(message) {'));
+const deviceVoice = win => new Function('window', 'SpeechSynthesisUtterance', deviceVoiceSource + '\nreturn { wsStudentDeviceVoiceOnly, wsSpeakDeviceVoice };')(win, function (text) { this.text = text; });
 const asset = value => {
   const bytes = Buffer.alloc(68); bytes.write('RIFF'); bytes.write('WAVE', 8); bytes[60] = value;
   return { mime: 'audio/wav', base64: bytes.toString('base64'), decoded: true, source: 'teacher_recording', durationSeconds: 0.4 };
@@ -48,9 +50,10 @@ async function harness({ word = 'air', activity = 'syllable_counting', clip = as
   const reviewed = core.createReviewedSyllableCount({ targetWord: word, language: 'en-US', count: word === 'family' ? 3 : 1,
     revision: 1, reviewed: true, audioContext: context });
   const item = { word, phonemes: ['k', 'a', 't'], activityItems: { syllable_counting: reviewed } };
+  const envWindow = { __ALLO_PHONEME_AUDIO_BANK: {} };
   const env = {
-    React, WS_CORE: core, Audio: ControlledAudio, window: { __ALLO_PHONEME_AUDIO_BANK: {} }, _CACHE_WORD_AUDIO_BANK: {},
-    ...helpers,
+    React, WS_CORE: core, Audio: ControlledAudio, window: envWindow, _CACHE_WORD_AUDIO_BANK: {},
+    ...helpers, ...deviceVoice(envWindow),
     syllableCountAudioRef: { current: { asset: clip || undefined, source: clip ? dataUri(clip) : null, context } },
     syllableCountContextRef: { current: helpers.syllableCountContextKey(word, 'en-US', item, context) },
     syllableCountDeliveryRef: { current: null }, syllableCountAttemptRef: { current: 0 }, advanceEpochRef: { current: 1 },
@@ -429,5 +432,48 @@ describe('syllable-count playback uses the reviewed pronunciation', () => {
     expect(tap.disabled).toBe(false);
     await act(async () => tap.click());
     expect(onTap).toHaveBeenCalledOnce();
+  });
+});
+
+describe('student AI off: prepared clip, then device voice for whole words only', () => {
+  const synth = win => { const spoken = []; win.speechSynthesis = { cancel: vi.fn(), speak: vi.fn(u => { spoken.push(u); u.onstart?.(); u.onend?.(); }) }; return spoken; };
+  // For these learners callTTS never reaches the cloud: it returns an on-device
+  // (Kokoro/Piper) clip already installed, or null (tts_module _studentOnDeviceVoice).
+  it('speaks a whole word without a clip on the device voice when no on-device engine answers', async () => {
+    const h = await harness({ word: 'cat', activity: 'blending', voice: 'Kore' });
+    const spoken = synth(h.env.window); h.env.window.__alloStudentAiDisabled = true;
+    h.env.callTTS.mockResolvedValue(null);
+    expect(await h.callback('cat')).toMatchObject({ ok: true, status: 'ready' });
+    expect(spoken.map(u => [u.text, u.lang])).toEqual([['cat', 'en-US']]);
+    expect(h.env.callTTS).toHaveBeenCalledTimes(1);
+    expect(h.env.callTTS).toHaveBeenCalledWith('cat', 'Kore', 1, { language: 'en-US', maxRetries: 0 });
+    expect(h.env.notifyAudioUnavailable).not.toHaveBeenCalled();
+  });
+  it('plays an on-device voice clip before the browser voice, without storing it', async () => {
+    const h = await harness({ word: 'cat', activity: 'blending', voice: 'af_heart' });
+    const spoken = synth(h.env.window); h.env.window.__alloStudentAiDisabled = true;
+    h.env.callTTS.mockResolvedValue('blob:kokoro-cat');
+    await h.finishPlayback('cat');
+    expect(h.played).toEqual(['blob:kokoro-cat']); expect(spoken).toEqual([]);
+    expect(h.env.saveAudioToStorage).not.toHaveBeenCalled(); expect(h.env.notifyAudioUnavailable).not.toHaveBeenCalled();
+  });
+  it('plays a prepared clip first when one exists', async () => {
+    const h = await harness({ word: 'cat', activity: 'blending', voice: 'Kore' });
+    const spoken = synth(h.env.window); h.env.window.__alloStudentAiDisabled = true;
+    h.env.wordSoundsAudioLibraryRef.current.cat = dataUri(asset(31));
+    await h.finishPlayback('cat');
+    expect(h.played).toEqual([dataUri(asset(31))]); expect(spoken).toEqual([]); expect(h.env.callTTS).not.toHaveBeenCalled();
+  });
+  it('never synthesizes an isolated phoneme', async () => {
+    const h = await harness({ word: 'cat', activity: 'blending', voice: 'Kore' });
+    const spoken = synth(h.env.window); h.env.window.__alloStudentAiDisabled = true;
+    expect(await h.callback('k')).toMatchObject({ ok: false, status: 'unavailable' });
+    expect(spoken).toEqual([]); expect(h.env.callTTS).not.toHaveBeenCalled();
+  });
+  it('teachers keep the cloud TTS route and never fall to the device voice', async () => {
+    const h = await harness({ word: 'cat', activity: 'blending', voice: 'Kore' });
+    const spoken = synth(h.env.window);
+    await h.finishPlayback('cat');
+    expect(h.env.callTTS).toHaveBeenCalledWith('cat', 'Kore', 1, expect.any(Object)); expect(spoken).toEqual([]);
   });
 });

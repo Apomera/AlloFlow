@@ -163,11 +163,17 @@ describe('quiz banks and generators', () => {
 });
 
 describe('source pins', () => {
-  it('quiz shuffles are Fisher-Yates and quiz data replacement records an undo entry', () => {
+  // 2026-11-03 deep pass: quizzes draw their own chart and no longer overwrite the student's
+  // points (so the quizUndo pins are retired); every option list goes through fyShuffle.
+  // The behaviour is pinned by tests/dataplot_deep_bugs.test.js (Guess-R² leak) and
+  // tests/dataplot_deep_features.test.js (generated practice).
+  it('quiz shuffles are Fisher-Yates and quizzes leave the plotted data alone', () => {
     expect(src).not.toContain('Math.random() - 0.5');
-    expect(src.split('fyShuffle(').length - 1).toBe(3);
-    expect(src).toContain('var quizUndo = pushUndo();');
-    expect(src.split('undoStack: quizUndo').length - 1).toBe(3);
+    expect(src).toContain('function fyShuffle(arr, rand)');
+    expect(src).not.toContain('var quizUndo = pushUndo();');
+    const makeQuiz = src.slice(src.indexOf('var makeQuiz = function()'), src.indexOf('var answerQuiz = function'));
+    expect(makeQuiz.length).toBeGreaterThan(0);
+    expect(makeQuiz).not.toMatch(/points\s*:/);
   });
 
   it('regression comparison ranks and colors by raw R², not |R²|', () => {

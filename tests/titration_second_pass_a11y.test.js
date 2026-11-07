@@ -5,9 +5,10 @@ const sourcePath = 'stem_lab/stem_tool_titration.js';
 
 function renderState(state = {}) {
   const host = document.createElement('div');
+  // The AI tutor renders only with a usable provider (student AI-off sweep).
   host.innerHTML = renderTool('titrationLab', {
     titrationLab: Object.assign({ safetyChecked: true, labTab: 'titrate' }, state),
-  });
+  }, { callGemini: () => new Promise(() => {}) });
   return host;
 }
 

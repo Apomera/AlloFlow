@@ -1049,6 +1049,36 @@ describe('AlloBot delayed-data and intro lifecycle', () => {
     expect(completedIntro).toHaveBeenCalledTimes(1);
     expect(second.container.querySelector('.allobot-bubble-live')?.textContent).toBe('Welcome to AlloFlow!');
   });
+
+  it('does not introduce itself as an AI guide when no AI is usable', async () => {
+    const languageValue = {
+      t: (key) => ({
+        'bot_events.intro_greeting': 'Intro available',
+        'sidebar.ai_guide_welcome': "Hi! I'm your AI Guide.",
+        'sidebar.allobot_welcome_no_ai': "Hi! I'm AlloBot.",
+      })[key] || key,
+    };
+    const usable = vi.fn(() => false);
+    window.__alloAiUsable = usable;
+    const shared = AlloBot;
+    try {
+      // The intro fires once per module load, so each case needs its own.
+      AlloBot = loadAlloBotFromSource();
+      const off = await mountBot({ canPlayIntro: true, hasSeenBotIntro: false, onBotIntroSeen: vi.fn(), disableAnimations: true }, { languageValue });
+      await advance(2500);
+      expect(usable).toHaveBeenCalledWith('text');
+      expect(off.container.querySelector('.allobot-bubble-live')?.textContent).toBe("Hi! I'm AlloBot.");
+      await off.unmount();
+      usable.mockReturnValue(true);
+      AlloBot = loadAlloBotFromSource();
+      const on = await mountBot({ canPlayIntro: true, hasSeenBotIntro: false, onBotIntroSeen: vi.fn(), disableAnimations: true }, { languageValue });
+      await advance(2500);
+      expect(on.container.querySelector('.allobot-bubble-live')?.textContent).toBe("Hi! I'm your AI Guide.");
+    } finally {
+      AlloBot = shared;
+      delete window.__alloAiUsable;
+    }
+  });
 });
 
 describe('AlloBot speech ownership and cancellation', () => {

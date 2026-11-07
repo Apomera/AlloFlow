@@ -77,6 +77,8 @@ beforeAll(() => {
   window.React = React;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('phase_k_helpers_module.js');
+  // A student save refuses to run without the real student-boundary helpers.
+  ['firestore_sync_module.js', 'instructional_context_module.js', 'session_transport_module.js', 'live_aac_module.js'].forEach(loadAlloModule);
   PhaseKHelpers = window.AlloModules.PhaseKHelpers;
 });
 

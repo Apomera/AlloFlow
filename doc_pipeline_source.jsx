@@ -51900,8 +51900,19 @@ function projectStudentGuideData(data, mode) {
           ? teacherCopyLabel : 'Teacher resources: ';
       const studentTitlePrefix = _teacherGuideOnly ? teacherTitlePrefix : isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
-      const _documentLanguageMap = {'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'};
-      const _documentLanguage = _documentLanguageMap[leveledTextLanguage || currentUiLanguage] || 'en';
+      const _documentLanguageMap = {'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh','Turkish':'tr','Gujarati':'gu','Marathi':'mr','Malayalam':'ml','Dutch':'nl','Kannada':'kn','Esperanto':'eo','Mandarin':'zh','Malay':'ms','Mongolian':'mn'};
+      // A typed-in language the map lacks asks the host's speech helper, which
+      // answers English for names it does not know; that is not evidence.
+      const _documentLanguage = (() => {
+          const name = leveledTextLanguage || currentUiLanguage;
+          if (_documentLanguageMap[name]) return _documentLanguageMap[name];
+          try {
+              const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
+              const tag = typeof resolve === 'function' && name ? String(resolve(name) || '') : '';
+              if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(tag) && !/^en(?:-|$)/i.test(tag)) return tag;
+          } catch (_) {}
+          return 'en';
+      })();
       // Dedicated Memory Aid print presets contain no interactive learner runtime.
       // In particular, an autosave identity dialog must never cover a printed sheet.
       if (historyItems.every(item => item.type === 'memory-aid' && ['study', 'recall', 'no-hints', 'teacher'].includes(item.data && item.data.memoryAidExportPreset))) {
@@ -52184,9 +52195,16 @@ function projectStudentGuideData(data, mode) {
                                     var receipt = null;
                                     for (var partIdx = 0; partIdx < totalParts; partIdx++) {
                                         var partBody = JSON.stringify({ a: 'putsubmission', id: mailboxTarget.id, k: mailboxTarget.k, sid: sid, part: partIdx + 1, of: totalParts, data: submissionEnvelope.slice(partIdx * chunkSize, (partIdx + 1) * chunkSize) });
-                                        var resp = await fetch(mailboxTarget.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: partBody, redirect: 'follow' });
+                                        // A hung request on bad Wi-Fi must reach the download fallback.
+                                        var partCtl = typeof AbortController === 'function' ? new AbortController() : null;
+                                        var partTimer = partCtl ? setTimeout(function() { partCtl.abort(); }, 25000) : null;
                                         var parsedResp = null;
-                                        try { parsedResp = await resp.json(); } catch (respErr) { parsedResp = null; }
+                                        try {
+                                            var resp = await fetch(mailboxTarget.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: partBody, redirect: 'follow', signal: partCtl ? partCtl.signal : undefined });
+                                            try { parsedResp = await resp.json(); } catch (respErr) { parsedResp = null; }
+                                        } catch (fetchErr) {
+                                            throw new Error(fetchErr && fetchErr.name === 'AbortError' ? 'no answer in time' : 'offline');
+                                        } finally { if (partTimer) clearTimeout(partTimer); }
                                         if (!parsedResp || parsedResp.ok !== true) throw new Error((parsedResp && parsedResp.e) || ('the mailbox rejected part ' + (partIdx + 1)));
                                         receipt = parsedResp;
                                     }
@@ -52208,8 +52226,16 @@ function projectStudentGuideData(data, mode) {
                             var blob = new Blob([subHtml], { type: 'text/html;charset=utf-8' });
                             var url2 = URL.createObjectURL(blob);
                             var a = document.createElement('a');
-                            var safeName = nickname.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
-                            var safeTitle = (payload.docTitle || 'worksheet').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+                            // Letters in any script survive, so Arabic or Chinese names do not
+                            // all collapse to the same file name.
+                            var filePart = function(value, fallback) {
+                                var out = String(value || '');
+                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{N}_-]+', 'gu'), '_'); }
+                                catch (_) { out = out.replace(/[^a-zA-Z0-9_-]+/g, '_'); }
+                                return out.replace(/^_+|_+$/g, '').slice(0, 40) || fallback;
+                            };
+                            var safeName = filePart(nickname, 'student');
+                            var safeTitle = filePart(payload.docTitle, 'worksheet');
                             var dateStr = new Date().toISOString().slice(0, 10);
                             var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
                             a.href = url2;
@@ -56932,8 +56958,14 @@ function projectStudentGuideData(data, mode) {
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                            var safeNick = nick.replace(/[^a-z0-9]+/gi, '_').slice(0, 40) || 'student';
-                            var safeDoc = String(document.title || 'worksheet').split('—')[0].replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'worksheet';
+                            var filePart = function(value, fallback) {
+                                var out = String(value || '');
+                                try { out = out.normalize('NFC').replace(new RegExp('[^\\\\p{L}\\\\p{N}]+', 'gu'), '_'); }
+                                catch (_) { out = out.replace(/[^a-z0-9]+/gi, '_'); }
+                                return out.replace(/^_+|_+$/g, '').slice(0, 40) || fallback;
+                            };
+                            var safeNick = filePart(nick, 'student');
+                            var safeDoc = filePart(String(document.title || 'worksheet').split('—')[0], 'worksheet');
                             var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
                             a.download = safeNick + '-' + safeDoc + '-answers' + docSuffix + '-' + new Date().toISOString().slice(0, 10) + '.json';
                             document.body.appendChild(a); a.click();

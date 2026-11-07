@@ -3777,7 +3777,8 @@
       var a11yClick = ctx.a11yClick;
       var awardXP = ctx.awardXP;
       var setToolSnapshots = ctx.setToolSnapshots;
-      var callGemini = ctx.callGemini;
+      // null unless text AI is usable: the AI tutor toggle and panel are then hidden.
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var band = getGradeBand(ctx);
 
@@ -4709,7 +4710,7 @@
             h('button', { type: 'button', onClick: function() { upd('_showBadges', !d._showBadges); }, 'aria-expanded': !!d._showBadges, 'aria-controls': 'chem-badges-panel',
               className: 'ml-auto min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2 ' + (d._showBadges ? 'bg-amber-100 text-amber-800 border-amber-700' : 'bg-slate-50 text-slate-700 border-slate-400')
             }, '\uD83C\uDFC5 ' + ext.badges.length + '/' + Object.keys(CHEM_BADGES).length),
-            h('button', { type: 'button', onClick: function() { upd('_showAI', !d._showAI); }, 'aria-pressed': !!d._showAI, 'aria-expanded': !!d._showAI, 'aria-controls': 'chem-ai-panel',
+            callGemini && h('button', { type: 'button', onClick: function() { upd('_showAI', !d._showAI); }, 'aria-pressed': !!d._showAI, 'aria-expanded': !!d._showAI, 'aria-controls': 'chem-ai-panel',
               className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2 ' + (d._showAI ? 'bg-sky-100 text-sky-800 border-sky-700' : 'bg-slate-50 text-slate-700 border-slate-400')
             }, __alloT('stem.chembalance.ai', '\uD83E\uDD16 AI')),
             h('button', {
@@ -5040,7 +5041,7 @@
           ),
 
           // ── AI Tutor ──
-          d._showAI && h('div', { id: 'chem-ai-panel', role: 'region', 'aria-labelledby': 'chem-ai-title', 'aria-busy': !!d._chemAILoading, className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-300' },
+          callGemini && d._showAI && h('div', { id: 'chem-ai-panel', role: 'region', 'aria-labelledby': 'chem-ai-title', 'aria-busy': !!d._chemAILoading, className: 'mb-3 bg-sky-50 rounded-xl p-3 border border-sky-300' },
             h('p', { id: 'chem-ai-title', className: 'text-xs font-bold text-sky-900 uppercase tracking-wider mb-2' }, __alloT('stem.chembalance.ai_chemistry_tutor', '\uD83E\uDD16 AI Chemistry Tutor')),
             typeof callGemini !== 'function' && h('p', { role: 'status', className: 'mb-2 rounded-lg border border-sky-200 bg-white p-2 text-xs text-slate-600' },
               __alloT('stem.chembalance.ai_tutor_unavailable', 'The AI tutor is unavailable in this environment. The calculators and guided feedback still work without it.')),

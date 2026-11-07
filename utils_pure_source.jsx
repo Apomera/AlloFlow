@@ -1167,6 +1167,11 @@ const isYouTubeUrl = (url) => {
     return /(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/i.test(url);
 };
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
+    // Student AI-off / policy: no Gemini URL Context or YouTube transcript (blocked fns are truthy).
+    const cloudAiOk = (() => {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', geminiCaller); } catch (_) {}
+        return !(geminiCaller && geminiCaller._alloQrBlocked) && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    })();
     if (!url || !url.trim()) return null;
     const blockedImport = () => {
         const error = new Error('External source import is disabled by this managed deployment. Paste approved text or use a school-approved import route.');
@@ -1203,6 +1208,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     // Different IP reputation than Jina — often succeeds where Jina 403s.
     // ─────────────────────────────────────────────────────────────
     const tryGeminiUrlContext = async () => {
+        if (!cloudAiOk) return null;
         if (!apiKey && !_isCanvasEnv) {
             console.log('[URL Fetch] ⏭️ Gemini URL Context skipped — no API key');
             return null;
@@ -1256,7 +1262,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             return null;
         }
     };
-    if (isYouTubeUrl(targetUrl)) {
+    if (isYouTubeUrl(targetUrl) && cloudAiOk) {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
             if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;

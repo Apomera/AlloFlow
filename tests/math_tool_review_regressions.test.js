@@ -10,28 +10,14 @@ function renderMarkup(file, id, state) {
   return root;
 }
 
+// Since the 2026-11-03 rebuild the Area Model grades through its pure core
+// (tool._core.grade), run here directly instead of slicing checkChallenge out
+// of the source; the same three answers are asserted below.
 function makeAreaGrader(answer) {
-  const source = fs.readFileSync('stem_lab/stem_tool_areamodel.js', 'utf8');
-  const start = source.indexOf('var diagnoseAreaError = function');
-  const end = source.indexOf('var askAITutor = function', start);
-  expect(start).toBeGreaterThan(-1);
-  expect(end).toBeGreaterThan(start);
-  const patches = [];
-  const noop = () => {};
-  // eslint-disable-next-line no-new-func
-  const checkChallenge = new Function(
-    'challenge', 'answer', 'streak', 'bestStreak', 'score',
-    'basicSolved', 'distSolved', 'multiSolved', 'wordSolved', 'challengeTypesUsed', '_a',
-    'upd', 'sfxCorrect', 'sfxWrong', 'sfxStreak', 'announceToSR',
-    'awardXP', 'checkBadges', 'feedback',
-    source.slice(start, end) + '\nreturn checkChallenge;'
-  )(
-    { a: 4, b: 6, answer: 24, mode: 'word' }, answer, 0, 0, { correct: 0, total: 0 },
-    0, 0, 0, 0, { word: true }, {},
-    (patch) => patches.push(patch), noop, noop, noop, noop, noop, noop, null,
-  );
-  checkChallenge();
-  return patches.find((patch) => patch.feedback);
+  resetStemLab();
+  const core = loadTool('stem_lab/stem_tool_areamodel.js', 'areamodel')._core;
+  expect(typeof core.grade).toBe('function');
+  return { feedback: { correct: core.grade({ a: 4, b: 6, answer: 24, mode: 'word' }, answer).correct } };
 }
 
 function functionGrapherState(range) {

@@ -10,9 +10,9 @@ test.describe('Perched hunt gameplay',()=>{
     await page.setViewportSize({width:species==='greatHorned'?440:1100,height:1200});
     await page.addInitScript(()=>{let time=1000,id=1,seed=731;const callbacks=new Map<number,FrameRequestCallback>();Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};performance.now=()=>time;window.requestAnimationFrame=cb=>{const next=id++;callbacks.set(next,cb);return next;};window.cancelAnimationFrame=key=>{callbacks.delete(key);};(window as any).advancePerch=(ms:number)=>{time+=ms;const pending=Array.from(callbacks.values());callbacks.clear();pending.forEach(cb=>cb(time));};});
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-    await harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:species,activeMission:'open',flightSession:{speciesId:species,missionId:'open'},huntTutorialDismissed:true,graphicsQuality:species==='redTail'?'high':'low'}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
+    await harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:species,activeMission:'perchHunt',flightSession:{speciesId:species,missionId:'perchHunt'},huntTutorialDismissed:true,graphicsQuality:species==='redTail'?'high':'low'}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
     if(species==='greatHorned')await page.addStyleTag({content:'#wrap{width:420px}'});
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     const scan=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
       const w=window as any,step=w.advancePerch;c._rhCommand('environment',{windSpeed:12,dayPhase:0.38});
       for(let i=0;i<30;i++)step(25);const resting=c._rhSnapshot();

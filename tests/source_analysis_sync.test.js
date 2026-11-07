@@ -127,7 +127,7 @@ describe('Source view: the check belongs to the exact text', () => {
     expect(edited.data).toMatchObject({ analysisNeedsRecheck: true, originalText: text });
     for (const key of ['concepts', 'readingLevel', 'accuracy', 'depthOfKnowledge', 'learnerBarriers', 'analysisCoverage', 'analysisIncomplete']) expect(edited.data).not.toHaveProperty(key);
     const p = view({ history: h.state.history, inputText: text });
-    expect(state(p.el)).toBe('none');
+    expect(state(p.el)).toBe('changed');
     p.render({history: [edited, analysisItem('fresh', text)]});
     expect(state(p.el)).toBe('done');
   });
@@ -147,7 +147,7 @@ describe('Source view: the check belongs to the exact text', () => {
       p.el.querySelector('[data-source-check-details]').click();
       expect(p.props.openAnalysis).toHaveBeenCalledWith(partial);
       await act(async () => p.el.querySelector('[data-source-run-check]').click());
-      expect(onRecheckAnalysis).toHaveBeenCalledWith(partial);
+      expect(onRecheckAnalysis).toHaveBeenCalledWith(partial, { inlineFailure: true });
     } finally {
       window.AlloModules.GenerationMatrix = before;
     }
@@ -161,7 +161,7 @@ describe('Source view: the check belongs to the exact text', () => {
     expect(state(p.el)).toBe('failed');
     expect(p.el.querySelector('[data-source-run-check]').textContent).toBe('Retry');
     await act(async () => p.el.querySelector('[data-source-run-check]').click());
-    expect(onRecheckAnalysis).toHaveBeenCalledWith(incomplete);
+    expect(onRecheckAnalysis).toHaveBeenCalledWith(incomplete, { inlineFailure: true });
     expect(p.props.handleGenerate).not.toHaveBeenCalled();
     expect(p.props.openAnalysis).toHaveBeenCalledWith(completed);
     p.render({ history: [completed, incomplete] });
@@ -195,10 +195,10 @@ describe('Source view: the check belongs to the exact text', () => {
   it('offers to check again once the text no longer matches', () => {
     const p = view();
     p.render({ inputText: TEXT + ' Stems hold it up.' });
-    expect(state(p.el)).toBe('none');
+    expect(state(p.el)).toBe('changed');
     expect(p.el.querySelector('[data-source-check-details]')).toBeNull();
     act(() => p.el.querySelector('[data-source-run-check]').click());
-    expect(p.props.handleGenerate).toHaveBeenCalledWith('analysis', null, false, TEXT + ' Stems hold it up.', { selectedReadingSourceId: '__input__', stayOnView: true }, false);
+    expect(p.props.handleGenerate).toHaveBeenCalledWith('analysis', null, false, TEXT + ' Stems hold it up.', { selectedReadingSourceId: '__input__', stayOnView: true, inlineFailure: true }, false);
   });
 
   it('shows the new check once an analysis matches the edited text', () => {

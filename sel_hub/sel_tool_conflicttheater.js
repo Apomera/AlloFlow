@@ -13,6 +13,10 @@
 // TTS voicing + safety pipeline integration. Cross-session memory
 // + Imagen portraits + full content library land in later phases.
 //
+// No-AI mode (2026-11-04): scripted branching scenes (CT_SCRIPTS) and a
+// student-written scene, both on window.AlloModules.AdventureOffline with
+// a built-in fallback. AI parts hide when ctx.aiAvailable is false.
+//
 // Registered tool ID: "conflicttheater"
 // Category: relationship-skills
 // Pattern source: sel_tool_peersupport.js (AI character +
@@ -533,6 +537,298 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Scripted scenes (no AI, 2026-11-04) ──
+  // One branching script per scenario in the shared AdventureOffline story
+  // format, played with AlloModules.AdventureOffline.Player (built-in
+  // fallback below). Braided: branches rejoin. Every choice shows how the
+  // other person reacts; every ending closes with a short debrief. English
+  // content, like the rest of this tool's scenario data.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an ending.
+  // ══════════════════════════════════════════════════════════════
+
+  function _ctScript(title, rows) {
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: r[1], ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: r[1], ending: true, choices: [] };
+    }) };
+  }
+
+  var CT_SCRIPTS = {
+    'lunch-money': _ctScript('The Missing Lunch Money', [
+      ['start', "Maya sits with her arms crossed, staring at the table. Jordan is across from her, looking at his phone. 'My lunch money was in my backpack before gym,' Maya says quietly. 'Now it's gone. And Jordan was the last one by my locker.' Jordan shrugs. 'Wasn't me.' They both look at you.", [
+        ["'Jordan, just admit it. Everyone knows it was you.'", 'heated'],
+        ["'Maya, that sounds really stressful. Can you tell me what happened?'", 'open'],
+        ["'Relax, it's just lunch money. I'll split my fries with you.'", 'joke']]],
+      ['open', "Maya's shoulders drop a little. 'I had exactly enough for the week. I checked this morning. Now I can't eat today, and I don't know how to tell my mom.' Jordan puts his phone down. He is looking at the table now.", [
+        ["'Okay, let's just search Jordan's bag and settle it.'", 'stuck'],
+        ["'So you're worried about today and about telling your mom. That's a lot.'", 'heard']]],
+      ['heated', "Jordan's jaw sets. 'Wow. So I'm guilty because I walked past a locker?' He pushes his tray away. Maya looks down; this is not the conversation she wanted either. Kids at the next table turn to watch.", [
+        ["'You're right, that came out wrong. I'm not here to accuse anyone. I want to understand what happened.'", 'reset'],
+        ["'If you didn't do it, why are you so mad?'", 'stuck']]],
+      ['joke', "Nobody laughs. Maya's eyes get shiny and she turns away. 'It's not just lunch money to me,' she says. Jordan gives a small, uneasy laugh, then goes quiet.", [
+        ["'Sorry, Maya. That wasn't funny. I want to actually listen.'", 'reset'],
+        ['Shrug and change the subject.', 'end_pause']]],
+      ['reset', "The table gets quieter. Maya uncrosses her arms. Jordan pulls his tray back and stops glancing at the door. Owning your words changed the feeling at the table: both of them seem more willing to talk.", [
+        ['Ask Maya how this has affected her day.', 'heard'],
+        ['Ask Jordan, gently, if there is anything he wants to say.', 'side']]],
+      ['heard', "'Yeah,' Maya says. 'Thanks. I just want it back, and I want to know what happened.' She glances at Jordan, not angry now, just waiting. Jordan rubs the back of his neck.", [
+        ["'Jordan, apologize to her. Right now.'", 'stuck'],
+        ["'Jordan, nobody is in trouble with me. What's going on for you?'", 'side']]],
+      ['side', "Jordan is quiet for a long moment. 'I took it,' he says, barely above a whisper. 'I didn't have lunch money either, and I panicked. I was going to put it back. Then it felt too late.' Maya looks hurt, and also surprised that he told the truth.", [
+        ["'Thank you for telling the truth. Jordan, how do you think this affected Maya?'", 'impact'],
+        ["'So you're a thief. Great.'", 'stuck']]],
+      ['stuck', "Voices get louder. Jordan crosses his arms and stops talking. Maya grabs her backpack like she might leave. Pushing harder is shutting things down instead of opening them up.", [
+        ["Slow down: 'Let me try again. Maya, I want to hear how you're doing.'", 'heard'],
+        ["'Let's take a break. Maybe we can talk again with the school counselor.'", 'end_pause']]],
+      ['impact', "Jordan looks at Maya. 'You couldn't eat today. And you trusted that your stuff was safe.' He swallows. 'I'm really sorry, Maya.' Maya nods slowly. 'Thanks for saying it. I'm still upset, though.'", [
+        ["'Great, you said sorry. So we're good now, right?'", 'end_partial'],
+        ["'What would help make this right? Let's figure it out together.'", 'end_repair']]],
+      ['end_repair', "Jordan gives back what he has left today and offers to pay back the rest by Friday. Maya asks him to tell her next time he is struggling instead of taking something. Together they decide to ask a trusted adult about lunch help for Jordan, so it does not happen again. It isn't perfect, but it is real.\n\nWhat worked:\n• Listening first: Maya felt heard before anyone talked about blame.\n• Curiosity, not accusation, made it safe for Jordan to tell the truth.\n• Naming the impact turned 'sorry' into understanding.\n• A repair plan (pay it back, ask for help) goes further than words alone."],
+      ['end_partial', "Jordan nods. Maya says 'sure,' but she doesn't sound sure. The money is still missing, and nothing has been planned to fix it. The conflict cooled down, but it isn't finished.\n\nWhat worked:\n• You listened, and Jordan told the truth. Both are big steps.\n• An apology is a start. Repair usually also needs a plan: what will be made right, and what happens next time?\n• You could still ask: 'What would help make this right?'"],
+      ['end_pause', "You stop for now. Maya still looks hurt, and Jordan heads off to class. Nothing is solved yet, but it isn't over: a conflict can be picked back up when everyone is calmer, and a trusted adult, like a teacher or counselor, can help.\n\nWhat worked:\n• Noticing when a talk is going badly, and pausing, is a real skill.\n• Next time, try starting with how the person feels ('That sounds stressful') before asking who did it.\n• An I-statement ('I want to understand what happened') keeps things calmer than a 'you' accusation."]
+    ]),
+    'spread-rumor': _ctScript('The Rumor That Got Out', [
+      ['start', "Sam stands at their locker, holding the door so no one can see their face. Riley walks up laughing with a friend, then stops. 'What? Why is everyone being weird?' Sam says, very quietly: 'You told people. About my parents.'", [
+        ["'Ha, Riley, you can never keep a secret.'", 'joke'],
+        ["'Sam, you look really upset. Do you want to tell me what happened?'", 'open'],
+        ["'Riley, why would you do that? That's so mean.'", 'heated']]],
+      ['open', "Sam takes a shaky breath. 'I told Riley something private last week. Today two people asked me about it. It felt like everyone was looking at me.' Riley's smile fades. She looks at the floor.", [
+        ["'That sounds embarrassing and lonely. You trusted her, and it got out.'", 'heard'],
+        ["'Rumors die down fast. Just ignore them.'", 'stuck']]],
+      ['heated', "Riley rolls her eyes and puts a hand on her hip. 'Oh my gosh, it's not a big deal. I barely said anything.' Sam shuts the locker and turns away. People in the hallway slow down to watch.", [
+        ["'It IS a big deal. You always do this.'", 'stuck'],
+        ["'Sorry, that sounded like an attack. I'm not trying to gang up on you, Riley. I want to understand.'", 'reset']]],
+      ['joke', "Riley laughs, but Sam doesn't. Sam's voice gets even quieter: 'Okay. Never mind.' They start to walk away.", [
+        ["'Wait, Sam, I'm sorry. That wasn't funny. I want to hear you.'", 'reset'],
+        ['Let Sam go.', 'end_pause']]],
+      ['reset', "Sam stops walking. Riley's hand drops from her hip. The hallway is still loud, but the three of you feel a little more like a team than a fight.", [
+        ['Ask Riley what was going on when she shared it.', 'side'],
+        ['Ask Sam how this has felt.', 'heard']]],
+      ['heard', "Sam nods. 'Yeah. It felt like my private stuff became a joke.' They look at Riley. 'I just want to know why.' Riley shifts her weight; she isn't laughing anymore.", [
+        ["'Riley, can you tell us what was going on for you?'", 'side'],
+        ["'Riley, you need to fix this right now.'", 'stuck']]],
+      ['side', "Riley looks away. 'Honestly? Someone was talking about me, and I wanted them to talk about something else. I didn't think about how it would land on you.' For a second she looks worried, like she knows what it is like to be talked about.", [
+        ["'Seriously? That's such a lame reason.'", 'stuck'],
+        ["'Thanks for being honest. Riley, what do you think today was like for Sam?'", 'impact']]],
+      ['stuck', "Riley crosses her arms and pulls out her phone. Sam stares at the floor. Pushing harder is making both of them close down.", [
+        ["'Let's pause. We can talk again later, with a teacher or counselor if you want.'", 'end_pause'],
+        ["Slow down: 'Sam, I'm here. How are you doing with all this?'", 'heard']]],
+      ['impact', "Riley is quiet. 'You probably felt like everyone knew your business. Like you couldn't trust me.' She swallows. 'I'm sorry, Sam. That was yours to share, not mine.' Sam looks up for the first time.", [
+        ["'What could help make this right, for both of you?'", 'end_repair'],
+        ["'Cool, problem solved. Let's go to class.'", 'end_partial']]],
+      ['end_repair', "Riley offers to tell the two people that what she said wasn't hers to share, and to ask them to drop it. Sam asks that private things stay private from now on, and Riley agrees. Sam says trust will take time. Riley says she understands.\n\nWhat worked:\n• You made space for Sam's hurt before asking for explanations.\n• Asking Riley with curiosity helped her see her own reasons, and the impact.\n• Naming the harm (broken trust) made the apology specific.\n• The repair has actions: correcting it with the others and a promise about privacy."],
+      ['end_partial', "Riley says sorry again and heads to class. Sam feels a little better, but the two people who heard the rumor still don't know it wasn't Riley's to share. The talk helped, but the repair isn't finished.\n\nWhat worked:\n• You listened to Sam and helped Riley see the impact. That matters.\n• Real repair often means fixing the harm where it happened, like talking to the people who heard it.\n• You could still ask: 'What would help make this right?'"],
+      ['end_pause', "You stop here for now. Sam heads to class, and Riley goes the other way. Nothing is fixed yet, but it isn't over: you can check in with Sam later, and a trusted adult can help if the rumor keeps spreading.\n\nWhat worked:\n• Knowing when to pause is a real skill.\n• Next time, try starting with how Sam feels before asking who said what.\n• An I-statement ('I want to understand') keeps a talk calmer than 'You always...'"]
+    ]),
+    'excluded-project': _ctScript('The Group Project Cut', [
+      ['start', "The classroom is empty except for Theo, wiping the whiteboard very carefully, and Devon, stacking chairs too loudly. Theo says, without turning around: 'The slides used my diagram. My name was not on them.' Devon drops a chair. 'We had to finish it. You weren't there.'", [
+        ["'Hey, at least you all got a good grade, right?'", 'joke'],
+        ["'Devon, leaving someone out and taking his ideas is wrong.'", 'heated'],
+        ["'Theo, it sounds like something about today felt unfair. What happened?'", 'open']]],
+      ['open', "Theo puts the eraser down. 'The group met on Saturday. I was not invited. The diagram on slide four is mine. I made it two weeks ago.' He speaks precisely, looking at the board. Devon stops stacking chairs.", [
+        ["'I'm sure it was an accident. Let's move on.'", 'stuck'],
+        ["'So you were left out of the meeting, and your work was used without your name. That's a lot.'", 'heard']]],
+      ['heated', "Devon's shoulders go tight. 'Wrong? We did all the work this weekend! He never answers the group chat like everybody else!' His hands close into fists, then open again. Theo goes very still.", [
+        ["'You're right, I jumped in fast. I'd like to hear from both of you, starting fresh.'", 'reset'],
+        ["'That's no excuse, Devon. You knew better.'", 'stuck']]],
+      ['joke', "Theo turns around. 'The grade is not the point,' he says flatly. Devon snorts, but it doesn't sound like he thinks it's funny either.", [
+        ['Shrug and go back to what you were doing.', 'end_pause'],
+        ["'You're right, Theo. That was a bad joke. Tell me what the point is for you.'", 'reset']]],
+      ['reset', "Devon sets the next chair down gently. Theo turns to face the room. The air feels less tense; both of them seem ready to say more.", [
+        ['Ask Theo what today was like for him.', 'heard'],
+        ['Ask Devon how the weekend meeting happened.', 'side']]],
+      ['heard', "Theo nods once. 'Yes. That is accurate.' After a pause: 'I want my name on my work. And I want to know why I was not invited.' Devon looks at the floor.", [
+        ["'Devon, you need to apologize right now.'", 'stuck'],
+        ["'Devon, can you help us understand how the meeting happened?'", 'side']]],
+      ['side', "Devon rubs his face. 'Honestly? Theo's messages are all facts, no emojis, and we thought he was annoyed with us. Somebody said it would be faster without him, and I went along with it.' He glances at Theo. 'I didn't think about the diagram being his.'", [
+        ["'Thanks for being honest. Devon, what do you think today felt like for Theo?'", 'impact'],
+        ["'Wow. So you just dump people you don't get?'", 'stuck']]],
+      ['stuck', "Devon grabs his bag. Theo turns back to the whiteboard and stops talking. The harder you push, the more both of them shut down.", [
+        ["Slow down: 'Theo, I'd like to hear what matters most to you here.'", 'heard'],
+        ["'Let's stop here and come back to this tomorrow with your science teacher.'", 'end_pause']]],
+      ['impact', "Devon is quiet. 'He got left out, and then he watched us present his idea like it was ours.' He looks at Theo. 'That's not okay. I'm sorry.' Theo looks at Devon for a moment. 'Thank you. I accept that you are sorry.'", [
+        ["'What would make this right, for the project and for next time?'", 'end_repair'],
+        ["'Okay, great. Everybody's good.'", 'end_partial']]],
+      ['end_repair', "Devon offers to tell the science teacher that the diagram was Theo's, so the credit gets fixed. Theo asks that the group plan every meeting in the class chat where everyone can see it. Devon agrees, and says that next time a message seems unclear, he will ask instead of guessing.\n\nWhat worked:\n• You named what happened to Theo without making him a lesson for anyone.\n• Asking Devon with curiosity uncovered a misunderstanding about messages.\n• Perspective-taking: a different way of communicating is not rudeness.\n• The repair fixes the credit and changes how the group works next time."],
+      ['end_partial', "Devon's apology was real, and Theo accepted it. But the science teacher still thinks the diagram came from the whole group, and nothing changes about how meetings get planned. It's a start, not a finish.\n\nWhat worked:\n• You listened, and Devon understood the impact. That is real progress.\n• Repair here also needs action: fixing the credit and including Theo next time.\n• You could still ask: 'What would make this right?'"],
+      ['end_pause', "You stop for now. Devon leaves for practice and Theo finishes the board. Nothing is fixed yet, but it isn't over: the science teacher can help the group sort out the credit, and you can check in with Theo tomorrow.\n\nWhat worked:\n• Pausing when a talk is going badly is a skill, not a failure.\n• Next time, try starting with what happened for Theo before deciding who is right.\n• Speaking for yourself ('I'd like to understand') keeps people talking."]
+    ]),
+    'misgender-on-purpose': _ctScript('The Pronoun That Was Not An Accident', [
+      ['start', "Sam is sitting on the bench, very still, arms wrapped around themself. Casey is at her locker, laughing with a friend who quickly leaves. 'I asked you to stop,' Sam says, barely loud enough to hear. Casey shrugs. 'I forgot. Again. Whatever.'", [
+        ["'Sam, are you okay? I'm here if you want to talk.'", 'open'],
+        ["'Come on, it's not that serious. Let's all just chill.'", 'joke'],
+        ["'Casey, that's so messed up. What is wrong with you?'", 'heated']]],
+      ['open', "Sam looks up. 'It's every day. In front of everyone. I asked nicely. Today she laughed.' Their voice shakes. 'I just want my name and my pronouns used. That's all.' Casey's laugh is gone; she stares into her locker.", [
+        ["'It keeps happening, even after you asked. That sounds exhausting.'", 'heard'],
+        ["'Maybe she really does forget? Just keep reminding her.'", 'stuck']]],
+      ['heated', "Casey spins around, eyes flashing. 'Here we go. Everybody's always ready to make me the bad guy.' She slams her locker. Sam flinches and looks away.", [
+        ["'Well, you ARE being the bad guy.'", 'stuck'],
+        ["'You're right that I came in hot. I'm not here to pile on. I want to understand what's happening.'", 'reset']]],
+      ['joke', "Sam's face falls. 'It's serious to me,' they say quietly, and pull their hood up. Casey smirks, but she glances at you like she isn't sure.", [
+        ["'You're right, Sam. I'm sorry. It is serious. I want to listen.'", 'reset'],
+        ['Grab your things and leave.', 'end_pause']]],
+      ['reset', "Casey leans against her locker instead of slamming it. Sam lowers their hood. Nobody is smiling, but nobody is leaving either.", [
+        ["Ask Casey what's really going on.", 'side'],
+        ['Ask Sam what this has been like.', 'heard']]],
+      ['heard', "Sam nods slowly. 'Yeah. It makes me feel like I don't belong here.' They look at Casey. 'I don't get why you keep doing it.' Casey's jaw tightens, but she is listening.", [
+        ["'Casey, I'm not trying to trap you. What's going on for you?'", 'side'],
+        ["'Casey, you have to apologize, right now.'", 'stuck']]],
+      ['side', "Casey is quiet for a long time. 'People were laughing when I did it. It felt good to be in on the joke instead of being the joke for once.' She shrugs, but it's a smaller shrug. 'I didn't really think about it after.'", [
+        ["'So you pick on people to fit in. Nice.'", 'stuck'],
+        ["'Thanks for being honest. Casey, what do you think it has been like for Sam?'", 'impact']]],
+      ['stuck', "Casey turns her whole body away. Sam stares at the floor. Pushing harder is making the room feel smaller for everyone.", [
+        ["'Let's stop for now. I think a counselor could help us talk about this.'", 'end_pause'],
+        ["Slow down: 'Sam, I'm still here. How are you doing?'", 'heard']]],
+      ['impact', "Casey looks at Sam. 'Every day you had to hear it, and then people laughed. Like you were the joke.' She lets out a long breath. 'That's not okay. I'm sorry, Sam. It wasn't an accident, and I'm not going to pretend it was.' Sam looks up, surprised.", [
+        ["'Great, sorted. Can we all go?'", 'end_partial'],
+        ["'What would make this right, so Sam doesn't have to keep correcting you?'", 'end_repair']]],
+      ['end_repair', "Casey says she will use Sam's name and they/them, and if she slips, she will correct herself without making a big deal of it. She also says she will tell her friends to stop the joke. Sam says they will believe it when they see it, and that is fair. A trusted adult can help keep things on track.\n\nWhat worked:\n• You treated this as a pattern that hurts, not a 'misunderstanding.'\n• Curiosity helped Casey see her own reasons, and the harm.\n• The repair puts the work on Casey to remember, not on Sam to keep correcting.\n• Using someone's name and pronouns is basic respect."],
+      ['end_partial', "Casey's apology was honest. But nothing was agreed about what happens next time, so Sam may still have to correct her, and her friends still think it's funny. The talk helped; the repair isn't finished.\n\nWhat worked:\n• You listened to Sam and helped Casey name the harm.\n• Repair usually needs a plan too: what will Casey do differently, and who else needs to hear it?\n• You could still ask: 'What would make this right?'"],
+      ['end_pause', "You stop here for now. Sam heads out, and Casey stays at her locker. Nothing is fixed yet, and Sam shouldn't have to handle this alone: harm that keeps targeting who someone is belongs with a trusted adult, like a teacher or counselor.\n\nWhat worked:\n• Pausing a talk that is going badly is a real skill.\n• Next time, try starting with how Sam is doing, before what Casey did.\n• An I-statement ('I want to understand') keeps a talk calmer than an accusation."]
+    ]),
+    'took-credit': _ctScript('The Idea That Wasn\'t Hers', [
+      ['start', "The bell has rung. Riley is packing up, still smiling from the teacher's praise. Aria sits at her desk, not moving. 'That was my idea,' Aria says carefully. 'The garden project. I said it in our group.' Riley laughs lightly. 'I mean, lots of people think of gardens.'", [
+        ["'Riley, you stole her idea and everybody saw it.'", 'heated'],
+        ["'Aria, you look really upset. Can you tell me more?'", 'open'],
+        ["'Ha, Riley, you should run for class president.'", 'joke']]],
+      ['open', "Aria takes a moment to find her words. 'Last week I explained the whole plan. The compost, the rain barrel. Today she said it to Mr. Okafor like it was hers, and everyone clapped.' Her voice is soft but steady. 'It took courage to say it in English.' Riley stops packing.", [
+        ["'So your idea got praised, but not your name. And speaking up took real effort.'", 'heard'],
+        ["'It's just one project. There'll be others.'", 'stuck']]],
+      ['heated', "Riley's smile disappears. 'Stole? Wow. I made it better, actually.' She grabs her phone and starts scrolling. Aria looks down at her hands.", [
+        ["'Better? You copied it.'", 'stuck'],
+        ["'Okay, I said that harshly. I'm not trying to attack you. I want to hear both sides.'", 'reset']]],
+      ['joke', "Riley gives a quick laugh. Aria doesn't. 'It is not funny for me,' she says, and closes her notebook.", [
+        ["'You're right, Aria, I'm sorry. I want to hear what happened.'", 'reset'],
+        ['Laugh it off and head out.', 'end_pause']]],
+      ['reset', "Riley puts her phone face-down. Aria opens her notebook again. The room is quieter, and both of them look ready to talk.", [
+        ['Ask Aria what this has been like.', 'heard'],
+        ['Ask Riley what was going on when she pitched it.', 'side']]],
+      ['heard', "Aria nods. 'Yes. I felt invisible.' She turns to Riley. 'I want to know why.' Riley's face flickers, like the question landed somewhere real.", [
+        ["'Riley, you have to tell the teacher right now.'", 'stuck'],
+        ["'Riley, can you tell us what was going on for you?'", 'side']]],
+      ['side', "Riley sighs. 'My grade in that class is bad, and I've been stressed about it. When Mr. Okafor asked for ideas, I panicked and said the first good thing I remembered.' She pauses. 'I didn't say it was Aria's. I know.'", [
+        ["'Thanks for being honest. Riley, what do you think it was like for Aria to watch that?'", 'impact'],
+        ["'So you just take whatever you want.'", 'stuck']]],
+      ['stuck', "Riley stands up to leave. Aria goes silent and stares at her desk. Pushing harder is shutting both of them down.", [
+        ["Slow down: 'Aria, I'd really like to hear what matters most to you.'", 'heard'],
+        ["'Let's stop for now and maybe talk with Mr. Okafor together later.'", 'end_pause']]],
+      ['impact', "Riley looks at Aria. 'You had to sit there while everyone clapped for your idea. And you couldn't say anything.' She bites her lip. 'I'm sorry, Aria. That wasn't fair to you.' Aria nods slowly.", [
+        ["'Cool, you're good now. See you tomorrow!'", 'end_partial'],
+        ["'What would make this right?'", 'end_repair']]],
+      ['end_repair', "Riley offers to tell Mr. Okafor tomorrow, in front of the class, that the garden idea was Aria's. Aria asks to lead the compost part. Riley agrees and asks if they can work on it together. Aria says yes, carefully.\n\nWhat worked:\n• You made space for Aria, who was quieter about her hurt than the situation deserved.\n• Curiosity helped Riley explain without excuses, then see the impact.\n• Credit taken in public is repaired in public.\n• The plan gives Aria back her voice in the project."],
+      ['end_partial', "Riley's apology was real, but the class still thinks the idea was hers. Aria said 'okay,' but the credit hasn't been fixed. It's a start.\n\nWhat worked:\n• You listened, and Riley understood the impact.\n• When harm happens in public, repair often needs a public part too.\n• You could still ask: 'What would make this right?'"],
+      ['end_pause', "You stop for now. Aria packs up quietly and Riley leaves first. Nothing is fixed yet, but it isn't over: Mr. Okafor or another trusted adult can help sort out the credit.\n\nWhat worked:\n• Pausing a talk that isn't going well is okay.\n• Next time, start with how Aria feels before deciding who is right.\n• I-statements ('I want to understand') keep things calmer than accusations."]
+    ]),
+    'screenshot-betrayal': _ctScript('The Screenshot That Got Sent', [
+      ['start', "The group chat is buzzing.\nDevon: 'Thanks a LOT, Maya. Coach saw it. I'm benched.'\nMaya: 'I didn't send it to Coach!!'\nDevon: 'You sent it to 20 people.'\nThen nobody types. You can tell everyone is reading.", [
+        ['Post a laughing emoji to break the tension.', 'joke'],
+        ["Message Devon: 'That sounds awful. Want to tell me what happened?'", 'open'],
+        ["Post: 'Maya, that was so fake of you.'", 'heated']]],
+      ['open', "Devon: 'I was venting to Maya. Privately. About practice being unfair. She screenshotted it. Now Coach thinks I don't respect him, and I'm off the starting five.'\nA minute later: 'I trusted her.'\nMaya is typing... then stops.", [
+        ["'Just apologize to Coach and it'll blow over.'", 'stuck'],
+        ["'So something private went public, and now there are real consequences. That's a lot.'", 'heard']]],
+      ['heated', "Maya: 'Wow, so now I'm fake?? I didn't know Coach would see it.'\nTwo other people react with eye-roll emojis. Devon leaves the chat for a second, then comes back.", [
+        ["'My bad, that was harsh. I'm not trying to pile on. Can we figure out what happened?'", 'reset'],
+        ["'Everyone knows screenshots get around, Maya.'", 'stuck']]],
+      ['joke', "Devon: 'Glad someone thinks it's funny.'\nMaya sends nothing. The chat goes quiet.", [
+        ['Mute the chat and put your phone away.', 'end_pause'],
+        ["'Sorry, Devon, that was a bad move. I'm listening.'", 'reset']]],
+      ['reset', "The emojis stop.\nMaya: 'Okay.'\nDevon: 'Okay.'\nIt feels like everyone took a breath.", [
+        ["Message Maya: 'What was going on when you shared it?'", 'side'],
+        ['Ask Devon how this has hit him.', 'heard']]],
+      ['heard', "Devon: 'Yeah. It's not even about basketball. It's that I can't vent to anyone without it getting out.'\nThen: 'Maya, why?'", [
+        ["'Maya, nobody is ganging up on you. What was going on for you?'", 'side'],
+        ["'Maya, you owe him a public apology. Now.'", 'stuck']]],
+      ['side', "Maya: 'I thought it was funny and kind of true. I sent it to the chat as a joke. I didn't think anyone would show Coach.'\nA pause.\nMaya: 'I didn't think, period.'", [
+        ["'That's such a weak excuse.'", 'stuck'],
+        ["'Thanks for being honest. Maya, how do you think today felt for Devon?'", 'impact']]],
+      ['stuck', "Maya: 'Whatever.'\nDevon: 'Forget it.'\nA few other people start adding comments. Online, things pile up fast, and pushing harder is making it worse.", [
+        ["Post: 'Let's stop for tonight. Devon, maybe talk to Coach or a counselor tomorrow?'", 'end_pause'],
+        ["Message Devon directly: 'Hey. I'm still here. How are you doing?'", 'heard']]],
+      ['impact', "Maya: 'You trusted me with something private, and I turned it into a joke for 20 people. And now you lost your spot.'\nMaya: 'I'm really sorry, Devon.'\nDevon: 'Thanks. That actually helps a little.'", [
+        ["'What could help make this right?'", 'end_repair'],
+        ["'Cool, drama over!'", 'end_partial']]],
+      ['end_repair', "Maya deletes the screenshot and asks everyone in the chat to delete it too. She posts that it was a private message and she shouldn't have shared it. She also offers to tell Coach it was venting to a friend, not meant for anyone else. Devon says that would mean a lot.\n\nWhat worked:\n• You acknowledged Devon's real consequences before redirecting.\n• Asking Maya with curiosity helped her see the harm, not just defend herself.\n• Online harm needs online repair: deleting and correcting in the same chat.\n• Trust about private things was named as the real harm."],
+      ['end_partial', "Maya apologized and Devon accepted. But the screenshot is still on 20 phones, and Coach still has only part of the story. The talk helped; the repair isn't finished.\n\nWhat worked:\n• You got both of them talking honestly.\n• Online, repair usually also means removing or correcting what was shared.\n• You could still ask: 'What would help make this right?'"],
+      ['end_pause', "You step away from the chat for tonight. Nothing is fixed yet, but it isn't over: talking face to face tomorrow, or with Coach or a counselor, often goes better than more messages.\n\nWhat worked:\n• Stepping away when a chat is heating up is a smart move.\n• Next time, try checking in privately with the person who is hurt first.\n• Online, an I-statement ('I want to understand') helps even more, because tone is easy to misread."]
+    ]),
+    'eating-alone': _ctScript('The Lunch Table That Filled Up', [
+      ['start', "You sit down next to Casey, who is eating alone again. She doesn't look up. Riley walks over with her tray. 'Oh, hey. Didn't see you sitting here,' Riley says brightly. Casey's jaw tightens. 'Sure you didn't. Two days in a row.'", [
+        ["'Riley, you've been leaving her out on purpose.'", 'heated'],
+        ["'Lunch table drama, huh? Pass the ketchup.'", 'joke'],
+        ["'Casey, I'm glad I sat here. How are you doing?'", 'open']]],
+      ['open', "Casey shrugs, but her voice is sharp. 'The seats were saved yesterday. And today. Everybody looked right at me and said nothing.' She stabs at her food. 'It's fine. I'm used to it.' Riley's smile slips.", [
+        ["'Maybe they really were saving seats? Don't take it personally.'", 'stuck'],
+        ["'Being left out like that, with everyone watching, really hurts. It's not fine.'", 'heard']]],
+      ['heated', "Riley does a fake laugh and checks her phone. 'Oh my gosh, we just didn't have room. Why is everyone so dramatic?' Casey turns her whole body away.", [
+        ["'Okay, I came in strong. I'm not here to attack anyone. I want to understand.'", 'reset'],
+        ["'You had room. Everyone could see it.'", 'stuck']]],
+      ['joke', "Casey gives you a look. 'Yeah, it's hilarious,' she says, and slides to the far end of the table. Riley smirks.", [
+        ["'Sorry, Casey. That was a dumb thing to say. I do want to know what's going on.'", 'reset'],
+        ['Eat your lunch and say nothing.', 'end_pause']]],
+      ['reset', "Casey slides back a little. Riley puts her phone away. It's still awkward, but nobody is leaving.", [
+        ["Ask Riley what's been happening with the group.", 'side'],
+        ['Ask Casey what the last few days have been like.', 'heard']]],
+      ['heard', "Casey is quiet, then says more softly: 'It's like I disappeared. I thought you guys were my friends.' She looks at Riley. Riley looks at the table.", [
+        ["'Riley, say sorry. Right now.'", 'stuck'],
+        ["'Riley, I'm not trying to trap you. What's been going on?'", 'side']]],
+      ['side', "Riley pauses. 'Someone in the group said Casey was too intense, and I didn't want them to say that about me too. So I went along with it.' Her voice gets quieter. 'It was easier than saying something.'", [
+        ["'Thanks for being honest. Riley, what do you think the last two days were like for Casey?'", 'impact'],
+        ["'So you'd rather be popular than kind.'", 'stuck']]],
+      ['stuck', "Riley rolls her eyes and starts to stand up. Casey pushes her tray away and goes silent. Pushing harder made everyone more guarded.", [
+        ["Slow down: 'Casey, I'm here. How are you really doing?'", 'heard'],
+        ["'Let's leave it for today. Casey, want to sit with me tomorrow too?'", 'end_pause']]],
+      ['impact', "Riley looks at Casey. 'You sat alone for two days and we all just watched. That's really lonely.' She swallows. 'I'm sorry, Casey. That wasn't fair.' Casey doesn't smile, but her shoulders loosen.", [
+        ["'Great, so it's fixed!'", 'end_partial'],
+        ["'What could make this right?'", 'end_repair']]],
+      ['end_repair', "Riley says she will save Casey a real seat tomorrow, and that she will speak up if the group talks about her again. Casey says she'll come, but she wants to see it happen more than once. Small and steady is how trust comes back.\n\nWhat worked:\n• Sitting with Casey was already a kind move.\n• You named quiet exclusion as real harm, not drama.\n• Curiosity helped Riley admit she went along with the group.\n• Repair here is small and consistent: a real seat, every day."],
+      ['end_partial', "Riley apologized, and Casey heard it. But nothing was decided about tomorrow, so Casey doesn't know where she'll sit. The talk helped; the repair isn't finished.\n\nWhat worked:\n• You listened and helped Riley see the impact.\n• Repair for exclusion is usually an action, like a saved seat, repeated.\n• You could still ask: 'What could make this right?'"],
+      ['end_pause', "You stop for now and finish lunch. Nothing is fixed yet, but it isn't over: being someone's steady lunch buddy matters, and a trusted adult can help if the exclusion keeps happening.\n\nWhat worked:\n• Choosing to sit with someone who is alone is a real kindness.\n• Next time, try starting with how Casey feels before calling out Riley.\n• I-statements ('I want to understand') keep people at the table."]
+    ]),
+    'racist-remark': _ctScript('The "Joke" That Wasn\'t', [
+      ['start', "A teacher asked you to help Aria and Jordan talk about what happened in the locker room yesterday. Jordan sits on the bench, arms crossed. Aria stands near the door, looking at her hands. 'I don't even know why we're here,' Jordan says. 'It was a joke. Everybody laughed.'", [
+        ["'Come on, let's keep this light. Nobody meant anything.'", 'joke'],
+        ["'Aria, thank you for coming. Would you be willing to share what happened for you?'", 'open'],
+        ["'Jordan, what is wrong with you? You're a terrible person.'", 'heated']]],
+      ['open', "Aria takes a breath. 'He made a joke about my hair. It used a stereotype about where my family is from.' She chooses each word slowly. 'Everyone laughed. I didn't. I felt like I was not a person to them, only a joke.' Jordan uncrosses his arms.", [
+        ["'That sounds really painful: being singled out for who you are while people laughed.'", 'heard'],
+        ["'I'm sure he didn't mean it like that.'", 'stuck']]],
+      ['heated', "Jordan's face goes red. 'Terrible person? Over a joke? This is so unfair.' He looks at the door. Aria shrinks back; now the conversation is about Jordan's feelings instead of hers.", [
+        ["'If the shoe fits.'", 'stuck'],
+        ["'You're right, I shouldn't label you. What you said is what we need to talk about. Can we start over?'", 'reset']]],
+      ['joke', "Aria's face closes. 'It is not light for me,' she says quietly. Jordan nods like you agreed with him.", [
+        ["'You're right, Aria. I'm sorry. This matters. Please tell us what happened for you.'", 'reset'],
+        ['Say nothing and let the silence sit.', 'end_pause']]],
+      ['reset', "Jordan stops looking at the door. Aria takes a step closer. It is still uncomfortable, but now there is room to talk.", [
+        ['Ask Jordan what he was thinking when he said it.', 'side'],
+        ['Ask Aria how it affected her.', 'heard']]],
+      ['heard', "Aria nods. 'Yes. And now in gym I wonder who is laughing at me.' She looks at Jordan. 'I want you to understand why it was not funny.' Jordan shifts on the bench.", [
+        ["'Jordan, say you're sorry so we can go.'", 'stuck'],
+        ["'Jordan, I'm not here to trap you. What were you thinking when you said it?'", 'side']]],
+      ['side', "Jordan rubs his neck. 'Honestly? I heard it online. I thought it was just a thing people say. Everyone laughed, so I thought it was fine.' He pauses. 'Nobody ever told me it was a stereotype.'", [
+        ["'Thanks for being honest. Jordan, now that you've heard Aria, how do you think it landed for her?'", 'impact'],
+        ["'Wow. You really don't get anything, do you?'", 'stuck']]],
+      ['stuck', "Jordan stares at the floor and stops talking. Aria looks toward the door. Pushing harder is shutting the conversation down.", [
+        ["Slow down: 'Aria, I'm listening. What matters most to you right now?'", 'heard'],
+        ["'Let's pause and ask the teacher to come back and help.'", 'end_pause']]],
+      ['impact', "Jordan is quiet. 'Everyone laughed at you, about your family, and you had to stand there.' He looks at Aria. 'It doesn't matter that I didn't mean it, if it hurt you like that. I'm sorry, Aria. I won't say that again.' Aria looks at him for a long moment, then nods.", [
+        ["'Perfect. We're done here.'", 'end_partial'],
+        ["'What would help make this right?'", 'end_repair']]],
+      ['end_repair', "Jordan says he will tell the people who laughed that the joke was not okay, and that he will speak up if he hears it again. Aria asks him to learn why that stereotype hurts, and the teacher offers to help with that. Aria says she feels a little safer.\n\nWhat worked:\n• You kept Aria's hurt at the center instead of Jordan's defensiveness.\n• Impact, not intent: Jordan didn't mean harm, and it still hurt.\n• You named the behavior, not the person, which kept Jordan listening.\n• The repair includes not repeating the pattern, and helping others stop too."],
+      ['end_partial', "Jordan's apology was real. But the people who laughed still think the joke was fine, and nothing was planned about what happens next. The talk helped; the repair isn't finished.\n\nWhat worked:\n• You listened to Aria and helped Jordan understand the impact.\n• Repair for a public joke often needs a public part, and a promise not to repeat it.\n• You could still ask: 'What would help make this right?'"],
+      ['end_pause', "You stop for now and ask the teacher to come back in. Nothing is fixed yet, and that's okay: harm that targets who someone is deserves an adult's help, not just a peer conversation.\n\nWhat worked:\n• Bringing in a trusted adult is the right call when things stall.\n• Next time, try starting with Aria's experience before anything else.\n• Name the behavior ('that joke used a stereotype'), not the person ('you're terrible')."]
+    ])
+  };
+
+  // ── Teacher scenes: the station's toolConfig.conflicttheater, handled by the hub's
+  // shared helper (window.SelHub.teacherScenes). An older hub has no helper: no teacher section.
+  function _ctTeacherApi() {
+    var api = window.SelHub && window.SelHub.teacherScenes;
+    return api && typeof api.bind === 'function' ? api : null;
+  }
+
+  // ══════════════════════════════════════════════════════════════
   // ── Helpers: persona + prompt construction ──
   // ══════════════════════════════════════════════════════════════
 
@@ -608,6 +904,14 @@ window.SelHub = window.SelHub || {
     contentWarning: true,
     beta: true,
     status: 'beta',
+    // Playable with no AI (scripted scenes + student-written scene).
+    offlineMode: true,
+    offlineScripts: CT_SCRIPTS,
+    // Teacher content contract (ctx.toolConfig.conflicttheater), exposed for tests.
+    teacherConfig: {
+      scenesFrom: function(cfg, AO) { var api = _ctTeacherApi(); return api ? api.scenesFrom(cfg, AO) : []; },
+      starter: function() { var api = _ctTeacherApi(); return api ? api.starter() : null; }
+    },
 
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
@@ -632,6 +936,11 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var band = ctx.gradeBand || 'middle';
       var onSafetyFlag = ctx.onSafetyFlag || null;
+      // Usable AI? Never typeof alone: a host-blocked fn is truthy (2026-11-04 AI-off sweep).
+      var _cftAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
+      var _cftAO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+      var _cftTheme = _cftHC ? 'contrast' : (_cftL ? 'light' : 'dark');
+      var _cftTr = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
 
       var d = (ctx.toolData && ctx.toolData.conflicttheater) || {};
       var upd = function(key, val) {
@@ -639,8 +948,30 @@ window.SelHub = window.SelHub || {
         else { if (ctx.update) ctx.update('conflicttheater', key, val); }
       };
 
-      var MODES = ['select', 'opt-in', 'scene', 'ending'];
-      var mode = MODES.indexOf(d.mode) !== -1 ? d.mode : 'select'; // select | opt-in | scene | ending
+      var MODES = ['select', 'opt-in', 'scene', 'ending', 'compare', 'replay', 'script', 'write', 'teacher-edit'];
+      var mode = MODES.indexOf(d.mode) !== -1 ? d.mode : 'select'; // select | opt-in | scene | ending | compare | replay | script | write | teacher-edit
+      // Teacher scenes from the active station (ctx.toolConfig); only the teacher view can edit them.
+      var _ctTx = function(key, fb) { var v = null; try { v = _cftTr(key); } catch (e) { v = null; } return (typeof v === 'string' && v && v !== key) ? v : fb; };
+      var _ctTsApi = _ctTeacherApi();
+      var tsCtl = _ctTsApi ? _ctTsApi.bind({
+        ctx: ctx, h: h, toolId: 'conflicttheater', d: d, set: upd, announce: announceSR, theme: _cftT, fg: _cftFg, bg: _cftBg,
+        attr: 'ct-', idBase: 'cft', openPatch: { mode: 'teacher-edit' }, closePatch: { mode: 'select' },
+        aiTopic: 'a realistic everyday conflict between students that the player helps repair',
+        aiExtra: 'Choices are things the player could say; scenes show how the other person reacts.',
+        ideaPrefix: 'Teacher\'s idea for the conflict: ',
+        copy: {
+          station_hint: _ctTx('sel.conflicttheater.teacher.station_hint', 'To give students your own scenes that work without AI, start an SEL Station that includes Conflict Theater, then open it here.'),
+          editor_title: _ctTx('sel.conflicttheater.teacher.editor_title', 'Write a conflict scene'),
+          guide: _ctTx('sel.conflicttheater.teacher.guide', 'Write a realistic everyday conflict with made-up names. Less helpful choices show common mistakes, like blaming or brushing feelings off. Every choice shows how the other person reacts. End with at least two endings, each with a short "What worked:" debrief. Keep it restorative: no shaming endings, no diagnoses, never quote slurs.'),
+          idea_label: _ctTx('sel.conflicttheater.teacher.idea_label', 'Optional: describe the conflict and let AI draft the scenes')
+        }
+      }) : null;
+      var tsReady = tsCtl ? tsCtl.ready : [];
+      var tsCanAuthor = !!tsCtl && tsCtl.canAuthor;
+      if (mode === 'teacher-edit' && !tsCanAuthor) mode = 'select';
+      var tsPlaying = d.teacherSceneId ? tsReady.filter(function(s) { return s.id === d.teacherSceneId; })[0] || null : null;
+      // Without AI a saved live scene resumes as the scripted one.
+      if (!_cftAiOn && mode === 'scene') mode = 'script';
       var scenarioId = d.scenarioId || 'lunch-money';
       var scenario = SCENARIOS[scenarioId] || SCENARIOS['lunch-money'];
       var scene = SCENES[scenario.sceneId] || SCENES.cafeteria;
@@ -829,7 +1160,7 @@ window.SelHub = window.SelHub || {
       // Helper: send turn
       // ──────────────────────────────────────────────────────────
       function sendTurn() {
-        if (!callGemini) { addToast && addToast('AI not available right now.', 'error'); return; }
+        if (!callGemini || !_cftAiOn) { addToast && addToast('AI not available right now.', 'error'); return; }
         var msg = (studentInput || '').trim();
         if (!msg || loading) return;
 
@@ -980,9 +1311,10 @@ window.SelHub = window.SelHub || {
             stateUpdate.mode = 'ending';
             stateUpdate.ending = ending;
             announceSR('Conversation complete: ' + ending + '.');
-            if (ending === 'resolved') { sfxResolve(); celebrate && celebrate(); awardXP && awardXP('conflicttheater', 30); }
+            // The SEL hub's awardXP takes (amount); a leading id string was added to XP as text.
+            if (ending === 'resolved') { sfxResolve(); celebrate && celebrate(); awardXP && awardXP(30); }
             else if (ending === 'deepened') { sfxBreakdown(); }
-            else { awardXP && awardXP('conflicttheater', 15); }
+            else { awardXP && awardXP(15); }
             // Save this attempt to history for future compare-to-previous.
             // Cap at 12 most-recent attempts to bound state size.
             var newAttempt = {
@@ -1085,6 +1417,7 @@ window.SelHub = window.SelHub || {
         sc.characterIds.forEach(function(cid) { if (!freshMoods[cid]) freshMoods[cid] = 'calm'; });
         upd({
           scenarioId: sid,
+          teacherSceneId: null,
           dialogue: [],
           harmony: sc.initialHarmony,
           principlesUsed: {},
@@ -1102,8 +1435,187 @@ window.SelHub = window.SelHub || {
       }
 
       // ──────────────────────────────────────────────────────────
+      // No-AI modes (2026-11-04): scripted scene + student-written scene.
+      // Zero AI calls: AdventureOffline is pure UI; safety is the local regex check.
+      // ──────────────────────────────────────────────────────────
+      var scriptStory = tsPlaying ? tsPlaying.story : (CT_SCRIPTS[scenario.id] || CT_SCRIPTS['lunch-money']);
+      // Endings found / XP / reflections are keyed per script: a teacher scene is its own script.
+      var scriptKey = tsPlaying ? 'teacher:' + tsPlaying.id : scenario.id;
+      var _cftCrisis = (_userTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null;
+      var _cftCard = { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 12 };
+      var _cftBtn = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: _cftFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+      var _cftBtnPrimary = Object.assign({}, _cftBtn, { border: 'none', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff') });
+      function _scriptScene(id) {
+        for (var i = 0; i < scriptStory.scenes.length; i++) { if (scriptStory.scenes[i].id === id) return scriptStory.scenes[i]; }
+        return null;
+      }
+      function _cftLocalSafety(text) {
+        if (!text || !window.SelHub || typeof window.SelHub.safeRehearseCheck !== 'function') return false;
+        var r = window.SelHub.safeRehearseCheck(String(text), { toolId: 'conflicttheater', onSafetyFlag: onSafetyFlag });
+        if (r && r.action === 'block') { upd('_userTier', 3); announceSR('Please use the support resources on this screen.'); return true; }
+        return false;
+      }
+      function startScript(sid) {
+        var id = (SCENARIOS[sid] && CT_SCRIPTS[sid]) ? sid : scenario.id;
+        upd({ scenarioId: id, teacherSceneId: null, mode: 'script', scriptEnding: null, scriptPath: null, scriptRun: (d.scriptRun || 0) + 1, scriptReflectDraft: '', scriptReflectSaved: false });
+        announceSR('Scripted scene started: ' + (SCENARIOS[id] || scenario).title + '.');
+      }
+      function startTeacherScript(ts) {
+        upd({ teacherSceneId: ts.id, mode: 'script', scriptEnding: null, scriptPath: null, scriptRun: (d.scriptRun || 0) + 1, scriptReflectDraft: '', scriptReflectSaved: false });
+        announceSR('Scripted scene started: ' + (ts.title || _ctTx('sel.conflicttheater.teacher.from', 'From your teacher')) + '.');
+      }
+      function reachScriptEnding(endId) {
+        var done = Object.assign({}, d.scriptDone || {});
+        var firstForScenario = !Object.keys(done).some(function(k) { return k.indexOf(scriptKey + ':') === 0; });
+        done[scriptKey + ':' + endId] = true;
+        upd({ scriptEnding: endId, scriptDone: done, scriptReflectSaved: false });
+        if (firstForScenario && typeof awardXP === 'function') awardXP(10);
+        announceSR('Ending reached. Read what worked, then reflect.');
+      }
+      // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+      function onScriptClick(e) {
+        var el = e && e.target && e.target.closest ? e.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+        if (!el) return;
+        var to = el.getAttribute('data-offline-choice');
+        var target = to ? _scriptScene(to) : null;
+        if (target && target.ending) reachScriptEnding(to);
+        else if (d.scriptEnding) upd('scriptEnding', null);
+      }
+      // Built-in player for an older host without AdventureOffline.
+      function renderFallbackPlayer(story) {
+        var path = (Array.isArray(d.scriptPath) ? d.scriptPath : []).filter(function(id) { return !!_scriptScene(id); });
+        if (!path.length) path = [story.start];
+        var cur = _scriptScene(path[path.length - 1]);
+        var go = function(to) { upd('scriptPath', path.concat([to])); var sc = _scriptScene(to); if (sc && sc.ending) reachScriptEnding(to); };
+        return h('section', { 'data-ct-fallback-player': 'true', 'aria-label': story.title, style: Object.assign({}, _cftCard, { padding: 18 }) },
+          h('h3', { style: { margin: '0 0 10px', fontSize: 16, fontWeight: 800, color: _cftFg('#f1f5f9') } }, cur.ending ? 'The end' : 'Step ' + path.length),
+          h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: _cftFg('#e2e8f0') } }, cur.text),
+          !cur.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 14 } },
+            cur.choices.map(function(c, i) {
+              return h('button', { key: i, 'data-ct-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, _cftBtn, { textAlign: 'left', fontWeight: 600 }) }, c.label);
+            })
+          ),
+          h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
+            h('button', { disabled: path.length < 2, onClick: function() { upd({ scriptPath: path.slice(0, -1), scriptEnding: null }); }, style: _cftBtn }, '← Back'),
+            h('button', { disabled: path.length < 2, onClick: function() { upd({ scriptPath: [story.start], scriptEnding: null }); }, style: cur.ending ? _cftBtnPrimary : _cftBtn }, cur.ending ? '↺ Play again' : '↺ Start over')
+          )
+        );
+      }
+      function renderReflectBox(cfg) {
+        return h('div', { 'data-ct-reflect': cfg.id, style: Object.assign({}, _cftCard, { borderColor: '#0369a1' }) },
+          h('label', { htmlFor: 'cft-reflect-' + cfg.id, style: { display: 'block', fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9'), marginBottom: 6 } }, cfg.title),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, color: _cftFg('#cbd5e1'), lineHeight: 1.5 } }, cfg.prompt),
+          h('textarea', { id: 'cft-reflect-' + cfg.id, value: cfg.value || '', rows: 3, maxLength: 2000,
+            onChange: function(e) { upd(cfg.draftKey, e.target.value); },
+            style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #475569', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+            h('button', { 'data-ct-reflect-save': cfg.id, disabled: !String(cfg.value || '').trim(), onClick: cfg.onSave, style: _cftBtnPrimary }, 'Save reflection'),
+            cfg.saved ? h('span', { role: 'status', style: { fontSize: 12, color: _cftFg('#94a3b8') } }, 'Saved to your work.') : null
+          )
+        );
+      }
+      var _cftBackBtn = h('button', { onClick: function() { upd({ mode: 'select', teacherSceneId: null }); }, style: Object.assign({}, _cftBtn, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cftFg('#94a3b8') }) }, '← All scenarios');
+
+      // MODE: script (scripted branching scene, no AI)
+      if (mode === 'script') {
+        var endCount = scriptStory.scenes.filter(function(s) { return s.ending; }).length;
+        var foundCount = Object.keys(d.scriptDone || {}).filter(function(k) { return k.indexOf(scriptKey + ':') === 0; }).length;
+        var castNames = scenario.characterIds.map(function(cid) { return CAST[cid] ? CAST[cid].avatar + ' ' + CAST[cid].name : cid; }).join('  ·  ');
+        var playerEl = (_cftAO && typeof _cftAO.Player === 'function')
+          ? h(_cftAO.Player, { key: scriptKey + ':' + (d.scriptRun || 0), story: scriptStory, t: _cftTr, theme: _cftTheme })
+          : renderFallbackPlayer(scriptStory);
+        return h('div', { style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
+          _cftCrisis,
+          h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+            _cftBackBtn,
+            h('h2', { id: 'cft-script-heading', style: { fontSize: 20, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '10px 0 2px' } }, tsPlaying ? (tsPlaying.title || _ctTx('sel.conflicttheater.teacher.from', 'From your teacher')) : scenario.title),
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, tsPlaying ? _ctTx('sel.conflicttheater.teacher.from', 'From your teacher') : 'Scripted scene · ' + scene.label),
+            tsPlaying ? null : h('div', { style: { fontSize: 13, color: _cftFg('#cbd5e1'), marginTop: 6 } }, castNames)
+          ),
+          tsPlaying ? (tsPlaying.intro ? h('p', { 'data-ct-teacher-intro': 'true', style: Object.assign({}, _cftCard, { fontSize: 13, color: _cftFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' }) }, tsPlaying.intro) : null)
+            : h('div', { role: 'img', 'aria-label': scene.label + ' scene', style: { marginBottom: 12 } }, scene.svg(h)),
+          h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: '0 0 10px', lineHeight: 1.5, textAlign: 'center' } }, 'Choose what you say. Each choice shows how they react. There is more than one ending; replay to find the others.'),
+          h('div', { 'data-ct-script-player': tsPlaying ? scriptKey : scenario.id, onClick: onScriptClick }, playerEl),
+          h('p', { style: { fontSize: 11, color: _cftFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundCount + ' of ' + endCount),
+          d.scriptEnding ? renderReflectBox({
+            id: 'script', title: '✍️ Reflect', draftKey: 'scriptReflectDraft', value: d.scriptReflectDraft, saved: !!d.scriptReflectSaved,
+            prompt: 'Which choice changed how the other person reacted? What is one thing you could try in a real disagreement?',
+            onSave: function() {
+              var txt = String(d.scriptReflectDraft || '').trim();
+              if (!txt) return;
+              _cftLocalSafety(txt);
+              var list = (Array.isArray(d.scriptReflections) ? d.scriptReflections : []).concat([{ scenarioId: scriptKey, ending: d.scriptEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+              upd({ scriptReflections: list, scriptReflectDraft: '', scriptReflectSaved: true });
+              announceSR('Reflection saved.');
+            }
+          }) : null,
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+        );
+      }
+
+      // MODE: write (student-written conflict scene, no AI)
+      if (mode === 'write') {
+        var studentScenes = Array.isArray(d.studentScenes) ? d.studentScenes : [];
+        var canWrite = !!(_cftAO && typeof _cftAO.Panel === 'function' && typeof _cftAO.findStudentStory === 'function');
+        var mine = canWrite ? _cftAO.findStudentStory(studentScenes) : null;
+        var myStory = mine && typeof _cftAO.normalize === 'function' ? _cftAO.normalize(mine.data.studentStory) : null;
+        var myOk = !!(myStory && typeof _cftAO.validate === 'function' && _cftAO.validate(myStory).ok);
+        // The writer saves through a history-style setter; here it is this tool's saved work.
+        var setStudentScenes = function(next) {
+          var cur = (ctx.toolData && ctx.toolData.conflicttheater && Array.isArray(ctx.toolData.conflicttheater.studentScenes)) ? ctx.toolData.conflicttheater.studentScenes : studentScenes;
+          var val = typeof next === 'function' ? next(cur) : next;
+          val = (Array.isArray(val) ? val : []).slice(-5);
+          var latest = _cftAO.findStudentStory(val);
+          if (latest && latest.data && latest.data.studentStory && Array.isArray(latest.data.studentStory.scenes)) {
+            _cftLocalSafety([latest.data.studentStory.title || ''].concat(latest.data.studentStory.scenes.map(function(s) { return [s.text || ''].concat((s.choices || []).map(function(c) { return c.label || ''; })).join(' '); })).join(' '));
+          }
+          upd('studentScenes', val);
+        };
+        return h('div', { style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
+          _cftCrisis,
+          h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+            _cftBackBtn,
+            h('h2', { id: 'cft-write-heading', style: { fontSize: 20, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '10px 0 4px' } }, '✍️ Write your own conflict scene')
+          ),
+          h('div', { style: _cftCard },
+            h('p', { style: { margin: '0 0 8px', fontSize: 13, color: _cftFg('#e2e8f0'), lineHeight: 1.6 } }, 'Make a short branching scene about an everyday disagreement. Use made-up characters, not real classmates. Start with the moment the conflict begins, add two or three things someone could say, and for each one write how the other person reacts. Finish with at least two endings: one where things get repaired and one that is not fixed yet.'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: _cftFg('#cbd5e1'), lineHeight: 1.7 } },
+              h('li', null, 'Try an I-statement: "I felt ___ when ___."'),
+              h('li', null, 'Show listening: someone says back what they heard.'),
+              h('li', null, 'Let each person explain their side.'),
+              h('li', null, 'A repair is an action, not only "sorry."')
+            )
+          ),
+          canWrite ? h('div', { style: Object.assign({}, _cftCard, { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }) },
+            h('button', { 'data-ct-open-writer': 'true', onClick: function() { upd({ writeOpen: true, writePlay: false }); }, style: _cftBtnPrimary }, mine ? '✏️ Keep writing' : '✏️ Open the scene writer'),
+            myStory ? h('span', { style: { fontSize: 12, color: _cftFg('#cbd5e1') } }, (myStory.title || 'My conflict scene') + ' · ' + myStory.scenes.length + ' scenes · ' + (myOk ? 'ready to play' : 'not finished yet')) : null,
+            myOk ? h('button', { 'data-ct-play-mine': 'true', 'aria-pressed': d.writePlay ? 'true' : 'false', onClick: function() { upd('writePlay', !d.writePlay); }, style: _cftBtn }, d.writePlay ? 'Hide my scene' : '▶ Play my scene') : null
+          ) : h('div', { role: 'status', 'data-ct-writer-loading': 'true', style: Object.assign({}, _cftCard, { fontSize: 13, color: _cftFg('#cbd5e1') }) }, 'The scene writer is still loading. Try again in a moment; if it does not appear, ask your teacher to reload AlloFlow.'),
+          canWrite && myOk && d.writePlay ? h('div', { style: { marginBottom: 12 } }, h(_cftAO.Player, { key: 'mine', story: myStory, t: _cftTr, theme: _cftTheme })) : null,
+          renderReflectBox({
+            id: 'write', title: '✍️ Reflect on your scene', draftKey: 'writeReflectDraft', value: d.writeReflectDraft, saved: !!d.writeReflectSaved,
+            prompt: 'What might the other person in your scene be feeling? Which line from your scene could you use in real life?',
+            onSave: function() {
+              var txt = String(d.writeReflectDraft || '').trim();
+              if (!txt) return;
+              _cftLocalSafety(txt);
+              upd({ writeReflection: { text: txt.slice(0, 2000), ts: new Date().toISOString() }, writeReflectDraft: '', writeReflectSaved: true });
+              announceSR('Reflection saved.');
+            }
+          }),
+          d.writeReflection && d.writeReflection.text ? h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: '0 0 12px', fontStyle: 'italic' } }, 'Last saved reflection: "' + d.writeReflection.text + '"') : null,
+          canWrite && d.writeOpen ? h(_cftAO.Panel, { studentMode: true, t: _cftTr, theme: _cftTheme, history: studentScenes, setHistory: setStudentScenes, onClose: function() { upd('writeOpen', false); } }) : null,
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+        );
+      }
+
+      // ──────────────────────────────────────────────────────────
       // MODE: select (scenario picker grid)
       // ──────────────────────────────────────────────────────────
+      // ── Teacher scenes: the hub's shared student list + teacher editor (no AI needed; AI only drafts) ──
+      function renderTeacherSceneList() { return tsCtl ? tsCtl.renderList({ onPlay: startTeacherScript }) : null; }
+      function renderTeacherAuthorCard() { return tsCtl ? tsCtl.renderAuthor() : null; }
+      if (mode === 'teacher-edit' && tsCtl) return tsCtl.renderEditor();
       if (mode === 'replay' && window.SelHubConflictReplay) {
         return window.SelHubConflictReplay.render(ctx, { h: h, fg: _cftFg, bg: _cftBg, bd: _cftBd, d: d, upd: upd, announceSR: announceSR, band: band });
       }
@@ -1124,9 +1636,14 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 48, marginBottom: 4 } }, '🎭'),
             h('h2', { id: 'cft-scenario-heading', tabIndex: -1, style: { fontSize: 22, fontWeight: 800, color: _cftFg('#f1f5f9'), marginBottom: 4 } }, 'Conflict Theater'),
             h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: 0, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } },
-              'Pick a conflict to mediate. Each scenario has two AI characters with their own personalities, moods, and reasons. Practice acknowledging feelings, making space, naming harm, and proposing repair.'
+              _cftAiOn
+                ? 'Pick a conflict to mediate. Each scenario has two AI characters with their own personalities, moods, and reasons. Practice acknowledging feelings, making space, naming harm, and proposing repair.'
+                : 'Pick a conflict. Read what happens, choose what to say, and see how each person reacts. Every ending has a short debrief on what worked: listening, I-statements, seeing both sides, calming things down, and repair.'
             )
           ),
+          // Teacher scenes first (no AI), then the teacher's editor entry
+          renderTeacherSceneList(),
+          renderTeacherAuthorCard(),
           // Scenario grid
           h('div', { role: 'list', 'aria-label': 'Available scenarios', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
             scenarioList.map(function(sc) {
@@ -1155,6 +1672,16 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('p', { style: { fontSize: 10, color: _cftFg('#64748b'), textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
+          // ── Write your own scene (no AI) ──
+          h('button', {
+            'data-ct-write-card': 'true',
+            onClick: function() { upd({ mode: 'write' }); announceSR('Write your own conflict scene.'); },
+            style: { width: '100%', textAlign: 'left', marginTop: 14, padding: 12, borderRadius: 12, border: '1px dashed #14b8a6', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer' }
+          },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9') } }, '✍️ Write your own conflict scene'),
+            h('p', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), margin: '4px 0 0', lineHeight: 1.5 } },
+              'Create a short branching scene: what happens, what someone could say, and how the other person reacts. Saved to your work.')
+          ),
           // ── Conflict Replay launch card (camera wave; hidden when AI/vision is off) ──
           ctx.callGeminiVision ? h('button', {
             'aria-label': 'Open Conflict Replay: act a scene, record it, and watch the tagged replay',
@@ -1236,13 +1763,19 @@ window.SelHub = window.SelHub || {
               );
             })
           ),
-          h('div', { style: { textAlign: 'center' } },
+          h('div', { style: { textAlign: 'center', display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', {
               'aria-label': 'Start scenario',
               autoFocus: true,
-              onClick: function() { upd({ mode: 'scene' }); announceSR('Scene started. ' + charsInPlay.map(function(c){ return c.name; }).join(' and ') + ' appear.'); },
-              style: { padding: '12px 32px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
-            }, 'Start →')
+              // Without AI, Start plays the scripted version of the same scenario.
+              onClick: function() { if (!_cftAiOn) { startScript(scenario.id); return; } upd({ mode: 'scene' }); announceSR('Scene started. ' + charsInPlay.map(function(c){ return c.name; }).join(' and ') + ' appear.'); },
+              style: { padding: '12px 32px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
+            }, 'Start →'),
+            _cftAiOn ? h('button', {
+              'data-ct-start-script': 'true',
+              onClick: function() { startScript(scenario.id); },
+              style: { padding: '12px 20px', background: 'transparent', color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+            }, '📜 Play the scripted version') : null
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
@@ -1324,7 +1857,7 @@ window.SelHub = window.SelHub || {
             h('button', {
               'aria-label': 'Try again with different choices',
               onClick: resetScenario,
-              style: { padding: '10px 20px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
             }, '↺ Try again'),
             // Compare-to-previous: only show if there are 2+ attempts of THIS scenario
             (function() {
@@ -1377,7 +1910,7 @@ window.SelHub = window.SelHub || {
           // Defensive: shouldn't reach here, but render a fallback.
           return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto', textAlign: 'center', color: _cftFg('#94a3b8') } },
             h('p', null, 'Need at least two attempts to compare. Try the scenario again first.'),
-            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
+            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
           );
         }
         var endingColor = function(end) { return end === 'resolved' ? _cftFg('#22c55e') : end === 'partial' ? _cftFg('#eab308') : _cftFg('#ef4444'); };

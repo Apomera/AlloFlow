@@ -592,7 +592,7 @@ window.SelHub = window.SelHub || {
     { _k: 'sel.emotions.badge_scenario_5', id: 'scenario_5',        icon: '\uD83C\uDFAD', name: 'Scenario Thinker',     desc: 'Respond to 5 emotion scenarios' },
     { _k: 'sel.emotions.badge_journal_3', id: 'journal_3',         icon: '\uD83D\uDCD3', name: 'Reflective Writer',    desc: 'Write 3 emotion journal entries' },
     { _k: 'sel.emotions.badge_journal_10', id: 'journal_10',        icon: '\u270D\uFE0F', name: 'Journal Master',       desc: 'Write 10 emotion journal entries' },
-    { _k: 'sel.emotions.badge_ai_coach', id: 'ai_coach',          icon: '\u2728',       name: 'Coached',              desc: 'Get advice from the AI Emotion Coach' },
+    { _k: 'sel.emotions.badge_ai_coach', id: 'ai_coach',          icon: '\u2728',       name: 'Coached',              desc: 'Get advice from the AI Emotion Coach', aiOnly: true },
     { _k: 'sel.emotions.badge_intensity_range', id: 'intensity_range',   icon: '\uD83D\uDCCA', name: 'Range Finder',         desc: 'Log emotions at 3 different intensity levels' },
     { _k: 'sel.emotions.badge_mixed_feelings', id: 'mixed_feelings',    icon: '\uD83C\uDF00', name: 'Complex Feeler',       desc: 'Identify mixed emotions in a scenario' },
     { _k: 'sel.emotions.badge_all_families', id: 'all_families',      icon: '\uD83C\uDFA8', name: 'Full Spectrum',        desc: 'Check in with all 6 emotion families' },
@@ -18308,6 +18308,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _emoAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       // `var t = ctx.t` removed 2026-09-21: it was declared and never called. ctx.t drops the English fallback, so the next person to wire this tool would have shipped raw keys. Use the __alloT wrapper instead.
       var band = ctx.gradeBand || 'elementary';
@@ -18464,6 +18465,8 @@ var EMOTION_JOURNAL_TEMPLATES = [
 
       // Badge state
       var earnedBadges    = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _emoAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup  = d.showBadgePopup || null;
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -18630,10 +18633,10 @@ var EMOTION_JOURNAL_TEMPLATES = [
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: P.textMuted, fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#3b82f633' : 'transparent', color: P.textMuted, fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
       // ══════════════════════════════════════════════════════════
@@ -18828,9 +18831,9 @@ var EMOTION_JOURNAL_TEMPLATES = [
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: P.text, fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: P.text, fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-              BADGES.map(function(badge) {
+              shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id,
                   title: _badgeName(badge) + ': ' + _badgeDesc(badge),

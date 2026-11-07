@@ -10,12 +10,12 @@ const evaluate=new Function('input',
 describe('Evasion requires both survival time and catches',()=>{
   it.each([
     [0,2,100,null],
-    [239.999,2,31,null],
-    [240,2,30,true],
+    [239.999,2,7,null],
+    [240,2,6,true],
     [240,3,100,true],
     [240,1,100,false],
-    [20,2,29.99,false],
-    [240,2,29.99,false],
+    [20,2,5.99,false],
+    [240,2,5.99,false],
   ])('at %s seconds with %s catches and %s m separation', (missionElapsed,missionCatches,hunterDistance,expected)=>{
     const result=evaluate({missionElapsed,missionCatches,hunterDistance});
     if(expected===null)expect(result).toBeNull();else expect(result?.success).toBe(expected);

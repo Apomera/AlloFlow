@@ -11,7 +11,8 @@
  *    markers and cached session data are removed on close or pruning paths;
  *    this is not a scheduled physical-deletion guarantee.
  *  - Homework packs and completed submission JSON: files in the owner's
- *    "AlloFlow Class Mailbox" Drive folder. Delete them any time.
+ *    "AlloFlow Class Mailbox" Drive folder, plus submissions-index.json
+ *    listing the submissions for the owner's AlloFlow. Delete them any time.
  *
  * Access model (capability tokens, no student logins):
  *  - admin token: required for teacher broadcasts, full class state, session
@@ -25,7 +26,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 28;
+var VERSION = 29;
 // Apps Script allows 30 simultaneous runs per owner and a run waiting on the
 // script lock still counts, so live writes give up quickly and answer "busy"
 // (the app retries with backoff) instead of queueing for seconds.
@@ -359,6 +360,13 @@ function handle(p) {
     return clonePack(cache, p);
   }
   if (a === 'putsubmission') return putSubmission(cache, props, p, admin);
+  // v29: the owner's AlloFlow collects submissions without opening Drive.
+  if (a === 'listsubmissions' || a === 'getsubmission' || a === 'marksubmissions') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (a === 'listsubmissions') return listSubmissions(p);
+    if (a === 'getsubmission') return getSubmission(p);
+    return markSubmissions(p);
+  }
   if (a === 'getpack') return getPack(cache, p);
   // Durable shared-assignment activities (v10+; plural manifests in v11).
   // These are deliberately
@@ -2750,7 +2758,7 @@ function moderateAssignmentActivity(cache, p) {
 // unguessable pack capability already present in their assignment QR. Files
 // land in the teacher-owned mailbox Drive folder as ordinary JSON. Uploads
 // are chunked so a complete portfolio does not hit Apps Script request/cache
-// value limits. No endpoint lists or downloads submissions.
+// value limits. Only the owner's admin token can list or download them (v29).
 function putSubmission(cache, props, p, admin) {
   var sourceKind = '';
   var sourceId = '';
@@ -2818,12 +2826,118 @@ function putSubmission(cache, props, p, admin) {
     var stamp = Utilities.formatDate ? Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd-HHmmss') : String(Date.now());
     var filename = 'submission-' + safeName + '-' + stamp + '-' + sid.slice(-8) + '.json';
     packFolder().createFile(filename, JSON.stringify(payload, null, 2), 'application/json');
+    // Best effort: a file the index misses is still found by a rescan.
+    try {
+      var sidx = readSubmissionIndex() || { v: 1, items: [] };
+      sidx.items.push({ n: filename, at: Date.now(), kind: sourceKind, src: sourceId });
+      writeSubmissionIndex(sidx);
+    } catch (idxErr) {}
     for (var r = 1; r <= of; r++) cache.remove(cachePrefix + r);
     var receipt = { ok: true, filename: filename, sourceKind: sourceKind, receivedAt: payload.mailboxReceipt.receivedAt };
     cache.put(receiptKey, JSON.stringify(receipt), UPLOAD_TTL_SEC);
     return out(receipt);
   } finally { lock.releaseLock(); }
 }
+
+// v29 submission pickup (admin only). A small index file in the mailbox folder
+// lists submission files so AlloFlow can fetch them without a Drive download.
+// Files saved before v29 (or missed by the index) are found by a folder scan.
+// "got" marks files the teacher already collected; nothing is deleted.
+var SUBMISSION_INDEX = 'submissions-index.json';
+var SUBMISSION_INDEX_MAX = 5000;
+var SUBMISSION_LIST_MAX = 300;
+var SUBMISSION_SCAN_MS = 20000;
+var SUBMISSION_NAME_RE = /^submission-[A-Za-z0-9_-]{1,120}\.json$/;
+
+function readSubmissionIndex() {
+  var file = findNamedPackFileV7(SUBMISSION_INDEX);
+  if (!file) return null;
+  try {
+    var idx = JSON.parse(file.getBlob().getDataAsString());
+    return idx && Array.isArray(idx.items) ? idx : null;
+  } catch (e) { return null; }
+}
+
+function writeSubmissionIndex(idx) {
+  if (idx.items.length > SUBMISSION_INDEX_MAX) idx.items = idx.items.slice(idx.items.length - SUBMISSION_INDEX_MAX);
+  replacePackFileV7(SUBMISSION_INDEX, JSON.stringify(idx), 'application/json');
+}
+
+// Adds submission files the index does not know. Returns false when it ran
+// out of time, so the next list continues the scan.
+function scanSubmissionFiles(idx) {
+  var known = {};
+  idx.items.forEach(function(item) { known[item.n] = true; });
+  var folder = packFolder();
+  var files;
+  try { files = folder.searchFiles('title contains "submission-" and trashed = false'); } catch (e) { files = folder.getFiles(); }
+  var started = Date.now();
+  while (files.hasNext()) {
+    if (Date.now() - started > SUBMISSION_SCAN_MS) return false;
+    var file = files.next();
+    var name = String(file.getName() || '');
+    if (!SUBMISSION_NAME_RE.test(name) || known[name]) continue;
+    known[name] = true;
+    var at = 0;
+    try { at = file.getDateCreated().getTime(); } catch (e2) {}
+    idx.items.push({ n: name, at: at, kind: '', src: '' });
+  }
+  idx.items.sort(function(x, y) { return (x.at || 0) - (y.at || 0); });
+  return true;
+}
+
+function listSubmissions(p) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  var idx;
+  var complete = true;
+  try {
+    idx = readSubmissionIndex() || { v: 1, items: [] };
+    if (!idx.scannedAt || p.rescan) {
+      complete = scanSubmissionFiles(idx);
+      if (complete) idx.scannedAt = Date.now();
+      writeSubmissionIndex(idx);
+    }
+  } finally { lock.releaseLock(); }
+  var wanted = idx.items.filter(function(item) { return p.all || !item.got; });
+  var items = wanted.slice(-SUBMISSION_LIST_MAX).reverse().map(function(item) {
+    return { n: item.n, at: item.at || 0, kind: item.kind || '', src: item.src || '', got: item.got || 0 };
+  });
+  return out({ ok: true, items: items, more: Math.max(0, wanted.length - items.length), complete: complete, t: Date.now() });
+}
+
+function getSubmission(p) {
+  var name = String(p.n || '');
+  if (!SUBMISSION_NAME_RE.test(name)) return out({ ok: false, e: 'bad-request' });
+  var file = findNamedPackFileV7(name);
+  if (!file) return out({ ok: false, e: 'no-file' });
+  var text = String(file.getBlob().getDataAsString() || '');
+  var of = Math.max(1, Math.ceil(text.length / GET_PART_CHARS));
+  var part = Math.max(1, parseInt(p.part, 10) || 1);
+  if (part > of) return out({ ok: false, e: 'bad-part' });
+  return out({ ok: true, n: name, part: part, of: of, chars: text.length,
+    data: text.slice((part - 1) * GET_PART_CHARS, part * GET_PART_CHARS) });
+}
+
+function markSubmissions(p) {
+  var names = Array.isArray(p.names) ? p.names.slice(0, SUBMISSION_LIST_MAX) : [];
+  var wanted = {};
+  names.forEach(function(name) { if (SUBMISSION_NAME_RE.test(String(name))) wanted[String(name)] = true; });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var idx = readSubmissionIndex();
+    if (!idx) return out({ ok: true, marked: 0 });
+    var now = Date.now();
+    var marked = 0;
+    idx.items.forEach(function(item) {
+      if (wanted[item.n] && !item.got) { item.got = now; marked++; }
+    });
+    if (marked) writeSubmissionIndex(idx);
+    return out({ ok: true, marked: marked, t: now });
+  } finally { lock.releaseLock(); }
+}
+
 function putPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });

@@ -14,7 +14,7 @@ npx playwright test -c playwright.mobile.config.ts --project=phone-ios
 
 ## Why this is a separate config
 
-`playwright.config.ts` points at `https://prismflow-911fe.web.app`, so it can
+`playwright.config.ts` points at `https://alloflow-cdn.pages.dev/app/`, so it can
 only tell you about code that is already deployed. `playwright.mobile.config.ts`
 starts the CRA dev server against the working tree instead, which means a
 layout fix can be verified in the same loop that found the bug, without a

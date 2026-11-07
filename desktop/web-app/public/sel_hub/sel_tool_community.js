@@ -558,7 +558,7 @@ window.SelHub = window.SelHub || {
     { id: 'deep_listener',     icon: '\uD83D\uDC42', name: 'Deep Listener',        desc: 'Complete 3 scenarios' },
     { id: 'bridge_builder', retired: true,    icon: '\uD83C\uDF09', name: 'Bridge Builder',       desc: 'Complete a scenario in every grade band topic' },
     { id: 'reflective',        icon: '\uD83E\uDE9E', name: 'Reflective',           desc: 'Write your Cultural Superpower reflection' },
-    { id: 'ai_learner',        icon: '\u2728',        name: 'AI Learner',           desc: 'Ask the AI Cultural Coach a question' },
+    { id: 'ai_learner',        icon: '\u2728',        name: 'AI Learner',           desc: 'Ask the AI Cultural Coach a question', aiOnly: true },
     { id: 'all_tabs',          icon: '\uD83D\uDCCB', name: 'All Tabs Visited',     desc: 'Visit every tab at least once' },
     { id: 'culture_champion',  icon: '\uD83C\uDFC6', name: 'Culture Champion',     desc: 'Earn 7 other badges' },
     { id: 'identity_complete', icon: '\uD83C\uDF1F', name: 'Identity Complete',    desc: 'Fill in all 8 identity areas' },
@@ -616,6 +616,7 @@ window.SelHub = window.SelHub || {
         var a11yClick = ctx.a11yClick;
         var celebrate = ctx.celebrate;
         var callGemini = ctx.callGemini;
+        var _cmAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
         var callTTS = ctx.callTTS;
         var gradeLevel = ctx.gradeLevel;
         var onSafetyFlag = ctx.onSafetyFlag || null;
@@ -731,7 +732,7 @@ window.SelHub = window.SelHub || {
         // Badges & log
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
-        var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
+        var shownBadges = BADGES.filter(function(b) { return (!b.retired && (_cmAiOn || !b.aiOnly)) || earnedBadges[b.id]; }); // retired, or AI-only without usable AI: shown only once earned
         var showBadgePopup = d.showBadgePopup || null;
         var showBadgesPanel = d.showBadgesPanel || false;
         var communityBadgeDialogRef = React.useRef(null);
@@ -2006,7 +2007,8 @@ window.SelHub = window.SelHub || {
                 );
               })
             ),
-            // AI Cultural Coach
+            // AI Cultural Coach (not offered without usable AI; crisis resources still shown)
+            !_cmAiOn ? ((_communityTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null) :
             h('div', { style: { padding: 16, borderRadius: 14, background: _comBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 20 } },
               h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', null, '\u2728'),
@@ -2032,7 +2034,7 @@ window.SelHub = window.SelHub || {
                   onKeyDown: function(e) {
                     if (e.key === 'Enter' && aiPrompt.trim()) {
                       e.preventDefault();
-                      if (!callGemini) { addToast('AI coach not available.', 'error'); return; }
+                      if (!_cmAiOn) return;
                       upd({ aiLoading: true, aiResponse: null });
                       var sysPrompt = 'You are a warm, encouraging cultural awareness coach for a ' + band + ' school student. ' +
                         'The student asked: "' + aiPrompt + '"\n\n' +
@@ -2057,7 +2059,7 @@ window.SelHub = window.SelHub || {
                 h('button', { 'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
                   onClick: function() {
                     if (!aiPrompt.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-                    if (!callGemini) { addToast('AI coach not available.', 'error'); return; }
+                    if (!_cmAiOn) return;
                     upd({ aiLoading: true, aiResponse: null });
                     var sysPrompt = 'You are a warm, encouraging cultural awareness coach for a ' + band + ' school student. ' +
                       'The student asked: "' + aiPrompt + '"\n\n' +

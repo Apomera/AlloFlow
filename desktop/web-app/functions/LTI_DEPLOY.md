@@ -54,8 +54,8 @@ In your LMS admin console:
 
 | Field | Value |
 |---|---|
-| Launch URL | `https://us-central1-prismflow-911fe.cloudfunctions.net/ltiLaunch` |
-| Login URL  | `https://us-central1-prismflow-911fe.cloudfunctions.net/ltiLogin` |
+| Launch URL | `https://us-central1-<your-project-id>.cloudfunctions.net/ltiLaunch` |
+| Login URL  | `https://us-central1-<your-project-id>.cloudfunctions.net/ltiLogin` |
 | Redirect URLs | (same Launch URL above) |
 | Public JWK | (your tool's JWK if the LMS asks — N/A for current implementation since AlloFlow doesn't sign anything outbound) |
 | Client ID | (LMS-assigned; paste back into Firebase secret in step 2) |
@@ -63,7 +63,7 @@ In your LMS admin console:
 
 ## 5. Test the launch
 
-From the LMS, navigate to a course where you've added the tool, click the launch link. You should land on `https://prismflow-911fe.web.app/?lti=1&session=...&course=...&role=teacher`.
+From the LMS, navigate to a course where you've added the tool, click the launch link. You should land on `https://<your-project-id>.web.app/?lti=1&session=...&course=...&role=teacher`.
 
 Watch Firebase Functions logs in real time:
 ```bash

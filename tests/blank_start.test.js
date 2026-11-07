@@ -6,7 +6,9 @@
 // ALLO_*_CANDIDATE env vars point at mutated copies for mutation checks.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { transformSync } from '@babel/core';
 import { loadAlloModule } from './setup.js';
+import { sliceBetween, expectAnchorCount } from './helpers/anchored_slice.js';
 import { React, ReactDOMClient, act } from './helpers/games_live_harness.js';
 
 const read = (env, file) => readFileSync(process.env[env] || file, 'utf8');
@@ -236,6 +238,43 @@ describe('host (AlloFlowANTI.txt): editors and edit mode', () => {
     expect(ANTI.slice(at, at + 400)).toContain("t('common.topic_seed_notice', { topic: generatedContent.lessonPath.seed.text || '' })");
   });
 
+  it('notes a word-list-made resource too, and tags both notes as the path less traveled', () => {
+    expect(sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'word-list' && (", '</div>', { file: 'AlloFlowANTI.txt' }))
+      .toContain('data-help-key="word_list_seed_notice"');
+    for (const key of ['topic_seed_notice', 'word_list_seed_notice']) {
+      expectAnchorCount(ANTI, `data-help-key="${key}"`, 1, { file: 'AlloFlowANTI.txt' });
+      const note = sliceBetween(ANTI, `data-help-key="${key}"`, '</div>', { file: 'AlloFlowANTI.txt', label: key });
+      expect(note).toContain(`t('common.${key}'`);
+      expect(note).toContain("t('sidebar.path_fork_badge')");
+    }
+  });
+
+  it('a topic note offers the other topic-ready resources on the same topic, one click each', () => {
+    const note = sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'topic' && (", "kind === 'word-list' && (", { file: 'AlloFlowANTI.txt' });
+    for (const [type, key] of [['anchor-chart', 'seed_also_anchor_chart'], ['concept-sort', 'seed_also_concept_sort'], ['persona', 'seed_also_persona'], ['timeline', 'seed_also_timeline']]) {
+      expect(note).toContain(`['${type}', t('common.${key}')`);
+    }
+    expect(note).toContain('.filter(([type]) => type !== generatedContent.type)');
+    const button = sliceBetween(note, 'data-seed-sibling={type}', '</button>', { file: 'AlloFlowANTI.txt' });
+    expect(button).toContain('disabled={isProcessing || !aiCapability.text}');
+    expect(button).toContain("handleGenerate(type, null, false, null, { seed: { kind: 'topic', text: generatedContent.lessonPath.seed.text || '' } })");
+  });
+
+  it('each note offers the road back: a passage form prefilled from the topic or the word list', () => {
+    const opens = ["setActiveSidebarTab('create'); setWorkspacePane('create'); setShowSourceGen(true);",
+      "setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);",
+      "addToast(t('common.seed_next_toast')"];
+    const cases = [['topic', "setSourceTopic(generatedContent.lessonPath.seed.text || '')", "t('common.seed_next_passage_topic')"],
+      ['word-list', "setSourceVocabulary((generatedContent.lessonPath.seed.terms || []).join(', '))", "t('common.seed_next_passage_words')"]];
+    for (const [kind, prefill, label] of cases) {
+      expectAnchorCount(ANTI, `data-seed-next="${kind}"`, 1, { file: 'AlloFlowANTI.txt' });
+      const button = sliceBetween(ANTI, `data-seed-next="${kind}"`, '</button>', { file: 'AlloFlowANTI.txt', label: kind });
+      for (const part of [prefill, ...opens, label]) expect(button, kind).toContain(part);
+      expect(sliceBetween(ANTI, `generatedContent.lessonPath?.seed?.kind === '${kind}' && (`, '</div>', { file: 'AlloFlowANTI.txt' }), kind + ' button sits in its note')
+        .toContain(`data-seed-next="${kind}"`);
+    }
+  });
+
   it('StoryForge receives the lesson glossary (the terms list), not an always-empty lookup', () => {
     expect(ANTI).toContain('glossaryTerms: latestGlossary,');
     expect(ANTI).not.toContain('return g?.data?.terms || [];');
@@ -369,5 +408,201 @@ describe('editors that now work from empty', () => {
     host = render(window.AlloModules.AnchorChartView, { generatedContent: { ...content, id: 'ac-2' }, isTeacherMode: true, handleNoteUpdate, t: (k, d) => d || k });
     expect(q(host, 'anchor_chart_edit_toggle').getAttribute('aria-pressed')).toBe('false');
     expect(q(host, 'anchor_chart_layout_picker'), 'picker only while editing').toBe(null);
+  });
+});
+
+describe('the lesson path on a topic-made resource (compiled from ANTI)', () => {
+  // The block is an inline IIFE in the host render; compile exactly that text and render it.
+  const block = () => {
+    const raw = sliceBetween(ANTI, '{(() => {\n                            const seedPath', '                        })()}', { file: 'AlloFlowANTI.txt', includeEnd: true }).trim();
+    const code = transformSync('const render = () => (<>' + raw + '</>);', { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+    return new Function('React', 'history', 'generatedContent', 't', 'handleRestoreView', code + '\nreturn render();');
+  };
+  const topic = text => ({ lessonPath: { seed: { kind: 'topic', text } } });
+  const mounted = [];
+  afterEach(() => { mounted.splice(0).forEach(({ root, host }) => { act(() => root.unmount()); host.remove(); }); });
+  function show(history, current, handleRestoreView = vi.fn()) {
+    const element = block()(React, history, current, () => undefined, handleRestoreView);
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    act(() => root.render(element || null));
+    mounted.push({ root, host });
+    return host;
+  }
+
+  it('lists every resource grown from the same topic, marks this one, and opens the others', () => {
+    const chart = { id: 'a', type: 'anchor-chart', title: 'Anchor Chart', ...topic('Volcanoes') };
+    const sort = { id: 'b', type: 'concept-sort', title: 'Concept Sort', ...topic('Volcanoes') };
+    const other = { id: 'c', type: 'persona', title: 'Interview', ...topic('Rivers') };
+    const passage = { id: 'd', type: 'quiz', title: 'Quiz' };
+    const open = vi.fn();
+    const host = show([chart, other, passage, sort], chart, open);
+    const nav = host.querySelector('nav[data-seed-path]');
+    expect(nav.getAttribute('aria-label')).toBe('Resources made from this topic');
+    expect([...nav.querySelectorAll('li')].map(li => li.textContent)).toEqual(['Anchor Chart · here', 'Concept Sort']);
+    expect(nav.querySelector('[aria-current="true"]').textContent).toContain('Anchor Chart');
+    act(() => nav.querySelector('button').click());
+    expect(open).toHaveBeenCalledWith(sort);
+  });
+
+  it('stays hidden until the topic has grown a second resource', () => {
+    const chart = { id: 'a', type: 'anchor-chart', title: 'Anchor Chart', ...topic('Volcanoes') };
+    expect(show([chart, { id: 'c', title: 'Other', ...topic('Rivers') }], chart).querySelector('[data-seed-path]')).toBeNull();
+  });
+});
+
+describe('word-list resources: sort wording, the other start, and their own path (ANTI)', () => {
+  const note = () => sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'word-list' && (", '{!isTeacherMode && studentWorkConflict', { file: 'AlloFlowANTI.txt' });
+  it('a sort says "check the categories", a glossary keeps "check the definitions"', () => {
+    expect(note()).toContain("generatedContent.type === 'concept-sort' ? (t('common.word_list_sort_notice')");
+    expect(note()).toContain("(t('common.word_list_seed_notice')");
+  });
+  it('offers the other word-list resource with the very same seed', () => {
+    const block = note();
+    expect(block).toContain("['glossary', t('common.seed_also_glossary_words')");
+    expect(block).toContain("['concept-sort', t('common.seed_also_concept_sort_words')");
+    expect(block).toContain('.filter(([type]) => type !== generatedContent.type)');
+    expect(block).toContain('handleGenerate(type, null, false, null, { seed: generatedContent.lessonPath.seed })');
+    expect(block).toContain('disabled={isProcessing || !aiCapability.text}');
+  });
+  it('lists only resources made from the same word list (compiled from ANTI)', () => {
+    const raw = sliceBetween(ANTI, '{(() => {\n                            const wordKey', '                        })()}', { file: 'AlloFlowANTI.txt', includeEnd: true }).trim();
+    const code = transformSync('const render = () => (<>' + raw + '</>);', { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+    const build = new Function('React', 'history', 'generatedContent', 't', 'handleRestoreView', code + '\nreturn render();');
+    const seed = terms => ({ lessonPath: { seed: { kind: 'word-list', terms, termLanguage: 'English' } } });
+    const glossary = { id: 'g', type: 'glossary', title: 'Glossary', ...seed(['delta', 'estuary']) };
+    const sort = { id: 's', type: 'concept-sort', title: 'Concept Sort', ...seed(['delta', 'estuary']) };
+    const other = { id: 'o', type: 'glossary', title: 'Other list', ...seed(['delta']) };
+    const open = vi.fn();
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    act(() => root.render(build(React, [glossary, other, sort], sort, () => undefined, open) || null));
+    try {
+      const items = [...host.querySelectorAll('[data-seed-path] li')].map(li => li.textContent);
+      expect(items).toEqual(['Glossary', 'Concept Sort · here']);
+      expect(host.querySelector('[data-seed-path]').getAttribute('aria-label')).toBe('Resources made from this word list');
+      act(() => host.querySelector('[data-seed-path] button').click());
+      expect(open).toHaveBeenCalledWith(glossary);
+    } finally { act(() => root.unmount()); host.remove(); }
+  });
+});
+
+describe('topic note: "Pick key words for this topic" (compiled from ANTI)', () => {
+  const build = () => {
+    const raw = sliceBetween(ANTI, "{typeof window.__alloRequestSourceStart === 'function' && <button", '</button>}', { file: 'AlloFlowANTI.txt', includeEnd: true }).trim();
+    const code = transformSync('const render = () => (<>' + raw + '</>);', { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+    return new Function('React', 'aiCapability', '_alloAiSetupDoorway', 't', 'generatedContent', 'setActiveSidebarTab', 'setWorkspacePane', 'setExpandedTools', code + '\nreturn render();');
+  };
+  const show = (aiText, fns) => {
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const generated = { type: 'anchor-chart', lessonPath: { seed: { kind: 'topic', text: 'Volcanoes' } } };
+    act(() => root.render(build()(React, { text: aiText }, () => ({ title: aiText ? '' : 'Connect AI' }), () => undefined, generated, fns.tab, fns.pane, fns.tools)));
+    return { host, done: () => { act(() => root.unmount()); host.remove(); } };
+  };
+  afterEach(() => { delete window.__alloRequestSourceStart; });
+
+  it('sits in the topic note and opens the word-list start with the topic', () => {
+    expectAnchorCount(ANTI, 'data-seed-next="words"', 1, { file: 'AlloFlowANTI.txt' });
+    expect(sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'topic' && (", "kind === 'word-list' && (", { file: 'AlloFlowANTI.txt' })).toContain('data-seed-next="words"');
+    window.__alloRequestSourceStart = vi.fn(() => true);
+    const fns = { tab: vi.fn(), pane: vi.fn(), tools: vi.fn() };
+    const { host, done } = show(true, fns);
+    try {
+      const button = host.querySelector('[data-seed-next="words"]');
+      expect(button.textContent).toBe('Pick key words for this topic');
+      act(() => button.click());
+      expect(window.__alloRequestSourceStart).toHaveBeenCalledExactlyOnceWith('word-list', { topic: 'Volcanoes' });
+      expect(fns.tab).toHaveBeenCalledWith('create');
+      expect(fns.pane).toHaveBeenCalledWith('create');
+      expect(fns.tools.mock.calls[0][0](['glossary'])).toEqual(['source-input', 'glossary']);
+      expect(fns.tools.mock.calls[0][0](['source-input'])).toEqual(['source-input']);
+    } finally { done(); }
+  });
+
+  it('is disabled without AI and absent when the sidebar has no request route', () => {
+    window.__alloRequestSourceStart = vi.fn();
+    const off = show(false, { tab: vi.fn(), pane: vi.fn(), tools: vi.fn() });
+    try { expect(off.host.querySelector('[data-seed-next="words"]').disabled).toBe(true); } finally { off.done(); }
+    delete window.__alloRequestSourceStart;
+    const none = show(true, { tab: vi.fn(), pane: vi.fn(), tools: vi.fn() });
+    try { expect(none.host.querySelector('[data-seed-next="words"]')).toBeNull(); } finally { none.done(); }
+  });
+});
+
+describe('a word list made for a topic joins that topic\'s path (compiled from ANTI)', () => {
+  const compile = (start, params) => {
+    const raw = sliceBetween(ANTI, start, '                        })()}', { file: 'AlloFlowANTI.txt', includeEnd: true }).trim();
+    const code = transformSync('const render = () => (<>' + raw + '</>);', { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+    return new Function(...params, code + '\nreturn render();');
+  };
+  const topicPath = () => compile('{(() => {\n                            const seedPath', ['React', 'history', 'generatedContent', 't', 'handleRestoreView']);
+  const wordPath = () => compile('{(() => {\n                            const wordKey', ['React', 'history', 'generatedContent', 't', 'handleRestoreView']);
+  const topic = text => ({ lessonPath: { seed: { kind: 'topic', text } } });
+  const words = (terms, topicText) => ({ lessonPath: { seed: { kind: 'word-list', terms, termLanguage: 'English', ...(topicText ? { topic: topicText } : {}) } } });
+  const chart = { id: 'a', type: 'anchor-chart', title: 'Anchor Chart', ...topic('Volcanoes') };
+  const glossary = { id: 'g', type: 'glossary', title: 'Glossary', ...words(['magma', 'lava'], 'Volcanoes') };
+  const sort = { id: 's', type: 'concept-sort', title: 'Concept Sort', ...words(['vent', 'crater'], 'Volcanoes') };
+  const untopical = { id: 'u', type: 'glossary', title: 'Plain list', ...words(['magma', 'lava']) };
+  const elsewhere = { id: 'e', type: 'glossary', title: 'Rivers list', ...words(['delta'], 'Rivers') };
+  const render = (build, history, current) => {
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    act(() => root.render(build()(React, history, current, () => undefined, vi.fn()) || null));
+    const items = [...host.querySelectorAll('[data-seed-path] li')].map(li => li.textContent);
+    const label = host.querySelector('[data-seed-path]')?.getAttribute('aria-label');
+    act(() => root.unmount()); host.remove();
+    return { items, label };
+  };
+  const all = [chart, glossary, untopical, elsewhere, sort];
+
+  it('the topic\'s path lists word lists made for it, and nothing else', () => {
+    expect(render(topicPath, all, chart).items).toEqual(['Anchor Chart · here', 'Glossary', 'Concept Sort']);
+  });
+
+  it('a word list with a topic shows the whole topic path, plus copies of its own list', () => {
+    const shown = render(wordPath, all, glossary);
+    expect(shown.items).toEqual(['Anchor Chart', 'Glossary · here', 'Plain list', 'Concept Sort']);
+    expect(shown.label).toBe('Resources made from this topic');
+  });
+
+  it('a word list without a topic keeps its own path and label', () => {
+    const shown = render(wordPath, all, untopical);
+    expect(shown.items).toEqual(['Glossary', 'Plain list · here']);
+    expect(shown.label).toBe('Resources made from this word list');
+  });
+
+  it('the word-list note names the topic, and its passage button carries it', () => {
+    const note = sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'word-list' && (", '{renderSeedFactCheck', { file: 'AlloFlowANTI.txt' });
+    expect(note).toContain("{generatedContent.lessonPath.seed.topic && <span data-seed-topic");
+    expect(note).toContain("t('common.word_list_topic', { topic: generatedContent.lessonPath.seed.topic })");
+    expect(sliceBetween(ANTI, 'data-seed-next="word-list"', '</button>', { file: 'AlloFlowANTI.txt' }))
+      .toContain('if (generatedContent.lessonPath.seed.topic) setSourceTopic(generatedContent.lessonPath.seed.topic);');
+  });
+});
+
+describe('Writing Scaffolds from a word list: the note (compiled from ANTI)', () => {
+  const note = () => sliceBetween(ANTI, "generatedContent.lessonPath?.seed?.kind === 'word-list' && (", '{!isTeacherMode && studentWorkConflict', { file: 'AlloFlowANTI.txt' });
+  const unusedLine = data => {
+    const raw = sliceBetween(ANTI, "{generatedContent.type === 'sentence-frames' && (() => {", '                        })()}', { file: 'AlloFlowANTI.txt', includeEnd: true }).trim();
+    const code = transformSync('const render = () => (<>' + raw + '</>);', { plugins: ['@babel/plugin-transform-react-jsx'], babelrc: false, configFile: false }).code;
+    const element = new Function('React', 'generatedContent', 't', code + '\nreturn render();')(React,
+      { type: 'sentence-frames', data, lessonPath: { seed: { kind: 'word-list', terms: ['delta', 'Estuary', 'canyon'] } } }, () => undefined);
+    const host = document.createElement('div'); document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    act(() => root.render(element));
+    const text = host.querySelector('[data-seed-unused]')?.textContent ?? null;
+    act(() => root.unmount()); host.remove();
+    return text;
+  };
+  it('says "check the prompts" and offers Scaffolds as a sibling with the same seed', () => {
+    expect(note()).toContain("generatedContent.type === 'sentence-frames' ? (t('common.word_list_scaffolds_notice')");
+    expect(note()).toContain("['sentence-frames', t('common.seed_also_scaffolds_words')");
+  });
+  it('names the words no prompt uses yet, ignoring case, from the live prompts', () => {
+    expect(unusedLine({ items: [{ text: 'A DELTA forms' }] })).toBe('Not used in a prompt yet: Estuary, canyon. These words are still in the word bank.');
+    expect(unusedLine({ text: 'A delta [blank] an estuary and a canyon.' })).toBeNull();
+    expect(unusedLine({ items: [null, { text: 'A delta, an estuary, a canyon' }] })).toBeNull();
+    expect(unusedLine(null)).toBe('Not used in a prompt yet: delta, Estuary, canyon. These words are still in the word bank.');
   });
 });

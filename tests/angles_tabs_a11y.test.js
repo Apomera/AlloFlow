@@ -5,7 +5,11 @@ describe('Angle Explorer tab accessibility', () => {
   it('keeps mirrored source aligned and exposes a roving, keyboard-operable tablist', () => {
     const source = readFileSync('stem_lab/stem_tool_angles.js', 'utf8');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_angles.js', 'utf8')).toBe(source);
-    expect(source).toContain("var ANGLE_TAB_ORDER = ['explore', 'challenges', 'reference', 'tools'];");
+    // Stage C: the order follows the level; every band keeps all ten tabs with Reference last.
+    expect(source).toContain("g4: ['protractor', 'challenges', 'explore', 'puzzles', 'polygons', 'contexts', 'circles', 'construct', 'tools', 'reference'],");
+    expect(source).toContain("g57: ['puzzles', 'polygons', 'contexts', 'protractor', 'challenges', 'explore', 'circles', 'construct', 'tools', 'reference'],");
+    expect(source).toContain("g8: ['circles', 'construct', 'puzzles', 'polygons', 'contexts', 'protractor', 'challenges', 'explore', 'tools', 'reference']");
+    expect(source).toContain('var ANGLE_TAB_ORDER = TAB_ORDER_BY_LEVEL[level] || TAB_ORDER_BY_LEVEL.g57;');
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("role: 'tab'");
     expect(source).toContain("'aria-controls': 'stem-angles-panel-' + id");

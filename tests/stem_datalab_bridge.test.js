@@ -100,7 +100,7 @@ describe('privacy-claim consistency (source pins)', () => {
     // The snapshot includes per-column summaries and a bounded sample of REAL
     // rows; the old lock line promised "only names and counts".
     expect(src).not.toContain('only sees names and counts');
-    expect(src).toContain('a small sample of rows — never your whole table');
+    expect(src).toContain('up to 20 rows from each table. In a small table, that can be every row.');
     expect(src).not.toContain('NEVER cell values');
   });
 });

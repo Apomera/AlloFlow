@@ -13,8 +13,8 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
-const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
+const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'checkFrame', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setPhotoMode', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
+const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'photoMode', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
   { id: 'staghorn_coral', count: 4 }, { id: 'giant_moray', count: 1 }, { id: 'green_turtle', count: 2 }, { id: 'reef_manta', count: 1 },

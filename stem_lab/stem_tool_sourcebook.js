@@ -7039,8 +7039,17 @@
 
   function sourcebookCapabilityMode(context) {
     var candidate = context && typeof context === 'object' ? context : {};
-    var textAi = typeof candidate.generateText === 'function' || typeof candidate.callGemini === 'function';
-    var visionAi = typeof candidate.callGeminiVision === 'function';
+    // Student AI-off: honour ctx.aiAvailable, blocked fns and host policy for learners
+    // (generateText can outlive a withheld callGemini).
+    var aiUsable = function (kind, fn) {
+      if (typeof fn !== 'function' || fn._alloQrBlocked || candidate.aiAvailable === false) return false;
+      if (candidate.callGemini && candidate.callGemini._alloQrBlocked) return false;
+      if (candidate.isTeacherMode) return true;
+      try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+      return !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    };
+    var textAi = aiUsable('text', typeof candidate.callGemini === 'function' ? candidate.callGemini : candidate.generateText);
+    var visionAi = aiUsable('vision', candidate.callGeminiVision);
     var mode = visionAi ? 'ai-visual' : (textAi ? 'ai-metadata' : 'deterministic');
     var label = visionAi ? 'AI visual + metadata assist available' : (textAi ? 'AI metadata assist available' : 'No-AI mode active');
     var description = visionAi
@@ -7243,6 +7252,14 @@
     };
   }
 
+  // Contrast theme: hovered buttons, owned by this tool (allo-sourcebook-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-sourcebook-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-sourcebook-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('sourcebook', {
     icon: '▧',
     label: 'Sourcebook',
@@ -8555,9 +8572,9 @@
         var prompt = 'You are Sourcebook, a visual-source research assistant. Turn the user request into 3 short, distinct collection-search queries for Wikimedia Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum of Art, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse. Focus on concrete visual vocabulary, medium, era, subject, and printable usefulness. Write every query in English whatever language the request uses, because these collections are catalogued in English; keep the reason in the language of the request. Do not guess licensing; the app enforces rights separately. The user wants exactly ' + fallback.paletteSize + ' recommendations. Return ONLY JSON: {"queries":["...","...","..."],"paletteSize":' + fallback.paletteSize + ',"reason":"one short sentence"}. User request: ' + JSON.stringify(fallback.query) + '. Material type: ' + JSON.stringify(fallback.kind) + '.';
         var request;
         try {
+          if (!capability.textAi) return Promise.resolve(fallback);
           if (typeof ctx.generateText === 'function') request = ctx.generateText(prompt, { jsonMode: true });
-          else if (capability.textAi) request = ctx.callGemini(prompt, true);
-          else return Promise.resolve(fallback);
+          else request = ctx.callGemini(prompt, true);
         } catch (_) { return Promise.resolve(fallback); }
         return Promise.resolve(request).then(function (result) {
           return normalizeAiDiscoveryPlan(result, fallback.query, fallback.kind, fallback.paletteSize);

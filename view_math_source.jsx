@@ -12,6 +12,21 @@ function _renderDiagramSvg(tool, state, titleText) {
   }
 }
 
+// Student AI-off: without usable AI, hints come from authored steps (math_helpers
+// holds back the final step when there are several), so the button shows only
+// while an authored hint is left. Host-blocked or policy-off = unusable. The AI
+// call goes through the host handler, so an absent global alone does not hide it.
+function _mathViewAiUsable() {
+  try {
+    if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', window.callGemini);
+  } catch (_) {}
+  try { return !(window.callGemini && window.callGemini._alloQrBlocked) && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+}
+function _mathAuthoredHintCount(steps) {
+  var n = (Array.isArray(steps) ? steps : []).filter(function (s) { return s && typeof s === 'object' && String(s.explanation || s.latex || '').trim(); }).length;
+  return Math.min(3, n > 1 ? n - 1 : n);
+}
+
 function _mathStableHash(value) {
   var text = String(value == null ? '' : value);
   var hash = 2166136261;
@@ -620,7 +635,8 @@ function MathView(props) {
         const audio = new Audio(url);
         await audio.play();
       }
-      return;
+      // Student AI off: no cloud voice came back; the device voice below reads instead.
+      if (url || typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return;
     }
     if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
       window.speechSynthesis.cancel();
@@ -1558,6 +1574,7 @@ function MathView(props) {
 {
     !checkResult?.checked && (() => {
         const hintInfo = getMathHintState(problem.__viewKey);
+        const hintLimit = _mathViewAiUsable() ? 3 : _mathAuthoredHintCount(problem.steps);
         return (
             <div className="space-y-2" aria-live="polite">
                 {hintInfo.hints.map((hint, hIdx) => (
@@ -1569,7 +1586,7 @@ function MathView(props) {
                         </div>
                     </div>
                 ))}
-                {hintInfo.count < 3 && (
+                {hintInfo.count < hintLimit && (
                     <button
                         type="button"
                         aria-busy={hintInfo.loading}

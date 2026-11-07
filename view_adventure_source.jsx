@@ -4,6 +4,14 @@ function adventureSettingsText(t, key, fallback) {
   return value && value !== 'adventure.learning_settings.' + key ? value : fallback;
 }
 
+// Solo turns need text AI; a live class adventure does not (the teacher's device generates).
+function _aiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+
 
 function adventureVisualTokens(theme = 'light', immersive = false) {
   const contrast = theme === 'contrast';
@@ -740,6 +748,8 @@ function AdventureFluencyPractice(props) {
 
 function AdventureView(props) {
   const [showFullIllustration, setShowFullIllustration] = React.useState(false);
+  const [showOfflinePanel, setShowOfflinePanel] = React.useState(false);
+  const [showStudentStoryPanel, setShowStudentStoryPanel] = React.useState(false);
   // "Full illustration" opens the scene art at viewport size (2026-09-14). It used to swap
   // object-fit at the same fixed height, which barely changed anything on screen.
   // Immersive reader: the decision debrief can be dismissed per feedback entry (index into
@@ -1032,6 +1042,29 @@ function AdventureView(props) {
   // A live student with class voting off cannot choose (the handler only shows a
   // toast), so the choices are disabled and say why instead of looking live.
   var liveStudentWaiting = !isTeacherMode && !!activeSessionCode && !democracyActive;
+  var soloStudentAiOff = !isTeacherMode && !activeSessionCode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
+  // Offline adventure (adventure_offline_source.jsx): a solo learner plays the teacher's saved story, no AI calls.
+  var offlineAdventure = findOfflineAdventure(props.history);
+  var offlinePlay = !isTeacherMode && !activeSessionCode && !!offlineAdventure && (soloStudentAiOff || offlineAdventure.offlineOnly);
+  var renderOfflineButton = function () {
+    if (!isTeacherMode || typeof props.setHistory !== 'function') return null;
+    return <button type="button" data-adventure-offline-open aria-haspopup="dialog" onClick={() => setShowOfflinePanel(true)}
+      className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]">
+      <WifiOff size={14} aria-hidden="true" /> {offlineText(t, 'button', 'Offline version')}{offlineAdventure ? ' ✓' : ''}
+    </button>;
+  };
+  // Student author mode: a solo learner writes their own branching story (no AI). Teacher switch
+  // studentProjectSettings.allowStudentStories, on unless set to false.
+  var studentStoryAllowed = !isTeacherMode && !activeSessionCode && typeof props.setHistory === 'function'
+    && !(studentProjectSettings && studentProjectSettings.allowStudentStories === false);
+  var studentStoryItem = studentStoryAllowed ? findStudentStory(props.history) : null;
+  var renderStudentStoryButton = function () {
+    if (!studentStoryAllowed) return null;
+    return <button type="button" data-adventure-student-story-open aria-haspopup="dialog" onClick={() => setShowStudentStoryPanel(true)}
+      className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] bg-[var(--av-surface)] text-[var(--av-ink)] border-[var(--av-control)] hover:bg-[var(--av-wash)]">
+      <Pencil size={14} aria-hidden="true" /> {offlineText(t, 'student_button', 'Write your own adventure')}{studentStoryItem ? ' ✓' : ''}
+    </button>;
+  };
   var storybookXpNeeded = adventureStorybookXpNeeded(adventureState, studentProjectSettings && studentProjectSettings.adventureMinXP);
   var democracyVotes = democracyActive && sessionData.democracy.votes && typeof sessionData.democracy.votes === 'object'
     ? sessionData.democracy.votes : {};
@@ -1209,6 +1242,9 @@ function AdventureView(props) {
                       onRetry={handleAdventureCrashRecovery}
                   >
                   <div data-adventure-view className="h-full min-h-0 flex flex-col gap-3 relative">
+                      {showOfflinePanel && isTeacherMode && <AdventureOfflinePanel history={props.history} setHistory={props.setHistory} callGemini={props.callGemini} t={t} theme={theme}
+                          settings={adventureOfflineSettings(props, glossLanguage)} onClose={() => setShowOfflinePanel(false)} />}
+                      {showStudentStoryPanel && studentStoryAllowed && <AdventureOfflinePanel studentMode history={props.history} setHistory={props.setHistory} t={t} theme={theme} onClose={() => setShowStudentStoryPanel(false)} />}
                       <ClimaxProgressBar climaxState={adventureState.climax} />
                       <AdventureAmbience
                           sceneText={adventureState.currentScene?.text}
@@ -1471,7 +1507,8 @@ function AdventureView(props) {
                             </button>
                             )}
                             {/* Not for a live student: the teacher's next broadcast overwrites a student's restart. */}
-                            {!(!isTeacherMode && activeSessionCode) && <button type="button"
+                            {renderOfflineButton()}
+                            {!(!isTeacherMode && activeSessionCode) && !soloStudentAiOff && !offlinePlay && <button type="button"
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure} disabled={adventureState.isLoading || isProcessing}
                                 className="min-w-11 min-h-11 flex items-center gap-2 bg-[var(--av-surface)] text-[var(--av-ink)] border border-[var(--av-control)] px-3 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--av-wash)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
                             >
@@ -1486,7 +1523,15 @@ function AdventureView(props) {
                         <div data-adventure-story className="p-4 sm:p-6 space-y-6">
                             {!adventureState.currentScene && adventureState.history.length === 0 && !adventureState.isLoading && (
                                 <div className="min-h-full flex flex-col items-center py-4 sm:py-10 animate-in fade-in zoom-in duration-300 motion-reduce:animate-none">
-                                    {hasSavedAdventure && !showNewGameSetup ? (
+                                    {offlinePlay ? (
+                                        <AdventureOfflinePlayer key={offlineAdventure.item.id} story={offlineAdventure.story} t={t} theme={theme}
+                                            onReflect={typeof props.setHistory === 'function' ? (scene, text) => saveOfflineReflection(props.setHistory, offlineAdventure.item, offlineAdventure.story, scene, text, t) : undefined}
+                                            reflections={(findOfflineReflection(props.history, offlineAdventure.item.id) || { data: {} }).data.reflections} />
+                                    ) : soloStudentAiOff ? (
+                                        <p data-adventure-solo-ai-off role="status" className="max-w-md my-auto text-center text-sm font-medium text-[var(--av-ink)]">
+                                            {adventureSettingsText(t, 'solo_needs_ai', "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.")}
+                                        </p>
+                                    ) : hasSavedAdventure && !showNewGameSetup ? (
                                         <div className="max-w-md w-full text-center space-y-6 my-auto">
                                             <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-indigo-100">
                                                 <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm border-2 border-indigo-200">
@@ -1546,11 +1591,13 @@ function AdventureView(props) {
                                                     {t('adventure.start')}
                                                 </button>
                                             </div>
+                                                {isTeacherMode && <div className="-mt-4 mb-4 flex justify-center">{renderOfflineButton()}</div>}
                                                 <AdventureLearningProfiles {...props}/>
                                                 <AdventureSetupFields {...props} hideSummary/>
                                             </div>
                                         </div>
                                     )}
+                                    {studentStoryAllowed && <div data-adventure-student-story-entry className="mt-4 flex justify-center" style={adventureVisualTokens(theme)}>{renderStudentStoryButton()}</div>}
                                 </div>
                             )}
                             <AdventureJourneyNotebook history={adventureState.history} t={t} theme={theme} renderFormattedText={renderFormattedText} />
@@ -1697,7 +1744,7 @@ function AdventureView(props) {
                                 const _isDefeat = adventureEpisodeDepleted(adventureState);
                                 return <>
                                     {!_isDefeat && adventureState.canStartSequel && <div aria-hidden="true"><ConfettiExplosion /></div>}
-                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} />
+                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={(isTeacherMode || !activeSessionCode) && !soloStudentAiOff} />
                                 </>;
                             })()}
                         </div>
@@ -1937,7 +1984,7 @@ function AdventureView(props) {
                                                 {!failedAdventureAction && <AdventureTurnStatus state={adventureState} t={t} theme={theme} immersive />}
                                                 {!adventureState.isGameOver && !failedAdventureAction && renderDebateSetupGuide()}
                                                 {adventureState.isGameOver ? (
-                                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} immersive />
+                                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={(isTeacherMode || !activeSessionCode) && !soloStudentAiOff} immersive />
                                                 ) : failedAdventureAction ? (
                                                     <AdventureTurnRecovery t={t} theme={theme} immersive loading={adventureState.isLoading} onRetry={handleRetryAdventureTurn} />
                                                 ) : (

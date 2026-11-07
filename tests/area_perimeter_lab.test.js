@@ -81,8 +81,11 @@ describe('Area & Perimeter Lab', () => {
     const html = renderTool(ID, { _areaPerimeter: { mode: 'explore', width: 3, height: 2 } });
     expect(html).toContain('role="group"');
     expect(html.match(/role="button"/g)).toHaveLength(6);
-    expect(html.match(/tabindex="0"/g)).toHaveLength(4); // active mode tab, panel, roving tile, and focusable formula scroller
-    expect(html.match(/tabindex="-1"/g)).toHaveLength(9); // four mode tabs and five tiles
+    // 2026-11-04: students see the three starred tabs plus the open one (the rest
+    // fold under "More activities"), and the formula table waits until the area
+    // or perimeter has been counted, so it is not a tab stop yet.
+    expect(html.match(/tabindex="0"/g)).toHaveLength(3); // active mode tab, panel, roving tile
+    expect(html.match(/tabindex="-1"/g)).toHaveLength(8); // three other shown mode tabs and five tiles
     expect(html).not.toContain('outline:none');
     expect(html).toContain('min-width:334px'); // preserves a 24 CSS-pixel tile target at narrow widths
   });
@@ -118,7 +121,9 @@ describe('Area & Perimeter Lab', () => {
       tile.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
     });
     expect(latest._areaPerimeter.revealedTiles['0-0']).toBe(true);
-    expect(document.body.textContent).toContain('1 of 4 unit squares revealed');
+    // 2026-11-04: the count no longer prints the total ("of 4") before counting.
+    expect(document.body.textContent).toContain('Tiles counted: 1');
+    expect(document.body.textContent).not.toContain('of 4 unit squares');
     await React.act(async () => { root.unmount(); });
   });
 
@@ -139,7 +144,7 @@ describe('Area & Perimeter Lab', () => {
 
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
-    expect(document.body.textContent).toContain('1 of 4 unit squares revealed');
+    expect(document.body.textContent).toContain('Tiles counted: 1'); // 2026-11-04: no "of 4" before counting
     const tile = document.querySelectorAll('[data-ap-tile]')[1];
     await React.act(async () => { tile.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     expect(latest._areaPerimeter.revealedTiles).toEqual({ '0-0': true, '1-0': true });
@@ -157,25 +162,32 @@ describe('Area & Perimeter Lab', () => {
     expect(Math.max(...pixelAreas) - Math.min(...pixelAreas)).toBeLessThan(0.000001);
     expect(new Set(factorRects.map((rect) => rect.getAttribute('data-square-unit'))).size).toBe(1);
 
-    const challenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', challengeIndex: 0 } });
+    // Generated practice replaced the fixed ten (2026-11-03): draw a generated rectangle to scale.
+    const problem = window.AreaPerimeterPure.generateProblem(4, 'rect_area', 11);
+    const challenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', genGrade: 4, genType: 'rect_area', genSeed: 11 } });
     document.body.innerHTML = challenge;
     const rectangle = document.querySelector('rect[data-challenge-shape="rectangle"]');
     expect(rectangle).toBeTruthy();
-    expect(Number(rectangle.getAttribute('width')) / Number(rectangle.getAttribute('height'))).toBeCloseTo(7 / 4, 6);
+    expect(Number(rectangle.getAttribute('width')) / Number(rectangle.getAttribute('height'))).toBeCloseTo(problem.l / problem.w, 6);
 
-    const secondChallenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', challengeIndex: 1 } });
-    expect(secondChallenge).toContain('picture frame');
+    const secondChallenge = renderTool(ID, { _areaPerimeter: { mode: 'challenge', genGrade: 4, genType: 'rect_perimeter', genSeed: 11 } });
     expect(secondChallenge).toContain('Perimeter');
+    expect(secondChallenge).toMatch(/fence|ribbon|trim|perimeter\?/);
   });
 
-  it('scores each deterministic challenge once under rapid activation', async () => {
+  // 2026-11-03: the fixed ten challenges became generated practice keyed by
+  // what each problem asks (g:<type>:<numbers>), so these three tests now pin
+  // the same guarantees (score once, save misses by identity, scoped feedback
+  // and hint/error semantics) on generated problems.
+  it('scores each generated challenge once under rapid activation', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
     const awardXP = vi.fn();
+    const problem = window.AreaPerimeterPure.generateProblem(4, 'rect_area', 11);
 
     function App() {
       const [state, setState] = React.useState({
-        _areaPerimeter: { mode: 'challenge', challengeIndex: 0, answer: '28' },
+        _areaPerimeter: { mode: 'challenge', genGrade: 4, genType: 'rect_area', genSeed: 11, itemSig: problem.sig, answer: String(problem.answer) },
       });
       latest = state;
       return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
@@ -186,8 +198,7 @@ describe('Area & Perimeter Lab', () => {
     const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
     expect(check).toBeTruthy();
     await React.act(async () => { check.click(); check.click(); });
-    expect(latest._areaPerimeter.solvedChallenges['garden-area']).toBe(true);
-    expect(latest._areaPerimeter.solvedChallenges['0']).toBeUndefined();
+    expect(latest._areaPerimeter.solvedChallenges[problem.sig]).toBe(true);
     expect(latest._areaPerimeter.score).toEqual({ correct: 1, attempts: 1 });
     expect(awardXP).toHaveBeenCalledWith('areaPerimeter', 5, 'Area & Perimeter challenge');
     expect(awardXP).toHaveBeenCalledTimes(1);
@@ -195,26 +206,21 @@ describe('Area & Perimeter Lab', () => {
     expect(solved).toBeTruthy();
     expect(solved.disabled).toBe(true);
 
-    let next = [...document.querySelectorAll('button')].find((button) => button.textContent.startsWith('Next'));
+    const next = [...document.querySelectorAll('button')].find((button) => button.textContent === 'New problem');
     await React.act(async () => { next.click(); });
-    expect(latest._areaPerimeter.challengeIndex).toBe(1);
-    expect(document.body.textContent).toContain('picture frame');
-    const previous = [...document.querySelectorAll('button')].find((button) => button.textContent.includes('Previous'));
-    await React.act(async () => { previous.click(); });
-    expect(latest._areaPerimeter.challengeIndex).toBe(0);
-    const revisitedInput = document.getElementById('ap-answer');
-    expect(revisitedInput.value).toBe('28');
-    expect(revisitedInput.disabled).toBe(true);
-    expect(document.body.textContent).toContain('Solved previously. Area = length');
+    expect(latest._areaPerimeter.itemSig).not.toBe(problem.sig);
+    expect(latest._areaPerimeter.answer).toBe('');
+    expect(document.getElementById('ap-answer').disabled).toBe(false);
     await React.act(async () => { root.unmount(); });
   });
-  it('focuses challenge difficulty and saves missed work by stable identity', async () => {
+  it('focuses the practice topic and saves missed work by stable identity', async () => {
     const tool = loadTool(FILE, ID);
     let latest;
+    const problem = window.AreaPerimeterPure.generateProblem(4, 'rect_area', 11);
 
     function App() {
       const [state, setState] = React.useState({
-        _areaPerimeter: { mode: 'challenge', challengeIndex: 0, answer: '27' },
+        _areaPerimeter: { mode: 'challenge', practiceGrade: 4, genGrade: 4, genType: 'rect_area', genSeed: 11, itemSig: problem.sig, answer: '1' },
       });
       latest = state;
       return tool.render(makeCtx({ toolData: state, setToolData: setState }));
@@ -222,57 +228,63 @@ describe('Area & Perimeter Lab', () => {
 
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
-    expect(document.querySelector('[data-challenge-id=garden-area]')).toBeTruthy();
+    expect(document.querySelector(`[data-challenge-id="${problem.sig}"]`)).toBeTruthy();
 
     const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
     await React.act(async () => { check.click(); check.click(); });
-    expect(latest._areaPerimeter.missedChallenges).toEqual({ 'garden-area': true });
+    expect(Object.keys(latest._areaPerimeter.missedItems)).toEqual([problem.sig]);
     expect(latest._areaPerimeter.score).toEqual({ correct: 0, attempts: 1 });
-    expect(latest._areaPerimeter.feedback.challengeId).toBe('garden-area');
-    expect(document.body.textContent).toContain('saved for retry');
+    expect(latest._areaPerimeter.feedback.sig).toBe(problem.sig);
+    expect(document.body.textContent).toContain('second try');
 
-    const retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Retry missed (1)');
+    const fresh = [...document.querySelectorAll('button')].find((button) => button.textContent === 'New problem');
+    await React.act(async () => { fresh.click(); });
+    const retry = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Practise missed problems (1)');
     expect(retry).toBeTruthy();
     await React.act(async () => { retry.click(); });
-    expect(latest._areaPerimeter.challengeId).toBe('garden-area');
+    expect(latest._areaPerimeter.itemSig).toBe(problem.sig);
     expect(latest._areaPerimeter.answer).toBe('');
 
-    const stretch = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Stretch');
-    await React.act(async () => { stretch.click(); });
-    expect(latest._areaPerimeter.challengeDifficulty).toBe('stretch');
-    expect(latest._areaPerimeter.challengeId).toBe('l-shape-area');
-    expect(latest._areaPerimeter.challengeIndex).toBe(4);
-    expect(document.querySelector('[data-challenge-id=l-shape-area]')).toBeTruthy();
+    const select = document.getElementById('ap-topic');
+    await React.act(async () => {
+      select.value = 'l_shape_area';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(latest._areaPerimeter.practiceTopic).toBe('l_shape_area');
+    expect(latest._areaPerimeter.genType).toBe('l_shape_area');
+    expect(document.querySelector('[data-challenge-type=l_shape_area]')).toBeTruthy();
     expect(document.body.textContent).toContain('An L-shape starts');
     await React.act(async () => { root.unmount(); });
   });
 
-  it('drops stale cross-filter feedback and exposes hint and error semantics', () => {
+  it('drops stale feedback from another problem and exposes hint and error semantics', () => {
     loadTool(FILE, ID);
+    const problem = window.AreaPerimeterPure.generateProblem(4, 'l_shape_area', 5);
+    const base = { mode: 'challenge', genGrade: 4, genType: 'l_shape_area', genSeed: 5 };
     const stale = renderTool(ID, {
       _areaPerimeter: {
-        mode: 'challenge', challengeDifficulty: 'stretch', challengeId: 'garden-area',
-        challengeIndex: 0, answer: '28', showHint: true,
-        feedback: { correct: true, challengeId: 'garden-area', text: 'Old foundation result' },
+        ...base, itemSig: 'g:rect_area:7-4-m-garden', answer: '28', hintStep: 2,
+        feedback: { sig: 'g:rect_area:7-4-m-garden', kind: 'correct', credited: true },
       },
     });
     document.body.innerHTML = stale;
-    expect(document.querySelector('[data-challenge-id=l-shape-area]')).toBeTruthy();
+    expect(document.querySelector(`[data-challenge-id="${problem.sig}"]`)).toBeTruthy();
     expect(document.getElementById('ap-answer').value).toBe('');
-    expect(document.body.textContent).not.toContain('Old foundation result');
+    expect(document.querySelector('[data-ap-feedback]')).toBeNull();
     expect(document.getElementById('ap-challenge-hint')).toBeNull();
 
     const scoped = renderTool(ID, {
       _areaPerimeter: {
-        mode: 'challenge', challengeId: 'garden-area', challengeIndex: 0, showHint: true,
-        feedback: { correct: false, challengeId: 'garden-area', text: 'Try the area model.' },
+        ...base, itemSig: problem.sig, hintStep: 1, attempts: 1,
+        feedback: { sig: problem.sig, kind: 'mistake', mistake: 'added_cutout', tries: 1 },
       },
     });
     document.body.innerHTML = scoped;
-    const hintButton = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Hide hint');
+    const hintButton = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Show hint');
     expect(hintButton.getAttribute('aria-expanded')).toBe('true');
     expect(hintButton.getAttribute('aria-controls')).toBe('ap-challenge-hint');
     expect(document.getElementById('ap-challenge-hint')).toBeTruthy();
+    expect(document.body.textContent).toContain('You added the cut-out piece');
     const input = document.getElementById('ap-answer');
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.getAttribute('aria-describedby')).toBe('ap-challenge-prompt ap-feedback');

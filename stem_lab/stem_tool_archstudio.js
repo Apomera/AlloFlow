@@ -15,6 +15,7 @@
 // global shared with the other 146 tools on the page and must stay unique to
 // Architecture Studio. It returns its English fallback until a render hands
 // it a ctx, so it is safe to call from anywhere, including before mount.
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 var __alloASCtx = null;
 function __alloAST(k, fb) {
   var v;
@@ -24,6 +25,14 @@ function __alloAST(k, fb) {
 (function () {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-archstudio-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-archstudio-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-archstudio-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3036,7 +3045,8 @@ function __alloAST(k, fb) {
       if (typeof key === 'object') { ctx.updateMulti('archStudio', key); }
       else { ctx.update('archStudio', key, val); }
     };
-    var callGemini = ctx.callGemini || window.callGemini;
+    // Host-handed fn only (a window fallback re-armed AI the host withheld); null hides the AI Architect.
+    var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
     var announceToSR = ctx.announceToSR;
     // typeof-guarded at both call sites, so it never threw — it just meant the
     // "3D view could not load, showing floor plans" notice never appeared, which
@@ -3370,11 +3380,11 @@ function __alloAST(k, fb) {
       var offCentre = Math.max(offX / Math.max(0.5, buildW / 2), offZ / Math.max(0.5, buildD / 2));
       var topHeavy = buildH >= 3 && cogHeight > (buildH - 1) / 2;
       if (floating > 0 && floating > totalBlocks * 0.3) {
-        analysis.tip = '\u26A0\uFE0F ' + t('stem.archstudio.tip_floating', '{n} blocks are floating! Add supports below them.').replace('{n}', floating);
+        analysis.tip = '\u26A0\uFE0F ' + __alloOneWord(t('stem.archstudio.tip_floating', '{n} blocks are floating! Add supports below them.').replace('{n}', floating));
       } else if (analysis.stability < 40) {
         analysis.tip = '\uD83C\uDFD7\uFE0F ' + t('stem.archstudio.tip_high_cog', 'Center of gravity is high ({y}). Widen the base!').replace('{y}', analysis.cogY);
       } else if (offCentre > 0.35) {
-        analysis.tip = '\u2696\uFE0F ' + t('stem.archstudio.tip_off_centre', 'Center of gravity is {d} units off-centre. A structure tips toward its heavy side: add weight opposite it, or widen the base.').replace('{d}', Math.max(offX, offZ).toFixed(1));
+        analysis.tip = '\u2696\uFE0F ' + __alloOneWord(t('stem.archstudio.tip_off_centre', 'Center of gravity is {d} units off-centre. A structure tips toward its heavy side: add weight opposite it, or widen the base.').replace('{d}', Math.max(offX, offZ).toFixed(1)));
       } else if (topHeavy) {
         analysis.tip = '\uD83E\uDDF1 ' + t('stem.archstudio.tip_top_heavy', 'Most of the weight sits in the upper half (center of gravity at y={y} of {h}). Put heavier materials low: metal weighs 13 times what wood does.').replace('{y}', analysis.cogY).replace('{h}', buildH);
       } else {
@@ -6202,7 +6212,7 @@ function __alloAST(k, fb) {
 
           el('div', { className: 'arch-selection-summary' },
             el('h4', null, workbenchText('selection')),
-            el('p', { 'data-arch-region-count': 'true', style: textStyle }, t('stem.archstudio.design_selected', '{count} blocks selected').replace('{count}', selected.length)),
+            el('p', { 'data-arch-region-count': 'true', style: textStyle }, __alloOneWord(t('stem.archstudio.design_selected', '{count} blocks selected').replace('{count}', selected.length))),
             selectedBounds && el('dl', { className: 'arch-selection-dimensions' },
               [['width', 'X'], ['depth', 'Z'], ['height', 'Y']].map(function (item) {
                 return el('div', { key: item[0] }, el('dt', null, workbenchText(item[0])),
@@ -6264,7 +6274,7 @@ function __alloAST(k, fb) {
             onChange: function (ev) { upd({ activeMaterial: ev.target.value, activeColor: normalizeArchColor(null, ev.target.value), designNotice: null }); } },
             materials.map(function (m) { return el('option', { key: m.id, value: m.id }, m.label + ' · ' + m.cost); }))),
         preview.ok && budgetEnabled && el('p', { style: Object.assign({}, textStyle, { color: projectedCost > budget ? '#fecaca' : '#a7f3d0' }) },
-          t('stem.archstudio.design_projected_budget', 'Build cost after edit: {cost} / {budget} credits').replace('{cost}', projectedCost).replace('{budget}', budget)),
+          __alloOneWord(t('stem.archstudio.design_projected_budget', 'Build cost after edit: {cost} / {budget} credits').replace('{cost}', projectedCost).replace('{budget}', budget))),
         !preview.ok && el('p', { id: 'arch-design-warning', 'data-arch-design-warning': 'true', style: Object.assign({}, textStyle, { color: '#fde68a' }) }, operation === 'repeat' && currentNotice && currentNotice.code === 'repeated' && preview.code === 'collision' ? repeatText('already_added') : tab === 'build' && currentNotice && currentNotice.code === 'built' && preview.code === 'collision'
           ? t('stem.archstudio.design_already_added', 'Design added. Change the origin to add another, or use Region edits to transform it.') : designMessage(preview)),
         el('button', { type: 'button', 'data-arch-design-apply': 'true', 'aria-describedby': !preview.ok ? 'arch-design-warning' : operation === 'repeat' && tab === 'region' ? 'arch-repeat-help' : undefined, disabled: !preview.ok, onClick: function () { commitDesign(action); },
@@ -6506,7 +6516,7 @@ function __alloAST(k, fb) {
         d.projectFileError && el('p', { role: 'alert', style: Object.assign({}, textStyle, { color: '#fecaca' }) }, projectError(d.projectFileError, d.projectFileErrorCount)),
         incoming && el('div', { 'data-arch-project-import': 'true', style: { marginTop: 9, padding: 8, border: '1px solid #64748b', borderRadius: 8 } },
           el('strong', { style: { color: '#e0e7ff', fontSize: 12, overflowWrap: 'anywhere' } }, incoming.project.name || t('stem.archstudio.project_untitled', 'Untitled project')),
-          el('p', { style: textStyle }, t('stem.archstudio.project_block_count', '{count} blocks in file').replace('{count}', incoming.blocks.length)),
+          el('p', { style: textStyle }, __alloOneWord(t('stem.archstudio.project_block_count', '{count} blocks in file').replace('{count}', incoming.blocks.length))),
           incoming.project.notes && el('p', { style: Object.assign({}, textStyle, { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 100, overflowY: 'auto' }) }, incoming.project.notes),
           projectPlan(incoming),
           el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_import_mode', 'Import action'),
@@ -7089,7 +7099,7 @@ function __alloAST(k, fb) {
           { id: 'templates', node: el('button', { id: 'arch-template-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleTemplates,
           'aria-expanded': !!showTemplates, 'aria-controls': showTemplates ? 'arch-template-library' : undefined,
           style: { background: showTemplates ? '#075985' : 'rgba(71,85,105,.3)', border: '1px solid #38bdf8', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, templateText('toggle')) },
-          { id: 'ai', node: pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }) },
+          { id: 'ai', node: callGemini && pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }) },
           { id: 'budget', node: pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }) },
           { id: 'schedule', node: el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
           'aria-expanded': !!showBOM, 'aria-controls': showBOM ? 'arch-schedule-panel' : undefined,
@@ -7802,7 +7812,7 @@ function __alloAST(k, fb) {
           ),
 
           // AI Architect overlay (left side, below mode indicator)
-          showAI && el('div', { className: 'arch-studio-floating-panel arch-studio-ai-panel', role: 'region', 'aria-label': __alloAST('stem.archstudio.a11y_ai_architect_advice', 'AI Architect advice'), 'aria-busy': aiLoading, style: { position: 'absolute', top: 44, left: 8, width: 264, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(244,114,182,.35)', zIndex: 10 } },
+          callGemini && showAI && el('div', { className: 'arch-studio-floating-panel arch-studio-ai-panel', role: 'region', 'aria-label': __alloAST('stem.archstudio.a11y_ai_architect_advice', 'AI Architect advice'), 'aria-busy': aiLoading, style: { position: 'absolute', top: 44, left: 8, width: 264, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(244,114,182,.35)', zIndex: 10 } },
             el('div', { className: 'arch-studio-floating-header', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
               el('button', { type: 'button', onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 7, padding: '4px 9px', fontSize: 10, fontWeight: 800, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Working' : '\u2728 Ask Again'),

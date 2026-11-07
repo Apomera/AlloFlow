@@ -1,4 +1,5 @@
 // ── Reduced motion CSS (WCAG 2.3.3), shared across all STEAM Lab tools ──
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -6849,6 +6850,13 @@
         return typeof value === "string" && value.trim() && value !== k ? value : fallback != null ? fallback : k;
       };
       var __alloT = t;
+      // Student AI-off: text AI only when usable, so the AI Petrologist hides and
+      // Mystery Rock takes its field-note path (rebinds callGemini below).
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var rkAiText = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -6859,7 +6867,7 @@
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      var callGemini = rkAiText;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -7002,30 +7010,13 @@ const d = labToolData.rocks || {};
             var prompt = 'You are a friendly Earth Science and geology tutor for a ' + (gradeLevel || 'Middle School') + ' student. '
               + 'Answer this question about the geological specimen "' + targetName + '" in 2-3 clear, educational sentences: ' + q;
 
+            // Host AI only (the raw generativelanguage fetch bypassed every policy gate).
+            if (typeof callGemini !== 'function') return;
             updMulti({ aiLoading: true, aiAnswer: '' });
-            var apiKey = (typeof props !== 'undefined' && props && props.geminiKey) || '';
-            if (!apiKey) {
-              if (typeof callGemini === 'function') {
-                callGemini(prompt, false, false, 0.6).then(function(resp) {
-                  updMulti({ aiAnswer: resp, aiLoading: false });
-                }).catch(function() {
-                  updMulti({ aiAnswer: __alloT('stem.rocks.ai_connection_error', 'Connection error. Please try again.'), aiLoading: false });
-                });
-              } else {
-                updMulti({ aiAnswer: __alloT('stem.rocks.ai_offline_no_key', 'AI Petrologist is currently offline. Key not configured.'), aiLoading: false });
-              }
-              return;
-            }
-
-            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            }).then(function(r) { return r.json(); }).then(function(data) {
-              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || __alloT('stem.rocks.ai_no_response', 'I could not generate a response. Try again!');
-              updMulti({ aiAnswer: answer, aiLoading: false });
+            callGemini(prompt, false, false, 0.6).then(function(resp) {
+              updMulti({ aiAnswer: resp || __alloT('stem.rocks.ai_no_response', 'I could not generate a response. Try again!'), aiLoading: false });
             }).catch(function() {
-              updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
+              updMulti({ aiAnswer: __alloT('stem.rocks.ai_connection_error', 'Connection error. Please try again.'), aiLoading: false });
             });
           };
 
@@ -7043,11 +7034,11 @@ const d = labToolData.rocks || {};
 
           const ROCK_TYPES = {
 
-            igneous: { label: t('stem.rocks.igneous'), icon: '🌋', color: '#ef4444', ink: '#b91c1c', desc: t('stem.rocks.formed_from_cooled_magma_or'), process: 'Cooling & Crystallization' },
+            igneous: { label: t('stem.rocks.igneous', 'Igneous'), icon: '🌋', color: '#ef4444', ink: '#b91c1c', desc: t('stem.rocks.formed_from_cooled_magma_or', 'Formed from cooled magma or lava'), process: 'Cooling & Crystallization' },
 
-            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', ink: '#92400e', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
+            sedimentary: { label: t('stem.rocks.sedimentary', 'Sedimentary'), icon: '🏖️', color: '#f59e0b', ink: '#92400e', desc: t('stem.rocks.formed_from_compressed_layers_of', 'Formed from compressed layers of sediment'), process: 'Compaction & Cementation' },
 
-            metamorphic: { label: t('stem.rocks.metamorphic'), icon: '⛰️', color: '#8b5cf6', ink: '#6d28d9', desc: t('stem.rocks.formed_when_existing_rocks_change'), process: t('stem.rock_cycle.heat_pressure') }
+            metamorphic: { label: t('stem.rocks.metamorphic', 'Metamorphic'), icon: '⛰️', color: '#8b5cf6', ink: '#6d28d9', desc: t('stem.rocks.formed_when_existing_rocks_change', 'Formed when existing rocks change under heat & pressure'), process: t('stem.rock_cycle.heat_pressure', 'Heat & Pressure') }
 
           };
 
@@ -7190,51 +7181,51 @@ const d = labToolData.rocks || {};
           };
           const MINERALS = [
 
-            { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, density: 2.65, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
+            { id: 'quartz', label: t('stem.rocks.quartz', 'Quartz'), hardness: 7, density: 2.65, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
 
-            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, density: 2.56, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', habit: 'blocky90', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'This reference specimen represents orthoclase, a potassium feldspar. Feldspars are the most abundant mineral group in Earth\u2019s crust and commonly show two cleavage directions near 90\u00B0. Orthoclase is often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name feldspar comes from the German words for "field" and "splinter." Moonstone and labradorite are feldspar gemstones!', occurrence: 'Common in granite, rhyolite, gneiss, pegmatites, and many other igneous and metamorphic rocks worldwide.' },
+            { id: 'feldspar', label: t('stem.rocks.feldspar', 'Feldspar'), hardness: 6, density: 2.56, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic', habit: 'blocky90', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'This reference specimen represents orthoclase, a potassium feldspar. Feldspars are the most abundant mineral group in Earth\u2019s crust and commonly show two cleavage directions near 90\u00B0. Orthoclase is often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name feldspar comes from the German words for "field" and "splinter." Moonstone and labradorite are feldspar gemstones!', occurrence: 'Common in granite, rhyolite, gneiss, pegmatites, and many other igneous and metamorphic rocks worldwide.' },
 
-            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, density: 2.82, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', habit: 'micaceous', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
+            { id: 'mica', label: t('stem.rocks.mica_muscovite', 'Mica (Muscovite)'), hardness: 2.5, density: 2.82, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', habit: 'micaceous', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
 
-            { id: 'biotite', label: t('stem.rocks.biotite'), hardness: 2.75, density: 3.0, streak: 'White', luster: 'Vitreous/Pearly', crystal: 'Monoclinic', color: '#3f2d18', formula: 'K(Mg,Fe)\u2083AlSi\u2083O\u2081\u2080(OH,F)\u2082', desc: 'The dark mica. It peels into flexible sheets exactly as muscovite does, and shares its hardness, its white streak and its one perfect cleavage, but iron and magnesium in the structure make it brown to black instead of silvery. In a granite the black flakes are biotite and the pale ones are muscovite.', uses: 'Mainly a rock-forming mineral rather than an ore; used in potassium-argon dating and as a filler', funFact: 'Biotite is a favourite mineral for dating rocks. It takes potassium into its structure and then holds on to the argon that potassium decays into, so a single flake records when its rock last cooled.', occurrence: 'Granites, schists and gneisses worldwide. Most coarse-grained igneous and metamorphic rocks contain some.' },
+            { id: 'biotite', label: t('stem.rocks.biotite', 'Biotite (Dark Mica)'), hardness: 2.75, density: 3.0, streak: 'White', luster: 'Vitreous/Pearly', crystal: 'Monoclinic', color: '#3f2d18', formula: 'K(Mg,Fe)\u2083AlSi\u2083O\u2081\u2080(OH,F)\u2082', desc: 'The dark mica. It peels into flexible sheets exactly as muscovite does, and shares its hardness, its white streak and its one perfect cleavage, but iron and magnesium in the structure make it brown to black instead of silvery. In a granite the black flakes are biotite and the pale ones are muscovite.', uses: 'Mainly a rock-forming mineral rather than an ore; used in potassium-argon dating and as a filler', funFact: 'Biotite is a favourite mineral for dating rocks. It takes potassium into its structure and then holds on to the argon that potassium decays into, so a single flake records when its rock last cooled.', occurrence: 'Granites, schists and gneisses worldwide. Most coarse-grained igneous and metamorphic rocks contain some.' },
 
-            { id: 'calcite', label: t('stem.rocks.calcite'), hardness: 3, density: 2.71, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', habit: 'rhombohedral', color: '#efe9dc', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage, always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
+            { id: 'calcite', label: t('stem.rocks.calcite', 'Calcite'), hardness: 3, density: 2.71, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', habit: 'rhombohedral', color: '#efe9dc', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage, always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
 
-            { id: 'malachite', label: t('stem.rocks.malachite'), hardness: 3.75, density: 3.9, streak: 'Green', luster: 'Silky/Dull', crystal: 'Monoclinic', color: '#1f7a4d', formula: 'Cu\u2082CO\u2083(OH)\u2082', desc: 'A copper carbonate, and one of the few minerals whose powder is as green as the specimen. It usually grows as banded, kidney-shaped masses rather than crystals, and it fizzes in dilute acid because it IS a carbonate. Where you find it, copper ore is usually nearby.', uses: 'Copper ore, gemstone and carving stone, historic green pigment', funFact: 'Ground malachite was the green pigment in ancient Egyptian eye paint and in medieval European paintings, long before anyone knew it was a copper ore.', occurrence: 'The oxidised upper zone of copper deposits. Famous from the Urals, Katanga in the Democratic Republic of the Congo, and Bisbee in Arizona.' },
+            { id: 'malachite', label: t('stem.rocks.malachite', 'Malachite'), hardness: 3.75, density: 3.9, streak: 'Green', luster: 'Silky/Dull', crystal: 'Monoclinic', color: '#1f7a4d', formula: 'Cu\u2082CO\u2083(OH)\u2082', desc: 'A copper carbonate, and one of the few minerals whose powder is as green as the specimen. It usually grows as banded, kidney-shaped masses rather than crystals, and it fizzes in dilute acid because it IS a carbonate. Where you find it, copper ore is usually nearby.', uses: 'Copper ore, gemstone and carving stone, historic green pigment', funFact: 'Ground malachite was the green pigment in ancient Egyptian eye paint and in medieval European paintings, long before anyone knew it was a copper ore.', occurrence: 'The oxidised upper zone of copper deposits. Famous from the Urals, Katanga in the Democratic Republic of the Congo, and Bisbee in Arizona.' },
 
-            { id: 'azurite', label: t('stem.rocks.azurite'), hardness: 3.75, density: 3.77, streak: 'Pale blue', luster: 'Vitreous', crystal: 'Monoclinic', color: '#1d4ed8', formula: 'Cu\u2083(CO\u2083)\u2082(OH)\u2082', desc: 'The blue copper carbonate, and malachite\u2019s constant companion: the two form in the same place, and azurite slowly turns INTO malachite as it takes up water. Like malachite it fizzes in dilute acid. Deep blue specimen, pale blue powder.', uses: 'Copper ore, gemstone, historic blue pigment', funFact: 'Blue skies in old European paintings sometimes look green today, because the azurite pigment altered to malachite on the canvas over centuries.', occurrence: 'The same oxidised copper zones as malachite, usually with it. Chessy in France gave azurite its old name, chessylite.' },
+            { id: 'azurite', label: t('stem.rocks.azurite', 'Azurite'), hardness: 3.75, density: 3.77, streak: 'Pale blue', luster: 'Vitreous', crystal: 'Monoclinic', color: '#1d4ed8', formula: 'Cu\u2083(CO\u2083)\u2082(OH)\u2082', desc: 'The blue copper carbonate, and malachite\u2019s constant companion: the two form in the same place, and azurite slowly turns INTO malachite as it takes up water. Like malachite it fizzes in dilute acid. Deep blue specimen, pale blue powder.', uses: 'Copper ore, gemstone, historic blue pigment', funFact: 'Blue skies in old European paintings sometimes look green today, because the azurite pigment altered to malachite on the canvas over centuries.', occurrence: 'The same oxidised copper zones as malachite, usually with it. Chessy in France gave azurite its old name, chessylite.' },
 
-            { id: 'halite', label: t('stem.rocks.halite'), hardness: 2.5, density: 2.17, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#eceff3', formula: 'NaCl', desc: 'Common table salt forms perfect cubic crystals. Never taste an unknown mineral specimen; it may be contaminated or unsafe. Halite forms when shallow seas or salt lakes evaporate and can be colorless, white, pink, blue, or red because of impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'The English word "salary" comes through Latin salarium, an allowance associated with buying salt—not evidence that Roman soldiers were paid in salt.', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
+            { id: 'halite', label: t('stem.rocks.halite', 'Halite'), hardness: 2.5, density: 2.17, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#eceff3', formula: 'NaCl', desc: 'Common table salt forms perfect cubic crystals. Never taste an unknown mineral specimen; it may be contaminated or unsafe. Halite forms when shallow seas or salt lakes evaporate and can be colorless, white, pink, blue, or red because of impurities.', uses: 'Food seasoning/preservation, road de-icing, chemical industry, water softening', funFact: 'The English word "salary" comes through Latin salarium, an allowance associated with buying salt—not evidence that Roman soldiers were paid in salt.', occurrence: 'Evaporite deposits in arid regions: Great Salt Lake, Dead Sea, salt mines in Poland (Wieliczka), Germany, and Louisiana.' },
 
-            { id: 'pyrite', label: t('stem.rocks.pyrite'), hardness: 6.5, density: 5.01, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#c9a227', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
+            { id: 'pyrite', label: t('stem.rocks.pyrite', 'Pyrite'), hardness: 6.5, density: 5.01, streak: 'Greenish-black', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#c9a227', formula: 'FeS\u2082', desc: 'Iron sulfide with a brilliant metallic brass-yellow color. Forms perfect cubes, pyritohedrons, and octahedrons. Produces sparks when struck against steel (name from Greek "pyr" = fire). Commonly mistaken for gold but much harder and lighter.', uses: 'Sulfuric acid production, electronics (early crystal radios), decorative stone, gold indicator mineral', funFact: 'Called "fool\u2019s gold" because miners confused it with real gold. You can tell them apart: gold is soft (scratches with a knife), pyrite is hard. Gold leaves a yellow streak, pyrite leaves a greenish-black streak!', occurrence: 'Found in all rock types. Often found alongside real gold deposits! Common in coal, hydrothermal veins, and sedimentary rocks.' },
 
-            { id: 'talc', label: t('stem.rocks.talc'), hardness: 1, density: 2.75, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', habit: 'foliated', color: '#dcded2', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral, number 1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
+            { id: 'talc', label: t('stem.rocks.talc', 'Talc'), hardness: 1, density: 2.75, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', habit: 'foliated', color: '#dcded2', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral, number 1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
 
-            { id: 'graphite', label: t('stem.rocks.graphite'), hardness: 1.5, density: 2.23, streak: 'Black', luster: 'Metallic/Earthy', crystal: 'Hexagonal', habit: 'platy', color: '#3f3f46', formula: 'C', desc: 'Pure carbon, and the softest common mineral after talc. It is greasy to the touch, marks paper, and conducts electricity, which almost no other non-metal mineral does. Diamond is the same element: everything different about the two comes from how the atoms are joined. It forms soft, flaky six-sided plates.', uses: 'Pencil "lead", dry lubricant, crucibles, electrodes, lithium-ion battery anodes', funFact: 'Graphite and diamond are both pure carbon, so the same element gives you Mohs 1 to 2 and Mohs 10. Arrangement, not composition, is doing all of the work.', occurrence: 'Metamorphosed carbon-rich sediments; marbles and schists. Major sources in China, Mozambique, Madagascar and Sri Lanka.' },
+            { id: 'graphite', label: t('stem.rocks.graphite', 'Graphite'), hardness: 1.5, density: 2.23, streak: 'Black', luster: 'Metallic/Earthy', crystal: 'Hexagonal', habit: 'platy', color: '#3f3f46', formula: 'C', desc: 'Pure carbon, and the softest common mineral after talc. It is greasy to the touch, marks paper, and conducts electricity, which almost no other non-metal mineral does. Diamond is the same element: everything different about the two comes from how the atoms are joined. It forms soft, flaky six-sided plates.', uses: 'Pencil "lead", dry lubricant, crucibles, electrodes, lithium-ion battery anodes', funFact: 'Graphite and diamond are both pure carbon, so the same element gives you Mohs 1 to 2 and Mohs 10. Arrangement, not composition, is doing all of the work.', occurrence: 'Metamorphosed carbon-rich sediments; marbles and schists. Major sources in China, Mozambique, Madagascar and Sri Lanka.' },
 
-            { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, density: 3.52, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes). Its crystals usually grow as octahedra: two pyramids base to base.', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
+            { id: 'diamond', label: t('stem.rocks.diamond', 'Diamond'), hardness: 10, density: 3.52, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes). Its crystals usually grow as octahedra: two pyramids base to base.', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
 
-            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, density: 5.18, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
+            { id: 'magnetite', label: t('stem.rocks.magnetite', 'Magnetite'), hardness: 5.5, density: 5.18, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
 
-            { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, density: 5.26, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'Mars looks red because its surface materials contain oxidized iron minerals. Hematite occurs on Mars, but newer evidence suggests ferrihydrite may also be an important source of the planet\u2019s red dust. Hematite was also used as a pigment by prehistoric humans.', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
+            { id: 'hematite', label: t('stem.rocks.hematite', 'Hematite'), hardness: 5.5, density: 5.26, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'Mars looks red because its surface materials contain oxidized iron minerals. Hematite occurs on Mars, but newer evidence suggests ferrihydrite may also be an important source of the planet\u2019s red dust. Hematite was also used as a pigment by prehistoric humans.', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
 
-            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, density: 4.32, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnet composition, considered with the surrounding minerals, helps geologists reconstruct metamorphic temperature and pressure. Crystal size alone is not a thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'garnet', label: t('stem.rocks.garnet', 'Garnet'), hardness: 7, density: 4.32, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnet composition, considered with the surrounding minerals, helps geologists reconstruct metamorphic temperature and pressure. Crystal size alone is not a thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
 
-            { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, density: 3.32, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine is a dominant mineral in much of Earth\'s upper mantle, but bridgmanite deeper in the mantle is Earth\'s most abundant mineral overall. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
+            { id: 'olivine', label: t('stem.rocks.olivine', 'Olivine'), hardness: 6.5, density: 3.32, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine is a dominant mineral in much of Earth\'s upper mantle, but bridgmanite deeper in the mantle is Earth\'s most abundant mineral overall. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
 
-            { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, density: 3.18, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
+            { id: 'fluorite', label: t('stem.rocks.fluorite', 'Fluorite'), hardness: 4, density: 3.18, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
 
-            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, density: 7.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, so it cleaves into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'galena', label: t('stem.rocks.galena', 'Galena'), hardness: 2.5, density: 7.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, so it cleaves into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
 
-            { id: 'apatite', label: t('stem.rocks.apatite'), hardness: 5, density: 3.19, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#6fbfa0', formula: 'Ca\u2085(PO\u2084)\u2083(F,Cl,OH)', desc: 'The reference mineral for Mohs 5, and the mineral your bones and tooth enamel are built from. Grows as six-sided prisms, most often green or blue-green, and is soft enough to be scratched by a glass plate but not by a copper coin.', uses: 'Phosphate fertilizer, phosphoric acid, gemstones', funFact: 'Tooth enamel is a form of apatite, so the hardest tissue in your body sits at 5 on the very scale that runs from talc to diamond.', occurrence: 'An accessory mineral in almost every igneous rock, and the main ore of phosphorus. Major deposits in Morocco, the Kola Peninsula in Russia, and Florida.' },
+            { id: 'apatite', label: t('stem.rocks.apatite', 'Apatite'), hardness: 5, density: 3.19, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#6fbfa0', formula: 'Ca\u2085(PO\u2084)\u2083(F,Cl,OH)', desc: 'The reference mineral for Mohs 5, and the mineral your bones and tooth enamel are built from. Grows as six-sided prisms, most often green or blue-green, and is soft enough to be scratched by a glass plate but not by a copper coin.', uses: 'Phosphate fertilizer, phosphoric acid, gemstones', funFact: 'Tooth enamel is a form of apatite, so the hardest tissue in your body sits at 5 on the very scale that runs from talc to diamond.', occurrence: 'An accessory mineral in almost every igneous rock, and the main ore of phosphorus. Major deposits in Morocco, the Kola Peninsula in Russia, and Florida.' },
 
-            { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, density: 2.32, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', habit: 'tabular', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
+            { id: 'gypsum', label: t('stem.rocks.gypsum', 'Gypsum'), hardness: 2, density: 2.32, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', habit: 'tabular', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
 
             { id: 'sulfur', label: t('stem.rocks.sulfur', 'Sulfur'), hardness: 2, density: 2.07, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', habit: 'bipyramidal', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color. Very light and brittle, with a low melting point (115\u00B0C). Burning sulfur makes pungent sulfur dioxide gas; the rotten-egg odor at some volcanic sites comes from hydrogen sulfide, not sulfur itself. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element. Its crystals are pointed double pyramids.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
 
-            { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, density: 4.0, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', habit: 'barrel', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering. It grows as six-sided crystals shaped like barrels.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
+            { id: 'corundum', label: t('stem.rocks.corundum', 'Corundum'), hardness: 9, density: 4.0, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', habit: 'barrel', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering. It grows as six-sided crystals shaped like barrels.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
 
-            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, density: 3.53, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is irradiated and usually heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
+            { id: 'topaz', label: t('stem.rocks.topaz', 'Topaz'), hardness: 8, density: 3.53, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is irradiated and usually heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
 
           ].map(function (m) {
             // Same gap the specimen card had: `label` was translated and every
@@ -7291,8 +7282,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.q_gritty_but_not_splitting', 'A fine-grained sedimentary rock has grains smaller than sand but larger than clay and does not split into thin sheets. What is it?'),
-              a: t('stem.rocks.siltstone'),
-              options: [t('stem.rocks.siltstone'), t('stem.rocks.shale'), t('stem.rocks.sandstone'), t('stem.rocks.chalk')],
+              a: t('stem.rocks.siltstone', 'Siltstone'),
+              options: [t('stem.rocks.siltstone', 'Siltstone'), t('stem.rocks.shale', 'Shale'), t('stem.rocks.sandstone', 'Sandstone'), t('stem.rocks.chalk', 'Chalk')],
               concept: 'Sedimentary',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_siltstone_grit', 'Correct! Silt is the size between sand and clay: too fine to pick out by eye, coarse enough to feel, and it does not split the way shale does.'),
@@ -7303,8 +7294,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.q_mohs_five_tooth_enamel', 'Which mineral is the Mohs 5 reference, and the material your tooth enamel is built from?'),
-              a: t('stem.rocks.apatite'),
-              options: [t('stem.rocks.apatite'), t('stem.rocks.fluorite'), t('stem.rocks.calcite'), t('stem.rocks.quartz')],
+              a: t('stem.rocks.apatite', 'Apatite'),
+              options: [t('stem.rocks.apatite', 'Apatite'), t('stem.rocks.fluorite', 'Fluorite'), t('stem.rocks.calcite', 'Calcite'), t('stem.rocks.quartz', 'Quartz')],
               concept: 'Hardness',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_apatite_enamel', 'Correct! Apatite is Mohs 5, so the hardest tissue in your body sits on the very scale that runs from talc to diamond.'),
@@ -7333,8 +7324,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.q_green_mineral_fizzes', 'A green mineral fizzes in dilute acid, and its powder is green as well. What is it?'),
-              a: t('stem.rocks.malachite'),
-              options: [t('stem.rocks.malachite'), t('stem.rocks.olivine'), t('stem.rocks.fluorite'), t('stem.rocks.biotite')],
+              a: t('stem.rocks.malachite', 'Malachite'),
+              options: [t('stem.rocks.malachite', 'Malachite'), t('stem.rocks.olivine', 'Olivine'), t('stem.rocks.fluorite', 'Fluorite'), t('stem.rocks.biotite', 'Biotite (Dark Mica)')],
               concept: 'Streak',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_malachite_green_powder', 'Correct! Malachite is a copper carbonate, so it fizzes — and it is one of the few minerals whose powder is as green as the specimen.'),
@@ -7345,8 +7336,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.q_blue_mineral_becomes_malachite', 'Which deep blue mineral slowly turns INTO malachite as it takes up water?'),
-              a: t('stem.rocks.azurite'),
-              options: [t('stem.rocks.azurite'), t('stem.rocks.fluorite'), t('stem.rocks.corundum'), t('stem.rocks.halite')],
+              a: t('stem.rocks.azurite', 'Azurite'),
+              options: [t('stem.rocks.azurite', 'Azurite'), t('stem.rocks.fluorite', 'Fluorite'), t('stem.rocks.corundum', 'Corundum'), t('stem.rocks.halite', 'Halite')],
               concept: 'Streak',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_azurite_to_malachite', 'Correct! Azurite and malachite are the same copper carbonate in different proportions, which is why blue skies in old paintings sometimes look green today.'),
@@ -7357,8 +7348,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_rock_type_forms_from_cooled_magma', 'Which rock type forms from cooled magma?'),
-              a: t('stem.rocks.igneous'),
-              options: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic'), __alloT('stem.rocks.qopt_organic', 'Organic')],
+              a: t('stem.rocks.igneous', 'Igneous'),
+              options: [t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.metamorphic', 'Metamorphic'), __alloT('stem.rocks.qopt_organic', 'Organic')],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_igneous_rocks_solidify_from_molten_magma', 'Correct! Igneous rocks solidify from molten magma.'),
@@ -7381,8 +7372,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.marble_is_a_metamorphic_form_of_which_rock', 'Marble is a metamorphic form of which rock?'),
-              a: t('stem.rocks.limestone'),
-              options: [t('stem.rocks.limestone'), t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.basalt')],
+              a: t('stem.rocks.limestone', 'Limestone'),
+              options: [t('stem.rocks.limestone', 'Limestone'), t('stem.rocks.sandstone', 'Sandstone'), t('stem.rocks.granite', 'Granite'), t('stem.rocks.basalt', 'Basalt')],
               concept: 'Metamorphic',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_limestone_transforms_into_marble_under_heat_and', 'Correct! Limestone transforms into marble under heat and pressure.'),
@@ -7393,8 +7384,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_mineral_is_the_hardest_on_the_mohs', 'Which mineral is the hardest on the Mohs scale?'),
-              a: t('stem.rocks.diamond'),
-              options: [t('stem.rocks.diamond'), t('stem.rocks.quartz'), t('stem.rocks.corundum'), t('stem.rocks.topaz')],
+              a: t('stem.rocks.diamond', 'Diamond'),
+              options: [t('stem.rocks.diamond', 'Diamond'), t('stem.rocks.quartz', 'Quartz'), t('stem.rocks.corundum', 'Corundum'), t('stem.rocks.topaz', 'Topaz')],
               concept: 'Hardness',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_diamond_is_rated_at_10_on_the', 'Correct! Diamond is rated at 10 on the Mohs hardness scale.'),
@@ -7405,8 +7396,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.what_is_the_softest_mineral', 'What is the softest mineral?'),
-              a: t('stem.rocks.talc'),
-              options: [t('stem.rocks.talc'), t('stem.rocks.gypsum'), t('stem.rocks.calcite'), t('stem.rocks.halite')],
+              a: t('stem.rocks.talc', 'Talc'),
+              options: [t('stem.rocks.talc', 'Talc'), t('stem.rocks.gypsum', 'Gypsum'), t('stem.rocks.calcite', 'Calcite'), t('stem.rocks.halite', 'Halite')],
               concept: 'Hardness',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_talc_is_rated_at_1_on_the', 'Correct! Talc is rated at 1 on the Mohs hardness scale.'),
@@ -7430,8 +7421,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_rock_can_float_on_water', 'Which rock can float on water?'),
-              a: t('stem.rocks.pumice'),
-              options: [t('stem.rocks.pumice'), t('stem.rocks.basalt'), t('stem.rocks.marble'), t('stem.rocks.granite')],
+              a: t('stem.rocks.pumice', 'Pumice'),
+              options: [t('stem.rocks.pumice', 'Pumice'), t('stem.rocks.basalt', 'Basalt'), t('stem.rocks.marble', 'Marble'), t('stem.rocks.granite', 'Granite')],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_pumice_is_filled_with_gas_pockets_vesicles', 'Correct! Pumice is filled with gas pockets (vesicles) and is less dense than water.'),
@@ -7442,8 +7433,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.what_type_of_rock_is_shale', 'What type of rock is shale?'),
-              a: t('stem.rocks.sedimentary'),
-              options: [t('stem.rocks.sedimentary'), t('stem.rocks.igneous'), t('stem.rocks.metamorphic'), __alloT('stem.rocks.qopt_mineral', 'Mineral')],
+              a: t('stem.rocks.sedimentary', 'Sedimentary'),
+              options: [t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.metamorphic', 'Metamorphic'), __alloT('stem.rocks.qopt_mineral', 'Mineral')],
               concept: 'Sedimentary',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_shale_is_a_fine_grained_clastic_sedimentary', 'Correct! Shale is a fine-grained clastic sedimentary rock made of mud and clay.'),
@@ -7467,8 +7458,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_rock_shows_distinct_banding', 'Which rock shows distinct banding?'),
-              a: t('stem.rocks.gneiss'),
-              options: [t('stem.rocks.gneiss'), t('stem.rocks.granite'), t('stem.rocks.basalt'), t('stem.rocks.slate')],
+              a: t('stem.rocks.gneiss', 'Gneiss'),
+              options: [t('stem.rocks.gneiss', 'Gneiss'), t('stem.rocks.granite', 'Granite'), t('stem.rocks.basalt', 'Basalt'), t('stem.rocks.slate', 'Slate')],
               concept: 'Foliation',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_gneiss_displays_prominent_mineral_banding_from_intense', 'Correct! Gneiss displays prominent mineral banding from intense metamorphic heat and pressure.'),
@@ -7481,7 +7472,7 @@ const d = labToolData.rocks || {};
               show: ['limestone'],
               q: __alloT('stem.rocks.limestone_fizzes_when_you_add', 'Limestone fizzes when you add...'),
               a: __alloT('stem.rocks.wb_coverage_acid', 'Acid'),
-              options: [__alloT('stem.rocks.wb_coverage_acid', 'Acid'), t('stem.chem_balance.water'), __alloT('stem.rocks.qopt_salt', 'Salt'), __alloT('stem.rocks.qopt_oil', 'Oil')],
+              options: [__alloT('stem.rocks.wb_coverage_acid', 'Acid'), t('stem.chem_balance.water', 'Water'), __alloT('stem.rocks.qopt_salt', 'Salt'), __alloT('stem.rocks.qopt_oil', 'Oil')],
               concept: 'Sedimentary',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_hydrochloric_acid_reacts_with_calcium_carbonate_in', 'Correct! Hydrochloric acid reacts with calcium carbonate in limestone to release CO2 gas.'),
@@ -7492,8 +7483,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.quartzite_is_metamorphosed', 'Quartzite is metamorphosed...'),
-              a: t('stem.rocks.sandstone'),
-              options: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.shale'), t('stem.rocks.granite')],
+              a: t('stem.rocks.sandstone', 'Sandstone'),
+              options: [t('stem.rocks.sandstone', 'Sandstone'), t('stem.rocks.limestone', 'Limestone'), t('stem.rocks.shale', 'Shale'), t('stem.rocks.granite', 'Granite')],
               concept: 'Metamorphic',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_sandstone_fuses_under_heat_and_pressure_into', 'Correct! Sandstone fuses under heat and pressure into quartzite.'),
@@ -7504,8 +7495,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.rhyolite_is_the_extrusive_equivalent_of', 'Rhyolite is the extrusive equivalent of...'),
-              a: t('stem.rocks.granite'),
-              options: [t('stem.rocks.granite'), t('stem.rocks.basalt'), __alloT('stem.rocks.gabbro', 'Gabbro'), t('stem.rocks.diorite')],
+              a: t('stem.rocks.granite', 'Granite'),
+              options: [t('stem.rocks.granite', 'Granite'), t('stem.rocks.basalt', 'Basalt'), __alloT('stem.rocks.gabbro', 'Gabbro'), t('stem.rocks.diorite', 'Diorite')],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_both_granite_and_rhyolite_are_high_silica', 'Correct! Both granite and rhyolite are high-silica rocks; granite is intrusive, rhyolite is extrusive.'),
@@ -7516,8 +7507,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_mineral_is_naturally_magnetic', 'Which mineral is naturally magnetic?'),
-              a: t('stem.rocks.magnetite'),
-              options: [t('stem.rocks.magnetite'), t('stem.rocks.hematite'), t('stem.rocks.pyrite'), t('stem.rocks.galena')],
+              a: t('stem.rocks.magnetite', 'Magnetite'),
+              options: [t('stem.rocks.magnetite', 'Magnetite'), t('stem.rocks.hematite', 'Hematite'), t('stem.rocks.pyrite', 'Pyrite'), t('stem.rocks.galena', 'Galena')],
               concept: 'Luster',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_magnetite_is_a_magnetic_iron_oxide_mineral', 'Correct! Magnetite is a magnetic iron oxide mineral.'),
@@ -7528,8 +7519,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.ruby_and_sapphire_are_both_varieties_of', 'Ruby and sapphire are both varieties of...'),
-              a: t('stem.rocks.corundum'),
-              options: [t('stem.rocks.corundum'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.topaz')],
+              a: t('stem.rocks.corundum', 'Corundum'),
+              options: [t('stem.rocks.corundum', 'Corundum'), t('stem.rocks.quartz', 'Quartz'), t('stem.rocks.diamond', 'Diamond'), t('stem.rocks.topaz', 'Topaz')],
               concept: 'Hardness',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_rubies_and_sapphires_are_gemstone_forms_of', 'Correct! Rubies and sapphires are gemstone forms of corundum (hardness 9).'),
@@ -7553,8 +7544,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.the_word_fluorescence_comes_from_which_mineral', 'The word "fluorescence" comes from which mineral?'),
-              a: t('stem.rocks.fluorite'),
-              options: [t('stem.rocks.fluorite'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.calcite')],
+              a: t('stem.rocks.fluorite', 'Fluorite'),
+              options: [t('stem.rocks.fluorite', 'Fluorite'), t('stem.rocks.quartz', 'Quartz'), t('stem.rocks.diamond', 'Diamond'), t('stem.rocks.calcite', 'Calcite')],
               concept: 'Luster',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_george_stokes_named_fluorescence_after_studying_fluorite', 'Correct! George Stokes named fluorescence after studying fluorite under ultraviolet light.'),
@@ -7590,8 +7581,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_mineral_was_used_in_early_crystal_radios', 'Which mineral was used in early crystal radios?'),
-              a: t('stem.rocks.galena'),
-              options: [t('stem.rocks.galena'), t('stem.rocks.quartz'), t('stem.rocks.diamond'), t('stem.rocks.pyrite')],
+              a: t('stem.rocks.galena', 'Galena'),
+              options: [t('stem.rocks.galena', 'Galena'), t('stem.rocks.quartz', 'Quartz'), t('stem.rocks.diamond', 'Diamond'), t('stem.rocks.pyrite', 'Pyrite')],
               concept: 'Streak',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_galena_was_used_as_a_point_contact', 'Correct! Galena was used as a point-contact semiconductor crystal in early radios.'),
@@ -7602,8 +7593,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.the_green_beaches_of_hawaii_are_made_of', 'The green beaches of Hawaii are made of...'),
-              a: t('stem.rocks.olivine'),
-              options: [t('stem.rocks.olivine'), __alloT('stem.rocks.qopt_emerald', 'Emerald'), __alloT('stem.rocks.qopt_jade', 'Jade'), __alloT('stem.rocks.qopt_green_glass', 'Green glass')],
+              a: t('stem.rocks.olivine', 'Olivine'),
+              options: [t('stem.rocks.olivine', 'Olivine'), __alloT('stem.rocks.qopt_emerald', 'Emerald'), __alloT('stem.rocks.qopt_jade', 'Jade'), __alloT('stem.rocks.qopt_green_glass', 'Green glass')],
               concept: 'Igneous',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_olivine_crystals_eroded_from_basaltic_lava_create', 'Correct! Olivine crystals eroded from basaltic lava create green sand beaches.'),
@@ -7703,8 +7694,8 @@ const d = labToolData.rocks || {};
             },
             {
               q: __alloT('stem.rocks.which_metamorphic_rock_comes_between_slate_and_schist', 'Which metamorphic rock comes between slate and schist?'),
-              a: t('stem.rocks.phyllite'),
-              options: [t('stem.rocks.phyllite'), t('stem.rocks.marble'), t('stem.rocks.gneiss'), t('stem.rocks.quartzite')],
+              a: t('stem.rocks.phyllite', 'Phyllite'),
+              options: [t('stem.rocks.phyllite', 'Phyllite'), t('stem.rocks.marble', 'Marble'), t('stem.rocks.gneiss', 'Gneiss'), t('stem.rocks.quartzite', 'Quartzite')],
               concept: 'Metamorphic',
               wrongFeedback: [
                 __alloT('stem.rocks.correct_phyllite_represents_low_to_medium_grade_metamorphism', 'Correct! Phyllite represents low-to-medium grade metamorphism, between slate and schist.'),
@@ -9717,9 +9708,9 @@ const d = labToolData.rocks || {};
                     // The texture slug alone ("clastic-coarse") means nothing to a
                     // student. Pair it with the plain-language gloss so the term,
                     // the swatch and the specimen photo all describe one thing.
-                    { label: t('stem.rocks.texture'), value: rkTextureName(selRock.texture, selRock.id), icon: '🔍', hint: rkGloss(selRock.texture, selRock.id) },
+                    { label: t('stem.rocks.texture', 'Texture'), value: rkTextureName(selRock.texture, selRock.id), icon: '🔍', hint: rkGloss(selRock.texture, selRock.id) },
 
-                    { label: t('stem.rocks.uses'), value: selRock.uses, icon: '🏗️' }
+                    { label: t('stem.rocks.uses', 'Uses'), value: selRock.uses, icon: '🏗️' }
 
                   ].map(function (prop) {
 
@@ -10919,7 +10910,7 @@ const d = labToolData.rocks || {};
                   );
                 })(),
                 // AI Petrologist panel
-                React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
+                typeof callGemini === 'function' && React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
                     React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
@@ -11464,9 +11455,9 @@ const d = labToolData.rocks || {};
                 ),
                 React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", "data-rk-mineral-props": selMineral.id },
                   [
-                    { label: t('stem.rocks.hardness'), value: selMineral.hardness + ' / 10', icon: '💪' },
-                    { label: t('stem.rocks.streak'), value: rkStreakText(selMineral), icon: '✏️', chip: Object.prototype.hasOwnProperty.call(RK_STREAK_HEX, selMineral.streak) ? RK_STREAK_HEX[selMineral.streak] : undefined },
-                    { label: t('stem.rocks.luster'), value: rkLusterText(selMineral), icon: '✨', hint: __alloT('stem.rocks.mluster_class', 'Workbench class: ') + __alloT('stem.rocks.wb_luster_' + rkLusterClassInfo(rkLusterClass(selMineral)).id, rkLusterClassInfo(rkLusterClass(selMineral)).label) },
+                    { label: t('stem.rocks.hardness', 'Hardness'), value: selMineral.hardness + ' / 10', icon: '💪' },
+                    { label: t('stem.rocks.streak', 'Streak'), value: rkStreakText(selMineral), icon: '✏️', chip: Object.prototype.hasOwnProperty.call(RK_STREAK_HEX, selMineral.streak) ? RK_STREAK_HEX[selMineral.streak] : undefined },
+                    { label: t('stem.rocks.luster', 'Luster'), value: rkLusterText(selMineral), icon: '✨', hint: __alloT('stem.rocks.mluster_class', 'Workbench class: ') + __alloT('stem.rocks.wb_luster_' + rkLusterClassInfo(rkLusterClass(selMineral)).id, rkLusterClassInfo(rkLusterClass(selMineral)).label) },
                     { label: __alloT('stem.rocks.cleavage_label', 'Cleavage'), value: __alloT('stem.rocks.brk_kind_' + rkCleavageKind(selMineral), RK_CLEAVAGE_KINDS[rkCleavageKind(selMineral)].name), icon: '🔨' },
                     // Density was in the data for every mineral and shown nowhere
                     // but the workbench balance. Heft is a real field test:
@@ -11542,8 +11533,8 @@ const d = labToolData.rocks || {};
                   var magWord = function (g) { return g ? __alloT('stem.rocks.ml_pulls', 'Pulls') : __alloT('stem.rocks.ml_no_pull', 'No pull'); };
                   var kindWord = function (k) { return __alloT('stem.rocks.brk_kind_' + k, RK_CLEAVAGE_KINDS[k].name); };
                   var rows = [
-                    { id: 'hardness', label: t('stem.rocks.hardness'), va: String(hA), vb: String(hB), splits: Math.abs(hA - hB) >= 1 },
-                    { id: 'streak', label: t('stem.rocks.streak'), va: rkStreakText(a), vb: rkStreakText(b), ca: RK_STREAK_HEX[a.streak], cb: RK_STREAK_HEX[b.streak], splits: streakKey(a) !== streakKey(b) },
+                    { id: 'hardness', label: t('stem.rocks.hardness', 'Hardness'), va: String(hA), vb: String(hB), splits: Math.abs(hA - hB) >= 1 },
+                    { id: 'streak', label: t('stem.rocks.streak', 'Streak'), va: rkStreakText(a), vb: rkStreakText(b), ca: RK_STREAK_HEX[a.streak], cb: RK_STREAK_HEX[b.streak], splits: streakKey(a) !== streakKey(b) },
                     { id: 'acid', label: __alloT('stem.rocks.ml_acid', 'Acid drop'), va: fizzWord(fizzA), vb: fizzWord(fizzB), splits: fizzA !== fizzB },
                     { id: 'magnet', label: __alloT('stem.rocks.ml_magnet', 'Magnet'), va: magWord(magA), vb: magWord(magB), splits: magA !== magB },
                     { id: 'heft', label: __alloT('stem.rocks.ml_heft', 'Heft (density)'), va: dA + ' g/cm\u00B3', vb: dB + ' g/cm\u00B3', splits: Math.abs(dA - dB) >= 0.8 },
@@ -12024,7 +12015,7 @@ const d = labToolData.rocks || {};
                 ),
 
                 // AI Petrologist panel
-                React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
+                typeof callGemini === 'function' && React.createElement("div", { className: "border-t border-slate-100 pt-3 mt-3" },
                   React.createElement("p", { className: "text-xs font-black text-slate-700 mb-1 flex items-center gap-1.5" },
                     React.createElement("span", null, "🧠"),
                     React.createElement("span", null, __alloT('stem.rocks.ask_ai_petrologist', "Ask the AI Petrologist"))
@@ -14377,7 +14368,7 @@ const d = labToolData.rocks || {};
                 return React.createElement(React.Fragment, null,
                   typeof wb.copyFallbackText === 'string' && wb.copyFallbackText ? React.createElement('section', { className: 'rounded-xl border border-amber-400 bg-amber-50 p-3' },
                     React.createElement('label', { htmlFor: 'wb-manual-copy', className: 'block text-sm font-bold text-amber-900' }, __alloT('stem.rocks.wb_manual_copy_label', 'Select and copy your report')),
-                    React.createElement('textarea', { id: 'wb-manual-copy', 'data-wb-manual-copy': true, readOnly: true, value: wb.copyFallbackText, rows: 8, className: 'mt-2 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm text-slate-900', onFocus: function (event) { event.target.select(); } })
+                    React.createElement('textarea', { id: 'wb-manual-copy', 'data-wb-manual-copy': true, readOnly: true, value: wb.copyFallbackText, rows: 8, className: 'mt-2 w-full rounded-lg border border-slate-500 bg-white p-3 text-sm text-slate-900', onFocus: function (event) { event.target.select(); } })
                   ) : null,
                   React.createElement('section', { className: 'rounded-2xl border border-sky-300 bg-sky-50 p-3 sm:p-4', 'aria-labelledby': 'wb-archive-title', 'data-wb-archive-count': wbArchive.length },
                     React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
@@ -14390,7 +14381,7 @@ const d = labToolData.rocks || {};
                         React.createElement('summary', { className: 'min-h-[44px] cursor-pointer font-bold text-sky-900' }, entry.specimenLabel + ' · ' + entry.evidence.length + ' ' + __alloT('stem.rocks.wb_archive_observations', 'observations') + ' · ' + entry.id.replace('investigation-', '#')),
                         React.createElement('pre', { className: 'whitespace-pre-wrap break-words text-xs text-slate-800', style: { overflowWrap: 'anywhere', fontFamily: 'inherit' } }, entry.report),
                         React.createElement('label', { htmlFor: 'wb-reflection-' + entry.id, className: 'block mt-3 text-sm font-bold text-slate-900' }, __alloT('stem.rocks.wb_archive_reflection_prompt', 'What evidence changed your thinking? What would you test next time?')),
-                        React.createElement('textarea', { id: 'wb-reflection-' + entry.id, 'data-wb-archive-reflection': entry.id, value: entry.reflection, maxLength: 2000, rows: 3, className: 'mt-1 w-full rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-900', onChange: function (event) {
+                        React.createElement('textarea', { id: 'wb-reflection-' + entry.id, 'data-wb-archive-reflection': entry.id, value: entry.reflection, maxLength: 2000, rows: 3, className: 'mt-1 w-full rounded-lg border border-slate-500 bg-white p-2 text-sm text-slate-900', onChange: function (event) {
                           var reflection = event.target.value.slice(0, 2000);
                           setLabToolData(function (prev) { var pr = (prev && prev.rocks) || {}, current = pr.wb || {}; return Object.assign({}, prev, { rocks: Object.assign({}, pr, { wb: Object.assign({}, current, { archive: wbReadArchive(current.archive).map(function (row) { return row.id === entry.id ? Object.assign({}, row, { reflection: reflection }) : row; }) }) }) }); });
                         } }),
@@ -15546,7 +15537,7 @@ const d = labToolData.rocks || {};
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': __alloT('stem.rocks.weath_rock_group', 'Rock being weathered') },
                   h('span', { className: 'text-[0.6875rem] font-black text-slate-700 mr-1' }, __alloT('stem.rocks.weath_rock_label', 'Rock:')),
-                  [['granite', t('stem.rocks.granite')], ['limestone', __alloT('stem.rocks.weath_rock_carbonate', 'Limestone or marble')], ['sandstone', t('stem.rocks.sandstone')]].map(function (opt) {
+                  [['granite', t('stem.rocks.granite', 'Granite')], ['limestone', __alloT('stem.rocks.weath_rock_carbonate', 'Limestone or marble')], ['sandstone', t('stem.rocks.sandstone', 'Sandstone')]].map(function (opt) {
                     var on = wxRock === opt[0];
                     return h('button', { key: opt[0], type: 'button', 'aria-pressed': on, 'data-wx-rock': opt[0],
                       onClick: function () { setIQ({ rock: opt[0] }); },
@@ -15656,7 +15647,7 @@ const d = labToolData.rocks || {};
 
                 onClick: function () {
 
-                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: t('stem.rocks.rocks') + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
+                  setToolSnapshots(function (prev) { return prev.concat([{ id: 'rk-' + Date.now(), tool: 'rocks', label: t('stem.rocks.rocks', 'Rocks') + (selRock ? ': ' + selRock.label : selMineral ? ': ' + selMineral.label : ''), data: Object.assign({}, d), timestamp: Date.now() }]); });
 
                   addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
 
@@ -17552,7 +17543,7 @@ const d = labToolData.rockCycle || {};
                   var firstTry = Object.keys(rcPath.log).filter(function (k) { return rcPath.log[k] === 1; }).length;
                   var solvedN = Object.keys(rcPath.log).length;
                   return React.createElement("div", { className: "ml-auto flex items-center gap-1", role: "img", "data-rc-path-score": firstTry + '/' + solvedN,
-                    "aria-label": __alloT('stem.rock_cycle.pd_score_aria', '{n} of {total} cases solved, {k} on the first try.').replace('{n}', solvedN).replace('{total}', RC_PATH_CASES.length).replace('{k}', firstTry) },
+                    "aria-label": __alloOneWord(__alloT('stem.rock_cycle.pd_score_aria', '{n} of {total} cases solved, {k} on the first try.').replace('{n}', solvedN).replace('{total}', RC_PATH_CASES.length).replace('{k}', firstTry)) },
                     RC_PATH_CASES.map(function (c, ci) {
                       var r = rcPath.log[ci], here = !rcPath.done && ci === rcPath.i;
                       return React.createElement("span", { key: c.id, "data-rc-path-dot": r === 1 ? 'first' : r === 0 ? 'later' : 'open',
@@ -18274,8 +18265,8 @@ const d = labToolData.rockCycle || {};
                   var RC_QS = [
                     {
                       q: __alloT('stem.rocks.rc_which_rock_type_forms_from_cooled_magma_lava', 'Which rock type forms from cooled magma/lava?'),
-                      a: t('stem.rocks.igneous'),
-                      opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
+                      a: t('stem.rocks.igneous', 'Igneous'),
+                      opts: [t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.metamorphic', 'Metamorphic')],
                       concept: 'Igneous',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_correct_igneous_rocks_solidify_directly_from_cooled_magma', 'Correct! Igneous rocks solidify directly from cooled magma.'),
@@ -18285,8 +18276,8 @@ const d = labToolData.rockCycle || {};
                     },
                     {
                       q: __alloT('stem.rocks.rc_which_rock_type_often_contains_fossils', 'Which rock type often contains fossils?'),
-                      a: t('stem.rocks.sedimentary'),
-                      opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
+                      a: t('stem.rocks.sedimentary', 'Sedimentary'),
+                      opts: [t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.metamorphic', 'Metamorphic')],
                       concept: 'Sedimentary',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_magma_temperatures_destroy_fossil_evidence_in_igneous', 'Incorrect. Magma temperatures destroy fossil evidence in igneous rocks.'),
@@ -18296,8 +18287,8 @@ const d = labToolData.rockCycle || {};
                     },
                     {
                       q: __alloT('stem.rocks.rc_which_rock_type_forms_under_heat_and_pressure', 'Which rock type forms under heat and pressure?'),
-                      a: t('stem.rocks.metamorphic'),
-                      opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
+                      a: t('stem.rocks.metamorphic', 'Metamorphic'),
+                      opts: [t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.metamorphic', 'Metamorphic')],
                       concept: 'Metamorphic',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_igneous_rocks_form_from_cooling_magma_not', 'Incorrect. Igneous rocks form from cooling magma, not solid alteration.'),
@@ -18307,8 +18298,8 @@ const d = labToolData.rockCycle || {};
                     },
                     {
                       q: __alloT('stem.rocks.rc_granite_is_an_example_of_which_rock_type', 'Granite is an example of which rock type?'),
-                      a: t('stem.rocks.igneous'),
-                      opts: [t('stem.rocks.igneous'), t('stem.rocks.sedimentary'), t('stem.rocks.metamorphic')],
+                      a: t('stem.rocks.igneous', 'Igneous'),
+                      opts: [t('stem.rocks.igneous', 'Igneous'), t('stem.rocks.sedimentary', 'Sedimentary'), t('stem.rocks.metamorphic', 'Metamorphic')],
                       concept: 'Igneous',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_correct_granite_is_a_coarse_grained_intrusive_igneous', 'Correct! Granite is a coarse-grained intrusive igneous rock.'),
@@ -18362,8 +18353,8 @@ const d = labToolData.rockCycle || {};
                     },
                     {
                       q: __alloT('stem.rocks.rc_which_rock_is_used_for_countertops', 'Which rock is used for countertops?'),
-                      a: t('stem.rocks.granite'),
-                      opts: [t('stem.rocks.sandstone'), t('stem.rocks.granite'), t('stem.rocks.slate')],
+                      a: t('stem.rocks.granite', 'Granite'),
+                      opts: [t('stem.rocks.sandstone', 'Sandstone'), t('stem.rocks.granite', 'Granite'), t('stem.rocks.slate', 'Slate')],
                       concept: 'Igneous',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_sandstone_is_too_porous_for_durable_countertops', 'Incorrect. Sandstone is too porous for durable countertops.'),
@@ -18373,8 +18364,8 @@ const d = labToolData.rockCycle || {};
                     },
                     {
                       q: __alloT('stem.rocks.rc_the_white_cliffs_of_dover_are_made_of', 'The White Cliffs of Dover are made of which sedimentary rock?'),
-                      a: t('stem.rocks.chalk'),
-                      opts: [t('stem.rocks.sandstone'), t('stem.rocks.limestone'), t('stem.rocks.chalk')],
+                      a: t('stem.rocks.chalk', 'Chalk'),
+                      opts: [t('stem.rocks.sandstone', 'Sandstone'), t('stem.rocks.limestone', 'Limestone'), t('stem.rocks.chalk', 'Chalk')],
                       concept: 'Sedimentary',
                       wrongFeedback: [
                         __alloT('stem.rocks.rc_incorrect_sandstone_is_granular_and_not_white_chalky', 'Incorrect. Sandstone is granular and not white/chalky.'),
@@ -18495,7 +18486,7 @@ const d = labToolData.rockCycle || {};
               )
             ),
 
-            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
+            React.createElement("button", { "aria-label": __alloT('stem.rocks.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'rc-' + Date.now(), tool: 'rockCycle', label: sel ? sel.label : t('stem.tools_menu.rock_cycle', 'Rock Cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.rocks.snapshot', "Snapshot"))
 
           );
       })();

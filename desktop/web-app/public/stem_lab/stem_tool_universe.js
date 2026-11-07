@@ -51,6 +51,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     document.head.appendChild(st);
   })();
 
+  // Contrast theme (WCAG 1.4.3): tool-owned rules, kept apart from any generated block. Only applies under .theme-contrast.
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    var css = '@media screen{' + [
+      '.theme-contrast [data-stem-tool-shell="universe"] [data-universe-tool]{--uni-page:#000;--uni-panel:#000;--uni-soft:#000;--uni-accent-soft:#000;--uni-surface:#000;--uni-chip:#000;--uni-ink:#ffff00;--uni-muted:#ffff00;--uni-accent:#ffff00;--uni-edge:#ffff00;background:#000;border-color:#ffff00}',
+      '.theme-contrast [data-stem-tool-shell="universe"] [data-universe-tool] .uni-card,.theme-contrast [data-stem-tool-shell="universe"] [data-universe-tool] .uni-card[data-uni]{--uni-surface:#000;--uni-tint:transparent;--uni-tint-dark:transparent;--uni-chip:#000;--uni-line:#ffff00;--uni-line-strong:#ffff00;background-image:none}',
+      '.theme-contrast [data-stem-tool-shell="universe"] .uni-element-symbol{color:#000!important}',
+      '.theme-contrast [data-stem-tool-shell="universe"] .w-12.h-12.rounded-full.text-xl.shadow-lg{background:#000!important;border:2px solid #ffff00}',
+      '.theme-contrast [data-stem-tool-shell="universe"] .inline-block.px-2.py-1.rounded-full.mb-2{color:#000!important}',
+      '.theme-contrast [data-stem-tool-shell="universe"] button:hover:not(:disabled){background-color:#00ff00!important;color:#000!important}',
+      '.theme-contrast [data-stem-tool-shell="universe"] button:hover:not(:disabled) .uni-path-icon,.theme-contrast [data-stem-tool-shell="universe"] button:hover:not(:disabled) .uni-topic-icon{background:transparent!important}',
+      '.theme-contrast [data-stem-tool-shell="universe"] button[aria-pressed=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-expanded=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-selected=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-current=true]{box-shadow:inset 0 0 0 3px #ffff00!important}',
+      '.theme-contrast [data-stem-tool-shell="universe"] button[data-result=right]::after{content:" \\2713"}',
+      '.theme-contrast [data-stem-tool-shell="universe"] button[data-result=wrong]::after,.theme-contrast [data-stem-tool-shell="universe"] button[data-result=miss]::after{content:" \\2717"}'
+    ].join('') + '}';
+    var st = document.getElementById('allo-universe-hc-extra-css');
+    if (!st) { st = document.createElement('style'); st.id = 'allo-universe-hc-extra-css'; document.head.appendChild(st); }
+    if (st.textContent !== css) st.textContent = css;
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-universe')) return;
@@ -4278,7 +4298,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: text AI only when usable, so the AI Cosmos Tutor hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -4417,22 +4442,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
           // --- AI Cosmos Tutor ---
           function askCosmosTutor(question) {
-            if (!question || !question.trim()) return;
+            if (typeof callGemini !== 'function' || !question || !question.trim()) return;
             updMulti({ aiQuestion: question, aiAnswer: '', aiLoading: true });
             var grade = gradeLevel || 'middle school';
             var epochCtx = epoch ? ' during the ' + epoch.name + ' epoch' : '';
             var prompt = 'You are a friendly cosmology tutor for a ' + grade + ' student. Answer this question about the universe' + epochCtx + ' in 2-3 clear sentences: ' + question;
-            var apiKey = (typeof props !== 'undefined' && props && props.geminiKey) || '';
-            if (!apiKey) {
-              updMulti({ aiAnswer: 'API key not configured. Ask your teacher to set up the AI tutor!', aiLoading: false });
-              return;
-            }
-            fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            }).then(function(r) { return r.json(); }).then(function(data) {
-              var answer = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || 'I could not generate a response. Try again!';
+            // Host AI only (the raw generativelanguage fetch bypassed every policy gate).
+            Promise.resolve().then(function() { return callGemini(prompt, false, false, 0.6); }).then(function(resp) {
+              var answer = (typeof resp === 'string' && resp.trim()) ? resp : 'I could not generate a response. Try again!';
               updMulti({ aiAnswer: answer, aiLoading: false });
             }).catch(function() {
               updMulti({ aiAnswer: 'Connection error. Please try again.', aiLoading: false });
@@ -4788,7 +4805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             { term: 'Standard Candle', def: 'An object of known intrinsic brightness. By comparing apparent vs. intrinsic brightness, distance can be calculated. Type Ia supernovae and Cepheid variables are key standard candles.' }
           ];
 
-          var isDark = d.isDark || false;
+          var isDark = d.isDark || ctx.isContrast === true;
 
           // Carl Sagan's Cosmic Calendar
           var COSMIC_CALENDAR = [
@@ -6739,7 +6756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 var dPath = 'M ' + (cx + r * Math.cos(start)).toFixed(2) + ' ' + (cy + r * Math.sin(start)).toFixed(2) + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(end)).toFixed(2) + ' ' + (cy + r * Math.sin(end)).toFixed(2);
                 start = end;
                 return h('g', { key: i }, h('path', { d: dPath, fill: 'none', stroke: p[2], strokeWidth: w }),
-                  p[1] >= 5 && h('text', { x: cx + r * Math.cos(mid), y: cy + r * Math.sin(mid) + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#0b1220' }, p[1] + '%'));
+                  p[1] >= 5 && h('text', { x: cx + r * Math.cos(mid), y: cy + r * Math.sin(mid) + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#000000' }, p[1] + '%'));
               });
             }
             var ordStart = -9, outerStart = ordStart + 18;
@@ -7281,7 +7298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               return h('g', { key: p.name, 'data-planet': p.name, 'data-fate': p.fate },
                 h('circle', { cx: CX, cy: CY, r: pr, fill: 'none', stroke: p.fate === 'engulfed' ? '#7f1d1d' : '#475569', strokeDasharray: p.fate === 'engulfed' ? '3 3' : undefined }),
                 h('circle', { cx: px, cy: py, r: 3.4, fill: p.fate === 'engulfed' ? '#f87171' : '#7dd3fc' }),
-                h('text', { x: px + 6, y: py - 5, fontSize: 11, fill: '#e2e8f0' }, p.name));
+                h('text', { x: px + 6, y: py - 5, fontSize: 11, fill: '#e2e8f0', stroke: '#0b1220', strokeWidth: 3, paintOrder: 'stroke' }, p.name));
             });
             var color = giant ? '#ef4444' : stage.id === 'dwarf' ? '#e0f2fe' : '#fde047';
             return h('div', { className: 'uni-lab uni-sunfate' },
@@ -8743,7 +8760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 cfg.prompt && React.createElement("p", { className: "text-[0.6875rem] font-bold mt-2 pt-2", style: { color: dk ? '#e2e8f0' : '#1e293b', borderTop: '1px solid ' + cfg.accent + '55' } }, "\uD83E\uDD14 " + cfg.prompt(item))
               ),
 
-              !item && React.createElement("p", { className: "text-[0.6875rem] mt-2 " + (dk ? 'text-slate-400' : 'text-slate-500') }, "Choose one to see the detail.")
+              !item && React.createElement("p", { className: "text-[0.6875rem] mt-2 " + (dk ? 'text-slate-300' : 'text-slate-600') }, "Choose one to see the detail.")
             );
           }
           // \u2500\u2500 Section registry. 36 collapsible topics is a library, not a page, so the
@@ -9048,7 +9065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 })
               ),
               React.createElement("div", { className: "uni-utilities" },
-                React.createElement("button", { type: 'button', 'aria-pressed': isDark, onClick: function () { upd('isDark', !isDark); } }, isDark ? 'Light appearance' : 'Dark appearance'),
+                !ctx.isContrast && React.createElement("button", { type: 'button', 'aria-pressed': isDark, onClick: function () { upd('isDark', !isDark); } }, isDark ? 'Light appearance' : 'Dark appearance'),
                 React.createElement("button", { type: 'button', onClick: function () { upd('tutorialDismissed', false); } }, 'How to use this tool')
               )
             ),
@@ -10127,7 +10144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             ),
 
             // === AI COSMOS TUTOR ===
-            React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
+            typeof callGemini === 'function' && React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-200" },
               React.createElement("div", { className: "text-xs font-bold text-violet-700 mb-2" }, "\uD83E\uDDD1\u200D\uD83D\uDE80 AI Cosmos Tutor"),
               React.createElement("div", { className: "flex gap-2 mb-2" },
                 React.createElement("input", {
@@ -10764,9 +10781,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 row: function (ast, on) {
                   return React.createElement("span", { className: "flex items-center gap-2" },
                     React.createElement("span", { className: "text-sm", "aria-hidden": "true" }, ast.icon),
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 flex-shrink-0", style: { color: '#0e7490' } }, ast.year),
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold w-16 flex-shrink-0", style: { color: isDark ? '#67e8f9' : '#155e75' } }, ast.year),
                     React.createElement("span", { className: "flex-1 text-[0.6875rem] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, ast.name),
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: '#06b6d4' } }, on ? "\u25BE" : "\u203A")
+                    React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isDark ? '#67e8f9' : '#155e75' } }, on ? "\u25BE" : "\u203A")
                   );
                 },
                 detail: function (ast) {
@@ -11166,7 +11183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 // z-value formula
                 React.createElement("div", { className: "bg-slate-800 rounded-lg p-2 text-center border border-slate-700 mt-1" },
                   React.createElement("div", { className: "text-[0.6875rem] font-mono text-indigo-300" }, "z = (\u03BB_observed - \u03BB_emitted) / \u03BB_emitted"),
-                  React.createElement("div", { className: "text-[0.6875rem] text-slate-400 mt-0.5" }, "z > 0 means wavelength grew; z < 0 means wavelength shrank; z = 1 means the wavelength doubled.")
+                  React.createElement("div", { className: "text-[0.6875rem] text-slate-300 mt-0.5" }, "z > 0 means wavelength grew; z < 0 means wavelength shrank; z = 1 means the wavelength doubled.")
                 ),
                 renderLineShiftLab(),
                 // \u2500\u2500 Hubble's Law interactive: v = H\u2080 \u00D7 d \u2500\u2500
@@ -11185,7 +11202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   return React.createElement("div", { className: "bg-slate-800 rounded-lg p-2 border border-amber-700 mt-1" },
                     React.createElement("div", { className: "flex items-center justify-between mb-1" },
                       React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-300" }, "\uD83D\uDCD0 Hubble's Law: v = H\u2080 \u00D7 d"),
-                      React.createElement("span", { className: "text-[0.625rem] text-slate-400 font-mono" }, "H\u2080 = 70 km/s/Mpc")
+                      React.createElement("span", { className: "text-[0.625rem] text-slate-300 font-mono" }, "H\u2080 = 70 km/s/Mpc")
                     ),
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("input", {
@@ -11217,7 +11234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("text", { x: hPad - 2, y: 8, fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'v'),
                       React.createElement("text", { x: hW - hPad, y: hH - 1, fontSize: 10, fill: '#94a3b8', textAnchor: 'end' }, 'd (Mpc)')
                     ),
-                    React.createElement("div", { className: "text-[0.625rem] text-slate-400 mt-1 italic text-center" },
+                    React.createElement("div", { className: "text-[0.625rem] text-slate-300 mt-1 italic text-center" },
                       'For nearby galaxies this linear model works well. At large distances, redshift needs the full expansion history of the universe, not a simple speed.')
                   );
                 })(),
@@ -11347,7 +11364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, cc.desc),
                       React.createElement("div", { className: "flex items-center gap-2 text-[0.6875rem]" },
-                        React.createElement("span", { className: (isDark ? 'text-amber-400' : 'text-amber-700') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
+                        React.createElement("span", { className: (isDark ? 'text-amber-300' : 'text-amber-700') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
                         React.createElement("span", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, "\u2022 Frequency: " + cc.freq)
                       ),
                       React.createElement("button", { "aria-label": "Listen to " + cc.name + " catastrophe",
@@ -11978,7 +11995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               // NOTE: isDark here is the TOOL own scene toggle, not the app theme, so it
               // says nothing about the ground this row sits on. That ground is the host
               // surface: black in the contrast theme, where slate-600 measured 2.77:1.
-              React.createElement("label", { className: "text-xs " + ((isDark || ctx.isContrast) ? 'text-slate-200' : 'text-slate-600') + " flex items-center gap-2 cursor-pointer" },
+              !ctx.isContrast && React.createElement("label", { className: "text-xs " + (isDark ? 'text-slate-200' : 'text-slate-600') + " flex items-center gap-2 cursor-pointer" },
                 React.createElement("input", {
                   type: "checkbox", checked: isDark,
                   onChange: function() { upd('isDark', !isDark); },
@@ -12002,7 +12019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             // Snapshot button
             React.createElement("div", { className: "flex mt-3" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_save_snapshot_of_current_universe_state', 'Save snapshot of current universe state'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_save_snapshot_of_current_universe_state', 'Save snapshot of current universe state'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe', 'Universe: ') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 

@@ -10,7 +10,7 @@ const { INPUTS, OUTPUTS, renderReaderModule } = require('../dev-tools/lib/reader
 const { HOSTS, PATHS, readerLoaders, verifyReaderRelease, parseArgs } = require('../dev-tools/check_reader_release.cjs');
 const HEAD = '1'.repeat(40), NEXT_HEAD = '2'.repeat(40);
 const ROOT = path.resolve('virtual-reader-release');
-const sources = ['function createReadingPlaceStore() { return "place"; }', 'var supportDrafts = "drafts";', 'function SimplifiedView() { return <p>{createReadingPlaceStore() + supportDrafts}</p>; }'];
+const sources = ['function createReadingPlaceStore() { return "place"; }', 'var supportDrafts = "drafts";', 'var syllableCore = "core";', 'var syllablePanel = "panel";', 'function SimplifiedView() { return <p>{createReadingPlaceStore() + supportDrafts}</p>; }'];
 const digest = text => crypto.createHash('sha256').update(text).digest('hex');
 const builder = readFileSync('_build_view_simplified_module.js', 'utf8');
 

@@ -121,52 +121,15 @@ describe('challenge progress', () => {
   });
 });
 
-// ── The challenge bank, executed from source and verified against its own math ──
-const CHALLENGES = (() => {
-  const start = src.indexOf('var CHALLENGES = [');
-  const end = src.indexOf('];', start);
-  expect(start).toBeGreaterThan(-1);
-  // eslint-disable-next-line no-new-func
-  return new Function('t', src.slice(start, end + 2) + '\nreturn CHALLENGES;')((k, fb) => fb);
-})();
-
-describe('challenge bank', () => {
-  it('has the ten expected ids in registry order', () => {
-    expect(CHALLENGES.map((c) => c.id)).toEqual(Pure.challengeIds);
-  });
-
-  it('every answer is provably correct for its kind', () => {
-    for (const c of CHALLENGES) {
-      if (c.kind === 'rect') {
-        expect(c.answer, c.id).toBe(c.answerType === 'area' ? c.w * c.h : 2 * (c.w + c.h));
-      } else if (c.kind === 'composite') {
-        expect(c.answer, c.id).toBe(c.outerW * c.outerH - c.cutW * c.cutH);
-      } else if (c.kind === 'compare') {
-        expect(c.w * c.h, c.id + ' equal areas').toBe(c.w2 * c.h2);
-        expect(c.answer, c.id).toBe(Math.abs(2 * (c.w + c.h) - 2 * (c.w2 + c.h2)));
-      } else if (c.kind === 'missing') {
-        expect([c.w, c.h], c.id).toContain(c.answer);
-      }
-      expect(c.explanation, c.id + ' explanation names the answer').toContain(String(c.answer));
-      expect(['foundations', 'reasoning', 'stretch'], c.id).toContain(c.difficulty);
-    }
-  });
-
-  it('the numbers quoted in each prompt match the stored dimensions', () => {
-    for (const c of CHALLENGES) {
-      if (c.kind === 'rect') {
-        expect(c.prompt, c.id).toContain(String(c.w));
-        expect(c.prompt, c.id).toContain(String(c.h));
-      } else if (c.kind === 'composite') {
-        for (const n of [c.outerW, c.outerH, c.cutW, c.cutH]) expect(c.prompt, c.id).toContain(String(n));
-      }
-    }
-  });
-});
+// The fixed ten-item challenge bank was retired on 2026-11-03 in favour of generated
+// practice; tests/areaperimeter_deep_features.test.js recomputes every generated answer
+// independently (4 grades x 19 topics x 150 seeds). The legacy ids still count toward
+// progress (normalizeChallengeProgress above).
 
 describe('i18n (source pins)', () => {
   it('the three previously hardcoded strings go through t()', () => {
-    expect(src).toContain("t('stem.areaperimeter.hid', \"Hid\")");
+    // "Hid" was a glued fragment; since 2026-11-03 it is a whole translatable sentence.
+    expect(src).toContain("t('stem.areaperimeter.sr_tile_hidden', 'Hid the unit square at column {c}, row {r}.");
     expect(src).toContain("t('stem.areaperimeter.drawn_with_the_same_unit_scale'");
     expect(src).toContain("t('stem.areaperimeter.subtract', \"subtract\")");
   });

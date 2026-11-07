@@ -230,6 +230,7 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     await act(async () => {
       window.dispatchEvent(new MessageEvent('message', {
         source: popup,
+        origin: window.location.origin, // the bridge accepts only its own pop-up at the companion origin
         data: { type: 'allocaf-hello' },
       }));
     });
@@ -250,6 +251,7 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     await act(async () => {
       window.dispatchEvent(new MessageEvent('message', {
         source: popup,
+        origin: window.location.origin, // the bridge accepts only its own pop-up at the companion origin
         data: {
           type: 'allocaf-cross-scale-evidence',
           schemaVersion: 1,
@@ -269,6 +271,7 @@ describe('Cell Atlas to AlphaFold cross-scale evidence bridge', () => {
     await act(async () => {
       window.dispatchEvent(new MessageEvent('message', {
         source: popup,
+        origin: window.location.origin, // the bridge accepts only its own pop-up at the companion origin
         data: {
           type: 'allocaf-cross-scale-evidence',
           schemaVersion: 1,

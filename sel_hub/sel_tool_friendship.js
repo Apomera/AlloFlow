@@ -983,6 +983,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _frAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
@@ -993,6 +994,7 @@ window.SelHub = window.SelHub || {
       };
 
       var activeTab     = d.activeTab || 'compass';
+      if (!_frAiOn && activeTab === 'coach') activeTab = 'compass';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
       var myStyle       = d.myStyle || null;
       var starterIdx    = (Number.isInteger(d.starterIdx) && d.starterIdx >= 0 ? d.starterIdx : 0);
@@ -1075,7 +1077,7 @@ window.SelHub = window.SelHub || {
         { id: 'endings',  icon: '\uD83C\uDF43', label: 'Endings' },
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'Practice' },
         { id: 'rehearse', icon: '\uD83C\uDFAD', label: 'Rehearse' },
-      ];
+      ].filter(function (t) { return _frAiOn || t.id !== 'coach'; });
 
       var exploredTabs = d.exploredTabs || {};
       if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
@@ -1639,7 +1641,7 @@ window.SelHub = window.SelHub || {
           var coachButton = { minHeight: '44px', padding: '10px 14px', border: '1px solid ' + coachEdge, borderRadius: '8px', background: coachSurface, color: coachInk, font: 'inherit', textAlign: 'left', cursor: 'pointer' };
           var coachSending = false;
           function sendFriendshipCoach() {
-            if (!coachInput.trim() || coachLoading || coachSending || !callGemini) return;
+            if (!coachInput.trim() || coachLoading || coachSending || !_frAiOn) return;
             if (hasSafetyLayer && !window.SelHub.hasCoachConsent()) return;
             coachSending = true;
             var userMsg = coachInput.trim();
@@ -1725,8 +1727,8 @@ window.SelHub = window.SelHub || {
               onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); sendFriendshipCoach(); } },
               disabled: coachLoading, style: { width: '100%', minWidth: 0, minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + coachEdge, borderRadius: '8px', background: coachSurface, color: coachInk, font: 'inherit', fontSize: '16px' } }),
             h('button', { 'aria-label': coachLoading ? 'Friendship coach is responding' : 'Send message to friendship coach', onClick: sendFriendshipCoach,
-              disabled: coachLoading || !coachInput.trim() || !callGemini, style: Object.assign({}, coachButton, { marginTop: '10px', fontWeight: 700 }) }, coachLoading ? 'Waiting for reply…' : 'Send'),
-            !callGemini && h('p', null, 'AI replies are unavailable here. You can keep a draft or explore the other Friendship activities.'),
+              disabled: coachLoading || !coachInput.trim() || !_frAiOn, style: Object.assign({}, coachButton, { marginTop: '10px', fontWeight: 700 }) }, coachLoading ? 'Waiting for reply…' : 'Send'),
+            !_frAiOn && h('p', null, 'AI replies are unavailable here. You can keep a draft or explore the other Friendship activities.'),
             h('details', { style: coachCard }, h('summary', { style: { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, 'Try a fictional example'),
               h('p', null, 'An example fills an empty draft; it does not send. To choose another, first clear the draft you no longer need.'),
               h('div', { style: { display: 'grid', gap: '8px' } }, coachExamples.map(function(example) {
@@ -1989,7 +1991,7 @@ window.SelHub = window.SelHub || {
           }).join('\n');
         }
         function rpCanRequest() {
-          return !!callGemini && !rpBusy && !rpSending && !rpBlocked && (!window.SelHub.hasCoachConsent || window.SelHub.hasCoachConsent());
+          return _frAiOn && !rpBusy && !rpSending && !rpBlocked && (!window.SelHub.hasCoachConsent || window.SelHub.hasCoachConsent());
         }
         function fStartRp(sid) {
           var cfg = FRIEND_SCENARIOS[sid];
@@ -2075,24 +2077,24 @@ window.SelHub = window.SelHub || {
               h('p', { id: 'fr-rp-hint' }, 'You can ask, clarify, decline or end the conversation. Enter adds a new line; use Send when ready. Sending shares the conversation with the AI service.'),
               h('textarea', { id: 'f-rp-input', value: fRpInput, 'aria-label': 'Your friendship role-play response', 'aria-describedby': 'fr-rp-hint', rows: 3, disabled: rpBusy, onChange: function(ev) { upd({ fRpInput: ev.target.value, fRpError: '' }); }, style: Object.assign({}, rpControl, { resize: 'vertical' }) }),
               h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' } },
-                h('button', { onClick: fSendTurn, disabled: rpBusy || !fRpInput.trim() || !callGemini, 'aria-label': fRpLoading ? 'Friendship role-play is responding' : 'Send role-play response', 'aria-busy': rpBusy ? 'true' : 'false', style: rpButton }, rpBusy ? 'Waiting…' : 'Send'),
-                h('button', { onClick: fCoachBreak, disabled: rpBusy || !callGemini, style: rpButton }, 'Ask for a coaching idea'),
+                _frAiOn && h('button', { onClick: fSendTurn, disabled: rpBusy || !fRpInput.trim(), 'aria-label': fRpLoading ? 'Friendship role-play is responding' : 'Send role-play response', 'aria-busy': rpBusy ? 'true' : 'false', style: rpButton }, rpBusy ? 'Waiting…' : 'Send'),
+                _frAiOn && h('button', { onClick: fCoachBreak, disabled: rpBusy, style: rpButton }, 'Ask for a coaching idea'),
                 h('button', { onClick: fEndRp, style: rpButton }, 'Pause and reflect'))),
             (fRpEnded || rpBlocked) && h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Role-play reflection', style: rpCard },
               h('h4', { style: { fontSize: '18px', margin: '0 0 8px' } }, 'Reflect on choices and limits'),
               h('p', null, 'The simulated response does not measure your worth or tell you what a real person will do. Reading or stopping is enough; there is no required number of turns.'),
               h('p', null, 'Optional notes stay with this scenario and grade. They are not sent with AI requests, are not monitored and do not ask for help.'),
               rpFields.map(function(field) { var id = 'fr-rp-note-' + field.id; return h('div', { key: id, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, style: Object.assign({}, rpControl, { resize: 'vertical' }), value: typeof rpDraft[field.id] === 'string' ? rpDraft[field.id] : '', onChange: function(ev) { var notes = Object.assign({}, rpDrafts); var value = Object.assign({}, rpDraft); value[field.id] = ev.target.value; notes[rpKey] = value; upd('fRpReflectionDrafts', notes); } })); }),
-              h('details', { style: rpCard }, h('summary', { style: rpSummary }, 'Optional AI reflection'), h('p', null, 'This sends the conversation, not your reflection notes. You can question or ignore the feedback.'),
-                h('button', { onClick: fRequestReflection, disabled: rpBusy || !callGemini || rpBlocked, style: rpButton }, 'Request an AI reflection'),
+              _frAiOn && h('details', { style: rpCard }, h('summary', { style: rpSummary }, 'Optional AI reflection'), h('p', null, 'This sends the conversation, not your reflection notes. You can question or ignore the feedback.'),
+                h('button', { onClick: fRequestReflection, disabled: rpBusy || rpBlocked, style: rpButton }, 'Request an AI reflection'),
                 fRpReflection && h('p', { style: { whiteSpace: 'pre-wrap' } }, fRpReflection)),
               !rpBlocked && h('button', { onClick: function() { upd('fRpEnded', false); }, disabled: rpBusy, style: rpButton }, 'Return to this rehearsal')),
             h('details', { style: rpCard }, h('summary', { style: rpSummary }, 'Choose another scenario'), h('p', null, 'This clears the current conversation, unsent response and AI reflection. Your optional reflection notes remain saved by scenario and grade.'),
               h('button', { onClick: fResetRp, disabled: rpBusy, style: rpButton }, 'Clear this rehearsal and choose another'))),
-          !callGemini && h('p', null, 'AI replies are unavailable here. You can read a written scenario, keep a draft and reflect on your own.'),
+          !_frAiOn && h('p', null, 'AI replies are unavailable here. You can read a written scenario, keep a draft and reflect on your own.'),
           h('p', null, 'If this resembles repeated pressure, harm or an unsafe situation, ask a trusted adult for support. A real conversation is not required.')
         );
-        if (callGemini && window.SelHub.hasCoachConsent && !window.SelHub.hasCoachConsent()) {
+        if (_frAiOn && window.SelHub.hasCoachConsent && !window.SelHub.hasCoachConsent()) {
           rehearseContent = window.SelHub.renderConsentScreen(h, band, function() { window.SelHub.giveCoachConsent(); upd('_consentRefresh', Date.now()); }, ctx.activeSessionCode);
         }
       }

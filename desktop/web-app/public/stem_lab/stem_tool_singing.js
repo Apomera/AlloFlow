@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -39,7 +40,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-singing-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-singing-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"singing\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"singing\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 252, 232)\"],[style*=\"background-color: rgb(254, 252, 232)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"singing\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -2086,14 +2087,1566 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // ═══════════════════════════════════════════
   var VS = (function () {
     'use strict';
+  var mod_score_player = (function () {
+    // Score player: renders a MusicXML (.musicxml or compressed .mxl) score with
+    // OpenSheetMusicDisplay and plays the voice line and piano with the Web Audio API.
+    //
+    // Self-contained on purpose: no framework and no imports. The caller passes in the
+    // OpenSheetMusicDisplay module, so the same file can run on Rachel's site and inside
+    // AlloFlow (Singing Lab / Open Groove).
+    //
+    //   const player = new ScorePlayer({ OSMD, container, onChange });
+    //   await player.load(binaryStringOrXml);
+    //   player.play(); player.setTempo(0.8); player.setTranspose(-2); player.setLoop(5, 8);
+    //   player.setClick(true); player.play({ countIn: true });   // metronome + one bar of count-in
+    
+    const VOICE_NAME = /voice|voix|voce|singstimme|stimme|soprano|mezzo|alto|tenor|bariton|bass|sopran|canto|gesang/i;
+    // Some editions put the words on the piano or a string part as well; those still aren't sung parts.
+    // Also never voices though they contain "bass": contrabass/Contrabbassi, bassoon, basso continuo.
+    const INSTRUMENT_NAME = /piano|klavier|organ|orgel|viol|cello|flute|flöte|clarinet|oboe|horn|trumpet|guitar|gitarre|harp|harfe|recorder|contrab|kontrab|double ?bass|bassoon|fagott|continuo|cembalo|harpsichord/i;
+    const LOOKAHEAD = 0.15; // seconds of audio scheduled ahead of the play head
+    const TICK_MS = 25;
+    
+    const midiToFreq = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+    
+    /** The practice sounds a visitor can choose for the melody guide, starting notes and trainers. */
+    const SOUNDS = { piano: 'Piano', voice: 'Soft voice (“oo”)', strings: 'Strings', flute: 'Flute' };
+    
+    // Half a second of white noise per audio context, for the piano's hammer and the flute's breath.
+    function noiseBuffer(ctx) {
+      if (!ctx.__practiceNoise) {
+        const len = Math.round(ctx.sampleRate * 0.5);
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        ctx.__practiceNoise = buf;
+      }
+      return ctx.__practiceNoise;
+    }
+    
+    /**
+     * Schedule one note of a practice sound on the audio clock. The caller stops the returned nodes at
+     * `stopAt` (and can silence early through `gain`).
+     * @returns {{ nodes: AudioScheduledSourceNode[], gain: GainNode, stopAt: number }}
+     */
+    /**
+     * A messa di voce guide: one long note that starts very soft, grows smoothly to full and fades back (a sine-shaped
+     * swell over the whole length), in a sustaining sound (the piano can't swell, so it uses the soft "oo").
+     */
+    function playSwell(ctx, out, sound, midi, at, dur, level = 1) {
+      const timbre = sound === 'piano' ? 'voice' : sound;
+      const shape = ctx.createGain();
+      shape.connect(out);
+      const steps = 64;
+      const curve = new Float32Array(steps);
+      for (let i = 0; i < steps; i++) curve[i] = 0.1 + 0.9 * Math.pow(Math.sin((Math.PI * i) / (steps - 1)), 2);
+      shape.gain.setValueAtTime(curve[0], at);
+      shape.gain.setValueCurveAtTime(curve, at + 0.001, dur);
+      const r = playSound(ctx, shape, timbre, midi, at, dur, level);
+      return { ...r, gain: shape };
+    }
+    
+    function playSound(ctx, out, sound, midi, at, dur, level = 1) {
+      const f = midiToFreq(midi);
+      const len = Math.max(0.08, dur);
+      const env = ctx.createGain();
+      env.connect(out);
+      const nodes = [];
+      const osc = (type, freq, dest) => {
+        const o = ctx.createOscillator();
+        o.type = type;
+        o.frequency.value = freq;
+        o.connect(dest);
+        o.start(at);
+        nodes.push(o);
+        return o;
+      };
+      // Vibrato that eases in after the note has settled (sung and bowed sounds).
+      const vibrato = (oscs, rate, depth, delay) => {
+        const lfo = ctx.createOscillator();
+        lfo.frequency.value = rate;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, at);
+        g.gain.linearRampToValueAtTime(f * depth, at + Math.min(delay, len));
+        lfo.connect(g);
+        for (const o of oscs) g.connect(o.frequency);
+        lfo.start(at);
+        nodes.push(lfo);
+      };
+    
+      if (sound === 'voice') {
+        // Soft, slightly breathy "oo" with delayed vibrato: a guide melody, not an imitation singer.
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(0.9 * level, at + Math.min(0.06, len / 3));
+        env.gain.setValueAtTime(0.9 * level, at + Math.max(0.06, len - 0.07));
+        env.gain.linearRampToValueAtTime(0, at + len);
+        const o1 = osc('sine', f, env);
+        const h2 = ctx.createGain();
+        h2.gain.value = 0.08;
+        h2.connect(env);
+        const o2 = osc('triangle', f * 2, h2);
+        vibrato([o1, o2], 5.4, 0.006, 0.45);
+        return { nodes, gain: env, stopAt: at + len + 0.05 };
+      }
+    
+      if (sound === 'strings') {
+        // A small string section: six bowed voices, each a little out of step (detune, vibrato speed), so they blend
+        // instead of buzzing; the tone opens as the bow bites, a wooden body warms the low mids, the top is rolled off,
+        // and a breath of rosin noise starts each note.
+        const peak = 0.54 * level; // about as loud as the old strings (measured), with a softer top
+        const bite = Math.min(0.2, len / 2);
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(peak * 0.85, at + bite);
+        env.gain.linearRampToValueAtTime(peak, at + Math.min(len, bite + 0.3));
+        env.gain.setValueAtTime(peak, at + Math.max(bite + 0.01, len - 0.05));
+        env.gain.setTargetAtTime(0, at + len, 0.16);
+        const open = Math.min(4200, f * 3.2 + 600);
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.Q.value = 0.5;
+        lp.frequency.setValueAtTime(open * 0.45, at);
+        lp.frequency.linearRampToValueAtTime(open, at + bite + 0.15);
+        const top = ctx.createBiquadFilter();
+        top.type = 'highshelf';
+        top.frequency.value = 2500;
+        top.gain.value = -9;
+        const wood = ctx.createBiquadFilter();
+        wood.type = 'peaking';
+        wood.frequency.value = 450;
+        wood.Q.value = 1;
+        wood.gain.value = 3;
+        lp.connect(top).connect(wood).connect(env);
+        [-9, -4, -1, 2, 5, 10].forEach((cents, k) => {
+          const g = ctx.createGain();
+          g.gain.value = 0.42; // six voices that don't line up add up to about one
+          g.connect(lp);
+          const o = osc('sawtooth', f * Math.pow(2, cents / 1200), g);
+          vibrato([o], 4.8 + k * 0.17, 0.0035 + (k % 3) * 0.0006, 0.3 + k * 0.04);
+        });
+        const rosin = ctx.createBufferSource();
+        rosin.buffer = noiseBuffer(ctx);
+        const rb = ctx.createBiquadFilter();
+        rb.type = 'bandpass';
+        rb.frequency.value = 3000;
+        rb.Q.value = 0.8;
+        const rg = ctx.createGain();
+        rg.gain.setValueAtTime(0, at);
+        rg.gain.linearRampToValueAtTime(0.05 * level, at + 0.03);
+        rg.gain.exponentialRampToValueAtTime(0.0005, at + 0.25);
+        rosin.connect(rb).connect(rg).connect(env);
+        rosin.start(at);
+        nodes.push(rosin);
+        return { nodes, gain: env, stopAt: at + len + 0.7 };
+      }
+    
+      if (sound === 'flute') {
+        // A pure tone with a touch of overtones and breath.
+        const peak = 0.8 * level; // as loud as the piano (measured)
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(peak, at + Math.min(0.06, len / 3));
+        env.gain.setValueAtTime(peak, at + Math.max(0.06, len - 0.05));
+        env.gain.setTargetAtTime(0, at + len, 0.05);
+        const o1 = osc('sine', f, env);
+        const h = ctx.createGain();
+        h.gain.value = 0.1;
+        h.connect(env);
+        const o2 = osc('sine', f * 2, h);
+        const h3 = ctx.createGain();
+        h3.gain.value = 0.04;
+        h3.connect(env);
+        const o3 = osc('sine', f * 3, h3);
+        const nz = ctx.createBufferSource();
+        nz.buffer = noiseBuffer(ctx);
+        nz.loop = true;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = Math.min(8000, f * 2);
+        bp.Q.value = 2;
+        const ng = ctx.createGain();
+        ng.gain.value = 0.05;
+        nz.connect(bp).connect(ng).connect(env);
+        nz.start(at);
+        nodes.push(nz);
+        vibrato([o1, o2, o3], 4.8, 0.003, 0.4);
+        return { nodes, gain: env, stopAt: at + len + 0.35 };
+      }
+    
+      // Piano: a few overtones (a little sharp, as on real strings) that ring and die away on their own,
+      // high ones first and low notes longest; two strings for the fundamental and a soft hammer knock.
+      // Holding a key longer than it rings just lets it fade, so long notes never drone.
+      const ring = Math.max(0.35, Math.min(2.4, 1.9 - (midi - 52) * 0.03));
+      env.gain.setValueAtTime(0.24 * level, at);
+      env.gain.setTargetAtTime(0, at + len, 0.09); // the damper
+      const AMPS = [1, 0.42, 0.26, 0.14, 0.09, 0.05];
+      AMPS.forEach((a, i) => {
+        const n = i + 1;
+        const fn = f * n * Math.sqrt(1 + 0.00035 * n * n);
+        if (fn > 12000) return;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0, at);
+        g.gain.linearRampToValueAtTime(a, at + 0.004);
+        g.gain.setTargetAtTime(0, at + 0.004, ring / (1 + 0.7 * i));
+        g.connect(env);
+        for (const cents of n === 1 ? [-1.2, 1.2] : [0]) osc('sine', fn * Math.pow(2, cents / 1200), g);
+      });
+      const nz = ctx.createBufferSource();
+      nz.buffer = noiseBuffer(ctx);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = Math.min(6000, f * 3);
+      bp.Q.value = 1.2;
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.25, at);
+      ng.gain.exponentialRampToValueAtTime(0.001, at + 0.03);
+      nz.connect(bp).connect(ng).connect(env);
+      nz.start(at);
+      nodes.push(nz);
+      return { nodes, gain: env, stopAt: at + Math.min(len + 0.6, ring * 4 + 0.2) };
+    }
+    
+    // Common short words of the languages songs here are in: enough to tell a verse from a singing
+    // translation printed under it (scores rarely mark which line is which).
+    const LANG_WORDS = {
+      en: 'the and of to my thy thou thee is in i me with that you your all be for on not his her o oh are was will what when how',
+      de: 'und der die das ich du mein dein nicht ist zu mit ein mir dich sich im wie auf den dem ach nur noch so es er sie wenn',
+      fr: 'le la les et de des je tu mon ma mes que qui est un une dans pour pas sur ton ta du au ne se plus',
+      it: 'il e di che mi ti non per un una del della mio mia io con si al se ch più cor',
+      la: 'et in est non ad cum qui quae quod deus domine dominus te nobis nos tu sancta sanctus mater pro',
+      es: 'el los las y que en mi no por con es del yo tus mis como más',
+    };
+    const LANG_SETS = Object.fromEntries(Object.entries(LANG_WORDS).map(([k, v]) => [k, new Set(v.split(' '))]));
+    
+    /** The likely language of some lyric text ('en', 'de', ...), or '' when it can't tell. */
+    function guessLanguage(text) {
+      const words = String(text).toLowerCase().normalize('NFC').split(/[^a-zà-ÿœæß]+/).filter(Boolean);
+      const scores = Object.entries(LANG_SETS)
+        .map(([k, set]) => [k, words.reduce((n, w) => n + (set.has(w) ? 1 : 0), 0)])
+        .sort((a, b) => b[1] - a[1]);
+      const [best, second] = scores;
+      return best[1] >= 3 && best[1] >= second[1] * 1.6 ? best[0] : '';
+    }
+    
+    // Does a tie from note a to note b jump over other notes? True when a pitched note of a's own voice begins strictly
+    // between them. A tie joins neighbours; some community transcriptions carry one that skips over notes (a slip, found
+    // in PDMX piano arrangements such as Santa Lucia, Annie Laurie and Ich liebe dich). A tie that merely spans a bar line
+    // or an unfilled beat is fine and is NOT a jump: there is nothing between its notes (the long held notes of "All the
+    // World Awakes Today" are written as a half note in a 3/4 bar, tied on, with the last beat of each bar empty).
+    function jumpsOver(a, b) {
+      const from = a.getAbsoluteTimestamp().RealValue;
+      const to = b.getAbsoluteTimestamp().RealValue;
+      if (to <= from) return false; // a tie back across a repeat: nothing lies between in written order
+      for (const ve of a.ParentVoiceEntry.ParentVoice.VoiceEntries) {
+        if (ve === a.ParentVoiceEntry || ve === b.ParentVoiceEntry || ve.IsGrace) continue;
+        const first = ve.Notes.find((n) => !n.isRest() && n.Pitch);
+        if (!first) continue;
+        const t = first.getAbsoluteTimestamp().RealValue;
+        if (t > from + 1e-6 && t < to - 1e-6) return true;
+      }
+      return false;
+    }
+    
+    // Is this note below the top of its chord? (The top note is a voice's line; the rest sound with the other voices.)
+    function belowChordTop(n) {
+      const top = [...(n.ParentVoiceEntry.Notes || [])].filter((x) => !x.isRest() && x.Pitch).sort((a, b) => b.Pitch.Frequency - a.Pitch.Frequency)[0];
+      return top !== n;
+    }
+    
+    // The run of tied notes this note belongs to: the notes of its tie up to the first jump. Merging across a jump
+    // stretched the first note over the ones after it (so the sung line overlapped itself) and dropped the far note from
+    // the melody. So a tie is cut at each jump into runs: a run is one note (its head, with the run's total length), and
+    // notes past a jump keep their own place and length. In a sung part a tie also stops where it runs on underneath a
+    // higher note (a tied D under a new E: the line has moved up to the E, so the D must not be held over it) and where it
+    // crosses into another voice of the staff (that voice's note is its own line; this voice starts a new note meanwhile).
+    function tiedRun(tie, note, sung = false) {
+      const all = tie.Notes;
+      let run = [all[0]];
+      for (let k = 1; k <= all.length; k++) {
+        const next = all[k];
+        const prev = run[run.length - 1];
+        const lineMovesOn = sung && next && (belowChordTop(next) || next.ParentVoiceEntry.ParentVoice !== prev.ParentVoiceEntry.ParentVoice);
+        if (next && !jumpsOver(prev, next) && !lineMovesOn) run.push(next);
+        else {
+          if (run.includes(note)) return run;
+          run = next ? [next] : [];
+        }
+      }
+      return [note];
+    }
+    
+    // A note's lyric syllables by verse number, each with a trailing hyphen when the word continues ("Wid-").
+    function lyricsOf(voiceEntry) {
+      const out = new Map();
+      const dict = voiceEntry.LyricsEntries;
+      if (!dict || !dict.size || !dict.size()) return out;
+      for (const verse of dict.keys()) {
+        const entry = dict.getValue(verse);
+        // Some editions write the verse number into the first syllable ("2.Swift"): not a word to sing.
+        // OSMD joins elided syllables with the music-font glyph U+E551, which text fonts lack: use the plain undertie.
+        const text = entry && entry.Text ? entry.Text.replace(/^\(?\d+[.)]\s*/, '').replaceAll('\uE551', '\u203F') : '';
+        if (text) out.set(verse, text + (entry.syllabic === 'begin' || entry.syllabic === 'middle' ? '-' : ''));
+      }
+      return out;
+    }
+    
+    /**
+     * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play).
+     * Declare this page's sound as media playback (Safari 17+), and on older iOS start a silent
+     * looping <audio> element, which moves the page into the media channel. Call from a tap.
+     * Shared with the trainers (lib/training/common.js) and kept self-contained here.
+     */
+    function routeAudioAsMedia() {
+      try {
+        if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
+      } catch {}
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
+      if (!ios || routeAudioAsMedia.el) return;
+      // A few hundred milliseconds of silent 8 kHz WAV, built here so there's no extra file.
+      const n = 2000;
+      const bytes = new Uint8Array(44 + n);
+      const dv = new DataView(bytes.buffer);
+      [..."RIFF"].forEach((ch, i) => (bytes[i] = ch.charCodeAt(0)));
+      dv.setUint32(4, 36 + n, true);
+      [..."WAVEfmt "].forEach((ch, i) => (bytes[8 + i] = ch.charCodeAt(0)));
+      dv.setUint32(16, 16, true);
+      dv.setUint16(20, 1, true);
+      dv.setUint16(22, 1, true);
+      dv.setUint32(24, 8000, true);
+      dv.setUint32(28, 8000, true);
+      dv.setUint16(32, 1, true);
+      dv.setUint16(34, 8, true);
+      [..."data"].forEach((ch, i) => (bytes[36 + i] = ch.charCodeAt(0)));
+      dv.setUint32(40, n, true);
+      bytes.fill(128, 44);
+      let bin = '';
+      bytes.forEach((b) => (bin += String.fromCharCode(b)));
+      const el = document.createElement('audio');
+      el.setAttribute('x-webkit-airplay', 'deny');
+      el.loop = true;
+      el.src = 'data:audio/wav;base64,' + btoa(bin);
+      el.play().catch(() => {});
+      routeAudioAsMedia.el = el;
+    }
+    
+    class ScorePlayer {
+      /**
+       * @param {{ OSMD: any, container: HTMLElement, onChange?: (state: object) => void, osmdOptions?: object, zoom?: number, language?: string }} opts
+       *   language: the song's language ('de', 'en', 'fr', 'it', 'la', 'es'), to tell its verses from printed translations.
+       *   firstBars: in a longer score, draw this many bars first so the opening shows sooner (0 = draw it all at once).
+       */
+      constructor({ OSMD, container, onChange, osmdOptions = {}, zoom, language = '', extraVerses = [], sound = 'piano', firstBars = 12 }) {
+        this.language = language;
+        this.firstBars = firstBars;
+        this.sound = SOUNDS[sound] ? sound : 'piano'; // the melody guide's sound (see SOUNDS)
+        // Verses printed as text below the music (no syllables under the notes): sung as extra passes,
+        // shown line by line in currentWords(). An array of stanzas, each an array of lines.
+        this.extraVerses = Array.isArray(extraVerses) ? extraVerses.filter((v) => Array.isArray(v) && v.length) : [];
+        this.OSMD = OSMD;
+        this.container = container;
+        this.onChange = onChange || (() => {});
+        this.osmd = new OSMD.OpenSheetMusicDisplay(container, {
+          autoResize: true,
+          backend: 'svg',
+          drawTitle: false,
+          drawSubtitle: false,
+          drawComposer: false,
+          drawLyricist: false,
+          drawPartNames: true,
+          followCursor: true,
+          ...osmdOptions,
+        });
+        this.zoom = zoom || 1; // smaller on phones so lyrics have room
+        this.tempo = 1; // playback rate: 1 = the score's tempo
+        this.transpose = 0; // semitones
+        this.melodyOctave = 0; // the singer's octave: moves the melody guide and targets, not the notation or piano
+        this.parts = { voice: true, piano: true, choir: true }; // choir: the other sung parts
+        this.click = false; // metronome click on every beat
+        this.loop = null; // { from, to } measure indexes, inclusive
+        this.lap = 1; // times round the loop so far
+        this.speedUp = 0; // speed added each time round a loop (0.05 = 5%), up to speedTop
+        this.speedTop = 1;
+        this.echo = null; // echo practice: { phrases, i, turn, melody } (see setEcho)
+        this.take = null; // the singer's own recording, heard with the music (see setTake)
+        this.playing = false;
+        this.ctx = null;
+        this.active = new Set();
+        this.cursorStep = -1;
+      }
+    
+      /** Load a score: XML text, or the binary string of a compressed .mxl file. */
+      async load(source) {
+        this.stop();
+        await this.osmd.load(source);
+        if (this.OSMD.TransposeCalculator) this.osmd.TransposeCalculator = new this.OSMD.TransposeCalculator();
+        this.osmd.Zoom = this.zoom; // OSMD spells it Zoom, and loading a score resets it
+        // Every redraw (key change, resize, coloured noteheads) makes new lyric text: mark the verse again.
+        if (!this.osmd.__versePatched) {
+          const render = this.osmd.render.bind(this.osmd);
+          this.osmd.render = (...a) => {
+            const r = render(...a);
+            this._uniqueIds();
+            this._plainElisions();
+            this.verseLabels = null;
+            this.shownVerse = undefined;
+            this._markVerse();
+            return r;
+          };
+          this.osmd.__versePatched = true;
+        }
+        // A long score: draw the opening, let it show, then draw everything (a 255-bar song takes ~8 s to draw on a
+        // phone; the opening ~1.5 s).
+        const bars = this.osmd.Sheet?.SourceMeasures?.length ?? 0;
+        if (this.firstBars && bars > 2 * this.firstBars) {
+          this.osmd.setOptions({ drawUpToMeasureNumber: this.firstBars });
+          this.osmd.render();
+          await new Promise((r) => {
+            requestAnimationFrame(() => setTimeout(r, 0));
+            setTimeout(r, 200); // a hidden tab has no frames
+          });
+          this.osmd.setOptions({ drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER });
+        }
+        this.osmd.render();
+        this.timeline = this._buildTimeline();
+        this.myPart = this.timeline.voiceParts[0]?.key ?? null;
+        this._applyRoles();
+        this.position = 0;
+        this._showCursorAt(0);
+        this._emit();
+        return this.info();
+      }
+    
+      // OSMD joins elided syllables ("mi‿al") with the music-font glyph U+E551, but lyrics are set in Times New Roman,
+      // which lacks it (a private-use character has no fallback): every elision showed as a box. Use the ordinary undertie.
+      _plainElisions() {
+        for (const t of this.container.querySelectorAll('svg text')) if (t.textContent.includes('\uE551')) t.textContent = t.textContent.replaceAll('\uE551', '\u203F');
+      }
+    
+      // VexFlow gives every staff's measure the same id ("1", "Voice0-1"), and a slur broken over two lines is drawn
+      // twice with one id: duplicate ids on every song page (and across two scores on one page). Rename the second and
+      // later copies only, so OSMD's own getElementById lookups (stems, ledger lines) still find the same element.
+      _uniqueIds() {
+        const root = this.container;
+        const taken = new Set();
+        for (const el of document.querySelectorAll('[id]')) if (!root.contains(el)) taken.add(el.id);
+        for (const el of root.querySelectorAll('[id]')) {
+          if (!taken.has(el.id)) {
+            taken.add(el.id);
+            continue;
+          }
+          let k = 2;
+          while (taken.has(`${el.id}~${k}`)) k++;
+          el.id = `${el.id}~${k}`;
+          taken.add(el.id);
+        }
+      }
+    
+      info() {
+        const t = this.timeline;
+        return {
+          measures: t.measureStarts.length,
+          performedMeasures: t.measures.length,
+          verses: t.verses,
+          seconds: t.total,
+          bpm: t.bpm,
+          hasVoice: t.events.some((e) => e.part === 'voice'),
+          voiceParts: t.voiceParts,
+          myPart: this.myPart,
+          firstVoiceMidi: t.events.find((e) => e.part === 'voice')?.midi ?? null,
+        };
+      }
+    
+      /**
+       * Follow the cursor by scrolling a box (e.g. the score's own container) instead of the whole
+       * page, so things above the score stay in view. Pass null to go back to page scrolling.
+       */
+      setFollow(el) {
+        this.followEl = el || null;
+        this.osmd.FollowCursor = !el;
+        if (el) this._scrollBoxToCursor();
+      }
+    
+      _scrollBoxToCursor() {
+        const img = this.osmd.cursor?.cursorElement;
+        const box = this.followEl;
+        if (!img || !box) return;
+        const r = img.getBoundingClientRect();
+        const top = r.top - box.getBoundingClientRect().top + box.scrollTop;
+        if (top < box.scrollTop + 16 || top + r.height > box.scrollTop + box.clientHeight - 16) {
+          box.scrollTo({ top: Math.max(0, top - box.clientHeight * 0.2), behavior: 'smooth' });
+        }
+      }
+    
+      /** The melody note sounding at the play head (with transposition), or null. For sing-along feedback. */
+      currentVoiceMidi() {
+        if (!this.playing) return null;
+        const pos = this._now();
+        const e = this.timeline.events.find((v) => v.part === 'voice' && v.sec <= pos && pos < v.sec + v.dur);
+        return e ? e.midi + this.transpose + 12 * this.melodyOctave : null;
+      }
+    
+      /** Melody notes around the play head, in real seconds relative to now (negative = past). */
+      voiceWindow(before, after) {
+        const pos = this.playing ? this._now() : this.position;
+        const from = pos - before * this.tempo;
+        const to = pos + after * this.tempo;
+        const out = [];
+        for (const e of this.timeline.events) {
+          if (e.part !== 'voice' || e.sec + e.dur < from) continue;
+          if (e.sec > to) break;
+          out.push({ start: (e.sec - pos) / this.tempo, dur: e.dur / this.tempo, midi: e.midi + this.transpose + 12 * this.melodyOctave });
+        }
+        return out;
+      }
+    
+      // Walk the score once with OSMD's cursor (which already takes a repeat once, with its endings and
+      // D.C./D.S. jumps), add passes so every verse of a strophic song is sung, and time the result.
+      _buildTimeline() {
+        const sheet = this.osmd.Sheet;
+        // Sung parts: instruments with lyrics or a voice name. (No lyrics anywhere: the first instrument.)
+        const vocal = new Set(sheet.Instruments.filter((inst) => !INSTRUMENT_NAME.test(inst.Name || '') && (VOICE_NAME.test(inst.Name || '') || inst.HasLyrics)));
+        // None looks like a voice: the parts with words are sung (editions that enter voices as instruments: a choir as
+        // recorders or horns, the Queen of the Night as a cello); with no words anywhere, the first part.
+        if (!vocal.size) {
+          for (const inst of sheet.Instruments) if (inst.HasLyrics) vocal.add(inst);
+          if (!vocal.size && sheet.Instruments.length > 1) vocal.add(sheet.Instruments[0]);
+        }
+        const partVoices = new Map(); // part key -> { inst index, voice id }
+    
+        // 1. The walk: one entry per cursor position, with its notes and lyric syllables (by verse).
+        const cursor = this.osmd.cursor;
+        cursor.reset();
+        const it = cursor.Iterator;
+        const walk = [];
+        const seen = new Map(); // "measure|time" -> how many times the walk has been there
+        let bpm = sheet.SourceMeasures[0]?.TempoInBPM || sheet.DefaultStartTempoInBpm || 100;
+        const firstBpm = bpm;
+        while (!it.EndReached) {
+          const whole = it.currentTimeStamp.RealValue;
+          const measure = it.CurrentMeasureIndex;
+          bpm = it.CurrentMeasure?.TempoInBPM || bpm;
+          const where = `${measure}|${whole}`;
+          const pass = (seen.get(where) || 0) + 1;
+          seen.set(where, pass);
+          const entries = [];
+          for (const ve of it.CurrentVoiceEntries) {
+            if (ve.IsGrace) continue;
+            const inst = ve.ParentSourceStaffEntry?.ParentStaff?.ParentInstrument;
+            const isVocal = vocal.has(inst);
+            const instIndex = sheet.Instruments.indexOf(inst);
+            // A choir staff can hold two parts (e.g. soprano and alto): one part per voice in the staff.
+            const pk = `${instIndex}:${ve.ParentVoice?.VoiceId ?? 0}`;
+            if (isVocal && !partVoices.has(pk)) partVoices.set(pk, { instIndex, voiceId: ve.ParentVoice?.VoiceId ?? 0, name: inst?.Name || '' });
+            // In a chord on one sung part, the top note is the part's line; the rest sound with the other voices.
+            const sungNotes = [...ve.Notes].filter((n) => !n.isRest() && n.Pitch).sort((a, b) => b.Pitch.Frequency - a.Pitch.Frequency);
+            const notes = [];
+            for (const note of ve.Notes) {
+              if (note.isRest() || !note.Pitch) continue;
+              let len = note.Length.RealValue;
+              const tie = note.NoteTie;
+              if (tie) {
+                const run = tiedRun(tie, note, isVocal);
+                if (run[0] !== note) continue; // a real continuation: already counted with the head of its run
+                len = run.reduce((sum, n) => sum + n.Length.RealValue, 0);
+              }
+              notes.push({ note, len, midi: Math.round(69 + 12 * Math.log2(note.Pitch.Frequency / 440)), sub: sungNotes[0] !== note });
+            }
+            entries.push({ pk, isVocal, notes, lyrics: isVocal ? lyricsOf(ve) : null });
+          }
+          walk.push({ whole, measure, bpm, pass, entries });
+          it.moveToNext();
+        }
+        cursor.reset();
+        // A choir part printed without words (common in hymn editions: words under the top line only)
+        // borrows the syllables sung at the same moment by the nearest part that has them.
+        const worded = new Set();
+        for (const st of walk) for (const e of st.entries) if (e.lyrics?.size) worded.add(e.pk);
+        for (const st of walk) {
+          for (const e of st.entries) {
+            if (!e.isVocal || worded.has(e.pk) || !e.notes.length) continue;
+            const donor = st.entries.find((d) => d !== e && d.isVocal && d.lyrics?.size && d.notes.length);
+            if (donor) e.lyrics = donor.lyrics;
+          }
+        }
+        // How long each position lasts (whole notes): to the next one, or to the end of its measure
+        // before a jump (so the last beat before a repeat isn't swallowed by the first beat after it).
+        walk.forEach((st, j) => {
+          const next = walk[j + 1];
+          const sm = sheet.SourceMeasures[st.measure];
+          const mEnd = (sm?.AbsoluteTimestamp?.RealValue ?? st.whole) + (sm?.Duration?.RealValue ?? 0);
+          st.len = next && next.whole > st.whole + 1e-9 && next.whole <= mEnd + 1e-6 ? next.whole - st.whole : Math.max(0, mEnd - st.whole);
+        });
+    
+        // 2. Verses: lyric lines that run through at least half as many measures as the fullest one.
+        const cover = new Map();
+        for (const st of walk) {
+          for (const e of st.entries) {
+            if (!e.lyrics) continue;
+            for (const k of e.lyrics.keys()) {
+              if (!cover.has(k)) cover.set(k, new Set());
+              cover.get(k).add(st.measure);
+            }
+          }
+        }
+        const most = Math.max(0, ...[...cover.values()].map((m) => m.size));
+        const fullest = [...cover.values()].find((m) => m.size === most) || new Set();
+        // A line counts as a verse when it covers most of what the fullest line has in the same stretch
+        // of music (verse 2 is often written only under a repeated section) and isn't a stray fragment.
+        let verses = [...cover.keys()]
+          .filter((k) => {
+            const mine = cover.get(k);
+            if (mine === fullest) return true;
+            const lo = Math.min(...mine);
+            const hi = Math.max(...mine);
+            let there = 0;
+            for (const m of fullest) if (m >= lo && m <= hi) there++;
+            return mine.size >= Math.max(3, most * 0.2) && mine.size >= there * 0.6;
+          })
+          .sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0));
+        // A line in another language is a singing translation printed under the verse, not a new verse.
+        if (verses.length > 1) {
+          const text = new Map(verses.map((k) => [k, '']));
+          for (const st of walk) {
+            if (st.pass !== 1) continue;
+            for (const e of st.entries) {
+              if (!e.lyrics) continue;
+              for (const k of verses) {
+                const syl = e.lyrics.get(k);
+                if (syl) text.set(k, text.get(k) + (syl.endsWith('-') ? syl.slice(0, -1) : syl + ' '));
+              }
+            }
+          }
+          const langs = new Map(verses.map((k) => [k, guessLanguage(text.get(k))]));
+          // The song's own language when known (the original may be printed under a translation),
+          // otherwise the first line's.
+          const want = this.language && [...langs.values()].includes(this.language) ? this.language : langs.get(verses[0]);
+          if (want) verses = verses.filter((k) => !langs.get(k) || langs.get(k) === want);
+        }
+        // Verses printed below the music add passes after the ones under the notes.
+        const extraCount = verses.length >= 1 ? this.extraVerses.length : 0;
+        const verseCount = Math.max(1, verses.length) + extraCount;
+    
+        // 3. The performance: walk positions with the pass (verse) each is sung in. More verses than
+        // the score's own repeat gives: the repeated section again for each further verse; no repeat at
+        // all (a strophic song written out once): the whole song once per verse.
+        const maxPass = Math.max(1, ...walk.map((st) => st.pass));
+        let perf = walk.map((st, j) => ({ j, pass: st.pass }));
+        if (verseCount > maxPass) {
+          if (maxPass === 1) {
+            perf = [];
+            for (let k = 1; k <= verseCount; k++) walk.forEach((_, j) => perf.push({ j, pass: k }));
+          } else {
+            const a = walk.findIndex((st) => st.pass === 2);
+            let b = a;
+            while (b + 1 < walk.length && walk[b + 1].pass === 2) b++;
+            const extra = [];
+            for (let k = 3; k <= verseCount; k++) for (let j = a; j <= b; j++) extra.push({ j, pass: k });
+            perf = [...perf.slice(0, b + 1), ...extra, ...perf.slice(b + 1)];
+          }
+        }
+        const lyricFor = (lyrics, pass) => {
+          if (!lyrics || !lyrics.size) return '';
+          if (pass > verses.length && extraCount) return ''; // a printed verse: no syllables under the notes
+          const want = verses[Math.min(pass, verses.length) - 1];
+          if (want !== undefined && lyrics.has(want)) return lyrics.get(want);
+          return lyrics.size === 1 ? [...lyrics.values()][0] : ''; // a refrain, sung the same every time
+        };
+    
+        // 4. Time it.
+        // Seconds a note of `len` whole notes lasts from walk position j: at that position's tempo, unless the tempo changes
+        // while it is held (a long tied note over a ritardando), then piece by piece. (Without a change inside the note,
+        // this is exactly len * 4 * 60 / bpm, as before.) A note timed at its starting tempo alone could run past the next
+        // note's start, so the sung line overlapped itself in seconds though not on the page.
+        const heldSeconds = (j, len) => {
+          const first = walk[j];
+          let changes = false;
+          for (let k = j + 1; walk[k] && walk[k].whole < first.whole + len - 1e-9; k++) {
+            if (walk[k].bpm !== first.bpm) { changes = true; break; }
+          }
+          if (!changes) return len * 4 * (60 / first.bpm);
+          let left = len;
+          let secs = 0;
+          let bpmNow = first.bpm;
+          for (let k = j; walk[k] && left > 1e-9; k++) {
+            bpmNow = walk[k].bpm;
+            const part = Math.min(left, walk[k].len);
+            secs += part * 4 * (60 / bpmNow);
+            left -= part;
+          }
+          return left > 1e-9 ? secs + left * 4 * (60 / bpmNow) : secs;
+        };
+        const events = [];
+        const steps = []; // one per performed cursor position: { sec, measure, walk, pass }
+        const measures = []; // performed measures in order: { m, pass, start, bpm }
+        const measureStarts = []; // each written measure's first appearance
+        let sec = 0;
+        perf.forEach((pp, i) => {
+          const st = walk[pp.j];
+          const prev = i ? perf[i - 1] : null;
+          if (!prev || walk[prev.j].measure !== st.measure || pp.j !== prev.j + 1 || prev.pass !== pp.pass) measures.push({ m: st.measure, pass: pp.pass, start: sec, bpm: st.bpm });
+          if (measureStarts[st.measure] === undefined) measureStarts[st.measure] = sec;
+          steps.push({ sec, measure: st.measure, walk: pp.j, pass: pp.pass });
+          for (const e of st.entries) {
+            for (const n of e.notes) {
+              events.push({ sec, dur: heldSeconds(pp.j, n.len), at: st.whole, len: n.len, midi: n.midi, part: 'piano', measure: st.measure, pass: pp.pass, note: n.note, pk: e.pk, vocal: e.isVocal, sub: n.sub, lyric: e.isVocal && !n.sub ? lyricFor(e.lyrics, pp.pass) : '' });
+            }
+          }
+          sec += st.len * 4 * (60 / st.bpm); // whole notes -> quarter beats -> seconds
+        });
+        const total = Math.max(sec, ...events.map((e) => e.sec + e.dur));
+        for (let m = 0; m < measureStarts.length; m++) if (measureStarts[m] === undefined) measureStarts[m] = measureStarts[m - 1] ?? 0;
+        events.sort((a, b) => a.sec - b.sec);
+        // One voice sings one note at a time. Whatever the score says (a stray tie, a tie into another voice, a doubled
+        // unison), a sung note ends where the same voice's next note begins, so the sung line never overlaps itself. (The
+        // tie rules above keep lengths right wherever the notation allows; this is the guarantee for what they don't cover.)
+        const lastSung = new Map();
+        for (const e of events) {
+          if (!e.vocal || e.sub) continue;
+          const prev = lastSung.get(e.pk);
+          if (prev && prev.sec + prev.dur > e.sec + 1e-6) {
+            if (e.sec - prev.sec < 1e-6) {
+              // Two notes at once in one voice (a doubled note): the one that carries the word is the line, the other sounds with the choir.
+              const keep = prev.lyric || !e.lyric ? prev : e;
+              const drop = keep === prev ? e : prev;
+              drop.sub = true;
+              drop.lyric = '';
+              lastSung.set(e.pk, keep);
+              continue;
+            }
+            prev.dur = e.sec - prev.sec;
+          }
+          lastSung.set(e.pk, e);
+        }
+        const clicks = this._buildClicks(sheet, measures, total);
+        // The sung parts a singer can choose as theirs, in score order; a staff with two parts gets upper/lower.
+        const counts = {};
+        for (const e of events) if (e.vocal && !e.sub) counts[e.pk] = (counts[e.pk] || 0) + 1;
+        const keys = [...partVoices.keys()].filter((k) => (counts[k] || 0) >= 8).sort((a, b) => {
+          const [ia, va] = a.split(':').map(Number);
+          const [ib, vb] = b.split(':').map(Number);
+          return ia - ib || va - vb;
+        });
+        const perInst = {};
+        for (const k of keys) perInst[k.split(':')[0]] = (perInst[k.split(':')[0]] || 0) + 1;
+        const seenInInst = {};
+        const voiceParts = keys.map((k) => {
+          const v = partVoices.get(k);
+          const n = (seenInInst[v.instIndex] = (seenInInst[v.instIndex] || 0) + 1);
+          const base = (v.name || 'Voice').replace(/\s+/g, ' ').trim();
+          const many = perInst[v.instIndex];
+          return { key: k, name: many === 2 ? `${base} (${n === 1 ? 'upper' : 'lower'})` : many > 2 ? `${base} ${n}` : base };
+        });
+        const passes = Math.max(1, ...perf.map((pp) => pp.pass));
+        return { events, steps, measures, measureStarts, total, bpm: firstBpm, clicks, voiceParts, verses: verseCount, verseKeys: verses, noteVerses: verses.length, passes, firstBeat: clicks[1] ? clicks[1].sec - clicks[0].sec : 60 / firstBpm, beatsPerBar: this._beatsIn(sheet.SourceMeasures[0]) };
+      }
+    
+      // A metronome beat: the denominator note, or the dotted beat in compound time (6/8 = two beats).
+      _beatsIn(measure) {
+        const sig = measure?.ActiveTimeSignature;
+        const num = sig?.Numerator || 4;
+        const den = sig?.Denominator || 4;
+        const compound = den >= 8 && num % 3 === 0 && num > 3;
+        return { beats: compound ? num / 3 : num, beatWhole: (compound ? 3 : 1) / den };
+      }
+    
+      // Click times for every beat of every performed measure, accented on each downbeat.
+      // A short pickup bar counts back from its end.
+      _buildClicks(sheet, measures, total) {
+        const clicks = [];
+        measures.forEach((pm, i) => {
+          const { beatWhole } = this._beatsIn(sheet.SourceMeasures[pm.m]);
+          const beatSec = beatWhole * 4 * (60 / (pm.bpm || 100));
+          const start = pm.start;
+          const end = i + 1 < measures.length ? measures[i + 1].start : total;
+          const full = (sheet.SourceMeasures[pm.m]?.Duration?.RealValue || 1) * 4 * (60 / (pm.bpm || 100));
+          const pickup = end - start < full - 1e-3;
+          const offset = pickup ? (end - start) % beatSec : 0;
+          for (let t = start + offset, k = 0; t < end - 1e-3; t += beatSec, k++) clicks.push({ sec: t, accent: k === 0 && !pickup });
+        });
+        return clicks;
+      }
+    
+      // ---- Transport -----------------------------------------------------------
+    
+      /** @param {{ countIn?: boolean }} [opts] countIn: one bar of clicks before the music starts. */
+      async play({ countIn = false } = {}) {
+        if (this.playing || this.starting || !this.timeline) return;
+        if (this.rec) return this._playRecording();
+        this._ensureAudio();
+        // Start the clock only once audio is really running, or the play head would sit still.
+        if (this.ctx.state !== 'running') {
+          this.starting = true;
+          try {
+            await this.ctx.resume();
+          } finally {
+            this.starting = false;
+          }
+        }
+        if (this.position >= this.timeline.total - 0.01) this.position = this.loop ? this._loopBounds().start : 0;
+        this.playing = true;
+        const beat = this.timeline.firstBeat / this.tempo;
+        const lead = countIn ? this.timeline.beatsPerBar.beats * beat : 0;
+        this._startFrom(this.position, lead);
+        for (let k = 0; countIn && k < this.timeline.beatsPerBar.beats; k++) this._click(this.startCtx - lead + k * beat, k === 0);
+        this.timer = setInterval(() => this._tick(), TICK_MS);
+        const frame = () => {
+          if (!this.playing) return;
+          this.position = Math.max(this.startSec, this._now());
+          this._showCursorAt(this.position);
+          this._emit();
+          this.raf = requestAnimationFrame(frame);
+        };
+        this.raf = requestAnimationFrame(frame);
+        this._emit();
+      }
+    
+      pause() {
+        if (!this.playing) return;
+        if (this.rec) {
+          this.position = Math.max(0, Math.min(this.timeline.total, this._now()));
+          this.rec.audio.pause();
+          this.playing = false;
+          cancelAnimationFrame(this.raf);
+          this._emit();
+          return;
+        }
+        this.position = Math.max(this.startSec, this._now());
+        this.playing = false;
+        clearInterval(this.timer);
+        cancelAnimationFrame(this.raf);
+        this._silence();
+        this._emit();
+      }
+    
+      stop() {
+        this.pause();
+        this.position = this.loop && this.timeline ? this._loopBounds().start : 0;
+        if (this.timeline) this._showCursorAt(this.position);
+        this._emit();
+      }
+    
+      /**
+       * Follow a recording instead of playing the practice sounds: audio is an <audio> element, map comes from
+       * align() (toAudio/toScore). The cursor, scoreTime(), currentVoiceMidi() and so on then follow the performance;
+       * the speed setting is the recording's playback rate (pitch kept). Pass null to go back to the practice sounds.
+       */
+      useRecording(audio, map) {
+        this.pause();
+        if (this.rec && this.rec.audio !== audio) this.rec.audio.pause();
+        this.rec = audio ? { audio, map } : null;
+        this._emit();
+      }
+    
+      async _playRecording() {
+        const { audio, map } = this.rec;
+        if (this.position >= this.timeline.total - 0.01) this.position = this.loop ? this._loopBounds().start : 0;
+        audio.preservesPitch = true;
+        audio.playbackRate = this.tempo;
+        audio.currentTime = Math.max(0, map.toAudio(this.position));
+        this.playing = true;
+        try {
+          await audio.play();
+        } catch {
+          this.playing = false;
+          this._emit();
+          return;
+        }
+        const frame = () => {
+          if (!this.playing || !this.rec) return;
+          let pos = map.toScore(audio.currentTime);
+          const end = this.loop ? this._loopBounds().end : this.timeline.total;
+          if (pos >= end || audio.ended) {
+            if (this.loop) {
+              this._nextLap();
+              audio.playbackRate = this.tempo;
+              pos = this._loopBounds().start;
+              audio.currentTime = Math.max(0, map.toAudio(pos));
+            } else {
+              this.pause();
+              this.position = this.timeline.total;
+              this._emit();
+              return;
+            }
+          }
+          this.position = Math.max(0, pos);
+          this._showCursorAt(this.position);
+          this._emit();
+          this.raf = requestAnimationFrame(frame);
+        };
+        this.raf = requestAnimationFrame(frame);
+        this._emit();
+      }
+    
+      /** Go to a written measure (0-based), in the verse being sung now if it comes round again. */
+      seekToMeasure(index) {
+        const m = Math.max(0, Math.min(index, this.timeline.measureStarts.length - 1));
+        const inst = this._instanceOf(m);
+        this._seek(inst ? inst.start : this.timeline.measureStarts[m]);
+      }
+    
+      /** Go to the i-th performed measure (counting every repeat and verse), 0-based. */
+      seekToPerformed(i) {
+        const ms = this.timeline.measures;
+        this._seek(ms[Math.max(0, Math.min(i, ms.length - 1))].start);
+      }
+    
+      /** Playback speed as a fraction of the score's tempo (e.g. 0.75 = 75%). */
+      setTempo(rate) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.tempo = Math.max(0.25, Math.min(2, rate));
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+    
+      /** Transpose audio and notation by semitones. */
+      setTranspose(semitones) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.transpose = Math.max(-12, Math.min(12, Math.round(semitones)));
+        if (this.osmd.TransposeCalculator) {
+          this.osmd.Sheet.Transpose = this.transpose;
+          this.osmd.updateGraphic();
+          this.osmd.render();
+          this.cursorStep = -1;
+          this._showCursorAt(this.position);
+        }
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+    
+      /**
+       * Sing the melody an octave (or two) lower or higher than written, as tenors, baritones and basses
+       * do with treble-clef songs. Moves the melody guide, targets and starting note; notation and piano stay.
+       */
+      setMelodyOctave(n) {
+        this.melodyOctave = Math.max(-2, Math.min(2, Math.round(n) || 0));
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+    
+      /**
+       * Choose which sung part is yours (a key from info().voiceParts): it becomes the melody guide and the
+       * feedback target; the other sung parts play softly as "other voices".
+       */
+      setMyPart(key) {
+        if (!this.timeline.voiceParts.some((v) => v.key === key)) return;
+        this.myPart = key;
+        this._applyRoles();
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+    
+      _applyRoles() {
+        let vi = 0;
+        for (const e of this.timeline.events) {
+          e.part = !e.vocal ? 'piano' : e.pk === this.myPart && !e.sub ? 'voice' : 'choir';
+          e.vi = e.part === 'voice' ? vi++ : -1; // index into voiceNotes()
+        }
+      }
+    
+      /**
+       * What a scrolling note lane needs around the play head, in real seconds relative to `at`
+       * (default: the play head): the melody's notes ({ start, dur, midi, lyric, i } where i indexes
+       * voiceNotes()) and the bar lines ({ start, n } with n counted from 1).
+       */
+      laneWindow(before, after, at = this.scoreTime()) {
+        const from = at - before * this.tempo;
+        const to = at + after * this.tempo;
+        const shift = this.transpose + 12 * this.melodyOctave;
+        const notes = [];
+        for (const e of this.timeline.events) {
+          if (e.part !== 'voice' || e.sec + e.dur < from) continue;
+          if (e.sec > to) break;
+          notes.push({ start: (e.sec - at) / this.tempo, dur: e.dur / this.tempo, midi: e.midi + shift, lyric: e.lyric, i: e.vi });
+        }
+        // Bar lines of the performance; `verse` is set on the first bar of each new verse.
+        const bars = [];
+        const ms = this.timeline.measures;
+        ms.forEach((pm, k) => {
+          if (pm.start < from || pm.start > to) return;
+          const newVerse = this.timeline.verses > 1 && k > 0 && pm.pass !== ms[k - 1].pass;
+          bars.push({ start: (pm.start - at) / this.tempo, n: pm.m + 1, verse: newVerse ? Math.min(pm.pass, this.timeline.verses) : 0 });
+        });
+        return { notes, bars };
+      }
+    
+      /**
+       * The words being sung now, for a caption: { verse, verses, printed, words: [{ text, state }] }
+       * (state 'past' | 'now' | 'next', one phrase around the play head), or for a printed verse
+       * { verse, verses, printed: true, line, lines } (the stanza's lines, advancing through the pass).
+       * Null when nothing is sung here.
+       */
+      currentWords() {
+        const t = this.timeline;
+        if (!t) return null;
+        const at = this.scoreTime();
+        const pass = this.pass || 1;
+        const verse = Math.min(pass, t.verses);
+        if (t.noteVerses && pass > t.noteVerses && this.extraVerses.length) {
+          const lines = this.extraVerses[Math.min(pass - t.noteVerses, this.extraVerses.length) - 1];
+          const inPass = t.measures.filter((pm) => pm.pass === pass);
+          if (!lines || !inPass.length) return null;
+          const start = inPass[0].start;
+          const next = t.measures[t.measures.indexOf(inPass[inPass.length - 1]) + 1];
+          const end = next ? next.start : t.total;
+          const k = Math.max(0, Math.min(lines.length - 1, Math.floor(((at - start) / Math.max(1e-6, end - start)) * lines.length)));
+          return { verse, verses: t.verses, printed: true, line: k, lines };
+        }
+        const ck = `${pass}|${this.myPart}`;
+        if (this.wordsCache?.key !== ck) this.wordsCache = { key: ck, sung: t.events.filter((e) => e.part === 'voice' && e.pass === pass) };
+        const sung = this.wordsCache.sung;
+        if (!sung.length) return null;
+        let i = sung.findIndex((e) => e.sec + e.dur > at);
+        if (i < 0) i = sung.length - 1;
+        // A phrase: back to the last breath (a gap, or punctuation), forward to the next one.
+        const ends = (k) => /[,;:.!?]$/.test(sung[k].lyric) || (sung[k + 1] && sung[k + 1].sec - (sung[k].sec + sung[k].dur) > 0.5);
+        let a = i;
+        while (a > 0 && !ends(a - 1) && i - a < 14) a--;
+        let b = i;
+        while (b < sung.length - 1 && !ends(b) && b - a < 16) b++;
+        const words = [];
+        for (let k = a; k <= b; k++) {
+          if (!sung[k].lyric) continue;
+          const state = sung[k].sec + sung[k].dur <= at ? 'past' : sung[k].sec <= at ? 'now' : 'next';
+          words.push({ text: sung[k].lyric, state });
+        }
+        return words.length ? { verse, verses: t.verses, printed: false, words } : null;
+      }
+    
+      // In the score, the verse being sung stands out and the other lines of words step back.
+      _markVerse() {
+        const t = this.timeline;
+        if (!t || t.verses < 2) return;
+        this.shownVerse = this.pass || 1;
+        const key = t.verseKeys[(this.pass || 1) - 1]; // undefined for a printed verse: none is under the notes
+        if (!this.verseLabels) {
+          this.verseLabels = [];
+          for (const staves of this.osmd.GraphicSheet?.MeasureList || []) {
+            for (const gm of staves || []) {
+              for (const se of gm?.staffEntries || []) {
+                for (const le of se.LyricsEntries || []) {
+                  const node = le.GraphicalLabel?.SVGNode;
+                  if (node) this.verseLabels.push({ node, verse: le.LyricsEntry?.VerseNumber });
+                }
+              }
+            }
+          }
+        }
+        for (const { node, verse } of this.verseLabels) {
+          const mine = verse === key;
+          node.style.opacity = mine ? '1' : '0.35';
+          // The label may be a group: colour its text itself (the text's own fill attribute wins over inheritance).
+          for (const el of node.tagName === 'text' ? [node] : node.querySelectorAll?.('text') || []) {
+            el.style.fill = mine ? '#7a1f33' : '';
+            el.style.fontWeight = mine ? '700' : '';
+          }
+        }
+      }
+    
+      /** Move the play head to a time in score seconds (keeps playing if it was). */
+      seek(sec) {
+        this._seek(sec);
+      }
+    
+      /** The measure index under a point on the page (e.g. a click on the score), or -1. */
+      measureAtPoint(clientX, clientY) {
+        const svg = this.container.querySelector('svg');
+        const list = this.osmd.GraphicSheet?.MeasureList;
+        if (!svg || !list) return -1;
+        const r = svg.getBoundingClientRect();
+        const scale = (r.width / (svg.width?.baseVal?.value || r.width)) * 10 * this.osmd.Zoom; // OSMD units are 10 px at zoom 1
+        const x = (clientX - r.left) / scale;
+        const y = (clientY - r.top) / scale;
+        let best = -1;
+        let bestDist = Infinity;
+        list.forEach((staves, m) => {
+          const boxes = (staves || []).filter(Boolean).map((g) => g.PositionAndShape);
+          if (!boxes.length) return;
+          const left = boxes[0].AbsolutePosition.x + boxes[0].BorderLeft;
+          const right = boxes[0].AbsolutePosition.x + boxes[0].BorderRight;
+          if (x < left || x > right) return;
+          // The system's height: from the top staff to the bottom staff, with room for lyrics below.
+          const top = Math.min(...boxes.map((b) => b.AbsolutePosition.y + b.BorderTop)) - 2;
+          const bottom = Math.max(...boxes.map((b) => b.AbsolutePosition.y + b.BorderBottom)) + 4;
+          const dist = y < top ? top - y : y > bottom ? y - bottom : 0;
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = m;
+          }
+        });
+        return bestDist <= 6 ? best : -1;
+      }
+    
+      /** Metronome click on every beat while playing. */
+      setClick(on) {
+        this.click = !!on;
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+    
+      /** Score time in seconds at the play head; negative-going (before startSec) during a count-in. */
+      scoreTime() {
+        return this.playing ? this._now() : this.position;
+      }
+    
+      /**
+       * The sung line as written, first time through (no repeats or extra verses), in the current key: { notes: [{ at,
+       * len, midi }] with at/len in whole notes from the start, num, den (time signature), bpm (quarter notes) }.
+       * For editing a copy of the tune elsewhere.
+       */
+      writtenMelody() {
+        const sig = this.osmd.Sheet.SourceMeasures[0]?.ActiveTimeSignature;
+        const notes = [];
+        const seen = new Set();
+        for (const e of this.timeline.events) {
+          if (e.part !== 'voice' || e.pass !== 1 || seen.has(e.at)) continue;
+          seen.add(e.at);
+          notes.push({ at: e.at, len: e.len, midi: e.midi + this.transpose });
+        }
+        notes.sort((a, b) => a.at - b.at);
+        return { notes, num: sig?.Numerator || 4, den: sig?.Denominator || 4, bpm: this.timeline.bpm };
+      }
+    
+      /** The melody's notes in order: { sec, dur, midi } in score seconds (before any count-in). */
+      voiceNotes() {
+        return this.timeline.events.filter((e) => e.part === 'voice').map(({ sec, dur, midi }) => ({ sec, dur, midi: midi + this.transpose + 12 * this.melodyOctave }));
+      }
+    
+      /**
+       * Colour the melody's noteheads, e.g. to show which sung notes were right.
+       * colors: an array matching voiceNotes() (a CSS color, or null for the default); omit to clear.
+       */
+      markVoiceNotes(colors = []) {
+        const voice = this.timeline.events.filter((e) => e.part === 'voice');
+        voice.forEach((e, i) => (e.note.NoteheadColor = colors[i] || undefined));
+        this.osmd.render();
+        this.cursorStep = -1;
+        this._showCursorAt(this.position);
+      }
+    
+      setPart(part, on) {
+        this.parts[part] = !!on;
+        if (this.playing) this._seek(this._now()); // reschedule without the muted part
+        this._emit();
+      }
+    
+      /** Loop measures `from`..`to` (0-based, inclusive). Pass null to stop looping. */
+      setLoop(from, to) {
+        this.lap = 1;
+        if (this.echo) this._endEcho();
+        if (from === null || from === undefined) {
+          this.loop = null;
+        } else {
+          const last = this.timeline.measureStarts.length - 1;
+          const a = Math.max(0, Math.min(from, last));
+          const b = Math.max(a, Math.min(to, last));
+          // Loop these measures as they come in the verse being sung now (or their first appearance).
+          const ms = this.timeline.measures;
+          const first = this._instanceOf(a);
+          const startIdx = first ? ms.indexOf(first) : 0;
+          let endIdx = ms.findIndex((pm, k) => k >= startIdx && pm.m === b);
+          if (endIdx < 0) endIdx = startIdx;
+          this.loop = { from: a, to: b, startIdx, endIdx };
+          const { start, end } = this._loopBounds();
+          if (this.position < start || this.position >= end) this._seek(start);
+        }
+        this._emit();
+      }
+    
+      /**
+       * Loop practice that speeds up: each time round a loop adds `step` to the speed (0.05 = 5%), up to `top` (full
+       * speed). Start slow with setTempo, then setLoop. 0 = the same speed every time.
+       */
+      setSpeedUp(step, top = 1) {
+        this.speedUp = Math.max(0, Number(step) || 0);
+        this.speedTop = top;
+        this._emit();
+      }
+    
+      /**
+       * Echo practice: each phrase ({ startIdx, endIdx } performed measures, from phrases.js findPhrases) is played once
+       * with the melody, then again without it for the singer to sing back, a beat's breath between; then the next phrase.
+       * Starts at phrase `from`. Pass null to stop (the melody setting is restored). Not with a recording.
+       */
+      setEcho(phrases, { from = 0 } = {}) {
+        if (!phrases?.length || this.rec) {
+          this._endEcho();
+          return;
+        }
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        const melody = this.echo ? this.echo.melody : this.parts.voice;
+        this.echo = { phrases, i: Math.max(0, Math.min(from, phrases.length - 1)), turn: false, melody };
+        this.lap = 1;
+        this._echoLoop();
+        this.position = this._loopBounds().start;
+        this._showCursorAt(this.position);
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+    
+      _echoLoop() {
+        const e = this.echo;
+        const p = e.phrases[e.i];
+        const ms = this.timeline.measures;
+        this.loop = { from: ms[p.startIdx].m, to: ms[p.endIdx].m, startIdx: p.startIdx, endIdx: p.endIdx };
+        this.parts.voice = !e.turn;
+      }
+    
+      _endEcho() {
+        if (!this.echo) return;
+        this.parts.voice = this.echo.melody;
+        this.echo = null;
+        this.loop = null;
+        this._emit();
+      }
+    
+      // The loop came round: count it, speed up or move echo practice on. Returns the pause before the next time round
+      // (seconds), or null when echo practice has run out of phrases.
+      _nextLap() {
+        this.lap++;
+        const e = this.echo;
+        if (e) {
+          if (!e.turn) e.turn = true;
+          else {
+            e.turn = false;
+            e.i++;
+          }
+          if (e.i >= e.phrases.length) {
+            this._endEcho();
+            this.position = this.timeline.measures[e.phrases[e.phrases.length - 1].endIdx + 1]?.start ?? this.timeline.total;
+            return null;
+          }
+          this._echoLoop();
+          this._emit();
+          return this.timeline.firstBeat / this.tempo; // a beat to breathe
+        }
+        if (this.speedUp && this.tempo < this.speedTop) this.tempo = Math.min(this.speedTop, Math.round((this.tempo + this.speedUp) * 100) / 100);
+        this._emit();
+        return 0;
+      }
+    
+      /**
+       * The singer's own recording, to hear with the music: { buffer (an AudioBuffer from decodeTake), scoreStart (score
+       * time of its first sample), lag (seconds the voice in it lags the music the singer heard: output + input latency),
+       * tempo, transpose (what it was sung at), on }. While `on`, playing at that tempo and key plays it in time with the
+       * parts from wherever playback starts (loops too). Pass null to forget it.
+       */
+      setTake(take) {
+        this.take = take || null;
+        if (this.playing) this._seek(this._now());
+        this._emit();
+      }
+    
+      /** Decode a recording (ArrayBuffer) on this player's audio clock, for setTake. */
+      async decodeTake(data) {
+        this._ensureAudio();
+        return this.ctx.decodeAudioData(data);
+      }
+    
+      /** Go to a moment of the performance (score seconds). */
+      seek(sec) {
+        this._seek(sec);
+      }
+    
+      _startTake(sec) {
+        const k = this.take;
+        if (!k?.on || Math.abs(k.tempo - this.tempo) > 1e-3 || k.transpose !== this.transpose) return;
+        const off = (sec - k.scoreStart) / this.tempo + k.lag; // where the take is at score time `sec`
+        if (off >= k.buffer.duration) return;
+        const src = this.ctx.createBufferSource();
+        src.buffer = k.buffer;
+        const gain = this.ctx.createGain();
+        gain.gain.value = k.level ?? 1;
+        src.connect(gain).connect(this.ctx.destination);
+        const when = this.startCtx + Math.max(0, -off);
+        src.start(when, Math.max(0, off));
+        this._track([src], gain, when + k.buffer.duration + 1);
+      }
+    
+      /** The melody guide's sound: a key of SOUNDS (the accompaniment stays piano, other choir parts "oo"). */
+      setSound(sound) {
+        if (!SOUNDS[sound]) return;
+        this.sound = sound;
+        if (this.playing) this._seek(this._now());
+      }
+    
+      /** Play the singer's first note (in the current key) so they can find their pitch. */
+      playStartingNote(seconds = 1.6) {
+        const midi = this.info().firstVoiceMidi;
+        if (midi === null) return;
+        this._ensureAudio();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const t = this.ctx.currentTime + 0.03;
+        this.noteUntil = t + seconds + 0.5;
+        const sung = midi + this.transpose + 12 * this.melodyOctave;
+        this._note(this.sound, sung, t, seconds, this.ctx.destination, this.sound === 'piano' ? 1.6 : 1);
+      }
+    
+      /**
+       * True while the starting note can be heard: for VoiceAnalyzer.setIgnore, so a microphone without
+       * headphones doesn't take it for the singer. (Playback itself isn't covered: use headphones.)
+       */
+      sounding() {
+        if (!this.ctx || !this.noteUntil) return false;
+        const lat = Math.max(0, Math.min(0.5, (this.ctx.outputLatency || 0) + (this.ctx.baseLatency || 0)));
+        return this.ctx.currentTime - lat < this.noteUntil + 0.15;
+      }
+    
+      destroy() {
+        this.pause();
+        this.rec?.audio.pause();
+        this.ctx?.close();
+        this.osmd.clear?.();
+      }
+    
+      // ---- Internals -------------------------------------------------------------
+    
+      _loopBounds() {
+        const ms = this.timeline.measures;
+        const end = ms[this.loop.endIdx + 1];
+        return { start: ms[this.loop.startIdx].start, end: end ? end.start : this.timeline.total };
+      }
+    
+      // A written measure as it is played in the current verse (or its first appearance).
+      _instanceOf(m) {
+        const ms = this.timeline.measures;
+        return ms.find((pm) => pm.m === m && pm.pass === (this.pass || 1)) || ms.find((pm) => pm.m === m) || null;
+      }
+    
+      _seek(sec) {
+        const wasPlaying = this.playing;
+        if (wasPlaying) this.pause();
+        this.position = Math.max(0, Math.min(sec, this.timeline.total));
+        this._showCursorAt(this.position);
+        if (wasPlaying) this.play();
+        this._emit();
+      }
+    
+      _now() {
+        if (this.rec) return this.rec.map.toScore(this.rec.audio.currentTime);
+        return this.startSec + (this.ctx.currentTime - this.startCtx) * this.tempo;
+      }
+    
+      _startFrom(sec, lead = 0) {
+        this.startSec = sec;
+        this.startCtx = this.ctx.currentTime + 0.06 + lead;
+        const ev = this.timeline.events;
+        let i = 0;
+        while (i < ev.length && ev[i].sec < sec - 1e-6) i++;
+        this.next = i;
+        const cl = this.timeline.clicks;
+        let c = 0;
+        while (c < cl.length && cl[c].sec < sec - 1e-6) c++;
+        this.nextClick = c;
+        this._startTake(sec);
+      }
+    
+      _tick() {
+        const now = this._now();
+        const end = this.loop ? this._loopBounds().end : this.timeline.total;
+        if (now >= end) {
+          if (this.loop) {
+            this._silence();
+            const lead = this._nextLap();
+            if (lead === null) {
+              // Echo practice finished: stop at the end of the last phrase.
+              this.pause();
+              return;
+            }
+            this._startFrom(this._loopBounds().start, lead);
+          } else {
+            this.pause();
+            this.position = this.timeline.total;
+            this._emit();
+          }
+          return;
+        }
+        const horizon = now + LOOKAHEAD * this.tempo;
+        const ev = this.timeline.events;
+        while (this.next < ev.length && ev[this.next].sec <= horizon && ev[this.next].sec < end) {
+          const e = ev[this.next++];
+          if (!this.parts[e.part]) continue;
+          const at = this.startCtx + (e.sec - this.startSec) / this.tempo;
+          const dur = Math.min(e.dur, end - e.sec) / this.tempo;
+          if (e.part === 'voice') this._note(this.sound, e.midi + this.transpose + 12 * this.melodyOctave, at, dur, this.voiceBus, this.sound === 'piano' ? 1.5 : 1);
+          else if (e.part === 'choir') this._note('voice', e.midi + this.transpose, at, dur, this.choirBus);
+          else this._note('piano', e.midi + this.transpose, at, dur, this.pianoBus, 2.2);
+        }
+        const cl = this.timeline.clicks;
+        while (this.nextClick < cl.length && cl[this.nextClick].sec <= horizon && cl[this.nextClick].sec < end - 1e-3) {
+          const c = cl[this.nextClick++];
+          if (this.click) this._click(this.startCtx + (c.sec - this.startSec) / this.tempo, c.accent);
+        }
+      }
+    
+      // A short woodblock-like tick, higher on the downbeat.
+      _click(at, accent) {
+        const ctx = this.ctx;
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = accent ? 1500 : 1000;
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0, at);
+        env.gain.linearRampToValueAtTime(accent ? 0.5 : 0.32, at + 0.002);
+        env.gain.exponentialRampToValueAtTime(0.001, at + 0.05);
+        o.connect(env).connect(this.clickBus);
+        o.start(at);
+        this._track([o], env, at + 0.06);
+      }
+    
+      _ensureAudio() {
+        routeAudioAsMedia(); // every Play/Starting note is a tap, so this runs inside one
+        if (this.ctx) return;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new Ctx();
+        const comp = this.ctx.createDynamicsCompressor();
+        comp.connect(this.ctx.destination);
+        this.voiceBus = this.ctx.createGain();
+        this.voiceBus.gain.value = 0.55;
+        this.pianoBus = this.ctx.createGain();
+        this.pianoBus.gain.value = 0.32;
+        this.clickBus = this.ctx.createGain();
+        this.clickBus.gain.value = 0.6;
+        this.choirBus = this.ctx.createGain();
+        this.choirBus.gain.value = 0.22;
+        this.choirBus.connect(comp);
+        this.voiceBus.connect(comp);
+        this.pianoBus.connect(comp);
+        this.clickBus.connect(comp);
+      }
+    
+      _track(nodes, gain, stopAt) {
+        const entry = { nodes, gain };
+        this.active.add(entry);
+        nodes[0].onended = () => this.active.delete(entry);
+        for (const n of nodes) n.stop(stopAt);
+      }
+    
+      _silence() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        for (const { nodes, gain } of this.active) {
+          gain.gain.cancelScheduledValues(t);
+          gain.gain.setTargetAtTime(0, t, 0.015);
+          for (const n of nodes) {
+            try { n.stop(t + 0.08); } catch {}
+          }
+        }
+        this.active.clear();
+      }
+    
+      // One note of a practice sound (see playSound), tracked so pause/seek can silence it.
+      _note(sound, midi, at, dur, out, level = 1) {
+        const { nodes, gain, stopAt } = playSound(this.ctx, out, sound, midi, at, dur, level);
+        this._track(nodes, gain, stopAt);
+      }
+    
+      // Keep OSMD's cursor on the note being played.
+      _showCursorAt(sec) {
+        const steps = this.timeline?.steps;
+        if (!steps?.length) return;
+        let lo = 0;
+        let hi = steps.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          if (steps[mid].sec <= sec + 1e-6) lo = mid;
+          else hi = mid - 1;
+        }
+        // The cursor follows OSMD's own walk of the score; extra verses map back onto the repeated
+        // section's positions, so step its iterator there (one visual update, not one per step).
+        const cursor = this.osmd.cursor;
+        const target = steps[lo].walk;
+        if (this.cursorStep < 0 || target < this.cursorStep) {
+          cursor.reset();
+          cursor.show();
+          this.cursorStep = 0;
+        }
+        const moved = this.cursorStep !== target;
+        if (moved) {
+          while (this.cursorStep < target && !cursor.Iterator.EndReached) {
+            cursor.Iterator.moveToNext();
+            this.cursorStep++;
+          }
+          cursor.update();
+        }
+        this.measure = steps[lo].measure;
+        this.pass = steps[lo].pass;
+        if (this.shownVerse !== this.pass) this._markVerse();
+        // Which performed measure this is.
+        const ms = this.timeline.measures;
+        let a = 0;
+        let b = ms.length - 1;
+        while (a < b) {
+          const mid = (a + b + 1) >> 1;
+          if (ms[mid].start <= sec + 1e-6) a = mid;
+          else b = mid - 1;
+        }
+        this.performedIndex = a;
+        if (moved && this.followEl) this._scrollBoxToCursor();
+      }
+    
+      _emit() {
+        if (!this.timeline) return;
+        this.onChange({
+          playing: this.playing,
+          measure: this.measure ?? 0,
+          measures: this.timeline.measureStarts.length,
+          // Repeats and verses: which pass this is, how many verses, and the place in the whole performance.
+          pass: this.pass ?? 1,
+          verses: this.timeline.verses,
+          passes: this.timeline.passes,
+          performed: this.performedIndex ?? 0,
+          performedCount: this.timeline.measures.length,
+          tempo: this.tempo,
+          bpm: Math.round(this.timeline.bpm * this.tempo),
+          transpose: this.transpose,
+          melodyOctave: this.melodyOctave,
+          parts: { ...this.parts },
+          myPart: this.myPart,
+          click: this.click,
+          loop: this.loop ? { ...this.loop } : null,
+          lap: this.lap,
+          speedUp: this.speedUp,
+          echo: this.echo ? { phrase: this.echo.i, phrases: this.echo.phrases.length, turn: this.echo.turn } : null,
+        });
+      }
+    }
+
+    return { SOUNDS, playSwell, playSound, guessLanguage, routeAudioAsMedia, ScorePlayer };
+  })();
   var mod_common = (function () {
     // Shared pieces for the Practice Room trainers: seeded randomness, voice types and a small synth.
-    // Framework-free with no imports, so the trainers can also run inside AlloFlow.
-
+    // Framework-free; its one import is the practice sounds shared with the score player (an AlloFlow
+    // port needs both files).
+    var playSound = mod_score_player.playSound, playSwell = mod_score_player.playSwell, SOUNDS = mod_score_player.SOUNDS;
+    // ---- The practice sound (one choice for the whole Practice Room) ------------------------
+    const SOUND_KEY = 'rp-sound';
+    
+    /** The visitor's chosen practice sound: a key of SOUNDS ('piano' unless they picked another). */
+    function loadSound() {
+      try {
+        const v = localStorage.getItem(SOUND_KEY);
+        return v && SOUNDS[v] ? v : 'piano';
+      } catch {
+        return 'piano';
+      }
+    }
+    
+    /** Remember a new choice and tell every player and trainer on the page (event 'sound:change'). */
+    function saveSound(sound) {
+      if (!SOUNDS[sound]) return;
+      try {
+        localStorage.setItem(SOUND_KEY, sound);
+      } catch {}
+      document.dispatchEvent(new CustomEvent('sound:change', { detail: sound }));
+    }
+    
+    
+    
     // ---- Seeded randomness -------------------------------------------------------------
     // The same seed always gives the same exercise, so a teacher can hand out a code (or a link)
     // and every student gets the identical melody or rhythm.
-
+    
     /** FNV-1a: a string to a 32-bit seed. */
     function hashSeed(str) {
       let h = 0x811c9dc5;
@@ -2103,7 +3656,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
       return h >>> 0;
     }
-
+    
     /** mulberry32: a fast, good-enough PRNG returning numbers in [0, 1). */
     function seededRandom(seed) {
       let a = typeof seed === 'number' ? seed >>> 0 : hashSeed(String(seed));
@@ -2128,26 +3681,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       };
       return rand;
     }
-
+    
     // No 0/O, 1/I/L: codes are read aloud and typed by students.
     const CODE_CHARS = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
-
+    
     /** A short, friendly exercise code like "K7QX2". */
     function newCode(length = 5) {
       const buf = new Uint32Array(length);
       crypto.getRandomValues(buf);
       return Array.from(buf, (n) => CODE_CHARS[n % CODE_CHARS.length]).join('');
     }
-
+    
     /** Today's date as YYYYMMDD in the visitor's own time zone (not UTC). */
     function todayStamp(d = new Date()) {
       return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
     }
-
+    
     // ---- Voice types -------------------------------------------------------------------
     // Comfortable practice ranges (MIDI), deliberately inside the full professional ranges.
     // Tenors read treble clef an octave down; baritones and basses read bass clef.
-
+    
     const VOICE_TYPES = {
       soprano: { label: 'Soprano', low: 60, high: 79, clef: 'treble' },
       mezzo: { label: 'Mezzo-soprano', low: 57, high: 76, clef: 'treble' },
@@ -2156,9 +3709,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       baritone: { label: 'Baritone', low: 45, high: 64, clef: 'bass' },
       bass: { label: 'Bass', low: 40, high: 60, clef: 'bass' },
     };
-
+    
     const VOICE_KEY = 'rp-voice-type';
-
+    
     function loadVoiceType() {
       try {
         const v = localStorage.getItem(VOICE_KEY);
@@ -2167,15 +3720,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         return 'mezzo';
       }
     }
-
+    
     function saveVoiceType(v) {
       try {
         localStorage.setItem(VOICE_KEY, v);
       } catch {}
     }
-
+    
     // ---- Notes -------------------------------------------------------------------------
-
+    
     const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
     const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
@@ -2183,9 +3736,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     const noteLabel = (midi, spelling) =>
       `${(spelling === 'sharps' ? SHARP_NAMES : spelling === 'flats' ? FLAT_NAMES : NAMES)[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
     const midiToHz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
-
+    
     // ---- A small synth -----------------------------------------------------------------
-
+    
     /**
      * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play), so
      * declare the sound as media playback (Safari 17+) and, on older iOS, start a silent looping
@@ -2197,7 +3750,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
       } catch {}
       const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
-      if (!ios || routeAudioAsMedia.el) return;
+      if (!ios) return;
+      // Already made: play it again if iOS refused the first time (it does when a finger is only going down).
+      if (routeAudioAsMedia.el) {
+        if (routeAudioAsMedia.el.paused) routeAudioAsMedia.el.play().catch(() => {});
+        return;
+      }
       const n = 2000; // a quarter second of silent 8 kHz, 8-bit WAV
       const bytes = new Uint8Array(44 + n);
       const dv = new DataView(bytes.buffer);
@@ -2225,21 +3783,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       routeAudioAsMedia.el = el;
     }
     // One AudioContext per page; every sound is scheduled on its clock so rhythms stay exact.
-
+    
     class Tones {
       get ctx() {
         if (!this._ctx) {
           this._ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.out = this._ctx.createDynamicsCompressor();
           this.out.connect(this._ctx.destination);
+          this._armUnlock();
         }
         return this._ctx;
       }
-
+    
+      // Browsers only let sound start from a real gesture, and on phones a finger going DOWN doesn't count (iPhones
+      // need it to lift: touchend/pointerup/click). A piano key reacts on the way down, so start the audio again on
+      // the next gesture that counts, and keep the iPhone's media routing (silent switch) trying too.
+      _armUnlock() {
+        if (typeof document === 'undefined') return;
+        const unlock = () => {
+          routeAudioAsMedia();
+          const c = this._ctx;
+          if (!c || c.state === 'running') {
+            for (const ev of EVENTS) document.removeEventListener(ev, unlock, true);
+            return;
+          }
+          c.resume().catch(() => {});
+        };
+        const EVENTS = ['pointerup', 'touchend', 'click', 'keydown'];
+        for (const ev of EVENTS) document.addEventListener(ev, unlock, true);
+      }
+    
       async ready() {
         routeAudioAsMedia();
         const c = this.ctx;
-        if (c.state !== 'running') await c.resume();
+        if (c.state !== 'running') {
+          // resume() may be refused (iPhone: a finger going down) or wait for a gesture: either way, carry on once the
+          // audio really runs, which the next lift, click or key press brings (see #armUnlock).
+          const running = new Promise((resolve) => {
+            const on = () => {
+              if (c.state !== 'running') return;
+              c.removeEventListener('statechange', on);
+              resolve();
+            };
+            c.addEventListener('statechange', on);
+          });
+          c.resume().catch(() => {});
+          if (c.state !== 'running') await running;
+        }
         // resume() can resolve before the audio clock starts moving (seconds, on a busy device).
         // Anything scheduled or timed before then drifts, so wait until the clock is really running.
         const t0 = performance.now();
@@ -2250,11 +3840,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         }
         return c;
       }
-
+    
       now() {
         return this.ctx.currentTime;
       }
-
+    
+      // Until when (audio clock) something this synth scheduled can still be heard, tail included.
+      _busy(end) {
+        this.until = Math.max(this.until || 0, end);
+      }
+    
+      /**
+       * True while one of these sounds can be heard (or is about to start): pass it to
+       * VoiceAnalyzer.setIgnore so a microphone without headphones doesn't take the site's own piano
+       * or chime for the singer. Allows for speaker delay and the analysis window.
+       */
+      sounding() {
+        const c = this._ctx;
+        if (!c || !this.until) return false;
+        const lat = Math.max(0, Math.min(0.5, (c.outputLatency || 0) + (c.baseLatency || 0)));
+        return c.currentTime - lat < this.until + 0.15;
+      }
+    
       /**
        * The audio-clock time the listener was HEARING when an input event happened. People tap along
        * to the speakers, which run behind the clock (Bluetooth by 0.2 s or more), so taps are compared
@@ -2267,40 +3874,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (ts && ts.performanceTime > 0 && typeof timeStamp === 'number') return ts.contextTime + (timeStamp - ts.performanceTime) / 1000;
         return c.currentTime - Math.max(0, Math.min(0.4, (c.outputLatency || 0) + (c.baseLatency || 0)));
       }
-
-      /** A soft practice-piano note. */
-      piano(midi, at = this.now(), dur = 0.9, level = 1) {
-        const c = this.ctx;
-        const f = midiToHz(midi);
-        const env = c.createGain();
-        env.gain.setValueAtTime(0, at);
-        env.gain.linearRampToValueAtTime(0.5 * level, at + 0.006);
-        env.gain.exponentialRampToValueAtTime(0.2 * level, at + 0.25);
-        env.gain.setTargetAtTime(0.0001, at + dur, 0.12);
-        const filter = c.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
-        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
-        const o1 = c.createOscillator();
-        o1.type = 'triangle';
-        o1.frequency.value = f;
-        const o2 = c.createOscillator();
-        o2.frequency.value = f * 2.001;
-        const h2 = c.createGain();
-        h2.gain.value = 0.22;
-        o1.connect(filter);
-        o2.connect(h2).connect(filter);
-        filter.connect(env).connect(this.out);
-        for (const o of [o1, o2]) {
-          o.start(at);
-          o.stop(at + dur + 1);
-        }
+    
+      /**
+       * A note in the visitor's chosen practice sound (piano unless they picked another; see loadSound).
+       * Pass `sound` to force one.
+       */
+      piano(midi, at = this.now(), dur = 0.9, level = 1, sound = loadSound()) {
+        const { nodes, stopAt } = playSound(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
+        for (const n of nodes) n.stop(stopAt);
+        this._busy(stopAt);
       }
-
+    
+      /** A messa di voce guide: one note swelling from very soft to full and back over `dur` (see playSwell). */
+      swell(midi, at = this.now(), dur = 6, level = 0.75, sound = loadSound()) {
+        const { nodes, stopAt } = playSwell(this.ctx, this.out, sound, midi, at, dur, level * 1.6);
+        for (const n of nodes) n.stop(stopAt);
+        this._busy(stopAt);
+      }
+    
       chord(midis, at = this.now(), dur = 1.2) {
         midis.forEach((m) => this.piano(m, at, dur, 0.55));
       }
-
+    
       /** Metronome tick, higher on the downbeat. */
       click(at = this.now(), accent = false, level = 1) {
         const c = this.ctx;
@@ -2313,8 +3908,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         o.connect(env).connect(this.out);
         o.start(at);
         o.stop(at + 0.06);
+        this._busy(at + 0.08);
       }
-
+    
       /** A woodblock-ish knock for rhythm patterns, distinct from the metronome. */
       knock(at = this.now(), level = 1) {
         const c = this.ctx;
@@ -2329,16 +3925,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         o.connect(env).connect(this.out);
         o.start(at);
         o.stop(at + 0.14);
+        this._busy(at + 0.16);
       }
-
-      /** A gentle two-note chime for success. */
+    
+      /**
+       * A soft, warm "ding" for success: two round bell tones a sixth apart (E5, then C6), a gentle 12 ms swell
+       * instead of a hammer strike, the highest overtones filtered off and a long quiet fade; about 7 dB quieter than
+       * the old piano chime (C6 + G6, bright and sharp), measured offline through the output compressor.
+       */
       chime(at = this.now()) {
-        this.piano(84, at, 0.5, 0.45);
-        this.piano(91, at + 0.12, 0.8, 0.45);
+        const c = this.ctx;
+        const bus = c.createGain();
+        bus.gain.value = 0.14;
+        const soft = c.createBiquadFilter();
+        soft.type = 'lowpass';
+        soft.frequency.value = 2600;
+        bus.connect(soft).connect(this.out);
+        const bell = (midi, t, level) => {
+          const f = 440 * Math.pow(2, (midi - 69) / 12);
+          // A struck bell's fundamental rings longest; its octave and a soft high partial fade sooner.
+          for (const [mult, gain, ring] of [[1, 1, 1.7], [2, 0.16, 0.8], [3, 0.04, 0.35]]) {
+            const o = c.createOscillator();
+            o.type = 'sine';
+            o.frequency.value = f * mult;
+            const env = c.createGain();
+            env.gain.setValueAtTime(0, t);
+            env.gain.linearRampToValueAtTime(level * gain, t + 0.012);
+            env.gain.exponentialRampToValueAtTime(0.0005, t + ring);
+            o.connect(env).connect(bus);
+            o.start(t);
+            o.stop(t + ring + 0.05);
+          }
+        };
+        bell(76, at, 1);
+        bell(84, at + 0.11, 0.8);
+        this._busy(at + 1.85);
       }
     }
 
-    return { hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones };
+    return { loadSound, saveSound, hashSeed, seededRandom, newCode, todayStamp, VOICE_TYPES, loadVoiceType, saveVoiceType, noteLabel, midiToHz, routeAudioAsMedia, Tones, SOUNDS };
   })();
   var mod_rhythm = (function () {
     // Rhythm clap-back: seeded rhythm generator, notation (MusicXML) and the tap scorer.
@@ -2583,7 +4208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     //
     //   const m = generateMelody({ seed: 'K7QX2', level: 3, voice: VOICE_TYPES.mezzo });
     //   m.xml  -> MusicXML for the score player;  m.notes -> [{ midi, dur }] for grading
-
+    
     var seededRandom = mod_common.seededRandom;
     var METERS = mod_rhythm.METERS, beamsFor = mod_rhythm.beamsFor, xmlDoc = mod_rhythm.xmlDoc;
     // Melody rhythms, in sixteenths ('r' = rest), with the level they appear at and how often.
@@ -2616,7 +4241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         { d: [2, 1, 1, 2], level: 6, w: 0.4 },
       ],
     };
-
+    
     // leap: largest interval in scale steps (2 = a third, 4 = a fifth, 7 = an octave).
     // chroma: share of chromatic notes. Rhythms come from MELODY_CELLS by level.
     const SIGHT_LEVELS = [
@@ -2627,7 +4252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       { level: 5, name: 'Level 5: Advanced', fifths: [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5], minor: 0.45, meters: ['4/4', '3/4', '6/8', '2/4'], bars: 8, span: 10, leap: 7, chroma: 0.2, tempo: 88, chords: [0, 1, 2, 3, 4, 5] },
       { level: 6, name: 'Level 6: Conservatory', fifths: [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], minor: 0.5, meters: ['4/4', '3/4', '6/8', '2/4'], bars: 8, span: 11, leap: 7, chroma: 0.3, tempo: 92, chords: [0, 1, 2, 3, 4, 5] },
     ];
-
+    
     const MAJOR = [0, 2, 4, 5, 7, 9, 11];
     const MINOR = [0, 2, 3, 5, 7, 8, 10]; // natural; the leading tone is raised where it resolves
     const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -2638,33 +4263,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     // Where each chord tends to go next (by scale-degree root).
     const NEXT = { 0: [3, 4, 5, 1], 1: [4, 4, 3], 2: [5, 3], 3: [4, 0, 1], 4: [0, 5, 0], 5: [1, 3, 4] };
     const TYPES = { 1: ['16th', 0], 2: ['eighth', 0], 3: ['eighth', 1], 4: ['quarter', 0], 6: ['quarter', 1], 8: ['half', 0], 12: ['half', 1], 16: ['whole', 0] };
-
+    
     const mod = (n, m) => ((n % m) + m) % m;
     const keyAlter = (letter, fifths) =>
       fifths > 0 && SHARP_ORDER.indexOf(letter) < fifths ? 1 : fifths < 0 && FLAT_ORDER.indexOf(letter) < -fifths ? -1 : 0;
     const accName = (a) => (a > 0 ? '♯'.repeat(a) : '♭'.repeat(-a));
-
+    
     /** A written note's name as it appears in the score, e.g. D♯4. */
     const spelledName = (n) => `${LETTERS[n.letter]}${accName(n.alter)}${n.octave}`;
-
+    
     function keyName(fifths, minor) {
       const letter = mod(4 * fifths + (minor ? 5 : 0), 7);
       return `${LETTERS[letter]}${accName(keyAlter(letter, fifths))} ${minor ? 'minor' : 'major'}`;
     }
-
+    
     /**
-     * @param {{ seed: string, level: number, voice: { low: number, high: number, clef: string }, meter?: string }} opts
+     * @param {{ seed: string, level: number, voice: { low: number, high: number, clef: string }, meter?: string, bars?: number }} opts
+     *   bars: the length (4, 8, 16, 32 ...); omitted = the level's own length. Longer melodies are built from
+     *   four-bar phrases in eight-bar periods (a half cadence, then an answer that closes on the tonic).
      */
-    function generateMelody({ seed, level, voice, meter: forceMeter }) {
-      const L = SIGHT_LEVELS[Math.max(0, Math.min(SIGHT_LEVELS.length - 1, level - 1))];
-      const rand = seededRandom(`${seed}|L${L.level}|${voice.low}-${voice.high}`);
-      for (let attempt = 0; attempt < 200; attempt++) {
+    function generateMelody({ seed, level, voice, meter: forceMeter, bars }) {
+      const L0 = SIGHT_LEVELS[Math.max(0, Math.min(SIGHT_LEVELS.length - 1, level - 1))];
+      const L = bars ? { ...L0, bars } : L0;
+      // The level's own length keeps its old seed, so codes shared before lengths existed still work.
+      const rand = seededRandom(`${seed}|L${L.level}|${voice.low}-${voice.high}${bars && bars !== L0.bars ? `|B${bars}` : ''}`);
+      for (let attempt = 0; attempt < 400; attempt++) {
         const m = tryMelody(rand, L, voice, forceMeter);
         if (m) return { ...m, seed, level: L.level };
       }
       throw new Error('Could not generate a melody for these settings.');
     }
-
+    
     function tryMelody(rand, L, voice, forceMeter) {
       // ---- Key, mode, meter, range ----
       const fifths = rand.pick(L.fifths);
@@ -2675,7 +4304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       const meterName = forceMeter || rand.pick(L.meters);
       const meter = METERS[meterName];
       const semis = (d) => 12 * Math.floor(d / 7) + scale[mod(d, 7)];
-
+    
       // A window of `span` scale steps that contains the tonic, placed inside the voice's range.
       let span = L.span;
       let placed = null;
@@ -2691,20 +4320,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (!placed) return null;
       const { tonic, lo, hi } = placed;
       const center = (lo + hi) / 2;
-
+    
       // ---- Chord plan ----
       const n = L.bars;
       const chords = [0];
       for (let b = 1; b < n; b++) {
         if (b === n - 1) chords.push(0);
-        else if (b === n - 2 || (n === 8 && b === 3)) chords.push(4); // cadences: V before the end, half cadence mid-way
+        else if (b === n - 2 || (n >= 8 && b % 8 === 3)) chords.push(4); // cadences: V before the end, half cadence mid-period
+        else if (n > 8 && b % 8 === 6) chords.push(4); // a longer piece: each period closes V - I ...
+        else if (n > 8 && b % 8 === 7) chords.push(0); // ... on the tonic
         else {
           const options = NEXT[chords[b - 1]].filter((c) => L.chords.includes(c));
           chords.push(options.length ? rand.pick(options) : rand.pick(L.chords));
         }
       }
       const chordTones = (c) => [c, c + 2, c + 4].map((x) => mod(x, 7)).concat(c === 4 && L.level >= 3 ? [3] : []); // V7 from level 3
-
+    
       // ---- Rhythm ----
       const barLen = meter.beats * meter.beat;
       const cells = MELODY_CELLS[meter.beat === 6 ? 'compound' : 'simple'].filter((c) => c.level <= L.level);
@@ -2732,18 +4363,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       for (let b = 0; b < n; b++) {
         let bar;
         if (b === n - 1) bar = [{ dur: barLen === 16 ? 16 : 12 <= barLen ? 12 : barLen, rest: false, pos: 0 }];
-        else if (n === 8 && b === 3) {
-          // Half cadence: end the first phrase on a long note.
+        else if (n >= 8 && (b % 8 === 3 || (n > 8 && b % 8 === 7))) {
+          // Phrase ends (a half cadence, or a period's close in a longer piece) land on a long note.
           const long = meter.beat === 6 ? 6 : barLen === 12 ? 8 : barLen === 8 ? 4 : 8;
           const head = fill(barLen - long, 0, true);
           bar = head ? [...head, { dur: long, rest: false, pos: barLen - long }] : null;
-        } else if (n === 8 && (b === 4 || b === 5)) bar = rhythm[b - 4].map((x) => ({ ...x })); // second phrase echoes the first
+        } else if (n >= 8 && (b % 8 === 4 || b % 8 === 5) && b < n - 2) bar = rhythm[b - 4].map((x) => ({ ...x })); // the answering phrase echoes the opening
         else bar = fill(barLen, 0, b === 0);
         if (!bar) return null;
         if (b === n - 1 && barLen !== bar[0].dur) bar.push({ dur: barLen - bar[0].dur, rest: true, pos: bar[0].dur });
         rhythm.push(bar);
       }
-
+    
       // ---- Pitches ----
       const leapCost = [1, 1.0, 0.85, 0.7, 0.6, 0.5][L.level - 1];
       const IV_COST = [1.4, 0, 0.9, 1.6, 2.0, 2.6, 3.4, 2.6]; // by scale steps: repeat, step, third ... octave
@@ -2819,7 +4450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           index++;
         }
       }
-
+    
       // ---- Alterations: leading tones in minor, then chromatic colour ----
       const sung = notes.filter((x) => !x.rest);
       if (minor) {
@@ -2845,7 +4476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           if ((back === 6 && L.level < 5) || back > 12 || back === 0) x.alt = 0;
         });
       }
-
+    
       // ---- Validate ----
       for (let i = 1; i < sung.length; i++) {
         const a = sung[i - 1];
@@ -2859,7 +4490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
       const midis = sung.map(midiOf);
       if (Math.min(...midis) < voice.low || Math.max(...midis) > voice.high) return null;
-
+    
       // ---- Spell and write MusicXML ----
       const out = notes.map((x) => {
         if (x.rest) return { rest: true, dur: x.dur, bar: x.bar };
@@ -2883,11 +4514,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         chords: chords.map((c) => (minor && c === 4 ? 'V' : ROMAN[c])),
       };
     }
-
+    
     function dur(x) {
       return typeof x === 'string' ? Number(x.slice(1)) : x;
     }
-
+    
     function toMusicXML(notes, { fifths, minor, meter, clef, quarterBpm, beatBpm }) {
       const clefXml =
         clef === 'bass'
@@ -3046,6 +4677,170 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     return { GRADE_BANDS, gradeSung };
   })();
+  var mod_sing_score = (function () {
+    // Live sing-along score: grades each melody note as the play head leaves it (the same readings and
+    // windows as sight-singing, grade.js) and keeps a running count.
+    //
+    //   const score = new SingScore(player, { onGrade: (i, level) => lane.setGrade(i, level) });
+    //   score.push(scoreSec, midiOrNull);   // every pitch reading, stamped in score time
+    //   score.summary();                    // { tune, near, off, wrong, missed, sung, accuracy, ... }
+    //
+    // Levels, by how far the sung pitch is from the note (octave-folded): 'tune' (spot on, <= 30 cents),
+    // 'near' (close, <= 60), 'off' (a bit off, <= 100: still the right note, just out of tune),
+    // 'wrong' (a wrong note), 'missed' (not sung).
+
+    var gradeSung = mod_grade.gradeSung;
+    /**
+     * Credit for one note, 0..1: full within 25 cents, then sliding down (70% of the way by a half step
+     * off) to nothing at a whole tone. Close counts for much more than far.
+     */
+    function noteCredit(cents) {
+      const c = Math.abs(cents);
+      if (c <= 25) return 1;
+      if (c <= 100) return 1 - (0.7 * (c - 25)) / 75;
+      if (c <= 200) return (0.3 * (200 - c)) / 100;
+      return 0;
+    }
+
+    function levelFor(cents) {
+      const c = Math.abs(cents);
+      return c <= 30 ? 'tune' : c <= 60 ? 'near' : c <= 100 ? 'off' : 'wrong';
+    }
+
+    /**
+     * The notes as the grader should see them: one line, each moment belonging to at most one note. A note that is still
+     * "sounding" when the next one begins (a score that overlaps its own melody) ends where the next begins, because a
+     * singer cannot sing both and the note lookup below assumes a single line. Same count and order as voiceNotes() (grades
+     * are reported by that index); the input is not changed.
+     */
+    function gradingNotes(notes) {
+      return notes.map((n, i) => {
+        const next = notes[i + 1];
+        return next && next.sec < n.sec + n.dur - 1e-6 ? { ...n, dur: Math.max(0.04, Math.min(n.dur, next.sec - n.sec)) } : n;
+      });
+    }
+
+    class SingScore {
+      /** @param {{ voiceNotes(): { sec: number, dur: number, midi: number }[] }} player */
+      constructor(player, { onGrade } = {}) {
+        this.player = player;
+        this.onGrade = onGrade || (() => {});
+        this.reset();
+      }
+
+      /** Forget every grade (e.g. after a key change, a new part, or "Start over"). */
+      reset() {
+        this.grades = new Map(); // note index -> { level, credit }; a note sung again (loop) keeps its latest grade
+        this.cur = { i: -1, frames: [] };
+        this.notes = gradingNotes(this.player.voiceNotes());
+      }
+
+      push(t, midi) {
+        const i = this._noteAt(t);
+        if (i !== this.cur.i) {
+          this._finish();
+          this.cur = { i, frames: [] };
+        }
+        if (i >= 0) this.cur.frames.push({ t, midi });
+      }
+
+      /** Grade the note in progress now (e.g. when the music stops). */
+      flush() {
+        this._finish();
+        this.cur = { i: -1, frames: [] };
+      }
+
+      summary() {
+        const s = { tune: 0, near: 0, off: 0, wrong: 0, missed: 0 };
+        let credit = 0;
+        for (const g of this.grades.values()) {
+          s[g.level]++;
+          credit += g.credit;
+        }
+        const sung = s.tune + s.near + s.off + s.wrong;
+        return {
+          ...s,
+          sung,
+          // Average credit over the notes sung: the headline "pitch accuracy".
+          accuracy: sung ? Math.round((100 * credit) / sung) : null,
+          // Share sung spot on.
+          percent: sung ? Math.round((100 * s.tune) / sung) : null,
+        };
+      }
+
+      _noteAt(t) {
+        const n = this.notes;
+        let lo = 0;
+        let hi = n.length - 1;
+        while (lo <= hi) {
+          const mid = (lo + hi) >> 1;
+          if (t < n[mid].sec) hi = mid - 1;
+          else if (t >= n[mid].sec + n[mid].dur) lo = mid + 1;
+          else return mid;
+        }
+        return -1;
+      }
+
+      _finish() {
+        const { i, frames } = this.cur;
+        if (i < 0 || !frames.length) return;
+        const n = this.notes[i];
+        // Only notes heard from (nearly) start to end: joining mid-note after a jump would be unfair.
+        const from = n.sec + Math.min(0.15, n.dur * 0.3);
+        const to = n.sec + n.dur - Math.min(0.06, n.dur * 0.15);
+        if (frames[0].t > from + 0.12 || frames[frames.length - 1].t < to - 0.12) return;
+        // Notes too short to measure (a couple of readings) are left out rather than guessed.
+        if (frames.filter((f) => f.t >= from && f.t <= to).length < 2) return;
+        const [g] = gradeSung([n], frames);
+        const grade = g.grade === 'missed' ? { level: 'missed', credit: 0 } : { level: levelFor(g.cents), credit: noteCredit(g.cents) };
+        this.grades.set(i, grade);
+        this.onGrade(i, grade.level);
+      }
+    }
+
+    /**
+     * The weakest stretches of a sing-along run, to practice next: measures whose sung notes averaged under `below`
+     * credit (at least `minNotes` graded; notes not sung don't count), neighbours joined up to 3 measures, worst first.
+     * grades: SingScore.grades (note index -> { level, credit }); measureOf(noteIndex) -> written measure (0-based).
+     * Returns [{ from, to, pct, notes }] with measures 0-based.
+     */
+    function troubleSpots(grades, measureOf, { max = 3, below = 0.8, minNotes = 2 } = {}) {
+      const per = new Map();
+      for (const [i, g] of grades) {
+        if (g.level === 'missed') continue;
+        const m = measureOf(i);
+        if (m === null || m === undefined || m < 0) continue;
+        const r = per.get(m) || { credit: 0, n: 0 };
+        r.credit += g.credit;
+        r.n++;
+        per.set(m, r);
+      }
+      const weak = [...per]
+        .filter(([, r]) => r.n >= minNotes && r.credit / r.n < below)
+        .map(([m]) => m)
+        .sort((a, b) => a - b);
+      const spans = [];
+      for (const m of weak) {
+        const last = spans[spans.length - 1];
+        if (last && m === last.to + 1 && m - last.from < 3) last.to = m;
+        else spans.push({ from: m, to: m });
+      }
+      return spans
+        .map((s) => {
+          let credit = 0;
+          let n = 0;
+          for (let m = s.from; m <= s.to; m++) {
+            credit += per.get(m).credit;
+            n += per.get(m).n;
+          }
+          return { ...s, pct: Math.round((100 * credit) / n), notes: n };
+        })
+        .sort((a, b) => a.pct - b.pct || a.from - b.from)
+        .slice(0, max);
+    }
+
+    return { noteCredit, levelFor, gradingNotes, SingScore, troubleSpots };
+  })();
   var mod_voice_analyzer = (function () {
     // Voice analyzer: turns a microphone (or any Web Audio source) into live measurements for
     // singers and instrumentalists: pitch, cents, vibrato, steadiness, loudness, "ring",
@@ -3067,7 +4862,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     };
 
     const NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
-    const SILENCE_DB = -52; // below this RMS level the frame counts as silence
+    const SILENCE_DB = -52; // below this RMS level the frame counts as silence (and loudness 0 sits here)
+
+    /**
+     * The room, chosen once for the whole site (localStorage 'rp-mic-room'): 'auto' keeps the silence level 8 dB
+     * above the background it measures (never more sensitive than SILENCE_DB, never above -38 dB); 'quiet' lets very
+     * soft singing through (-60 dB); 'noisy' needs a louder, clearer voice (at least -42 dB and a clearer pitch), so a
+     * hum or a far-off TV isn't taken for singing.
+     */
+    const ROOMS = {
+      auto: { label: 'Automatic' },
+      quiet: { label: 'Quiet room (very soft singing)' },
+      noisy: { label: 'Noisy room' },
+    };
+    const ROOM_KEY = 'rp-mic-room';
+    function loadRoom() {
+      try {
+        const r = localStorage.getItem(ROOM_KEY);
+        return ROOMS[r] ? r : 'auto';
+      } catch {
+        return 'auto';
+      }
+    }
+    function saveRoom(room) {
+      if (!ROOMS[room]) return;
+      try {
+        localStorage.setItem(ROOM_KEY, room);
+      } catch {}
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('microom:change', { detail: room }));
+    }
     const PHRASE_GAP = 0.3; // seconds of silence that end a phrase
 
     const midiFromHz = (hz, a4 = 440) => 69 + 12 * Math.log2(hz / a4);
@@ -3306,12 +5129,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     // ---- Live analyzer -------------------------------------------------------------
 
     class VoiceAnalyzer {
-      constructor({ mode = 'voice', a4 = 440 } = {}) {
+      constructor({ mode = 'voice', a4 = 440, room } = {}) {
         this.mode = mode;
         this.a4 = a4;
         this.listeners = new Set();
         this.target = null;
+        this.fixedRoom = room || null; // tests pass one; otherwise the visitor's setting, followed while running
+        this.room = room || (typeof localStorage !== 'undefined' ? loadRoom() : 'auto');
+        this.noiseDb = []; // levels of recent frames with no pitch: the room's background
+        this.noiseFloor = null;
+        this.onRoom = (e) => !this.fixedRoom && (this.room = e.detail);
         this.reset();
+      }
+
+      /** The level (dB) below which a frame counts as silence, for the room setting and measured background. */
+      gateDb() {
+        if (this.room === 'quiet') return -60;
+        const auto = this.noiseFloor === null ? SILENCE_DB : Math.min(-38, Math.max(SILENCE_DB, this.noiseFloor + 8));
+        return this.room === 'noisy' ? Math.max(auto, -42) : auto;
       }
 
       onFrame(fn) {
@@ -3326,6 +5161,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       /** A function returning the target MIDI note right now (or null), e.g. from a score player. */
       setTarget(fn) {
         this.target = fn;
+      }
+
+      /**
+       * A function that returns true while the page itself is making a sound (a reference note, a
+       * success chime): those moments come through as silence, marked `ignored`, so the speakers'
+       * sound isn't drawn or scored as the singer's.
+       */
+      setIgnore(fn) {
+        this.ignore = fn;
       }
 
       reset() {
@@ -3359,6 +5203,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         const ctx = node.context;
         this.ctx = ctx;
         this._disconnect();
+        if (!this.fixedRoom && typeof localStorage !== 'undefined') this.room = loadRoom();
+        this.noiseDb = [];
+        this.noiseFloor = null;
+        if (typeof window !== 'undefined') window.addEventListener('microom:change', this.onRoom);
         this.analyser = ctx.createAnalyser();
         this.analyser.fftSize = 4096; // ~85 ms: enough cycles for low notes
         this.analyser.smoothingTimeConstant = 0.3;
@@ -3401,6 +5249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
       stop() {
         this.running = false;
+        if (typeof window !== 'undefined') window.removeEventListener('microom:change', this.onRoom);
         this._disconnect();
         this.stream?.getTracks().forEach((t) => t.stop());
         this.stream = null;
@@ -3459,9 +5308,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         let sum = 0;
         for (let i = 0; i < this.time.length; i++) sum += this.time[i] * this.time[i];
-        const db = 10 * Math.log10(sum / this.time.length + 1e-12);
-        const loud = db > SILENCE_DB;
-        const pitch = loud ? detectPitch(this.time, this.ctx.sampleRate, cfg) : null;
+        const ignored = !!(this.ignore && this.ignore());
+        const db = ignored ? SILENCE_DB - 1 : 10 * Math.log10(sum / this.time.length + 1e-12);
+        const gate = this.gateDb();
+        const loud = !ignored && db > gate;
+        const pitch = loud ? detectPitch(this.time, this.ctx.sampleRate, this.room === 'noisy' ? { ...cfg, clarity: Math.max(cfg.clarity, 0.88) } : cfg) : null;
+        // The background: the quietest tenth of the last ~10 s (the moments between phrases). Every frame counts, so
+        // a pitched hum or a TV is measured too; a singer who never pauses for 10 s only raises it to their softest.
+        if (!ignored) {
+          this.noiseDb.push(db);
+          if (this.noiseDb.length > 400) this.noiseDb.shift();
+          if (this.noiseDb.length >= 20 && this.noiseDb.length % 10 === 0) {
+            const sorted = [...this.noiseDb].sort((a, b) => a - b);
+            this.noiseFloor = sorted[Math.floor(sorted.length * 0.1)];
+          }
+        }
 
         // Median of three readings removes single-frame octave slips. (It also clips vibrato
         // peaks, so the vibrato track below keeps the raw reading whenever it agrees.)
@@ -3553,8 +5414,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         const frame = {
           t: now,
+          ignored,
           mode: this.mode,
           voiced: midi !== null,
+          gate, // the silence level in use (dB), for the room setting
           hz: heard !== null ? this.a4 * Math.pow(2, (heard - 69) / 12) : null,
           midi, // instantaneous: the visuals show the full vibrato shimmer
           heardMidi: heard,
@@ -3576,7 +5439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
     }
 
-    return { MODES, midiFromHz, noteName, detectPitch, spectralFeatures, measureVibrato, VoiceAnalyzer };
+    return { MODES, ROOMS, loadRoom, saveRoom, midiFromHz, noteName, detectPitch, spectralFeatures, measureVibrato, VoiceAnalyzer };
   })();
   var mod_voice_visuals = (function () {
     // Voice visuals: an immersive canvas scene ("Aurora") plus optional formal meters, driven by
@@ -3589,18 +5452,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     //
     //   const meters = createMeters(element, { mode: 'voice' });
     //   analyzer.onFrame((f) => meters.update(f));
-
+    
     const PALETTES = {
       opera: { label: 'Opera (burgundy & gold)', bg: ['#1b0f13', '#2c141b'], hues: [345, 20, 42], spark: '#f2d49b', target: '242,212,155', guide: '242,226,210' },
       aurora: { label: 'Northern lights', bg: ['#04121a', '#0a2430'], hues: [165, 195, 280], spark: '#b9fff1', target: '185,255,241', guide: '200,235,240' },
       dusk: { label: 'Dusk (rose & lilac)', bg: ['#140f22', '#251733'], hues: [320, 280, 25], spark: '#ffd6e8', target: '255,214,232', guide: '235,220,245' },
+      jewel: { label: 'Jewel tones (sapphire & amethyst)', bg: ['#060818', '#141029'], hues: [205, 280, 330], spark: '#ffe7b0', target: '255,231,176', guide: '222,226,248' },
       prism: { label: 'Prism (a color per note)', bg: ['#07070b', '#141420'], hues: null, spark: '#ffffff', target: '255,255,255', guide: '220,220,235' },
       contrast: { label: 'High contrast', bg: ['#000000', '#000000'], hues: [55, 55, 55], spark: '#ffffff', target: '255,255,255', guide: '255,255,255', bold: true },
     };
-
+    
     const NOTE = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
     const RANGES = { voice: [43, 84], instrument: [28, 96] }; // default MIDI view (G2–C6, E1–C7)
-
+    
     class VoiceVisuals {
       constructor(canvas, { palette = 'opera', mode = 'voice', calm = false, history = 7, guides = true, scene = 'aurora', explore = false } = {}) {
         // explore: free play. No note lines or names, and nothing rewards being "right" (no tuning sparkles).
@@ -3616,26 +5480,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.sparks = [];
         this.view = [...RANGES[mode]];
         this.targets = null;
-        this.scene = scene; // aurora | bloom | constellation | ripples | paint
+        this.scene = scene; // aurora | silk | bloom | constellation | ripples | paint | kaleido
         this.notes = []; // finished held notes
         this.cur = null; // the note being held now
         this.hits = new Set(); // song notes sung in tune (Constellation)
         this.resize = this.resize.bind(this);
         this.ro = new ResizeObserver(this.resize);
         this.ro.observe(canvas);
+        // Full effects even on a slow device (set localStorage 'rp-vis-quality' to 'high'; used for testing).
+        try {
+          this.forceHigh = localStorage.getItem('rp-vis-quality') === 'high';
+        } catch {}
         this.resize();
       }
-
+    
       set(options) {
         Object.assign(this, options);
         if (options.mode) this.view = [...RANGES[options.mode]];
       }
-
+    
+      /** A celebration: a burst of golden light from the voice's position (e.g. a note landed cleanly). */
+      burst(count = 24) {
+        const at = this.head || { x: this.w / 2, y: this.h / 2 };
+        const n = this.calm ? Math.min(6, count) : count;
+        for (let k = 0; k < n; k++) {
+          const a = (k / n) * Math.PI * 2 + Math.random() * 0.3;
+          const v = (this.calm ? 20 : 60) + Math.random() * (this.calm ? 20 : 120);
+          this.sparks.push({ x: at.x, y: at.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.2 + Math.random() * 0.5, gold: true });
+        }
+      }
+    
       /** A function (secondsBefore, secondsAfter) -> [{ start, dur, midi }] with times relative to now. */
       setTargets(fn) {
         this.targets = fn;
       }
-
+    
       push(f) {
         this.last = f;
         const now = performance.now() / 1000;
@@ -3646,7 +5525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // so movement fills the screen instead of hugging a thin line.
         if (f.voiced) this.center = this.center === undefined ? f.midi : this.center + (f.midi - this.center) * 0.04;
       }
-
+    
       _updateView(targetNotes) {
         const span = this.mode === 'instrument' ? 26 : 20;
         let lo = (this.center ?? (RANGES[this.mode][0] + RANGES[this.mode][1]) / 2) - span / 2;
@@ -3659,8 +5538,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         const [vl, vh] = this.view;
         this.view = [vl + (lo - vl) * 0.08, vh + (hi - vh) * 0.08];
       }
-
+    
+      // The scene draws only while its canvas can be seen: a closed panel (display: none) or a canvas scrolled off
+      // screen costs nothing (on a phone, a hidden sing-along panel used to animate all through the song page).
       start() {
+        this.wanted = true;
+        if (!this.io && typeof IntersectionObserver !== 'undefined') {
+          this.io = new IntersectionObserver((entries) => {
+            this.visible = entries[entries.length - 1].isIntersecting;
+            if (this.visible && this.wanted) this._run();
+            else this._halt();
+          });
+          this.visible = false;
+          this.io.observe(this.canvas);
+          return; // the observer reports at once and starts the loop if the canvas is on screen
+        }
+        if (!this.io || this.visible) this._run();
+      }
+    
+      stop() {
+        this.wanted = false;
+        this._halt();
+      }
+    
+      _run() {
         if (this.raf) return;
         const loop = () => {
           this.draw();
@@ -3668,17 +5569,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         };
         this.raf = requestAnimationFrame(loop);
       }
-
-      stop() {
+    
+      _halt() {
         cancelAnimationFrame(this.raf);
         this.raf = null;
       }
-
+    
       destroy() {
         this.stop();
         this.ro.disconnect();
+        this.io?.disconnect();
       }
-
+    
       resize() {
         const r = this.canvas.getBoundingClientRect();
         const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -3694,9 +5596,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.gg = this.glow.getContext('2d');
         this.gg.setTransform(0.25, 0, 0, 0.25, 0, 0);
       }
-
+    
       // ---- Drawing ------------------------------------------------------------------
-
+    
       hueFor(midi, i = 0) {
         const p = PALETTES[this.palette];
         if (!p.hues) return (((Math.round(midi) % 12) * 7) % 12) * 30; // circle of fifths around the colour wheel
@@ -3708,51 +5610,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (Math.abs(d) > 180) d -= Math.sign(d) * 360;
         return (a + d * k + 360) % 360;
       }
-
+    
       y(midi) {
         const [lo, hi] = this.view;
         const pad = this.h * 0.08;
         return this.h - pad - ((midi - lo) / (hi - lo)) * (this.h - 2 * pad);
       }
-
+    
       draw() {
         const g = this.g;
         const { w, h } = this;
         const p = PALETTES[this.palette];
         const now = performance.now() / 1000;
+        // Frame pacing: when a device can't keep up (frames averaging over 30 ms), the costliest touches
+        // (bloom, bokeh, twinkling stars) step aside for a few seconds, then come back if it recovers.
+        const ms = now * 1000;
+        if (this.lastFrame) this.frameMs = (this.frameMs ?? 16) * 0.92 + Math.min(200, ms - this.lastFrame) * 0.08;
+        this.lastFrame = ms;
+        if ((this.frameMs ?? 16) > 30 && !this.forceHigh) this.lowPowerUntil = ms + 5000;
+        this.lowPower = !this.forceHigh && ms < (this.lowPowerUntil || 0);
         const sing = !!this.targets;
         const headX = w * (sing ? 0.6 : 0.82); // leave room on the right for upcoming notes
         const xAt = (t) => headX - ((now - t) / this.history) * headX;
         const notes = sing ? this.targets(this.history, ((w - headX) / headX) * this.history) || [] : null;
         this._updateView(notes);
-
-        // Night-sky background with a faint, slowly twinkling star field.
-        const bg = g.createLinearGradient(0, 0, 0, h);
-        bg.addColorStop(0, p.bg[1]);
-        bg.addColorStop(1, p.bg[0]);
+    
         g.globalCompositeOperation = 'source-over';
-        g.fillStyle = bg;
-        g.fillRect(0, 0, w, h);
-        if (!p.bold) {
-          this.stars = this.stars ?? Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.1 + 0.3, s: Math.random() * 6 }));
-          g.fillStyle = `rgb(${p.guide})`;
-          for (const s of this.stars) {
-            g.globalAlpha = 0.07 + (this.calm ? 0.06 : 0.12 * (0.5 + 0.5 * Math.sin(now * 0.8 + s.s)));
-            g.beginPath();
-            g.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
-            g.fill();
+        g.globalAlpha = 1;
+        // Free-play scenes have their own layout (no timeline, no pitch axis). Paint brings its own paper.
+        if (this.scene === 'ripples' || this.scene === 'paint' || this.scene === 'kaleido') {
+          if (this.scene === 'paint') this._drawPaint(g, p, now);
+          else {
+            this._backdrop(g, p, now);
+            if (this.scene === 'ripples') this._drawRipples(g, p, now);
+            else this._drawKaleido(g, p, now);
           }
-          g.globalAlpha = 1;
-        }
-
-        // Free-play scenes have their own layout (no timeline, no pitch axis).
-        if (this.scene === 'ripples' || this.scene === 'paint') {
-          if (this.scene === 'ripples') this._drawRipples(g, p, now);
-          else this._drawPaint(g, p, now);
+          this._bloom(g, p, this.scene === 'paint' ? 0.6 : 1);
+          this._vignette(g, p);
           this._drawHint(g, p, now, false);
           return;
         }
-
+        this._backdrop(g, p, now);
+    
         // Note guides: a faint line for every C, labelled, like ledger lines in the dark.
         if (this.guides && !this.explore) {
           g.font = '11px system-ui, sans-serif';
@@ -3771,25 +5670,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             g.fillText(`${NOTE[m % 12]}${Math.floor(m / 12) - 1}`, 6, yy);
           }
         }
-
-        // Sing-along: the song's notes as soft bars; the current one glows.
+    
+        // Sing-along: the song's notes as glowing pills. The current one pulses and lights up while you're
+        // in tune with it; a note you hit stays lit as it scrolls away.
         let current = null;
         if (sing && this.scene !== 'constellation') {
+          const f0 = this.last;
+          const inTuneNow = !!(f0?.voiced && f0.targetCents !== null && Math.abs(f0.targetCents) <= 25 && now - (this.points[this.points.length - 1]?.t ?? 0) < 0.3);
+          this.hitNotes = this.hitNotes ?? []; // { midi, t }: wall-clock start of each note sung in tune
+          const isHit = (n) => this.hitNotes.some((x) => x.midi === n.midi && Math.abs(x.t - (now + n.start)) < 0.15);
           for (const n of notes) {
             const x0 = headX + (n.start / this.history) * headX;
             const x1 = headX + ((n.start + n.dur) / this.history) * headX;
             const yy = this.y(n.midi);
             const live = n.start <= 0 && n.start + n.dur > 0;
             if (live) current = n;
-            g.fillStyle = `rgba(${p.target},${live ? 0.45 : 0.24})`;
-            roundRect(g, x0, yy - 7, Math.max(4, x1 - x0 - 2), 14, 7);
+            if (live && inTuneNow && !isHit(n)) this.hitNotes.push({ midi: n.midi, t: now + n.start });
+            const hit = isHit(n);
+            const past = n.start + n.dur <= 0;
+            const wdt = Math.max(4, x1 - x0 - 2);
+            if (p.bold) {
+              g.fillStyle = `rgba(${p.target},${live || hit ? 0.9 : 0.45})`;
+              roundRect(g, x0, yy - 7, wdt, 14, 7);
+              g.fill();
+              continue;
+            }
+            // A soft halo behind the current note and the ones you hit.
+            if (live || hit) {
+              g.fillStyle = `rgba(${p.target},${live ? 0.16 : 0.1})`;
+              roundRect(g, x0 - 5, yy - 12, wdt + 10, 24, 12);
+              g.fill();
+            }
+            const pill = g.createLinearGradient(0, yy - 7, 0, yy + 7);
+            const a = hit ? 0.8 : live ? 0.5 : past ? 0.12 : 0.26;
+            pill.addColorStop(0, `rgba(${hit ? p.target : p.guide},${Math.min(1, a + 0.15)})`);
+            pill.addColorStop(1, `rgba(${hit ? p.target : p.guide},${a * 0.6})`);
+            g.fillStyle = pill;
+            roundRect(g, x0, yy - 7, wdt, 14, 7);
             g.fill();
             if (live) {
-              g.strokeStyle = `rgba(${p.target},0.8)`;
-              g.lineWidth = 1.5;
+              const pulse = this.calm ? 0.8 : 0.6 + 0.35 * Math.sin(now * 6);
+              g.strokeStyle = `rgba(${p.target},${inTuneNow ? 1 : pulse})`;
+              g.lineWidth = inTuneNow ? 2.2 : 1.5;
+              g.stroke();
+            } else if (!past) {
+              g.strokeStyle = `rgba(${p.target},0.3)`;
+              g.lineWidth = 1;
               g.stroke();
             }
           }
+          this.hitNotes = this.hitNotes.filter((x) => now - x.t < this.history * 2 + 30);
           g.strokeStyle = `rgba(${p.guide},0.25)`;
           g.setLineDash([3, 5]);
           g.beginPath();
@@ -3798,30 +5728,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           g.stroke();
           g.setLineDash([]);
         }
-
+    
         const pts = this.points.filter((q) => now - q.t <= this.history);
-        if (this.scene === 'bloom') this._drawBloom(g, p, now, headX);
-        else if (this.scene === 'constellation') this._drawConstellation(g, p, now, headX, sing, notes);
+        if (this.scene === 'bloom') {
+          this._drawBloom(g, p, now, headX);
+          this._drawPollen(g, now);
+        }
+        else if (this.scene === 'constellation') {
+          this._milkyWay(g, p);
+          this._drawConstellation(g, p, now, headX, sing, notes);
+        }
+        else if (this.scene === 'silk') this._drawSilk(g, p, now, headX, xAt, pts);
         else this._drawAurora(g, p, now, headX, xAt, pts);
-
+    
         // The head: an orb whose halo grows with "ring" (or brightness for instruments).
         const f = this.last;
-        if (f?.voiced && now - this.points[this.points.length - 1].t < 0.3) {
+        if (f?.voiced && this.points.length && now - this.points[this.points.length - 1].t < 0.3) {
           const yy = this.y(f.midi);
+          this.head = { x: headX, y: yy };
           const hue = this.hueFor(f.midi);
           const glow = this.mode === 'voice' ? f.ring : f.brightness;
           const r = 6 + f.loudness * 14;
-          const halo = g.createRadialGradient(headX, yy, 0, headX, yy, r * (2.5 + glow * 3));
-          halo.addColorStop(0, `hsla(${hue},90%,85%,0.9)`);
-          halo.addColorStop(0.35, `hsla(${hue},90%,65%,${0.25 + glow * 0.35})`);
-          halo.addColorStop(1, `hsla(${hue},90%,50%,0)`);
           if (this.scene !== 'bloom') {
-            g.fillStyle = halo;
-            g.beginPath();
-            g.arc(headX, yy, r * (2.5 + glow * 3), 0, Math.PI * 2);
-            g.fill();
+            g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+            this._light(g, headX, yy, r * (3 + glow * 3.5), hue, 0.55 + glow * 0.35);
+            this._light(g, headX, yy, r * 1.2, hue, 0.9, 60, 85);
+            g.globalCompositeOperation = 'source-over';
           }
-
+    
           // Sparkles reward steady (and, with a song, in-tune) singing.
           const inTune = f.targetCents !== null && Math.abs(f.targetCents) <= 25;
           const steady = (f.steadiness ?? 0) > 0.7;
@@ -3833,24 +5767,228 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           }
         }
         const dt = 1 / 60;
-        g.fillStyle = p.spark;
+        const sparkHue = f?.voiced ? this.hueFor(f.midi) : 40;
+        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
         for (const s of this.sparks) {
           s.x += s.vx * dt;
           s.y += s.vy * dt;
+          s.vy += 12 * dt; // they drift down a little, like embers
           s.life -= dt * 0.9;
-          g.globalAlpha = Math.max(0, s.life);
-          g.beginPath();
-          g.arc(s.x, s.y, s.gold ? 2.2 : 1.5, 0, Math.PI * 2);
-          g.fill();
+          // Gold for in tune; otherwise the voice's own colour, nearly white.
+          this._light(g, s.x, s.y, (s.gold ? 7 : 5) * (0.6 + 0.4 * s.life), s.gold ? 42 : sparkHue, Math.max(0, s.life), s.gold ? 95 : 50, 80);
         }
-        g.globalAlpha = 1;
         this.sparks = this.sparks.filter((s) => s.life > 0).slice(-300);
         g.globalCompositeOperation = 'source-over';
-
+    
+        this._bloom(g, p, this.scene === 'bloom' ? 0.55 : 1); // the flowers' hearts are bright already
+        this._vignette(g, p);
         this._drawHint(g, p, now, sing, pts);
         this.currentTarget = current;
       }
-
+    
+      // ---- Light and atmosphere (shared by every scene) ---------------------------------
+    
+      // A soft round light, rendered once per colour and reused: far cheaper than a new gradient per frame.
+      _sprite(hue, sat = 90, light = 68) {
+        const h = ((Math.round(hue / 6) * 6) % 360 + 360) % 360;
+        const key = `${h}|${sat}|${light}`;
+        this.sprites = this.sprites ?? new Map();
+        let s = this.sprites.get(key);
+        if (!s) {
+          s = document.createElement('canvas');
+          s.width = s.height = 128;
+          const sg = s.getContext('2d');
+          const gr = sg.createRadialGradient(64, 64, 0, 64, 64, 64);
+          const L = (v) => Math.max(0, Math.min(97, v));
+          gr.addColorStop(0, `hsla(${h},${sat}%,${L(light + 26)}%,1)`);
+          gr.addColorStop(0.12, `hsla(${h},${sat}%,${L(light + 8)}%,0.75)`);
+          gr.addColorStop(0.35, `hsla(${h},${sat}%,${L(light)}%,0.22)`);
+          gr.addColorStop(0.7, `hsla(${h},${sat}%,${L(light - 12)}%,0.05)`);
+          gr.addColorStop(1, `hsla(${h},${sat}%,${L(light - 20)}%,0)`);
+          sg.fillStyle = gr;
+          sg.fillRect(0, 0, 128, 128);
+          if (this.sprites.size > 300) this.sprites.clear();
+          this.sprites.set(key, s);
+        }
+        return s;
+      }
+    
+      _light(g, x, y, r, hue, alpha = 1, sat, light) {
+        if (r <= 0 || alpha <= 0) return;
+        g.globalAlpha = Math.min(1, alpha);
+        g.drawImage(this._sprite(hue, sat, light), x - r, y - r, r * 2, r * 2);
+        g.globalAlpha = 1;
+      }
+    
+      // The palette's colours for the sky: its own hues, or (Prism) the voice's.
+      _skyHues(p) {
+        if (p.hues) return p.hues;
+        const base = this.moodHue ?? 220;
+        return [base, (base + 120) % 360, (base + 240) % 360];
+      }
+    
+      // Night sky: a cached gradient, stars at several depths and a soft horizon glow; over it, a few
+      // huge nebula lights drift slowly, brighten while you sound and lean toward your note's colour.
+      _backdrop(g, p, now) {
+        const { w, h } = this;
+        const key = `${this.canvas.width}x${this.canvas.height}|${this.palette}`;
+        if (this.sky?.key !== key) {
+          const c = document.createElement('canvas');
+          c.width = this.canvas.width;
+          c.height = this.canvas.height;
+          const s = c.getContext('2d');
+          s.scale(c.width / w, c.height / h);
+          const bg = s.createLinearGradient(0, 0, 0, h);
+          bg.addColorStop(0, p.bg[1]);
+          bg.addColorStop(1, p.bg[0]);
+          s.fillStyle = bg;
+          s.fillRect(0, 0, w, h);
+          if (!p.bold) {
+            const n = Math.round((w * h) / 2600);
+            for (let i = 0; i < n; i++) {
+              const far = Math.random() < 0.85;
+              s.fillStyle = `rgba(${p.guide},${far ? 0.05 + Math.random() * 0.12 : 0.2 + Math.random() * 0.25})`;
+              s.beginPath();
+              s.arc(Math.random() * w, Math.random() * h, far ? 0.3 + Math.random() * 0.6 : 0.8 + Math.random() * 0.9, 0, Math.PI * 2);
+              s.fill();
+            }
+          }
+          this.sky = { key, canvas: c, twinkle: Array.from({ length: 14 }, () => ({ x: Math.random(), y: Math.random(), s: Math.random() * 7, r: 1.5 + Math.random() * 2.5 })) };
+        }
+        g.drawImage(this.sky.canvas, 0, 0, w, h);
+        if (p.bold) return;
+    
+        const f = this.last;
+        const live = f && f.voiced && now - (this.points[this.points.length - 1]?.t ?? 0) < 0.3;
+        this.energy = (this.energy || 0) + ((live ? 0.35 + f.loudness * 0.65 : 0) - (this.energy || 0)) * 0.03;
+        if (live) {
+          const hue = this.hueFor(f.midi);
+          this.moodHue = this.moodHue === undefined ? hue : this.moodHue + shortestTurn(this.moodHue, hue) * 0.02;
+        }
+        const hues = this._skyHues(p);
+        const R = Math.max(w, h);
+        const drift = this.calm ? 0 : now;
+        g.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 3; i++) {
+          const x = w * (0.5 + 0.38 * Math.sin(drift * 0.031 + i * 2.1));
+          const y = h * (0.45 + 0.3 * Math.sin(drift * 0.023 + i * 1.3 + 1));
+          let hue = hues[i % hues.length];
+          if (this.moodHue !== undefined) hue = (hue + shortestTurn(hue, this.moodHue) * 0.35 * this.energy + 360) % 360;
+          this._light(g, x, y, R * (0.42 + 0.08 * i), hue, 0.11 + this.energy * 0.12, 70, 42);
+        }
+        if (this.lowPower) {
+          g.globalCompositeOperation = 'source-over';
+          return;
+        }
+        // Bokeh: a few large, soft, out-of-focus lights drifting slowly in the depth of the sky.
+        this.bokeh = this.bokeh ?? Array.from({ length: 9 }, (_, i) => ({ x: Math.random(), y: Math.random(), r: 0.04 + Math.random() * 0.07, s: Math.random() * 10, k: i % 3 }));
+        for (const b of this.bokeh) {
+          const bx = (((b.x + (this.calm ? 0 : now * 0.004 * (1 + b.k))) % 1.2) - 0.1) * w;
+          const by = (b.y + (this.calm ? 0 : 0.03 * Math.sin(now * 0.1 + b.s))) * h;
+          const hue = (hues[b.k] + (this.moodHue !== undefined ? shortestTurn(hues[b.k], this.moodHue) * 0.5 * this.energy : 0) + 360) % 360;
+          this._light(g, bx, by, R * b.r, hue, 0.05 + 0.04 * Math.sin(now * 0.3 + b.s) + this.energy * 0.05, 60, 70);
+        }
+        // A few brighter stars twinkle.
+        for (const s of this.sky.twinkle) {
+          const tw = this.calm ? 0.5 : 0.5 + 0.5 * Math.sin(now * 1.3 + s.s);
+          this._light(g, s.x * w, s.y * h, s.r * (2 + tw * 2), hues[0], 0.25 + tw * 0.35, 40, 82);
+        }
+        g.globalCompositeOperation = 'source-over';
+      }
+    
+      // Bloom, like light in a camera lens: the frame shrunk twice (blurring it), squared so mostly the bright
+      // parts remain, then added back over the scene.
+      _bloom(g, p, strength) {
+        if (p.bold || this.lowPower) return;
+        const cw = this.canvas.width;
+        const ch = this.canvas.height;
+        const size = (c, k) => {
+          const w = Math.max(1, Math.round(cw / k));
+          const h = Math.max(1, Math.round(ch / k));
+          if (!c || c.width !== w || c.height !== h) {
+            c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+          }
+          return c;
+        };
+        this.bloomA = size(this.bloomA, 4);
+        this.bloomB = size(this.bloomB, 10);
+        const a = this.bloomA.getContext('2d');
+        const b = this.bloomB.getContext('2d');
+        a.globalCompositeOperation = 'copy';
+        a.imageSmoothingQuality = 'high';
+        a.drawImage(this.canvas, 0, 0, this.bloomA.width, this.bloomA.height);
+        a.globalCompositeOperation = 'multiply'; // squared: dim parts drop away, bright parts stay
+        a.drawImage(this.bloomA, 0, 0);
+        b.globalCompositeOperation = 'copy';
+        b.imageSmoothingQuality = 'high';
+        b.drawImage(this.bloomA, 0, 0, this.bloomB.width, this.bloomB.height);
+        g.save();
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.globalCompositeOperation = 'lighter';
+        g.imageSmoothingEnabled = true;
+        g.imageSmoothingQuality = 'high';
+        g.globalAlpha = 0.26 * strength;
+        g.drawImage(this.bloomA, 0, 0, cw, ch);
+        g.globalAlpha = 0.42 * strength;
+        g.drawImage(this.bloomB, 0, 0, cw, ch);
+        g.restore();
+      }
+    
+      // Constellation's sky: a faint Milky Way, a diagonal band of fine star-dust with a soft glow (cached).
+      _milkyWay(g, p) {
+        if (p.bold) return;
+        const { w, h } = this;
+        const key = `${this.canvas.width}x${this.canvas.height}|${this.palette}`;
+        if (this.milky?.key !== key) {
+          const c = document.createElement('canvas');
+          c.width = this.canvas.width;
+          c.height = this.canvas.height;
+          const m = c.getContext('2d');
+          m.scale(c.width / w, c.height / h);
+          const ax = -0.05 * w;
+          const ay = 0.82 * h;
+          const bx = 1.05 * w;
+          const by = 0.12 * h;
+          const len = Math.hypot(bx - ax, by - ay);
+          const nx = -(by - ay) / len;
+          const ny = (bx - ax) / len;
+          const band = Math.min(w, h) * 0.13;
+          const hue = (this._skyHues(p)[1] ?? 260) % 360;
+          m.globalCompositeOperation = 'lighter';
+          for (let i = 0; i <= 14; i++) {
+            const t = i / 14;
+            this._light(m, ax + (bx - ax) * t, ay + (by - ay) * t, band * (1.6 + Math.sin(i * 1.7) * 0.4), hue, 0.05, 40, 60);
+          }
+          const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+          for (let i = 0; i < Math.round((w * h) / 380); i++) {
+            const t = Math.random();
+            const o = gauss() * band;
+            m.fillStyle = `rgba(${p.guide},${0.08 + Math.random() * 0.22 * (1 - Math.abs(o) / (band * 1.6))})`;
+            m.fillRect(ax + (bx - ax) * t + nx * o, ay + (by - ay) * t + ny * o, 0.9, 0.9);
+          }
+          this.milky = { key, canvas: c };
+        }
+        g.drawImage(this.milky.canvas, 0, 0, w, h);
+      }
+    
+      // A soft darkening toward the edges, like a stage: it frames the light without hiding anything.
+      _vignette(g, p) {
+        if (p.bold) return;
+        const { w, h } = this;
+        // The edges darken into a deep shade of the voice's colour rather than plain black.
+        const hue = Math.round((this.moodHue ?? 280) / 10) * 10;
+        if (this.vig?.key !== `${w}x${h}|${hue}`) {
+          const v = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.35, w / 2, h / 2, Math.hypot(w, h) * 0.62);
+          v.addColorStop(0, `hsla(${hue},45%,4%,0)`);
+          v.addColorStop(1, `hsla(${hue},45%,4%,0.5)`);
+          this.vig = { key: `${w}x${h}|${hue}`, fill: v };
+        }
+        g.fillStyle = this.vig.fill;
+        g.fillRect(0, 0, w, h);
+      }
+    
       // A quiet hint when nothing is coming in.
       _drawHint(g, p, now, sing, pts = this.points.filter((q) => now - q.t <= this.history)) {
         const f = this.last;
@@ -3862,24 +6000,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           g.textAlign = 'start';
         }
       }
-
+    
       // ---- Ripples (free play): every sound sends out a ring --------------------------
       // Direction = the note, around the circle of fifths; distance from the centre = how high;
-      // size = loudness; a wobbling edge = vibrato. The centre breathes with your volume.
-
+      // size = loudness; a wobbling edge = vibrato; a brighter core = more ring. Rings shimmer with an
+      // iridescent edge, leave drifting motes of light, and the centre star breathes with your volume.
+    
       _drawRipples(g, p, now) {
         const { w, h } = this;
         const f = this.last;
         const fresh = f && this.points.length && now - this.points[this.points.length - 1].t < 0.2;
         this.rings = this.rings ?? [];
+        this.motes = this.motes ?? [];
         const [lo, hi] = this.mode === 'voice' ? [40, 88] : [28, 100];
+        const R = Math.min(w, h);
+        const bold = !!p.bold;
         if (fresh && f.voiced && (!this.lastRing || now - this.lastRing > (this.calm ? 0.35 : 0.14))) {
           this.lastRing = now;
           const pc = ((Math.round(f.midi) % 12) + 12) % 12;
           const ang = (((pc * 7) % 12) / 12) * Math.PI * 2 - Math.PI / 2;
           const dist = 0.1 + 0.34 * Math.max(0, Math.min(1, (f.midi - lo) / (hi - lo)));
-          const R = Math.min(w, h);
-          this.rings.push({
+          const ring = {
             x: w / 2 + Math.cos(ang) * dist * R,
             y: h / 2 + Math.sin(ang) * dist * R,
             born: now,
@@ -3888,77 +6029,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             vib: f.vibrato ? f.vibrato.extent : 0,
             glow: this.mode === 'voice' ? f.ring : f.brightness,
             seed: Math.random() * 10,
-          });
+          };
+          this.rings.push(ring);
           if (this.rings.length > 160) this.rings.shift();
+          // Motes of light float away from where the sound landed.
+          if (!this.calm && !bold) {
+            for (let k = 0; k < 2; k++) {
+              const a = Math.random() * Math.PI * 2;
+              const v = 8 + Math.random() * 22 * ring.size;
+              this.motes.push({ x: ring.x, y: ring.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 6, born: now, life: 2.5 + Math.random() * 2, hue: (ring.hue + (Math.random() - 0.5) * 30 + 360) % 360, r: 3 + Math.random() * 4 });
+            }
+            if (this.motes.length > 360) this.motes.splice(0, this.motes.length - 360);
+          }
         }
-        const life = this.calm ? 4.5 : 3.2;
-        g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
+        const life = this.calm ? 4.5 : 3.4;
+        g.globalCompositeOperation = bold ? 'source-over' : 'lighter';
+    
+        // The centre: a slowly turning twelve-pointed star (the circle of fifths the rings sit on),
+        // breathing with how loud you are.
+        const L = fresh && f.voiced ? f.loudness : 0;
+        this.centreLevel = (this.centreLevel || 0) + (L - (this.centreLevel || 0)) * 0.08;
+        const hue = f && f.voiced ? this.hueFor(f.midi) : (this.lastHue ?? 30);
+        this.lastHue = hue;
+        const cr = R * (0.06 + this.centreLevel * 0.16);
+        if (!bold) this._light(g, w / 2, h / 2, cr * 3, hue, 0.25 + this.centreLevel * 0.45);
+        const spin = this.calm ? 0 : now * 0.05;
+        const sr = R * 0.44;
+        g.strokeStyle = bold ? `rgba(${p.guide},0.35)` : `hsla(${hue},60%,75%,${0.05 + this.centreLevel * 0.12})`;
+        g.lineWidth = 1;
+        g.beginPath();
+        for (let k = 0; k <= 12; k++) {
+          const a = spin + ((k * 5) % 12) * (Math.PI / 6) - Math.PI / 2; // a {12/5} star: every fifth point
+          const X = w / 2 + Math.cos(a) * sr;
+          const Y = h / 2 + Math.sin(a) * sr;
+          if (k) g.lineTo(X, Y);
+          else g.moveTo(X, Y);
+        }
+        g.stroke();
+        g.beginPath();
+        g.arc(w / 2, h / 2, sr * (0.98 + 0.02 * Math.sin(now * 0.7)), 0, Math.PI * 2);
+        g.stroke();
+    
         for (const r of this.rings) {
           const age = now - r.born;
           if (age > life) continue;
           const k = age / life;
-          const rad = 6 + k * Math.min(w, h) * 0.22 * r.size;
-          g.strokeStyle = `hsla(${r.hue},90%,${p.bold ? 72 : 66}%,${(1 - k) * (p.bold ? 0.9 : 0.6)})`;
-          g.lineWidth = 1 + r.size * 4 * (1 - k);
+          const ease = 1 - Math.pow(1 - k, 2.2); // fast at first, then gliding out like water
+          const rad = 6 + ease * R * 0.26 * r.size;
+          const fade = Math.pow(1 - k, 1.4);
           const wob = this.calm ? 0 : Math.min(12, r.vib / 4);
-          g.beginPath();
-          for (let a = 0; a <= 72; a++) {
-            const t = (a / 72) * Math.PI * 2;
-            const rr = rad + wob * Math.sin(t * 6 + now * 4 + r.seed);
-            const X = r.x + Math.cos(t) * rr;
-            const Y = r.y + Math.sin(t) * rr;
-            if (a) g.lineTo(X, Y);
-            else g.moveTo(X, Y);
-          }
-          g.stroke();
-          if (age < 0.7) {
-            const cr = 14 + r.glow * 30;
-            const core = g.createRadialGradient(r.x, r.y, 0, r.x, r.y, cr);
-            core.addColorStop(0, `hsla(${r.hue},95%,85%,${(1 - age / 0.7) * 0.7})`);
-            core.addColorStop(1, `hsla(${r.hue},95%,60%,0)`);
-            g.fillStyle = core;
+          const path = (dr) => {
             g.beginPath();
-            g.arc(r.x, r.y, cr, 0, Math.PI * 2);
-            g.fill();
+            if (!wob) {
+              g.arc(r.x, r.y, Math.max(1, rad + dr), 0, Math.PI * 2);
+              return;
+            }
+            for (let a = 0; a <= 56; a++) {
+              const t = (a / 56) * Math.PI * 2;
+              const rr = Math.max(1, rad + dr + wob * Math.sin(t * 6 + now * 4 + r.seed));
+              const X = r.x + Math.cos(t) * rr;
+              const Y = r.y + Math.sin(t) * rr;
+              if (a) g.lineTo(X, Y);
+              else g.moveTo(X, Y);
+            }
+          };
+          if (bold) {
+            g.strokeStyle = `hsla(${r.hue},90%,72%,${fade * 0.9})`;
+            g.lineWidth = 2 + r.size * 3 * (1 - k);
+            path(0);
+            g.stroke();
+            continue;
           }
+          // A wide soft halo, the bright ring itself, and a thin iridescent fringe on either side.
+          g.strokeStyle = `hsla(${r.hue},85%,60%,${fade * 0.1})`;
+          g.lineWidth = 10 + r.size * 18 * (1 - k);
+          path(0);
+          g.stroke();
+          g.strokeStyle = `hsla(${r.hue},90%,74%,${fade * 0.7})`;
+          g.lineWidth = 1 + r.size * 2.6 * (1 - k);
+          path(0);
+          g.stroke();
+          g.lineWidth = 1;
+          g.strokeStyle = `hsla(${(r.hue + 40) % 360},95%,72%,${fade * 0.28})`;
+          path(3 + 4 * k);
+          g.stroke();
+          g.strokeStyle = `hsla(${(r.hue + 320) % 360},95%,72%,${fade * 0.22})`;
+          path(-3 - 3 * k);
+          g.stroke();
+          // Where the sound landed: a flash of light, brighter with more ring.
+          if (age < 1) this._light(g, r.x, r.y, 18 + r.glow * 46 + r.size * 14, r.hue, (1 - age) * (0.5 + r.glow * 0.4));
         }
         this.rings = this.rings.filter((r) => now - r.born < life);
-        // The centre breathes with how loud you are.
-        const L = fresh && f.voiced ? f.loudness : 0;
-        this.centreLevel = (this.centreLevel || 0) + (L - (this.centreLevel || 0)) * 0.08;
-        const cr = 24 + this.centreLevel * Math.min(w, h) * 0.18;
-        const hue = f && f.voiced ? this.hueFor(f.midi) : (this.lastHue ?? 30);
-        this.lastHue = hue;
-        const c = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, cr);
-        c.addColorStop(0, `hsla(${hue},80%,75%,${0.12 + this.centreLevel * 0.35})`);
-        c.addColorStop(1, `hsla(${hue},80%,50%,0)`);
-        g.fillStyle = c;
-        g.beginPath();
-        g.arc(w / 2, h / 2, cr, 0, Math.PI * 2);
-        g.fill();
+    
+        const dt = 1 / 60;
+        for (const m of this.motes) {
+          const age = now - m.born;
+          m.x += m.vx * dt;
+          m.y += m.vy * dt;
+          m.vx *= 0.995;
+          m.vy = m.vy * 0.995 - 2 * dt; // a slow rise
+          const a = Math.max(0, 1 - age / m.life);
+          this._light(g, m.x, m.y, m.r * (0.6 + 0.4 * Math.sin(now * 3 + m.r)), m.hue, a * 0.8, 80, 78);
+        }
+        this.motes = this.motes.filter((m) => now - m.born < m.life);
         g.globalCompositeOperation = 'source-over';
       }
-
+    
       // ---- Paint (free play): your sound is a brush ------------------------------------
       // The brush wanders over the page; pitch lifts it, loudness widens it, vibrato ripples it,
-      // breathy sounds spray. Strokes stay, so a session becomes a picture (see snapshot()).
-
+      // breathy sounds spatter, ring adds a sheen. Each stroke is one smooth watercolour ribbon (laid
+      // down as a single wash, so it never beads), with darker pooled edges and bristle streaks.
+      // Strokes stay, so a session becomes a picture (see snapshot()).
+    
       _drawPaint(g, p, now) {
         const { w, h } = this;
         const dpr = this.canvas.width / w;
+        const bold = !!p.bold;
         if (!this.paper || this.paper.width !== this.canvas.width || this.paper.height !== this.canvas.height) {
           const old = this.paper;
           this.paper = document.createElement('canvas');
           this.paper.width = this.canvas.width;
           this.paper.height = this.canvas.height;
+          this.wet = document.createElement('canvas');
+          this.wet.width = this.canvas.width;
+          this.wet.height = this.canvas.height;
           const pg0 = this.paper.getContext('2d');
-          const bg = pg0.createLinearGradient(0, 0, 0, this.paper.height);
+          pg0.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const bg = pg0.createLinearGradient(0, 0, 0, h);
           bg.addColorStop(0, p.bg[1]);
           bg.addColorStop(1, p.bg[0]);
           pg0.fillStyle = bg;
-          pg0.fillRect(0, 0, this.paper.width, this.paper.height);
-          if (old) pg0.drawImage(old, 0, 0, this.paper.width, this.paper.height); // keep the picture on resize
-          this.brush = null;
+          pg0.fillRect(0, 0, w, h);
+          if (!bold) {
+            // Paper grain: faint flecks, light and dark.
+            for (let i = 0; i < (w * h) / 90; i++) {
+              pg0.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.06)';
+              pg0.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random(), 1 + Math.random());
+            }
+          }
+          if (old) pg0.drawImage(old, 0, 0, w, h); // keep the picture on resize
+          this.stroke = null;
         }
         const pg = this.paper.getContext('2d');
         pg.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -3970,69 +6180,428 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         const lift = f && f.voiced ? Math.max(0, Math.min(1, (f.midi - lo) / (hi - lo))) : 0.5;
         const bx = w * (0.5 + 0.43 * Math.sin(t)) + w * 0.04 * Math.sin(t * 3.7);
         const by = h * (0.9 - 0.78 * lift) + h * 0.06 * Math.sin(t * 2.3);
+    
         if (fresh && f.voiced) {
           const hue = this.hueFor(f.midi);
-          const prev = this.brush;
-          const ripple = this.calm || !f.vibrato ? 0 : Math.min(10, f.vibrato.extent / 5) * Math.sin(now * 2 * Math.PI * f.vibrato.rate);
+          // Vibrato pulses the stroke's width (a wobbling path would only look jittery).
+          const pulse = this.calm || !f.vibrato ? 0 : Math.min(0.3, f.vibrato.extent / 120) * Math.sin(now * 2 * Math.PI * f.vibrato.rate);
           const x = bx;
-          const y = by + ripple;
-          if (prev && Math.hypot(prev.x - x, prev.y - y) < Math.max(w, h) * 0.15) {
-            // Normal blending, like paint: colours build up without blowing out to white.
-            pg.globalCompositeOperation = 'source-over';
-            pg.strokeStyle = `hsla(${hue},80%,${p.bold ? 62 : 58}%,${p.bold ? 0.9 : 0.22})`;
-            pg.lineWidth = 2 + f.loudness * 26;
-            pg.lineCap = 'round';
-            pg.beginPath();
-            pg.moveTo(prev.x, prev.y);
-            pg.lineTo(x, y);
-            pg.stroke();
-            // A fine bright line down the middle of the stroke, brighter with more ring.
-            const glow = this.mode === 'voice' ? f.ring : f.brightness;
-            pg.strokeStyle = `hsla(${(hue + 30) % 360},95%,82%,${0.1 + glow * 0.3})`;
-            pg.lineWidth = 1 + glow * 2;
-            pg.beginPath();
-            pg.moveTo(prev.x, prev.y);
-            pg.lineTo(x, y);
-            pg.stroke();
-            if ((f.breathiness ?? 0) > 0.35) {
-              pg.fillStyle = `hsla(${hue},70%,75%,0.25)`;
-              for (let k = 0; k < 6; k++) {
-                const a = Math.random() * Math.PI * 2;
-                const d = Math.random() * (10 + f.loudness * 30);
-                pg.fillRect(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.5, 1.5);
-              }
-            }
-            pg.globalCompositeOperation = 'source-over';
+          const y = by;
+          const s = this.stroke;
+          const lastPt = s && s.pts[s.pts.length - 1];
+          // A jump (a new note far away) or a very long stroke starts a new one.
+          if (s && (Math.hypot(lastPt.x - x, lastPt.y - y) > Math.max(w, h) * 0.15 || s.pts.length > 700)) this._commitStroke(pg, p);
+          this.stroke = this.stroke ?? { pts: [] };
+          const pts = this.stroke.pts;
+          const prev = pts[pts.length - 1];
+          if (!prev || Math.hypot(prev.x - x, prev.y - y) > 1.5) {
+            pts.push({ x, y, w: ((bold ? 3 : 4) + f.loudness * (bold ? 16 : 34)) * (1 + pulse), hue, ring: this.mode === 'voice' ? f.ring : f.brightness });
           }
-          this.brush = { x, y };
-        } else this.brush = null;
+          this.stroke.last = now;
+          if (!bold && (f.breathiness ?? 0) > 0.35) {
+            // Breathy sounds spatter tiny drops around the brush.
+            for (let k = 0; k < 5; k++) {
+              const a = Math.random() * Math.PI * 2;
+              const d = 6 + Math.random() * (12 + f.loudness * 34);
+              pg.fillStyle = `hsla(${hue},75%,${62 + Math.random() * 14}%,${0.15 + Math.random() * 0.25})`;
+              pg.beginPath();
+              pg.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, 0.6 + Math.random() * 1.8, 0, Math.PI * 2);
+              pg.fill();
+            }
+          }
+        } else if (this.stroke && now - this.stroke.last > 0.25) {
+          this._commitStroke(pg, p);
+        }
+    
         g.drawImage(this.paper, 0, 0, w, h);
-        // Where the brush is now: a soft ring, so you can steer it.
-        g.strokeStyle = `rgba(${p.guide},0.35)`;
+        // The stroke being painted shows as wet paint on top, at the strength it will dry to.
+        if (this.stroke && this.stroke.pts.length > 1) {
+          this._renderWet(p);
+          g.globalAlpha = bold ? 1 : 0.74;
+          g.drawImage(this.wet, 0, 0, w, h);
+          g.globalAlpha = 1;
+          if (!bold) {
+            g.save();
+            g.setTransform(1, 0, 0, 1, 0, 0);
+            this._paintHalo(g, 0.3);
+            g.restore();
+          }
+        }
+        // Where the brush is now: a soft glow and a ring, so you can steer it.
+        if (!bold) {
+          g.globalCompositeOperation = 'lighter';
+          this._light(g, bx, by, 26, f && f.voiced ? this.hueFor(f.midi) : 40, 0.35);
+          g.globalCompositeOperation = 'source-over';
+        }
+        g.strokeStyle = `rgba(${p.guide},0.4)`;
         g.lineWidth = 1.5;
         g.beginPath();
         g.arc(bx, by, 10, 0, Math.PI * 2);
         g.stroke();
       }
-
+    
+      // Draw the current stroke, fully opaque, on the wet layer: one ribbon whose width follows loudness.
+      _renderWet(p) {
+        const wg = this.wet.getContext('2d');
+        const dpr = this.canvas.width / this.w;
+        wg.setTransform(1, 0, 0, 1, 0, 0);
+        wg.clearRect(0, 0, this.wet.width, this.wet.height);
+        wg.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const raw = this.stroke.pts;
+        // Smooth the brush path (the voice wobbles; a brush glides): a weighted average over 9 points.
+        const K = [1, 2, 3, 4, 5, 4, 3, 2, 1];
+        const pts = raw.map((q, i) => {
+          let x = 0;
+          let y = 0;
+          let wd = 0;
+          let sum = 0;
+          for (let j = -4; j <= 4; j++) {
+            const r = raw[Math.max(0, Math.min(raw.length - 1, i + j))];
+            const k = K[j + 4];
+            x += r.x * k;
+            y += r.y * k;
+            wd += r.w * k;
+            sum += k;
+          }
+          return { ...q, x: x / sum, y: y / sum, w: wd / sum };
+        });
+        const n = pts.length;
+        const L = [];
+        const Rt = [];
+        for (let i = 0; i < n; i++) {
+          const a = pts[Math.max(0, i - 1)];
+          const b = pts[Math.min(n - 1, i + 1)];
+          let dx = b.x - a.x;
+          let dy = b.y - a.y;
+          const len = Math.hypot(dx, dy) || 1;
+          dx /= len;
+          dy /= len;
+          // Taper: a brush touches down and lifts off.
+          const taper = Math.min(1, (i + 1) / 5, (n - i) / 4);
+          const half = (pts[i].w / 2) * (0.35 + 0.65 * taper);
+          L.push({ x: pts[i].x - dy * half, y: pts[i].y + dx * half });
+          Rt.push({ x: pts[i].x + dy * half, y: pts[i].y - dx * half });
+        }
+        const bold = !!p.bold;
+        // The body, in chunks so the colour can follow the notes.
+        const CH = 8;
+        for (let s = 0; s < n - 1; s += CH) {
+          const e = Math.min(n - 1, s + CH);
+          wg.fillStyle = `hsl(${pts[e].hue},${bold ? 90 : 78}%,${bold ? 62 : 62}%)`;
+          wg.beginPath();
+          wg.moveTo(L[s].x, L[s].y);
+          for (let i = s + 1; i <= e; i++) wg.lineTo(L[i].x, L[i].y);
+          for (let i = e; i >= s; i--) wg.lineTo(Rt[i].x, Rt[i].y);
+          wg.closePath();
+          wg.fill();
+        }
+        if (bold) return;
+        // Watercolour pools at its edges: a darker, richer rim.
+        wg.lineJoin = 'round';
+        wg.lineCap = 'round';
+        for (const edge of [L, Rt]) {
+          for (let s = 0; s < n - 1; s += CH) {
+            const e = Math.min(n - 1, s + CH);
+            wg.strokeStyle = `hsl(${pts[e].hue},80%,50%)`;
+            wg.lineWidth = 1.2;
+            wg.beginPath();
+            wg.moveTo(edge[s].x, edge[s].y);
+            for (let i = s + 1; i <= e; i++) wg.lineTo(edge[i].x, edge[i].y);
+            wg.stroke();
+          }
+        }
+        // Granulation: pigment settles into the paper's grain as darker specks inside the stroke.
+        wg.globalCompositeOperation = 'source-atop';
+        // (Fixed per place in the stroke, so the wet stroke doesn't flicker as it is redrawn.)
+        const grain = (i, k) => {
+          const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453;
+          return v - Math.floor(v);
+        };
+        for (let i = 0; i < n; i += 2) {
+          const q = pts[i];
+          for (let k = 0; k < 3; k++) {
+            const t = grain(i, k);
+            const x = L[i].x + (Rt[i].x - L[i].x) * t + (grain(i, k + 3) - 0.5) * 3;
+            const y = L[i].y + (Rt[i].y - L[i].y) * t + (grain(i, k + 6) - 0.5) * 3;
+            wg.fillStyle = `hsla(${q.hue},70%,${36 + grain(i, k + 9) * 14}%,0.5)`;
+            wg.fillRect(x, y, 1.2, 1.2);
+          }
+        }
+        wg.globalCompositeOperation = 'source-over';
+        // Bristles: fine streaks across the stroke's width, each a little lighter or darker than the next,
+        // so the stroke reads as brushed paint. Each bristle keeps its shade along the whole stroke.
+        const B = 9;
+        for (let k = 0; k < B; k++) {
+          const off = (k + 0.5) / B;
+          const shade = (grain(k, 101) - 0.5) * 24; // lighter or darker, per bristle
+          for (let s = 0; s < n - 1; s += CH) {
+            const e = Math.min(n - 1, s + CH);
+            wg.strokeStyle = `hsla(${(pts[e].hue + shade * 0.4) % 360},80%,${62 + shade}%,${0.35 + grain(k, 202) * 0.35})`;
+            wg.lineWidth = Math.max(0.7, (pts[e].w / B) * 0.9);
+            wg.beginPath();
+            for (let i = s; i <= e; i++) {
+              const x = L[i].x + (Rt[i].x - L[i].x) * off;
+              const y = L[i].y + (Rt[i].y - L[i].y) * off;
+              if (i === s) wg.moveTo(x, y);
+              else wg.lineTo(x, y);
+            }
+            wg.stroke();
+          }
+        }
+      }
+    
+      // A soft glow around the wet stroke: shrunk to a sixth and stretched back, it blurs for free.
+      // Drawn in device pixels (the caller resets the transform).
+      _paintHalo(ctx, alpha) {
+        const W = Math.max(1, Math.round(this.wet.width / 6));
+        const H = Math.max(1, Math.round(this.wet.height / 6));
+        if (!this.halo || this.halo.width !== W || this.halo.height !== H) {
+          this.halo = document.createElement('canvas');
+          this.halo.width = W;
+          this.halo.height = H;
+        }
+        const hg = this.halo.getContext('2d');
+        hg.clearRect(0, 0, W, H);
+        hg.imageSmoothingQuality = 'high';
+        hg.drawImage(this.wet, 0, 0, W, H);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = alpha;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(this.halo, 0, 0, this.wet.width, this.wet.height);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
+    
+      // The stroke dries onto the paper as a single wash, then a fine sheen (more with ring) on top.
+      _commitStroke(pg, p) {
+        const st = this.stroke;
+        if (!st || st.pts.length < 2) {
+          this.stroke = null;
+          return;
+        }
+        this._renderWet(p);
+        this.stroke = null;
+        pg.save();
+        pg.setTransform(1, 0, 0, 1, 0, 0);
+        pg.globalAlpha = p.bold ? 1 : 0.74;
+        pg.drawImage(this.wet, 0, 0);
+        if (!p.bold) this._paintHalo(pg, 0.3);
+        pg.restore();
+        if (p.bold) return;
+        pg.globalCompositeOperation = 'lighter';
+        pg.lineCap = 'round';
+        pg.lineJoin = 'round';
+        const pts = st.pts;
+        for (let s = 0; s < pts.length - 1; s += 6) {
+          const e = Math.min(pts.length - 1, s + 6);
+          const ring = pts[e].ring || 0;
+          pg.strokeStyle = `hsla(${(pts[e].hue + 30) % 360},95%,85%,${0.06 + ring * 0.3})`;
+          pg.lineWidth = 0.8 + ring * 1.8;
+          pg.beginPath();
+          pg.moveTo(pts[s].x, pts[s].y);
+          for (let i = s + 1; i <= e; i++) pg.lineTo(pts[i].x, pts[i].y);
+          pg.stroke();
+        }
+        pg.globalCompositeOperation = 'source-over';
+      }
+    
       /** Start a fresh painting (Paint scene). */
       clearPaint() {
         this.paper = null;
-        this.brush = null;
+        this.stroke = null;
       }
-
+    
       /** The current picture (Paint scene) or frame, as a PNG blob. */
       snapshot() {
+        if (this.scene === 'paint' && this.paper && this.stroke) {
+          const pg = this.paper.getContext('2d');
+          pg.setTransform(this.canvas.width / this.w, 0, 0, this.canvas.width / this.w, 0, 0);
+          this._commitStroke(pg, PALETTES[this.palette]);
+        }
         const src = this.scene === 'paint' && this.paper ? this.paper : this.canvas;
         return new Promise((resolve) => src.toBlob(resolve, 'image/png'));
       }
-
+    
+      // ---- Kaleidoscope (free play): your voice draws a mandala ------------------------
+      // The pen turns slowly around the centre; pitch sets its distance from the middle, loudness its
+      // width and speed, vibrato a shimmer. Every stroke is mirrored eight ways and slowly fades, so a
+      // phrase weaves a pattern and silence lets it dissolve.
+    
+      _drawKaleido(g, p, now) {
+        const { w, h } = this;
+        const bold = !!p.bold;
+        const dpr = this.canvas.width / w;
+        if (!this.kal || this.kal.width !== this.canvas.width || this.kal.height !== this.canvas.height) {
+          this.kal = document.createElement('canvas');
+          this.kal.width = this.canvas.width;
+          this.kal.height = this.canvas.height;
+          this.pen = null;
+        }
+        const kg = this.kal.getContext('2d');
+        kg.setTransform(1, 0, 0, 1, 0, 0);
+        // Fade what was drawn (slowly, so a pattern builds up).
+        kg.globalCompositeOperation = 'destination-out';
+        kg.fillStyle = `rgba(0,0,0,${this.calm ? 0.012 : 0.02})`;
+        kg.fillRect(0, 0, this.kal.width, this.kal.height);
+        kg.globalCompositeOperation = bold ? 'source-over' : 'lighter';
+        kg.setTransform(dpr, 0, 0, dpr, w / 2 * dpr, h / 2 * dpr);
+    
+        const f = this.last;
+        const fresh = f && this.points.length && now - this.points[this.points.length - 1].t < 0.2;
+        const [lo, hi] = this.mode === 'voice' ? [40, 88] : [28, 100];
+        const R = Math.min(w, h) * 0.46;
+        if (fresh && f.voiced) {
+          const k = Math.max(0, Math.min(1, (f.midi - lo) / (hi - lo)));
+          this.penAngle = (this.penAngle ?? 0) + (this.calm ? 0.012 : 0.022 + f.loudness * 0.04);
+          // Like a spirograph: each note traces petals (3 to 7 of them, by the note's place on the circle
+          // of fifths), deeper when louder; pitch sets how far out they reach.
+          const pc = ((Math.round(f.midi) % 12) + 12) % 12;
+          const petals = 3 + ((pc * 7) % 5);
+          this.petalDepth = (this.petalDepth ?? 0.2) + ((0.12 + f.loudness * 0.35) - (this.petalDepth ?? 0.2)) * 0.05;
+          this.penR = (this.penR ?? R * (0.12 + 0.86 * k)) + (R * (0.12 + 0.86 * k) - (this.penR ?? 0)) * 0.08;
+          const r = this.penR * (1 - this.petalDepth + this.petalDepth * Math.cos(this.penAngle * petals));
+          const shimmer = this.calm || !f.vibrato ? 1 : 1 + Math.min(0.5, f.vibrato.extent / 80) * Math.sin(now * 2 * Math.PI * f.vibrato.rate);
+          const pt = { x: Math.cos(this.penAngle) * r, y: Math.sin(this.penAngle) * r };
+          const hue = this.hueFor(f.midi);
+          const prev = this.pen;
+          if (prev && Math.hypot(prev.x - pt.x, prev.y - pt.y) < R * 0.5) {
+            const width = ((bold ? 2 : 1) + f.loudness * (bold ? 4 : 5)) * shimmer;
+            const glow = this.mode === 'voice' ? f.ring : f.brightness;
+            const N = 8;
+            for (let i = 0; i < N; i++) {
+              kg.save();
+              kg.rotate((i * Math.PI * 2) / N);
+              if (i % 2) kg.scale(1, -1); // mirror every other copy, like a real kaleidoscope
+              kg.strokeStyle = bold ? `hsl(${hue},90%,70%)` : `hsla(${hue},90%,${62 + glow * 18}%,0.55)`;
+              kg.lineWidth = width;
+              kg.lineCap = 'round';
+              kg.beginPath();
+              kg.moveTo(prev.x, prev.y);
+              kg.lineTo(pt.x, pt.y);
+              kg.stroke();
+              if (!bold) {
+                kg.strokeStyle = `hsla(${hue},90%,60%,0.08)`;
+                kg.lineWidth = width * 5;
+                kg.stroke();
+              }
+              kg.restore();
+            }
+          }
+          this.pen = pt;
+          this.penHue = hue;
+        } else this.pen = null;
+    
+        // The pattern turns very slowly as a whole.
+        const spin = this.calm ? 0 : now * 0.03;
+        g.save();
+        g.translate(w / 2, h / 2);
+        g.rotate(spin);
+        g.drawImage(this.kal, -w / 2, -h / 2, w, h);
+        g.restore();
+        // A soft light at the centre, and where the pen is.
+        if (!bold) {
+          g.globalCompositeOperation = 'lighter';
+          const L = fresh && f.voiced ? f.loudness : 0;
+          this.centreLevel = (this.centreLevel || 0) + (L - (this.centreLevel || 0)) * 0.08;
+          this._light(g, w / 2, h / 2, R * (0.18 + this.centreLevel * 0.3), this.penHue ?? 40, 0.2 + this.centreLevel * 0.4);
+          if (this.pen) {
+            for (let i = 0; i < 8; i++) {
+              const a = (i * Math.PI * 2) / 8 + spin;
+              const x = this.pen.x * Math.cos(a) - (i % 2 ? -this.pen.y : this.pen.y) * Math.sin(a);
+              const y = this.pen.x * Math.sin(a) + (i % 2 ? -this.pen.y : this.pen.y) * Math.cos(a);
+              this._light(g, w / 2 + x, h / 2 + y, 14, this.penHue, 0.7, 90, 80);
+            }
+          }
+          g.globalCompositeOperation = 'source-over';
+        }
+      }
+    
+      /** Start a fresh pattern (Kaleidoscope). */
+      clearKaleido() {
+        this.kal = null;
+        this.pen = null;
+      }
+    
+      // ---- Silk: strands of light flowing from the voice --------------------------------
+      // Six translucent strands follow the shape of your melody across the screen, woven around it;
+      // loudness billows them out, vibrato quickens their ripple, ring brightens the sheen. Silence lets
+      // them settle into calm threads.
+    
+      _drawSilk(g, p, now, headX, xAt, pts) {
+        const bold = !!p.bold;
+        const voiced = pts.filter((q) => q.f.voiced);
+        // The strands' path: the sung pitch (smoothed); through silences it holds the last note.
+        const path = [];
+        let lastY = this.silkY ?? this.h / 2;
+        let loud = 0;
+        for (let i = 0; i < pts.length; i += 2) {
+          const q = pts[i];
+          if (q.f.voiced) {
+            lastY = this.y(q.f.midi);
+            loud = q.f.loudness;
+          } else loud *= 0.9;
+          path.push({ x: xAt(q.t), y: lastY, loud, hue: q.f.voiced ? this.hueFor(q.f.midi) : null, vib: q.f.vibrato ? q.f.vibrato.rate : 0, ring: this.mode === 'voice' ? q.f.ring : q.f.brightness, age: now - q.t });
+        }
+        this.silkY = lastY;
+        if (path.length < 2) return;
+        for (let i = 1; i < path.length; i++) {
+          path[i].y = path[i - 1].y + (path[i].y - path[i - 1].y) * 0.35; // ease between notes
+          if (path[i].hue === null) path[i].hue = path[i - 1].hue ?? this.hueFor(this.center ?? 60);
+        }
+        if (path[0].hue === null) path[0].hue = path.find((q) => q.hue !== null)?.hue ?? 40;
+        g.globalCompositeOperation = bold ? 'source-over' : 'lighter';
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        const strands = bold ? 3 : 6;
+        for (let s = 0; s < strands; s++) {
+          const phase = s * 1.1;
+          const spread = (s - (strands - 1) / 2) / strands;
+          for (const [width, alpha] of bold ? [[2.5, 1]] : [[9, 0.05], [1.6, 0.5]]) {
+            // Drawn in short pieces so the colour can follow the notes and fade with age.
+            for (let k = 0; k < path.length - 1; k += 6) {
+              const chunk = path.slice(k, k + 7);
+              const q = chunk[chunk.length - 1];
+              const fade = Math.max(0, 1 - q.age / this.history);
+              g.strokeStyle = `hsla(${(q.hue + s * 9) % 360},${bold ? 90 : 80}%,${bold ? 70 : 64 + q.ring * 16}%,${alpha * (bold ? 1 : fade)})`;
+              g.lineWidth = width * (bold ? 1 : 0.6 + q.loud);
+              g.beginPath();
+              chunk.forEach((c, i) => {
+                const amp = 4 + c.loud * 46 * (0.4 + Math.abs(spread) * 1.6);
+                const wave = this.calm ? 0 : Math.sin(c.x * 0.013 + now * (1.2 + c.vib * 0.15) + phase) * amp;
+                const yy = c.y + spread * (10 + c.loud * 60) + wave * (0.5 + 0.5 * Math.sin(phase + c.x * 0.004));
+                if (i) g.lineTo(c.x, yy);
+                else g.moveTo(c.x, yy);
+              });
+              g.stroke();
+            }
+          }
+        }
+        // Points of sheen travel along each strand, as light catches the silk.
+        if (!bold && !this.calm) {
+          for (let s = 0; s < strands; s++) {
+            const k = Math.floor((((now * 0.18 + s * 0.17) % 1) * (path.length - 1)));
+            const c = path[k];
+            if (!c || c.age > this.history) continue;
+            const phase = s * 1.1;
+            const spread = (s - (strands - 1) / 2) / strands;
+            const amp = 4 + c.loud * 46 * (0.4 + Math.abs(spread) * 1.6);
+            const yy = c.y + spread * (10 + c.loud * 60) + Math.sin(c.x * 0.013 + now * (1.2 + c.vib * 0.15) + phase) * amp * (0.5 + 0.5 * Math.sin(phase + c.x * 0.004));
+            this._light(g, c.x, yy, 10 + c.loud * 10, (c.hue + s * 9) % 360, 0.55 * Math.max(0, 1 - c.age / this.history), 70, 85);
+          }
+        }
+        g.globalCompositeOperation = 'source-over';
+        // Where the voice is now: the strands gather into a soft knot of light.
+        const f = this.last;
+        if (!bold && voiced.length && f?.voiced) this._light(g, headX, this.y(f.midi), 22 + f.loudness * 30, this.hueFor(f.midi), 0.6);
+      }
+    
       // ---- Aurora: a luminous band with light curtains -------------------------------
-
+    
       _drawAurora(g, p, now, headX, xAt, pts) {
         const { w, h } = this;
-        // The voice as an aurora: a luminous band (thicker when louder) with a shimmering edge
-        // (stronger with vibrato), soft light rays falling from it, and a trail that fades.
+        // The voice as an aurora: a luminous ribbon (thicker when louder) that shimmers with vibrato,
+        // fine rays of light hanging from it and swaying, and a trail that fades.
         g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
         const runs = [];
         let run = [];
@@ -4051,72 +6620,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           gg.clearRect(0, 0, w, h);
           gg.globalCompositeOperation = 'lighter';
         }
+        const K = [1, 3, 6, 9, 10, 9, 6, 3, 1]; // smoothing weights over about 0.2 s
         for (const r of runs) {
           if (r.length < 2) continue;
-          const P = r.map(({ t, f }) => ({
+          // Display pitch: one-frame blips removed (median of five), then smoothed so the line flows.
+          const med = r.map((_, i) => {
+            const win = [];
+            for (let j = -2; j <= 2; j++) if (r[i + j]) win.push(r[i + j].f.midi);
+            win.sort((x, y) => x - y);
+            return win[win.length >> 1];
+          });
+          const sm = med.map((_, i) => {
+            let s = 0;
+            let n = 0;
+            for (let j = -4; j <= 4; j++) {
+              const m = med[i + j];
+              if (m === undefined) continue;
+              s += m * K[j + 4];
+              n += K[j + 4];
+            }
+            return s / n;
+          });
+          const P = r.map(({ t, f }, i) => ({
             t,
             x: xAt(t),
-            y: this.y(f.midi),
+            y: this.y(sm[i]),
             th: (p.bold ? 6 : 4) + f.loudness * (p.bold ? 10 : 30),
-            hue: this.hueFor(f.midi),
+            hue: this.hueFor(sm[i]),
             fade: Math.max(0, 1 - (now - t) / this.history),
             vib: f.vibrato ? f.vibrato.extent : 0,
           }));
-          // Taper both ends so each note fades in and out instead of starting with a hard edge.
-          P.forEach((q, i) => (q.th *= Math.min(1, (i + 1) / 6, (P.length - i) / 4)));
+          // Taper both ends so each phrase fades in and out instead of starting with a hard edge.
+          P.forEach((q, i) => (q.th *= Math.min(1, (i + 1) / 8, (P.length - i) / 6)));
           const a = P[0];
           const b = P[P.length - 1];
-
+          const span = Math.max(1, b.x - a.x);
+          // One gradient along the whole phrase: the colour follows the notes and fades with age.
+          const along = (ctx, light, alpha) => {
+            const gr = ctx.createLinearGradient(a.x, 0, b.x, 0);
+            for (let i = 0; i < P.length; i += Math.max(1, Math.floor(P.length / 12))) {
+              const q = P[i];
+              gr.addColorStop(Math.max(0, Math.min(1, (q.x - a.x) / span)), `hsla(${q.hue},92%,${light}%,${alpha * (p.bold ? 1 : q.fade)})`);
+            }
+            gr.addColorStop(1, `hsla(${b.hue},92%,${light}%,${alpha * (p.bold ? 1 : b.fade)})`);
+            return gr;
+          };
+          const trace = (ctx, dy = 0) => {
+            ctx.beginPath();
+            ctx.moveTo(P[0].x, P[0].y + dy);
+            for (let i = 1; i < P.length - 1; i++) ctx.quadraticCurveTo(P[i].x, P[i].y + dy, (P[i].x + P[i + 1].x) / 2, (P[i].y + P[i + 1].y) / 2 + dy);
+            ctx.lineTo(b.x, b.y + dy);
+          };
+    
           if (soft) {
-            // Aurora curtain: light falling from the band, drawn on the low-resolution glow layer.
+            // Rays: fine streaks of light hanging from the ribbon, swaying slowly, two-toned like real aurora.
             if (!this.calm) {
               const top = Math.min(...P.map((q) => q.y));
-              const depth = 40 + Math.max(...P.map((q) => q.th)) * 3.5;
-              const curtain = gg.createLinearGradient(0, top, 0, top + depth + 20);
-              curtain.addColorStop(0, `hsla(${b.hue},85%,62%,${0.2 * b.fade})`);
-              curtain.addColorStop(1, `hsla(${b.hue},85%,45%,0)`);
+              const depth = 46 + Math.max(...P.map((q) => q.th)) * 3.8;
+              const curtain = gg.createLinearGradient(0, top, 0, top + depth + 30);
+              curtain.addColorStop(0, `hsla(${b.hue},88%,66%,${0.36 * b.fade})`);
+              curtain.addColorStop(0.5, `hsla(${(b.hue + 55) % 360},82%,56%,${0.15 * b.fade})`);
+              curtain.addColorStop(1, `hsla(${(b.hue + 80) % 360},80%,45%,0)`);
               gg.fillStyle = curtain;
+              // A continuous sheet of light under the ribbon, fading downward and at both ends...
+              gg.globalAlpha = 0.45;
               gg.beginPath();
-              P.forEach((q, i) => gg.lineTo(q.x, q.y + Math.sin(q.t * 3 + i * 0.2) * 3));
-              // Many soft fingers of light, like real aurora streaks, drifting slowly.
+              P.forEach((q, i) => (i ? gg.lineTo(q.x, q.y) : gg.moveTo(q.x, q.y)));
               for (let i = P.length - 1; i >= 0; i--) {
-                const streak = (0.5 + 0.5 * Math.sin(i * 0.5 + P[i].t * 0.6)) * 0.65 + (0.5 + 0.5 * Math.sin(i * 0.21 - P[i].t * 0.4)) * 0.35;
-                gg.lineTo(P[i].x, P[i].y + depth * (0.25 + 0.75 * streak));
+                const taper = Math.min(1, (i + 1) / 14, (P.length - i) / 14);
+                gg.lineTo(P[i].x, P[i].y + depth * 0.55 * taper);
               }
               gg.closePath();
               gg.fill();
+              // ... and brighter streaks in it.
+              for (let i = 0; i < P.length; i++) {
+                const q = P[i];
+                // Irregular streaks: waves of unrelated lengths, so the curtain never repeats like a comb,
+                // over a continuous glow.
+                const streak =
+                  (0.5 + 0.5 * Math.sin(i * 0.37 + q.t * 0.5)) * 0.45 +
+                  (0.5 + 0.5 * Math.sin(i * 0.131 - now * 0.35)) * 0.35 +
+                  (0.5 + 0.5 * Math.sin(i * 0.713 + q.t * 1.3)) * 0.2;
+                const taper = Math.min(1, (i + 1) / 14, (P.length - i) / 14);
+                const sway = Math.sin(now * 0.6 + i * 0.05) * 4;
+                gg.globalAlpha = taper * (0.18 + 0.82 * Math.pow(streak, 1.6));
+                gg.fillRect(q.x + sway, q.y, 3.2, depth * (0.35 + 0.65 * streak));
+              }
+              gg.globalAlpha = 1;
             }
-            // The luminous band (shimmers more with vibrato).
-            const edge = (q, i, s) => (this.calm ? 0 : Math.sin(q.t * 5 + i * 0.15 + s) * (0.6 + q.vib / 15));
-            gg.beginPath();
-            P.forEach((q, i) => gg.lineTo(q.x, q.y - q.th * 0.7 - edge(q, i, 0)));
-            for (let i = P.length - 1; i >= 0; i--) gg.lineTo(P[i].x, P[i].y + P[i].th * 0.7 + edge(P[i], i, 1.7));
-            gg.closePath();
-            const band = gg.createLinearGradient(a.x, 0, b.x, 0);
-            band.addColorStop(0, `hsla(${a.hue},90%,60%,${0.32 * a.fade * a.fade})`);
-            band.addColorStop(1, `hsla(${b.hue},90%,64%,${0.5 * b.fade})`);
-            gg.fillStyle = band;
-            gg.fill();
+            // The ribbon: soft layered strokes with a rounded glow, shimmering with vibrato.
+            gg.lineCap = 'round';
+            gg.lineJoin = 'round';
+            const shimmer = this.calm ? 0 : Math.sin(now * 6) * (0.5 + b.vib / 12);
+            const thick = Math.max(...P.map((q) => q.th));
+            for (const [k, light, alpha] of [[2.4, 58, 0.12], [1.4, 64, 0.2], [0.7, 72, 0.34]]) {
+              gg.lineWidth = Math.max(2, thick * k);
+              gg.strokeStyle = along(gg, light, alpha);
+              trace(gg, shimmer * k);
+              gg.stroke();
+            }
           }
-
-          // Crisp core line, smoothed into curves through the midpoints; colour follows the notes.
+    
+          // The crisp core: one continuous curve (no joins to flare), a fine bright filament over a soft one.
           g.lineCap = 'round';
           g.lineJoin = 'round';
-          for (const [width, alpha, light] of p.bold ? [[4, 1, 70]] : [[5, 0.18, 70], [1.8, 0.95, 84]]) {
+          for (const [width, alpha, light] of p.bold ? [[4, 1, 70]] : [[5, 0.16, 70], [1.8, 0.95, 86]]) {
             g.lineWidth = width;
-            for (let s = 0; s < P.length - 1; s += 10) {
-              const chunk = P.slice(s, s + 11);
-              const q = chunk[chunk.length - 1];
-              g.strokeStyle = `hsla(${q.hue},95%,${light}%,${alpha * (p.bold ? 1 : q.fade)})`;
-              g.beginPath();
-              g.moveTo(chunk[0].x, chunk[0].y);
-              for (let i = 1; i < chunk.length - 1; i++) {
-                g.quadraticCurveTo(chunk[i].x, chunk[i].y, (chunk[i].x + chunk[i + 1].x) / 2, (chunk[i].y + chunk[i + 1].y) / 2);
-              }
-              const end = chunk[chunk.length - 1];
-              g.lineTo(end.x, end.y);
-              g.stroke();
-            }
+            g.strokeStyle = along(g, light, alpha);
+            trace(g);
+            g.stroke();
           }
         }
         if (soft && runs.length) {
@@ -4126,9 +6738,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           g.drawImage(this.glow, 0, 0, w, h);
         }
       }
-
+    
       // ---- Held notes (shared by Bloom and Constellation) ------------------------------
-
+    
       _trackNote(f, now) {
         const c = this.cur;
         if (f.voiced) {
@@ -4147,7 +6759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           this._endNote();
         }
       }
-
+    
       _endNote() {
         const n = this.cur;
         this.cur = null;
@@ -4157,24 +6769,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           if (this.notes.length > 80) this.notes.shift();
         }
       }
-
+    
       _heldNotes(now, span) {
         const list = this.notes.filter((n) => now - n.end < span);
         if (this.cur && this.cur.last - this.cur.start > 0.12 && now - this.cur.last < 0.3) list.push({ ...this.cur, end: now, growing: true });
         return list;
       }
-
+    
       // ---- Bloom: every held note grows a flower in a slowly drifting garden -----------
-
+    
       _drawBloom(g, p, now, headX) {
         const { h } = this;
-        const span = 24; // seconds of garden on screen
+        // Seconds of garden on screen and flower size follow the canvas, so a phone or a small preview
+        // isn't packed with overlapping blooms that wash out to white.
+        const span = Math.max(12, Math.min(24, this.w / 40));
+        const scale = Math.max(0.5, Math.min(1, this.w / 800, this.h / 360));
         g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
         for (const n of this._heldNotes(now, span)) {
           const x = headX - ((now - n.end) / span) * headX;
           const y = this.y(n.midi);
           const open = Math.min(1, (n.end - n.start) / 1.2); // a bloom opens over about a second
-          const size = (10 + n.loud * 26) * (0.35 + 0.65 * open);
+          const size = (13 + n.loud * 32) * (0.35 + 0.65 * open) * scale;
           const fade = Math.max(0, 1 - (now - n.end) / span);
           const hue = this.hueFor(n.midi);
           const sway = this.calm ? 0 : Math.sin(now * 0.8 + n.seed) * 8;
@@ -4184,10 +6799,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           g.moveTo(x, y + size * 0.3);
           g.quadraticCurveTo(x + sway, (y + h) / 2, x + sway * 0.5, h);
           g.stroke();
+          // A pair of leaves partway down the stem, swaying with it.
+          if (!p.bold && open > 0.4) {
+            const ly = y + (h - y) * 0.45;
+            const lx = x + sway * 0.75;
+            const leaf = Math.min(22, 6 + size * 0.5) * open;
+            g.fillStyle = `hsla(140,40%,42%,${0.24 * fade})`; // a soft natural green whatever the palette
+            for (const dir of [-1, 1]) {
+              g.beginPath();
+              g.ellipse(lx + dir * leaf * 0.6, ly, leaf, leaf * 0.32, dir * (0.5 + (this.calm ? 0 : Math.sin(now * 0.8 + n.seed) * 0.08)), 0, Math.PI * 2);
+              g.fill();
+            }
+          }
+          if (!p.bold) this._light(g, x, y, size * 2.6, hue, 0.26 * fade);
           this._flower(g, p, x, y, size, n, hue, open, fade, now);
+          // Open flowers let go of a little glowing pollen.
+          if (!p.bold && !this.calm && open > 0.8 && fade > 0.5 && Math.random() < 0.04) {
+            this.pollen = this.pollen ?? [];
+            this.pollen.push({ x, y, vx: (Math.random() - 0.5) * 12, vy: -10 - Math.random() * 18, born: now, hue: (hue + 40) % 360 });
+          }
         }
       }
-
+    
+      _drawPollen(g, now) {
+        if (!this.pollen?.length) return;
+        const dt = 1 / 60;
+        g.globalCompositeOperation = 'lighter';
+        for (const q of this.pollen) {
+          q.x += q.vx * dt + Math.sin(now * 2 + q.born) * 0.3;
+          q.y += q.vy * dt;
+          const a = Math.max(0, 1 - (now - q.born) / 4);
+          this._light(g, q.x, q.y, 5, q.hue, a * 0.8, 90, 80);
+        }
+        this.pollen = this.pollen.filter((q) => now - q.born < 4).slice(-200);
+        g.globalCompositeOperation = 'source-over';
+      }
+    
       _flower(g, p, x, y, size, n, hue, open, fade, now) {
         const petals = Math.min(9, 5 + Math.floor((n.end - n.start) / 1.5)); // longer notes, fuller flowers
         const uneven = 1 - (n.steady ?? 0.7); // an unsteady note grows uneven petals
@@ -4198,42 +6845,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         tint.addColorStop(1, `hsla(${hue},90%,55%,${(p.bold ? 0.9 : 0.1) * fade})`);
         g.fillStyle = tint;
         const steps = 14;
-        for (let k = 0; k < petals; k++) {
-          const a = rot + (k * Math.PI * 2) / petals;
-          const len = size * (1 + uneven * 0.5 * Math.sin(k * 2.3 + n.seed));
-          const wid = len * 0.4 * (0.6 + 0.4 * open);
-          const ca = Math.cos(a);
-          const sa = Math.sin(a);
-          g.beginPath();
-          for (let side = 1; side >= -1; side -= 2) {
-            for (let s = 0; s <= steps; s++) {
-              const u = side > 0 ? s / steps : 1 - s / steps;
-              const r = len * u;
-              const half = side * Math.sin(Math.PI * u) * wid * (1 + ripple * 0.25 * Math.sin(u * 18 + (this.calm ? 0 : now * 6)));
-              g.lineTo(x + ca * r - sa * half, y + sa * r + ca * half);
+        // Two rings of petals: the outer ones, and a smaller, lighter ring turned half a petal.
+        const ring = (count, scale, turn, inner) => {
+          for (let k = 0; k < count; k++) {
+            const a = rot + turn + (k * Math.PI * 2) / count;
+            const len = size * scale * (1 + uneven * 0.5 * Math.sin(k * 2.3 + n.seed));
+            const wid = len * 0.4 * (0.6 + 0.4 * open);
+            const ca = Math.cos(a);
+            const sa = Math.sin(a);
+            g.beginPath();
+            for (let side = 1; side >= -1; side -= 2) {
+              for (let s = 0; s <= steps; s++) {
+                const u = side > 0 ? s / steps : 1 - s / steps;
+                const r = len * u;
+                const half = side * Math.sin(Math.PI * u) * wid * (1 + ripple * 0.25 * Math.sin(u * 18 + (this.calm ? 0 : now * 6)));
+                g.lineTo(x + ca * r - sa * half, y + sa * r + ca * half);
+              }
+            }
+            g.closePath();
+            g.fill();
+            if (!p.bold) {
+              // A lit edge gives each petal its shape.
+              g.strokeStyle = `hsla(${(hue + (inner ? 30 : 10)) % 360},90%,${inner ? 85 : 75}%,${0.28 * fade})`;
+              g.lineWidth = 0.8;
+              g.stroke();
             }
           }
-          g.closePath();
-          g.fill();
+        };
+        ring(petals, 1, 0, false);
+        if (open > 0.6 && !p.bold) {
+          const light = g.createRadialGradient(x, y, 0, x, y, size);
+          light.addColorStop(0, `hsla(${(hue + 30) % 360},90%,80%,${0.28 * fade})`);
+          light.addColorStop(1, `hsla(${(hue + 30) % 360},90%,65%,${0.04 * fade})`);
+          g.fillStyle = light;
+          ring(petals, 0.6, Math.PI / petals, true);
         }
         // The glowing centre is brighter with more "ring"; an in-tune note gets a golden heart.
         const cr = 3 + size * 0.18;
-        const core = g.createRadialGradient(x, y, 0, x, y, cr * (2 + n.ring * 2));
-        core.addColorStop(0, n.inTune ? `rgba(${p.target},${0.95 * fade})` : `hsla(${(hue + 40) % 360},95%,88%,${0.9 * fade})`);
+        const core = g.createRadialGradient(x, y, 0, x, y, cr * (1.6 + n.ring * 1.6));
+        core.addColorStop(0, n.inTune ? `rgba(${p.target},${0.85 * fade})` : `hsla(${(hue + 40) % 360},95%,76%,${0.6 * fade})`);
         core.addColorStop(1, `hsla(${hue},95%,60%,0)`);
         g.fillStyle = core;
         g.beginPath();
-        g.arc(x, y, cr * (2 + n.ring * 2), 0, Math.PI * 2);
+        g.arc(x, y, cr * (1.6 + n.ring * 1.6), 0, Math.PI * 2);
         g.fill();
       }
-
+    
       // ---- Constellation: held notes become stars; a song's notes light up when sung ----
-
+    
       _drawConstellation(g, p, now, headX, sing, targets) {
         const span = sing ? this.history : this.history * 2;
         const xS = (t) => headX - ((now - t) / span) * headX;
         g.globalCompositeOperation = p.bold ? 'source-over' : 'lighter';
-
+    
         // Faint dust where the voice has passed, so the sky shows the whole line.
         g.fillStyle = `rgb(${p.guide})`;
         for (let i = 0; i < this.points.length; i += 2) {
@@ -4243,7 +6907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           g.fillRect(xS(t), this.y(f.midi), 1.4, 1.4);
         }
         g.globalAlpha = 1;
-
+    
         // The song's notes: dim stars that ignite gold once sung in tune.
         if (sing) {
           for (const n of targets) {
@@ -4263,7 +6927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           }
           if (this.hits.size > 600) this.hits = new Set([...this.hits].slice(-300));
         }
-
+    
         // The singer's held notes as stars, joined into constellations.
         const stars = this._heldNotes(now, span).map((n) => ({
           n,
@@ -4276,32 +6940,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           const a = stars[i - 1];
           const b = stars[i];
           if (b.n.start - a.n.end > 1.5) continue;
-          g.strokeStyle = `rgba(${p.guide},${0.28 * Math.min(a.fade, b.fade)})`;
-          g.lineWidth = 1;
-          g.beginPath();
-          g.moveTo(a.x, a.y);
-          g.lineTo(b.x, b.y);
-          g.stroke();
+          // A wisp of nebula along the line, then a soft glow under a fine line.
+          if (!p.bold) this._light(g, (a.x + b.x) / 2, (a.y + b.y) / 2, Math.max(30, Math.hypot(b.x - a.x, b.y - a.y) * 0.55), this.hueFor((a.n.midi + b.n.midi) / 2), 0.22 * Math.min(a.fade, b.fade), 60, 55);
+          for (const [width, alpha] of p.bold ? [[1, 0.28]] : [[5, 0.06], [1, 0.32]]) {
+            g.strokeStyle = `rgba(${p.guide},${alpha * Math.min(a.fade, b.fade)})`;
+            g.lineWidth = width;
+            g.beginPath();
+            g.moveTo(a.x, a.y);
+            g.lineTo(b.x, b.y);
+            g.stroke();
+          }
         }
         for (const s of stars) {
           const hue = this.hueFor(s.n.midi);
           this._star(g, s.x, s.y, s.r * (1 + s.n.ring * 0.6), `hsl(${hue},90%,78%)`, s.fade, now, s.n.seed);
         }
       }
-
+    
       // A soft glowing star with four spikes that twinkle gently.
       _star(g, x, y, r, color, alpha, now, seed = 0) {
         const rgb = color.startsWith('hsl') ? null : color;
         const fill = (a) => (rgb ? `rgba(${rgb},${a})` : color.replace('hsl(', 'hsla(').replace(')', `,${a})`));
         const tw = this.calm ? 1 : 0.85 + 0.15 * Math.sin(now * 3 + seed * 7);
-        const glow = g.createRadialGradient(x, y, 0, x, y, r * 3);
-        glow.addColorStop(0, fill(0.9 * alpha));
-        glow.addColorStop(0.3, fill(0.3 * alpha));
-        glow.addColorStop(1, fill(0));
-        g.fillStyle = glow;
-        g.beginPath();
-        g.arc(x, y, r * 3, 0, Math.PI * 2);
-        g.fill();
+        // The glow from the shared light sprites: hsl colours by their hue; the song's gold otherwise.
+        const hue = rgb ? 42 : Number(color.slice(4).split(',')[0]);
+        this._light(g, x, y, r * 4, hue, 0.9 * alpha, rgb ? 70 : 90, rgb ? 80 : 72);
         g.strokeStyle = fill(0.7 * alpha * tw);
         g.lineWidth = 1;
         g.beginPath();
@@ -4310,10 +6973,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         g.moveTo(x, y - r * 2.6 * tw);
         g.lineTo(x, y + r * 2.6 * tw);
         g.stroke();
+        // Fainter, shorter diagonal spikes, like light through a telescope.
+        g.strokeStyle = fill(0.3 * alpha * tw);
+        const d = r * 1.4 * tw;
+        g.beginPath();
+        g.moveTo(x - d, y - d);
+        g.lineTo(x + d, y + d);
+        g.moveTo(x - d, y + d);
+        g.lineTo(x + d, y - d);
+        g.stroke();
       }
-
+    
     }
-
+    
     function roundRect(g, x, y, w, h, r) {
       g.beginPath();
       g.moveTo(x + r, y);
@@ -4323,11 +6995,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       g.arcTo(x, y, x + w, y, r);
       g.closePath();
     }
-
+    
+    // The signed smallest turn (degrees) from hue a to hue b.
+    function shortestTurn(a, b) {
+      return ((((b - a) % 360) + 540) % 360) - 180;
+    }
+    
     const noteOf = (midi) => `${NOTE[((Math.round(midi) % 12) + 12) % 12]}${Math.floor(Math.round(midi) / 12) - 1}`;
-
+    
     // ---- Meters ------------------------------------------------------------------------
-
+    
     /**
      * Formal meters as plain HTML (readable by screen readers, stylable by the host page).
      * Returns { update(frame), setMode(mode) }.
@@ -4382,680 +7059,402 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     return { PALETTES, VoiceVisuals, createMeters };
   })();
-  var mod_score_player = (function () {
-    // Score player: renders a MusicXML (.musicxml or compressed .mxl) score with
-    // OpenSheetMusicDisplay and plays the voice line and piano with the Web Audio API.
+  var mod_note_lane = (function () {
+    // Note lane: a scrolling strip that shows the singer's part as bars at their pitch, with the lyric
+    // syllable under each note, flowing past a play head in time with a ScorePlayer. Sung notes take the
+    // colour of their grade, and while the microphone is on the singer's own pitch is drawn as a trail.
     //
-    // Self-contained on purpose: no framework and no imports. The caller passes in the
-    // OpenSheetMusicDisplay module, so the same file can run on Rachel's site and inside
-    // AlloFlow (Singing Lab / Open Groove).
+    // Framework-free, like the player, so it can be reused in AlloFlow.
     //
-    //   const player = new ScorePlayer({ OSMD, container, onChange });
-    //   await player.load(binaryStringOrXml);
-    //   player.play(); player.setTempo(0.8); player.setTranspose(-2); player.setLoop(5, 8);
-    //   player.setClick(true); player.play({ countIn: true });   // metronome + one bar of count-in
-
-    const VOICE_NAME = /voice|voix|voce|singstimme|stimme|soprano|mezzo|alto|tenor|bariton|bass|sopran|canto|gesang/i;
-    const LOOKAHEAD = 0.15; // seconds of audio scheduled ahead of the play head
-    const TICK_MS = 25;
-
-    const midiToFreq = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
-
-    /**
-     * iPhones and iPads mute Web Audio when the side switch is on silent (videos still play).
-     * Declare this page's sound as media playback (Safari 17+), and on older iOS start a silent
-     * looping <audio> element, which moves the page into the media channel. Call from a tap.
-     * Shared with the trainers (lib/training/common.js) and kept self-contained here.
-     */
-    function routeAudioAsMedia() {
-      try {
-        if (navigator.audioSession && navigator.audioSession.type === 'auto') navigator.audioSession.type = 'playback';
-      } catch {}
-      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document);
-      if (!ios || routeAudioAsMedia.el) return;
-      // A few hundred milliseconds of silent 8 kHz WAV, built here so there's no extra file.
-      const n = 2000;
-      const bytes = new Uint8Array(44 + n);
-      const dv = new DataView(bytes.buffer);
-      [..."RIFF"].forEach((ch, i) => (bytes[i] = ch.charCodeAt(0)));
-      dv.setUint32(4, 36 + n, true);
-      [..."WAVEfmt "].forEach((ch, i) => (bytes[8 + i] = ch.charCodeAt(0)));
-      dv.setUint32(16, 16, true);
-      dv.setUint16(20, 1, true);
-      dv.setUint16(22, 1, true);
-      dv.setUint32(24, 8000, true);
-      dv.setUint32(28, 8000, true);
-      dv.setUint16(32, 1, true);
-      dv.setUint16(34, 8, true);
-      [..."data"].forEach((ch, i) => (bytes[36 + i] = ch.charCodeAt(0)));
-      dv.setUint32(40, n, true);
-      bytes.fill(128, 44);
-      let bin = '';
-      bytes.forEach((b) => (bin += String.fromCharCode(b)));
-      const el = document.createElement('audio');
-      el.setAttribute('x-webkit-airplay', 'deny');
-      el.loop = true;
-      el.src = 'data:audio/wav;base64,' + btoa(bin);
-      el.play().catch(() => {});
-      routeAudioAsMedia.el = el;
-    }
-
-    class ScorePlayer {
-      /**
-       * @param {{ OSMD: any, container: HTMLElement, onChange?: (state: object) => void, osmdOptions?: object, zoom?: number }} opts
-       */
-      constructor({ OSMD, container, onChange, osmdOptions = {}, zoom }) {
-        this.OSMD = OSMD;
-        this.container = container;
-        this.onChange = onChange || (() => {});
-        this.osmd = new OSMD.OpenSheetMusicDisplay(container, {
-          autoResize: true,
-          backend: 'svg',
-          drawTitle: false,
-          drawSubtitle: false,
-          drawComposer: false,
-          drawLyricist: false,
-          drawPartNames: true,
-          followCursor: true,
-          ...osmdOptions,
-        });
-        this.zoom = zoom || 1; // smaller on phones so lyrics have room
-        this.tempo = 1; // playback rate: 1 = the score's tempo
-        this.transpose = 0; // semitones
-        this.melodyOctave = 0; // the singer's octave: moves the melody guide and targets, not the notation or piano
-        this.parts = { voice: true, piano: true, choir: true }; // choir: the other sung parts
-        this.click = false; // metronome click on every beat
-        this.loop = null; // { from, to } measure indexes, inclusive
-        this.playing = false;
-        this.ctx = null;
-        this.active = new Set();
-        this.cursorStep = -1;
-      }
-
-      /** Load a score: XML text, or the binary string of a compressed .mxl file. */
-      async load(source) {
-        this.stop();
-        await this.osmd.load(source);
-        if (this.OSMD.TransposeCalculator) this.osmd.TransposeCalculator = new this.OSMD.TransposeCalculator();
-        this.osmd.Zoom = this.zoom; // OSMD spells it Zoom, and loading a score resets it
-        this.osmd.render();
-        this.timeline = this._buildTimeline();
-        this.myPart = this.timeline.voiceParts[0]?.key ?? null;
-        this._applyRoles();
-        this.position = 0;
-        this._showCursorAt(0);
-        this._emit();
-        return this.info();
-      }
-
-      info() {
-        const t = this.timeline;
-        return {
-          measures: t.measureStarts.length,
-          seconds: t.total,
-          bpm: t.bpm,
-          hasVoice: t.events.some((e) => e.part === 'voice'),
-          voiceParts: t.voiceParts,
-          myPart: this.myPart,
-          firstVoiceMidi: t.events.find((e) => e.part === 'voice')?.midi ?? null,
-        };
-      }
-
-      /**
-       * Follow the cursor by scrolling a box (e.g. the score's own container) instead of the whole
-       * page, so things above the score stay in view. Pass null to go back to page scrolling.
-       */
-      setFollow(el) {
-        this.followEl = el || null;
-        this.osmd.FollowCursor = !el;
-        if (el) this._scrollBoxToCursor();
-      }
-
-      _scrollBoxToCursor() {
-        const img = this.osmd.cursor?.cursorElement;
-        const box = this.followEl;
-        if (!img || !box) return;
-        const r = img.getBoundingClientRect();
-        const top = r.top - box.getBoundingClientRect().top + box.scrollTop;
-        if (top < box.scrollTop + 16 || top + r.height > box.scrollTop + box.clientHeight - 16) {
-          box.scrollTo({ top: Math.max(0, top - box.clientHeight * 0.2), behavior: 'smooth' });
-        }
-      }
-
-      /** The melody note sounding at the play head (with transposition), or null. For sing-along feedback. */
-      currentVoiceMidi() {
-        if (!this.playing) return null;
-        const pos = this._now();
-        const e = this.timeline.events.find((v) => v.part === 'voice' && v.sec <= pos && pos < v.sec + v.dur);
-        return e ? e.midi + this.transpose + 12 * this.melodyOctave : null;
-      }
-
-      /** Melody notes around the play head, in real seconds relative to now (negative = past). */
-      voiceWindow(before, after) {
-        const pos = this.playing ? this._now() : this.position;
-        const from = pos - before * this.tempo;
-        const to = pos + after * this.tempo;
-        const out = [];
-        for (const e of this.timeline.events) {
-          if (e.part !== 'voice' || e.sec + e.dur < from) continue;
-          if (e.sec > to) break;
-          out.push({ start: (e.sec - pos) / this.tempo, dur: e.dur / this.tempo, midi: e.midi + this.transpose + 12 * this.melodyOctave });
-        }
-        return out;
-      }
-
-      // Walk the score once with OSMD's cursor and turn it into timed note events.
-      _buildTimeline() {
-        const sheet = this.osmd.Sheet;
-        // Sung parts: instruments with lyrics or a voice name. (No lyrics anywhere: the first instrument.)
-        const vocal = new Set(sheet.Instruments.filter((inst) => inst.HasLyrics || VOICE_NAME.test(inst.Name || '')));
-        if (!vocal.size && sheet.Instruments.length > 1) vocal.add(sheet.Instruments[0]);
-        const partVoices = new Map(); // part key -> { inst index, voice id }
-
-        const cursor = this.osmd.cursor;
-        cursor.reset();
-        const it = cursor.Iterator;
-        const events = [];
-        const steps = []; // one entry per cursor position: { sec, measure }
-        const measureStarts = [];
-        let lastWhole = 0;
-        let sec = 0;
-        let bpm = sheet.SourceMeasures[0]?.TempoInBPM || sheet.DefaultStartTempoInBpm || 100;
-        const firstBpm = bpm;
-        const measureBpm = [];
-
-        while (!it.EndReached) {
-          const whole = it.currentTimeStamp.RealValue;
-          sec += Math.max(0, whole - lastWhole) * 4 * (60 / bpm); // whole notes -> quarter beats -> seconds
-          lastWhole = whole;
-          const measure = it.CurrentMeasureIndex;
-          bpm = it.CurrentMeasure?.TempoInBPM || bpm;
-          if (measureStarts[measure] === undefined) {
-            measureStarts[measure] = sec;
-            measureBpm[measure] = bpm;
+    //   const lane = new NoteLane(canvas, { player, onSeek: (sec) => player.seek(sec) });
+    //   lane.setGrade(i, 'tune');          // i indexes player.voiceNotes(); 'tune' | 'near' | 'off' | 'wrong' | 'missed'
+    //   lane.pushPitch(scoreSec, midi);    // the singer's pitch (or null) at a score time
+    //   lane.destroy();
+    
+    const BEFORE = 2.8; // seconds of the past shown left of the play head
+    const AFTER = 6; // and of the future to the right
+    const HEAD = 0.3; // play head position, as a fraction of the width
+    
+    const LANE_COLORS = {
+      bg: ['#1b1014', '#24161a'],
+      grid: 'rgba(245, 236, 223, 0.07)',
+      gridC: 'rgba(245, 236, 223, 0.16)',
+      label: 'rgba(245, 236, 223, 0.45)',
+      bar: 'rgba(245, 236, 223, 0.16)',
+      note: '#d9b77e',
+      glow: '#f2d49b',
+      lyric: 'rgba(245, 236, 223, 0.78)',
+      // On a dark stage: lighter versions of the sight-singing colours.
+      tune: '#5cc58a',
+      near: '#e6cf5a',
+      off: '#f09a4f',
+      wrong: '#ec6f86',
+      missed: 'rgba(245, 236, 223, 0.32)',
+    };
+    
+    const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    
+    class NoteLane {
+      /** @param {HTMLCanvasElement} canvas @param {{ player: any, onSeek?: (sec: number) => void, colors?: object, calm?: boolean }} opts */
+      constructor(canvas, { player, onSeek, colors = {}, calm } = {}) {
+        this.canvas = canvas;
+        this.g = canvas.getContext('2d');
+        this.player = player;
+        this.onSeek = onSeek || null;
+        this.c = { ...LANE_COLORS, ...colors };
+        this.calm = calm ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.grades = new Map();
+        this.trail = []; // { t (score sec), midi | null }
+        this.drag = null; // score time under the pointer while scrubbing
+        this.dirty = true;
+        this.last = '';
+        this.resize = this.resize.bind(this);
+        this.ro = new ResizeObserver(this.resize);
+        this.ro.observe(canvas);
+        this._bindPointer();
+        // The loop sleeps when nothing has changed for half a second and the music isn't playing (on a phone an
+        // idle loop cost ~10% of the main thread); wake() restarts it on any change, play or seek.
+        this.loop = () => {
+          this.raf = requestAnimationFrame(this.loop);
+          if (this._frame()) this.quiet = 0;
+          else if (!this.player.playing && this.drag === null && ++this.quiet > 30) {
+            cancelAnimationFrame(this.raf);
+            this.raf = null;
           }
-          steps.push({ sec, measure });
-
-          for (const ve of it.CurrentVoiceEntries) {
-            if (ve.IsGrace) continue;
-            const inst = ve.ParentSourceStaffEntry?.ParentStaff?.ParentInstrument;
-            const isVocal = vocal.has(inst);
-            const instIndex = sheet.Instruments.indexOf(inst);
-            // A choir staff can hold two parts (e.g. soprano and alto): one part per voice in the staff.
-            const pk = `${instIndex}:${ve.ParentVoice?.VoiceId ?? 0}`;
-            if (isVocal && !partVoices.has(pk)) partVoices.set(pk, { instIndex, voiceId: ve.ParentVoice?.VoiceId ?? 0, name: inst?.Name || '' });
-            // In a chord on one sung part, the top note is the part's line; the rest sound with the other voices.
-            const sungNotes = [...ve.Notes].filter((n) => !n.isRest() && n.Pitch).sort((a, b) => b.Pitch.Frequency - a.Pitch.Frequency);
-            for (const note of ve.Notes) {
-              if (note.isRest() || !note.Pitch) continue;
-              let whole = note.Length.RealValue;
-              const tie = note.NoteTie;
-              if (tie) {
-                if (tie.StartNote !== note) continue; // continuation of a tie: already counted
-                whole = tie.Notes.reduce((sum, n) => sum + n.Length.RealValue, 0);
-              }
-              const midi = Math.round(69 + 12 * Math.log2(note.Pitch.Frequency / 440));
-              events.push({ sec, dur: whole * 4 * (60 / bpm), midi, part: 'piano', measure, note, pk, vocal: isVocal, sub: sungNotes[0] !== note });
+        };
+        this.wake();
+      }
+    
+      /** Redraw from now on (the loop goes back to sleep by itself). */
+      wake() {
+        this.quiet = 0;
+        if (!this.raf && this.loop) this.raf = requestAnimationFrame(this.loop);
+      }
+    
+      setGrade(i, grade) {
+        this.grades.set(i, grade);
+        // A note sung spot on throws a few sparks.
+        if (grade === 'tune' && !this.calm) (this.bursts = this.bursts ?? []).push({ i, at: performance.now() });
+        this.dirty = true;
+        this.wake();
+      }
+    
+      clearGrades() {
+        this.grades.clear();
+        this.trail = [];
+        this.dirty = true;
+        this.wake();
+      }
+    
+      pushPitch(t, midi) {
+        const tr = this.trail;
+        // A jump backwards (loop, seek) starts a new trail.
+        if (tr.length && t < tr[tr.length - 1].t - 0.05) tr.length = 0;
+        tr.push({ t, midi });
+        while (tr.length && tr[0].t < t - BEFORE * 2.5 * this.player.tempo) tr.shift();
+        this.dirty = true;
+        this.wake();
+      }
+    
+      resize() {
+        const r = this.canvas.getBoundingClientRect();
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        this.w = r.width;
+        this.h = r.height;
+        this.canvas.width = Math.max(1, Math.round(r.width * dpr));
+        this.canvas.height = Math.max(1, Math.round(r.height * dpr));
+        this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this.dirty = true;
+        this.wake?.();
+      }
+    
+      destroy() {
+        this.loop = null;
+        cancelAnimationFrame(this.raf);
+        this.ro.disconnect();
+      }
+    
+      // The pitch rows: the whole part (in the current key and octave) with a little room around it.
+      _range() {
+        const p = this.player;
+        const key = `${p.transpose}|${p.melodyOctave}|${p.myPart}`;
+        if (this.rangeKey !== key) {
+          const m = p.voiceNotes().map((n) => n.midi);
+          let lo = m.length ? Math.min(...m) - 2 : 57;
+          let hi = m.length ? Math.max(...m) + 2 : 72;
+          if (hi - lo < 12) {
+            const pad = (12 - (hi - lo)) / 2;
+            lo -= Math.floor(pad);
+            hi += Math.ceil(pad);
+          }
+          this.rangeKey = key;
+          this.lo = lo;
+          this.hi = hi;
+        }
+        return [this.lo, this.hi];
+      }
+    
+      // Draws if anything changed; returns whether it drew.
+      _frame() {
+        if (!this.w || !this.h || document.hidden) return false;
+        if (this.bursts?.length) this.dirty = true; // sparks are still flying
+        const p = this.player;
+        const at = this.drag ?? p.scoreTime();
+        const stamp = `${at.toFixed(3)}|${p.tempo}|${p.transpose}|${p.melodyOctave}|${p.myPart}`;
+        if (!this.dirty && stamp === this.last) return false;
+        this.dirty = false;
+        this.last = stamp;
+        this._draw(at);
+        return true;
+      }
+    
+      _draw(at) {
+        const { g, w, h, c } = this;
+        const p = this.player;
+        const [lo, hi] = this._range();
+        const top = 20; // room for bar numbers
+        const bottom = 22; // room for the lowest note's lyric
+        const rowH = (h - top - bottom) / (hi - lo + 1);
+        const y = (midi) => top + (hi - midi) * rowH; // top edge of a pitch row
+        const headX = w * HEAD;
+        const pps = (w - headX) / AFTER; // pixels per real second
+        const x = (sec) => headX + sec * pps;
+    
+        const bg = g.createLinearGradient(0, 0, 0, h);
+        bg.addColorStop(0, c.bg[0]);
+        bg.addColorStop(1, c.bg[1]);
+        g.fillStyle = bg;
+        g.fillRect(0, 0, w, h);
+    
+        // Pitch rows: a faint line per half step, a stronger one with a label at each C.
+        g.font = '600 10px system-ui, sans-serif';
+        g.textBaseline = 'middle';
+        for (let m = lo; m <= hi; m++) {
+          const cy = y(m) + rowH / 2;
+          const isC = ((m % 12) + 12) % 12 === 0;
+          g.fillStyle = isC ? c.gridC : c.grid;
+          g.fillRect(0, Math.round(cy), w, 1);
+          if (isC) {
+            g.fillStyle = c.label;
+            g.fillText(`${NAMES[0]}${Math.floor(m / 12) - 1}`, 6, cy - 7);
+          }
+        }
+    
+        const { notes, bars } = p.laneWindow(BEFORE + 0.5, AFTER + 0.5, at);
+    
+        // Bar lines with measure numbers.
+        g.textBaseline = 'top';
+        for (const b of bars) {
+          const bx = Math.round(x(b.start));
+          g.fillStyle = c.bar;
+          g.fillRect(bx, top - 4, 1, h - top + 4);
+          g.fillStyle = b.verse ? c.glow : c.label;
+          g.fillText(b.verse ? `${b.n} · verse ${b.verse}` : String(b.n), bx + 4, 4);
+        }
+    
+        // Notes.
+        // Bars a little taller than a row, so wide-ranged songs still read as solid notes.
+        // Bars and words grow with a taller lane (e.g. the full-screen note lane view).
+        const barH = Math.max(8, Math.min(Math.max(18, h / 30), rowH * 1.5));
+        const fontPx = Math.round(Math.max(13, Math.min(22, h / 34)));
+        const r = Math.min(barH / 2, 6);
+        // The "now" zone: a soft column of light around the play head.
+        const zone = g.createLinearGradient(headX - 60, 0, headX + 60, 0);
+        zone.addColorStop(0, 'rgba(242, 212, 155, 0)');
+        zone.addColorStop(0.5, 'rgba(242, 212, 155, 0.07)');
+        zone.addColorStop(1, 'rgba(242, 212, 155, 0)');
+        g.fillStyle = zone;
+        g.fillRect(headX - 60, 0, 120, h);
+        const pulse = this.calm ? 1 : 0.75 + 0.25 * Math.sin(performance.now() / 160);
+        const where = new Map(); // note index -> its bar's right end, for sparks
+        for (const n of notes) {
+          const x0 = x(n.start);
+          const x1 = Math.max(x0 + 4, x(n.start + n.dur) - 2);
+          if (x1 < 0 || x0 > w) continue;
+          const cy = y(n.midi) + rowH / 2;
+          const now = n.start <= 0 && n.start + n.dur > 0;
+          const grade = this.grades.get(n.i);
+          where.set(n.i, { x: x1, y: cy });
+          const base = grade ? c[grade] : c.note;
+          g.save();
+          // A halo behind the current note and the ones sung spot on.
+          if ((now && !grade) || grade === 'tune') {
+            g.globalAlpha = now ? 0.22 * pulse : 0.18;
+            g.fillStyle = now ? c.glow : c.tune;
+            roundRect(g, x0 - 4, cy - barH / 2 - 4, x1 - x0 + 8, barH + 8, r + 4);
+            g.fill();
+          }
+          g.globalAlpha = grade ? (grade === 'missed' ? 1 : 0.92) : now ? 1 : n.start < 0 ? 0.3 : 0.6;
+          g.fillStyle = base;
+          roundRect(g, x0, cy - barH / 2, x1 - x0, barH, r);
+          g.fill();
+          // Lit from above: a lighter sheen on the top half of the bar.
+          if (grade !== 'missed') {
+            g.globalAlpha *= 0.35;
+            g.fillStyle = '#fff6e6';
+            roundRect(g, x0 + 1, cy - barH / 2 + 1, Math.max(2, x1 - x0 - 2), Math.max(2, barH * 0.4), Math.min(r, barH * 0.2));
+            g.fill();
+          }
+          g.globalAlpha = 1;
+          if (now && !grade) {
+            g.strokeStyle = c.glow;
+            g.lineWidth = 1.5;
+            roundRect(g, x0, cy - barH / 2, x1 - x0, barH, r);
+            g.stroke();
+          }
+          g.restore();
+        }
+        // Sparks from notes just sung spot on.
+        if (this.bursts?.length) {
+          const t = performance.now();
+          this.bursts = this.bursts.filter((b) => t - b.at < 900);
+          for (const b of this.bursts) {
+            const at = where.get(b.i);
+            if (!at) continue;
+            const k = (t - b.at) / 900;
+            for (let j = 0; j < 9; j++) {
+              const ang = (j / 9) * Math.PI * 2 + b.i;
+              const d = 6 + k * 26;
+              g.globalAlpha = (1 - k) * 0.9;
+              g.fillStyle = j % 2 ? c.glow : c.tune;
+              g.beginPath();
+              g.arc(at.x + Math.cos(ang) * d, at.y + Math.sin(ang) * d * 0.7, 2 * (1 - k) + 0.6, 0, Math.PI * 2);
+              g.fill();
             }
           }
-          it.moveToNext();
+          g.globalAlpha = 1;
         }
-        // Close the timeline at the end of the last note.
-        const total = Math.max(sec, ...events.map((e) => e.sec + e.dur));
-        for (let m = 0; m < measureStarts.length; m++) if (measureStarts[m] === undefined) measureStarts[m] = measureStarts[m - 1] ?? 0;
-        events.sort((a, b) => a.sec - b.sec);
-        cursor.reset();
-        const clicks = this._buildClicks(sheet, measureStarts, measureBpm, total);
-        // The sung parts a singer can choose as theirs, in score order; a staff with two parts gets upper/lower.
-        const counts = {};
-        for (const e of events) if (e.vocal && !e.sub) counts[e.pk] = (counts[e.pk] || 0) + 1;
-        const keys = [...partVoices.keys()].filter((k) => (counts[k] || 0) >= 8).sort((a, b) => {
-          const [ia, va] = a.split(':').map(Number);
-          const [ib, vb] = b.split(':').map(Number);
-          return ia - ib || va - vb;
-        });
-        const perInst = {};
-        for (const k of keys) perInst[k.split(':')[0]] = (perInst[k.split(':')[0]] || 0) + 1;
-        const seenInInst = {};
-        const voiceParts = keys.map((k) => {
-          const v = partVoices.get(k);
-          const n = (seenInInst[v.instIndex] = (seenInInst[v.instIndex] || 0) + 1);
-          const base = (v.name || 'Voice').replace(/\s+/g, ' ').trim();
-          const many = perInst[v.instIndex];
-          return { key: k, name: many === 2 ? `${base} (${n === 1 ? 'upper' : 'lower'})` : many > 2 ? `${base} ${n}` : base };
-        });
-        return { events, steps, measureStarts, total, bpm: firstBpm, clicks, voiceParts, firstBeat: clicks[1] ? clicks[1].sec - clicks[0].sec : 60 / firstBpm, beatsPerBar: this._beatsIn(sheet.SourceMeasures[0]) };
-      }
-
-      // A metronome beat: the denominator note, or the dotted beat in compound time (6/8 = two beats).
-      _beatsIn(measure) {
-        const sig = measure?.ActiveTimeSignature;
-        const num = sig?.Numerator || 4;
-        const den = sig?.Denominator || 4;
-        const compound = den >= 8 && num % 3 === 0 && num > 3;
-        return { beats: compound ? num / 3 : num, beatWhole: (compound ? 3 : 1) / den };
-      }
-
-      // Click times for every beat, accented on each downbeat. A short pickup bar counts back from its end.
-      _buildClicks(sheet, measureStarts, measureBpm, total) {
-        const clicks = [];
-        for (let m = 0; m < measureStarts.length; m++) {
-          const { beatWhole } = this._beatsIn(sheet.SourceMeasures[m]);
-          const beatSec = beatWhole * 4 * (60 / (measureBpm[m] || 100));
-          const start = measureStarts[m];
-          const end = m + 1 < measureStarts.length ? measureStarts[m + 1] : total;
-          const full = (sheet.SourceMeasures[m]?.Duration?.RealValue || 1) * 4 * (60 / (measureBpm[m] || 100));
-          const pickup = end - start < full - 1e-3;
-          const offset = pickup ? (end - start) % beatSec : 0;
-          for (let t = start + offset, k = 0; t < end - 1e-3; t += beatSec, k++) clicks.push({ sec: t, accent: k === 0 && !pickup });
+    
+        // Lyrics under their notes, skipping any that would overlap the one before.
+        g.textBaseline = 'top';
+        let lastRight = -Infinity;
+        for (const n of notes) {
+          if (!n.lyric) continue;
+          const x0 = x(n.start);
+          const now = n.start <= 0 && n.start + n.dur > 0;
+          g.font = `${now ? '700' : '400'} ${fontPx}px "Source Serif 4", Georgia, serif`;
+          const tw = g.measureText(n.lyric).width;
+          if (x0 < lastRight + 4 || x0 > w || x0 + tw < 0) continue;
+          lastRight = x0 + tw;
+          g.fillStyle = now ? c.glow : c.lyric;
+          g.globalAlpha = n.start + n.dur < 0 ? 0.45 : 1;
+          g.fillText(n.lyric, x0, Math.min(h - fontPx - 4, y(n.midi) + rowH / 2 + barH / 2 + 3));
+          g.globalAlpha = 1;
         }
-        return clicks;
-      }
-
-      // ---- Transport -----------------------------------------------------------
-
-      /** @param {{ countIn?: boolean }} [opts] countIn: one bar of clicks before the music starts. */
-      async play({ countIn = false } = {}) {
-        if (this.playing || this.starting || !this.timeline) return;
-        this._ensureAudio();
-        // Start the clock only once audio is really running, or the play head would sit still.
-        if (this.ctx.state !== 'running') {
-          this.starting = true;
-          try {
-            await this.ctx.resume();
-          } finally {
-            this.starting = false;
+    
+        // The singer's pitch: folded to the octave of the note being sung, coloured by how close it is.
+        const tr = this.trail;
+        if (tr.length > 1) {
+          const lane = p.laneWindow(BEFORE * 2.5, 0.1, at).notes;
+          const targetAt = (t) => {
+            const rel = (t - at) / p.tempo;
+            const n = lane.find((v) => v.start <= rel && rel < v.start + v.dur);
+            return n ? n.midi : null;
+          };
+          g.lineWidth = 2.5;
+          g.lineCap = 'round';
+          g.globalAlpha = 0.85;
+          let prev = null;
+          for (const pt of tr) {
+            const px = x((pt.t - at) / p.tempo);
+            if (pt.midi === null || px > headX + 1) {
+              prev = null;
+              continue;
+            }
+            const target = targetAt(pt.t);
+            let m = pt.midi;
+            if (target !== null) m -= 12 * Math.round((m - target) / 12);
+            else m -= 12 * Math.round((m - (lo + hi) / 2) / 12);
+            const py = y(m) + rowH / 2;
+            if (prev && px - prev.x < 30) {
+              const cents = target === null ? null : Math.abs(m - target) * 100;
+              g.strokeStyle = cents === null ? 'rgba(245, 236, 223, 0.55)' : cents <= 30 ? c.tune : cents <= 60 ? c.near : cents <= 100 ? c.off : c.wrong;
+              g.beginPath();
+              g.moveTo(prev.x, prev.y);
+              g.lineTo(px, py);
+              g.stroke();
+            }
+            prev = { x: px, y: py };
           }
+          g.globalAlpha = 1;
         }
-        if (this.position >= this.timeline.total - 0.01) this.position = this.loop ? this._loopBounds().start : 0;
-        this.playing = true;
-        const beat = this.timeline.firstBeat / this.tempo;
-        const lead = countIn ? this.timeline.beatsPerBar.beats * beat : 0;
-        this._startFrom(this.position, lead);
-        for (let k = 0; countIn && k < this.timeline.beatsPerBar.beats; k++) this._click(this.startCtx - lead + k * beat, k === 0);
-        this.timer = setInterval(() => this._tick(), TICK_MS);
-        const frame = () => {
-          if (!this.playing) return;
-          this.position = Math.max(this.startSec, this._now());
-          this._showCursorAt(this.position);
-          this._emit();
-          this.raf = requestAnimationFrame(frame);
+    
+        // Play head.
+        const grad = g.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(242, 212, 155, 0)');
+        grad.addColorStop(0.15, 'rgba(242, 212, 155, 0.9)');
+        grad.addColorStop(1, 'rgba(242, 212, 155, 0.6)');
+        g.fillStyle = grad;
+        g.fillRect(Math.round(headX) - 1, 0, 2, h);
+        g.fillStyle = c.glow;
+        g.beginPath();
+        g.moveTo(headX - 5, 0);
+        g.lineTo(headX + 5, 0);
+        g.lineTo(headX, 7);
+        g.closePath();
+        g.fill();
+      }
+    
+      // Tap or click to jump there; drag to scrub (the music moves when you let go).
+      _bindPointer() {
+        const cv = this.canvas;
+        const timeAt = (clientX) => {
+          const r = cv.getBoundingClientRect();
+          const headX = r.width * HEAD;
+          const pps = (r.width - headX) / AFTER;
+          return (clientX - r.left - headX) / pps;
         };
-        this.raf = requestAnimationFrame(frame);
-        this._emit();
-      }
-
-      pause() {
-        if (!this.playing) return;
-        this.position = Math.max(this.startSec, this._now());
-        this.playing = false;
-        clearInterval(this.timer);
-        cancelAnimationFrame(this.raf);
-        this._silence();
-        this._emit();
-      }
-
-      stop() {
-        this.pause();
-        this.position = this.loop && this.timeline ? this._loopBounds().start : 0;
-        if (this.timeline) this._showCursorAt(this.position);
-        this._emit();
-      }
-
-      seekToMeasure(index) {
-        const m = Math.max(0, Math.min(index, this.timeline.measureStarts.length - 1));
-        this._seek(this.timeline.measureStarts[m]);
-      }
-
-      /** Playback speed as a fraction of the score's tempo (e.g. 0.75 = 75%). */
-      setTempo(rate) {
-        const wasPlaying = this.playing;
-        if (wasPlaying) this.pause();
-        this.tempo = Math.max(0.25, Math.min(2, rate));
-        if (wasPlaying) this.play();
-        this._emit();
-      }
-
-      /** Transpose audio and notation by semitones. */
-      setTranspose(semitones) {
-        const wasPlaying = this.playing;
-        if (wasPlaying) this.pause();
-        this.transpose = Math.max(-12, Math.min(12, Math.round(semitones)));
-        if (this.osmd.TransposeCalculator) {
-          this.osmd.Sheet.Transpose = this.transpose;
-          this.osmd.updateGraphic();
-          this.osmd.render();
-          this.cursorStep = -1;
-          this._showCursorAt(this.position);
-        }
-        if (wasPlaying) this.play();
-        this._emit();
-      }
-
-      /**
-       * Sing the melody an octave (or two) lower or higher than written, as tenors, baritones and basses
-       * do with treble-clef songs. Moves the melody guide, targets and starting note; notation and piano stay.
-       */
-      setMelodyOctave(n) {
-        this.melodyOctave = Math.max(-2, Math.min(2, Math.round(n) || 0));
-        if (this.playing) this._seek(this._now());
-        this._emit();
-      }
-
-      /**
-       * Choose which sung part is yours (a key from info().voiceParts): it becomes the melody guide and the
-       * feedback target; the other sung parts play softly as "other voices".
-       */
-      setMyPart(key) {
-        if (!this.timeline.voiceParts.some((v) => v.key === key)) return;
-        this.myPart = key;
-        this._applyRoles();
-        if (this.playing) this._seek(this._now());
-        this._emit();
-      }
-
-      _applyRoles() {
-        for (const e of this.timeline.events) e.part = !e.vocal ? 'piano' : e.pk === this.myPart && !e.sub ? 'voice' : 'choir';
-      }
-
-      /** Metronome click on every beat while playing. */
-      setClick(on) {
-        this.click = !!on;
-        if (this.playing) this._seek(this._now());
-        this._emit();
-      }
-
-      /** Score time in seconds at the play head; negative-going (before startSec) during a count-in. */
-      scoreTime() {
-        return this.playing ? this._now() : this.position;
-      }
-
-      /** The melody's notes in order: { sec, dur, midi } in score seconds (before any count-in). */
-      voiceNotes() {
-        return this.timeline.events.filter((e) => e.part === 'voice').map(({ sec, dur, midi }) => ({ sec, dur, midi: midi + this.transpose + 12 * this.melodyOctave }));
-      }
-
-      /**
-       * Colour the melody's noteheads, e.g. to show which sung notes were right.
-       * colors: an array matching voiceNotes() (a CSS color, or null for the default); omit to clear.
-       */
-      markVoiceNotes(colors = []) {
-        const voice = this.timeline.events.filter((e) => e.part === 'voice');
-        voice.forEach((e, i) => (e.note.NoteheadColor = colors[i] || undefined));
-        this.osmd.render();
-        this.cursorStep = -1;
-        this._showCursorAt(this.position);
-      }
-
-      setPart(part, on) {
-        this.parts[part] = !!on;
-        if (this.playing) this._seek(this._now()); // reschedule without the muted part
-        this._emit();
-      }
-
-      /** Loop measures `from`..`to` (0-based, inclusive). Pass null to stop looping. */
-      setLoop(from, to) {
-        if (from === null || from === undefined) {
-          this.loop = null;
-        } else {
-          const last = this.timeline.measureStarts.length - 1;
-          const a = Math.max(0, Math.min(from, last));
-          const b = Math.max(a, Math.min(to, last));
-          this.loop = { from: a, to: b };
-          const { start, end } = this._loopBounds();
-          if (this.position < start || this.position >= end) this._seek(start);
-        }
-        this._emit();
-      }
-
-      /** Play the singer's first note (in the current key) so they can find their pitch. */
-      playStartingNote(seconds = 1.6) {
-        const midi = this.info().firstVoiceMidi;
-        if (midi === null) return;
-        this._ensureAudio();
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-        const t = this.ctx.currentTime + 0.03;
-        const sung = midi + this.transpose + 12 * this.melodyOctave;
-        this._voiceNote(sung, t, seconds, this.ctx.destination);
-        this._pianoNote(sung, t, seconds, this.ctx.destination, 0.35);
-      }
-
-      destroy() {
-        this.pause();
-        this.ctx?.close();
-        this.osmd.clear?.();
-      }
-
-      // ---- Internals -------------------------------------------------------------
-
-      _loopBounds() {
-        const ms = this.timeline.measureStarts;
-        return { start: ms[this.loop.from], end: this.loop.to + 1 < ms.length ? ms[this.loop.to + 1] : this.timeline.total };
-      }
-
-      _seek(sec) {
-        const wasPlaying = this.playing;
-        if (wasPlaying) this.pause();
-        this.position = Math.max(0, Math.min(sec, this.timeline.total));
-        this._showCursorAt(this.position);
-        if (wasPlaying) this.play();
-        this._emit();
-      }
-
-      _now() {
-        return this.startSec + (this.ctx.currentTime - this.startCtx) * this.tempo;
-      }
-
-      _startFrom(sec, lead = 0) {
-        this.startSec = sec;
-        this.startCtx = this.ctx.currentTime + 0.06 + lead;
-        const ev = this.timeline.events;
-        let i = 0;
-        while (i < ev.length && ev[i].sec < sec - 1e-6) i++;
-        this.next = i;
-        const cl = this.timeline.clicks;
-        let c = 0;
-        while (c < cl.length && cl[c].sec < sec - 1e-6) c++;
-        this.nextClick = c;
-      }
-
-      _tick() {
-        const now = this._now();
-        const end = this.loop ? this._loopBounds().end : this.timeline.total;
-        if (now >= end) {
-          if (this.loop) {
-            this._silence();
-            this._startFrom(this._loopBounds().start);
-          } else {
-            this.pause();
-            this.position = this.timeline.total;
-            this._emit();
-          }
-          return;
-        }
-        const horizon = now + LOOKAHEAD * this.tempo;
-        const ev = this.timeline.events;
-        while (this.next < ev.length && ev[this.next].sec <= horizon && ev[this.next].sec < end) {
-          const e = ev[this.next++];
-          if (!this.parts[e.part]) continue;
-          const at = this.startCtx + (e.sec - this.startSec) / this.tempo;
-          const dur = Math.min(e.dur, end - e.sec) / this.tempo;
-          if (e.part === 'voice') this._voiceNote(e.midi + this.transpose + 12 * this.melodyOctave, at, dur, this.voiceBus);
-          else if (e.part === 'choir') this._voiceNote(e.midi + this.transpose, at, dur, this.choirBus);
-          else this._pianoNote(e.midi + this.transpose, at, dur, this.pianoBus);
-        }
-        const cl = this.timeline.clicks;
-        while (this.nextClick < cl.length && cl[this.nextClick].sec <= horizon && cl[this.nextClick].sec < end - 1e-3) {
-          const c = cl[this.nextClick++];
-          if (this.click) this._click(this.startCtx + (c.sec - this.startSec) / this.tempo, c.accent);
-        }
-      }
-
-      // A short woodblock-like tick, higher on the downbeat.
-      _click(at, accent) {
-        const ctx = this.ctx;
-        const o = ctx.createOscillator();
-        o.type = 'sine';
-        o.frequency.value = accent ? 1500 : 1000;
-        const env = ctx.createGain();
-        env.gain.setValueAtTime(0, at);
-        env.gain.linearRampToValueAtTime(accent ? 0.5 : 0.32, at + 0.002);
-        env.gain.exponentialRampToValueAtTime(0.001, at + 0.05);
-        o.connect(env).connect(this.clickBus);
-        o.start(at);
-        this._track([o], env, at + 0.06);
-      }
-
-      _ensureAudio() {
-        routeAudioAsMedia(); // every Play/Starting note is a tap, so this runs inside one
-        if (this.ctx) return;
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        this.ctx = new Ctx();
-        const comp = this.ctx.createDynamicsCompressor();
-        comp.connect(this.ctx.destination);
-        this.voiceBus = this.ctx.createGain();
-        this.voiceBus.gain.value = 0.55;
-        this.pianoBus = this.ctx.createGain();
-        this.pianoBus.gain.value = 0.32;
-        this.clickBus = this.ctx.createGain();
-        this.clickBus.gain.value = 0.6;
-        this.choirBus = this.ctx.createGain();
-        this.choirBus.gain.value = 0.22;
-        this.choirBus.connect(comp);
-        this.voiceBus.connect(comp);
-        this.pianoBus.connect(comp);
-        this.clickBus.connect(comp);
-      }
-
-      _track(nodes, gain, stopAt) {
-        const entry = { nodes, gain };
-        this.active.add(entry);
-        nodes[0].onended = () => this.active.delete(entry);
-        for (const n of nodes) n.stop(stopAt);
-      }
-
-      _silence() {
-        if (!this.ctx) return;
-        const t = this.ctx.currentTime;
-        for (const { nodes, gain } of this.active) {
-          gain.gain.cancelScheduledValues(t);
-          gain.gain.setTargetAtTime(0, t, 0.015);
-          for (const n of nodes) {
-            try { n.stop(t + 0.08); } catch {}
-          }
-        }
-        this.active.clear();
-      }
-
-      // Soft, slightly breathy "oo" with delayed vibrato: a guide melody, not an imitation singer.
-      _voiceNote(midi, at, dur, out) {
-        const ctx = this.ctx;
-        const f = midiToFreq(midi);
-        const env = ctx.createGain();
-        const len = Math.max(0.08, dur);
-        env.gain.setValueAtTime(0, at);
-        env.gain.linearRampToValueAtTime(0.9, at + Math.min(0.06, len / 3));
-        env.gain.setValueAtTime(0.9, at + Math.max(0.06, len - 0.07));
-        env.gain.linearRampToValueAtTime(0, at + len);
-        const o1 = ctx.createOscillator();
-        o1.type = 'sine';
-        o1.frequency.value = f;
-        const o2 = ctx.createOscillator();
-        o2.type = 'triangle';
-        o2.frequency.value = f * 2;
-        const h2 = ctx.createGain();
-        h2.gain.value = 0.08;
-        const lfo = ctx.createOscillator();
-        lfo.frequency.value = 5.4;
-        const depth = ctx.createGain();
-        depth.gain.setValueAtTime(0, at);
-        depth.gain.linearRampToValueAtTime(f * 0.006, at + Math.min(0.45, len)); // vibrato eases in
-        lfo.connect(depth);
-        depth.connect(o1.frequency);
-        depth.connect(o2.frequency);
-        o1.connect(env);
-        o2.connect(h2).connect(env);
-        env.connect(out);
-        for (const n of [o1, o2, lfo]) n.start(at);
-        this._track([o1, o2, lfo], env, at + len + 0.05);
-      }
-
-      // Plucked-then-decaying tone with a little brightness: a practice piano, not a concert grand.
-      _pianoNote(midi, at, dur, out, level = 1) {
-        const ctx = this.ctx;
-        const f = midiToFreq(midi);
-        const len = Math.max(0.12, dur);
-        const tail = Math.min(2.2, len + 0.35);
-        const env = ctx.createGain();
-        env.gain.setValueAtTime(0, at);
-        env.gain.linearRampToValueAtTime(0.7 * level, at + 0.006);
-        env.gain.exponentialRampToValueAtTime(0.28 * level, at + 0.25);
-        env.gain.setTargetAtTime(0.0001, at + len, 0.12);
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(Math.min(9000, f * 8), at);
-        filter.frequency.exponentialRampToValueAtTime(Math.min(4000, f * 3), at + 0.4);
-        const o1 = ctx.createOscillator();
-        o1.type = 'triangle';
-        o1.frequency.value = f;
-        const o2 = ctx.createOscillator();
-        o2.type = 'sine';
-        o2.frequency.value = f * 2.001;
-        const h2 = ctx.createGain();
-        h2.gain.value = 0.22;
-        o1.connect(filter);
-        o2.connect(h2).connect(filter);
-        filter.connect(env).connect(out);
-        o1.start(at);
-        o2.start(at);
-        this._track([o1, o2], env, at + tail);
-      }
-
-      // Keep OSMD's cursor on the note being played.
-      _showCursorAt(sec) {
-        const steps = this.timeline?.steps;
-        if (!steps?.length) return;
-        let lo = 0;
-        let hi = steps.length - 1;
-        while (lo < hi) {
-          const mid = (lo + hi + 1) >> 1;
-          if (steps[mid].sec <= sec + 1e-6) lo = mid;
-          else hi = mid - 1;
-        }
-        const cursor = this.osmd.cursor;
-        if (this.cursorStep < 0 || lo < this.cursorStep) {
-          cursor.reset();
-          cursor.show();
-          this.cursorStep = 0;
-        }
-        const moved = this.cursorStep !== lo;
-        while (this.cursorStep < lo) {
-          cursor.next();
-          this.cursorStep++;
-        }
-        this.measure = steps[lo].measure;
-        if (moved && this.followEl) this._scrollBoxToCursor();
-      }
-
-      _emit() {
-        if (!this.timeline) return;
-        this.onChange({
-          playing: this.playing,
-          measure: this.measure ?? 0,
-          measures: this.timeline.measureStarts.length,
-          tempo: this.tempo,
-          bpm: Math.round(this.timeline.bpm * this.tempo),
-          transpose: this.transpose,
-          melodyOctave: this.melodyOctave,
-          parts: { ...this.parts },
-          myPart: this.myPart,
-          click: this.click,
-          loop: this.loop ? { ...this.loop } : null,
+        let start = null;
+        cv.addEventListener('pointerdown', (e) => {
+          if (!this.onSeek || e.button > 0) return;
+          start = { x: e.clientX, at: this.player.scoreTime(), moved: false };
+          cv.setPointerCapture(e.pointerId);
         });
+        cv.addEventListener('pointermove', (e) => {
+          if (!start) return;
+          const dx = e.clientX - start.x;
+          if (Math.abs(dx) > 4) start.moved = true;
+          if (!start.moved) return;
+          const r = cv.getBoundingClientRect();
+          const pps = (r.width * (1 - HEAD)) / AFTER;
+          // Dragging left pulls later music under the play head, like moving a strip of paper.
+          this.drag = clamp(start.at - (dx / pps) * this.player.tempo, 0, this.player.timeline.total);
+          this.dirty = true;
+          this.wake();
+        });
+        const end = (e) => {
+          if (!start) return;
+          const target = start.moved ? this.drag : clamp(start.at + timeAt(e.clientX) * this.player.tempo, 0, this.player.timeline.total);
+          start = null;
+          this.drag = null;
+          if (target !== null && e.type === 'pointerup') this.onSeek(target);
+          this.dirty = true;
+          this.wake();
+        };
+        cv.addEventListener('pointerup', end);
+        cv.addEventListener('pointercancel', end);
       }
     }
+    
+    function clamp(v, a, b) {
+      return Math.max(a, Math.min(b, v));
+    }
+    
+    function roundRect(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.lineTo(x + w - r, y);
+      g.arcTo(x + w, y, x + w, y + r, r);
+      g.lineTo(x + w, y + h - r);
+      g.arcTo(x + w, y + h, x + w - r, y + h, r);
+      g.lineTo(x + r, y + h);
+      g.arcTo(x, y + h, x, y + h - r, r);
+      g.lineTo(x, y + r);
+      g.arcTo(x, y, x + r, y, r);
+      g.closePath();
+    }
 
-    return { routeAudioAsMedia, ScorePlayer };
+    return { LANE_COLORS, NoteLane };
   })();
   var mod_warmups = (function () {
     // Warm-up patterns and the plan for playing one through a singer's range.
@@ -5176,7 +7575,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     return { WARMUPS, planWarmup };
   })();
-    return Object.assign({}, mod_common, mod_rhythm, mod_melody_gen, mod_intervals, mod_grade, mod_voice_analyzer, mod_voice_visuals, mod_score_player, mod_warmups);
+  var mod_song_packs = (function () {
+    // Reads songs from the packs that scripts/build-song-packs.cjs writes: one index (songs.json) says which pack
+    // holds each song and where; a pack is a few dozen .mxl files laid end to end. Framework-free, so it can be
+    // ported into AlloFlow (Singing Lab / Music Lab) next to ScorePlayer.
+    //
+    //   const lib = createSongPacks({ baseUrl: 'https://alloflow-cdn.pages.dev/song_library/' });
+    //   const index = await lib.load();               // { songs: [{ id, title, cid, lang, lo, hi, ... }], composers, ... }
+    //   const mxl = await lib.get(index.songs[0].id); // ArrayBuffer of that song's .mxl
+    //
+    // Why the checks: on alloflow-cdn.pages.dev a path that does not exist answers 200 with the app's HTML page, and a
+    // Canvas-hosted tool cannot tell that from a song. So every response is checked for content type, exact length
+    // and (where the browser has crypto.subtle) the SHA-256 the index promises, and failures say which check failed.
+    // Errors carry a `code`: HTTP, BAD_TYPE, BAD_INDEX, SIZE, HASH, UNKNOWN_SONG.
+
+    const fail = (code, message) => Object.assign(new Error(message), { code });
+    const HEX = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, '0'));
+    const toHex = (buf) => {
+      const b = new Uint8Array(buf);
+      let s = '';
+      for (let i = 0; i < b.length; i++) s += HEX[b[i]];
+      return s;
+    };
+
+    /**
+     * @param {object} o
+     * @param {string} o.baseUrl        folder holding songs.json and the packs (trailing slash optional)
+     * @param {typeof fetch} [o.fetchFn] defaults to the global fetch
+     * @param {boolean} [o.verify]       check each pack's SHA-256 (default true when crypto.subtle exists)
+     * @param {number} [o.retries]       extra attempts after a network error or HTTP error (default 1)
+     * @param {number} [o.keepPacks]     decoded packs to keep in memory (default 4, each about 640 KB)
+     */
+    function createSongPacks({ baseUrl, fetchFn, verify, retries = 1, keepPacks = 4 } = {}) {
+      if (!baseUrl) throw new Error('createSongPacks needs a baseUrl');
+      const base = new URL(baseUrl.endsWith('/') ? baseUrl : baseUrl + '/', globalThis.location ? globalThis.location.href : undefined).href;
+      const doFetch = fetchFn || ((...a) => globalThis.fetch(...a));
+      const subtle = globalThis.crypto && globalThis.crypto.subtle;
+      const checkHash = verify === undefined ? !!subtle : !!verify && !!subtle;
+
+      let indexPromise = null;
+      let byId = null;
+      const packs = new Map(); // file -> Promise<ArrayBuffer>, in recently-used order
+
+      async function getBuffer(name, wantType) {
+        let lastErr;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+          try {
+            const res = await doFetch(base + name);
+            if (!res.ok) throw fail('HTTP', `${name}: HTTP ${res.status}`);
+            const type = (res.headers && res.headers.get && res.headers.get('content-type')) || '';
+            // A missing path on the CDN is the app's HTML page with a 200; never mistake it for data.
+            if (/text\/html/i.test(type)) throw fail('BAD_TYPE', `${name}: got a web page (${type}), not ${wantType}; is the file deployed?`);
+            return await res.arrayBuffer();
+          } catch (e) {
+            lastErr = e;
+            if (e.code === 'BAD_TYPE') break; // retrying a page that is not there will not help
+          }
+        }
+        throw lastErr;
+      }
+
+      function load() {
+        if (!indexPromise) {
+          indexPromise = (async () => {
+            const buf = await getBuffer('songs.json', 'the song index');
+            let idx;
+            try { idx = JSON.parse(new TextDecoder().decode(buf)); } catch { throw fail('BAD_INDEX', 'songs.json is not valid JSON'); }
+            if (!idx || idx.v !== 1 || !Array.isArray(idx.packs) || !Array.isArray(idx.songs)) throw fail('BAD_INDEX', 'songs.json has an unexpected shape');
+            byId = new Map(idx.songs.map((s) => [s.id, s]));
+            return idx;
+          })();
+          indexPromise.catch(() => { indexPromise = null; }); // a failed load can be tried again
+        }
+        return indexPromise;
+      }
+
+      function pack(index, p) {
+        const meta = index.packs[p];
+        let got = packs.get(meta.f);
+        if (got) { packs.delete(meta.f); packs.set(meta.f, got); return got; } // most recently used last
+        got = (async () => {
+          const buf = await getBuffer(meta.f, 'a song pack');
+          if (buf.byteLength !== meta.bytes) throw fail('SIZE', `${meta.f}: ${buf.byteLength} bytes, expected ${meta.bytes} (cut off or changed)`);
+          if (checkHash && toHex(await subtle.digest('SHA-256', buf)) !== meta.sha256) throw fail('HASH', `${meta.f}: contents do not match the index (stale or corrupted copy)`);
+          return buf;
+        })();
+        packs.set(meta.f, got);
+        got.catch(() => { if (packs.get(meta.f) === got) packs.delete(meta.f); });
+        while (packs.size > Math.max(1, keepPacks)) packs.delete(packs.keys().next().value);
+        return got;
+      }
+
+      return {
+        load,
+        /** Whether the loaded index has this song (call load() first). */
+        has: (id) => !!byId && byId.has(id),
+        /** The song's index entry (title, composer id, range, ...), or undefined. */
+        meta: (id) => (byId ? byId.get(id) : undefined),
+        /** The song's .mxl bytes as a fresh ArrayBuffer. */
+        async get(id) {
+          const index = await load();
+          const s = byId.get(id);
+          if (!s) throw fail('UNKNOWN_SONG', `no song "${id}" in the library`);
+          const buf = await pack(index, s.p);
+          return buf.slice(s.o, s.o + s.n);
+        },
+        /** One of the extra data files ('lyrics' or 'melodies') as parsed JSON, checked like a pack. */
+        async extra(key) {
+          const index = await load();
+          const x = index.extras && index.extras[key];
+          if (!x) throw fail('UNKNOWN_SONG', `no "${key}" file in this library`);
+          const buf = await getBuffer(x.f, 'a data file');
+          if (buf.byteLength !== x.bytes) throw fail('SIZE', `${x.f}: ${buf.byteLength} bytes, expected ${x.bytes}`);
+          if (checkHash && toHex(await subtle.digest('SHA-256', buf)) !== x.sha256) throw fail('HASH', `${x.f}: contents do not match the index`);
+          return JSON.parse(new TextDecoder().decode(buf));
+        },
+        /** Pack files currently held in memory (for tests). */
+        cachedPacks: () => [...packs.keys()],
+      };
+    }
+
+    return { createSongPacks };
+  })();
+  var mod_library = (function () {
+    // Song-library helpers shared by the library pages (build time) and the filter script (browser).
+
+    const VOICE_LABELS = {
+      soprano: 'Soprano',
+      mezzo: 'Mezzo-soprano',
+      alto: 'Alto',
+      tenor: 'Tenor',
+      baritone: 'Baritone',
+      bass: 'Bass',
+    };
+
+    // Typical written ranges (MIDI) a student of each voice can sing a song in, a little wider than
+    // the trainers' comfortable practice ranges. Men usually sing treble-written songs an octave down.
+    const RANGES = {
+      soprano: [60, 81],
+      mezzo: [57, 78],
+      alto: [53, 74],
+      tenor: [48, 69],
+      baritone: [43, 65],
+      bass: [40, 62],
+    };
+    const MEN = new Set(['tenor', 'baritone', 'bass']);
+
+    /** Does a melody (lowest/highest MIDI as written) fit this voice without transposing? */
+    function fitsVoice(voice, lo, hi) {
+      const r = RANGES[voice];
+      if (!r || lo == null || hi == null) return false;
+      if (lo >= r[0] && hi <= r[1]) return true;
+      return MEN.has(voice) && lo - 12 >= r[0] && hi - 12 <= r[1];
+    }
+
+    function voiceFits(lo, hi) {
+      return Object.keys(RANGES).filter((v) => fitsVoice(v, lo, hi));
+    }
+
+    return { VOICE_LABELS, fitsVoice, voiceFits };
+  })();
+    return Object.assign({}, mod_score_player, mod_common, mod_rhythm, mod_melody_gen, mod_intervals, mod_grade, mod_sing_score, mod_voice_analyzer, mod_voice_visuals, mod_note_lane, mod_warmups, mod_song_packs, mod_library);
   })();
   // ═══ End voice studio block ═══
 
@@ -5187,28 +7746,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // ═══════════════════════════════════════════
 
   function vsFmt(s, vars) {
-    return String(s).replace(/\{(\w+)\}/g, function (whole, name) {
+    return __alloOneWord(String(s).replace(/\{(\w+)\}/g, function (whole, name) {
       return vars && Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
-    });
+    }));
   }
 
-  // The notation renderer (OpenSheetMusicDisplay, BSD-3) loads on first use, like three.js elsewhere.
+  // The notation renderer (OpenSheetMusicDisplay, BSD-3) loads on first use, like three.js elsewhere. Gemini Canvas
+  // refuses third-party CDNs, so a copy beside this script's own host (vendor/) is tried first, then jsdelivr.
   var VS_OSMD_URL = 'https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@2.2.1/build/opensheetmusicdisplay.min.js';
   var _vsOsmdPromise = null;
+  function vsOsmdSources() {
+    var list = [];
+    try {
+      var own = (document.currentScript && document.currentScript.src) || (typeof VS_SCRIPT_SRC === 'string' ? VS_SCRIPT_SRC : '');
+      if (own) list.push(new URL('../vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js', own).href);
+    } catch (e) { /* jsdelivr only */ }
+    list.push(VS_OSMD_URL);
+    return list;
+  }
   function vsLoadOSMD() {
-    if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) return Promise.resolve(window.opensheetmusicdisplay);
+    var have = function () { return window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay; };
+    if (have()) return Promise.resolve(window.opensheetmusicdisplay);
     if (_vsOsmdPromise) return _vsOsmdPromise;
-    _vsOsmdPromise = new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
-      s.src = VS_OSMD_URL;
-      s.async = true;
-      s.onload = function () {
-        if (window.opensheetmusicdisplay && window.opensheetmusicdisplay.OpenSheetMusicDisplay) resolve(window.opensheetmusicdisplay);
-        else { _vsOsmdPromise = null; reject(new Error('notation library missing')); }
-      };
-      s.onerror = function () { _vsOsmdPromise = null; reject(new Error('notation library failed to load')); };
-      document.head.appendChild(s);
-    });
+    var sources = vsOsmdSources();
+    // A missing file on the CDN is an HTML page with status 200: the script "loads" but defines nothing, so
+    // judge by the global it should define, then try the next source.
+    _vsOsmdPromise = (function next(i) {
+      if (i >= sources.length) return Promise.reject(new Error('notation library failed to load'));
+      return new Promise(function (resolve) {
+        var el = document.createElement('script');
+        el.src = sources[i];
+        el.async = true;
+        el.onload = function () { resolve(have() ? true : false); };
+        el.onerror = function () { resolve(false); };
+        document.head.appendChild(el);
+      }).then(function (ok) { return ok ? window.opensheetmusicdisplay : next(i + 1); });
+    })(0);
+    _vsOsmdPromise.catch(function () { _vsOsmdPromise = null; });
     return _vsOsmdPromise;
   }
 
@@ -6050,6 +8624,513 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_wu_care', 'Warm up gently: stay light, sip water, and stop if anything feels scratchy or tight.')));
   }
 
+  // ═══════════════════════════════════════════
+  // Song Library tab: browse the public-domain song library (served from the CDN as packs, see
+  // song-packs.js) and practise a song: score with a following cursor, piano + melody guide, a scrolling
+  // note lane, and live "% on pitch" while you sing. Everything runs on this device; the microphone
+  // is only open during a run and no audio leaves the page.
+  // ═══════════════════════════════════════════
+
+  // The song library sits beside stem_lab/ on whatever host served this script (the CDN, or a district's own
+  // copy). A page can say otherwise with window.__alloSongLibraryBase; the CDN address is the last resort.
+  var VS_SCRIPT_SRC = (function () {
+    try { return (document.currentScript && document.currentScript.src) || ''; } catch (e) { return ''; }
+  })();
+  function vsLibBases() {
+    var list = [];
+    try {
+      if (typeof window !== 'undefined' && window.__alloSongLibraryBase) list.push(String(window.__alloSongLibraryBase));
+      if (VS_SCRIPT_SRC) list.push(new URL('../song_library/', VS_SCRIPT_SRC).href);
+    } catch (e) { /* fall through to the CDN */ }
+    list.push('https://alloflow-cdn.pages.dev/song_library/');
+    return list.filter(function (b, i) { return list.indexOf(b) === i; });
+  }
+  var _vsLibPromise = null;
+  // Opens the library once per page: the first base whose index loads wins ({ lib, index }).
+  function vsOpenLibrary() {
+    if (_vsLibPromise) return _vsLibPromise;
+    var bases = vsLibBases();
+    _vsLibPromise = (function next(i, lastErr) {
+      if (i >= bases.length) return Promise.reject(lastErr || new Error('no song library'));
+      var lib = VS.createSongPacks({ baseUrl: bases[i] });
+      return lib.load().then(function (index) {
+        // Search text per song, folded to plain lower case so "Faure" finds Fauré.
+        index._hay = index.songs.map(function (s) {
+          var c = index.composers[s.cid];
+          return vsFold([s.title, c && c.name, s.poet, s.set, s.group, s.lang].join(' '));
+        });
+        return { lib: lib, index: index };
+      }, function (e) { return next(i + 1, e); });
+    })(0, null);
+    _vsLibPromise.catch(function () { _vsLibPromise = null; });
+    return _vsLibPromise;
+  }
+  var _vsFoldMarks = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
+  function vsFold(s) {
+    return String(s || '').normalize('NFD').replace(_vsFoldMarks, '').toLowerCase().replace(/ß/g, 'ss');
+  }
+  var _vsLyricsPromise = null;
+  // Verses printed below the music (not under the notes) are sung as extra passes.
+  function vsPrintedVerses(lib, id) {
+    if (!_vsLyricsPromise) _vsLyricsPromise = lib.extra('lyrics').catch(function () { _vsLyricsPromise = null; return {}; });
+    return _vsLyricsPromise.then(function (all) { var w = all && all[id]; return (w && w.printed) || []; });
+  }
+  // A pack holds raw .mxl bytes; the score player wants the file as a binary string.
+  function vsBinaryString(buf) {
+    var b = new Uint8Array(buf);
+    var s = '';
+    for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+    return s;
+  }
+  function vsClock(sec) {
+    sec = Math.max(0, Math.round(sec));
+    return Math.floor(sec / 60) + ':' + (sec % 60 < 10 ? '0' : '') + (sec % 60);
+  }
+
+  // ───────────────────────── Song Library: browse ─────────────────────────
+  function VsSongLibrary(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var dark = p.isDark || p.isContrast;
+    var errCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
+    var prefs = Object.assign({ voice: 'mezzo', col: 'all', fits: false, best: {} }, p.prefs || {});
+    var prefsRef = React.useRef(prefs);
+    prefsRef.current = prefs;
+    var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
+    var openS = React.useState({ status: 'loading' }); var open = openS[0]; var setOpen = openS[1];
+    var songS = React.useState(null); var songId = songS[0]; var setSongId = songS[1];
+    var qS = React.useState(''); var query = qS[0]; var setQuery = qS[1];
+    var limS = React.useState(30); var limit = limS[0]; var setLimit = limS[1];
+    var voiceLabels = vsVoiceLabels(t);
+    var colLabels = {
+      all: t('stem.singing.vs_lib_col_all', 'All songs'),
+      essentials: t('stem.singing.vs_lib_col_essentials', 'Teaching essentials'),
+      choral: t('stem.singing.vs_lib_col_choral', 'Choir pieces'),
+      lieder: t('stem.singing.vs_lib_col_lieder', 'Art songs')
+    };
+
+    function connect() {
+      setOpen({ status: 'loading' });
+      vsOpenLibrary().then(function (r) { setOpen({ status: 'ready', lib: r.lib, index: r.index }); },
+        function () { setOpen({ status: 'error' }); });
+    }
+    React.useEffect(function () {
+      var alive = true;
+      vsOpenLibrary().then(function (r) { if (alive) setOpen({ status: 'ready', lib: r.lib, index: r.index }); },
+        function () { if (alive) setOpen({ status: 'error' }); });
+      return function () { alive = false; };
+    }, []);
+
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+
+    if (open.status === 'loading') return h('div', { className: c.cardClass }, h('p', { className: c.subTextClass + ' m-0', role: 'status' }, t('stem.singing.vs_lib_loading', 'Opening the song library…')));
+    if (open.status === 'error') {
+      return h('div', { className: c.cardClass + ' space-y-3' },
+        h('p', { role: 'alert', className: errCls }, t('stem.singing.vs_lib_unavailable', 'The song library could not be reached. Check the internet connection, then try again.')),
+        h('button', { type: 'button', className: c.btnPrimary, onClick: connect }, t('stem.singing.vs_lib_retry', 'Try again')));
+    }
+
+    var index = open.index;
+    var songs = index.songs;
+    if (songId) {
+      var song = songs.find(function (s) { return s.id === songId; });
+      if (song) {
+        return h(VsSongPlayer, {
+          key: song.id, p: p, song: song, lib: open.lib, composer: (index.composers[song.cid] || {}).name || '',
+          prefs: prefs, prefsRef: prefsRef, onBack: function () { setSongId(null); }
+        });
+      }
+    }
+
+    var words = vsFold(query).split(/\s+/).filter(Boolean);
+    var rows = [];
+    for (var i = 0; i < songs.length; i++) {
+      var s = songs[i];
+      if (prefs.col !== 'all' && s.col !== prefs.col) continue;
+      if (prefs.fits && !VS.fitsVoice(prefs.voice, s.lo, s.hi)) continue;
+      var hay = index._hay[i];
+      if (words.every(function (w) { return hay.indexOf(w) >= 0; })) rows.push(s);
+    }
+    var shown = rows.slice(0, limit);
+    var last = prefs.last && songs.find(function (x) { return x.id === prefs.last; });
+
+    return h('div', { className: 'space-y-3' },
+      h('div', { className: c.cardClass + ' space-y-3' },
+        h('p', { className: c.subTextClass + ' m-0' }, vsFmt(t('stem.singing.vs_lib_intro', '{n} public-domain songs to sing with piano: art songs, folk songs, spirituals and choir pieces. Pick one, then press “Sing along”.'), { n: songs.length })),
+        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+          h('label', { className: lab }, t('stem.singing.vs_lib_search', 'Search'),
+            h('input', { type: 'search', value: query, placeholder: t('stem.singing.vs_lib_search_ph', 'Title, composer or poet'), className: selCls + ' w-56',
+              onChange: function (e) { setQuery(e.target.value); setLimit(30); } })),
+          h('label', { className: lab }, t('stem.singing.vs_lib_collection', 'Collection'),
+            h('select', { className: selCls, value: prefs.col, onChange: function (e) { set({ col: e.target.value }); setLimit(30); } },
+              ['all', 'essentials', 'choral', 'lieder'].map(function (k) { return h('option', { key: k, value: k }, colLabels[k]); }))),
+          h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
+            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); setLimit(30); } },
+              Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
+          h('label', { className: lab },
+            h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.fits, onChange: function (e) { set({ fits: e.target.checked }); setLimit(30); } }),
+            t('stem.singing.vs_lib_fits', 'Only songs that fit my voice as written'))),
+        last && h('div', null,
+          h('button', { type: 'button', className: c.btnSecondary, onClick: function () { setSongId(last.id); } },
+            vsFmt(t('stem.singing.vs_lib_continue', 'Continue: {title}'), { title: last.title })))),
+      h('p', { className: c.subTextClass + ' m-0', role: 'status' }, vsFmt(t('stem.singing.vs_lib_count', '{n} songs'), { n: rows.length })),
+      rows.length === 0
+        ? h('p', { className: c.subTextClass }, t('stem.singing.vs_lib_none', 'No songs match. Try fewer words, or turn off the voice filter.'))
+        : h('ul', { className: 'list-none p-0 m-0 grid gap-2 sm:grid-cols-2' },
+          shown.map(function (s) {
+            var comp = (index.composers[s.cid] || {}).name || '';
+            var best = (prefs.best || {})[s.id];
+            var meta = [s.lang, VS.noteLabel(s.lo) + '–' + VS.noteLabel(s.hi), vsClock(s.sec), s.col === 'lieder' ? '' : s.group].filter(Boolean).join(' · ');
+            return h('li', { key: s.id },
+              h('button', { type: 'button', onClick: function () { setSongId(s.id); },
+                className: 'w-full text-left rounded-xl border p-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 ' +
+                  (dark ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 text-slate-100' : 'bg-white border-slate-300 hover:bg-rose-50 text-slate-800') },
+                h('span', { className: 'block text-sm font-bold' }, s.title),
+                h('span', { className: 'block text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, comp),
+                h('span', { className: 'block text-xs ' + (dark ? 'text-slate-400' : 'text-slate-500') }, meta),
+                best && h('span', { className: 'block text-xs font-bold ' + (dark ? 'text-emerald-300' : 'text-emerald-700') }, vsFmt(t('stem.singing.vs_lib_best_chip', 'Your best: {pct}%'), { pct: best.best }))));
+          })),
+      rows.length > shown.length && h('div', null,
+        h('button', { type: 'button', className: c.btnSecondary, onClick: function () { setLimit(limit + 30); } },
+          vsFmt(t('stem.singing.vs_lib_more', 'Show more ({n} left)'), { n: rows.length - shown.length }))),
+      h('p', { className: c.subTextClass }, t('stem.singing.vs_lib_privacy', 'Your voice is analysed on this device and is never recorded or sent anywhere. Headphones help the microphone hear you instead of the piano.')));
+  }
+
+  // ───────────────────────── Song Library: one song ─────────────────────────
+  var VS_LANE_LEVELS = { tune: '#15803d', near: '#b45309', off: '#c2410c', wrong: '#be123c', missed: '#6b7280' };
+
+  function VsSongPlayer(props) {
+    var p = props.p;
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var song = props.song;
+    var dark = p.isDark || p.isContrast;
+    var errCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
+    var prefs = props.prefs;
+    var prefsRef = props.prefsRef;
+    var set = function (patch) { p.savePrefs(Object.assign({}, prefsRef.current, patch)); };
+    var boxEl = React.useRef(null);
+    var scoreEl = React.useRef(null);
+    var laneEl = React.useRef(null);
+    var playerRef = React.useRef(null);
+    var laneRef = React.useRef(null);
+    var singRef = React.useRef(null);
+    var anRef = React.useRef(null);
+    var modeRef = React.useRef(null);
+    var stateRef = React.useRef(null);
+    var loadS = React.useState('loading'); var load = loadS[0]; var setLoad = loadS[1];
+    var infoS = React.useState(null); var info = infoS[0]; var setInfo = infoS[1];
+    var psS = React.useState(null); var ps = psS[0]; var setPs = psS[1];
+    var modeS = React.useState(null); var mode = modeS[0]; var setMode = modeS[1];
+    var liveS = React.useState(null); var live = liveS[0]; var setLive = liveS[1];
+    var resS = React.useState(null); var result = resS[0]; var setResult = resS[1];
+    var spotsS = React.useState([]); var spots = spotsS[0]; var setSpots = spotsS[1];
+    var wordsS = React.useState(null); var words = wordsS[0]; var setWords = wordsS[1];
+    var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
+    var shiftS = React.useState(0); var shift = shiftS[0]; var setShift = shiftS[1];
+    var voiceLabels = vsVoiceLabels(t);
+
+    // Score, player, lane and live score are made when the song is opened and torn down when it is left.
+    React.useEffect(function () {
+      var alive = true;
+      var player = null;
+      var lane = null;
+      Promise.all([vsLoadOSMD(), props.lib.get(song.id), vsPrintedVerses(props.lib, song.id)]).then(function (r) {
+        if (!alive || !scoreEl.current) return null;
+        var narrow = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
+        player = new VS.ScorePlayer({
+          OSMD: r[0],
+          container: scoreEl.current,
+          language: song.lang || '',
+          extraVerses: r[2],
+          sound: prefsRef.current.sound || 'piano',
+          zoom: narrow ? 0.75 : 1,
+          osmdOptions: { drawPartNames: false, drawMetronomeMarks: true, cursorsOptions: [{ type: 0, color: '#be123c', alpha: 0.28, follow: true }] },
+          onChange: onPlayerChange
+        });
+        playerRef.current = player;
+        if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.player = player; // test seam: only exists in the test harness
+        return player.load(vsBinaryString(r[1])).then(function (inf) {
+          if (!alive) return;
+          var pr = prefsRef.current;
+          if (boxEl.current) player.setFollow(boxEl.current); // the cursor scrolls this box, not the page
+          player.setTempo((pr.speed || 100) / 100);
+          player.setClick(!!pr.click);
+          player.setPart('voice', pr.guide !== false);
+          player.setPart('piano', pr.piano !== false);
+          lane = new VS.NoteLane(laneEl.current, { player: player, calm: !!p.reducedMotion, onSeek: function (sec) { stopAll(); player.seek(sec); } });
+          laneRef.current = lane;
+          singRef.current = new VS.SingScore(player, { onGrade: function (i, level) { lane.setGrade(i, level); refreshLive(); } });
+          if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.score = singRef.current; // test seam (harness only)
+          setInfo(inf);
+          setLoad('ready');
+          set({ last: song.id });
+        });
+      }).catch(function (e) {
+        if (!alive) return;
+        setErr(e && e.code === 'BAD_TYPE' || e && e.code === 'HTTP' || e && e.code === 'SIZE' || e && e.code === 'HASH'
+          ? t('stem.singing.vs_lib_song_failed', 'This song could not be downloaded. Check the internet connection and try again.')
+          : t('stem.singing.vs_osmd_failed', 'The music display could not load. Check the internet connection, then reopen this tab.'));
+        setLoad('error');
+      });
+      return function () {
+        alive = false;
+        modeRef.current = null;
+        stopMic();
+        if (laneRef.current) laneRef.current.destroy();
+        if (playerRef.current) playerRef.current.destroy();
+        laneRef.current = null; playerRef.current = null; singRef.current = null;
+      };
+    }, [song.id]);
+
+    function onPlayerChange(s) {
+      var prev = stateRef.current;
+      stateRef.current = s;
+      var loopKey = function (x) { return x && x.loop ? x.loop.from + ':' + x.loop.to : ''; };
+      if (!prev || prev.playing !== s.playing || prev.measure !== s.measure || prev.myPart !== s.myPart || prev.transpose !== s.transpose || loopKey(prev) !== loopKey(s)) {
+        setPs(s);
+        if (!prev || prev.playing !== s.playing) { if (laneRef.current) laneRef.current.wake(); }
+      }
+      if (!s.playing && modeRef.current) finish();
+    }
+
+    // The words line follows the music while it plays.
+    React.useEffect(function () {
+      var raf = 0;
+      var lastKey = null;
+      var tick = function () {
+        var pl = playerRef.current;
+        var w = pl && prefsRef.current.words !== false ? pl.currentWords() : null;
+        var key = w ? JSON.stringify(w.printed ? [w.verse, w.line] : [w.verse, w.words.map(function (x) { return x.text + x.state; }).join('|')]) : '';
+        if (key !== lastKey) { lastKey = key; setWords(w); }
+        if (ps && ps.playing) raf = requestAnimationFrame(tick);
+      };
+      tick();
+      return function () { if (raf) cancelAnimationFrame(raf); };
+    }, [ps && ps.playing, ps && ps.measure, load, prefs.words]);
+
+    function refreshLive() {
+      if (singRef.current) setLive(singRef.current.summary());
+    }
+    function resetScore() {
+      if (singRef.current) singRef.current.reset();
+      if (laneRef.current) laneRef.current.clearGrades();
+      setLive(null); setResult(null); setSpots([]);
+    }
+    function stopMic() {
+      if (anRef.current) { try { anRef.current.stop(); } catch (e) { /* already stopped */ } anRef.current = null; }
+    }
+    function ensureMic() {
+      if (anRef.current) return Promise.resolve(anRef.current);
+      var a = new VS.VoiceAnalyzer({ mode: 'voice' });
+      a.setIgnore(function () { return playerRef.current ? playerRef.current.sounding() : false; }); // the starting note is not the singer
+      a.onFrame(function (f) {
+        var pl = playerRef.current;
+        if (modeRef.current !== 'sing' || !pl || !pl.playing) return;
+        var tm = pl.scoreTime() - 0.06 * pl.tempo; // a reading describes sound from a moment earlier
+        if (tm < 0) return; // count-in
+        var midi = f.voiced ? f.midi : null;
+        if (singRef.current) singRef.current.push(tm, midi);
+        if (laneRef.current) laneRef.current.pushPitch(tm, midi);
+      });
+      return a.startMicrophone().then(function () { anRef.current = a; return a; });
+    }
+
+    function stopAll() {
+      var was = modeRef.current;
+      modeRef.current = null;
+      setMode(null);
+      if (playerRef.current && playerRef.current.playing) playerRef.current.pause();
+      if (was === 'sing') endRun();
+      stopMic();
+    }
+    function finish() { // the music reached its end (or was stopped from outside)
+      var was = modeRef.current;
+      modeRef.current = null;
+      setMode(null);
+      if (was === 'sing') endRun();
+      stopMic();
+      if (playerRef.current && playerRef.current.timeline && playerRef.current.position >= playerRef.current.timeline.total - 0.05) playerRef.current.stop();
+    }
+    function listen() {
+      if (mode === 'hear') { stopAll(); return; }
+      stopAll();
+      setErr('');
+      modeRef.current = 'hear';
+      setMode('hear');
+      playerRef.current.play();
+    }
+    function singAlong() {
+      if (mode === 'sing') { stopAll(); return; }
+      stopAll();
+      setErr('');
+      ensureMic().then(function () {
+        var pl = playerRef.current;
+        if (!pl) { stopMic(); return; }
+        modeRef.current = 'sing';
+        setMode('sing');
+        setResult(null);
+        if (p.announce) p.announce(t('stem.singing.vs_sr_count_in', 'Count-in, then sing.'));
+        pl.play({ countIn: !!prefsRef.current.countIn });
+      }).catch(function (e) { setErr(vsMicError(t, e)); });
+    }
+    function restart() {
+      stopAll();
+      playerRef.current.setLoop(null);
+      playerRef.current.stop();
+      resetScore();
+    }
+
+    function endRun() {
+      var sc = singRef.current;
+      var pl = playerRef.current;
+      if (!sc || !pl) return;
+      sc.flush();
+      var s = sc.summary();
+      setLive(s);
+      if (!s.sung) return;
+      var total = pl.voiceNotes().length;
+      var counts = s.sung >= Math.max(8, total * 0.25);
+      var measures = pl.timeline.measures;
+      var measureOfNote = function (i) {
+        var n = sc.notes[i];
+        var k = 0;
+        while (k + 1 < measures.length && measures[k + 1].start <= n.sec + 1e-6) k++;
+        return measures[k] ? measures[k].m : null;
+      };
+      setSpots(VS.troubleSpots(sc.grades, measureOfNote));
+      var best = prefsRef.current.best || {};
+      var prev = best[song.id] || null;
+      var isBest = counts && (!prev || s.accuracy > prev.best);
+      if (isBest) {
+        var nb = Object.assign({}, best);
+        nb[song.id] = { best: s.accuracy, sung: s.sung, total: total, at: Date.now() };
+        var ids = Object.keys(nb);
+        if (ids.length > 80) {
+          ids.sort(function (a, b) { return nb[a].at - nb[b].at; });
+          delete nb[ids[0]];
+        }
+        p.savePrefs(Object.assign({}, prefsRef.current, { best: nb }));
+      }
+      setResult({ s: s, total: total, counts: counts, isBest: isBest, prev: prev });
+      if (p.announce) p.announce(vsFmt(t('stem.singing.vs_lib_sr_result', 'Pitch accuracy {pct}%. {tune} spot on, {near} close, {off} a bit off, {wrong} wrong, out of {n} notes sung.'), { pct: s.accuracy, tune: s.tune, near: s.near, off: s.off, wrong: s.wrong, n: s.sung }));
+      if (counts && s.accuracy >= 80 && (!prev || prev.best < 80) && p.awardXP) p.awardXP('singing_library', 10, 'Singing: ' + song.title);
+    }
+
+    function changeKey(n) {
+      stopAll();
+      setShift(n);
+      playerRef.current.setTranspose(n);
+      resetScore();
+    }
+    function changePart(key) {
+      stopAll();
+      playerRef.current.setMyPart(key);
+      resetScore();
+    }
+    function onScoreClick(e) {
+      var pl = playerRef.current;
+      if (!pl || load !== 'ready') return;
+      var m = pl.measureAtPoint(e.clientX, e.clientY);
+      if (typeof m === 'number' && m >= 0) { stopAll(); pl.seekToMeasure(m); }
+    }
+
+    var ready = load === 'ready' && info;
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var chk = function (label, key, on, apply) {
+      return h('label', { className: lab },
+        h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!on, onChange: function (e) { var v = e.target.checked; var patch = {}; patch[key] = v; set(patch); if (apply && playerRef.current) apply(v); } }), label);
+    };
+    var fitsNow = VS.fitsVoice(prefs.voice, song.lo + shift, song.hi + shift);
+    var meta = [props.composer, song.lang, song.set && (song.no ? song.set + ', ' + song.no : song.set), VS.noteLabel(song.lo) + '–' + VS.noteLabel(song.hi), vsClock(song.sec)].filter(Boolean).join(' · ');
+    var credit = song.col === 'lieder'
+      ? t('stem.singing.vs_lib_credit_lieder', 'Score from the OpenScore Lieder Corpus (github.com/OpenScore/Lieder), transcribed by volunteers and dedicated to the public domain (CC0). Check notes and words against your own edition.')
+      : vsFmt(t('stem.singing.vs_lib_credit_pdmx', 'Score shared on MuseScore by its transcriber and marked public domain or CC0, from the PDMX dataset (Long et al., 2024, CC BY 4.0). Community transcriptions can contain mistakes; check them against your own edition.{notice}'), { notice: song.notice ? ' ' + vsFmt(t('stem.singing.vs_lib_credit_notice', 'File notice: “{text}”.'), { text: String(song.notice).replace(/\s+/g, ' ').slice(0, 160) }) : '' });
+
+    return h('div', { className: 'space-y-3' },
+      h('div', { className: c.cardClass + ' space-y-3' },
+        h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+          h('div', null,
+            h('h3', { className: c.headingClass + ' text-base m-0' }, song.title),
+            h('p', { className: c.subTextClass + ' m-0' }, meta)),
+          h('button', { type: 'button', className: c.btnSecondary, onClick: function () { stopAll(); props.onBack(); } }, '← ' + t('stem.singing.vs_lib_back', 'All songs'))),
+        h('div', { className: 'flex flex-wrap gap-2' },
+          h('button', { type: 'button', className: c.btnPrimary, disabled: !ready, onClick: singAlong }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : '🎤 ' + t('stem.singing.vs_lib_sing_along', 'Sing along')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: listen }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : '▶ ' + t('stem.singing.vs_lib_listen', 'Listen')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { stopAll(); playerRef.current.playStartingNote(); } }, t('stem.singing.vs_lib_start_note', 'Starting note')),
+          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: restart }, t('stem.singing.vs_lib_restart', 'Start over'))),
+        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+          h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed || 100 }),
+            h('input', { type: 'range', min: 50, max: 130, step: 5, value: prefs.speed || 100, className: 'accent-rose-600',
+              onChange: function (e) { var v = Number(e.target.value); stopAll(); set({ speed: v }); if (playerRef.current) playerRef.current.setTempo(v / 100); } })),
+          h('label', { className: lab }, t('stem.singing.vs_lib_key', 'Key'),
+            h('select', { className: selCls, value: String(shift), disabled: !ready, onChange: function (e) { changeKey(Number(e.target.value)); } },
+              [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('option', { key: n, value: String(n) }, n === 0 ? t('stem.singing.vs_lib_key_written', 'As written') : (n > 0 ? '+' : '') + n); }))),
+          info && info.voiceParts && info.voiceParts.length > 1 && h('label', { className: lab }, t('stem.singing.vs_lib_part', 'My part'),
+            h('select', { className: selCls, value: (ps && ps.myPart) || info.myPart || '', onChange: function (e) { changePart(e.target.value); } },
+              info.voiceParts.map(function (v) { return h('option', { key: v.key, value: v.key }, v.name); }))),
+          h('label', { className: lab }, t('stem.singing.vs_lib_sound', 'Sound'),
+            h('select', { className: selCls, value: prefs.sound || 'piano', onChange: function (e) { var v = e.target.value; set({ sound: v }); if (playerRef.current) playerRef.current.setSound(v); } },
+              Object.keys(VS.SOUNDS).map(function (k) { return h('option', { key: k, value: k }, VS.SOUNDS[k]); })))),
+        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+          chk(t('stem.singing.vs_lib_guide', 'Hear the melody'), 'guide', prefs.guide !== false, function (v) { stopAll(); playerRef.current.setPart('voice', v); }),
+          chk(t('stem.singing.vs_lib_piano', 'Piano'), 'piano', prefs.piano !== false, function (v) { stopAll(); playerRef.current.setPart('piano', v); }),
+          chk(t('stem.singing.vs_lib_count_in', 'Count-in'), 'countIn', prefs.countIn !== false, null),
+          chk(t('stem.singing.vs_lib_click', 'Click'), 'click', !!prefs.click, function (v) { playerRef.current.setClick(v); }),
+          chk(t('stem.singing.vs_lib_lane', 'Note lane'), 'lane', prefs.lane !== false, function () { if (laneRef.current) laneRef.current.wake(); }),
+          chk(t('stem.singing.vs_lib_words', 'Words'), 'words', prefs.words !== false, null)),
+        !fitsNow && h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_lib_range_hint', 'This song may sit outside your voice as written. Use “Key” to move it into your range.')),
+        ps && h('p', { className: c.subTextClass + ' m-0' }, vsFmt(t('stem.singing.vs_lib_where', 'Measure {m} of {n}'), { m: ps.measure + 1, n: ps.measures }) +
+          (ps.loop ? ' · ' + (ps.loop.from === ps.loop.to ? vsFmt(t('stem.singing.vs_lib_loop_one', 'looping measure {a}'), { a: ps.loop.from + 1 }) : vsFmt(t('stem.singing.vs_lib_loop_many', 'looping measures {a}–{b}'), { a: ps.loop.from + 1, b: ps.loop.to + 1 })) : '')),
+        ps && ps.loop && h('div', null, h('button', { type: 'button', className: c.btnSecondary, onClick: function () { playerRef.current.setLoop(null); } }, t('stem.singing.vs_lib_clear_loop', 'Stop looping')))),
+      err && h('p', { role: 'alert', className: errCls }, err),
+      load === 'loading' && h('p', { className: c.subTextClass + ' m-0', role: 'status' }, t('stem.singing.vs_loading_music', 'Loading the music display…')),
+      h('div', { style: { display: prefs.lane !== false && load !== 'error' ? 'block' : 'none' } },
+        h('canvas', { ref: laneEl, 'aria-hidden': 'true', style: { width: '100%', height: 170, display: 'block', borderRadius: 12, background: '#1b1014', touchAction: 'pan-y' } })),
+      live && (live.sung || live.missed) ? h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1' },
+        h('span', { className: c.headingClass + ' text-lg' }, live.accuracy === null ? '–' : live.accuracy + '%'),
+        h('span', { className: c.subTextClass }, vsFmt(t('stem.singing.vs_lib_live', 'on pitch · {n} notes sung: {tune} spot on, {near} close, {off} a bit off, {wrong} wrong, {missed} not sung'), { n: live.sung, tune: live.tune, near: live.near, off: live.off, wrong: live.wrong, missed: live.missed }))) : null,
+      words && h('p', { className: 'text-base m-0 ' + (dark ? 'text-slate-100' : 'text-slate-800'), 'aria-hidden': 'true' },
+        words.verses > 1 && h('span', { className: 'text-xs font-bold mr-2 ' + (dark ? 'text-slate-400' : 'text-slate-500') }, vsFmt(t('stem.singing.vs_lib_verse', 'Verse {v} of {n}'), { v: words.verse, n: words.verses })),
+        words.printed
+          ? h('span', { className: 'font-semibold' }, words.lines[words.line])
+          : words.words.map(function (w, i) {
+            return h('span', { key: i, className: w.state === 'now' ? 'font-bold ' + (dark ? 'text-rose-300' : 'text-rose-700') : (w.state === 'past' ? (dark ? 'text-slate-400' : 'text-slate-500') : ''), style: { marginRight: /[-–]$/.test(w.text) ? 0 : '0.3em' } }, w.text.replace(/[-–]+$/, ''));
+          })),
+      // The music scrolls inside its own box while it plays (setFollow), so the buttons above stay in view; the box is
+      // a focusable region so the keyboard can scroll it.
+      h('div', { ref: boxEl, tabIndex: 0, role: 'region', 'aria-label': t('stem.singing.vs_lib_score_region', 'Sheet music (scrolls as the song plays)'),
+        className: 'rounded-xl border', style: { background: '#fff', borderColor: '#cbd5e1', maxHeight: '60vh', overflow: 'auto' } },
+        h('div', { ref: scoreEl, role: 'img', onClick: onScoreClick, style: { minHeight: 140, cursor: ready ? 'pointer' : 'default' },
+          'aria-label': vsFmt(t('stem.singing.vs_lib_score_label', 'Sheet music for {title} by {composer}'), { title: song.title, composer: props.composer }) })),
+      result && h('div', { className: c.cardClass + ' space-y-2', role: 'status' },
+        h('p', { className: c.headingClass + ' text-base m-0' }, vsFmt(t('stem.singing.vs_lib_result', 'Pitch accuracy {pct}% · {n} notes sung'), { pct: result.s.accuracy, n: result.s.sung })),
+        h('ul', { className: 'flex flex-wrap gap-x-4 gap-y-1 text-xs m-0 p-0 list-none' },
+          [['tune', t('stem.singing.vs_g_tune', 'In tune'), result.s.tune], ['near', t('stem.singing.vs_g_near', 'Right note, a little off'), result.s.near + result.s.off], ['wrong', t('stem.singing.vs_g_wrong', 'Wrong note'), result.s.wrong], ['missed', t('stem.singing.vs_g_missed', 'Not heard'), result.s.missed]].map(function (g) {
+            return h('li', { key: g[0], className: 'inline-flex items-center gap-1.5 ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+              h('span', { 'aria-hidden': 'true', className: 'inline-block w-3 h-3 rounded-full', style: { background: VS_LANE_LEVELS[g[0]] } }), g[1] + ': ' + g[2]);
+          })),
+        result.isBest && h('p', { className: 'text-sm font-bold m-0 ' + (dark ? 'text-emerald-300' : 'text-emerald-700') },
+          result.prev ? vsFmt(t('stem.singing.vs_lib_new_best', 'New best! Your last best was {pct}%.'), { pct: result.prev.best }) : t('stem.singing.vs_lib_first_best', 'First score kept on this device. Beat it next time!')),
+        !result.counts && h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_lib_too_short', 'Sing at least a quarter of the song for a score to keep.')),
+        spots.length > 0 && h('div', { className: 'space-y-1' },
+          h('p', { className: c.subTextClass + ' m-0 font-bold' }, t('stem.singing.vs_lib_trouble', 'Practise these next:')),
+          h('div', { className: 'flex flex-wrap gap-2' }, spots.map(function (sp) {
+            var where = sp.from === sp.to ? vsFmt(t('stem.singing.vs_lib_m_one', 'Measure {a}'), { a: sp.from + 1 }) : vsFmt(t('stem.singing.vs_lib_m_many', 'Measures {a}–{b}'), { a: sp.from + 1, b: sp.to + 1 });
+            return h('button', { key: sp.from + '-' + sp.to, type: 'button', className: c.btnSecondary,
+              'aria-label': vsFmt(t('stem.singing.vs_lib_loop_aria', 'Loop {where}, {pct}% pitch accuracy there'), { where: where, pct: sp.pct }),
+              onClick: function () { stopAll(); playerRef.current.setLoop(sp.from, sp.to); } }, where + ' · ' + sp.pct + '%');
+          })))),
+      h('p', { className: c.subTextClass }, t('stem.singing.vs_lib_help', 'Sing along: the piano plays, notes scroll by, and each note is checked as it passes. Singing in another octave still counts. Click a measure in the music to jump there.')),
+      h('p', { className: c.subTextClass + ' text-xs' }, credit));
+  }
+
   window.StemLab.registerTool('singing', {
     icon: '\uD83C\uDFA4',
     label: 'Singing Lab',
@@ -6085,9 +9166,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var __alloFmt = function (k, fb, vars) {
         var out = __alloT(k, fb);
         if (!vars) return out;
-        return String(out).replace(/\{(\w+)\}/g, function (whole, name) {
+        return __alloOneWord(String(out).replace(/\{(\w+)\}/g, function (whole, name) {
           return Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : whole;
-        });
+        }));
       };
       var React = ctx.React;
       var h = React.createElement;
@@ -6101,7 +9182,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var awardStemXP = ctx.awardXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so the AI exercise tab and Vocal Health Tips hide.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var isDark = ctx.isDark;
@@ -6147,6 +9233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var TABS = [
           { id: 'pitch', label: t('stem.singing.pitch_detective', 'Pitch Detective'), icon: '\uD83C\uDFAF' },
           { id: 'mirror', label: t('stem.singing.vs_tab_mirror', 'Voice Mirror'), icon: '\u2728' },
+          { id: 'library', label: t('stem.singing.vs_tab_library', 'Song Library'), icon: '🎶' },
           { id: 'range', label: t('stem.singing.vocal_range', 'Vocal Range'), icon: '\uD83C\uDFB9' },
           { id: 'vibrato', label: t('stem.singing.vibrato_lab', 'Vibrato Lab'), icon: '\uD83C\uDF0A' },
           { id: 'intervals', label: t('stem.singing.interval_singer', 'Interval Singer'), icon: '\uD83C\uDFB5' },
@@ -8108,8 +11195,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               )
             ),
 
-            // Vocal health tips
-            h('div', { className: cardClass },
+            // Vocal health tips (AI-generated)
+            callGemini && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-3 flex items-center gap-2' },
                 '\u2764\uFE0F', t('stem.singing.vocal_health_tips', 'Vocal Health Tips')),
 
@@ -8771,6 +11858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             var TAB_META = {
               pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: t('stem.singing.pitch_detective_2', 'Pitch Detective'),           hint: t('stem.singing.sing_into_the_mic_the_lab_tracks_frequ', 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.') },
               mirror:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\u2728', title: t('stem.singing.vs_tab_mirror_title', 'Voice Mirror — see your sound'), hint: t('stem.singing.vs_tab_mirror_hint', 'Sing or play and watch it become light: pitch, tuning, vibrato, steadiness and ring, with optional meters.') },
+              library:   { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '🎶', title: t('stem.singing.vs_tab_library_title', 'Song Library — sing with the piano'), hint: t('stem.singing.vs_tab_library_hint', 'Pick a public-domain song, hear it with piano, then sing along: every note is checked as it passes and you get a score and the spots to practise.') },
               range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: t('stem.singing.vocal_range_your_tessitura', 'Vocal Range — your tessitura'), hint: t('stem.singing.most_untrained_voices_span_1_5_2_octav', 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.') },
               vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: t('stem.singing.vibrato_lab_2', 'Vibrato Lab'),                hint: t('stem.singing.healthy_vibrato_5_7_hz_oscillation_60_', 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.') },
               intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: t('stem.singing.interval_singer_ear_training', 'Interval Singer — ear training'), hint: t('stem.singing.major_3rd_vs_minor_3rd_is_the_single_m', 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.') },
@@ -8811,6 +11899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           },
             activeTab === 'pitch' && renderPitchDetective(),
             activeTab === 'mirror' && h(VsVoiceMirror, vsProps('mirror')),
+            activeTab === 'library' && h(VsSongLibrary, vsProps('library')),
             activeTab === 'range' && renderVocalRange(),
             activeTab === 'vibrato' && renderVibratoLab(),
             activeTab === 'intervals' && renderIntervalSinger(),

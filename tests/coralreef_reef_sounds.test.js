@@ -360,7 +360,10 @@ describe('Reef sounds: accessibility and the shared-context rule', () => {
     const creates = (src.match(/new\s*\(?\s*(?:window\.)?(?:webkit)?AudioContext/g) || []).length;
     expect(creates).toBe(1);
     expect(src.split(HELPER).length - 1).toBe(creates);
-    expect(src).not.toMatch(/\.close\(\)/);
+    // The only allowed close() calls are the Printables print window (win.document.close() after
+    // writing the handout, win.close() if printing fails); nothing may close the AudioContext.
+    expect(src.replace(/\bwin\.document\.close\(\)|\bwin\.close\(\)/g, '')).not.toMatch(/\.close\(\)/);
+    expect(src.match(/\bwin\.document\.close\(\)|\bwin\.close\(\)/g) || []).toHaveLength(2);
     expect(src).not.toMatch(/\.suspend\(/);
     const start = src.indexOf('// ── Reef sounds'), end = src.indexOf('  function ExploreSection(props) {');
     const block = src.slice(start, end);

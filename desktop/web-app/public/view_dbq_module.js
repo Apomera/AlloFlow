@@ -381,11 +381,19 @@ function dbqCheckedFeedback(value, key, context) {
   }
   return result;
 }
+function _dbqAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
 function DbqView(props) {
   var generatedContent = props.generatedContent;
   var studentResponses = props.studentResponses;
   var handleStudentInput = props.handleStudentInput;
-  var callGemini = props.callGemini;
+  // Learners without usable AI get null so every AI helper hides and the non-AI step path runs.
+  var callGemini = !props.isTeacherMode && !_dbqAiUsable('text', props.callGemini) ? null : props.callGemini;
+  var dbqAiHidden = !props.isTeacherMode && !callGemini;
   var cleanJson = props.cleanJson;
   var addToast = props.addToast;
   var handleScoreUpdate = props.handleScoreUpdate;
@@ -1117,7 +1125,7 @@ function DbqView(props) {
     "data-dbq-listen": true,
     className: `text-[11px] font-bold px-2 py-1 rounded-full ${speakingDocId === activeDoc.id ? 'bg-red-200 hover:bg-red-300 text-red-800' : 'bg-blue-200 hover:bg-blue-300 text-blue-800'}`,
     "aria-label": speakingDocId === activeDoc.id ? t('a11y.stop_reading') || 'Stop reading' : t('a11y.read_aloud') || 'Read aloud'
-  }, speakingDocId === activeDoc.id ? '⏹️ ' + L('dbq.stop', 'Stop') : '🔊 ' + L('dbq.listen', 'Listen')), /*#__PURE__*/React.createElement("button", {
+  }, speakingDocId === activeDoc.id ? '⏹️ ' + L('dbq.stop', 'Stop') : '🔊 ' + L('dbq.listen', 'Listen')), !dbqAiHidden && /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (feedbackPending(`_docVocab_${activeDoc.id}`)) return;
       if (feedbackFor(`_docVocab_${activeDoc.id}`)) {
@@ -1313,7 +1321,7 @@ function DbqView(props) {
     "aria-label": L('dbq.reliability_reasoning_aria', 'Source reliability reasoning for Document {id}', {
       id: activeDoc.id
     })
-  }), (r[`_reliability_${activeDoc.id}`] || {}).reasoning?.trim() && /*#__PURE__*/React.createElement("button", {
+  }), !dbqAiHidden && (r[`_reliability_${activeDoc.id}`] || {}).reasoning?.trim() && /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (!callGemini) return;
       const request = beginFeedback(`_reliabilityAI_${activeDoc.id}`);
@@ -1398,7 +1406,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
     const hasAnyResponse = ['historical', 'audience', 'purpose', 'pointOfView'].some(k => docHapp[k]?.trim()) || (activeDoc.sourcingQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-sourcing-${qi}`]?.trim()) || (activeDoc.analysisQuestions || []).some((_, qi) => r[`doc-${activeDoc.id}-analysis-${qi}`]?.trim());
     const docFeedback = feedbackFor(`_docFeedback_${activeDoc.id}`);
     const feedbackLoading = docFeedback === 'loading';
-    return hasAnyResponse && /*#__PURE__*/React.createElement("div", {
+    return hasAnyResponse && !dbqAiHidden && /*#__PURE__*/React.createElement("div", {
       className: "space-y-3"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
@@ -1672,7 +1680,7 @@ Rules:
     const hasCorrobResponses = claims.some((_, ci) => corrobNotes[ci]?.trim()) || docs.some(d => ['claim', 'agree', 'disagree'].some(field => r['corrob-' + field + '-' + d.id]?.trim())) || (r._perspectiveResponse || '').trim();
     const corrobFb = feedbackFor('_corrobFeedback');
     const corrobLoading = corrobFb === 'loading';
-    return hasCorrobResponses && /*#__PURE__*/React.createElement("div", {
+    return hasCorrobResponses && !dbqAiHidden && /*#__PURE__*/React.createElement("div", {
       className: "space-y-3 mt-4"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
@@ -1807,7 +1815,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
     n: essayText.split(/\s+/).filter(Boolean).length
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 items-start"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, !dbqAiHidden && /*#__PURE__*/React.createElement("button", {
     onClick: async () => {
       if (!essayText.trim()) {
         addToast && addToast(t("toasts.write_essay_first"));

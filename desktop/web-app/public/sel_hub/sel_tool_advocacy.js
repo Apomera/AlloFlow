@@ -6018,6 +6018,159 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Scripted voice practice (no AI, 2026-11-04) ──
+  // One branching script per chosen VOICE_SCENARIOS id, in the shared
+  // AdventureOffline story format, played with AlloModules.AdventureOffline.Player
+  // (built-in fallback for older hosts). Braided: branches rejoin. Endings
+  // close with a short "What worked" debrief on asking a decision-maker.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an ending.
+  // ══════════════════════════════════════════════════════════════
+  function _advScript(title, rows) {
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: r[1], ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: r[1], ending: true, choices: [] };
+    }) };
+  }
+  var ADV_VOICE_SCRIPTS = {
+    vo1: _advScript('Asking Ms. Chen for Help', [
+      ['start', "Ms. Chen is stacking papers at her desk. 'Oh hi! I'm just getting things ready for next period. Did you need something, sweetie?' The reading test is on Friday, and you have been confused about the reading for three days.", [
+        ["'Um... never mind. It's okay.'", 'quiet'],
+        ["'Ms. Chen, I'm confused about the reading, and I need help before the test.'", 'clear'],
+        ["'This reading is too hard. It's not fair.'", 'upset']]],
+      ['quiet', "Ms. Chen smiles and goes back to her papers. You walk back to your seat. Your stomach feels tight. The test is still on Friday, and you are still confused. There are a few minutes before the bell.", [
+        ["Walk back and try again: 'Actually, I do need something.'", 'clear'],
+        ['Wait and hope it makes sense later.', 'end_wait']]],
+      ['upset', "Ms. Chen puts down her papers. 'Hmm. What part feels too hard?' She sounds kind, but she looks unsure what you want.", [
+        ["'I don't know. All of it.'", 'narrow'],
+        ["'The part about the main idea. I've been confused for three days.'", 'specific']]],
+      ['clear', "Ms. Chen turns to face you. 'Thank you for telling me. What part is confusing?'", [
+        ["'Finding the main idea. I read it, but I can't tell what's important.'", 'specific'],
+        ["'Everything, I guess.'", 'narrow']]],
+      ['narrow', "Ms. Chen nods. 'That's okay. Let's find where it gets tricky. Was it the first page, or later?' She waits for you.", [
+        ["Point to the page: 'Here. Where it talks about the river.'", 'specific'],
+        ["Shrug: 'I don't know.'", 'end_later']]],
+      ['specific', "'Ah, the main idea,' Ms. Chen says. 'Lots of people find that tricky. Thank you for being so clear.' She looks at the clock. 'I only have two minutes right now, though.'", [
+        ["'Could we look at it together at recess or after school?'", 'plan'],
+        ["'Oh. Okay, never mind then.'", 'end_later']]],
+      ['plan', "Ms. Chen smiles. 'Recess tomorrow works. Bring your reading. And thank you for asking. I wouldn't have known.'", [
+        ["'Thank you! I'll bring it. Can I also take the practice sheet home tonight?'", 'end_best'],
+        ["'Thanks. I'll come if I remember.'", 'end_later']]],
+      ['end_best', "At recess, Ms. Chen shows you a trick: after each paragraph, ask 'What is this mostly about?' You practice with the sheet that night. On Friday, the main idea questions make much more sense.\n\nWhat worked:\n• You said what you needed in one clear sentence.\n• You named the exact part that was hard, so she knew how to help.\n• You asked for a time that worked for both of you, and a way to practice.\n• Asking is a strength. Teachers can only help with what they know about."],
+      ['end_later', "Ms. Chen says, 'Sure, come find me sometime.' But 'sometime' is easy to forget, and Friday is coming fast. You did start the conversation, which is the hardest part.\n\nWhat worked:\n• You spoke up and told her you were confused. That took courage.\n• Next time, name the exact part that is hard, like 'the main idea.'\n• Ask for a specific time: 'Could we look at it at recess tomorrow?'"],
+      ['end_wait', "You decide to wait. On Friday, the main idea questions are still confusing. Ms. Chen never knew you needed help. You can still ask her after the test.\n\nWhat worked:\n• Noticing you are confused is the first step of speaking up for yourself.\n• A short script helps: 'I'm confused about ___. Can you help me before ___?'\n• Teachers are busy, but most really want to know when a student needs help."]
+    ]),
+    vo10: _advScript('Getting a New Seat', [
+      ['start', "Your desk is right by the door. Every time someone walks down the hallway, you lose your place. You raise your hand, and Mrs. Garcia comes over. 'I noticed you raised your hand. What do you need, sweetheart?'", [
+        ["'I want to move. This seat is the worst.'", 'want'],
+        ["'It's really noisy by the door, and it's hard for me to focus. Could I try a seat farther away?'", 'why'],
+        ["'Nothing. Sorry.'", 'nothing']]],
+      ['nothing', "Mrs. Garcia nods and walks to the next table. A loud group passes in the hallway, and you lose your place in your math again. There is still most of the class left.", [
+        ['Raise your hand again.', 'again'],
+        ['Put your head down and try to ignore the noise.', 'end_quiet']]],
+      ['again', "Mrs. Garcia comes back. 'Yes?' She waits for you to explain.", [
+        ["'The hallway noise makes me lose my place. It's hard to focus by the door.'", 'why'],
+        ["'Can I just sit somewhere else?'", 'want']]],
+      ['want', "Mrs. Garcia raises an eyebrow. 'I worked hard on my seating chart. Why do you want to move?'", [
+        ["'Because I just do.'", 'firm'],
+        ["'The noise from the hallway makes it hard to focus. I lose my place a lot.'", 'why']]],
+      ['firm', "'Then let's keep the chart for now,' Mrs. Garcia says. She isn't upset. She just doesn't know what the problem is.", [
+        ["'Wait. The real reason is the hallway noise. It makes it hard for me to focus.'", 'why'],
+        ['Shrug and go back to work.', 'end_quiet']]],
+      ['why', "Mrs. Garcia looks at the door, then back at you. 'Oh. I didn't realize the hallway was that loud from here. Thank you for telling me.' She thinks. 'I can't change the whole chart today, though.'", [
+        ["'Could I try the empty desk by the window, just for this week?'", 'trial'],
+        ["'Okay. Never mind.'", 'end_partial']]],
+      ['trial', "Mrs. Garcia smiles. 'A one-week try? I like that idea.' She points to the desk by the window. 'Let's see how it goes.'", [
+        ["'Thank you! Can we check on Friday if it's working?'", 'end_best'],
+        ["'Thanks!' and go move your things.", 'end_best']]],
+      ['end_best', "You move to the desk by the window for a one-week try. The hallway is still there, but it's much quieter here. You finish your math page for the first time this week, and on Friday you and Mrs. Garcia agree to keep the new seat.\n\nWhat worked:\n• You explained WHY, not just what you wanted. The reason is what changes minds.\n• You suggested a small, specific solution: one desk, one week.\n• A trial is easy for an adult to say yes to.\n• Checking in later means you can speak up again if something isn't working."],
+      ['end_partial', "Mrs. Garcia says she'll think about it. Now she knows the hallway is loud, which matters. But without a plan, nothing changes yet.\n\nWhat worked:\n• You told her the real reason. That is the most important part.\n• When an adult says 'not today,' offer a small idea: 'Could I try ___ just for this week?'\n• It's okay to bring it up again tomorrow."],
+      ['end_quiet', "You try to ignore the noise. Some days it works, and some days it doesn't. Mrs. Garcia still doesn't know what makes this seat hard for you.\n\nWhat worked:\n• You noticed what gets in the way of your focus. That's real self-knowledge.\n• Adults can't fix what they don't know about. Try: 'It's hard to focus because ___. Could I ___?'\n• You can still ask tomorrow."]
+    ]),
+    vo4: _advScript('Discussing Accommodations with Mr. Torres', [
+      ['start', "It's the end of class. Mr. Torres is erasing the board. 'Hey, what's up? I've got a few minutes before my next class. What can I do for you?' The midterm is next week, and he hasn't mentioned the extended time in your 504 plan.", [
+        ["'I have a 504 plan with extended time on tests. I wanted to make sure you know before the midterm.'", 'clear'],
+        ["'You're supposed to give me extra time. It's the law.'", 'demand'],
+        ["'Um, how long is the midterm?'", 'hint']]],
+      ['hint', "'The whole period, about fifty minutes,' he says. 'Why, are you worried about it?' He waits, but he has no idea what you are really asking.", [
+        ["'Kind of. I have a 504 plan that gives me extended time.'", 'clear'],
+        ["'No, just wondering.'", 'end_unsaid']]],
+      ['demand', "Mr. Torres's eyebrows go up. 'Whoa, okay. I haven't seen any paperwork about that. I'm new here.' He folds his arms. He isn't angry, but he isn't convinced either.", [
+        ["'Sorry, that came out strong. I do have a 504 plan. Can I tell you about it?'", 'clear'],
+        ["'Well, it's not my fault you didn't read it.'", 'stuck']]],
+      ['stuck', "Mr. Torres sighs. 'I'm not trying to keep anything from you. But I can't change how a test works because someone tells me to.' The conversation feels like a wall now.", [
+        ["Take a breath: 'You're right. Let me start over. I have a 504 plan, and I'm worried about the midterm.'", 'clear'],
+        ["Say 'whatever' and leave.", 'end_unsaid']]],
+      ['clear', "Mr. Torres puts the eraser down. 'Okay, thanks for telling me. I'm new, and I haven't seen all the plans yet. What does yours say?'", [
+        ["'Time and a half on tests, in a quieter room if possible. The counselor has a copy.'", 'specifics'],
+        ["'Just that I get more time. I don't really know the details.'", 'vague']]],
+      ['vague', "'More time, like how much?' Mr. Torres asks. 'I want to get this right, but I need to see it in writing.'", [
+        ["'I'm not sure. Could we ask the counselor to send you a copy?'", 'specifics'],
+        ["'Forget it. It's too complicated.'", 'end_unsaid']]],
+      ['specifics', "'Time and a half. Got it,' Mr. Torres says, writing it down. 'I'll check with the counselor today. So how should we handle the midterm?'", [
+        ["'Could I start in class and finish in your room at lunch?'", 'end_best'],
+        ["'Whatever you think.'", 'end_partial']]],
+      ['end_best', "Mr. Torres checks with the counselor that afternoon and emails to confirm: you'll start the midterm in class and finish in his room at lunch. You walk into the test knowing the plan.\n\nWhat worked:\n• You named your accommodation clearly and calmly, before the test, not after.\n• You gave specifics (time and a half) and said where the paperwork is.\n• You suggested a practical plan that works for him too.\n• A new teacher isn't the enemy. Clear information turned a doubter into a partner."],
+      ['end_partial', "Mr. Torres says he'll figure something out. He knows about your plan now, which is a big step. But on test day, you aren't sure where you'll go or when.\n\nWhat worked:\n• You told him about your 504 plan and gave him the details.\n• Finish with a specific ask: 'Could I finish at lunch in your room?'\n• You can follow up: 'Did you get a chance to talk to the counselor?'"],
+      ['end_unsaid', "You leave without settling anything. The midterm is still next week, and Mr. Torres still doesn't know what your plan says. There's time to try again, or to ask your counselor to help you have this talk.\n\nWhat worked:\n• Noticing the problem before the test gives you time to fix it.\n• A calm opener works better than a demand: 'I have a 504 plan and wanted to make sure you know.'\n• Your counselor or case manager can back you up. You don't have to do it alone."]
+    ]),
+    vo5: _advScript('Talking to Counselor Washington', [
+      ['start', "Counselor Washington's office has a stack of folders on every chair. 'Hi! Sorry about the wait. It's been a crazy week. What do you need help with?' Your new schedule put you in a class at the same time as your reading support group, and nobody asked you.", [
+        ["'My schedule is messed up. You need to fix it.'", 'demand'],
+        ["'My new schedule conflicts with my reading support group. I'd like to find a way to keep the group.'", 'clear'],
+        ["'It's fine. I can come back another time.'", 'leave']]],
+      ['leave', "She nods and turns back to her computer. Outside her door, you think about missing reading group next week. The bell won't ring for five more minutes.", [
+        ["Knock again: 'Actually, could I have two minutes? It's about my schedule.'", 'clear'],
+        ['Head to class and hope it sorts itself out.', 'end_none']]],
+      ['demand', "She pulls up your schedule. 'Okay. I see a lot of classes here. What exactly is wrong with it?' She's willing to help, but she has four hundred students and no idea what you mean.", [
+        ["'It's wrong. Anyone can see it's wrong.'", 'stuck'],
+        ["'My new class is at the same time as my reading support group.'", 'clear']]],
+      ['stuck', "She rubs her eyes. 'I want to help, but I need to know what the problem is and why it matters to you.'", [
+        ["Take a breath: 'Sorry. I'm frustrated. The class is during reading group, and that group really helps me.'", 'why'],
+        ["'Never mind.'", 'end_none']]],
+      ['clear', "Counselor Washington looks at your schedule. 'I see it. Third period is during reading group. Can you tell me why the group is important to you?'", [
+        ["'It's just a group. I don't know.'", 'vague'],
+        ["'It's helping. My reading scores went up, and it's the only time I get small-group help.'", 'why']]],
+      ['vague', "'Hmm,' she says. 'Third period is a required class. If I move things, I need a good reason to give the scheduling team.'", [
+        ["'My reading has gotten better since I started. My reading teacher could tell you.'", 'why'],
+        ["'Okay. I guess it can't be changed.'", 'end_partial']]],
+      ['why', "She sits up. 'That's exactly what I needed to know. Thank you.' She clicks through a few screens. 'There's another section of that class sixth period. Would that work?'", [
+        ["'Yes, that works. When will it change, and could you let my reading teacher know?'", 'end_best'],
+        ["'Sure.' Then leave.", 'end_partial']]],
+      ['end_best', "Counselor Washington moves you to sixth period and emails your reading teacher. She says it will be updated by Monday, and to come back if it isn't. You keep your reading group.\n\nWhat worked:\n• You named the exact problem: the class and the group meet at the same time.\n• You explained WHY it matters, with evidence: your reading went up.\n• You asked for a clear next step and who else should know.\n• A busy adult can move fast once she understands what you need and why."],
+      ['end_partial', "Counselor Washington says she'll look into it. But it lands on a tall pile, and next week you're still not sure which class you'll be in.\n\nWhat worked:\n• You went to the right person and named the problem.\n• Add the why: 'This group has helped my reading go up.'\n• Ask for a next step: 'When will I know?' Then follow up if you don't hear back."],
+      ['end_none', "You leave the office. Next week you miss reading group, and the counselor still doesn't know there's a problem. You can still go back, or ask your reading teacher to help you explain.\n\nWhat worked:\n• Noticing that a decision affects you is the start of self-advocacy.\n• A one-sentence opener helps: 'My schedule conflicts with ___, and I'd like to keep it.'\n• Busy adults still want to know. Two minutes is enough to start."]
+    ]),
+    vo8: _advScript('Discussing a Grade with Professor Kim', [
+      ['start', "Professor Kim's classroom is quiet after school. 'You wanted to discuss your paper grade? I have about fifteen minutes. What questions do you have?' Your paper and the rubric are in your bag.", [
+        ["'I worked really hard on this. A C-minus isn't fair.'", 'complaint'],
+        ["'I'd like to understand my analysis score. Can I show you where I think I met the rubric?'", 'specific'],
+        ["'Never mind, it's fine.'", 'leave']]],
+      ['complaint', "Professor Kim's face goes neutral. 'Effort matters, but I grade the work against the rubric. What, specifically, do you think was graded incorrectly?'", [
+        ["'All of it, basically. Other people got B's.'", 'defensive'],
+        ["Take out the rubric: 'The analysis section. Here's what I mean.'", 'specific']]],
+      ['defensive', "'I don't discuss other students' grades,' she says firmly. 'If you want me to look again, I need to see what you're pointing to.' She glances at the clock.", [
+        ["'Okay, fair. Let me show you the rubric and page three.'", 'specific'],
+        ["'Forget it. You won't change it anyway.'", 'end_leave']]],
+      ['leave', "Professor Kim nods. 'All right. My door is open if you change your mind.' You stand in the hallway holding your paper. The rubric is still in your bag.", [
+        ["Go back in: 'Actually, I do have a question about the analysis score.'", 'specific'],
+        ['Walk to your locker.', 'end_leave']]],
+      ['specific', "You point to the rubric. 'For full analysis credit, it says to connect evidence to the claim in every section. On pages three and five, I tried to do that, here and here.' Professor Kim reads quietly.", [
+        ['Wait while she reads.', 'reread'],
+        ["'So you agree it should be higher, right?'", 'push']]],
+      ['push', "'I haven't finished reading,' she says, a little sharper. 'Give me a moment.'", [
+        ["'Sorry. Take your time.'", 'reread'],
+        ["'I just think it's obvious.'", 'end_partial']]],
+      ['reread', "Professor Kim nods slowly. 'You're right that page three connects the evidence. Page five is thinner: the quote isn't explained.' She taps the paper. 'I can raise the analysis score partly, not fully.'", [
+        ["'Thank you. What would full credit on page five look like? Could I revise it?'", 'end_best'],
+        ["'Only partly? That's still not fair.'", 'end_partial']]],
+      ['end_best', "Professor Kim raises the analysis score and shows you what a full-credit explanation looks like. She lets you revise page five for half of the missing points by Friday. You leave with a better grade and a clear idea of what she wants.\n\nWhat worked:\n• You came with evidence: the rubric and the exact pages.\n• You asked to understand the grade, not just to change it.\n• You gave her time to read, which kept the talk calm.\n• Asking 'what would full credit look like?' turned one grade into a plan for the next paper."],
+      ['end_partial', "Professor Kim says she'll think about it, but the talk ends tense. She may adjust a few points, and you still aren't sure what she wants next time.\n\nWhat worked:\n• You brought the rubric and pointed to real evidence. That was strong.\n• Pushing for agreement before she finished reading made her defensive.\n• When an adult gives you part of what you asked for, try: 'Thank you. What would make it full credit?'"],
+      ['end_leave', "You leave without discussing it. The grade stays a C-minus, and you still don't know what the analysis section needed. You can still email her to set up a time.\n\nWhat worked:\n• Reading the rubric and noticing a mismatch is a real skill.\n• 'It's not fair' closes doors; 'Can you help me understand this score?' opens them.\n• Bring evidence: the exact rubric line and the exact page."]
+    ])
+  };
+
+  // ══════════════════════════════════════════════════════════════
   // ── Power Phrases (quick-reference advocacy language) ──
   // ══════════════════════════════════════════════════════════════
   var POWER_PHRASES = {
@@ -6363,9 +6516,10 @@ window.SelHub = window.SelHub || {
     { id: 'script_5',           icon: '\uD83D\uDCDC', name: 'Script Master',          desc: 'Complete 5 advocacy scripts' },
     { id: 'first_rights',       icon: '\u2696\uFE0F', name: 'Rights Explorer',        desc: 'Explore your first rights card' },
     { id: 'rights_all',         icon: '\uD83D\uDCDA', name: 'Rights Scholar',         desc: 'Explore all rights in your grade band' },
-    { id: 'first_voice',        icon: '\uD83C\uDFA4', name: 'Voice Found',            desc: 'Complete your first AI voice practice' },
-    { id: 'voice_resolved',     icon: '\uD83C\uDF89', name: 'Heard & Understood',     desc: 'Successfully advocate in voice practice' },
-    { id: 'voice_5',            icon: '\uD83C\uDF1F', name: 'Confident Speaker',      desc: 'Complete 5 voice practice sessions' },
+    { id: 'first_voice',        icon: '\uD83C\uDFA4', name: 'Voice Found',            desc: 'Complete your first AI voice practice', aiOnly: true },
+    { id: 'voice_resolved',     icon: '\uD83C\uDF89', name: 'Heard & Understood',     desc: 'Successfully advocate in voice practice', aiOnly: true },
+    { id: 'voice_5',            icon: '\uD83C\uDF1F', name: 'Confident Speaker',      desc: 'Complete 5 voice practice sessions', aiOnly: true },
+    { id: 'voice_scripted',     icon: '🎬', name: 'Practice Run',           desc: 'Finish a scripted voice practice' },
     { id: 'total_10',           icon: '\uD83C\uDFC6', name: 'Advocacy Champion',      desc: 'Complete 10 activities across all tabs' },
     { id: 'total_20',           icon: '\uD83D\uDC8E', name: 'Advocacy Leader',        desc: 'Complete 20 activities across all tabs' },
     { id: 'phrase_explorer',    icon: '\uD83D\uDCAC', name: 'Phrase Collector',       desc: 'Practice 5 power phrases' },
@@ -11079,6 +11233,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
     desc: 'Learn to speak up for your needs with advocacy scenarios, script templates, rights education, and AI-powered voice practice.',
     color: 'indigo',
     category: 'self-awareness',
+    // Voice tab plays scripted practice without AI.
+    offlineScripts: ADV_VOICE_SCRIPTS,
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _advT = (ctx && ctx.theme) || {};
@@ -11104,6 +11260,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _advAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand || 'elementary';
       var onSafetyFlag = ctx.onSafetyFlag || null;
 
@@ -11266,6 +11423,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _advAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
       var advocacyBadgeDialogRef = React.useRef(null);
@@ -11393,6 +11552,17 @@ var TRAUMA_INFORMED_ADVOCACY = [
         { id: 'print',     label: '\uD83D\uDDA8 Print' }
       ];
 
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _advTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var advTs = (_advTsApi && typeof _advTsApi.bind === 'function') ? _advTsApi.bind({ ctx: ctx, h: h, toolId: 'advocacy', d: d, set: upd, announce: announceToSR,
+        aiTopic: 'a realistic conversation where a student asks an adult for what they need',
+        aiExtra: 'Choices are things the student could say; scenes show how the adult responds. Never diagnose, and never tell the student they must disclose a disability.' }) : null;
+      var advStartTeacher = function(s) {
+        upd({ voMode: 'scripted', voScriptKey: s.key, voScriptRun: (d.voScriptRun || 0) + 1, voScriptPath: null, voScriptEnding: null, voScriptReflectDraft: '', voScriptReflectSaved: false });
+        if (soundEnabled) sfxClick();
+        if (announceToSR) announceToSR('Scripted practice started: ' + (s.title || advTs.from) + '.');
+      };
+
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
@@ -11411,7 +11581,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
           })
         ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8'), position: 'relative' } },
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8'), position: 'relative' } },
           '\uD83C\uDFC5',
           Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _advSolid(ACCENT), color: _advFg('#fff'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
         )
@@ -11471,9 +11641,9 @@ var TRAUMA_INFORMED_ADVOCACY = [
         badgePopup = h('div', { ref: advocacyBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'advocacy-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeAdvocacyBadgeDialogs(); } },
           h('div', { style: { position: 'relative', background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
             h('button', { 'aria-label': 'Close badges panel', onClick: closeAdvocacyBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _advBg('#334155'), color: _advFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
-            h('h3', { id: 'advocacy-badges-panel-title', style: { textAlign: 'center', color: _advFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { id: 'advocacy-badges-panel-title', style: { textAlign: 'center', color: _advFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _advBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 } },
                   h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, earned ? b.icon : '\uD83D\uDD12'),
@@ -13454,7 +13624,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
       // ── TAB: Voice Practice (AI-powered advocacy role-play) ──
       // ══════════════════════════════════════════════════════════
       var voiceContent = null;
-      if (activeTab === 'voice') {
+      // Voice Ops (AI authority figures) is hidden without AI; the Voice tab keeps its quote decks.
+      if (activeTab === 'voice' && _advAiOn && voMode !== 'scripted') {
         var voScenarios = VOICE_SCENARIOS[band] || VOICE_SCENARIOS.elementary;
         var curVo = voScenarios[voScenarioIdx % voScenarios.length];
 
@@ -13486,7 +13657,12 @@ var TRAUMA_INFORMED_ADVOCACY = [
           voiceContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _advFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFA4 Voice Practice'),
             h('p', { style: { textAlign: 'center', color: _advFg('#94a3b8'), fontSize: 12, marginBottom: 16 } }, 'Practice advocating with AI-powered authority figures. Build confidence through conversation.'),
+            advTs ? advTs.renderSection({ onPlay: advStartTeacher }) : null,
             voCompleted > 0 && h('div', { style: { textAlign: 'center', color: _advFg('#94a3b8'), fontSize: 11, marginBottom: 12 } }, voCompleted + ' sessions completed'),
+            h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+              h('button', { 'data-adv-scripted-mode': 'true', onClick: function() { upd({ voMode: 'scripted', voScriptKey: null }); if (soundEnabled) sfxClick(); },
+                style: { minHeight: 40, padding: '8px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _advFg('#cbd5e1'), fontWeight: 600, fontSize: 12, cursor: 'pointer' } }, '🎬 Scripted practice (no AI)')
+            ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               voScenarios.map(function(sc, si) {
                 return h('button', { 
@@ -13566,7 +13742,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
 
           function sendVoMessage() {
             var userMsg = voInputText.trim();
-            if (!userMsg || voLoading) return;
+            if (!userMsg || voLoading || !_advAiOn) return;
             var newHistory = voChatHistory.concat([{ role: 'user', text: userMsg }]);
             upd({ voChatHistory: newHistory, voLoading: true, voTurnCount: voTurnCount + 1, voInputText: '' });
 
@@ -13690,6 +13866,139 @@ var TRAUMA_INFORMED_ADVOCACY = [
             )
           );
         }
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Voice Practice, scripted (no AI, 2026-11-04) ──
+      // Without AI this replaces the AI voice practice; with AI it is an option.
+      // Zero AI calls: AdventureOffline is pure UI; safety is the local regex check.
+      // ══════════════════════════════════════════════════════════
+      if (activeTab === 'voice' && (!_advAiOn || voMode === 'scripted')) {
+        voiceContent = (function() {
+          var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+          var aoTheme = _advHC ? 'contrast' : (_advL ? 'light' : 'dark');
+          var aoT = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
+          var all = [].concat(VOICE_SCENARIOS.elementary, VOICE_SCENARIOS.middle, VOICE_SCENARIOS.high);
+          var entries = [];
+          Object.keys(ADV_VOICE_SCRIPTS).forEach(function(k) { all.forEach(function(sc) { if (sc.id === k) entries.push({ key: k, sc: sc, story: ADV_VOICE_SCRIPTS[k] }); }); });
+          // This grade band's scenes first; the rest stay playable.
+          entries.sort(function(a, b) { return (a.sc.band === band ? 0 : 1) - (b.sc.band === band ? 0 : 1); });
+          var done = d.voScriptDone || {};
+          var foundFor = function(key) { return Object.keys(done).filter(function(x) { return x.indexOf(key + ':') === 0; }).length; };
+          var endCount = function(story) { return story.scenes.filter(function(s) { return s.ending; }).length; };
+          var cur = null;
+          entries.forEach(function(e) { if (e.key === d.voScriptKey) cur = e; });
+          var curTs = advTs ? advTs.byKey(d.voScriptKey) : null;
+          if (curTs) cur = { key: curTs.key, ts: curTs, sc: { title: curTs.title || advTs.from }, story: curTs.story };
+          var btnBase = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: _advFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+          var btnMain = Object.assign({}, btnBase, { border: 'none', background: _advSolid(ACCENT), color: _advFg('#fff') });
+          var crisis = ((d._voScriptTier || 0) >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null;
+          var say = function(msg) { if (announceToSR) announceToSR(msg); };
+
+          if (!cur) {
+            return h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, justifyContent: 'center' } },
+                _advAiOn ? h('button', { 'aria-label': 'Back to AI voice practice', onClick: function() { upd('voMode', null); }, style: { background: 'none', border: 'none', color: _advFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '←') : null,
+                h('h3', { style: { margin: 0, color: _advFg('#f1f5f9'), fontSize: 18 } }, '🎤 Voice Practice')
+              ),
+              h('p', { style: { textAlign: 'center', color: _advFg('#94a3b8'), fontSize: 12, marginBottom: 16 } }, 'Practice asking for what you need. Choose what to say and see how the adult responds. Replay to find every ending.'),
+              advTs ? advTs.renderSection({ onPlay: advStartTeacher }) : null,
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                entries.map(function(e) {
+                  return h('button', { key: e.key, 'data-adv-script-card': e.key,
+                    onClick: function() { upd({ voScriptKey: e.key, voScriptRun: (d.voScriptRun || 0) + 1, voScriptPath: null, voScriptEnding: null, voScriptReflectDraft: '', voScriptReflectSaved: false }); if (soundEnabled) sfxClick(); say('Scripted practice started: ' + e.sc.title + '.'); },
+                    style: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 12, border: '1px solid #334155', background: _advBg('#1e293b'), cursor: 'pointer', textAlign: 'left' }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 28, flexShrink: 0 } }, e.sc.authority.emoji),
+                    h('div', null,
+                      h('div', { style: { fontSize: 14, fontWeight: 700, color: _advFg('#f1f5f9'), marginBottom: 2 } }, e.sc.title),
+                      h('div', { style: { fontSize: 12, color: _advFg('#94a3b8'), lineHeight: 1.4 } }, e.sc.desc),
+                      h('div', { style: { fontSize: 11, color: _advFg('#94a3b8'), marginTop: 4 } }, e.sc.authority.role + ': ' + e.sc.authority.name + ' · Endings found: ' + foundFor(e.key) + ' of ' + endCount(e.story))
+                    )
+                  );
+                })
+              )
+            );
+          }
+
+          var sceneById = function(id) { for (var i = 0; i < cur.story.scenes.length; i++) { if (cur.story.scenes[i].id === id) return cur.story.scenes[i]; } return null; };
+          var reachEnding = function(endId) {
+            var next = Object.assign({}, done);
+            var first = foundFor(cur.key) === 0;
+            next[cur.key + ':' + endId] = true;
+            upd({ voScriptEnding: endId, voScriptDone: next, voScriptReflectSaved: false });
+            if (first) {
+              // The SEL hub's awardXP takes (amount). XP once per scene.
+              if (typeof awardXP === 'function') awardXP(10);
+              logPractice('voice', cur.key);
+              tryAwardBadge('voice_scripted');
+            }
+            say('Ending reached. Read what worked, then reflect.');
+          };
+          // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+          var onPlayerClick = function(ev) {
+            var el = ev && ev.target && ev.target.closest ? ev.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+            if (!el) return;
+            var to = el.getAttribute('data-offline-choice');
+            var target = to ? sceneById(to) : null;
+            if (target && target.ending) reachEnding(to);
+            else if (d.voScriptEnding) upd('voScriptEnding', null);
+          };
+          // Built-in player for an older host without AdventureOffline.
+          var fallbackPlayer = function() {
+            var path = (Array.isArray(d.voScriptPath) ? d.voScriptPath : []).filter(function(id) { return !!sceneById(id); });
+            if (!path.length) path = [cur.story.start];
+            var scn = sceneById(path[path.length - 1]);
+            var go = function(to) { upd('voScriptPath', path.concat([to])); var t2 = sceneById(to); if (t2 && t2.ending) reachEnding(to); };
+            return h('section', { 'data-adv-fallback-player': 'true', 'aria-label': cur.story.title, style: { background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 18 } },
+              h('h3', { style: { margin: '0 0 10px', fontSize: 16, fontWeight: 800, color: _advFg('#f1f5f9') } }, scn.ending ? 'The end' : 'Step ' + path.length),
+              h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: _advFg('#e2e8f0') } }, scn.text),
+              !scn.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 14 } },
+                scn.choices.map(function(c, i) { return h('button', { key: i, 'data-adv-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, btnBase, { textAlign: 'left', fontWeight: 600 }) }, c.label); })),
+              h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
+                h('button', { disabled: path.length < 2, onClick: function() { upd({ voScriptPath: path.slice(0, -1), voScriptEnding: null }); }, style: btnBase }, '← Back'),
+                h('button', { disabled: path.length < 2, onClick: function() { upd({ voScriptPath: [cur.story.start], voScriptEnding: null }); }, style: scn.ending ? btnMain : btnBase }, scn.ending ? '↺ Play again' : '↺ Start over'))
+            );
+          };
+          var player = (AO && typeof AO.Player === 'function')
+            ? h(AO.Player, { key: cur.key + ':' + (d.voScriptRun || 0), story: cur.story, t: aoT, theme: aoTheme })
+            : fallbackPlayer();
+          var draft = String(d.voScriptReflectDraft || '');
+          return h('div', { style: { padding: 20, maxWidth: 620, margin: '0 auto' } },
+            crisis,
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+              h('button', { onClick: function() { upd({ voScriptKey: null, voScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _advFg('#94a3b8') }) }, '← All practices'),
+              h('div', null,
+                h('h3', { style: { margin: 0, fontSize: 17, color: _advFg('#f1f5f9') } }, cur.sc.title),
+                h('div', { style: { fontSize: 12, color: _advFg('#94a3b8') } }, cur.ts ? advTs.from : cur.sc.authority.emoji + ' ' + cur.sc.authority.name + ', ' + cur.sc.authority.role)
+              )
+            ),
+            cur.ts ? advTs.renderIntro(cur.ts) : null,
+            h('div', { 'data-adv-script-player': cur.key, onClick: onPlayerClick }, player),
+            h('p', { style: { fontSize: 11, color: _advFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundFor(cur.key) + ' of ' + endCount(cur.story)),
+            d.voScriptEnding ? h('div', { 'data-adv-reflect': 'true', style: { background: _advBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14 } },
+              h('label', { htmlFor: 'adv-reflect-script', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _advFg('#f1f5f9'), marginBottom: 6 } }, '✍️ Reflect'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: _advFg('#cbd5e1'), lineHeight: 1.5 } }, 'What did you ask for, and what made it easier for the adult to say yes? Write one sentence you could use to ask for something you need.'),
+              h('textarea', { id: 'adv-reflect-script', value: draft, rows: 3, maxLength: 2000,
+                onChange: function(e) { upd('voScriptReflectDraft', e.target.value); },
+                style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #475569', background: _advBg('#0f172a'), color: _advFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+                h('button', { 'data-adv-reflect-save': 'true', disabled: !draft.trim(), style: btnMain, onClick: function() {
+                  var txt = draft.trim();
+                  if (!txt) return;
+                  if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                    var chk = window.SelHub.safeRehearseCheck(txt, { toolId: 'advocacy', onSafetyFlag: onSafetyFlag });
+                    if (chk && chk.action === 'block') { upd('_voScriptTier', 3); say('Please use the support resources on this screen.'); }
+                  }
+                  var list = (Array.isArray(d.voScriptReflections) ? d.voScriptReflections : []).concat([{ scenarioId: cur.key, ending: d.voScriptEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+                  upd({ voScriptReflections: list, voScriptReflectDraft: '', voScriptReflectSaved: true });
+                  say('Reflection saved.');
+                } }, 'Save reflection'),
+                d.voScriptReflectSaved ? h('span', { role: 'status', style: { fontSize: 12, color: _advFg('#94a3b8') } }, 'Saved to your work.') : null
+              )
+            ) : null
+          );
+        })();
       }
 
       // ══════════════════════════════════════════════════════════
@@ -14533,7 +14842,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
             ), '#a78bfa'));
       }
       // Voice: mentors, quotes, affirmations.
-      if (activeTab === 'voice' && voiceContent) {
+      if (activeTab === 'voice' && advTs && advTs.editing) voiceContent = advTs.renderEditor();
+      if (activeTab === 'voice' && (voiceContent || !_advAiOn)) {
         voiceContent = h('div', null, voiceContent,
           _advW_panel('voices', 'Voices to borrow when yours is quiet', 'Words from people who advocated before you. Use them when you need them; put them down when you do not.',
             h('div', null,
@@ -14595,6 +14905,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
       return h('div', { className: 'selh-advocacy', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('advocacy', h, ctx) : null),
         tabBar,
+        (advTs && activeTab !== 'voice') ? advTs.renderJump({ onOpen: function() { upd({ activeTab: 'voice', voMode: 'scripted', voScriptKey: null }); } }) : null,
         heroBand,
         badgePopup,
         renderAdvocacyConfirm(),

@@ -35,7 +35,6 @@ describe('the setting reaches every emitting path in the audit', () => {
     'quiz (reflection field)': `_xlate.enabled ? { text: 'Reflection prompt', text_en:`,
     'quiz (translation field directive)': `_xlate.enabled ? \`For every question, option, and reflection`,
     'quiz (answer explanation)': `_xlate.enabled ? \`- After the explanation`,
-    'analysis': `const isTranslatedAnalysis = _xlate.enabled && !usesLocalTextBackend;`,
     'faq': `_xlate.enabled ? \`Provide \${glossLang} translations for every question and answer.\``,
     'brainstorm': `_xlate.enabled ? \`Provide \${glossLang} translations for all text.\``,
     'timeline': `_xlate.enabled ? \`Provide \${glossLang} translations for all labels`,
@@ -81,10 +80,16 @@ describe('the setting reaches every emitting path in the audit', () => {
     expect(dispatcher).toMatch(/buildLessonPlanPrompt\(context(?: \+ _unitPathBlock)?, assetManifest, effectiveLanguage/);
   });
 
-  it('the analysis path no longer reads the app UI language', () => {
-    // Audit row 10: the leak Aaron suspected.
-    expect(dispatcher).not.toContain("const targetUiLang = currentUiLanguage || 'English';");
-    expect(dispatcher).toContain('const targetUiLang = _xlate.target || effectiveLanguage;');
+  it('the source check: findings in the app language, passage in the output language, no automatic second report', () => {
+    // Audit row 10 (2026-08-16) was a report translated into the UI language whatever the
+    // setting said. Decided 2026-11-03: the findings are teacher notes, so they are WRITTEN in
+    // the app language and no second-language report is made; other report languages are on
+    // demand (Translate). Students' passage follows the output language, as resources do.
+    expect(dispatcher).toContain("const analysisReportLanguage = _nativeAppLanguage || 'English';");
+    expect(dispatcher).toContain('grammar notes) in ${analysisReportLanguage}.');
+    expect(dispatcher).not.toContain('isTranslatedAnalysis');
+    expect(dispatcher).not.toContain('reportTranslations[${JSON.stringify(');
+    expect(dispatcher).toContain("_passageTranslator({ type: 'analysis', data: content, studentSources: _inputStudentRecord }, effectiveLanguage,");
   });
 
   it('the shared bilingual pipeline spends no second call when translations are off', async () => {

@@ -1,5 +1,9 @@
 // Image changes use the host's resource/entry task, shared with AI generation.
 // Mulberry is fetched only when its picker opens, a search is submitted, or a result is selected.
+// Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function glossaryAiDoor(kind, t) {
+  try { return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null; } catch (_) { return null; }
+}
 const GLOSSARY_IMAGE_TYPES = /^image\/(png|jpeg|gif|webp|avif)$/i;
 function readGlossaryImageFile(file, signal, allowSvg = false) {
   if (!file || !(GLOSSARY_IMAGE_TYPES.test(file.type) || (allowSvg && file.type === 'image/svg+xml'))) return Promise.reject(new Error('Choose a PNG, JPEG, GIF, WebP, or AVIF image.'));
@@ -170,6 +174,7 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
   const [error, setError] = React.useState('');
   const [undo, setUndo] = React.useState(null);
   const [description, setDescription] = React.useState(glossaryCurrentDescription(item));
+  const aiDoor = glossaryAiDoor('images', t);
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const openerRef = React.useRef(null);
@@ -327,7 +332,8 @@ function GlossaryImageControls({ item, index, canEdit, beginTask, onGenerate, ge
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-describedby={uploadHelpId} onClick={() => inputRef.current?.click()}>{text('glossary.images.upload', 'Upload image')}</button>
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'mulberry'} onClick={openMulberry}>{text('glossary.images.mulberry', 'Find Mulberry symbol')}</button>
         <button type="button" className={buttonClass} disabled={working || !beginTask} aria-pressed={mode === 'photos'} onClick={() => { stopSearch(); setError(''); setStatus(''); setMode('photos'); }}>{text('glossary.images.photo', 'Find photo')}</button>
-        <button type="button" className={buttonClass} disabled={working || !onGenerate} onClick={generate}>{text('glossary.images.generate', 'Generate image')}</button>
+        <button type="button" className={buttonClass} disabled={working || !onGenerate || !!aiDoor?.disabled} title={aiDoor?.title || undefined} onClick={generate}>{text('glossary.images.generate', 'Generate image')}</button>
+        {aiDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} kind="images" />}
       </div>
       <p id={uploadHelpId} className="mb-4 text-xs text-slate-600">{text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')}</p>
       {mode === 'mulberry' ? <section aria-label={text('glossary.images.mulberry_section_aria', 'Mulberry symbols for {term}').replace('{term}', item.term)}>

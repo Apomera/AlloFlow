@@ -191,3 +191,62 @@ describe('actual per-clip preflight effect', () => {
     expect(h.state.report.ready).toBe(1);
   });
 });
+
+describe('AI-off start gate: whole-word clips may fall back to the device voice, pieces may not', () => {
+  const structuralSource = between('      const structuralPreparedAudioBlocked =', '      const playbackPreparedAudioBlocked =');
+  function derive(words, activities = ['blending']) {
+    const helperSource = between('    const syllableCountWordKey =', '    // SyllableCountingView');
+    const helpers = new Function('WS_CORE', 'window', helperSource + '\nreturn {syllableCountAudioFor,syllableCountContextKey};')(core, {});
+    const env = { React: { useMemo: fn => fn(), useCallback: fn => fn }, preloadedWords: words, WS_CORE: core, wordSoundsLanguage: 'en-US',
+      ...helpers, activitySequence: activities, wordSoundsActivity: activities[0], selectedVoice: '', currentWordSoundsWord: words[0]?.word,
+      wordSoundsPhonemes: words[0], wordSoundsAudioLibrary: {}, syllableCountAudioRef: { current: null }, syllableCountContextRef: { current: null },
+      syllableCountAttemptRef: { current: 0 }, syllableCountResponsesRef: { current: [] }, syllableCountDeliveryRef: { current: null }, advanceEpochRef: { current: 0 } };
+    return new Function(...Object.keys(env), `${manifestSource}\nreturn { preparedAudioCoverage, preparedAudioMissingPieceClip };`)(...Object.values(env));
+  }
+  function blocked(derived, { runtimeAiAllowed = false, callTTS = async () => null } = {}) {
+    return new Function('runtimeAiAllowed', 'preparedAudioCoverage', 'preparedAudioMissingPieceClip', 'callTTS',
+      `${structuralSource}\nreturn structuralPreparedAudioBlocked;`)(runtimeAiAllowed, derived.preparedAudioCoverage, derived.preparedAudioMissingPieceClip, callTTS);
+  }
+  const GOOD = { mime: 'audio/wav', base64: 'GOOD' };
+
+  it('a missing whole word (even a one-syllable word listed as its own syllable) does not block when a device voice exists', () => {
+    const derived = derive([{ targetWord: 'cat', syllables: ['cat'], phonemes: ['k', 'a', 't'], _ttsRequiredKeys: ['cat', 'which word did you hear?'],
+      _ttsAssets: { 'which word did you hear?': GOOD } }]);
+    expect(derived.preparedAudioCoverage).toEqual({ ready: 1, total: 2, missing: 1 });
+    expect(derived.preparedAudioMissingPieceClip).toBe(false);
+    expect(blocked(derived)).toBe(false);
+  });
+  it('a missing sentence or instruction clip does not block either', () => {
+    const derived = derive([{ targetWord: 'cat', _ttsRequiredKeys: ['cat', 'read the sentence. which word finishes it?'], _ttsAssets: { cat: GOOD } }]);
+    expect(derived.preparedAudioMissingPieceClip).toBe(false);
+    expect(blocked(derived)).toBe(false);
+  });
+  it('still blocks when there is no usable device voice (null or host-blocked callTTS)', () => {
+    const derived = derive([{ targetWord: 'cat', _ttsAssets: {} }]);
+    expect(derived.preparedAudioMissingPieceClip).toBe(false);
+    expect(blocked(derived, { callTTS: null })).toBe(true);
+    const blockedFn = async () => null; blockedFn._alloQrBlocked = true;
+    expect(blocked(derived, { callTTS: blockedFn })).toBe(true);
+  });
+  it('blocks when a syllable piece the activity needs is missing', () => {
+    const derived = derive([{ targetWord: 'sunset', syllables: ['sun', 'set'], _ttsRequiredKeys: ['sunset', 'sun', 'set'],
+      activityItems: { syllable_blending: { syllables: ['sun', 'set'], audioUnits: [{ key: 'sun', text: 'sun' }, { key: 'set', text: 'set' }] } },
+      _ttsAssets: { sunset: GOOD, sun: GOOD } }], ['syllable_blending']);
+    expect(derived.preparedAudioCoverage.missing).toBe(1);
+    expect(derived.preparedAudioMissingPieceClip).toBe(true);
+    expect(blocked(derived)).toBe(true);
+  });
+  it('blocks when a phoneme-like clip is missing (single letter, digraph, IPA, slash-marked, vowel-less chunk)', () => {
+    for (const piece of ['k', 'sh', 'ʃ', '/b/', 'bl']) {
+      const derived = derive([{ targetWord: 'cat', _ttsRequiredKeys: ['cat', piece], _ttsAssets: { cat: GOOD } }]);
+      expect(derived.preparedAudioMissingPieceClip, piece).toBe(true);
+      expect(blocked(derived), piece).toBe(true);
+    }
+  });
+  it('never blocks when runtime AI is allowed or nothing is missing', () => {
+    const missing = derive([{ targetWord: 'cat', _ttsRequiredKeys: ['cat', 'sh'], _ttsAssets: {} }]);
+    expect(blocked(missing, { runtimeAiAllowed: true, callTTS: null })).toBe(false);
+    const complete = derive([{ targetWord: 'cat', _ttsAssets: { cat: GOOD } }]);
+    expect(blocked(complete, { callTTS: null })).toBe(false);
+  });
+});

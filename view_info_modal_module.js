@@ -273,6 +273,8 @@ const OSS_CREDITS = [
       { name: "lz-string", use: "compressing saved work", license: "MIT", url: "https://github.com/pieroxy/lz-string" },
       { name: "idb-keyval", use: "offline browser storage", license: "Apache-2.0", url: "https://github.com/jakearchibald/idb-keyval" },
       { name: "jsdiff", use: "comparing text revisions", license: "BSD-3-Clause", url: "https://github.com/kpdecker/jsdiff" },
+      { name: "CMU Pronouncing Dictionary", use: "syllable counts and stress for Word Sounds and syllable checking", license: "BSD-2-Clause", url: "https://github.com/cmusphinx/cmudict" },
+      { name: "Moby Hyphenator (Grady Ward)", use: "English syllable divisions", license: "Public domain", url: "https://www.gutenberg.org/ebooks/3204" },
       { name: "jsonrepair", use: "repairing AI-generated JSON", license: "ISC", url: "https://github.com/josdejong/jsonrepair" },
       { name: "lamejs", use: "MP3 audio encoding", license: "LGPL-3.0", url: "https://github.com/zhuker/lamejs" },
       { name: "DragDropTouch", use: "touch drag-and-drop on tablets", license: "MIT", url: "https://github.com/Bernardo-Castilho/dragdroptouch" }
@@ -1583,6 +1585,7 @@ function InfoModal({
       type: "button",
       onClick: () => {
         safeRemoveItem("allo_wizard_completed");
+        safeRemoveItem("allo_path_fork_skip");
         setShowWizard(true);
         setShowInfoModal(false);
       },
@@ -1591,7 +1594,7 @@ function InfoModal({
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, "aria-hidden": "true" }),
     " ",
     t("about.reset_wizard")
-  ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t })) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t, onRequestClose: handleSetShowInfoModalToFalse }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t }), /* @__PURE__ */ React.createElement("div", { "data-dedication": true, className: "pt-3 border-t border-slate-200 text-center text-xs text-slate-600 italic space-y-1" }, /* @__PURE__ */ React.createElement("p", null, t("about.maker") || "Made by Dr. Aaron Pomeranz, a school psychologist in Portland, Maine."), /* @__PURE__ */ React.createElement("p", null, t("about.dedication") || "For my father, Dr. Robert Pomeranz: teacher, doctor, and sci-fi nerd. He set out to repair the world, and in his own way, he did."))) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t, onRequestClose: handleSetShowInfoModalToFalse }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left motion-safe:duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: featureBackRef,

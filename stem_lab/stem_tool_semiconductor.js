@@ -1387,7 +1387,12 @@ window.StemLab = window.StemLab || {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so every "AI Explain" button hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -2069,7 +2074,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!d.showFermi, onChange: function() { upd('showFermi', !d.showFermi); }, className: 'accent-orange-500' }),
               t('stem.semiconductor.fermi_level', 'Fermi Level')
             ),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('band gap of ' + mat.name + ' semiconductor'); }),
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI('band gap of ' + mat.name + ' semiconductor'); }),
             btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           )
           ),
@@ -2279,7 +2284,7 @@ window.StemLab = window.StemLab || {
             dopantKey === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2076 S/cm (\u03C1 \u2248 2.3\u00D710\u2075 \u03A9\u00B7cm).' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(dopantKey === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI(dopantKey === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
             btn('\uD83D\uDD0A Read', function() { speakText(dopantKey === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
@@ -2493,7 +2498,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!d.pnShowIV, onChange: function() { upd('pnShowIV', !d.pnShowIV); }, className: 'accent-cyan-500' }), t('stem.semiconductor.i_v_curve', 'I-V Curve')),
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!d.pnLedMode, onChange: function() { upd('pnLedMode', !d.pnLedMode); if (!d.pnLedMode) tryAwardXP('pn-led', 10, 'Explored LED mode'); }, className: 'accent-amber-500' }), t('stem.semiconductor.led_analogy', 'LED analogy (different material)')),
-            btn('\uD83E\uDD16 AI', function() {
+            callGemini && btn('\uD83E\uDD16 AI', function() {
               askAI(bias > 0 ? 'forward biased P-N junction current flow' : bias < 0 ? 'reverse biased P-N junction depletion' : 'P-N junction equilibrium');
             })
           ),
@@ -2779,7 +2784,7 @@ window.StemLab = window.StemLab || {
                 : isMos?'Long-channel square-law model with |Vth| = 1.5 V; beta = 1 mA/V² for NMOS and 0.5 mA/V² for PMOS. With positive magnitudes: linear when VDS < VGS − Vth; saturation when VDS ≥ VGS − Vth. Drain current is signed positive from drain to source; carrier arrows show source-to-drain motion. Body is tied to source. Subthreshold current, body effect, channel-length modulation and breakdown are omitted. In saturation current continues after pinch-off.':'NPN onset is illustrated near 0.6 V. Actual current and operating region require the external bias circuit.'),
               h('a',{href:'https://ocw.mit.edu/courses/6-004-computation-structures-spring-2017/pages/c3/c3s1/',target:'_blank',rel:'noopener noreferrer'},'MIT: MOSFET behavior'))),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(showCMOS ? 'CMOS inverter operation' : type + ' transistor'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI(showCMOS ? 'CMOS inverter operation' : type + ' transistor'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
             btn('\uD83D\uDD0A Read', function(){speakText(transistorReadout);}, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
@@ -3165,7 +3170,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: showIdeal, onChange: function() { upd('ivShowIdeal', !showIdeal); }, className: 'accent-slate-400' }), t('stem.semiconductor.ohm_reference', 'Ohm Reference')),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI('I-V characteristic curve of a ' + device); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI('I-V characteristic curve of a ' + device); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
           ),
           // Stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
@@ -3637,7 +3642,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!d.solarShowPV, onChange: function() { upd('solarShowPV', !d.solarShowPV); }, className: 'accent-cyan-500' }), t('stem.semiconductor.i_v_p_v_curve', 'I-V / P-V Curve')),
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(sMat.name + ' solar cell photovoltaic effect and efficiency'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI(sMat.name + ' solar cell photovoltaic effect and efficiency'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
           ),
           d.solarShowPV&&h('p',{className:'semi-model-note'},'Chart key: solid cyan = current / Isc; dashed gold = power / (1.3 × Pmax); gold dot = maximum power; white square = load current. Horizontal axis: 0 to 1.1 × Voc. Read numerical values above.'),
           // Stats
@@ -4167,7 +4172,7 @@ window.StemLab = window.StemLab || {
             'Small-signal model: hybrid-\u03C0 for BJT, MOSFET small-signal params: g\u2098 = \u2202I\u2093/\u2202V\u2097\u209B, r\u2092 = 1/(\u03BB\u00B7I\u2093). Miller effect: C\u2098\u2097 = C\u2097\u2093(1+|A\u1D65|). Cascode: improved bandwidth via reduced Miller effect. Diff pair CMRR = A\u2093\u2098/A\u1D9C\u2098 \u221D g\u2098R\u209B\u209B. Noise figure: NF = 10\u00B7log(1 + v\u2099\u00B2/(4kTR\u209B)).'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(amp.name + ' amplifier gain and frequency response'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            callGemini && btn('\uD83E\uDD16 AI Explain', function() { askAI(amp.name + ' amplifier gain and frequency response'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
             btn('\uD83D\uDD0A Read', function() { speakText(amp.name + '. Gain magnitude at this frequency is ' + response.magnitude.toFixed(2) + ', or ' + response.gainDB.toFixed(1) + ' decibels. Input impedance: ' + amp.inputZ + '. ' + (inverts ? 'This amplifier inverts the signal.' : 'This amplifier does not invert.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
@@ -4615,7 +4620,7 @@ window.StemLab = window.StemLab || {
             );
           }),
           h('div', { className: 'flex gap-2 mt-3' },
-            btn('\uD83E\uDD16 AI: Explain all for my level', function() { askAI('comprehensive semiconductor overview for ' + gradeBand + ' student'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            callGemini && btn('\uD83E\uDD16 AI: Explain all for my level', function() { askAI('comprehensive semiconductor overview for ' + gradeBand + ' student'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
             btn('\uD83D\uDD0A Read intro', function() { speakText('Semiconductors are materials whose electrical conductivity is between conductors and insulators. Silicon is the most important semiconductor. We control it with doping, temperature, and voltage.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()

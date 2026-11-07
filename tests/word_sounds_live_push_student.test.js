@@ -361,6 +361,8 @@ describe('live-session push: student lands in the activity, not the review panel
     delete packItem._ttsAssets;
     const Host = makeStatefulHost(studentPushOverrides(calls, {
       wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+      // No device voice: a missing whole-word clip has no fallback.
+      callTTS: null,
       getWordSoundsString: localized,
     }));
     const { host } = mount(React.createElement(Host));
@@ -405,6 +407,8 @@ describe('live-session push: student lands in the activity, not the review panel
     delete packItem._ttsAssets;
     const Host = makeStatefulHost(studentPushOverrides(calls, {
       wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+      // No device voice: a missing whole-word clip has no fallback.
+      callTTS: null,
       onPreparedAudioRetry: async (coverage) => {
         calls.push({ retry: coverage });
         return true;
@@ -429,6 +433,29 @@ describe('live-session push: student lands in the activity, not the review panel
     expect(calls[0].retry).toMatchObject({ ready: 0, total: 1, missing: 1 });
     await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
     expect(host.textContent).toContain('Request sent');
+  });
+
+  it('AI off: starts when only whole-word clips are missing and a device voice exists', async () => {
+    const calls = [];
+    const statuses = [];
+    const spoken = [];
+    const packItem = makePackItem();
+    delete packItem._ttsAssets;
+    const Host = makeStatefulHost(studentPushOverrides(calls, {
+      wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+      playInstructions: false,
+      callTTS: async (text) => { spoken.push(text); return null; },
+      onPreparedAudioStatus: (report) => statuses.push(report),
+    }));
+    const { host } = mount(React.createElement(Host));
+    await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
+    expect(calls).toEqual([]);
+    expect(host.querySelector('[data-testid="word-sounds-audio-unavailable"]')).toBeFalsy();
+    expect(host.querySelector('[data-testid="word-sounds-audio-preparing"]')).toBeFalsy();
+    const tiles = Array.from(host.querySelectorAll('button, [role="button"]')).map((b) => b.textContent.trim());
+    expect(tiles.some((t) => /^[0-9]+\+?$/.test(t))).toBe(true);
+    // The teacher still sees the honest coverage report.
+    expect(statuses.at(-1)).toMatchObject({ status: 'missing', ready: 0, total: 1, failed: 1 });
   });
 
   it('teacher launch (initialShowReviewPanel: true) still opens the review panel', async () => {

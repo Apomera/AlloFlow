@@ -369,7 +369,7 @@ describe('Architecture Studio authoring', () => {
         aiAdvice: 'STALE ARCHITECT ADVICE', aiAdviceBuildSignature: 'old-build',
         aiLoading: true, aiRequestBuildSignature: 'old-build',
         quakeResult: { rating: 'STALE QUAKE RESULT', pct: 100, fallen: 0, intensity: 10, buildSignature: 'old-build' },
-      } });
+      } }, { callGemini: () => Promise.resolve('') });
       expect(staleHtml).not.toContain('STALE ARCHITECT ADVICE');
       expect(staleHtml).not.toContain('Analyzing your structure...');
       expect(staleHtml).not.toContain('STALE QUAKE RESULT');
@@ -380,7 +380,7 @@ describe('Architecture Studio authoring', () => {
         blocks: [block], showAI: true, earnedBadges: { first_block: 1 },
         aiAdvice: 'CURRENT ARCHITECT ADVICE', aiAdviceBuildSignature: signature,
         quakeResult: { rating: 'CURRENT QUAKE RESULT', pct: 100, fallen: 0, intensity: 10, buildSignature: signature },
-      } });
+      } }, { callGemini: () => Promise.resolve('') });
       expect(currentHtml).toContain('CURRENT ARCHITECT ADVICE');
       expect(currentHtml).toContain('CURRENT QUAKE RESULT');
     }

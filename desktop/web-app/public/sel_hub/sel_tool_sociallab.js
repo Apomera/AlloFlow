@@ -257,6 +257,144 @@ window.SelHub = window.SelHub || {
   };
 
   // ═══════════════════════════════════════════════════════════════
+  // SCRIPTED CONVERSATIONS (no AI, 2026-11-04)
+  // One branching script per chosen AI_SCENARIOS id, in the shared
+  // AdventureOffline story format, played with AlloModules.AdventureOffline.Player
+  // (built-in fallback for older hosts). Braided: branches rejoin. Endings close
+  // with a "What worked" debrief on the social skill.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an ending.
+  // ═══════════════════════════════════════════════════════════════
+  function _slScript(title, rows) {
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: r[1], ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: r[1], ending: true, choices: [] };
+    }) };
+  }
+  var SL_SCRIPTS = {
+    new_kid: _slScript('The New Student', [
+      ['start', "A new student, Alex, is standing alone by the fence at recess, looking at the ground. Alex just moved here from another state.", [
+        ["Walk over and smile: 'Hi, I'm in your class. You're new, right?'", 'hello'],
+        ['Stay with your friends and wave from far away.', 'wave'],
+        ["'Hey, new kid, why are you just standing there?'", 'rough']]],
+      ['wave', "Alex sees the wave and gives a tiny wave back, then looks down again. Your friends are starting a game of soccer.", [
+        ["Jog over to Alex: 'Hey! Want to play soccer with us?'", 'end_friend'],
+        ['Go play with your friends.', 'end_missed']]],
+      ['rough', "Alex's cheeks turn pink. 'I don't know anybody,' Alex says quietly, and steps back.", [
+        ["'Oh, sorry, that came out wrong. I'm in your class. Want to hang out?'", 'hello'],
+        ['Shrug and walk away.', 'end_missed']]],
+      ['hello', "Alex looks up. 'Yeah. I'm Alex. We moved here last week.' Alex is holding a soccer ball.", [
+        ["'Cool! Where did you move from?'", 'talk'],
+        ['Tell Alex all about your favorite video game for five minutes.', 'onesided']]],
+      ['onesided', "Alex nods politely while you talk and talk. Alex's eyes drift over to the soccer field.", [
+        ["'Oops, I've been talking a lot. What do you like to do?'", 'talk'],
+        ['Keep talking about the game.', 'end_ok']]],
+      ['talk', "'Arizona. It's way colder here,' Alex says with a small laugh. 'I like soccer. I was on a team back home.'", [
+        ["'We play soccer by the big field! Want to play with us?'", 'end_friend'],
+        ["'Cool.' Then head back to your friends.", 'end_ok']]],
+      ['end_friend', "Alex's face brightens. 'Really? Okay!' You introduce Alex to your friends, and Alex scores a goal in the first five minutes. At the end of recess, Alex asks, 'Can I sit with you at lunch?'\n\nWhat worked:\n• You noticed someone alone and went over.\n• A friendly hello is all it takes to start.\n• You asked a question and listened to the answer.\n• Inviting someone into a game is one of the kindest things you can do."],
+      ['end_ok', "Alex says, 'Okay, see you,' and stays by the fence. You were friendly, which helped, but Alex still doesn't have anyone to play with.\n\nWhat worked:\n• Saying hi and talking with Alex was kind.\n• Good conversations go back and forth: ask, listen, then share.\n• The next step is an invitation: 'Want to play with us?'"],
+      ['end_missed', "Recess ends. Alex stood by the fence the whole time. Tomorrow is another chance.\n\nWhat worked:\n• You noticed Alex. That's the first step.\n• Starting is the hardest part. Try: 'Hi, I'm ___. Want to play?'\n• If something comes out wrong, a quick 'sorry' fixes a lot."]
+    ]),
+    broken_toy: _slScript('The Broken Toy', [
+      ['start', "You and Jordan are playing at Jordan's house. You're zooming Jordan's favorite action figure through the air, and CRACK: its arm snaps off. Jordan's eyes go wide. 'That's my favorite one!'", [
+        ["'It was already loose. Not my fault.'", 'blame'],
+        ["'Oh no. I'm really sorry, Jordan. I broke it.'", 'own'],
+        ['Hide the arm behind your back.', 'hide']]],
+      ['blame', "Jordan's face turns red. 'It was NOT loose! You were being too rough!' Jordan grabs the figure and turns away.", [
+        ["'You're right. I was being rough. I'm sorry.'", 'own'],
+        ["'Whatever. It's just a toy.'", 'stuck']]],
+      ['hide', "Jordan looks around. 'Where's the arm? Did you break it?' Jordan looks at you, waiting.", [
+        ["Show the arm: 'Yes. I'm sorry. I was scared to tell you.'", 'own'],
+        ["'I don't know where it is.'", 'stuck']]],
+      ['stuck', "Jordan starts to cry. 'I don't want to play anymore.' Jordan's mom calls that it's almost time for you to go home.", [
+        ["'Wait. I'm sorry. I broke it, and I feel bad.'", 'own'],
+        ['Go home without saying anything.', 'end_upset']]],
+      ['own', "Jordan sniffs. 'It was my favorite. My grandpa gave it to me.' Jordan holds the broken figure carefully.", [
+        ["'That makes it extra special. I understand why you're so sad.'", 'feel'],
+        ["'Well, I said sorry. Can we keep playing?'", 'end_partial']]],
+      ['feel', "Jordan nods slowly. 'Yeah.' Jordan seems a little calmer now that you understand.", [
+        ["'Can I help fix it? Maybe with glue, or we could ask your mom.'", 'end_repair'],
+        ["'Okay, let's play something else.'", 'end_partial']]],
+      ['end_repair', "Jordan's mom helps you both glue the arm back on. It's not perfect, but it holds. Jordan says, 'Thanks for helping.' Next time, you play more gently.\n\nWhat worked:\n• You told the truth about what happened.\n• You said sorry for the exact thing you did.\n• You showed you understood why it mattered to Jordan.\n• You offered to help make it right. That's what makes an apology real."],
+      ['end_partial', "Jordan says 'okay,' but stays quiet for the rest of the playdate. The toy is still broken.\n\nWhat worked:\n• You said sorry and owned what happened. Good!\n• A full apology also shows you understand the feelings and offers to help: 'Can I help fix it?'\n• It's not too late to offer."],
+      ['end_upset', "You go home. Jordan is still crying, and you have a heavy feeling in your tummy. Tomorrow you could still say sorry.\n\nWhat worked:\n• Feeling bad means you care about Jordan.\n• Telling the truth, even when it's scary, helps friends trust you.\n• A good apology: 'I'm sorry I ___. I know you feel ___. Can I help fix it?'"]
+    ]),
+    lunch_table: _slScript('The Lunch Table', [
+      ['start', "Riley used to sit with your friend group. Lately the others have been saving seats 'for someone else.' Today, Riley walks up with a tray. 'Hey... is it okay if I sit here?' Your friends look at you.", [
+        ["'Yeah, sit down! Slide over, everyone.'", 'welcome'],
+        ["'Um, these seats are kind of saved.'", 'saved'],
+        ["Look at your phone and don't answer.", 'ignore']]],
+      ['saved', "Riley's smile drops. 'Oh. Right. Okay.' Riley turns away, scanning the cafeteria for somewhere else to go.", [
+        ["'Wait, Riley. Actually, sit with us.'", 'welcome'],
+        ['Let Riley go.', 'after']]],
+      ['ignore', "Nobody answers. After an awkward pause, Riley says, 'Never mind,' and walks off. One friend whispers, 'Thank you.'", [
+        ["'That felt wrong. I'm going to ask Riley to come back.'", 'welcome'],
+        ['Keep eating.', 'after']]],
+      ['after', "A few minutes later, you see Riley sitting alone near the windows, not eating much. You feel uneasy.", [
+        ['Pick up your tray and go sit with Riley.', 'join'],
+        ["Decide it's not your problem.", 'end_excluded']]],
+      ['welcome', "Riley sits down. A friend gives you a look and mutters, 'Why'd you do that?' Riley pretends not to hear.", [
+        ["Quietly, to your friend: 'Riley's nice. Everyone deserves a seat.'", 'end_included'],
+        ['Laugh it off and change the subject.', 'end_partial']]],
+      ['join', "Riley looks up, surprised. 'You don't have to...' 'I want to,' you say. You talk about the weird science quiz, and Riley starts to smile.", [
+        ["'Want to sit with us tomorrow? I'll save you a seat.'", 'end_included'],
+        ["'Cool. See you around.'", 'end_partial']]],
+      ['end_included', "Riley has a place at the table again. Your friends grumble at first, but by the end of the week, Riley is just part of the group, and someone else starts saving Riley a seat.\n\nWhat worked:\n• You noticed someone being left out and did something about it.\n• You spoke up kindly, without making a big scene.\n• Including someone can feel awkward, and it's still worth it.\n• One person's choice often changes what the whole group does."],
+      ['end_partial', "Riley got a seat today, which matters. But nothing has changed about the saved seats, and tomorrow could be the same.\n\nWhat worked:\n• Making room for Riley was kind.\n• One calm sentence to your friends can shift the group: 'Everyone deserves a seat.'\n• Following up ('Sit with us tomorrow?') shows you meant it."],
+      ['end_excluded', "Riley eats alone for the rest of the week. You feel uneasy every time you pass the windows.\n\nWhat worked:\n• Feeling uneasy is your empathy talking. Listen to it.\n• Including someone doesn't need a speech: 'Sure, sit down' is enough.\n• If you missed the moment, you can still go to them: 'Want to sit with me?'"]
+    ]),
+    group_project: _slScript('The Group Project', [
+      ['start', "Your group project is due tomorrow. Casey hasn't done their part, the slides on the water cycle. You find Casey at their locker after school.", [
+        ["'Thanks a lot for ruining our grade, Casey.'", 'attack'],
+        ["'Hey, I noticed your slides aren't in yet. Is everything okay?'", 'check'],
+        ["Say nothing, and do Casey's part yourself tonight.", 'silent']]],
+      ['attack', "Casey slams the locker. 'You don't even know what's going on with me.' Casey starts to walk away.", [
+        ["'You're right, I don't. Sorry. What's going on?'", 'check'],
+        ["'I don't care what's going on. Just do your part.'", 'stuck']]],
+      ['silent', "You stay up late doing Casey's slides. You're exhausted and annoyed. The next morning, Casey says, 'Oh, you did my part? Thanks.'", [
+        ["'I did, but I was upset about it. Can we talk about what happened?'", 'check'],
+        ["Smile and say 'no problem,' even though it isn't true.", 'end_alone']]],
+      ['stuck', "Casey's eyes get shiny. 'Forget it. I'll just take a zero.' Casey leaves.", [
+        ["Text Casey later: 'Sorry I was harsh. Can we figure this out together?'", 'check'],
+        ["Do Casey's part yourself tonight, still angry.", 'silent']]],
+      ['check', "Casey's shoulders drop. 'My little brother's been sick, and I've been watching him after school. I didn't know how to tell you guys. I'm so behind.'", [
+        ["'That sounds really hard. Thanks for telling me.'", 'plan'],
+        ["'Okay, but that's not our problem. You still have to do it.'", 'stuck']]],
+      ['plan', "Casey looks relieved. 'I can do some tonight after he's asleep, but not all of it.'", [
+        ["'What if you do the two diagram slides, and I write the notes? And next time, tell us early so we can adjust.'", 'end_team'],
+        ["'Okay, just do what you can.'", 'end_partial']]],
+      ['end_team', "Casey does the two diagram slides that night, and you write the notes. The project isn't perfect, but it's on time and it's everyone's work. Casey says, 'Thanks for asking instead of yelling.'\n\nWhat worked:\n• You started with a check-in ('Is everything okay?') instead of blame.\n• You listened to the reason before deciding what to do.\n• You made a specific, fair plan that fit Casey's situation.\n• Your feedback for next time was kind and clear: tell us early."],
+      ['end_partial', "Casey does a little, and you do the rest. You understand Casey better, but the plan was fuzzy, and the work feels uneven.\n\nWhat worked:\n• Asking what was going on, and listening, built trust.\n• Specific plans work better than 'do what you can': who does what, by when?\n• Feedback for next time can be kind and clear: 'Please tell us early.'"],
+      ['end_alone', "The project gets turned in, but you did most of it, and you're quietly angry. Casey never learned how this affected you.\n\nWhat worked:\n• Getting the work done shows responsibility.\n• Feedback helps when it's kind and specific: 'When the slides didn't come in, I felt stressed. Can we plan better next time?'\n• Asking 'Is everything okay?' can uncover a reason you didn't expect."]
+    ]),
+    college_stress: _slScript('The Comparison Trap', [
+      ['start', "Jamie runs up, holding their phone. 'I got in! I actually got into my dream school!' Yesterday, the same school turned you down. Jamie doesn't know.", [
+        ["'Congratulations! You worked so hard for this.'", 'congrats'],
+        ["'Must be nice. Some of us didn't get lucky.'", 'bitter'],
+        ['Force a smile and change the subject fast.', 'avoid']]],
+      ['bitter', "Jamie's smile fades. 'Lucky? I worked really hard for this.' Then, more quietly: 'Wait... did something happen?'", [
+        ["'Sorry. That wasn't fair to you. I got turned down yesterday, and I'm hurting.'", 'honest'],
+        ["'Nothing. Forget it.'", 'distant']]],
+      ['avoid', "Jamie keeps talking about the campus and the dorms. You nod along, but your chest feels tight. Jamie asks, 'You okay? You seem quiet.'", [
+        ["'Honestly, I'm happy for you, and I'm also sad. I didn't get in.'", 'honest'],
+        ["'I'm fine.'", 'distant']]],
+      ['congrats', "Jamie beams. 'Thank you! I can't believe it.' Then Jamie pauses. 'Did you hear back yet?'", [
+        ["'I did. I didn't get in. I'm still really happy for you, though.'", 'honest'],
+        ["'Not yet,' you say, even though you have.", 'distant']]],
+      ['distant', "Over the next week, you avoid Jamie a little. Jamie notices and texts: 'Did I do something wrong?'", [
+        ["Reply: 'No, you didn't. I didn't get in, and it's been hard to be around the excitement. Sorry I went quiet.'", 'honest'],
+        ["Reply: 'No, all good.'", 'end_drift']]],
+      ['honest', "Jamie's face softens. 'Oh no. I'm so sorry. And here I was going on and on.' Jamie sits down next to you.", [
+        ["'It's okay. You should celebrate! Can we celebrate you today and talk about my options another day?'", 'end_both'],
+        ["'Yeah, you kind of were.'", 'end_partial']]],
+      ['end_both', "You and Jamie go out for celebration milkshakes. A few days later, Jamie helps you look at other schools, and you find one you're genuinely excited about.\n\nWhat worked:\n• You let two feelings be true at once: happy for Jamie and sad for yourself.\n• Honesty, said kindly, kept the friendship close instead of distant.\n• You asked for what you needed (a later talk) without taking Jamie's moment away.\n• Good friends can hold each other's good news and hard news."],
+      ['end_partial', "Jamie apologizes, and the moment turns awkward. You were honest, which matters, but Jamie's big news now feels a little spoiled.\n\nWhat worked:\n• Telling the truth about your feelings was brave.\n• You can be honest without blaming: 'I'm happy for you, and I'm having a hard day.'\n• Asking for a separate time to talk about you lets both of you get support."],
+      ['end_drift', "You and Jamie drift apart over the next few weeks. Jamie never finds out why, and you lose a friend right when you needed one.\n\nWhat worked:\n• Wanting to protect yourself from hard feelings makes sense.\n• Silence often looks like anger to the other person.\n• A short, honest message can repair a lot: 'It's not you. I'm sad about my news.'"]
+    ])
+  };
+
+  // ═══════════════════════════════════════════════════════════════
   // REGISTRATION
   // ═══════════════════════════════════════════════════════════════
 
@@ -271,6 +409,8 @@ window.SelHub = window.SelHub || {
     gradient: 'linear-gradient(135deg, #2563eb, #7c3aed)',
     standards: ['CASEL: Relationship Skills', 'CASEL: Social Awareness'],
     ready: true,
+    // AI roleplay has a scripted version that needs no AI.
+    offlineScripts: SL_SCRIPTS,
 
     render: function(ctx) {
       // ── Host theme remap (consumes ctx.theme) — canonical SEL light-base pattern ──
@@ -303,7 +443,7 @@ window.SelHub = window.SelHub || {
       var awardXP = ctx.awardXP;
       var update = ctx.update;
       var toolData = (ctx.toolData && ctx.toolData.sociallab) || {};
-      var hasAI = !!callGemini;
+      var hasAI = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
 
       // State
       var _mode = useState('menu'); var mode = _mode[0]; var setMode = _mode[1];
@@ -335,9 +475,10 @@ window.SelHub = window.SelHub || {
       var SL_BADGES = [
         { id: 'first_scenario', label: 'First Try', emoji: '🌟', desc: 'Complete your first scenario', check: function() { return total >= 1; } },
         { id: 'perfect_set', label: 'Perfect Set', emoji: '⭐', desc: 'Get all "great" in a skill set', check: function() { return total >= 3 && score === total; } },
-        { id: 'roleplay', label: 'Brave Talker', emoji: '🎤', desc: 'Complete an AI roleplay conversation', check: function() { return chatTurns >= 3; } },
+        { id: 'roleplay', label: 'Brave Talker', emoji: '🎤', desc: 'Complete an AI roleplay conversation', aiOnly: true, check: function() { return chatTurns >= 3; } },
         { id: 'five_great', label: 'Social Star', emoji: '🌟', desc: 'Get 5 "great" responses total', check: function() { return score >= 5; } },
-        { id: 'feedback', label: 'Reflective Learner', emoji: '🪞', desc: 'Receive AI feedback on a conversation', check: function() { return chatFeedback && typeof chatFeedback === 'object' && !chatFeedback.error; } },
+        { id: 'feedback', label: 'Reflective Learner', emoji: '🪞', desc: 'Receive AI feedback on a conversation', aiOnly: true, check: function() { return chatFeedback && typeof chatFeedback === 'object' && !chatFeedback.error; } },
+        { id: 'scripted', label: 'Practice Run', emoji: '🎬', desc: 'Finish a scripted conversation', check: function() { return Object.keys(toolData.scriptDone || {}).length > 0; } },
       ];
       var earnedBadges = SL_BADGES.filter(function(b) { return b.check(); });
 
@@ -352,7 +493,7 @@ window.SelHub = window.SelHub || {
 
       // ── AI Chat Send ──
       var sendChat = useCallback(async function(userMsg) {
-        if (!callGemini || !aiScenario || !userMsg.trim()) return;
+        if (!hasAI || !aiScenario || !userMsg.trim()) return;
         // Safety pre-check on student's typed peer-roleplay message. If
         // critical-tier content, halt the AI peer's response and surface
         // a coach-style break + crisis resources.
@@ -410,11 +551,11 @@ window.SelHub = window.SelHub || {
         }
         setChatLoading(false);
         setTimeout(function() { if (chatEndRef.current) chatEndRef.current.scrollIntoView({ behavior: 'smooth' }); }, 100);
-      }, [callGemini, aiScenario, chatHistory, gradeBand, addToast]);
+      }, [callGemini, hasAI, aiScenario, chatHistory, gradeBand, addToast]);
 
       // ── Get AI Feedback on Roleplay ──
       var getConversationFeedback = useCallback(async function() {
-        if (!callGemini || !aiScenario) return;
+        if (!hasAI || !aiScenario) return;
         setChatFeedback('loading');
         try {
           var historyText = chatHistory.map(function(m) { return (m.role === 'user' ? 'Student' : aiScenario.peerName) + ': ' + m.text; }).join('\n');
@@ -432,16 +573,70 @@ window.SelHub = window.SelHub || {
           var parsed = JSON.parse(result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
           setChatFeedback(parsed);
           var xp = parsed.rating === 'exemplary' ? 30 : parsed.rating === 'proficient' ? 20 : 10;
-          if (awardXP) awardXP('sociallab', xp);
+          if (awardXP) awardXP(xp);
           addToast && addToast('Feedback received! +' + xp + ' XP', 'success');
         } catch (err) {
           setChatFeedback({ error: 'Could not generate feedback.' });
         }
-      }, [callGemini, aiScenario, chatHistory, gradeBand, awardXP, addToast]);
+      }, [callGemini, hasAI, aiScenario, chatHistory, gradeBand, awardXP, addToast]);
+
+      // ── Scripted conversations (no AI, 2026-11-04) ──
+      // In place of the AI roleplay without AI; an option beside it with AI.
+      // Zero AI calls: AdventureOffline is pure UI; safety is the local regex check.
+      var slUpd = function(obj) {
+        if (ctx.updateMulti) ctx.updateMulti('sociallab', obj);
+        else if (update) Object.keys(obj).forEach(function(k) { update('sociallab', k, obj[k]); });
+      };
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _slTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var slTs = (_slTsApi && typeof _slTsApi.bind === 'function') ? _slTsApi.bind({ ctx: ctx, h: h, toolId: 'sociallab', d: toolData, set: slUpd, announce: announceToSR,
+        aiTopic: 'a realistic everyday social conversation a student practises',
+        aiExtra: 'Choices are things the player could say; scenes show how the other person reacts.' }) : null;
+      var slAO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+      var slTheme = _slCHC ? 'contrast' : (_slCDark ? 'dark' : 'light');
+      var slT = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
+      var slEntries = [];
+      ['elementary', 'middle', 'high'].forEach(function(b) { (AI_SCENARIOS[b] || []).forEach(function(sc) { if (SL_SCRIPTS[sc.id]) slEntries.push({ key: sc.id, band: b, sc: sc, story: SL_SCRIPTS[sc.id] }); }); });
+      // This grade band's conversations first; the rest stay playable.
+      slEntries.sort(function(a, b) { return (a.band === gradeBand ? 0 : 1) - (b.band === gradeBand ? 0 : 1); });
+      var slDone = toolData.scriptDone || {};
+      var slFound = function(key) { return Object.keys(slDone).filter(function(x) { return x.indexOf(key + ':') === 0; }).length; };
+      var slEnds = function(story) { return story.scenes.filter(function(s) { return s.ending; }).length; };
+      var slCur = null;
+      slEntries.forEach(function(e) { if (e.key === toolData.scriptKey) slCur = e; });
+      var slCurTs = slTs ? slTs.byKey(toolData.scriptKey) : null;
+      if (slCurTs) slCur = { key: slCurTs.key, ts: slCurTs, sc: { title: slCurTs.title || slTs.from }, story: slCurTs.story };
+      var slStartTeacher = function(s) {
+        slUpd({ scriptKey: s.key, scriptRun: (toolData.scriptRun || 0) + 1, scriptPath: null, scriptEnding: null, scriptReflectDraft: '', scriptReflectSaved: false });
+        setMode('script');
+        announceToSR('Scripted conversation started: ' + (s.title || slTs.from) + '.');
+      };
+      var openSlScript = function(e) {
+        slUpd({ scriptKey: e.key, scriptRun: (toolData.scriptRun || 0) + 1, scriptPath: null, scriptEnding: null, scriptReflectDraft: '', scriptReflectSaved: false });
+        setMode('script');
+        announceToSR('Scripted conversation started: ' + e.sc.title + '.');
+      };
+      var slScriptList = function() {
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          slEntries.map(function(e) {
+            var cat = SKILL_CATEGORIES.find(function(c) { return c.id === e.sc.skill; });
+            return h('button', { key: e.key, 'data-sl-script-card': e.key, onClick: function() { openSlScript(e); },
+              style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: _slC('#fff'), border: '1px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'left' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '18px', flexShrink: 0 } }, (cat && cat.icon) || '🎭'),
+              h('div', null,
+                h('div', { style: { fontWeight: 700, fontSize: '13px', color: _slC('#1e293b') } }, e.sc.title),
+                h('div', { style: { fontSize: '11px', color: _slC('#475569') } }, e.sc.setup),
+                h('div', { style: { fontSize: '11px', color: _slC('#475569'), marginTop: '2px' } }, 'Endings found: ' + slFound(e.key) + ' of ' + slEnds(e.story))
+              )
+            );
+          })
+        );
+      };
 
       // ═══ RENDER ═══
 
       // ── Menu ──
+      if (mode === 'menu' && slTs && slTs.editing) return slTs.renderEditor();
       if (mode === 'menu') {
         return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sociallab', h, ctx) : null),
@@ -449,8 +644,9 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🎭'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: _slC('#1e293b') } }, 'Social Skills Lab'),
             h('p', { style: { color: _slC('#94a3b8'), fontSize: '14px', maxWidth: '450px', margin: '0 auto' } },
-              'Practice real social situations. Choose how you\'d respond in scenarios, or have a real conversation with an AI peer.')
+              hasAI ? 'Practice real social situations. Choose how you\'d respond in scenarios, or have a real conversation with an AI peer.' : 'Practice real social situations. Choose how you\'d respond in scenarios, or play through a scripted conversation.')
           ),
+          slTs ? slTs.renderSection({ onPlay: slStartTeacher }) : null,
           // Badges
           earnedBadges.length > 0 && h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }, 'aria-label': 'Earned badges' },
             earnedBadges.map(function(b) {
@@ -479,8 +675,8 @@ window.SelHub = window.SelHub || {
               })
             )
           ),
-          // Mode 2: AI Roleplay
-          h('div', { style: Object.assign({}, card, { border: '2px solid ' + (hasAI ? '#86efac' : '#fca5a5'), background: hasAI ? _slC('#f0fdf4') : _slC('#fef2f2') }) },
+          // Mode 2: AI Roleplay (hidden without usable AI)
+          hasAI && h('div', { style: Object.assign({}, card, { border: '2px solid ' + (hasAI ? '#86efac' : '#fca5a5'), background: hasAI ? _slC('#f0fdf4') : _slC('#fef2f2') }) },
             h('h3', { style: { fontSize: '16px', fontWeight: 800, color: hasAI ? _slC('#166534') : _slC('#991b1b'), marginBottom: '6px' } }, '🤖 AI Peer Roleplay' + (hasAI ? '' : ' (AI Required)')),
             h('p', { style: { fontSize: '12px', color: _slC('#94a3b8'), marginBottom: '12px' } }, hasAI ? 'Have a real conversation with an AI playing the role of a peer. Practice using your own words.' : 'AI roleplay requires API access. Use Scenario Practice above, or ask your teacher to enable AI.'),
             hasAI && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
@@ -488,7 +684,7 @@ window.SelHub = window.SelHub || {
                 return h('button', { key: sc.id, onClick: function() {
                     setAiScenario(sc); setChatHistory([{ role: 'peer', text: '' }]); setChatInput(''); setChatFeedback(null); setChatTurns(0); setRapport(50); setPeerMood('neutral'); setPeerGesture(''); setPeerPortrait(null); setMode('roleplay'); announceToSR(sc.title + ' selected. Starting a conversation with ' + sc.peerName + '.');
                     // Generate opening line
-                    if (callGemini) {
+                    if (hasAI) {
                       callGemini('You are ' + sc.peerName + ', ' + sc.peerDesc + '. Scenario: ' + sc.setup + '. Say your opening line as ' + sc.peerName + ' — 1 sentence, natural, in-character as a ' + gradeBand + ' school student. Return ONLY the dialogue.', false).then(function(line) {
                         setChatHistory([{ role: 'peer', text: line ? line.trim() : 'Hey...' }]);
                       }).catch(function() { setChatHistory([{ role: 'peer', text: 'Hey...' }]); });
@@ -505,6 +701,14 @@ window.SelHub = window.SelHub || {
               })
             )
           ),
+          // Scripted conversations (no AI): in place of the AI roleplay, or a quiet option beside it.
+          !hasAI ? h('div', { 'data-sl-script-menu': 'true', style: Object.assign({}, card, { border: '2px solid #c4b5fd', background: _slC('#faf5ff') }) },
+            h('h3', { style: { fontSize: '16px', fontWeight: 800, color: _slInk(PURPLE), marginBottom: '6px' } }, '🎬 Practice Conversations'),
+            h('p', { style: { fontSize: '12px', color: _slC('#475569'), marginBottom: '12px' } }, 'Talk through a real situation by choosing what to say. Each choice shows how the other person reacts. Works without AI.'),
+            slScriptList()
+          ) : h('div', { style: { textAlign: 'center', margin: '4px 0 10px' } },
+            h('button', { 'data-sl-scripted-mode': 'true', onClick: function() { slUpd({ scriptKey: null }); setMode('script'); }, style: { minHeight: '40px', padding: '8px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: _slC('#fff'), color: _slC('#1e293b'), fontWeight: 600, fontSize: '12px', cursor: 'pointer' } }, '🎬 Scripted conversations (no AI)')
+          ),
           // Clinical note
           h('div', { style: { marginTop: '16px', background: _slC('#eff6ff'), border: '1px solid #bfdbfe', borderRadius: '10px', padding: '12px', fontSize: '11px', color: _slC('#1e40af') } },
             h('strong', null, 'Clinical note: '),
@@ -513,6 +717,95 @@ window.SelHub = window.SelHub || {
             'AI Roleplay (Tier 2) provides dynamic conversation practice for generalization. ',
             'Both modes support IEP goals like "Student will use appropriate social greetings in 4/5 opportunities."'
           )
+        );
+      }
+
+      // ── Scripted Conversation Mode (no AI) ──
+      if (mode === 'script') {
+        var slBtn = { minHeight: '44px', padding: '9px 16px', borderRadius: '10px', border: '1px solid #cbd5e1', background: _slC('#fff'), color: _slC('#1e293b'), fontSize: '13px', fontWeight: 700, cursor: 'pointer' };
+        var slBtnMain = Object.assign({}, slBtn, { border: 'none', background: PURPLE, color: '#fff' });
+        var slCrisis = ((toolData._scriptTier || 0) >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null;
+        if (!slCur) {
+          return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+            h('button', { onClick: function() { setMode('menu'); }, style: Object.assign({}, slBtn, { minHeight: '36px', padding: '6px 14px', fontSize: '12px', marginBottom: '12px' }) }, '← Back'),
+            h('h2', { style: { fontSize: '20px', fontWeight: 900, color: _slC('#1e293b'), margin: '0 0 6px' } }, '🎬 Scripted Conversations'),
+            h('p', { style: { fontSize: '12px', color: _slC('#475569'), margin: '0 0 14px' } }, 'Choose what to say and see how the other person reacts. No AI needed. Replay to find every ending.'),
+            slTs ? slTs.renderList({ onPlay: slStartTeacher }) : null,
+            slScriptList()
+          );
+        }
+        var slScene = function(id) { for (var i = 0; i < slCur.story.scenes.length; i++) { if (slCur.story.scenes[i].id === id) return slCur.story.scenes[i]; } return null; };
+        var slReach = function(endId) {
+          var next = Object.assign({}, slDone);
+          var first = slFound(slCur.key) === 0;
+          next[slCur.key + ':' + endId] = true;
+          slUpd({ scriptEnding: endId, scriptDone: next, scriptReflectSaved: false });
+          // The SEL hub's awardXP takes (amount). XP once per conversation.
+          if (first && awardXP) awardXP(10);
+          announceToSR('Ending reached. Read what worked, then reflect.');
+        };
+        // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+        var slOnClick = function(ev) {
+          var el = ev && ev.target && ev.target.closest ? ev.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+          if (!el) return;
+          var to = el.getAttribute('data-offline-choice');
+          var target = to ? slScene(to) : null;
+          if (target && target.ending) slReach(to);
+          else if (toolData.scriptEnding) slUpd({ scriptEnding: null });
+        };
+        // Built-in player for an older host without AdventureOffline.
+        var slFallback = function() {
+          var path = (Array.isArray(toolData.scriptPath) ? toolData.scriptPath : []).filter(function(id) { return !!slScene(id); });
+          if (!path.length) path = [slCur.story.start];
+          var scn = slScene(path[path.length - 1]);
+          var go = function(to) { slUpd({ scriptPath: path.concat([to]) }); var t2 = slScene(to); if (t2 && t2.ending) slReach(to); };
+          return h('section', { 'data-sl-fallback-player': 'true', 'aria-label': slCur.story.title, style: Object.assign({}, card, { padding: '18px' }) },
+            h('h3', { style: { margin: '0 0 10px', fontSize: '16px', fontWeight: 800, color: _slC('#1e293b') } }, scn.ending ? 'The end' : 'Step ' + path.length),
+            h('div', { style: { whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: 1.6, color: _slC('#1e293b') } }, scn.text),
+            !scn.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: '8px', marginTop: '14px' } },
+              scn.choices.map(function(c, i) { return h('button', { key: i, 'data-sl-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, slBtn, { textAlign: 'left', fontWeight: 600 }) }, c.label); })),
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' } },
+              h('button', { disabled: path.length < 2, onClick: function() { slUpd({ scriptPath: path.slice(0, -1), scriptEnding: null }); }, style: slBtn }, '← Back'),
+              h('button', { disabled: path.length < 2, onClick: function() { slUpd({ scriptPath: [slCur.story.start], scriptEnding: null }); }, style: scn.ending ? slBtnMain : slBtn }, scn.ending ? '↺ Play again' : '↺ Start over'))
+          );
+        };
+        var slDraft = String(toolData.scriptReflectDraft || '');
+        return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+          slCrisis,
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' } },
+            h('button', { onClick: function() { slUpd({ scriptKey: null, scriptEnding: null }); }, style: Object.assign({}, slBtn, { minHeight: '36px', padding: '6px 14px', fontSize: '12px' }) }, '← All conversations'),
+            h('div', null,
+              h('h2', { style: { fontSize: '18px', fontWeight: 900, color: _slC('#1e293b'), margin: 0 } }, slCur.sc.title),
+              h('div', { style: { fontSize: '12px', color: _slC('#475569') } }, slCur.ts ? slTs.from : 'Goal: ' + slCur.sc.goal)
+            )
+          ),
+          slCur.ts ? slTs.renderIntro(slCur.ts) : null,
+          h('div', { 'data-sl-script-player': slCur.key, onClick: slOnClick },
+            (slAO && typeof slAO.Player === 'function')
+              ? h(slAO.Player, { key: slCur.key + ':' + (toolData.scriptRun || 0), story: slCur.story, t: slT, theme: slTheme })
+              : slFallback()),
+          h('p', { style: { fontSize: '11px', color: _slC('#475569'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + slFound(slCur.key) + ' of ' + slEnds(slCur.story)),
+          toolData.scriptEnding ? h('div', { 'data-sl-reflect': 'true', style: card },
+            h('label', { htmlFor: 'sl-reflect-script', style: { display: 'block', fontSize: '13px', fontWeight: 800, color: _slC('#1e293b'), marginBottom: '6px' } }, '✍️ Reflect'),
+            h('p', { style: { margin: '0 0 8px', fontSize: '12px', color: _slC('#475569'), lineHeight: 1.5 } }, 'Which choice helped the most? When could you use it with someone in real life?'),
+            h('textarea', { id: 'sl-reflect-script', value: slDraft, rows: 3, maxLength: 2000,
+              onChange: function(e) { slUpd({ scriptReflectDraft: e.target.value }); },
+              style: { width: '100%', boxSizing: 'border-box', padding: '10px', borderRadius: '10px', border: '1px solid #cbd5e1', background: _slC('#fff'), color: _slC('#1e293b'), fontSize: '13px', fontFamily: 'inherit', resize: 'vertical' } }),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px', flexWrap: 'wrap' } },
+              h('button', { 'data-sl-reflect-save': 'true', disabled: !slDraft.trim(), style: slBtnMain, onClick: function() {
+                var txt = slDraft.trim();
+                if (!txt) return;
+                if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                  var chk = window.SelHub.safeRehearseCheck(txt, { toolId: 'sociallab', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+                  if (chk && chk.action === 'block') { slUpd({ _scriptTier: 3 }); announceToSR('Please use the support resources on this screen.'); }
+                }
+                var list = (Array.isArray(toolData.scriptReflections) ? toolData.scriptReflections : []).concat([{ scenarioId: slCur.key, ending: toolData.scriptEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+                slUpd({ scriptReflections: list, scriptReflectDraft: '', scriptReflectSaved: true });
+                announceToSR('Reflection saved.');
+              } }, 'Save reflection'),
+              toolData.scriptReflectSaved ? h('span', { role: 'status', style: { fontSize: '12px', color: _slC('#475569') } }, 'Saved to your work.') : null
+            )
+          ) : null
         );
       }
 
@@ -646,7 +939,7 @@ window.SelHub = window.SelHub || {
                   if (!transferDraft.trim() || transferSaved) return;
                   setTransferSaved(true);
                   announceToSR('Your own-words rehearsal was marked for this practice round.');
-                  if (awardXP) awardXP('sociallab', 3);
+                  if (awardXP) awardXP(3);
                 },
                 disabled: transferSaved || !transferDraft.trim(),
                 'aria-label': transferSaved ? 'Own-words rehearsal marked' : 'Mark own-words rehearsal as practiced',
@@ -665,12 +958,12 @@ window.SelHub = window.SelHub || {
                     setScore(function(s) { return s + 1; });
                     setFeedback({ ok: true, msg: '⭐ ' + opt.feedback, rating: opt.rating });
                     announceToSR('Great response! ' + opt.feedback);
-                    if (awardXP) awardXP('sociallab', 10);
+                    if (awardXP) awardXP(10);
                   } else {
                     sfxNeutral();
                     setFeedback({ ok: false, msg: (opt.rating === 'ok' ? '🤔 ' : '❌ ') + opt.feedback, rating: opt.rating });
                     announceToSR((opt.rating === 'ok' ? 'Good try. ' : 'Not the best choice. ') + opt.feedback);
-                    if (opt.rating === 'ok' && awardXP) awardXP('sociallab', 5);
+                    if (opt.rating === 'ok' && awardXP) awardXP(5);
                   }
                 },
                 style: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', background: _slC('#fff'), border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontSize: '13px', lineHeight: 1.5 }

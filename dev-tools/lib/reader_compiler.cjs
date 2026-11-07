@@ -1,7 +1,7 @@
 'use strict';
 // Pure rendering shared by the builder and read-only verifier. No file writes.
 const babel = require('@babel/core');
-const INPUTS = Object.freeze(['reader_place_store.js', 'reader_support_drafts.js', 'view_simplified_source.jsx']);
+const INPUTS = Object.freeze(['reader_place_store.js', 'reader_support_drafts.js', 'syllable_prep_core.js', 'syllable_prep_panel.jsx', 'view_simplified_source.jsx']);
 const OUTPUTS = Object.freeze(['view_simplified_module.js', 'desktop/web-app/public/view_simplified_module.js']);
 function renderReaderModule(sources) {
   if (!Array.isArray(sources) || sources.length !== INPUTS.length || sources.some(source => typeof source !== 'string')) throw new Error('Expected the three canonical reader source strings in declared order.');

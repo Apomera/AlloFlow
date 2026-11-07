@@ -39,6 +39,7 @@
 // The IMAGES catalog is DUPLICATED in zoom_gallery/zoom_gallery.html;
 // tests/zoom_gallery_catalog.test.js pins the two equal.
 // ═══════════════════════════════════════════════════════════════════════
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function () {
   'use strict';
   // A shared link (?tool=...) requests this plugin before stem_lab_module.js has
@@ -151,6 +152,18 @@
     return cdnUrl;
   }
   var ZOOM_GALLERY_URL = companionUrl('zoom_gallery/zoom_gallery.html?v=2', ZOOM_GALLERY_CDN_URL);
+  // Bridge trust: only the pop-up this tool opened, at the companion's own origin,
+  // may drive the bridge. Opaque origins (file://) report "null", which postMessage
+  // rejects as a target, so those fall back to '*' and rely on the source check.
+  var ZOOM_GALLERY_ORIGIN = (function () {
+    try { var o = new URL(ZOOM_GALLERY_URL, (window.location && window.location.href) || undefined).origin; return (o && o !== 'null') ? o : '*'; } catch (_) { return '*'; }
+  })();
+  var _zoomgalleryPopup = null; // module scope: a still-open pop-up keeps working after a remount
+  function _zoomgalleryBridgeTrusted(ev, win) {
+    var src = ev && ev.source;
+    if (!src || (src !== win && src !== _zoomgalleryPopup)) return false;
+    return ZOOM_GALLERY_ORIGIN === '*' || ev.origin === ZOOM_GALLERY_ORIGIN;
+  }
 
   // ── Strings shared with the companion window (English fallbacks; the
   //    language packs carry them under stem.zoomGallery.*) ───────────────
@@ -434,7 +447,7 @@
   ];
 
   function fmt(s, vars) {
-    return String(s).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; });
+    return __alloOneWord(String(s).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; }));
   }
   function imgKey(item, field) { return 'img_' + String(item.id).replace(/-/g, '_') + '_' + field; }
   // Full key → English table (UI + catalog copy) so the companion window can be
@@ -875,18 +888,19 @@
       React.useEffect(function () {
         var popup = _win.current;
         if (!popup || popup.closed) return;
-        try { popup.postMessage({ type: 'alloflow-theme-change', theme: theme }, '*'); } catch (_) {}
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: theme }, ZOOM_GALLERY_ORIGIN); } catch (_) {}
       }, [theme]);
       React.useEffect(function () {
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string' || data.type.indexOf('alloczoom-') !== 0) return;
+          if (!_zoomgalleryBridgeTrusted(ev, _win.current)) return;
           if (data.type === 'alloczoom-hello') {
             var manifest = (data.strings && typeof data.strings === 'object') ? data.strings : windowStringManifest();
             var resolved = {};
             Object.keys(manifest).forEach(function (k) { resolved[k] = t('stem.zoomGallery.' + k, manifest[k]); });
             var notes = ((ctx.toolData && ctx.toolData._zoomGallery && ctx.toolData._zoomGallery.notes) || {});
-            try { if (ev.source) ev.source.postMessage({ type: 'alloczoom-ready', ai: aiOn, tts: typeof ctx.callTTS === 'function', strings: resolved, notes: notes }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'alloczoom-ready', ai: aiOn, tts: typeof ctx.callTTS === 'function', strings: resolved, notes: notes }, ZOOM_GALLERY_ORIGIN); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -898,7 +912,7 @@
           if (data.type === 'alloczoom-speak') {
             // The pop-out has no host of its own; it asks us to read aloud.
             var back = ev.source || _win.current;
-            var reply = function (ok) { try { if (back) back.postMessage({ type: 'alloczoom-speak-result', id: data.id, ok: !!ok }, '*'); } catch (_) {} };
+            var reply = function (ok) { try { if (back) back.postMessage({ type: 'alloczoom-speak-result', id: data.id, ok: !!ok }, ZOOM_GALLERY_ORIGIN); } catch (_) {} };
             if (typeof ctx.callTTS !== 'function' || !data.text) { reply(false); return; }
             Promise.resolve(ctx.callTTS(String(data.text).slice(0, 4000), null, null, { force: true }))
               .then(function (url) { reply(!!url); })
@@ -908,7 +922,7 @@
           if (data.type !== 'alloczoom-ai-request' || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'alloczoom-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'alloczoom-ai-response', id: data.id }, payload), ZOOM_GALLERY_ORIGIN); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
           bumpSlice('coachCount');
@@ -926,6 +940,7 @@
         try { w = window.open(url, 'alloflow-zoom-gallery', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { setPopupState('blocked'); say(I('popup_blocked')); return; }
         _win.current = w;
+        _zoomgalleryPopup = w;
         setPopupState('opening');
         bumpSlice('openedCount');
         say(I('opened_sr'));

@@ -81,6 +81,310 @@
     className: "mt-2 leading-relaxed"
   }, label('unavailable', 'The saved passage could not be matched to this lesson. Check the original source before using this claim.')));
 }
+function _aiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+
+// Role Swap: the student answers the figure's stored questions AS the figure, citing the source. No AI.
+function _roleSwapNorm(value) {
+  return String(value || '').toLocaleLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim().replace(/^["'….\s]+|["'….\s]+$/g, '');
+}
+function _roleSwapQuestions(characters, fallbackSuggestions) {
+  var out = [];
+  characters.forEach(function (character, ci) {
+    var name = String(character && character.name || '').trim();
+    if (!name) return;
+    var stored = Array.isArray(character.suggestedQuestions) && character.suggestedQuestions.length ? character.suggestedQuestions : characters.length === 1 && Array.isArray(fallbackSuggestions) ? fallbackSuggestions : [];
+    var seen = {};
+    stored.forEach(function (item) {
+      if (item && typeof item === 'object' && item.tier === 'poor') return;
+      var text = String(typeof item === 'string' ? item : item && item.text || '').trim().slice(0, 500);
+      var id = ci + ':' + text;
+      if (!text || seen[id] || Object.keys(seen).length >= 6) return;
+      seen[id] = true;
+      out.push({
+        id: id,
+        speaker: name,
+        text: text
+      });
+    });
+    out.push({
+      id: ci + ':own',
+      speaker: name,
+      text: '',
+      own: true
+    });
+  });
+  return out;
+}
+function PersonaRoleSwap(props) {
+  var t = props.t;
+  var personaState = props.personaState || {};
+  var setPersonaState = props.setPersonaState;
+  var sessionKey = props.sessionKey;
+  var characters = props.characters;
+  var label = function (key, fallback, params) {
+    var value = t('persona.role_swap.' + key, params || {});
+    if (value && value !== 'persona.role_swap.' + key) return value;
+    return String(fallback).replace(/\{(\w+)\}/g, function (match, name) {
+      return params && params[name] != null ? String(params[name]) : match;
+    });
+  };
+  var names = characters.map(function (c) {
+    return String(c && c.name || '').trim();
+  }).filter(Boolean);
+  var draft = personaState.roleSwap && personaState.roleSwap.key === sessionKey ? personaState.roleSwap : null;
+  var answers = draft && draft.answers || {};
+  var checks = draft && draft.checks || {};
+  var questions = _roleSwapQuestions(characters, personaState.suggestions);
+  var active = questions.find(function (q) {
+    return draft && q.id === draft.active;
+  }) || questions[0];
+  var excerpt = props.sourceBinding && typeof props.sourceBinding.excerpt === 'string' ? props.sourceBinding.excerpt.trim() : '';
+  var _status = React.useState(null);
+  var status = _status[0];
+  var setStatus = _status[1];
+  var _busy = React.useState(false);
+  var busy = _busy[0];
+  var setBusy = _busy[1];
+  var evidenceRef = React.useRef(null);
+  var baseId = 'persona-role-swap';
+  var update = function (mutate) {
+    if (typeof setPersonaState !== 'function') return;
+    setStatus(null);
+    setPersonaState(function (prev) {
+      var base = prev && prev.roleSwap && prev.roleSwap.key === sessionKey ? prev.roleSwap : {};
+      var next = {
+        key: sessionKey,
+        answers: Object.assign({}, base.answers),
+        checks: Object.assign({}, base.checks),
+        active: base.active
+      };
+      mutate(next);
+      return Object.assign({}, prev, {
+        roleSwap: next
+      });
+    });
+  };
+  var setField = function (q, field, value) {
+    update(function (next) {
+      next.answers[q.id] = Object.assign({
+        speaker: q.speaker,
+        question: q.text
+      }, next.answers[q.id]);
+      next.answers[q.id][field] = String(value).slice(0, field === 'answer' ? 4000 : field === 'question' ? 500 : 1000);
+    });
+  };
+  var entries = Object.keys(answers).map(function (id) {
+    return answers[id];
+  }).filter(function (a) {
+    return a && String(a.answer || '').trim() && String(a.question || '').trim();
+  });
+  var current = active && answers[active.id] || {};
+  var evidenceKey = _roleSwapNorm(current.evidence);
+  var evidenceFound = Boolean(excerpt && evidenceKey.length >= 12 && _roleSwapNorm(excerpt).indexOf(evidenceKey) >= 0);
+  var quoteSelection = function () {
+    var selection = typeof window !== 'undefined' && window.getSelection ? window.getSelection() : null;
+    var text = selection ? String(selection.toString() || '').trim() : '';
+    if (text && active) setField(active, 'evidence', text);
+    if (evidenceRef.current) evidenceRef.current.focus();
+  };
+  var save = function () {
+    if (busy || !entries.length) return;
+    var saveFn = typeof props.onSave === 'function' ? props.onSave : typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaRoleSwap && typeof window.AlloModules.PersonaRoleSwap.save === 'function' ? window.AlloModules.PersonaRoleSwap.save : null;
+    var failed = {
+      error: true,
+      text: label('save_failed', 'Could not save yet. Your answers are still here, so try again.')
+    };
+    if (!saveFn) {
+      setStatus(failed);
+      return;
+    }
+    setBusy(true);
+    Promise.resolve().then(function () {
+      return saveFn({
+        key: sessionKey,
+        mode: props.mode,
+        entries: entries,
+        checks: {
+          inCharacter: checks.inCharacter === true,
+          usesEvidence: checks.usesEvidence === true,
+          accurate: checks.accurate === true
+        }
+      });
+    }).then(function (result) {
+      setStatus(result ? {
+        text: label('saved', 'Saved to your work. Your teacher will see it when you hand in your work.')
+      } : failed);
+    }).catch(function () {
+      setStatus(failed);
+    }).finally(function () {
+      setBusy(false);
+    });
+  };
+  var inputClass = 'block w-full min-w-0 rounded-xl border-2 border-slate-300 bg-white p-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
+  var checkItems = [['inCharacter', label('check_character', 'I stayed in character and wrote as they would speak.')], ['usesEvidence', label('check_evidence', 'I used evidence from the source.')], ['accurate', label('check_accurate', 'My answers fit the history in the source.')]];
+  return /*#__PURE__*/React.createElement("section", {
+    "data-persona-role-swap": true,
+    "aria-labelledby": baseId + '-title',
+    className: "min-w-0 p-3 sm:p-4 bg-white text-slate-800"
+  }, props.note, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: baseId + '-title',
+    className: "flex items-center gap-2 text-sm font-black text-indigo-900"
+  }, /*#__PURE__*/React.createElement(PenTool, {
+    size: 16,
+    "aria-hidden": "true"
+  }), label('title', 'Role Swap: you answer as {name}', {
+    name: names.join(' & ')
+  })), typeof props.onBack === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: props.onBack,
+    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+  }, label('back', 'Back to interview'))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs leading-relaxed text-slate-600"
+  }, label('intro', 'Pick a question. Answer it the way {name} would, in their voice, and back it up with evidence from the source.', {
+    name: names.join(' & ')
+  })), excerpt && /*#__PURE__*/React.createElement("details", {
+    className: "mt-2 rounded-lg border border-teal-200 bg-teal-50/60 p-2 text-xs text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold text-teal-900 min-h-8 py-1"
+  }, label('source', 'Read the source passage')), /*#__PURE__*/React.createElement("div", {
+    "data-persona-role-swap-passage": true,
+    tabIndex: 0,
+    role: "region",
+    "aria-label": label('source', 'Read the source passage'),
+    className: "mt-1 max-h-48 overflow-y-auto whitespace-pre-wrap break-words leading-relaxed focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-700"
+  }, excerpt)), /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-labelledby": baseId + '-title',
+    className: "mt-3 flex flex-wrap gap-2"
+  }, questions.map(function (q) {
+    var done = Boolean(answers[q.id] && String(answers[q.id].answer || '').trim());
+    var text = q.own ? String((answers[q.id] || {}).question || '').trim() || label('own_question', 'Your own question') : q.text;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: q.id,
+      "data-role-swap-question": q.id,
+      "aria-pressed": active && active.id === q.id,
+      onClick: function () {
+        update(function (next) {
+          next.active = q.id;
+        });
+      },
+      className: 'min-h-11 max-w-full text-left rounded-xl border px-3 py-2 text-xs font-bold [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (active && active.id === q.id ? 'border-indigo-500 bg-indigo-100 text-indigo-950' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
+    }, done && /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 12,
+      "aria-hidden": "true",
+      className: "mr-1 inline text-emerald-700"
+    }), names.length > 1 ? q.speaker + ': ' : '', text);
+  })), active && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-2"
+  }, active.own ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    htmlFor: baseId + '-question',
+    className: "block text-xs font-bold"
+  }, label('own_question', 'Your own question')), /*#__PURE__*/React.createElement("input", {
+    id: baseId + '-question',
+    type: "text",
+    maxLength: 500,
+    value: current.question || '',
+    onChange: function (e) {
+      setField(active, 'question', e.target.value);
+    },
+    className: inputClass
+  })) : /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-900 [overflow-wrap:anywhere]"
+  }, active.text), /*#__PURE__*/React.createElement("label", {
+    htmlFor: baseId + '-answer',
+    className: "block text-xs font-bold"
+  }, label('answer_label', 'Your answer as {name}', {
+    name: active.speaker
+  })), /*#__PURE__*/React.createElement("textarea", {
+    id: baseId + '-answer',
+    "data-role-swap-answer": true,
+    rows: 4,
+    maxLength: 4000,
+    value: current.answer || '',
+    onChange: function (e) {
+      setField(active, 'answer', e.target.value);
+    },
+    className: inputClass + ' min-h-24 resize-y'
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: baseId + '-evidence',
+    className: "block text-xs font-bold"
+  }, label('evidence_label', 'Evidence from the source')), /*#__PURE__*/React.createElement("textarea", {
+    id: baseId + '-evidence',
+    ref: evidenceRef,
+    "data-role-swap-evidence": true,
+    rows: 2,
+    maxLength: 1000,
+    value: current.evidence || '',
+    onChange: function (e) {
+      setField(active, 'evidence', e.target.value);
+    },
+    className: inputClass + ' resize-y'
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, excerpt && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onMouseDown: function (e) {
+      e.preventDefault();
+    },
+    onClick: quoteSelection,
+    className: "min-h-11 inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-white px-3 py-2 text-xs font-bold text-teal-900 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
+  }, /*#__PURE__*/React.createElement(Quote, {
+    size: 14,
+    "aria-hidden": "true"
+  }), label('quote_selection', 'Use the text I selected')), evidenceFound && /*#__PURE__*/React.createElement("span", {
+    "data-role-swap-evidence-found": true,
+    className: "text-xs font-bold text-emerald-800"
+  }, label('evidence_found', 'This quote matches the source passage.')))), /*#__PURE__*/React.createElement("fieldset", {
+    className: "mt-3 rounded-xl border border-slate-200 p-2"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "px-1 text-xs font-bold text-slate-800"
+  }, label('check_title', 'Self-check')), checkItems.map(function (item) {
+    return /*#__PURE__*/React.createElement("label", {
+      key: item[0],
+      className: "flex min-h-8 items-start gap-2 text-xs leading-relaxed text-slate-800"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      "data-role-swap-check": item[0],
+      checked: checks[item[0]] === true,
+      onChange: function (e) {
+        var on = e.target.checked;
+        update(function (next) {
+          next.checks[item[0]] = on;
+        });
+      },
+      className: "mt-0.5 h-4 w-4"
+    }), /*#__PURE__*/React.createElement("span", null, item[1]));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-role-swap-save": true,
+    onClick: save,
+    disabled: busy || !entries.length,
+    "aria-busy": busy,
+    className: "min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+  }, busy ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    "aria-hidden": "true",
+    className: "animate-spin motion-reduce:animate-none"
+  }) : /*#__PURE__*/React.createElement(Save, {
+    size: 16,
+    "aria-hidden": "true"
+  }), label('save', 'Save my Role Swap')), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "data-role-swap-status": true,
+    className: 'text-xs leading-relaxed ' + (status && status.error ? 'text-red-800' : 'text-emerald-800')
+  }, status ? status.text : '')));
+}
 function PersonaChatView(props) {
   // State (object-bundle)
   var personaState = props.personaState;
@@ -144,6 +448,71 @@ function PersonaChatView(props) {
   var handlePersonaTopicSpark = props.handlePersonaTopicSpark;
   var handleGeneratePersonaSummary = props.handleGeneratePersonaSummary;
   var handleRetryPortraitGeneration = props.handleRetryPortraitGeneration;
+  // Learner with no usable AI: the figure cannot reply, so hide AI extras and show the stored greeting with a note.
+  var personaStudentTextAiOff = !isTeacherMode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
+  var personaStudentImageAiOff = personaStudentTextAiOff || !isTeacherMode && !_aiUsable('images', typeof window !== 'undefined' ? window.callGeminiImageEdit : undefined);
+  if (personaStudentTextAiOff) {
+    handlePersonaTopicSpark = null;
+    handleGeneratePersonaSummary = null;
+  }
+  if (personaStudentImageAiOff) handleRetryPortraitGeneration = null;
+  var handleSavePersonaRoleSwap = props.handleSavePersonaRoleSwap;
+  var _roleSwapOpenState = React.useState(false);
+  var showRoleSwap = personaStudentTextAiOff || _roleSwapOpenState[0];
+  var roleSwapToggleRef = React.useRef(null);
+  var roleSwapCharacters = (personaState.mode === 'panel' ? (personaState.selectedCharacters || []).slice(0, 2) : [personaState.selectedCharacter]).filter(function (c) {
+    return c && c.name;
+  });
+  var roleSwapTitle = function () {
+    var names = roleSwapCharacters.map(function (c) {
+      return c.name;
+    }).join(' & ');
+    var value = t('persona.role_swap.title', {
+      name: names
+    });
+    return value && value !== 'persona.role_swap.title' ? value : 'Role Swap: you answer as ' + names;
+  }();
+  var renderPersonaRoleSwap = function () {
+    return /*#__PURE__*/React.createElement(PersonaRoleSwap, {
+      t: t,
+      personaState: personaState,
+      setPersonaState: setPersonaState,
+      characters: roleSwapCharacters,
+      mode: personaState.mode === 'panel' ? 'panel' : 'single',
+      sessionKey: (personaState.mode === 'panel' ? 'panel' : 'single') + ':' + roleSwapCharacters.map(function (c) {
+        return c.name;
+      }).join('|') + ':' + String(generatedContent && generatedContent.id || ''),
+      sourceBinding: generatedContent && generatedContent.config ? generatedContent.config.personaSource : null,
+      onSave: typeof handleSavePersonaRoleSwap === 'function' ? handleSavePersonaRoleSwap : null,
+      note: personaStudentTextAiOff ? renderPersonaAiOffNote() : null,
+      onBack: personaStudentTextAiOff ? null : function () {
+        _roleSwapOpenState[1](false);
+        setTimeout(function () {
+          if (roleSwapToggleRef.current) roleSwapToggleRef.current.focus();
+        }, 0);
+      }
+    });
+  };
+  var renderRoleSwapToggle = function () {
+    if (personaStudentTextAiOff || !roleSwapCharacters.length) return null;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      ref: roleSwapToggleRef,
+      "data-persona-role-swap-toggle": true,
+      "aria-pressed": _roleSwapOpenState[0],
+      onClick: function () {
+        _roleSwapOpenState[1](function (open) {
+          return !open;
+        });
+      },
+      className: 'p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none flex items-center gap-2 ' + (_roleSwapOpenState[0] ? 'bg-indigo-100 text-indigo-900 border-indigo-300' : 'bg-white text-indigo-700 border-slate-200 hover:bg-indigo-50'),
+      title: roleSwapTitle,
+      "aria-label": roleSwapTitle
+    }, /*#__PURE__*/React.createElement(PenTool, {
+      size: 16,
+      "aria-hidden": "true"
+    }));
+  };
   var handleSavePersonaChat = props.handleSavePersonaChat;
   var handleListPersonaSessionArchive = props.handleListPersonaSessionArchive;
   var handleDownloadPersonaSessionArchive = props.handleDownloadPersonaSessionArchive;
@@ -265,6 +634,13 @@ function PersonaChatView(props) {
       role: "status",
       "aria-live": "polite"
     }, conversationPosition.unread ? navigationLabel('new_reply_announcement', 'A new reply is available. Use Jump to latest to read it.') : ''));
+  };
+  var renderPersonaAiOffNote = function () {
+    return /*#__PURE__*/React.createElement("p", {
+      "data-persona-ai-off": true,
+      role: "status",
+      className: "m-3 rounded-xl border border-slate-300 bg-slate-50 p-3 text-center text-xs leading-relaxed text-slate-700"
+    }, recoveryLabel('ai_off', "This interview needs AI, which isn't available here. You can still read the greeting and the profile."));
   };
   var renderPersonaTurnError = function () {
     if (!personaState.turnError || personaState.isLoading) return null;
@@ -600,6 +976,8 @@ function PersonaChatView(props) {
         if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-definition-dialog], [data-persona-reflection-dialog], [data-persona-summary-dialog], [data-persona-archive-dialog]')) {
           return;
         }
+        // Role Swap holds unsaved student writing; Escape there must not close (and erase) it.
+        if (event.target && typeof event.target.closest === 'function' && event.target.closest('[data-persona-role-swap]')) return;
         // Closing erases the interview, so Escape while typing does not close it.
         if (event.target && /^(TEXTAREA|INPUT|SELECT)$/.test(event.target.tagName || '')) return;
         event.preventDefault();
@@ -1424,7 +1802,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), /*#__PURE__*/React.createElement("button", {
+  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: _requestPersonaTopicSpark,
@@ -1442,7 +1820,7 @@ function PersonaChatView(props) {
     className: personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-6 bg-slate-300 mx-1"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), renderRoleSwapToggle(), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('persona.archive_button'),
     onClick: _openPersonaArchive,
@@ -1464,7 +1842,7 @@ function PersonaChatView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Save, {
     size: 16
-  })), /*#__PURE__*/React.createElement("button", {
+  })), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _openPersonaSummary,
     disabled: !canGeneratePersonaSummary || summaryBusy,
@@ -1833,7 +2211,9 @@ function PersonaChatView(props) {
     className: "flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 12
-  }), " ", t('persona.speak_definition'))))), renderPersonaLatestControl(), !isPersonaFreeResponse && renderPersonaTurnError(), (showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('persona.speak_definition'))))), renderPersonaLatestControl(), !isPersonaFreeResponse && renderPersonaTurnError(), showRoleSwap ? /*#__PURE__*/React.createElement("div", {
+    className: "bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain"
+  }, renderPersonaRoleSwap()) : (showPersonaHints || !isPersonaFreeResponse) && (personaState.panelSuggestions || []).length > 0 && !personaState.isLoading && !panelChoicePending ? /*#__PURE__*/React.createElement("div", {
     className: "p-3 sm:p-4 bg-white border-t border-slate-200 max-h-[45vh] overflow-y-auto overscroll-contain"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 text-center mb-3 font-medium"
@@ -2087,7 +2467,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(History, {
     size: 64,
     className: "text-yellow-300/50"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('persona.generate_portrait_for', {
       name: personaState.selectedCharacter?.name || t('persona.character_fallback')
@@ -2096,7 +2476,7 @@ function PersonaChatView(props) {
     className: "bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16
-  }), t('persona.generate_portrait')), personaState.avatarGenerationFailed && /*#__PURE__*/React.createElement("span", {
+  }), t('persona.generate_portrait')), personaState.avatarGenerationFailed && typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-yellow-600/70 italic text-center"
   }, t('persona.portrait_retry_hint')))), /*#__PURE__*/React.createElement("h3", {
     className: "font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2"
@@ -2260,7 +2640,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), /*#__PURE__*/React.createElement("button", {
+  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: _requestPersonaTopicSpark,
@@ -2276,7 +2656,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement(Lightbulb, {
     size: 16,
     className: personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''
-  })), /*#__PURE__*/React.createElement("button", {
+  })), renderRoleSwapToggle(), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('persona.archive_button'),
     onClick: _openPersonaArchive,
@@ -2298,7 +2678,7 @@ function PersonaChatView(props) {
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Save, {
     size: 16
-  })), /*#__PURE__*/React.createElement("button", {
+  })), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _openPersonaSummary,
     disabled: !canGeneratePersonaSummary || summaryBusy,
@@ -2537,7 +2917,7 @@ function PersonaChatView(props) {
     }
   })))))), renderPersonaLatestControl(), /*#__PURE__*/React.createElement("div", {
     className: "bg-white border-t border-slate-100 flex flex-col shrink-0 max-h-[45vh] overflow-y-auto overscroll-contain z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
-  }, !isPersonaFreeResponse && renderPersonaTurnError(), isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
+  }, showRoleSwap ? renderPersonaRoleSwap() : /*#__PURE__*/React.createElement(React.Fragment, null, !isPersonaFreeResponse && renderPersonaTurnError(), isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: "px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in"
   }, /*#__PURE__*/React.createElement("span", {
     className: `text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`
@@ -2592,7 +2972,7 @@ function PersonaChatView(props) {
     disabled: suggestionsRetryPending,
     "aria-busy": suggestionsRetryPending ? 'true' : 'false',
     className: "font-bold text-indigo-700 border border-indigo-300 rounded-lg px-3 py-1.5 hover:bg-indigo-50"
-  }, t('persona.retry_choices')))), isPersonaReflectionOpen && /*#__PURE__*/React.createElement("div", {
+  }, t('persona.retry_choices'))))), isPersonaReflectionOpen && /*#__PURE__*/React.createElement("div", {
     ref: personaReflectionDialogRef,
     "data-persona-reflection-dialog": true,
     role: "dialog",

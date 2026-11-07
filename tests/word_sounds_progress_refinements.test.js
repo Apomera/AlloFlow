@@ -53,10 +53,29 @@ describe('Word Sounds destination activity queues',()=>{
  });
 });
 describe('phoneme progress with prepared pronunciation objects',()=>{
- function mastery(){let stats={};const update=callback('updatePhonemeMastery','trackConfusion',{WS_CORE:core,setPhonemeMastery:fn=>{stats=fn(stats);}});return {update,get:()=>stats};}
+ function mastery(isEnglish=true){let stats={};const update=callback('updatePhonemeMastery','trackConfusion',{WS_CORE:core,wsLangCaps:{isEnglish},setPhonemeMastery:fn=>{stats=fn(stats);}});return {update,get:()=>stats};}
  it('records each distinct sound label without object-string keys',()=>{
   const m=mastery();m.update([{grapheme:' CH ',ipa:'tʃ'},{ipa:'ɪ'},'p','P',{},null,{grapheme:{},ipa:'s'}],true);
-  expect(Object.keys(m.get())).toEqual(['ch','ɪ','p','s']);for(const stat of Object.values(m.get()))expect(stat).toMatchObject({total:1,independentCorrect:1,accuracy:100});
+  expect(Object.keys(m.get())).toEqual(['ch','i','p','s']);for(const stat of Object.values(m.get()))expect(stat).toMatchObject({total:1,independentCorrect:1,accuracy:100});
+ });
+ it('keeps two sounds apart when they share a spelling',()=>{
+  const m=mastery();for(let n=0;n<8;n++)m.update([{ipa:'k',grapheme:'c'}],true);for(let n=0;n<2;n++)m.update([{ipa:'s',grapheme:'c'}],false);
+  expect(m.get().c).toBeUndefined();
+  expect(m.get().k).toMatchObject({total:8,correct:8});expect(m.get().s).toMatchObject({total:2,correct:0});
+ });
+ it('keeps one sound together across its spellings',()=>{
+  const m=mastery();for(const grapheme of ['c','c','k','k','ck'])m.update([{ipa:'k',grapheme}],true);
+  expect(Object.keys(m.get())).toEqual(['k']);expect(m.get().k).toMatchObject({total:5,independentCorrect:5});
+ });
+ it('uses the same key whichever activity tested the sound',()=>{
+  const m=mastery();m.update(['k'],true);m.update([{ipa:'k',grapheme:'c'}],true);m.update([{ipa:'k',grapheme:'c'},{ipa:'æ',grapheme:'a'},{ipa:'t',grapheme:'t'}],true);
+  expect(m.get().k.total).toBe(3);expect(m.get().c).toBeUndefined();
+ });
+ it('leaves another language\'s IPA as written instead of applying English labels',()=>{
+  const m=mastery(false);m.update([{ipa:'i'},{ipa:'j'}],true);expect(Object.keys(m.get())).toEqual(['i','j']);
+ });
+ it('leaves plain-string progress keys where they were',()=>{
+  const m=mastery();m.update(['c','k','ck','sh'],true);expect(Object.keys(m.get())).toEqual(['c','k','ck','sh']);
  });
  it('separates printed support, AAC, retries and independent responses',()=>{
   const m=mastery();m.update(['k'],true,{textSupported:true});m.update(['k'],true,{aacAssisted:true});m.update(['k'],true,{presentations:2});m.update(['k'],true);

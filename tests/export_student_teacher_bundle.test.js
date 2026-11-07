@@ -278,6 +278,58 @@ describe('student and teacher HTML export bundle', () => {
     expect(revokeUrl).toHaveBeenCalledWith('blob:generic-2');
   });
 
+  it('removes the pack profile (grade levels, teacher-only items) from the student copy only', () => {
+    const profile = '<script type="application/json" id="alloflow-interactive-object-profile">{"resources":[{"title":"Key","instructionalText":{"form":"adapted","requestedGrade":3}}]}</script>';
+    const source = '<!DOCTYPE html><html><head><title>Energy lesson</title>' + profile + '</head><body><main><p>Student reading</p>' +
+      '<section class="teacher-view"><p>SECRET ANSWER</p></section></main></body></html>';
+    const copies = separateStudentTeacherHtml(source);
+    expect(copies.studentHtml).not.toContain('alloflow-interactive-object-profile');
+    expect(copies.studentHtml).not.toContain('requestedGrade');
+    expect(copies.teacherHtml).toContain('alloflow-interactive-object-profile');
+  });
+
+  it('keeps the editable project (every answer key) out of the read-aloud ZIP', async () => {
+    const lesson = '<!DOCTYPE html><html><head><title>Energy lesson</title></head><body><main><section data-ka-readable><h2>Reading</h2>' +
+      '<p>First sentence. Second sentence.</p></section></main></body></html>';
+    const zipEntries = [];
+    class FakeZip {
+      file(name) { zipEntries.push(name); return this; }
+      async generateAsync() { return new Blob(['zip']); }
+    }
+    const oldZip = window.JSZip;
+    window.JSZip = FakeZip;
+    vi.spyOn(URL, 'createObjectURL').mockImplementation(() => 'blob:read-aloud');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const downloads = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () { downloads.push(this.download); });
+    try {
+      const promise = handlersApi.executeExportFromPreview({
+        _docPipeline: {},
+        exportPreviewMode: 'html',
+        exportPreviewRef: { current: null },
+        generateFullPackHTML: () => lesson,
+        getExportableHistory: () => [{ correctAnswer: 'SECRET' }],
+        getSkippedResources: () => [],
+        exportConfig: { includeTeacherKey: false, assessmentMode: false, separateTeacherStudentFiles: false },
+        history: [{ correctAnswer: 'SECRET' }],
+        callTTS: async () => 'data:audio/wav;base64,UklGRgAAAAA=',
+        selectedVoice: 'Puck',
+        addToast: () => {},
+        t: (key) => key,
+        setShowExportPreview: () => {},
+      });
+      document.querySelector('input[name="allo-audio-quality"][value="embedded"]').checked = true;
+      document.querySelector('[data-r="continue"]').click();
+      expect(await promise).toBe(true);
+    } finally {
+      window.JSZip = oldZip;
+    }
+    expect(downloads.some((name) => /\.zip$/.test(name))).toBe(true);
+    expect(zipEntries.some((name) => /\.mp3$|\.wav$|audio/i.test(name))).toBe(true);
+    expect(zipEntries.some((name) => /project/i.test(name))).toBe(false);
+    expect(document.querySelector('#allo-project-backup-download a[download]')?.download).toBe('Energy lesson-project.json');
+  });
+
   it('exports assessment preview HTML without any raw project artifact', async () => {
     const assessment = '<!DOCTYPE html><html><head><title>Secure assessment</title></head><body><main><h1>Assessment</h1><p>Student-safe questions.</p></main></body></html>';
     const oldZip = window.JSZip;

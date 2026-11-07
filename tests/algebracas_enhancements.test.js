@@ -91,11 +91,11 @@ describe('E1: the engine checks AI answers against the problem', () => {
 });
 
 describe('E8/E9: offline honesty and accessibility', () => {
-  it('problem types with no local items are disabled offline, with a note; Multi-Step gives local multi-step items', async () => {
+  it('problem types with no local items are hidden offline (2026-11-03 AI-off sweep); Multi-Step gives local multi-step items', async () => {
     const app = await mount({ tab: 'practice' });
-    for (const name of ['📈 Quadratic', '📖 Word Problem', '⚖ Systems']) expect(button(name).disabled, name).toBe(true);
+    for (const name of ['📈 Quadratic', '📖 Word Problem', '⚖ Systems']) expect(button(name), name).toBeUndefined();
     expect(button('🔣 Multi-Step').disabled).toBe(false);
-    expect(document.body.textContent).toContain('Quadratic, Word Problem and Systems need the AI provider');
+    expect(document.body.textContent).not.toContain('Quadratic, Word Problem and Systems need the AI provider');
     await click('🔣 Multi-Step');
     await click('🎲 Generate Problem');
     expect(app.state().practiceQ.source).toBe('local-linear');

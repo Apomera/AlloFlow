@@ -193,7 +193,7 @@ test.describe('Raptor carried prey surface depth in real catches', () => {
   }
   function expectContact(contact: any, kind: string) {
     expect(contact.kind).toBe(kind); expect(contact.sameNativeIdentity).toBe(true); expect(contact.carriedUuid).toBe(contact.chosenUuid);
-    expect(contact.after.missionCatches - contact.before.missionCatches).toBe(1); expect(contact.after.carriedPreyMs).toBe(1100); expect(contact.state.parent).toBe('raptor-feet');
+    expect(contact.after.missionCatches - contact.before.missionCatches).toBe(1); expect(contact.after.carriedPreyMs).toBe(4200); expect(contact.state.parent).toBe('raptor-feet');
     expect(contact.state.materials).toEqual(contact.originalMaterials); expectMaterials(contact.state, 1);
     const p = contact.placement, h = p.headingRadians, pitch = p.pitchRadians, r = p.raptorPosition;
     expect(p.cameraPreserved).toBe(true); expect(p.orientationPreserved).toBe(true); expect(p.nativeModelUuid).toBe(contact.chosenUuid);
@@ -242,7 +242,7 @@ test.describe('Raptor carried prey surface depth in real catches', () => {
     return { before, state, proof, after, enteredAndClosedActualProductionStudy: true };
   }
   async function expired(page: Page) {
-    const result = await canvas(page).evaluate((c: any) => { const w = window as any; w.toCarryAge(1100); return { snapshot: c._rhSnapshot(), attached: !!w.carriedRoot.parent, carriedRootExists: !!w.depthScene.getObjectByName('raptor-carried-prey'),
+    const result = await canvas(page).evaluate((c: any) => { const w = window as any; w.toCarryAge(4200); return { snapshot: c._rhSnapshot(), attached: !!w.carriedRoot.parent, carriedRootExists: !!w.depthScene.getObjectByName('raptor-carried-prey'),
       disposals: w.disposals, footDisposals: w.footDisposals, sameBuffers: w.sameBuffers(), ownership: w.ownership(), ownedAttributeCount: w.ownedAttributes().length, rendererAliases: w.rendererAliases() }; });
     expectOwnership(result); expect(result.snapshot.carriedPreyMs).toBe(0); expect(result.snapshot.carriedPreyLabel).toBeNull(); expect(result.snapshot.talonGrip).toBe(0);
     expect(result.attached).toBe(false); expect(result.carriedRootExists).toBe(false); expect(result.footDisposals).toBe(0); expect(result.disposals.length).toBeGreaterThan(4); result.disposals.forEach((entry: any) => expect(entry.count).toBe(1));
@@ -256,21 +256,21 @@ test.describe('Raptor carried prey surface depth in real catches', () => {
     expectMaterials(held, 1); held.materials.forEach((entry: any) => expect(entry.version).toBe(entry.original.version));
     const native = await depthProof(page, info, 'bird-desktop-native', false), study = await studyProof(page, info, 'bird-desktop');
     const versionBaseline = await canvas(page).evaluate((c: any) => { c._rhCommand('pause'); return (window as any).readMaterials(); });
-    const samples = await canvas(page).evaluate(() => { const w = window as any; return [900, 950, 1000].map(age => w.toCarryAge(age)); });
-    const fades = [1, .84375, .5]; samples.forEach((state: any, i: number) => { expect(state.ageMs).toBe([900, 950, 1000][i]); expectMaterials(state, fades[i]); state.materials.forEach((entry: any, j: number) => expect(entry.version).toBe(versionBaseline[j].version + (i === 0 ? 0 : 1))); });
-    expect(samples.map((state: any) => state.ageMs)).toEqual([900, 950, 1000]);
+    const samples = await canvas(page).evaluate(() => { const w = window as any; return [4000, 4050, 4100].map(age => w.toCarryAge(age)); });
+    const fades = [1, .84375, .5]; samples.forEach((state: any, i: number) => { expect(state.ageMs).toBe([4000, 4050, 4100][i]); expectMaterials(state, fades[i]); state.materials.forEach((entry: any, j: number) => expect(entry.version).toBe(versionBaseline[j].version + (i === 0 ? 0 : 1))); });
+    expect(samples.map((state: any) => state.ageMs)).toEqual([4000, 4050, 4100]);
     const paused = await canvas(page).evaluate((c: any) => { const w = window as any; c._rhCommand('pause'); const before = w.readCarry(); w.stepDepth(60000); return { before, after: w.readCarry() }; });
     expect(paused.after.snapshot.motionTimeMs).toBe(paused.before.snapshot.motionTimeMs); expect(paused.after.materials).toEqual(paused.before.materials); expect(paused.after.pose).toEqual(paused.before.pose);
     await page.emulateMedia({ reducedMotion: 'reduce' }); await expect.poll(() => canvas(page).evaluate((c: any) => c._rhSnapshot().reducedMotion)).toBe(true);
-    const quiet = await canvas(page).evaluate(() => (window as any).readCarry()); expectMaterials(quiet, 1); expect(quiet.ageMs).toBe(1000); expect(quiet.snapshot.motionTimeMs).toBe(paused.before.snapshot.motionTimeMs);
+    const quiet = await canvas(page).evaluate(() => (window as any).readCarry()); expectMaterials(quiet, 1); expect(quiet.ageMs).toBe(4100); expect(quiet.snapshot.motionTimeMs).toBe(paused.before.snapshot.motionTimeMs);
     quiet.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(paused.before.materials[i].version + 1));
-    const quietFrozen = await canvas(page).evaluate(() => { const w = window as any; w.stepDepth(60000); return w.readCarry(); }); expect(quietFrozen.materials).toEqual(quiet.materials); expect(quietFrozen.pose).toEqual(quiet.pose); expect(quietFrozen.ageMs).toBe(1000);
+    const quietFrozen = await canvas(page).evaluate(() => { const w = window as any; w.stepDepth(60000); return w.readCarry(); }); expect(quietFrozen.materials).toEqual(quiet.materials); expect(quietFrozen.pose).toEqual(quiet.pose); expect(quietFrozen.ageMs).toBe(4100);
     await page.emulateMedia({ reducedMotion: 'no-preference' }); await expect.poll(() => canvas(page).evaluate((c: any) => c._rhSnapshot().reducedMotion)).toBe(false);
-    const restoredFade = await canvas(page).evaluate(() => (window as any).readCarry()); expectMaterials(restoredFade, .5); expect(restoredFade.ageMs).toBe(1000);
+    const restoredFade = await canvas(page).evaluate(() => (window as any).readCarry()); expectMaterials(restoredFade, .5); expect(restoredFade.ageMs).toBe(4100);
     restoredFade.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(quiet.materials[i].version + 1));
-    const late = await canvas(page).evaluate((c: any) => { c._rhCommand('pause'); const w = window as any; return [1050, 1099].map(age => w.toCarryAge(age)); });
-    late.forEach((state: any) => { const progress = (state.ageMs - 900) / 200; expectMaterials(state, 1 - progress * progress * (3 - 2 * progress)); state.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(restoredFade.materials[i].version)); });
-    expect(late.map((state: any) => state.ageMs)).toEqual([1050, 1099]); const release = await expired(page);
+    const late = await canvas(page).evaluate((c: any) => { c._rhCommand('pause'); const w = window as any; return [4150, 4199].map(age => w.toCarryAge(age)); });
+    late.forEach((state: any) => { const progress = (state.ageMs - 4000) / 200; expectMaterials(state, 1 - progress * progress * (3 - 2 * progress)); state.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(restoredFade.materials[i].version)); });
+    expect(late.map((state: any) => state.ageMs)).toEqual([4150, 4199]); const release = await expired(page);
     await info.attach('bird-desktop-lifecycle', { body: JSON.stringify({ source: launchHashes, contact, held, native, study, versionBaseline, samples, paused, quiet, quietFrozen, restoredFade, late, release }), contentType: 'application/json' });
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
@@ -288,8 +288,8 @@ test.describe('Raptor carried prey surface depth in real catches', () => {
     const held = await canvas(page).evaluate((c: any) => { const w = window as any; const state = w.toCarryAge(240); w.renderDepth(); c._rhCommand('pause'); return state; }); expectMaterials(held, 1); held.materials.forEach((entry: any) => expect(entry.version).toBe(entry.original.version));
     const native = await depthProof(page, info, 'fish-mobile-native', false), study = await studyProof(page, info, 'fish-mobile');
     const versionBaseline = await canvas(page).evaluate((c: any) => { c._rhCommand('pause'); return (window as any).readMaterials(); });
-    const samples = await canvas(page).evaluate(() => { const w = window as any; return [900, 950, 1000, 1050, 1099].map(age => w.toCarryAge(age)); });
-    expect(samples.map((state: any) => state.ageMs)).toEqual([900, 950, 1000, 1050, 1099]); samples.forEach((state: any) => { expectMaterials(state, 1); state.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(versionBaseline[i].version)); });
+    const samples = await canvas(page).evaluate(() => { const w = window as any; return [4000, 4050, 4100, 4150, 4199].map(age => w.toCarryAge(age)); });
+    expect(samples.map((state: any) => state.ageMs)).toEqual([4000, 4050, 4100, 4150, 4199]); samples.forEach((state: any) => { expectMaterials(state, 1); state.materials.forEach((entry: any, i: number) => expect(entry.version).toBe(versionBaseline[i].version)); });
     const release = await expired(page);
     await info.attach('fish-mobile-lifecycle', { body: JSON.stringify({ source: launchHashes, posture, contact, held, native, study, versionBaseline, samples, release }), contentType: 'application/json' });
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);

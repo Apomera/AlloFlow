@@ -1148,8 +1148,9 @@
         className: 'text-xs px-2 py-1 rounded border ' + (s.mode === id ? 'bg-indigo-100 border-indigo-300' : 'border-slate-300')
       }, label);
     };
-    // Speaking uses on-device speech-to-text (an allowed accommodation) and
-    // becomes text the student can edit. Honest label: nothing is uploaded.
+    // Speaking uses the app's speech-to-text (an allowed accommodation) and
+    // becomes text the student can edit. Which engine runs depends on the device,
+    // and Chrome's built-in one sends audio to Google, so the label promises nothing.
     var startSpeaking = function () {
       var SR = GLOBAL.SpeechRecognition || GLOBAL.webkitSpeechRecognition;
       if (!SR) return;
@@ -1197,7 +1198,7 @@
               s.mode === 'audio' ? h('button', {
                 type: 'button', onClick: startSpeaking,
                 className: 'text-xs px-2 py-1 rounded border border-slate-300 mb-1'
-              }, s.speaking ? t('checkpoint.listening', '🔴 Listening — say your answer') : t('checkpoint.speak', '🎤 Speak your answer (it becomes text on this device)')) : null,
+              }, s.speaking ? t('checkpoint.listening', '🔴 Listening — say your answer') : t('checkpoint.speak_to_text', '🎤 Speak your answer (it becomes text you can edit)')) : null,
               h('textarea', {
                 value: s.text,
                 onChange: function (e) { set(Object.assign({}, s, { text: e.target.value })); },

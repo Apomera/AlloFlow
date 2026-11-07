@@ -271,6 +271,8 @@ test.describe('Raptor talon grip in the production capture lifecycle', () => {
     });
     for (const sample of samples) expectFeet(sample.feet, 1 - Math.pow(1 - Math.min(1, sample.age / 160), 3));
     expect(samples.map((s: any) => s.age)).toEqual([40, 80, 120, 160]); expectFeet(samples[3].feet, 1);
+    // The carry camera swings under the bird; the feet read clearly once it has arrived.
+    await canvas(page).evaluate(() => { const w = window as any; w.skipGripRender = true; w.advanceGrip(900); w.renderGrip(); });
     const native = await nativeProof(page, info, 'peregrine-day-desktop');
     const paused = await canvas(page).evaluate((c: any) => {
       const w = window as any; c._rhCommand('pause'); const before = w.readFeet(); w.stepGrip(60000); return { before, after: w.readFeet(), sameBuffers: w.sameFootBuffers() };
@@ -293,7 +295,7 @@ test.describe('Raptor talon grip in the production capture lifecycle', () => {
     expect(replacement.disposedOld).toHaveLength(initial.watch.resources); replacement.disposedOld.forEach((entry: any) => expect(entry.count).toBe(1));
     expect(replacement.footResourceDisposals).toBe(0);
     const expired = await canvas(page).evaluate((c: any) => {
-      const w = window as any; w.skipGripRender = true; w.advanceGrip(1200);
+      const w = window as any; w.skipGripRender = true; w.advanceGrip(4400);
       return { snapshot: c._rhSnapshot(), sameBuffers: w.sameFootBuffers(), watches: w.carryWatches.map((watch: any) => ({ attached: !!watch.root.parent, counts: watch.counts })), footResourceDisposals: w.footResourceDisposals, weights: w.feet.map((f: any) => f.morphTargetInfluences.slice()) };
     });
     expect(expired.snapshot.carriedPreyMs).toBe(0); expect(expired.snapshot.talonGrip).toBe(0); expect(expired.snapshot.footGrip).toBe(0);

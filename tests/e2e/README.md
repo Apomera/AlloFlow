@@ -1,7 +1,7 @@
 # AlloFlow Playwright E2E Suite
 
 End-to-end browser tests for AlloFlow, running against the deployed production site
-(`https://prismflow-911fe.web.app`) by default.
+(`https://alloflow-cdn.pages.dev/app/`) by default.
 
 ## Running
 

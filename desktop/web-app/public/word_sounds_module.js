@@ -18,6 +18,64 @@
   // project-standard host announcer (it owns its own polite region); otherwise
   // write to the dedicated region created above. Without this, correct/incorrect
   // feedback was visual + audio chime only and never reached AT users.
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function wsAiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+  // Student AI off: the host's callTTS returns no cloud voice, so a WHOLE word
+  // (never an isolated phoneme) with no prepared clip uses the device voice.
+  function wsStudentDeviceVoiceOnly() {
+    return typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
+  }
+  function wsSpeakDeviceVoice(text, language, rate) {
+    return new Promise(function (resolve) {
+      var synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+      var phrase = String(text == null ? '' : text).trim();
+      if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) { resolve(false); return; }
+      var done = false, started = false, timer = null;
+      var finish = function (ok) { if (done) return; done = true; clearTimeout(timer); resolve(ok); };
+      try {
+        var utterance = new SpeechSynthesisUtterance(phrase);
+        var lang = String(language || '').trim().replace(/_/g, '-');
+        utterance.lang = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(lang) ? lang : 'en-US';
+        var speed = Number(rate);
+        if (Number.isFinite(speed) && speed > 0) utterance.rate = Math.max(0.5, Math.min(2, speed));
+        utterance.onstart = function () { started = true; };
+        utterance.onend = function () { finish(true); };
+        utterance.onerror = function (e) { finish(!!e && (e.error === 'interrupted' || e.error === 'canceled')); };
+        // A muted or voiceless device never starts: report it instead of hanging.
+        timer = setTimeout(function () { finish(started); }, 8000);
+        synth.cancel();
+        synth.speak(utterance);
+      } catch (_) { finish(false); }
+    });
+  }
+  // A lesson's item count is a minimum: the activity then continues until the
+  // mastery rule or its limit is met, so the counter must not read like "7/5".
+  function wsLessonItemsText(ts, done, goal, max) {
+    return done < goal
+      ? ts("word_sounds.items_min_progress", { done: done, goal: goal }) || (done + " of at least " + goal + " items")
+      : ts("word_sounds.items_min_met", { done: done, max: max }) || (done + " of at most " + max + " items");
+  }
+  // First-try results for the finished session. A retry earns the item but no
+  // first-try credit; practice-only items carry no score.
+  function wsFirstTrySummary(masteryStats) {
+    var stats = Object.values(masteryStats || {}).filter(Boolean);
+    var total = 0, first = 0, words = new Set();
+    stats.forEach(function (s) {
+      total += Math.max(0, (s.attempted || 0) - (s.practiceOnlyAttempts || 0));
+      first += s.firstTryCorrect || 0;
+      (s.distinctWords || []).forEach(function (w) { words.add(String(w).toLowerCase()); });
+    });
+    if (!total) return null;
+    return { first: first, total: total, percent: Math.round((first / total) * 100), words: words.size };
+  }
+  function wsFirstTryText(ts, s) {
+    return ts("word_sounds.session_first_try", s) || ("First try: " + s.first + " of " + s.total + " items (" + s.percent + "%). Different words: " + s.words + ".");
+  }
   function wsAnnounce(message) {
     if (!message) return;
     try {
@@ -907,12 +965,44 @@ function createWordSoundsCore(options = {}) {
     const wordMatching=!imageAvailable || answerRevealed;
     return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
   };
-  // Progress keys follow the displayed sound label for both legacy strings
-  // and prepared pronunciation objects. One response counts once per label.
-  const phonemeLabels = phonemes => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
-    const label = typeof value === 'string' ? value : value && typeof value === 'object'
-      ? [value.grapheme, value.phoneme, value.ipa].find(v => typeof v === 'string' && v.trim()) : '';
-    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+  // Grading for a typed or chosen sound: each alternate spelling maps to ONE
+  // canonical form. Self-contained on purpose: the take-home player embeds
+  // this exact function, so the app and a downloaded file grade alike.
+  function soundAnswerMatches(answer, expected) {
+    var EQUIV = { oy: 'oi', au: 'aw', ew: 'oo', oe: 'oa', ai: 'ay', ea: 'ee', ir: 'er', ur: 'er', igh: 'ie', ou: 'ow', ck: 'k', ph: 'f', wr: 'r', kn: 'n' };
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var e = String(expected == null ? '' : expected).toLowerCase().trim();
+    if (!e) return false;
+    return a === e || (EQUIV[a] || a) === (EQUIV[e] || e);
+  }
+  // Which phoneme-bank recordings can voice a sound label, in the order the
+  // player tries them. Mirrors handleAudio's specialMap + phonemeMatches;
+  // tests/word_sounds_take_home.test.js pins both tables to the player's.
+  const PHONEME_BANK_SPECIAL = {au:'aw','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',ae:'ay',ai:'ay',a_e:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',igh:'ie',y:'ee',o_e:'oa',ow:'ow',ew:'oo',u_e:'oo',ue:'oo',ui:'oo','long u':'oo','short u':'u','ə':'schwa',schwa:'schwa'};
+  const PHONEME_BANK_MATCHES = {'ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',kn:'n',wr:'r',gn:'n',mb:'m',gh:'g',qu:'k',igh:'ie',tch:'ch',dge:'j',ai:'ay',a_e:'ay',ae:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',y:'ee',o_e:'oa',ue:'oo',ew:'oo',u_e:'oo',ui:'oo',oi:'oy',au:'aw',ou:'ow',ir:'er',ur:'er',c:'k',q:'k',x:'s',ph:'f',ck:'k',ce:'s',ci:'s',cy:'s',ge:'j',gi:'j',gy:'j','ə':'schwa','ɔɪ':'oy','aʊ':'ow','əʊ':'oa','eɪ':'ay','aɪ':'ie','iː':'ee','uː':'oo','ɑː':'ar','ɔː':'or','ɜː':'er','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ʌ':'u','ʊ':'oo','θ':'th','ð':'th','ʃ':'sh','ʒ':'sh','ŋ':'ng','tʃ':'ch','dʒ':'j','ɪə':'ear','eə':'air','ʊə':'oo'};
+  const phonemeBankCandidates = text => {
+    const lower = String(text == null ? '' : text).toLowerCase();
+    let key = lower.trim();
+    const out = [];
+    if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
+    else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
+    else if (key.endsWith(' short')) key = key.replace(' short', '');
+    const special = PHONEME_BANK_SPECIAL[key] || key;
+    out.push(special, lower);
+    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    if (match) out.push(match);
+    return [...new Set(out.filter(Boolean))];
+  };
+  // A lesson activity's item count is a minimum; this is where it must stop even
+  // if the mastery streak never comes. Never below the streak itself, or a
+  // one-item plan could not show one.
+  const lessonItemCeiling = (count, masteryThreshold) => Math.max((Number(count) || 5) * 2, Number(masteryThreshold) || 3);
+  // Progress keys are SOUNDS, the same label the learner sees, for both legacy
+  // strings and prepared pronunciation objects: c as /k/ and c as /s/ stay apart,
+  // and c, k and ck as /k/ stay together. One response counts once per label.
+  const phonemeLabels = (phonemes, isEnglish = true) => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
+    const label = phonemeLabel(value, isEnglish);
+    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label : '';
   }).filter(Boolean))];
   // Capture the supports present when answering, before success feedback can
   // reveal the word. Preserve the more specific connected-text evidence.
@@ -1592,7 +1682,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -2379,7 +2469,14 @@ const WS_CORE = createWordSoundsCore();
         ? window.loadAudioFromStorage
         : (key) => {
           try {
-            return localStorage.getItem("alloflow_audio_" + key) || null;
+            const stored = localStorage.getItem("alloflow_audio_" + key) || null;
+            // A blob URL dies with the page that made it. One saved earlier
+            // would win over speech on every later load and always fail.
+            if (stored && /^blob:/i.test(stored)) {
+              localStorage.removeItem("alloflow_audio_" + key);
+              return null;
+            }
+            return stored;
           } catch (e) {
             return null;
           }
@@ -2388,6 +2485,7 @@ const WS_CORE = createWordSoundsCore();
       typeof window.saveAudioToStorage === "function"
         ? window.saveAudioToStorage
         : (key, val) => {
+          if (typeof val === "string" && /^blob:/i.test(val)) return;
           try {
             localStorage.setItem("alloflow_audio_" + key, val);
           } catch (e) { console.warn("[WordSounds] silent catch:", e); }
@@ -4330,7 +4428,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           previous.active = false;
           previous.pending.forEach(request => request.controller.abort());
         }
-        ownerRef.current = { revision, resourceKey, active: true, pending: new Map(),
+        ownerRef.current = { revision, resourceKey, active: true, pending: new Map(), failed: new Set(),
           cache: new Map(Object.entries(prepared || {}).map(([word, image]) => [keyFor(word), rawImage(image)]).filter(([word, image]) => word && image)) };
       }
       const owner = ownerRef.current;
@@ -4350,20 +4448,27 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           if (typeof callImagen !== "function") return Promise.resolve();
           const request = { controller: new AbortController(), promise: null };
           owner.pending.set(word, request);
+          owner.failed.delete(word);
+          const markFailed = () => {
+            if (!owner.active || ownerRef.current !== owner || request.controller.signal.aborted) return;
+            owner.failed.add(word);
+            setSnapshot({ owner, images: Object.fromEntries(owner.cache), failed: owner.failed.size });
+          };
           request.promise = (async () => {
             try {
               const image = await callImagen(`Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`, undefined, undefined, { signal: request.controller.signal });
-              if (!image || !owner.active || ownerRef.current !== owner || request.controller.signal.aborted) return;
+              if (!image) { markFailed(); return; }
+              if (!owner.active || ownerRef.current !== owner || request.controller.signal.aborted) return;
               owner.cache.set(word, rawImage(image));
               setSnapshot({ owner, images: Object.fromEntries(owner.cache) });
-            } catch (_) { /* Missing pictures remain available for a later retry. */ }
+            } catch (_) { markFailed(); /* Missing pictures remain available for a later retry. */ }
             finally { if (owner.pending.get(word) === request) owner.pending.delete(word); }
           })();
           return request.promise;
         });
         await Promise.all(requests);
       }, [owner, callImagen]);
-      return { optionImages, generatePreparedOptionImages };
+      return { optionImages, generatePreparedOptionImages, optionImageFailures: owner.failed ? owner.failed.size : 0 };
     }
     // END WORD SOUNDS PREPARED PICTURE CACHE
 
@@ -5832,7 +5937,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             /*#__PURE__*/ React.createElement(
               "p",
               { className: "mt-2 text-sm text-slate-600" },
-              label("word_sounds.di_timing", "About {{minutes}} minutes. Mastery: {{mastery}} consecutive correct.")
+              label("word_sounds.di_timing_goal", "About {{minutes}} minutes. Practice goal: {{mastery}} in a row, right on the first try.")
                 .replace("{{minutes}}", String(script.estimatedMinutes))
                 .replace("{minutes}", String(script.estimatedMinutes))
                 .replace("{{mastery}}", String(script.mastery))
@@ -6967,10 +7072,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             window.__alloStudentAiDisabled === true
           );
       const callGemini = runtimeAiAllowed ? providedCallGemini : null;
-      const callTTS = runtimeAiAllowed ? providedCallTTS : null;
+      // Read-aloud stays on for students: prepared clips play first, and a WHOLE
+      // word without a clip may use the host's callTTS (local/browser voices
+      // without a key). Isolated phonemes never go to TTS (see handleAudio).
+      const callTTS = providedCallTTS;
       const wordSoundsVoiceRef = React.useRef(selectedVoice);
       wordSoundsVoiceRef.current = selectedVoice;
-      const callImagen = runtimeAiAllowed ? providedCallImagen : null;
+      // Null a blocked/unusable fn so every typeof callImagen check below is truthful.
+      const callImagen = runtimeAiAllowed && wsAiUsable("images", providedCallImagen) ? providedCallImagen : null;
       const runtimeSessionConfig = React.useMemo(() => ({
         preparedActivities: wsPreloadedWords?.[0]?._preparedActivities,
         ...(sessionConfig && typeof sessionConfig === "object" ? sessionConfig : {}),
@@ -7341,6 +7450,23 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           .toLowerCase().split(/[^\p{L}\p{M}']+/u).some((w) => w && !soundSwapUnplayable(w, null)));
       }, [wsPreloadedWords, glossaryTerms, wordSoundsLanguage]);
       const [isMinimized, setIsMinimized] = React.useState(false);
+      // startActivity can outlive a restore; its delayed reset must read today's state.
+      const isMinimizedRef = React.useRef(isMinimized);
+      isMinimizedRef.current = isMinimized;
+      // The first read of each bank is what starts its download. Start both when
+      // the player opens, so the first instruction is not the read that misses.
+      React.useEffect(() => {
+        try { void window.__ALLO_INSTRUCTION_AUDIO?.inst_warm; void window.__ALLO_ISOLATION_AUDIO?.inst_warm; } catch (_) {}
+      }, []);
+      // Waking Kokoro takes 20-45 s on a school laptop, and the first
+      // instruction used to be the request that waited for it. Wake it as soon
+      // as the player opens; the hook never downloads a model that is not here.
+      React.useEffect(() => {
+        if (!/^(af_|am_|bf_|bm_)/i.test(String(selectedVoice || ""))) return;
+        try {
+          if (typeof window.__alloWarmOnDeviceKokoro === "function") Promise.resolve(window.__alloWarmOnDeviceKokoro()).catch(() => {});
+        } catch (_) {}
+      }, [selectedVoice]);
       React.useEffect(() => {
         if (typeof loadProbeBanks === "function") {
           loadProbeBanks();
@@ -7790,6 +7916,41 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         }, 0);
         return { ready, total: preparedAudioTargets.length, missing: Math.max(0, preparedAudioTargets.length - ready) };
       }, [preparedAudioTargets, portableTtsLibrary]);
+      // AI off: handleAudio voices a WHOLE word / sentence without a clip on the
+      // device voice, but never a phoneme or syllable piece. True when a missing
+      // clip is one of those pieces, so the start must keep waiting for it.
+      const preparedAudioMissingPieceClip = React.useMemo(() => {
+        const normalizeKey = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+        const textOf = (value) => normalizeKey(value && typeof value === "object" ? (value.text || value.ipa || value.grapheme || value.phoneme) : value);
+        const wholeWords = new Set();
+        const pieces = new Set();
+        for (const item of preloadedWords) {
+          [item?.targetWord, item?.word, item?.term, item?.singleWord, item?.displayWord].forEach((value) => { if (typeof value === "string" && value.trim()) wholeWords.add(normalizeKey(value)); });
+          const boards = item?.activityItems && typeof item.activityItems === "object" ? item.activityItems : {};
+          Object.values(boards).forEach((board) => {
+            if (!board || typeof board !== "object") return;
+            [board.options, board.distractors, board.choices, board.sequence, board.extras].forEach((list) => {
+              if (Array.isArray(list)) list.forEach((value) => { if (typeof value === "string" && value.trim()) wholeWords.add(normalizeKey(value)); });
+            });
+          });
+          const syllableBoard = boards.syllable_blending;
+          [item?.syllables, item?.phonemes, syllableBoard?.syllables, syllableBoard?.audioUnits].forEach((list) => {
+            if (Array.isArray(list)) list.forEach((value) => { const key = textOf(value); if (key) pieces.add(key); });
+          });
+        }
+        const bank = typeof window !== "undefined" && window.__ALLO_PHONEME_AUDIO_BANK && typeof window.__ALLO_PHONEME_AUDIO_BANK === "object" ? window.__ALLO_PHONEME_AUDIO_BANK : null;
+        const soundChunk = /^(?:[a-z]|sh|ch|th|wh|ph|ng|ck|dh|zh|ar|er|ir|or|ur|aw|ow|ou|oo|ee|ea|ay|ai|oa|ie|ue|oy|air|ear|oo_long|oo_short|schwa|igh|tch|dge|kn|wr|gn|mb|qu)$/;
+        return preparedAudioTargets.some((key) => {
+          const asset = portableTtsLibrary[key];
+          const playable = (typeof asset === "string" && /^data:audio\/[a-z0-9.+-]+;base64,/i.test(asset))
+            || (asset && typeof asset === "object" && typeof asset.base64 === "string" && asset.base64.trim().length > 0);
+          if (playable) return false;
+          if (/^\/.+\/$/.test(key) || key.length === 1 || /[ɐ-˿]/.test(key) || /^[āēīōūăĕĭŏŭə]$/.test(key) || soundChunk.test(key)) return true;
+          if (bank && Object.prototype.hasOwnProperty.call(bank, key)) return true;
+          if (/^[a-z]+$/.test(key) && !/[aeiouy]/.test(key)) return true;
+          return pieces.has(key) && !wholeWords.has(key);
+        });
+      }, [preloadedWords, preparedAudioTargets, portableTtsLibrary]);
       const [preparedAudioRetryEpoch, setPreparedAudioRetryEpoch] = React.useState(0);
       const [preparedAudioRetryRequested, setPreparedAudioRetryRequested] = React.useState(false);
       const playbackPreflightEnabled = !runtimeAiAllowed && typeof onPreparedAudioStatus === "function";
@@ -7933,7 +8094,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       }, [playbackPreflightEnabled, preparedAudioCoverage.total, preparedAudioPlayback, publishPreparedAudioStatus]);
       const structuralPreparedAudioBlocked = !runtimeAiAllowed
         && preparedAudioCoverage.total > 0
-        && preparedAudioCoverage.missing > 0;
+        && preparedAudioCoverage.missing > 0
+        && (preparedAudioMissingPieceClip || typeof callTTS !== "function" || !!callTTS._alloQrBlocked);
       const playbackPreparedAudioBlocked = playbackPreflightEnabled
         && preparedAudioCoverage.total > 0
         && preparedAudioCoverage.missing === 0
@@ -8263,9 +8425,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [aacMode, setAacMode] = React.useState(
         () => preloadedWords.some((w) => w && w._aacDefaultOn),
       );
-      const { optionImages, generatePreparedOptionImages } = useWordSoundsPreparedPictures(
+      const { optionImages, generatePreparedOptionImages, optionImageFailures } = useWordSoundsPreparedPictures(
         preparedImageLibrary, historyResourceId || preloadedWords, callImagen,
       );
+      // Picture generation that cannot run (no provider, blocked, or failed this
+      // session) must never leave "Preparing pictures..." up.
+      const wsImagesUsable = typeof callImagen === "function" && wsAiUsable("images", callImagen) && !optionImageFailures;
       const buildNextMasteryStat = React.useCallback(
         (current, isCorrect, evidence = {}) => {
           const prior = current || {
@@ -8318,13 +8483,16 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           };
           const minItems = activityConfig.count || 5;
           const masteryThreshold = lessonPlanConfig.masteryThreshold || 3;
+          // Unscored practice can never build a first-try streak.
+          if (WS_NON_GRADED_ACTIVITIES.has(activityId)) return stats.attempted >= minItems;
           return (
             stats.attempted >= minItems &&
             stats.consecutiveStreak >= masteryThreshold &&
-            (!stats.distinctWords || stats.distinctWords.length >= Math.min(3, minItems))
+            // A one- or two-word lesson cannot show three different words.
+            (!stats.distinctWords || stats.distinctWords.length >= Math.min(3, minItems, preloadedWords.length || 3))
           );
         },
-        [masteryStats],
+        [masteryStats, preloadedWords.length],
       );
       const updateMasteryStats = React.useCallback(
         (activityId, isCorrect, word, evidence = {}) => {
@@ -9343,7 +9511,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             if (playImmediately && !playbackStale()) setIsPlayingAudio(false);
             return { ok: false, status: "unavailable" };
           }
-          if (callTTS && voiceForTts && !isPhoneme) {
+          // A vowel-less ASCII string ("bl", "st") is a sound chunk, not a word: never TTS it.
+          const ttsWholeWord = !/^[a-z]+$/i.test(text) || /[aeiouy]/i.test(text);
+          if (callTTS && voiceForTts && !isPhoneme && ttsWholeWord && !wsStudentDeviceVoiceOnly()) {
             if (ttsInflight.current.has(text)) {
               debugLog(
                 "⏳ TTS already in-flight for:",
@@ -9394,6 +9564,30 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               } catch (retryErr) {
                 warnLog("TTS retry also failed for:", text, retryErr?.message);
               }
+            }
+          }
+          // Student AI off: callTTS answers with an on-device voice already installed (Kokoro/Piper; never downloads) or null.
+          let onDeviceFailed = false;
+          if (playImmediately && callTTS && voiceForTts && !isPhoneme && ttsWholeWord && wsStudentDeviceVoiceOnly() && !playbackStale()) {
+            let onDeviceUrl = null;
+            try {
+              onDeviceUrl = await callTTS(text, voiceForTts, 1, { language: wordSoundsLanguage || "English", maxRetries: 0 });
+            } catch (e) {
+              warnLog("On-device voice failed for word:", text, e?.message);
+            }
+            if (playbackStale()) return { ok: false, status: 'cancelled' };
+            if (onDeviceUrl) {
+              const played = await loadAndPlay(onDeviceUrl);
+              if (played) return played;
+              onDeviceFailed = true;
+            }
+          }
+          if (playImmediately && !isPhoneme && ttsWholeWord && wsStudentDeviceVoiceOnly() && !playbackStale() && (await waitForFeedback())) {
+            const spoken = await wsSpeakDeviceVoice(text, wordSoundsLanguage, ttsSpeed);
+            if (playbackStale()) return { ok: false, status: 'cancelled' };
+            if (spoken) {
+              if (onDeviceFailed) clearAudioNotice();
+              return { ok: true, status: 'ready' };
             }
           }
           if (playImmediately && !playbackStale()) {
@@ -9485,6 +9679,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             }) : null);
           if (stale()) return;
           if (source) return handleAudio({ audioSrc: source, playbackRate: 0.9 });
+          if (wsStudentDeviceVoiceOnly() && await wsSpeakDeviceVoice(instruction, "en-US", 0.9)) return;
+          if (stale()) return;
           notifyAudioUnavailable();
         } catch (error) {
           if (!stale()) { warnLog("Instruction audio failed:", error); notifyAudioUnavailable(); }
@@ -10724,6 +10920,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const prepared = runtimeSessionConfig.preparedActivities;
           if (Array.isArray(prepared) && prepared.length && !prepared.includes(activityId)) return false;
           if (activityId === "manipulation" && !soundSwapAvailable) return false;
+          if (!isTeacherMode && (activityId === "decoding" || activityId === "sentence_match") && !wsImagesUsable && !hasPreparedImages) return false;
           if (wsLangCaps.isEnglish) return true; // English: everything, unchanged
           switch (activityId) {
             // English-specific machinery — never half-run in another language:
@@ -10749,7 +10946,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               return true;
           }
         },
-        [wsLangCaps, runtimeSessionConfig.preparedActivities, soundSwapAvailable],
+        [wsLangCaps, runtimeSessionConfig.preparedActivities, soundSwapAvailable, isTeacherMode, wsImagesUsable, hasPreparedImages],
       );
       const ACTIVITIES = React.useMemo(() => {
         const tierFiltered = includeOrthographic
@@ -11914,7 +12111,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const textSupported = !!(evidence.textSupported || evidence.answerExposed);
           setPhonemeMastery((prev) => {
             const updated = { ...prev };
-            WS_CORE.phonemeLabels(phonemes).forEach((p) => {
+            WS_CORE.phonemeLabels(phonemes, wsLangCaps.isEnglish).forEach((p) => {
               const prior = updated[p] || { correct: 0, total: 0 };
               const total = (prior.total || 0) + 1;
               const correct = (prior.correct || 0) + (isCorrect ? 1 : 0);
@@ -11966,7 +12163,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             return updated;
           });
         },
-        [setPhonemeMastery],
+        [setPhonemeMastery, wsLangCaps.isEnglish],
       );
       const trackConfusion = React.useCallback(
         (expected, actual) => {
@@ -14766,7 +14963,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (!image) { addToast?.('No image to refine', 'error'); return false; }
           const rawBase64 = image.split(',')[1];
           if (!rawBase64) throw new Error('Invalid image format');
-          if (typeof callGeminiImageEdit !== 'function') {
+          if (typeof callGeminiImageEdit !== 'function' || !wsAiUsable('imageEdit', callGeminiImageEdit)) {
             addToast?.('Image editing not available', 'error');
             return false;
           }
@@ -15656,7 +15853,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           // then-minimize within 50ms left the hard-cancel flag false,
           // re-opening the leak stopAllWordSoundsAudio exists to close.
           setTimeout(() => {
-            if (!isMinimized) audioCancelledRef.current = false;
+            if (!isMinimizedRef.current) audioCancelledRef.current = false;
           }, 50);
           // === End audio cleanup ===
           advanceEpochRef.current++;
@@ -16278,29 +16475,31 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const bank = window.__ALLO_INSTRUCTION_AUDIO;
               return bank && (bank[instKey] || bank[wordSoundsActivity]);
             };
+            const waitForBankClip = (read) => new Promise((resolve) => {
+              let finished = false;
+              let timeout;
+              let clip = null;
+              const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timeout);
+                window.removeEventListener("audio_bank_loaded", check);
+                cancelInstructionWait = null;
+                resolve(clip);
+              };
+              const check = () => {
+                if (seqStale()) { finish(); return; }
+                clip = read();
+                if (clip) finish();
+              };
+              cancelInstructionWait = finish;
+              window.addEventListener("audio_bank_loaded", check);
+              timeout = setTimeout(finish, 3000);
+              check();
+            });
             let readyInstructionAudio = usesGenericInstruction ? readInstructionAudio() : null;
             if (usesGenericInstruction && !readyInstructionAudio && typeof window.getAudio === "function") {
-              await new Promise((resolve) => {
-                let finished = false;
-                let timeout;
-                const finish = () => {
-                  if (finished) return;
-                  finished = true;
-                  clearTimeout(timeout);
-                  window.removeEventListener("audio_bank_loaded", check);
-                  cancelInstructionWait = null;
-                  resolve();
-                };
-                const check = () => {
-                  if (seqStale()) { finish(); return; }
-                  readyInstructionAudio = readInstructionAudio();
-                  if (readyInstructionAudio) finish();
-                };
-                cancelInstructionWait = finish;
-                window.addEventListener("audio_bank_loaded", check);
-                timeout = setTimeout(finish, 3000);
-                check();
-              });
+              readyInstructionAudio = await waitForBankClip(readInstructionAudio);
             }
             if (seqStale()) return;
             if (readyInstructionAudio) {
@@ -16341,11 +16540,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 typeof posRaw === "number"
                   ? ordinals[posRaw]
                   : posKeyMap[posRaw] || posRaw;
-              if (
-                typeof window.__ALLO_ISOLATION_AUDIO !== "undefined" &&
-                window.__ALLO_ISOLATION_AUDIO[posKey]
-              ) {
-                instructionAudioSrc = window.__ALLO_ISOLATION_AUDIO[posKey];
+              const isolationBank = window.__ALLO_ISOLATION_AUDIO;
+              const readIsolationClip = () => (isolationBank ? isolationBank[posKey] : null);
+              let isolationClip = readIsolationClip();
+              // No ordinals means the recordings are still downloading; the bank
+              // lists every key from the start, and a separate gap bank can fill
+              // "middle" and "last" sooner. A loaded bank without this position
+              // will not gain it, so that must not delay every item.
+              if (!isolationClip && isolationBank && typeof window.getAudio === "function" && !["1st", "2nd", "3rd"].some((key) => isolationBank[key])) {
+                isolationClip = await waitForBankClip(readIsolationClip);
+                if (seqStale()) return;
+              }
+              if (isolationClip) {
+                instructionAudioSrc = isolationClip;
               } else {
                 const ordinalNames = [
                   "first",
@@ -16363,7 +16570,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ];
                 const posStr =
                   typeof posRaw === "number" ? ordinalNames[posRaw] : posRaw;
-                instructionText = `What is the ${posStr || "target"} sound in ${currentWordSoundsWord}?`;
+                const longPrompt = `What is the ${posStr || "target"} sound in ${currentWordSoundsWord}?`;
+                // A prepared clip of the shorter wording beats depending on speech
+                // that may not be ready; Repeat uses that same wording.
+                const shortClip = posKey && !portableTtsSrcFor(longPrompt) ? portableTtsSrcFor(`What is the ${posKey} sound?`) : null;
+                if (shortClip) instructionAudioSrc = shortClip;
+                else instructionText = longPrompt;
               }
               } else {
                 instructionText = ts('word_sounds.isolation_prompt') || "What sound is in this word?";
@@ -16558,13 +16770,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }
             if (seqStale()) return;
+            let instructionOutcome = null;
             if (instructionAudioSrc) {
-              await handleAudio(instructionAudioSrc);
+              instructionOutcome = await handleAudio(instructionAudioSrc);
             } else if (instructionText) {
               // This sequence owns playback; a captured busy flag must not
               // silence its fallback when the first bank is still loading.
-              await handleAudio(instructionText);
+              instructionOutcome = await handleAudio(instructionText);
             }
+            // A browser that refuses to play gives no other sign; the notice's
+            // Try again button is the tap that lets the sound start.
+            if (instructionOutcome?.status === "blocked" && !seqStale()) notifyAudioUnavailable();
             // Bail BEFORE dispatching: a word advance mid-instruction used to
             // still fire this event, kicking WordFamiliesView's option
             // auto-play against the wrong (next) item.
@@ -16891,32 +17107,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               );
               return;
             }
-            // Canonical map: each alternate spelling of a sound maps to ONE
-            // representative (which is itself NOT a key, so it resolves to
-            // itself). A prior version used bidirectional swaps (oi:"oy",
-            // oy:"oi"); those never matched when BOTH sides were in the table
-            // (each flipped to the other), so alternate spellings were silently
-            // rejected. Collapsing to a canonical form fixes it:
-            // norm("oy") === norm("oi") === "oi".
-            const ANSWER_EQUIV = {
-              oy: "oi",
-              au: "aw",
-              ew: "oo",
-              oe: "oa",
-              ai: "ay",
-              ea: "ee",
-              ir: "er", ur: "er",
-              igh: "ie",
-              ou: "ow",
-              ck: "k",
-              ph: "f",
-              wr: "r",
-              kn: "n",
-            };
-            const normAnswer = ANSWER_EQUIV[safeAnswer] || safeAnswer;
-            const normExpected = ANSWER_EQUIV[safeExpected] || safeExpected;
-            const isCorrect =
-              normAnswer === normExpected || safeAnswer === safeExpected;
+            // One canonical form per alternate spelling ("oy" and "oi" both
+            // become "oi"). Shared with the take-home player, so a downloaded
+            // activity grades exactly as the app does.
+            const isCorrect = WS_CORE.soundAnswerMatches(safeAnswer, safeExpected);
             // Several activities grade locally and pass sentinel pairs like
             // ("incorrect","correct") — the sentinel must never be spoken,
             // shown, or hinted at as if it were the real answer.
@@ -17258,6 +17452,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               difficulty: getEffectiveDifficulty(),
               wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
               phonemes: wordSoundsPhonemes?.phonemes || [],
+              // The phonemeMastery keys for this word, so reports can match a
+              // row to a sound without their own copy of the sound tables.
+              soundLabels: WS_CORE.phonemeLabels(wordSoundsPhonemes?.phonemes || [], wsLangCaps.isEnglish),
               // Total presentations of THIS item, so 1 = right first time and
               // 2 = right (or wrong) after one retry. Same base as the
               // `attempts` on sessionWordResults below, which the session-recap
@@ -17315,22 +17512,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             const currentLessonConfig = lessonPlanConfig;
             let lessonTransitionPending = false;
+            // Shown in place of "Correct!" below. Setting it here directly was
+            // overwritten by that message in the same batch, so no learner saw it.
+            let _lessonTransitionMessage = null;
             const hasLessonPlan =
               currentLessonConfig &&
               activitySequence &&
               activitySequence.length > 0;
+            const _lessonActivity = hasLessonPlan && currentLessonConfig.activities?.find((a) => a.id === wordSoundsActivity);
+            // The count is a minimum; this is the hard stop for a learner who
+            // never reaches the streak. It ends the activity on a miss too.
+            const _lessonCeilingHit = !!_lessonActivity &&
+              _postActivityMastery.attempted >= WS_CORE.lessonItemCeiling(_lessonActivity.count, currentLessonConfig.masteryThreshold);
             if (autoDirectorCooldown.current) {
               debugLog(
                 "⏸️ Auto-director on cooldown, skipping progression check",
               );
             } else if (
               hasLessonPlan &&
-              isCorrect &&
               // Never let the lesson-plan auto-director switch activities
               // mid-probe: startActivity resets the probe clock without
               // resetting the score, permanently killing the payload arming.
               !isFixedForm &&
-              shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig, _postActivityMastery)
+              (_lessonCeilingHit || (isCorrect && shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig, _postActivityMastery)))
             ) {
               lessonTransitionPending = true;
               debugLog(
@@ -17349,49 +17553,40 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const currentIdx = uniqueActivities.indexOf(wordSoundsActivity);
               if (currentIdx < uniqueActivities.length - 1) {
                 const nextActivity = uniqueActivities[currentIdx + 1];
-                setWordSoundsFeedback({
-                  type: "success",
-                  message: `✅ Activity complete! Moving to ${nextActivity.replace(/_/g, " ")}! 🎉`,
-                });
+                // A miss that hits the limit keeps its own "Nice try" feedback.
+                const nextLabel = ALL_ACTIVITIES.find((a) => a.id === nextActivity)?.label || nextActivity.replace(/_/g, " ");
+                if (isCorrect) _lessonTransitionMessage = "✅ " + (ts("word_sounds.lesson_activity_next", { activity: nextLabel }) || ("Activity complete! Next: " + nextLabel)) + " 🎉";
                 setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
                 if (setWordSoundsStreak) setWordSoundsStreak(0);
                 autoDirectorCooldown.current = true;
                 setTimeout(() => {
+                  autoDirectorCooldown.current = false;
                   if (!isMountedRef.current) return;
                   // A manual activity change during the delay owns the screen.
-                  if (advanceEpochRef.current !== _advanceEpoch) { autoDirectorCooldown.current = false; return; }
+                  if (advanceEpochRef.current !== _advanceEpoch) return;
                   startActivity(nextActivity);
-                  setTimeout(() => {
-                    autoDirectorCooldown.current = false;
-                  }, 15000);
-                  if (!isMountedRef.current) return;
                 }, 2500);
               } else {
-                if (revisitQueue.length > 0) {
-                  setWordSoundsFeedback({
-                    type: "info",
-                    message: `📝 Let's review ${revisitQueue.length} words you missed!`,
-                  });
+                if (revisitQueue.length > 0 && !_lessonCeilingHit) {
+                  // No number in the sentence: one/many is the only plural it needs.
+                  _lessonTransitionMessage = "📝 " + (revisitQueue.length === 1
+                    ? ts("word_sounds.lesson_review_missed_one") || "Let's go back to the word you missed!"
+                    : ts("word_sounds.lesson_review_missed_many") || "Let's go back to the words you missed!");
                   const firstRevisit = revisitQueue[0];
                   if (firstRevisit) {
                     setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
                     if (setWordSoundsStreak) setWordSoundsStreak(0);
                     autoDirectorCooldown.current = true;
                     setTimeout(() => {
+                      autoDirectorCooldown.current = false;
                       if (!isMountedRef.current) return;
-                      if (advanceEpochRef.current !== _advanceEpoch) { autoDirectorCooldown.current = false; return; }
+                      if (advanceEpochRef.current !== _advanceEpoch) return;
                       startActivity(firstRevisit.activityId, firstRevisit.word);
                       setRevisitQueue((prev) => prev.slice(1));
-                      setTimeout(() => {
-                        autoDirectorCooldown.current = false;
-                      }, 15000);
                     }, 2500);
                   }
                 } else {
-                  setWordSoundsFeedback({
-                    type: "success",
-                    message: ts("word_sounds.lesson_practice_complete") || "Lesson complete! You practiced every activity.",
-                  });
+                  if (isCorrect) _lessonTransitionMessage = ts("word_sounds.lesson_practice_complete") || "Lesson complete! You practiced every activity.";
                   setTimeout(() => {
                     if (isMountedRef.current && advanceEpochRef.current === _advanceEpoch) setShowSessionComplete(true);
                   }, 2500);
@@ -17405,12 +17600,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const readyToAdvance =
                 (actStats.attempted >= MIN_PRACTICE && actStats.consecutiveStreak >= 3 && (actStats.distinctWords || []).length >= 3);
               if (showLetterHints && readyToAdvance) {
-                setWordSoundsFeedback({
-                  type: "success",
-                  message:
-                    ts("word_sounds.fb_no_text_mode") ||
-                    "Awesome! Let's try WITHOUT text now! 🙈",
-                });
+                _lessonTransitionMessage =
+                  ts("word_sounds.fb_no_text_mode") ||
+                  "Awesome! Let's try WITHOUT text now! 🙈";
                 setTimeout(() => {
                   if (isMountedRef.current) setShowLetterHints(false);
                 }, 2000);
@@ -17459,10 +17651,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     `Great spelling! Let's try ${nextActivity.replace(/_/g, " ")}! \uD83C\uDFC6`;
                 }
                 if (nextActivity) {
-                  setWordSoundsFeedback({
-                    type: "success",
-                    message: transitionMessage,
-                  });
+                  _lessonTransitionMessage = transitionMessage;
                   setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
                   setWordSoundsStreak?.(0);
                   autoDirectorCooldown.current = true;
@@ -17613,7 +17802,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setWordSoundsFeedback?.({
               isCorrect,
               streak: newStreak,
-              message: _resultMsg,
+              message: _lessonTransitionMessage || _resultMsg,
             });
             // (announced by the wordSoundsFeedback mirror effect)
             if (
@@ -17770,6 +17959,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           imageVisibilityMode,
           aacMode,
           learnerScopedHistory,
+          masteryStats,
+          revisitQueue,
+          lessonPlanConfig,
+          activitySequence,
+          shouldAdvanceActivity,
+          wsLangCaps.isEnglish,
         ],
       );
       React.useEffect(() => {
@@ -20620,7 +20815,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.decoding_drag_prompt") || "Drag the picture onto the word, or tap the picture"),
               /*#__PURE__*/ React.createElement("div", { onDragOver: (e) => { e.preventDefault(); if (!decodeDragOver) setDecodeDragOver(true); }, onDragLeave: () => setDecodeDragOver(false), onDrop: (e) => { e.preventDefault(); setDecodeDragOver(false); const _dw = e.dataTransfer.getData("text/plain"); if (_dw) dCheck(_dw); }, className: "text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors " + (decodeDragOver ? "border-violet-500 bg-violet-50 text-violet-800" : "border-slate-400 text-slate-800") }, dWord),
-              (!dAnyImg && typeof callImagen !== "function")
+              (!dAllReady && !wsImagesUsable)
                 ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-700 text-sm font-semibold" }, ts("word_sounds.decoding_needs_image") || "Picture matching needs image generation (open in Canvas).")
                 : !dAllReady
                   ? /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures...")
@@ -20925,7 +21120,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       }),
                     ),
                     !smAllReady
-                      ? (typeof callImagen !== "function"
+                      ? (!wsImagesUsable
                         ? /*#__PURE__*/ React.createElement("p", { className: "text-amber-700 text-sm font-semibold" }, ts("word_sounds.decoding_needs_image") || "Picture matching needs image generation (open in Canvas).")
                         : /*#__PURE__*/ React.createElement("p", { className: "text-slate-500 text-sm font-semibold italic" }, ts("word_sounds.decoding_preparing") || "Preparing pictures..."))
                       : /*#__PURE__*/ React.createElement(
@@ -21153,6 +21348,147 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
       }, [printMenuOpen]);
       React.useEffect(() => { if (!printAllowed && printMenuOpen) setPrintMenuOpen(false); }, [printAllowed, printMenuOpen]);
+      // Take-home file: a self-contained Find Sounds activity for one lesson,
+      // plus reading the results files students hand back. Teacher-only, like
+      // printing. English only: the sound recordings it embeds are English.
+      const takeHomeAllowed = printAllowed && wsLangCaps.isEnglish;
+      const [takeHomeOpen, setTakeHomeOpen] = React.useState(false);
+      const [takeHomeTitle, setTakeHomeTitle] = React.useState("");
+      const [takeHomeLetters, setTakeHomeLetters] = React.useState(false);
+      // null = follow the lesson plan's activities (or Find Sounds alone).
+      const [takeHomeActivities, setTakeHomeActivities] = React.useState(null);
+      const [takeHomeCatalog, setTakeHomeCatalog] = React.useState([]);
+      const [takeHomeMailbox, setTakeHomeMailbox] = React.useState(true);
+      const takeHomeChosen = (catalog) => {
+        const ids = (catalog || takeHomeCatalog).map((a) => a.id);
+        if (takeHomeActivities) return takeHomeActivities.filter((id) => ids.includes(id));
+        const planned = [...new Set(activitySequence || [])].filter((id) => ids.includes(id));
+        return planned.length ? planned : ids.includes("isolation") ? ["isolation"] : ids.slice(0, 1);
+      };
+      const takeHomeMailboxApi = typeof window !== "undefined" ? window.__alloMailboxTakeHome : null;
+      const takeHomeMailboxReady = !!(takeHomeMailboxApi && takeHomeMailboxApi.connected);
+      const [takeHomeStatus, setTakeHomeStatus] = React.useState("");
+      const [takeHomeReady, setTakeHomeReady] = React.useState(null);
+      const [takeHomeResults, setTakeHomeResults] = React.useState([]);
+      const takeHomeButtonRef = React.useRef(null);
+      const takeHomeDialogRef = React.useRef(null);
+      const takeHomeFocusBackRef = React.useRef(false);
+      const takeHomeRunRef = React.useRef(0);
+      const takeHomeLib = async () => {
+        if (!window.AlloWordSoundsTakeHome && typeof window.__alloLoadPlugin === "function") {
+          await window.__alloLoadPlugin("word_sounds_take_home_loader.js");
+        }
+        return window.AlloWordSoundsTakeHome || null;
+      };
+      // The recordings live in shared banks that download on first use.
+      const takeHomeBanks = async () => {
+        const banks = () => ({ isolation: window.__ALLO_ISOLATION_AUDIO, phonemes: window.__ALLO_PHONEME_AUDIO_BANK, instructions: window.__ALLO_INSTRUCTION_AUDIO });
+        const loaded = () => {
+          try { const b = banks(); return !!(b.isolation && b.isolation["1st"] && b.phonemes && b.phonemes.k && b.instructions && b.instructions.fb_try_again_listen); } catch (_) { return false; }
+        };
+        for (let waited = 0; !loaded() && waited < 10000; waited += 250) await new Promise((r) => setTimeout(r, 250));
+        return banks();
+      };
+      const takeHomeLesson = async (lib, submit) => lib.lessonFromPack(preloadedWords, {
+        core: WS_CORE, banks: await takeHomeBanks(), isEnglish: true, showLetters: takeHomeLetters,
+        activities: takeHomeChosen(lib.activities()), submit: submit || null,
+        title: takeHomeTitle.trim() || printTr("word_sounds.take_home_default_title", "Find the sound"),
+        lessonId: historyResourceId != null ? "ws-" + String(historyResourceId) : undefined,
+      });
+      React.useEffect(() => {
+        if (!takeHomeOpen) return undefined;
+        const run = ++takeHomeRunRef.current;
+        setTakeHomeReady(null);
+        (async () => {
+          const lib = await takeHomeLib();
+          if (run !== takeHomeRunRef.current) return;
+          if (!lib) { setTakeHomeReady({ error: true }); return; }
+          setTakeHomeCatalog(lib.activities());
+          const built = await takeHomeLesson(lib);
+          if (run === takeHomeRunRef.current) setTakeHomeReady(built);
+        })().catch(() => { if (run === takeHomeRunRef.current) setTakeHomeReady({ error: true }); });
+        return undefined;
+      }, [takeHomeOpen, preloadedWords, takeHomeLetters, takeHomeActivities]);
+      const closeTakeHome = React.useCallback(() => {
+        takeHomeFocusBackRef.current = true;
+        setTakeHomeOpen(false);
+        setTakeHomeStatus("");
+      }, []);
+      React.useEffect(() => {
+        if (takeHomeOpen) {
+          const dialog = takeHomeDialogRef.current;
+          const target = dialog && (dialog.querySelector("[data-dialog-initial-focus]") || dialog);
+          if (target) { try { target.focus(); } catch (_) {} }
+        } else if (takeHomeFocusBackRef.current) {
+          takeHomeFocusBackRef.current = false;
+          const button = takeHomeButtonRef.current;
+          if (button && button.isConnected) { try { button.focus(); } catch (_) {} }
+        }
+      }, [takeHomeOpen]);
+      React.useEffect(() => { if (!takeHomeAllowed && takeHomeOpen) setTakeHomeOpen(false); }, [takeHomeAllowed, takeHomeOpen]);
+      const takeHomeSlug = (value) => String(value || "").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "lesson";
+      const handleTakeHomeDownload = async () => {
+        const lib = await takeHomeLib();
+        if (!lib) { setTakeHomeStatus(printTr("word_sounds.take_home_unavailable", "The take-home tool did not load. Check your connection and try again.")); return; }
+        const check = await takeHomeLesson(lib);
+        setTakeHomeReady(check);
+        if (!check.ready) { setTakeHomeStatus(printTr("word_sounds.take_home_none_ready", "No word is ready for a take-home file yet.")); return; }
+        // Sending back needs a mailbox pack for this file. Made only now, at
+        // download, and only when the teacher chose it.
+        let submit = null;
+        if (takeHomeMailbox && takeHomeMailboxReady) {
+          try {
+            setTakeHomeStatus(printTr("word_sounds.take_home_mailbox_making", "Setting up sending on your Class Mailbox..."));
+            submit = await takeHomeMailboxApi.target({ title: check.lesson.title, expiresAt: new Date(Date.now() + 60 * 86400000).toISOString() });
+          } catch (_) {
+            setTakeHomeStatus(printTr("word_sounds.take_home_mailbox_failed", "Your Class Mailbox did not answer, so this file was not made. Try again, or turn off sending to make a file that saves results only."));
+            return;
+          }
+        }
+        const built = submit ? await takeHomeLesson(lib, submit) : check;
+        // The player's words for the learner, in the app's language when translated.
+        // Keys word_sounds.take_home_player_<label>, registered one by one.
+        const labels = {};
+        const playerKeyPrefix = ["word_sounds", "take_home_player_"].join(".");
+        const labelKeys = Object.keys(lib.DEFAULT_LABELS);
+        Object.keys(lib.ADAPTERS || {}).forEach((id) => labelKeys.push(...Object.keys(lib.ADAPTERS[id].labels || {}), id + "_title"));
+        labelKeys.forEach((key) => {
+          if (key === "ordinals" || key === "lang") return;
+          const value = ts(playerKeyPrefix + key);
+          if (value) labels[key] = value;
+        });
+        const html = lib.buildHtml(built.lesson, { core: WS_CORE, labels });
+        const name = "word-sounds-" + takeHomeSlug(built.lesson.title) + ".html";
+        const fileBlob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(fileBlob);
+        const link = document.createElement("a");
+        link.href = url; link.download = name;
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        // Email and class sites often refuse files over about 10 MB.
+        const sizeMb = fileBlob.size / (1024 * 1024);
+        const sizeText = printTr("word_sounds.take_home_file_size", "The file is {size} MB.", { size: sizeMb < 0.1 ? "0.1" : sizeMb.toFixed(1) })
+          + (sizeMb > 10 ? " " + printTr("word_sounds.take_home_file_big", "That may be too big to email or upload. Choosing fewer activities makes it smaller.") : "");
+        setTakeHomeStatus((built.lesson.submit
+          ? printTr("word_sounds.take_home_downloaded_send", "Downloaded {file}. Students open it in a browser; it works offline. When they finish online, Send puts their results in your Class Mailbox for 60 days; collect them in the Submission Inbox with Get submissions from Class Mailbox. They can always save a results file instead.", { file: name })
+          : printTr("word_sounds.take_home_downloaded", "Downloaded {file}. It works offline, with no account. Students download it, open it in a browser, and save their results file at the end.", { file: name })) + " " + sizeText);
+      };
+      const handleTakeHomeResults = async (event) => {
+        const files = Array.from((event.target && event.target.files) || []);
+        if (event.target) event.target.value = "";
+        const lib = await takeHomeLib();
+        if (!lib || !files.length) return;
+        const read = await Promise.all(files.slice(0, 60).map((file) => (file.size > 2000000 ? Promise.resolve({ ok: false, error: "too_large", name: file.name })
+          : file.text().then((text) => ({ ...lib.parseResult(text), name: file.name }), () => ({ ok: false, error: "unreadable", name: file.name })))));
+        setTakeHomeResults((prev) => {
+          const next = [...prev];
+          read.forEach((entry) => {
+            const id = entry.ok ? entry.result.lessonId + "|" + entry.result.learnerName + "|" + entry.result.finishedAt : "bad|" + entry.name;
+            if (!next.some((row) => row.id === id)) next.push({ id, ...entry });
+          });
+          return next;
+        });
+      };
       const handlePrintMaterial = (kind) => {
         const entries = kind === "boxes" ? printEntries.filter((e) => e.sounds > 0) : printEntries;
         if (!entries.length) return;
@@ -21200,6 +21536,121 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const blocked = printTr("word_sounds.di_script_print_blocked", "Printing is blocked here. Allow pop-ups for this page, then press Print again.");
         setPrintStatus(blocked);
         addToast?.(blocked, "error");
+      };
+      const renderTakeHome = () => {
+        const h = React.createElement;
+        const action = "mt-3 min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
+        const section = "rounded-xl border-2 border-slate-200 p-4";
+        const ready = takeHomeReady;
+        const chosen = takeHomeChosen();
+        const takeHomeActivityName = (id, fallback) => (ALL_ACTIVITIES.find((x) => x.id === id) || {}).label || fallback;
+        const toggleActivity = (id, on) => {
+          const next = on ? [...chosen, id] : chosen.filter((x) => x !== id);
+          setTakeHomeActivities(takeHomeCatalog.map((a) => a.id).filter((x) => next.includes(x)));
+        };
+        const missingText = (missing) => missing.map((m) => m === "board" ? printTr("word_sounds.take_home_missing_board", "no prepared item for this activity")
+          : m === "word" ? printTr("word_sounds.take_home_missing_word", "no recording of the word")
+          : m === "question" ? printTr("word_sounds.take_home_missing_question", "no recording of the question")
+          : printTr("word_sounds.take_home_missing_sound", "no recording of {sound}", { sound: m })).join(", ");
+        const goodRows = takeHomeResults.filter((row) => row.ok);
+        const badRows = takeHomeResults.filter((row) => !row.ok);
+        const lessonId = historyResourceId != null ? "ws-" + String(historyResourceId) : null;
+        return h("div", {
+            className: "fixed inset-0 z-[210] flex items-center justify-center bg-black/50 p-4",
+            onClick: (event) => { if (event.target === event.currentTarget) closeTakeHome(); },
+          },
+          h("div", {
+              ref: takeHomeDialogRef,
+              role: "dialog",
+              "aria-modal": "true",
+              "aria-labelledby": "ws-take-home-title",
+              "aria-describedby": "ws-take-home-intro",
+              tabIndex: -1,
+              "data-ws-take-home-dialog": "true",
+              className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 text-left text-slate-900 shadow-2xl",
+              onKeyDown: (event) => { handleDialogKeyDown(event, closeTakeHome); if (event.key === "Tab") event.stopPropagation(); },
+            },
+            h("div", { className: "flex items-start justify-between gap-3" },
+              h("h2", { id: "ws-take-home-title", className: "text-xl font-black" }, printTr("word_sounds.take_home_title_all", "Take-home practice file")),
+              h("button", { type: "button", onClick: closeTakeHome, "data-dialog-initial-focus": "true",
+                className: "min-h-11 min-w-11 rounded-xl border-2 border-slate-300 bg-white px-3 font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" },
+                printTr("common.close", "Close"))),
+            h("p", { id: "ws-take-home-intro", className: "mt-1 text-sm text-slate-600" },
+              printTr("word_sounds.take_home_intro", "One file a student can open on any device, even offline. It plays these words' prepared recordings, grades each answer the same way the app does, and saves a results file the student gives back to you.")),
+            h("div", { className: "mt-4 space-y-3" },
+              h("section", { className: section, "aria-labelledby": "ws-take-home-make" },
+                h("h3", { id: "ws-take-home-make", className: "font-bold" }, printTr("word_sounds.take_home_make_heading", "Make the file")),
+                h("label", { className: "mt-2 block text-sm font-semibold", htmlFor: "ws-take-home-name" }, printTr("word_sounds.take_home_name_label", "Title students will see")),
+                h("input", { id: "ws-take-home-name", type: "text", value: takeHomeTitle, maxLength: 120,
+                  placeholder: printTr("word_sounds.take_home_default_title", "Find the sound"),
+                  onChange: (event) => setTakeHomeTitle(event.target.value),
+                  className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-300 px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
+                takeHomeCatalog.length > 0 && h("fieldset", { className: "mt-3" },
+                  h("legend", { className: "text-sm font-semibold" }, printTr("word_sounds.take_home_activities", "Activities in the file")),
+                  h("div", { className: "mt-1 grid gap-1 sm:grid-cols-2" }, takeHomeCatalog.map((a) => {
+                    const row = ready && !ready.error && ready.perActivity ? ready.perActivity.find((p) => p.activity === a.id) : null;
+                    return h("label", { key: a.id, className: "flex min-h-11 items-center gap-3 text-sm" },
+                      h("input", { type: "checkbox", checked: chosen.includes(a.id), onChange: (event) => toggleActivity(a.id, event.target.checked), className: "h-5 w-5", "data-ws-take-home-activity": a.id }),
+                      h("span", null, takeHomeActivityName(a.id, a.title),
+                        row ? h("span", { className: "text-slate-600" }, " " + printTr("word_sounds.take_home_activity_ready", "({ready} of {total} ready)", { ready: row.ready, total: row.ready + row.exceptions.length })) : null));
+                  }))),
+                h("label", { className: "mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold" },
+                  h("input", { type: "checkbox", checked: takeHomeLetters, onChange: (event) => setTakeHomeLetters(event.target.checked), className: "h-5 w-5" }),
+                  printTr("word_sounds.take_home_letters", "Show letters on the answer choices (off: students choose by listening)")),
+                takeHomeMailboxReady
+                  ? h("label", { className: "mt-1 flex min-h-11 items-center gap-3 text-sm font-semibold" },
+                    h("input", { type: "checkbox", checked: takeHomeMailbox, onChange: (event) => setTakeHomeMailbox(event.target.checked), className: "h-5 w-5", "data-ws-take-home-send": "true" }),
+                    printTr("word_sounds.take_home_send_option", "Let students send their results to my Class Mailbox (they can still save a file)"))
+                  : h("p", { className: "mt-2 text-sm text-slate-700" },
+                    printTr("word_sounds.take_home_send_needs_mailbox", "To have results sent back automatically, connect a Class Mailbox first. Without one, students save a results file and give it to you."),
+                    takeHomeMailboxApi && typeof takeHomeMailboxApi.openSetup === "function" ? h("button", { type: "button", onClick: () => takeHomeMailboxApi.openSetup(),
+                      className: "ml-2 min-h-11 rounded-lg border-2 border-indigo-700 px-3 font-semibold text-indigo-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" },
+                      printTr("word_sounds.take_home_mailbox_setup", "Set up Class Mailbox")) : null),
+                h("p", { className: "mt-2 text-sm", role: "status" },
+                  !ready ? printTr("word_sounds.take_home_checking", "Checking which words have every recording...")
+                  : ready.error ? printTr("word_sounds.take_home_unavailable", "The take-home tool did not load. Check your connection and try again.")
+                  : !chosen.length ? printTr("word_sounds.take_home_pick_activity", "Choose at least one activity.")
+                  : printTr("word_sounds.take_home_items_ready", "{ready} items are ready.", { ready: ready.ready })),
+                ready && !ready.error && ready.exceptions.length > 0 && h("div", { className: "mt-2 text-sm" },
+                  h("p", { className: "font-semibold" }, printTr("word_sounds.take_home_left_out", "Left out of the file, so nothing plays wrong or silent:")),
+                  h("ul", { className: "ml-5 list-disc" }, ready.exceptions.map((entry) => h("li", { key: entry.activity + ":" + entry.word },
+                    takeHomeActivityName(entry.activity, entry.activity) + ", " + entry.word + ": " + missingText(entry.missing))))),
+                h("button", { type: "button", className: action, disabled: !ready || ready.error || !ready.ready, onClick: handleTakeHomeDownload },
+                  printTr("word_sounds.take_home_download", "Download the file")),
+                h("p", { className: "mt-2 text-xs text-slate-600" },
+                  printTr("word_sounds.take_home_privacy_send", "The file holds these words, their recordings and the answers it checks, so a curious student could find the answers in it. Use it for practice, not tests. It holds no student data. It sends nothing unless you turn on sending, and then only to your own Class Mailbox."))),
+              h("section", { className: section, "aria-labelledby": "ws-take-home-back" },
+                h("h3", { id: "ws-take-home-back", className: "font-bold" }, printTr("word_sounds.take_home_results_heading", "Look at returned work")),
+                h("label", { className: "mt-2 block text-sm font-semibold", htmlFor: "ws-take-home-files" }, printTr("word_sounds.take_home_results_pick", "Open results files (.json)")),
+                h("input", { id: "ws-take-home-files", type: "file", accept: ".json,application/json", multiple: true, onChange: handleTakeHomeResults,
+                  className: "mt-1 block text-sm" }),
+                h("p", { className: "mt-1 text-xs text-slate-600" }, printTr("word_sounds.take_home_results_local", "Files are read on this device only. Names are what each student typed, not a verified identity.")),
+                h("p", { className: "mt-1 text-xs text-slate-600" }, printTr("word_sounds.take_home_results_mailbox", "Results students sent to your Class Mailbox: open the Submission Inbox and choose Get submissions from Class Mailbox.")),
+                goodRows.length > 0 && h("table", { className: "mt-3 w-full text-sm", "data-ws-take-home-results": "true" },
+                  h("caption", { className: "sr-only" }, printTr("word_sounds.take_home_results_heading", "Look at returned work")),
+                  h("thead", null, h("tr", { className: "text-left" },
+                    h("th", { scope: "col", className: "py-1 pr-2" }, printTr("word_sounds.take_home_col_student", "Student")),
+                    h("th", { scope: "col", className: "py-1 pr-2" }, printTr("word_sounds.take_home_col_first", "First try")),
+                    h("th", { scope: "col", className: "py-1 pr-2" }, printTr("word_sounds.take_home_col_retry", "After a retry")),
+                    h("th", { scope: "col", className: "py-1 pr-2" }, printTr("word_sounds.take_home_col_missed", "Missed")),
+                    h("th", { scope: "col", className: "py-1" }, printTr("word_sounds.take_home_col_words", "Words")))),
+                  h("tbody", null, goodRows.map((row) => {
+                    const r = row.result;
+                    const other = lessonId && r.lessonId !== lessonId;
+                    return h("tr", { key: row.id, className: "border-t border-slate-200 align-top" },
+                      h("th", { scope: "row", className: "py-1 pr-2 font-semibold" }, (r.learnerName || printTr("word_sounds.take_home_no_name", "(no name)")) +
+                        (other ? " " + printTr("word_sounds.take_home_other_lesson", "(from another lesson: {title})", { title: r.lessonTitle }) : "")),
+                      h("td", { className: "py-1 pr-2" }, r.summary.firstTry + " / " + r.summary.items),
+                      h("td", { className: "py-1 pr-2" }, String(r.summary.afterRetry)),
+                      h("td", { className: "py-1 pr-2" }, String(r.summary.missed) + (r.summary.done < r.summary.items ? " " + printTr("word_sounds.take_home_unfinished", "({count} not done)", { count: r.summary.items - r.summary.done }) : "")),
+                      h("td", { className: "py-1" }, Object.keys(r.byActivity || {}).map((id) => (r.activityTitles && r.activityTitles[id] || id) + ": " +
+                        r.items.filter((item) => item.activity === id).map((item) => item.word + " " + (!item.done ? "–" : item.firstTry ? "✓" : item.correct ? "↻" : "✗")).join(", ")).join("; ")));
+                  }))),
+                goodRows.length > 0 && h("p", { className: "mt-1 text-xs text-slate-600" },
+                  printTr("word_sounds.take_home_results_key", "✓ right first time, ↻ right after a retry, ✗ missed, – not done.")),
+                badRows.length > 0 && h("ul", { className: "mt-2 text-sm text-red-800" }, badRows.map((row) => h("li", { key: row.id },
+                  printTr("word_sounds.take_home_bad_file", "{file} is not a Word Sounds results file.", { file: row.name })))))),
+            takeHomeStatus && h("p", { role: "status", className: "mt-3 min-h-[1.25rem] text-sm font-semibold text-slate-700" }, takeHomeStatus)));
       };
       const renderPrintMenu = () => {
         const h = React.createElement;
@@ -21289,6 +21740,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ? Math.round((wordSoundsScore.correct / wordSoundsScore.total) * 100) : 0;
         const streakEmoji =
           wordSoundsStreak >= 5 ? "🔥" : wordSoundsStreak >= 3 ? "⚡" : "✨";
+        const firstTrySummary = isProbeMode ? null : wsFirstTrySummary(masteryStats);
         return /*#__PURE__*/ React.createElement(
           "div",
           {
@@ -21466,6 +21918,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       : ts("word_sounds.session_xp_earned") || "XP Earned",
                   ),
                 ),
+              ),
+              firstTrySummary && /*#__PURE__*/ React.createElement(
+                "p",
+                { className: "mt-3 text-sm text-white text-center", "data-ws-first-try": "true" },
+                wsFirstTryText(ts, firstTrySummary),
               ),
             ),
             isProbeMode && (() => {
@@ -22443,8 +22900,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     const _goal = lessonPlanConfig.activities?.find(
                       (a) => a.id === wordSoundsActivity,
                     )?.count || 5;
-                    return ts("word_sounds.items_done_of", { done: _done, goal: _goal }) ||
-                      (_done + "/" + _goal + " items");
+                    return wsLessonItemsText(ts, _done, _goal, WS_CORE.lessonItemCeiling(_goal, lessonPlanConfig.masteryThreshold));
                   })(),
                 ),
                   /*#__PURE__*/ React.createElement(
@@ -22605,6 +23061,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   },
                   /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "🖨️"),
                   ts("word_sounds.print_button") || "Print materials",
+                ),
+                takeHomeAllowed &&
+                  /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    ref: takeHomeButtonRef,
+                    type: "button",
+                    onClick: () => { setTakeHomeStatus(""); setTakeHomeOpen(true); },
+                    "aria-haspopup": "dialog",
+                    "data-ws-take-home-open": "true",
+                    className:
+                      "flex items-center gap-1 min-h-11 px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
+                  },
+                  /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "🏠"),
+                  ts("word_sounds.take_home_button") || "Take-home file",
                 ),
                 isTeacherMode &&
                 !isProbeMode &&
@@ -22981,7 +23452,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 ];
               }),
-              (typeof callImagen === "function" || hasPreparedImages) &&
+              (wsImagesUsable || hasPreparedImages) &&
                 /*#__PURE__*/ React.createElement(
                 "button",
                 {
@@ -23175,6 +23646,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             drawer: renderPresentDrawer(),
           }),
         printMenuOpen && printAllowed && renderPrintMenu(),
+        takeHomeOpen && takeHomeAllowed && renderTakeHome(),
       );
     };
   }

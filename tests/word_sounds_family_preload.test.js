@@ -111,6 +111,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     portableTtsSrcFor: () => packed, wordSoundsAudioLibraryRef: { current: {} },
     loadAudioFromStorage: () => null, ttsInflight: { current: new Map() }, callTTS: vi.fn(async () => null),
     saveAudioToStorage: vi.fn(), wordSoundsLanguage: 'en', preloadedWords: [], wordSoundsAudioLibrary: {}, speakWord: vi.fn(),
+    wsStudentDeviceVoiceOnly: () => false, wsSpeakDeviceVoice: vi.fn(async () => false),
   };
   if (cached) environment.audioInstances.current.set('hat', cached);
   const handleAudio = new Function(...Object.keys(environment), handleAudioSource + ';return handleAudio;')(...Object.values(environment));

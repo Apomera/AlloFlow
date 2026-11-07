@@ -1272,7 +1272,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         announce('Reading the practice guidance aloud.');
         Promise.resolve(ctx.callTTS(guidanceText(selectedProtocol), ctx.selectedVoice, 0.9))
           .then(function(url) {
-            if (!url) toast('Voice guidance is unavailable right now.', 'info');
+            // Student AI off: the hub reads the guidance with the device voice instead.
+            if (!url && window.__alloStudentAiDisabled !== true) toast('Voice guidance is unavailable right now.', 'info');
             setIsSpeaking(false);
           })
           .catch(function() {

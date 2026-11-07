@@ -627,11 +627,10 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();expect(await activity.getByLabel('Choose a way to care to explore',{exact:true}).inputValue()).toBe('listener');await activity.getByText('Adapt a practice (optional)',{exact:true}).click();expect(await activity.getByLabel('What could I offer, adapt or decline? (optional)',{exact:true}).inputValue()).toBe('Ask whether listening or ideas would help.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.myStyle)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
-  it('friendship coach draft survives the real hub return flow while AI is unavailable',async()=>{
-    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Practice/}).click();
-    const field=page.getByLabel('Friendship practice message',{exact:true});await field.fill('Fictional example: ask for a quieter activity.');expect(await page.getByRole('button',{name:'Send message to friendship coach',exact:true}).isDisabled()).toBe(true);
-    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();
-    expect(await field.inputValue()).toBe('Fictional example: ask for a quieter activity.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.coachHistory)).toBeUndefined();expect(errors).toEqual([]);
+  it('friendship hides the AI coach practice tab in the real hub while AI is unavailable',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Rehearse/}).waitFor();
+    expect(await page.getByRole('tab',{name:/Practice/}).count()).toBe(0);expect(await page.getByLabel('Friendship practice message',{exact:true}).count()).toBe(0);
+    expect(await page.evaluate(()=>(window.__alloflowSelToolData.friendship||{}).coachHistory)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
   it('friendship rehearsal reflection survives the real hub return flow without an AI request',async()=>{
@@ -751,7 +750,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await guide.getByRole('button', { name: 'Pass for now' }).getAttribute('aria-pressed')).toBe('true');
     await guide.getByRole('button', { name: 'View pathway tools' }).click();
     await guide.getByRole('button', { name: 'Exit pathway mode' }).click();
-    expect(await page.locator('[data-sel-tool-card-id]').count()).toBeGreaterThan(70);
+    expect(await page.locator('[data-sel-tool-card-id]').count()).toBeGreaterThan(70); // Conflict Theater and Culture Explorer have no-AI modes
     await startPathway('Morning Check-In');
     expect(await guide.innerText()).toContain('0 of 4 tools opened');
     await guide.getByRole('button', { name: /^Open next:/ }).click();
@@ -765,6 +764,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     const sequences = [
       ['Morning Check-In', ['zones', 'mindfulness', 'goals', 'journal']],
       ['Calm Down Corner', ['zones', 'coping', 'mindfulness', 'somaticReset']],
+      // No AI in this mount: Conflict Theater and Culture Explorer are still offered (no-AI modes).
       ['Conflict Resolution Unit', ['conflict', 'conflicttheater', 'perspective', 'social', 'restorativeCircle']],
       ['Empathy & Perspective Week', ['perspective', 'emotions', 'community', 'cultureExplorer']],
       ['Decision-Making Deep Dive', ['decisions', 'ethicalReasoning', 'safety']],
@@ -1080,7 +1080,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     await support.locator(':scope > summary').click();
     expect(await support.innerText()).toContain('do not fill or submit');
     await support.getByRole('button', { name: 'Return to activities', exact: true }).click();
-    expect(await page.locator('[data-sel-tool-card-id]').count()).toBeGreaterThan(70);
+    expect(await page.locator('[data-sel-tool-card-id]').count()).toBeGreaterThan(70); // Conflict Theater and Culture Explorer have no-AI modes
     expect(await page.evaluate(() => Object.keys(localStorage).some(key => /chooseNeed|chooseTime|chooseResponse/.test(key)))).toBe(false);
     expect(errors).toEqual([]);
   }, 120000);

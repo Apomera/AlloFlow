@@ -154,7 +154,10 @@ describe('pure helpers', () => {
 
 describe('i18n (source pin)', () => {
   it('the place-value row header no longer hardcodes English "first"', () => {
-    expect(src).toContain("t('stem.arithmetic.first', \"first\")");
+    // 2026-11-03 deep pass: the row headers became whole labels ("First
+    // number", "{sym} second number") instead of glued fragments.
+    expect(src).toContain("t('stem.arithmetic.row_first', 'First number')");
+    expect(src).toContain("t('stem.arithmetic.row_second', '{sym} second number')");
     expect(src).not.toContain(": 'first')");
   });
 });

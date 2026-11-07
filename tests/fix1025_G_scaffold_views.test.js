@@ -259,6 +259,11 @@ describe('5c. Sentence Frames tiers and word bank (optional generator extras)', 
     expect(document.getElementById(bank.getAttribute('aria-labelledby')).textContent).toBe('Banco de palabras');
     expect([...bank.querySelectorAll('li')].map(li => li.textContent)).toEqual(BANK);
   });
+  it('shows every word of a 40-term word list in the bank', () => {
+    const list = Array.from({ length: 40 }, (_, i) => 'word ' + i);
+    const el = mount(M.SentenceFramesView, sfProps({ generatedContent: starters(NEW, { wordBank: list }) }));
+    expect([...el.querySelector('[data-scaffold-word-bank]').querySelectorAll('li')].map(li => li.textContent)).toEqual(list);
+  });
   it('shows the word bank on paragraph frames too, with English fallbacks', () => {
     const el = mount(M.SentenceFramesView, sfProps({ generatedContent: { id: 'p', type: 'sentence-frames', data: { mode: 'paragraph', text: 'Water [verb] when heated.', wordBank: ['evaporates', 42, ''] } } }));
     const bank = el.querySelector('[data-scaffold-word-bank]');

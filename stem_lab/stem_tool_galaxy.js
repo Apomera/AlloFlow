@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -1876,7 +1877,7 @@ function renderGalaxyEvidenceWorkbench(o) {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-galaxy-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-galaxy-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-help],[data-galaxy-evidence-mission],[data-galaxy-evidence-mission]:hover,[data-galaxy-evidence-workbench] .galaxy-evidence-step,[data-galaxy-evidence-choice],[data-galaxy-evidence-choice]:hover,[data-galaxy-evidence-choice][data-selected=true],[data-galaxy-evidence-workbench] .galaxy-evidence-card,[data-galaxy-evidence-visited],[data-galaxy-evidence-visited][data-visited=true],[data-galaxy-evidence-observe],[data-galaxy-evidence-observe]:hover,[data-galaxy-evidence-observe][aria-pressed=true],[data-galaxy-evidence-workbench] textarea,[data-galaxy-evidence-check]:disabled,[data-galaxy-evidence-feedback],[data-galaxy-root],[data-bh-distance-key] i,[data-bh-distance-key] [data-bh-selected-key] i,[data-galaxy-root] [data-galaxy-real-sky-launcher],[data-galaxy-shapes],[data-galaxy-shapes] [data-galaxy-shape],[data-galaxy-shapes] [data-galaxy-shape]:hover,[data-galaxy-shapes] [data-galaxy-shape][aria-pressed=true],[data-galaxy-controls],[data-galaxy-controls] [role=tablist],[data-galaxy-view-angle][aria-pressed=true],[data-galaxy-info]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-workbench]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-workbench],[data-galaxy-evidence-workbench] h3,[data-galaxy-evidence-workbench] h4,[data-galaxy-evidence-workbench] .galaxy-evidence-eyebrow,[data-galaxy-evidence-workbench] .galaxy-evidence-heading h3 + p,[data-galaxy-evidence-help] summary,[data-galaxy-evidence-mission],[data-galaxy-evidence-workbench] .galaxy-evidence-question p,[data-galaxy-evidence-workbench] .galaxy-evidence-prediction legend,[data-galaxy-evidence-workbench] .galaxy-evidence-step,[data-galaxy-evidence-choice],[data-galaxy-evidence-progress],[data-galaxy-evidence-workbench] .galaxy-evidence-band-kind,[data-galaxy-evidence-workbench] .galaxy-evidence-card h5,[data-galaxy-evidence-visited],[data-galaxy-evidence-visited][data-visited=true],[data-galaxy-evidence-workbench] .galaxy-evidence-signal,[data-galaxy-evidence-workbench] .galaxy-evidence-look,[data-galaxy-evidence-observe],[data-galaxy-evidence-observe][aria-pressed=true],[data-galaxy-evidence-workbench] .galaxy-evidence-card-body label,[data-galaxy-evidence-workbench] textarea,[data-galaxy-evidence-workbench] .galaxy-evidence-model-note,[data-galaxy-evidence-workbench] .galaxy-evidence-reasoning > label,[data-galaxy-evidence-workbench] .galaxy-evidence-reasoning > p,[data-galaxy-evidence-check]:disabled,[data-galaxy-evidence-workbench] .galaxy-evidence-check-row p,[data-galaxy-evidence-workbench] .galaxy-evidence-your-prediction,[data-galaxy-evidence-workbench] .galaxy-evidence-takeaway,[data-galaxy-evidence-workbench] .galaxy-evidence-reflect,[data-galaxy-evidence-workbench] .galaxy-evidence-return,[data-galaxy-evidence-workbench] .galaxy-evidence-footer a,[data-galaxy-shapes] #galaxy-shape-label,[data-galaxy-shapes] [data-galaxy-shape],[data-galaxy-shapes] [data-galaxy-shape][aria-pressed=true],[data-galaxy-view-angle][aria-pressed=true]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-help],[data-galaxy-evidence-mission],[data-galaxy-evidence-mission]:hover,[data-galaxy-evidence-workbench] .galaxy-evidence-step,[data-galaxy-evidence-choice],[data-galaxy-evidence-choice]:hover,[data-galaxy-evidence-choice][data-selected=true],[data-galaxy-evidence-workbench] .galaxy-evidence-card,[data-galaxy-evidence-visited],[data-galaxy-evidence-visited][data-visited=true],[data-galaxy-evidence-observe],[data-galaxy-evidence-observe]:hover,[data-galaxy-evidence-observe][aria-pressed=true],[data-galaxy-evidence-workbench] textarea,[data-galaxy-evidence-check]:disabled,[data-galaxy-evidence-feedback],[data-galaxy-root],[data-bh-distance-key] i,[data-bh-distance-key] [data-bh-selected-key] i,[data-galaxy-root] [data-galaxy-real-sky-launcher],[data-galaxy-shapes],[data-galaxy-shapes] [data-galaxy-shape],[data-galaxy-shapes] [data-galaxy-shape]:hover,[data-galaxy-shapes] [data-galaxy-shape][aria-pressed=true],[data-galaxy-controls],[data-galaxy-controls] [role=tablist],[data-galaxy-view-angle][aria-pressed=true],[data-galaxy-info]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-workbench]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] :is([data-galaxy-evidence-workbench],[data-galaxy-evidence-workbench] h3,[data-galaxy-evidence-workbench] h4,[data-galaxy-evidence-workbench] .galaxy-evidence-eyebrow,[data-galaxy-evidence-workbench] .galaxy-evidence-heading h3 + p,[data-galaxy-evidence-help] summary,[data-galaxy-evidence-mission],[data-galaxy-evidence-workbench] .galaxy-evidence-question p,[data-galaxy-evidence-workbench] .galaxy-evidence-prediction legend,[data-galaxy-evidence-workbench] .galaxy-evidence-step,[data-galaxy-evidence-choice],[data-galaxy-evidence-progress],[data-galaxy-evidence-workbench] .galaxy-evidence-band-kind,[data-galaxy-evidence-workbench] .galaxy-evidence-card h5,[data-galaxy-evidence-visited],[data-galaxy-evidence-visited][data-visited=true],[data-galaxy-evidence-workbench] .galaxy-evidence-signal,[data-galaxy-evidence-workbench] .galaxy-evidence-look,[data-galaxy-evidence-observe],[data-galaxy-evidence-observe][aria-pressed=true],[data-galaxy-evidence-workbench] .galaxy-evidence-card-body label,[data-galaxy-evidence-workbench] textarea,[data-galaxy-evidence-workbench] .galaxy-evidence-model-note,[data-galaxy-evidence-workbench] .galaxy-evidence-reasoning > label,[data-galaxy-evidence-workbench] .galaxy-evidence-reasoning > p,[data-galaxy-evidence-check]:disabled,[data-galaxy-evidence-workbench] .galaxy-evidence-check-row p,[data-galaxy-evidence-workbench] .galaxy-evidence-your-prediction,[data-galaxy-evidence-workbench] .galaxy-evidence-takeaway,[data-galaxy-evidence-workbench] .galaxy-evidence-reflect,[data-galaxy-evidence-workbench] .galaxy-evidence-return,[data-galaxy-evidence-workbench] .galaxy-evidence-footer a,[data-galaxy-shapes] #galaxy-shape-label,[data-galaxy-shapes] [data-galaxy-shape],[data-galaxy-shapes] [data-galaxy-shape][aria-pressed=true],[data-galaxy-view-angle][aria-pressed=true]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] button[class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"galaxy\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -2340,9 +2341,14 @@ if (!window._galaxyHasLoadedOnce) {
               }
             }
             request.timer = setTimeout(function () { finish(null, true); }, 25000);
+            var settled = false;
+            function settleOnce(response) { if (settled) return; settled = true; finish(response, false); }
             try {
-              var result = callGemini('Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return only a JSON array of objects with q (question), a (correct answer), and options (2 to 4 distinct answers, including a).', function (response) { finish(response, false); });
-              if (result && typeof result.catch === 'function') result.catch(function () { finish(null, false); });
+              var result = callGemini('Generate 5 challenging multiple-choice questions about stars, galaxies, and astrophysics. Return only a JSON array of objects with q (question), a (correct answer), and options (2 to 4 distinct answers, including a).', function (response) { settleOnce(response); });
+              // The host callGemini is promise-based (the callback above is never called and only reads as
+              // truthy jsonMode), so the quiz used to wait out its 25 s timeout; settle from whichever arrives first.
+              if (result && typeof result.then === 'function') result.then(function (resp) { settleOnce({ text: typeof resp === 'string' ? resp : (resp && typeof resp.text === 'string' ? resp.text : '') }); }, function () { settleOnce(null); });
+              else if (!settled) finish(null, false);
             } catch (error) { finish(null, false); }
           }
           function representativeMainSequenceMass(classId) { return ({ O: 30, B: 8, A: 1.8, F: 1.2, G: 1, K: 0.7, M: 0.3 })[classId] || 1; }
@@ -2515,19 +2521,19 @@ if (!window._galaxyHasLoadedOnce) {
           // learner. Worth correcting if this field is ever wired up.
           var STAR_TYPES = [
 
-            { id: 'O', label: t('stem.galaxy.otype'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16.2-150 M\u2609', lifetime: '1-10 Myr' },
+            { id: 'O', label: t('stem.galaxy.otype', 'O-type'), color: '#9bb0ff', temp: '30,000+', pct: 0.003, example: 'Naos', desc: __alloT('stem.galaxy.otype_desc', 'Extremely hot, blue, massive. Rarest type \u2014 short lives of only a few million years.'), whyItMatters: __alloT('stem.galaxy.otype_why', 'O-type stars produce most of a galaxy\'s ultraviolet light and ionize surrounding gas, creating the glowing emission nebulae we see. Their supernovae seed the universe with heavy elements like iron and gold.'), luminosity: '30,000-1,000,000x Sun', mass: '16.2-150 M\u2609', lifetime: '1-10 Myr' },
 
-            { id: 'B', label: t('stem.galaxy.btype'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Regulus', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.36-16.2 M\u2609', lifetime: '10-100 Myr' },
+            { id: 'B', label: t('stem.galaxy.btype', 'B-type'), color: '#aabfff', temp: '10,000-30,000', pct: 0.13, example: 'Regulus', desc: __alloT('stem.galaxy.btype_desc', 'Blue-white giants. Often found in young OB associations and spiral arms.'), whyItMatters: __alloT('stem.galaxy.btype_why', 'B-type stars trace the spiral arms of galaxies because they are short-lived. Astronomers use them as markers for galactic structure and recent star formation.'), luminosity: '25-30,000x Sun', mass: '2.36-16.2 M\u2609', lifetime: '10-100 Myr' },
 
-            { id: 'A', label: t('stem.galaxy.atype'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.62-2.36 M\u2609', lifetime: '1-2 Gyr' },
+            { id: 'A', label: t('stem.galaxy.atype', 'A-type'), color: '#cad7ff', temp: '7,500-10,000', pct: 0.6, example: 'Sirius', desc: __alloT('stem.galaxy.atype_desc', 'White stars with strong hydrogen absorption lines. Many are binary systems.'), whyItMatters: __alloT('stem.galaxy.atype_why', 'A-type stars like Sirius were among the first to have their spectra analyzed, helping astronomers develop the stellar classification system we use today.'), luminosity: '5-25x Sun', mass: '1.62-2.36 M\u2609', lifetime: '1-2 Gyr' },
 
-            { id: 'F', label: t('stem.galaxy.ftype'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: __alloT('stem.galaxy.ftype_desc', 'Yellow-white. Transition zone where convection begins in the outer layer.'), whyItMatters: __alloT('stem.galaxy.ftype_why', 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.'), luminosity: '1.5-5x Sun', mass: '1.10-1.62 M\u2609', lifetime: '2-4 Gyr' },
+            { id: 'F', label: t('stem.galaxy.ftype', 'F-type'), color: '#f8f7ff', temp: '6,000-7,500', pct: 3, example: 'Procyon', desc: __alloT('stem.galaxy.ftype_desc', 'Yellow-white. Transition zone where convection begins in the outer layer.'), whyItMatters: __alloT('stem.galaxy.ftype_why', 'F-type stars are interesting for exoplanet searches because they have habitable zones and lifespans long enough for complex life to potentially develop.'), luminosity: '1.5-5x Sun', mass: '1.10-1.62 M\u2609', lifetime: '2-4 Gyr' },
 
-            { id: 'G', label: t('stem.galaxy.gtype'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.87-1.10 M\u2609', lifetime: '10 Gyr' },
+            { id: 'G', label: t('stem.galaxy.gtype', 'G-type'), color: '#fff4ea', temp: '5,200-6,000', pct: 7.6, example: 'Sun', desc: __alloT('stem.galaxy.gtype_desc', 'Our Sun is a G2V star! Yellow stars with lifespans of ~10 billion years.'), whyItMatters: __alloT('stem.galaxy.gtype_why', 'G-type stars like our Sun prove that modest stars can nurture life. Their 10-billion-year lifespan gives plenty of time for biological evolution.'), luminosity: '0.6-1.5x Sun', mass: '0.87-1.10 M\u2609', lifetime: '10 Gyr' },
 
-            { id: 'K', label: t('stem.galaxy.ktype'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: '61 Cygni A', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.87 M\u2609', lifetime: '15-30 Gyr' },
+            { id: 'K', label: t('stem.galaxy.ktype', 'K-type'), color: '#ffd2a1', temp: '3,700-5,200', pct: 12.1, example: '61 Cygni A', desc: __alloT('stem.galaxy.ktype_desc', 'Orange stars. Many have habitable zones \u2014 prime candidates for exoplanet searches.'), whyItMatters: __alloT('stem.galaxy.ktype_why', 'K-type stars are considered the best candidates for finding habitable exoplanets\u2014they are stable, long-lived, and common enough to offer many opportunities.'), luminosity: '0.08-0.6x Sun', mass: '0.45-0.87 M\u2609', lifetime: '15-30 Gyr' },
 
-            { id: 'M', label: t('stem.galaxy.mtype'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: __alloT('stem.galaxy.mtype_desc', 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).'), whyItMatters: __alloT('stem.galaxy.mtype_why', 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!'), luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
+            { id: 'M', label: t('stem.galaxy.mtype', 'M-type'), color: '#ffcc6f', temp: '2,400-3,700', pct: 76.5, example: 'Proxima Centauri', desc: __alloT('stem.galaxy.mtype_desc', 'Red dwarfs \u2014 76% of all stars! Extremely long-lived (trillions of years).'), whyItMatters: __alloT('stem.galaxy.mtype_why', 'M-type red dwarfs will be the last stars shining in the universe. Proxima Centauri b, a potentially habitable exoplanet, orbits one of these stars\u2014our closest neighbor!'), luminosity: '0.001-0.08x Sun', mass: '0.08-0.45 M\u2609', lifetime: '100+ Gyr' }
 
           ];
 
@@ -2766,21 +2772,21 @@ if (!window._galaxyHasLoadedOnce) {
 
           var NEBULAE = [
 
-            { name: t('stem.galaxy.orion_nebula'), x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: __alloT('stem.galaxy.orion_nebula_desc', 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.') },
+            { name: t('stem.galaxy.orion_nebula', 'Orion Nebula'), x: 0.35, y: 0.02, z: 0.15, r: 0.08, color: '#ff6b9d', type: 'Emission', dist: '1,344 ly', desc: __alloT('stem.galaxy.orion_nebula_desc', 'Stellar nursery 1,344 light-years away. Visible to the naked eye. Contains the Trapezium star cluster.') },
 
-            { name: t('stem.galaxy.eagle_nebula'), x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: __alloT('stem.galaxy.eagle_nebula_desc', 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.') },
+            { name: t('stem.galaxy.eagle_nebula', 'Eagle Nebula'), x: -0.2, y: 0.01, z: -0.25, r: 0.06, color: '#7c6dff', type: 'Emission', dist: '7,000 ly', desc: __alloT('stem.galaxy.eagle_nebula_desc', 'Home of the Pillars of Creation. Star-forming region 7,000 light-years from Earth.') },
 
-            { name: t('stem.galaxy.crab_nebula'), x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: __alloT('stem.galaxy.crab_nebula_desc', 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.') },
+            { name: t('stem.galaxy.crab_nebula', 'Crab Nebula'), x: 0.4, y: 0.05, z: -0.1, r: 0.05, color: '#00d4aa', type: 'Supernova Remnant', dist: '6,500 ly', desc: __alloT('stem.galaxy.crab_nebula_desc', 'Supernova remnant from 1054 AD. Contains a pulsar spinning 30x per second.') },
 
-            { name: t('stem.galaxy.carina_nebula'), x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: __alloT('stem.galaxy.carina_nebula_desc', 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.') },
+            { name: t('stem.galaxy.carina_nebula', 'Carina Nebula'), x: -0.3, y: -0.02, z: 0.3, r: 0.07, color: '#ff9f43', type: 'Emission', dist: '8,500 ly', desc: __alloT('stem.galaxy.carina_nebula_desc', 'One of the largest nebulae. Contains Eta Carinae, a hypergiant 4 million times brighter than the Sun.') },
 
-            { name: t('stem.galaxy.helix_nebula'), x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: __alloT('stem.galaxy.helix_nebula_desc', 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.') },
+            { name: t('stem.galaxy.helix_nebula', 'Helix Nebula'), x: 0.25, y: -0.01, z: -0.3, r: 0.05, color: '#00bcd4', type: 'Planetary', dist: '655 ly', desc: __alloT('stem.galaxy.helix_nebula_desc', 'The "Eye of God." A planetary nebula \u2014 the outer shell of a dying Sun-like star.') },
 
-            { name: t('stem.galaxy.ring_nebula'), x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: __alloT('stem.galaxy.ring_nebula_desc', 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.') },
+            { name: t('stem.galaxy.ring_nebula', 'Ring Nebula'), x: -0.15, y: 0.03, z: 0.2, r: 0.04, color: '#e040fb', type: 'Planetary', dist: '2,283 ly', desc: __alloT('stem.galaxy.ring_nebula_desc', 'Classic planetary nebula in Lyra. The central white dwarf is visible at high zoom.') },
 
-            { name: t('stem.galaxy.horsehead_nebula'), x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: __alloT('stem.galaxy.horsehead_nebula_desc', 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.') },
+            { name: t('stem.galaxy.horsehead_nebula', 'Horsehead Nebula'), x: 0.32, y: 0.01, z: 0.05, r: 0.04, color: '#8d6e63', type: 'Dark', dist: '1,375 ly', desc: __alloT('stem.galaxy.horsehead_nebula_desc', 'Dark nebula silhouetted against the emission nebula IC 434. An iconic astronomical object.') },
 
-            { name: t('stem.galaxy.lagoon_nebula'), x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: __alloT('stem.galaxy.lagoon_nebula_desc', 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.') }
+            { name: t('stem.galaxy.lagoon_nebula', 'Lagoon Nebula'), x: -0.1, y: -0.01, z: -0.15, r: 0.06, color: '#ef5350', type: 'Emission', dist: '4,100 ly', desc: __alloT('stem.galaxy.lagoon_nebula_desc', 'One of the brightest emission nebulae. Visible with binoculars in Sagittarius.') }
 
           ];
 
@@ -2790,13 +2796,13 @@ if (!window._galaxyHasLoadedOnce) {
 
           var GALAXY_TYPES = {
 
-            barredSpiral: { label: t('stem.galaxy.barred_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.barred_spiral_desc', 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.'), example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.34, windTightness: 2.5 },
+            barredSpiral: { label: t('stem.galaxy.barred_spiral', 'Barred Spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.barred_spiral_desc', 'Like our Milky Way. A central bar of stars with spiral arms winding outward. ~60% of spirals have bars.'), example: 'Milky Way, NGC 1300', arms: 4, barLength: 0.34, windTightness: 2.5 },
 
-            grandDesign: { label: t('stem.galaxy.grand_design_spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.grand_design_spiral_desc', 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.'), example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
+            grandDesign: { label: t('stem.galaxy.grand_design_spiral', 'Grand Design Spiral'), icon: '\uD83C\uDF00', desc: __alloT('stem.galaxy.grand_design_spiral_desc', 'Prominent, well-defined spiral arms. Usually triggered by gravitational interaction with a companion galaxy.'), example: 'M51 (Whirlpool), M81', arms: 2, barLength: 0, windTightness: 3.5 },
 
-            elliptical: { label: t('stem.galaxy.elliptical'), icon: '\u2B2D\uFE0F', desc: __alloT('stem.galaxy.elliptical_desc', 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.'), example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
+            elliptical: { label: t('stem.galaxy.elliptical', 'Elliptical'), icon: '\u2B2D\uFE0F', desc: __alloT('stem.galaxy.elliptical_desc', 'Smooth, featureless ellipsoidal shape. Contain old, red stars with little gas or dust. Formed from galaxy mergers.'), example: 'M87, M49', arms: 0, barLength: 0, windTightness: 0 },
 
-            irregular: { label: t('stem.galaxy.irregular'), icon: '\u2728', desc: __alloT('stem.galaxy.irregular_desc', 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.'), example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
+            irregular: { label: t('stem.galaxy.irregular', 'Irregular'), icon: '\u2728', desc: __alloT('stem.galaxy.irregular_desc', 'No distinct shape. Rich in gas and dust with active star formation. Often satellites of larger galaxies.'), example: 'LMC, SMC', arms: 0, barLength: 0, windTightness: 0 }
 
           };
 
@@ -3125,9 +3131,9 @@ if (!window._galaxyHasLoadedOnce) {
           var activeRealSkyRecipeStep = activeRealSkyRecipeComparisonReady ? 2 : 1;
           var realSkyEvidenceReady = realSkyEvidenceNote.trim().length >= REAL_SKY_NOTE_MIN_LENGTH && realSkyEvidenceNote.trim().length <= REAL_SKY_NOTE_MAX_LENGTH;
           var realSkyNotebookFull = realSkyObservations.length >= REAL_SKY_OBSERVATION_LIMIT;
-          var realSkyNotebookCapacityLabel = __alloT('stem.galaxy.real_sky_notebook_capacity', '{count} of {limit} observations saved')
+          var realSkyNotebookCapacityLabel = __alloOneWord(__alloT('stem.galaxy.real_sky_notebook_capacity', '{count} of {limit} observations saved')
             .replace('{count}', String(realSkyObservations.length))
-            .replace('{limit}', String(REAL_SKY_OBSERVATION_LIMIT));
+            .replace('{limit}', String(REAL_SKY_OBSERVATION_LIMIT)));
           var realSkyNotebookFullMessage = __alloT('stem.galaxy.real_sky_notebook_full', 'Evidence notebook full ({count} of {limit}). Download the report or remove an observation before saving another. Your draft will stay here.')
             .replace('{count}', String(realSkyObservations.length))
             .replace('{limit}', String(REAL_SKY_OBSERVATION_LIMIT));
@@ -3455,15 +3461,15 @@ if (!window._galaxyHasLoadedOnce) {
 
           var WARP_POINTS = [
 
-            { label: t('stem.galaxy.galactic_core'), x: 0, y: 0, z: 0, zoom: 2, short: __alloT('stem.galaxy.warp_core_short', 'The crowded nucleus, home to Sagittarius A*.') },
+            { label: t('stem.galaxy.galactic_core', 'Galactic Core'), x: 0, y: 0, z: 0, zoom: 2, short: __alloT('stem.galaxy.warp_core_short', 'The crowded nucleus, home to Sagittarius A*.') },
 
-            { label: t('stem.galaxy.orion_arm_us'), x: 0.35, y: 0, z: 0.1, zoom: 4, desc: __alloT('stem.galaxy.orion_arm_us_desc', 'Our Solar System is here, about 26,000 light-years from the center.') },
+            { label: t('stem.galaxy.orion_arm_us', 'Orion Arm (Us)'), x: 0.35, y: 0, z: 0.1, zoom: 4, desc: __alloT('stem.galaxy.orion_arm_us_desc', 'Our Solar System is here, about 26,000 light-years from the center.') },
 
-            { label: t('stem.galaxy.perseus_arm'), x: 0.5, y: 0, z: -0.2, zoom: 3, desc: __alloT('stem.galaxy.perseus_arm_desc', 'The next spiral arm outward from us. Contains many young, hot stars.') },
+            { label: t('stem.galaxy.perseus_arm', 'Perseus Arm'), x: 0.5, y: 0, z: -0.2, zoom: 3, desc: __alloT('stem.galaxy.perseus_arm_desc', 'The next spiral arm outward from us. Contains many young, hot stars.') },
 
-            { label: t('stem.galaxy.sagittarius_arm'), x: -0.15, y: 0, z: 0.35, zoom: 3, desc: t('stem.galaxy.the_next_arm_inward_toward') },
+            { label: t('stem.galaxy.sagittarius_arm', 'Sagittarius Arm'), x: -0.15, y: 0, z: 0.35, zoom: 3, desc: t('stem.galaxy.the_next_arm_inward_toward', 'The next arm inward toward the galactic center.') },
 
-            { label: t('stem.galaxy.overview'), x: 0, y: 0.8, z: 0, zoom: 0.8, desc: t('stem.galaxy.full_view_of_the_galaxy') }
+            { label: t('stem.galaxy.overview', 'Overview'), x: 0, y: 0.8, z: 0, zoom: 0.8, desc: t('stem.galaxy.full_view_of_the_galaxy', 'Full view of the galaxy from above.') }
 
           ];
 
@@ -3473,13 +3479,13 @@ if (!window._galaxyHasLoadedOnce) {
 
           var QUIZ_BANK = [
 
-            { q: __alloT('stem.galaxy.quiz_sun_type', 'What type of star is our Sun?'), a: t('stem.galaxy.gtype'), options: [t('stem.galaxy.otype'), t('stem.galaxy.atype'), t('stem.galaxy.gtype'), t('stem.galaxy.mtype')] },
+            { q: __alloT('stem.galaxy.quiz_sun_type', 'What type of star is our Sun?'), a: t('stem.galaxy.gtype', 'G-type'), options: [t('stem.galaxy.otype', 'O-type'), t('stem.galaxy.atype', 'A-type'), t('stem.galaxy.gtype', 'G-type'), t('stem.galaxy.mtype', 'M-type')] },
 
-            { q: __alloT('stem.galaxy.quiz_mw_center', 'What is at the center of the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), options: [__alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), __alloT('stem.galaxy.quiz_opt_giant_star', 'Giant star'), __alloT('stem.galaxy.quiz_opt_neutron_star', 'Neutron star'), t('stem.galaxy.nebula')] },
+            { q: __alloT('stem.galaxy.quiz_mw_center', 'What is at the center of the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), options: [__alloT('stem.galaxy.quiz_opt_supermassive_black_hole', 'Supermassive black hole'), __alloT('stem.galaxy.quiz_opt_giant_star', 'Giant star'), __alloT('stem.galaxy.quiz_opt_neutron_star', 'Neutron star'), t('stem.galaxy.nebula', 'Nebula')] },
 
-            { q: __alloT('stem.galaxy.quiz_hottest_type', 'Which star type is the hottest?'), a: t('stem.galaxy.otype'), options: [t('stem.galaxy.mtype'), t('stem.galaxy.gtype'), t('stem.galaxy.atype'), t('stem.galaxy.otype')] },
+            { q: __alloT('stem.galaxy.quiz_hottest_type', 'Which star type is the hottest?'), a: t('stem.galaxy.otype', 'O-type'), options: [t('stem.galaxy.mtype', 'M-type'), t('stem.galaxy.gtype', 'G-type'), t('stem.galaxy.atype', 'A-type'), t('stem.galaxy.otype', 'O-type')] },
 
-            { q: __alloT('stem.galaxy.quiz_our_arm', 'Which spiral arm contains our Solar System?'), a: __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), options: [t('stem.galaxy.perseus_arm'), __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), t('stem.galaxy.sagittarius_arm'), __alloT('stem.galaxy.quiz_opt_norma_arm', 'Norma Arm')] },
+            { q: __alloT('stem.galaxy.quiz_our_arm', 'Which spiral arm contains our Solar System?'), a: __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), options: [t('stem.galaxy.perseus_arm', 'Perseus Arm'), __alloT('stem.galaxy.quiz_opt_orion_arm', 'Orion Arm'), t('stem.galaxy.sagittarius_arm', 'Sagittarius Arm'), __alloT('stem.galaxy.quiz_opt_norma_arm', 'Norma Arm')] },
 
             { q: __alloT('stem.galaxy.quiz_mtype_pct', 'What percentage of stars are M-type red dwarfs?'), a: '~76%', options: ['~10%', '~30%', '~50%', '~76%'] },
 
@@ -3487,7 +3493,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             { q: __alloT('stem.galaxy.quiz_star_count', 'How many stars are in the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_100_400_billion', '100-400 billion'), options: [__alloT('stem.galaxy.quiz_opt_100_400_thousand', '100-400 thousand'), __alloT('stem.galaxy.quiz_opt_10_40_million', '10-40 million'), __alloT('stem.galaxy.quiz_opt_100_400_billion', '100-400 billion'), __alloT('stem.galaxy.quiz_opt_1_4_trillion', '1-4 trillion')] },
 
-            { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral'), options: [t('stem.galaxy.elliptical'), t('stem.galaxy.irregular'), __alloT('stem.galaxy.quiz_opt_spiral', 'Spiral'), __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral')] },
+            { q: __alloT('stem.galaxy.quiz_mw_type', 'What type of galaxy is the Milky Way?'), a: __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral'), options: [t('stem.galaxy.elliptical', 'Elliptical'), t('stem.galaxy.irregular', 'Irregular'), __alloT('stem.galaxy.quiz_opt_spiral', 'Spiral'), __alloT('stem.galaxy.quiz_opt_barred_spiral', 'Barred spiral')] },
 
             { q: __alloT('stem.galaxy.quiz_closest_star', 'Which star is closest to our Sun?'), a: __alloT('stem.galaxy.quiz_opt_proxima_centauri', 'Proxima Centauri'), options: [__alloT('stem.galaxy.quiz_opt_sirius', 'Sirius'), __alloT('stem.galaxy.quiz_opt_proxima_centauri', 'Proxima Centauri'), __alloT('stem.galaxy.quiz_opt_alpha_centauri_a', 'Alpha Centauri A'), __alloT('stem.galaxy.quiz_opt_barnards_star', 'Barnards Star')] },
 
@@ -3548,15 +3554,15 @@ if (!window._galaxyHasLoadedOnce) {
 
           var SCALE_INFO = [
 
-            { label: t('stem.galaxy.galaxy_diameter'), value: __alloT('stem.galaxy.scale_val_diameter', '~100,000 light-years') },
+            { label: t('stem.galaxy.galaxy_diameter', 'Galaxy Diameter'), value: __alloT('stem.galaxy.scale_val_diameter', '~100,000 light-years') },
 
-            { label: t('stem.galaxy.disk_thickness'), value: __alloT('stem.galaxy.scale_val_thickness', '~2,000 light-years') },
+            { label: t('stem.galaxy.disk_thickness', 'Disk Thickness'), value: __alloT('stem.galaxy.scale_val_thickness', '~2,000 light-years') },
 
-            { label: t('stem.galaxy.central_bulge'), value: __alloT('stem.galaxy.scale_val_bulge', '~10,000 light-years') },
+            { label: t('stem.galaxy.central_bulge', 'Central Bulge'), value: __alloT('stem.galaxy.scale_val_bulge', '~10,000 light-years') },
 
-            { label: t('stem.galaxy.sun_to_center'), value: __alloT('stem.galaxy.scale_val_sun_distance', '~26,000 light-years') },
+            { label: t('stem.galaxy.sun_to_center', 'Sun to Center'), value: __alloT('stem.galaxy.scale_val_sun_distance', '~26,000 light-years') },
 
-            { label: t('stem.galaxy.stars'), value: '100\u2013400 billion' },
+            { label: t('stem.galaxy.stars', 'Stars'), value: '100\u2013400 billion' },
 
             { label: __alloT('stem.galaxy.scale_age', 'Age'), value: __alloT('stem.galaxy.scale_val_age', '~13.6 billion years') }
 
@@ -3568,21 +3574,21 @@ if (!window._galaxyHasLoadedOnce) {
 
           var EPOCH_NARRATION = [
 
-            { age: 0.1, title: t('stem.galaxy.cosmic_dawn'), emoji: '\u2728', desc: __alloT('stem.galaxy.cosmic_dawn_desc', 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.') },
+            { age: 0.1, title: t('stem.galaxy.cosmic_dawn', 'Cosmic Dawn'), emoji: '\u2728', desc: __alloT('stem.galaxy.cosmic_dawn_desc', 'The first stars ignite, ending the cosmic dark ages. These massive Population III stars forge the first heavy elements.') },
 
-            { age: 0.4, title: t('stem.galaxy.first_galaxies'), emoji: '\uD83C\uDF0C', desc: __alloT('stem.galaxy.first_galaxies_desc', 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.') },
+            { age: 0.4, title: t('stem.galaxy.first_galaxies', 'First Galaxies'), emoji: '\uD83C\uDF0C', desc: __alloT('stem.galaxy.first_galaxies_desc', 'Protogalaxies begin to coalesce from dark matter halos. The first quasars blaze to life, powered by supermassive black holes.') },
 
-            { age: 1.0, title: t('stem.galaxy.galaxy_assembly'), emoji: '\uD83C\uDF00', desc: __alloT('stem.galaxy.galaxy_assembly_desc', 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.') },
+            { age: 1.0, title: t('stem.galaxy.galaxy_assembly', 'Galaxy Assembly'), emoji: '\uD83C\uDF00', desc: __alloT('stem.galaxy.galaxy_assembly_desc', 'Galaxies collide and merge, building larger structures. Spiral arms begin to form as gas settles into rotating disks.') },
 
-            { age: 4.6, title: t('stem.galaxy.milky_way_forms'), emoji: '\uD83C\uDF1F', desc: __alloT('stem.galaxy.milky_way_forms_desc', 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.') },
+            { age: 4.6, title: t('stem.galaxy.milky_way_forms', 'Milky Way Forms'), emoji: '\uD83C\uDF1F', desc: __alloT('stem.galaxy.milky_way_forms_desc', 'Our galaxy takes shape. The galactic bar forms, organizing the inner structure. Star formation peaks in the spiral arms.') },
 
-            { age: 9.2, title: t('stem.galaxy.sun_is_born'), emoji: '\u2600\uFE0F', desc: __alloT('stem.galaxy.sun_is_born_desc', 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.') },
+            { age: 9.2, title: t('stem.galaxy.sun_is_born', 'Sun Is Born'), emoji: '\u2600\uFE0F', desc: __alloT('stem.galaxy.sun_is_born_desc', 'A cloud of gas collapses in the Orion Arm, forming our Sun and Solar System 4.6 billion years ago. Life will eventually arise on Earth.') },
 
-            { age: 10.0, title: t('stem.galaxy.mature_galaxy'), emoji: '\uD83D\uDD2D', desc: __alloT('stem.galaxy.mature_galaxy_desc', 'The Milky Way settles into its current form with 100-400 billion stars. Star formation slows as gas reserves deplete.') },
+            { age: 10.0, title: t('stem.galaxy.mature_galaxy', 'Mature Galaxy'), emoji: '\uD83D\uDD2D', desc: __alloT('stem.galaxy.mature_galaxy_desc', 'The Milky Way settles into its current form with 100-400 billion stars. Star formation slows as gas reserves deplete.') },
 
-            { age: 13.0, title: t('stem.galaxy.present_era'), emoji: '\uD83C\uDF0D', desc: __alloT('stem.galaxy.present_era_desc', 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.') },
+            { age: 13.0, title: t('stem.galaxy.present_era', 'Present Era'), emoji: '\uD83C\uDF0D', desc: __alloT('stem.galaxy.present_era_desc', 'We are here! Humanity looks outward. The universe continues expanding, and dark energy accelerates its growth.') },
 
-            { age: 13.8, title: t('stem.galaxy.right_now'), emoji: '\uD83D\uDE80', desc: __alloT('stem.galaxy.right_now_desc', 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.') }
+            { age: 13.8, title: t('stem.galaxy.right_now', 'Right Now'), emoji: '\uD83D\uDE80', desc: __alloT('stem.galaxy.right_now_desc', 'The observable universe is 93 billion light-years across. We can see the cosmic microwave background\u2014the afterglow of the Big Bang.') }
 
           ];
 
@@ -3740,8 +3746,8 @@ if (!window._galaxyHasLoadedOnce) {
 
           function getStagesForMass(mass) {
             var stages = [
-              { id: 'nebula', name: t('stem.galaxy.nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas'), color: '#a855f7' },
-              { id: 'protostar', name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' }
+              { id: 'nebula', name: t('stem.galaxy.nebula', 'Nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas', 'A vast cloud of gas & dust collapses under gravity.'), color: '#a855f7' },
+              { id: 'protostar', name: t('stem.galaxy.protostar', 'Protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational', 'Core heats up from gravitational compression. Not yet fusing.'), color: '#fb923c' }
             ];
             if (mass < HYDROGEN_FUSION_LIMIT) {
               stages.push({ id: 'main_sequence', name: __alloT('stem.galaxy.stage_brown_dwarf_name', 'Brown Dwarf'), emoji: '\uD83E\uDDF4', desc: __alloT('stem.galaxy.stage_brown_dwarf_desc', 'Too small for sustained hydrogen fusion; it glows faintly while cooling.'), color: '#a16207' });
@@ -3749,24 +3755,24 @@ if (!window._galaxyHasLoadedOnce) {
             } else if (mass < M_DWARF_LIMIT) {
               stages.push({ id: 'main_sequence', name: __alloT('stem.galaxy.stage_red_dwarf_name', 'Red Dwarf'), emoji: '\uD83D\uDD34', desc: __alloT('stem.galaxy.stage_red_dwarf_desc', 'Burns slowly for hundreds of billions of years.'), color: '#dc2626' });
               stages.push({ id: 'blue_dwarf', name: __alloT('stem.galaxy.stage_blue_dwarf_name', 'Blue Dwarf'), emoji: '\uD83D\uDD35', desc: __alloT('stem.galaxy.stage_blue_dwarf_desc', 'Theoretical phase where a red dwarf heats up as its opacity changes.'), color: '#3b82f6' });
-              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf', 'White Dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools', 'Dense stellar core slowly cools. Size of Earth, mass of Sun.'), color: 'var(--allo-stem-text, #e2e8f0)' });
               stages.push({ id: 'black_dwarf', name: __alloT('stem.galaxy.stage_black_dwarf_name', 'Black Dwarf'), emoji: '\u26AB', desc: __alloT('stem.galaxy.stage_black_dwarf_desc', 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.'), color: '#18181b' });
             } else if (mass < 8) {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_sunlike', 'Hydrogen fusion ignites! Stable for billions of years.'), color: '#fbbf24' });
-              stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' });
-              stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' });
-              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence', 'Main Sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_sunlike', 'Hydrogen fusion ignites! Stable for billions of years.'), color: '#fbbf24' });
+              stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant', 'Red Giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand', 'Core contracts, outer layers expand. Helium fusion begins.'), color: '#ef4444' });
+              stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula', 'Planetary Nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into', 'Outer layers shed gently into space.'), color: '#818cf8' });
+              stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf', 'White Dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools', 'Dense stellar core slowly cools. Size of Earth, mass of Sun.'), color: 'var(--allo-stem-text, #e2e8f0)' });
               stages.push({ id: 'black_dwarf', name: __alloT('stem.galaxy.stage_black_dwarf_name', 'Black Dwarf'), emoji: '\u26AB', desc: __alloT('stem.galaxy.stage_black_dwarf_desc', 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.'), color: '#18181b' });
             } else if (mass < 25) {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_massive', 'Hot and enormous. Burns through fuel in millions of years.'), color: '#60a5fa' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence', 'Main Sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_massive', 'Hot and enormous. Burns through fuel in millions of years.'), color: '#60a5fa' });
               stages.push({ id: 'red_supergiant', name: __alloT('stem.galaxy.stage_red_supergiant_name', 'Red Supergiant'), emoji: '\uD83D\uDD34', desc: __alloT('stem.galaxy.stage_red_supergiant_desc', 'Expands to massive proportions, large enough to swallow Jupiter!'), color: '#b91c1c' });
-              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_core', 'Core collapses! A catastrophic explosion outshining entire galaxies.'), color: '#fbbf24' });
-              stages.push({ id: 'neutron_star', name: t('stem.galaxy.neutron_star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs'), color: '#38bdf8' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova', 'Supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_core', 'Core collapses! A catastrophic explosion outshining entire galaxies.'), color: '#fbbf24' });
+              stages.push({ id: 'neutron_star', name: t('stem.galaxy.neutron_star', 'Neutron Star'), emoji: '\u2B50', desc: t('stem.galaxy.ultradense_remnant_a_teaspoon_weighs', 'Ultra-dense remnant. A teaspoon weighs billions of tons.'), color: '#38bdf8' });
             } else {
-              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_ultramassive', 'An ultra-hot blue giant blazing with intense radiation.'), color: '#818cf8' });
+              stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence', 'Main Sequence'), emoji: '\u2B50', desc: __alloT('stem.galaxy.stage_ms_desc_ultramassive', 'An ultra-hot blue giant blazing with intense radiation.'), color: '#818cf8' });
               stages.push({ id: 'blue_supergiant', name: __alloT('stem.galaxy.stage_blue_supergiant_name', 'Blue Supergiant'), emoji: '\uD83D\uDD35', desc: __alloT('stem.galaxy.stage_blue_supergiant_desc', 'Sheds immense mass through violent stellar winds.'), color: '#3b82f6' });
-              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_hyper', 'A hypernova explosion obliterates the star.'), color: '#fbbf24' });
-              stages.push({ id: 'black_hole', name: t('stem.galaxy.black_hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes'), color: '#1e1b4b' });
+              stages.push({ id: 'supernova', name: t('stem.galaxy.supernova', 'Supernova'), emoji: '\uD83D\uDCA5', desc: __alloT('stem.galaxy.stage_supernova_desc_hyper', 'A hypernova explosion obliterates the star.'), color: '#fbbf24' });
+              stages.push({ id: 'black_hole', name: t('stem.galaxy.black_hole', 'Black Hole'), emoji: '\uD83D\uDD73\uFE0F', desc: t('stem.galaxy.gravity_so_strong_nothing_escapes', 'Gravity so strong nothing escapes. Spacetime itself warps.'), color: '#1e1b4b' });
             }
             return stages;
           }
@@ -8303,7 +8309,7 @@ if (!window._galaxyHasLoadedOnce) {
             }
             NEBULAE.forEach(function (neb) {
               if (galaxyType === 'elliptical' || neb.type !== 'Planetary') return;
-              var helix = neb.name === t('stem.galaxy.helix_nebula');
+              var helix = neb.name === t('stem.galaxy.helix_nebula', 'Helix Nebula');
               var shellSegments = resolvedQuality === 'cinematic' ? 80 : resolvedQuality === 'high' ? 64 : 48;
               // More cross-section samples keep close-up gas silhouettes smooth;
               // only the selected object's two small meshes are drawn at a time.
@@ -13200,19 +13206,19 @@ if (!window._galaxyHasLoadedOnce) {
 
           var LAYER_TOGGLES = [
 
-            { key: 'arms', icon: galaxyType === 'elliptical' ? '\u2B2D\uFE0F' : '\uD83C\uDF00', label: galaxyType === 'elliptical' ? __alloT('stem.galaxy.stellar_body', 'Stellar Body') : t('stem.galaxy.spiral_arms') },
+            { key: 'arms', icon: galaxyType === 'elliptical' ? '\u2B2D\uFE0F' : '\uD83C\uDF00', label: galaxyType === 'elliptical' ? __alloT('stem.galaxy.stellar_body', 'Stellar Body') : t('stem.galaxy.spiral_arms', 'Spiral Arms') },
 
-            { key: 'bulge', icon: '\uD83D\uDFE1', label: t('stem.galaxy.central_bulge') },
+            { key: 'bulge', icon: '\uD83D\uDFE1', label: t('stem.galaxy.central_bulge', 'Central Bulge') },
 
-            { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: t('stem.galaxy.black_hole') },
+            { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: t('stem.galaxy.black_hole', 'Black Hole') },
 
-            { key: 'nebulae', icon: '\u2728', label: t('stem.galaxy.nebulae') },
+            { key: 'nebulae', icon: '\u2728', label: t('stem.galaxy.nebulae', 'Nebulae') },
 
-            { key: 'bgStars', icon: '\uD83C\uDF0C', label: t('stem.galaxy.background') },
+            { key: 'bgStars', icon: '\uD83C\uDF0C', label: t('stem.galaxy.background', 'Background') },
 
-            { key: 'grid', icon: '\uD83D\uDCCF', label: t('stem.galaxy.scale_grid') },
+            { key: 'grid', icon: '\uD83D\uDCCF', label: t('stem.galaxy.scale_grid', 'Scale Grid') },
 
-            { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels') },
+            { key: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: t('stem.galaxy.labels', 'Labels') },
 
             { key: 'dust', icon: '\uD83C\uDF2B\uFE0F', label: __alloT('stem.galaxy.layer_dust_lanes', 'Dust Lanes') },
 
@@ -13684,7 +13690,7 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-cyan-100/80" }, __alloT('stem.galaxy.measurement_ruler_note', 'The cyan ruler measures radius. Sideways motion plus an inward gravitational pull continuously bends the star onto the glowing orbit path. Change the model to test a new speed and period.'))
                 ),
                 isSpiralMorphology && !galaxyHudHidden && selectedStarMeasurement && selStar && activeRotationMeasurement && React.createElement("details", { "data-galaxy-measurement-mobile": "true" },
-                  React.createElement("summary", { "aria-label": __alloT('stem.galaxy.measurement_mobile_expand', 'Selected orbit: radius {radius} kpc, speed {speed} kilometers per second. Expand for period and enclosed mass.').replace('{radius}', selectedRadiusKpc.toFixed(1)).replace('{speed}', String(Math.round(activeRotationMeasurement.speed))) },
+                  React.createElement("summary", { "aria-label": __alloOneWord(__alloT('stem.galaxy.measurement_mobile_expand', 'Selected orbit: radius {radius} kpc, speed {speed} kilometers per second. Expand for period and enclosed mass.').replace('{radius}', selectedRadiusKpc.toFixed(1)).replace('{speed}', String(Math.round(activeRotationMeasurement.speed)))) },
                     __alloT('stem.galaxy.measure_radius', 'Radius') + ': ' + selectedRadiusKpc.toFixed(1) + ' kpc', React.createElement("br"),
                     __alloT('stem.galaxy.measure_speed_short', 'Speed') + ': ' + Math.round(activeRotationMeasurement.speed) + ' km/s'
                   ),
@@ -13750,7 +13756,7 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("p", { style: { marginTop: '4px', fontSize: '10px', color: '#cbd5e1' } }, __alloT('stem.galaxy.nearby_keyboard', '[ ] browse these objects')),
                     React.createElement("p", { id: "galaxy-nearby-help", className: "sr-only" }, __alloT('stem.galaxy.nearby_depth_help', 'These objects overlap on screen but can lie at different depths in space. Inspect, then browse to compare them.'))
                   ),
-                  React.createElement("p", { id: "galaxy-object-inspection-help", "data-galaxy-inspection-hint": "true" }, galaxyInspection.active && galaxyCrabComponents.available ? __alloT('stem.galaxy.object_inspection_crab', 'Illustrative 3D remnant: orbit to compare filamentary debris with the pulsar-powered interior. Colors and dimensions are schematic. Escape returns to the galaxy.') : galaxyInspection.active ? galaxyInspection.kind === 'nebula' && (galaxyInspection.label === t('stem.galaxy.helix_nebula') || galaxyInspection.label === t('stem.galaxy.ring_nebula')) && ((d.observeMode || 'visible') === 'visible' || d.observeMode === 'infrared') ? __alloT('stem.galaxy.object_inspection_planetary_shell', 'Illustrative 3D gas shell. Orbit to compare its shape; colors and dimensions are schematic. Escape returns to the galaxy.') : __alloT('stem.galaxy.object_inspection_active', 'Orbit around this object. Escape returns to the galaxy view.') : __alloT('stem.galaxy.object_inspection_hint', 'I or double-click to inspect · Escape clears selection'))
+                  React.createElement("p", { id: "galaxy-object-inspection-help", "data-galaxy-inspection-hint": "true" }, galaxyInspection.active && galaxyCrabComponents.available ? __alloT('stem.galaxy.object_inspection_crab', 'Illustrative 3D remnant: orbit to compare filamentary debris with the pulsar-powered interior. Colors and dimensions are schematic. Escape returns to the galaxy.') : galaxyInspection.active ? galaxyInspection.kind === 'nebula' && (galaxyInspection.label === t('stem.galaxy.helix_nebula', 'Helix Nebula') || galaxyInspection.label === t('stem.galaxy.ring_nebula', 'Ring Nebula')) && ((d.observeMode || 'visible') === 'visible' || d.observeMode === 'infrared') ? __alloT('stem.galaxy.object_inspection_planetary_shell', 'Illustrative 3D gas shell. Orbit to compare its shape; colors and dimensions are schematic. Escape returns to the galaxy.') : __alloT('stem.galaxy.object_inspection_active', 'Orbit around this object. Escape returns to the galaxy view.') : __alloT('stem.galaxy.object_inspection_hint', 'I or double-click to inspect · Escape clears selection'))
                 ),
                 galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden || galaxyInspection.canInspect ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, rotationGuideSpec.visible && !selStar && !selNeb ? __alloT('stem.galaxy.radius_guides_probe', 'Probe ring') + ': ' + rotationGuideSpec.radiusKpc.toFixed(1) + ' kpc · ' + __alloT('stem.galaxy.radius_guides_saved', '{count} saved radii').replace('{count}', rotationGuideSpec.savedRadii.length) + ' '  : selStar ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selNeb.name) : __alloT('stem.galaxy.status_chip_help', 'Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars')),
                 // Scale info overlay
@@ -14470,10 +14476,10 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("p", { id: "galaxy-epoch-choices-help", className: "mt-1 text-xs leading-relaxed text-violet-900" }, __alloT('stem.galaxy.epoch_choices_help', 'Tick marks show the ages to scale. The buttons below are shortcuts to each milestone.')),
                 React.createElement("div", { "data-galaxy-epoch-choices": "true", role: "group", "aria-label": __alloT('stem.galaxy.epoch_choices', 'Choose a cosmic milestone'), "aria-describedby": "galaxy-epoch-choices-help", className: "mt-2 grid gap-2", style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 9rem), 1fr))' } },
                   [
-                    { age: 0.1, label: t('stem.galaxy.first_stars') },
-                    { age: 0.4, label: t('stem.galaxy.galaxies_form') },
-                    { age: 4.6, label: t('stem.galaxy.milky_way') },
-                    { age: 9.2, label: t('stem.galaxy.sun_born') },
+                    { age: 0.1, label: t('stem.galaxy.first_stars', 'First stars') },
+                    { age: 0.4, label: t('stem.galaxy.galaxies_form', 'Galaxies form') },
+                    { age: 4.6, label: t('stem.galaxy.milky_way', 'Milky Way') },
+                    { age: 9.2, label: t('stem.galaxy.sun_born', 'Sun born') },
                     { age: 13.8, label: __alloT('stem.galaxy.milestone_now', 'Now') }
                   ].map(function (m) {
                     var isHere = Math.abs(cosmicAge - m.age) < 0.15;
@@ -15067,7 +15073,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_snapshot', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy', 'Galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_snapshot', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
 
               )
 

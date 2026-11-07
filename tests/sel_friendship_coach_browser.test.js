@@ -91,8 +91,9 @@ describe('Friendship coach practice', () => {
     await mount(band);await map().getByText('Try a fictional example',{exact:true}).click();const examples=map().getByRole('button',{name:/Use prompt:/});expect(await examples.count()).toBe(3);await examples.first().click();expect(await field().inputValue()).toContain('Fictional example:');expect(await examples.nth(1).isDisabled()).toBe(true);expect(await page.evaluate(()=>window.depthCoachCalls)).toEqual([]);const saved=await snapshot();await mount(band,'light',1100,saved);expect(await field().inputValue()).toBe(saved.coachInput);expect(errors).toEqual([]);
   },120000);
 
-  it('keeps an editable offline draft and respects the existing consent gate',async()=>{
-    await mount('middle','light',1100,{offline:true});await field().fill('Offline draft');expect(await send().isDisabled()).toBe(true);expect(await map().innerText()).toContain('AI replies are unavailable');await page.getByRole('tab',{name:/Ways to Care/}).click();await page.getByRole('tab',{name:/Practice/}).click();expect(await field().inputValue()).toBe('Offline draft');
+  it('hides the AI practice tab offline and respects the existing consent gate',async()=>{
+    await mount('middle','light',1100,{offline:true});expect(await page.getByRole('tab',{name:/Practice/}).count()).toBe(0);expect(await field().count()).toBe(0);expect(await page.getByRole('tab',{name:/Ways to Care/}).getAttribute('aria-selected')).toBe('true');expect(errors).toEqual([]);
+    await mount('middle','light',1100);
     await page.evaluate(()=>{window.SelHub.hasCoachConsent=()=>false;window.SelHub.renderConsentScreen=h=>h('p',null,'Consent required');});await page.getByRole('tab',{name:/Ways to Care/}).click();await page.getByRole('tab',{name:/Practice/}).click();expect(await page.getByText('Consent required',{exact:true}).isVisible()).toBe(true);expect(await field().count()).toBe(0);expect(await page.evaluate(()=>window.depthCoachCalls)).toEqual([]);expect(errors).toEqual([]);
   },120000);
 

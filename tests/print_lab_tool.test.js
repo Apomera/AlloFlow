@@ -47,7 +47,8 @@ beforeEach(() => {
 
 describe('Print Lab workflow surface', () => {
   it('registers four keyboard-operable tabs and the manual, AI, and local-import design paths', () => {
-    const html = renderTool('printLab', { printLab: { activeTab: 'Design', recipe: RECIPE, unitMm: 20 } });
+    // The AI assistant renders only with a usable provider (student AI-off sweep).
+    const html = renderTool('printLab', { printLab: { activeTab: 'Design', recipe: RECIPE, unitMm: 20 } }, { callGemini: () => new Promise(() => {}) });
 
     expect(html).toContain('data-print-lab="true"');
     expect(html).toContain('role="tablist"');

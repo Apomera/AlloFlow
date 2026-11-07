@@ -34,6 +34,24 @@
   // BUILDING_VERBS.
   // ═══════════════════════════════════════════
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
+  var __alloT = function (key, fallback) {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      try {
+        var v = window.__alloT(key);
+        if (typeof v === 'string' && v !== '' && v !== key) return v;
+      } catch (e) {}
+    }
+    return fallback != null ? fallback : key;
+  };
+
   function waitForRegistry(cb) {
     if (window.AlloHavenArcade && typeof window.AlloHavenArcade.registerMode === 'function') {
       cb(); return;
@@ -80,6 +98,13 @@
   function getGrader() {
     return window.AlloHavenArcade && window.AlloHavenArcade.gradeCardJustification;
   }
+  function getClassWork() {
+    return (window.AlloHavenArcade && window.AlloHavenArcade.classWork) || null;
+  }
+
+  function getSelfCheck() {
+    return (window.AlloHavenArcade && window.AlloHavenArcade.selfCheck) || null;
+  }
 
   // ── Generate a stable id for a fresh realm ──
   function newRealmId() {
@@ -104,6 +129,9 @@
 
   function register() {
     window.AlloHavenArcade.registerMode('realm-builder', {
+      // Every card play adds a zone whatever its score, so building still means
+      // something with AI off: self-rated solo, teacher-scored in class.
+      aiOffPath: 'self-check',
       label: 'Realm Builder',
       icon: '🌱',
       blurb: 'Build a world from your cards. Play solo or contribute to a teacher-hosted class realm.',
@@ -149,7 +177,14 @@
     var disabled = !!session;
     var minutesAsked = 10;
     var tokensCost = Math.ceil(minutesAsked / (ctx.minutesPerToken || 5));
-    var canAfford = ctx.tokens >= tokensCost && deckSize >= MIN_DECK_FOR_LAUNCH;
+    // AI off: the self-check pays nothing, so starting one costs nothing.
+    var aiOff = !_aiUsable('text', ctx.callGemini);
+    var canAfford = (aiOff || ctx.tokens >= tokensCost) && deckSize >= MIN_DECK_FOR_LAUNCH;
+
+    function startSelfCheck() {
+      var launch = ctx.onLaunchSelfCheck || ctx.onLaunchHosted;
+      if (typeof launch === 'function') launch(minutesAsked);
+    }
 
     // In-progress local realm? Solo continuation path.
     var realms = (ctx.realms || []).filter(function (r) { return r && !r.isComplete; });
@@ -177,6 +212,7 @@
       }
       window.__alloHavenRealmResume = null;
       window.__alloHavenRealmClassMode = null;
+      if (aiOff) { startSelfCheck(); return; }
       ctx.onLaunch(minutesAsked);
     }
 
@@ -184,6 +220,7 @@
       if (disabled || !resumable) return;
       window.__alloHavenRealmResume = { realmId: resumable.id };
       window.__alloHavenRealmClassMode = null;
+      if (aiOff) { startSelfCheck(); return; }
       ctx.onLaunch(minutesAsked);
     }
 
@@ -240,7 +277,9 @@
           h('div', { style: { fontSize: '15px', fontWeight: 700, color: palette.text || '#e2e8f0', marginBottom: '3px' } },
             'Realm Builder'),
           h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', lineHeight: '1.45' } },
-            'Pick a topic. Place cards from your room into a world that grows. Each card needs a justification — the realm evolves visually when your reasoning lands.')
+            aiOff
+              ? __alloT('arcade.realm.ai_off_blurb', 'Pick a topic. Place cards from your room into a world that grows, and write why each one belongs. You check your own work, so no tokens are spent or earned.')
+              : 'Pick a topic. Place cards from your room into a world that grows. Each card needs a justification — the realm evolves visually when your reasoning lands.')
         )
       ),
       // ── Class-mode strip ─────────────────────────────────────────
@@ -381,7 +420,7 @@
           h('div', { style: { fontSize: '13px', fontWeight: 700 } },
             'Continue: ' + (resumable.name || resumable.topic || 'untitled realm')),
           h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginTop: '2px' } },
-            (resumable.zones || []).length + ' zone' + ((resumable.zones || []).length === 1 ? '' : 's') + ' placed · ' + tokensCost + ' 🪙 to resume')
+            (resumable.zones || []).length + ' zone' + ((resumable.zones || []).length === 1 ? '' : 's') + ' placed · ' + (aiOff ? __alloT('arcade.self_check.no_tokens', 'no tokens') : tokensCost + ' 🪙 to resume'))
         )
       ) : null,
       h('button', {
@@ -407,12 +446,12 @@
           h('div', { style: { fontSize: '13px', fontWeight: 700 } },
             isInSession ? 'Solo realm (just for you)' : (resumable ? 'Start a new realm' : 'Start building')),
           h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
-            tokensCost + ' 🪙 · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
+            (aiOff ? __alloT('arcade.self_check.no_tokens', 'no tokens') : tokensCost + ' 🪙') + ' · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
         )
       ),
       deckSize < MIN_DECK_FOR_LAUNCH ? h('div', {
         style: { fontSize: '11px', color: palette.warn || '#f59e0b', marginTop: '8px', fontStyle: 'italic', lineHeight: '1.45' }
-      }, 'You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to build. Earn decorations or generate a unit glossary first.') : null
+      }, aiOff ? __alloT('arcade.self_check.need_more_cards', 'You need at least {count} cards. Earn decorations, or ask your teacher to share a glossary.').replace('{count}', MIN_DECK_FOR_LAUNCH) : 'You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to build. Earn decorations or generate a unit glossary first.') : null
     );
   }
 
@@ -433,6 +472,9 @@
     var verbs = getBuildingVerbs();
     var helpers = getCardHelpers();
     var grader = getGrader();
+    var selfCheck = getSelfCheck();
+    var aiOff = !_aiUsable('text', ctx.callGemini);
+    var participantId = ctx.sessionParticipantId || '';
 
     // Resume-sentinel: if the launcher set it, hydrate from that realm.
     var resumeRef = useRef(null);
@@ -537,7 +579,7 @@
     var phase;
     if (isClassStudent) {
       if (classRealm && classRealm.status === 'closed') phase = 'complete';
-      else if (classRealm && classRealm.canvas) phase = 'play';
+      else if (classRealm && (classRealm.canvas || classRealm.noCanvas)) phase = 'play';
       else phase = 'gen-canvas';
     } else {
       phase = localPhase;
@@ -587,6 +629,10 @@
     var lastFeedbackTuple = useState(null);  // { score, ackText, followUp, cardName, verbLabel }
     var lastFeedback = lastFeedbackTuple[0];
     var setLastFeedback = lastFeedbackTuple[1];
+
+    var checksTuple = useState([]);          // AI off: ids of the evidence chips ticked
+    var checks = checksTuple[0];
+    var setChecks = checksTuple[1];
 
     var transformingTuple = useState(false);
     var transforming = transformingTuple[0];
@@ -682,10 +728,17 @@
           topic: localRealm.topic || '',
           name: localRealm.name || '',
           canvas: localRealm.canvas || null,
+          noCanvas: !!localRealm.noCanvas,
           zones: (localRealm.zones || []).map(function (z) {
             // Strip any nested raw refs that might have crept in.
             var copy = Object.assign({}, z);
             delete copy.raw;
+            // Writing and teacher notes stay off classmates' devices.
+            delete copy.justification;
+            delete copy.ackText;
+            delete copy.followUp;
+            delete copy.selfCheck;
+            delete copy.selfCheckText;
             return copy;
           }),
           milestones: localRealm.milestones || [],
@@ -729,16 +782,61 @@
       }
     }, [sessionState, isClassStudent]); // eslint-disable-line
 
+    // Class work from students' private documents. See classChannel in the Boss module.
+    var privateDocsTuple = useState({});
+    var privateDocs = privateDocsTuple[0];
+    var setPrivateDocs = privateDocsTuple[1];
+    var classIssueTuple = useState(null);
+    var classIssue = classIssueTuple[0];
+    var setClassIssue = classIssueTuple[1];
+    useEffect(function () {
+      if (!isClassHost && !isClassStudent) return;
+      var kit = getClassWork();
+      var chan = kit ? kit.channel(ctx) : { kind: 'legacy' };
+      if (chan.kind === 'unavailable') { setClassIssue('transport'); return; }
+      if (chan.kind !== 'private') return;
+      return chan.watch(isClassHost, 'realm', setPrivateDocs, setClassIssue);
+    }, [isClassHost, isClassStudent, ctx.sessionCode]); // eslint-disable-line
+    var classKit = getClassWork();
+    var classSubs = (function () {
+      var legacy = sessionState && sessionState.realmBuilder && sessionState.realmBuilder.submissions;
+      return classKit ? classKit.queue(legacy, privateDocs) : (legacy || {});
+    })();
+    var classSendBlocked = isClassStudent && (classIssue === 'rules' || classIssue === 'transport');
+
+    function classFailMessage(err) {
+      return classKit ? classKit.message(err) : __alloT('arcade.class_send.failed', 'That did not send. Your work is still here. Check your connection and try again.');
+    }
+
+    function deliverClassWork(subId, data, legacyPayload) {
+      var chan = classKit ? classKit.channel(ctx) : { kind: 'legacy' };
+      if (chan.kind === 'private') return chan.send('realm', subId, data);
+      if (chan.kind === 'unavailable') {
+        var err = new Error('This class connection cannot carry game work.');
+        err.classReason = 'transport';
+        return Promise.reject(err);
+      }
+      return Promise.resolve(ctx.sessionUpdate(legacyPayload));
+    }
+
+    function renderClassNotice() {
+      var text = classKit && (isClassHost || isClassStudent) ? classKit.noticeText(classIssue, isClassHost) : '';
+      if (!text) return null;
+      return h('p', {
+        role: 'status',
+        'data-class-notice': classIssue,
+        style: { margin: '0 0 12px 0', padding: '8px 12px', fontSize: '12px', lineHeight: '1.5', borderRadius: '8px', border: '1.5px solid ' + (palette.accent || '#60a5fa'), background: palette.surface || '#1e293b', color: palette.text || '#e2e8f0' }
+      }, text);
+    }
+
     // ── Class-mode HOST: drain student submissions ──
-    // Each student writes their graded play to session.realmBuilder.submissions[uuid].
-    // Host iterates the queue, applies each one as a zone (just like a
-    // local play), then clears the consumed submission via Firestore
-    // delete-sentinel so the queue stays bounded.
+    // Each graded play arrives as a private document (older hosts: in
+    // session.realmBuilder.submissions). The host applies each one as a zone,
+    // then clears it so the queue stays bounded.
     var processedSubsRef = useRef({});
     useEffect(function () {
       if (!isClassHost) return;
-      if (!sessionState || !sessionState.realmBuilder) return;
-      var subs = sessionState.realmBuilder.submissions || {};
+      var subs = classSubs;
       var keys = Object.keys(subs);
       if (keys.length === 0) return;
       // Order by submittedAt so simultaneous submits stay deterministic
@@ -752,8 +850,14 @@
         if (processed[k]) return;
         var sub = subs[k];
         if (!sub || !sub.cardName || !sub.verb) return;
+        if (sub.awaitingTeacher) return; // not graded: stays queued until the teacher scores it
         processed[k] = true;
         applyZoneFromSubmission(sub);
+        if (sub.privateDoc) {
+          var drainChan = classKit && classKit.channel(ctx);
+          if (drainChan && drainChan.kind === 'private') drainChan.remove(k).catch(function () {});
+          return;
+        }
         // Clear the submission so the queue stays small. Use a sentinel
         // that Firestore treats as a delete (set to null in this stack;
         // the host's set-merge wrapper accepts nulls as deletions).
@@ -761,7 +865,50 @@
         clearPayload.realmBuilder.submissions[k] = null;
         Promise.resolve(ctx.sessionUpdate(clearPayload)).catch(function () {});
       });
-    }, [sessionState, isClassHost]); // eslint-disable-line
+    }, [sessionState, privateDocs, isClassHost]); // eslint-disable-line
+
+    // AI-off class play: the teacher's score is the first real result. The zone
+    // lands once the session write succeeds, so a failed write can be retried.
+    var scoringRef = useRef({});
+    function scoreSubmission(subId, sub, band, note) {
+      if (!isClassHost || !selfCheck || scoringRef.current[subId]) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      scoringRef.current[subId] = true;
+      var record = selfCheck.teacherScoreRecord(subId, sub, band, note);
+      var payload = { realmBuilder: { submissions: {}, teacherScores: {} } };
+      payload.realmBuilder.submissions[subId] = null;
+      payload.realmBuilder.teacherScores[subId] = record;
+      var scoreChan = sub.privateDoc && classKit ? classKit.channel(ctx) : null;
+      var scoreWrite = scoreChan && scoreChan.kind === 'private' ? scoreChan.score(subId, record) : Promise.resolve(ctx.sessionUpdate(payload));
+      scoreWrite.then(function () {
+        applyZoneFromSubmission(Object.assign({}, sub, {
+          score: band.score, ackText: record.note, followUp: '', scoredBy: 'teacher'
+        }));
+      }).catch(function () {
+        scoringRef.current[subId] = false;
+        ctx.addToast(__alloT('arcade.teacher_queue.save_failed', 'That score did not save. Try again.'));
+      });
+    }
+
+    // Class student: pick up the teacher's scores for this student's work.
+    var teacherSeenRef = useRef({});
+    useEffect(function () {
+      if (!isClassStudent || !selfCheck) return;
+      var rb = sessionState && sessionState.realmBuilder;
+      var scores = classKit ? classKit.scores(rb && rb.teacherScores, privateDocs) : (rb && rb.teacherScores);
+      if (!scores) return;
+      selfCheck.claimTeacherScores(ctx, scores, teacherSeenRef.current, participantId, nickname, 'realm-teacher-score', function (entry) {
+        setLastFeedback({
+          score: entry.score,
+          tag: selfCheck.scoreTag({ scoredBy: 'teacher', score: entry.score }),
+          ackText: entry.note || '',
+          followUp: '',
+          cardName: entry.summary || '',
+          verbLabel: '',
+          resonant: entry.score >= 18
+        });
+      });
+    }, [sessionState, privateDocs, isClassStudent, ctx.tokens]); // eslint-disable-line
 
     // Apply a class-student submission as a zone on the host. Mirrors
     // applyZone() but reads card+verb+text from the submission record
@@ -772,7 +919,7 @@
       var isResonant = score >= 18;
       var nowIso = new Date().toISOString();
       var verbDef = (verbs.filter(function (v) { return v.id === sub.verb; })[0]) || { id: sub.verb, label: sub.verbLabel, editPrompt: '' };
-      var newZone = {
+      var newZone = Object.assign({
         id: 'zone-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         cardId: sub.cardId,
         cardName: sub.cardName,
@@ -790,21 +937,22 @@
         transformed: false,
         resonant: isResonant,
         contributorNickname: sub.nickname || ''
-      };
+      }, selfCheck ? selfCheck.evidenceFields(sub) : {});
       // Use functional update so we don't race against other submissions
       // landing in the same render cycle.
       setLocalRealm(function (prev) {
         var nextZoneCount = (prev.zones || []).length + 1;
+        var countedZones = (prev.zones || []).filter(function (z) { return !z.selfRated; }).length + 1;
         var alreadyLevels = (prev.milestones || []).map(function (m) { return m.level; });
         var newMilestones = MILESTONES.filter(function (m) {
-          return nextZoneCount >= m.zones && alreadyLevels.indexOf(m.level) === -1;
+          return countedZones >= m.zones && alreadyLevels.indexOf(m.level) === -1;
         }).map(function (m) {
           return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
         });
         if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
           newMilestones.forEach(function (m) {
-            ctx.onAwardTokens(m.tokens, 'realm-milestone', { realmId: prev.id, level: m.level });
-            ctx.addToast(m.emoji + ' ' + m.label + ' unlocked (class) · +' + m.tokens + ' 🪙');
+            ctx.onAwardTokens(m.tokensAwarded, 'realm-milestone', { realmId: prev.id, level: m.level });
+            ctx.addToast(m.emoji + ' ' + m.label + ' unlocked (class) · +' + m.tokensAwarded + ' 🪙');
           });
         }
         var isComplete = prev.isComplete || nextZoneCount >= MILESTONES[MILESTONES.length - 1].zones;
@@ -854,8 +1002,11 @@
       // The student's phase just signals "waiting for canvas" until the
       // session sync delivers one.
       if (isClassStudent) return;
-      if (typeof ctx.callImagen !== 'function') {
-        setCanvasError('Image generator unavailable. You can still build — the canvas will stay blank.');
+      if (!_aiUsable('images', ctx.callImagen)) {
+        // Text AI on but images off is a real gap worth saying. With all AI off
+        // the realm map below is simply how this game looks.
+        if (!aiOff) setCanvasError('Image generator unavailable. You can still build — the canvas will stay blank.');
+        setRealm(function (prev) { return Object.assign({}, prev, { noCanvas: true }); });
         setPhase('play');
         return;
       }
@@ -876,6 +1027,7 @@
         })
         .catch(function (err) {
           setCanvasError('Could not generate the canvas (' + ((err && err.message) || 'unknown') + '). You can still build — the canvas will stay blank.');
+          setRealm(function (prev) { return Object.assign({}, prev, { noCanvas: true }); });
           setCanvasLoading(false);
           setPhase('play');
         });
@@ -895,7 +1047,7 @@
         : { webSpeech: false, mediaRecorder: false, whisperLoaded: false };
       if (engine === 'auto') {
         if (caps.whisperLoaded) return 'whisper';
-        if (typeof ctx.callGeminiAudio === 'function') return 'gemini';
+        if (_aiUsable('audio', ctx.callGeminiAudio)) return 'gemini';
         if (caps.webSpeech) return 'webspeech';
         return 'off';
       }
@@ -904,7 +1056,7 @@
       if (engine === 'whisper' && !caps.whisperLoaded) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
-      if (engine === 'gemini' && typeof ctx.callGeminiAudio !== 'function') {
+      if (engine === 'gemini' && !_aiUsable('audio', ctx.callGeminiAudio)) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
       if (engine === 'webspeech' && !caps.webSpeech) {
@@ -1072,6 +1224,20 @@
         ctx.addToast('Write at least a sentence about how this card fits the realm.');
         return;
       }
+      if (aiOff) {
+        if (!selfCheck) {
+          ctx.addToast(__alloT('arcade.self_check.unavailable', 'This check did not load. Close the game and open it again.'));
+          return;
+        }
+        if (checks.length === 0) {
+          ctx.addToast(__alloT('arcade.self_check.need_one', 'Tick what your writing does first. If none fit yet, add to your writing.'));
+          return;
+        }
+        var evidence = selfCheck.selfRatedResult('building', checks);
+        if (isClassStudent) submitForTeacher(evidence);
+        else applyZone(evidence);
+        return;
+      }
       if (typeof grader !== 'function') {
         ctx.addToast('AI grader unavailable. Try again later.');
         return;
@@ -1094,6 +1260,65 @@
       }).catch(function (err) {
         setSubmitting(false);
         ctx.addToast('Grading failed: ' + ((err && err.message) || 'unknown'));
+      });
+    }
+
+    // AI-off class student: saves the UNGRADED play for the teacher to score.
+    // Card images stay out: an unscored play waits on Firestore, possibly in
+    // the shared session doc on an older host, and that doc has a size limit.
+    function submitForTeacher(evidence) {
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class sync unavailable. Try solo mode.');
+        return;
+      }
+      var room = selfCheck.queueRoom(classSubs, participantId, nickname);
+      if (room !== 'ok') {
+        ctx.addToast(selfCheck.queueBlockedMessage(room));
+        return;
+      }
+      setSubmitting(true);
+      var subId = 'rs-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+      var payload = { realmBuilder: { submissions: {} } };
+      payload.realmBuilder.submissions[subId] = {
+        subId: subId,
+        awaitingTeacher: true,
+        nickname: nickname,
+        participantId: participantId,
+        cardId: pickedCard.id,
+        cardName: pickedCard.name,
+        cardSource: pickedCard.source,
+        cardImageBase64: null,
+        verb: pickedVerb.id,
+        verbLabel: pickedVerb.label,
+        partnerCardId: partnerCard ? partnerCard.id : null,
+        partnerCardName: partnerCard ? partnerCard.name : null,
+        summary: pickedCard.name + ' (' + pickedVerb.label + ')',
+        justification: (justification || '').trim(),
+        score: null,
+        selfCheck: evidence.selfCheck,
+        selfCheckText: evidence.selfCheckText,
+        submittedAt: new Date().toISOString()
+      };
+      deliverClassWork(subId, payload.realmBuilder.submissions[subId], payload).then(function () {
+        setLastFeedback({
+          score: null,
+          tag: __alloT('arcade.teacher_queue.waiting_tag', 'waiting for teacher'),
+          ackText: __alloT('arcade.teacher_queue.sent', 'Sent to your teacher. It joins the realm once they score it.'),
+          followUp: '',
+          cardName: pickedCard.name,
+          verbLabel: pickedVerb.label,
+          resonant: false
+        });
+        setPickedCard(null);
+        setPickedVerb(null);
+        setPartnerCard(null);
+        setJustification('');
+        setChecks([]);
+        setSubmitting(false);
+        refreshHand();
+      }).catch(function (err) {
+        setSubmitting(false);
+        ctx.addToast(classFailMessage(err));
       });
     }
 
@@ -1130,7 +1355,7 @@
         followUp: parsed.followUp || '',
         submittedAt: new Date().toISOString()
       };
-      Promise.resolve(ctx.sessionUpdate(payload)).then(function () {
+      deliverClassWork(subId, payload.realmBuilder.submissions[subId], payload).then(function () {
         // Local feedback so the student sees their score immediately,
         // even before the host applies the zone.
         var sc = parsed.score || 1;
@@ -1151,17 +1376,18 @@
         refreshHand();
       }).catch(function (err) {
         setSubmitting(false);
-        ctx.addToast('Submit failed: ' + ((err && err.message) || 'unknown'));
+        ctx.addToast(classFailMessage(err));
       });
     }
 
     function applyZone(parsed) {
-      var score = parsed.score || 1;
+      var isSelfRated = parsed.selfRated === true;
+      var score = isSelfRated ? null : (parsed.score || 1);
       var willTransform = score >= 11;
       var isResonant = score >= 18;
       var nowIso = new Date().toISOString();
 
-      var newZone = {
+      var newZone = Object.assign({
         id: 'zone-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         cardId: pickedCard.id,
         cardName: pickedCard.name,
@@ -1181,13 +1407,15 @@
         // Class mode: tag the host's own zone with their nickname so the
         // shared feed shows attribution. Solo: omit (no other contributors).
         contributorNickname: isClass ? nickname : null
-      };
+      }, isSelfRated && selfCheck ? selfCheck.evidenceFields(parsed) : {});
 
-      // Compute new milestone unlocks
+      // Compute new milestone unlocks. Self-rated zones build the realm but
+      // never count toward these, because milestones pay tokens.
       var nextZoneCount = realm.zones.length + 1;
+      var countedZones = realm.zones.filter(function (z) { return !z.selfRated; }).length + 1;
       var alreadyAchievedLevels = (realm.milestones || []).map(function (m) { return m.level; });
-      var newMilestones = MILESTONES.filter(function (m) {
-        return nextZoneCount >= m.zones && alreadyAchievedLevels.indexOf(m.level) === -1;
+      var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
+        return countedZones >= m.zones && alreadyAchievedLevels.indexOf(m.level) === -1;
       }).map(function (m) {
         return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
       });
@@ -1195,8 +1423,8 @@
       // Award tokens for each new milestone hit this turn
       if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
         newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokens, 'realm-milestone', { realmId: realm.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokens + ' 🪙');
+          ctx.onAwardTokens(m.tokensAwarded, 'realm-milestone', { realmId: realm.id, level: m.level });
+          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
         });
       }
 
@@ -1211,7 +1439,15 @@
         });
       });
 
-      setLastFeedback({
+      setLastFeedback(isSelfRated ? {
+        score: null,
+        tag: selfCheck ? selfCheck.scoreTag(newZone) : '',
+        ackText: __alloT('arcade.self_check.you_said', 'Placed. You said:') + ' ' + (parsed.selfCheckText || ''),
+        followUp: __alloT('arcade.self_check.reread', 'Not graded. Read it once more: would a classmate follow your reason?'),
+        cardName: pickedCard.name,
+        verbLabel: pickedVerb.label,
+        resonant: false
+      } : {
         score: score,
         ackText: parsed.ackText || '',
         followUp: parsed.followUp || '',
@@ -1225,6 +1461,7 @@
       setPickedVerb(null);
       setPartnerCard(null);
       setJustification('');
+      setChecks([]);
       setSubmitting(false);
       refreshHand();
 
@@ -1242,7 +1479,7 @@
     function applyVisualEvolution(zone, verb, isResonant) {
       if (realm.transformCount >= MAX_VISUAL_TRANSFORMS) return;
       if (!realm.canvas) return;
-      if (typeof window.callGeminiImageEdit !== 'function') return;
+      if (!_aiUsable('imageEdit', window.callGeminiImageEdit)) return;
 
       var verbEdit = verb.editPrompt || 'with a subtle but visible change to one region of the scene';
       var cardName = zone.cardName || 'a new element';
@@ -1307,6 +1544,8 @@
             classRewardWrittenAt: nowIso
           }
         })).catch(function () {});
+        var endChan = classKit && classKit.channel(ctx);
+        if (endChan && endChan.kind === 'private') endChan.clear('realm').catch(function () {});
       }
     }
 
@@ -1388,7 +1627,7 @@
             onClick: startNewRealm,
             disabled: topicDraft.trim().length < 2,
             style: { padding: '8px 16px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: topicDraft.trim().length < 2 ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: topicDraft.trim().length < 2 ? 0.6 : 1 }
-          }, '🌍 Generate the canvas →')
+          }, _aiUsable('images', ctx.callImagen) ? '🌍 Generate the canvas →' : __alloT('arcade.realm.start_building', '🌍 Start building →'))
         )
       );
     }
@@ -1450,13 +1689,52 @@
       );
     }
 
+    // No canvas image: the realm is a map of what has been placed, drawn from
+    // the zones themselves, so it still visibly grows with every card.
+    function renderRealmMap() {
+      var zones = realm.zones || [];
+      return h('div', {
+        'data-realm-map': 'true',
+        style: { padding: '12px', minHeight: '120px', background: palette.surface || '#1e293b', color: palette.textDim || '#cbd5e1' }
+      },
+        zones.length === 0 ? h('p', { style: { margin: 0, padding: '36px 8px', textAlign: 'center', fontSize: '12px' } },
+          __alloT('arcade.realm.map_empty', 'Your realm starts here. Each card you place appears on this map.')) :
+        h('ul', {
+          role: 'list',
+          'aria-label': __alloT('arcade.realm.map_label', 'Map of your realm'),
+          style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: 0, padding: 0, listStyle: 'none' }
+        },
+          zones.map(function (z) {
+            return h('li', {
+              key: 'map-' + z.id,
+              role: 'listitem',
+              style: { listStyle: 'none', width: '92px', padding: '6px', textAlign: 'center', fontSize: '10px', borderRadius: '8px', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155') }
+            },
+              z.cardImageBase64 ? h('img', {
+                src: z.cardImageBase64, alt: '', 'aria-hidden': 'true',
+                style: { width: '56px', height: '56px', objectFit: 'cover', borderRadius: '4px' }
+              }) : h('div', { 'aria-hidden': 'true', style: { fontSize: '28px' } }, z.cardSource === 'glossary' ? '📖' : '🎴'),
+              h('div', { style: { fontWeight: 700, color: palette.text || '#e2e8f0', overflowWrap: 'anywhere' } }, z.cardName),
+              h('div', null, z.verbLabel + (z.partnerCardName ? ' ↔ ' + z.partnerCardName : ''))
+            );
+          })
+        )
+      );
+    }
+
     function renderPlayPhase() {
       var verbHint = pickedVerb ? pickedVerb.hint : 'Pick how this card joins the realm.';
       var connectMode = pickedVerb && pickedVerb.id === 'connect';
       var canSubmit = !!pickedCard && !!pickedVerb && (justification || '').trim().length >= 10
-                      && (!connectMode || !!partnerCard) && !submitting;
+                      && (!connectMode || !!partnerCard) && !submitting
+                      && (!aiOff || checks.length > 0) && !classSendBlocked;
+      var myWaiting = (isClassStudent && selfCheck) ? selfCheck.pendingSubmissions(classSubs).filter(function (p) {
+        return selfCheck.isMine(p.sub, participantId, nickname);
+      }).length : 0;
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
+        renderClassNotice(),
+        renderTeacherQueue(),
         // Realm canvas — `ah-realm-canvas` adds an inset radial vignette
         // overlay so the canvas reads as a window into a world rather
         // than a flat thumbnail.
@@ -1467,9 +1745,7 @@
           realm.canvas ? h('img', {
             src: realm.canvas, alt: 'Your realm: ' + realm.topic,
             style: { display: 'block', width: '100%', maxHeight: '320px', objectFit: 'cover' }
-          }) : h('div', {
-            style: { padding: '60px 16px', textAlign: 'center', background: palette.surface || '#1e293b', color: palette.textDim || '#cbd5e1' }
-          }, '🌍 (canvas unavailable — keep building)'),
+          }) : renderRealmMap(),
           transforming ? h('div', {
             'aria-live': 'polite', 'aria-busy': 'true',
             style: { position: 'absolute', top: 8, right: 8, padding: '4px 10px', background: 'rgba(0,0,0,0.6)', color: '#fff', borderRadius: '999px', fontSize: '11px' }
@@ -1494,10 +1770,10 @@
             lastFeedback.resonant ? h('span', { className: 'ah-resonant-pulse', 'aria-label': 'Resonant placement', style: { fontSize: '14px' } }, '🌟') : null,
             h('span', null,
               (lastFeedback.resonant ? 'Resonant placement · ' : '') +
-              lastFeedback.cardName + ' (' + lastFeedback.verbLabel + ')'),
+              lastFeedback.cardName + (lastFeedback.verbLabel ? ' (' + lastFeedback.verbLabel + ')' : '')),
             // Score-pop chip — animates in on render via CSS keyframe.
             h('span', {
-              key: 'sp-' + lastFeedback.score + '-' + (lastFeedback.cardName || ''),
+              key: 'sp-' + (lastFeedback.tag || lastFeedback.score) + '-' + (lastFeedback.cardName || ''),
               className: 'ah-score-pop',
               style: {
                 marginLeft: 'auto',
@@ -1508,7 +1784,7 @@
                 fontWeight: lastFeedback.score >= 18 ? 800 : 700,
                 fontSize: '11px', letterSpacing: 0
               }
-            }, lastFeedback.score + '/20')
+            }, lastFeedback.tag || (lastFeedback.score + '/20'))
           ),
           lastFeedback.ackText ? h('p', { style: { margin: '0 0 6px 0', fontSize: '13px', lineHeight: '1.5' } }, lastFeedback.ackText) : null,
           lastFeedback.followUp ? h('p', { style: { margin: 0, fontSize: '12px', fontStyle: 'italic', color: palette.textDim || '#cbd5e1' } }, '💭 ' + lastFeedback.followUp) : null
@@ -1670,6 +1946,12 @@
             style: { fontSize: '10px', color: '#dc2626', marginTop: '4px', fontStyle: 'italic' }
           }, '🎤 ' + voiceError) : null
         ),
+        (aiOff && selfCheck) ? selfCheck.renderSelfCheck(h, palette, {
+          frameAs: 'building', idPrefix: 'rb', value: checks, onChange: setChecks,
+          disabled: submitting, toTeacher: isClassStudent
+        }) : null,
+        myWaiting > 0 ? h('div', { role: 'status', style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginBottom: '8px' } },
+          __alloT('arcade.teacher_queue.my_waiting', 'Waiting for your teacher:') + ' ' + myWaiting) : null,
         // Submit
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
           h('button', {
@@ -1686,7 +1968,9 @@
               fontFamily: 'inherit',
               opacity: canSubmit ? 1 : 0.6
             }
-          }, submitting ? 'Grading…' : '🌱 Place into the realm')
+          }, submitting
+            ? (aiOff ? __alloT('arcade.teacher_queue.sending', 'Sending…') : 'Grading…')
+            : (aiOff && isClassStudent ? __alloT('arcade.teacher_queue.send', 'Send to your teacher') : '🌱 Place into the realm'))
         ),
         // Zones-so-far recap. In class mode this becomes the shared
         // "recent placements" feed visible to all participants — each
@@ -1733,7 +2017,7 @@
                       fontWeight: sc >= 18 ? 700 : 400,
                       fontSize: '10px'
                     }
-                  }, sc + '/20');
+                  }, selfCheck ? selfCheck.scoreTag(z) : sc + '/20');
                 })()
               );
             })
@@ -1741,6 +2025,18 @@
           realm.zones.length > 8 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 8 — full list in print packet') : null
         ) : null
       );
+    }
+
+    function renderTeacherQueue() {
+      if (!isClassHost || !selfCheck) return null;
+      return h(selfCheck.TeacherQueue, {
+        palette: palette,
+        submissions: classSubs,
+        describe: function (sub) {
+          return sub.cardName + ' (' + sub.verbLabel + ')' + (sub.partnerCardName ? ' ↔ ' + sub.partnerCardName : '');
+        },
+        onScore: scoreSubmission
+      });
     }
 
     function renderCompletePhase() {
@@ -1755,6 +2051,7 @@
           h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🌍'),
           h('h3', { style: { margin: '0 0 8px 0', color: palette.text || '#e2e8f0', fontSize: '17px', fontWeight: 700 } },
             'Realm wrapped'),
+          renderTeacherQueue(),
           h('p', { style: { margin: '0 0 14px 0', color: palette.textDim || '#cbd5e1', fontSize: '13px', lineHeight: '1.55' } },
             'You placed ' + realm.zones.length + ' zone' + (realm.zones.length === 1 ? '' : 's') + ' across "' + realm.topic + '"'
             + (resonantCount > 0 ? ' · 🌟 ' + resonantCount + ' resonant placement' + (resonantCount === 1 ? '' : 's') : '')
@@ -2192,6 +2489,28 @@
       return ctx.sessionSubscribe(function(data) { setSessionState(data); });
     }, [ctx.sessionCode]);
 
+    var palaceDocsTuple = useState({});
+    var palaceDocs = palaceDocsTuple[0];
+    var setPalaceDocsRaw = palaceDocsTuple[1];
+    var palaceDocsLoadedTuple = useState(false);
+    var palaceDocsLoaded = palaceDocsLoadedTuple[0];
+    var setPalaceDocsLoaded = palaceDocsLoadedTuple[1];
+    var palaceIssueTuple = useState(null);
+    var palaceIssue = palaceIssueTuple[0];
+    var setPalaceIssue = palaceIssueTuple[1];
+    useEffect(function() {
+      if (!ctx.sessionCode) return;
+      var kit = getClassWork();
+      var chan = kit ? kit.channel(ctx) : { kind: 'legacy' };
+      if (chan.kind === 'unavailable') { setPalaceIssue('transport'); return; }
+      if (chan.kind !== 'private') return;
+      return chan.watch(isHost, 'palace', function(docs) { setPalaceDocsRaw(docs); setPalaceDocsLoaded(true); }, setPalaceIssue);
+    }, [ctx.sessionCode, isHost]);
+    function palaceChannel() {
+      var kit = getClassWork();
+      return kit ? kit.channel(ctx) : { kind: 'legacy' };
+    }
+
     var rawPalace = sessionState && sessionState.collaborativeMemoryPalace;
     var palace = rawPalace ? normalizeClassPalace(rawPalace) : null;
     var isOpen = !!(palace && palace.status === 'open');
@@ -2204,7 +2523,17 @@
     var activeGroup = palace && palace.groups.filter(function(group) { return group.id === activeGroupId; })[0];
     var activeRooms = palace ? palace.rooms.filter(function(room) { return room.groupId === activeGroupId; }) : [];
     var activeLoci = palace ? palace.loci.filter(function(locus) { return locus.groupId === activeGroupId; }) : [];
-    var submissions = palace ? palace.submissions : {};
+    // Student work and join requests live on private documents; only approved anchors reach the group.
+    var palaceActivityId = palace ? palace.activityId : '';
+    var palaceDocsCurrent = {};
+    Object.keys(palaceDocs).forEach(function(id) { if (palaceDocs[id].activityId === palaceActivityId) palaceDocsCurrent[id] = palaceDocs[id]; });
+    var replacedDocs = {};
+    Object.keys(palaceDocsCurrent).forEach(function(id) { if (palaceDocsCurrent[id].replaces) replacedDocs[palaceDocsCurrent[id].replaces] = true; });
+    var submissions = Object.assign({}, palace ? palace.submissions : {});
+    Object.keys(palaceDocsCurrent).forEach(function(id) {
+      var d = palaceDocsCurrent[id];
+      if (d.kind === 'contribution' && !replacedDocs[id]) submissions[id] = Object.assign({}, d, { id: id, participantId: d.uid });
+    });
     var pendingKeys = Object.keys(submissions).filter(function(key) {
       var sub = normalizePalaceSubmission(submissions[key]);
       return !!(sub && sub.status === 'pending');
@@ -2224,7 +2553,8 @@
     }).slice(0, 12);
     var participantCapacityReached = !!(palace && !participant && Object.keys(palace.participants).length >= CMP_MAX_PARTICIPANTS);
     var openLimitReached = !!(!isHost && !editingSubmissionId && ownOpenKeys.length >= CMP_MAX_PENDING_PER_PARTICIPANT);
-    var contributionDisabled = busy || (!isHost && (!participant || openLimitReached));
+    var palaceSendBlocked = !isHost && (palaceIssue === 'rules' || palaceIssue === 'transport');
+    var contributionDisabled = busy || (!isHost && (!participant || openLimitReached || palaceSendBlocked));
 
     useEffect(function() {
       if (isHost || !palace || palace.status !== 'closed' || remoteEndedRef.current) return;
@@ -2250,6 +2580,20 @@
 
     useEffect(function() {
       if (isHost || !palace || !isOpen || participant || participantRegistrationRef.current === palace.activityId) return;
+      var joinChan = palaceChannel();
+      if (joinChan.kind === 'unavailable') return;
+      if (joinChan.kind === 'private') {
+        if (!palaceDocsLoaded) return;
+        participantRegistrationRef.current = palace.activityId;
+        var joinId = 'join-' + palace.activityId.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 58);
+        if (palaceDocs[participantId + '_' + joinId]) return;
+        joinChan.send('palace', joinId, { kind: 'join', activityId: palace.activityId, subId: joinId, nickname: ctx.studentNickname || 'Student', submittedAt: new Date().toISOString() }).catch(function(err) {
+          participantRegistrationRef.current = '';
+          var joinKit = getClassWork();
+          ctx.addToast(joinKit ? joinKit.message(err) : 'Could not join a palace group yet. Retrying when the session reconnects.');
+        });
+        return;
+      }
       participantRegistrationRef.current = palace.activityId;
       var assignment = createPalaceParticipantAssignment(palace, participantId, ctx.studentNickname);
       if (!assignment) {
@@ -2258,11 +2602,42 @@
       }
       var fields = { participants: {} };
       fields.participants[participantId] = assignment;
-      write(fields).catch(function() {
+      write(fields).catch(function(err) {
         participantRegistrationRef.current = '';
-        ctx.addToast('Could not join a palace group yet. Retrying when the session reconnects.');
+        var kit = getClassWork();
+        ctx.addToast(kit ? kit.message(err) : 'Could not join a palace group yet. Retrying when the session reconnects.');
       });
-    }, [isHost, isOpen, palace && palace.activityId, participant && participant.participantId, participantId, participantCapacityReached]);
+    }, [isHost, isOpen, palace && palace.activityId, participant && participant.participantId, participantId, participantCapacityReached, palaceDocsLoaded]);
+
+    // Host: place join requests into groups and drop the drafts a revision replaced.
+    var palaceDrainRef = useRef({});
+    useEffect(function() {
+      if (!isHost || !palace || !isOpen) return;
+      var chan = palaceChannel();
+      if (chan.kind !== 'private') return;
+      var working = Object.assign({}, rawPalace, { participants: Object.assign({}, rawPalace.participants || {}) });
+      var added = {}, joinIds = [];
+      Object.keys(palaceDocsCurrent).forEach(function(id) {
+        var d = palaceDocsCurrent[id];
+        if (d.kind !== 'join' || palaceDrainRef.current[id]) return;
+        palaceDrainRef.current[id] = true;
+        joinIds.push(id);
+        if (working.participants[d.uid]) return;
+        var seat = createPalaceParticipantAssignment(working, d.uid, d.nickname);
+        if (seat) { working.participants[d.uid] = seat; added[d.uid] = seat; }
+      });
+      Object.keys(replacedDocs).forEach(function(id) {
+        if (palaceDocsCurrent[id] && !palaceDrainRef.current[id]) { palaceDrainRef.current[id] = true; chan.remove(id).catch(function() {}); }
+      });
+      if (!joinIds.length) return;
+      var seated = Object.keys(added).length ? write({ participants: added }) : Promise.resolve();
+      seated.then(function() {
+        joinIds.forEach(function(id) { chan.remove(id).catch(function() {}); });
+      }).catch(function() {
+        joinIds.forEach(function(id) { delete palaceDrainRef.current[id]; });
+        ctx.addToast('Could not place a student in a palace group. Try again.');
+      });
+    }, [isHost, isOpen, palaceDocs, palace && palace.activityId]);
 
     function write(fields) {
       if (typeof ctx.sessionUpdate !== 'function') return Promise.reject(new Error('Session sync unavailable'));
@@ -2391,13 +2766,29 @@
       var submissionKey = editingSubmissionId || sub.id;
       sub.id = submissionKey;
       fields.submissions[submissionKey] = sub;
-      write(fields).then(function() {
+      var sendChan = palaceChannel();
+      var delivered;
+      if (sendChan.kind === 'private') {
+        var privateSubId = cmpId('pc').replace(/[^A-Za-z0-9_-]/g, '');
+        delivered = sendChan.send('palace', privateSubId, Object.assign({}, sub, {
+          kind: 'contribution', activityId: palace.activityId, subId: privateSubId, status: 'pending', nickname: sub.contributorNickname,
+          replaces: palaceDocs[editingSubmissionId] ? editingSubmissionId : null
+        }));
+      } else if (sendChan.kind === 'unavailable') {
+        var sendErr = new Error('This class connection cannot carry game work.');
+        sendErr.classReason = 'transport';
+        delivered = Promise.reject(sendErr);
+      } else {
+        delivered = write(fields);
+      }
+      delivered.then(function() {
         stopVoiceContribution();
         setLabel(''); setMnemonic(''); setNewRoomTitle('');
         setEditingSubmissionId('');
         ctx.addToast(editingSubmissionId ? 'Revision sent back to your teacher.' : 'Contribution sent to your teacher for review.');
-      }).catch(function() {
-        ctx.addToast('Could not send that contribution. Try again.');
+      }).catch(function(err) {
+        var kit = getClassWork();
+        ctx.addToast(kit ? kit.message(err) : 'Could not send that contribution. Try again.');
       }).then(function() { setBusy(false); });
     }
 
@@ -2431,13 +2822,16 @@
       }]);
       setBusy(true);
       var fields = { rooms: nextRooms, loci: nextLoci, updatedAt: new Date().toISOString() };
-      if (!direct) {
+      var approvedPrivate = !direct && !!palaceDocs[key];
+      if (!direct && !approvedPrivate) {
         fields.submissions = {};
         fields.submissions[key] = Object.assign({}, sub, {
           roomId: targetRoom.id, newRoomTitle: '', status: 'approved', feedback: '', approvedAt: new Date().toISOString()
         });
       }
       write(fields).then(function() {
+        if (approvedPrivate) return palaceChannel().patch(key, { roomId: targetRoom.id, newRoomTitle: '', status: 'approved', feedback: '', approvedAt: new Date().toISOString() });
+      }).then(function() {
         if (direct) { stopVoiceContribution(); setLabel(''); setMnemonic(''); setNewRoomTitle(''); }
         ctx.addToast(direct ? 'Memory anchor added.' : 'Contribution approved into the palace.');
       }).catch(function() {
@@ -2458,7 +2852,9 @@
         status: 'returned', feedback: feedback, returnedAt: new Date().toISOString()
       });
       setBusy(true);
-      write(fields).then(function() {
+      (palaceDocs[key]
+        ? palaceChannel().patch(key, { status: 'returned', feedback: feedback, returnedAt: new Date().toISOString() })
+        : write(fields)).then(function() {
         setFeedbackDrafts(function(previous) { var next = Object.assign({}, previous); delete next[key]; return next; });
         ctx.addToast('Contribution returned with revision feedback.');
       })
@@ -2521,6 +2917,8 @@
       if (!isHost || !palace || busy) return;
       setBusy(true);
       write({ status: 'closed', closedAt: new Date().toISOString() }).then(function() {
+        var closeChan = palaceChannel();
+        if (closeChan.kind === 'private') closeChan.clear('palace').catch(function() {});
         ctx.addToast('Class memory palace closed for everyone.');
         if (typeof ctx.onEndSession === 'function') ctx.onEndSession('closed');
       }).catch(function() {
@@ -2557,7 +2955,14 @@
       );
     }
 
+    var palaceKit = getClassWork();
+    var palaceNotice = palaceKit ? palaceKit.noticeText(palaceIssue, isHost) : '';
     return h('section', { 'aria-label': palace.title, style: { padding: '14px', color: palette.text || '#e2e8f0' } },
+      palaceNotice ? h('p', {
+        role: 'status',
+        'data-class-notice': palaceIssue,
+        style: { margin: '0 0 12px 0', padding: '8px 12px', fontSize: '12px', lineHeight: '1.5', borderRadius: '8px', border: '1.5px solid ' + (palette.accent || '#60a5fa') }
+      }, palaceNotice) : null,
       h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '12px' } },
         h('div', { style: { flex: 1, minWidth: '220px' } },
           h('h3', { style: { margin: 0, fontSize: '18px' } }, '🏛 ' + palace.title),

@@ -21,6 +21,9 @@
     "1200x more",
     "4x faster"
   ],
+  "stem_tool_areaperimeter.js": [
+    "about 3.14 times"
+  ],
   "stem_tool_assessmentliteracy.js": [
     "4x more"
   ],
@@ -40,6 +43,10 @@
   "stem_tool_bikelab.js": [
     "4x faster",
     "5x faster"
+  ],
+  "stem_tool_birdlab.js": [
+    "about 400 times",
+    "about 50 times"
   ],
   "stem_tool_cell.js": [
     "about 1,000 times",
@@ -145,10 +152,15 @@
   "stem_tool_printingpress.js": [
     "14x larger",
     "3x faster",
-    "about 126 times"
+    "5x faster",
+    "about 126 times",
+    "about 14 times",
+    "roughly 17 times"
   ],
   "stem_tool_raptorhunt.js": [
-    "100x more"
+    "100x more",
+    "about 16 times",
+    "about 5 times"
   ],
   "stem_tool_renewables.js": [
     "3x more"
@@ -175,6 +187,12 @@
     "80x more",
     "about 1.61 times",
     "about 4.15 times"
+  ],
+  "stem_tool_unitconvert.js": [
+    "about 10 times",
+    "about 100,000 times",
+    "about 2 times",
+    "about 70 times"
   ],
   "stem_tool_universe.js": [
     "1,000x smaller",

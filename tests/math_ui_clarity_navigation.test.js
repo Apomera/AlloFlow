@@ -6,12 +6,12 @@ beforeEach(() => {
   resetStemLab(); document.body.innerHTML='<div id="root"></div>';
 });
 afterEach(async () => { if(root) await React.act(()=>root.unmount()); root=null; vi.unstubAllGlobals(); });
-async function mount(file,id,key,patch={}) {
+async function mount(file,id,key,patch={},ctxExtra={}) {
   loadTool('stem_lab/stem_tool_'+file+'.js',id);
   let latest;
   function App() {
     const [state,setState]=React.useState({[key]:patch}); latest=state[key];
-    return window.StemLab._registry[id].render(makeCtx({toolData:state,setToolData:setState}));
+    return window.StemLab._registry[id].render(makeCtx({toolData:state,setToolData:setState,...ctxExtra}));
   }
   root=ReactDOMClient.createRoot(document.getElementById('root'));
   await React.act(()=>root.render(React.createElement(App)));
@@ -23,8 +23,15 @@ const moneyTabs=()=>[...document.querySelectorAll('#money-activity-list [role="t
 const moneyMore=()=>document.querySelector('[data-money-more-activities]');
 
 describe('math tool UI clarity',()=>{
-  it('preserves access to all ten Money Math activities',async()=>{
+  it('with AI off, Money Math hides only Word Problems',async()=>{
     await mount('money','moneyMath','_moneyMath');
+    await click(moneyMore());
+    expect(moneyTabs()).toHaveLength(9);
+    expect(document.getElementById('money-tool-tab-word')).toBe(null);
+  });
+  it('preserves access to all ten Money Math activities',async()=>{
+    // Word Problems needs AI; the student AI-off work hides the tab when there is none.
+    await mount('money','moneyMath','_moneyMath',{},{callGemini:()=>Promise.resolve('')});
     expect(moneyTabs()).toHaveLength(4);
     await click(moneyMore()); expect(moneyMore().getAttribute('aria-expanded')).toBe('true');
     expect(moneyTabs()).toHaveLength(10);
@@ -73,7 +80,9 @@ describe('math tool UI clarity',()=>{
     expect(input).toBeTruthy(); await press(input,'5');
     expect(state().tab).toBe('convert');
     await press(tab,'End');
-    expect(document.activeElement.id).toBe('stem-unitconvert-tab-magHunt');
+    // 2026-11-03 deep pass: Factor chain and Estimate tabs follow Compare scales;
+    // stage B appends Prefix ladder, Time & money and Chemistry, so End lands on Chemistry.
+    expect(document.activeElement.id).toBe('stem-unitconvert-tab-chem');
   });
 });
 

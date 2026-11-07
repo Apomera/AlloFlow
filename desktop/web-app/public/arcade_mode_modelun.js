@@ -71,25 +71,26 @@
   //   - gdp_band: 'high' | 'middle' | 'lower-middle' | 'low'
   //   - alliances: short list of bloc memberships (e.g., 'EU', 'NATO', 'G7', 'BRICS')
   //   - currentEvents: 1-2 sentence anchor for "what's been in the news"
-  //   - defaultPositions: keyed by agenda id → terse stance phrase
+  //   - defaultPositions: keyed by agenda id → terse third-person background note, shown
+  //     to students in no-AI practice. Fact-checked 2026-11-04; votes are the recorded UN votes.
   // ═══════════════════════════════════════════
   var COUNTRIES = [
     { iso: 'USA', name: 'United States',     flag: '🇺🇸', region: 'North America', gov: 'Federal republic',
       gdp_band: 'high', alliances: ['NATO', 'G7', 'P5'],
-      currentEvents: 'Active in climate accords; tensions with China over trade and tech.',
+      currentEvents: 'Left the Paris Agreement and WHO in 2026; tensions with China over trade and tech.',
       defaultPositions: {
-        climate_action:     'Re-engaged in global climate cooperation; pushes private-sector innovation alongside regulation.',
-        refugee_crisis:     'Supports asylum frameworks but limits direct intake; funds regional partners.',
+        climate_action:     'Left the Paris Agreement (Jan 2026) and announced exit from the UN climate treaty; favors private-sector innovation over regulation.',
+        refugee_crisis:     'Refugee cap cut to 7,500 for 2026, the lowest since the 1980 refugee law; limits direct intake.',
         ai_governance:      'Favors a light-touch federal framework; resists global pre-deployment review.',
         maritime_disputes:  'Defends freedom-of-navigation operations, particularly in the South China Sea.',
-        pandemic_prep:      'Funds WHO + bilateral aid; emphasizes mRNA stockpiles and warm-base manufacturing.',
-        nuclear_nonprolif:  'P5 member; supports NPT and CTBT; opposes Iran and North Korea programs.',
-        food_security:      'Major aid donor through USAID and WFP; supports market-based ag reform; resists tariff-only solutions.',
-        cybersecurity:      'Pushes liberal-democratic norms; CISA-led private-sector partnerships; cool on UN cybercrime treaty.',
-        migration_compact:  'Did not sign GCM; bilateral border deals; oscillating asylum + enforcement posture.',
+        pandemic_prep:      'Left WHO (January 2026); prefers bilateral health partnerships.',
+        nuclear_nonprolif:  'P5 member; supports NPT; signed but never ratified CTBT; opposes Iran and North Korea programs.',
+        food_security:      'Major food-aid donor, though USAID closed in 2025 and aid was cut; supports market-based ag reform; resists tariff-only solutions.',
+        cybersecurity:      'Pushes liberal-democratic norms; CISA-led private-sector partnerships; declined to sign UN cybercrime treaty (2025).',
+        migration_compact:  'Voted against the compact (2018) after leaving its talks; bilateral border deals; asylum policy shifts with each administration.',
         womens_rights:      'Signed but never ratified CEDAW; Title IX domestic anchor; Mexico City Policy oscillates by admin.',
-        antarctic_minerals: 'Antarctic Treaty Consultative Party; supports Madrid Protocol; cautious on permanent extension during 2025-2048 window.',
-        indigenous_rights:  'Endorsed UNDRIP (2010) as aspirational; tribal sovereignty domestically; uneven federal FPIC implementation.'
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; Madrid Protocol party; large research program.',
+        indigenous_rights:  'Voted against UNDRIP (2007), then endorsed it (2010) as aspirational; tribal sovereignty domestically; uneven federal FPIC implementation.'
       }
     },
     { iso: 'CHN', name: 'China',             flag: '🇨🇳', region: 'East Asia', gov: 'One-party state',
@@ -99,14 +100,14 @@
         climate_action:     'Largest renewable installer; insists on "common but differentiated responsibilities."',
         refugee_crisis:     'Rejects international intervention in domestic populations; limited intake.',
         ai_governance:      'Strong domestic AI regulation; resists Western-led global frameworks.',
-        maritime_disputes:  'Asserts nine-dash line in South China Sea; rejects UNCLOS rulings.',
+        maritime_disputes:  'Asserts nine-dash line in South China Sea; rejects the 2016 UNCLOS arbitration ruling against it.',
         pandemic_prep:      'Emphasizes sovereignty; resists external inspection mandates.',
-        nuclear_nonprolif:  'P5; modernizing arsenal; opposes US/UK tactical deployments to Asia-Pacific.',
-        food_security:      'Aggressive grain-stockpile strategy; BRI ag investments; resists Western ag-subsidy framings.',
+        nuclear_nonprolif:  'P5; expanding arsenal (about 620 warheads, 2026 estimate); opposes AUKUS and US deployments to Asia-Pacific.',
+        food_security:      'Large grain-stockpile strategy; BRI ag investments; resists Western ag-subsidy framings.',
         cybersecurity:      'Cyber-sovereignty doctrine; pushes UN-led framework via SCO; rejects US-led norms.',
-        migration_compact:  'Did not sign GCM; rejects refugee burden-sharing; tight border policies.',
-        womens_rights:      'Demographic focus reshaping policy; resists LGBTQ+ inclusion in international working groups.',
-        antarctic_minerals: 'Expanding Antarctic station footprint; opposes making the ban permanent; emphasizes future resource access for all states.',
+        migration_compact:  'Voted for the compact (2018); strict border controls; hosts few refugees for its size.',
+        womens_rights:      'Ratified CEDAW (1980); demographic focus reshaping policy; rejects outside criticism of its record.',
+        antarctic_minerals: 'Consultative Party; Madrid Protocol party; fifth station opened 2024; criticized, with Russia, for blocking new Antarctic marine protected areas.',
         indigenous_rights:  'Voted in favor of UNDRIP but rejects "Indigenous peoples" framing for own minority groups; resists external scrutiny.'
       }
     },
@@ -119,13 +120,13 @@
         ai_governance:      'Sovereignty-first; resists Western-led oversight bodies.',
         maritime_disputes:  'Defends Arctic claims; supports Northern Sea Route control.',
         pandemic_prep:      'Self-reliance emphasis; bilateral vaccine diplomacy.',
-        nuclear_nonprolif:  'P5; doctrine flexibility; opposes NATO eastern deployments.',
-        food_security:      'Major grain exporter; weaponizes wheat exports; periodically blocks Black Sea corridor.',
-        cybersecurity:      'Resists Western attribution norms; advances own UN cybercrime convention; sovereignty-first.',
-        migration_compact:  'Limited GCM engagement; CIS bilateral labor framework preferred over global compact.',
-        womens_rights:      'Decriminalized domestic violence (2017); "LGBT propaganda" expanded ban; conservative bloc lead.',
-        antarctic_minerals: 'Active Antarctic station network; reluctant to lock in permanent ban; views Antarctica through resource-frontier lens.',
-        indigenous_rights:  'Voted for UNDRIP; uneven implementation in Far North (Sakha, Nenets); resource projects often override consultation.'
+        nuclear_nonprolif:  'P5; revoked CTBT ratification (2023); New START limits expired 2026; opposes NATO eastern deployments.',
+        food_security:      'Major grain exporter; accused of using wheat exports as leverage; left the Black Sea Grain Initiative (2023).',
+        cybersecurity:      'Resists Western attribution norms; championed the UN cybercrime convention; sovereignty-first.',
+        migration_compact:  'Voted for the compact (2018); prefers bilateral labor deals within the CIS.',
+        womens_rights:      'Partly decriminalized first-offense domestic battery (2017); expanded "LGBT propaganda" ban; conservative bloc lead.',
+        antarctic_minerals: 'Consultative Party; Madrid Protocol party; criticized for blocking marine protected areas and for seismic surveys it describes as science.',
+        indigenous_rights:  'Abstained on UNDRIP (2007); uneven implementation in Far North (Sakha, Nenets); critics say resource projects often override consultation.'
       }
     },
     { iso: 'GBR', name: 'United Kingdom',    flag: '🇬🇧', region: 'Europe', gov: 'Constitutional monarchy',
@@ -133,17 +134,17 @@
       currentEvents: 'Post-Brexit recalibration; close US ally; AUKUS partner.',
       defaultPositions: {
         climate_action:     'Net-zero 2050 legal mandate; champions climate finance for vulnerable states.',
-        refugee_crisis:     'Tightened asylum policy; controversial Rwanda removal scheme.',
+        refugee_crisis:     'Tightened asylum policy; Rwanda removal plan scrapped in 2024 without any removals.',
         ai_governance:      'Hosted first AI Safety Summit; favors voluntary frontier-model standards.',
         maritime_disputes:  'Freedom of navigation supporter; defends Falklands claim.',
-        pandemic_prep:      'Strong R&D base; supports pandemic treaty negotiations.',
+        pandemic_prep:      'Strong R&D base; supports WHO Pandemic Agreement.',
         nuclear_nonprolif:  'P5; modernizing deterrent; supports NPT.',
-        food_security:      'Strong FCDO development funder; backs nutrition-sensitive agriculture; G7 food task force.',
+        food_security:      'FCDO development funder, with aid falling to 0.3% of GNI by 2027; backs nutrition-sensitive agriculture.',
         cybersecurity:      'NCSC + Five Eyes; offensive cyber capability disclosed; international norms advocate.',
-        migration_compact:  'Did not sign GCM; tightened asylum; Rwanda removal scheme controversy.',
+        migration_compact:  'Voted for the compact (2018); tightened asylum rules; Rwanda removal plan scrapped in 2024 without any removals.',
         womens_rights:      'Women-Peace-Security advocate; backs CEDAW; gender-mainstreaming in development policy.',
-        antarctic_minerals: 'Original Antarctic Treaty signatory; territorial claim (BAT); strong supporter of Madrid Protocol permanence.',
-        indigenous_rights:  'No domestic Indigenous population per UN definition; supports UNDRIP internationally via FCDO programming.'
+        antarctic_minerals: 'Original Antarctic Treaty signatory; territorial claim (BAT); strong supporter of the Madrid Protocol mining ban.',
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; supports Indigenous rights abroad through development work.'
       }
     },
     { iso: 'FRA', name: 'France',            flag: '🇫🇷', region: 'Europe', gov: 'Semi-presidential republic',
@@ -152,34 +153,34 @@
       defaultPositions: {
         climate_action:     'Strong nuclear-energy advocate; co-leads on green industrial policy.',
         refugee_crisis:     'Supports EU-level burden sharing; tightened domestic asylum.',
-        ai_governance:      'Co-architect of EU AI Act; favors risk-tiered regulation.',
+        ai_governance:      'Helped shape the EU AI Act; favors risk-tiered regulation.',
         maritime_disputes:  'Indo-Pacific presence (territories); freedom of navigation.',
-        pandemic_prep:      'WHO supporter; vaccine equity advocate via COVAX successor.',
-        nuclear_nonprolif:  'P5; smallest declared arsenal among nuclear powers; supports NPT.',
+        pandemic_prep:      'WHO supporter; vaccine equity advocate.',
+        nuclear_nonprolif:  'P5; modernizing deterrent; supports NPT.',
         food_security:      'Backs EU CAP green pivot; advocates fair trade in Africa; defends agricultural sovereignty.',
         cybersecurity:      'ANSSI-led EU resilience push; Paris Call for Trust and Security in Cyberspace champion.',
-        migration_compact:  'Signed GCM; supports orderly EU intake; tightened domestic asylum.',
+        migration_compact:  'Voted for the compact (2018); supports orderly EU intake; tightened domestic asylum.',
         womens_rights:      'Feminist foreign policy advocate; Generation Equality Forum host; abortion-rights advocate.',
-        antarctic_minerals: 'Antarctic Treaty Consultative Party; co-led 1991 ban with Australia; advocates permanent prohibition.',
-        indigenous_rights:  'Constitutional non-recognition of communautarisme complicates UNDRIP; New Caledonia Kanak rights remain contested.'
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; co-led 1991 ban with Australia; advocates keeping the prohibition.',
+        indigenous_rights:  'Voted for UNDRIP; constitutional unity of the French people complicates it; New Caledonia Kanak rights remain contested.'
       }
     },
     { iso: 'DEU', name: 'Germany',           flag: '🇩🇪', region: 'Europe', gov: 'Federal parliamentary republic',
       gdp_band: 'high', alliances: ['NATO', 'EU', 'G7'],
-      currentEvents: 'Coal phaseout accelerating; defense spending rising post-Ukraine.',
+      currentEvents: 'Phasing out coal; defense spending rising post-Ukraine.',
       defaultPositions: {
         climate_action:     'Energiewende leader; balancing coal exit and energy security.',
         refugee_crisis:     'Largest EU host; supports orderly intake with integration funding.',
         ai_governance:      'EU AI Act backer; data-protection-first framing.',
         maritime_disputes:  'Indo-Pacific guidelines; supports rules-based maritime order.',
-        pandemic_prep:      'Global Health Initiative leader; backs WHO funding.',
-        nuclear_nonprolif:  'Non-nuclear NATO host (US weapons); supports NPT.',
+        pandemic_prep:      'Backs WHO funding and global health programs.',
+        nuclear_nonprolif:  'Non-nuclear NATO state reported to host US weapons; supports NPT.',
         food_security:      'Hosts Global Forum for Food and Agriculture; backs Africa-EU agri-investment; resists CAP rollback.',
         cybersecurity:      'BSI domestic lead; EU Cybersecurity Act backer; opposes broad surveillance powers.',
-        migration_compact:  'Signed GCM; integration-funding leader; Skilled Immigration Act expansion.',
-        womens_rights:      'Adopted feminist foreign policy (2023); pay-gap legislation; CEDAW compliance review.',
-        antarctic_minerals: 'Antarctic Treaty Consultative Party; non-claimant; strong scientific cooperation focus; supports permanent ban.',
-        indigenous_rights:  'No domestic Indigenous population; supports UNDRIP internationally; strong development-cooperation focus on Indigenous rights abroad.'
+        migration_compact:  'Voted for the compact (2018); funds integration; Skilled Immigration Act expansion.',
+        womens_rights:      'Adopted feminist foreign policy (2023), dropped it (2025); pay-gap legislation; CEDAW compliance review.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; non-claimant; strong scientific cooperation focus; supports the mining ban.',
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; development work supports Indigenous rights abroad.'
       }
     },
     { iso: 'JPN', name: 'Japan',             flag: '🇯🇵', region: 'East Asia', gov: 'Constitutional monarchy',
@@ -189,15 +190,15 @@
         climate_action:     'Hydrogen and nuclear back online; methane/HFC reduction focus.',
         refugee_crisis:     'Historically restrictive; small recent humanitarian intake.',
         ai_governance:      'Hiroshima AI Process champion; light-touch + ethical guidelines.',
-        maritime_disputes:  'Senkaku/Diaoyu Islands disputes with China; freedom of navigation.',
+        maritime_disputes:  'Administers the Senkaku Islands, claimed by China as Diaoyu; freedom of navigation.',
         pandemic_prep:      'Strong WHO partner; bilateral vaccine donations.',
         nuclear_nonprolif:  'Non-nuclear; under US extended deterrence; supports NPT.',
         food_security:      'Low self-sufficiency anxiety; rice diplomacy in Asia; G7 food-security task force backer.',
-        cybersecurity:      'Active Cyber Defense pivot (2024); Quad cyber partnership; resilience focus.',
-        migration_compact:  'Signed GCM; Specified Skilled Worker program expanding; demographic-driven.',
-        womens_rights:      'Womenomics initiative; persistent OECD-low pay/leadership gap; gradual reform.',
+        cybersecurity:      'Active Cyber Defense law (2025); Quad cyber partnership; resilience focus.',
+        migration_compact:  'Voted for the compact (2018); Specified Skilled Worker program expanding; demographic-driven.',
+        womens_rights:      'Womenomics initiative; wide pay and leadership gaps by OECD standards; gradual reform.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party; large scientific program (Showa Station); supports Madrid Protocol.',
-        indigenous_rights:  'Recognized Ainu as Indigenous (2019); Ryukyuan recognition pending; gradual UNDRIP implementation.'
+        indigenous_rights:  'Recognized Ainu as Indigenous (2019 law); has not recognized Ryukyuans as Indigenous; gradual UNDRIP implementation.'
       }
     },
     { iso: 'IND', name: 'India',             flag: '🇮🇳', region: 'South Asia', gov: 'Federal parliamentary republic',
@@ -209,10 +210,10 @@
         ai_governance:      'Pro-innovation; opposes restrictive global frameworks; data-sovereignty.',
         maritime_disputes:  'Indian Ocean primacy; tensions with China over border + maritime.',
         pandemic_prep:      'Vaccine Maitri donor; supports WHO + South-South cooperation.',
-        nuclear_nonprolif:  'Non-NPT nuclear state; pushes for full membership including NSG.',
-        food_security:      'PDS subsidy defender at WTO; Right to Food Act; opposes WTO ag-subsidy caps.',
-        cybersecurity:      'Digital sovereignty + data localization push; cautious on UN cybercrime treaty overreach.',
-        migration_compact:  'Did not sign GCM; CAA citizenship law controversial; large diaspora protection focus.',
+        nuclear_nonprolif:  'Non-NPT nuclear state; seeks Nuclear Suppliers Group membership.',
+        food_security:      'PDS subsidy defender at WTO; National Food Security Act (2013); opposes WTO ag-subsidy caps.',
+        cybersecurity:      'Digital sovereignty + data localization push.',
+        migration_compact:  'Voted for the compact (2018); large diaspora protection focus; 2019 citizenship law (CAA) criticized as discriminatory.',
         womens_rights:      'Beti Bachao Beti Padhao campaign; constitutional reservation; uneven implementation.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party (1983); two stations; opposes commercial mining; emphasizes peaceful use.',
         indigenous_rights:  'Domestic Adivasi/Scheduled Tribes framework predates UNDRIP; resists external "Indigenous" label; FPIC implementation contested.'
@@ -220,7 +221,7 @@
     },
     { iso: 'BRA', name: 'Brazil',            flag: '🇧🇷', region: 'South America', gov: 'Federal presidential republic',
       gdp_band: 'middle', alliances: ['BRICS', 'G20', 'Mercosur'],
-      currentEvents: 'Lula renewing Amazon protections; champions Global South voice.',
+      currentEvents: 'Renewing Amazon protections; champions Global South voice.',
       defaultPositions: {
         climate_action:     'Amazon protection leader; demands climate finance for forest stewardship.',
         refugee_crisis:     'Hosts large Venezuelan inflow; humanitarian framework.',
@@ -230,7 +231,7 @@
         nuclear_nonprolif:  'Latin America nuclear-free zone; supports NPT.',
         food_security:      'Major exporter; Zero Hunger program legacy; Lula re-prioritized Family Farm Program.',
         cybersecurity:      'LGPD data-protection law; multilateral approach; favors UN-led cyber norms.',
-        migration_compact:  'Signed GCM; humanitarian visa for Venezuelans and Haitians; Roraima emergency response.',
+        migration_compact:  'Voted for the compact (2018), left it in 2019, returned in 2023; humanitarian visas for Venezuelans and Haitians; Roraima emergency response.',
         womens_rights:      'High GBV rates; Ministry of Women restored 2023; femicide criminalized.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party; Comandante Ferraz station; strong environmental-protection voice on continent.',
         indigenous_rights:  'Constitutional Indigenous protections; Lula re-prioritized demarcations; Amazon FPIC battles continuous.'
@@ -240,18 +241,18 @@
       gdp_band: 'high', alliances: ['NATO', 'G7', 'Commonwealth'],
       currentEvents: 'Wildfire seasons intensifying; refugee resettlement leader per-capita.',
       defaultPositions: {
-        climate_action:     'Carbon-pricing model; balancing oil-sand industry with net-zero.',
+        climate_action:     'Industrial carbon pricing (consumer price ended 2025); balancing oil-sands industry with net-zero.',
         refugee_crisis:     'High per-capita intake; private-sponsorship model praised globally.',
-        ai_governance:      'AIDA legislation; multilateral cooperation supporter.',
+        ai_governance:      'AI bill (AIDA) died in 2025, so no federal AI law yet; multilateral cooperation supporter.',
         maritime_disputes:  'Arctic sovereignty (Northwest Passage); supports UNCLOS.',
         pandemic_prep:      'WHO supporter; pandemic-treaty negotiator.',
         nuclear_nonprolif:  'Non-nuclear; uranium supplier; supports NPT strongly.',
         food_security:      'Cairns Group founder; Feminist International Assistance Policy ties food to gender.',
         cybersecurity:      'CSE + Five Eyes; ransomware-payment policy debates; critical infrastructure focus.',
-        migration_compact:  'Signed GCM; high per-capita intake target; Express Entry economic stream.',
-        womens_rights:      'Original feminist foreign policy adopter; backs UN Women; gender-based-analysis-plus framework.',
-        antarctic_minerals: 'Non-claimant Antarctic Treaty Party; strong Arctic parallel; supports Madrid Protocol permanence.',
-        indigenous_rights:  'TRC concluded 2015; UNDRIP Act 2021 mandates federal implementation; ongoing 215+ unmarked graves reckoning.'
+        migration_compact:  'Voted for the compact (2018); large planned intake; Express Entry economic stream.',
+        womens_rights:      'Feminist aid policy (2017), but in 2025 the PM said foreign policy is not "feminist"; backs UN Women; gender-based-analysis-plus framework.',
+        antarctic_minerals: 'Non-Consultative Antarctic Treaty Party; Madrid Protocol party (2003); strong Arctic parallel.',
+        indigenous_rights:  'Voted against UNDRIP (2007), endorsed it (2010); TRC concluded 2015; UNDRIP Act 2021 mandates federal implementation; reckoning with suspected unmarked graves.'
       }
     },
     { iso: 'AUS', name: 'Australia',         flag: '🇦🇺', region: 'Oceania', gov: 'Federal parliamentary',
@@ -263,13 +264,13 @@
         ai_governance:      'Voluntary safety framework; aligned with US/UK.',
         maritime_disputes:  'Pacific freedom of navigation; Indo-Pacific strategy.',
         pandemic_prep:      'Regional surveillance + bilateral aid in Pacific.',
-        nuclear_nonprolif:  'Non-nuclear; AUKUS submarines (conventional warheads).',
+        nuclear_nonprolif:  'Non-nuclear; AUKUS nuclear-powered submarines, conventionally armed.',
         food_security:      'Cairns Group major exporter; aid focus on Pacific food resilience.',
         cybersecurity:      'ASD + Five Eyes; Critical Infrastructure Act; AUKUS Pillar II cyber.',
-        migration_compact:  'Did not sign GCM; offshore processing controversy; modest humanitarian intake.',
+        migration_compact:  'Abstained on the compact (2018) and said it would not sign; offshore processing controversy; modest humanitarian intake.',
         womens_rights:      'National Action Plan on Women, Peace and Security; strong CEDAW backer.',
-        antarctic_minerals: 'Largest territorial claim (Australian Antarctic Territory); co-architect of 1991 ban; permanent-extension champion.',
-        indigenous_rights:  'No formal treaty with Aboriginal/Torres Strait Islander peoples; Voice referendum failed 2023; UNDRIP support uneven.'
+        antarctic_minerals: 'Largest territorial claim (Australian Antarctic Territory); co-architect of 1991 ban; long-standing defender of it.',
+        indigenous_rights:  'Voted against UNDRIP (2007), endorsed it (2009); no national treaty with Aboriginal/Torres Strait Islander peoples; Voice referendum failed 2023.'
       }
     },
     { iso: 'KOR', name: 'South Korea',       flag: '🇰🇷', region: 'East Asia', gov: 'Presidential republic',
@@ -277,40 +278,40 @@
       currentEvents: 'Semiconductor industry leader; navigating US-China tech rivalry.',
       defaultPositions: {
         climate_action:     'Net-zero 2050 commitment; nuclear + renewable mix.',
-        refugee_crisis:     'Low intake historically; recent yemenis case shifted policy.',
-        ai_governance:      'Promotes K-AI governance model; voluntary norms.',
+        refugee_crisis:     'Low intake historically; Yemeni arrivals on Jeju (2018) sparked national debate.',
+        ai_governance:      'AI Basic Act in force since January 2026; rules for high-impact AI alongside industry support.',
         maritime_disputes:  'Defends Dokdo/Takeshima claim with Japan.',
         pandemic_prep:      'COVID response praised; transparency advocate.',
         nuclear_nonprolif:  'Non-nuclear; under US extended deterrence; supports NPT.',
         food_security:      'Low self-sufficiency anxiety; backs ASEAN+3 Emergency Rice Reserve.',
-        cybersecurity:      'K-CSIRT capacity; offensive doctrine vs DPRK; private-sector innovation.',
-        migration_compact:  'Signed GCM; F-visa skilled-worker expansion; demographic pressure.',
-        womens_rights:      'Persistent OECD-low gender pay gap; #MeToo legislative reforms; demographic crisis dimension.',
+        cybersecurity:      'Cyber strategy focused on DPRK threats; private-sector innovation.',
+        migration_compact:  'Voted for the compact (2018); work-visa programs expanding; demographic pressure.',
+        womens_rights:      'Largest gender pay gap in the OECD; #MeToo legislative reforms; demographic crisis dimension.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party; King Sejong + Jang Bogo stations; supports Madrid Protocol.',
-        indigenous_rights:  'No domestic Indigenous population; supports UNDRIP internationally; limited development-cooperation focus.'
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; limited development-cooperation focus.'
       }
     },
     { iso: 'ZAF', name: 'South Africa',      flag: '🇿🇦', region: 'Africa', gov: 'Parliamentary republic',
       gdp_band: 'middle', alliances: ['BRICS', 'AU', 'G20'],
-      currentEvents: 'Just-energy-transition partnership; load-shedding crisis.',
+      currentEvents: 'Just-energy-transition partnership; power cuts (load-shedding) a long-running issue.',
       defaultPositions: {
         climate_action:     'Just-transition advocate; demands climate finance for coal exit.',
         refugee_crisis:     'Hosts large continental displacement; xenophobia tensions.',
         ai_governance:      'Pro-Global-South seat; data-sovereignty.',
         maritime_disputes:  'African Maritime Strategy supporter.',
         pandemic_prep:      'Africa CDC supporter; vaccine equity advocate.',
-        nuclear_nonprolif:  'Voluntarily disarmed (only country to do so); strong NPT supporter.',
+        nuclear_nonprolif:  'Only state to dismantle nuclear weapons it built itself; strong NPT supporter.',
         food_security:      'Land-reform policy drives production debate; backs African Continental ag integration.',
-        cybersecurity:      'POPIA data-protection law; African Cyber Union supporter.',
-        migration_compact:  'Signed GCM with reservations; persistent xenophobic violence; AU Free Movement protocol delays.',
-        womens_rights:      'High femicide rate (4x global avg); strong constitutional protections; implementation gap.',
+        cybersecurity:      'POPIA data-protection law; Cybercrimes Act (2020).',
+        migration_compact:  'Voted for the compact (2018); recurring xenophobic violence; AU Free Movement protocol delays.',
+        womens_rights:      'High femicide rate; gender-based violence declared a national disaster (2025); strong constitutional protections; implementation gap.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party (SANAE base); supports Madrid Protocol; emphasizes Southern Hemisphere stewardship.',
-        indigenous_rights:  'Khoisan and San rights recognized in constitution; implementation uneven; UNDRIP supporter.'
+        indigenous_rights:  'Voted for UNDRIP; Khoi and San languages named in constitution; 2019 Khoi-San leadership law ruled invalid, with the order suspended until 2027.'
       }
     },
     { iso: 'NGA', name: 'Nigeria',           flag: '🇳🇬', region: 'Africa', gov: 'Federal presidential',
       gdp_band: 'lower-middle', alliances: ['AU', 'ECOWAS', 'OPEC'],
-      currentEvents: 'Largest African economy; tinubu reforms; security challenges.',
+      currentEvents: 'Africa\'s most populous country; Tinubu reforms; security challenges.',
       defaultPositions: {
         climate_action:     'Climate-finance demand; energy access central; gas-as-transition.',
         refugee_crisis:     'Sahel displacement host; ECOWAS protocols.',
@@ -318,12 +319,12 @@
         maritime_disputes:  'Gulf of Guinea security; counter-piracy.',
         pandemic_prep:      'Africa CDC partner; vaccine manufacturing ambition.',
         nuclear_nonprolif:  'Non-nuclear; Pelindaba Treaty signatory; NPT supporter.',
-        food_security:      'Africa\'s largest food producer and importer; Anchor Borrowers\' Program; Boko Haram disrupts north.',
+        food_security:      'Major food producer and importer; farm-credit program halted; Boko Haram disrupts north.',
         cybersecurity:      'Cybercrime Act 2015; ECOWAS cyber strategy backer; bank-fraud focus.',
-        migration_compact:  'Signed GCM; remittance-dependent diaspora; ECOWAS free movement member.',
-        womens_rights:      'Constitutional protections; Northern Sharia states variance; child-marriage hotspot.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; voice for non-Antarctic states\' future access concerns; views ban as locking in advantage.',
-        indigenous_rights:  'Domestic ethnic-pluralism framework rather than Indigenous; voted for UNDRIP; minority-rights focus.'
+        migration_compact:  'Voted for the compact (2018); remittance-dependent diaspora; ECOWAS free movement member.',
+        womens_rights:      'Constitutional protections; Sharia rules in some northern states; high child-marriage rates.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Abstained on UNDRIP (2007); domestic ethnic-pluralism framework rather than Indigenous; minority-rights focus.'
       }
     },
     { iso: 'KEN', name: 'Kenya',             flag: '🇰🇪', region: 'Africa', gov: 'Presidential republic',
@@ -337,11 +338,11 @@
         pandemic_prep:      'Regional health hub.',
         nuclear_nonprolif:  'Non-nuclear; Pelindaba Treaty.',
         food_security:      'Drought-recovery + food-import dependence; smallholder maize farmer focus; GMO debate.',
-        cybersecurity:      'Computer Misuse Act 2018; African Union cyber lead; Konza Tech City build-out.',
-        migration_compact:  'Signed GCM; major refugee host (Somali/South Sudanese); Dadaab/Kakuma camps.',
+        cybersecurity:      'Computer Misuse and Cybercrimes Act 2018; Konza Tech City build-out.',
+        migration_compact:  'Voted for the compact (2018); major refugee host (Somali/South Sudanese); Dadaab/Kakuma camps.',
         womens_rights:      'Constitutional gender protections; FGM/C banned 2011; political-representation quotas.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued scientific use; cautious on permanent extraction ban.',
-        indigenous_rights:  'Maasai, Samburu, Endorois recognized; African Commission Endorois ruling landmark; UNDRIP supporter.'
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Abstained on UNDRIP (2007); African Commission Endorois ruling landmark; Maasai, Samburu, Endorois land claims continue.'
       }
     },
     { iso: 'EGY', name: 'Egypt',             flag: '🇪🇬', region: 'Middle East / N Africa', gov: 'Presidential republic',
@@ -354,17 +355,17 @@
         maritime_disputes:  'Eastern Mediterranean gas; Nile Basin disputes.',
         pandemic_prep:      'Vaccine manufacturing hub ambition.',
         nuclear_nonprolif:  'Non-nuclear; advocates for nuclear-weapon-free Middle East.',
-        food_security:      'Largest wheat importer globally; bread-subsidy political stakes; Black Sea corridor critical.',
+        food_security:      'Among the world\'s largest wheat importers; bread-subsidy political stakes; Black Sea supply critical.',
         cybersecurity:      'Cybercrime Law 2018 chilling effect concerns; Arab cyber strategy participant.',
-        migration_compact:  'Signed GCM; transit + host country; African Union migration coordinator.',
+        migration_compact:  'Voted for the compact (2018); transit + host country.',
         womens_rights:      'CEDAW with reservations; FGM/C banned 2008 (uneven enforcement); inheritance reform debates.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; emphasizes equitable future access.',
-        indigenous_rights:  'No domestic Indigenous population per UN definition; Coptic and Nubian heritage protections; UNDRIP supporter internationally.'
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; Coptic and Nubian heritage protections.'
       }
     },
     { iso: 'SAU', name: 'Saudi Arabia',      flag: '🇸🇦', region: 'Middle East', gov: 'Absolute monarchy',
       gdp_band: 'high', alliances: ['GCC', 'OPEC', 'Arab League'],
-      currentEvents: 'Vision 2030 diversification; normalization talks with Israel.',
+      currentEvents: 'Vision 2030 diversification; ties with Israel on hold over Palestinian statehood.',
       defaultPositions: {
         climate_action:     'Net-zero 2060 pledge; pushes carbon-capture over oil phaseout.',
         refugee_crisis:     'Hosts large guest-worker pop; not 1951 Convention signatory.',
@@ -374,46 +375,46 @@
         nuclear_nonprolif:  'Non-nuclear; hinted at matching Iran capability if needed.',
         food_security:      'Massive food importer; Vision 2030 ag-investment abroad; halal supply chain emphasis.',
         cybersecurity:      'NCA national authority; reactive posture after Aramco attack; cool on liberal-democratic norms.',
-        migration_compact:  'Signed GCM; kafala labor reform pace contested; migrant-worker majority workforce.',
-        womens_rights:      'Vision 2030 reforms (driving 2018, guardianship loosened); persistent advocacy crackdowns.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; cautious on permanent extraction bans setting precedent for other domains.',
-        indigenous_rights:  'No domestic Indigenous population recognition framework; abstained on UNDRIP; uneven international engagement.'
+        migration_compact:  'Voted for the compact (2018); kafala labor reform pace contested; large migrant workforce.',
+        womens_rights:      'Vision 2030 reforms (driving 2018, guardianship loosened); women\'s rights advocates have been jailed.',
+        antarctic_minerals: 'Joined the Antarctic Treaty in 2024 as a non-Consultative party; not in the Madrid Protocol; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Voted for UNDRIP; no domestic Indigenous recognition framework; uneven international engagement.'
       }
     },
     { iso: 'IRN', name: 'Iran',              flag: '🇮🇷', region: 'Middle East', gov: 'Theocratic republic',
-      gdp_band: 'middle', alliances: ['SCO (joining)', 'BRICS'],
-      currentEvents: 'Nuclear program escalation; regional proxy support.',
+      gdp_band: 'middle', alliances: ['SCO', 'BRICS'],
+      currentEvents: 'War with the US and Israel in 2026; nuclear dispute unresolved; accused of backing armed groups in the region.',
       defaultPositions: {
         climate_action:     'Sanctions-constrained; resistant to external mandates.',
-        refugee_crisis:     'Hosts ~3.4M Afghans; one of world\'s largest refugee populations.',
+        refugee_crisis:     'Long-time host of Afghans (UNHCR: 1.65M refugees and others in need of protection, Aug 2026); mass returns and deportations.',
         ai_governance:      'Sovereignty-first; resists Western frameworks.',
-        maritime_disputes:  'Strait of Hormuz primacy; Persian Gulf claims.',
+        maritime_disputes:  'Strait of Hormuz shipping disrupted during the 2026 war; Persian Gulf claims.',
         pandemic_prep:      'Self-sufficiency emphasis under sanctions.',
-        nuclear_nonprolif:  'NPT member; insists program is civilian; opposes Israeli ambiguity.',
+        nuclear_nonprolif:  'NPT member; insists program is civilian; sites struck in 2026 war; dispute over enrichment continues; opposes Israeli ambiguity.',
         food_security:      'Sanctions-exemption advocate; water-scarcity crisis driving internal migration.',
-        cybersecurity:      'APT35/APT39 attributions; halal-internet policy; opposes Western frameworks.',
-        migration_compact:  'Signed GCM; world\'s largest refugee host (Afghans); chronically under-funded.',
-        womens_rights:      'Mahsa Amini protests legacy; mandatory hijab; international advocacy crackdown.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful scientific use; resists Western-led governance.',
+        cybersecurity:      'Accused of hacking (APT35/APT39 attributions); national-internet policy; opposes Western frameworks.',
+        migration_compact:  'Voted for the compact (2018); long-time host of Afghan refugees, with mass returns and deportations since 2025; under-funded response.',
+        womens_rights:      'Mahsa Amini protests legacy; mandatory hijab; crackdown on women\'s rights advocates.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
         indigenous_rights:  'No domestic Indigenous framework; voted for UNDRIP; resists external scrutiny of minority issues.'
       }
     },
     { iso: 'ISR', name: 'Israel',            flag: '🇮🇱', region: 'Middle East', gov: 'Parliamentary democracy',
       gdp_band: 'high', alliances: ['US alliance', 'Abraham Accords'],
-      currentEvents: 'Gaza conflict; regional normalization continues.',
+      currentEvents: 'Gaza ceasefire since October 2025, under strain; war with Iran in 2026.',
       defaultPositions: {
         climate_action:     'Cleantech innovation hub; supports adaptation finance.',
         refugee_crisis:     'Strict intake; humanitarian aid abroad.',
         ai_governance:      'Innovation-friendly; aligned with US framework.',
         maritime_disputes:  'Eastern Mediterranean gas; Levantine basin.',
         pandemic_prep:      'Strong R&D; early COVID booster pioneer.',
-        nuclear_nonprolif:  'Undeclared nuclear state; not NPT signatory; ambiguity policy.',
-        food_security:      'Ag-tech exporter (drip irrigation); strong food-security narrative; Gaza access controversy.',
-        cybersecurity:      'Unit 8200 expertise; Iron Dome cyber-defense exporter; INCD national agency.',
-        migration_compact:  'Did not sign GCM; restrictive asylum (esp. African); Russian/Ukrainian intake.',
-        womens_rights:      'Gender-equal IDF service; persistent religious-secular tension; pay-gap legislation.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; aligned with US/Western consensus on continued peaceful use.',
-        indigenous_rights:  'Voted for UNDRIP; Bedouin recognition contested; Palestinian Indigenous claims politically charged.'
+        nuclear_nonprolif:  'Does not acknowledge having nuclear weapons, though widely believed to; not an NPT party; ambiguity policy.',
+        food_security:      'Ag-tech exporter (drip irrigation); criticized over aid access to Gaza.',
+        cybersecurity:      'Unit 8200 expertise; cyber-defense exporter; INCD national agency.',
+        migration_compact:  'Voted against the compact (2018); restrictive asylum (esp. African); Russian/Ukrainian intake.',
+        womens_rights:      'Women conscripted, with shorter terms than men; persistent religious-secular tension; pay-gap legislation.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Did not vote on UNDRIP (absent in 2007); Bedouin recognition contested; Palestinian Indigenous claims politically charged.'
       }
     },
     { iso: 'TUR', name: 'Türkiye',           flag: '🇹🇷', region: 'Middle East / Europe', gov: 'Presidential republic',
@@ -421,17 +422,17 @@
       currentEvents: 'Hosts largest Syrian refugee population; inflation crisis.',
       defaultPositions: {
         climate_action:     'Ratified Paris late; renewable buildout accelerating.',
-        refugee_crisis:     'Hosts ~3.6M Syrians; demands more EU burden-sharing.',
+        refugee_crisis:     'Hosts about 2.3M Syrians (2026), down from a 3.7M peak; demands more EU burden-sharing.',
         ai_governance:      'Bridge between EU + non-EU frameworks.',
         maritime_disputes:  'Eastern Mediterranean claims; Cyprus dispute.',
         pandemic_prep:      'Regional vaccine producer (TURKOVAC).',
-        nuclear_nonprolif:  'NATO host (US weapons); non-nuclear; supports NPT.',
+        nuclear_nonprolif:  'Non-nuclear NATO state reported to host US weapons; supports NPT.',
         food_security:      'Black Sea Grain corridor mediator; aid to Syrian-host regions; ag self-sufficiency push.',
         cybersecurity:      'USOM coordination; NATO ally with sovereignty caveats; cyber-norms ambivalence.',
-        migration_compact:  'Signed GCM; world\'s largest single-country refugee host (Syrians); EU readmission deal.',
-        womens_rights:      'Istanbul Convention withdrawal (2021); rising femicide; civil-society pushback.',
-        antarctic_minerals: 'Antarctic Treaty Party (2017, non-Consultative); emerging Antarctic research presence; cautious on permanent bans.',
-        indigenous_rights:  'Domestic minority framework rather than Indigenous; Kurdish rights remain contested; uneven UNDRIP engagement.'
+        migration_compact:  'Voted for the compact (2018); major refugee host (about 2.3M Syrians in 2026, down from 3.7M); EU readmission deal.',
+        womens_rights:      'Istanbul Convention withdrawal (2021); femicide concerns; civil-society pushback.',
+        antarctic_minerals: 'Antarctic Treaty Party (1996, non-Consultative); joined Madrid Protocol (2017); emerging Antarctic research presence.',
+        indigenous_rights:  'Voted for UNDRIP; domestic minority framework rather than Indigenous; Kurdish rights remain contested.'
       }
     },
     { iso: 'MEX', name: 'Mexico',            flag: '🇲🇽', region: 'North America', gov: 'Federal presidential',
@@ -439,17 +440,17 @@
       currentEvents: 'Migration corridor pressure; energy nationalism debate.',
       defaultPositions: {
         climate_action:     'Renewable potential vast; state energy company priorities tension.',
-        refugee_crisis:     'Transit + destination country; Title 42 follow-ons.',
+        refugee_crisis:     'Transit + destination country; receives people returned from the US.',
         ai_governance:      'Pro-Global-South voice; data-protection framework.',
         maritime_disputes:  'Gulf of Mexico cooperation with US.',
         pandemic_prep:      'COVAX participant; vaccine manufacturing.',
         nuclear_nonprolif:  'Tlatelolco Treaty leader; strong NPT supporter.',
         food_security:      'GMO-corn import dispute with US; smallholder farmer protection; SADER agricultural strategy.',
         cybersecurity:      'Limited offensive capacity; PEMEX attack legacy; USMCA-framed US cooperation.',
-        migration_compact:  'Signed GCM; transit + destination + origin country; US-Mexico bilateral pressure.',
+        migration_compact:  'Voted for the compact (2018); transit + destination + origin country; US-Mexico bilateral pressure.',
         womens_rights:      'Femicide crisis high-visibility; gender-parity in Congress; abortion decriminalization wave.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued scientific protection; values multilateral environmental governance.',
-        indigenous_rights:  'Strong constitutional Indigenous recognition; 68 official languages; uneven FPIC implementation on extractive projects.'
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Strong constitutional Indigenous recognition; 68 recognized Indigenous language groups; uneven FPIC implementation on extractive projects.'
       }
     },
     { iso: 'ARG', name: 'Argentina',         flag: '🇦🇷', region: 'South America', gov: 'Federal presidential',
@@ -457,35 +458,35 @@
       currentEvents: 'Milei economic shock therapy; pulled back from BRICS+ joining.',
       defaultPositions: {
         climate_action:     'Vaca Muerta shale tension with climate goals.',
-        refugee_crisis:     'Bolsonaro/Venezuelan migration; relatively open.',
+        refugee_crisis:     'Hosts Venezuelan migrants; long relatively open, but a 2025 decree tightened migration rules.',
         ai_governance:      'Latin American AI bloc participant.',
         maritime_disputes:  'Falklands/Malvinas claim ongoing.',
-        pandemic_prep:      'mRNA tech-transfer hub ambition.',
+        pandemic_prep:      'mRNA tech-transfer hub ambition; Milei ordered WHO exit (2025).',
         nuclear_nonprolif:  'Tlatelolco Treaty; civilian nuclear program; NPT.',
-        food_security:      'Top-5 grain/beef exporter; tension between Vaca Muerta extraction and ag land; G20 ag voice.',
-        cybersecurity:      'PDP data-protection law; OAS CICTE backer; limited offensive doctrine.',
-        migration_compact:  'Signed GCM; Latin America Compact contributor; Venezuelan/Bolivian intake.',
-        womens_rights:      'Abortion legalized 2020 (regional leader); persistent femicide concerns; gender-violence prevention law.',
+        food_security:      'Major grain and beef exporter; G20 ag voice.',
+        cybersecurity:      'PDP data-protection law; OAS CICTE backer.',
+        migration_compact:  'Voted for the compact (2018); Venezuelan/Bolivian intake; 2025 decree tightened migration rules.',
+        womens_rights:      'Abortion legalized 2020; persistent femicide concerns; gender-violence prevention law.',
         antarctic_minerals: 'Major territorial claim (overlapping with Chile, UK); permanent Antarctic station network; ban supporter.',
         indigenous_rights:  'Mapuche, Qom, Wichí recognized; constitutional protections; FPIC implementation contested in Vaca Muerta development.'
       }
     },
     { iso: 'IDN', name: 'Indonesia',         flag: '🇮🇩', region: 'Southeast Asia', gov: 'Presidential republic',
-      gdp_band: 'middle', alliances: ['ASEAN', 'G20'],
+      gdp_band: 'middle', alliances: ['ASEAN', 'G20', 'BRICS'],
       currentEvents: 'New capital Nusantara; just-transition deal with G7.',
       defaultPositions: {
         climate_action:     'Just-transition deal recipient; coal-exit pathway negotiated.',
         refugee_crisis:     'Rohingya arrivals; not 1951 Convention signatory.',
-        ai_governance:      'ASEAN AI guide architect; sovereignty + innovation balance.',
+        ai_governance:      'Follows the ASEAN AI guide; sovereignty + innovation balance.',
         maritime_disputes:  'South China Sea (Natuna); freedom of navigation.',
         pandemic_prep:      'Regional vaccine producer; ASEAN cooperation.',
         nuclear_nonprolif:  'Non-nuclear; Bangkok Treaty (SE Asia NWFZ).',
         food_security:      'Rice self-sufficiency mandate; palm-oil export tension with EU; smallholder support.',
         cybersecurity:      'BSSN national agency; UU PDP 2022 data law; ASEAN cyber capacity-building.',
-        migration_compact:  'Signed GCM; major sending country (domestic workers); Rohingya transit concerns.',
+        migration_compact:  'Voted for the compact (2018); major sending country (domestic workers); Rohingya transit concerns.',
         womens_rights:      'Strong national women\'s ministry; persistent FGM/C; child-marriage reform.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; ASEAN-aligned environmental stewardship voice.',
-        indigenous_rights:  'Adat (customary law) recognition pending; AMAN organization advocates; UNDRIP supporter with reservations.'
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Voted for UNDRIP; Adat (customary law) recognition pending; AMAN organization advocates.'
       }
     },
     { iso: 'VNM', name: 'Vietnam',           flag: '🇻🇳', region: 'Southeast Asia', gov: 'Communist state',
@@ -499,11 +500,11 @@
         pandemic_prep:      'COVID response praised early; ASEAN cooperation.',
         nuclear_nonprolif:  'Non-nuclear; Bangkok Treaty.',
         food_security:      'Top rice exporter; Mekong climate vulnerability; ag-product diversification push.',
-        cybersecurity:      'Cybersecurity Law 2019 controversial (data localization, content control); APT32 attribution.',
-        migration_compact:  'Signed GCM; labor migration to JP/KR/Taiwan; remittance economy.',
+        cybersecurity:      'Cybersecurity Law (in force 2019) criticized over data localization and content control; accused of links to APT32.',
+        migration_compact:  'Voted for the compact (2018); labor migration to JP/KR/Taiwan; remittance economy.',
         womens_rights:      'Gender equality in constitution; female leadership in legislature; rural gap persists.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful scientific use; cautious on permanent bans.',
-        indigenous_rights:  'Domestic 54-ethnic-group framework rather than "Indigenous" framing; voted for UNDRIP with interpretation reservations.'
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
+        indigenous_rights:  'Domestic 54-ethnic-group framework rather than "Indigenous" framing; voted for UNDRIP.'
       }
     },
     { iso: 'PHL', name: 'Philippines',       flag: '🇵🇭', region: 'Southeast Asia', gov: 'Presidential republic',
@@ -517,10 +518,10 @@
         pandemic_prep:      'Regional cooperation.',
         nuclear_nonprolif:  'Non-nuclear; Bangkok Treaty.',
         food_security:      'Rice importer; tropical-cyclone supply disruption; ASEAN+3 Emergency Rice Reserve member.',
-        cybersecurity:      'DICT Cybersecurity Plan; persistent Chinese APT concern; press-freedom chilling effects.',
-        migration_compact:  'Signed GCM; OFW economy backbone; remittance-dependent; bilateral labor agreements.',
+        cybersecurity:      'DICT Cybersecurity Plan; concern over China-linked hacking; press-freedom concerns.',
+        migration_compact:  'Voted for the compact (2018); OFW economy backbone; remittance-dependent; bilateral labor agreements.',
         womens_rights:      'Magna Carta of Women (2009); divorce-prohibition reform pending; RH Law debates ongoing.',
-        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; emphasizes climate-vulnerable nations\' Antarctic stake.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party, so no formal say in its decisions; this tool has no verified position for it on the mining ban.',
         indigenous_rights:  'IPRA 1997 strong domestic framework; NCIP institutional advocate; FPIC implementation contested on mining and dams.'
       }
     },
@@ -535,11 +536,11 @@
         pandemic_prep:      'EU framework participant.',
         nuclear_nonprolif:  'Non-nuclear; NATO host; supports NPT.',
         food_security:      'EU CAP recipient; Ukrainian grain transit disputes 2023-24; rising ag-protectionism.',
-        cybersecurity:      'NASK + cyber command; NATO Cooperative Cyber Defence CoE host; RU APT focus.',
-        migration_compact:  'Did not sign GCM (2018); Ukrainian intake 2022+; Belarus border crisis posture.',
+        cybersecurity:      'NASK + cyber command; NATO ally; focus on Russian cyber threats.',
+        migration_compact:  'Voted against the compact (2018); Ukrainian intake 2022+; Belarus border crisis posture.',
         womens_rights:      'Near-total abortion ban (2020); 2023 government shift loosening stance; pay-gap legislation.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party; Arctowski station; supports Madrid Protocol; emerging Antarctic science investment.',
-        indigenous_rights:  'No domestic Indigenous population per UN definition; supports UNDRIP internationally via development cooperation.'
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; supports Indigenous rights abroad via development cooperation.'
       }
     },
     { iso: 'UKR', name: 'Ukraine',           flag: '🇺🇦', region: 'Europe', gov: 'Semi-presidential republic',
@@ -554,28 +555,28 @@
         nuclear_nonprolif:  'Voluntarily disarmed under Budapest Memorandum; NPT supporter.',
         food_security:      'Pre-war 10% of global wheat exports; Black Sea Grain Initiative champion; corridor advocacy.',
         cybersecurity:      'Battlefield cyber-warfare experience; NATO cyber-coalition partnership; CERT-UA active.',
-        migration_compact:  'Signed GCM; 6M+ displaced since 2022; reconstruction migration policy in flux.',
+        migration_compact:  'Did not vote on the compact (2018); millions displaced since 2022; reconstruction migration policy in flux.',
         womens_rights:      'Combat service expansion; conflict-related GBV documentation focus; CEDAW commitments.',
         antarctic_minerals: 'Antarctic Treaty Consultative Party; Vernadsky station (former UK Faraday); strong Madrid Protocol supporter.',
-        indigenous_rights:  'Crimean Tatars recognized as Indigenous (2014); UNDRIP supporter; conflict context adds protection urgency.'
+        indigenous_rights:  'Abstained on UNDRIP (2007), endorsed it (2014); Crimean Tatars recognized as Indigenous (2014); conflict context adds protection urgency.'
       }
     },
     { iso: 'NOR', name: 'Norway',            flag: '🇳🇴', region: 'Europe', gov: 'Constitutional monarchy',
       gdp_band: 'high', alliances: ['NATO', 'EEA'],
-      currentEvents: 'Sovereign wealth divesting from fossil; EV adoption leader.',
+      currentEvents: 'Wealth fund applies climate criteria; major oil and gas producer; EV adoption leader.',
       defaultPositions: {
-        climate_action:     'Sovereign wealth fund climate-criteria; 2030 fossil-car ban achieved early.',
+        climate_action:     'Sovereign wealth fund climate criteria; nearly all new cars electric (96% in 2025); still a major oil and gas producer.',
         refugee_crisis:     'Generous historically; recent tightening.',
         ai_governance:      'EU AI Act adoption; ethics-first.',
         maritime_disputes:  'Arctic stewardship; Svalbard treaty.',
         pandemic_prep:      'WHO leader; CEPI co-founder.',
         nuclear_nonprolif:  'Non-nuclear; NATO; strong NPT supporter.',
         food_security:      'Major aquaculture exporter; Svalbard Global Seed Vault host; high food-import dependence.',
-        cybersecurity:      'NSM + NATO partner; offensive-cyber transparency advocate; private-sector resilience focus.',
-        migration_compact:  'Did not sign GCM (2018); EEA-aligned asylum; integration-focused intake.',
-        womens_rights:      'Gender board quotas (40%); strong parental-leave policy; feminist foreign policy advocate.',
+        cybersecurity:      'NSM + NATO member; private-sector resilience focus.',
+        migration_compact:  'Voted for the compact (2018); integration-focused intake.',
+        womens_rights:      'Gender board quotas (40%); strong parental-leave policy; gender equality a foreign-policy priority.',
         antarctic_minerals: 'Major Antarctic claim (Queen Maud Land); long Antarctic research history; ban supporter.',
-        indigenous_rights:  'Sami Parliament established 1989; Finnmark Act 2005; among strongest UNDRIP implementers globally.'
+        indigenous_rights:  'Voted for UNDRIP; Sami Parliament established 1989; Finnmark Act 2005.'
       }
     },
     { iso: 'CHE', name: 'Switzerland',       flag: '🇨🇭', region: 'Europe', gov: 'Federal directorial',
@@ -587,31 +588,31 @@
         ai_governance:      'Neutral convening venue; favors voluntary norms.',
         maritime_disputes:  'Landlocked; mediator role.',
         pandemic_prep:      'WHO host; CEPI partner.',
-        nuclear_nonprolif:  'Non-nuclear; mediator on Iran deal; supports NPT.',
-        food_security:      'Geneva HQ for WFP/FAO ops; strong humanitarian funding; ag-protectionism domestic.',
-        cybersecurity:      'NCSC + neutrality balance; GovWare ban; ICT-supply-chain caution.',
-        migration_compact:  'Signed GCM; strict asylum + integration framework; ICRC HQ duty.',
+        nuclear_nonprolif:  'Non-nuclear; hosted Iran nuclear talks; supports NPT.',
+        food_security:      'Strong humanitarian funding; Geneva is a humanitarian hub; protects domestic agriculture.',
+        cybersecurity:      'National cyber office + neutrality balance; ICT-supply-chain caution.',
+        migration_compact:  'Abstained on the compact (2018), leaving the final say to parliament; strict asylum + integration framework.',
         womens_rights:      'Late voting franchise (1971); gender-equality act 1996; CEDAW periodic review.',
         antarctic_minerals: 'Antarctic Treaty Party (1990); non-claimant; emphasizes neutrality, scientific cooperation, and protection.',
-        indigenous_rights:  'No domestic Indigenous population per UN definition; strong international UNDRIP funding via SDC programming.'
+        indigenous_rights:  'Voted for UNDRIP; no recognized Indigenous population at home; funds Indigenous programs abroad via SDC.'
       }
     },
     { iso: 'NZL', name: 'New Zealand',       flag: '🇳🇿', region: 'Oceania', gov: 'Parliamentary democracy',
       gdp_band: 'high', alliances: ['Five Eyes', 'Commonwealth'],
       currentEvents: 'Pacific climate-leadership voice; nuclear-free legacy.',
       defaultPositions: {
-        climate_action:     'Carbon-neutral 2050; Pacific leadership on loss-and-damage.',
-        refugee_crisis:     'Per-capita resettlement leader; family reunification focus.',
+        climate_action:     'Net-zero 2050 law, with methane target weakened in 2025; Pacific leadership on loss-and-damage.',
+        refugee_crisis:     'Modest annual refugee quota; family reunification focus.',
         ai_governance:      'Algorithm Charter; ethics-first.',
         maritime_disputes:  'Pacific Islands diplomacy; freedom of navigation.',
         pandemic_prep:      'COVID early elimination strategy; WHO partner.',
         nuclear_nonprolif:  'Nuclear-free zone (1987 Act); strong NPT + TPNW supporter.',
         food_security:      'Cairns Group; agricultural export powerhouse; methane-reduction ag policy.',
         cybersecurity:      'GCSB + Five Eyes; supply-chain caution (Huawei 5G ban); Pacific cyber capacity-building.',
-        migration_compact:  'Signed GCM; humanitarian intake under refugee-resettlement strategy.',
-        womens_rights:      'First country with women\'s suffrage (1893); strong pay-gap framework; gender-mainstreaming.',
-        antarctic_minerals: 'Territorial claim (Ross Dependency); strong Madrid Protocol champion; co-leads with Australia on permanence push.',
-        indigenous_rights:  'Treaty of Waitangi central to constitutional framework; Maori sovereignty recognition; UNDRIP supporter; strong implementation.'
+        migration_compact:  'Voted for the compact (2018); humanitarian intake under refugee-resettlement strategy.',
+        womens_rights:      'First self-governing country with women\'s suffrage (1893); pay-equity debate; gender-mainstreaming.',
+        antarctic_minerals: 'Territorial claim (Ross Dependency); strong Madrid Protocol champion; works with Australia to defend the ban.',
+        indigenous_rights:  'Voted against UNDRIP (2007), backed it (2010); Treaty of Waitangi central to Māori-Crown relations; 2023 coalition says UNDRIP has no binding effect.'
       }
     }
   ];
@@ -640,12 +641,12 @@
       ],
       sampleClauses: [
         'Calls upon Member States to submit revised Nationally Determined Contributions consistent with the 1.5°C pathway by [date];',
-        'Establishes a Loss and Damage Coordination Body to disburse the $100 billion annual climate-finance commitment, with a transparent allocation formula;',
+        'Establishes a Loss and Damage Coordination Body to speed payments to affected states, with a transparent allocation formula;',
         'Urges development banks to align all new lending portfolios with the Paris Agreement temperature goals.'
       ]
     },
     { id: 'refugee_crisis', title: 'Refugee Crisis & Forced Migration', emoji: '🚶',
-      background: 'A record 117 million people are forcibly displaced globally. The 1951 Refugee Convention burden-sharing remains uneven. New climate-displacement and conflict-displacement flows strain host countries.',
+      background: 'About 118 million people were forcibly displaced at the end of 2025, UNHCR reports. The 1951 Refugee Convention burden-sharing remains uneven. New climate-displacement and conflict-displacement flows strain host countries.',
       keyQuestions: [
         'How is intake responsibility allocated between countries?',
         'Should climate displacement receive formal refugee protection?',
@@ -687,7 +688,7 @@
       ]
     },
     { id: 'pandemic_prep', title: 'Pandemic Preparedness & Health Equity', emoji: '🦠',
-      background: 'COVID-19 exposed deep inequities in vaccine access and surveillance capacity. WHO Pandemic Treaty negotiations continue. Antimicrobial resistance and zoonotic spillover risks are rising.',
+      background: 'COVID-19 exposed deep inequities in vaccine access and surveillance capacity. WHO members adopted a Pandemic Agreement in 2025, and talks on its pathogen-sharing annex continue. Antimicrobial resistance and zoonotic spillover risks are rising.',
       keyQuestions: [
         'How are pandemic-counter-measures (vaccines, therapeutics) allocated globally?',
         'What surveillance and reporting obligations apply to all countries?',
@@ -697,11 +698,11 @@
       sampleClauses: [
         'Reaffirms WHO authority as the lead coordinating body for pandemic response;',
         'Establishes a Pandemic Equity Mechanism guaranteeing 30% of pandemic counter-measures to low- and middle-income countries;',
-        'Urges Member States to ratify the Pandemic Treaty currently under negotiation.'
+        'Urges Member States to finish the pathogen-sharing annex and ratify the WHO Pandemic Agreement.'
       ]
     },
     { id: 'nuclear_nonprolif', title: 'Nuclear Non-Proliferation & Disarmament', emoji: '☢️',
-      background: 'The NPT review process faces strain from modernization programs in all five recognized nuclear-weapon states, plus undeclared and threshold states. The TPNW divides nuclear-host states from disarmament advocates.',
+      background: 'The NPT review process is under strain: the 2026 review conference ended without an agreed document, and all five recognized nuclear-weapon states are modernizing, alongside undeclared and threshold states. The TPNW divides nuclear-host states from disarmament advocates.',
       keyQuestions: [
         'How is NPT Article VI (disarmament obligation) verified?',
         'What is the relationship between NPT and TPNW?',
@@ -715,7 +716,7 @@
       ]
     },
     { id: 'food_security', title: 'Global Food Security', emoji: '🌾',
-      background: 'Approximately 783 million people face hunger globally. Climate change, conflict, and supply-chain disruptions compound the crisis. The World Food Programme reports record demand against falling donor support.',
+      background: 'About 645 million people faced hunger in 2025, the UN reports. Climate change, conflict, and supply-chain disruptions compound the crisis. The World Food Programme reports record demand against falling donor support.',
       keyQuestions: [
         'How are emergency food-aid contributions allocated and triggered?',
         'What role do agricultural subsidies in wealthy nations play in distorting global markets?',
@@ -771,21 +772,21 @@
       ]
     },
     { id: 'antarctic_minerals', title: 'Antarctic Mineral Rights & Environmental Protection', emoji: '🧊',
-      background: 'The Antarctic Treaty\'s 1991 Madrid Protocol banned mineral extraction with a 50-year prohibition window (review in 2048). As climate change exposes new ice-free areas and great-power competition intensifies, pressure to revisit the ban is growing. Russia and China have expanded scientific stations; tourism is at record levels.',
+      background: 'The Antarctic Treaty\'s 1991 Madrid Protocol bans mineral extraction with no end date. From 2048 a Consultative Party can ask for a review, but changing the ban would take a supermajority and a binding minerals regime. As climate change exposes new ice-free areas and great-power competition intensifies, some analysts warn of pressure to revisit it. Russia and China have expanded scientific stations; tourism is at record levels.',
       keyQuestions: [
-        'Should the Madrid Protocol\'s mining ban be extended beyond 2048 or made permanent?',
+        'Should states pledge never to reopen the Madrid Protocol\'s mining ban, even after a review becomes possible in 2048?',
         'How are non-Antarctic Treaty parties\' interests represented in continent governance?',
         'What enforcement mechanisms exist for "scientific" stations that may have dual purposes?',
         'How are climate-driven impacts (krill fisheries, ecosystem shifts) factored into resource decisions?'
       ],
       sampleClauses: [
-        'Reaffirms the indefinite prohibition of mineral resource activities under the Madrid Protocol and calls for the ban to be made permanent in advance of the 2048 review window;',
+        'Reaffirms the indefinite prohibition of mineral resource activities under the Madrid Protocol and calls on all Parties to keep it in place at any review after 2048;',
         'Establishes an independent Antarctic Environmental Monitoring Body with annual public reporting on all national activities;',
         'Urges all Consultative Parties to share station infrastructure data, including dual-use capabilities, to build mutual trust.'
       ]
     },
     { id: 'indigenous_rights', title: 'Indigenous Peoples\' Rights & Self-Determination', emoji: '🪶',
-      background: 'The UN Declaration on the Rights of Indigenous Peoples (UNDRIP, 2007) was adopted with 144 in favor, 4 against, 11 abstentions. Implementation remains deeply uneven. Land rights, language preservation, free prior and informed consent (FPIC), and the legacy of residential schools and forced assimilation continue to drive tension between states and Indigenous nations.',
+      background: 'The UN Declaration on the Rights of Indigenous Peoples (UNDRIP, 2007) was adopted with 143 in favor, 4 against, 11 abstentions. Implementation remains deeply uneven. Land rights, language preservation, free prior and informed consent (FPIC), and the legacy of residential schools and forced assimilation continue to drive tension between states and Indigenous nations.',
       keyQuestions: [
         'How are free, prior and informed consent obligations enforced when states authorize extractive projects on Indigenous lands?',
         'What mechanisms support Indigenous-language revitalization, especially for languages at imminent risk of extinction?',
@@ -850,16 +851,16 @@
   var BLOCS = [
     { id: 'p5',         name: 'P5 (Security Council Permanent)', color: '#dc2626', members: ['USA','CHN','RUS','GBR','FRA'] },
     { id: 'nato',       name: 'NATO',                             color: '#1d4ed8', members: ['USA','GBR','FRA','DEU','CAN','POL','NOR','TUR'] },
-    { id: 'eu',         name: 'European Union',                   color: '#fbbf24', members: ['FRA','DEU','POL','CHE'] }, // CHE isn't EU but Western Europe anchor here
+    { id: 'eu',         name: 'European Union',                   color: '#fbbf24', members: ['FRA','DEU','POL'] },
     { id: 'g7',         name: 'G7',                               color: '#0ea5e9', members: ['USA','GBR','FRA','DEU','JPN','CAN'] },
-    { id: 'brics',      name: 'BRICS',                            color: '#a855f7', members: ['BRA','RUS','IND','CHN','ZAF','EGY','IRN','SAU'] },
+    { id: 'brics',      name: 'BRICS',                            color: '#a855f7', members: ['BRA','RUS','IND','CHN','ZAF','EGY','IRN','IDN'] },
     { id: 'african',    name: 'African Group',                    color: '#10b981', members: ['ZAF','NGA','KEN','EGY'] },
     { id: 'latam',      name: 'Latin America & Caribbean (GRULAC)', color: '#f97316', members: ['BRA','MEX','ARG'] },
     { id: 'asean',      name: 'ASEAN',                            color: '#06b6d4', members: ['IDN','VNM','PHL'] },
     { id: 'arab',       name: 'Arab League',                      color: '#84cc16', members: ['SAU','EGY'] },
     { id: 'quad',       name: 'Quad',                             color: '#3b82f6', members: ['USA','JPN','IND','AUS'] },
-    { id: 'nam',        name: 'Non-Aligned Movement',             color: '#ec4899', members: ['IND','BRA','ZAF','NGA','KEN','EGY','IDN','VNM','PHL','SAU','ARG','IRN'] },
-    { id: 'cairns',     name: 'Cairns Group (ag exporters)',      color: '#65a30d', members: ['ARG','AUS','BRA','CAN','NZL','ZAF','IDN','VNM'] }
+    { id: 'nam',        name: 'Non-Aligned Movement',             color: '#ec4899', members: ['IND','ZAF','NGA','KEN','EGY','IDN','VNM','PHL','SAU','IRN'] },
+    { id: 'cairns',     name: 'Cairns Group (ag exporters)',      color: '#65a30d', members: ['ARG','AUS','BRA','CAN','NZL','ZAF','IDN','VNM','PHL','UKR'] }
   ];
 
   function blocsForCountry(iso) {
@@ -949,6 +950,200 @@
     if (document.head) document.head.appendChild(style);
   }
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+  function munAiOk(ctx) { return !!ctx && !ctx.__munNoAi && _aiUsable('text', ctx.callGemini); }
+
+  // ═══════════════════════════════════════════
+  // SOLO PRACTICE WITHOUT AI
+  // ModelUNMain hands every view a ctx with all AI functions removed and
+  // __munNoAi set, so no view can reach a model. Other seats read templates
+  // built only from defaultPositions, agenda text and the codes below.
+  // ═══════════════════════════════════════════
+  function munNoAi(ctx) { return !!(ctx && ctx.__munNoAi); }
+  function munNoAiCtx(ctx) {
+    return Object.assign({}, ctx, {
+      __munNoAi: true, callGemini: null, callGeminiVision: null, callGeminiAudio: null,
+      callGeminiImageEdit: null, callImagen: null, callTTS: null
+    });
+  }
+  function munDelegateLabel(ctx) { return munNoAi(ctx) ? '🗒️ Simulated delegate' : '🤖 AI delegate'; }
+
+  // Hand-coded reading of each stored note against collective action on that agenda.
+  // b = the note favors action; r = the note resists it. Any other stored note is
+  // mixed or unclear. A reading of this tool's notes, not a claim about a government.
+  var MUN_STANCE_CODES = {
+    climate_action:     { b: 'GBR FRA DEU BRA AUS KOR ZAF KEN EGY ISR IDN VNM PHL NOR CHE NZL', r: 'USA RUS IRN' },
+    refugee_crisis:     { b: 'DEU BRA CAN NGA TUR CHE NZL', r: 'USA CHN RUS GBR SAU IDN' },
+    ai_governance:      { b: 'FRA DEU BRA KOR POL NOR NZL', r: 'USA CHN RUS IND IRN' },
+    maritime_disputes:  { b: 'USA GBR FRA DEU JPN BRA CAN AUS IDN PHL NZL', r: 'CHN' },
+    pandemic_prep:      { b: 'GBR FRA DEU JPN IND BRA CAN KOR ZAF MEX UKR NOR CHE NZL', r: 'USA CHN' },
+    nuclear_nonprolif:  { b: 'USA FRA DEU JPN BRA CAN KOR ZAF NGA KEN EGY TUR MEX ARG IDN VNM PHL POL UKR NOR CHE NZL', r: 'RUS SAU ISR' },
+    food_security:      { b: 'GBR DEU JPN BRA CAN AUS KOR TUR UKR', r: 'CHN RUS IND POL' },
+    cybersecurity:      { b: 'GBR FRA DEU BRA', r: 'RUS IRN' },
+    migration_compact:  { b: 'FRA DEU JPN IND BRA CAN KOR NGA KEN EGY SAU IRN TUR MEX IDN VNM PHL NOR NZL', r: 'USA AUS ISR POL' },
+    womens_rights:      { b: 'GBR FRA DEU CAN AUS UKR NOR NZL', r: 'CHN RUS IRN TUR' },
+    antarctic_minerals: { b: 'GBR FRA DEU JPN IND BRA CAN AUS KOR ZAF ARG POL UKR NOR CHE NZL', r: 'CHN RUS' },
+    indigenous_rights:  { b: 'GBR DEU JPN BRA CAN KOR ZAF EGY MEX PHL POL UKR NOR CHE', r: 'CHN IND IRN' }
+  };
+  var MUN_STANCE_SENTENCES = {
+    backs: 'In this simulation, this seat favors action on this agenda.',
+    mixed: 'In this simulation, this seat has no clear lean, so it asks for care before any firm step.',
+    resists: 'In this simulation, this seat is wary of new commitments on this agenda.'
+  };
+  var MUN_STANCE_REASONS = {
+    backs: 'its stored position favors action on this agenda',
+    mixed: 'its stored position is mixed or unclear on this agenda',
+    resists: 'its stored position is wary of commitments on this agenda'
+  };
+  var MUN_RESOLUTION_STANCES = [
+    { id: 'firm', label: 'Firm action', hint: 'Requires something, or sets up a new body or binding target.', reason: 'asks for firm commitments' },
+    { id: 'voluntary', label: 'Voluntary steps', hint: 'Urges or encourages. Nothing is required.', reason: 'asks for voluntary steps' },
+    { id: 'limits', label: 'Limits action', hint: 'Protects national choice, or holds back outside action.', reason: 'limits outside action' }
+  ];
+  var MUN_VOTE_TABLE = {
+    backs:   { firm: 'Y', voluntary: 'Y', limits: 'N' },
+    mixed:   { firm: 'A', voluntary: 'Y', limits: 'A' },
+    resists: { firm: 'N', voluntary: 'A', limits: 'Y' }
+  };
+  var MUN_VOTE_WORDS = { Y: 'Voted for', N: 'Voted against', A: 'Abstained' };
+
+  function munStoredPosition(country, agenda) {
+    var note = country && agenda && country.defaultPositions && country.defaultPositions[agenda.id];
+    return typeof note === 'string' && note.trim() ? note.trim() : null;
+  }
+  function munStoredStance(country, agenda) {
+    if (!munStoredPosition(country, agenda)) return 'none';
+    var codes = MUN_STANCE_CODES[agenda.id] || {};
+    function listed(list) { return (' ' + (list || '') + ' ').indexOf(' ' + country.iso + ' ') !== -1; }
+    if (listed(codes.b)) return 'backs';
+    if (listed(codes.r)) return 'resists';
+    return 'mixed';
+  }
+  function munSeed(text) {
+    var total = 0;
+    String(text).split('').forEach(function(ch) { total = (total * 31 + ch.charCodeAt(0)) % 9973; });
+    return total;
+  }
+  // A note is a third-person background note, so it is quoted and labelled, never spoken as the seat's own words.
+  function munNoteFrame(name, note) {
+    return 'Background note on ' + name + ' (not its delegation\'s words): "' + note + '" ';
+  }
+  // Facts come only from the stored note. With no note, the seat makes a procedural statement.
+  function munTemplateSpeech(country, agenda, caucusTopic) {
+    var name = country.name;
+    var title = agenda.title;
+    var note = munStoredPosition(country, agenda);
+    if (!note) {
+      return caucusTopic
+        ? 'Thank you, Chair. ' + name + ' has no position stored for this agenda, so it makes no claim on "' + caucusTopic + '" and yields the floor.'
+        : 'Thank you, Chair. ' + name + ' has no position stored on ' + title + ' in this simulation, so it makes no claim and yields the floor back to the Chair.';
+    }
+    var stance = MUN_STANCE_SENTENCES[munStoredStance(country, agenda)];
+    if (caucusTopic) {
+      return 'On "' + caucusTopic + '", the delegate for ' + name + ' has only this to offer. ' + munNoteFrame(name, note) + stance;
+    }
+    var seed = munSeed(country.iso + agenda.id);
+    var openers = [
+      'Thank you, Chair. Delegate for ' + name + ', speaking on ' + title + '.',
+      'Honorable Chair, the delegate for ' + name + ' takes the floor on ' + title + '.',
+      'Chair and fellow delegates, the delegate for ' + name + ' has a short statement on ' + title + '.'
+    ];
+    var questions = agenda.keyQuestions || [];
+    var ask = questions.length ? ' Question for the committee: ' + questions[seed % questions.length] : '';
+    return openers[seed % openers.length] + ' ' + munNoteFrame(name, note) + stance + ask;
+  }
+  function munResolutionStanceById(id) {
+    return MUN_RESOLUTION_STANCES.filter(function(r) { return r.id === id; })[0] || MUN_RESOLUTION_STANCES[1];
+  }
+  // A starting guess from the student's own operative verbs; the student can change it.
+  function munDefaultResolutionStance(clauses) {
+    var text = (clauses || []).filter(function(c) { return c.type !== 'preamble'; }).map(function(c) { return c.text || ''; }).join(' ');
+    return /\b(establish(es)?|requires?|mandates?|binding|prohibits?|bans?|decides?)\b/i.test(text) ? 'firm' : 'voluntary';
+  }
+  function munSimulatedVote(country, agenda, resolutionStance) {
+    var stance = munStoredStance(country, agenda);
+    if (stance === 'none') {
+      return { vote: 'A', reasoning: 'Abstained because no position is stored for this country on this agenda.', simulated: true };
+    }
+    var res = munResolutionStanceById(resolutionStance);
+    var vote = MUN_VOTE_TABLE[stance][res.id];
+    return {
+      vote: vote,
+      reasoning: MUN_VOTE_WORDS[vote] + ' because ' + MUN_STANCE_REASONS[stance] + ' and this resolution ' + res.reason + '.',
+      simulated: true
+    };
+  }
+
+  // Authored and fictional: no real country or real event is named.
+  var MUN_PRACTICE_SCENARIOS = {
+    climate_action: { headline: 'A storm floods a low-lying island state', body: 'A fictional island state reports that a storm surge has flooded its main port and cut off fresh water. It asks the committee who should pay for the damage and how fast help can arrive.' },
+    refugee_crisis: { headline: 'A border camp reaches twice its capacity', body: 'Floods push thousands of people toward a border camp in a fictional country. The camp now holds twice the people it was built for, and the host government asks other states to share the responsibility.' },
+    ai_governance: { headline: 'A fake video spreads before an election', body: 'An AI-made video of a candidate spreads the day before a national election in a fictional country. Election officials cannot yet tell who made it and ask the committee what rules should apply.' },
+    maritime_disputes: { headline: 'A near-collision in a contested strait', body: 'Naval ships from two fictional coastal states nearly collide in a strait both claim. No one was hurt, but shipping has slowed, and the committee is asked to help calm the situation.' },
+    pandemic_prep: { headline: 'A new illness in a port city', body: 'Health workers in a fictional port city report a fast-spreading respiratory illness. The country has few tests and no vaccine, and it asks how supplies should be shared and who may inspect the outbreak.' },
+    nuclear_nonprolif: { headline: 'A state leaves a safety inspection program', body: 'A fictional state announces that it will stop allowing international inspectors at its nuclear plants. It says the plants are civilian, and its neighbors ask the committee to respond.' },
+    food_security: { headline: 'A drought and a closed port cut grain deliveries', body: 'Drought and a port closure have halved grain deliveries to a fictional region. Aid groups say stocks will last six weeks and ask who will fund emergency food and how it will be delivered.' },
+    cybersecurity: { headline: 'Ransomware locks hospital records', body: 'Ransomware has locked patient records at hospitals in a fictional capital city. No one has claimed the attack, and the government asks what help other states owe and what responsibility they carry.' },
+    migration_compact: { headline: 'A money transfer route shuts down', body: 'The main service that workers abroad use to send money home to a fictional country has shut down without warning. Families are losing income, and the committee is asked to help restore safe, low-cost transfers.' },
+    womens_rights: { headline: 'Peace talks open with no women at the table', body: 'Peace talks for a fictional region open with no women on any negotiating team. Local women\'s groups ask the committee to respond and to say how they should be included.' },
+    antarctic_minerals: { headline: 'A research group is accused of prospecting', body: 'Scientists report that a fictional research group in Antarctica has been drilling in a way that looks like mineral prospecting. The group says the work is pure science, and the committee is asked how to check.' },
+    indigenous_rights: { headline: 'A mine is approved without consent', body: 'A fictional government approves a mine on land claimed by an Indigenous nation, which says it was never consulted. The nation\'s leaders ask the committee to respond.' }
+  };
+  function munPracticeScenario(agenda) {
+    var authored = agenda && MUN_PRACTICE_SCENARIOS[agenda.id];
+    if (!authored) return null;
+    return { headline: authored.headline, body: authored.body, affectedIsos: [], simulated: true, at: Date.now() };
+  }
+
+  // Token rule: finishing is the only input. No score, self-rated or otherwise, reaches it.
+  var MUN_SOLO_REWARD_TOKENS = 1;
+  var MUN_SOLO_REWARD_SOURCE = 'model-un-solo-practice';
+  function munSoloCompletion(modelUn) {
+    var state = modelUn || {};
+    var iso = (state.assignedCountries || {}).me;
+    function byMe(group) {
+      return Object.keys(group || {}).some(function(id) { return group[id].uid === 'me'; });
+    }
+    var clauses = state.clauses || {};
+    var speech = byMe(state.speeches) || byMe(state.caucusSpeeches);
+    var clause = !!iso && Object.keys(clauses).some(function(id) { return clauses[id].iso === iso && !clauses[id].isAi; });
+    var myVote = iso ? (state.finalVotes || {})[iso] : null;
+    var vote = !!(myVote && !myVote.isAi && state.voteRevealed);
+    return { speech: speech, clause: clause, vote: vote, done: speech && clause && vote };
+  }
+  function munClaimSoloReward(ctx, modelUn) {
+    if (!munNoAi(ctx)) return 'off';
+    if (!munSoloCompletion(modelUn).done) return 'incomplete';
+    if (typeof ctx.onAwardTokens !== 'function') return 'unavailable';
+    var key = String((ctx.session && ctx.session.startedAt) || (modelUn && modelUn.startedAt) || '');
+    var claimed = window.__alloHavenModelUNSoloClaims = window.__alloHavenModelUNSoloClaims || {};
+    var earnings = typeof ctx.getEarnings === 'function' ? (ctx.getEarnings() || []) : [];
+    var logged = earnings.some(function(entry) {
+      return entry && entry.source === MUN_SOLO_REWARD_SOURCE && entry.metadata && entry.metadata.soloKey === key;
+    });
+    if (claimed[key] || logged) return 'already';
+    claimed[key] = true;
+    ctx.onAwardTokens(MUN_SOLO_REWARD_TOKENS, MUN_SOLO_REWARD_SOURCE, { soloKey: key });
+    return 'awarded';
+  }
+
+  function MunNoAiNotice() {
+    var h = window.React.createElement;
+    return h('div', {
+      'data-mun-no-ai-notice': 'true',
+      style: { padding: '8px 12px', marginBottom: 12, fontSize: 12, lineHeight: 1.5, color: '#e0f2fe', background: 'rgba(14,165,233,0.14)', border: '1px solid #0ea5e9', borderRadius: 8 }
+    },
+      h('strong', null, 'Practice without AI. '),
+      'Other delegates read short templates built from background notes stored in this tool. Each note describes the country in this tool\'s words, not its own. Their speeches and votes are simulated positions, not what any real government would say or do. Finish with your own speech, a clause you wrote and your vote to earn ' + MUN_SOLO_REWARD_TOKENS + ' 🪙.'
+    );
+  }
+
   function register() {
     attachModelUNCrisisA11yCSS();
     window.AlloHavenArcade.registerMode('model-un', {
@@ -958,6 +1153,20 @@
       timeCost: 15,
       partnerRequired: false,
       ready: true,
+      helpers: {
+        countries: function() { return COUNTRIES; },
+        agendas: function() { return AGENDAS; },
+        resolutionStances: function() { return MUN_RESOLUTION_STANCES; },
+        storedPosition: munStoredPosition,
+        storedStance: munStoredStance,
+        templateSpeech: munTemplateSpeech,
+        simulatedVote: munSimulatedVote,
+        defaultResolutionStance: munDefaultResolutionStance,
+        practiceScenario: munPracticeScenario,
+        soloCompletion: munSoloCompletion,
+        claimSoloReward: munClaimSoloReward,
+        noAiCtx: munNoAiCtx
+      },
       // Achievement quest hooks — surfaced wherever AlloHaven lists arcade quests.
       // Each hook checks the module-level stats mirror (set by bumpStat in
       // commitSpeech, commitClause, castVote, and reveal-tally).
@@ -1118,7 +1327,9 @@
         )
       ),
       h('p', { style: { fontSize: '12px', color: textMuted, lineHeight: 1.55, marginBottom: '12px' } },
-        'Chair a UN committee. Each student plays a country; AI fills any seats no student is playing. Pick a committee, an agenda, and run the debate.'),
+        munAiOk(ctx)
+          ? 'Chair a UN committee. Each student plays a country; AI fills any seats no student is playing. Pick a committee, an agenda, and run the debate.'
+          : 'Chair a UN committee or practice solo. Solo practice needs no AI: other delegates read short templates from stored background notes, and their votes are simulated.'),
 
       // Host class-session CTA
       isInSession && ctx.isHost && !hasOpenClassMUN && h('button', {
@@ -1152,11 +1363,11 @@
         '🌐 Join class Model UN'
       ),
 
-      // Solo CTA
+      // Solo CTA (with no AI, ModelUNMain runs templated delegates)
       h('button', {
         onClick: handleSoloLaunch,
         disabled: disabled || !canAfford,
-        'aria-label': 'Start a solo Model UN simulation (you pick committee + agenda)',
+        'aria-label': munAiOk(ctx) ? 'Start a solo Model UN simulation (you pick committee + agenda)' : 'Start a solo Model UN practice without AI (you pick committee + agenda)',
         style: {
           width: '100%', padding: '10px 12px',
           background: 'rgba(14,165,233,0.18)', color: text,
@@ -1165,7 +1376,7 @@
           cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer'
         }
       },
-        canAfford ? '🎓 Solo: pick committee + agenda' : 'Need ' + tokensCost + ' 🪙 to start'
+        canAfford ? (munAiOk(ctx) ? '🎓 Solo: pick committee + agenda' : '🎓 Solo practice (no AI): pick committee + agenda') : 'Need ' + tokensCost + ' 🪙 to start'
       ),
 
       // Quick-start presets — one-click pre-configured debates
@@ -1204,7 +1415,7 @@
           border: '1px dashed #fbbf24', borderRadius: 8, cursor: 'pointer'
         }
       }, '🏆 Achievements & quests'),
-      galleryOpen && h(AchievementGallery, { onClose: function() { setGalleryOpen(false); } }),
+      galleryOpen && h(AchievementGallery, { aiOk: munAiOk(ctx), onClose: function() { setGalleryOpen(false); } }),
 
       // In-session status footer
       isInSession && h('div', { style: { marginTop: '10px', fontSize: '11px', color: textMuted } },
@@ -1260,6 +1471,10 @@
     var localState = localStateTuple[0];
     var setLocalState = localStateTuple[1];
 
+    // Solo with no usable AI (or the student chose it): views get a ctx with no AI functions.
+    var soloAiAvailable = isSolo && munAiOk(ctx);
+    if (isSolo && (!soloAiAvailable || localState.noAiChosen)) ctx = munNoAiCtx(ctx);
+
     // The state we display is either the session state (class mode) or local (solo).
     var modelUn = isSolo ? localState : (sessionState && sessionState.modelUn) || null;
 
@@ -1295,18 +1510,25 @@
       if (isSolo) {
         setLocalState(function (prev) {
           var next = Object.assign({}, prev, patch);
-          // Nested merge for assignedCountries
+          // Nested merge for assignedCountries; an empty patch clears the roster
           if (patch.assignedCountries) {
-            next.assignedCountries = Object.assign({}, prev.assignedCountries || {}, patch.assignedCountries);
+            next.assignedCountries = Object.keys(patch.assignedCountries).length
+              ? Object.assign({}, prev.assignedCountries || {}, patch.assignedCountries)
+              : {};
           }
           return next;
         });
       } else if (typeof ctx.sessionUpdate === 'function') {
         var merged = Object.assign({}, modelUn, patch);
         if (patch.assignedCountries) {
-          merged.assignedCountries = Object.assign({}, modelUn.assignedCountries || {}, patch.assignedCountries);
+          merged.assignedCountries = Object.keys(patch.assignedCountries).length
+            ? Object.assign({}, modelUn.assignedCountries || {}, patch.assignedCountries)
+            : {};
         }
-        ctx.sessionUpdate({ modelUn: merged });
+        Promise.resolve(ctx.sessionUpdate({ modelUn: merged })).catch(function (err) {
+          var kit = window.AlloHavenArcade && window.AlloHavenArcade.classWork;
+          ctx.addToast(kit ? kit.message(err) : 'That did not send. Check your connection and try again.');
+        });
       }
     }
 
@@ -1315,8 +1537,9 @@
     // everywhere a delegate might be working.
     function withFloatingHelpers(viewElement) {
       return h(React.Fragment, null,
+        munNoAi(ctx) && h(MunNoAiNotice),
         viewElement,
-        h(AICoachButton,  { ctx: ctx, modelUn: modelUn, sessionState: sessionState, isSolo: isSolo }),
+        munAiOk(ctx) && h(AICoachButton,  { ctx: ctx, modelUn: modelUn, sessionState: sessionState, isSolo: isSolo }),
         h(DelegateNotes,  { ctx: ctx, modelUn: modelUn, isSolo: isSolo })
       );
     }
@@ -1324,7 +1547,7 @@
     // Phase branching
     var phase = modelUn.phase || PHASES.SETUP;
     if (phase === PHASES.SETUP) {
-      return h(SetupView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, classModeFlag: classModeFlag });
+      return h(SetupView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, classModeFlag: classModeFlag, soloAiAvailable: soloAiAvailable });
     }
     if (phase === PHASES.ASSIGNMENT) {
       return h(AssignmentView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
@@ -1348,7 +1571,10 @@
       return withFloatingHelpers(h(VotingView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState }));
     }
     if (phase === PHASES.DEBRIEF) {
-      return h(DebriefView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+      return h(React.Fragment, null,
+        munNoAi(ctx) && h(MunNoAiNotice),
+        h(DebriefView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState })
+      );
     }
 
     // Future phases — placeholder
@@ -1396,7 +1622,7 @@
       h('h2', { style: { fontSize: 22, fontWeight: 800, marginBottom: 4 } }, '🌐 Model UN Setup'),
       h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 20 } },
         props.isSolo
-          ? 'Solo mode — you\'ll play one country; AI plays the rest.'
+          ? (munNoAi(ctx) ? 'Solo practice without AI: you play one country; simulated delegates read short templates for the rest.' : 'Solo mode — you\'ll play one country; AI plays the rest.')
           : 'You are chairing the committee. Students join with code ' + (ctx.sessionCode || '—') + '.'
       ),
 
@@ -1468,7 +1694,14 @@
         h('input', {
           type: 'checkbox', checked: !!modelUn.aiFillsEmpty, onChange: toggleAIFills
         }),
-        'AI plays any country not assigned to a student (recommended)'
+        munNoAi(ctx) ? 'Simulated delegates fill every other seat (recommended)' : 'AI plays any country not assigned to a student (recommended)'
+      ),
+      props.soloAiAvailable && h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1', marginTop: -16, marginBottom: 24, cursor: 'pointer' } },
+        h('input', {
+          type: 'checkbox', checked: !!modelUn.noAiChosen, 'data-mun-choose-no-ai': 'true',
+          onChange: function() { updateMUN({ noAiChosen: !modelUn.noAiChosen }); }
+        }),
+        'Practice without AI (short templates, no AI calls)'
       ),
 
       // Advance
@@ -1551,6 +1784,7 @@
       updateMUN({ assignedCountries: next });
     }
     function lockRosterAndAdvance() {
+      if (munNoAi(ctx) && !assigned.me) { ctx.addToast('Pick your country first.'); return; }
       // Fill empty seats with AI if toggle is on
       if (modelUn.aiFillsEmpty) {
         var taken = {};
@@ -1590,7 +1824,9 @@
         (agenda ? agenda.emoji + ' ' : '') + (committee ? committee.name : 'Committee') + ' — Country Assignment'
       ),
       h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } },
-        'Tap a student → tap a country chip to assign. Or use Randomize. AI will fill any empty seats when you lock the roster.'
+        munNoAi(ctx)
+          ? 'Tap your name, then tap a country. Or use Randomize. Simulated delegates fill the other seats when you lock the roster.'
+          : 'Tap a student → tap a country chip to assign. Or use Randomize. AI will fill any empty seats when you lock the roster.'
       ),
 
       // Quick actions
@@ -1760,7 +1996,7 @@
           h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', margin: 0 } }, myCountry.currentEvents)
         ),
         agenda && myCountry.defaultPositions && myCountry.defaultPositions[agenda.id] && h('div', { style: { marginTop: 10, padding: 10, background: 'rgba(0,0,0,0.18)', borderRadius: 8 } },
-          h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 } }, 'Your country\'s default stance on this agenda'),
+          h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 } }, 'Background note: your country on this agenda'),
           h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#fef3c7', margin: 0 } }, myCountry.defaultPositions[agenda.id])
         )
       ),
@@ -1801,7 +2037,7 @@
               }
             },
               h('div', null, country.flag + ' ', h('strong', null, country.name)),
-              h('div', { style: { color: isAi ? '#a855f7' : '#10b981', fontSize: 10, marginTop: 2 } }, isAi ? '🤖 AI delegate' : '👤 ' + name)
+              h('div', { style: { color: isAi ? '#a855f7' : '#10b981', fontSize: 10, marginTop: 2 } }, isAi ? munDelegateLabel(ctx) : '👤 ' + name)
             );
           })
         )
@@ -2007,7 +2243,9 @@
         h('div', { style: { fontSize: 11, color: '#ddd6fe', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } }, 'Position Paper Phase'),
         h('h2', { style: { fontSize: 20, fontWeight: 800, marginTop: 4 } }, '📝 Draft your delegation\'s position paper'),
         h('p', { style: { fontSize: 12, color: '#ddd6fe', marginTop: 6 } },
-          'In real Model UN, every delegate writes a position paper before debate. Today you do the same: research, take a stance, propose solutions. Your paper becomes the grounding for your AI speech starter.'
+          munNoAi(ctx)
+            ? 'In real Model UN, every delegate writes a position paper before debate. Today you do the same: research, take a stance, propose solutions. Use your paper as notes for your speech.'
+            : 'In real Model UN, every delegate writes a position paper before debate. Today you do the same: research, take a stance, propose solutions. Your paper becomes the grounding for your AI speech starter.'
         )
       ),
 
@@ -2018,7 +2256,7 @@
           h('div', null,
             h('div', { style: { fontWeight: 800, fontSize: 16 } }, myCountry.name + ' on ' + (agenda ? agenda.title : '')),
             h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } },
-              'Reminder stance: ' + ((myCountry.defaultPositions && agenda && myCountry.defaultPositions[agenda.id]) || 'develop your own.')
+              'Background note: ' + ((myCountry.defaultPositions && agenda && myCountry.defaultPositions[agenda.id]) || 'develop your own.')
             )
           )
         )
@@ -2026,13 +2264,13 @@
 
       // AI starter row
       myCountry && agenda && h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
-        h('button', {
+        munAiOk(ctx) && h('button', {
           onClick: aiDraft,
           disabled: status.drafting,
           'aria-busy': status.drafting,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: status.drafting ? '#475569' : '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: status.drafting ? 'wait' : 'pointer' }
         }, status.drafting ? '⏳ Drafting…' : '🤖 AI starter draft'),
-        h('button', {
+        munAiOk(ctx) && h('button', {
           onClick: aiCritique,
           disabled: status.critiquing || !form.stance,
           'aria-busy': status.critiquing,
@@ -2160,7 +2398,7 @@
   // Returns { background, stance, solutions, allies } or null.
   // ═══════════════════════════════════════════
   function aiDraftPositionPaper(ctx, country, agenda, committee) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) {
       return Promise.resolve(null);
     }
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
@@ -2211,7 +2449,7 @@
   // Returns { strengths: [], weaknesses: [], followUpQuestions: [] } or null.
   // ═══════════════════════════════════════════
   function aiCritiquePositionPaper(ctx, country, agenda, paper) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda || !paper) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda || !paper) {
       return Promise.resolve(null);
     }
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
@@ -2259,7 +2497,7 @@
   // strip code fences, extract by outer braces, validate shape, silent fallback.
   // ═══════════════════════════════════════════
   function aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches, caucusTopic, userPaper) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) {
       return Promise.resolve(null);
     }
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
@@ -2331,7 +2569,7 @@
   // Returns { text, type: 'preamble'|'operative', perspective } or null.
   // ═══════════════════════════════════════════
   function aiSuggestResolutionClause(ctx, fromCountry, agenda, committee, existingClauses) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !agenda) return Promise.resolve(null);
+    if (!ctx || !munAiOk(ctx) || !agenda) return Promise.resolve(null);
     var stance = (fromCountry && fromCountry.defaultPositions && fromCountry.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
     var existingText = (existingClauses || []).slice(0, 8).map(function(c, i) {
       return (i + 1) + '. ' + (c.text || '').slice(0, 200);
@@ -2380,7 +2618,7 @@
   // or null. Used by ClauseReviewPanel before the student submits the clause.
   // ═══════════════════════════════════════════
   function aiReviewClause(ctx, payload) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.draft || !payload.agenda || !payload.country) {
+    if (!ctx || !munAiOk(ctx) || !payload || !payload.draft || !payload.agenda || !payload.country) {
       return Promise.resolve(null);
     }
     var draft = String(payload.draft).slice(0, 1200);
@@ -2447,7 +2685,7 @@
   // Used by TeacherRubricPanel in the Debrief.
   // ═══════════════════════════════════════════
   function aiGradeStudentRubric(ctx, payload) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.country || !payload.agenda) {
+    if (!ctx || !munAiOk(ctx) || !payload || !payload.country || !payload.agenda) {
       return Promise.resolve(null);
     }
     var country = payload.country;
@@ -2543,7 +2781,7 @@
       // Default to abstention to keep the simulation tame.
       return Promise.resolve({ vote: 'A', reasoning: '(AI unavailable — defaulted to abstention)' });
     }
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) return fallback();
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) return fallback();
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
     var clauseText = (clauses || []).map(function(c, i) {
       return (i + 1) + '. [' + (c.type === 'preamble' ? 'PRE' : 'OP') + '] ' + (c.text || '').slice(0, 280);
@@ -2584,7 +2822,7 @@
   // Analyzes consistency between speeches + final vote + country position.
   // ═══════════════════════════════════════════
   function aiCoachFeedback(ctx, country, agenda, mySpeeches, myVote, classOutcome) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) {
       return Promise.resolve({
         strengths: ['Participated as ' + (country ? country.name : 'a delegate') + ' through the full debate.'],
         areas: ['No AI coach available — review your speeches against your country\'s stance manually.'],
@@ -2643,7 +2881,7 @@
   // Returns { type: 'strike'|'add'|'modify', text, rationale } or null.
   // ═══════════════════════════════════════════
   function aiSuggestAmendment(ctx, fromCountry, agenda, originalClause) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !originalClause) return Promise.resolve(null);
+    if (!ctx || !munAiOk(ctx) || !originalClause) return Promise.resolve(null);
     var stance = (fromCountry && fromCountry.defaultPositions && fromCountry.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
     var prompt = [
       'You are proposing an AMENDMENT to a Model UN resolution clause.',
@@ -2691,7 +2929,7 @@
   // Pedagogically: real diplomacy shifts under news; this tests adaptability.
   // ═══════════════════════════════════════════
   function aiBreakingNews(ctx, agenda, recentSpeeches, committee) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !agenda) return Promise.resolve(null);
+    if (!ctx || !munAiOk(ctx) || !agenda) return Promise.resolve(null);
     var historyText = (recentSpeeches || []).slice(-5).map(function(s) {
       return '- ' + s.country + ': ' + (s.text || '').slice(0, 120);
     }).join('\n');
@@ -2740,7 +2978,7 @@
   // of a blank text prompt.
   // ═══════════════════════════════════════════
   function aiSuggestCaucusTopics(ctx, agenda, recentSpeeches, news) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !agenda) return Promise.resolve(null);
+    if (!ctx || !munAiOk(ctx) || !agenda) return Promise.resolve(null);
     var historyText = (recentSpeeches || []).slice(-8).map(function(s) {
       return '- ' + (s.country || '') + ': ' + (s.text || '').slice(0, 200);
     }).join('\n');
@@ -2785,7 +3023,7 @@
   // Returns { advice: "...", nextSteps: [...] } or null.
   // ═══════════════════════════════════════════
   function aiCoachAdvice(ctx, payload) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.country || !payload.agenda) {
+    if (!ctx || !munAiOk(ctx) || !payload || !payload.country || !payload.agenda) {
       return Promise.resolve(null);
     }
     var country = payload.country;
@@ -2867,7 +3105,7 @@
   // or null. Called when the host closes the crisis window.
   // ═══════════════════════════════════════════
   function aiGradeCrisisResponses(ctx, payload) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.news || !payload.agenda) {
+    if (!ctx || !munAiOk(ctx) || !payload || !payload.news || !payload.agenda) {
       return Promise.resolve(null);
     }
     var news = payload.news;
@@ -2942,7 +3180,7 @@
   // Used by the VoteWhipPanel BEFORE the actual vote — students see the gap and can lobby.
   // ═══════════════════════════════════════════
   function aiPredictVoteTally(ctx, payload) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.committee || !payload.agenda) {
+    if (!ctx || !munAiOk(ctx) || !payload || !payload.committee || !payload.agenda) {
       return Promise.resolve(null);
     }
     var committee = payload.committee;
@@ -3023,7 +3261,7 @@
   // Short, urgent, reactive. Returns { text } or null.
   // ═══════════════════════════════════════════
   function aiGenerateCrisisResponse(ctx, country, agenda, news) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda || !news) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda || !news) {
       return Promise.resolve(null);
     }
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
@@ -3059,7 +3297,7 @@
   // Used by ConsistencyBadge; fire-and-forget — UI degrades gracefully on null.
   // ═══════════════════════════════════════════
   function aiScoreConsistency(ctx, country, agenda, paper, recentOwnSpeeches) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) {
       return Promise.resolve(null);
     }
     if (!recentOwnSpeeches || recentOwnSpeeches.length === 0) return Promise.resolve(null);
@@ -3183,11 +3421,26 @@
       if (!isHost && !isSolo) return;
       var iso = assigned[uid];
       if (!iso) { ctx.addToast('That seat is empty'); return; }
+      if (munNoAi(ctx) && uid.indexOf('ai_') === 0) { commitSimulatedSpeeches([uid]); return; }
       updateMUN({ currentSpeakerUid: uid, speakerStartedAt: new Date().toISOString() });
       // If AI, kick off generation immediately
       if (uid.indexOf('ai_') === 0) {
         triggerAiSpeech(uid, iso);
       }
+    }
+    function commitSimulatedSpeeches(uids) {
+      var nextSpeeches = Object.assign({}, speeches);
+      var now = Date.now();
+      uids.forEach(function(uid, i) {
+        var country = countryById(assigned[uid]);
+        if (!country) return;
+        nextSpeeches['sp_' + now + '_' + i] = {
+          uid: uid, country: country.name, iso: country.iso, flag: country.flag,
+          text: munTemplateSpeech(country, agenda), keyPoints: [],
+          isAi: true, simulated: true, at: now + i
+        };
+      });
+      updateMUN({ speeches: nextSpeeches, speechCount: (modelUn.speechCount || 0) + uids.length });
     }
     function triggerAiSpeech(uid, iso) {
       if (aiInFlight[uid]) return;
@@ -3328,7 +3581,7 @@
 
       // ── Diplomatic Consistency badge (student-facing) ──
       myCountry && h('div', { style: { marginBottom: 12 } },
-        h(ConsistencyBadge, {
+        munAiOk(ctx) && h(ConsistencyBadge, {
           ctx: ctx,
           country: myCountry,
           agenda: agenda,
@@ -3376,7 +3629,7 @@
         currentSpeakerUid.indexOf('ai_') === 0 && aiInFlight[currentSpeakerUid] && h('div', { style: { padding: 8, fontSize: 12, color: '#a855f7', fontStyle: 'italic' } },
           '🤖 Generating speech in character… (this takes 3-6 seconds)'
         ),
-        currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+        munAiOk(ctx) && currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
           onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
           style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Generate AI speech')
@@ -3393,6 +3646,11 @@
           allSpoken && h('div', { style: { padding: 14, fontSize: 12, color: '#10b981', fontStyle: 'italic', textAlign: 'center', background: 'rgba(16,185,129,0.08)', borderRadius: 8 } },
             '✓ All delegates have spoken'
           ),
+          munNoAi(ctx) && !currentSpeakerUid && queue.some(function(q) { return q.isAi; }) && h('button', {
+            'data-mun-hear-delegates': 'true',
+            onClick: function() { commitSimulatedSpeeches(queue.filter(function(q) { return q.isAi; }).map(function(q) { return q.uid; })); },
+            style: { width: '100%', padding: 8, marginBottom: 8, fontSize: 12, fontWeight: 700, background: 'rgba(14,165,233,0.18)', color: '#e0f2fe', border: '1px solid #0ea5e9', borderRadius: 8, cursor: 'pointer' }
+          }, '▶ Hear the simulated delegates (' + queue.filter(function(q) { return q.isAi; }).length + ')'),
           queue.map(function(q) {
             var country = countryById(q.iso);
             if (!country) return null;
@@ -3418,7 +3676,7 @@
                 canRecognize && h('span', { style: { fontSize: 10, color: '#7dd3fc' } }, 'Give floor →')
               ),
               h('div', { style: { fontSize: 10, marginTop: 2, color: q.isAi ? '#a855f7' : '#10b981' } },
-                q.isAi ? '🤖 AI delegate' : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
+                q.isAi ? munDelegateLabel(ctx) : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
               )
             );
           })
@@ -3511,7 +3769,7 @@
             ? ('You have the floor — focused caucus speech (50-80 words on "' + (caucusTopic || 'sub-topic') + '")')
             : 'You have the floor — compose your opening speech (120-180 words)'
         ),
-        h('button', {
+        munAiOk(ctx) && h('button', {
           onClick: getStarter,
           disabled: loading,
           title: userPaper && userPaper.stance ? 'AI starter will use your position paper as grounding' : 'AI starter draws from your country profile',
@@ -3522,6 +3780,9 @@
             border: 'none', borderRadius: 6, cursor: loading ? 'not-allowed' : 'pointer'
           }
         }, loading ? '⏳ Generating…' : (userPaper && userPaper.stance ? '✨ AI starter (from your paper)' : '✨ AI starter'))
+      ),
+      munNoAi(ctx) && h('div', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 6 } },
+        shortForm ? 'Try this order: one clear point, then one proposal.' : 'Try this order: who you speak for, what your country wants, one concrete proposal.'
       ),
       h('textarea', {
         className: 'mun-form-control',
@@ -3770,7 +4031,7 @@
       }),
 
       // ── Vote Whip Prediction (AI estimates the upcoming tally) ──
-      h(VoteWhipPanel, {
+      munAiOk(ctx) && h(VoteWhipPanel, {
         ctx: ctx, modelUn: modelUn, committee: committee, agenda: agenda
       }),
 
@@ -3822,7 +4083,7 @@
               }
             }),
             h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
-              h('button', {
+              munAiOk(ctx) && h('button', {
                 onClick: handleAIStarter,
                 disabled: aiLoading,
                 style: {
@@ -3831,7 +4092,7 @@
                   border: 'none', borderRadius: 6, cursor: aiLoading ? 'not-allowed' : 'pointer'
                 }
               }, aiLoading ? '⏳ Generating…' : '✨ AI starter'),
-              h('button', {
+              munAiOk(ctx) && h('button', {
                 onClick: function() {
                   if (!myCountry || !text || text.trim().length < 15) {
                     if (typeof ctx.addToast === 'function') ctx.addToast('Write at least a sentence before requesting AI review.');
@@ -3908,8 +4169,17 @@
             'You are not assigned a country in this committee. You can still watch the drafting.'
           ),
 
+          // No AI: the clauses are the student's own; the briefing samples stay as models.
+          munNoAi(ctx) && agenda && h('details', { style: { marginTop: 14, padding: 10, fontSize: 12, color: '#ddd6fe', background: 'rgba(255,255,255,0.03)', border: '1px solid #475569', borderRadius: 8 } },
+            h('summary', { style: { fontWeight: 700, cursor: 'pointer' } }, 'Sample clauses from your briefing'),
+            h('p', { style: { margin: '8px 0 4px 0' } }, 'Models only. Write your clause in your own words.'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, lineHeight: 1.6, fontStyle: 'italic' } },
+              agenda.sampleClauses.map(function(c, ci) { return h('li', { key: ci }, c); })
+            )
+          ),
+
           // Host helper: AI delegate auto-propose
-          isHost && h('div', { style: { marginTop: 14 } },
+          isHost && munAiOk(ctx) && h('div', { style: { marginTop: 14 } },
             h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } },
               'Have an AI delegate propose'
             ),
@@ -3943,7 +4213,7 @@
           ),
           orderedClauses.length === 0
             ? h('div', { style: { padding: 14, fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 8 } },
-                'No clauses yet. Propose one from the left, or have an AI delegate draft the first one.'
+                munNoAi(ctx) ? 'No clauses yet. Write one on the left, then adopt it here to put it in the resolution.' : 'No clauses yet. Propose one from the left, or have an AI delegate draft the first one.'
               )
             : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 600, overflowY: 'auto' } },
                 orderedClauses.map(function(c, idx) {
@@ -4173,7 +4443,7 @@
         ),
 
         // AI suggestions row
-        h('div', { style: { marginBottom: 12 } },
+        munAiOk(ctx) && h('div', { style: { marginBottom: 12 } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
             h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'AI Suggestions'),
             h('button', {
@@ -4202,6 +4472,20 @@
                 h('div', { style: { fontWeight: 700, color: picked ? '#fbbf24' : '#fef3c7', marginBottom: 4 } }, s.topic),
                 h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, s.rationale)
               );
+            })
+          )
+        ),
+
+        munNoAi(ctx) && agenda && h('div', { style: { marginBottom: 12 } },
+          h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 } }, 'Key questions from your briefing'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            (agenda.keyQuestions || []).map(function(q, qi) {
+              return h('button', {
+                key: qi, type: 'button',
+                'aria-pressed': topic === q,
+                onClick: function() { setTopic(q); },
+                style: { textAlign: 'left', padding: 8, fontSize: 12, background: topic === q ? 'rgba(251,191,36,0.18)' : 'rgba(255,255,255,0.04)', color: '#e2e8f0', border: '1px solid ' + (topic === q ? '#fbbf24' : '#475569'), borderRadius: 8, cursor: 'pointer' }
+              }, q);
             })
           )
         ),
@@ -4441,7 +4725,7 @@
             }
           }),
           h('div', { style: { display: 'flex', gap: 6 } },
-            h('button', {
+            munAiOk(ctx) && h('button', {
               onClick: handleAIStarter,
               disabled: loading,
               style: {
@@ -4553,6 +4837,7 @@
 
     var finalVotes = modelUn.finalVotes || {};
     var revealMode = !!modelUn.voteRevealed;
+    var resolutionStance = modelUn.resolutionStance || munDefaultResolutionStance(adoptedClauses);
 
     var myUid = isSolo ? 'me' : (ctx.userId || null);
     var myIso = myUid ? assigned[myUid] : null;
@@ -4563,9 +4848,16 @@
     var aiInFlight = aiInFlightTuple[0];
     var setAiInFlight = aiInFlightTuple[1];
 
-    function castVote(iso, vote, reasoning, isAi) {
-      var next = Object.assign({}, finalVotes);
-      next[iso] = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, at: Date.now() };
+    // AI replies land after later renders. Read the newest votes, and carry this click's batch so a reply
+    // cannot drop one sent earlier (a class session may not have echoed that write yet).
+    var finalVotesRef = React.useRef(finalVotes);
+    finalVotesRef.current = finalVotes;
+    function castVote(iso, vote, reasoning, isAi, batch) {
+      var rec = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, at: Date.now() };
+      if (batch) batch[iso] = rec;
+      var next = Object.assign({}, finalVotesRef.current, batch || {});
+      next[iso] = rec;
+      finalVotesRef.current = next;
       updateMUN({ finalVotes: next });
       // Achievement: voteCast
       if (!isAi && !window.__alloHavenModelUNStats.voteCast) {
@@ -4586,12 +4878,13 @@
       var newInFlight = Object.assign({}, aiInFlight);
       pending.forEach(function(uid) { newInFlight[assigned[uid]] = true; });
       setAiInFlight(newInFlight);
+      var batch = {};
       pending.forEach(function(uid) {
         var iso = assigned[uid];
         var country = countryById(iso);
         if (!country) return;
         aiVoteDelegate(ctx, country, agenda, adoptedClauses).then(function(r) {
-          if (r && r.vote) castVote(iso, r.vote, r.reasoning, true);
+          if (r && r.vote) castVote(iso, r.vote, r.reasoning, true, batch);
           setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[iso]; return n; });
         }).catch(function() {
           setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[iso]; return n; });
@@ -4601,15 +4894,29 @@
     function revealAndAdvance() {
       // Reveal mode + compute outcome
       var yCount = 0, nCount = 0, aCount = 0;
-      Object.keys(finalVotes).forEach(function(iso) {
-        var v = finalVotes[iso].vote;
+      var votes = finalVotes;
+      if (munNoAi(ctx)) {
+        // Simulated seats vote here, from the stored stance against the chosen resolution stance.
+        votes = Object.assign({}, finalVotes);
+        Object.keys(assigned).forEach(function(uid) {
+          var iso = assigned[uid];
+          var country = countryById(iso);
+          if (uid.indexOf('ai_') !== 0 || !country || votes[iso]) return;
+          var sim = munSimulatedVote(country, agenda, resolutionStance);
+          votes[iso] = { vote: sim.vote, reasoning: sim.reasoning, isAi: true, simulated: true, at: Date.now() };
+        });
+      }
+      Object.keys(votes).forEach(function(iso) {
+        var v = votes[iso].vote;
         if (v === 'Y') yCount++;
         else if (v === 'N') nCount++;
         else if (v === 'A') aCount++;
       });
       var passed = yCount > nCount; // simple majority of cast votes
       var outcome = passed ? 'passed' : 'failed';
-      updateMUN({ voteRevealed: true, voteOutcome: outcome });
+      updateMUN(munNoAi(ctx)
+        ? { voteRevealed: true, voteOutcome: outcome, finalVotes: votes, resolutionStance: resolutionStance }
+        : { voteRevealed: true, voteOutcome: outcome });
       // Achievement: resolution passed (counted only when you participated)
       if (passed) {
         bumpStat('resolutionsPassed');
@@ -4710,18 +5017,38 @@
             )
       ),
 
+      // No AI: the student says what the resolution does; simulated votes follow from it.
+      munNoAi(ctx) && !revealMode && h('fieldset', {
+        style: { padding: 12, marginBottom: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid #475569', borderRadius: 10 }
+      },
+        h('legend', { style: { padding: '0 6px', fontSize: 12, fontWeight: 700, color: '#7dd3fc' } }, 'What does your resolution do?'),
+        h('p', { style: { margin: '0 0 8px 0', fontSize: 11, color: '#cbd5e1' } }, 'Preselected from your clause wording. Change it if it does not fit. Simulated delegates vote on this.'),
+        MUN_RESOLUTION_STANCES.map(function(r) {
+          return h('label', { key: r.id, style: { display: 'block', marginBottom: 4, fontSize: 12, color: '#e2e8f0', cursor: 'pointer' } },
+            h('input', {
+              type: 'radio', name: 'mun_resolution_stance', value: r.id,
+              className: 'mun-form-control',
+              checked: resolutionStance === r.id,
+              onChange: function() { updateMUN({ resolutionStance: r.id }); },
+              style: { marginRight: 6 }
+            }),
+            h('strong', null, r.label + ': '), r.hint
+          );
+        })
+      ),
+
       // Host controls
       isHost && h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-        h('button', {
+        !munNoAi(ctx) && h('button', {
           onClick: triggerAllAIVotes,
           disabled: Object.keys(aiInFlight).length > 0,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Cast all AI votes (' + unvoted.filter(function(d) { return d.isAi; }).length + ')'),
         !revealMode && h('button', {
           onClick: revealAndAdvance,
-          disabled: voted.length === 0,
-          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: voted.length === 0 ? '#475569' : '#fbbf24', color: '#000', border: 'none', borderRadius: 8, cursor: voted.length === 0 ? 'not-allowed' : 'pointer' }
-        }, '🗳 Reveal tally'),
+          disabled: munNoAi(ctx) ? !myVote : voted.length === 0,
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: (munNoAi(ctx) ? !myVote : voted.length === 0) ? '#475569' : '#fbbf24', color: (munNoAi(ctx) && !myVote) ? '#fff' : '#000', border: 'none', borderRadius: 8, cursor: (munNoAi(ctx) ? !myVote : voted.length === 0) ? 'not-allowed' : 'pointer' }
+        }, munNoAi(ctx) ? '🗳 Reveal tally (simulated delegates vote now)' : '🗳 Reveal tally'),
         revealMode && h('button', {
           onClick: advanceToDebrief,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
@@ -4755,7 +5082,7 @@
           'Resolution ' + (modelUn.voteOutcome === 'passed' ? 'ADOPTED' : 'FAILED')
         ),
         h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } },
-          tally.Y + ' yes · ' + tally.N + ' no · ' + tally.A + ' abstain'
+          tally.Y + ' yes · ' + tally.N + ' no · ' + tally.A + ' abstain' + (munNoAi(ctx) ? ' · a practice result from simulated votes' : '')
         )
       ),
 
@@ -4790,8 +5117,8 @@
                   aiInFlight[d.iso] ? '⏳' : 'pending'
                 )
               ),
-              d.vote && rev && d.vote.reasoning && h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.4, fontStyle: 'italic' } },
-                '"' + d.vote.reasoning + '"'
+              d.vote && rev && d.vote.reasoning && h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.4, fontStyle: d.vote.simulated ? 'normal' : 'italic' } },
+                d.vote.simulated ? d.vote.reasoning : '"' + d.vote.reasoning + '"'
               )
             );
           })
@@ -4837,6 +5164,14 @@
     var fbLoading = fbLoadTuple[0];
     var setFbLoading = fbLoadTuple[1];
 
+    // No-AI solo: a fixed token for finishing, decided before any self-rating exists.
+    var soloRewardTuple = useState(null);
+    var soloReward = soloRewardTuple[0];
+    var setSoloReward = soloRewardTuple[1];
+    useEffect(function() {
+      if (munNoAi(ctx)) setSoloReward(munClaimSoloReward(ctx, modelUn));
+    }, []);
+
     function generateFeedback() {
       if (fbLoading || !myCountry) return;
       setFbLoading(true);
@@ -4855,7 +5190,7 @@
       }
       // For solo, just go back to setup
       if (isSolo) {
-        updateMUN({ phase: PHASES.SETUP, committeeId: null, agendaId: null, assignedCountries: {}, speeches: {}, clauses: {}, finalVotes: {}, voteRevealed: false });
+        updateMUN({ phase: PHASES.SETUP, committeeId: null, agendaId: null, assignedCountries: {}, speeches: {}, clauses: {}, finalVotes: {}, voteRevealed: false, voteOutcome: null, positionPapers: {}, caucusSpeeches: {}, news: null, crisisResponse: null, resolutionStance: null, backchannel: {} });
       }
     }
 
@@ -4878,6 +5213,7 @@
         bodyHtml += '<h1>' + escapeHtml(title) + '</h1>';
         bodyHtml += '<div class="meta">Outcome: ' + escapeHtml(modelUn.voteOutcome === 'passed' ? 'Resolution ADOPTED' : modelUn.voteOutcome === 'failed' ? 'Resolution FAILED' : 'Debate concluded') + '</div>';
         if (agenda) bodyHtml += '<div class="meta">Agenda background: ' + escapeHtml(agenda.background) + '</div>';
+        if (munNoAi(ctx)) bodyHtml += '<div class="meta">Practice without AI: other delegates\' speeches and votes are simulated from short stored notes, not what any real government would say or do.</div>';
 
         // Roster
         bodyHtml += '<h2>Roll Call</h2><table class="roster"><tr><th>Country</th><th>Delegate</th><th>Final Vote</th></tr>';
@@ -4886,7 +5222,7 @@
           var c = countryById(iso);
           if (!c) return;
           var isAi = uid.indexOf('ai_') === 0;
-          var name = isAi ? 'AI delegate' : (roster[uid] ? roster[uid].name : (isSolo && uid === 'me' ? 'You' : uid));
+          var name = isAi ? (munNoAi(ctx) ? 'Simulated delegate' : 'AI delegate') : (roster[uid] ? roster[uid].name : (isSolo && uid === 'me' ? 'You' : uid));
           var v = finalVotes[iso];
           var voteLabel = v ? (v.vote === 'Y' ? 'Yes' : v.vote === 'N' ? 'No' : 'Abstain') : '—';
           bodyHtml += '<tr><td>' + escapeHtml(c.name) + '</td><td>' + escapeHtml(name) + '</td><td>' + escapeHtml(voteLabel) + '</td></tr>';
@@ -4927,7 +5263,7 @@
           speechSet.forEach(function(s) {
             var c = countryById(s.country);
             var when = s.at ? new Date(s.at).toLocaleTimeString() : '';
-            bodyHtml += '<div class="speech"><div class="speech-head">' + escapeHtml((c ? c.name : s.country)) + (when ? ' · ' + escapeHtml(when) : '') + '</div>';
+            bodyHtml += '<div class="speech"><div class="speech-head">' + escapeHtml((c ? c.name : s.country)) + (s.simulated ? ' (simulated)' : '') + (when ? ' · ' + escapeHtml(when) : '') + '</div>';
             bodyHtml += '<p>' + escapeHtml(s.text || '') + '</p></div>';
           });
         }
@@ -5011,8 +5347,16 @@
           )
         ),
 
+        // Fixed reward line (no-AI solo only)
+        (soloReward === 'awarded' || soloReward === 'already') && h('div', { 'data-mun-solo-reward': 'earned', style: { padding: 10, fontSize: 12, color: '#fef3c7', background: 'rgba(0,0,0,0.18)', borderRadius: 8 } },
+          MUN_SOLO_REWARD_TOKENS + ' 🪙 for finishing this practice session, once per session. The amount is fixed and does not depend on your self-rating.'
+        ),
+        soloReward === 'incomplete' && h('div', { 'data-mun-solo-reward': 'incomplete', style: { padding: 10, fontSize: 12, color: '#fef3c7', background: 'rgba(0,0,0,0.18)', borderRadius: 8 } },
+          'No token this time. A token needs your own speech, a clause you wrote and your vote.'
+        ),
+
         // AI coach feedback (lazy-load via button)
-        !feedback && !fbLoading && h('button', {
+        munAiOk(ctx) && !feedback && !fbLoading && h('button', {
           onClick: generateFeedback,
           style: { width: '100%', padding: '10px 14px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🧠 Get AI coach feedback'),
@@ -5231,6 +5575,11 @@
       if (!isHost && !isSolo) return;
       var iso = assigned[uid];
       if (!iso) return;
+      if (munNoAi(ctx) && uid.indexOf('ai_') === 0) {
+        var seatCountry = countryById(iso);
+        if (seatCountry) commitCaucusSpeech(uid, iso, munTemplateSpeech(seatCountry, agenda, subTopic), [], true, true);
+        return;
+      }
       updateMUN({ caucusSpeakerUid: uid });
       if (uid.indexOf('ai_') === 0) triggerAiSpeech(uid, iso);
     }
@@ -5251,7 +5600,7 @@
         setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[uid]; return n; });
       });
     }
-    function commitCaucusSpeech(uid, iso, text, keyPoints, isAi) {
+    function commitCaucusSpeech(uid, iso, text, keyPoints, isAi, simulated) {
       var country = countryById(iso);
       var speechId = 'cs_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
       var newSpeech = {
@@ -5262,6 +5611,7 @@
         text: (text || '').slice(0, 1000),
         keyPoints: keyPoints || [],
         isAi: !!isAi,
+        simulated: !!simulated,
         at: Date.now()
       };
       var nextSpeeches = Object.assign({}, caucusSpeeches);
@@ -5330,15 +5680,15 @@
         agenda: agenda, committee: committee, recentSpeeches: orderedSpeeches
       }),
 
-      // Backchannel diplomacy panel — private 1:1 notes during caucus
-      h(BackchannelPanel, {
+      // Backchannel diplomacy panel — private 1:1 notes during caucus (simulated seats cannot reply)
+      !munNoAi(ctx) && h(BackchannelPanel, {
         ctx: ctx, modelUn: modelUn, updateMUN: updateMUN,
         isHost: isHost, isSolo: isSolo, sessionState: sessionState
       }),
 
       // Diplomatic consistency badge
       myCountry && h('div', { style: { marginBottom: 12 } },
-        h(ConsistencyBadge, {
+        munAiOk(ctx) && h(ConsistencyBadge, {
           ctx: ctx,
           country: myCountry,
           agenda: agenda,
@@ -5385,7 +5735,7 @@
         currentSpeakerUid.indexOf('ai_') === 0 && aiInFlight[currentSpeakerUid] && h('div', { style: { padding: 8, fontSize: 12, color: '#a855f7', fontStyle: 'italic' } },
           '🤖 Generating focused caucus speech…'
         ),
-        currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+        munAiOk(ctx) && currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
           onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
           style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Generate AI speech')
@@ -5424,7 +5774,7 @@
                 !q.spoken && canRecognize && h('span', { style: { fontSize: 10, color: '#fcd34d' } }, 'Give floor →')
               ),
               h('div', { style: { fontSize: 10, marginTop: 2, color: q.isAi ? '#a855f7' : '#10b981' } },
-                q.isAi ? '🤖 AI delegate' : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
+                q.isAi ? munDelegateLabel(ctx) : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
               )
             );
           })
@@ -5456,6 +5806,25 @@
   // v0.13: includes a TTS read-aloud button when ctx.callTTS is available.
   // Pure UDL accessibility — auditory channel for any speech in the feed.
   // ═══════════════════════════════════════════
+  // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+  function modelUnStudentDeviceVoice(text, onEnd, noAiPractice) {
+    if (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && !noAiPractice)) return false;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false; } catch (e) {}
+    try { if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false; } catch (e) {}
+    var synth = window.speechSynthesis;
+    var phrase = String(text == null ? '' : text).trim();
+    if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+    try {
+      var u = new SpeechSynthesisUtterance(phrase);
+      u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
+      if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+      if (typeof onEnd === 'function') { u.onend = onEnd; u.onerror = onEnd; }
+      synth.cancel();
+      synth.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+
   function SpeechCard(props) {
     var React = window.React;
     var h = React.createElement;
@@ -5470,12 +5839,38 @@
     var ttsState = ttsStateTuple[0];
     var setTtsState = ttsStateTuple[1];
     var audioRef = useRef(null);
+    var noAiVoice = munNoAi(ctx);
+    var canListen = noAiVoice
+      ? (typeof window !== 'undefined' && !!window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined')
+      : typeof ctx.callTTS === 'function';
+    React.useEffect(function() {
+      return function() {
+        if (audioRef.current === 'device-voice') { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      };
+    }, []);
 
     function toggleTTS() {
+      // No-AI practice never touches the cloud voice path.
+      if (noAiVoice) {
+        if (ttsState.playing) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+          audioRef.current = null;
+          setTtsState({ loading: false, playing: false });
+          return;
+        }
+        var started = modelUnStudentDeviceVoice(String(sp.text || '').slice(0, 1500), function() {
+          if (audioRef.current === 'device-voice') audioRef.current = null;
+          setTtsState({ loading: false, playing: false });
+        }, true);
+        if (started) { audioRef.current = 'device-voice'; setTtsState({ loading: false, playing: true }); }
+        else if (typeof ctx.addToast === 'function') ctx.addToast('Read-aloud is off or not available on this device.');
+        return;
+      }
       if (typeof ctx.callTTS !== 'function') return;
       // Stop any in-progress playback
       if (audioRef.current && ttsState.playing) {
-        try { audioRef.current.pause(); audioRef.current.currentTime = 0; } catch (e) {}
+        if (audioRef.current === 'device-voice') { try { window.speechSynthesis.cancel(); } catch (e) {} audioRef.current = null; }
+        else { try { audioRef.current.pause(); audioRef.current.currentTime = 0; } catch (e) {} }
         setTtsState({ loading: false, playing: false });
         return;
       }
@@ -5484,6 +5879,11 @@
       var text = sp.text || '';
       Promise.resolve(ctx.callTTS(text.slice(0, 1500), 'Kore', 1.0)).then(function(audioUrl) {
         if (!audioUrl) {
+          var spoken = modelUnStudentDeviceVoice(text.slice(0, 1500), function() {
+            if (audioRef.current === 'device-voice') audioRef.current = null;
+            setTtsState({ loading: false, playing: false });
+          });
+          if (spoken) { audioRef.current = 'device-voice'; setTtsState({ loading: false, playing: true }); return; }
           setTtsState({ loading: false, playing: false });
           if (typeof ctx.addToast === 'function') ctx.addToast('TTS unavailable for this speech.');
           return;
@@ -5514,11 +5914,11 @@
         h('div', { style: { flex: 1 } },
           h('div', { style: { fontWeight: 700, fontSize: 13 } }, sp.country),
           h('div', { style: { fontSize: 10, color: sp.isAi ? '#a855f7' : '#10b981', marginTop: 2 } },
-            sp.isAi ? '🤖 AI delegate' : '👤 Delegate',
+            sp.simulated ? '🗒️ Simulated delegate' : (sp.isAi ? '🤖 AI delegate' : '👤 Delegate'),
             isMine && ' · your speech'
           )
         ),
-        typeof ctx.callTTS === 'function' && h('button', {
+        canListen && h('button', {
           onClick: toggleTTS,
           'aria-label': ttsState.playing ? 'Stop read-aloud' : 'Read this speech aloud',
           title: ttsState.playing ? 'Stop' : 'Read aloud',
@@ -5761,7 +6161,7 @@
       // Kick off AI delegate responses (one per AI seat) — fire and forget
       var assigned = modelUn.assignedCountries || {};
       Object.keys(assigned).forEach(function(uid) {
-        if (uid.indexOf('ai_') !== 0) return;
+        if (uid.indexOf('ai_') !== 0 || munNoAi(ctx)) return;
         var country = countryById(assigned[uid]);
         if (!country) return;
         // Stagger AI responses to feel organic (random 2-12s)
@@ -5827,7 +6227,14 @@
 
     // No active news — host sees a small "📰 Breaking News" trigger button
     if (!news) {
-      if (!isHost) return null;
+      if (isHost && munNoAi(ctx) && munPracticeScenario(agenda)) {
+        return h('button', {
+          onClick: function() { updateMUN({ news: munPracticeScenario(agenda) }); },
+          'data-mun-add-scenario': 'true',
+          style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', border: '1px dashed #dc2626', borderRadius: 6, cursor: 'pointer', marginBottom: 10 }
+        }, '📰 Add a fictional practice scenario');
+      }
+      if (!isHost || !munAiOk(ctx)) return null;
       return h('button', {
         onClick: generateNews,
         disabled: loading,
@@ -5882,7 +6289,7 @@
           h('span', { style: { fontSize: 24 } }, '📰'),
           h('div', { style: { flex: 1 } },
             h('div', { style: { fontSize: 9, color: '#fca5a5', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
-              'Breaking · UN News Desk'
+              news.simulated ? 'Fictional practice scenario · not a real event' : 'Breaking · UN News Desk'
             ),
             h('div', { style: { fontSize: 15, fontWeight: 900, marginTop: 2, lineHeight: 1.3 } }, news.headline),
             news.imageUrl && h('img', {
@@ -6029,6 +6436,9 @@
           crisisActive && h('div', { id: 'mun_crisis_response_help', style: { fontSize: 11, color: '#fef9c3', marginTop: 2, fontStyle: 'italic' } },
             'Every delegation has 90 seconds to react. Diplomatic but urgent. 25-50 words.'
           ),
+          munNoAi(ctx) && h('div', { style: { fontSize: 11, color: '#fef9c3', marginTop: 2 } },
+            'Simulated delegates stay silent here: this tool has no stored position on a fictional event.'
+          ),
           crisisClosed && h('div', { style: { fontSize: 11, color: '#fef9c3', marginTop: 2, fontStyle: 'italic' } },
             'Window closed. The Chair may now incorporate responses into the debate or move on.'
           )
@@ -6065,7 +6475,7 @@
               borderRadius: 6, cursor: 'pointer'
             }
           }, 'Add 60 seconds'),
-          isHost && crisisClosed && responseCount > 0 && !gradeState.grades && h('button', {
+          munAiOk(ctx) && isHost && crisisClosed && responseCount > 0 && !gradeState.grades && h('button', {
             type: 'button',
             className: 'mun-crisis-control',
             onClick: gradeResponses,
@@ -6559,7 +6969,7 @@
       progress: function() { var s = window.__alloHavenModelUNStats; return s.firstClauseProposed ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
     { id: 'first_vote',           label: 'First Vote',            icon: '🗳', desc: 'Cast Yes / No / Abstain on a final resolution.',
       progress: function() { var s = window.__alloHavenModelUNStats; return s.voteCast ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
-    { id: 'ai_scaffold',          label: 'UDL Scaffold User',     icon: '✨', desc: 'Use the AI speech starter at least once. UDL multiple-means-of-action.',
+    { id: 'ai_scaffold', aiOnly: true, label: 'UDL Scaffold User',     icon: '✨', desc: 'Use the AI speech starter at least once. UDL multiple-means-of-action.',
       progress: function() { var s = window.__alloHavenModelUNStats; return s.aiStarterUsed ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
     { id: 'resolution_passed',    label: 'Resolution Adopted',    icon: '✅', desc: 'Be present in a chamber that passes a resolution.',
       progress: function() { var n = window.__alloHavenModelUNStats.resolutionsPassed || 0; return { done: n >= 1, pct: Math.min(100, n * 100), line: n + ' passed' }; } },
@@ -6571,7 +6981,7 @@
       progress: function() { var n = window.__alloHavenModelUNStats.positionPapersSubmitted || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned' : 'Not yet' }; } },
     { id: 'crisis_responder',     label: 'Crisis Responder',      icon: '🚨', desc: 'React to a breaking-news crisis within the 90-second window.',
       progress: function() { var n = window.__alloHavenModelUNStats.crisisResponsesGiven || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n : 'Not yet' }; } },
-    { id: 'consistency_master',   label: 'Consistency Master',    icon: '📐', desc: 'Reach 90+ on the diplomatic-consistency AI judge.',
+    { id: 'consistency_master', aiOnly: true, label: 'Consistency Master',    icon: '📐', desc: 'Reach 90+ on the diplomatic-consistency AI judge.',
       progress: function() { var n = window.__alloHavenModelUNStats.bestConsistencyScore || 0; return { done: n >= 90, pct: Math.min(100, (n / 90) * 100), line: n + ' / 90' }; } },
     { id: 'backchannel_diplomat', label: 'Backchannel Diplomat',  icon: '📬', desc: 'Pass a private 1:1 note during a moderated caucus.',
       progress: function() { var n = window.__alloHavenModelUNStats.backchannelMessagesSent || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n + ' sent' : 'Not yet' }; } }
@@ -6584,7 +6994,7 @@
     var rows = MUN_ACHIEVEMENTS.map(function(a) {
       var p = (function() { try { return a.progress(); } catch (e) { return { done: false, pct: 0, line: '—' }; } })();
       return Object.assign({}, a, { p: p });
-    });
+    }).filter(function(r) { return props.aiOk !== false || !r.aiOnly || r.p.done; });
     var earned = rows.filter(function(r) { return r.p.done; }).length;
 
     return h('div', {
@@ -6655,6 +7065,7 @@
     var committee = props.committee;
     var agenda = props.agenda;
 
+    var selfRated = munNoAi(ctx);
     var assigned = modelUn.assignedCountries || {};
     var papers = modelUn.positionPapers || {};
     var speeches = modelUn.speeches || {};
@@ -6678,6 +7089,14 @@
       var iso = assigned[uid];
       var country = countryById(iso);
       if (!country) return;
+      if (!munAiOk(ctx)) {
+        // No AI: seed an empty rubric so the teacher scores with the 1-4 chips.
+        var blank = {};
+        RUBRIC_DOMAINS.forEach(function(d) { blank[d.key] = { score: 0, rationale: '' }; });
+        var seeded = Object.assign({}, grades); seeded[uid] = blank;
+        setGrades(seeded);
+        return;
+      }
       var nextLoad = Object.assign({}, loading); nextLoad[uid] = true;
       setLoading(nextLoad);
       var ownSpeeches = Object.keys(speeches).map(function(id) { return speeches[id]; }).filter(function(s) { return s.uid === uid; });
@@ -6728,12 +7147,12 @@
     function exportCsv() {
       var roster = (sessionState && sessionState.roster) || {};
       var lines = [];
-      lines.push(['Delegate', 'Country', 'Preparation', 'Speech Quality', 'Diplomatic Consistency', 'Coalition Building', 'Resolution Contribution', 'Overall'].join(','));
+      lines.push(['Delegate', 'Country', 'Preparation', 'Speech Quality', 'Diplomatic Consistency', 'Coalition Building', 'Resolution Contribution', 'Overall'].concat(selfRated ? ['Rating type'] : []).join(','));
       humanUids.forEach(function(uid) {
         var iso = assigned[uid]; var country = countryById(iso); if (!country) return;
         var name = roster[uid] ? roster[uid].name : (uid === 'me' ? 'You' : uid);
         var r = grades[uid] || {};
-        var cell = function(d) { return r[d] ? r[d].score : ''; };
+        var cell = function(d) { return r[d] && r[d].score ? r[d].score : ''; };
         lines.push([
           '"' + String(name).replace(/"/g, '""') + '"',
           '"' + country.name.replace(/"/g, '""') + '"',
@@ -6743,7 +7162,7 @@
           cell('coalitionBuilding'),
           cell('resolutionContribution'),
           cell('overall')
-        ].join(','));
+        ].concat(selfRated ? ['Self-rated'] : []).join(','));
       });
       var csv = lines.join('\n');
       try {
@@ -6751,7 +7170,7 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = 'model-un-grades-' + (committee ? committee.id : 'committee') + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.download = (selfRated ? 'model-un-self-rating-' : 'model-un-grades-') + (committee ? committee.id : 'committee') + '-' + new Date().toISOString().slice(0, 10) + '.csv';
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
       } catch (e) {
@@ -6771,13 +7190,15 @@
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
         h('span', { style: { fontSize: 22 } }, '📋'),
         h('div', { style: { flex: 1 } },
-          h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'Teacher Rubric Grading'),
+          h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, selfRated ? 'Self-Rated Rubric' : 'Teacher Rubric Grading'),
           h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 2 } },
-            humanUids.length + ' human delegate' + (humanUids.length !== 1 ? 's' : '') + ' · 5 domains · 4-point scale · scores are editable'
+            selfRated
+              ? 'Your own ratings · 5 domains · 4-point scale · not a grade'
+              : humanUids.length + ' human delegate' + (humanUids.length !== 1 ? 's' : '') + ' · 5 domains · 4-point scale · scores are editable'
           )
         ),
         h('div', { style: { display: 'flex', gap: 6 } },
-          h('button', {
+          munAiOk(ctx) && h('button', {
             onClick: gradeAll,
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '🤖 AI-grade all'),
@@ -6809,7 +7230,7 @@
               !r && !isLoading && h('button', {
                 onClick: function() { gradeOne(uid); },
                 style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
-              }, '🤖 Grade'),
+              }, munAiOk(ctx) ? '🤖 Grade' : (selfRated ? '✍️ Rate myself' : '✍️ Score')),
               isLoading && h('span', { style: { fontSize: 11, color: '#c4b5fd', fontStyle: 'italic' } }, '⏳ Grading…'),
               r && r.overall && h('div', {
                 style: {
@@ -6857,7 +7278,9 @@
       ),
 
       h('p', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', marginTop: 10, marginBottom: 0 } },
-        '🎯 Scores: 1 Beginning · 2 Developing · 3 Proficient · 4 Advanced. AI suggestions are starting points — your professional judgment is final. Click any number to override.'
+        selfRated
+          ? '🎯 1 Beginning · 2 Developing · 3 Proficient · 4 Advanced. You chose these ratings yourself. They are self-rated, not a grade, and they do not change any reward.'
+          : '🎯 Scores: 1 Beginning · 2 Developing · 3 Proficient · 4 Advanced. AI suggestions are starting points — your professional judgment is final. Click any number to override.'
       )
     );
   }
@@ -7065,7 +7488,7 @@
   // delegate. ~20-50 words. Returns { text } or null.
   // ═══════════════════════════════════════════
   function aiGenerateBackchannelReply(ctx, country, agenda, incomingText, senderCountry) {
-    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) return Promise.resolve(null);
+    if (!ctx || !munAiOk(ctx) || !country || !agenda) return Promise.resolve(null);
     var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
     var prompt = [
       'You are the delegate from ' + country.name + ' in a Model UN moderated caucus.',

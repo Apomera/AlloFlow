@@ -46,7 +46,7 @@ beforeEach(() => {
   loadTool(TOOL, 'coralReef');
   X = window.__RR_TEST_EXPORTS__.coralReef;
   TX = X.speciesText((k, f) => f);
-  GN = ['Fish', 'Sea turtles', 'Invertebrates and sponges', 'Corals', 'Restoration structures'];
+  GN = ['Fish', 'Sea turtles and sea snakes', 'Invertebrates and sponges', 'Corals', 'Restoration structures'];
 });
 
 afterEach(async () => {

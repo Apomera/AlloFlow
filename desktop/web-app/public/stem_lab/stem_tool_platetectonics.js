@@ -1,4 +1,13 @@
 // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-platetectonics-hc-extra-css).
+  function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+(function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-platetectonics-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-platetectonics-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"plateTectonics\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -5452,7 +5461,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var recorded = ptDepthTrial(sRef.current);
       if (!recorded || typeof props.onRecordDepths !== 'function') return;
       props.onRecordDepths(recorded);
-      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.depth_record_saved', 'Recorded {type}: {n} earthquakes, deepest {d} kilometres.').replace('{type}', BOUNDARY[recorded.mode].name).replace('{n}', recorded.events).replace('{d}', recorded.maxKm));
+      if (typeof announceToSR === 'function') announceToSR(__alloOneWord(__alloT('stem.platetectonics.depth_record_saved', 'Recorded {type}: {n} earthquakes, deepest {d} kilometres.').replace('{type}', BOUNDARY[recorded.mode].name).replace('{n}', recorded.events).replace('{d}', recorded.maxKm)));
     }
     // Re-bind draw each render so the running rAF loop picks up the CURRENT theme
     // (the [] effect otherwise calls the first render's draw closure forever).
@@ -6344,7 +6353,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   // the student moves the rate slider part-way through a run.
   var yrs = s.years || 0;
   var timeText = yrs < 1e6
-    ? __alloT('stem.platetectonics.sim_time_years', '{n} years').replace('{n}', Math.round(yrs).toLocaleString())
+    ? __alloOneWord(__alloT('stem.platetectonics.sim_time_years', '{n} years').replace('{n}', Math.round(yrs).toLocaleString()))
     : __alloT('stem.platetectonics.sim_time_myr', '{n} million years').replace('{n}', (yrs / 1e6).toFixed(1));
   var movementLabel = s.mode === 'convergent'
     ? __alloT('stem.platetectonics.sim_readout_rise', 'Mountain range rise')
@@ -6420,8 +6429,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   var deepCount = visibleFoci.filter(function(q) { return (q.depthKm || 0) >= 70; }).length;
   var tectGlAlt = __alloT('stem.platetectonics.sim_alt_intro', 'Rotatable 3D block of a {type} boundary. ').replace('{type}', info.name.toLowerCase())
     + (s.mode === 'convergent'
-        ? (__alloT('stem.platetectonics.sim_alt_convergent_internal', 'Oceanic plate descending beneath continental plate at about {dip} degrees. {deep} of {total} shown earthquakes are 70 km or deeper, within the sinking slab.')
-             .replace('{dip}', TECT_DIP_DEG).replace('{deep}', deepCount).replace('{total}', visibleFoci.length))
+        ? (__alloOneWord(__alloT('stem.platetectonics.sim_alt_convergent_internal', 'Oceanic plate descending beneath continental plate at about {dip} degrees. {deep} of {total} shown earthquakes are 70 km or deeper, within the sinking slab.')
+             .replace('{dip}', TECT_DIP_DEG).replace('{deep}', deepCount).replace('{total}', visibleFoci.length)))
         : s.mode === 'divergent'
           ? __alloT('stem.platetectonics.sim_alt_divergent', 'Two plates separating, with new crust filling the ridge between them. Earthquakes are shallow.')
           : __alloT('stem.platetectonics.sim_alt_transform', 'Two plates sliding past each other along the fault, offset along strike. Earthquakes are shallow.'));
@@ -7025,7 +7034,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               var current = sRef.current;
               update({ rate: newRate, depthRunRate: current.years === 0 ? newRate : current.depthRunRate,
                 depthRunRateConstant: current.years === 0 ? true : current.depthRunRateConstant && newRate === current.rate });
-              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.sim_sr_rate_changed', 'Plate rate changed to {n} centimeters per year').replace('{n}', newRate));
+              if (typeof announceToSR === 'function') announceToSR(__alloOneWord(__alloT('stem.platetectonics.sim_sr_rate_changed', 'Plate rate changed to {n} centimeters per year').replace('{n}', newRate)));
             },
             className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
             style: { width: '100%', minHeight: 44, height: 44, padding: 0, border: 'none', background: 'transparent', accentColor: '#ea580c' }
@@ -7213,7 +7222,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               stepRef.current(Math.round(intervals));
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.bc_advanced', 'Paused trial advanced to {n} million model years. Read its depth sample and record deliberately.').replace('{n}', (savedPlan.years / 1e6).toLocaleString()));
             } }, __alloT('stem.platetectonics.bc_advance_button', 'Advance to the shared time')),
-          liveAtTarget && currentTrial && h('p', { 'data-pt-boundary-current-sample': 'true', className: 'leading-relaxed mt-2' }, __alloT('stem.platetectonics.bc_current_sample', 'Sample to record: {type}, {n} events, {min}–{max} km depth.').replace('{type}', BOUNDARY[s.mode].name).replace('{n}', currentTrial.events).replace('{min}', currentTrial.minKm).replace('{max}', currentTrial.maxKm)),
+          liveAtTarget && currentTrial && h('p', { 'data-pt-boundary-current-sample': 'true', className: 'leading-relaxed mt-2' }, __alloOneWord(__alloT('stem.platetectonics.bc_current_sample', 'Sample to record: {type}, {n} events, {min}–{max} km depth.').replace('{type}', BOUNDARY[s.mode].name).replace('{n}', currentTrial.events).replace('{min}', currentTrial.minKm).replace('{max}', currentTrial.maxKm))),
           liveAtTarget && currentTrial && bandCounts(currentTrial, 'live'),
           emptyAtTarget && h('div', { 'data-pt-boundary-empty-sample': s.mode, className: 'mt-3 rounded-lg border p-3 leading-relaxed ' + neutral },
             h('h5', { className: 'font-bold' }, __alloT('stem.platetectonics.bc_empty_title', 'Empty sample at the shared time')),
@@ -7314,7 +7323,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             ? __alloT('stem.platetectonics.depth_preview_values', '{type}: earthquake count {n}; depth {min}–{max} km.').replace('{type}', BOUNDARY[s.mode].name).replace('{n}', trial.events).replace('{min}', trial.minKm).replace('{max}', trial.maxKm)
             : s.qlogRestored ? __alloT('stem.platetectonics.depth_record_restored_wait', 'The restored slab points belong to your saved angle check. Press Play or advance one interval to start a fresh depth sample for this run.')
               : __alloT('stem.platetectonics.depth_record_wait_steps', 'Press Play or advance paused intervals until earthquakes appear, then record a sample.')),
-          trial && (s.quakeTotal || 0) > trial.events && h('p', { 'data-pt-depth-window': 'true', className: 'mt-1' }, __alloT('stem.platetectonics.depth_preview_window', 'The log retains the latest {n} of {total} events from this run. Older events are outside this sample.').replace('{n}', trial.events).replace('{total}', s.quakeTotal)),
+          trial && (s.quakeTotal || 0) > trial.events && h('p', { 'data-pt-depth-window': 'true', className: 'mt-1' }, __alloOneWord(__alloT('stem.platetectonics.depth_preview_window', 'The log retains the latest {n} of {total} events from this run. Older events are outside this sample.').replace('{n}', trial.events).replace('{total}', s.quakeTotal))),
           currentSaved && h('p', { 'data-pt-depth-preview-saved': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.depth_preview_saved', 'Saved {type}: earthquake count {n}; depth {min}–{max} km. Recording again replaces only this boundary’s saved sample.').replace('{type}', BOUNDARY[s.mode].name).replace('{n}', currentSaved.events).replace('{min}', currentSaved.minKm).replace('{max}', currentSaved.maxKm))
         ),
         h('div', { className: 'flex flex-wrap gap-2 my-3' },
@@ -7574,7 +7583,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                     h('button', { type: 'button', 'data-pt-quake-project': 'true', 'aria-describedby': 'pt-ql-project-help', 'aria-controls': 'pt-quake-model-frame', onClick: showQuakeProjection, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg border font-semibold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-cyan-500 text-cyan-100' : 'bg-white border-cyan-700 text-cyan-950') }, __alloT('stem.platetectonics.ql_projection_show', 'Show this event on the 3D cut face')))));
 
       var quakeCoordinates = s.qlOpen && h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
-            h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length)),
+            h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloOneWord(__alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length))),
             h('p', { 'data-pt-slab-coordinates-note': captured ? 'captured' : 'live', className: 'mt-2 mb-3' }, captured
               ? __alloT('stem.platetectonics.ql_coordinates_captured', 'These coordinates belong to the checked sample shown in the plot. They stay fixed while the live run continues. Revise your angle to use the latest observations.')
               : __alloT('stem.platetectonics.ql_coordinates_live', 'These coordinates belong to the latest observations shown in the plot. The list changes as new model earthquakes enter the log.')),
@@ -7600,7 +7609,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               h('p', { id: 'pt-ql-angle-help', className: 'text-sm leading-relaxed mt-1' }, __alloT('stem.platetectonics.ql_angle_equal_help', 'Angle is measured down from horizontal. Both axes use the same kilometre scale; compare several events and your dashed estimate before checking the data fit.')),
               h('div', { className: 'flex flex-wrap items-center gap-2 my-2' },
                 h('input', { id: 'pt-ql-dip', type: 'range', min: 5, max: 85, step: 1, value: s.dipGuess, disabled: s.dipLocked, className: 'flex-1 min-w-0 min-h-11', style: { accentColor: '#d97706' }, 'aria-describedby': 'pt-ql-angle-help',
-                  'aria-valuetext': __alloT('stem.platetectonics.ql_angle_vt', '{a} degrees').replace('{a}', s.dipGuess),
+                  'aria-valuetext': __alloOneWord(__alloT('stem.platetectonics.ql_angle_vt', '{a} degrees').replace('{a}', s.dipGuess)),
                   onChange: function (e) { var angle = parseInt(e.target.value, 10); setDipAngleDraft(String(angle)); update({ dipGuess: angle }); } }),
                 h('label', { className: 'flex items-center gap-1 text-sm' },
                   h('span', { className: 'sr-only' }, __alloT('stem.platetectonics.ql_exact_angle', 'Exact slab angle in degrees')),
@@ -8904,7 +8913,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         h('p', { id: 'pt-hl-rate-help', className: 'text-sm mt-1 leading-relaxed' }, __alloT('stem.platetectonics.hl_rate_help', 'Use the slider or type 1–20 cm per year. Press Enter or leave the number field to apply it. Compare a younger and an older volcano; a useful overall line need not pass through every dot.')),
         h('div', { className: 'flex flex-wrap items-center gap-3 my-2' },
         h('input', { id: 'pt-hl-rate', ref: rateSliderRef, type: 'range', min: 10, max: 200, step: 1, value: Math.round(rate), disabled: committed, 'aria-describedby': 'pt-hl-rate-help',
-          'aria-valuetext': __alloT('stem.platetectonics.hl_rate_vt', '{k} kilometres per million years, {c} centimetres per year').replace('{k}', Math.round(rate)).replace('{c}', cmYr(rate)),
+          'aria-valuetext': __alloOneWord(__alloT('stem.platetectonics.hl_rate_vt', '{k} kilometres per million years, {c} centimetres per year').replace('{k}', Math.round(rate)).replace('{c}', cmYr(rate))),
           onChange: function (e) { changeRate(parseInt(e.target.value, 10)); }, className: 'flex-1 min-w-0 min-h-10', style: { accentColor: '#d97706' } }),
         h('label', { className: 'flex items-center gap-2 text-sm' },
           h('span', { className: 'sr-only' }, __alloT('stem.platetectonics.hl_exact_rate', 'Exact line speed in centimetres per year')),
@@ -9240,7 +9249,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     };
     var kids = [];
     kids.push(h('desc', { key: 'description', id: 'pt-fit-map-description' },
-      __alloT('stem.platetectonics.fp_map_aria', 'Map of South America and Africa. South America has moved {d} km from where it is today and turned {r} degrees. Average gap between the facing coasts: {g} km.').replace('{d}', Math.round(Math.hypot(s.t.dx, s.t.dy)).toLocaleString()).replace('{r}', Math.round(s.t.rot)).replace('{g}', gKm.toLocaleString())));
+      __alloOneWord(__alloT('stem.platetectonics.fp_map_aria', 'Map of South America and Africa. South America has moved {d} km from where it is today and turned {r} degrees. Average gap between the facing coasts: {g} km.').replace('{d}', Math.round(Math.hypot(s.t.dx, s.t.dy)).toLocaleString()).replace('{r}', Math.round(s.t.rot)).replace('{g}', gKm.toLocaleString()))));
     kids.push(h('defs', { key: 'defs' },
       h('pattern', { id: 'pt-fit-glosso', patternUnits: 'userSpaceOnUse', width: 200, height: 200, patternTransform: 'rotate(45)' },
         h('rect', { x: 0, y: 0, width: 70, height: 200, fill: LAYER_STYLE.glosso.swatch })),
@@ -9355,8 +9364,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'e', 'aria-label': __alloT('stem.platetectonics.fp_move_e_aria', 'Move South America east {k} km').replace('{k}', step), onClick: function () { moveBy(step, 0, 0); } }, __alloT('stem.platetectonics.fp_move_e', 'East →')),
           h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'n', 'aria-label': __alloT('stem.platetectonics.fp_move_n_aria', 'Move South America north {k} km').replace('{k}', step), onClick: function () { moveBy(0, step, 0); } }, __alloT('stem.platetectonics.fp_move_n', '↑ North')),
           h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 's', 'aria-label': __alloT('stem.platetectonics.fp_move_s_aria', 'Move South America south {k} km').replace('{k}', step), onClick: function () { moveBy(0, -step, 0); } }, __alloT('stem.platetectonics.fp_move_s', '↓ South')),
-          h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'ccw', 'aria-label': __alloT('stem.platetectonics.fp_turn_ccw_aria', 'Turn South America {k} degrees anticlockwise').replace('{k}', turn), onClick: function () { moveBy(0, 0, turn); } }, __alloT('stem.platetectonics.fp_turn_ccw', '↺ Turn')),
-          h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'cw', 'aria-label': __alloT('stem.platetectonics.fp_turn_cw_aria', 'Turn South America {k} degrees clockwise').replace('{k}', turn), onClick: function () { moveBy(0, 0, -turn); } }, __alloT('stem.platetectonics.fp_turn_cw', 'Turn ↻')),
+          h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'ccw', 'aria-label': __alloOneWord(__alloT('stem.platetectonics.fp_turn_ccw_aria', 'Turn South America {k} degrees anticlockwise').replace('{k}', turn)), onClick: function () { moveBy(0, 0, turn); } }, __alloT('stem.platetectonics.fp_turn_ccw', '↺ Turn')),
+          h('button', { type: 'button', className: btnCls, 'data-pt-fit-move': 'cw', 'aria-label': __alloOneWord(__alloT('stem.platetectonics.fp_turn_cw_aria', 'Turn South America {k} degrees clockwise').replace('{k}', turn)), onClick: function () { moveBy(0, 0, -turn); } }, __alloT('stem.platetectonics.fp_turn_cw', 'Turn ↻')),
           h('label', { className: 'flex items-center gap-1 text-[12px] font-bold px-1 min-h-10' },
             h('input', { type: 'checkbox', checked: s.fine, 'data-pt-fit-fine': 'true', onChange: function () { var fine = !s.fine; setS(function (prev) { return Object.assign({}, prev, { fine: fine }); }); if (typeof onRecord === 'function') onRecord({ fine: fine }); } }),
             __alloT('stem.platetectonics.fp_fine', 'Small steps')),
@@ -9538,7 +9547,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     ['convergent', 'divergent', 'transform'].forEach(function (type) {
       var depth = context.earthquakeDepthTrials[type], trial = context.stressTrialsByType[type];
       if (depth) {
-        var line = t('stem.platetectonics.ex_saved_depth_value', '{type} depth sample: {n} events, {min}–{max} km.').replace('{type}', names[type]).replace('{n}', depth.events).replace('{min}', depth.minKm).replace('{max}', depth.maxKm);
+        var line = __alloOneWord(t('stem.platetectonics.ex_saved_depth_value', '{type} depth sample: {n} events, {min}–{max} km.').replace('{type}', names[type]).replace('{n}', depth.events).replace('{min}', depth.minKm).replace('{max}', depth.maxKm));
         line += ' ' + t('stem.platetectonics.rpt_depth_bands', '{shallow} shallow, {intermediate} intermediate and {deep} deep events.').replace('{shallow}', depth.shallow).replace('{intermediate}', depth.intermediate).replace('{deep}', depth.deep);
         if (depth.years != null && depth.rate != null) line += ' ' + t('stem.platetectonics.rpt_depth_settings', 'Recorded at {years} model years; rate setting {rate} cm per year.').replace('{years}', depth.years).replace('{rate}', depth.rate);
         rows.push(line);
@@ -9594,7 +9603,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         h('h5', { className: 'font-bold' }, t('stem.platetectonics.rpt_comparison', 'Saved boundary comparison')),
         h('p', { className: 'leading-relaxed' }, t('stem.platetectonics.rpt_comparison_settings', 'All three samples: {years} model years at a constant rate of {rate} cm per year.').replace('{years}', comparison.years).replace('{rate}', comparison.rate)),
         ['prediction', 'explanation'].map(function (part) { return h('p', { key: part, className: 'leading-relaxed', style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, h('strong', null, part === 'prediction' ? t('stem.platetectonics.rpt_prediction', 'Prediction: ') : t('stem.platetectonics.rpt_explanation', 'Explanation: ')), comparison[part]); }),
-        h('ul', { className: 'list-disc pl-5 space-y-2 leading-relaxed' }, ['convergent', 'divergent', 'transform'].map(function (type) { var row = comparison.records[type]; return h('li', { key: type }, t('stem.platetectonics.ex_saved_depth_value', '{type} depth sample: {n} events, {min}–{max} km.').replace('{type}', t('stem.platetectonics.b_' + type, type.charAt(0).toUpperCase() + type.slice(1))).replace('{n}', row.events).replace('{min}', row.minKm).replace('{max}', row.maxKm) + ' ' + t('stem.platetectonics.rpt_depth_bands', '{shallow} shallow, {intermediate} intermediate and {deep} deep events.').replace('{shallow}', row.shallow).replace('{intermediate}', row.intermediate).replace('{deep}', row.deep)); })),
+        h('ul', { className: 'list-disc pl-5 space-y-2 leading-relaxed' }, ['convergent', 'divergent', 'transform'].map(function (type) { var row = comparison.records[type]; return h('li', { key: type }, __alloOneWord(t('stem.platetectonics.ex_saved_depth_value', '{type} depth sample: {n} events, {min}–{max} km.').replace('{type}', t('stem.platetectonics.b_' + type, type.charAt(0).toUpperCase() + type.slice(1))).replace('{n}', row.events).replace('{min}', row.minKm).replace('{max}', row.maxKm)) + ' ' + t('stem.platetectonics.rpt_depth_bands', '{shallow} shallow, {intermediate} intermediate and {deep} deep events.').replace('{shallow}', row.shallow).replace('{intermediate}', row.intermediate).replace('{deep}', row.deep)); })),
         comparison.transferChoice && comparison.transferReason ? h('div', { className: 'space-y-2', 'data-pt-saved-comparison-transfer': 'true' },
           h('h5', { className: 'font-bold' }, t('stem.platetectonics.rpt_transfer', 'Application response to the unfamiliar diagram')),
           h('p', { className: 'leading-relaxed' }, t('stem.platetectonics.bc_transfer_diagram', 'Unfamiliar cross-section: surface trench at the left. Three earthquake foci farther inland are at depths of 20, 160 and 380 kilometres. Depth increases downward.')),
@@ -9884,7 +9893,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             'aria-describedby': 'pt-cer-hint-' + k + ' pt-cer-count-' + k,
             onChange: function (e) { var p = {}; p[k] = e.target.value; upd(p); } }),
           h('p', { id: 'pt-cer-count-' + k, 'data-pt-cer-count': k, className: 'text-sm mt-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-            __alloT('stem.platetectonics.ex_word_count', '{count} words · minimum {min}').replace('{count}', words(s[k])).replace('{min}', k === 'claim' ? 5 : 8)));
+            __alloOneWord(__alloT('stem.platetectonics.ex_word_count', '{count} words · minimum {min}').replace('{count}', words(s[k])).replace('{min}', k === 'claim' ? 5 : 8))));
       })),
       h('div', { className: card, 'data-pt-cer-review': 'true' },
         h('h4', { className: 'text-sm font-black mb-2' }, __alloT('stem.platetectonics.ex_review_stage', '3. Review and save')),
@@ -10030,7 +10039,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             ? __alloT('stem.platetectonics.tg_hotspot_retained_ready', 'A completed rate within the activity’s 15% tolerance and the matching northwest direction are retained as evidence.')
             : __alloT('stem.platetectonics.tg_hotspot_review', 'Review both the rate fit and the young-to-old island pattern before using this as evidence.'))]),
         card('stress', __alloT('stem.platetectonics.tg_stress_title', 'Boundary Stress inquiry'), [
-          para('coverage', __alloT('stem.platetectonics.tg_stress_coverage_plain', 'Boundary types recorded: {n} of 3. Explanation: {chars} characters; minimum 40 characters.').replace('{n}', stressTypes).replace('{chars}', stressChars)),
+          para('coverage', __alloOneWord(__alloT('stem.platetectonics.tg_stress_coverage_plain', 'Boundary types recorded: {n} of 3. Explanation: {chars} characters; minimum 40 characters.').replace('{n}', stressTypes).replace('{chars}', stressChars))),
           measuredStress.map(function(row) { return para(row.bt, __alloT('stem.platetectonics.tg_stress_measurement', '{type}: stress {force}%, friction {friction}%; {outcome}.').replace('{type}', stressNames[row.bt]).replace('{force}', row.f).replace('{friction}', row.fr).replace('{outcome}', stressResults[row.st])); }),
           measuredStress.length ? h('p', { key: 'controls', className: 'text-[13px] leading-relaxed', 'data-pt-teacher-stress-matched': String(matchedStress) }, matchedStress
             ? __alloT('stem.platetectonics.tg_stress_matched', 'Stress and friction were held constant across all three types. Ask how changing the boundary type affected the model outcome.')
@@ -10067,7 +10076,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             : __alloT('stem.platetectonics.tg_ev_quiz_none', 'Quiz: no completed attempt yet.')),
           bestQuiz && (!quizResult || bestQuiz.score !== quizResult.score || bestQuiz.total !== quizResult.total || bestQuiz.band !== quizResult.band)
             ? para('best', __alloT('stem.platetectonics.tg_quiz_best', 'Stored best completed quiz: {s} of {total} (grades {band}).').replace('{s}', bestQuiz.score).replace('{total}', bestQuiz.total).replace('{band}', bestQuiz.band)) : null,
-          quizInProgress ? para('progress', __alloT('stem.platetectonics.tg_quiz_progress', 'Current attempt: {n} of {total} responses recorded (grades {band}); it is not complete.').replace('{n}', Math.min(quizTotal, d.quizIdx + (d.quizAnswer ? 1 : 0))).replace('{total}', quizTotal).replace('{band}', d.quizBand)) : null]),
+          quizInProgress ? para('progress', __alloOneWord(__alloT('stem.platetectonics.tg_quiz_progress', 'Current attempt: {n} of {total} responses recorded (grades {band}); it is not complete.').replace('{n}', Math.min(quizTotal, d.quizIdx + (d.quizAnswer ? 1 : 0))).replace('{total}', quizTotal).replace('{band}', d.quizBand))) : null]),
         card('explanation', __alloT('stem.platetectonics.tg_cer_title', 'Claim, evidence and reasoning'), [
           h('p', { key: 'status', className: 'text-[13px] font-semibold', 'data-pt-teacher-cer-status': submitted ? (changedDraft ? 'submitted-with-draft' : 'submitted') : hasDraft ? 'draft' : 'not-submitted' }, submitted
             ? changedDraft ? __alloT('stem.platetectonics.tg_cer_revision', 'A complete explanation is submitted; the current draft has changes that have not been submitted.') : __alloT('stem.platetectonics.tg_cer_submitted', 'A claim, evidence and reasoning have been submitted for review.')
@@ -10162,7 +10171,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so the AI tectonics tutor hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -13684,7 +13698,7 @@ var d = labToolData.plateTectonics || {};
           };
           var ptSceneText = (function () {
             var order = PLATES.map(function (pl) { return pl.name + ' (' + ptTypeT(pl.type) + ')'; }).join(__alloT('stem.platetectonics.scene_then', ', then '));
-            var lead = __alloT('stem.platetectonics.scene_lead', 'Left to right the model holds {n} plates: {order}. ').replace('{n}', PLATES.length).replace('{order}', order)
+            var lead = __alloOneWord(__alloT('stem.platetectonics.scene_lead', 'Left to right the model holds {n} plates: {order}. ').replace('{n}', PLATES.length).replace('{order}', order))
               + __alloT('stem.platetectonics.scene_depths', 'Depths are drawn to scale from sea level down to 400 kilometres; below that the mantle and core are squeezed to fit behind a marked scale break. ');
             var drift = ptDrift
               ? __alloT('stem.platetectonics.scene_drift_on', 'Drift is on, so the plates are moving with the simplified mantle flow drawn below them. ')
@@ -14194,7 +14208,7 @@ var d = labToolData.plateTectonics || {};
               // The strongest quake so far, because "make an M8" is only a fair
               // challenge if you can see how close you are getting and which
               // boundary got you there.
-              [__alloT('stem.platetectonics.metric_events', 'Events'), __alloT('stem.platetectonics.metric_n_quakes', '{n} quakes').replace('{n}', quakeTotal), __alloT('stem.platetectonics.metric_n_eruptions', '{n} eruptions').replace('{n}', eruptionTotal)],
+              [__alloT('stem.platetectonics.metric_events', 'Events'), __alloOneWord(__alloT('stem.platetectonics.metric_n_quakes', '{n} quakes').replace('{n}', quakeTotal)), __alloOneWord(__alloT('stem.platetectonics.metric_n_eruptions', '{n} eruptions').replace('{n}', eruptionTotal))],
               // The sub-line carries the LATEST quake once there is one. The
               // on-canvas M readout fades after about 200 frames, so a student
               // who looks away has no record of the quake they just made — only
@@ -17835,6 +17849,7 @@ var d = labToolData.plateTectonics || {};
 
               // ── AI Tutor Panel (reading-level aware) ──
               (function () {
+                if (typeof callGemini !== 'function') return null;
                 // Default reading level follows the grade band; a student's choice wins.
                 var aiLevel = d.aiLevel || (ptBand === '9-12' ? 'hs' : 'grade5');
                 var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
@@ -18026,9 +18041,9 @@ var d = labToolData.plateTectonics || {};
               var arrivalS = eqDistKm / PT_SEISMIC.VS;
               var arrivalGap = arrivalS - arrivalP;
               var kmPerGap = PT_SEISMIC.VP * PT_SEISMIC.VS / (PT_SEISMIC.VP - PT_SEISMIC.VS);
-              var traceDescription = __alloT('stem.platetectonics.eq_trace_readout', 'Model seismogram for magnitude {m} at {d} km. P arrives {p} seconds after the earthquake and S arrives {s} seconds after it, a gap of {gap} seconds. Trace height is compressed; read arrival times rather than true shaking strength.')
+              var traceDescription = __alloOneWord(__alloT('stem.platetectonics.eq_trace_readout', 'Model seismogram for magnitude {m} at {d} km. P arrives {p} seconds after the earthquake and S arrives {s} seconds after it, a gap of {gap} seconds. Trace height is compressed; read arrival times rather than true shaking strength.')
                 .replace('{m}', eqMagnitude.toFixed(1)).replace('{d}', Math.round(eqDistKm))
-                .replace('{p}', arrivalP.toFixed(1)).replace('{s}', arrivalS.toFixed(1)).replace('{gap}', arrivalGap.toFixed(1));
+                .replace('{p}', arrivalP.toFixed(1)).replace('{s}', arrivalS.toFixed(1)).replace('{gap}', arrivalGap.toFixed(1)));
               return React.createElement("div", { className: "space-y-4", 'data-pt-earthquake-lab': 'true' },
 
               React.createElement("div", {
@@ -19657,7 +19672,7 @@ var d = labToolData.plateTectonics || {};
             simTab === "tsunamis" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-blue-200 bg-blue-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-blue-800 mb-2' }, __alloT('stem.platetectonics.tsunami_history', "Tsunami History")),
-                React.createElement('p', { className: 'text-xs text-blue-700 mb-3' }, __alloT('stem.platetectonics.tsunami_intro_counted', "Tsunamis are ocean waves triggered by earthquakes, volcanoes, landslides, or impacts. {n} events from 365 CE to 2023 are catalogued here. Sort by deaths, magnitude, or year.").replace('{n}', TSUNAMI_DB.length)),
+                React.createElement('p', { className: 'text-xs text-blue-700 mb-3' }, __alloOneWord(__alloT('stem.platetectonics.tsunami_intro_counted', "Tsunamis are ocean waves triggered by earthquakes, volcanoes, landslides, or impacts. {n} events from 365 CE to 2023 are catalogued here. Sort by deaths, magnitude, or year.").replace('{n}', TSUNAMI_DB.length))),
                 React.createElement('div', { className: 'flex gap-2 text-xs mb-3' },
                   [['year', 'Year'], ['deaths', 'Deaths'], ['mag', 'Magnitude']].map(function(sm) {
                     var active = (d._tsunamiSort || 'year') === sm[0];

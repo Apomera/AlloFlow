@@ -1,6 +1,6 @@
 # Lumen — real-Canvas smoke test
 
-Run this in the **deployed Gemini Canvas surface** (and/or prismflow-911fe.web.app)
+Run this in the **deployed Gemini Canvas surface** (and/or the Cloudflare shell at alloflow-cdn.pages.dev/app/)
 after the next deploy clears. SSR golden tests pin the render; this checks the
 *live* surface — load, interaction, AI calls, exports, and the 2026-06-08
 repositioning. Tick each box; note anything that doesn't match the expected result.

@@ -294,7 +294,7 @@ function sourceView(extra = {}) {
 }
 const useButton = (el) => q(el, '[data-source-use]');
 const checkState = (el) => q(el, '[data-source-check-state]').getAttribute('data-source-check-state');
-const CHECK_CALL = ['analysis', null, false, PASTED, { selectedReadingSourceId: '__input__', stayOnView: true }, false];
+const CHECK_CALL = ['analysis', null, false, PASTED, { selectedReadingSourceId: '__input__', stayOnView: true, inlineFailure: true }, false];
 
 describe('the Source view: one editor that says what is in use', () => {
   it('is the only editor: a draft, with Use this source and the check', () => {
@@ -323,6 +323,207 @@ describe('the Source view: one editor that says what is in use', () => {
     await act(async () => finish());
     expect(checkState(v.el)).toBe('failed');
     expect(q(v.el, '[data-source-run-check]').textContent).toBe('Retry');
+  });
+
+  describe('while the check runs, in the host screen switch', () => {
+    // The real condition from the shell: a loading screen here unmounts the view and cancels the open.
+    const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
+    const conditionMatch = shell.match(/\{(\(isProcessing \|\| isGeneratingSource\)[^\n]*) \? \(\r?\n\s*<div data-help-key="gen_loading_screen"/);
+    const showsLoading = new Function('isProcessing', 'isGeneratingSource', 'sourceCheckText', 'activeView', 'generatedContent', 'return ' + (conditionMatch ? conditionMatch[1] : 'true'));
+    const item = { id: 'fresh', type: 'analysis', data: { originalText: PASTED, readingLevel: { range: 'Grade 4' } } };
+    function hosted(extra = {}) {
+      let finish, setBusy, setKept, setText;
+      const handleGenerate = vi.fn(() => { setBusy(true); return new Promise((done) => { finish = (value) => { setBusy(false); done(value); }; }); });
+      const openAnalysis = vi.fn();
+      const base = { t: () => '', setInputText: vi.fn(), sourceRecord: null, setSourceRecord: vi.fn(), sourceReplacement: null, setSourceReplacement: vi.fn(), history: [], handleGenerate,
+        isGeneratingSource: false, generationStep: 'Checking accuracy', isExtracting: false, setIsExtracting: vi.fn(), setGenerationStep: vi.fn(), addToast: vi.fn(), checkAccuracyWithSearch: true,
+        setCheckAccuracyWithSearch: vi.fn(), handleFormatText: vi.fn(), refineSourceSuggestion: vi.fn(async () => null), openAnalysis, aiTextAvailable: true, isCanvas: true, focusRequest: 0, onShowResources: vi.fn(), setSourceTopic: vi.fn(), ...extra };
+      const latest = { checkText: null };
+      function Host() {
+        const [busy, busySetter] = React.useState(false);
+        const [sourceCheckText, setSourceCheckText] = React.useState(null);
+        const [kept, keptSetter] = React.useState(true);
+        const [text, textSetter] = React.useState(PASTED);
+        setBusy = busySetter; setKept = keptSetter; setText = textSetter; latest.checkText = sourceCheckText;
+        if (!kept) return React.createElement('div', { 'data-other-screen': 1 });
+        if (showsLoading(busy, false, sourceCheckText, 'input', null)) return React.createElement('div', { 'data-loading': 1 });
+        return React.createElement(api.SourceView, { ...base, inputText: text, isProcessing: busy, sourceCheckText, onSourceCheckChange: setSourceCheckText });
+      }
+      const v = mount(Host, {});
+      return { ...v, handleGenerate, openAnalysis, latest, finish: (value) => act(async () => finish(value)), leave: () => act(() => setKept(false)), edit: (value) => act(() => setText(value)) };
+    }
+
+    it('still shows the loading screen for any other generation or view', () => {
+      expect(conditionMatch, 'loading-screen condition not found in ANTI').toBeTruthy();
+      expect(showsLoading(true, false, null, 'input', null)).toBe(true);
+      expect(showsLoading(true, false, PASTED, 'quiz', null)).toBe(true);
+      expect(showsLoading(false, true, null, 'input', null)).toBe(true);
+      expect(showsLoading(true, false, PASTED, 'input', null)).toBe(false);
+    });
+
+    it('stays on the source and opens the result of a pressed check when it finishes', async () => {
+      const h = hosted();
+      await act(async () => q(h.el, '[data-source-run-check]').click());
+      expect(q(h.el, '[data-loading]')).toBeNull();
+      expect(h.latest.checkText).toBe(PASTED);
+      expect(checkState(h.el)).toBe('running');
+      expect(document.activeElement).toBe(q(h.el, '[data-source-check-state]'));
+      expect(q(h.el, '[data-source-check-step]').textContent).toBe('Checking accuracy');
+      // The text holds still: no editor, no rewrite, no way to start editing.
+      expect(q(h.el, 'textarea')).toBeNull();
+      expect(q(h.el, '[data-source-readonly]').textContent).toBe(PASTED);
+      expect(q(h.el, '[data-source-refine]')).toBeNull();
+      expect(q(h.el, '[data-source-edit]').disabled).toBe(true);
+      expect(h.openAnalysis).not.toHaveBeenCalled();
+      await h.finish(item);
+      expect(h.openAnalysis).toHaveBeenCalledTimes(1);
+      expect(h.openAnalysis).toHaveBeenCalledWith(item);
+      expect(h.latest.checkText).toBeNull();
+      expect(q(h.el, '[data-source-check-step]')).toBeNull();
+    });
+
+    it('stays put after Use this source: the check runs but nothing opens', async () => {
+      const h = hosted();
+      await act(async () => useButton(h.el).click());
+      expect(h.handleGenerate).toHaveBeenCalledTimes(1);
+      expect(q(h.el, '[data-loading]')).toBeNull();
+      await h.finish(item);
+      expect(h.openAnalysis).not.toHaveBeenCalled();
+      expect(q(h.el, '[data-source-view]')).not.toBeNull();
+    });
+
+    it('does not pull the teacher away if they left or the text changed', async () => {
+      const left = hosted();
+      await act(async () => q(left.el, '[data-source-run-check]').click());
+      left.leave();
+      await left.finish(item);
+      expect(left.openAnalysis).not.toHaveBeenCalled();
+      expect(left.latest.checkText).toBeNull();
+      const changed = hosted();
+      await act(async () => q(changed.el, '[data-source-run-check]').click());
+      changed.edit(PASTED + ' New.');
+      await changed.finish(item);
+      expect(changed.openAnalysis).not.toHaveBeenCalled();
+      expect(changed.latest.checkText).toBeNull();
+    });
+
+    it('reports a failure in place with its reason and Retry, and nothing opens', async () => {
+      const h = hosted();
+      await act(async () => q(h.el, '[data-source-run-check]').click());
+      await h.finish({ failureMessage: 'Authorization failed.' });
+      expect(h.openAnalysis).not.toHaveBeenCalled();
+      expect(checkState(h.el)).toBe('failed');
+      expect(q(h.el, '[data-source-check-failure]').textContent).toBe('Authorization failed.');
+      expect(q(h.el, '[data-source-run-check]').textContent).toBe('Retry');
+      expect(q(h.el, 'textarea')).not.toBeNull();
+      // A later success clears the reason.
+      await act(async () => q(h.el, '[data-source-run-check]').click());
+      expect(q(h.el, '[data-source-check-failure]')).toBeNull();
+    });
+
+    it('never starts a second generation over one already running', async () => {
+      const v = sourceView({ isProcessing: true });
+      await act(async () => useButton(v.el).click());
+      expect(v.props.handleGenerate).not.toHaveBeenCalled();
+    });
+
+    it('shows a check still running after the teacher leaves and comes back', () => {
+      const v = sourceView({ isProcessing: true, sourceCheckText: PASTED });
+      expect(checkState(v.el)).toBe('running');
+      expect(q(v.el, 'textarea')).toBeNull();
+    });
+
+    it('re-running a finished check shows as running, not as the old result', async () => {
+      const check = analysisOf(PASTED, { readingLevel: { range: 'Grade 4-5' } });
+      const v = sourceView({ history: [check], handleGenerate: vi.fn(() => new Promise(() => {})) });
+      expect(checkState(v.el)).toBe('done');
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(checkState(v.el)).toBe('running');
+    });
+  });
+
+  describe('after an edit: recheck the same report', () => {
+    const LONG = 'Our town garden opened this spring. Volunteers built raised beds, and students track rainfall each week in a shared notebook.';
+    const EDITED = LONG.replace('this spring', 'last spring');
+    const report = (text = LONG, extra = {}) => ({ ...analysisOf(text, { readingLevel: { range: 'Grade 5' }, concepts: ['a'], accuracy: { rating: 'High' } }), id: 'r1', ...extra });
+    const editedView = (extra = {}) => sourceView({ inputText: EDITED, history: [report()], onRecheckAnalysis: vi.fn(async () => report(EDITED)), ...extra });
+    const REPLACE = { inlineFailure: true, replace: true, text: EDITED };
+
+    it('says the text changed, offers a recheck and updates that report', async () => {
+      const v = editedView();
+      expect(checkState(v.el)).toBe('changed');
+      expect(q(v.el, '[data-source-check-state]').textContent).toMatch(/source text changed/i);
+      expect(q(v.el, '[data-source-run-check]').textContent).toBe('Recheck edited source');
+      expect(q(v.el, '[data-source-check-details]')).toBeNull();
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(v.props.onRecheckAnalysis).toHaveBeenCalledWith(v.props.history[0], REPLACE);
+      expect(v.props.handleGenerate).not.toHaveBeenCalled();
+      expect(v.props.openAnalysis).toHaveBeenCalledTimes(1);
+    });
+
+    it('Use this version updates that report too, and stays on the source', async () => {
+      const v = editedView();
+      await act(async () => useButton(v.el).click());
+      expect(v.props.onRecheckAnalysis).toHaveBeenCalledWith(v.props.history[0], REPLACE);
+      expect(v.props.handleGenerate).not.toHaveBeenCalled();
+      expect(v.props.openAnalysis).not.toHaveBeenCalled();
+    });
+
+    it('Analyze again replaces the report of unchanged text', async () => {
+      const existing = report();
+      const v = sourceView({ inputText: LONG, history: [existing], onRecheckAnalysis: vi.fn(async () => existing) });
+      expect(checkState(v.el)).toBe('done');
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(v.props.onRecheckAnalysis).toHaveBeenCalledWith(existing, { inlineFailure: true, replace: true, text: LONG });
+      expect(v.props.handleGenerate).not.toHaveBeenCalled();
+    });
+
+    it('finds a report edited on the analysis screen and rechecks it there', async () => {
+      const edited = report(EDITED, { data: { originalText: EDITED, analysisNeedsRecheck: true } });
+      const v = sourceView({ inputText: EDITED, history: [report(), edited], onRecheckAnalysis: vi.fn(async () => report(EDITED)) });
+      expect(checkState(v.el)).toBe('changed');
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(v.props.onRecheckAnalysis).toHaveBeenCalledWith(edited, { inlineFailure: true });
+    });
+
+    it('a different passage keeps its own report and gets a new one', async () => {
+      const other = 'Volcanoes form where molten rock reaches the surface of the planet through cracks in the crust.';
+      const v = sourceView({ inputText: other, history: [report()], onRecheckAnalysis: vi.fn() });
+      expect(checkState(v.el)).toBe('none');
+      expect(q(v.el, '[data-source-run-check]').textContent).toBe('Analyze source material');
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(v.props.onRecheckAnalysis).not.toHaveBeenCalled();
+      expect(v.props.handleGenerate).toHaveBeenCalledTimes(1);
+    });
+
+    it('falls back to a new report where this role cannot recheck', async () => {
+      const v = editedView({ onRecheckAnalysis: undefined });
+      await act(async () => q(v.el, '[data-source-run-check]').click());
+      expect(v.props.handleGenerate).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves reports of other units and adapted texts out', () => {
+      const R = api.SourceRecord;
+      expect(R.priorCheck([report(LONG, { unitId: 'u1' })], EDITED, 'u2')).toBeNull();
+      expect(R.priorCheck([report(LONG, { unitId: 'u1' })], EDITED, 'u1')?.id).toBe('r1');
+      expect(R.priorCheck([report(LONG, { unitId: 'u1' })], EDITED, 'all')?.id).toBe('r1');
+      expect(R.priorCheck([report()], EDITED, 'u2')).toBeNull();
+      expect(R.priorCheck([report()], EDITED, 'uncategorized')?.id).toBe('r1');
+      expect(R.priorCheck([report(LONG, { instructionalText: { form: 'adapted' } })], EDITED, 'all')).toBeNull();
+      expect(R.priorCheck([report(LONG, { error: true })], EDITED, 'all')).toBeNull();
+      expect(R.priorCheck([report(), report(LONG, { id: 'r2' })], EDITED, 'all')?.id).toBe('r2');
+      expect(R.priorCheck([report(EDITED)], EDITED, 'all')).toBeNull();
+    });
+
+    it('tells close rewording from a different passage, in spaced and unspaced scripts', () => {
+      const R = api.SourceRecord;
+      expect(R.sameSource(LONG, EDITED)).toBe(true);
+      expect(R.sameSource(LONG, 'Volcanoes form where molten rock reaches the surface.')).toBe(false);
+      expect(R.sameSource(LONG, LONG + ' Extra words nobody wrote before appear here in a very long addition about something new entirely today, with plenty more unrelated vocabulary.')).toBe(false);
+      expect(R.sameSource('', LONG)).toBe(false);
+      expect(R.sameSource('月球绕着地球转动，引力带来了海洋的潮汐变化。', '月球绕着地球转动，引力带来了海洋的潮汐。')).toBe(true);
+      expect(R.sameSource('月球绕着地球转动，引力带来了海洋的潮汐变化。', '火山形成于熔岩从地壳裂缝喷出的地方。')).toBe(false);
+    });
   });
 
   it('skips the check when asked', async () => {
@@ -618,7 +819,7 @@ describe('the host: automatic use and version stamps', () => {
   const autoUseEffect = sliceBetween(host, "  useEffect(() => { const api = window.AlloModules?.SidebarPanels?.SourceRecord; if (!isProcessing", '\n', { file: 'AlloFlowANTI.txt', label: 'auto-use effect' });
   const stampEffect = sliceBetween(host, "  useEffect(() => { const api = window.AlloModules?.SidebarPanels?.SourceRecord; if (!api) return; if (!sourceStampSeenRef", '\n', { file: 'AlloFlowANTI.txt', label: 'stamp effect' });
 
-  function autoUse({ typing, processing = true, prev = null }) {
+  function autoUse({ typing, processing = true, prev = null, seedRuns = 0 }) {
     let next = 'untouched';
     const box = document.createElement('textarea');
     box.setAttribute('data-allo-textundo', 'input');
@@ -626,7 +827,7 @@ describe('the host: automatic use and version stamps', () => {
     document.body.append(box, other);
     try {
       (typing ? box : other).focus();
-      new Function('useEffect', 'isProcessing', 'inputText', 'setSourceRecord', autoUseEffect)((fn) => fn(), processing, PASTED, (value) => { next = typeof value === 'function' ? value(prev) : value; });
+      new Function('useEffect', 'isProcessing', 'inputText', 'setSourceRecord', 'sourceStampSeenRef', autoUseEffect)((fn) => fn(), processing, PASTED, (value) => { next = typeof value === 'function' ? value(prev) : value; }, { seedRuns });
     } finally { box.remove(); other.remove(); }
     return next;
   }
@@ -634,6 +835,27 @@ describe('the host: automatic use and version stamps', () => {
   it('uses the draft when a resource starts', () => {
     expect(autoUse({ typing: false }).inUse).toMatchObject({ text: PASTED, version: 1 });
     expect(autoUse({ typing: false, processing: false })).toBe('untouched');
+  });
+
+  it('a source check starts no new version: only Use or making a resource does', () => {
+    const line = host.match(/const noAutoUse = ([^\n]+);/);
+    expect(line, 'source-check gate not found in ANTI').toBeTruthy();
+    const gate = new Function('independentSeed', 'type', 'configOverride', 'return ' + line[1]);
+    expect(gate(false, 'analysis', { stayOnView: true })).toBe(true);
+    expect(gate(false, 'analysis', {})).toBe(false);
+    expect(gate(false, 'quiz', { stayOnView: true })).toBe(false);
+    expect(gate(true, 'quiz', {})).toBe(true);
+    expect(autoUse({ typing: false, seedRuns: 1 })).toBe('untouched');
+  });
+
+  it('does not call a report of the current wording older', () => {
+    const badge = host.match(/\{(generatedContent && typeof generatedContent\.sourceVersion === 'number'[^\n]*) && \(\r?\n\s*<span data-source-version-badge/);
+    expect(badge, 'version badge condition not found in ANTI').toBeTruthy();
+    const shows = new Function('generatedContent', 'sourceRecord', 'return ' + badge[1]);
+    const record = { inUse: { text: 'Current wording.', version: 2 } };
+    expect(shows({ type: 'analysis', sourceVersion: 1, data: { originalText: 'Current wording.' } }, record)).toBe(false);
+    expect(shows({ type: 'analysis', sourceVersion: 1, data: { originalText: 'Old wording.' } }, record)).toBe(true);
+    expect(shows({ type: 'quiz', sourceVersion: 1, data: {} }, record)).toBe(true);
   });
 
   it('never changes the text under the cursor: it is only marked pending', () => {
@@ -659,7 +881,19 @@ describe('the host: automatic use and version stamps', () => {
   it('offers to remake a resource made from an older version', () => {
     const badge = sliceBetween(host, '{generatedContent && typeof generatedContent.sourceVersion', '</span>', { file: 'AlloFlowANTI.txt', label: 'version badge' });
     expect(badge).toContain('generatedContent.sourceVersion < sourceRecord.inUse.version');
-    expect(badge).toContain('onClick={() => handleGenerate(generatedContent.type)}');
+    const click = badge.match(/onClick=\{\(\) => ([^\n]*?)\} className="min-h-11 underline/);
+    expect(click, 'remake action not found').toBeTruthy();
+    const press = (generatedContent, sameSource) => {
+      const recheckSourceAnalysis = vi.fn(), handleGenerate = vi.fn();
+      new Function('generatedContent', 'sourceRecord', 'recheckSourceAnalysis', 'handleGenerate', 'window', click[1])(generatedContent, { inUse: { text: 'Now.' } }, recheckSourceAnalysis, handleGenerate,
+        { AlloModules: { SidebarPanels: { SourceRecord: { sameSource: () => sameSource } } } });
+      return { recheckSourceAnalysis, handleGenerate };
+    };
+    const report = { type: 'analysis', data: { originalText: 'Then.' } };
+    expect(press(report, true).recheckSourceAnalysis).toHaveBeenCalledWith(report, { replace: true, text: 'Now.' });
+    expect(press(report, true).handleGenerate).not.toHaveBeenCalled();
+    expect(press(report, false).handleGenerate).toHaveBeenCalledWith('analysis');
+    expect(press({ type: 'quiz' }, true).handleGenerate).toHaveBeenCalledWith('quiz');
   });
 
   // "Based on" left on Automatic used a saved reading over the source in use, so

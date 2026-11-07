@@ -364,7 +364,7 @@ describe('galaxy canvas lifecycle', () => {
     await mountGalaxy(ensureThree);
 
     const typeButton = Array.from(host.querySelectorAll('button'))
-      .find((button) => button.textContent.includes('stem.galaxy.elliptical'));
+      .find((button) => button.textContent.includes('Elliptical'));
     expect(typeButton).toBeTruthy();
 
     await React.act(async () => typeButton.click());

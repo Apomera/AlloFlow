@@ -438,6 +438,9 @@ function UDLGuideModal(props) {
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
+  // Host doorway for AI-only actions; chat stays open because local commands work without AI.
+  let aiDoor = null; try { if (typeof window.__alloAiSetupDoorway === 'function') aiDoor = window.__alloAiSetupDoorway('text', t); } catch (_) {}
+  const aiOff = !!(aiDoor && aiDoor.disabled), aiTitle = aiOff ? aiDoor.title : undefined, AiNotice = aiOff && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
   // The global command listener and legacy free-form dictation are separate
   // microphone owners. Talk is command mode only: always tear down dictation
   // before starting, pausing, stopping, or hiding the Talk surface. The shared
@@ -787,7 +790,8 @@ function UDLGuideModal(props) {
               {msg.type === 'chat-error' && (
                 <div role="alert" className={`max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
                   {renderFormattedText(msg.text)}
-                  <button type="button" disabled={isChatProcessing} className={`block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`}
+                  {AiNotice && <div data-chat-error-ai-setup className="mt-2"><AiNotice t={t} /></div>}
+                  <button type="button" disabled={isChatProcessing || aiOff} title={aiTitle} className={`block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`}
                     onClick={() => handleSendUDLMessage({ action: 'retry-chat', text: msg.retryText })}>
                     {tx('chat_guide.retry_reply', 'Retry response')}
                   </button>
@@ -1124,9 +1128,9 @@ function UDLGuideModal(props) {
                   />
                   <button
                       onClick={handleFindStandards}
-                      disabled={isFindingStandards || !aiStandardQuery.trim()}
+                      disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
                       className={`p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`}
-                      title={t('standards.search_button_title')}
+                      title={aiTitle || t('standards.search_button_title')}
                       aria-label={t('standards.search_button_title')}
                   >
                       {isFindingStandards ? <RefreshCw size={14} className="motion-safe:animate-spin" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
@@ -1216,10 +1220,10 @@ function UDLGuideModal(props) {
                   </select>
                   <button
                       aria-label={t('standards.consult_btn_title')}
-                      data-help-key="chat_consult_btn"
+                      data-help-key="chat_consult_btn" disabled={aiOff}
                       onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
                       className={`p-1.5 rounded transition-colors border ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
-                      title={t('standards.consult_btn_title')}
+                      title={aiTitle || t('standards.consult_btn_title')}
                   >
                       <ArrowRight size={14} />
                   </button>
@@ -1244,13 +1248,14 @@ function UDLGuideModal(props) {
                <p id="udl-lesson-mode-help" className={`mt-1 ${chatStyles.subText}`}>{tx('chat_guide.plan_lesson_mode_help', 'Uses lesson settings and recent discussion to draft a plan for your review.')}</p>
              </div>
           </div>
-          {props.canReviseLesson === true && <button type="button" disabled={isChatProcessing}
+          {props.canReviseLesson === true && <button type="button" disabled={isChatProcessing || aiOff} title={aiTitle}
             data-testid="start-lesson-revision" style={{ minHeight: 44 }}
             className={`w-full px-3 py-2 mb-2 rounded-lg text-xs font-bold whitespace-normal disabled:opacity-40 ${chatStyles.secondaryButton}`}
             onClick={() => handleSendUDLMessage({ action: 'lesson-revision-start' })}>
             {tx('chat_guide.revision_title', 'Revise existing lesson')}
           </button>}
           </>}
+          {AiNotice && <div className="mb-2"><AiNotice t={t} /></div>}
           <div className="flex gap-2">
              <input aria-label={tx('chat_guide.input_aria', 'Ask the UDL guide a question')}
                 ref={udlInputRef}
@@ -1947,6 +1952,10 @@ function AIBackendModalBody(props) {
   const [guidedView, setGuidedView] = React.useState('choose');
   const [advancedOpen, setAdvancedOpen] = React.useState(isStudentAiSetup || requestedSettingsSection === 'gemini-audio');
   const [configRevision, setConfigRevision] = React.useState(0);
+  const [keyLockCode, setKeyLockCode] = React.useState('');
+  const [keyLockMessage, setKeyLockMessage] = React.useState('');
+  const [keyLockBusy, setKeyLockBusy] = React.useState(false);
+  const [, setKeyLockTick] = React.useState(0);
   const [guidedReady, setGuidedReady] = React.useState(false);
   const guidedHeadingRef = React.useRef(null);
   const prevGuidedViewRef = React.useRef('choose');
@@ -1995,9 +2004,41 @@ function AIBackendModalBody(props) {
     } catch (_) { return ''; }
   };
   const geminiCredentialDestination = 'gemini|https://generativelanguage.googleapis.com';
+  const keyLockApi = () => (!isStudentAiSetup && window.AlloModules && window.AlloModules.DeviceAccessCode) || null;
+  const keyLockStatus = () => {
+    const api = keyLockApi();
+    return api && typeof api.aiKeyStatus === 'function' ? api.aiKeyStatus() : null;
+  };
+  const keyLockFailureText = (result) => {
+    if (result && (result.reason === 'backoff' || result.retryAfterMs > 0)) return t('ai_backend.key_lock_wait') || 'Too many incorrect attempts. Please wait briefly before trying again.';
+    if (result && result.reason === 'undecryptable') return t('ai_backend.key_lock_undecryptable') || 'That code is correct, but this saved key cannot be opened with it. Remove the saved key and enter it again.';
+    return t('ai_backend.key_lock_incorrect') || 'That access code is not correct.';
+  };
+  const runKeyLock = async (action, successText) => {
+    const api = keyLockApi();
+    if (!api || keyLockBusy) return;
+    const code = keyLockCode;
+    setKeyLockCode('');
+    setKeyLockBusy(true);
+    setKeyLockMessage('');
+    try {
+      const result = await action(api, code);
+      setKeyLockMessage(result && result.ok ? successText : keyLockFailureText(result));
+      if (result && result.ok) setConfigRevision((revision) => revision + 1);
+    } catch (error) {
+      setKeyLockMessage(error && error.code === 'allo/access-code-too-short'
+        ? (t('ai_backend.key_lock_too_short') || 'Use at least 6 characters.')
+        : (t('ai_backend.key_lock_failed') || 'The key could not be locked on this device.'));
+    } finally {
+      setKeyLockBusy(false);
+      setKeyLockTick((tick) => tick + 1);
+    }
+  };
   const readAIBackendConfig = () => {
     try {
-      const config = JSON.parse(configStorage.getItem(configStorageKey) || '{}');
+      // A teacher's key is unlocked into this tab, not stored in the config.
+      const hostRead = !isStudentAiSetup ? window.__alloReadStoredAiConfig : null;
+      const config = (typeof hostRead === 'function' ? hostRead() : JSON.parse(configStorage.getItem(configStorageKey) || '{}')) || {};
       if (!config || typeof config !== 'object' || Array.isArray(config)) return {};
       if (config.apiKeyDestination && config.apiKeyDestination !== aiCredentialDestination(config)) return { ...config, apiKey: '' };
       return config;
@@ -2047,7 +2088,9 @@ function AIBackendModalBody(props) {
       next.apiKeyDestination = aiCredentialDestination(next);
       if (!next.apiKeyDestination) next.apiKey = '';
       if (options.preserveValidation !== true) delete next.validation;
-      configStorage.setItem(configStorageKey, JSON.stringify(next));
+      const keyLock = keyLockApi();
+      configStorage.setItem(configStorageKey, JSON.stringify(keyLock && typeof keyLock.splitAiSecretsForSave === 'function' ? keyLock.splitAiSecretsForSave(next) : next));
+      if (keyLock) setKeyLockTick((tick) => tick + 1);
       if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
       // W7: capability-gated UI (STEM "AI extras" pill, disabled generate
       // surfaces) re-derives on this. Same-tab only; other tabs get 'storage'.
@@ -2061,6 +2104,8 @@ function AIBackendModalBody(props) {
         window.__alloDisconnectStudentAi();
       } else {
         configStorage.removeItem(configStorageKey);
+        const keyLock = keyLockApi();
+        if (keyLock && typeof keyLock.forgetAiKey === 'function') keyLock.forgetAiKey();
         if (isStudentAiSetup) window.dispatchEvent(new CustomEvent('alloflow:student-ai-config-changed'));
       }
     } catch (_) {}
@@ -2348,8 +2393,64 @@ function AIBackendModalBody(props) {
         />
     </div>
   );
+  // Rules differ by provider, so only Gemini's specifics are stated as fact; the
+  // host never uses this key in student mode whichever provider it belongs to.
+  const renderTeacherKeyTermsNotice = () => (
+    <div id="ai-backend-key-terms" className="mb-3 rounded-xl border-2 border-rose-200 bg-rose-50/70 p-3">
+        <p className="text-[11px] font-black uppercase tracking-wider text-rose-800">
+            {t('ai_backend.key_terms_kicker') || 'For teachers only'}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-rose-900">
+            {t('ai_backend.key_terms_age') || 'Each AI provider sets its own rules for minors and for how it handles what you send. Check them before connecting. AlloFlow never uses this key in student mode, on any device.'}
+        </p>
+        {String(readAIBackendConfig().backend || 'gemini') === 'gemini' && (
+          <p className="mt-1.5 text-xs leading-relaxed text-rose-900">
+              {t('ai_backend.key_terms_review') || 'Google\'s Gemini API terms require users to be 18 or older and restrict use in apps likely to be accessed by people under 18. On the free tier, people at Google may review what you send, and Google may use it to improve its products. Leave out student names and personal details, or turn on billing for this key: Google does not use paid-tier prompts that way.'}
+          </p>
+        )}
+    </div>
+  );
+  const renderKeyProtectRow = () => {
+    const status = keyLockStatus();
+    if (!status) return null;
+    if (status.saved && !status.unsaved && !status.plaintextOnDevice) {
+      return <p id="ai-backend-key-lock-state" role="status" className="mt-2 text-[11px] font-bold text-emerald-800">{t('ai_backend.key_lock_saved_state') || 'Saved on this device and locked with your educator access code.'}</p>;
+    }
+    if (!status.unsaved && !status.plaintextOnDevice) return null;
+    const configured = keyLockApi().isConfigured();
+    const save = () => runKeyLock((api, code) => api.protectAiKey(code), t('ai_backend.key_lock_saved_msg') || 'Your key is saved and locked.');
+    return (
+      <div id="ai-backend-key-lock" className="mt-2 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3">
+          <p className="text-xs leading-relaxed text-amber-900">
+              {status.plaintextOnDevice
+                ? (t('ai_backend.key_lock_plaintext_warning') || 'This key is saved on this device without protection. Lock it so nobody else using this device can read it.')
+                : (t('ai_backend.key_lock_tab_only') || 'This key works until you close this tab. To keep it on this device, lock it with your educator access code.')}
+          </p>
+          <label htmlFor="ai-backend-key-lock-code" className="mt-2 block text-[11px] font-bold text-amber-900">
+              {configured ? (t('ai_backend.key_lock_code_label') || 'Educator access code') : (t('ai_backend.key_lock_create_label') || 'Create an educator access code (at least 6 characters)')}
+          </label>
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                  id="ai-backend-key-lock-code"
+                  type="password"
+                  autoComplete={configured ? 'current-password' : 'new-password'}
+                  value={keyLockCode}
+                  onChange={(e) => setKeyLockCode(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } }}
+                  className="min-h-11 flex-1 rounded-xl border-2 border-amber-300 bg-white p-2 text-sm text-slate-800"
+              />
+              <button type="button" disabled={keyLockBusy || !keyLockCode} onClick={save} className="min-h-11 rounded-xl bg-amber-800 px-3 py-2 text-xs font-bold text-white hover:bg-amber-900 disabled:opacity-60">
+                  {t('ai_backend.key_lock_save_btn') || 'Save and lock key'}
+              </button>
+          </div>
+          {!configured && <p className="mt-2 text-[11px] leading-relaxed text-amber-900">{t('ai_backend.key_lock_create_hint') || 'You will also use this code to enter teacher mode on this device. If you forget it, you can remove the saved key and enter it again.'}</p>}
+          {keyLockMessage && <p role="status" className="mt-2 text-[11px] font-bold text-amber-950">{keyLockMessage}</p>}
+      </div>
+    );
+  };
   const renderApiKeyField = (labelText, hintText) => (
     <div>
+        {!isStudentAiSetup && renderTeacherKeyTermsNotice()}
         <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{labelText || t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{hintText || t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
         <input
             data-help-key="ai_backend_api_key_input"
@@ -2367,6 +2468,7 @@ function AIBackendModalBody(props) {
             }}
             className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
         />
+        {renderKeyProtectRow()}
         {!isStudentAiSetup && String(readAIBackendConfig().backend || 'gemini') === 'gemini' && (
           <button
             type="button"
@@ -2446,7 +2548,7 @@ function AIBackendModalBody(props) {
         {guidedStepHeading(t('ai_backend.guided_gemini_kicker') || 'Step 2 of 2 · Google Gemini')}
         <ol className="list-decimal ml-5 space-y-1.5 text-xs text-slate-700 leading-relaxed">
             <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="font-bold text-violet-700 underline">{t('ai_backend.guided_gemini_step1') || 'Open Google AI Studio ↗'}</a></li>
-            <li>{t('ai_backend.guided_gemini_step2') || 'Sign in with any Google account (a free one is fine).'}</li>
+            <li>{t('ai_backend.guided_gemini_step2_adult') || 'Sign in with your own adult Google account.'}</li>
             <li>{t('ai_backend.guided_gemini_step3') || 'Press "Create API key" and copy it.'}</li>
             <li>{t('ai_backend.guided_gemini_step4') || 'Paste the key below.'}</li>
         </ol>
@@ -2499,7 +2601,7 @@ function AIBackendModalBody(props) {
                 </a>
             </span>
         </label>
-        <p className="text-[11px] text-slate-500">{t('ai_backend.guided_gemini_key_note') || 'Stored only on this device. The free tier covers everyday classroom use.'}</p>
+        <p className="text-[11px] text-slate-500">{t('ai_backend.guided_gemini_key_note_teacher') || 'Stored only on this device and never used in student mode.'}</p>
         {guidedBackBtn('choose')}
       </div>
     );
@@ -2625,6 +2727,56 @@ function AIBackendModalBody(props) {
     // wrong screen; the probe now has its own labelled button in Platform Diagnostics.
     try { console.warn('[Storage] Storage and recovery manager bridge unavailable on this host build.'); } catch (_) {}
   };
+  // A locked key hides every setting: this window opens from the Launch Pad before
+  // any role is chosen, so it is the one lock that covers every way in.
+  const initialKeyLockStatus = keyLockStatus();
+  if (initialKeyLockStatus && initialKeyLockStatus.locked) {
+    const unlock = () => runKeyLock((api, code) => api.unlockAiKeyWithCode(code), t('ai_backend.key_lock_unlocked_msg') || 'Your key is unlocked for this tab.');
+    return (
+        <div
+          data-ai-backend-modal-overlay="true"
+          style={{ zIndex: aiBackendOverlayZ }}
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup="false" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+            <div className="flex items-center gap-2 mb-4 text-violet-900">
+                <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
+                <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.key_lock_locked_title') || 'Saved AI key is locked'}</h3>
+            </div>
+            <p className="text-sm leading-relaxed text-slate-700">{t('ai_backend.key_lock_locked_body') || 'Enter your educator access code to use or change the AI key saved on this device.'}</p>
+            <label htmlFor="ai-backend-key-unlock-code" className="mt-4 block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.key_lock_code_label') || 'Educator access code'}</label>
+            <input
+                id="ai-backend-key-unlock-code"
+                type="password"
+                autoComplete="current-password"
+                value={keyLockCode}
+                onChange={(e) => setKeyLockCode(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); unlock(); } }}
+                className="min-h-11 w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+            />
+            {keyLockMessage && <p role="status" className="mt-2 text-xs font-bold text-rose-800">{keyLockMessage}</p>}
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <button type="button" disabled={keyLockBusy || !keyLockCode} onClick={unlock} className="min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60">
+                    {t('ai_backend.key_lock_unlock_btn') || 'Unlock'}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (typeof window.confirm === 'function' && !window.confirm(t('ai_backend.key_lock_forget_confirm') || 'Remove the saved AI key from this device? You can enter it again afterward.')) return;
+                        keyLockApi().forgetAiKey();
+                        setKeyLockMessage('');
+                        setConfigRevision((revision) => revision + 1);
+                        setKeyLockTick((tick) => tick + 1);
+                    }}
+                    className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                >
+                    {t('ai_backend.key_lock_forget_btn') || 'Forgot your code? Remove saved key'}
+                </button>
+            </div>
+          </div>
+        </div>
+    );
+  }
   return (
         <div
           data-ai-backend-modal-overlay="true"

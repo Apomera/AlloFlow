@@ -1,4 +1,13 @@
 // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-flightsim-hc-extra-css).
+  function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+(function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-flightsim-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-flightsim-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"flightSim\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"flightSim\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"flightSim\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -19832,7 +19841,7 @@ function getFlightCityLayout(city) {
         syncTapControlUi();
         if (feedbackLabel) setTapControlFeedback(feedbackLabel + ': ' + (axis === 'power'
           ? __alloT('stem.flightsim.tap_percent_value', '{value} percent').replace('{value}', Math.round(value))
-          : __alloT('stem.flightsim.tap_degrees_value', '{value} degrees').replace('{value}', Math.round(value * 10) / 10)));
+          : __alloOneWord(__alloT('stem.flightsim.tap_degrees_value', '{value} degrees').replace('{value}', Math.round(value * 10) / 10))));
       };
       var centerTapControls = function(node, controls, session) {
         if (!tapInputCurrent(node, controls, session)) return;
@@ -26330,7 +26339,7 @@ function getFlightCityLayout(city) {
         var next = currentAC.flapDetents[nextIdx];
         controlsRef.current.flaps = next;
         setFlightConfigUi(function(prev) { return { flaps: next, brake: prev.brake }; });
-        if (next !== current && typeof skyAnnounce === 'function') skyAnnounce(__alloT('stem.flightsim.announce_flaps_degrees', "Flaps {deg} degrees").replace('{deg}', next));
+        if (next !== current && typeof skyAnnounce === 'function') skyAnnounce(__alloOneWord(__alloT('stem.flightsim.announce_flaps_degrees', "Flaps {deg} degrees").replace('{deg}', next)));
       };
 
       var toggleWheelBrake = function() {
@@ -26723,7 +26732,7 @@ function getFlightCityLayout(city) {
           gfx.fillText(__alloT('stem.flightsim.hud_survivor_delivered', "Survivor delivered to PWM"), W / 2, ccY + 54);
           gfx.fillStyle = 'rgba(203,213,225,' + cAlpha + ')';
           gfx.font = '11px system-ui';
-          gfx.fillText(__alloT('stem.flightsim.hud_total_mission_time', "Total mission time: {sec} seconds").replace('{sec}', rescue.totalSec || 0), W / 2, ccY + 74);
+          gfx.fillText(__alloOneWord(__alloT('stem.flightsim.hud_total_mission_time', "Total mission time: {sec} seconds").replace('{sec}', rescue.totalSec || 0)), W / 2, ccY + 74);
           gfx.fillStyle = 'rgba(251,191,36,' + cAlpha + ')';
           gfx.font = 'italic 10px system-ui';
           gfx.fillText(__alloT('stem.flightsim.hud_coast_guard_achievement', "+ Coast Guard Pilot achievement"), W / 2, ccY + 94);
@@ -27324,7 +27333,7 @@ function getFlightCityLayout(city) {
           style: { position: 'absolute', zIndex: 45, top: '62px', left: '50%', transform: 'translateX(-50%)', width: 'min(520px, calc(100% - 24px))', maxHeight: 'calc(100% - 86px)', overflowY: 'auto', boxSizing: 'border-box', padding: '16px', border: '2px solid #a78bfa', borderRadius: '14px', background: '#0f172a', color: '#f8fafc', boxShadow: '0 18px 60px rgba(0,0,0,0.7)', fontSize: '14px', lineHeight: 1.5, overflowWrap: 'anywhere' } },
           h('h2', { id: 'skyschool-sprint-title', style: { margin: '0 0 8px', fontSize: '16px', color: '#ddd6fe' } }, __alloT('stem.flightsim.sprint_native_title', 'Geography sprint') + ' · ' + routeName),
           h('p', { 'data-sprint-score': 'true', style: { margin: '8px 0', color: '#fde68a' } }, __alloT('stem.flightsim.hud_sprint_score', 'Score: {n}/{total}  |  🔥 Streak: {streak}').replace('{n}', score.score).replace('{total}', score.total).replace('{streak}', sp.streak)),
-          !resultReady && h('p', { 'data-sprint-timer': 'true', 'aria-live': 'off', style: { margin: '8px 0', fontVariantNumeric: 'tabular-nums' } }, sp.timerMode === 'off' ? __alloT('stem.flightsim.sprint_no_time_limit', 'No time limit') : __alloT('stem.flightsim.sprint_time_remaining', 'Time remaining: {seconds} seconds').replace('{seconds}', Math.max(0, Math.ceil(sp.timer)))),
+          !resultReady && h('p', { 'data-sprint-timer': 'true', 'aria-live': 'off', style: { margin: '8px 0', fontVariantNumeric: 'tabular-nums' } }, sp.timerMode === 'off' ? __alloT('stem.flightsim.sprint_no_time_limit', 'No time limit') : __alloOneWord(__alloT('stem.flightsim.sprint_time_remaining', 'Time remaining: {seconds} seconds').replace('{seconds}', Math.max(0, Math.ceil(sp.timer))))),
           !resultReady && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', margin: '12px 0' } },
             h('button', { 'data-sprint-pause': 'true', style: buttonStyle, onClick: function() { setFlightPaused(!pausedRef.current); } }, pausedUi ? __alloT('stem.flightsim.label_resume_flight', 'Resume flight') : __alloT('stem.flightsim.label_pause_flight', 'Pause flight')),
             h('button', { 'data-sprint-help': 'true', style: buttonStyle, onClick: function() { setFlightHelp(true); } }, __alloT('stem.flightsim.help_reference_title', 'Controls and help')),
@@ -27788,9 +27797,9 @@ function getFlightCityLayout(city) {
       };
       var flightDiscoveryDescription = function(discovery) {
         if (!discovery) return '';
-        return __alloT('stem.flightsim.nav_next_discovery_status', 'Next discovery: {place}. Bearing {bearing} degrees, {distance} nautical miles away.')
+        return __alloOneWord(__alloT('stem.flightsim.nav_next_discovery_status', 'Next discovery: {place}. Bearing {bearing} degrees, {distance} nautical miles away.')
           .replace('{place}', discovery.place.name).replace('{bearing}', Math.round(discovery.bearingDeg) % 360)
-          .replace('{distance}', discovery.distanceNm.toFixed(discovery.distanceNm < 10 ? 1 : 0));
+          .replace('{distance}', discovery.distanceNm.toFixed(discovery.distanceNm < 10 ? 1 : 0)));
       };
 
       var flightFiledRouteDescription = function(state, telemetry) {
@@ -27915,13 +27924,13 @@ function getFlightCityLayout(city) {
         var speedText = scripted ? __alloT('stem.flightsim.status_route_speed', 'Route speed {kts} knots.')
           : rotor ? __alloT('stem.flightsim.status_ground_speed', 'Ground speed {kts} knots.')
           : __alloT('stem.flightsim.status_indicated_speed', 'Indicated airspeed {kts} knots.');
-        var text = __alloT('stem.flightsim.status_altitude', 'Altitude {alt} feet above sea level.').replace('{alt}', Math.round(Number(st.altitude) || 0))
+        var text = __alloOneWord(__alloT('stem.flightsim.status_altitude', 'Altitude {alt} feet above sea level.').replace('{alt}', Math.round(Number(st.altitude) || 0)))
           + ' ' + speedText.replace('{kts}', Math.round(speed))
-          + ' ' + __alloT('stem.flightsim.status_heading', 'Heading {hdg} degrees.').replace('{hdg}', ((Math.round(Number(st.heading) || 0) % 360) + 360) % 360)
-          + ' ' + __alloT('stem.flightsim.status_vertical', 'Height above ground {agl} feet. Vertical speed {fpm} feet per minute.').replace('{agl}', Math.round(telemetry.aglFt)).replace('{fpm}', Math.round(telemetry.fpm))
+          + ' ' + __alloOneWord(__alloT('stem.flightsim.status_heading', 'Heading {hdg} degrees.').replace('{hdg}', ((Math.round(Number(st.heading) || 0) % 360) + 360) % 360))
+          + ' ' + __alloOneWord(__alloT('stem.flightsim.status_vertical', 'Height above ground {agl} feet. Vertical speed {fpm} feet per minute.').replace('{agl}', Math.round(telemetry.aglFt)).replace('{fpm}', Math.round(telemetry.fpm)))
           + (st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_stalling', 'Warning: stalling!') : '')
           + (st.lowAirspeed && !st.stalling ? ' ' + __alloT('stem.flightsim.announce_status_low_airspeed', 'Low airspeed advisory. Monitor lift and angle of attack.') : '')
-          + (!rotor && !scripted ? ' ' + __alloT('stem.flightsim.announce_status_aoa', 'Angle of attack {aoa} degrees.').replace('{aoa}', (Number(st.aoa) || 0).toFixed(1)) : '')
+          + (!rotor && !scripted ? ' ' + __alloOneWord(__alloT('stem.flightsim.announce_status_aoa', 'Angle of attack {aoa} degrees.').replace('{aoa}', (Number(st.aoa) || 0).toFixed(1))) : '')
           + (st.hitCeiling ? ' ' + __alloT('stem.flightsim.announce_status_ceiling', 'Holding at the Part 107 ceiling: 400 feet is a legal limit, not a limit of the drone.') : '')
           + (st.onGround ? ' ' + __alloT('stem.flightsim.announce_status_on_ground', 'On ground.') : '')
           + ' ' + __alloT('stem.flightsim.announce_status_discovered', 'Places discovered: {n}.').replace('{n}', Object.keys(geoDiscoveredRef.current).length);
@@ -29331,7 +29340,7 @@ function getFlightCityLayout(city) {
                 rescueEffects.push(function() {
                 celebrateFlightWin(__alloT('stem.flightsim.toast_rescue_complete', "✅ Rescue complete — {sec}s").replace('{sec}', elapsedSec), 20,
                   __alloT('stem.flightsim.xp_reason_rescue', 'SkySchool coastal rescue'));
-                if (typeof skyAnnounce === 'function') skyAnnounce(__alloT('stem.flightsim.announce_rescue_complete', "Rescue complete. Total time {sec} seconds.").replace('{sec}', elapsedSec));
+                if (typeof skyAnnounce === 'function') skyAnnounce(__alloOneWord(__alloT('stem.flightsim.announce_rescue_complete', "Rescue complete. Total time {sec} seconds.").replace('{sec}', elapsedSec)));
                 });
               }
             }
@@ -29686,7 +29695,7 @@ function getFlightCityLayout(city) {
               var xtClock = ((Math.round(xtRel2 / 30) + 12 - 1) % 12) + 1;
               xtNow.callTxt = 'TRAFFIC — ' + xtClock + " o'clock, " + Math.max(1, Math.round(xtDist2)) + ' miles, similar altitude';
               xtNow.calledAt = timeRef.current;
-              if (typeof skyAnnounce === 'function') skyAnnounce(__alloT('stem.flightsim.announce_traffic', "Traffic, {clock} o'clock, {miles} miles, similar altitude. Look outside.").replace('{clock}', xtClock).replace('{miles}', Math.max(1, Math.round(xtDist2))));
+              if (typeof skyAnnounce === 'function') skyAnnounce(__alloOneWord(__alloT('stem.flightsim.announce_traffic', "Traffic, {clock} o'clock, {miles} miles, similar altitude. Look outside.").replace('{clock}', xtClock).replace('{miles}', Math.max(1, Math.round(xtDist2)))));
             }
             if (xtDist2 > 12 || timeRef.current - xtNow.spawnedAt > 240) hudRef.current._xtraffic = null;
           }
@@ -33140,7 +33149,7 @@ function getFlightCityLayout(city) {
         }
         return h('section', { 'aria-label': sectionTitle, style: { order: 0, padding: '14px', width: isDebrief ? undefined : '320px', maxWidth: '100%', boxSizing: 'border-box', border: '1px solid #7dd3fc', borderRadius: '12px', background: '#0f172a', color: '#f8fafc', maxHeight: isDebrief ? undefined : '42vh', overflowY: 'auto', fontSize: isDebrief ? '14px' : '12px', lineHeight: 1.5, marginBottom: isDebrief ? '16px' : 0 } },
           h('h3', { id: titleId, style: { fontSize: isDebrief ? '20px' : '15px', margin: '0 0 8px' } }, __alloT('stem.flightsim.' + record.id + '_name', challenge.name)),
-          h('p', { role: 'status', style: { margin: '8px 0', fontWeight: 700, color: summary.complete ? '#86efac' : '#bae6fd' } }, summary.complete ? __alloT('stem.flightsim.challenge_goals_observed', 'All challenge objectives observed.') : __alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.').replace('{done}', summary.done).replace('{total}', summary.total)),
+          h('p', { role: 'status', style: { margin: '8px 0', fontWeight: 700, color: summary.complete ? '#86efac' : '#bae6fd' } }, summary.complete ? __alloT('stem.flightsim.challenge_goals_observed', 'All challenge objectives observed.') : __alloOneWord(__alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.').replace('{done}', summary.done).replace('{total}', summary.total))),
           h('progress', { 'aria-labelledby': titleId, max: summary.total, value: summary.done, style: { width: '100%', height: '12px', accentColor: '#38bdf8' } }),
           !isDebrief && nextGoal && h('p', { style: { margin: '10px 0', color: '#fef3c7' } }, __alloT('stem.flightsim.challenge_next_goal', 'Next: {goal}').replace('{goal}', challengeObjectiveText(record.id, nextGoal.key))),
           tourLegComplete && h('button', { onClick: function() { finishFlight(false); }, 'data-flight-continue-tour': 'true', style: { width: '100%', minHeight: '44px', padding: '10px', margin: '8px 0', background: '#0c4a6e', color: '#fff', border: '1px solid #7dd3fc', borderRadius: '8px', cursor: 'pointer' } }, __alloT('stem.flightsim.challenge_continue_tour', 'Continue airport tour')),
@@ -33213,8 +33222,8 @@ function getFlightCityLayout(city) {
           h('h4', { style: { margin: '0 0 8px', color: '#fff' } }, sideLabel.replace('{value}', name)),
           h('p', { 'data-challenge-review-status': 'true', style: { margin: '8px 0', color: record && record.status === 'complete' ? '#86efac' : '#cbd5e1' } }, !record ? missing
             : record.status === 'complete' ? __alloT('stem.flightsim.challenge_goals_observed', 'All challenge objectives observed.')
-            : __alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.')
-              .replace('{done}', review.objectives.filter(function(goal) { return goal.observed; }).length).replace('{total}', review.objectives.length)),
+            : __alloOneWord(__alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.')
+              .replace('{done}', review.objectives.filter(function(goal) { return goal.observed; }).length).replace('{total}', review.objectives.length))),
           !omitObjectives && h('ul', { 'data-challenge-review-objectives': 'true', style: { paddingInlineStart: '20px', margin: '8px 0' } }, review.objectives.map(function(goal) {
             return h('li', { key: goal.key, 'data-challenge-review-objective': goal.key, style: { margin: '8px 0' } },
               challengeObjectiveText(review.challengeId, goal.key) + ' · ' + observedText(goal.observed) + (goal.airportId ? ' · ' + airportText(goal.airportId) : ''));
@@ -33228,7 +33237,7 @@ function getFlightCityLayout(city) {
             h('h5', { style: { margin: '12px 0 4px', fontSize: 'inherit' } }, __alloT('stem.flightsim.challenge_checklist', 'Objective checklist')),
             record && record.arrivals.length ? h('ol', { style: { paddingInlineStart: '20px', margin: '4px 0' } }, record.arrivals.map(function(id) {
               return h('li', { key: id, 'data-challenge-review-airport': id }, airportText(id));
-            })) : h('p', { style: { margin: '4px 0' } }, record ? __alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.').replace('{done}', 0).replace('{total}', review.objectives.length) : missing))
+            })) : h('p', { style: { margin: '4px 0' } }, record ? __alloOneWord(__alloT('stem.flightsim.challenge_progress', '{done} of {total} objectives observed.').replace('{done}', 0).replace('{total}', review.objectives.length)) : missing))
         );
       };
 
@@ -33279,7 +33288,7 @@ function getFlightCityLayout(city) {
         var batteryText = function(mission) { var battery = value(mission, 'battery'); return battery == null ? missing
           : __alloT('stem.flightsim.hud_battery_remaining', 'Battery remaining: {pct}%').replace('{pct}', numberText(battery)); };
         var timeText = function(mission) { var seconds = mission ? mission.outcome === 'complete' ? mission.completedAtSeconds : mission.elapsedSeconds : null;
-          return seconds == null ? missing : __alloT('stem.flightsim.hud_total_mission_time', 'Total mission time: {sec} seconds').replace('{sec}', numberText(seconds)); };
+          return seconds == null ? missing : __alloOneWord(__alloT('stem.flightsim.hud_total_mission_time', 'Total mission time: {sec} seconds').replace('{sec}', numberText(seconds))); };
         var metrics = [{ key: 'outcome', earlier: outcomeText(earlier), latest: outcomeText(latest) }];
         if (rescue) metrics.push({ key: 'recovery', earlier: __alloT('stem.flightsim.mission_journal_recovery', 'Survivor recovery recorded: {value}.').replace('{value}', flagText(value(earlier, 'recovered'))),
           latest: __alloT('stem.flightsim.mission_journal_recovery', 'Survivor recovery recorded: {value}.').replace('{value}', flagText(value(latest, 'recovered'))) });
@@ -33338,7 +33347,7 @@ function getFlightCityLayout(city) {
           ),
           mission.mode === 'rescue' && h('p', { style: { margin: '8px 0' } }, __alloT('stem.flightsim.mission_journal_recovery', 'Survivor recovery recorded: {value}.').replace('{value}', observedText(mission.recovered))),
           h('p', { style: { margin: '8px 0' } }, __alloT('stem.flightsim.mission_journal_return', 'Return landing at base recorded: {value}.').replace('{value}', observedText(mission.returned))),
-          mission.elapsedSeconds != null && h('p', { style: { margin: '8px 0' } }, __alloT('stem.flightsim.hud_total_mission_time', 'Total mission time: {sec} seconds').replace('{sec}', Math.round(mission.outcome === 'complete' ? mission.completedAtSeconds : mission.elapsedSeconds)))
+          mission.elapsedSeconds != null && h('p', { style: { margin: '8px 0' } }, __alloOneWord(__alloT('stem.flightsim.hud_total_mission_time', 'Total mission time: {sec} seconds').replace('{sec}', Math.round(mission.outcome === 'complete' ? mission.completedAtSeconds : mission.elapsedSeconds))))
         );
       };
 
@@ -33642,8 +33651,8 @@ function getFlightCityLayout(city) {
       var renderFlightExactAngles = function(selected, reference, scope, timeText) {
         var missing = __alloT('stem.flightsim.evidence_not_recorded', 'Not recorded');
         var degrees = function(value, signed) {
-          return value == null ? missing : __alloT('stem.flightsim.tap_degrees_value', '{value} degrees')
-            .replace('{value}', (signed && value > 0 ? '+' : '') + String(value));
+          return value == null ? missing : __alloOneWord(__alloT('stem.flightsim.tap_degrees_value', '{value} degrees')
+            .replace('{value}', (signed && value > 0 ? '+' : '') + String(value)));
         };
         var rows = [
           ['selected', __alloT('common.selected', 'Selected') + ' · ' + timeText(selected.t), degrees(selected.aoa)]
@@ -34713,7 +34722,7 @@ function getFlightCityLayout(city) {
               landed && db.bestLanding < LANDING_GRADE_FPM.smooth ? h('div',{ style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #ec4899' } }, __alloT('stem.flightsim.debrief_learned_landing', "🧈 Great landing at {fpm} fpm! This sim counts anything under {smooth} fpm as smooth, and under {butter} fpm as butter. The technique is called “flaring” — pitching up gently at 20 ft above the runway.").replace('{fpm}', db.bestLanding).replace('{smooth}', LANDING_GRADE_FPM.smooth).replace('{butter}', LANDING_GRADE_FPM.butter)) : null,
               db.flightTime > 300 ? h('div', { style: { fontSize: '11px', color: '#94a3b8', paddingLeft: '8px', borderLeft: '2px solid #8b5cf6' } },
                 (dbAc && dbAc.fuelBurn > 0
-                  ? __alloT('stem.flightsim.debrief_learned_fuel', "⏱️ You flew for over 5 minutes. Real pilots track fuel consumption carefully — the {ac} burns about {gph} gallons per hour.").replace('{ac}', dbAc.shortName || dbAc.name).replace('{gph}', dbAc.fuelBurn.toLocaleString())
+                  ? __alloOneWord(__alloT('stem.flightsim.debrief_learned_fuel', "⏱️ You flew for over 5 minutes. Real pilots track fuel consumption carefully — the {ac} burns about {gph} gallons per hour.").replace('{ac}', dbAc.shortName || dbAc.name).replace('{gph}', dbAc.fuelBurn.toLocaleString()))
                   : __alloT('stem.flightsim.debrief_learned_fuel_none', "⏱️ You flew for over 5 minutes — on no fuel at all. Without an engine to feed, the limit is energy: altitude and airspeed are the only fuel you have."))) : null
             )
           ),
@@ -35323,8 +35332,8 @@ function getFlightCityLayout(city) {
           qLegacy && h('p', { 'data-quiz-legacy-summary': 'true', style: { fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_legacy_summary', 'Earlier saved score: {score}/{total}. Earlier responses without question records are kept as history.').replace('{score}', qLegacy.score).replace('{total}', qLegacy.total)),
           h('section', { 'data-quiz-review': 'true', style: { marginBottom: '16px', padding: '12px', background: 'rgba(15,23,42,0.55)', border: '1px solid #475569', borderRadius: '12px' } },
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': true, style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: '13px' } },
-              __alloT('stem.flightsim.quiz_review_progress', '{answered} of {total} questions answered · {missed} missed')
-                .replace('{answered}', qTotal).replace('{total}', quizDeck.length).replace('{missed}', qReview.missed.length)),
+              __alloOneWord(__alloT('stem.flightsim.quiz_review_progress', '{answered} of {total} questions answered · {missed} missed')
+                .replace('{answered}', qTotal).replace('{total}', quizDeck.length).replace('{missed}', qReview.missed.length))),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, [
               { label: __alloT('stem.flightsim.quiz_review_missed', 'Review missed'), indices: qReview.missed, practice: true, id: 'missed' },
               { label: __alloT('stem.flightsim.quiz_next_unanswered', 'Next unanswered'), indices: qReview.unanswered, practice: false, id: 'unanswered' }
@@ -35437,7 +35446,7 @@ function getFlightCityLayout(city) {
                   __alloT('stem.flightsim.quiz_history_attempt', 'Saved {date} · {score}/{answered} first responses correct').replace('{date}', dateLabel).replace('{score}', attempt.score).replace('{answered}', attempt.answered)),
                 h('div', { style: { padding: '0 12px 12px', fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6 } },
                   attempt.savedAt && h('time', { dateTime: attempt.savedAt, style: { color: '#94a3b8' } }, dateLabel),
-                  h('p', { 'data-quiz-history-progress': 'true' }, __alloT('stem.flightsim.quiz_history_progress', '{answered} of {total} questions recorded · {unanswered} unanswered').replace('{answered}', attempt.answered).replace('{total}', attempt.total).replace('{unanswered}', attempt.unanswered)),
+                  h('p', { 'data-quiz-history-progress': 'true' }, __alloOneWord(__alloT('stem.flightsim.quiz_history_progress', '{answered} of {total} questions recorded · {unanswered} unanswered').replace('{answered}', attempt.answered).replace('{total}', attempt.total).replace('{unanswered}', attempt.unanswered))),
                   !!attempt.unavailable && h('p', { 'data-quiz-history-changed': 'true' }, __alloT('stem.flightsim.quiz_history_changed', '{count} saved questions no longer match this quiz. Scores use only matching question records.').replace('{count}', attempt.unavailable)),
                   attempt.entries.map(function(entry) { return h('article', { key: entry.key, 'data-quiz-history-response': 'true', style: { padding: '12px 0', borderTop: '1px solid #334155' } },
                     h('h5', { style: { fontSize: '14px', color: '#fff', margin: '0 0 8px', lineHeight: 1.5 } }, __alloT('stem.flightsim.quiz_history_question', 'Question {number}: {question}').replace('{number}', entry.number).replace('{question}', entry.question.question)),
@@ -35602,7 +35611,7 @@ function getFlightCityLayout(city) {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', minWidth: 0, alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' } },
               h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
                 h('div', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, __alloT('stem.flightsim.preflight_review_progress', 'Review progress')),
-                h('div', { style: { fontSize: '20px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#fff' } }, __alloT('stem.flightsim.preflight_review_count', '{count} / {total} items reviewed').replace('{count}', checkedCount).replace('{total}', totalItems))
+                h('div', { style: { fontSize: '20px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#fff' } }, __alloOneWord(__alloT('stem.flightsim.preflight_review_count', '{count} / {total} items reviewed').replace('{count}', checkedCount).replace('{total}', totalItems)))
               ),
               h('div', { style: { flexShrink: 0, fontSize: '28px', fontWeight: 900, color: pctComplete === 100 ? '#86efac' : '#22d3ee' } }, pctComplete + '%'),
               h('div', { style: { display: 'flex', minWidth: 0, flex: '1 1 180px', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
@@ -35751,19 +35760,19 @@ function getFlightCityLayout(city) {
             if (Math.abs(value) < Math.pow(10, -decimals) / 2) value = 0;
             return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
           }
-          var text = __alloT('stem.flightsim.calculator_read_inputs', '{aircraft}. True airspeed {speed} knots. Altitude {altitude} feet above sea level. Wing area {area} square feet. Lift coefficient {coefficient}.')
+          var text = __alloOneWord(__alloT('stem.flightsim.calculator_read_inputs', '{aircraft}. True airspeed {speed} knots. Altitude {altitude} feet above sea level. Wing area {area} square feet. Lift coefficient {coefficient}.')
             .replace('{aircraft}', namedPreset.name).replace('{speed}', number(inputs.calcSpeed, 0)).replace('{altitude}', number(inputs.calcAltitude, 0))
-            .replace('{area}', number(inputs.calcWingArea, 0)).replace('{coefficient}', number(inputs.calcCl, 2))
-            + ' ' + __alloT('stem.flightsim.calculator_read_outputs', 'Air density {density} slugs per cubic foot. Lift {lift} pounds. Aircraft weight {weight} pounds. Lift-to-weight ratio {ratio}.')
-              .replace('{density}', number(condition.density, 5)).replace('{lift}', number(condition.liftLb, 0)).replace('{weight}', number(condition.weightLb, 0)).replace('{ratio}', number(condition.liftWeightRatio, 2))
+            .replace('{area}', number(inputs.calcWingArea, 0)).replace('{coefficient}', number(inputs.calcCl, 2)))
+            + ' ' + __alloOneWord(__alloT('stem.flightsim.calculator_read_outputs', 'Air density {density} slugs per cubic foot. Lift {lift} pounds. Aircraft weight {weight} pounds. Lift-to-weight ratio {ratio}.')
+              .replace('{density}', number(condition.density, 5)).replace('{lift}', number(condition.liftLb, 0)).replace('{weight}', number(condition.weightLb, 0)).replace('{ratio}', number(condition.liftWeightRatio, 2)))
             + ' ' + balance.label + '. ' + balance.explanation;
           var comparison = flightCalculatorComparison(live, live.calcReference);
           if (comparison) {
             function names(keys) { return keys.length ? keys.map(function(key) { return calculatorInputLabels[key]; }).join(', ') : __alloT('stem.flightsim.guided_compare_none', 'None'); }
             text += ' ' + __alloT('stem.flightsim.guided_compare_variables', 'Changed: {changed}. Held fixed: {held}.')
               .replace('{changed}', names(comparison.changed)).replace('{held}', names(comparison.held));
-            text += ' ' + __alloT('stem.flightsim.calculator_read_reference', 'Reference lift {reference} pounds. Change in lift {change} pounds.')
-              .replace('{reference}', number(comparison.reference.liftLb, 0)).replace('{change}', (comparison.liftChange >= 0.5 ? '+' : '') + number(comparison.liftChange, 0));
+            text += ' ' + __alloOneWord(__alloT('stem.flightsim.calculator_read_reference', 'Reference lift {reference} pounds. Change in lift {change} pounds.')
+              .replace('{reference}', number(comparison.reference.liftLb, 0)).replace('{change}', (comparison.liftChange >= 0.5 ? '+' : '') + number(comparison.liftChange, 0)));
             text += ' ' + (comparison.liftFactor == null
               ? __alloT('stem.flightsim.calculator_read_zero_reference', 'Reference lift is zero, so a lift multiplier cannot be calculated.')
               : __alloT('stem.flightsim.calculator_read_factor', 'Current lift is {factor} times the reference lift.').replace('{factor}', number(comparison.liftFactor, 2)));
@@ -36020,7 +36029,7 @@ function getFlightCityLayout(city) {
             h('summary', { style: { minHeight: '44px', alignContent: 'center', cursor: 'pointer', color: '#bae6fd', fontWeight: 700 } }, scopedLabel(__alloT('stem.flightsim.evidence_exact_angles', 'Exact saved angles'))),
             h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '8px 0' } }, __alloT('stem.flightsim.guided_practice_angle_precision', 'Displayed angles are rounded to two decimal places; flow states use the saved angle before rounding.')),
             h('p', { 'data-exact-angle': 'selected', style: { margin: '8px 0 0', fontWeight: 700 } },
-              __alloT('stem.flightsim.guided_angle_label', 'Angle of attack') + ': ' + __alloT('stem.flightsim.tap_degrees_value', '{value} degrees').replace('{value}', String(selected.aoa)))),
+              __alloT('stem.flightsim.guided_angle_label', 'Angle of attack') + ': ' + __alloOneWord(__alloT('stem.flightsim.tap_degrees_value', '{value} degrees').replace('{value}', String(selected.aoa))))),
           h('p', { style: { color: '#cbd5e1', fontSize: '14px', margin: '12px 0' } }, __alloT('stem.flightsim.guided_practice_single_point_limit', 'One normal-flow point does not establish sustained recovery. The session summary records whether five continuous seconds were observed.')),
           h('div', { role: 'region', tabIndex: 0, 'data-stall-practice-region': earlierScope ? 'earlier' : 'true', 'aria-label': scopedLabel(__alloT('stem.flightsim.guided_practice_table_region', 'Flight practice observations table')), style: { overflowX: 'auto', maxWidth: '100%' } },
             h('table', { style: { minWidth: '540px', width: '100%', borderCollapse: 'collapse', fontSize: '14px' } },

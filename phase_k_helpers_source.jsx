@@ -179,8 +179,9 @@ const _pkReadTtsConfig = () => {
             provider: String(config.ttsProvider || '').trim().toLowerCase(),
             // Default ON (2026-09-02): a refused or failed sentence is read by the
             // device voice unless the teacher has explicitly unticked the header
-            // checkbox, which stores `browserTtsFallback: false`.
-            browserFallback: config.browserTtsFallback !== false,
+            // checkbox, which stores `browserTtsFallback: false`. A student with
+            // AI off has no cloud voice, so the device voice is never unticked.
+            browserFallback: config.browserTtsFallback !== false || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true),
         };
     } catch (_) {
         return { provider: '', browserFallback: true };
@@ -2298,8 +2299,10 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
           const studentSerializer = window.AlloModules?.LiveAac?.serializeResourceForStudentPack;
           const activityProjector = window.AlloModules?.BrainstormView?.projectStudentActivityResource;
           const learnerActivities = history.filter(item => item?.type === 'brainstorm' && !item.data?.submissionCopy && Array.isArray(item.data) && item.data.some(activity => activity && ['discussion', 'jigsaw'].includes(activity.kind)));
+          // The host waits for these before calling; an older host page may not have.
+          const studentHelpersMissing = typeof studentTransport?.studentSafeResources !== 'function' || typeof studentSerializer !== 'function' || typeof window.sanitizeHistoryForCloud !== 'function' || typeof window.stripUndefined !== 'function' || (learnerActivities.length && typeof activityProjector !== 'function');
           try {
-              if (typeof studentTransport?.studentSafeResources !== 'function' || typeof studentSerializer !== 'function' || typeof window.sanitizeHistoryForCloud !== 'function' || typeof window.stripUndefined !== 'function' || (learnerActivities.length && typeof activityProjector !== 'function')) throw new Error('student projection unavailable');
+              if (studentHelpersMissing) throw new Error('student projection unavailable');
               const projectedHistory = studentTransport.studentSafeResources(history, sourceTeacherOnlyTypes, activityProjector);
               if (!Array.isArray(projectedHistory) || learnerActivities.some(original => !projectedHistory.some(item => item?.id === original.id && item.type === 'brainstorm'))) throw new Error('learner activity projection unavailable');
               for (const item of projectedHistory) {
@@ -2312,9 +2315,11 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
                   studentHistory.push(safe);
               }
           } catch (_) {
-              const message = 'Student resources could not be prepared safely. Reload AlloFlow and try Save File again.';
+              const message = studentHelpersMissing
+                  ? 'AlloFlow is still getting ready to save. Your work is still open. Wait a moment, then press Save File again.'
+                  : 'A resource in this project could not be prepared safely, so no file was saved. Your work is still open. Try Save File again, and tell your teacher if this keeps happening.';
               try { addToast(message, 'error'); } catch (_) {}
-              return { ok: false, reason: 'student-resource-projection-unavailable', narration: message };
+              return { ok: false, reason: studentHelpersMissing ? 'student-resource-projection-unavailable' : 'student-resource-not-safe', narration: message };
           }
           dataStr = JSON.stringify({
               mode: 'student',
@@ -2976,8 +2981,10 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
           const companionInstruction = includeSource
               ? `Provide a faithful companion translation of the original passage below in sourceTranslation. If it is already in ${target}, return null. This companion is not the text being assessed. Preserve existing Markdown citations and URLs exactly.\nOriginal passage: ${JSON.stringify(companionSource)}`
               : 'Return null for sourceTranslation; no companion translation is needed.';
-          if (availableReportLanguage) {
-              const data = { ...source, reportLanguage, displayReportLanguage: availableReportLanguage };
+          // companionOnly: add the passage in this language for students; the report and its display choice stay as they are.
+          const companionOnly = deps.companionOnly === true;
+          if (availableReportLanguage || companionOnly) {
+              const data = companionOnly ? { ...source } : { ...source, reportLanguage, displayReportLanguage: availableReportLanguage };
               if (!includeSource) return { ...item, data };
               // The requested report is already available, but its source passage
               // may be in another language. Request only that missing companion.
@@ -2989,7 +2996,7 @@ const translateResourceItem = async (item, targetLanguage, deps) => {
                   }
                   const companion = result.sourceTranslation;
                   if (typeof companion === 'string' && comparable(companion) !== comparable(companionSource)) {
-                      data.sourceTranslations = { ...sourceTranslations, [availableReportLanguage]: companion };
+                      data.sourceTranslations = { ...sourceTranslations, [companionOnly ? target : availableReportLanguage]: companion };
                   }
                   return { ...item, data };
               } catch (error) {
@@ -3126,7 +3133,7 @@ ${companionInstruction}`;
       const copyBase = { ...item };
       // These caches describe the old words and voice lane, not reusable media.
       // Illustrations and embedded resource media remain available in item.data.
-      ['karaokeAudio', 'karaokeStudentAudio', 'immersiveData', 'immersiveSource', 'posEnriched'].forEach(key => { delete copyBase[key]; });
+      ['karaokeAudio', 'karaokeStudentAudio', 'immersiveData', 'immersiveSource', 'posEnriched', 'syllablePrep'].forEach(key => { delete copyBase[key]; });
       const copyConfig = { ...item.config };
       if (item.provenance && typeof item.provenance === 'object') copyBase.provenance = { ...item.provenance };
       // Reuse checks must not mistake a translated derivative for the exact
@@ -4060,10 +4067,67 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
       }
 };
 
+// Saves a partner-scored running record (fluency_module buildPartnerFluencyResult)
+// the way the AI path saves its result: assessments, history, XP. No audio exists.
+const recordPartnerFluencyCheck = (deps, result, sourceText) => {
+  const { generatedContent, setFluencyAssessments, setHistory, setFluencyResult, setFluencyFeedback, setFluencyStatus, handleScoreUpdate, playSound, addToast, t, warnLog } = deps || {};
+  if (!result || !result.recordId || result.scoringMethod !== 'partner') return null;
+  try {
+      const accuracy = Number(result.accuracy) || 0;
+      const wcpm = Number(result.wcpm) || 0;
+      const durationSeconds = Number(result.durationSeconds) || 0;
+      setFluencyAssessments(prev => {
+          const items = Array.isArray(prev) ? prev : [];
+          return items.some(item => (item?.recordId || item?.id) === result.recordId) ? items : [...items, result];
+      });
+      setHistory(prev => (Array.isArray(prev) && prev.some(item => item && item.id === result.recordId)) ? prev : [...(Array.isArray(prev) ? prev : []), {
+          id: result.recordId,
+          type: 'fluency-record',
+          title: `Partner Reading Check (${accuracy}%)`,
+          timestamp: result.timestamp,
+          meta: `${wcpm} WCPM - ${Math.round(durationSeconds)}s - partner check`,
+          data: {
+              audioRecording: '',
+              sourceText: String(sourceText || ''),
+              sourceKind: 'partner-check',
+              wordData: result.wordData || [],
+              insertions: [],
+              feedback: '',
+              passageMetadata: result.passageMetadata || null,
+              review: result.review || { status: 'unreviewed' },
+              metrics: result.metrics || {}
+          },
+          config: { descriptiveOnly: true, benchmarkEligible: false, scoringMethod: 'partner' }
+      }]);
+      setFluencyResult(result);
+      setFluencyFeedback('');
+      setFluencyStatus('complete');
+      // Flat practice XP, so a partner gains nothing by leaving errors unmarked;
+      // handleScoreUpdate keeps the per-passage maximum.
+      const earned = typeof handleScoreUpdate === 'function' ? handleScoreUpdate(50, 'Partner Reading Check', generatedContent?.id) : 0;
+      if (typeof playSound === 'function') playSound(earned > 0 ? 'correct' : 'click');
+      if (earned > 0 && generatedContent?.id && typeof addToast === 'function') {
+          addToast((typeof t === 'function' && t('toasts.xp_gain', { amount: earned, score: earned })) || `+${earned} XP`, 'success');
+      }
+      return result;
+  } catch (e) {
+      (typeof warnLog === 'function' ? warnLog : console.warn)('[PhaseK] recordPartnerFluencyCheck failed:', e);
+      return null;
+  }
+};
+
 const toggleFluencyRecording = async (deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, generationSignal } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] toggleFluencyRecording fired"); } catch(_) {}
+      // FluencyModePanel's partner check hands its finished, audio-free result
+      // here (the host passes this function, not its deps). Save it; never record.
+      const _partnerHandoff = window.__alloFluencyPartnerResult;
+      if (_partnerHandoff) {
+          window.__alloFluencyPartnerResult = null;
+          return recordPartnerFluencyCheck(deps, _partnerHandoff.result, _partnerHandoff.sourceText);
+      }
       try {
+          if ((fluencyStatus === 'idle' || fluencyStatus === 'complete') && (window.__alloStudentAiDisabled === true || window.__alloFluencyPartnerActive === true)) return;
           if (fluencyStatus === 'idle' || fluencyStatus === 'complete') {
               setFluencyTranscript(t('fluency.listening'));
               setFluencyResult(null);
@@ -4420,6 +4484,7 @@ window.AlloModules.PhaseKHelpers = {
   handleSaveReflection,
   handleSocraticSubmit,
   toggleFluencyRecording,
+  recordPartnerFluencyCheck,
   handleFixGrammarErrors,
   performDeepVerification,
 };

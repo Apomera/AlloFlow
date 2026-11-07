@@ -271,11 +271,13 @@ describe('Machine Lab: the Field Manual', () => {
   });
 
   it('offers the AI tutor with a level defaulting to the current band', () => {
-    const g912 = renderTool('machineLab', state({ view: 'learn', bandOverride: 'g912' }));
+    // The tutor renders only with a usable provider (student AI-off sweep).
+    const ai = { callGemini: () => new Promise(() => {}) };
+    const g912 = renderTool('machineLab', state({ view: 'learn', bandOverride: 'g912' }), ai);
     expect(g912).toContain('Explain at:');
     expect(g912).toMatch(/aria-pressed="true"[^>]*>High school</);
 
-    const k2 = renderTool('machineLab', state({ view: 'learn', bandOverride: 'k2' }));
+    const k2 = renderTool('machineLab', state({ view: 'learn', bandOverride: 'k2' }), ai);
     expect(k2).toMatch(/aria-pressed="true"[^>]*>Grade 2</);
   });
 });

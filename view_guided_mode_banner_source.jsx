@@ -516,6 +516,25 @@ const GUIDED_DETAIL = {
   }
 };
 
+// Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+function guidedStudentDeviceVoice(text, onEnd) {
+  if (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return false;
+  try { if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false; } catch (_) {}
+  try { if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false; } catch (_) {}
+  const synth = window.speechSynthesis;
+  const phrase = String(text == null ? '' : text).trim();
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+  try {
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
+    if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+    if (typeof onEnd === 'function') { u.onend = onEnd; u.onerror = onEnd; }
+    synth.cancel();
+    synth.speak(u);
+    return true;
+  } catch (_) { return false; }
+}
+
 function GuidedModeBanner({
   GUIDED_STEPS,
   allGuidedSteps,
@@ -1125,7 +1144,8 @@ function GuidedModeBanner({
   const _stopTts = React.useCallback(() => {
     _ttsGenRef.current++;
     const a = _ttsAudioRef.current; _ttsAudioRef.current = null;
-    if (a) { try { a.pause(); a.src = ''; } catch (_) {} }
+    if (a === 'device-voice') { try { window.speechSynthesis.cancel(); } catch (_) {} }
+    else if (a) { try { a.pause(); a.src = ''; } catch (_) {} }
     const u = _ttsUrlRef.current; _ttsUrlRef.current = null;
     if (u) { try { URL.revokeObjectURL(u); } catch (_) {} }
     setTtsState('idle');
@@ -1142,7 +1162,12 @@ function GuidedModeBanner({
     let url = null;
     try { url = await window.callTTS(plain, (window.__alloSelectedVoice || 'Puck'), (window.__alloPlaybackRate || 1), { maxRetries: 2 }); } catch (_) { url = null; }
     if (myGen !== _ttsGenRef.current) { if (url) { try { URL.revokeObjectURL(url); } catch (_) {} } return; } // superseded
-    if (!url) { setTtsState('idle'); return; }
+    if (!url) {
+      if (guidedStudentDeviceVoice(plain, () => { if (myGen === _ttsGenRef.current) _stopTts(); })) {
+        _ttsAudioRef.current = 'device-voice'; setTtsState('playing'); return;
+      }
+      setTtsState('idle'); return;
+    }
     _ttsUrlRef.current = url;
     const audio = new Audio(url); _ttsAudioRef.current = audio;
     audio.onended = _stopTts; audio.onerror = _stopTts;

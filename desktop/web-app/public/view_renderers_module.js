@@ -31,9 +31,20 @@ var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
 var X = _lazyIcon('X');
+const _alloAiUsableKind = (kind, fn) => {
+  try {
+    if (typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  try {
+    return typeof fn === "function" && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+  } catch (_) {
+    return false;
+  }
+};
 const _alloRuntimeAiAvailable = () => {
   try {
-    return typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+    return typeof window.callGemini === "function" && _alloAiUsableKind("text", window.callGemini);
   } catch (_) {
     return false;
   }
@@ -2458,7 +2469,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const [arranging, setArranging] = React.useState(false);
   const [nonce, setNonce] = React.useState(0);
   const persist = typeof onPersist === "function" ? onPersist : null;
-  const canImagen = typeof callImagen === "function";
+  const canImagen = typeof callImagen === "function" && _alloAiUsableKind("images", callImagen);
   const constelWeights = data?.constellation || {};
   const constelRef = React.useRef({});
   constelRef.current = constelWeights;
@@ -3925,7 +3936,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     return id;
   };
   const persist = typeof onPersist === "function" ? onPersist : null;
-  const canImagen = typeof callImagen === "function";
+  const canImagen = typeof callImagen === "function" && _alloAiUsableKind("images", callImagen);
   const images = data?.memoryPalace?.images || {};
   const depths = data?.memoryPalace?.depths || {};
   const [reliefOn, setReliefOn] = React.useState(false);

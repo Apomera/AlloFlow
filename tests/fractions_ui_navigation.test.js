@@ -19,12 +19,12 @@ afterEach(async () => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
-async function mount(patch = {}) {
+async function mount(patch = {}, overrides = {}) {
   let latest;
   function App() {
     const [state, setState] = React.useState({ _fractions: patch });
     latest = state._fractions;
-    return window.StemLab._registry.fractionViz.render(makeCtx({ toolData: state, setToolData: setState }));
+    return window.StemLab._registry.fractionViz.render(makeCtx({ toolData: state, setToolData: setState, ...overrides }));
   }
   root = ReactDOMClient.createRoot(document.getElementById('root'));
   await React.act(() => root.render(React.createElement(App)));
@@ -40,7 +40,7 @@ async function key(element, value, options = {}) {
 
 describe('Fraction Lab activity navigation', () => {
   it('offers four starting activities and retains every activity in each mode', async () => {
-    await mount();
+    await mount({}, { isTeacherMode: true });
     for (const [mode, count] of [['learn',10], ['practice',6], ['apply',10], ['teacher',5]]) {
       await click(document.getElementById('fraction-mode-tab-' + mode));
       expect(tabs()).toHaveLength(mode === 'teacher' ? 5 : 4);
@@ -72,7 +72,7 @@ describe('Fraction Lab activity navigation', () => {
   });
 
   it('moves keyboard focus through the currently visible activities and expanded list', async () => {
-    await mount();
+    await mount({}, { isTeacherMode: true });
     await key(selected(), 'End');
     expect(selected().id).toBe('fraction-section-tab-wall');
     expect(document.activeElement).toBe(selected());

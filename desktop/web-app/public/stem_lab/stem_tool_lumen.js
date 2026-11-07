@@ -2422,7 +2422,8 @@
           var audience = d.audience || 'working';
           var sourceRefs = Array.isArray(d.sourceRefs) ? d.sourceRefs : []; // §16 external benchmarks
           var chartType = d.chartType || 'trend'; // visualization pathway (trend | bar)
-          var callGemini = (ctx.callGemini) || (typeof window !== 'undefined' && window.callGemini) || null;
+          // Host-handed fn only (a window fallback re-armed AI the host withheld); null hides the dial + AI bar.
+          var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
           var parseJson = function (raw) {
             try {
               if (typeof raw !== 'string') return raw;
@@ -2693,7 +2694,7 @@
               onClick: function () { upd('ceiling', lvl); upd('aiError', ''); announce(__alloFill(__alloT('stem.lumen.sr_ai_ceiling_set_to', 'AI ceiling set to {value1}.'), { value1: label })); }
             }, label);
           };
-          kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.ai_involvement_ceiling', 'AI involvement ceiling') },
+          if (callGemini) kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.ai_involvement_ceiling', 'AI involvement ceiling') },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, __alloT('stem.lumen.ai_ceiling', 'AI ceiling:')),
             ceilBtn('L1', __alloT('stem.lumen.ceiling_l1', 'L1 · Data only')), ceilBtn('L2', __alloT('stem.lumen.ceiling_l2', 'L2 · Assisted')), ceilBtn('L3', __alloT('stem.lumen.ceiling_l3', 'L3 · Interpretive'))));
           var faceBtn = function (a, label, title) {
@@ -3522,7 +3523,7 @@
           // The AI section — only at the L2/L3 ceiling, only when the n-floor gate allows. The AI
           // interpretation layer is trend-shaped (buildClaimContext sends slope/interval), so it is
           // OFF in the scatter view: scatter v1 is a pure L1 correlation (data-only, no AI re-word).
-          if (claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
+          if (callGemini && claim && !claim.refused && levelIndex(ceiling) >= 2 && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
             // The AI context (buildClaimContext) describes the FULL dataset's ranges; over a
             // focused subset the two would disagree, so AI is off until the focus clears.
             var gate = focusActive

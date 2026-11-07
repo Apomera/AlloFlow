@@ -45,7 +45,8 @@ walk(ast, (node) => {
 
 describe('Dynamic Assessment form and table accessibility', () => {
   it('gives every rendered native form control an explicit accessible name', () => {
-    expect(formControls).toHaveLength(88);
+    // 90 since 2026-11-07: the second fraction of a compare item (numerator, denominator).
+    expect(formControls).toHaveLength(90);
     for (const control of formControls) {
       const names = propertiesFor(control).map(propertyName);
       expect(names.some((name) => name === 'aria-label' || name === 'aria-labelledby')).toBe(true);

@@ -42,7 +42,7 @@ describe('marine guide discovery search', () => {
 
   it('finds existing field marks and ecological details while requiring every query token', () => {
     expect(search('white bands anemone', 'clownfish')).toBe(true);
-    expect(search('three bands sheltered lagoons', 'clownfish')).toBe(true);
+    expect(search('three bands rocky reef host', 'clownfish')).toBe(true);
     expect(search('plankton branching coral', 'blue_tang')).toBe(true);
     expect(search('palette yellow tail currents', 'blue_tang')).toBe(true);
     expect(search('fish Paracanthurus', 'blue_tang')).toBe(true);

@@ -347,6 +347,61 @@ const panelDescriptionStale = (panel, overrideUrl, A) => {
     if (overrideUrl) return !(A && panel.altHash && A.hashImage(overrideUrl) === panel.altHash);
     return !!(A && panel.altHash && A.hashImage(panelDescribedImage(panel)) !== panel.altHash);
 };
+// Student AI-off: a null, host-blocked or policy-off fn is unusable. The label
+// challenge is then graded here against the teacher's labels (case, spacing,
+// punctuation and Latin/Greek/Cyrillic accents ignored; small typos tolerated).
+function _vpAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+function _vpNormLabel(value) {
+  return String(value == null ? '' : value).toLowerCase().normalize('NFKD')
+    .replace(/([\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, '$1').normalize('NFC')
+    .replace(/[\p{P}\p{S}]+/gu, ' ').replace(/\s+/g, ' ').trim();
+}
+function _vpEditDistance(a, b) {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function _vpLabelMatches(answer, key) {
+  const a = _vpNormLabel(answer), b = _vpNormLabel(key);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const tol = b.length <= 4 ? 0 : b.length <= 8 ? 1 : 2;
+  return tol > 0 && Math.abs(a.length - b.length) <= tol && _vpEditDistance(a, b) <= tol;
+}
+// keys: [{ panel, text, fillKey }]; answers: [{ panel, text, fillKey? }].
+function _vpGradeLabelsLocally(keys, answers, isFillBlank, t) {
+  const used = new Set();
+  const labelResults = answers.map(ans => {
+    let idx = -1;
+    if (isFillBlank) idx = keys.findIndex(k => k.fillKey === ans.fillKey);
+    else {
+      idx = keys.findIndex((k, i) => !used.has(i) && k.panel === ans.panel && _vpLabelMatches(ans.text, k.text));
+      if (idx < 0) idx = keys.findIndex((k, i) => !used.has(i) && _vpLabelMatches(ans.text, k.text));
+    }
+    const ok = idx >= 0 && !used.has(idx) && _vpLabelMatches(ans.text, keys[idx].text);
+    if (ok) used.add(idx);
+    return { studentLabel: ans.text, matchedTeacherLabel: ok ? keys[idx].text : '', verdict: ok ? 'correct' : 'incorrect', note: '' };
+  });
+  const totalCorrect = labelResults.filter(r => r.verdict === 'correct').length;
+  const totalExpected = keys.length;
+  const tmpl = (typeof t === 'function' && t('visual_panel.local_label_feedback')) || "Checked against your teacher's labels: {correct} of {total} match.";
+  return {
+    score: totalExpected ? Math.round(totalCorrect / totalExpected * 100) : 0,
+    totalCorrect, totalClose: 0, totalExpected,
+    feedback: String(tmpl).replace('{correct}', () => String(totalCorrect)).replace('{total}', () => String(totalExpected)),
+    labelResults, gradedLocally: true
+  };
+}
+
 const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel, onRegenerateFrame, onDeleteFrame, onDuplicateFrame, onReorderFrame, onSetPanelFps, onUpdateLabel, onUpdatePanel, language, onSpeak, t, initialAnnotations, onAnnotationsChange, isTeacherMode, onChallengeSubmit, callGemini, readOnlyDrawings, onRetryFailed }) => {
     const [labelsHidden, setLabelsHidden] = React.useState(false);
     const [editingLabel, setEditingLabel] = React.useState(null);
@@ -539,7 +594,23 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
         }));
     };
     const handleChallengeSubmit = async () => {
-        if (!callGemini || isAnalyzing) return;
+        if (isAnalyzing) return;
+        if (!_vpAiUsable('text', callGemini)) {
+            const keyText = l => typeof l === 'string' ? l : (l && l.text) || '';
+            const keys = [
+                ...visualPlan.panels.flatMap((p, i) => (p.labels || []).map((l, li) => ({ panel: i, text: keyText(l), fillKey: i + '-' + li }))),
+                ...Object.entries(userLabels).flatMap(([i, labels]) => (labels || []).map(l => ({ panel: parseInt(i), text: l.text, fillKey: 'user-' + i + '-' + l.id })))
+            ].filter(k => _vpNormLabel(k.text));
+            const answers = isFillBlank
+                ? Object.entries(fillBlankAnswers).filter(([, text]) => text && text.trim()).map(([key, text]) => ({ panel: parseInt(key.startsWith('user-') ? key.split('-')[1] : key.split('-')[0]), text: text.trim(), fillKey: key }))
+                : Object.entries(studentLabels).flatMap(([i, labels]) => (labels || []).filter(l => l && String(l.text || '').trim()).map(l => ({ panel: parseInt(i), text: String(l.text).trim() })));
+            const local = _vpGradeLabelsLocally(keys, answers, isFillBlank, t);
+            setChallengeResult(local);
+            setChallengeSubmitted(true);
+            setShowComparison(true);
+            if (onChallengeSubmit) onChallengeSubmit(local);
+            return;
+        }
         setIsAnalyzing(true);
         try {
             const teacherLabelsList = [

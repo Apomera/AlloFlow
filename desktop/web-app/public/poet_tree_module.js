@@ -896,6 +896,8 @@
   var PoetTree = React.memo(function PoetTree(props) {
     var onClose = props.onClose;
     var onCallGemini = props.onCallGemini;
+    // Learner AI off: the host may hand a blocked fn (truthy). Teacher behaviour is unchanged.
+    var ptTextAi = !!onCallGemini && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
     var onCallTTS = props.onCallTTS;
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
@@ -3950,7 +3952,7 @@
                 'aria-label': tr('Save this poem to your portfolio (My Resources)'),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '📚 Save to Portfolio'),
-              onCallGemini && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
+              ptTextAi && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '✨ Get feedback'),
               // Cross-tool: open this poem in LitLab as a performance script (parent wires the prop).
@@ -4504,7 +4506,7 @@
               }, 'Edit')
             ),
 
-            poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
+            poemText.trim() && ptTextAi && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? tr('Getting feedback, please wait') : tr('Get AI feedback on this poem'),
               style: { padding: '10px 18px', background: aiLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: aiLoading ? 'wait' : 'pointer', alignSelf: 'flex-start' }

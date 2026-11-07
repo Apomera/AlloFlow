@@ -17,7 +17,7 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 // tracked file concurrently, and swapping it in place can erase their work.
 const SOURCE = process.env.SOLAR_SOURCE || 'stem_lab/stem_tool_solarsystem.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_solarsystem.js';
-const EARTH = 'stem.solar_sys.earth';
+const EARTH = 'Earth';
 const noop = () => {};
 // Rendering the whole tool pays a first-render warm-up that measured 1.9s,
 // 5.3s and 7.5s for the SAME code on a shared machine -- straddling vitest's

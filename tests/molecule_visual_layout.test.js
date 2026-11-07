@@ -185,7 +185,7 @@ describe('Molecule Lab visual layout regression', () => {
     expect(await page.locator('[data-matching-elements-tray="true"]').count()).toBe(1);
     expect(await page.locator('[data-matching-element]').count()).toBeGreaterThan(0);
     expect(await page.locator('[data-matching-element="C"]').textContent()).toContain('Carbon');
-    expect(await page.locator('[data-selected-element-card="true"]').textContent()).toContain('Carbon forms the backbone of all known life');
+    expect(await page.locator('[data-selected-element-card="true"]').textContent()).toContain('Basis of all known life');
     expect(await page.locator('body').textContent()).not.toContain('stem.periodic.');
     expect(await page.locator('[data-molecule-periodic-grid="true"] [aria-label="Scrollable periodic table map"]').count()).toBe(1);
     expect(await page.locator('[data-periodic-map-viewport-controls="true"]').count()).toBe(1);

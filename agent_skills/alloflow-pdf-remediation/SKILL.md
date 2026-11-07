@@ -108,6 +108,16 @@ installed connector's local tools.
    the pipeline *withheld* the PDF/UA identification on purpose because the
    file didn't earn it — report it as "not claiming conformance", not as a
    defect it forgot.
+7. If a run holds the PDF because words could not be matched
+   (`taggedPdfError: content_coverage_requires_review`) or a scan correction
+   involves a number (`scan_corrections_require_review`), and
+   `coverageRelease.eligible` is true, show the person every word in
+   `coverageRelease.wordsToConfirm` and every correction in
+   `coverageRelease.correctionsToConfirm` and ask them to check each against the
+   original. Only when they say nothing is lost or changed, call
+   `pdf_release_held_tagged_pdf` with their name and
+   `coverageRelease.fingerprint`. Never decide this yourself, and never call it
+   to make a run look finished: a changed score or date must be fixed instead.
 
 ## Agent-bridge flow (no Gemini key: YOU are the model)
 

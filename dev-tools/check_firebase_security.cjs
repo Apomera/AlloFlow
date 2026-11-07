@@ -56,6 +56,19 @@ check(sourceFetch.includes("assertPublicTarget(current") && sourceFetch.includes
 check(sourceFetch === desktopSourceFetch, "desktop and cloud source-fetch safety cores must match");
 
 check(!ai.includes("https://prismflow-911fe.web.app"), "client must not fall back to the maintainer Firebase project");
+// Prismflow stays offline; districts bring their own Firebase. Shipped code may name its hosts only to refuse them.
+const PRISMFLOW_WIRED = /(?:projectId|authDomain|storageBucket)\s*:\s*["']prismflow-911fe|us-central1-prismflow-911fe/;
+const shippedFiles = ["app", "app/static/js", "desktop/web-app/public/app", "desktop/web-app/public/app/static/js"].flatMap((dir) => {
+  const full = path.join(root, dir);
+  return fs.existsSync(full) ? fs.readdirSync(full).filter((name) => /\.(?:js|html)$/.test(name)).map((name) => path.join(full, name)) : [];
+});
+if (process.env.FIREBASE_SECURITY_EXTRA_BUNDLE) shippedFiles.push(path.resolve(process.env.FIREBASE_SECURITY_EXTRA_BUNDLE));
+check(shippedFiles.length >= 4, "Prismflow scan must find the shipped app files");
+for (const file of shippedFiles) check(!PRISMFLOW_WIRED.test(fs.readFileSync(file, "utf8")), "shipped file must not connect to Prismflow: " + path.relative(root, file));
+const prismflowLines = app.split("\n").filter((line) => line.includes("prismflow-911fe"));
+check(prismflowLines.length === 1 && prismflowLines[0].includes("ALLOFLOW_DEMO_STUDENT_HOSTS"), "host app may name Prismflow only in its refused-hosts list");
+check(!read("desktop/web-app/.firebaserc").includes("prismflow"), "default Firebase project must not be Prismflow");
+check(!guide.includes("prismflow-911fe") && !env.includes("prismflow-911fe"), "district setup files must not name Prismflow");
 check(ai.includes("getFunctionSecurityHeaders") && ai.includes("method: 'POST'"), "client search must send authenticated POST requests");
 check(lumen.includes("/api/sourceFetchProxy") && lumen.includes("getFunctionSecurityHeaders") && lumen.includes("method: 'POST'"), "Lumen source import must prefer the authenticated POST proxy");
 check(lumen.includes("error.code === 'source-fetch-unavailable'"), "Lumen may use the legacy importer only when the first-party route is unavailable");

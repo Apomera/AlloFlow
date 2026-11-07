@@ -82,7 +82,8 @@ describe('double number line scaffold', () => {
   });
 
   it('puts the scaffold in the accessible description, not only the picture', () => {
-    const i = src.indexOf('aligned_line_description');
+    // 2026-11-04: the line is drawn from the student's own table; its title carries the scaffold.
+    const i = src.indexOf('model_line_description');
     expect(src.slice(i, i + 400)).toContain('scaffoldText');
   });
 

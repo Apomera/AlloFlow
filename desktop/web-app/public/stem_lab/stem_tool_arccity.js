@@ -1435,6 +1435,14 @@
     renderTool: function (id, ctx) { var t = this._registry[id]; if (!t || !t.render) return null; try { return t.render(ctx); } catch (e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
   };
 
+  // Contrast theme: hovered buttons, owned by this tool (allo-arccity-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-arccity-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-arccity-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
   (function () {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

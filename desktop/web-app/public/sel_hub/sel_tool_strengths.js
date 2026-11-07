@@ -1147,6 +1147,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
+      var _stAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var t = ctx.t || function(k) { return k; };
@@ -1169,6 +1170,7 @@ window.SelHub = window.SelHub || {
         })();
 
         var tab = d.tab || 'discover';
+        if (!_stAiOn && tab === 'coach') tab = 'discover';
         var selectedStrengths = (Array.isArray(d.selectedStrengths) ? d.selectedStrengths : []);
         var reflections = d.reflections || [];
         var reflectionInput = d.reflectionInput || '';
@@ -1205,7 +1207,7 @@ window.SelHub = window.SelHub || {
           { id: 'coach', label: '\uD83E\uDD16 Coach' },
           { id: 'profile', label: '\uD83D\uDCCA Profile' },
           { id: 'print', label: '\uD83D\uDDA8 Print' }
-        ];
+        ].filter(function (st) { return _stAiOn || st.id !== 'coach'; });
 
         var selectStrengthTab = function(nextTab) {
           var next = strengthTabs.find(function(item) { return item.id === nextTab; });
@@ -1260,7 +1262,7 @@ window.SelHub = window.SelHub || {
 
         // ── AI Coach ──
         var askAI = function() {
-          if (!callGemini || aiLoading) return;
+          if (!_stAiOn || aiLoading) return;
           sfxReflect();
           var question = aiInput.trim() || 'Based on my selected strengths, give me personalized advice.';
           // Safety pre-check on the student's typed question.
@@ -1282,7 +1284,9 @@ window.SelHub = window.SelHub || {
              'Be thoughtful and nuanced. Help them see connections between their strengths.');
           upd({ aiLoading: true, aiInput: '' });
           callGemini(prompt, false, false, 0.8).then(function(resp) {
-            upd({ aiResponse: resp || 'Great question! Keep exploring your strengths.', aiLoading: false, aiAsked: true });
+            // An empty reply (boot stub) is a failure, not a coach answer.
+            if (typeof resp !== 'string' || !resp.trim()) throw new Error('empty AI reply');
+            upd({ aiResponse: resp, aiLoading: false, aiAsked: true });
           }).catch(function() {
             upd({ aiResponse: 'AI coach is unavailable right now. Keep reflecting on your strengths!', aiLoading: false });
           });
@@ -1813,7 +1817,7 @@ window.SelHub = window.SelHub || {
               };
 
               var getAiFeedback = function() {
-                if (!callGemini || storyAiLoading || !allFilled) return;
+                if (!_stAiOn || storyAiLoading || !allFilled) return;
                 sfxReflect();
                 var storyText = storyPrompts.map(function(p) {
                   return p.label.replace('[STRENGTH]', storyStrength.label) + '\n' + (storyDraft[p.id] || '');
@@ -1834,7 +1838,8 @@ window.SelHub = window.SelHub || {
                   (band === 'elementary' ? 'Use simple, warm language.' : band === 'middle' ? 'Be relatable and affirming.' : 'Be thoughtful and nuanced.');
                 upd({ storyAiLoading: true });
                 callGemini(prompt, false, false, 0.8).then(function(resp) {
-                  upd({ storyAiResponse: resp || 'Great story! You clearly used your strength well.', storyAiLoading: false });
+                  if (typeof resp !== 'string' || !resp.trim()) throw new Error('empty AI reply');
+                  upd({ storyAiResponse: resp, storyAiLoading: false });
                 }).catch(function() {
                   upd({ storyAiResponse: 'Your story shows real self-awareness! Keep writing about your strengths.', storyAiLoading: false });
                 });
@@ -1875,7 +1880,7 @@ window.SelHub = window.SelHub || {
                     storyStep < storyPrompts.length - 1 ?
                       h('button', { 'aria-label': 'Next', onClick: function() { upd({ storyStep: storyStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strHC ? _strFg('#0f172a') : '#ffffff', border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
                       h('div', { style: { display: 'flex', gap: 6 } },
-                        callGemini ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? _strFg('#a5b4fc') : _strFg('#94a3b8'), border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
+                        _stAiOn ? h('button', { onClick: getAiFeedback, disabled: !allFilled || storyAiLoading, style: { padding: '8px 14px', borderRadius: 8, background: allFilled ? 'rgba(99,102,241,0.15)' : '#334155', color: allFilled ? _strFg('#a5b4fc') : _strFg('#94a3b8'), border: '1px solid ' + (allFilled ? 'rgba(99,102,241,0.3)' : 'transparent'), fontSize: 12, cursor: allFilled ? 'pointer' : 'default' } }, storyAiLoading ? '\u23F3 Getting feedback...' : '\uD83E\uDD16 Get AI Feedback') : null,
                         h('button', { 'aria-label': 'Save Story', onClick: saveStory, disabled: !allFilled, style: { padding: '8px 20px', borderRadius: 8, background: allFilled ? _strFg('#22c55e') : '#334155', color: allFilled ? _strFg('#0f172a') : _strFg('#94a3b8'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: allFilled ? 'pointer' : 'default' } }, '\uD83D\uDCBE Save Story')
                       )
                   )
@@ -2439,7 +2444,7 @@ window.SelHub = window.SelHub || {
             })() : null,
 
             // ── COACH TAB ──
-            tab === 'coach' ? h('div', null,
+            tab === 'coach' && _stAiOn ? h('div', null,
               h('div', { style: { textAlign: 'center', padding: 20 } },
                 h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83E\uDD16'),
                 h('p', { style: { fontSize: 13, color: _strFg('#94a3b8'), lineHeight: 1.6, maxWidth: 400, margin: '0 auto 16px' } },

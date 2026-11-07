@@ -8,6 +8,12 @@
       "indexes": []
     },
     {
+      "collectionGroup": "arcadeSubmissions",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
       "collectionGroup": "peers",
       "fieldPath": "expiresAt",
       "ttl": true,

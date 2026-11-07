@@ -47,8 +47,14 @@ describe('Calculus estimate semantics', () => {
     });
     expect(integralHtml).toContain('role="img"');
     expect(integralHtml).toContain('using 6 simpson subdivisions');
-    expect(integralHtml).toContain('exact integral 0.3333');
+    // Engagement pass 2026-11-04: on every method the exact value waits for the over/under answer.
+    expect(integralHtml).toContain('The exact integral is hidden until you answer.');
     expect(integralHtml).toContain('aria-pressed="true"');
+    const answeredHtml = renderCalculus({
+      tab: 'integral', mode: 'simpson', a: 1, b: 0, c: 0,
+      xMin: 0, xMax: 1, n: 5, ouAnswered: 'Q|1,0,0|0|1'
+    });
+    expect(answeredHtml).toContain('exact integral 0.3333');
 
     const derivativeHtml = renderCalculus({
       tab: 'derivative', a: 1, b: 0, c: 0,

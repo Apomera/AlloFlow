@@ -97,7 +97,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(28);
+        expect(call({ a: 'hello' }).v).toBe(29);
         const claim = call.setupOwner();
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -855,7 +855,7 @@ describe('ANTI wiring pins', () => {
     it('hardening + real-time wiring is present on both sides', () => {
         // Teacher: token UX, RTC answerer, dual-path push, staleness UI.
         expect(shareSessionSurfacesSource).toMatch(/Admin token — save it like a password/);
-        expect(shareSessionSurfacesSource).toMatch(/Admin token \(only when reconnecting from a new device\)/);
+        expect(shareSessionSurfacesSource).toMatch(/Admin token from Apps Script properties/);
         expect(anti).toMatch(/answerRtcOffer/);
         expect(anti).toMatch(/ondatachannel/);
         expect(hostHandlersSource).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);

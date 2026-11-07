@@ -4403,6 +4403,7 @@ window.StemLab = window.StemLab || {
 
       // ── AI Tutor ──
       var askAI = function() {
+        if (typeof ctx.callGemini !== 'function') return; // AI tutor hidden when ctx hands no usable AI
         if (aiLoading || aiRequestRef.current) return;
         aiRequestRef.current = true;
         updExt({ aiLoading: true, aiResponse: '', showAI: true });
@@ -5234,7 +5235,7 @@ window.StemLab = window.StemLab || {
             h('div',{className:'geo-action-row'},
               sculptRecipe&&h('button',{type:'button',onClick:function(){downloadSculptData({schema:'geometry-sculpture-v1',recipe:sculptRecipe},'geometry-sculpture.json');}},t('stem.geosandbox.workbench_export','Export sculpture')),
               h('label',{className:'geo-file'},t('stem.geosandbox.workbench_import','Import sculpture'),h('input',{type:'file',accept:'.json,application/json','aria-label':t('stem.geosandbox.workbench_import','Import sculpture'),onChange:importSculptFile})))),
-          h('details',{className:'geo-ai-disclosure'},h('summary',null,t('stem.geosandbox.studio_ai_creation','AI-assisted creation')),(typeof ctx.callGemini !== 'function')
+          (typeof ctx.callGemini === 'function') && h('details',{className:'geo-ai-disclosure'},h('summary',null,t('stem.geosandbox.studio_ai_creation','AI-assisted creation')),(typeof ctx.callGemini !== 'function')
                 ? h('p', { className: 'text-[0.6875rem] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI-assisted creation is unavailable, but manual sculpting below still works.'))
                 : h(React.Fragment, null,
                     h('input', {
@@ -5873,7 +5874,7 @@ window.StemLab = window.StemLab || {
               onClick: function() { updExt({ showBadges: !showBadges }); },
               title: t('stem.geosandbox.badges_b_2', 'Badges [B]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-700 to-fuchsia-800 shadow-md' : 'text-purple-200 bg-purple-700/30 border border-purple-300/70 hover:bg-purple-700/40')
-            }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),h('button', { id: 'geo-ai-tutor-button', 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
+            }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),(typeof ctx.callGemini === 'function') && h('button', { id: 'geo-ai-tutor-button', 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
               'aria-controls': 'geo-ai-tutor-panel', 'aria-expanded': showAI, disabled: aiLoading,
               onClick: askAI,
               title: t('stem.geosandbox.ai_tutor', 'AI Tutor [/]'),
@@ -5904,7 +5905,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── AI Tutor panel ──
-        showAI && h('div', { id: 'geo-ai-tutor-panel', role: 'region', 'aria-labelledby': 'geo-ai-tutor-title', 'aria-busy': aiLoading, className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
+        showAI && (typeof ctx.callGemini === 'function') && h('div', { id: 'geo-ai-tutor-panel', role: 'region', 'aria-labelledby': 'geo-ai-tutor-title', 'aria-busy': aiLoading, className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { id: 'geo-ai-tutor-title', className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, t('stem.geosandbox.ai_geometry_tutor', '\uD83E\uDD16 AI Geometry Tutor')),
             h('button', { onClick: function() { updExt({ showAI: false }); window.setTimeout(function() { var btn = document.getElementById('geo-ai-tutor-button'); if (btn) { var menu=btn.closest('details');if(menu)menu.open=true;btn.focus();} }, 0); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')

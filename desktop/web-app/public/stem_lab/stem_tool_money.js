@@ -73,6 +73,14 @@ window.StemLab = window.StemLab || {
     return (a >>> 0).toString(36) + '.' + (b >>> 0).toString(36);
   }
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-money-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-money-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-money-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"moneyMath\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"moneyMath\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"moneyMath\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -245,7 +253,15 @@ window.StemLab = window.StemLab || {
         var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
         return (v == null || v === '' || v === k) ? (fb != null ? fb : k) : v;
       };
-      
+      // Student AI-off: AI controls render only when text AI is usable (blocked/absent
+      // fn or policy off hides them); teachers keep their prior behaviour.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var moneyAiFn = ctx.callGemini;
+      var moneyAiOn = ctx.aiAvailable !== false && typeof moneyAiFn === 'function' && !moneyAiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', moneyAiFn));
+
       // State bridge: map labToolData/setLabToolData to ctx.toolData/setToolData
       var labToolData = { moneyMath: (ctx.toolData && ctx.toolData._moneyMath) || {} };
       var setLabToolData = function(fn) {
@@ -337,7 +353,7 @@ window.StemLab = window.StemLab || {
             };
             var clearMoneyDrafts = function(keys) { keys.forEach(function(key) { upd(key, null); }); };
 
-            const tab = d.tab || 'coins';
+            const tab = (d.tab === 'word' && !moneyAiOn) ? 'coins' : (d.tab || 'coins');
             const grade = d.grade || 'elementary';
             const currency = d.currency || 'USD';
             const challengeMode = !!d.challengeMode;
@@ -1815,6 +1831,7 @@ window.StemLab = window.StemLab || {
 
             // ── Word problem via AI ──
             var genWordProblem = function () {
+              if (!moneyAiOn) return;
               beginMoneyRound('ai-word-problem');
               upd('wpLoading', true); upd('wpProblem', null); upd('wpAnswer', null); upd('wpFeedback', null);
               var levelText = gc.wordProblemLevel;
@@ -1824,8 +1841,8 @@ window.StemLab = window.StemLab || {
               var convNote = Object.keys(CURRENCIES).length > 1 ? ' Occasionally include currency conversion between USD, EUR, GBP, CAD, JPY, MXN, AUD, and INR. Use exactly this fixed classroom model (units per 1 USD): USD 1, EUR 0.92, GBP 0.79, CAD 1.36, JPY 149.5, MXN 17.1, AUD 1.54, INR 83.1. Round only the final currency answer.' : '';
               var prompt = 'Generate ONE money math word problem for a ' + levelText + ' level student. ' + currNote + taxNote + percentNote + convNote +
                 '\n\nReturn ONLY valid JSON with NO markdown:\n{"problem":"...","hint":"...","answer":number,"explanation":"step-by-step solution","category":"one of: counting|change|shopping|percent|tax|tip|conversion|budgeting"}';
-              if (typeof callGemini === 'function') {
-                callGemini(prompt, { temperature: 0.9, maxTokens: 500 }).then(function (resp) {
+              if (typeof moneyAiFn === 'function') {
+                moneyAiFn(prompt, { temperature: 0.9, maxTokens: 500 }).then(function (resp) {
                   try {
                     var cleaned = (resp || '').replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
                     var parsed = JSON.parse(cleaned);
@@ -2197,7 +2214,8 @@ window.StemLab = window.StemLab || {
             // Loan calculator defaults
             var loanAmt = typeof d.loanAmt === 'number' ? d.loanAmt : 25000;
             var loanRate = typeof d.loanRate === 'number' ? d.loanRate : 5;
-            var loanTerm = typeof d.loanTerm === 'number' ? d.loanTerm : 60;
+            // Capped at 100 years: the schedule below runs once per month, in render, so a typed 1000000000 froze the tab.
+            var loanTerm = typeof d.loanTerm === 'number' ? Math.min(1200, d.loanTerm) : 60;
             var loanType = d.loanType || 'auto';
             var loanPresets = {
               auto: { label: __alloT('stem.money.auto_loan', '\uD83D\uDE97 Auto Loan'), amt: 25000, rate: 5, term: 60 },
@@ -2257,11 +2275,11 @@ window.StemLab = window.StemLab || {
               { id: 'store', label: __alloT('stem.money.grocery_store', '\uD83D\uDED2 Grocery Store'), icon: '\uD83D\uDED2' },
               { id: 'budget', label: __alloT('stem.money.budget', '\uD83D\uDCCA Budget'), icon: '\uD83D\uDCCA' },
               { id: 'cents', label: __alloT('stem.money.common_cents', '\uD83E\uDE99 Common Cents'), icon: '\uD83E\uDE99' },
-              { id: 'word', label: __alloT('stem.money.word_problems', '\uD83D\uDCDD Word Problems'), icon: '\uD83D\uDCDD' },
+              moneyAiOn && { id: 'word', label: __alloT('stem.money.word_problems', '\uD83D\uDCDD Word Problems'), icon: '\uD83D\uDCDD' },
               { id: 'exchange', label: __alloT('stem.money.currency_exchange', '\uD83C\uDF0D Currency Exchange'), icon: '\uD83C\uDF0D' },
               { id: 'finance', label: __alloT('stem.money.personal_finance', '\uD83D\uDCB0 Personal Finance'), icon: '\uD83D\uDCB0' },
               { id: 'inquiry', label: __alloT("stem.money.nav_growth_explorer", "Explore interest growth"), icon: '\uD83D\uDD2C' }
-            ];
+            ].filter(Boolean);
             var primaryMoneyTabs = ['coins', 'change', 'tips', 'store'];
             // A saved or selected secondary activity remains visible when the list is shortened.
             var visibleMoneyTabs = tabs.filter(function(item) {
@@ -4050,7 +4068,7 @@ window.StemLab = window.StemLab || {
                               var correct = typeof d.wpProblem.answer === 'number' ? roundCurrency(d.wpProblem.answer, currency) : d.wpProblem.answer;
                               var userAns = d.wpAnswer;
                               var isRight = typeof correct === 'number' && sameCurrencyAmount(userAns, correct, currency);
-                              upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 ' + t('stem.dissection.correct') } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
+                              upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 ' + t('stem.dissection.correct', 'Correct!') } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
                               if (!isRight) markMoneyAnswerShown(wordProblemItemId);
                               if (isRight) awardMoneyXPOnce('ai-word-problem', [currency, d.wpProblem.problem, correct], 25, 'word problem solved');
                             },
@@ -4859,7 +4877,7 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase" }, __alloT('stem.money.term_months', "Term (months)")),
-                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "1", step: "1", value: moneyDraftValue('loanTermDraft', loanTerm), 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { updateMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }, 60); },
+                      React.createElement("input", { style: { background: moneySurface, color: moneyInk, minHeight: 44 }, type: "number", min: "1", max: "1200", step: "1", value: moneyDraftValue('loanTermDraft', loanTerm), 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { updateMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, max: 1200, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, max: 1200, integer: true }, 60); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     )
                   ),

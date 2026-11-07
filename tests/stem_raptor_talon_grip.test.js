@@ -82,6 +82,7 @@ const fixtureFactory = Function('THREE', 'feet', `
   ${body('clearCarriedPrey')}
   ${body('beginCarriedPrey')}
   ${body('updateCarriedPrey')}
+  function updateCarryPose(){} function updateNest(){} function updateModeStart(){} function updateHoverMission(){} var mission={id:'open'},FISH_WATER_Y=-1.5;
   ${body('setPaused')}
   ${body('onReducedMotionChange')}
   function frame(dt){${source.slice(animationStart, animationEnd)}}

@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
-function renderAstronomy(state) {
-  return renderTool('astronomy', { astronomy: state });
+function renderAstronomy(state, overrides) {
+  return renderTool('astronomy', { astronomy: state }, overrides);
 }
+// The Ask card renders only when text AI is usable (2026-11-03 AI-off sweep).
+const WITH_AI = { callGemini: () => Promise.resolve('') };
 
 beforeEach(() => {
   window.__alloAstronomyAiPending = null;
@@ -171,11 +173,11 @@ describe('Astronomy AI question resilience', () => {
     expect(() => renderAstronomy({
       tab: 'tonight', observingList: [], askInput: { forged: true },
       askResponse: { forged: true }, askLoading: 'true'
-    })).not.toThrow();
+    }, WITH_AI)).not.toThrow();
     const html = renderAstronomy({
       tab: 'tonight', observingList: [], askInput: { forged: true },
       askResponse: { forged: true }, askLoading: 'true'
-    });
+    }, WITH_AI);
     expect(html).toContain('maxLength="500" aria-label="Question for the sky guide"');
     expect(html).toContain('500 characters maximum. Press Ctrl+Enter or Command+Enter to ask.');
     expect(html).not.toContain('[object Object]');
@@ -184,7 +186,7 @@ describe('Astronomy AI question resilience', () => {
   it('recovers a request that was interrupted before state was restored', () => {
     const html = renderAstronomy({
       tab: 'tonight', observingList: [], askInput: 'Where is Jupiter?', askLoading: true
-    });
+    }, WITH_AI);
     expect(html).toContain('The previous AI request was interrupted. You can ask again.');
     expect(html).toContain('aria-label="Ask the sky guide"');
     expect(html).not.toContain('Thinking');
@@ -193,7 +195,7 @@ describe('Astronomy AI question resilience', () => {
   it('announces an available answer and provides a clear action', () => {
     const html = renderAstronomy({
       tab: 'tonight', observingList: [], askResponse: 'Look east shortly after sunset.'
-    });
+    }, WITH_AI);
     expect(html).toContain('role="region" aria-label="Sky guide answer"');
     expect(html).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(html).toContain('Clear answer');

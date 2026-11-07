@@ -51,7 +51,7 @@ test.describe('Raptor grounded strike and takeoff controls',()=>{
 
   test('immediately explains launch from a perch and keeps controls readable on a phone',async({page})=>{
     const canvas=page.locator('[data-raptor-canvas]'),strike=page.locator('.rh-flight-btn-strike');
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     // No animation step: entering practice must publish its resting state immediately.
     await expect(page.locator('.rh-flight-state')).toHaveAttribute('data-flight-state','perched');await expect(strike).toBeDisabled();await expect(strike).toHaveText('Launch first');
     await expect(page.getByRole('button',{name:/^Hold to take off/})).toBeVisible();

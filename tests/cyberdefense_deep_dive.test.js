@@ -183,7 +183,7 @@ describe('Cyber Defense deep-dive hardening', () => {
   it('shows phishing difficulty only where it has an effect and avoids duplicate AI icon text', () => {
     resetStemLab();
     loadTool('stem_lab/stem_tool_cyberdefense.js', 'cyberDefense');
-    const phishing = renderTool('cyberDefense', { cyberDefense: { cyberTab: 'phish' } });
+    const phishing = renderTool('cyberDefense', { cyberDefense: { cyberTab: 'phish' } }, { callGemini: () => Promise.resolve('') });
     expect(phishing).toContain('aria-label="Phishing case difficulty"');
     expect(phishing).toContain('Email level:');
     expect(phishing).toContain('AI Case');

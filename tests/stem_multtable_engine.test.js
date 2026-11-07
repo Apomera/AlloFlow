@@ -126,8 +126,11 @@ describe('UI contracts (source pins)', () => {
   });
 
   it('Try again actually starts a new speed run', () => {
-    // Count run-start sites: keyboard S, the Speed Run button, and Try again.
-    expect(src.split('endTime: Date.now() + 120000').length - 1).toBe(3);
+    // 2026-11-03: the three run-start sites (keyboard S, the Speed Run button,
+    // Try again) now share startSpeedRun(); the behaviour is mounted and
+    // clicked in tests/multtable_deep_practice.test.js.
+    expect(src.split('endTime: Date.now() + 120000').length - 1).toBe(1);
+    expect(src.split('startSpeedRun();').length - 1).toBeGreaterThanOrEqual(3);
   });
 });
 

@@ -132,14 +132,15 @@ describe('B5: accessible names match the visible labels', () => {
   });
 });
 
-describe('B6: tutor Send without an AI provider', () => {
-  it('is disabled and says why', () => {
+describe('B6: tutor without an AI provider', () => {
+  // 2026-11-03 student AI-off sweep: with no usable AI the tutor is hidden (not disabled),
+  // and a saved 'tutor' tab falls back to Solve.
+  it('hides the tutor and its Send control', () => {
     const host = document.createElement('div');
     host.innerHTML = renderTool('algebraCAS', { algebraCAS: { tab: 'tutor', tutorInput: 'What is a variable?' } });
     const send = [...host.querySelectorAll('button')].find((b) => visible(b) === 'Send');
-    expect(send).toBeTruthy();
-    expect(send.hasAttribute('disabled')).toBe(true);
-    expect(host.textContent).toContain('needs an AI provider');
+    expect(send).toBeUndefined();
+    expect(host.textContent).not.toContain('needs an AI provider');
   });
 });
 

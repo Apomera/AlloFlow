@@ -22,6 +22,24 @@
   // hooks-rules-of-hooks holds across the arcade hub's re-renders.
   // ═══════════════════════════════════════════
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
+  var __alloT = function (key, fallback) {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      try {
+        var v = window.__alloT(key);
+        if (typeof v === 'string' && v !== '' && v !== key) return v;
+      } catch (e) {}
+    }
+    return fallback != null ? fallback : key;
+  };
+
   function waitForRegistry(cb) {
     if (window.AlloHavenArcade && typeof window.AlloHavenArcade.registerMode === 'function') {
       cb(); return;
@@ -39,16 +57,6 @@
       }
     }, 100);
   }
-
-  waitForRegistry(function () {
-    // Always attach shared helpers, even if this mode is already registered
-    // (a hot-reload could leave the mode flag set but the helpers missing).
-    attachSharedHelpers();
-    if (window.AlloHavenArcade.isRegistered && window.AlloHavenArcade.isRegistered('boss-encounter')) {
-      return;
-    }
-    register();
-  });
 
   // STEAM Spark verb set — universal across fantasy / sci-fi / plain registers.
   // Each Spark verb shapes the AI grader's framing of the action; mechanically
@@ -174,7 +182,7 @@
   // Pedagogy stays identical — generous, formative, supports distant transfer.
   // Atlas frame additionally takes opts.partnerCard (the TO card).
   function gradeCardJustification(ctx, opts) {
-    if (!ctx || typeof ctx.callGemini !== 'function') {
+    if (!ctx || !_aiUsable('text', ctx.callGemini)) {
       return Promise.reject(new Error('AI grader unavailable.'));
     }
     opts = opts || {};
@@ -266,6 +274,343 @@
     });
   }
 
+  // ── AI-off evidence path (Realm Builder, Concept Atlas) ──
+  // With no usable AI a justification is never graded and never passed. Solo,
+  // the student ticks what their writing does: that record is self-rated, costs
+  // no tokens and earns none. In a class session it goes to the teacher, whose
+  // score is the only thing that can pay. Nothing here reads the text to judge
+  // it: keyword matching would claim to measure understanding it cannot see.
+  // Boss Encounter does not use this path (see the note at its registerMode).
+  function selfCheckOptions(frameAs) {
+    if (frameAs === 'atlas') {
+      return [
+        { id: 'named_both', label: __alloT('arcade.self_check.named_both', 'I named both concepts') },
+        { id: 'how_related', label: __alloT('arcade.self_check.how_related', 'I said how they relate') },
+        { id: 'reason', label: __alloT('arcade.self_check.reason', 'I gave a reason') },
+        { id: 'example', label: __alloT('arcade.self_check.example', 'I used an example from the lesson') }
+      ];
+    }
+    return [
+      { id: 'named', label: __alloT('arcade.self_check.named', 'I named the concept') },
+      { id: 'fit', label: __alloT('arcade.self_check.fit', 'I said where or how it fits in this realm') },
+      { id: 'reason', label: __alloT('arcade.self_check.reason', 'I gave a reason') },
+      { id: 'example', label: __alloT('arcade.self_check.example', 'I used an example from the lesson') }
+    ];
+  }
+
+  // Score values feed the same thresholds AI grades use (11 evolves the canvas,
+  // 18 is resonant). Buttons show the number, so the mapping is not hidden.
+  var TEACHER_BANDS = [
+    { id: 'not_yet', label: function () { return __alloT('arcade.teacher_queue.not_yet', 'Not yet'); }, score: 8, tokens: 0 },
+    { id: 'solid', label: function () { return __alloT('arcade.teacher_queue.solid', 'Solid'); }, score: 14, tokens: 1 },
+    { id: 'strong', label: function () { return __alloT('arcade.teacher_queue.strong', 'Strong'); }, score: 19, tokens: 1 }
+  ];
+  var MAX_PENDING_PER_STUDENT = 3;
+  var MAX_PENDING_TOTAL = 40;
+
+  function selfRatedResult(frameAs, ids) {
+    var chosen = selfCheckOptions(frameAs).filter(function (o) { return (ids || []).indexOf(o.id) !== -1; });
+    return {
+      selfRated: true,
+      selfCheck: chosen.map(function (o) { return o.id; }),
+      selfCheckText: chosen.map(function (o) { return o.label; }).join('; ')
+    };
+  }
+
+  // Evidence fields for a zone or edge. Copies defined values only: Firestore
+  // rejects undefined, and these records are broadcast to the session doc.
+  function evidenceFields(src) {
+    var out = {};
+    ['selfRated', 'selfCheck', 'selfCheckText', 'scoredBy'].forEach(function (k) {
+      if (src && src[k] !== undefined && src[k] !== false) out[k] = src[k];
+    });
+    return out;
+  }
+
+  // How a zone or edge's result reads to a student or teacher. Self-rated work
+  // has no number, so it can never look like a graded result.
+  function scoreTag(item) {
+    if (item && item.selfRated) return __alloT('arcade.self_check.tag', 'self-rated');
+    if (item && item.scoredBy === 'teacher') return __alloT('arcade.teacher_queue.tag', 'teacher') + ' ' + (item.score || 0) + '/20';
+    return ((item && item.score) || 0) + '/20';
+  }
+
+  function isMine(rec, participantId, nickname) {
+    if (!rec) return false;
+    if (rec.participantId && participantId) return rec.participantId === participantId;
+    return !!nickname && rec.nickname === nickname;
+  }
+
+  function pendingSubmissions(subs) {
+    subs = subs || {};
+    return Object.keys(subs).filter(function (k) {
+      return subs[k] && subs[k].awaitingTeacher === true;
+    }).sort(function (a, b) {
+      return String(subs[a].submittedAt || '').localeCompare(String(subs[b].submittedAt || ''));
+    }).map(function (k) { return { id: k, sub: subs[k] }; });
+  }
+
+  function queueRoom(subs, participantId, nickname) {
+    var pending = pendingSubmissions(subs);
+    if (pending.length >= MAX_PENDING_TOTAL) return 'full';
+    var mine = pending.filter(function (p) { return isMine(p.sub, participantId, nickname); });
+    return mine.length >= MAX_PENDING_PER_STUDENT ? 'mine' : 'ok';
+  }
+
+  function queueBlockedMessage(room) {
+    return room === 'full'
+      ? __alloT('arcade.teacher_queue.full', 'Your teacher has a lot to score right now. Try again in a little while.')
+      : __alloT('arcade.teacher_queue.mine_full', 'You have 3 waiting for your teacher. Send more once those are scored.');
+  }
+
+  function teacherScoreRecord(subId, sub, band, note) {
+    return {
+      subId: subId,
+      participantId: sub.participantId || '',
+      nickname: sub.nickname || '',
+      summary: sub.summary || '',
+      score: band.score,
+      tokens: band.tokens,
+      note: String(note || '').trim().slice(0, 240),
+      scoredAt: new Date().toISOString()
+    };
+  }
+
+  // One award per pass: the host's awardTokens computes from its render-time
+  // state, so a second call in the same tick would overwrite the first. Callers
+  // list ctx.tokens as an effect dep, so the next award runs after this one lands.
+  function claimTeacherScores(ctx, scores, seen, participantId, nickname, source, onResult) {
+    scores = scores || {};
+    var earnings = typeof ctx.getEarnings === 'function' ? (ctx.getEarnings() || []) : [];
+    var ids = Object.keys(scores).sort();
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      var entry = scores[id];
+      if (seen[id] || !entry || !isMine(entry, participantId, nickname)) continue;
+      seen[id] = true;
+      var already = earnings.some(function (e) { return e && e.metadata && e.metadata.teacherScoreKey === id; });
+      if (already) continue;
+      if (typeof onResult === 'function') onResult(entry);
+      if (entry.tokens > 0 && typeof ctx.onAwardTokens === 'function') {
+        ctx.onAwardTokens(Math.min(1, entry.tokens), source, { teacherScoreKey: id });
+        return;
+      }
+    }
+  }
+
+  // Class work goes on its own private document, so classmates' devices never receive it and
+  // the rules can refuse a score from a student. LAN and Mailbox servers filter these writes
+  // ('unavailable'). A host too old to expose the SDK keeps the session document ('legacy').
+  var CLASS_TEXT_LIMITS = {
+    subId: 80, nickname: 80, participantId: 128, summary: 300, justification: 4000, ackText: 1000, followUp: 1000, selfCheckText: 600, submittedAt: 40,
+    verb: 40, verbLabel: 80, cardId: 200, cardName: 200, cardSource: 40, partnerCardId: 200, partnerCardName: 200,
+    fromCardId: 200, fromCardName: 200, fromCardSource: 40, toCardId: 200, toCardName: 200, toCardSource: 40,
+    cardTier: 40, encounterKey: 60, kind: 20, activityId: 100, replaces: 200, roomId: 80, newRoomTitle: 80, label: 120, mnemonic: 360, groupId: 80, role: 40, contributorNickname: 80
+  };
+  var CLASS_IMAGE_FIELDS = ['cardImageBase64', 'fromCardImageBase64', 'toCardImageBase64'];
+  var CLASS_IMAGE_LIMIT = 400000;
+  var CLASS_KEEP_MS = 14 * 24 * 60 * 60 * 1000;
+
+  function classFailReason(err) {
+    if (err && err.classReason) return err.classReason;
+    return /permission|denied|insufficient/i.test(String((err && err.code) || '') + ' ' + String((err && err.message) || '')) ? 'rules' : 'network';
+  }
+
+  function classSendMessage(err) {
+    var reason = classFailReason(err);
+    if (reason === 'rules') return __alloT('arcade.class_send.rules', 'Your class is not set up to receive this yet, so it was not sent. Your work is still here. Let your teacher know.');
+    if (reason === 'transport') return __alloT('arcade.class_send.connection', 'This kind of class connection cannot carry game work, so it was not sent. Your work is still here. Let your teacher know.');
+    return __alloT('arcade.class_send.failed', 'That did not send. Your work is still here. Check your connection and try again.');
+  }
+
+  function classNoticeText(issue, isHost) {
+    if (issue === 'rules') return isHost
+      ? __alloT('arcade.class_send.teacher_rules', 'Students cannot send you work yet. Ask whoever set up your school\'s Firebase to publish the latest rules.')
+      : __alloT('arcade.class_send.student_rules', 'Your class is not set up to receive game work yet, so nothing can be sent. Let your teacher know.');
+    if (issue === 'transport') return isHost
+      ? __alloT('arcade.class_send.teacher_connection', 'Students cannot send game work over this kind of class connection (local network or Class Mailbox). They can still play on their own.')
+      : __alloT('arcade.class_send.student_connection', 'This kind of class connection cannot carry game work, so nothing can be sent. You can still play on your own.');
+    return '';
+  }
+
+  function cleanClassDoc(data, uid, activity) {
+    var doc = { uid: uid, activity: activity, expiresAt: new Date(Date.now() + CLASS_KEEP_MS) };
+    Object.keys(CLASS_TEXT_LIMITS).forEach(function (field) {
+      var value = data[field];
+      if (value === null || value === undefined) return;
+      doc[field] = String(value).slice(0, CLASS_TEXT_LIMITS[field]);
+    });
+    CLASS_IMAGE_FIELDS.forEach(function (field) {
+      if (typeof data[field] === 'string' && data[field].length <= CLASS_IMAGE_LIMIT) doc[field] = data[field];
+    });
+    if (data.awaitingTeacher === true) doc.awaitingTeacher = true;
+    if (typeof data.score === 'number') doc.score = Math.max(1, Math.min(20, Math.round(data.score)));
+    if (typeof data.round === 'number') doc.round = Math.max(1, Math.min(99, Math.round(data.round)));
+    if (data.status === 'pending') doc.status = 'pending';
+    if (Array.isArray(data.selfCheck)) doc.selfCheck = data.selfCheck.slice(0, 12).map(String);
+    return doc;
+  }
+
+  function classChannel(ctx) {
+    var fb = window.__alloFirebase;
+    var db = ctx.firestoreDb || (fb && fb.db);
+    var uid = ctx.sessionParticipantId || '';
+    if (!fb || !db || !ctx.sessionCode || !ctx.firestoreAppId || !fb.doc || !fb.setDoc || !fb.updateDoc || !fb.deleteDoc || !fb.onSnapshot || !fb.collection || !fb.query || !fb.where || !fb.getDocs) return { kind: 'legacy' };
+    var base = ['artifacts', ctx.firestoreAppId, 'public', 'data', 'sessions', ctx.sessionCode];
+    var sessionRef = fb.doc.apply(null, [db].concat(base));
+    if (sessionRef && (sessionRef.__alloMbRef || sessionRef.__alloLanRef)) return { kind: 'unavailable' };
+    function col() { return fb.collection.apply(null, [db].concat(base, ['arcadeSubmissions'])); }
+    function ref(id) { return fb.doc.apply(null, [db].concat(base, ['arcadeSubmissions', id])); }
+    return {
+      kind: 'private',
+      send: function (activity, subId, data) { return Promise.resolve(fb.setDoc(ref(uid + '_' + subId), cleanClassDoc(data, uid, activity))); },
+      score: function (docId, record) { return Promise.resolve(fb.updateDoc(ref(docId), { teacherScore: record })); },
+      patch: function (docId, fields) { return Promise.resolve(fb.updateDoc(ref(docId), fields)); },
+      remove: function (docId) { return Promise.resolve(fb.deleteDoc(ref(docId))); },
+      clear: function (activity) {
+        return Promise.resolve(fb.getDocs(col())).then(function (snap) {
+          var ids = [];
+          snap.forEach(function (item) { var d = item.data(); if (d && d.activity === activity) ids.push(item.id); });
+          return Promise.all(ids.map(function (id) { return fb.deleteDoc(ref(id)); }));
+        });
+      },
+      // A permission error here means the deployed rules are older than this app.
+      watch: function (isHost, activity, onDocs, onIssue) {
+        try {
+          return fb.onSnapshot(isHost ? col() : fb.query(col(), fb.where('uid', '==', uid)), function (snap) {
+            var docs = {};
+            snap.forEach(function (item) { var d = item.data(); if (d && d.activity === activity) docs[item.id] = d; });
+            onIssue(null);
+            onDocs(docs);
+          }, function (err) { onIssue(classFailReason(err)); });
+        } catch (err) {
+          onIssue(classFailReason(err));
+          return function () {};
+        }
+      }
+    };
+  }
+
+  // Unscored private docs in the shape of session-doc submissions, keyed by document id.
+  function classQueue(legacy, docs) {
+    var merged = Object.assign({}, legacy || {});
+    Object.keys(docs || {}).forEach(function (id) {
+      if (!docs[id].teacherScore) merged[id] = Object.assign({}, docs[id], { participantId: docs[id].uid, privateDoc: true });
+    });
+    return merged;
+  }
+
+  function classScores(legacy, docs) {
+    var merged = Object.assign({}, legacy || {});
+    Object.keys(docs || {}).forEach(function (id) {
+      if (docs[id].teacherScore) merged[id] = Object.assign({}, docs[id].teacherScore, { participantId: docs[id].uid });
+    });
+    return merged;
+  }
+
+  function renderSelfCheck(h, palette, opts) {
+    var value = opts.value || [];
+    var legendId = opts.idPrefix + '-self-check-legend';
+    return h('fieldset', {
+      'data-self-check': opts.frameAs,
+      'aria-labelledby': legendId,
+      style: { margin: '0 0 10px 0', padding: '10px 12px', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' }
+    },
+      h('legend', {
+        id: legendId,
+        style: { padding: '0 4px', fontSize: '11px', fontWeight: 700, color: palette.text || '#e2e8f0' }
+      }, __alloT('arcade.self_check.legend', 'Check your own writing. Tick only what it really does.')),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' } },
+        selfCheckOptions(opts.frameAs).map(function (o) {
+          var on = value.indexOf(o.id) !== -1;
+          return h('label', {
+            key: 'sc-' + o.id,
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '6px', minHeight: '44px', padding: '4px 12px',
+              fontSize: '12px', borderRadius: '999px', cursor: opts.disabled ? 'not-allowed' : 'pointer',
+              border: '1.5px solid ' + (on ? (palette.accent || '#60a5fa') : (palette.border || '#334155')),
+              color: palette.text || '#e2e8f0'
+            }
+          },
+            h('input', {
+              type: 'checkbox',
+              checked: on,
+              disabled: !!opts.disabled,
+              'data-self-check-chip': o.id,
+              onChange: function () {
+                opts.onChange(on ? value.filter(function (v) { return v !== o.id; }) : value.concat([o.id]));
+              }
+            }),
+            h('span', null, o.label)
+          );
+        })
+      ),
+      h('p', { style: { margin: 0, fontSize: '11px', lineHeight: '1.45', color: palette.textDim || '#cbd5e1' } },
+        opts.toTeacher
+          ? __alloT('arcade.self_check.note_teacher', 'Your teacher reads your writing and scores it. They also see what you ticked.')
+          : __alloT('arcade.self_check.note_solo', 'This is self-rated, not a grade. No tokens are spent or earned. If none fit yet, add a reason or an example, then tick.'))
+    );
+  }
+
+  // Teacher's scoring list for AI-off class submissions. Its own component so
+  // note drafts survive the parent's re-renders. opts.describe(sub) names the
+  // card play; opts.onScore(id, sub, band, note) applies the score.
+  function TeacherQueue(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var palette = props.palette || {};
+    var notesTuple = React.useState({});
+    var notes = notesTuple[0];
+    var setNotes = notesTuple[1];
+    var pending = pendingSubmissions(props.submissions);
+    if (!pending.length) return null;
+    return h('section', {
+      'data-teacher-queue': 'true',
+      'aria-label': __alloT('arcade.teacher_queue.title', 'Waiting for your score'),
+      style: { marginBottom: '12px', padding: '10px 12px', border: '1.5px solid ' + (palette.accent || '#60a5fa'), borderRadius: '10px', background: palette.surface || '#1e293b', color: palette.text || '#e2e8f0' }
+    },
+      h('h3', { style: { margin: '0 0 8px 0', fontSize: '13px', fontWeight: 700 } },
+        __alloT('arcade.teacher_queue.title', 'Waiting for your score') + ' · ' + pending.length),
+      pending.map(function (p) {
+        var noteId = 'arcade-teacher-note-' + p.id;
+        return h('article', {
+          key: p.id,
+          'data-teacher-item': p.id,
+          style: { padding: '8px 10px', marginBottom: '8px', borderRadius: '8px', border: '1px solid ' + (palette.border || '#334155') }
+        },
+          h('div', { style: { fontSize: '12px', fontWeight: 700 } }, (p.sub.nickname || 'Student') + ' · ' + props.describe(p.sub)),
+          h('p', { style: { margin: '4px 0', fontSize: '12px', lineHeight: '1.5' } }, p.sub.justification || ''),
+          h('p', { style: { margin: '0 0 6px 0', fontSize: '11px', color: palette.textDim || '#cbd5e1' } },
+            __alloT('arcade.teacher_queue.student_ticked', 'Self-rated by the student, not a score:') + ' ' + (p.sub.selfCheckText || '')),
+          h('label', { htmlFor: noteId, style: { display: 'block', fontSize: '11px', fontWeight: 700, marginBottom: '2px' } },
+            __alloT('arcade.teacher_queue.note_label', 'Note to the student (optional)')),
+          h('input', {
+            id: noteId,
+            type: 'text',
+            maxLength: 240,
+            value: notes[p.id] || '',
+            onChange: function (e) {
+              var v = e.target.value;
+              setNotes(function (prev) { var n = Object.assign({}, prev); n[p.id] = v; return n; });
+            },
+            style: { width: '100%', boxSizing: 'border-box', padding: '6px 8px', marginBottom: '6px', fontSize: '12px', fontFamily: 'inherit', color: palette.text || '#e2e8f0', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px' }
+          }),
+          h('div', { role: 'group', 'aria-label': __alloT('arcade.teacher_queue.score_label', 'Score this'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+            TEACHER_BANDS.map(function (band) {
+              return h('button', {
+                key: band.id,
+                type: 'button',
+                'data-teacher-band': band.id,
+                onClick: function () { props.onScore(p.id, p.sub, band, notes[p.id] || ''); },
+                style: { minHeight: '44px', padding: '6px 12px', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', background: 'transparent', color: palette.text || '#e2e8f0', border: '1.5px solid ' + (palette.accent || '#60a5fa'), borderRadius: '8px' }
+              }, band.label() + ' (' + band.score + '/20)');
+            })
+          )
+        );
+      })
+    );
+  }
+
   // ── Shared arcade CSS (Phase J — visual polish) ──
   // Injects card/verb interaction styles + score-pop keyframes once per
   // page load. All three arcade modes use the same className helpers
@@ -351,6 +696,31 @@
     if (!window.AlloHavenArcade.gradeCardJustification) {
       window.AlloHavenArcade.gradeCardJustification = gradeCardJustification;
     }
+    if (!window.AlloHavenArcade.selfCheck) {
+      window.AlloHavenArcade.selfCheck = {
+        options: selfCheckOptions,
+        selfRatedResult: selfRatedResult,
+        evidenceFields: evidenceFields,
+        scoreTag: scoreTag,
+        isMine: isMine,
+        pendingSubmissions: pendingSubmissions,
+        queueRoom: queueRoom,
+        queueBlockedMessage: queueBlockedMessage,
+        teacherScoreRecord: teacherScoreRecord,
+        claimTeacherScores: claimTeacherScores,
+        renderSelfCheck: renderSelfCheck,
+        TeacherQueue: TeacherQueue
+      };
+    }
+    if (!window.AlloHavenArcade.classWork) {
+      window.AlloHavenArcade.classWork = {
+        channel: classChannel,
+        queue: classQueue,
+        scores: classScores,
+        message: classSendMessage,
+        noticeText: classNoticeText
+      };
+    }
     if (!window.AlloHavenArcade.COMBAT_VERBS)   window.AlloHavenArcade.COMBAT_VERBS = COMBAT_VERBS;
     if (!window.AlloHavenArcade.BUILDING_VERBS) window.AlloHavenArcade.BUILDING_VERBS = BUILDING_VERBS;
     if (!window.AlloHavenArcade.ATLAS_VERBS)    window.AlloHavenArcade.ATLAS_VERBS = ATLAS_VERBS;
@@ -369,6 +739,11 @@
 
   function register() {
     window.AlloHavenArcade.registerMode('boss-encounter', {
+      // Stays hidden with AI off. The grade IS the game: it sets boss damage and
+      // win or loss, and a class win pays tokens. Self-rated damage is a win the
+      // student awards themself, no damage is no game, and a teacher cannot read
+      // a class's writing inside a 90-second round.
+      requiresAi: 'text',
       label: 'Boss Encounter',
       icon: '🐉',
       blurb: 'Pick a topic, draw cards from your room, and Spark them through justifications. Solo vs. an AI-generated boss for now; live class mode comes next.',
@@ -802,6 +1177,49 @@
       // eslint-disable-next-line
     }, []);
 
+    // Students' Sparks arrive on private documents (see classChannel). The host relays
+    // score and damage to the session document; writing stays off classmates' devices.
+    var bossDocsTuple = useState({});
+    var bossDocs = bossDocsTuple[0];
+    var setBossDocs = bossDocsTuple[1];
+    var bossIssueTuple = useState(null);
+    var bossIssue = bossIssueTuple[0];
+    var setBossIssue = bossIssueTuple[1];
+    var ownWritingRef = useRef({});
+    useEffect(function () {
+      if (!isClassMode) return;
+      var chan = classChannel(ctx);
+      if (chan.kind === 'unavailable') { setBossIssue('transport'); return; }
+      if (chan.kind !== 'private') return;
+      return chan.watch(isClassHost, 'boss', setBossDocs, setBossIssue);
+      // eslint-disable-next-line
+    }, [isClassMode, ctx.sessionCode]);
+    var bossEncounterKey = (classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.startedAt) || '';
+    var relayedBossRef = useRef({});
+    useEffect(function () {
+      if (!isClassHost || typeof ctx.sessionUpdate !== 'function' || !bossEncounterKey) return;
+      var be = classSessionState.bossEncounter || {};
+      if (be.status !== 'open') return;
+      var subFields = {};
+      Object.keys(bossDocs).forEach(function (id) {
+        var d = bossDocs[id];
+        if (relayedBossRef.current[id] || d.encounterKey !== bossEncounterKey || (be.submissions && be.submissions[id])) return;
+        var score = typeof d.score === 'number' ? d.score : 1;
+        relayedBossRef.current[id] = true;
+        subFields[id] = {
+          nickname: d.nickname || 'anon', cardName: d.cardName || '', cardSource: d.cardSource || 'decoration', cardTier: d.cardTier || null,
+          verb: d.verb || '', score: score, damage: score < 11 ? 0 : (score >= 18 ? score : (score - 5)), healed: score >= 18,
+          round: typeof d.round === 'number' ? d.round : 1, submittedAt: d.submittedAt || new Date().toISOString()
+        };
+      });
+      var ids = Object.keys(subFields);
+      if (!ids.length) return;
+      Promise.resolve(ctx.sessionUpdate({ bossEncounter: { submissions: subFields } })).catch(function () {
+        ids.forEach(function (id) { delete relayedBossRef.current[id]; });
+      });
+      // eslint-disable-next-line
+    }, [bossDocs, bossEncounterKey, isClassHost]);
+
     // Derived class-encounter view (null in solo mode). Phase 3b.full.c
     // shipped submissions / sumDamage / participants / sharedHp; this
     // commit (3b.full.d) extends with round state (currentRound,
@@ -839,7 +1257,9 @@
       var myNickname = ctx.studentNickname || 'anon';
       var hasSubmittedThisRound = subList.some(function (s) {
         return s.nickname === myNickname && s.round === currentRound;
-      });
+      }) || (isClassStudent && Object.keys(bossDocs).some(function (id) {
+        return bossDocs[id].encounterKey === (be.startedAt || '') && bossDocs[id].round === currentRound;
+      }));
 
       return {
         submissions: subList,
@@ -1010,6 +1430,8 @@
       if (outcome === 'won') {
         fields.classRewardTokens = CLASS_REWARD_TOKENS;
       }
+      var endChan = classChannel(ctx);
+      if (endChan.kind === 'private') endChan.clear('boss').catch(function () { /* the documents expire on their own */ });
       try {
         ctx.sessionUpdate({ bossEncounter: fields }).catch(function () { /* ignore */ });
       } catch (e) { /* ignore */ }
@@ -1032,7 +1454,11 @@
       }
       var newDamage = clamped < 11 ? 0 : (clamped >= 18 ? clamped : (clamped - 5));
       var subFields = {};
-      subFields[sub.id] = Object.assign({}, sub, {
+      var publicSub = Object.assign({}, sub);
+      delete publicSub.justification;
+      delete publicSub.ackText;
+      delete publicSub.followUp;
+      subFields[sub.id] = Object.assign(publicSub, {
         score: clamped,
         damage: newDamage,
         healed: clamped >= 18,
@@ -1113,7 +1539,7 @@
         : { webSpeech: false, mediaRecorder: false, whisperLoaded: false };
       if (engine === 'auto') {
         if (caps.whisperLoaded) return 'whisper';
-        if (typeof ctx.callGeminiAudio === 'function') return 'gemini';
+        if (_aiUsable('audio', ctx.callGeminiAudio)) return 'gemini';
         if (caps.webSpeech) return 'webspeech';
         return 'off';
       }
@@ -1125,7 +1551,7 @@
       if (engine === 'whisper' && !caps.whisperLoaded) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
-      if (engine === 'gemini' && typeof ctx.callGeminiAudio !== 'function') {
+      if (engine === 'gemini' && !_aiUsable('audio', ctx.callGeminiAudio)) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
       if (engine === 'webspeech' && !caps.webSpeech) {
@@ -1294,7 +1720,7 @@
         ctx.addToast('Write at least a sentence to Spark this card.');
         return;
       }
-      if (typeof ctx.callGemini !== 'function') {
+      if (!_aiUsable('text', ctx.callGemini)) {
         ctx.addToast('AI grader unavailable. Try again later.');
         return;
       }
@@ -1326,7 +1752,7 @@
       if (parsed.score < 18) return;                      // only criticals trigger
       if (transformCount >= MAX_VISUAL_TRANSFORMS) return; // cost guard
       if (!bossImage) return;                              // nothing to transform
-      if (typeof window.callGeminiImageEdit !== 'function') return;
+      if (!_aiUsable('imageEdit', window.callGeminiImageEdit)) return;
       var verbDef = SPARK_VERBS.filter(function (v) { return v.id === verb.id; })[0] || verb;
       var verbEdit = verbDef.editPrompt || 'transformed by an idea, with a subtle inner change visible';
       var cardName = card.name || 'an idea';
@@ -1381,7 +1807,7 @@
       var willTransform = healed
         && transformCount < MAX_VISUAL_TRANSFORMS
         && bossImage
-        && typeof window.callGeminiImageEdit === 'function';
+        && _aiUsable('imageEdit', window.callGeminiImageEdit);
       var entry = {
         round: round,
         cardId: pickedCard.id,
@@ -1428,10 +1854,27 @@
           submittedAt: new Date().toISOString()
         };
         try {
-          ctx.sessionUpdate({
-            bossEncounter: { submissions: subFields }
-          }).catch(function () { /* best-effort */ });
-        } catch (e) { /* ignore */ }
+          var sparkChan = isClassStudent ? classChannel(ctx) : { kind: 'host' };
+          var sparkSent;
+          if (sparkChan.kind === 'private') {
+            var sparkId = 'spark-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+            ownWritingRef.current[ctx.sessionParticipantId + '_' + sparkId] = entry;
+            sparkSent = sparkChan.send('boss', sparkId, Object.assign({}, subFields[subId], { encounterKey: bossEncounterKey, subId: sparkId }));
+          } else if (sparkChan.kind === 'unavailable') {
+            var sparkErr = new Error('This class connection cannot carry game work.');
+            sparkErr.classReason = 'transport';
+            sparkSent = Promise.reject(sparkErr);
+          } else {
+            sparkSent = Promise.resolve(ctx.sessionUpdate({ bossEncounter: { submissions: subFields } }));
+          }
+          sparkSent.catch(function (err) {
+            ctx.addToast(classSendMessage(err));
+            setJustification(entry.justification);
+          });
+        } catch (e) {
+          ctx.addToast(classSendMessage(e));
+          setJustification(entry.justification);
+        }
       }
       if (willTransform) {
         applyVisualSparkTransform(pickedCard, pickedVerb, parsed);
@@ -1484,16 +1927,17 @@
         sourceHistory = classView.submissions
           .filter(function (s) { return s.nickname === myNick; })
           .map(function (s) {
+            var mine = ownWritingRef.current[s.id] || bossDocs[s.id] || {};
             var entry = {
               round: s.round,
               cardName: s.cardName,
               cardSource: s.cardSource || 'decoration',
               cardTier: s.cardTier || null,
               verb: s.verb,
-              justification: s.justification,
+              justification: s.justification || mine.justification || '',
               score: s.score,
-              ackText: s.ackText,
-              followUp: s.followUp,
+              ackText: s.ackText || mine.ackText || '',
+              followUp: s.followUp || mine.followUp || '',
               damage: s.damage,
               healed: s.healed
             };
@@ -1897,6 +2341,11 @@
       // determining outcome (won if HP=0, lost otherwise). The
       // snapshot useEffect propagates terminal phase to all
       // participants.
+      isClassMode && classNoticeText(bossIssue, isClassHost) ? h('p', {
+        role: 'status',
+        'data-class-notice': bossIssue,
+        style: { margin: '0 0 12px 0', padding: '8px 12px', fontSize: '12px', lineHeight: '1.5', borderRadius: '8px', border: '1.5px solid ' + (palette.accent || '#60a5fa'), color: palette.text }
+      }, classNoticeText(bossIssue, isClassHost)) : null,
       isClassHost && classView && classView.sessionStatus === 'open' ? h('div', {
         role: 'group',
         'aria-label': 'Teacher encounter controls',
@@ -2164,6 +2613,9 @@
                   flexWrap: 'wrap'
                 }
               },
+                bossDocs[s.id] && bossDocs[s.id].justification ? h('p', {
+                  style: { flexBasis: '100%', margin: 0, fontSize: '11px', lineHeight: '1.45', color: palette.text }
+                }, bossDocs[s.id].justification) : null,
                 h('label', {
                   htmlFor: 'edit-score-' + s.id,
                   style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
@@ -2519,4 +2971,16 @@
       ) : null
     );
   }
+
+  // Runs last: when the registry already exists this fires synchronously, and
+  // attachSharedHelpers publishes the verb lists, which must be initialized by then.
+  waitForRegistry(function () {
+    // Always attach shared helpers, even if this mode is already registered
+    // (a hot-reload could leave the mode flag set but the helpers missing).
+    attachSharedHelpers();
+    if (window.AlloHavenArcade.isRegistered && window.AlloHavenArcade.isRegistered('boss-encounter')) {
+      return;
+    }
+    register();
+  });
 })();

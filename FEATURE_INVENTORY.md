@@ -502,7 +502,7 @@ The "Spelling Bee / Sound Sort / Letter Tracing" activities flagged in REFLECTIV
 `ai_backend_module.js` exposes a **`WebSearchProvider`** that grounds Gemini responses in live web results — used by Quiz fact-checking, persona research, lesson alignment verification, etc.
 
 - Uses a **SearxNG** instance for search (privacy-respecting metasearch; no per-query API key)
-- Falls back to Firebase-hosted search proxy at `https://prismflow-911fe.web.app` (the `searchproxy` Firebase function)
+- Falls back to the `searchProxy` Firebase function on the district's own project, when one is configured
 - Health check: 2-second timeout against SearxNG; auto-fallback if unavailable
 - Topic-extraction pipeline: pattern-match → quoted-string → shortest-meaningful-sentence
 - Builds **grounding metadata** that gets attached to the Gemini call so the model cites sources

@@ -14,7 +14,8 @@ beforeEach(() => {
 });
 
 function glossary() {
-  const html = renderTool('protractor', { angles: { expSection: 'glossary' } });
+  // The library now lives behind the activities, on the Reference tab.
+  const html = renderTool('protractor', { protractor: { activeTab: 'reference' }, angles: { expSection: 'glossary' } });
   const host = document.createElement('div');
   host.innerHTML = html;
   const entries = {};

@@ -3,7 +3,7 @@ import { loadTool, resetStemLab, renderTool } from './helpers/stem_widgets_smoke
 import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const ids = ['goldmouth_sea_squirt', 'feather_duster_worm', 'christmas_tree_worm', 'bennetts_feather_star',
-  'barrel_sponge', 'orange_cup_coral', 'magnificent_anemone', 'giant_clam'];
+  'barrel_sponge', 'orange_cup_coral', 'magnificent_anemone', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'giant_clam'];
 let X;
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
@@ -24,9 +24,9 @@ describe('contextual animal-group explanations', () => {
       expect(X.SPECIES_META.some(meta => meta.id === id)).toBe(true);
       expect(note.text.trim().split(/\s+/).length, id + ' stays readable').toBeLessThanOrEqual(55);
       expect(note.text.length, id).toBeGreaterThan(100);
-      expect(note.source.title).toMatch(/University of Hawaiʻi|Museums Victoria|NOAA/);
+      expect(note.source.title).toMatch(/University of Hawaiʻi|Museums Victoria|NOAA|WoRMS|Living Oceans Foundation|Naturalis/);
       expect(new URL(note.source.url).protocol).toBe('https:');
-      expect(['manoa.hawaii.edu', 'collections.museumsvictoria.com.au', 'oceanservice.noaa.gov']).toContain(new URL(note.source.url).hostname);
+      expect(['manoa.hawaii.edu', 'collections.museumsvictoria.com.au', 'oceanservice.noaa.gov', 'www.marinespecies.org', 'www.livingoceansfoundation.org', 'indo-malayan-reef-corals.linnaeus.naturalis.nl']).toContain(new URL(note.source.url).hostname);
     }
     expect(notes.reef_manta).toBeUndefined(); expect(notes.biorock).toBeUndefined();
   });

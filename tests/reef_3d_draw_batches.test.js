@@ -18,7 +18,7 @@ const S = local.Reef3DSpecies;
 const TIERS = ['low', 'high'];
 const MOTION = { speed: 0.3, turn: 0.25, current: { x: 0.05, z: -0.03, strength: 0.7 } };
 const RAYS = ['bluespotted_stingray', 'reef_manta'], TURTLES = ['green_turtle', 'hawksbill_turtle'];
-const SCHOOLS = ['anthias', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish'];
+const SCHOOLS = ['anthias', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish', 'blackfin_barracuda'];
 // These fish have their own rigs rather than the shared lofted-fish anatomy.
 const CUSTOM_FISH = ['spotted_garden_eel', 'banded_pipefish', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'];
 const LOFTED = S.ids.filter((id) => S.info(id).group === 'fish' && !RAYS.includes(id) && !CUSTOM_FISH.includes(id));
@@ -56,7 +56,9 @@ const CALLS = {
   reef_star: 2, reef_ball: 3, coral_tree_nursery: 2,
   firefish: 2, copperband_butterflyfish: 2, spotted_garden_eel: 2, banded_pipefish: 2, yellow_longnose_butterflyfish: 2,
   pajama_cardinalfish: 2, banggai_cardinalfish: 2, giant_triton: 2, blue_velvet_headshield_slug: 2, regal_angelfish: 2,
-  mandarin_dragonet: 2, harlequin_shrimp: 2, spotted_seahorse: 2, bennetts_feather_star: 2, peacock_mantis_shrimp: 2, ribbon_eel: 2
+  mandarin_dragonet: 2, harlequin_shrimp: 2, spotted_seahorse: 2, bennetts_feather_star: 2, peacock_mantis_shrimp: 2, ribbon_eel: 2,
+  blackfin_barracuda: 2, titan_triggerfish: 2, bluefin_trevally: 2,
+  blacktip_reef_shark: 2, dusky_farmerfish: 2
 };
 for (const [id, parts] of Object.entries(POST_MERGE_PARTS)) CALLS[id] = parts.length;
 const EXACT = { ...Object.fromEntries(Object.entries(POST_MERGE_PARTS).map(([id, parts]) => [id, parts.length])), reef_manta: 3, bluespotted_stingray: 3, green_turtle: 5, hawksbill_turtle: 5, day_octopus: 2 };
@@ -71,6 +73,7 @@ describe('J1 species batches: draw calls', () => {
           expect(CALLS[id], id + ' is pinned').toBeDefined();
           if (LOFTED.includes(id)) expect(n, id + ' ' + quality + ': body + one batch of fins, tail, pectorals and eyes').toBe(2);
           else if (id === 'orange_cup_coral' && health === 'dead') expect(n, 'dead cup coral keeps its skeleton and oral discs, without feeding tentacles').toBe(2);
+          else if (['bubble_coral', 'hammer_coral', 'flowerpot_coral'].includes(id) && health === 'dead') expect(n, id + ': a dead fleshy coral is its bare skeleton alone').toBe(1);
           else if (EXACT[id]) expect(n, id + ' ' + quality).toBe(EXACT[id]);
           else expect(n, id + ' ' + quality + ' ' + health).toBeLessThanOrEqual(CALLS[id]);
           if (health === 'healthy') total += n;
@@ -82,7 +85,7 @@ describe('J1 species batches: draw calls', () => {
       }
     }
     // Sixteen added specimens each use two draws per tier; the original limits stay fixed.
-    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 16 * 2 * TIERS.length + Object.values(POST_MERGE_PARTS).reduce((n, parts) => n + parts.length, 0) * TIERS.length);
+    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 21 * 2 * TIERS.length + 5 * TIERS.length + Object.values(POST_MERGE_PARTS).reduce((n, parts) => n + parts.length, 0) * TIERS.length);
   });
 });
 

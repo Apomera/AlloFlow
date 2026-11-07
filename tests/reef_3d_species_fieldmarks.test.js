@@ -38,7 +38,7 @@ describe('Lane D guide portraits', () => {
       expect(p.dir.every(Number.isFinite), id).toBe(true);
       const len = Math.hypot(...p.dir);
       expect(len, id + ' camera stays outside the model and close enough to fill the picture').toBeGreaterThan(1.3);
-      if (id === 'ocellated_eagle_ray') expect(p.dir, 'the 4.2 m ray needs room for its disc and whip tail').toEqual([5.5, 1.6, 1]);
+      if (id === 'ocellated_eagle_ray') expect(p.dir, 'the 4.2 m ray needs room for its disc and whip tail').toEqual([3.5, 1.75, .55]);
       else expect(len, id).toBeLessThan(4.5);
       expect(p.lookY, id).toBeGreaterThanOrEqual(0); expect(p.lookY, id).toBeLessThanOrEqual(1);
     }

@@ -269,7 +269,7 @@ describe('Word Sounds localization gate', () => {
     // into the JS. These must be single parameterised keys.
     for (const key of ['word_sounds.word_n_of_m', 'word_sounds.correct_of_total',
       'word_sounds.sound_n', 'word_sounds.option_n', 'word_sounds.level_n',
-      'word_sounds.items_done_of']) {
+      'word_sounds.items_min_progress', 'word_sounds.items_min_met']) {
       expect(src.includes(key), `${key} should be used for a phrase that was previously concatenated`).toBe(true);
     }
   });

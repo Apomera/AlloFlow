@@ -922,6 +922,14 @@ window.StemLab = window.StemLab || {
 
   // === End aquarium ecosystem core ===
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-aquarium-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-aquarium-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-aquarium-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"aquarium\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

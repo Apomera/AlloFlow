@@ -252,6 +252,14 @@ range** for the same parameters rather than as ideological positions. Three ship
 | **Conservative** (high end) | 1.10 | 0.10 | 1.20 | 2.6 |
 | **Optimistic** (low end) | 0.90 | 0.20 | 0.85 | 2.2 |
 
+Later parameters ride in the same three sets (sources in section 31 and on screen):
+
+| Set | `planningSeaRiseM` (2100) | `heatHardC` | `heatShadeC` | `heatCoolRoofC` |
+|---|---|---|---|---|
+| **Central** | 0.6 | 38 | 18 | 28 |
+| **Conservative** | 1.0 (NOAA Intermediate) | 50 | 11 | 20 |
+| **Optimistic** | 0.3 (NOAA Low) | 27 | 25 | 33 |
+
 Note that conservative is not uniformly "higher": it pairs high runoff coefficients and high
 costs with a **low** green-infrastructure credit, because a cautious engineer discounts the
 mitigation as well as inflating the load. Making that internally coherent matters more than
@@ -900,8 +908,17 @@ there is no answer key. A test asserts the summary object carries no `score`, `r
 The first two towns ask whether a plan works. Harborlight asks whether it **still** works.
 
 The board wants 700 homes kept out of the storm surge today **and** out of the reach it is
-planned to have by 2050. The higher ground is a narrow diagonal band in the north-west, and
+planned to have by 2100. The higher ground is a narrow diagonal band in the north-west, and
 the existing harbour town sits low, as harbour towns do.
+
+> **Horizon changed from 2050 to 2100 (2026-11-03, accepted by Aaron).** The original
+> allowances of 0.6 m and 0.9 m "by 2050" were outside anything NOAA publishes for that date:
+> Sweet et al. (2022), *Global and Regional Sea Level Rise Scenarios for the United States*,
+> NOAA Technical Report NOS 01, expects about 0.25 to 0.30 m of rise along US coasts from 2020
+> to 2050. Its 2100 scenarios (global mean, relative to 2000) are Low 0.3 m,
+> Intermediate-Low 0.5 m, Intermediate 1.0 m, Intermediate-High 1.5 m and High 2.0 m. Homes
+> permitted now will still be standing in 2100, which is why long-lived planning uses that
+> horizon. Ids that predate the change (`surge_2050`, the `sea` group) were kept.
 
 ### The mechanic
 
@@ -911,8 +928,12 @@ The safe area is not an authored map. It is derived:
 inFutureSurge(parcel) = elevation <= surgeBaseElevation + planningSeaRiseM
 ```
 
-`surgeBaseElevation` is a property of the place (1.45 m). **`planningSeaRiseM` is an
-assumption-set parameter**: 0.3 m optimistic, 0.6 m central, 0.9 m conservative.
+`surgeBaseElevation` is a property of the place (1.45 m, invented for this fictional town).
+**`planningSeaRiseM` is an assumption-set parameter**, for 2100: 0.3 m optimistic (NOAA
+Low), 0.6 m central (between Intermediate-Low and Intermediate) and 1.0 m conservative (NOAA
+Intermediate). The two higher NOAA scenarios would put most of Harborlight under, and the
+source note on screen says so. The previous 0.9 m and the new 1.0 m fall between the same
+two 0.3 m ground steps, so every parcel count below is unchanged by the move.
 
 That one line is the most consequential thing in the tool. Everywhere else, changing the
 assumption set changes a number. Here it changes **which parcels a student is allowed to
@@ -921,7 +942,7 @@ one, and 21 under the largest.
 
 Two plans housing the same 720 families, one on the high ground and one pushed downhill, both
 meet every requirement under central assumptions. Under conservative assumptions the second
-puts **180 homes inside the 2050 reach** and fails a hard requirement. Robustness stops being
+puts **180 homes inside the 2100 reach** and fails a hard requirement. Robustness stops being
 an abstraction about numbers and becomes a question about where the houses are.
 
 ### Framing, which matters more here than anywhere else
@@ -1031,7 +1052,7 @@ the town where elevation decides everything.
 The board now has two views: **Land use** and **Height**. Height paints a hypsometric tint
 (the map convention: low ground dark and cool, high ground pale and warm) with the land-use
 codes still on every parcel and the bay keeping its own colour. The narrow band of buildable
-high ground becomes visible at a glance, and the flood and 2050 rings still read on top of
+high ground becomes visible at a glance, and the flood and 2100 rings still read on top of
 it, so risk and height are legible together.
 
 They are separate **views** rather than one overloaded fill because stacking height onto
@@ -1306,7 +1327,7 @@ and driving the actual viewer. Neither is visible to any test in the repo.
    sheet tints everything behind it whatever the depth, so switching assumption set barely
    changed the picture even though the underlying numbers changed enormously. Fixed by
    marking the ground itself: each parcel knows whether it is under the surge today or under
-   the 2050 line, and gets a cap accordingly. The sheets stayed but dropped to about a sixth
+   the 2100 line, and gets a cap accordingly. The sheets stayed but dropped to about a sixth
    of their opacity, as atmosphere rather than information.
 
    With that change the comparison finally reads: under the optimistic allowance most of
@@ -1398,3 +1419,95 @@ The rebuild is still the right way to generate the entry, but the result was red
 surgical insert: take the previous index as the base, drop in only `cityLab`, and leave every
 other entry byte-identical. Verified by diffing before and after, which reports
 `other tools changed: none`.
+
+(Stage B note: the `desc` had grown back to 351 characters by the stage A pass, which put
+*redlining* past the cap again. It is now 313 characters, one literal, with *urban heat
+island*, *bus stops*, *equity* and *redlining* inside the cap. The index entry itself was not
+regenerated in this pass.)
+
+---
+
+## 31. Stage B (2026-11-03): heat, buses, access gaps, the hearing, and a map you can hear
+
+Everything here keeps the three tiers. Each addition is listed with its tier.
+
+### Surface heat (Modelled)
+
+Per parcel, on a clear summer afternoon, in degrees C above shaded vegetated ground:
+
+```
+shaded = heatHardC - canopy x heatShadeC
+roof   = shaded - heatCoolRoofC            (only on parcels with cool roofs)
+heat   = imperv x (0.4 x roof + 0.6 x shaded)
+```
+
+Indicators `surfaceHeatC` (average over land parcels) and `homeSurfaceHeatC` (weighted by the
+homes a road reaches) sit in a new Tier 2 group, *Surface heat*. Sources, all shown on screen:
+
+- **heatHardC 27 to 50.** US EPA, *Reducing Urban Heat Islands: Compendium of Strategies*,
+  Urban Heat Island Basics: sunlit roofs and pavement 50 to 90 F (27 to 50 C) above the air.
+- **heatShadeC 11 to 25.** Same compendium, Trees and Vegetation: shaded surfaces 20 to 45 F
+  (11 to 25 C) below the peak of unshaded materials.
+- **heatCoolRoofC 20 to 33.** Same compendium, Cool Roofs: up to 50 to 60 F (28 to 33 C) cooler
+  than conventional roofs at peak. 20 C is this tool's own low end, because "up to" is a best
+  case. Flagged as such on screen.
+- **imperv.** USDA NRCS TR-55 (1986) Table 2-2a: commercial 85%, industrial 72%, town houses
+  65%, quarter-acre lots 38%. Mixed use takes the commercial figure. Civic 50% and park 5%
+  are this tool's choices.
+- **Chosen for this tool and labelled so:** every canopy share, roofs as 40% of the hard
+  surface, and the 15 canopy points green infrastructure adds.
+
+The honest caveat on screen: this is SURFACE temperature. EPA puts the daytime AIR
+difference between a city and its outskirts at only 1 to 7 F. Wind, humidity, night cooling
+and hot bare desert soil are not modelled, and what heat does to health stays contested
+(`heatIllness`, `airTemperature` joined `CONTESTED_IDS`).
+
+Cool roofs are a new per-parcel overlay (`plan.coolRoofs`), allowed only on uses with a
+storey, paid by the building owner and so **not on the bond**, but each one costs a move.
+
+The fifth mission, *Keep the new streets cool*, asks for half the brief's homes with the
+home-weighted heat no more than 6 C above today's homes under the central set (19.0 C in every
+town). Tests pin the shape of the answer: mid density passes with cool roofs, mixed use only
+with cool roofs and green infrastructure. Named misconceptions: *Dark roofs soak up the sun*,
+*No shade over the pavement*.
+
+### Bus stops (Measured) and mode share (Contested)
+
+`plan.transit` marks stops. A stop can be added only on a parcel a road runs into, counts only
+where a road from the centre reaches (a bus has to get there), and costs an illustrative
+$60k from the bond (operating the buses is not a capital cost). `transitAccessPct` is the share
+of homes within 4 hops, a 5-minute walk, about 400 m: the quarter-mile walk-shed US transit
+planners commonly draw round a bus stop. The FTA's 2011 pedestrian and bicycle policy
+statement uses half a mile for stations and 3 miles for cycling; every town here is 1.2 km
+across, so a cycling measure would read 100% everywhere and is deliberately not shown, with the
+reason on screen. Who would ride is mode share: a new shared discussion item, three positions,
+no numbers, and `modeShare` / `ridership` in `CONTESTED_IDS`.
+
+### Access gaps (Measured, not a score)
+
+A map view and panel: for every home a road reaches, which of a park (5 min), a bus stop
+(5 min) and a school or clinic (10 min) is out of walking range. Counts of homes and the parcels
+concerned, never a grade. A structured prompt (notice, wonder, decide) ends with the student
+recording which gap they would close first (`plan.equity`), which goes into the memo export.
+
+### The hearing (grades 9-12)
+
+Two stakeholder briefs per town, written to the discussion rules (real positions, no
+statistics). Each lists the indicators it `watches`. The memo then needs: the stakeholder
+whose objection is strongest, that objection in the student's words (10+ words), an answer
+(12+ words), and cited numbers of which at least one is one that stakeholder watches. That
+last rule checks relevance without reading prose. On by default for g912, opt-in below,
+fixable by the teacher (`teacher.hearing`). XP 10 once per town.
+
+### Described map and sonification
+
+*Describe the map row by row* writes all twelve rows of whichever view is showing, merging
+runs ("F to J Open field"). *Listen to the requirements* plays one tone per requirement,
+pitch from slack (an octave above 440 Hz is plenty of room, 440 is the limit), sine when met and
+square when not; *Listen to a row* plays the selected row's height or heat as pitch. Sound
+starts only from a button, is announced in words first, and is torn down on unmount.
+
+### Also fixed
+
+The orbit viewer's no-WebGL `failMessage` is now a getter read at attach time, so it
+translates like everything else.

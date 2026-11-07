@@ -48,6 +48,18 @@
     return cdnUrl;
   }
   var CIRCUIT_SHELF_URL = companionUrl('circuit_shelf/circuit_shelf.html?v=1', CIRCUIT_SHELF_CDN_URL);
+  // Bridge trust: only the pop-up this tool opened, at the companion's own origin,
+  // may drive the bridge. Opaque origins (file://) report "null", which postMessage
+  // rejects as a target, so those fall back to '*' and rely on the source check.
+  var CIRCUIT_SHELF_ORIGIN = (function () {
+    try { var o = new URL(CIRCUIT_SHELF_URL, (window.location && window.location.href) || undefined).origin; return (o && o !== 'null') ? o : '*'; } catch (_) { return '*'; }
+  })();
+  var _circuitshelfPopup = null; // module scope: a still-open pop-up keeps working after a remount
+  function _circuitshelfBridgeTrusted(ev, win) {
+    var src = ev && ev.source;
+    if (!src || (src !== win && src !== _circuitshelfPopup)) return false;
+    return CIRCUIT_SHELF_ORIGIN === '*' || ev.origin === CIRCUIT_SHELF_ORIGIN;
+  }
 
   function buildDebriefPrompt(challenge, prediction, explanation) {
     return [
@@ -97,7 +109,7 @@
         var popup = _win.current;
         if (!popup || popup.closed) return;
         var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
-        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, CIRCUIT_SHELF_ORIGIN); } catch (_) {}
       }, [ctx.theme]);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
 
@@ -117,8 +129,9 @@
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
+          if (!_circuitshelfBridgeTrusted(ev, _win.current)) return;
           if (data.type === 'alloccircuit-hello') {
-            try { if (ev.source) ev.source.postMessage({ type: 'alloccircuit-ready', ai: aiOn }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'alloccircuit-ready', ai: aiOn }, CIRCUIT_SHELF_ORIGIN); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -127,7 +140,7 @@
           if (data.type !== 'alloccircuit-ai-request' || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'alloccircuit-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'alloccircuit-ai-response', id: data.id }, payload), CIRCUIT_SHELF_ORIGIN); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
           bumpSlice('debriefCount');
@@ -157,6 +170,7 @@
           return;
         }
         _win.current = w;
+        _circuitshelfPopup = w;
         setPopupState('opening');
         bumpSlice('openedCount');
         if (announceToSR) announceToSR(t('stem.circuitShelf.opened_sr', 'Opened the Circuit Shelf in a new window.'));

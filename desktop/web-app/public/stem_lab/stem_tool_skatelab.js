@@ -2,6 +2,7 @@
 // One deterministic model drives both views, the numeric readouts,
 // the energy ledger, and the experiment log.
 
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -84,9 +85,9 @@ window.StemLab = window.StemLab || {
   };
 
   function fillTemplate(template, values) {
-    return String(template).replace(/\{(\w+)\}/g, function(match, name) {
+    return __alloOneWord(String(template).replace(/\{(\w+)\}/g, function(match, name) {
       return values && values[name] != null ? String(values[name]) : match;
-    });
+    }));
   }
 
   var WINDS = {
@@ -2388,6 +2389,19 @@ window.StemLab = window.StemLab || {
     { id: 'airLoss', unit: 'J', modes: 'g' }
   ];
 
+  // True when a halfpipe run's spin, body position or pumps differ from the
+  // starting setup (DEFAULTS), so landing it is the learner's own trick.
+  function trickSetupChanged(sim) {
+    if (!sim || sim.mode !== 'halfpipe') return false;
+    // A "No spin" target has no spin to land.
+    if (!(finite(sim.rotationTarget, DEFAULTS.rotationTarget) > 0)) return false;
+    var body = sim.bodyPosition && sim.bodyPosition.id ? sim.bodyPosition.id : sim.bodyPositionId;
+    return Math.round(finite(sim.rotationTarget, DEFAULTS.rotationTarget)) !== DEFAULTS.rotationTarget ||
+      Math.round(finite(sim.spinRate, DEFAULTS.spinRate)) !== DEFAULTS.spinRate ||
+      String(body || DEFAULTS.bodyPositionId) !== DEFAULTS.bodyPositionId ||
+      Math.round(finite(sim.pumps, DEFAULTS.pumps)) !== DEFAULTS.pumps;
+  }
+
   function peakReachM(sim) {
     var best = finite(sim.dropHeightM, 0);
     (sim.passPeaks || []).forEach(function(peak) { best = Math.max(best, finite(peak.heightM, 0)); });
@@ -2521,6 +2535,61 @@ window.StemLab = window.StemLab || {
     return { angle: best, range: bestRange, range45: rangeAt(45) };
   }
 
+  // The one-variable change each halfpipe prompt compares against. It is the
+  // "try this" patch and the after-reveal ghost run, so both always agree.
+  function halfpipePromptPatch(promptId, sim) {
+    if (!sim || sim.mode !== 'halfpipe') return null;
+    if (promptId === 'hp_mass') {
+      var lightMass = Math.min(sim.riderMassKg, 90);
+      var heavyMass = lightMass + 20;
+      return { riderMassKg: sim.riderMassKg === heavyMass ? lightMass : heavyMass };
+    }
+    if (promptId === 'hp_moon') return { gravity: sim.gravity === 1.62 ? 9.81 : 1.62 };
+    if (promptId === 'hp_friction') return { pumps: 0 };
+    if (promptId === 'hp_spin') return { bodyPositionId: sim.bodyPosition && sim.bodyPosition.id === 'tuck' ? 'open' : 'tuck' };
+    return null;
+  }
+
+  // After a revealed halfpipe prediction: the what-if run, from the same
+  // model with that prompt's patch. Null when it would repeat this run.
+  function ghostSimFor(sim, promptId) {
+    var patch = halfpipePromptPatch(promptId, sim);
+    if (!patch) return null;
+    var ghost = runSimulation('halfpipe', Object.assign({}, sim.inputs || {}, patch));
+    if (!ghost || simulationSignature(ghost) === simulationSignature(sim)) return null;
+    return { sim: ghost, promptId: promptId, patch: patch };
+  }
+
+  // Highest point of any pass after the drop (0 when there are none).
+  function highestPassM(sim) {
+    var best = 0;
+    ((sim && sim.passPeaks) || []).forEach(function(peak) { best = Math.max(best, finite(peak.heightM, 0)); });
+    return best;
+  }
+
+  // The short canvas tag for a ghost run.
+  function ghostTag(ghost) {
+    if (!ghost) return '';
+    if (ghost.promptId === 'hp_moon') {
+      return ghost.patch.gravity === 1.62
+        ? __alloT('stem.skatelab.ghost_tag_moon', 'what-if: Moon')
+        : __alloT('stem.skatelab.ghost_tag_earth', 'what-if: Earth');
+    }
+    if (ghost.promptId === 'hp_mass') return fillTemplate(__alloT('stem.skatelab.ghost_tag_mass', 'what-if: {mass} kg'), { mass: Math.round(ghost.patch.riderMassKg) });
+    if (ghost.promptId === 'hp_friction') return __alloT('stem.skatelab.ghost_tag_pumps', 'what-if: no pumps');
+    return fillTemplate(__alloT('stem.skatelab.ghost_tag_body', 'what-if: {body}'), { body: bodyPositionLabel(ghost.patch.bodyPositionId) });
+  }
+
+  // Where a pass peak sits on the halfpipe (model metres).
+  function passPeakPoint(peak, rampDepthM) {
+    return {
+      x: peak.air
+        ? peak.side * HALFPIPE_HALF_WIDTH_M
+        : peak.side * HALFPIPE_HALF_WIDTH_M * Math.sin(Math.acos(clamp(1 - peak.heightM / rampDepthM, -1, 1))),
+      y: peak.heightM
+    };
+  }
+
   // Works out the model's answer to a prediction prompt for this setup.
   // Returns { promptId, correct, facts, tryPatch, tryProgress }.
   function evaluatePrediction(promptId, sim) {
@@ -2538,13 +2607,13 @@ window.StemLab = window.StemLab || {
       var heavyRider = quickSim('halfpipe', inputs, { riderMassKg: heavyMass });
       facts = { lightMass: lightMass, heavyMass: heavyMass, lightHeight: peakReachM(lightRider), heavyHeight: peakReachM(heavyRider) };
       correct = compareValues(facts.lightHeight, facts.heavyHeight, 0.005);
-      tryPatch = { riderMassKg: sim.riderMassKg === heavyMass ? lightMass : heavyMass };
+      tryPatch = halfpipePromptPatch(promptId, sim);
     } else if (promptId === 'hp_moon') {
       var earth = quickSim('halfpipe', inputs, { gravity: 9.81 });
       var moon = quickSim('halfpipe', inputs, { gravity: 1.62 });
       facts = { earthHeight: peakReachM(earth), moonHeight: peakReachM(moon), earthTime: earth.airTime, moonTime: moon.airTime };
       correct = compareValues(facts.earthHeight, facts.moonHeight, 0.005);
-      tryPatch = { gravity: sim.gravity === 1.62 ? 9.81 : 1.62 };
+      tryPatch = halfpipePromptPatch(promptId, sim);
     } else if (promptId === 'hp_friction') {
       var coast = quickSim('halfpipe', inputs, { pumps: 0 });
       var turn = coast.turns && coast.turns.length ? coast.turns[0] : null;
@@ -2556,7 +2625,7 @@ window.StemLab = window.StemLab || {
         surfaceId: coast.surface.id
       };
       correct = compareValues(facts.drop, facts.turnHeight, 0.0001);
-      tryPatch = { pumps: 0 };
+      tryPatch = halfpipePromptPatch(promptId, sim);
     } else if (promptId === 'hp_spin') {
       var open = quickSim('halfpipe', inputs, { bodyPositionId: 'open' });
       var tuck = quickSim('halfpipe', inputs, { bodyPositionId: 'tuck' });
@@ -2569,7 +2638,7 @@ window.StemLab = window.StemLab || {
         tuckL: tuck.angularMomentum
       };
       correct = compareValues(facts.openHeight, facts.tuckHeight, 0.005);
-      tryPatch = { bodyPositionId: sim.bodyPosition.id === 'tuck' ? 'open' : 'tuck' };
+      tryPatch = halfpipePromptPatch(promptId, sim);
     } else if (promptId === 'gap_weight') {
       var apexProgress = clamp((sim.approachTime + sim.peakTime) / sim.motionDuration, 0, 1);
       var apex = sampleGapJump(sim, apexProgress);
@@ -2726,6 +2795,13 @@ window.StemLab = window.StemLab || {
     return null;
   }
 
+  // A typed hang-time guess as a number above 0 s, else null.
+  function hangGuessOf(value) {
+    if (value == null || typeof value === 'object' || String(value).trim() === '') return null;
+    var guess = Number(value);
+    return Number.isFinite(guess) && guess > 0 ? guess : null;
+  }
+
   // { id, done, value, reason } for one finished run. info.guess is the
   // hang-time prediction typed before the run (moon_hang only).
   function checkMission(id, sim, info) {
@@ -2756,8 +2832,8 @@ window.StemLab = window.StemLab || {
       result.done = sim.dropHeightM <= MISSION_SMALL_DROP_M + 1e-9 && !!sim.hasAir && sim.hAir >= MISSION_SMALL_DROP_AIR_M - 1e-9;
     } else if (id === 'moon_hang') {
       result.value = sim.airTime;
-      var guess = Number(info.guess);
-      var hasGuess = info.guess != null && String(info.guess).trim() !== '' && Number.isFinite(guess) && guess > 0;
+      var guess = hangGuessOf(info.guess);
+      var hasGuess = guess !== null;
       if (Math.abs(sim.gravity - 1.62) > 1e-6) result.reason = 'not_moon';
       else if (!sim.hasAir) result.reason = 'no_air';
       else if (!hasGuess) result.reason = 'no_guess';
@@ -2786,6 +2862,86 @@ window.StemLab = window.StemLab || {
     }
     if (result.done) result.reason = 'done';
     return result;
+  }
+
+  // Saved log rows that can be shown (a damaged save may hold null or text).
+  function logEntriesOf(list) {
+    return Array.isArray(list) ? list.filter(function(entry) { return !!entry && typeof entry === 'object' && !Array.isArray(entry); }) : [];
+  }
+
+  // ---- Stage D: teacher locks that rule a mission or a plan step out. ----
+  function hasTeacherLock(locks, key) {
+    return !!locks && typeof locks === 'object' && TEACHER_LOCK_KEYS.indexOf(key) !== -1 &&
+      Object.prototype.hasOwnProperty.call(locks, key) && locks[key] != null;
+  }
+  function lockValueMatches(key, locked, wanted) {
+    if (key === 'airDrag' || key === 'estimateChallenge') return (locked !== false) === (wanted !== false);
+    if (key === 'mode') return (locked === 'gap' || locked === 'flat' ? locked : 'halfpipe') === wanted;
+    if (typeof wanted === 'number') return Math.abs(Number(locked) - wanted) < 0.000001;
+    return locked === wanted;
+  }
+  // Settings a mission cannot be done without. Found by searching every free
+  // setting with the model (stage D probes); flat missions are searched live.
+  var MISSION_LOCK_NEEDS = {
+    moon_hang: { gravity: [1.62], estimateChallenge: [true] },
+    rough_stop: { surfaceId: ['rough'] },
+    small_drop_air: { surfaceId: ['wax', 'standard'] },
+    gap_drag: { airDrag: [true] },
+    crosswind_lane: { airDrag: [true], windId: ['cross_left', 'cross_right'] }
+  };
+  var FLAT_FEASIBLE_CACHE = {};
+  function flatMissionPossible(id, locks) {
+    var keys = ['gravity', 'riderMassKg', 'vehicle', 'surfaceId'];
+    var cacheKey = id + '|' + keys.map(function(key) { return hasTeacherLock(locks, key) ? String(locks[key]) : '*'; }).join('|');
+    if (Object.prototype.hasOwnProperty.call(FLAT_FEASIBLE_CACHE, cacheKey)) return FLAT_FEASIBLE_CACHE[cacheKey];
+    function options(key, all) { return hasTeacherLock(locks, key) ? [locks[key]] : all; }
+    var possible = false;
+    options('gravity', [9.81, 3.71, 1.62]).forEach(function(gravity) {
+      options('riderMassKg', [35, 50, 62, 80, 95, 110]).forEach(function(mass) {
+        options('vehicle', ['skate', 'bmx']).forEach(function(vehicle) {
+          options('surfaceId', ['wax', 'standard', 'rough']).forEach(function(surfaceId) {
+            for (var push = 20; push <= 400 && !possible; push += 10) {
+              var trial = simFlatGround({ pushForceN: push, gravity: gravity, riderMassKg: mass, vehicle: vehicle, surfaceId: surfaceId });
+              if (checkMission(id, trial).done) possible = true;
+            }
+          });
+        });
+      });
+    });
+    FLAT_FEASIBLE_CACHE[cacheKey] = possible;
+    return possible;
+  }
+  // Lock keys that make this mission impossible ([] if none do).
+  function missionLockConflicts(id, locks) {
+    var mission = getMission(id);
+    if (!mission || !locks || typeof locks !== 'object') return [];
+    var needs = Object.assign({ mode: [mission.mode] }, MISSION_LOCK_NEEDS[id] || {});
+    var conflicts = Object.keys(needs).filter(function(key) {
+      return hasTeacherLock(locks, key) && !needs[key].some(function(wanted) { return lockValueMatches(key, locks[key], wanted); });
+    });
+    if (conflicts.length) return conflicts;
+    // A BMX on rough concrete never gets the 1 s of air a slow-spin 360 needs.
+    if (id === 'tuck_360' && hasTeacherLock(locks, 'vehicle') && locks.vehicle === 'bmx' &&
+        hasTeacherLock(locks, 'surfaceId') && locks.surfaceId === 'rough') return ['vehicle', 'surfaceId'];
+    if (mission.mode === 'flat' && !flatMissionPossible(id, locks)) {
+      return ['gravity', 'riderMassKg', 'vehicle', 'surfaceId'].filter(function(key) { return hasTeacherLock(locks, key); });
+    }
+    return [];
+  }
+  // Lock keys that stop a plan step from being set up ([] if none do).
+  function planStepLockConflicts(step, locks) {
+    if (!step || !step.patch) return [];
+    return Object.keys(step.patch).filter(function(key) {
+      return hasTeacherLock(locks, key) && !lockValueMatches(key, locks[key], step.patch[key]);
+    });
+  }
+  function investigationLockConflicts(id, locks) {
+    var investigation = getInvestigation(id);
+    var conflicts = [];
+    (investigation ? investigation.steps : []).forEach(function(step) {
+      planStepLockConflicts(step, locks).forEach(function(key) { if (conflicts.indexOf(key) === -1) conflicts.push(key); });
+    });
+    return conflicts;
   }
 
   // ---- Stage C P4-2 scaffold level: Simple (6-8), Standard (9-10), Extended
@@ -2958,6 +3114,8 @@ window.StemLab = window.StemLab || {
     sampleFlat: sampleFlat,
     sampleModel: sampleModel,
     runSimulation: runSimulation,
+    trickSetupChanged: trickSetupChanged,
+    ghostSimFor: ghostSimFor,
     hydrateSim: hydrateSim,
     simRecord: simRecord,
     halfpipeTrackPoint: halfpipeTrackPoint,
@@ -2988,7 +3146,8 @@ window.StemLab = window.StemLab || {
     misconceptionIds: MISCONCEPTION_IDS,
     investigations: INVESTIGATIONS,
     matchPlanStep: matchPlanStep,
-    checkCer: function(entry, keywords) { return checkCer(entry, keywords); },
+    checkCer: function(entry, keywords, runs) { return checkCer(entry, keywords, runs); },
+    investigationRunNumbers: function(investigation, entries) { return investigationRunNumbers(investigation, entries); },
     simulationSignature: function(candidate) { return simulationSignature(candidate); },
     investigationText: function(id) { return investigationText(id); },
     missions: MISSIONS,
@@ -3007,6 +3166,9 @@ window.StemLab = window.StemLab || {
     reportHtml: function(state, meta) { return buildReportHtml(state, meta); },
     logEntryOutcome: function(entry) { return logEntryOutcome(entry); },
     lockableKeys: function() { return TEACHER_LOCK_KEYS.slice(); },
+    missionLockConflicts: missionLockConflicts,
+    planStepLockConflicts: planStepLockConflicts,
+    investigationLockConflicts: investigationLockConflicts,
     constants: {
       halfpipeHalfWidthM: HALFPIPE_HALF_WIDTH_M,
       halfpipeStepS: HALFPIPE_DT_S,
@@ -3069,6 +3231,9 @@ window.StemLab = window.StemLab || {
       '.sk-run[aria-disabled=true]{opacity:.62;cursor:not-allowed;box-shadow:none}.sk-predict-needed{margin:0}.sk-locked-note{color:var(--sk-text)}.sk-access{display:grid;gap:8px;margin:6px 0 4px;padding:8px 10px;border:1px solid var(--sk-border);border-radius:11px;background:color-mix(in srgb,var(--sk-bg) 60%,transparent);min-width:0}.sk-access-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}.sk-access .sk-check{color:var(--sk-text)}.sk-step-panel{display:grid;gap:6px;min-width:0}.sk-step-buttons{display:flex;flex-wrap:wrap;gap:8px}.sk-step-text{margin:0;font-size:.78rem;line-height:1.45;color:var(--sk-text)}.sk-shortcuts summary{cursor:pointer;font-weight:800;font-size:.78rem;color:var(--sk-text)}.sk-shortcut-list{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;margin:6px 0 0;font-size:.76rem;color:var(--sk-text)}.sk-shortcut-list dd{margin:0}.skatelab-shell kbd{display:inline-block;min-width:1.6em;padding:1px 6px;border:1px solid var(--sk-border);border-bottom-width:2px;border-radius:5px;font:700 .74rem ui-monospace,monospace;color:var(--sk-text);text-align:center}',
       '.sk-mission-banner,.sk-assignment{border:1px solid var(--sk-accent);border-radius:11px;padding:8px 10px;display:grid;gap:6px;min-width:0;background:color-mix(in srgb,var(--sk-accent) 9%,transparent)}.sk-mission-banner p,.sk-assignment p{margin:0;font-size:.78rem;line-height:1.45;color:var(--sk-text)}.sk-assignment{margin:0 0 12px}.sk-mission-meter{height:8px;border-radius:999px;background:color-mix(in srgb,var(--sk-border) 55%,transparent);overflow:hidden;margin:6px 0}.sk-mission-meter span{display:block;height:100%;background:var(--sk-green)}.sk-mission-list{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:8px}.sk-mission{border:1px solid var(--sk-border);border-radius:11px;padding:8px 10px;display:grid;gap:5px;min-width:0;align-content:start}.sk-mission.is-active{border-color:var(--sk-accent);box-shadow:inset 0 0 0 1px var(--sk-accent)}.sk-mission.is-done{border-color:var(--sk-green)}.sk-mission-title{margin:0;font-size:.84rem;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.sk-mission-xp{font-size:.7rem;color:var(--sk-cyan);font-weight:850}.sk-mission-goal,.sk-mission-status{margin:0;font-size:.76rem;line-height:1.4}.sk-mission-goal{color:var(--sk-text)}.sk-mission-hints{margin:0;padding-left:18px;font-size:.74rem;color:var(--sk-text);display:grid;gap:3px}.sk-mission-guess{display:grid;gap:4px}.sk-mission-guess label{font-size:.76rem;font-weight:750;color:var(--sk-text)}.sk-mission-guess input{max-width:160px}',
       '.sk-support{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.sk-teacher,.sk-missions,.sk-access{grid-template-columns:minmax(0,1fr)}.sk-support h3{margin:0}.sk-level{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.78rem;font-weight:750;min-width:0}.sk-level select{flex:1 1 12em;width:auto;max-width:100%;min-width:0}.sk-plain{border-left:3px solid var(--sk-green);padding:6px 10px;background:color-mix(in srgb,var(--sk-green) 8%,transparent)}.sk-plain h4{margin:0 0 4px;font-size:.82rem}.sk-plain p{margin:0;font-size:.82rem;line-height:1.5;color:var(--sk-text)}.sk-vocab{display:flex;flex-wrap:wrap;gap:6px}.sk-vocab-term{border:1px dashed var(--sk-cyan);border-radius:999px;background:transparent;color:var(--sk-text);padding:5px 10px;font-size:.74rem;font-weight:750;cursor:help}.sk-vocab-term[aria-expanded=true]{border-style:solid;background:color-mix(in srgb,var(--sk-cyan) 14%,transparent)}.sk-vocab-def{border:1px solid var(--sk-cyan);border-radius:10px;padding:8px 10px;display:grid;gap:4px}.sk-vocab-def[hidden]{display:none}.sk-vocab-def p{margin:0;font-size:.8rem;line-height:1.45;color:var(--sk-text)}.sk-maths summary{cursor:pointer;font-weight:800;font-size:.8rem;color:var(--sk-text);margin-top:8px}.sk-extended{margin-top:10px;border-left:3px solid var(--sk-compare);padding:6px 10px}.sk-extended h4{margin:0 0 4px;font-size:.82rem}.sk-extended ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:.76rem;line-height:1.45;color:var(--sk-text)}.sk-teacher{margin:0 0 12px;display:grid;gap:8px}.sk-teacher .sk-check{color:var(--sk-text)}.sk-teacher h4{margin:6px 0 0;font-size:.84rem}',
+      // Engagement pass: predict + run first, start-point drag handle, ghost note, ride description.
+      '.sk-quickstart{display:grid;gap:9px;min-width:0;padding-bottom:12px;border-bottom:1px solid var(--sk-border)}.sk-quickstart .sk-run{min-block-size:48px}.sk-start-handle{position:absolute;inline-size:44px;block-size:44px;border-radius:50%;border:2px dashed #f6b83f;background:rgba(246,184,63,.12);color:#f6b83f;display:flex;align-items:center;justify-content:center;font:800 16px/1 ui-sans-serif,system-ui;cursor:ns-resize;touch-action:none;z-index:5;user-select:none}.sk-start-handle:hover{background:rgba(246,184,63,.24)}.sk-start-handle[hidden]{display:none!important}.sk-ghost-note{margin:6px 2px 0;padding:6px 9px;border-left:3px dashed var(--sk-text);color:var(--sk-text);font-size:.78rem;line-height:1.45}.sk-describe{margin-top:6px}.sk-describe summary{cursor:pointer;font-weight:800;font-size:.8rem;color:var(--sk-text)}.sk-comparison-line{margin:6px 2px 0}',
+      '@media(forced-colors:active){.sk-start-handle{forced-color-adjust:none;border-color:CanvasText;color:CanvasText;background:Canvas}.sk-ghost-note,.sk-quickstart{border-color:CanvasText!important}}',
       '@media(forced-colors:active){.sk-mission,.sk-mission-banner,.sk-assignment,.sk-vocab-term,.sk-vocab-def,.sk-access{border-color:CanvasText!important}.sk-mission-meter span{forced-color-adjust:none;background:CanvasText!important}}',
       '@media(prefers-reduced-motion:reduce){.skatelab-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}@media(forced-colors:active){.skatelab-shell button,.skatelab-shell input,.skatelab-shell select,.skatelab-shell textarea,.sk-stage,.sk-controls,.sk-panel,.sk-metric,.sk-switch,.sk-timeline{forced-color-adjust:auto;border-color:CanvasText!important}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell select:focus-visible,.skatelab-shell textarea:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid Highlight!important}.sk-canvas-frame{border:2px solid CanvasText}.sk-canvas-summary,.sk-model-note{border-color:CanvasText!important}}'
     ].join('');
@@ -3424,13 +3589,13 @@ window.StemLab = window.StemLab || {
     ctx.restore();
   }
 
-  function drawMotionFooter(ctx, sample, width, height, detail, predictionLocked) {
+  function drawMotionFooter(ctx, sample, width, height, detail, predictionLocked, guessSaved) {
     ctx.save();
     ctx.font = '700 11px ui-monospace, monospace';
     var timeLabel = finite(sample.time, 0).toFixed(2) + ' s';
     var speedLabel = (finite(sample.speedMps, 0) * MPS2MPH).toFixed(1) + ' mph';
     var footerText = predictionLocked
-      ? __alloT('stem.skatelab.footer_locked', 'prediction locked  |  run to reveal')
+      ? (guessSaved ? __alloT('stem.skatelab.footer_guess_saved', 'guess saved  |  run it to see the ride') : __alloT('stem.skatelab.footer_locked_v2', 'guess first  |  then watch the ride'))
       : phaseLabel(sample.phase) + '  |  ' + timeLabel + '  |  ' + speedLabel;
     var availableWidth = Math.max(80, width - 38);
     if (!predictionLocked && ctx.measureText && ctx.measureText(footerText).width > availableWidth) {
@@ -3571,8 +3736,10 @@ window.StemLab = window.StemLab || {
     ctx.restore();
     if (width > 560) {
       drawGuideLabel(ctx,
-        'COM ↓ ' + rounded(sample.comCompressionM, 2) + ' / ' +
-          rounded(sim.landingCompressionM, 2) + ' m',
+        fillTemplate(__alloT('stem.skatelab.canvas_com_drop', 'COM ↓ {now} / {total} m'), {
+          now: rounded(sample.comCompressionM, 2),
+          total: rounded(sim.landingCompressionM, 2)
+        }),
         anchors.board.x - 126,
         anchors.board.y - 8,
         '#4ed7e8',
@@ -3614,11 +3781,85 @@ window.StemLab = window.StemLab || {
         pixelsPerNewton, '#f6b83f', 'f');
     }
   }
+  // What-if ghost (after a reveal only): hollow white diamonds at each pass
+  // peak of the ghost run and a dashed line at its highest one, with a tag.
+  var GHOST_INK = '#f1f5f9';
+  function ghostLabelX(ctx, text, endX, side) {
+    ctx.save();
+    ctx.font = '700 12px ui-monospace, monospace';
+    var textWidth = ctx.measureText ? finite(ctx.measureText(text).width, text.length * 7) : text.length * 7;
+    ctx.restore();
+    return side > 0 ? endX - textWidth - 16 : endX + 8;
+  }
+  function drawGhostPeaks2D(ctx, ghostSim, map, tag, width) {
+    var top = null;
+    ctx.save();
+    ctx.strokeStyle = GHOST_INK;
+    ctx.lineWidth = 2;
+    (ghostSim.passPeaks || []).forEach(function(peak) {
+      var at = passPeakPoint(peak, ghostSim.rampDepthM);
+      var screen = map(at.x, at.y);
+      var cx = screen.x - peak.side * 25;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(cx, screen.y - 5);
+      ctx.lineTo(cx + 5, screen.y);
+      ctx.lineTo(cx, screen.y + 5);
+      ctx.lineTo(cx - 5, screen.y);
+      ctx.closePath();
+      ctx.stroke();
+      if (!top || peak.heightM > top.peak.heightM) top = { peak: peak, screen: screen };
+    });
+    if (top) {
+      var endX = top.screen.x - top.peak.side * (width < 520 ? 40 : 90);
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(top.screen.x, top.screen.y);
+      ctx.lineTo(endX, top.screen.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+    // Narrow canvases skip the tag (the ghost note below names the run).
+    if (top && tag && width >= 520) drawGuideLabel(ctx, tag, ghostLabelX(ctx, tag, endX, top.peak.side), top.screen.y + 18, GHOST_INK, width);
+  }
+  function drawGhostPeaks3D(ctx, ghostSim, camera, width, height, tag) {
+    var top = null;
+    (ghostSim.passPeaks || []).forEach(function(peak) {
+      if (!top || peak.heightM > top.heightM) top = peak;
+    });
+    if (!top) return;
+    var at = passPeakPoint(top, ghostSim.rampDepthM);
+    var lip = project3D({ x: at.x, y: Math.min(at.y, ghostSim.rampDepthM), z: 0 }, camera, width, height);
+    var apex = project3D({ x: at.x, y: at.y, z: 0 }, camera, width, height);
+    ctx.save();
+    ctx.strokeStyle = GHOST_INK;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    ctx.moveTo(lip.x - top.side * 14, lip.y);
+    ctx.lineTo(apex.x - top.side * 14, apex.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    var cx = apex.x - top.side * 14;
+    ctx.beginPath();
+    ctx.moveTo(cx, apex.y - 5);
+    ctx.lineTo(cx + 5, apex.y);
+    ctx.lineTo(cx, apex.y + 5);
+    ctx.lineTo(cx - 5, apex.y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+    if (tag && width >= 520) drawGuideLabel(ctx, tag, ghostLabelX(ctx, tag, cx, top.side), apex.y - 10, GHOST_INK, width);
+  }
+
   function drawHalfpipe2D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_halfpipe_title', 'HALFPIPE | SIDE ELEVATION'),
       __alloT('stem.skatelab.canvas_halfpipe_subtitle', 'Drop in from rest: gravity, rolling friction, pumping, and flight'));
     var comparisonHalf2D = config.compareSim && config.compareSim.mode === 'halfpipe'
       ? config.compareSim
+      : null;
+    var ghostHalf2D = !config.predictionLocked && config.ghostSim && config.ghostSim.mode === 'halfpipe'
+      ? config.ghostSim
       : null;
     var compactHalfpipe = width < 520;
     var marginX = Math.max(compactHalfpipe ? 36 : 52, width * 0.08);
@@ -3626,7 +3867,8 @@ window.StemLab = window.StemLab || {
     var sx = (width - marginX * 2) / 9.3;
     var ceiling = config.predictionLocked
       ? Math.max(4.7, sim.rampDepthM + 2.4)
-      : Math.max(halfpipeHeightCeiling(sim), comparisonHalf2D ? halfpipeHeightCeiling(comparisonHalf2D) : 0);
+      : Math.max(halfpipeHeightCeiling(sim), comparisonHalf2D ? halfpipeHeightCeiling(comparisonHalf2D) : 0,
+        ghostHalf2D ? halfpipeHeightCeiling(ghostHalf2D) : 0);
     var sy = Math.min((height - (compactHalfpipe ? 110 : 140)) / Math.max(4.7, ceiling), sx * 0.82);
     function map(x, y) { return { x: width / 2 + x * sx, y: baseY - y * sy }; }
 
@@ -3689,7 +3931,9 @@ window.StemLab = window.StemLab || {
     ctx.stroke();
     ctx.restore();
     drawGuideLabel(ctx, __alloT('stem.skatelab.canvas_start_height', 'start') + ' ' + rounded(sim.dropHeightM, 1) + ' m',
-      startScreen.x + 8, startScreen.y - 6, '#d8e5f4', width);
+      startScreen.x + 26, startScreen.y - 6, '#d8e5f4', width);
+    // The drag handle over the start point reads this screen-to-metres scale.
+    config.startMarker = { x: startScreen.x, y: startScreen.y, baseY: baseY, sy: sy, width: width, height: height };
 
     if (!config.predictionLocked) {
       var peakLoadMarker = map(sim.peakLoadX, sim.peakLoadY);
@@ -3760,6 +4004,8 @@ window.StemLab = window.StemLab || {
       ctx.restore();
     }
 
+    if (ghostHalf2D) drawGhostPeaks2D(ctx, ghostHalf2D, map, config.ghostTag, width);
+
     if (sample.airborne) {
       var liftoff = map(sample.x, sim.rampDepthM);
       var current = map(sample.x, sample.y);
@@ -3815,7 +4061,7 @@ window.StemLab = window.StemLab || {
       halfpipeOutcomeVisible(sim, sample)
         ? outcomeMarkerStyle(sim).label.toLowerCase()
         : fillTemplate(__alloT('stem.skatelab.canvas_body_surface', '{body} body | {surface} surface'), { body: bodyPositionLabel(sim.bodyPosition.id), surface: surfaceLabel(sim.surface.id) }),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
   function drawLaneInset2D(ctx, sim, sample, width) {
@@ -4144,9 +4390,12 @@ window.StemLab = window.StemLab || {
             net: signedDelta(sample.aerodynamicNetWorkJ, 0, ' J'), loss: Math.round(sample.aerodynamicDissipationJ) })
           : fillTemplate(__alloT('stem.skatelab.canvas_footer_load_drift', 'load {load} g | peak {peak} g | drift {drift} ft'), {
             load: sample.normalG.toFixed(1), peak: getLandingPeakG(sim).toFixed(1), drift: sim.crossDriftFt.toFixed(1) })),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
+  // Set only while a halfpipe draws with a what-if ghost: the whole 3D scene shrinks about its base so the ghost's real
+  // height stays on the canvas, the way the 2D view's height ceiling does. Everything is still drawn to one scale.
+  var scene3DZoom = 1;
   function project3D(point, camera, width, height) {
     var azimuth = camera * Math.PI / 180;
     var cos = Math.cos(azimuth);
@@ -4157,7 +4406,7 @@ window.StemLab = window.StemLab || {
     var ry = point.y * Math.cos(pitch) - rz * Math.sin(pitch);
     var depth = point.y * Math.sin(pitch) + rz * Math.cos(pitch);
     var perspective = 1 / (1 + clamp(depth * 0.035, -0.28, 0.5));
-    var scale = Math.min(width / 12.5, height / 7.2) * perspective;
+    var scale = Math.min(width / 12.5, height / 7.2) * perspective * scene3DZoom;
     return {
       x: width * 0.5 + rx * scale,
       y: height * 0.72 - ry * scale,
@@ -4359,6 +4608,20 @@ window.StemLab = window.StemLab || {
     ctx.restore();
   }
 
+  // After a reveal only: a locked prediction keeps the normal view, so the framing can not hint at the height.
+  function halfpipe3DGhostZoom(sim, config, width, height) {
+    if (config.predictionLocked || !config.ghostSim || config.ghostSim.mode !== 'halfpipe') return 1;
+    var points = [];
+    (config.ghostSim.passPeaks || []).forEach(function(peak) { points.push(passPeakPoint(peak, config.ghostSim.rampDepthM)); });
+    if (sim.hasAir) points.push({ x: sim.trickSide * 4, y: sim.rampDepthM + sim.hAir });
+    if (config.compareSim && config.compareSim.mode === 'halfpipe' && config.compareSim.hasAir) points.push({ x: config.compareSim.trickSide * 4, y: config.compareSim.rampDepthM + config.compareSim.hAir });
+    var base = height * 0.72, top = width < 520 ? 48 : 72, zoom = 1;
+    points.forEach(function(point) {
+      var y = project3D({ x: point.x, y: point.y, z: 0 }, config.camera, width, height).y;
+      if (y < top) zoom = Math.min(zoom, (base - top) / (base - y));
+    });
+    return zoom;
+  }
   function drawHalfpipe3D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_halfpipe_3d_title', 'HALFPIPE | 3D ORBIT'),
       __alloT('stem.skatelab.canvas_halfpipe_3d_subtitle', 'Board pitch follows terrain through supported motion, flight, and contact'));
@@ -4446,6 +4709,9 @@ window.StemLab = window.StemLab || {
       ctx.stroke();
       ctx.restore();
     }
+    if (!config.predictionLocked && config.ghostSim && config.ghostSim.mode === 'halfpipe') {
+      drawGhostPeaks3D(ctx, config.ghostSim, config.camera, width, height, config.ghostTag);
+    }
     if (sample.airborne) {
       path3D(ctx, [
         { x: sample.x, y: sim.rampDepthM, z: 0 },
@@ -4505,7 +4771,7 @@ window.StemLab = window.StemLab || {
       halfpipeOutcomeVisible(sim, sample)
         ? outcomeMarkerStyle(sim).label.toLowerCase()
         : fillTemplate(__alloT('stem.skatelab.canvas_camera_body', 'camera {camera} deg | {body} body'), { camera: Math.round(config.camera), body: bodyPositionLabel(sim.bodyPosition.id) }),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
   function drawGap3D(ctx, width, height, sim, sample, config) {
@@ -4739,7 +5005,7 @@ window.StemLab = window.StemLab || {
             net: signedDelta(sample.aerodynamicNetWorkJ, 0, ' J'), loss: Math.round(sample.aerodynamicDissipationJ) })
           : fillTemplate(__alloT('stem.skatelab.canvas_footer_load_ideal', 'load {load} g | peak {peak} g | ideal air'), {
             load: sample.normalG.toFixed(1), peak: getLandingPeakG(sim).toFixed(1) })),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
   function niceTickStep(span, targetTicks) {
@@ -4887,7 +5153,7 @@ window.StemLab = window.StemLab || {
           friction: Math.round(sample.coastFrictionWorkSoFarJ)
         })
         : surfaceLabel(sim.surface.id) + ' · μ = ' + rounded(sim.rollingMu, 3),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
   function drawFlat3D(ctx, width, height, sim, sample, config) {
@@ -4936,7 +5202,7 @@ window.StemLab = window.StemLab || {
     if (config.showEnergy && !config.predictionLocked) drawEnergyHud(ctx, sim, sample, width);
     drawMotionFooter(ctx, sample, width, height,
       fillTemplate(__alloT('stem.skatelab.canvas_camera_surface', 'camera {camera} deg | {surface} · μ = {mu}'), { camera: Math.round(config.camera), surface: surfaceLabel(sim.surface.id), mu: rounded(sim.rollingMu, 3) }),
-      config.predictionLocked);
+      config.predictionLocked, config.guessSaved);
   }
 
   function drawScene(canvas, sim, progress, config) {
@@ -4951,7 +5217,11 @@ window.StemLab = window.StemLab || {
       ? sampleHalfpipe(sim, progress)
       : (sim.mode === 'flat' ? sampleFlat(sim, progress) : sampleGapJump(sim, progress));
     if (config.view === '3d') {
-      if (sim.mode === 'halfpipe') drawHalfpipe3D(frame.ctx, frame.width, frame.height, sim, sample, config);
+      if (sim.mode === 'halfpipe') {
+        scene3DZoom = 1;
+        scene3DZoom = halfpipe3DGhostZoom(sim, config, frame.width, frame.height);
+        try { drawHalfpipe3D(frame.ctx, frame.width, frame.height, sim, sample, config); } finally { scene3DZoom = 1; }
+      }
       else if (sim.mode === 'flat') drawFlat3D(frame.ctx, frame.width, frame.height, sim, sample, config);
       else drawGap3D(frame.ctx, frame.width, frame.height, sim, sample, config);
     } else {
@@ -4959,6 +5229,7 @@ window.StemLab = window.StemLab || {
       else if (sim.mode === 'flat') drawFlat2D(frame.ctx, frame.width, frame.height, sim, sample, config);
       else drawGap2D(frame.ctx, frame.width, frame.height, sim, sample, config);
     }
+    try { canvas.__skStartMarker = config.startMarker || null; } catch (err) {}
   }
 
   // ---------- Stage B text (every string has a stem.skatelab.* key) ----------
@@ -5245,21 +5516,54 @@ window.StemLab = window.StemLab || {
 
   // Offline self-check of a claim-evidence-reasoning answer. It looks for the
   // parts a strong answer has; it does not grade the science.
-  function checkCer(entry, keywords) {
+  // runs (optional): for each logged run of the investigation, the numbers
+  // it showed. Then evidence numbers must match values from two different
+  // runs (within 3 %), so blanks filled with made-up numbers do not pass.
+  function checkCer(entry, keywords, runs) {
     entry = entry || {};
     var claim = String(entry.claim || '');
     var evidence = String(entry.evidence || '');
     var reasoning = String(entry.reasoning || '');
     var words = claim.trim() ? claim.trim().split(/\s+/).length : 0;
-    var numbers = (evidence.match(/\d+(?:[.,]\d+)?/g) || []).length;
+    var found = (evidence.match(/\d+(?:[.,]\d+)?/g) || []).map(function(text) { return Number(text.replace(',', '.')); });
+    var numbersOk = found.length >= 2;
+    if (Array.isArray(runs)) {
+      var close = function(number, value) { return Math.abs(number - value) <= Math.max(0.005, 0.03 * Math.abs(value)); };
+      var matchedRuns = runs.filter(function(values) {
+        return (values || []).some(function(value) { return found.some(function(number) { return close(number, value); }); });
+      }).length;
+      var matchedNumbers = found.filter(function(number, index) {
+        return found.indexOf(number) === index && runs.some(function(values) {
+          return (values || []).some(function(value) { return close(number, value); });
+        });
+      }).length;
+      numbersOk = matchedRuns >= 2 && matchedNumbers >= 2;
+    }
     var lowerReasoning = reasoning.toLowerCase();
     return [
       { id: 'claim', ok: words >= 6 },
-      { id: 'numbers', ok: numbers >= 2 },
+      { id: 'numbers', ok: numbersOk },
       { id: 'units', ok: /(\d\s*(J|N|kg|m\/s²|m\/s|m|s|g|°))|\b(joules?|newtons?|metres?|meters?|seconds?)\b/i.test(evidence) },
       { id: 'idea', ok: (keywords || []).some(function(word) { return lowerReasoning.indexOf(String(word).toLowerCase()) !== -1; }) },
       { id: 'blanks', ok: (claim + evidence + reasoning).indexOf('___') === -1 && !!(claim.trim() && evidence.trim() && reasoning.trim()) }
     ];
+  }
+
+  // The measured results each logged run of an investigation can supply as
+  // evidence (its y columns; the frames already name the x values).
+  function investigationRunNumbers(investigation, entries) {
+    if (!investigation) return [];
+    var rows = (entries || []).map(function(entry) { return entry && entry.values && typeof entry.values === 'object' ? entry.values : {}; });
+    var columns = [investigation.y, investigation.altY].filter(Boolean);
+    return rows.map(function(values) {
+      return columns.map(function(id) { return values[id]; }).filter(function(value) { return Number.isFinite(value); });
+    });
+  }
+
+  // The standard code shown on an investigation (one carries an English word).
+  function ngssLabel(investigation) {
+    if (investigation && investigation.id === 'range_angle') return __alloT('stem.skatelab.inv_ngss_range_angle', 'HS-PS2-1 · projectile');
+    return investigation ? String(investigation.ngss || '') : '';
   }
 
   function investigationText(id) {
@@ -5722,9 +6026,11 @@ window.StemLab = window.StemLab || {
   }
 
   // Everything a teacher report needs, read from saved toolData only.
-  function reportData(state) {
+  // hideVerdicts: the learner's own copy while the teacher hides answers, so
+  // the matched count and the named ideas (which give the verdict away) are left out.
+  function reportData(state, hideVerdicts) {
     state = state || {};
-    var experiments = Array.isArray(state.experiments) ? state.experiments : [];
+    var experiments = logEntriesOf(state.experiments);
     var stats = state.predictionStats || { made: 0, matched: 0 };
     var tally = state.misconceptionTally || {};
     var progress = state.missions || {};
@@ -5742,8 +6048,9 @@ window.StemLab = window.StemLab || {
           investigation: entry.inv ? (investigationText(entry.inv) || {}).title || entry.inv : ''
         };
       }),
-      predictions: { made: finite(stats.made, 0), matched: finite(stats.matched, 0) },
-      ideas: MISCONCEPTION_IDS.filter(function(id) { return finite(tally[id], 0) > 0; }).map(function(id) {
+      hideVerdicts: !!hideVerdicts,
+      predictions: { made: finite(stats.made, 0), matched: hideVerdicts ? null : finite(stats.matched, 0) },
+      ideas: hideVerdicts ? [] : MISCONCEPTION_IDS.filter(function(id) { return finite(tally[id], 0) > 0; }).map(function(id) {
         return { label: misconceptionLabel(id), count: finite(tally[id], 0) };
       }),
       missions: MISSIONS.map(function(mission) {
@@ -5773,8 +6080,8 @@ window.StemLab = window.StemLab || {
   }
 
   // Several CSV blocks, one per section, separated by a blank line.
-  function buildReportCsv(state) {
-    var data = reportData(state);
+  function buildReportCsv(state, hideVerdicts) {
+    var data = reportData(state, hideVerdicts);
     var blocks = [];
     blocks.push(buildCsv(
       [{ label: __alloT('stem.skatelab.report_section_runs', 'Runs') }, { label: 'mode' }, { label: 'setup' }, { label: 'measured_ft' },
@@ -5799,7 +6106,7 @@ window.StemLab = window.StemLab || {
   // from that window, because window.print() on the app is ignored in Canvas).
   function buildReportHtml(state, meta) {
     meta = meta || {};
-    var data = reportData(state);
+    var data = reportData(state, meta.hideVerdicts);
     var e = htmlEscape;
     function table(caption, headers, rows) {
       if (!rows.length) return '<p>' + e(fillTemplate(__alloT('stem.skatelab.report_none', 'No {what} yet.'), { what: caption.toLowerCase() })) + '</p>';
@@ -5824,8 +6131,10 @@ window.StemLab = window.StemLab || {
         __alloT('stem.skatelab.sort_error', 'Estimate error') + ' (%)', __alloT('stem.skatelab.sort_outcome', 'Outcome'), __alloT('stem.skatelab.report_col_investigation', 'Investigation')],
         data.runs.map(function(run) { return [run.n, run.mode, run.setup, run.measured, run.estimate, run.errorPct, run.outcome, run.investigation]; })),
       '<h2>' + e(__alloT('stem.skatelab.report_section_predictions', 'Predictions')) + '</h2>',
-      '<p>' + e(fillTemplate(__alloT('stem.skatelab.prediction_record', 'Predictions checked: {made}. Matched the model: {matched}.'), data.predictions)) + '</p>',
-      table(__alloT('stem.skatelab.report_section_ideas', 'Ideas to rethink'), [__alloT('stem.skatelab.report_col_idea', 'Idea'), __alloT('stem.skatelab.report_col_count', 'Times')],
+      '<p>' + e(data.hideVerdicts
+        ? fillTemplate(__alloT('stem.skatelab.prediction_record_hidden', 'Predictions saved for your teacher: {made}.'), data.predictions)
+        : fillTemplate(__alloT('stem.skatelab.prediction_record', 'Predictions checked: {made}. Matched the model: {matched}.'), data.predictions)) + '</p>',
+      data.hideVerdicts ? '' : table(__alloT('stem.skatelab.report_section_ideas', 'Ideas to rethink'), [__alloT('stem.skatelab.report_col_idea', 'Idea'), __alloT('stem.skatelab.report_col_count', 'Times')],
         data.ideas.map(function(idea) { return [idea.label, idea.count]; })),
       '<h2>' + e(__alloT('stem.skatelab.report_section_missions', 'Missions')) + '</h2>',
       table(__alloT('stem.skatelab.report_section_missions', 'Missions'), [__alloT('stem.skatelab.report_col_mission', 'Mission'), __alloT('stem.skatelab.report_col_status', 'Status'),
@@ -6444,13 +6753,13 @@ window.StemLab = window.StemLab || {
         get label() { return __alloT('stem.skatelab.quest_gap_label', 'Model a safe gap landing'); },
         icon: '✓',
         check: function(data) {
-          return (data.experiments || []).some(function(entry) {
+          return logEntriesOf(data.experiments).some(function(entry) {
             return entry.mode === 'gap' &&
               (typeof entry.runSuccessful === 'boolean' ? entry.runSuccessful : entry.landed);
           });
         },
         progress: function(data) {
-          return (data.experiments || []).some(function(entry) {
+          return logEntriesOf(data.experiments).some(function(entry) {
             return entry.mode === 'gap' &&
               (typeof entry.runSuccessful === 'boolean' ? entry.runSuccessful : entry.landed);
           }) ? __alloT('stem.skatelab.quest_complete', 'complete') : __alloT('stem.skatelab.quest_pending', 'pending');
@@ -6499,7 +6808,7 @@ window.StemLab = window.StemLab || {
       d.stats = Object.assign({}, DEFAULTS.stats, seeded.stats || {});
       d.runViews = Object.assign({}, seeded.runViews || {});
       d.runSurfaces = Object.assign({}, seeded.runSurfaces || {});
-      d.experiments = Array.isArray(seeded.experiments) ? seeded.experiments : [];
+      d.experiments = logEntriesOf(seeded.experiments);
       d.estimateCredits = Array.isArray(seeded.estimateCredits) ? seeded.estimateCredits : [];
       d.xpCredits = Array.isArray(seeded.xpCredits) ? seeded.xpCredits : [];
       d.predictionStats = Object.assign({}, DEFAULTS.predictionStats, seeded.predictionStats || {});
@@ -6521,7 +6830,7 @@ window.StemLab = window.StemLab || {
       var teacherSettings = seeded.teacher && typeof seeded.teacher === 'object' ? seeded.teacher : {};
       var teacherLocks = teacherSettings.locks && typeof teacherSettings.locks === 'object' ? teacherSettings.locks : {};
       function isLocked(key) {
-        return !teacherView && Object.prototype.hasOwnProperty.call(teacherLocks, key);
+        return !teacherView && hasTeacherLock(teacherLocks, key);
       }
       function withLocks(state) {
         var effective = Object.assign({}, state || {});
@@ -6548,7 +6857,7 @@ window.StemLab = window.StemLab || {
           current.stats = Object.assign({}, DEFAULTS.stats, current.stats || {});
           current.runViews = Object.assign({}, current.runViews || {});
           current.runSurfaces = Object.assign({}, current.runSurfaces || {});
-          current.experiments = Array.isArray(current.experiments) ? current.experiments : [];
+          current.experiments = logEntriesOf(current.experiments);
           current.estimateCredits = Array.isArray(current.estimateCredits) ? current.estimateCredits : [];
           current.xpCredits = Array.isArray(current.xpCredits) ? current.xpCredits : [];
           var values = typeof patch === 'function' ? patch(current) : patch;
@@ -6583,6 +6892,14 @@ window.StemLab = window.StemLab || {
             : null);
 
       var canvasRef = React.useRef(null);
+      // Drag handle over the halfpipe start point (pointer twin of the
+      // Drop-in height slider) and the drag in progress.
+      var startHandleRef = React.useRef(null);
+      var startDragRef = React.useRef(null);
+      var focusPredictionNextRef = React.useRef(false);
+      var describeOpenState = React.useState(false);
+      var describeOpen = describeOpenState[0];
+      var setDescribeOpen = describeOpenState[1];
       // Fullscreen stage: the whole sk-stage section, so the run toolbar, the
       // telemetry strip and the timeline scrubber stay with the simulation. The
       // canvas is aspect-ratio 16/9 at width:100%, so it scales on its own.
@@ -6759,15 +7076,75 @@ window.StemLab = window.StemLab || {
           showTrail: !lockPrediction && d.showTrail !== false,
           showEnergy: !lockPrediction && d.showEnergy !== false,
           predictionLocked: lockPrediction,
-          compareSim: lockPrediction ? null : compareForDraw
+          guessSaved: lockPrediction && !estimateBlocked,
+          compareSim: lockPrediction ? null : compareForDraw,
+          // The ghost belongs to this setup only, and only after its reveal.
+          ghostSim: !lockPrediction && ghost && simulationSignature(activeModel) === currentSimulationSignature ? ghost.sim : null,
+          ghostTag: ghost ? ghostTag(ghost) : ''
         };
       }
+
+      // Keeps the drag handle on the drawn start point (2D halfpipe only).
+      function syncStartHandle() {
+        var handle = startHandleRef.current;
+        var marker = canvasRef.current && canvasRef.current.__skStartMarker;
+        if (!handle) return;
+        if (!marker) { handle.style.display = 'none'; return; }
+        handle.style.display = '';
+        handle.style.left = Math.round(marker.x - 22) + 'px';
+        handle.style.top = Math.round(marker.y - 22) + 'px';
+      }
+      // Pointer drag of the start point: the same dropHeightM, range and 0.1 m
+      // step as the Drop-in height slider (the keyboard and screen-reader route).
+      function startHeightFromPointer(clientY, drag) {
+        // The canvas rescales with the setup, so use the scale drawn now.
+        var live = canvasRef.current && canvasRef.current.__skStartMarker;
+        var scale = live && live.sy > 0 ? live : drag;
+        var metres = (scale.baseY - (clientY - drag.top)) / scale.sy;
+        return Math.round(clamp(metres, HALFPIPE_MIN_DROP_M, finite(d.rampDepthM, 2.4)) * 10) / 10;
+      }
+      function startDragDown(event) {
+        var canvas = canvasRef.current;
+        var marker = canvas && canvas.__skStartMarker;
+        if (running || !marker || !(marker.sy > 0)) return;
+        if (event.preventDefault) event.preventDefault();
+        var rect = canvas.getBoundingClientRect();
+        startDragRef.current = { pointerId: event.pointerId, top: finite(rect.top, 0), baseY: marker.baseY, sy: marker.sy };
+        try { if (event.currentTarget && event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); } catch (err) {}
+      }
+      function startDragMove(event) {
+        var drag = startDragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId || running) return;
+        var next = startHeightFromPointer(event.clientY, drag);
+        if (Math.abs(next - finite(d.dropHeightM, 0)) > 0.0001) upd({ dropHeightM: next });
+      }
+      function startDragEnd() { startDragRef.current = null; }
+
+      // Follows the stylesheet's own breakpoint: one grid column means stacked.
+      var workbenchRef = React.useRef(null);
+      var stackedState = React.useState(false);
+      var stageStacked = stackedState[0];
+      React.useEffect(function() {
+        var el = workbenchRef.current;
+        if (!el || typeof window === 'undefined' || !window.getComputedStyle) return undefined;
+        function measure() {
+          var cols = String(window.getComputedStyle(el).gridTemplateColumns || '').trim().split(/\s+/).filter(Boolean);
+          stackedState[1](cols.length === 1);
+        }
+        measure();
+        var observer = typeof window.ResizeObserver === 'function' ? new window.ResizeObserver(measure) : null;
+        if (observer) observer.observe(el); else window.addEventListener('resize', measure);
+        return function() {
+          if (observer) observer.disconnect(); else window.removeEventListener('resize', measure);
+        };
+      }, []);
 
       React.useEffect(function() {
         if (!canvasRef.current) return undefined;
         function redraw() {
           if (!running && canvasRef.current) {
             drawScene(canvasRef.current, sim, playheadRef.current, renderConfig());
+            syncStartHandle();
           }
         }
         redraw();
@@ -6784,7 +7161,10 @@ window.StemLab = window.StemLab || {
         };
       }, [
         running, mode, viewMode, currentSimulationSignature, d.cameraAzimuth,
-        d.showVectors, d.showTrail, d.showEnergy, lastSimulationSignature, previousSimulationSignature
+        d.showVectors, d.showTrail, d.showEnergy, lastSimulationSignature, previousSimulationSignature,
+        // The ghost appears once this setup's prediction is revealed.
+        d.predictionResult && currentResult && !hideAnswers && d.predictionResult.signature === currentSimulationSignature
+          ? String(d.predictionResult.promptId) : ''
       ]);
 
       React.useEffect(function() {
@@ -6843,7 +7223,9 @@ window.StemLab = window.StemLab || {
           awards.push({ id: 'skatelab_setup_' + signatureHash(finishedSignature), points: 2,
             reason: __alloT('stem.skatelab.xp_new_setup', 'Skate Lab: tested a new physics setup') });
         }
-        if (finishedSim.mode === 'halfpipe' && finishedSim.runSuccessful) {
+        // The untouched default (180° neutral, 3 pumps) lands on its own, so the
+        // trick awards need the learner's own spin, body or pump change.
+        if (finishedSim.mode === 'halfpipe' && finishedSim.runSuccessful && trickSetupChanged(finishedSim)) {
           awards.push({ id: 'skatelab_trick_landed', points: 10,
             reason: __alloT('stem.skatelab.xp_trick_landed', 'Skate Lab: landed a spin on target') });
           if (finishedSim.landingHalfTurns % 2 === 1) {
@@ -6878,7 +7260,7 @@ window.StemLab = window.StemLab || {
         return fresh.map(function(award) { return award.id; });
       }
 
-      function finishRun(finishedSim, shouldLog) {
+      function finishRun(finishedSim, shouldLog, blind) {
         animationRef.current = null;
         playbackRef.current = null;
         commitPlayhead(1);
@@ -6897,17 +7279,23 @@ window.StemLab = window.StemLab || {
         }
 
         var finishedSignature = simulationSignature(finishedSim);
+        var finishedHash = signatureHash(finishedSignature);
+        // Stage D: a prediction counts only if this setup's results were hidden
+        // at Run; an estimate or hang-time guess also needs a setup that is not
+        // already in the log (whose rows show the answer).
+        var freshSetup = !!blind && !d.experiments.some(function(entry) { return entry.sig === finishedHash; });
         var actual = measuredValueFt(finishedSim);
         var estimate = Number(estimateText);
         var hasEstimate = estimateValid;
         var errorPct = hasEstimate ? Math.abs(estimate - actual) / Math.max(0.01, actual) * 100 : null;
         // Repeating the same estimate for the same setup earns credit once.
         var estimateKey = finishedSignature + '|' + (hasEstimate ? rounded(estimate, 2) : '');
-        var estimateCredited = errorPct !== null && errorPct <= 10 &&
-          d.estimateCredits.indexOf(estimateKey) === -1;
+        var estimateCredited = freshSetup && errorPct !== null && errorPct <= 10 &&
+          d.estimateCredits.indexOf(estimateKey) === -1 &&
+          d.moonSeen.indexOf(finishedHash) === -1;
         // P3-1: check the committed prediction by running the model.
         var predictionOutcome = null;
-        if (predictionChoice && activePromptId && finishedSignature === currentSimulationSignature) {
+        if (blind && predictionChoice && activePromptId && finishedSignature === currentSimulationSignature) {
           var evaluation = null;
           try { evaluation = evaluatePrediction(activePromptId, finishedSim); } catch (err) { evaluation = null; }
           var judged = judgePrediction(activePromptId, predictionChoice, evaluation);
@@ -6928,9 +7316,12 @@ window.StemLab = window.StemLab || {
         // Stage C P4-1: every mission is checked against this finished run.
         // A hang-time guess counts only if it was typed for this setup before
         // any Moon run of the same setup revealed the answer.
-        var finishedHash = signatureHash(finishedSignature);
-        var missionGuessValue = d.missionGuess && d.missionGuess.signature === finishedSignature &&
+        var missionGuessValue = freshSetup && d.missionGuess && d.missionGuess.signature === finishedSignature &&
           d.moonSeen.indexOf(finishedHash) === -1 ? d.missionGuess.value : null;
+        // Stage E: the log keeps the hang-time guess typed for this setup.
+        var guessMissionNow = getMission(d.activeMission);
+        var loggedGuess = guessMissionNow && guessMissionNow.guess && finishedSim.mode === 'halfpipe' && d.missionGuess &&
+          d.missionGuess.signature === finishedSignature ? hangGuessOf(d.missionGuess.value) : null;
         var missionResults = MISSIONS.map(function(mission) {
           if (mission.mode !== finishedSim.mode) return null;
           try { return checkMission(mission.id, finishedSim, { guess: missionGuessValue }); } catch (err) { return null; }
@@ -6994,6 +7385,7 @@ window.StemLab = window.StemLab || {
           var entry = {
             id: entryId,
             n: stats.runs,
+            sig: finishedHash,
             mode: finishedSim.mode,
             view: current.viewMode,
             setup: experimentSetupText(finishedSim, current),
@@ -7009,6 +7401,10 @@ window.StemLab = window.StemLab || {
             record: runRecord,
             values: runNumbers
           };
+          if (loggedGuess !== null) {
+            entry.hangGuess = loggedGuess;
+            entry.hangErrPct = Math.abs(loggedGuess - finite(finishedSim.airTime, 0)) / Math.max(0.000001, finite(finishedSim.airTime, 0)) * 100;
+          }
           var activeInvestigation = getInvestigation(current.activeInvestigation);
           var planStep = matchPlanStep(activeInvestigation, withLocks(current));
           if (planStep !== -1) {
@@ -7058,7 +7454,9 @@ window.StemLab = window.StemLab || {
             estimateCredits: credit
               ? [estimateKey].concat(current.estimateCredits || []).slice(0, 40)
               : (current.estimateCredits || []),
-            xpCredits: xpCredits.slice(-80)
+            // Never trimmed: a dropped id would pay again. Every id family is
+            // capped (predict 25, setup 30, estimate 20) or one-time.
+            xpCredits: xpCredits
           };
         });
       }
@@ -7183,7 +7581,9 @@ window.StemLab = window.StemLab || {
         return Math.max(1, finite(model.motionDuration, 0) * 1000 / Math.max(0.01, speed));
       }
 
-      function animateModel(model, shouldLog) {
+      // blind: the results of this setup were hidden when Run was pressed, so
+      // a prediction, estimate or hang-time guess made for it can count.
+      function animateModel(model, shouldLog, blind) {
         if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
         playbackRef.current = null;
@@ -7197,7 +7597,7 @@ window.StemLab = window.StemLab || {
         if (motionReduced()) {
           commitPlayhead(1);
           drawScene(canvasRef.current, model, 1, renderConfig(model, true));
-          finishRun(model, shouldLog);
+          finishRun(model, shouldLog, blind);
           return;
         }
         if (d.sonify) startSonify(model, 0, playbackSpeed);
@@ -7206,6 +7606,7 @@ window.StemLab = window.StemLab || {
         var session = {
           model: model,
           shouldLog: !!shouldLog,
+          blind: !!blind,
           duration: playbackDurationMs(model, playbackSpeed),
           progress: 0,
           anchorTime: null,
@@ -7216,7 +7617,7 @@ window.StemLab = window.StemLab || {
           if (playbackRef.current !== session || session.paused) return;
           if (motionReduced()) {
             drawScene(canvasRef.current, model, 1, renderConfig(model, true));
-            finishRun(model, session.shouldLog);
+            finishRun(model, session.shouldLog, session.blind);
             return;
           }
           if (session.anchorTime === null) {
@@ -7235,7 +7636,7 @@ window.StemLab = window.StemLab || {
           else {
             animationRef.current = null;
             if (playbackRef.current !== session) return;
-            finishRun(model, session.shouldLog);
+            finishRun(model, session.shouldLog, session.blind);
           }
         }
         session.frame = frame;
@@ -7428,7 +7829,13 @@ window.StemLab = window.StemLab || {
         ? storedPrediction.choice
         : null;
       var choiceMade = !!predictionChoice;
-      var estimateBlocked = !!d.estimateChallenge && !estimateValid && !choiceMade;
+      // Stage E: on the hang-time mission a typed guess for this setup is a
+      // prediction too (credit still needs a blind, fresh setup).
+      var guessMission = getMission(d.activeMission);
+      var guessShown = !!guessMission && !!guessMission.guess && mode === 'halfpipe';
+      var guessMade = guessShown && !!d.missionGuess && d.missionGuess.signature === currentSimulationSignature &&
+        hangGuessOf(d.missionGuess.value) !== null;
+      var estimateBlocked = !!d.estimateChallenge && !estimateValid && !choiceMade && !guessMade;
       // (a) The alert appears only after Run was pressed without a prediction
       // for this setup; before that the same need is calm instruction text.
       var showPredictAlert = estimateBlocked && runAttemptSignature === currentSimulationSignature;
@@ -7678,7 +8085,7 @@ window.StemLab = window.StemLab || {
             time: rounded(sim.landingStopTimeS, 2)
           }) +
             (isLandingContactPhase(currentSample.phase)
-              ? ' · COM ↓ ' + rounded(currentSample.comCompressionM, 2) + ' m'
+              ? ' · ' + fillTemplate(__alloT('stem.skatelab.trace_com_drop', 'COM ↓ {value} m'), { value: rounded(currentSample.comCompressionM, 2) })
               : '')
           : fillTemplate(__alloT('stem.skatelab.trace_gap_no_contact', 'now {now} g · no supported landing contact'), {
             now: rounded(traceCurrentLoadG, 1)
@@ -7875,7 +8282,9 @@ window.StemLab = window.StemLab || {
         ? localStatus.text
         : '';
       var statusText = predictionLocked
-        ? __alloT('stem.skatelab.status_locked', 'Prediction locked: run the model to reveal the measured outcome.')
+        ? (estimateBlocked
+          ? __alloT('stem.skatelab.status_guess_first', 'Make your guess, then run the model to see what really happens.')
+          : __alloT('stem.skatelab.status_guess_saved', 'Guess saved. Run the model to see what really happens.'))
         : (localStatusText || (result
           ? resultText(result)
           : fillTemplate(__alloT('stem.skatelab.status_predicted', 'Predicted result: {result}'), { result: resultText(sim) })));
@@ -8340,11 +8749,13 @@ window.StemLab = window.StemLab || {
           : fillTemplate(__alloT('stem.skatelab.telemetry_flat_net', 'ΣF {net} N'), { net: rounded(currentSample.netForceN, 1) });
       } else {
         telemetryDetail = isLandingContactPhase(currentSample.phase)
-          ? rounded(Math.abs(currentSample.comVerticalVelocityMps), 2) + ' m/s ↓ COM'
+          ? fillTemplate(__alloT('stem.skatelab.telemetry_com_speed', '{speed} m/s ↓ COM'), { speed: rounded(Math.abs(currentSample.comVerticalVelocityMps), 2) })
           : fillTemplate(__alloT('stem.skatelab.telemetry_high', '{height} ft high'), { height: rounded(Math.max(0, currentSample.y) * M2FT, 1) });
         telemetryLast = isLandingContactPhase(currentSample.phase)
-          ? 'COM ↓ ' + rounded(currentSample.comCompressionM, 2) + ' m · ' +
-            rounded(currentSample.normalG, 1) + ' g'
+          ? fillTemplate(__alloT('stem.skatelab.telemetry_com_drop', 'COM ↓ {drop} m · {load} g'), {
+            drop: rounded(currentSample.comCompressionM, 2),
+            load: rounded(currentSample.normalG, 1)
+          })
           : (sim.airDrag && currentSample.flightTime > 0
             ? fillTemplate(__alloT('stem.skatelab.telemetry_net_air', 'net air {net}'), { net: signedDelta(currentSample.aerodynamicNetWorkJ, 0, ' J') })
             : fillTemplate(__alloT('stem.skatelab.telemetry_drift', '{drift} ft drift'), { drift: rounded(Math.abs(currentSample.z) * M2FT, 1) }));
@@ -8928,6 +9339,52 @@ window.StemLab = window.StemLab || {
         d.predictionResult.signature === currentSimulationSignature
         ? d.predictionResult
         : null;
+      // What-if ghost: only after this setup's prediction was revealed, and
+      // never while the teacher hides answers.
+      var ghost = null;
+      if (predictionFeedback && !predictionLocked && !hideAnswers && mode === 'halfpipe') {
+        try { ghost = ghostSimFor(sim, predictionFeedback.promptId); } catch (err) { ghost = null; }
+      }
+      // The reveal shows that setup's height and hang time, so a later guess or
+      // estimate for it is not a prediction (moonSeen holds short setup hashes).
+      var ghostMoonHash = ghost ? signatureHash(simulationSignature(ghost.sim)) : '';
+      React.useEffect(function() {
+        if (!ghostMoonHash || d.moonSeen.indexOf(ghostMoonHash) !== -1) return;
+        upd(function(current) {
+          var seen = Array.isArray(current.moonSeen) ? current.moonSeen : [];
+          return seen.indexOf(ghostMoonHash) !== -1 ? null : { moonSeen: seen.concat([ghostMoonHash]).slice(-40) };
+        });
+      }, [ghostMoonHash]);
+      // The canvas footer says when a guess is in.
+      React.useEffect(function() {
+        if (!running && canvasRef.current) drawScene(canvasRef.current, sim, playheadRef.current, renderConfig());
+      }, [!!estimateBlocked]);
+      React.useEffect(function() {
+        if (!focusPredictionNextRef.current) return;
+        focusPredictionNextRef.current = false;
+        focusPrediction();
+      }, [currentSimulationSignature]);
+      var ghostNote = null;
+      if (ghost) {
+        var ghostIntro;
+        if (ghost.promptId === 'hp_moon') {
+          ghostIntro = ghost.patch.gravity === 1.62
+            ? __alloT('stem.skatelab.ghost_intro_moon', 'What-if ghost (white dashes): the same ride on the Moon.')
+            : __alloT('stem.skatelab.ghost_intro_earth', 'What-if ghost (white dashes): the same ride on Earth.');
+        } else if (ghost.promptId === 'hp_mass') {
+          ghostIntro = fillTemplate(__alloT('stem.skatelab.ghost_intro_mass', 'What-if ghost (white dashes): the same ride with a {mass} kg rider.'), { mass: Math.round(ghost.patch.riderMassKg) });
+        } else if (ghost.promptId === 'hp_friction') {
+          ghostIntro = __alloT('stem.skatelab.ghost_intro_pumps', 'What-if ghost (white dashes): the same ride with no pumps.');
+        } else {
+          ghostIntro = fillTemplate(__alloT('stem.skatelab.ghost_intro_body', 'What-if ghost (white dashes): the same ride with the “{body}” body position.'), { body: bodyPositionLabel(ghost.patch.bodyPositionId) });
+        }
+        ghostNote = ghostIntro + ' ' + fillTemplate(__alloT('stem.skatelab.ghost_numbers', 'Its highest pass reaches {ghostTop} m with {ghostAir} s in the air; this run reaches {top} m with {air} s.'), {
+          ghostTop: rounded(highestPassM(ghost.sim), 2),
+          ghostAir: rounded(finite(ghost.sim.airTime, 0), 2),
+          top: rounded(highestPassM(sim), 2),
+          air: rounded(finite(sim.airTime, 0), 2)
+        });
+      }
       var predictCard = null;
       if (d.estimateChallenge && !result && activePromptId) {
         predictCard = h('fieldset', { className: 'sk-predict', 'data-skatelab-predict': 'true' },
@@ -8986,14 +9443,21 @@ window.StemLab = window.StemLab || {
             className: 'sk-secondary',
             disabled: running,
             onClick: function() {
-              if (feedbackPatch) applySetupPatch(feedbackPatch);
-              else inspectPlayhead(feedbackProgress, true);
+              if (feedbackPatch) {
+                // This button goes away with the new setup, so focus moves on.
+                focusPredictionNextRef.current = true;
+                applySetupPatch(feedbackPatch);
+              } else inspectPlayhead(feedbackProgress, true);
             }
           }, feedbackPatch
             ? __alloT('stem.skatelab.predict_try', 'Try this to see why: set up the comparison run')
             : __alloT('stem.skatelab.predict_show', 'Show me that moment'))
         );
       }
+
+      // One column (phones): the controls sit far below the ride, so the verdict
+      // moves to right under the canvas.
+      var dockVerdict = !!(stageStacked && predictionFeedback && predictCard);
 
       // ---- P3-2 experiment log: sort, plot, export, delete ----
       var logEntries = d.experiments;
@@ -9077,12 +9541,17 @@ window.StemLab = window.StemLab || {
           if (!group.fit) {
             return { index: index, text: fillTemplate(__alloT('stem.skatelab.scatter_no_fit', '{group}: {n} point(s), not enough spread in x for a best-fit line.'), { group: name, n: group.points.length }) };
           }
+          // A negative intercept is written "− 0.05", never "+ -0.05".
+          var negativeIntercept = group.fit.intercept < 0 &&
+            Number(rounded(group.fit.intercept, Math.abs(group.fit.intercept) >= 100 ? 1 : 3)) !== 0;
           return {
             index: index,
-            text: fillTemplate(__alloT('stem.skatelab.scatter_fit', '{group}: best fit y = {slope}·x + {intercept}, r² = {r2} ({n} runs).'), {
+            text: fillTemplate(negativeIntercept
+              ? __alloT('stem.skatelab.scatter_fit_minus', '{group}: best fit y = {slope}·x − {intercept}, r² = {r2} ({n} runs).')
+              : __alloT('stem.skatelab.scatter_fit', '{group}: best fit y = {slope}·x + {intercept}, r² = {r2} ({n} runs).'), {
               group: name,
               slope: formatNumber(group.fit.slope, Math.abs(group.fit.slope) >= 100 ? 1 : 4),
-              intercept: formatNumber(group.fit.intercept, Math.abs(group.fit.intercept) >= 100 ? 1 : 3),
+              intercept: formatNumber(negativeIntercept ? -group.fit.intercept : group.fit.intercept, Math.abs(group.fit.intercept) >= 100 ? 1 : 3),
               r2: group.fit.r2 == null ? '—' : formatNumber(group.fit.r2, 4),
               n: group.fit.n
             })
@@ -9197,6 +9666,68 @@ window.StemLab = window.StemLab || {
           announce(__alloT('stem.skatelab.csv_download_failed', 'Download is not available here. Use Copy CSV instead.'));
         }
       }
+      // Hand the log to Data Plot (Charts & Graphs, Regression mode) or to CODAP through Data Lab.
+      // Both hooks live in lazily loaded modules, so fall back to their inboxes and open the tool.
+      function openOtherTool(id) {
+        try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(id); } catch (err) {}
+        if (typeof setStemLabTool === 'function') setStemLabTool(id);
+      }
+      function sendLogToDataPlot() {
+        var points = sortedEntries.filter(function(entry) {
+          return entry.values && Number.isFinite(entry.values[logX]) && Number.isFinite(entry.values[logY]);
+        }).map(function(entry) { return { x: entry.values[logX], y: entry.values[logY] }; });
+        if (!points.length) {
+          announce(__alloT('stem.skatelab.send_none', 'No runs have both of these values yet. Pick other axes or run more experiments.'));
+          return;
+        }
+        var payload = { title: __alloT('stem.skatelab.send_title', 'Skate Lab runs'), xLabel: logColumnTitle(logX), yLabel: logColumnTitle(logY), source: 'Skate Lab', points: points };
+        var SL = window.StemLab || {};
+        if (typeof SL.dataPlotImport === 'function') {
+          var res = SL.dataPlotImport(payload, ctx);
+          if (!res || !res.ok) { announce(__alloT('stem.skatelab.send_failed', 'Those runs could not be sent. Try Copy CSV instead.')); return; }
+        } else {
+          SL._dataPlotInbox = payload;
+          if (typeof setToolData === 'function') {
+            setToolData(function(prev) {
+              var ds = Object.assign({}, prev && prev._dataStudio && typeof prev._dataStudio === 'object' ? prev._dataStudio : {}, { studioMode: 'regression' });
+              return Object.assign({}, prev, { _dataStudio: ds });
+            });
+          }
+          openOtherTool('dataStudio');
+        }
+        announce(fillTemplate(__alloT('stem.skatelab.send_plot_done', 'Sent {n} runs to Data Plot.'), { n: points.length }));
+      }
+      function sendLogToCodap() {
+        var attributes = [{ name: '#', type: 'numeric' }, { name: 'mode', type: 'categorical' }]
+          .concat(presentColumns.map(function(id) { return { name: logColumnTitle(id), type: 'numeric' }; }))
+          .concat([{ name: 'measured_ft', type: 'numeric' }, { name: 'estimate_ft', type: 'numeric' }, { name: 'outcome', type: 'categorical' }]);
+        var rows = sortedEntries.map(function(entry) {
+          return [runNumbers[entry.id], entry.mode]
+            .concat(presentColumns.map(function(id) { return entry.values && Number.isFinite(entry.values[id]) ? entry.values[id] : ''; }))
+            .concat([Number.isFinite(entry.measured) ? Number(entry.measured.toPrecision(6)) : '', Number.isFinite(entry.estimate) ? entry.estimate : '', entryOutcomeText(entry)]);
+        });
+        var dataset = { title: __alloT('stem.skatelab.send_title', 'Skate Lab runs'), attributes: attributes, rows: rows, source: 'Skate Lab' };
+        var SL = window.StemLab || {};
+        if (typeof SL.openInDataLab === 'function') {
+          var res = SL.openInDataLab(dataset);
+          if (res && res.error === 'desktop-app') {
+            // The desktop app opens CODAP in the web browser; Data Lab's inbox offers the rows as a copyable table.
+            if (!Array.isArray(window.__alloDataLabInbox)) window.__alloDataLabInbox = [];
+            window.__alloDataLabInbox.push(dataset);
+            openOtherTool('dataLab');
+            announce(__alloT('stem.skatelab.send_codap_desktop', 'In the desktop app, CODAP opens in your web browser. Data Lab is open now: copy your runs as a table there and paste them into CODAP.'));
+            return;
+          }
+          if (res && res.ok) announce(fillTemplate(__alloT('stem.skatelab.send_codap_done', 'Sent {n} runs to CODAP in a new window.'), { n: rows.length }));
+          else if (res && res.error === 'popup-blocked') announce(__alloT('stem.skatelab.send_codap_blocked', 'The browser blocked the CODAP window. Allow pop-ups for this site, then try again.'));
+          else announce(__alloT('stem.skatelab.send_failed', 'Those runs could not be sent. Try Copy CSV instead.'));
+          return;
+        }
+        if (!Array.isArray(window.__alloDataLabInbox)) window.__alloDataLabInbox = [];
+        window.__alloDataLabInbox.push(dataset);
+        openOtherTool('dataLab');
+        announce(__alloT('stem.skatelab.send_codap_inbox', 'Opening Data Lab. Press "Open it in CODAP" there to see your runs.'));
+      }
       function focusSoon(id) {
         if (typeof document === 'undefined') return;
         setTimeout(function() {
@@ -9254,6 +9785,8 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'sk-log-actions' },
           h('button', { type: 'button', className: 'sk-secondary', onClick: copyLogCsv }, __alloT('stem.skatelab.csv_copy', 'Copy CSV')),
           h('button', { type: 'button', className: 'sk-secondary', onClick: downloadLogCsv }, __alloT('stem.skatelab.csv_download', 'Download CSV')),
+          presentColumns.length > 0 && !!logX && !!logY && h('button', { type: 'button', className: 'sk-secondary', onClick: sendLogToDataPlot }, __alloT('stem.skatelab.send_plot', 'Graph these axes in Data Plot')),
+          h('button', { type: 'button', className: 'sk-secondary', onClick: sendLogToCodap }, __alloT('stem.skatelab.send_codap', 'Explore the log in CODAP')),
           pendingConfirm && pendingConfirm.kind === 'all'
             ? h('span', { className: 'sk-confirm', role: 'group', 'aria-label': __alloT('stem.skatelab.log_clear_confirm_label', 'Confirm clearing the log') },
               h('span', null, fillTemplate(__alloT('stem.skatelab.log_clear_confirm', 'Delete all {n} runs?'), { n: logEntries.length })),
@@ -9297,8 +9830,15 @@ window.StemLab = window.StemLab || {
                   h('td', null, entry.setup),
                   showXY && h('td', null, formatNumber(values[logX], 3)),
                   showXY && logY !== logX && h('td', null, formatNumber(values[logY], 3)),
-                  h('td', null, rounded(entry.measured, 1) + ' ' + entry.unit),
-                  h('td', null, entry.errorPct == null ? '—' : rounded(entry.errorPct, 1) + '%'),
+                  h('td', null, Number.isFinite(entry.measured) ? rounded(entry.measured, 1) + ' ' + (entry.unit || 'ft') : '—'),
+                  h('td', null,
+                    entry.errorPct == null && !Number.isFinite(entry.hangErrPct) ? '—' : null,
+                    entry.errorPct == null ? null : h('span', null, rounded(entry.errorPct, 1) + '%'),
+                    Number.isFinite(entry.hangErrPct) && Number.isFinite(entry.hangGuess) && h('span', { className: 'sk-log-hang-guess', style: { display: 'block' } },
+                      fillTemplate(__alloT('stem.skatelab.log_hang_guess', 'Hang-time guess {guess} s: {pct}% off'), {
+                        guess: entry.hangGuess,
+                        pct: rounded(entry.hangErrPct, 1)
+                      }))),
                   h('td', {
                     className: (typeof entry.runSuccessful === 'boolean' ? entry.runSuccessful : entry.landed)
                       ? 'sk-result-good'
@@ -9323,12 +9863,16 @@ window.StemLab = window.StemLab || {
           )
         );
       var tallyIds = MISCONCEPTION_IDS.filter(function(id) { return d.misconceptionTally[id] > 0; });
+      // With answers hidden, the matched count and the named ideas would give
+      // away the verdict, so only the number of saved predictions shows.
       var predictionRecord = d.predictionStats.made > 0 && h('div', { className: 'sk-prediction-record' },
-        h('p', { className: 'sk-help' }, fillTemplate(__alloT('stem.skatelab.prediction_record', 'Predictions checked: {made}. Matched the model: {matched}.'), {
-          made: d.predictionStats.made,
-          matched: d.predictionStats.matched
-        })),
-        tallyIds.length > 0 && h('ul', { className: 'sk-help sk-tally', 'aria-label': __alloT('stem.skatelab.tally_label', 'Ideas to rethink, with how often they came up') },
+        h('p', { className: 'sk-help' }, hideAnswers
+          ? fillTemplate(__alloT('stem.skatelab.prediction_record_hidden', 'Predictions saved for your teacher: {made}.'), { made: d.predictionStats.made })
+          : fillTemplate(__alloT('stem.skatelab.prediction_record', 'Predictions checked: {made}. Matched the model: {matched}.'), {
+            made: d.predictionStats.made,
+            matched: d.predictionStats.matched
+          })),
+        !hideAnswers && tallyIds.length > 0 && h('ul', { className: 'sk-help sk-tally', 'aria-label': __alloT('stem.skatelab.tally_label', 'Ideas to rethink, with how often they came up') },
           tallyIds.map(function(id) {
             return h('li', { key: id }, misconceptionLabel(id) + ' × ' + d.misconceptionTally[id]);
           }))
@@ -9366,7 +9910,8 @@ window.StemLab = window.StemLab || {
       }
       function runCerCheck() {
         if (!activeInvestigation) return;
-        var results = checkCer(activeCer, activeInvestigationText.keywords);
+        var results = checkCer(activeCer, activeInvestigationText.keywords,
+          investigationRunNumbers(activeInvestigation, investigationEntries(activeInvestigation.id)));
         var count = finite(activeCer.checkCount, 0) + 1;
         updateCer(activeInvestigation.id, { checkCount: count });
         var allOk = results.every(function(item) { return item.ok; });
@@ -9395,7 +9940,7 @@ window.StemLab = window.StemLab || {
         upd(function(current) {
           var credits = (current.xpCredits || []).slice();
           if (credits.indexOf(id) === -1) credits.push(id);
-          return { xpCredits: credits.slice(-80) };
+          return { xpCredits: credits };
         });
         return true;
       }
@@ -9430,7 +9975,7 @@ window.StemLab = window.StemLab || {
               disabled: running,
               onClick: function() { upd({ activeInvestigation: pressed ? null : investigation.id }); setCerFeedback(null); }
             },
-              h('span', { className: 'sk-inv-ngss' }, investigation.ngss),
+              h('span', { className: 'sk-inv-ngss' }, ngssLabel(investigation)),
               h('span', { className: 'sk-inv-name' }, text.title),
               h('span', { className: 'sk-inv-progress' }, fillTemplate(__alloT('stem.skatelab.inv_progress', '{done}/{total} runs'), { done: done, total: investigation.steps.length })));
           })
@@ -9473,7 +10018,7 @@ window.StemLab = window.StemLab || {
             );
           }
           return h('div', { className: 'sk-inv-body', 'aria-labelledby': 'sk-inv-title', role: 'region' },
-            h('h4', { id: 'sk-inv-title' }, text.title, ' ', h('span', { className: 'sk-inv-ngss' }, activeInvestigation.ngss)),
+            h('h4', { id: 'sk-inv-title' }, text.title, ' ', h('span', { className: 'sk-inv-ngss' }, ngssLabel(activeInvestigation))),
             h('p', { className: 'sk-inv-question' }, h('strong', null, __alloT('stem.skatelab.inv_question_label', 'Question:') + ' '), text.question),
             h('dl', { className: 'sk-inv-vars' },
               h('dt', null, __alloT('stem.skatelab.inv_iv', 'Change (independent variable)')), h('dd', null, text.iv),
@@ -9487,15 +10032,18 @@ window.StemLab = window.StemLab || {
                 var logged = entries.some(function(entry) { return entry.step === index; });
                 var isCurrent = currentPlanStep === index;
                 var label = planStepLabel(step);
+                var stepBlockedBy = teacherView ? [] : planStepLockConflicts(step, teacherLocks);
                 return h('li', { key: index, className: logged ? 'is-logged' : undefined },
                   h('span', { className: 'sk-inv-step' }, label),
                   h('span', { className: logged ? 'sk-result-good' : 'sk-help' }, logged
                     ? __alloT('stem.skatelab.inv_step_logged', '✓ logged')
-                    : (isCurrent ? __alloT('stem.skatelab.inv_step_ready', 'set up: press Run') : __alloT('stem.skatelab.inv_step_todo', 'not run yet'))),
+                    : (stepBlockedBy.length
+                      ? missionLockText(stepBlockedBy)
+                      : (isCurrent ? __alloT('stem.skatelab.inv_step_ready', 'set up: press Run') : __alloT('stem.skatelab.inv_step_todo', 'not run yet')))),
                   h('button', {
                     type: 'button',
                     className: 'sk-secondary sk-small',
-                    disabled: running,
+                    disabled: running || stepBlockedBy.length > 0,
                     'aria-label': fillTemplate(__alloT('stem.skatelab.inv_setup_label', 'Set up run {n}: {label}'), { n: index + 1, label: label }),
                     onClick: function() { applySetupPatch(step.patch, activeInvestigation.speed ? { playbackSpeed: activeInvestigation.speed } : null); }
                   }, __alloT('stem.skatelab.inv_setup', 'Set up'))
@@ -9565,7 +10113,25 @@ window.StemLab = window.StemLab || {
           setRunAttemptSignature(currentSimulationSignature);
           return;
         }
-        animateModel(sim, true);
+        animateModel(sim, true, predictionLocked);
+        bringRideIntoView();
+      }
+      // The ride plays where the learner can see it: if the canvas is not
+      // fully on screen, scroll it in (instantly under reduced motion). Focus
+      // stays on the run button.
+      function bringRideIntoView() {
+        var canvas = canvasRef.current;
+        if (!canvas || typeof canvas.scrollIntoView !== 'function' || typeof window === 'undefined') return;
+        var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+        var viewHeight = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || 0;
+        if (!rect || !(viewHeight > 0) || !(rect.height > 0)) return;
+        if (rect.top >= 0 && rect.bottom <= viewHeight) return;
+        try {
+          // Stacked: at the top, so the verdict docked under the ride shows with it.
+          canvas.scrollIntoView({ block: stageStacked || rect.height > viewHeight ? 'start' : 'center', behavior: motionReduced() ? 'auto' : 'smooth' });
+        } catch (err) {
+          try { canvas.scrollIntoView(); } catch (ignore) {}
+        }
       }
       function focusPrediction() {
         if (typeof document === 'undefined') return;
@@ -9590,7 +10156,9 @@ window.StemLab = window.StemLab || {
         var key = event.key;
         var onActivator = !!(target && target.tagName && /^(button|summary|a)$/i.test(target.tagName));
         if (key === ' ' || key === 'Spacebar') {
-          if (onActivator) return;
+          // The run button keeps focus through a ride; its Space pauses there.
+          var onRunningLaunch = running && !!(target && target.getAttribute && target.getAttribute('data-skatelab-launch') === 'true');
+          if (onActivator && !onRunningLaunch) return;
           event.preventDefault();
           if (running) togglePlayback();
           else requestRun();
@@ -9753,13 +10321,25 @@ window.StemLab = window.StemLab || {
       var activeMission = getMission(d.activeMission);
       var missionsDone = MISSIONS.filter(function(mission) { return d.missions[mission.id] && d.missions[mission.id].done; }).length;
       var currentSetupHash = signatureHash(currentSimulationSignature);
+      var setupLogged = d.experiments.some(function(entry) { return entry.sig === currentSetupHash; });
       var moonSetupSeen = mode === 'halfpipe' && Math.abs(finite(d.gravity, G) - 1.62) < 1e-6 && d.moonSeen.indexOf(currentSetupHash) !== -1;
       var guessText = d.missionGuess && d.missionGuess.signature === currentSimulationSignature && d.missionGuess.value != null
         ? String(d.missionGuess.value)
         : '';
+      // Stage D: missions the teacher's locks rule out (learners only).
+      function lockNames(keys) { return keys.map(function(key) { return lockLabel(key); }).join(', '); }
+      function missionBlockedBy(id) { return teacherView ? [] : missionLockConflicts(id, teacherLocks); }
+      function missionLockText(keys) {
+        return fillTemplate(__alloT('stem.skatelab.mission_locked', 'Not possible with the settings your teacher locked ({names}).'), { names: lockNames(keys) });
+      }
       function startMission(id) {
         var mission = getMission(id);
         if (running || !mission) return;
+        var blockedBy = missionBlockedBy(id);
+        if (blockedBy.length) {
+          announce(missionLockText(blockedBy));
+          return;
+        }
         applySetupPatch(mission.setup, { activeMission: id });
         announce(fillTemplate(__alloT('stem.skatelab.mission_started', 'Mission set up: {title}. {goal}'), {
           title: missionText(id).title,
@@ -9789,7 +10369,9 @@ window.StemLab = window.StemLab || {
               upd({ missionGuess: { value: String(event.target.value).slice(0, 12), signature: currentSimulationSignature } });
             }
           }),
-          h('p', { id: inputId + '-help', className: 'sk-help' }, moonSetupSeen
+          h('p', { id: inputId + '-help', className: 'sk-help' }, !d.estimateChallenge
+            ? __alloT('stem.skatelab.mission_guess_open', 'Turn on “Predict before each run” so the hang time stays hidden. A guess typed while the answer is showing does not count.')
+            : moonSetupSeen || setupLogged
             ? __alloT('stem.skatelab.mission_guess_seen', 'This Moon setup has already been run, so a prediction for it will not count. Change any setting to make a new setup.')
             : __alloT('stem.skatelab.mission_guess_help', 'Type it before you run. It counts only for this setup, and only before its first Moon run.'))
         );
@@ -9816,6 +10398,7 @@ window.StemLab = window.StemLab || {
             var record = d.missions[mission.id] || {};
             var shown = finite(missionHints[mission.id], 0);
             var isActive = activeMission && activeMission.id === mission.id;
+            var blockedBy = missionBlockedBy(mission.id);
             return h('li', {
               key: mission.id,
               className: 'sk-mission' + (record.done ? ' is-done' : '') + (isActive ? ' is-active' : ''),
@@ -9825,13 +10408,14 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'sk-mission-xp' }, fillTemplate(__alloT('stem.skatelab.mission_xp', '{xp} XP'), { xp: mission.xp }))),
               h('p', { className: 'sk-mission-goal' }, text.goal),
               h('p', { className: record.done ? 'sk-result-good sk-mission-status' : 'sk-help sk-mission-status' }, missionStatusText(mission)),
+              blockedBy.length > 0 && h('p', { className: 'sk-help sk-locked-note' }, missionLockText(blockedBy)),
               shown > 0 && h('ol', { className: 'sk-mission-hints' },
                 text.hints.slice(0, shown).map(function(hint, index) { return h('li', { key: index }, hint); })),
               h('div', { className: 'sk-log-actions' },
                 h('button', {
                   type: 'button',
                   className: 'sk-secondary sk-small',
-                  disabled: running,
+                  disabled: running || blockedBy.length > 0,
                   'aria-label': fillTemplate(__alloT('stem.skatelab.mission_setup_label', 'Set up the attempt: {title}'), { title: text.title }),
                   onClick: function() { startMission(mission.id); }
                 }, __alloT('stem.skatelab.mission_setup', 'Set up the attempt')),
@@ -9996,6 +10580,9 @@ window.StemLab = window.StemLab || {
           ? (getMission(assignment.id) ? missionText(assignment.id).title : '')
           : (getInvestigation(assignment.id) ? investigationText(assignment.id).title : ''))
         : '';
+      var assignmentConflicts = !assignment ? [] : (assignment.kind === 'mission'
+        ? missionLockConflicts(assignment.id, teacherLocks)
+        : investigationLockConflicts(assignment.id, teacherLocks));
       function startAssignment() {
         if (!assignment || running) return;
         if (assignment.kind === 'mission') startMission(assignment.id);
@@ -10009,7 +10596,7 @@ window.StemLab = window.StemLab || {
         try { date = new Date().toLocaleDateString(); } catch (err) {}
         var lang = 'en';
         try { lang = (document.documentElement && document.documentElement.lang) || 'en'; } catch (err) {}
-        return { learner: ctx.studentNickname || '', date: date, lang: lang };
+        return { learner: ctx.studentNickname || '', date: date, lang: lang, hideVerdicts: hideAnswers };
       }
       function downloadText(text, name, type) {
         try {
@@ -10028,7 +10615,7 @@ window.StemLab = window.StemLab || {
         }
       }
       function downloadReportCsv() {
-        announce(downloadText(buildReportCsv(d), 'skate-lab-report.csv', 'text/csv;charset=utf-8')
+        announce(downloadText(buildReportCsv(d, hideAnswers), 'skate-lab-report.csv', 'text/csv;charset=utf-8')
           ? __alloT('stem.skatelab.report_csv_done', 'Downloaded the report as skate-lab-report.csv.')
           : __alloT('stem.skatelab.csv_download_failed', 'Download is not available here. Use Copy CSV instead.'));
       }
@@ -10097,6 +10684,10 @@ window.StemLab = window.StemLab || {
               }))
           )
         ),
+        assignmentConflicts.length > 0 && h('p', { className: 'sk-error', 'data-skatelab-assign-conflict': 'true' },
+          fillTemplate(__alloT('stem.skatelab.teacher_assign_conflict', 'Learners cannot finish this assignment with the current locks. Unlock: {names}.'), {
+            names: lockNames(assignmentConflicts)
+          })),
         h('label', { className: 'sk-check', htmlFor: 'sk-teacher-hide' },
           h('input', {
             id: 'sk-teacher-hide',
@@ -10138,6 +10729,16 @@ window.StemLab = window.StemLab || {
         }, label);
       }
 
+      function canvasSummaryBlock(props) {
+        return h('p', props,
+          comparisonExplanation && h('span', { className: 'sk-comparison-insight' },
+            h('strong', null, __alloT('stem.skatelab.cause_effect', 'Cause-and-effect check:') + ' '),
+            comparisonExplanation
+          ),
+          h('span', null, canvasSummary)
+        );
+      }
+
       return h('div', {
         ref: shellRef,
         className: 'skatelab-shell',
@@ -10152,7 +10753,7 @@ window.StemLab = window.StemLab || {
               type: 'button',
               className: 'sk-back',
               onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-              'aria-label': __alloT('stem.skatelab.back_to_stem_lab', 'Back to STEM Lab')
+              'aria-label': __alloT('stem.skatelab.back_to_stem_lab', 'Back to STEAM Lab')
             }, '←'),
             h('div', null,
               h('h2', { className: 'sk-title' }, __alloT('stem.skatelab.title', 'Skate Lab')),
@@ -10178,7 +10779,7 @@ window.StemLab = window.StemLab || {
         assignmentBanner,
         teacherPanel,
 
-        h('div', { className: 'sk-workbench' },
+        h('div', { className: 'sk-workbench', ref: workbenchRef },
           h('section', { ref: skFsRef, 'data-allo-fs-stage': 'true', className: 'sk-stage', 'data-skatelab-run-focus': 'true', 'aria-label': __alloT('stem.skatelab.a11y_simulation_stage', 'Simulation stage'), style: { position: 'relative' } },
             h('button', {
               type: 'button',
@@ -10199,15 +10800,34 @@ window.StemLab = window.StemLab || {
                   return canvasLabel;
                 })(),
                 'aria-describedby': 'sk-canvas-summary'
-              }, __alloT('stem.skatelab.canvas_fallback', 'A visual simulation of skate physics. The full numeric description appears below.'))
+              }, __alloT('stem.skatelab.canvas_fallback', 'A visual simulation of skate physics. The full numeric description appears below.')),
+              // Pointer twin of the Drop-in height slider, which keyboard and
+              // screen-reader users use (so this handle is hidden from them).
+              h('div', {
+                ref: startHandleRef,
+                className: 'sk-start-handle',
+                'aria-hidden': 'true',
+                'data-skatelab-start-handle': 'true',
+                hidden: mode !== 'halfpipe' || viewMode !== '2d' || running ? true : undefined,
+                title: __alloT('stem.skatelab.start_handle_title', 'Drag up or down to change the drop-in height'),
+                style: { display: 'none' },
+                onPointerDown: startDragDown,
+                onPointerMove: startDragMove,
+                onPointerUp: startDragEnd,
+                onPointerCancel: startDragEnd,
+                onLostPointerCapture: startDragEnd
+              }, h('span', null, '↕'))
             ),
+            dockVerdict && h('div', { 'data-skatelab-verdict-dock': 'true', style: { marginTop: 10 } }, predictCard),
             h('div', { className: 'sk-stage-toolbar' },
               h('div', {
                 className: 'sk-live-telemetry',
                 'aria-label': telemetryAria
               },
-                h('span', { className: 'sk-phase' }, predictionLocked ? __alloT('stem.skatelab.telemetry_locked_phase', 'prediction locked') : phaseLabel(currentSample.phase)),
-                h('span', null, predictionLocked ? __alloT('stem.skatelab.telemetry_locked_short', 'Run to reveal measurements') : rounded(currentSample.time, 2) + ' s'),
+                h('span', { className: 'sk-phase' }, predictionLocked
+                  ? (estimateBlocked ? __alloT('stem.skatelab.telemetry_guess_first', 'Guess first') : __alloT('stem.skatelab.telemetry_guess_saved', 'Guess saved'))
+                  : phaseLabel(currentSample.phase)),
+                h('span', null, predictionLocked ? __alloT('stem.skatelab.telemetry_locked_short_v2', 'The numbers appear after your run') : rounded(currentSample.time, 2) + ' s'),
                 !predictionLocked && h('span', { className: 'sk-telemetry-detail' },
                   rounded(currentSample.speedMps * MPS2MPH, 1) + ' mph'),
                 !predictionLocked && h('span', { className: 'sk-telemetry-detail' }, telemetryDetail),
@@ -10345,15 +10965,28 @@ window.StemLab = window.StemLab || {
                 ? __alloT('stem.skatelab.legend_perspective', 'Perspective model')
                 : __alloT('stem.skatelab.legend_side', 'Side elevation')),
               legendText,
-              (comparisonSim ? __alloT('stem.skatelab.legend_previous', ' · lavender dashed = previous run') : '')
+              (comparisonSim ? __alloT('stem.skatelab.legend_previous', ' · lavender dashed = previous run') : ''),
+              (ghost ? __alloT('stem.skatelab.legend_ghost', ' · white dashes = what-if ghost') : '')
             ),
-            h('p', { id: 'sk-canvas-summary', className: 'sk-canvas-summary' },
-              comparisonExplanation && h('span', { className: 'sk-comparison-insight' },
-                h('strong', null, __alloT('stem.skatelab.cause_effect', 'Cause-and-effect check:') + ' '),
-                comparisonExplanation
-              ),
-              h('span', null, canvasSummary)
-            )
+            ghostNote && h('p', { className: 'sk-ghost-note', 'data-skatelab-ghost': ghost.promptId }, ghostNote),
+            // Simple level: the long description is one click away; the
+            // canvas keeps it as its aria-describedby either way.
+            scaffoldLevel === 'simple' && comparisonExplanation && !describeOpen && h('p', { className: 'sk-canvas-summary sk-comparison-line' },
+              h('strong', null, __alloT('stem.skatelab.cause_effect', 'Cause-and-effect check:') + ' '),
+              comparisonExplanation
+            ),
+            scaffoldLevel === 'simple'
+              ? h('details', {
+                className: 'sk-describe',
+                'data-skatelab-describe': 'true',
+                open: describeOpen,
+                onToggle: function(event) { setDescribeOpen(!!(event.currentTarget && event.currentTarget.open)); }
+              },
+                h('summary', null, __alloT('stem.skatelab.describe_ride', 'Describe the ride')),
+                canvasSummaryBlock({ className: 'sk-canvas-summary' }))
+              : canvasSummaryBlock({ id: 'sk-canvas-summary', className: 'sk-canvas-summary' }),
+            // A closed disclosure would silence aria-describedby.
+            scaffoldLevel === 'simple' && canvasSummaryBlock({ id: 'sk-canvas-summary', hidden: true })
           ),
 
           h('aside', { className: 'sk-controls', 'aria-label': __alloT('stem.skatelab.a11y_physics_controls', 'Physics controls') },
@@ -10369,6 +11002,67 @@ window.StemLab = window.StemLab || {
               'aria-labelledby': 'sk-mode-tab-' + mode,
               className: 'sk-control-group'
             },
+              // Predict and run come first, so the first minute is: guess, then go.
+              h('div', { className: 'sk-quickstart', 'data-skatelab-quickstart': 'true' },
+            !dockVerdict && predictCard,
+            h('div', { className: 'sk-estimate' },
+              h('label', { htmlFor: 'sk-estimate' }, estimateLabel),
+              h('input', {
+                id: 'sk-estimate',
+                type: 'number',
+                min: 0,
+                step: 0.1,
+                value: estimateText,
+                disabled: running,
+                'aria-invalid': showPredictAlert ? 'true' : undefined,
+                'aria-describedby': showPredictAlert ? 'sk-estimate-error' : (estimateBlocked ? 'sk-predict-needed' : undefined),
+                onChange: function(event) { upd({ estimateValue: event.target.value, estimateSignature: currentSimulationSignature }); }
+              })
+            ),
+            estimateValid && !d.estimateChallenge && h('p', { className: 'sk-help sk-estimate-note' },
+              __alloT('stem.skatelab.estimate_no_credit_open', 'The results are showing, so an estimate earns no credit. Turn on “Predict before each run” to hide them first.')),
+            estimateValid && predictionLocked && setupLogged && h('p', { className: 'sk-help sk-estimate-note' },
+              __alloT('stem.skatelab.estimate_no_credit_logged', 'This setup is already in your experiment log, so an estimate for it earns no credit. Change any setting to make a new setup.')),
+            estimateValid && predictionLocked && !setupLogged && d.moonSeen.indexOf(currentSetupHash) !== -1 && h('p', { className: 'sk-help sk-estimate-note' },
+              __alloT('stem.skatelab.estimate_no_credit_ghost', 'A what-if ghost already showed this setup, so an estimate for it earns no credit. Change any setting to make a new setup.')),
+            estimateBlocked && !showPredictAlert && h('p', { id: 'sk-predict-needed', className: 'sk-help sk-predict-needed' }, guessShown
+              ? __alloT('stem.skatelab.predict_needed_hang', 'Before you run: type your hang-time prediction below, choose an answer above, or type an estimate (zero or more). Run starts once you have predicted.')
+              : __alloT('stem.skatelab.predict_needed', 'Before you run: choose an answer above or type an estimate (zero or more). Run starts once you have predicted.')),
+            showPredictAlert && h('p', { id: 'sk-estimate-error', className: 'sk-error', role: 'alert' }, guessShown
+              ? __alloT('stem.skatelab.predict_required_hang', 'Make a prediction first: type a hang-time prediction above 0 s below, choose an answer above, or enter an estimate of zero or greater.')
+              : __alloT('stem.skatelab.predict_required', 'Make a prediction first: choose an answer above or enter an estimate of zero or greater.')),
+            activeMissionBanner,
+            h('div', { className: 'sk-actions' },
+              h('button', {
+                type: 'button',
+                className: 'sk-run',
+                'data-skatelab-launch': 'true',
+                'aria-disabled': estimateBlocked || running ? 'true' : undefined,
+                'aria-describedby': estimateBlocked && !running ? (showPredictAlert ? 'sk-estimate-error' : 'sk-predict-needed') : undefined,
+                'aria-keyshortcuts': 'Space',
+                onClick: requestRun
+              }, running
+                ? (paused ? __alloT('stem.skatelab.run_paused', 'Paused') : __alloT('stem.skatelab.run_running', 'Running…'))
+                : runLabel),
+              h('button', {
+                type: 'button',
+                className: 'sk-secondary',
+                disabled: running,
+                onClick: resetSetup
+              }, __alloT('stem.skatelab.reset_setup', 'Reset setup'))
+            ),
+            h('div', {
+              className: 'sk-status',
+              'data-result': result ? (simulationSuccessful(result) ? 'success' : 'miss') : ''
+            }, statusText),
+            h('div', {
+              className: 'sk-sr-only',
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              'data-skatelab-announcer': 'true'
+            }, announcement)
+              ),
               h('div', { className: 'sk-control' },
                 h('div', { className: 'sk-control-head' }, h('span', null, __alloT('stem.skatelab.control_rider_setup', 'Rider setup')), h('output', null, vehicleName(getVehicle(d.vehicle).id))),
                 radioGrid('Vehicle', d.vehicle, ['skate', 'bmx'].map(function(id) {
@@ -10440,58 +11134,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
               lockedNote('estimateChallenge')
-            ),
-            predictCard,
-            h('div', { className: 'sk-estimate' },
-              h('label', { htmlFor: 'sk-estimate' }, estimateLabel),
-              h('input', {
-                id: 'sk-estimate',
-                type: 'number',
-                min: 0,
-                step: 0.1,
-                value: estimateText,
-                disabled: running,
-                'aria-invalid': showPredictAlert ? 'true' : undefined,
-                'aria-describedby': showPredictAlert ? 'sk-estimate-error' : (estimateBlocked ? 'sk-predict-needed' : undefined),
-                onChange: function(event) { upd({ estimateValue: event.target.value, estimateSignature: currentSimulationSignature }); }
-              })
-            ),
-            estimateBlocked && !showPredictAlert && h('p', { id: 'sk-predict-needed', className: 'sk-help sk-predict-needed' },
-              __alloT('stem.skatelab.predict_needed', 'Before you run: choose an answer above or type an estimate (zero or more). Run starts once you have predicted.')),
-            showPredictAlert && h('p', { id: 'sk-estimate-error', className: 'sk-error', role: 'alert' },
-              __alloT('stem.skatelab.predict_required', 'Make a prediction first: choose an answer above or enter an estimate of zero or greater.')),
-            activeMissionBanner,
-            h('div', { className: 'sk-actions' },
-              h('button', {
-                type: 'button',
-                className: 'sk-run',
-                'data-skatelab-launch': 'true',
-                disabled: running,
-                'aria-disabled': estimateBlocked && !running ? 'true' : undefined,
-                'aria-describedby': estimateBlocked && !running ? (showPredictAlert ? 'sk-estimate-error' : 'sk-predict-needed') : undefined,
-                'aria-keyshortcuts': 'Space',
-                onClick: requestRun
-              }, running
-                ? (paused ? __alloT('stem.skatelab.run_paused', 'Paused') : __alloT('stem.skatelab.run_running', 'Running…'))
-                : runLabel),
-              h('button', {
-                type: 'button',
-                className: 'sk-secondary',
-                disabled: running,
-                onClick: resetSetup
-              }, __alloT('stem.skatelab.reset_setup', 'Reset setup'))
-            ),
-            h('div', {
-              className: 'sk-status',
-              'data-result': result ? (simulationSuccessful(result) ? 'success' : 'miss') : ''
-            }, statusText),
-            h('div', {
-              className: 'sk-sr-only',
-              role: 'status',
-              'aria-live': 'polite',
-              'aria-atomic': 'true',
-              'data-skatelab-announcer': 'true'
-            }, announcement)
+            )
           )
         ),
 
@@ -10556,7 +11199,7 @@ window.StemLab = window.StemLab || {
               id: 'sk-hypothesis',
               rows: 3,
               value: d.hypothesis,
-              'aria-label': __alloT('stem.skatelab.hypothesis_input', 'Skate physics investigation hypothesis'),
+              'aria-label': __alloT('stem.skatelab.hypothesis_input_v2', 'Skate physics investigation hypothesis'),
               placeholder: __alloT('stem.skatelab.hypothesis_placeholder', 'Write a claim you can test by changing one variable at a time…'),
               onChange: function(event) { upd({ hypothesis: event.target.value }); }
             }),

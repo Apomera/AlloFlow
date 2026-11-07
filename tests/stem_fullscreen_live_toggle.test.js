@@ -37,14 +37,19 @@ const CASES = [
   // funcGrapher renders a 'Loading...' placeholder until its state exists, so
   // the seed is what makes the real body (and the Function Zoo) render at all.
   { file: 'stem_lab/stem_tool_funcgrapher.js', id: 'funcGrapher', stage: 'data-allo-fs-stage', seed: { funcGrapher: { type: 'linear', a: 1, b: 0, c: 0, traceX: 0 } } },
-  { file: 'stem_lab/stem_tool_unitconvert.js', id: 'unitConvert', stage: 'data-allo-fs-stage' },
+  // Unit Converter engagement build (2026-11-04): the pico-to-tera prefix
+  // canvas is shown from grade 6 up; the harness student is in 5th grade, so a
+  // teacher lock at Grades 6-7 brings the canvas (and its button) back.
+  { file: 'stem_lab/stem_tool_unitconvert.js', id: 'unitConvert', stage: 'data-allo-fs-stage', seed: { unitConvert: { teacher: { lockBand: 'b67' } } } },
   { file: 'stem_lab/stem_tool_printlab.js', id: 'printLab', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_numberline.js', id: 'numberline', stage: 'data-allo-fs-stage', seed: { _numberline: { showIntegerLab: true } } },
   { file: 'stem_lab/stem_tool_logiclab.js', id: 'logicLab', stage: 'data-allo-fs-stage', seed: { logicLab: { showTruthLab: true } } },
   { file: 'stem_lab/stem_tool_coding.js', id: 'codingPlayground', stage: 'data-allo-fs-stage' },
   // cityLab keeps its 3D board in local useState, so no toolData seed can reach
   // it; the view has to be switched the way a student switches it.
-  { file: 'stem_lab/stem_tool_citylab.js', id: 'cityLab', stage: 'data-allo-fs-stage', reveal: /show the map by 3d/i },
+  // City Lab W4 (2026-11-04): the camera row folds at every width, so Full
+  // screen sits under "More camera"; that is opened second.
+  { file: 'stem_lab/stem_tool_citylab.js', id: 'cityLab', stage: 'data-allo-fs-stage', reveal: [/show the map by 3d/i, /^more camera$/i] },
   { file: 'stem_lab/stem_tool_consciousness.js', id: 'consciousnessLab', stage: 'data-allo-fs-stage', seed: { consciousnessLab: { activeView: 'bench' } } },
   { file: 'stem_lab/stem_tool_climateExplorer.js', id: 'climateExplorer', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_epidemic.js', id: 'epidemicSim', stage: 'data-allo-fs-stage' },
@@ -144,12 +149,13 @@ function mount(toolId, seed, reveal) {
   const Comp = () => cfg.render(ctx);
   root = ReactDOMClient.createRoot(container);
   act(() => root.render(React.createElement(Comp)));
-  if (reveal) {
+  // `reveal` is one control, or a list pressed in order.
+  [].concat(reveal || []).forEach((rx) => {
     const opener = [...container.querySelectorAll('button')]
-      .find((b) => reveal.test(b.getAttribute('aria-label') || b.textContent || ''));
-    if (!opener) throw new Error('reveal control not found for ' + toolId + ': ' + reveal);
+      .find((b) => rx.test(b.getAttribute('aria-label') || b.textContent || ''));
+    if (!opener) throw new Error('reveal control not found for ' + toolId + ': ' + rx);
     act(() => { opener.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-  }
+  });
   return container;
 }
 

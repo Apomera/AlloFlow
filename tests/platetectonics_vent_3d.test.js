@@ -1476,7 +1476,8 @@ describe('AI tutor: grounded in the scene, and coaching rather than telling', ()
   });
 
   it('defaults the reading level to the grade band', () => {
-    const { host } = renderTool({ aiCoachOpen: true }, { gradeLevel: '10th Grade' });
+    // The tutor renders only with a usable provider (student AI-off sweep).
+    const { host } = renderTool({ aiCoachOpen: true }, { gradeLevel: '10th Grade', callGemini: () => Promise.resolve('') });
     const hs = [...host.querySelectorAll('[data-pt-ai-coach="open"] [aria-pressed]')].find((b) => /High School/.test(b.textContent));
     expect(hs.getAttribute('aria-pressed')).toBe('true');
   });

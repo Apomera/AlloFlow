@@ -633,7 +633,10 @@ describe('City Planning Lab - the 3D model is a view, not a source of truth', ()
     expect(P.massingSignature(base, 'central', 'D6')).toBe(sigA);
     expect(P.massingSignature(P.setUse(base, 'A1', 'mixed'), 'central', 'D6')).not.toBe(sigA);
     expect(P.massingSignature(base, 'conservative', 'D6')).not.toBe(sigA);
-    expect(P.massingSignature(base, 'central', 'A1')).not.toBe(sigA);
+    // City Lab 3D W1 (2026-11-04): a SELECTION change no longer rebuilds.
+    // Every arrow key moved the selection, and each rebuild re-created 220-600
+    // meshes; the scene's tick now moves the selection outline instead.
+    expect(P.massingSignature(base, 'central', 'A1')).toBe(sigA);
   });
 
   it('applies one vertical exaggeration to everything', () => {

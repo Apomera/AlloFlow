@@ -41,7 +41,7 @@ for(const mission of ['open','feedChicks'])test.describe('Raptor flight HUD clea
       if(width===1100||width===420)await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/hud-clearance-'+mission+'-'+width+'.png',timeout:90000});
     }
     if(mission==='open'){
-      await page.getByRole('button',{name:'Flight trail',exact:true}).click();await expect(panel).toBeHidden();
+      await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('trail'));await expect(panel).toBeHidden();
       await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('trail'));
       await expect(panel).toBeVisible();await page.getByRole('button',{name:'Scenic view',exact:true}).click();await expect(panel).toBeHidden();await page.getByRole('button',{name:'Scenic view',exact:true}).click();await expect(panel).toBeVisible();
     }

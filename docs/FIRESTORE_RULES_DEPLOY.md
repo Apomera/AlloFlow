@@ -11,6 +11,10 @@
 > writes `expiresAt` on those docs (24h live / 30d assignments); until the TTL policy is deployed
 > to an owned project, expired docs simply linger and are ignored/overwritten — verify the policy
 > shows "Active" under Firestore → TTL in the console after deploying.)
+> **Realm Builder, Concept Atlas, Boss Encounter and Class Memory Palace class play need the rules and indexes from 2026-11-05.** Students
+> send class work as private `arcadeSubmissions` documents, kept for at most 14 days by a TTL policy.
+> Until a district redeploys, teachers and students see a notice that nothing can be sent. Redeploy
+> with the command above, then check the new TTL policy shows "Active".
 > App Check monitoring/enforcement and emulator coverage are release requirements. The historical
 > checklist below remains only as behavioral context.
 >
@@ -31,27 +35,22 @@ AlloFlow runs against **two different Firebase backends** depending on surface
    there.** Access control on that surface is Google's platform policy (apps are namespaced under
    `artifacts/{appId}/…` with platform-issued auth). Nothing for you to do — and nothing you
    *can* do — at the database layer for Canvas.
-2. **desktop/web-app (the public demo site)** — uses the owned project **`prismflow-911fe`**
-   (see `desktop/web-app/.env`). **This is where these rules deploy**, at
-   [console.firebase.google.com](https://console.firebase.google.com) → project `prismflow-911fe`
-   → Firestore Database → Rules. Whatever rules it has today are whatever was set when the
-   project was created (possibly open "test mode").
+2. **A district's own Firebase project** — every district sets up its own project, following
+   [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md). **This is where these rules deploy.** There is no
+   shared AlloFlow project. `prismflow-911fe` is retired and must stay offline (Aaron, 2026-11-05):
+   never deploy to it, and treat anything that reaches it as a bug.
 
-Why this still matters even though Canvas is the primary surface: the demo site is public and its
-project is reachable by anyone with its (client-shipped) config; and more importantly, the
-**classroom phase should run on an owned project anyway** — a Google-managed Canvas backend means
-no data-processing agreement, no retention control, and no audit trail, which a district will not
-accept. These rules are the ready-made security layer for that project, whether it's
-`prismflow-911fe` or a fresh one for the pilot.
+Why this matters even though Canvas is a primary surface: a Google-managed Canvas backend means no
+data-processing agreement, no retention control and no audit trail, which a district will not
+accept. These rules are the ready-made security layer for the district's project.
 
-**The one-sentence version:** today anyone with the demo's Firebase config (which ships in the
-client) can write anything to `prismflow-911fe`; after this deploy, only the teacher who created a
-session can control it, students can only touch their own roster/quiz/reaction entries, and
-session codes can't be listed out of the database.
+**The one-sentence version:** after this deploy, only the teacher who created a session can control
+it, students can only touch their own permitted entries, and session codes can't be listed out of
+the database.
 
 ## Before you deploy
 
-1. Open [Firebase console](https://console.firebase.google.com) → **`prismflow-911fe`** →
+1. Open [Firebase console](https://console.firebase.google.com) → **your district's project** →
    **Firestore Database → Rules**.
 2. **Copy everything currently in the editor** into a new file `docs/firestore.rules.PREVIOUS`
    in the repo (or anywhere safe). This is your instant rollback.

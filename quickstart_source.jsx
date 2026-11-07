@@ -330,7 +330,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   // Guarded fallback for keys newer than the lang packs (raw-key echo counts
   // as missing — same convention as the Reading Library module).
   const wt = (k, fb) => { try { const r = t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
+  // Host doorway: AI-only choices render disabled with the reason and a setup link (null on old hosts).
+  let aiDoor = null; try { if (typeof window.__alloAiSetupDoorway === 'function') aiDoor = window.__alloAiSetupDoorway('text', t); } catch (_) {}
+  const aiOff = !!(aiDoor && aiDoor.disabled), aiTitle = aiOff ? aiDoor.title : undefined, AiNotice = aiOff && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
   const wizardRef = useRef(null);
+  // Literal t('…') calls keep new keys visible to the i18n scanner; a missing or echoed key falls back to English.
+  const pick = (value, fallback) => (typeof value === 'string' && value && !/^[\w-]+(\.[\w-]+)+$/.test(value) ? value : fallback);
+  const [customLength, setCustomLength] = useState(false);
   const handleClose = useCallback(() => {
     const close = () => {
       setIsHelpMode(false);
@@ -351,6 +357,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       format: 'Standard Text',
       sourceMode: '',
       fetchedContent: '',
+      pastedText: '',
       resourceMeta: null,
       searchQuery: '',
       searchOptions: [],
@@ -888,7 +895,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   <button type="button"
                                     data-help-key="wizard_find_standard_btn"
                                     onClick={handleGoalSearch}
-                                    disabled={isSearching || !learningGoal.trim()}
+                                    disabled={isSearching || !learningGoal.trim() || aiOff} title={aiTitle}
                                     aria-busy={isSearching}
                                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 rounded-xl shadow-md transition-all motion-reduce:transition-none flex items-center gap-2 disabled:opacity-50 shrink-0"
                                   >
@@ -950,6 +957,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.source_material')}</label>
                           <p className="text-slate-600 mb-6 text-sm">{t('wizard.source_desc')}</p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <button type="button" data-help-key="wizard_paste_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'paste' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-sky-500 hover:bg-sky-50 transition-all motion-reduce:transition-none group"
+                              >
+                                <div className="bg-sky-50 p-4 rounded-full shadow-sm mb-3 group-hover:bg-white">
+                                    <FileText size={32} className="text-sky-700" aria-hidden="true"/>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-sky-800 text-lg">{pick(t('wizard.paste_text'), 'Paste or type text')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{pick(t('wizard.paste_desc'), 'Use your own passage, article, or notes')}</span>
+                              </button>
                               <button type="button" data-help-key="wizard_upload_source"
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'file' }));
@@ -989,7 +1009,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('wizard.storybooks', 'Reading Catalog')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Books, articles, and primary sources')}</span>
                               </button>
-                              <button type="button" data-help-key="wizard_generate_source"
+                              {AiNotice && <div className="sm:col-span-2"><AiNotice t={t} /></div>}
+                              <button type="button" data-help-key="wizard_generate_source" disabled={aiOff} title={aiTitle} style={aiOff ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'generate' }));
                                     setStep(3);
@@ -1254,8 +1275,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               </div>
                                               <select
                                                   dir="auto"
-                                                  value={localData.length}
-                                                  onChange={(e) => setLocalData(prev => ({ ...prev, length: e.target.value }))}
+                                                  value={customLength || !['200', '500', '800', '1200', '2000'].includes(String(localData.length)) ? 'custom' : String(localData.length)}
+                                                  onChange={(e) => { const v = e.target.value; if (v === 'custom') setCustomLength(true); else { setCustomLength(false); setLocalData(prev => ({ ...prev, length: v })); } }}
                                                   className="w-full ps-9 p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all motion-reduce:transition-none bg-white"
                                                   data-help-key="wizard_length_select"
                                                   aria-label={t('wizard.input_length_label')}
@@ -1265,8 +1286,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   <option value="800">{t('wizard.lengths.long')}</option>
                                                   <option value="1200">{t('wizard.lengths.extended')}</option>
                                                   <option value="2000">{t('wizard.lengths.deep')}</option>
+                                                  <option value="custom">{pick(t('wizard.length_custom'), 'Custom…')}</option>
                                               </select>
                                           </div>
+                                          {(customLength || !['200', '500', '800', '1200', '2000'].includes(String(localData.length))) && (
+                                              <div data-wizard-custom-length className="mt-2">
+                                                  <label htmlFor="wizard-custom-length" className="block text-xs font-bold text-slate-600 mb-1">{pick(t('wizard.length_custom_label'), 'Number of words')}</label>
+                                                  <input id="wizard-custom-length" type="number" inputMode="numeric" min={50} max={5000} step={50} value={localData.length} aria-describedby="wizard-custom-length-hint"
+                                                      onChange={(e) => setLocalData(prev => ({ ...prev, length: e.target.value }))}
+                                                      onBlur={(e) => { const n = Math.round(Number(e.target.value) / 10) * 10; setLocalData(prev => ({ ...prev, length: String(Number.isFinite(n) && n > 0 ? Math.min(5000, Math.max(50, n)) : 500) })); }}
+                                                      className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 bg-white" />
+                                                  <p id="wizard-custom-length-hint" className="mt-1 text-xs text-slate-600">{pick(t('wizard.length_custom_hint'), '50 to 5,000 words')}</p>
+                                              </div>
+                                          )}
                                       </div>
                                   </div>
                                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1376,10 +1408,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     />
                                                     <button type="button"
                                                         onClick={handleFindStandards} data-help-key="standards_search_btn"
-                                                        disabled={isFindingStandards || !aiStandardQuery.trim()}
+                                                        disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
                                                         aria-busy={isFindingStandards}
                                                         className="min-h-11 min-w-11 self-end bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors motion-reduce:transition-none shadow-sm sm:self-auto"
-                                                        title={t('standards.search_button_title')}
+                                                        title={aiTitle || t('standards.search_button_title')}
                                                         aria-label={t('standards.search_button_title')}
                                                     >
                                                         {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
@@ -1603,6 +1635,29 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </div>
                           </div>
                       )}
+                      {localData.sourceMode === 'paste' && (() => {
+                          const words = (localData.pastedText.trim().match(/\S+/g) || []).length;
+                          return (
+                          <div data-wizard-paste className="space-y-3">
+                              <label htmlFor="wizard-paste-text" className="block text-lg font-bold text-slate-700">{pick(t('wizard.paste_label'), 'Your text')}</label>
+                              <p id="wizard-paste-help" className="text-slate-600 text-sm">{pick(t('wizard.paste_help'), 'Paste or type the passage your lesson will build from. It opens in the Source view, where you can keep editing.')}</p>
+                              <textarea id="wizard-paste-text" dir="auto" autoFocus rows={10} value={localData.pastedText} aria-describedby="wizard-paste-help wizard-paste-count"
+                                  onChange={(e) => setLocalData(prev => ({ ...prev, pastedText: e.target.value }))}
+                                  placeholder={pick(t('wizard.paste_placeholder'), 'Paste or type your text here…')}
+                                  className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-600/30 transition-all motion-reduce:transition-none bg-white text-slate-900 resize-y" />
+                              <p id="wizard-paste-count" className="text-xs text-slate-600" aria-live="polite">{pick(t('wizard.paste_word_count'), '{count} words').replace('{count}', String(words))}</p>
+                              <button type="button"
+                                  aria-label={t('common.next')}
+                                  data-help-key="wizard_paste_next"
+                                  onClick={() => setStep(4)}
+                                  disabled={!localData.pastedText.trim()}
+                                  className="w-full bg-sky-700 text-white font-bold py-3 rounded-xl hover:bg-sky-800 disabled:opacity-50 flex items-center justify-center gap-2"
+                              >
+                                  {t('common.next')} <ArrowRight size={18} />
+                              </button>
+                          </div>
+                          );
+                      })()}
                       {localData.sourceMode === 'file' && (
                           <div className="text-center py-8">
                               <div className="inline-block p-6 bg-indigo-50 rounded-full mb-4 border-2 border-indigo-100">

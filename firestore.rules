@@ -493,6 +493,42 @@ service cloud.firestore {
             && privateBoardAnswer(session(), request.resource.data);
           allow delete: if authed() && session().hostId == request.auth.uid;
         }
+        // Arcade class work (Realm Builder, Concept Atlas, Boss Encounter, Memory Palace). One private document per send: a learner
+        // creates and reads only their own; only the host reads all, adds a teacher score or deletes.
+        // A learner cannot write teacherScore. score is the device's AI grade, bounded here, not verified.
+        match /arcadeSubmissions/{subId} {
+          function arcadeSession() { return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data; }
+          function arcadeHost() { return authed() && arcadeSession().hostId == request.auth.uid; }
+          function arcadeText(d, field, max) { return !(field in d) || (d[field] is string && d[field].size() <= max); }
+          function arcadeSend(d) {
+            return d.keys().hasAll(['uid', 'activity', 'expiresAt', 'submittedAt'])
+              && d.keys().hasOnly(['uid', 'activity', 'expiresAt', 'submittedAt', 'subId', 'awaitingTeacher', 'nickname', 'participantId', 'summary', 'justification', 'score', 'ackText', 'followUp', 'selfCheck', 'selfCheckText', 'verb', 'verbLabel', 'cardId', 'cardName', 'cardSource', 'cardImageBase64', 'partnerCardId', 'partnerCardName', 'fromCardId', 'fromCardName', 'fromCardSource', 'fromCardImageBase64', 'toCardId', 'toCardName', 'toCardSource', 'toCardImageBase64', 'cardTier', 'encounterKey', 'round', 'kind', 'activityId', 'replaces', 'roomId', 'newRoomTitle', 'label', 'mnemonic', 'groupId', 'role', 'contributorNickname', 'status'])
+              && d.uid == request.auth.uid
+              && subId.matches('^' + request.auth.uid + '_[A-Za-z0-9_-]{1,64}$')
+              && d.activity in ['realm', 'atlas', 'boss', 'palace']
+              && d.expiresAt is timestamp && d.expiresAt <= request.time + duration.value(31, 'd')
+              && arcadeText(d, 'submittedAt', 40) && arcadeText(d, 'subId', 80) && arcadeText(d, 'nickname', 80) && arcadeText(d, 'participantId', 128)
+              && arcadeText(d, 'summary', 300) && arcadeText(d, 'justification', 4000) && arcadeText(d, 'ackText', 1000) && arcadeText(d, 'followUp', 1000) && arcadeText(d, 'selfCheckText', 600)
+              && arcadeText(d, 'verb', 40) && arcadeText(d, 'verbLabel', 80)
+              && arcadeText(d, 'cardId', 200) && arcadeText(d, 'cardName', 200) && arcadeText(d, 'cardSource', 40) && arcadeText(d, 'partnerCardId', 200) && arcadeText(d, 'partnerCardName', 200)
+              && arcadeText(d, 'fromCardId', 200) && arcadeText(d, 'fromCardName', 200) && arcadeText(d, 'fromCardSource', 40)
+              && arcadeText(d, 'toCardId', 200) && arcadeText(d, 'toCardName', 200) && arcadeText(d, 'toCardSource', 40)
+              && arcadeText(d, 'cardImageBase64', 400000) && arcadeText(d, 'fromCardImageBase64', 400000) && arcadeText(d, 'toCardImageBase64', 400000)
+              && arcadeText(d, 'cardTier', 40) && arcadeText(d, 'encounterKey', 60) && arcadeText(d, 'activityId', 100) && arcadeText(d, 'replaces', 200)
+              && arcadeText(d, 'roomId', 80) && arcadeText(d, 'newRoomTitle', 80) && arcadeText(d, 'label', 120) && arcadeText(d, 'mnemonic', 360)
+              && arcadeText(d, 'groupId', 80) && arcadeText(d, 'role', 40) && arcadeText(d, 'contributorNickname', 80)
+              && (!('kind' in d) || d.kind in ['join', 'contribution'])
+              && (!('status' in d) || d.status == 'pending')
+              && (!('round' in d) || (d.round is int && d.round >= 1 && d.round <= 99))
+              && (!('awaitingTeacher' in d) || d.awaitingTeacher is bool)
+              && (!('score' in d) || (d.score is int && d.score >= 1 && d.score <= 20))
+              && (!('selfCheck' in d) || (d.selfCheck is list && d.selfCheck.size() <= 12));
+          }
+          allow get, list: if authed() && (arcadeHost() || resource.data.uid == request.auth.uid);
+          allow create: if authed() && arcadeSession().get('roster', {}).keys().hasAny([request.auth.uid])
+            && participantSessionOpen(arcadeSession()) && arcadeSend(request.resource.data);
+          allow update, delete: if arcadeHost();
+        }
         match /boardHost/{attempt} {
           allow read, write: if authed() && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
         }

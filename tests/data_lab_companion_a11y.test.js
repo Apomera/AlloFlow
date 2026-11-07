@@ -10,7 +10,9 @@ const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/
 const staticPage = source.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '');
 const interactivePage = source
   .replace('<head>', '<head><base href="http://data-lab.test/data_lab/">')
-  .replace("var CODAP_BASE = 'https://codap.concord.org/releases/latest/static/dg/en/cert/index.html';", "var CODAP_BASE = 'about:blank';");
+  .replace("var CODAP_BASE = 'https://codap.concord.org/app/version/3.1.2/index.html';", "var CODAP_BASE = 'about:blank';");
+// The stub must actually apply, or the tests below would load live CODAP.
+if (!interactivePage.includes("var CODAP_BASE = 'about:blank';")) throw new Error('CODAP_BASE stub did not apply');
 const offlinePage = interactivePage.replace("'use strict';", "'use strict';\n  Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: function () { return false; } });");
 
 describe('Data Lab companion accessibility in a real browser', () => {

@@ -484,8 +484,8 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
 
 describe('Lingua Practice describe-the-picture accessibility', () => {
   it('keeps the picture tab axe-clean with and without image generation', async () => {
-    // Without an image surface: honest empty state.
-    await mount();
+    // Without an image surface: honest empty state (teachers; learners do not see the tab).
+    await mount({ isTeacherMode: true });
     await click('Build practice set');
     await click('Describe');
     expect(host.textContent).toContain('Picture generation is not available in this session.');

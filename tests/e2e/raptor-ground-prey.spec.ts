@@ -98,7 +98,7 @@ test.describe('Raptor ground prey detail and movement',()=>{
     expect(paused.after.preyVisualPoses).toEqual(paused.before.preyVisualPoses);expect(paused.after.carriedPreyMs).toBe(paused.before.carriedPreyMs);
     await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>canvas.evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);
     const quiet=await canvas.evaluate((c:any)=>c._rhSnapshot().groundPreyGaits);expect(quiet.length).toBeGreaterThan(0);for(const gait of quiet){expect(gait.front).toBe(0);expect(gait.hind).toBe(0);expect(gait.bob).toBe(0);expect(gait.effort).toBe(0);}
-    const reduced=await canvas.evaluate((c:any)=>{const w=window as any;c._rhCommand('pause');w.stepPrey(25);const before=c._rhSnapshot();for(let i=0;i<28;i++)w.stepPrey(50);return {before,after:c._rhSnapshot(),disposed:w.preyDisposed};});
+    const reduced=await canvas.evaluate((c:any)=>{const w=window as any;c._rhCommand('pause');w.stepPrey(25);const before=c._rhSnapshot();for(let i=0;i<88;i++)w.stepPrey(50);return {before,after:c._rhSnapshot(),disposed:w.preyDisposed};});
     expect(reduced.after.carriedPreyMs).toBe(0);expect(reduced.disposed).toHaveLength(5);expect(new Set(reduced.disposed).size).toBe(5);
     for(const p of reduced.after.preyVisualPoses){expect(p.bank).toBe(0);expect(p.wingAngle).toBe(.08);}
     reduced.before.preyVisualPoses.forEach((p:any,i:number)=>expect(reduced.after.preyVisualPoses[i].phase).toBe(p.phase));

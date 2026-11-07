@@ -29,7 +29,7 @@ async function mount(moneyState) {
   function App() {
     const [state, setState] = React.useState({ _moneyMath: moneyState });
     view.state = state._moneyMath;
-    return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP, callGemini: async () => '{}' }));
   }
   document.body.innerHTML = '<div id="money-root"></div>';
   root = ReactDOMClient.createRoot(document.getElementById('money-root'));

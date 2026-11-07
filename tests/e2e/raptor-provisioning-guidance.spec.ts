@@ -29,24 +29,32 @@ test.describe('Raptor provisioning mission guidance',()=>{
 
 
 
-  test('follows each approach and catch until the calorie objective completes',async({page})=>{
-    const panel=page.getByRole('group',{name:'Mission progress',exact:true}),route=panel.locator('[data-raptor-mission-route]'),meter=panel.getByRole('progressbar');
-    const place=async(distance:number,yaw=0)=>page.evaluate(({distance,yaw})=>{const w=window as any;w.placeHuntPrey(distance,yaw);w.stepHunt(1);},{distance,yaw});
-    await place(2000);await expect(panel).toContainText('Find your next target');await expect(meter).toHaveAttribute('aria-valuenow','0');
-    await place(30,.95);await expect(panel).toContainText('Line up your approach');await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','align');
-    await place(30);await expect(panel).toContainText('Close the distance');
-    let previousProgress=0;
-    for(let catches=1;catches<=12;catches++){
-      await place(3);await expect(panel).toContainText('Strike window open');await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','strike');
+  test('counts calories only when each catch reaches the nest, until the objective completes',async({page})=>{
+    const canvas=page.locator('[data-raptor-canvas]'),panel=page.getByRole('group',{name:'Mission progress',exact:true}),route=panel.locator('[data-raptor-mission-route]'),meter=panel.getByRole('progressbar');
+    const snap=()=>canvas.evaluate((c:any)=>{const s=c._rhSnapshot();return {catches:s.missionCatches,carrying:s.carryingToNest,kcal:s.missionCaloriesCounted,deliveries:s.nestDeliveries,label:s.carriedPreyLabel,calories:s.calories,state:s.targetState};});
+    await expect.poll(()=>route.locator('[data-route-key]').evaluateAll(els=>els.map((el:any)=>el.getAttribute('data-route-key')))).toEqual(['scan','catch','carry','feed']);
+    let previous=0,lastProgress=0;
+    for(let trip=1;trip<=14;trip++){
       await page.evaluate(()=>{const w=window as any;w.placeHuntPrey(3);(document.querySelector('[data-raptor-canvas]') as any)._rhCommand('strike');w.stepHunt(1);});
-      expect(await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().missionCatches)).toBe(catches);
-      const progress=Number(await meter.getAttribute('aria-valuenow'));expect(progress).toBeGreaterThan(previousProgress);previousProgress=progress;
+      const caught=await snap();expect(caught.catches).toBe(trip);expect(caught.carrying).toBe(true);expect(caught.kcal).toBe(previous);
+      await expect(meter).toHaveAttribute('aria-valuenow',String(lastProgress));
+      await expect(panel).toContainText('Carry it to the nest');await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','carry');
+      await page.evaluate(()=>{(window as any).advanceHunt(1500);});
+      expect((await snap()).state).toBe('deliver');await expect(page.locator('[data-raptor-target-guidance]')).toContainText('DELIVER');
+      // Talons are full: a second strike is refused and costs nothing.
+      await page.evaluate(()=>{const w=window as any;w.placeHuntPrey(3);(document.querySelector('[data-raptor-canvas]') as any)._rhCommand('strike');w.stepHunt(1);});
+      expect((await snap()).catches).toBe(trip);
+      // Bring the nest to the bird so delivery runs through the production proximity check.
+      await canvas.evaluate((c:any)=>{const w=window as any,s=c._rhSnapshot(),n=w.huntScene.getObjectByName('raptor-nest'),height=s.nest.y-n.position.y;n.position.set(s.raptorPosition.x+2,s.raptorPosition.y-height,s.raptorPosition.z);w.stepHunt(25);});
+      const fed=await snap();expect(fed.carrying).toBe(false);expect(fed.deliveries).toBe(trip);expect(fed.kcal).toBeGreaterThan(previous);
+      expect(await canvas.evaluate(()=>!!(window as any).huntScene.getObjectByName('raptor-nest').getObjectByName('raptor-carried-prey'))).toBe(true);
+      previous=fed.kcal;const progress=Number(await meter.getAttribute('aria-valuenow'));expect(progress).toBeGreaterThan(lastProgress);lastProgress=progress;
       if(await route.getAttribute('data-route-outcome')==='success')break;
-      await expect(panel).toContainText('Catch secured');await expect(panel).toContainText('kcal to go');await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','reset');
-      await page.evaluate(()=>{(window as any).advanceHunt(1000);});await place(2000);
-      await expect(panel).toContainText('Find your next target');await expect(route.locator('[data-route-state="complete"]')).toHaveCount(0);await expect(meter).toHaveAttribute('aria-valuenow',String(progress));
+      await expect(panel).toContainText('Chicks fed');await expect(panel).toContainText(/(kcal|trips?) to go/);await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','feed');
+      await canvas.evaluate((c:any)=>{const w=window as any,s=c._rhSnapshot(),n=w.huntScene.getObjectByName('raptor-nest');n.position.x=s.raptorPosition.x+400;w.advanceHunt(4500);});
+      expect(await canvas.evaluate(()=>!!(window as any).huntScene.getObjectByName('raptor-nest').getObjectByName('raptor-carried-prey'))).toBe(false);
     }
-    await expect(route).toHaveAttribute('data-route-outcome','success');await expect(meter).toHaveAttribute('aria-valuenow','100');await expect(panel.locator('.rh-flight-mission-phase')).toHaveText('Mission complete');await expect(route.locator('[aria-current="step"]')).toHaveCount(0);
+    expect(previous).toBeGreaterThanOrEqual(400);expect((await snap()).deliveries).toBeGreaterThanOrEqual(3);await expect(route).toHaveAttribute('data-route-outcome','success');await expect(meter).toHaveAttribute('aria-valuenow','100');
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });
   test('keeps coaching and calorie progress honest after a miss, pause, and assist changes',async({page})=>{

@@ -82,7 +82,7 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const off = renderTool('brainAtlas', { brainAtlas: { view: 'stimulate' } });
     expect(off).not.toMatch(/Patient Simulator/);
-    const on = renderTool('brainAtlas', { brainAtlas: { view: 'stimulate' } }, { aiHintsEnabled: true });
+    const on = renderTool('brainAtlas', { brainAtlas: { view: 'stimulate' } }, { aiHintsEnabled: true, callGemini: () => Promise.resolve('') });
     expect(on).toMatch(/Patient Simulator/);
     expect(on).toMatch(/Stimulate the patient/);
   });
@@ -112,7 +112,7 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const off = renderTool('brainAtlas', { brainAtlas: { view: 'lateral', selectedRegion: 'cerebellum' } });
     expect(off).not.toMatch(/Explain at my level/);
-    const on = renderTool('brainAtlas', { brainAtlas: { view: 'lateral', selectedRegion: 'cerebellum' } }, { aiHintsEnabled: true });
+    const on = renderTool('brainAtlas', { brainAtlas: { view: 'lateral', selectedRegion: 'cerebellum' } }, { aiHintsEnabled: true, callGemini: () => Promise.resolve('') });
     expect(on).toMatch(/Explain at my level/);
   });
 

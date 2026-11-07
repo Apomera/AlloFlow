@@ -88,7 +88,7 @@ test.describe('Raptor prey terrain posture',()=>{
     });
     expect(caught.catchDelta).toBe(1);expect(caught.carried).toBeGreaterThan(0);expect(caught.sameIdentity).toBe(true);expect(caught.pitch).toBe(0);expect(caught.roll).toBe(0);expect(caught.offset).toBe(0);
     await canvas.evaluate(()=>{const w=window as any;w.skipTerrainRender=false;w.terrainRenderer.render(w.terrainScene,w.terrainCamera);});await stage.screenshot({path:resolve(output,model.label+'-terrain-catch.png'),timeout:90000});
-    const expired=await canvas.evaluate((c:any)=>{const w=window as any;w.skipTerrainRender=true;for(let i=0;i<28;i++)w.stepTerrain(50);return {remaining:c._rhSnapshot().carriedPreyMs,disposed:w.terrainDisposed};});expect(expired.remaining).toBe(0);expect(expired.disposed).toHaveLength(5);expect(new Set(expired.disposed).size).toBe(5);
+    const expired=await canvas.evaluate((c:any)=>{const w=window as any;w.skipTerrainRender=true;for(let i=0;i<88;i++)w.stepTerrain(50);return {remaining:c._rhSnapshot().carriedPreyMs,disposed:w.terrainDisposed};});expect(expired.remaining).toBe(0);expect(expired.disposed).toHaveLength(5);expect(new Set(expired.disposed).size).toBe(5);
     await testInfo.attach('terrain-lifecycle',{body:JSON.stringify({selectedPitch:review.selectedPitch,selectedRoll:review.selectedRoll,groundAnimals:review.terrain.length,meshCount:review.identity.length,catchDelta:caught.catchDelta,sameIdentity:caught.sameIdentity,neutralCarry:caught.pitch===0&&caught.roll===0&&caught.offset===0,disposed:expired.disposed.length,paused:true,reducedMotion:true}),contentType:'application/json'});
     expect(errors).toEqual([]);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });

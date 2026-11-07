@@ -9,7 +9,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-unitconvert-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-unitconvert-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:is([style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:is([style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"unitConvert\"] button[class*=\"bg-gradient\"]{background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -58,29 +58,47 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   }
 
   // ── Badge definitions ──
+  // Text lives in the render (literal t() keys). xp: badges for learning pay a
+  // little, badges for clicking around (pins, saves, visits) pay nothing. The
+  // old Speedster badge rewarded answering in under 3 seconds and is gone.
   var BADGES = [
-    { id: 'firstConvert',   icon: '\u2B50',       label: 'First Convert',    desc: 'Make your first unit conversion' },
-    { id: 'quizStreak5',    icon: '\uD83D\uDD25', label: 'On Fire',          desc: '5 quiz answers in a row' },
-    { id: 'quizStreak10',   icon: '\u26A1',       label: 'Lightning',        desc: '10 quiz answers in a row' },
-    { id: 'quizMaster',     icon: '\uD83E\uDDE0', label: 'Quiz Master',      desc: 'Answer 20 quiz questions' },
-    { id: 'allCategories',  icon: '\uD83C\uDF0D', label: 'World Explorer',   desc: 'Use all 9 unit categories' },
-    { id: 'speedster',      icon: '\uD83D\uDE80', label: 'Speedster',        desc: 'Answer a quiz in under 3 seconds' },
-    { id: 'wordProblem',    icon: '\uD83D\uDCDD', label: 'Word Wizard',      desc: 'Generate an AI word problem' },
-    { id: 'pinCollector',   icon: '\uD83D\uDCCC', label: 'Pin Collector',    desc: 'Pin 5 conversions' },
-    { id: 'historian',      icon: '\uD83D\uDCBE', label: 'Historian',        desc: 'Save 10 conversions to history' },
-    { id: 'tempMaster',     icon: '\uD83C\uDF21\uFE0F', label: 'Temp Master', desc: 'Convert between all 3 temperature units' }
+    { id: 'firstConvert',       icon: '⭐',       xp: 0 },
+    { id: 'quizStreak5',        icon: '🔥', xp: 5 },
+    { id: 'quizStreak10',       icon: '⚡',       xp: 5 },
+    { id: 'quizMaster',         icon: '🧠', xp: 5 },
+    { id: 'misconceptionFixer', icon: '🔧', xp: 5 },
+    { id: 'wordProblem',        icon: '📝', xp: 5 },
+    { id: 'chainBuilder',       icon: '🔗', xp: 5 },
+    { id: 'estimator',          icon: '🎯', xp: 5 },
+    { id: 'allCategories',      icon: '🌍', xp: 0 },
+    { id: 'pinCollector',       icon: '📌', xp: 0 },
+    { id: 'historian',          icon: '💾', xp: 0 },
+    { id: 'tempMaster',         icon: '🌡️', xp: 0 }
   ];
 
+  // Factors to the category base unit (m, g, L, s, m², Pa, J, m/s). Every
+  // factor is an exact definition (international inch/foot/yard/mile 1959,
+  // avoirdupois pound, US liquid gallon = 231 in³, imperial gallon = 4.54609 L,
+  // thermochemical calorie, nautical mile = 1852 m). tests/unitconvert_deep_*
+  // pins each one numerically.
+  // 'ton' keeps its old key (saved work and pins use it) and is the US SHORT
+  // ton, 2,000 lb; 't' is the metric tonne, 1,000 kg. gal/qt/pt/cup/fl oz are
+  // US liquid measures; 'imp gal' is the imperial (UK) gallon.
   var UNIT_FACTORS = {
     length: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 },
-    weight: { mg: 0.001, g: 1, kg: 1000, oz: 28.349523125, lb: 453.59237, ton: 907184.74 },
-    temperature: { '\u00B0C': 'C', '\u00B0F': 'F', K: 'K' },
-    speed: { 'm/s': 1, 'km/h': 1 / 3.6, mph: 0.44704, knots: 1852 / 3600 },
-    volume: { mL: 0.001, L: 1, gal: 3.785411784, qt: 0.946352946, cup: 0.2365882365, 'fl oz': 0.0295735295625 },
+    weight: { mg: 0.001, g: 1, kg: 1000, t: 1000000, oz: 28.349523125, lb: 453.59237, ton: 907184.74 },
+    temperature: { '°C': 'C', '°F': 'F', K: 'K' },
+    speed: { 'm/s': 1, 'km/h': 1 / 3.6, mph: 0.44704, 'ft/s': 0.3048, knots: 1852 / 3600 },
+    volume: { mL: 0.001, L: 1, 'cm³': 0.001, 'm³': 1000, 'fl oz': 0.0295735295625, cup: 0.2365882365, pt: 0.473176473, qt: 0.946352946, gal: 3.785411784, 'imp gal': 4.54609 },
     time: { sec: 1, min: 60, hr: 3600, day: 86400, week: 604800, year: 31536000 },
-    area: { 'cm\u00B2': 0.0001, 'm\u00B2': 1, 'km\u00B2': 1000000, 'in\u00B2': 0.00064516, 'ft\u00B2': 0.09290304, acre: 4046.8564224 },
+    area: { 'mm²': 0.000001, 'cm²': 0.0001, 'm²': 1, ha: 10000, 'km²': 1000000, 'in²': 0.00064516, 'ft²': 0.09290304, 'yd²': 0.83612736, acre: 4046.8564224 },
     pressure: { Pa: 1, kPa: 1000, bar: 100000, psi: 6894.757293168, atm: 101325 },
     energy: { J: 1, kJ: 1000, cal: 4.184, kcal: 4184, Wh: 3600, kWh: 3600000 }
+  };
+  // The pair a category opens on (the first two units of the original lists).
+  var DEFAULT_PAIRS = {
+    length: ['mm', 'cm'], weight: ['mg', 'g'], temperature: ['°C', '°F'], speed: ['m/s', 'km/h'],
+    volume: ['mL', 'L'], time: ['sec', 'min'], area: ['cm²', 'm²'], pressure: ['Pa', 'kPa'], energy: ['J', 'kJ']
   };
 
   function validateTemperatureValue(value, unit) {
@@ -95,22 +113,209 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     return { valid: true, message: '' };
   }
 
+  // Lengths, masses, volumes, areas, durations, speeds, absolute pressures and
+  // amounts of energy are never negative; only temperature can go below zero.
+  var NEGATIVE_MESSAGES = {
+    length: 'A length cannot be negative. Enter 0 or a positive number.',
+    weight: 'A mass cannot be negative. Enter 0 or a positive number.',
+    speed: 'A speed cannot be negative. Enter 0 or a positive number.',
+    volume: 'A volume cannot be negative. Enter 0 or a positive number.',
+    time: 'An amount of time cannot be negative. Enter 0 or a positive number.',
+    area: 'An area cannot be negative. Enter 0 or a positive number.',
+    pressure: 'This pressure is measured from a perfect vacuum, so it cannot be negative. Enter 0 or a positive number.',
+    energy: 'An amount of energy cannot be negative. Enter 0 or a positive number.'
+  };
+  function validateQuantityValue(value, category, unit) {
+    var numericValue = Number(value);
+    if (category === 'temperature') return validateTemperatureValue(numericValue, unit);
+    if (!Number.isFinite(numericValue)) return { valid: false, code: 'invalid', message: 'Enter a valid number.' };
+    if (numericValue < 0) return { valid: false, code: 'negative', message: NEGATIVE_MESSAGES[category] || 'This quantity cannot be negative.' };
+    return { valid: true, code: '', message: '' };
+  }
+
+  // ── Number locale ──
+  // Grouping and decimal marks follow the student's language ("1.234,5" in
+  // German; plain Spanish is Latin-American "1,234.5"). Only the two marks are borrowed from Intl: digits stay
+  // Latin, so every format here can be typed back in. Without Intl the marks
+  // are the English ones.
+  var LANGUAGE_LOCALES = {
+    english: 'en', spanish: 'es-419', 'spanish (castilian)': 'es-ES', 'spanish (latin america)': 'es-419', german: 'de', french: 'fr', 'french (canadian)': 'fr-CA',
+    portuguese: 'pt', 'portuguese (brazil)': 'pt-BR', 'portuguese (portugal)': 'pt-PT', 'portuguese (angola)': 'pt-AO', italian: 'it', dutch: 'nl', polish: 'pl',
+    romanian: 'ro', russian: 'ru', ukrainian: 'uk', turkish: 'tr', greek: 'el', vietnamese: 'vi', indonesian: 'id', arabic: 'ar', farsi: 'fa', dari: 'fa-AF',
+    pashto: 'ps', urdu: 'ur', hindi: 'hi', bengali: 'bn', gujarati: 'gu', marathi: 'mr', punjabi: 'pa', tamil: 'ta', telugu: 'te', kannada: 'kn', malayalam: 'ml',
+    nepali: 'ne', 'chinese (simplified)': 'zh-CN', 'chinese (traditional)': 'zh-TW', japanese: 'ja', korean: 'ko', thai: 'th', lao: 'lo', khmer: 'km', burmese: 'my',
+    swahili: 'sw', somali: 'so', 'haitian creole': 'ht', tagalog: 'fil', esperanto: 'eo', hebrew: 'he', amharic: 'am', tigrinya: 'ti', hausa: 'ha', igbo: 'ig',
+    yoruba: 'yo', kinyarwanda: 'rw', kirundi: 'rn', lingala: 'ln', hmong: 'hmn', latin: 'la'
+  };
+  function resolveNumberLocale(candidates) {
+    var list = Array.isArray(candidates) ? candidates : [candidates];
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (typeof c !== 'string' || !c.trim()) continue;
+      var key = c.trim().toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(LANGUAGE_LOCALES, key)) return LANGUAGE_LOCALES[key];
+      if (/^[a-z]{2,3}(?:[-_][a-z0-9]{2,8})*$/i.test(key)) {
+        try { if (typeof Intl !== 'undefined' && Intl.NumberFormat && Intl.NumberFormat.supportedLocalesOf(c.replace('_', '-')).length) return c.replace('_', '-'); } catch (e) { /* not a usable tag */ }
+      }
+    }
+    return 'en';
+  }
+  var EN_MARKS = { group: ',', decimal: '.' };
+  function numberMarksFor(locale) {
+    try {
+      if (typeof Intl === 'undefined' || !Intl.NumberFormat) return EN_MARKS;
+      var marks = { group: ',', decimal: '.' };
+      new Intl.NumberFormat(locale, { numberingSystem: 'latn', useGrouping: true }).formatToParts(12345.6).forEach(function(p) {
+        if (p.type === 'group') marks.group = p.value;
+        if (p.type === 'decimal') marks.decimal = p.value;
+      });
+      if (!marks.decimal || marks.decimal === marks.group || /\d/.test(marks.decimal + marks.group)) return EN_MARKS;
+      return marks;
+    } catch (e) { return EN_MARKS; }
+  }
+  var _numberLocale = 'en';
+  var _numberMarks = EN_MARKS;
+  function setNumberLocale(locale) {
+    var tag = resolveNumberLocale(locale);
+    if (tag === _numberLocale) return tag;
+    _numberLocale = tag;
+    _numberMarks = numberMarksFor(tag);
+    return tag;
+  }
+  // "12,345.6" (the English form every formatter builds) in the current marks.
+  function localizeNumberText(text, marks) {
+    var m = marks || _numberMarks;
+    var s = String(text);
+    if (m.group === ',' && m.decimal === '.') return s;
+    return s.replace(/\d[\d,]*(?:\.\d+)?/g, function(num) {
+      var parts = num.split('.');
+      return parts[0].split(',').join(m.group) + (parts.length > 1 ? m.decimal + parts[1] : '');
+    });
+  }
+
   function formatTemperatureNumber(value) {
     if (!Number.isFinite(value)) return '';
-    return parseFloat(value.toFixed(6)).toString();
+    return localizeNumberText(parseFloat(value.toFixed(6)).toString());
+  }
+
+  // Reads what a student typed into a plain JS number string. Accepts:
+  //  * plain numbers, and English thousands commas ("1,250.5");
+  //  * in decimal-comma locales, the decimal comma ("2,5", "1.234,5",
+  //    "1 234,5"); a lone point is still a decimal point ("2.5"), so values
+  //    written by other tools in machine form keep their meaning;
+  //  * scientific notation: 6.02e23, 6.02 × 10^23, 6.02x10^23, 6.02·10²³.
+  // state: 'ok' | 'incomplete' | 'invalid'. sci: typed in scientific form.
+  var SUPERSCRIPT_TO_ASCII = { '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁻': '-', '⁺': '+' };
+  // mantissa: the front number of scientific notation ("6.022" in
+  // 6.022 × 10^23 stays a decimal in every locale).
+  function normalizePlainNumber(text, m, mantissa) {
+    var t = text;
+    var sign = '';
+    if (/^[+-]/.test(t)) { sign = t.charAt(0) === '-' ? '-' : ''; t = t.slice(1); }
+    if (t === '' || t === '.' || (m.decimal === ',' && t === ',')) return { state: 'incomplete' };
+    if (m.decimal === '.') {
+      if (/^\d{1,3}(?:,\d{3})+(?:\.\d*)?$/.test(t)) t = t.replace(/,/g, '');
+      // The locale's own group mark too (de-CH shows 1’234.5).
+      else if (/^[’' ]$/.test(m.group) && /^\d{1,3}(?:[’' ]\d{3})+(?:\.\d*)?$/.test(t)) t = t.replace(/[’' ]/g, '');
+    } else if (m.decimal === ',') {
+      if (t.indexOf(',') !== -1) {
+        var halves = t.split(',');
+        if (halves.length !== 2 || !/^\d*$/.test(halves[1])) return { state: 'invalid' };
+        var whole = halves[0];
+        if (/^\d{1,3}(?:([.\s'’])\d{3})(?:\1\d{3})*$/.test(whole)) whole = whole.replace(/[.\s'’]/g, '');
+        if (!/^\d*$/.test(whole)) return { state: 'invalid' };
+        t = whole + '.' + halves[1];
+        if (t === '.') return { state: 'incomplete' };
+      } else if (/^\d{1,3}(?:\.\d{3}){2,}$/.test(t) || /^\d{1,3}(?:\s\d{3})+$/.test(t) || /^\d{1,3}(?:'\d{3})+$/.test(t)) {
+        t = t.replace(/[.\s']/g, '');
+      } else if (!mantissa && m.group === '.' && /^[1-9]\d{0,2}\.\d{3}$/.test(t)) {
+        // "1.500" is how these locales write 1500, and how this tool shows
+        // it, so it reads back as 1500. Machine-written values never reach
+        // here in that shape (see machineDraft and localizeNumberText).
+        t = t.replace('.', '');
+      }
+    }
+    if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(t)) return { state: 'invalid' };
+    return { state: 'ok', text: sign + t };
+  }
+  // Display stays in Latin digits on purpose (formulas, x10^n, units and the
+  // canvases all use them; ICU's own default for ar and ur is Latin). Input
+  // accepts both: Arabic-Indic and Persian/Urdu digits (plus Devanagari and
+  // Bengali), the Arabic decimal mark (U+066B) and group mark (U+066C), the
+  // Persian slash decimal (2/5 in Persian digits = 2.5), and the bidi marks
+  // that Intl output and RTL keyboards add.
+  var NATIVE_ZEROS = [0x0660, 0x06F0, 0x0966, 0x09E6];
+  function isBidiMark(code) { return code === 0x200E || code === 0x200F || code === 0x061C || (code >= 0x202A && code <= 0x202E) || (code >= 0x2066 && code <= 0x2069); }
+  function foldNativeDigits(rawText, marks) {
+    var m = marks || _numberMarks;
+    var s = String(rawText == null ? '' : rawText);
+    var out = '';
+    var persian = false;
+    for (var i = 0; i < s.length; i++) {
+      var code = s.charCodeAt(i);
+      if (isBidiMark(code)) continue;
+      var ch = s.charAt(i);
+      for (var z = 0; z < NATIVE_ZEROS.length; z++) {
+        if (code >= NATIVE_ZEROS[z] && code <= NATIVE_ZEROS[z] + 9) { ch = String(code - NATIVE_ZEROS[z]); if (z === 1) persian = true; break; }
+      }
+      if (code === 0x066B) ch = m.decimal;
+      else if (code === 0x066C) ch = m.group;
+      out += ch;
+    }
+    if (persian && /^[+-]?\d+\/\d+$/.test(out.trim())) out = out.replace('/', m.decimal);
+    return out;
+  }
+  function normalizeNumberText(rawValue, marks) {
+    // A number comes from code, not a keyboard: no locale reading.
+    if (typeof rawValue === 'number') return Number.isFinite(rawValue) ? { state: 'ok', sci: false, text: String(rawValue) } : { state: 'invalid', sci: false };
+    var m = marks || _numberMarks;
+    var text = foldNativeDigits(rawValue, m).replace(/[−–]/g, '-').replace(/[   ]/g, ' ').trim();
+    text = text.replace(/^\$\s*/, '').replace(/\s*¢$/, '').trim();
+    if (text === '' || text === '+' || text === '-') return { state: 'incomplete', sci: false };
+    var mantissaText = null;
+    var expText = null;
+    var e = text.match(/^(.+?)[eE]([+-]?)(\d*)$/);
+    var times = !e && text.match(/^(.+?)\s*[x×*·]\s*(.*)$/);
+    if (e) {
+      mantissaText = e[1];
+      if (!e[3]) return { state: 'incomplete', sci: true };
+      expText = (e[2] === '-' ? '-' : '') + e[3];
+    } else if (times) {
+      mantissaText = times[1];
+      var rest = times[2].replace(/\s+/g, '');
+      if (rest === '' || rest === '1' || rest === '10' || /^10\^[+-]?$/.test(rest) || /^10[⁻⁺]$/.test(rest)) return { state: 'incomplete', sci: true };
+      var caret = rest.match(/^10\^([+-]?)(\d+)$/);
+      var sup = rest.match(/^10([⁻⁺]?[⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/);
+      if (caret) expText = (caret[1] === '-' ? '-' : '') + caret[2];
+      else if (sup) expText = sup[1].split('').map(function(ch) { return SUPERSCRIPT_TO_ASCII[ch]; }).join('').replace(/^\+/, '');
+      else return { state: 'invalid', sci: true };
+    }
+    if (mantissaText !== null) {
+      var mant = normalizePlainNumber(mantissaText.trim(), m, true);
+      if (mant.state !== 'ok') return { state: mant.state === 'incomplete' ? 'incomplete' : 'invalid', sci: true };
+      return { state: 'ok', sci: true, text: mant.text + 'e' + expText, mantissa: mant.text, exponent: Number(expText) };
+    }
+    var plain = normalizePlainNumber(text, m);
+    return plain.state === 'ok' ? { state: 'ok', sci: false, text: plain.text } : { state: plain.state, sci: false };
+  }
+  function parseNumberInput(rawValue) {
+    var n = normalizeNumberText(rawValue);
+    if (n.state !== 'ok') return NaN;
+    var v = Number(n.text);
+    return Number.isFinite(v) ? v : NaN;
   }
 
   function parseNumericDraft(rawValue) {
-    var rawText = rawValue === null || rawValue === undefined ? '' : String(rawValue);
-    var text = rawText.trim().replace(/\u2212/g, '-');
-    if (text === '' || text === '+' || text === '-' || text === '.' || text === '+.' || text === '-.' || /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)[eE][+-]?$/.test(text)) {
+    var norm = normalizeNumberText(rawValue);
+    if (norm.state === 'incomplete') {
       return { valid: false, complete: false, value: NaN, message: 'Finish entering a number.' };
     }
-    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(text)) {
+    if (norm.state !== 'ok') {
       return { valid: false, complete: true, value: NaN, message: 'Enter a valid number.' };
     }
-    var value = Number(text);
+    var value = Number(norm.text);
     if (!Number.isFinite(value)) return { valid: false, complete: true, value: NaN, message: 'Enter a finite number.' };
+    if (value === 0) value = 0; // no -0
     return { valid: true, complete: true, value: value, message: '' };
   }
 
@@ -135,21 +340,22 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     }
 
     var steps = [];
+    var T0 = formatTemperatureNumber(273.15);
     if (from === '°C' && to === '°F') {
       steps.push(inputText + ' °C × 9/5 + 32 = ' + resultText + ' °F');
     } else if (from === '°F' && to === '°C') {
       steps.push('(' + inputText + ' °F − 32) × 5/9 = ' + resultText + ' °C');
     } else if (from === '°C' && to === 'K') {
-      steps.push(inputText + ' °C + 273.15 = ' + resultText + ' K');
+      steps.push(inputText + ' °C + ' + T0 + ' = ' + resultText + ' K');
     } else if (from === 'K' && to === '°C') {
-      steps.push(inputText + ' K − 273.15 = ' + resultText + ' °C');
+      steps.push(inputText + ' K − ' + T0 + ' = ' + resultText + ' °C');
     } else if (from === '°F' && to === 'K') {
       celsius = (numericValue - 32) * 5 / 9;
       steps.push('(' + inputText + ' °F − 32) × 5/9 = ' + formatTemperatureNumber(celsius) + ' °C');
-      steps.push(formatTemperatureNumber(celsius) + ' °C + 273.15 = ' + resultText + ' K');
+      steps.push(formatTemperatureNumber(celsius) + ' °C + ' + T0 + ' = ' + resultText + ' K');
     } else if (from === 'K' && to === '°F') {
       celsius = numericValue - 273.15;
-      steps.push(inputText + ' K − 273.15 = ' + formatTemperatureNumber(celsius) + ' °C');
+      steps.push(inputText + ' K − ' + T0 + ' = ' + formatTemperatureNumber(celsius) + ' °C');
       steps.push(formatTemperatureNumber(celsius) + ' °C × 9/5 + 32 = ' + resultText + ' °F');
     }
 
@@ -168,22 +374,114 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       if (!Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, from) || !Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, to)) return NaN;
       if (!validateTemperatureValue(numericValue, from).valid) return NaN;
       if (from === to) return numericValue;
-      var celsius = from === '\u00B0C' ? numericValue : from === '\u00B0F' ? (numericValue - 32) * 5 / 9 : numericValue - 273.15;
-      return to === '\u00B0C' ? celsius : to === '\u00B0F' ? celsius * 9 / 5 + 32 : celsius + 273.15;
+      var celsius = from === '°C' ? numericValue : from === '°F' ? (numericValue - 32) * 5 / 9 : numericValue - 273.15;
+      return to === '°C' ? celsius : to === '°F' ? celsius * 9 / 5 + 32 : celsius + 273.15;
     }
     var units = UNIT_FACTORS[category];
     if (!units || !Object.prototype.hasOwnProperty.call(units, from) || !Object.prototype.hasOwnProperty.call(units, to)) return NaN;
     return numericValue * units[from] / units[to];
   }
 
+  var SUPERSCRIPT_DIGITS = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  function superscriptInt(n) {
+    return String(n).split('').map(function(ch) { return ch === '-' ? '⁻' : SUPERSCRIPT_DIGITS.charAt(Number(ch)); }).join('');
+  }
+  function groupThousands(intText) {
+    return intText.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // Plain, readable numbers: thousands commas, no e-notation. "auto" keeps up
+  // to 7 significant figures and drops trailing zeros; 2-6 keeps exactly that
+  // many. Only values beyond the plain range (>= 10^15 or < 10^-6) use
+  // "a × 10ⁿ" -- never "1.6e+3".
   function formatUnitNumber(value, significantFigures) {
     var numericValue = Number(value);
     if (!Number.isFinite(numericValue)) return '—';
     var sig = Number(significantFigures);
-    if (Number.isInteger(sig) && sig >= 2 && sig <= 6) return numericValue.toPrecision(sig);
-    if (Math.abs(numericValue) < 0.001 && numericValue !== 0) return numericValue.toExponential(4);
-    return parseFloat(numericValue.toFixed(6)).toString();
+    var fixedSig = Number.isInteger(sig) && sig >= 2 && sig <= 6;
+    var digits = fixedSig ? sig : 7;
+    if (numericValue === 0) return fixedSig ? (0).toFixed(digits - 1) : '0';
+    var rounded = Number(numericValue.toPrecision(digits));
+    var abs = Math.abs(rounded);
+    var exp = Math.floor(Math.log10(abs));
+    if (Math.pow(10, exp + 1) <= abs) exp += 1;
+    else if (Math.pow(10, exp) > abs) exp -= 1;
+    var sign = rounded < 0 ? '-' : '';
+    if (exp >= 15 || exp < -6) {
+      var mantissa = abs / Math.pow(10, exp);
+      var mantissaText = fixedSig ? mantissa.toFixed(digits - 1) : String(Number(mantissa.toFixed(digits - 1)));
+      return sign + localizeNumberText(mantissaText) + ' × 10' + superscriptInt(exp);
+    }
+    var decimals = Math.max(0, digits - 1 - exp);
+    var text = abs.toFixed(decimals);
+    if (!fixedSig && text.indexOf('.') !== -1) text = text.replace(/0+$/, '').replace(/\.$/, '');
+    var parts = text.split('.');
+    return sign + localizeNumberText(groupThousands(parts[0]) + (parts.length > 1 ? '.' + parts[1] : ''));
   }
+
+  // ── Significant figures and scientific notation ──
+  // Counts the significant figures in what a student typed (already
+  // normalised). Trailing zeros of a whole number with no decimal point are
+  // ambiguous ("1500" has 2, 3 or 4): count = the sure ones, maxCount = all.
+  function countSigFigs(normText) {
+    var t = String(normText == null ? '' : normText).replace(/^[+-]/, '');
+    var mant = t.split(/[eE]/)[0];
+    var hasPoint = mant.indexOf('.') !== -1;
+    var digits = mant.replace('.', '').replace(/^0+/, '');
+    if (!digits) return { count: 1, maxCount: 1, ambiguous: false };
+    if (hasPoint) return { count: digits.length, maxCount: digits.length, ambiguous: false };
+    var sure = digits.replace(/0+$/, '');
+    return { count: sure.length, maxCount: digits.length, ambiguous: sure.length !== digits.length };
+  }
+  function roundSig(x, n) { return Number(Number(x).toPrecision(n)); }
+  // Cuts (does not round) to n significant figures.
+  function truncSig(x, n) {
+    var v = Number(x);
+    if (!(v !== 0) || !Number.isFinite(v)) return v;
+    var exp = Math.floor(Math.log10(Math.abs(v)));
+    var scale = Math.pow(10, n - 1 - exp);
+    var cut = Math.floor(Math.abs(v) * scale * (1 + 1e-12)) / scale;
+    return Number((v < 0 ? -cut : cut).toPrecision(n));
+  }
+  function sameNumber(a, b) { return Math.abs(a - b) <= Math.max(Math.abs(a), Math.abs(b)) * 1e-9 + 1e-300; }
+  // "m × 10ⁿ" with exactly `sig` significant figures in the mantissa.
+  function sciText(x, sig) {
+    var v = Number(x);
+    if (!Number.isFinite(v)) return '—';
+    var s = sig >= 1 ? v.toExponential(Math.max(0, sig - 1)) : v.toExponential();
+    var parts = s.split('e');
+    return localizeNumberText(parts[0]) + ' × 10' + superscriptInt(Number(parts[1]));
+  }
+  // A value written with exactly n significant figures, unambiguously: plain
+  // when the plain form shows them all, otherwise scientific notation.
+  function sigText(x, n) {
+    var p = Number(x).toPrecision(n);
+    if (/e/.test(p)) return sciText(x, n);
+    if (p.indexOf('.') === -1 && /0$/.test(p)) return sciText(x, n);
+    var parts = p.replace(/^-/, '').split('.');
+    return (p.charAt(0) === '-' ? '-' : '') + localizeNumberText(groupThousands(parts[0]) + (parts.length > 1 ? '.' + parts[1] : ''));
+  }
+  // Every digit written out, never "× 10ⁿ" (for "write as an ordinary number").
+  function plainNumber(x) {
+    var v = Number(x);
+    if (!Number.isFinite(v)) return '—';
+    var dp = 0;
+    while (dp < 15 && Math.abs(Number(v.toFixed(dp)) - v) > Math.abs(v) * 1e-12) dp++;
+    var parts = Math.abs(v).toFixed(dp).split('.');
+    return (v < 0 ? '-' : '') + localizeNumberText(groupThousands(parts[0]) + (parts.length > 1 ? '.' + parts[1] : ''));
+  }
+  // Clock time from minutes after midnight, in the student's locale.
+  function formatClock(minutes) {
+    var m = Math.round(Number(minutes) || 0);
+    var hh = Math.floor(m / 60) % 24, mm = m % 60;
+    try {
+      if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+        return new Intl.DateTimeFormat(_numberLocale, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC', numberingSystem: 'latn' }).format(new Date(Date.UTC(2020, 0, 1, hh, mm)));
+      }
+    } catch (e) { /* fall through */ }
+    return ((hh % 12) || 12) + ':' + pad2(mm) + (hh < 12 ? ' a.m.' : ' p.m.');
+  }
+  function formatMoney(dollars) { return '$' + localizeNumberText(Number(dollars).toFixed(2)); }
 
   function cleanWordProblemText(value, maximumLength) {
     var cleaned = String(value == null ? '' : value)
@@ -247,6 +545,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     if (fromUnit === toUnit || permitted.indexOf(fromUnit) === -1 || permitted.indexOf(toUnit) === -1) return null;
     if (!Object.prototype.hasOwnProperty.call(units, fromUnit) || !Object.prototype.hasOwnProperty.call(units, toUnit)) return null;
     if (answerUnit !== toUnit) return null;
+    // A negative length, mass, volume ... is not a physical measurement.
+    if (category !== 'temperature' && inputValue < 0) return null;
 
     var verifiedAnswer = convertUnitValue(inputValue, fromUnit, toUnit, category);
     if (!Number.isFinite(verifiedAnswer)) return null;
@@ -268,51 +568,95 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     };
   }
 
-  function makeOfflineWordProblem(category, from, to) {
+  // ── Seeded random numbers (practice that never runs out, reproducible in tests) ──
+  function makeRng(seed) {
+    var s = (Math.floor(Math.abs(Number(seed) || 0)) >>> 0) || 0x9E3779B9;
+    return function() {
+      s = (s + 0x6D2B79F5) >>> 0;
+      var x = s;
+      x = Math.imul(x ^ (x >>> 15), x | 1);
+      x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function pickFrom(rng, list) { return list[Math.floor(rng() * list.length) % list.length]; }
+  function randInt(rng, lo, hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
+  function roundTo(value, places) { var k = Math.pow(10, places); return Math.round(value * k) / k; }
+
+  // Offline word problems: the first problem for a pair is the classic one
+  // (3 m, 2 kg, 20 °C ...); every later request draws a new amount, a new
+  // context and often a new unit pair, so the same problem never repeats.
+  var OFFLINE_AMOUNTS = {
+    length: [3, 12, 250, 4.5, 75, 1.2, 600, 18], weight: [2, 750, 5.5, 40, 1200, 3, 16, 0.25],
+    temperature: [20, 37, 100, -10, 5, 30, 0, 15], speed: [60, 25, 100, 12, 5, 80, 3.5, 45],
+    volume: [2, 500, 1.5, 4, 250, 12, 0.75, 20], time: [3, 90, 45, 2.5, 600, 7, 36, 1.5],
+    area: [2, 50, 0.5, 12, 300, 1.5, 8, 2500], pressure: [2, 101.3, 250, 5, 30, 1.2, 80, 700],
+    energy: [5, 250, 1200, 40, 3.6, 900, 15, 0.5]
+  };
+  var OFFLINE_CONTEXTS = {
+    length: ['A design team is measuring material for a model.', 'A runner is planning a training route.', 'A carpenter is cutting a board for a shelf.', 'A class is measuring how far a paper airplane flew.'],
+    weight: ['A science class is measuring the mass of a sample.', 'A baker is weighing flour for bread.', 'A vet is checking the mass of a puppy.', 'A shipping clerk is weighing a box.'],
+    temperature: ['A weather station is comparing temperature scales.', 'A nurse is reading a patient thermometer.', 'A chef is checking an oven setting.', 'A scientist is recording a lab temperature.'],
+    speed: ['A robotics team is checking a vehicle speed.', 'A coach is timing a sprinter.', 'A pilot is reading an airspeed gauge.', 'A cyclist is checking a bike computer.'],
+    volume: ['A kitchen lab is measuring a liquid.', 'A gardener is filling a watering can.', 'A pharmacist is measuring a liquid medicine.', 'A family is filling a fish tank.'],
+    time: ['A space mission is planning an activity.', 'A student is timing a science experiment.', 'A coach is planning practice time.', 'A family is planning a road trip.'],
+    area: ['A garden team is measuring a plot.', 'A painter is measuring a wall.', 'A farmer is measuring a field.', 'A class is measuring the floor of a room.'],
+    pressure: ['An engineering team is checking a pressure reading.', 'A cyclist is checking tire pressure.', 'A diver is reading a depth gauge.', 'A weather station is recording air pressure.'],
+    energy: ['A sustainability team is tracking energy use.', 'A nutrition class is reading a food label.', 'A family is reading an electricity bill.', 'An engineer is testing a battery.']
+  };
+
+  function makeOfflineWordProblem(category, from, to, sequence) {
     var safeCategory = Object.prototype.hasOwnProperty.call(UNIT_FACTORS, category) ? category : 'length';
     var units = Object.keys(UNIT_FACTORS[safeCategory]);
+    var seq = Math.max(0, Math.floor(Number(sequence) || 0));
+    var rng = makeRng(seq * 7919 + safeCategory.length * 104729 + 17);
     var safeFrom = units.indexOf(from) >= 0 ? from : units[0];
     var safeTo = units.indexOf(to) >= 0 && to !== safeFrom ? to : (units.find(function(unit) { return unit !== safeFrom; }) || safeFrom);
-    var amounts = { length: 3, weight: 2, temperature: 20, speed: 60, volume: 2, time: 3, area: 2, pressure: 2, energy: 5 };
-    var amount = amounts[safeCategory] || 2;
+    if (seq > 0 && rng() < 0.6) {
+      safeFrom = pickFrom(rng, units);
+      var others = units.filter(function(unit) { return unit !== safeFrom; });
+      safeTo = pickFrom(rng, others);
+    }
+    var amounts = OFFLINE_AMOUNTS[safeCategory] || OFFLINE_AMOUNTS.length;
+    var amount = seq < amounts.length ? amounts[seq] : roundTo(pickFrom(rng, amounts) * pickFrom(rng, [0.5, 1.5, 2, 3, 4, 6]), 2);
     if (safeCategory === 'temperature') {
-      if (safeFrom === '°F') amount = 68;
-      else if (safeFrom === 'K') amount = 293.15;
+      // Amounts are Celsius; an F or K start shows that same temperature.
+      if (safeFrom === '°F') amount = roundTo(amount * 9 / 5 + 32, 2);
+      else if (safeFrom === 'K') amount = roundTo(amount + 273.15, 2);
     }
     var answer = convertUnitValue(amount, safeFrom, safeTo, safeCategory);
-    var contexts = {
-      length: 'A design team is measuring material for a model.',
-      weight: 'A science class is measuring the mass of a sample.',
-      temperature: 'A weather station is comparing temperature scales.',
-      speed: 'A robotics team is checking a vehicle speed.',
-      volume: 'A kitchen lab is measuring a liquid.',
-      time: 'A space mission is planning an activity.',
-      area: 'A garden team is measuring a plot.',
-      pressure: 'An engineering team is checking a pressure reading.',
-      energy: 'A sustainability team is tracking energy use.'
-    };
-    var context = contexts[safeCategory] || contexts.length;
+    var contextIndex = seq % 4;
+    var context = (OFFLINE_CONTEXTS[safeCategory] || OFFLINE_CONTEXTS.length)[contextIndex];
     return {
       source: 'offline',
       verified: true,
+      category: safeCategory,
+      contextIndex: contextIndex,
       context: context,
       inputValue: amount,
       fromUnit: safeFrom,
       toUnit: safeTo,
-      problem: context + ' The measurement is ' + amount + ' ' + safeFrom + '. What is this value in ' + safeTo + '?',
+      problem: context + ' The measurement is ' + formatUnitNumber(amount, 'auto') + ' ' + safeFrom + '. What is this value in ' + safeTo + '?',
       hints: buildVerifiedPracticeHints(safeCategory, safeFrom, safeTo),
       answer: answer,
       unit: safeTo,
       explanation: buildVerifiedConversionExplanation(amount, safeFrom, safeTo, safeCategory, answer)
     };
   }
+  function wordProblemSignature(problem) {
+    if (!problem || typeof problem !== 'object') return '';
+    return ['wp', problem.fromUnit || '', problem.toUnit || '', String(problem.inputValue), String(problem.answer)].join('|');
+  }
+
+  // A flipped ratio gives v / (expected / v) = v * v / expected. Only a
+  // RELATIVE window counts: the old 0.01 absolute floor called 0.01 a
+  // "reversed ratio" for 1 hr -> 3600 s (whose flip is 0.000278).
   function diagnosePracticeAnswer(answer, expected, unit, inputValue) {
     if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
-    // A flipped ratio gives v / (expected / v) = v * v / expected; it only equals 1 / expected when v = 1.
     var startValue = Number.isFinite(inputValue) ? inputValue : 1;
     var isTemperature = unit === '°F' || unit === '°C' || unit === 'K';
     var inverse = expected === 0 || isTemperature ? NaN : startValue * startValue / expected;
-    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.abs(inverse) * 0.02) {
       return 'The conversion ratio may be reversed. Flip it so the starting unit cancels.';
     }
     var slip = null;
@@ -320,15 +664,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       if (slip === null && expected !== 0 && Math.abs(answer / expected - factor) <= Math.abs(factor) * 0.02) slip = factor;
     });
     if (slip !== null) return 'Check the decimal place or metric prefix before trying again.';
-    if (unit === '°F' || unit === '°C' || unit === 'K') {
+    if (isTemperature) {
       return 'Remember that temperature conversions use an offset as well as a scale factor.';
     }
     return 'Not yet. Check that the starting unit cancels and the requested unit remains.';
   }
 
   function evaluateNumericAnswer(rawAnswer, expected, absoluteTolerance) {
-    var rawText = rawAnswer === null || rawAnswer === undefined ? '' : String(rawAnswer).trim();
-    var answer = rawText === '' ? NaN : Number(rawText);
+    var answer = parseNumberInput(rawAnswer);
     var target = Number(expected);
     var tolerance = Math.max(0, Number(absoluteTolerance) || 0.01);
     if (!Number.isFinite(answer) || !Number.isFinite(target)) return { valid: false, correct: false, answer: answer, expected: target, tolerance: tolerance, error: NaN };
@@ -339,7 +682,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   function diagnoseNumericAnswer(answer, expected, unit, tolerance) {
     if (!Number.isFinite(answer)) return 'Enter a valid number before checking your answer.';
     var inverse = expected === 0 ? NaN : 1 / expected;
-    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.max(0.01, Math.abs(inverse) * 0.02)) {
+    if (answer !== 0 && Number.isFinite(inverse) && Math.abs(answer - inverse) <= Math.abs(inverse) * 0.02) {
       return 'The ratio is reversed. Flip the conversion factor so the starting unit cancels. The answer is ' + expected + ' ' + unit + '.';
     }
     var slip = null;
@@ -347,47 +690,1660 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       if (slip === null && expected !== 0 && Math.abs(answer / expected - factor) <= Math.abs(factor) * 0.02) slip = factor;
     });
     if (slip !== null) return 'The answer is off by ' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ', which suggests a decimal-place or metric-prefix slip. The answer is ' + expected + ' ' + unit + '.';
-    if (unit === '\u00B0F' || unit === '\u00B0C' || unit === 'K') return 'Temperature uses an offset as well as a scale factor, so a simple ratio will not work. The answer is ' + expected + ' ' + unit + '.';
+    if (unit === '°F' || unit === '°C' || unit === 'K') return 'Temperature uses an offset as well as a scale factor, so a simple ratio will not work. The answer is ' + expected + ' ' + unit + '.';
     return 'Set up a conversion factor so the starting unit cancels and the requested unit remains. The answer is ' + expected + ' ' + unit + '.';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Generated practice by grade band
+  //   b45 (host k2/g35): within one system, mixed units (4.MD.1, 5.MD.1)
+  //   b67 (host g68):    rates, unit rates, given factors, prefixes, °C/°F (6.RP.2-3, 7.RP.2)
+  //   b8  (host g912):   factor chains, area and volume units, density,
+  //                      US vs imperial, prefixes, temperature
+  // Each item carries its answer, named misconception "traps" (the number a
+  // particular wrong method gives), language-neutral facts / set-up / worked
+  // steps, and params the render turns into translated sentences.
+  // ═══════════════════════════════════════════════════════════════════════
+  var PRACTICE_BANDS = ['b45', 'b67', 'b8'];
+  var PRACTICE_KINDS = {
+    b45: ['mixedToSmall', 'bigToSmall', 'smallToBig', 'metricDecimal'],
+    b67: ['unitRate', 'rateConvert', 'givenFactor', 'prefix', 'temperature'],
+    b8: ['chainRate', 'area', 'volume', 'density', 'temperature', 'usImperial', 'prefix']
+  };
+  function practiceBandFor(gradeBand) {
+    var g = String(gradeBand || '').toLowerCase();
+    if (PRACTICE_BANDS.indexOf(g) !== -1) return g;
+    if (g === 'k2' || g === 'g35') return 'b45';
+    if (g === 'g912') return 'b8';
+    return 'b67';
+  }
+  function fmtN(x) { return formatUnitNumber(x, 'auto'); }
+
+  // Within-system pairs (all verified against UNIT_FACTORS in the tests).
+  var WITHIN_SYSTEM = [
+    { big: 'ft', small: 'in', ratio: 12, cat: 'length' },
+    { big: 'yd', small: 'ft', ratio: 3, cat: 'length' },
+    { big: 'hr', small: 'min', ratio: 60, cat: 'time' },
+    { big: 'min', small: 'sec', ratio: 60, cat: 'time' },
+    { big: 'day', small: 'hr', ratio: 24, cat: 'time' },
+    { big: 'week', small: 'day', ratio: 7, cat: 'time' },
+    { big: 'lb', small: 'oz', ratio: 16, cat: 'weight' },
+    { big: 'gal', small: 'qt', ratio: 4, cat: 'volume' },
+    { big: 'qt', small: 'pt', ratio: 2, cat: 'volume' },
+    { big: 'pt', small: 'cup', ratio: 2, cat: 'volume' },
+    { big: 'm', small: 'cm', ratio: 100, cat: 'length' },
+    { big: 'km', small: 'm', ratio: 1000, cat: 'length' },
+    { big: 'kg', small: 'g', ratio: 1000, cat: 'weight' },
+    { big: 'L', small: 'mL', ratio: 1000, cat: 'volume' }
+  ];
+  var METRIC_PAIRS = [
+    { big: 'm', small: 'cm', ratio: 100, cat: 'length' },
+    { big: 'm', small: 'mm', ratio: 1000, cat: 'length' },
+    { big: 'cm', small: 'mm', ratio: 10, cat: 'length' },
+    { big: 'km', small: 'm', ratio: 1000, cat: 'length' },
+    { big: 'kg', small: 'g', ratio: 1000, cat: 'weight' },
+    { big: 'g', small: 'mg', ratio: 1000, cat: 'weight' },
+    { big: 'L', small: 'mL', ratio: 1000, cat: 'volume' }
+  ];
+  var PREFIX_PAIRS = {
+    b67: [['kg', 'g', 'weight'], ['g', 'mg', 'weight'], ['km', 'm', 'length'], ['m', 'cm', 'length'], ['m', 'mm', 'length'], ['L', 'mL', 'volume'], ['kJ', 'J', 'energy'], ['kPa', 'Pa', 'pressure']],
+    b8: [['kg', 'mg', 'weight'], ['km', 'cm', 'length'], ['km', 'mm', 'length'], ['kWh', 'Wh', 'energy'], ['kJ', 'J', 'energy'], ['kPa', 'Pa', 'pressure'], ['t', 'kg', 'weight'], ['L', 'mL', 'volume']]
+  };
+  var RATE_CONTEXTS = [
+    { id: 'car', u1: 'mi', u2: 'hr', r: [25, 70], tt: [2, 6] },
+    { id: 'cyclist', u1: 'km', u2: 'hr', r: [8, 30], tt: [2, 5] },
+    { id: 'hose', u1: 'L', u2: 'min', r: [4, 20], tt: [3, 10] },
+    { id: 'snail', u1: 'cm', u2: 'min', r: [2, 9], tt: [3, 12] }
+  ];
+  var RATE_TIME_STEPS = [
+    { small: 'sec', big: 'min', ratio: 60 },
+    { small: 'min', big: 'hr', ratio: 60 },
+    { small: 'hr', big: 'day', ratio: 24 }
+  ];
+  var RATE_CONVERT_CONTEXTS = [{ id: 'faucet', q: 'mL' }, { id: 'walker', q: 'm' }, { id: 'ant', q: 'cm' }, { id: 'pump', q: 'L' }];
+  // shown = the factor printed in the question; answers use that same factor.
+  var GIVEN_FACTORS = [
+    { from: 'in', to: 'cm', f: 2.54, shown: '2.54', cat: 'length' },
+    { from: 'mi', to: 'km', f: 1.609, shown: '1.609', cat: 'length' },
+    { from: 'gal', to: 'L', f: 3.785, shown: '3.785', cat: 'volume' },
+    { from: 'kg', to: 'lb', f: 2.205, shown: '2.205', cat: 'weight' }
+  ];
+  var CHAIN_RATES = [
+    { from: 'km/h', to: 'm/s', make: function(k) { return 18 * k; }, k: [1, 8], ans: function(v) { return v / 3.6; }, traps: function(v) { return [{ id: 'inverse', value: v * 3.6 }, { id: 'chainOneStep', value: v * 1000 }, { id: 'chainOneStep', value: v / 3600 }]; }, facts: ['1 km = 1,000 m', '1 h = 3,600 s'], setup: function(v) { return fmtN(v) + ' × 1,000 ÷ 3,600'; } },
+    { from: 'm/s', to: 'km/h', make: function(k) { return k; }, k: [2, 30], ans: function(v) { return v * 3.6; }, traps: function(v) { return [{ id: 'inverse', value: v / 3.6 }, { id: 'chainOneStep', value: v / 1000 }, { id: 'chainOneStep', value: v * 3600 }]; }, facts: ['1 km = 1,000 m', '1 h = 3,600 s'], setup: function(v) { return fmtN(v) + ' ÷ 1,000 × 3,600'; } },
+    { from: 'mph', to: 'ft/s', make: function(k) { return 15 * k; }, k: [1, 6], ans: function(v) { return v * 5280 / 3600; }, traps: function(v) { return [{ id: 'inverse', value: v * 3600 / 5280 }, { id: 'chainOneStep', value: v * 5280 }, { id: 'chainOneStep', value: v / 3600 }]; }, facts: ['1 mi = 5,280 ft', '1 h = 3,600 s'], setup: function(v) { return fmtN(v) + ' × 5,280 ÷ 3,600'; } },
+    { from: 'L/min', to: 'mL/s', make: function(k) { return 3 * k; }, k: [1, 10], ans: function(v) { return v * 1000 / 60; }, traps: function(v) { return [{ id: 'inverse', value: v * 60 / 1000 }, { id: 'chainOneStep', value: v * 1000 }, { id: 'chainOneStep', value: v / 60 }]; }, facts: ['1 L = 1,000 mL', '1 min = 60 s'], setup: function(v) { return fmtN(v) + ' × 1,000 ÷ 60'; } },
+    { from: 'g/s', to: 'kg/h', make: function(k) { return 5 * k; }, k: [1, 10], ans: function(v) { return v * 3.6; }, traps: function(v) { return [{ id: 'inverse', value: v / 3.6 }, { id: 'chainOneStep', value: v / 1000 }, { id: 'chainOneStep', value: v * 3600 }]; }, facts: ['1 kg = 1,000 g', '1 h = 3,600 s'], setup: function(v) { return fmtN(v) + ' ÷ 1,000 × 3,600'; } }
+  ];
+  var AREA_PAIRS = [
+    { from: 'm²', to: 'cm²', big: 'm', small: 'cm', lin: 100 },
+    { from: 'cm²', to: 'mm²', big: 'cm', small: 'mm', lin: 10 },
+    { from: 'ft²', to: 'in²', big: 'ft', small: 'in', lin: 12 },
+    { from: 'yd²', to: 'ft²', big: 'yd', small: 'ft', lin: 3 },
+    { from: 'km²', to: 'm²', big: 'km', small: 'm', lin: 1000 }
+  ];
+  var VOLUME_PAIRS = [
+    { from: 'm³', to: 'cm³', big: 'm', small: 'cm', lin: 100 },
+    { from: 'cm³', to: 'mm³', big: 'cm', small: 'mm', lin: 10 },
+    { from: 'ft³', to: 'in³', big: 'ft', small: 'in', lin: 12 },
+    { from: 'yd³', to: 'ft³', big: 'yd', small: 'ft', lin: 3 }
+  ];
+  var MATERIALS = [
+    { id: 'water', rho: 1 }, { id: 'aluminum', rho: 2.7 }, { id: 'iron', rho: 7.87 },
+    { id: 'gold', rho: 19.3 }, { id: 'ice', rho: 0.917 }, { id: 'copper', rho: 8.96 }
+  ];
+  var CELSIUS_NICE = [-40, -20, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 50, 100];
+
+  function finishPracticeItem(item, band) {
+    item.band = band;
+    item.id = item.kind + '|' + item.sig;
+    if (!(item.tol > 0)) item.tol = Math.max(1e-9, Math.abs(item.a) * 0.005);
+    var a = item.a;
+    var seen = {};
+    var timeAnswer = item.answerType === 'hm' || item.answerType === 'clock';
+    item.traps = (item.traps || []).filter(function(trap) {
+      if (timeAnswer) {
+        if (!trap || !Number.isInteger(trap.h) || !Number.isInteger(trap.m) || trap.h < 0 || trap.m < 0) return false;
+        var same = item.answerType === 'clock' ? (trap.h % 12 === item.ah % 12 && trap.m === item.am) : (trap.h === item.ah && trap.m === item.am);
+        var pairKey = trap.id + ':' + trap.h + ':' + trap.m;
+        if (same || seen[pairKey]) return false;
+        seen[pairKey] = true;
+        return true;
+      }
+      if (!trap || !Number.isFinite(trap.value)) return false;
+      if (Math.abs(trap.value - a) <= Math.max(item.tol, Math.abs(a) * 0.01)) return false;
+      var key = trap.id + ':' + trap.value;
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+    item.direction = item.a > item.inputValue + 1e-12 ? 'bigger' : item.a < item.inputValue - 1e-12 ? 'smaller' : 'same';
+    item.q = item.q || '';
+    item.unit = item.unit || item.toUnit;
+    item.tries = 0;
+    item.hintLevel = 0;
+    item.answered = false;
+    return item;
+  }
+
+  var PRACTICE_GENERATORS = {
+    mixedToSmall: function(rng) {
+      var sys = pickFrom(rng, WITHIN_SYSTEM);
+      var n = randInt(rng, 2, 9);
+      var s = sys.ratio === 1000 ? randInt(rng, 1, 19) * 50 : sys.ratio === 100 ? randInt(rng, 1, 99) : randInt(rng, 1, sys.ratio - 1);
+      var whole = n * sys.ratio;
+      var customary = [10, 100, 1000].indexOf(sys.ratio) === -1;
+      var traps = [
+        { id: 'mixedIgnoredSmall', value: whole },
+        { id: 'inverse', value: n / sys.ratio + s },
+        { id: 'mixedDecimal', value: roundTo((n + s / Math.pow(10, String(s).length)) * sys.ratio, 6) }
+      ];
+      if (customary) traps.push({ id: 'baseTenHabit', value: n * 10 + s }, { id: 'baseTenHabit', value: n * 100 + s });
+      return {
+        kind: 'mixedToSmall', sig: [sys.big, sys.small, n, s].join('|'), cat: sys.cat,
+        params: { n: n, big: sys.big, s: s, small: sys.small, ratio: sys.ratio },
+        a: whole + s, tol: 1e-6, fromUnit: sys.big, toUnit: sys.small, inputValue: n, sizeRel: 'toSmaller',
+        q: n + ' ' + sys.big + ' ' + s + ' ' + sys.small + ' = ? ' + sys.small,
+        facts: ['1 ' + sys.big + ' = ' + fmtN(sys.ratio) + ' ' + sys.small],
+        setup: n + ' × ' + fmtN(sys.ratio) + ' + ' + s,
+        steps: [n + ' ' + sys.big + ' × ' + fmtN(sys.ratio) + ' = ' + fmtN(whole) + ' ' + sys.small, fmtN(whole) + ' ' + sys.small + ' + ' + s + ' ' + sys.small + ' = ' + fmtN(whole + s) + ' ' + sys.small],
+        traps: traps
+      };
+    },
+    bigToSmall: function(rng) {
+      var sys = pickFrom(rng, WITHIN_SYSTEM);
+      var n = sys.ratio >= 1000 ? randInt(rng, 2, 9) : randInt(rng, 2, 12);
+      var customary = [10, 100, 1000].indexOf(sys.ratio) === -1;
+      var traps = [{ id: 'inverse', value: n / sys.ratio }];
+      if (customary) traps.push({ id: 'baseTenHabit', value: n * 10 });
+      return {
+        kind: 'bigToSmall', sig: [sys.big, sys.small, n].join('|'), cat: sys.cat,
+        params: { n: n, from: sys.big, to: sys.small, ratio: sys.ratio },
+        a: n * sys.ratio, tol: 1e-6, fromUnit: sys.big, toUnit: sys.small, inputValue: n, sizeRel: 'toSmaller',
+        q: n + ' ' + sys.big + ' = ? ' + sys.small,
+        facts: ['1 ' + sys.big + ' = ' + fmtN(sys.ratio) + ' ' + sys.small],
+        setup: n + ' × ' + fmtN(sys.ratio),
+        steps: [n + ' ' + sys.big + ' × ' + fmtN(sys.ratio) + ' ' + sys.small + '/' + sys.big + ' = ' + fmtN(n * sys.ratio) + ' ' + sys.small],
+        traps: traps
+      };
+    },
+    smallToBig: function(rng) {
+      var sys = pickFrom(rng, WITHIN_SYSTEM);
+      var n = sys.ratio >= 1000 ? randInt(rng, 2, 9) : randInt(rng, 2, 12);
+      var total = n * sys.ratio;
+      var customary = [10, 100, 1000].indexOf(sys.ratio) === -1;
+      var traps = [{ id: 'inverse', value: total * sys.ratio }];
+      if (customary) traps.push({ id: 'baseTenHabit', value: total / 10 });
+      return {
+        kind: 'smallToBig', sig: [sys.small, sys.big, total].join('|'), cat: sys.cat,
+        params: { n: total, from: sys.small, to: sys.big, ratio: sys.ratio },
+        a: n, tol: 1e-6, fromUnit: sys.small, toUnit: sys.big, inputValue: total, sizeRel: 'toBigger',
+        q: fmtN(total) + ' ' + sys.small + ' = ? ' + sys.big,
+        facts: ['1 ' + sys.big + ' = ' + fmtN(sys.ratio) + ' ' + sys.small],
+        setup: fmtN(total) + ' ÷ ' + fmtN(sys.ratio),
+        steps: [fmtN(total) + ' ' + sys.small + ' ÷ ' + fmtN(sys.ratio) + ' ' + sys.small + '/' + sys.big + ' = ' + n + ' ' + sys.big],
+        traps: traps
+      };
+    },
+    metricDecimal: function(rng) {
+      var pair = pickFrom(rng, METRIC_PAIRS);
+      var toSmall = rng() < 0.5;
+      var k = randInt(rng, 11, 99);
+      if (k % 10 === 0) k += 1;
+      var value, a, from, to;
+      if (toSmall) { value = k / 10; a = roundTo(value * pair.ratio, 6); from = pair.big; to = pair.small; }
+      else { value = roundTo(k * pair.ratio / 10, 6); a = k / 10; from = pair.small; to = pair.big; }
+      var traps = toSmall
+        ? [{ id: 'inverse', value: value / pair.ratio }, { id: 'prefixSlip', value: a * 10 }, { id: 'prefixSlip', value: a / 10 }]
+        : [{ id: 'inverse', value: value * pair.ratio }, { id: 'prefixSlip', value: a * 10 }, { id: 'prefixSlip', value: a / 10 }];
+      return {
+        kind: 'metricDecimal', sig: [from, to, value].join('|'), cat: pair.cat,
+        params: { n: value, from: from, to: to, ratio: pair.ratio },
+        a: a, tol: 1e-6, fromUnit: from, toUnit: to, inputValue: value, sizeRel: toSmall ? 'toSmaller' : 'toBigger',
+        q: fmtN(value) + ' ' + from + ' = ? ' + to,
+        facts: ['1 ' + pair.big + ' = ' + fmtN(pair.ratio) + ' ' + pair.small],
+        setup: fmtN(value) + (toSmall ? ' × ' : ' ÷ ') + fmtN(pair.ratio),
+        steps: [fmtN(value) + ' ' + from + (toSmall ? ' × ' : ' ÷ ') + fmtN(pair.ratio) + ' = ' + fmtN(a) + ' ' + to],
+        traps: traps
+      };
+    },
+    unitRate: function(rng) {
+      var c = pickFrom(rng, RATE_CONTEXTS);
+      var r = randInt(rng, c.r[0], c.r[1]);
+      var time = randInt(rng, c.tt[0], c.tt[1]);
+      var total = r * time;
+      return {
+        kind: 'unitRate', sig: [c.id, total, time].join('|'), cat: null,
+        params: { ctx: c.id, total: total, time: time, u1: c.u1, u2: c.u2 },
+        a: r, tol: 1e-6, fromUnit: c.u1, toUnit: c.u1 + '/' + c.u2, unit: c.u1 + '/' + c.u2, inputValue: total, sizeRel: null,
+        q: total + ' ' + c.u1 + ' in ' + time + ' ' + c.u2 + ' = ? ' + c.u1 + '/' + c.u2,
+        facts: [c.u1 + '/' + c.u2 + ' = ' + c.u1 + ' ÷ ' + c.u2],
+        setup: fmtN(total) + ' ÷ ' + time,
+        steps: [fmtN(total) + ' ' + c.u1 + ' ÷ ' + time + ' ' + c.u2 + ' = ' + fmtN(r) + ' ' + c.u1 + '/' + c.u2],
+        traps: [{ id: 'rateInverted', value: time / total }, { id: 'rateMultiplied', value: total * time }]
+      };
+    },
+    rateConvert: function(rng) {
+      var c = pickFrom(rng, RATE_CONVERT_CONTEXTS);
+      var step = pickFrom(rng, RATE_TIME_STEPS);
+      var forward = rng() < 0.6;
+      var r, a, fromT, toT;
+      if (forward) { r = randInt(rng, 2, 15); a = r * step.ratio; fromT = step.small; toT = step.big; }
+      else { var k = randInt(rng, 2, 12); r = k * step.ratio; a = k; fromT = step.big; toT = step.small; }
+      return {
+        kind: 'rateConvert', sig: [c.id, r, fromT, toT].join('|'), cat: null,
+        params: { ctx: c.id, r: r, q: c.q, fromT: fromT, toT: toT, ratio: step.ratio },
+        a: a, tol: 1e-6, fromUnit: c.q + '/' + fromT, toUnit: c.q + '/' + toT, unit: c.q + '/' + toT, inputValue: r, sizeRel: null,
+        q: r + ' ' + c.q + '/' + fromT + ' = ? ' + c.q + '/' + toT,
+        facts: ['1 ' + step.big + ' = ' + step.ratio + ' ' + step.small],
+        setup: fmtN(r) + (forward ? ' × ' : ' ÷ ') + step.ratio,
+        steps: [fmtN(r) + ' ' + c.q + '/' + fromT + (forward ? ' × ' : ' ÷ ') + step.ratio + ' = ' + fmtN(a) + ' ' + c.q + '/' + toT],
+        traps: [{ id: 'inverse', value: forward ? r / step.ratio : r * step.ratio }]
+      };
+    },
+    givenFactor: function(rng) {
+      var g = pickFrom(rng, GIVEN_FACTORS);
+      var forward = rng() < 0.6;
+      var n = randInt(rng, 2, 20);
+      var value, a, from, to;
+      if (forward) { value = n; a = roundTo(n * g.f, 6); from = g.from; to = g.to; }
+      else { value = roundTo(n * g.f, 3); a = n; from = g.to; to = g.from; }
+      var traps = [{ id: 'inverse', value: forward ? value / g.f : value * g.f }];
+      if (g.from === 'gal') traps.push({ id: 'usImperial', value: forward ? value * 4.546 : value / 4.546 });
+      return {
+        kind: 'givenFactor', sig: [from, to, value].join('|'), cat: g.cat,
+        params: { n: value, from: from, to: to, factFrom: g.from, factTo: g.to, shown: g.shown },
+        a: a, fromUnit: from, toUnit: to, inputValue: value, sizeRel: null,
+        q: '1 ' + g.from + ' = ' + g.shown + ' ' + g.to + '. ' + fmtN(value) + ' ' + from + ' = ? ' + to,
+        facts: ['1 ' + g.from + ' = ' + g.shown + ' ' + g.to],
+        setup: fmtN(value) + (forward ? ' × ' : ' ÷ ') + g.shown,
+        steps: [fmtN(value) + ' ' + from + (forward ? ' × ' : ' ÷ ') + g.shown + ' = ' + fmtN(a) + ' ' + to],
+        traps: traps
+      };
+    },
+    prefix: function(rng, band) {
+      var pair = pickFrom(rng, PREFIX_PAIRS[band] || PREFIX_PAIRS.b67);
+      var ratio = Math.round(UNIT_FACTORS[pair[2]][pair[0]] / UNIT_FACTORS[pair[2]][pair[1]]);
+      var toSmall = rng() < 0.5;
+      var value, a, from, to;
+      if (toSmall) { value = randInt(rng, 12, 95) / 10; a = roundTo(value * ratio, 6); from = pair[0]; to = pair[1]; }
+      else { value = randInt(rng, 2, 95) * Math.max(1, ratio / 100); a = roundTo(value / ratio, 9); from = pair[1]; to = pair[0]; }
+      return {
+        kind: 'prefix', sig: [from, to, value].join('|'), cat: pair[2],
+        params: { n: value, from: from, to: to, ratio: ratio },
+        a: a, fromUnit: from, toUnit: to, inputValue: value, sizeRel: toSmall ? 'toSmaller' : 'toBigger',
+        q: fmtN(value) + ' ' + from + ' = ? ' + to,
+        facts: ['1 ' + pair[0] + ' = ' + fmtN(ratio) + ' ' + pair[1]],
+        setup: fmtN(value) + (toSmall ? ' × ' : ' ÷ ') + fmtN(ratio),
+        steps: [fmtN(value) + ' ' + from + (toSmall ? ' × ' : ' ÷ ') + fmtN(ratio) + ' = ' + fmtN(a) + ' ' + to],
+        traps: [{ id: 'inverse', value: toSmall ? value / ratio : value * ratio }, { id: 'prefixSlip', value: a * 10 }, { id: 'prefixSlip', value: a / 10 }, { id: 'prefixSlip', value: a * 1000 }, { id: 'prefixSlip', value: a / 1000 }]
+      };
+    },
+    temperature: function(rng, band) {
+      var c = pickFrom(rng, CELSIUS_NICE);
+      var modes = band === 'b8' ? ['CF', 'FC', 'CK', 'KC'] : ['CF', 'FC'];
+      var mode = pickFrom(rng, modes);
+      var f = roundTo(c * 9 / 5 + 32, 6);
+      var k = roundTo(c + 273.15, 6);
+      var item = { kind: 'temperature', cat: 'temperature', tol: 0.05, sizeRel: null };
+      if (mode === 'CF') {
+        Object.assign(item, { sig: 'CF|' + c, a: f, fromUnit: '°C', toUnit: '°F', inputValue: c,
+          facts: ['F = C × 9/5 + 32'], setup: fmtN(c) + ' × 9/5 + 32',
+          steps: [fmtN(c) + ' × 9/5 = ' + fmtN(c * 9 / 5), fmtN(c * 9 / 5) + ' + 32 = ' + fmtN(f) + ' °F'],
+          traps: [{ id: 'tempOrder', value: (c + 32) * 9 / 5 }, { id: 'tempNoOffset', value: c * 9 / 5 }, { id: 'tempWrongScale', value: c * 5 / 9 + 32 }] });
+      } else if (mode === 'FC') {
+        Object.assign(item, { sig: 'FC|' + f, a: c, fromUnit: '°F', toUnit: '°C', inputValue: f,
+          facts: ['C = (F − 32) × 5/9'], setup: '(' + fmtN(f) + ' − 32) × 5/9',
+          steps: [fmtN(f) + ' − 32 = ' + fmtN(f - 32), fmtN(f - 32) + ' × 5/9 = ' + fmtN(c) + ' °C'],
+          traps: [{ id: 'tempOrder', value: f * 5 / 9 - 32 }, { id: 'tempWrongScale', value: (f - 32) * 9 / 5 }, { id: 'tempNoScale', value: f - 32 }] });
+      } else if (mode === 'CK') {
+        Object.assign(item, { sig: 'CK|' + c, a: k, fromUnit: '°C', toUnit: 'K', inputValue: c,
+          facts: ['K = C + ' + fmtN(273.15)], setup: fmtN(c) + ' + ' + fmtN(273.15),
+          steps: [fmtN(c) + ' + ' + fmtN(273.15) + ' = ' + fmtN(k) + ' K'],
+          traps: [{ id: 'tempKelvinSign', value: c - 273.15 }] });
+      } else {
+        Object.assign(item, { sig: 'KC|' + k, a: c, fromUnit: 'K', toUnit: '°C', inputValue: k,
+          facts: ['C = K − ' + fmtN(273.15)], setup: fmtN(k) + ' − ' + fmtN(273.15),
+          steps: [fmtN(k) + ' − ' + fmtN(273.15) + ' = ' + fmtN(c) + ' °C'],
+          traps: [{ id: 'tempKelvinSign', value: k + 273.15 }] });
+      }
+      item.params = { n: item.inputValue, from: item.fromUnit, to: item.toUnit };
+      item.q = fmtN(item.inputValue) + ' ' + item.fromUnit + ' = ? ' + item.toUnit;
+      return item;
+    },
+    chainRate: function(rng) {
+      var c = pickFrom(rng, CHAIN_RATES);
+      var v = c.make(randInt(rng, c.k[0], c.k[1]));
+      var a = roundTo(c.ans(v), 9);
+      return {
+        kind: 'chainRate', sig: [c.from, c.to, v].join('|'), cat: null,
+        params: { n: v, from: c.from, to: c.to },
+        a: a, fromUnit: c.from, toUnit: c.to, inputValue: v, sizeRel: null,
+        q: fmtN(v) + ' ' + c.from + ' = ? ' + c.to,
+        facts: c.facts.slice(), setup: c.setup(v),
+        steps: [c.setup(v) + ' = ' + fmtN(a) + ' ' + c.to],
+        traps: c.traps(v)
+      };
+    },
+    area: function(rng) {
+      var p = pickFrom(rng, AREA_PAIRS);
+      var sq = p.lin * p.lin;
+      var forward = rng() < 0.65;
+      var n = randInt(rng, 2, 9);
+      var value = forward ? n : n * sq;
+      var a = forward ? n * sq : n;
+      var from = forward ? p.from : p.to;
+      var to = forward ? p.to : p.from;
+      return {
+        kind: 'area', sig: [from, to, value].join('|'), cat: 'area',
+        params: { n: value, from: from, to: to, big: p.big, small: p.small, lin: p.lin },
+        a: a, fromUnit: from, toUnit: to, inputValue: value, sizeRel: forward ? 'toSmaller' : 'toBigger',
+        q: fmtN(value) + ' ' + from + ' = ? ' + to,
+        facts: ['1 ' + p.big + ' = ' + fmtN(p.lin) + ' ' + p.small, '1 ' + p.from + ' = ' + fmtN(p.lin) + ' ' + p.small + ' × ' + fmtN(p.lin) + ' ' + p.small + ' = ' + fmtN(sq) + ' ' + p.to],
+        setup: fmtN(value) + (forward ? ' × ' : ' ÷ ') + fmtN(p.lin) + (forward ? ' × ' : ' ÷ ') + fmtN(p.lin),
+        steps: ['1 ' + p.from + ' = ' + fmtN(sq) + ' ' + p.to, fmtN(value) + ' ' + from + (forward ? ' × ' : ' ÷ ') + fmtN(sq) + ' = ' + fmtN(a) + ' ' + to],
+        traps: forward
+          ? [{ id: 'linearForArea', value: n * p.lin }, { id: 'inverse', value: n / sq }]
+          : [{ id: 'linearForArea', value: value / p.lin }, { id: 'inverse', value: value * sq }]
+      };
+    },
+    volume: function(rng) {
+      var p = pickFrom(rng, VOLUME_PAIRS);
+      var cube = p.lin * p.lin * p.lin;
+      var n = randInt(rng, 2, 9);
+      return {
+        kind: 'volume', sig: [p.from, p.to, n].join('|'), cat: null,
+        params: { n: n, from: p.from, to: p.to, big: p.big, small: p.small, lin: p.lin },
+        a: n * cube, fromUnit: p.from, toUnit: p.to, inputValue: n, sizeRel: 'toSmaller',
+        q: n + ' ' + p.from + ' = ? ' + p.to,
+        facts: ['1 ' + p.big + ' = ' + fmtN(p.lin) + ' ' + p.small, '1 ' + p.from + ' = ' + fmtN(p.lin) + ' × ' + fmtN(p.lin) + ' × ' + fmtN(p.lin) + ' ' + p.to + ' = ' + fmtN(cube) + ' ' + p.to],
+        setup: n + ' × ' + fmtN(p.lin) + ' × ' + fmtN(p.lin) + ' × ' + fmtN(p.lin),
+        steps: ['1 ' + p.from + ' = ' + fmtN(cube) + ' ' + p.to, n + ' ' + p.from + ' × ' + fmtN(cube) + ' = ' + fmtN(n * cube) + ' ' + p.to],
+        traps: [{ id: 'linearForVolume', value: n * p.lin }, { id: 'linearForVolume', value: n * p.lin * p.lin }, { id: 'inverse', value: n / cube }]
+      };
+    },
+    density: function(rng) {
+      var mat = pickFrom(rng, MATERIALS);
+      var mode = pickFrom(rng, ['toSI', 'mass', 'volume']);
+      var rho = mat.rho;
+      if (mode === 'toSI') {
+        var a1 = roundTo(rho * 1000, 6);
+        return {
+          kind: 'density', sig: 'toSI|' + mat.id, cat: null,
+          params: { mode: mode, mat: mat.id, rho: rho },
+          a: a1, fromUnit: 'g/cm³', toUnit: 'kg/m³', inputValue: rho, sizeRel: null,
+          q: mat.id + ' ' + fmtN(rho) + ' g/cm³ = ? kg/m³',
+          facts: ['1 kg = 1,000 g', '1 m³ = 1,000,000 cm³'],
+          setup: fmtN(rho) + ' ÷ 1,000 × 1,000,000',
+          steps: [fmtN(rho) + ' g/cm³ × (1 kg / 1,000 g) × (1,000,000 cm³ / 1 m³) = ' + fmtN(a1) + ' kg/m³'],
+          traps: [{ id: 'inverse', value: rho / 1000 }, { id: 'chainOneStep', value: rho * 1000000 }, { id: 'linearForVolume', value: rho / 1000 * 100 }]
+        };
+      }
+      var vol = randInt(rng, 2, 50);
+      var mass = roundTo(rho * vol, 6);
+      if (mode === 'mass') {
+        return {
+          kind: 'density', sig: 'mass|' + mat.id + '|' + vol, cat: null,
+          params: { mode: mode, mat: mat.id, rho: rho, vol: vol },
+          a: mass, fromUnit: 'cm³', toUnit: 'g', inputValue: vol, sizeRel: null,
+          q: mat.id + ' ' + fmtN(rho) + ' g/cm³, ' + vol + ' cm³ = ? g',
+          facts: ['m = ρ × V'], setup: fmtN(rho) + ' × ' + vol,
+          steps: [fmtN(rho) + ' g/cm³ × ' + vol + ' cm³ = ' + fmtN(mass) + ' g'],
+          traps: [{ id: 'densityInverted', value: vol / rho }, { id: 'densityInverted', value: rho / vol }]
+        };
+      }
+      return {
+        kind: 'density', sig: 'volume|' + mat.id + '|' + mass, cat: null,
+        params: { mode: mode, mat: mat.id, rho: rho, mass: mass },
+        a: vol, fromUnit: 'g', toUnit: 'cm³', inputValue: mass, sizeRel: null,
+        q: mat.id + ' ' + fmtN(rho) + ' g/cm³, ' + fmtN(mass) + ' g = ? cm³',
+        facts: ['V = m ÷ ρ'], setup: fmtN(mass) + ' ÷ ' + fmtN(rho),
+        steps: [fmtN(mass) + ' g ÷ ' + fmtN(rho) + ' g/cm³ = ' + fmtN(vol) + ' cm³'],
+        traps: [{ id: 'densityInverted', value: mass * rho }, { id: 'densityInverted', value: rho / mass }]
+      };
+    },
+    usImperial: function(rng) {
+      var mode = pickFrom(rng, ['impToL', 'usToL', 'impToUs']);
+      var n = randInt(rng, 2, 12);
+      var US = UNIT_FACTORS.volume.gal, IMP = UNIT_FACTORS.volume['imp gal'];
+      var map = {
+        impToL: { from: 'imp gal', to: 'L', a: n * IMP, trap: n * US },
+        usToL: { from: 'gal', to: 'L', a: n * US, trap: n * IMP },
+        impToUs: { from: 'imp gal', to: 'gal', a: n * IMP / US, trap: n * US / IMP }
+      };
+      var m = map[mode];
+      return {
+        kind: 'usImperial', sig: [mode, n].join('|'), cat: 'volume',
+        params: { mode: mode, n: n, from: m.from, to: m.to },
+        a: m.a, fromUnit: m.from, toUnit: m.to, inputValue: n, sizeRel: null,
+        q: n + ' ' + m.from + ' = ? ' + m.to,
+        facts: ['1 US gal = 3.785 L', '1 imp gal = 4.546 L'],
+        setup: mode === 'impToUs' ? n + ' × 4.546 ÷ 3.785' : n + ' × ' + (mode === 'usToL' ? '3.785' : '4.546'),
+        steps: [(mode === 'impToUs' ? n + ' × 4.546 ÷ 3.785' : n + ' × ' + (mode === 'usToL' ? '3.785' : '4.546')) + ' ≈ ' + formatUnitNumber(m.a, 4) + ' ' + m.to],
+        traps: [{ id: 'usImperial', value: m.trap }]
+      };
+    }
+  };
+
+  function makePracticeItem(band, seed, kind) {
+    var safeBand = PRACTICE_BANDS.indexOf(band) !== -1 ? band : 'b67';
+    var rng = makeRng(seed);
+    var kinds = PRACTICE_KINDS[safeBand];
+    var safeKind = kinds.indexOf(kind) !== -1 ? kind : pickFrom(rng, kinds);
+    var item = PRACTICE_GENERATORS[safeKind](rng, safeBand);
+    return finishPracticeItem(item, safeBand);
+  }
+
+  // Grade an attempt and name the misconception behind a wrong one.
+  function diagnosePracticeItem(item, rawAnswer) {
+    if (item && (item.answerType === 'hm' || item.answerType === 'clock')) return diagnoseTimeAnswer(item, rawAnswer);
+    if (item && item.grade === 'sigfigs') return diagnoseSigFigAnswer(item, rawAnswer);
+    if (item && item.grade === 'sciForm') return diagnoseSciAnswer(item, rawAnswer);
+    // "Write 7.2 × 10⁴ as an ordinary number": retyping the question is not an answer.
+    if (item && item.kind === 'sciNotation' && item.params && item.params.mode === 'fromSci') return diagnoseSciAnswer(item, rawAnswer, true);
+    var evaluation = evaluateNumericAnswer(rawAnswer, item && item.a, item && item.tol);
+    if (!evaluation.valid) return { valid: false, correct: false, misconception: null, answer: evaluation.answer };
+    if (evaluation.correct) return { valid: true, correct: true, misconception: null, answer: evaluation.answer };
+    var answer = evaluation.answer;
+    var traps = Array.isArray(item.traps) ? item.traps : [];
+    for (var i = 0; i < traps.length; i++) {
+      var trap = traps[i];
+      // Relative to the TRAP's size: the answer's tolerance is far too wide
+      // for a trap a thousand times smaller (5.7 vs 0.0057). Exact domains
+      // (cents, minutes, ladder steps) match exactly: 91¢ is not 90.1¢.
+      var rel = item.exactTraps ? 1e-9 : 0.01;
+      if (Math.abs(answer - trap.value) <= Math.max(Math.abs(trap.value) * rel, 1e-9)) {
+        return { valid: true, correct: false, misconception: trap.id, answer: answer };
+      }
+    }
+    if (item.a !== 0 && answer !== 0 && (answer > 0) === (item.a > 0) && item.kind !== 'temperature') {
+      var ratio = answer / item.a;
+      var power = Math.round(Math.log10(Math.abs(ratio)));
+      if (power !== 0 && Math.abs(ratio / Math.pow(10, power) - 1) <= 0.01) {
+        return { valid: true, correct: false, misconception: 'prefixSlip', answer: answer };
+      }
+    }
+    return { valid: true, correct: false, misconception: 'generic', answer: answer };
+  }
+
+  // ── Estimation ("about how many?") and benchmarks ──
+  var ESTIMATE_PAIRS = {
+    b45: [['ft', 'in', 'length'], ['yd', 'ft', 'length'], ['m', 'cm', 'length'], ['kg', 'g', 'weight'], ['L', 'mL', 'volume'], ['hr', 'min', 'time'], ['gal', 'qt', 'volume'], ['lb', 'oz', 'weight']],
+    b67: [['m', 'ft', 'length'], ['km', 'mi', 'length'], ['kg', 'lb', 'weight'], ['L', 'gal', 'volume'], ['in', 'cm', 'length'], ['mi', 'km', 'length'], ['gal', 'L', 'volume'], ['lb', 'kg', 'weight']],
+    b8: [['km/h', 'mph', 'speed'], ['m/s', 'km/h', 'speed'], ['acre', 'm²', 'area'], ['kWh', 'kJ', 'energy'], ['atm', 'kPa', 'pressure'], ['m³', 'L', 'volume'], ['mi', 'km', 'length'], ['day', 'min', 'time']]
+  };
+  var BENCHMARKS = [
+    { id: 'door', value: 2, unit: 'm' }, { id: 'paperclip', value: 1, unit: 'g' }, { id: 'bottle', value: 1, unit: 'L' },
+    { id: 'pencil', value: 20, unit: 'cm' }, { id: 'teaspoon', value: 5, unit: 'mL' }, { id: 'textbook', value: 1, unit: 'kg' },
+    { id: 'classroom', value: 10, unit: 'm' }, { id: 'marathon', value: 40, unit: 'km' }, { id: 'car', value: 1000, unit: 'kg' },
+    { id: 'nickel', value: 5, unit: 'g' }, { id: 'adult', value: 2, unit: 'm' }, { id: 'bathtub', value: 200, unit: 'L' }
+  ];
+  function niceRound(x) {
+    if (!(x > 0)) return 0;
+    var p = Math.pow(10, Math.floor(Math.log10(x)));
+    var m = Math.round(x / p);
+    if (m >= 10) { m = 1; p *= 10; }
+    return m * p;
+  }
+  function makeEstimateItem(band, seed) {
+    var safeBand = PRACTICE_BANDS.indexOf(band) !== -1 ? band : 'b67';
+    var rng = makeRng(seed);
+    var options, correct, item;
+    if (rng() < 0.6) {
+      var pair = pickFrom(rng, ESTIMATE_PAIRS[safeBand]);
+      var value = pickFrom(rng, [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 40, 50]);
+      var exact = convertUnitValue(value, pair[0], pair[1], pair[2]);
+      correct = niceRound(exact);
+      item = { type: 'convert', id: 'est|' + pair[0] + '|' + pair[1] + '|' + value, value: value, from: pair[0], to: pair[1], cat: pair[2], exact: exact };
+    } else {
+      var b = pickFrom(rng, BENCHMARKS);
+      correct = b.value;
+      item = { type: 'benchmark', id: 'est|bench|' + b.id, bench: b.id, to: b.unit, exact: b.value };
+    }
+    options = [correct / 10, correct, correct * 10].map(function(x) { return roundTo(x, 6); });
+    // Shuffle with the item's own random stream.
+    for (var i = options.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var tmp = options[i]; options[i] = options[j]; options[j] = tmp; }
+    item.options = options;
+    item.correct = roundTo(correct, 6);
+    item.band = safeBand;
+    return item;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Stage B engines: metric prefix ladder, everyday time and money (grades
+  // 3-5), and the chemistry band (significant figures, scientific notation,
+  // moles, density chains). Items share the practice-item shape, so the same
+  // card gives them prediction, named mistakes, a second try, hints and
+  // fading worked examples. Steps may be {s, p} objects: the render turns
+  // them into translated sentences.
+  // ═══════════════════════════════════════════════════════════════════════
+  function shiftDecimal(value, places) { return Number((Number(value) * Math.pow(10, places)).toPrecision(12)); }
+  var LADDER_RUNGS = [
+    { id: 'mega', sym: 'M', exp: 6, wide: true },
+    { id: 'kilo', sym: 'k', exp: 3 },
+    { id: 'hecto', sym: 'h', exp: 2 },
+    { id: 'deca', sym: 'da', exp: 1 },
+    { id: 'base', sym: '', exp: 0 },
+    { id: 'deci', sym: 'd', exp: -1 },
+    { id: 'centi', sym: 'c', exp: -2 },
+    { id: 'milli', sym: 'm', exp: -3 },
+    { id: 'micro', sym: 'µ', exp: -6, wide: true }
+  ];
+  var LADDER_BASES = ['m', 'g', 'L'];
+  // Micro and mega join the ladder from grade 8.
+  function ladderRungs(band) { return LADDER_RUNGS.filter(function(r) { return !r.wide || band === 'b8' || band === 'chem'; }); }
+  function ladderRung(id) { return LADDER_RUNGS.filter(function(r) { return r.id === id; })[0] || LADDER_RUNGS[4]; }
+  function ladderUnit(rungId, base) { return ladderRung(rungId).sym + base; }
+  var LADDER_MAX_PLACES = { b45: 3, b67: 6, b8: 12, chem: 12 };
+
+  function makeLadderGenerator(rng, band) {
+    var rungs = ladderRungs(band);
+    var limit = LADDER_MAX_PLACES[band] || 6;
+    var base = pickFrom(rng, LADDER_BASES);
+    var i = 0, j = 0;
+    for (var tries = 0; tries < 40; tries++) {
+      i = randInt(rng, 0, rungs.length - 1);
+      j = randInt(rng, 0, rungs.length - 1);
+      if (i !== j && Math.abs(rungs[i].exp - rungs[j].exp) <= limit) break;
+    }
+    if (i === j) j = (i + 1) % rungs.length;
+    var from = rungs[i], to = rungs[j];
+    var places = from.exp - to.exp; // > 0: the new unit is smaller, multiply
+    var value = Number((randInt(rng, 11, 999) / pickFrom(rng, [10, 100])).toPrecision(6));
+    var a = shiftDecimal(value, places);
+    var fromU = from.sym + base, toU = to.sym + base;
+    var factor = Math.pow(10, Math.abs(places));
+    var bigU = places > 0 ? fromU : toU, smallU = places > 0 ? toU : fromU;
+    var traps = [
+      { id: 'ladderWrongWay', value: shiftDecimal(value, -places) },
+      { id: 'ladderCount', value: shiftDecimal(value, places + 1) },
+      { id: 'ladderCount', value: shiftDecimal(value, places - 1) }
+    ];
+    var rungSteps = Math.abs(i - j);
+    if (rungSteps !== Math.abs(places)) traps.unshift({ id: 'ladderRungsNotPowers', value: shiftDecimal(value, places > 0 ? rungSteps : -rungSteps) });
+    return {
+      kind: 'ladder', sig: [from.id, to.id, base, value].join('|'), cat: base === 'm' ? 'length' : base === 'g' ? 'weight' : 'volume',
+      params: { n: value, from: fromU, to: toU, places: Math.abs(places), dir: places > 0 ? 'down' : 'up', fromRung: from.id, toRung: to.id, base: base },
+      a: a, tol: Math.abs(a) * 1e-6, fromUnit: fromU, toUnit: toU, unit: toU, inputValue: value, sizeRel: places > 0 ? 'toSmaller' : 'toBigger',
+      q: fmtN(value) + ' ' + fromU + ' = ? ' + toU,
+      facts: ['1 ' + bigU + ' = ' + fmtN(factor) + ' ' + smallU],
+      setup: fmtN(value) + (places > 0 ? ' × ' : ' ÷ ') + fmtN(factor),
+      steps: [
+        { s: places > 0 ? 'ladderDown' : 'ladderUp', p: { from: fromU, to: toU, n: Math.abs(places), factor: fmtN(factor) } },
+        fmtN(value) + ' ' + fromU + (places > 0 ? ' × ' : ' ÷ ') + fmtN(factor) + ' = ' + fmtN(a) + ' ' + toU
+      ],
+      traps: traps
+    };
+  }
+
+  // ── Everyday time and money (grades 3-5: 3.MD.1, 4.MD.2) ──
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  // Jumps on an elapsed-time number line: to the next hour, whole hours,
+  // then the minutes left.
+  function elapsedJumps(start, end) {
+    var jumps = [];
+    var at = start;
+    if (end <= at) return jumps;
+    var nextHour = Math.ceil(at / 60) * 60;
+    if (nextHour > at && nextHour <= end) { jumps.push({ from: at, to: nextHour, d: nextHour - at }); at = nextHour; }
+    var wholeHours = Math.floor((end - at) / 60);
+    if (wholeHours > 0) { jumps.push({ from: at, to: at + wholeHours * 60, d: wholeHours * 60 }); at += wholeHours * 60; }
+    if (end > at) jumps.push({ from: at, to: end, d: end - at });
+    return jumps;
+  }
+  function durationText(minutes) {
+    var h = Math.floor(minutes / 60), m = minutes % 60;
+    if (h && m) return h + ' h ' + m + ' min';
+    if (h) return h + ' h';
+    return m + ' min';
+  }
+  function makeStartTime(rng) {
+    var morning = rng() < 0.5;
+    var start = (morning ? randInt(rng, 7, 9) : randInt(rng, 13, 14)) * 60 + randInt(rng, 1, 11) * 5;
+    return { start: start, limit: morning ? 11 * 60 + 55 : 17 * 60 + 55 };
+  }
+  var EVERYDAY_KINDS = { time: ['hoursToMin', 'minToHours'], elapsed: ['elapsed', 'elapsedEnd'], money: ['centsToDollars', 'dollarsToCents', 'moneyMixed'] };
+  var EVERYDAY_GENERATORS = {
+    hoursToMin: function(rng) {
+      var h = randInt(rng, 1, 5), m = randInt(rng, 1, 11) * 5;
+      var a = h * 60 + m;
+      return {
+        kind: 'hoursToMin', sig: h + '|' + m, cat: 'time', params: { h: h, m: m },
+        a: a, tol: 1e-9, fromUnit: 'hr', toUnit: 'min', unit: 'min', inputValue: h, sizeRel: 'toSmaller',
+        q: h + ' h ' + m + ' min = ? min', facts: ['1 h = 60 min'], setup: h + ' × 60 + ' + m,
+        steps: [h + ' h × 60 = ' + (h * 60) + ' min', (h * 60) + ' min + ' + m + ' min = ' + a + ' min'],
+        traps: [{ id: 'hundredMinutes', value: h * 100 + m }, { id: 'mixedIgnoredSmall', value: h * 60 }]
+      };
+    },
+    minToHours: function(rng) {
+      var total = 0;
+      do { total = randInt(rng, 13, 59) * 5; } while (total % 60 === 0);
+      var ah = Math.floor(total / 60), am = total % 60;
+      // Under 100 minutes a 100-minute hour gives "0 h 75 min": the
+      // regrouping feedback covers that one.
+      var traps = total >= 100 ? [{ id: 'hundredMinutes', h: Math.floor(total / 100), m: total % 100 }] : [];
+      var hundredths = (total / 60 - ah) * 100;
+      if (Math.abs(hundredths - Math.round(hundredths)) < 1e-9) traps.push({ id: 'decimalHours', h: ah, m: Math.round(hundredths) });
+      return {
+        kind: 'minToHours', answerType: 'hm', noPredict: true, sig: String(total), cat: 'time', params: { t: total },
+        a: total, ah: ah, am: am, tol: 0, fromUnit: 'min', toUnit: 'hr', unit: 'min', inputValue: total, sizeRel: null,
+        q: total + ' min = ? h ? min', facts: ['1 h = 60 min'], setup: total + ' ÷ 60',
+        steps: [{ s: 'divRemainder', p: { t: total, h: ah, m: am } }, total + ' min = ' + ah + ' h ' + am + ' min'],
+        traps: traps
+      };
+    },
+    elapsed: function(rng) {
+      var st = makeStartTime(rng);
+      var start = st.start;
+      var dur = randInt(rng, 5, 46) * 5;
+      if (start + dur > st.limit) dur = Math.max(20, Math.floor((st.limit - start) / 5) * 5);
+      var end = start + dur;
+      var sh = Math.floor(start / 60), sm = start % 60, eh = Math.floor(end / 60), em = end % 60;
+      var traps = [];
+      var hundred = (eh * 100 + em) - (sh * 100 + sm);
+      if (hundred >= 0) traps.push({ id: 'hundredMinutes', h: Math.floor(hundred / 100), m: hundred % 100 });
+      if (em < sm) traps.push({ id: 'subtractedBackwards', h: eh - sh, m: sm - em });
+      var jumps = elapsedJumps(start, end);
+      return {
+        kind: 'elapsed', answerType: 'hm', noPredict: true, sig: start + '|' + end, cat: 'time', params: { start: start, end: end },
+        a: dur, ah: Math.floor(dur / 60), am: dur % 60, tol: 0, fromUnit: 'min', toUnit: 'min', unit: 'min', inputValue: dur, sizeRel: null,
+        q: sh + ':' + pad2(sm) + ' → ' + eh + ':' + pad2(em) + ' = ? h ? min',
+        facts: ['1 h = 60 min'], setup: jumps.map(function(j) { return '+' + durationText(j.d); }).join(' '),
+        jumps: jumps,
+        steps: jumps.map(function(j) { return { s: 'jump', p: { from: { clock: j.from }, to: { clock: j.to }, d: durationText(j.d) } }; })
+          .concat([{ s: 'jumpTotal', p: { parts: jumps.map(function(j) { return durationText(j.d); }).join(' + '), total: durationText(dur) } }]),
+        traps: traps
+      };
+    },
+    elapsedEnd: function(rng) {
+      var st = makeStartTime(rng);
+      var start = st.start;
+      var dur = randInt(rng, 4, 30) * 5;
+      if (start + dur > st.limit) dur = Math.max(20, Math.floor((st.limit - start) / 5) * 5);
+      var end = start + dur;
+      var sh = Math.floor(start / 60), sm = start % 60, dh = Math.floor(dur / 60), dm = dur % 60;
+      var traps = [];
+      if (sm + dm >= 60) traps.push({ id: 'regroupMinutes', h: sh + dh, m: sm + dm });
+      var jumps = elapsedJumps(start, end);
+      return {
+        kind: 'elapsedEnd', answerType: 'clock', noPredict: true, sig: start + '|' + dur, cat: 'time', params: { start: start, dh: dh, dm: dm },
+        a: end, ah: Math.floor(end / 60), am: end % 60, tol: 0, fromUnit: 'min', toUnit: 'min', unit: 'min', inputValue: start, sizeRel: null,
+        q: sh + ':' + pad2(sm) + ' + ' + durationText(dur) + ' = ?',
+        facts: ['1 h = 60 min'], setup: jumps.map(function(j) { return '+' + durationText(j.d); }).join(' '),
+        jumps: jumps,
+        steps: jumps.map(function(j) { return { s: 'jump', p: { from: { clock: j.from }, to: { clock: j.to }, d: durationText(j.d) } }; })
+          .concat([{ s: 'endsAt', p: { time: { clock: end } } }]),
+        traps: traps
+      };
+    },
+    centsToDollars: function(rng) {
+      var c = randInt(rng, 101, 999);
+      if (c % 100 === 0) c += 5;
+      var a = c / 100;
+      return {
+        kind: 'centsToDollars', money: true, sig: String(c), cat: null, params: { c: c },
+        a: a, tol: 1e-9, fromUnit: '¢', toUnit: '$', unit: '$', inputValue: c, sizeRel: 'toBigger',
+        q: c + '¢ = $?', facts: ['$1 = 100¢'], setup: c + ' ÷ 100',
+        steps: [c + '¢ ÷ 100 = ' + formatMoney(a)],
+        traps: [{ id: 'centsTenths', value: c / 10 }, { id: 'moneyNotConverted', value: c }, { id: 'centsTenths', value: c / 1000 }]
+      };
+    },
+    dollarsToCents: function(rng) {
+      var dollars = randInt(rng, 1, 9);
+      var cents = rng() < 0.5 ? randInt(rng, 1, 9) : randInt(rng, 10, 99);
+      var value = Number((dollars + cents / 100).toFixed(2));
+      var a = dollars * 100 + cents;
+      var traps = [{ id: 'centsTenths', value: Number((value * 10).toFixed(2)) }, { id: 'moneyNotConverted', value: value }];
+      if (cents < 10) traps.unshift({ id: 'droppedZero', value: dollars * 10 + cents });
+      return {
+        kind: 'dollarsToCents', money: true, sig: String(a), cat: null, params: { v: value },
+        a: a, tol: 1e-9, fromUnit: '$', toUnit: '¢', unit: '¢', inputValue: value, sizeRel: 'toSmaller',
+        q: '$' + value.toFixed(2) + ' = ?¢', facts: ['$1 = 100¢'], setup: localizeNumberText(value.toFixed(2)) + ' × 100',
+        steps: [formatMoney(value) + ' × 100 = ' + a + '¢'],
+        traps: traps
+      };
+    },
+    moneyMixed: function(rng) {
+      var dollars = randInt(rng, 2, 9);
+      var cents = rng() < 0.5 ? randInt(rng, 1, 9) : randInt(rng, 10, 95);
+      var a = dollars * 100 + cents;
+      var traps = [{ id: 'mixedIgnoredSmall', value: dollars * 100 }];
+      if (cents < 10) traps.unshift({ id: 'droppedZero', value: dollars * 10 + cents });
+      return {
+        kind: 'moneyMixed', money: true, sig: dollars + '|' + cents, cat: null, params: { dollars: dollars, cents: cents },
+        a: a, tol: 1e-9, fromUnit: '$', toUnit: '¢', unit: '¢', inputValue: dollars, sizeRel: 'toSmaller',
+        q: '$' + dollars + ' + ' + cents + '¢ = ?¢', facts: ['$1 = 100¢'], setup: dollars + ' × 100 + ' + cents,
+        steps: [dollars + ' × 100 = ' + (dollars * 100) + '¢', (dollars * 100) + '¢ + ' + cents + '¢ = ' + a + '¢'],
+        traps: traps
+      };
+    }
+  };
+
+  // ── Chemistry data ──
+  // Standard atomic weights: IUPAC/CIAAW 2021, abridged to five significant
+  // figures; for elements with an interval (H, C, N, O, Mg, S, Cl) the
+  // conventional value. Avogadro constant: exactly 6.022 140 76 × 10²³ mol⁻¹
+  // (SI 2019); problems use 6.022 × 10²³.
+  var ATOMIC_MASS = { H: 1.008, C: 12.011, N: 14.007, O: 15.999, Na: 22.990, Mg: 24.305, Al: 26.982, S: 32.06, Cl: 35.45, K: 39.098, Ca: 40.078, Fe: 55.845, Cu: 63.546, Zn: 65.38, Ag: 107.87, Au: 196.97 };
+  var AVOGADRO_EXACT = 6.02214076e23;
+  var AVOGADRO = 6.022e23;
+  var COMPOUNDS = [
+    { id: 'water', f: 'H₂O', atoms: [['H', 2], ['O', 1]], particle: 'molecule' },
+    { id: 'co2', f: 'CO₂', atoms: [['C', 1], ['O', 2]], particle: 'molecule' },
+    { id: 'nacl', f: 'NaCl', atoms: [['Na', 1], ['Cl', 1]], particle: 'formulaUnit' },
+    { id: 'caco3', f: 'CaCO₃', atoms: [['Ca', 1], ['C', 1], ['O', 3]], particle: 'formulaUnit' },
+    { id: 'glucose', f: 'C₆H₁₂O₆', atoms: [['C', 6], ['H', 12], ['O', 6]], particle: 'molecule' },
+    { id: 'nh3', f: 'NH₃', atoms: [['N', 1], ['H', 3]], particle: 'molecule' },
+    { id: 'ch4', f: 'CH₄', atoms: [['C', 1], ['H', 4]], particle: 'molecule' },
+    { id: 'o2', f: 'O₂', atoms: [['O', 2]], particle: 'molecule', diatomic: true },
+    { id: 'n2', f: 'N₂', atoms: [['N', 2]], particle: 'molecule', diatomic: true },
+    { id: 'cl2', f: 'Cl₂', atoms: [['Cl', 2]], particle: 'molecule', diatomic: true },
+    { id: 'kcl', f: 'KCl', atoms: [['K', 1], ['Cl', 1]], particle: 'formulaUnit' },
+    { id: 'mgo', f: 'MgO', atoms: [['Mg', 1], ['O', 1]], particle: 'formulaUnit' },
+    { id: 'fe', f: 'Fe', atoms: [['Fe', 1]], particle: 'atom' },
+    { id: 'cu', f: 'Cu', atoms: [['Cu', 1]], particle: 'atom' },
+    { id: 'al', f: 'Al', atoms: [['Al', 1]], particle: 'atom' },
+    { id: 'zn', f: 'Zn', atoms: [['Zn', 1]], particle: 'atom' },
+    { id: 'ag', f: 'Ag', atoms: [['Ag', 1]], particle: 'atom' },
+    { id: 'au', f: 'Au', atoms: [['Au', 1]], particle: 'atom' },
+    { id: 's', f: 'S', atoms: [['S', 1]], particle: 'atom' }
+  ];
+  function compoundById(id) { return COMPOUNDS.filter(function(c) { return c.id === id; })[0] || COMPOUNDS[0]; }
+  function molarMass(c) { return Number(c.atoms.reduce(function(sum, pair) { return sum + ATOMIC_MASS[pair[0]] * pair[1]; }, 0).toFixed(3)); }
+  // The molar mass a student gets by ignoring the subscripts.
+  function molarMassNoSubscripts(c) { return Number(c.atoms.reduce(function(sum, pair) { return sum + ATOMIC_MASS[pair[0]]; }, 0).toFixed(3)); }
+  function molarMassFact(c) {
+    var M = molarMass(c);
+    var terms = c.atoms.map(function(pair) { return (pair[1] > 1 ? pair[1] + ' × ' : '') + fmtN(ATOMIC_MASS[pair[0]]); }).join(' + ');
+    return 'M(' + c.f + ') = ' + (c.atoms.length === 1 && c.atoms[0][1] === 1 ? '' : terms + ' = ') + fmtN(M) + ' g/mol';
+  }
+  // A measured value with exactly n significant figures, always written with
+  // a decimal point so trailing zeros are unambiguous ("12.50", "0.4060").
+  function makeMeasured(rng, n, lo, hi) {
+    var low = lo || 0.01, high = hi || 999;
+    for (var tries = 0; tries < 60; tries++) {
+      var mant = randInt(rng, Math.pow(10, n - 1), Math.pow(10, n) - 1);
+      if (rng() < 0.4) mant = Math.floor(mant / 10) * 10 || mant;
+      var dp = randInt(rng, 1, n + 1);
+      var value = mant / Math.pow(10, dp);
+      if (value < low || value > high) continue;
+      var text = value.toFixed(dp);
+      if (countSigFigs(text).count !== n) continue;
+      return { value: Number(text), text: text, n: n };
+    }
+    var fallback = (Math.pow(10, n - 1) + 1) / Math.pow(10, n - 1);
+    return { value: fallback, text: fallback.toFixed(n - 1), n: n };
+  }
+  var SIG_PREFIX_PAIRS = [['g', 'kg', -3], ['mg', 'g', -3], ['mL', 'L', -3], ['cm', 'm', -2], ['m', 'km', -3], ['kg', 'g', 3], ['L', 'mL', 3], ['m', 'cm', 2], ['mm', 'cm', -1]];
+  var SIG_DENSITIES = [
+    { id: 'ethanol', rho: '0.789', vu: 'mL', du: 'g/mL' }, { id: 'aluminum', rho: '2.70', vu: 'cm³', du: 'g/cm³' },
+    { id: 'oliveOil', rho: '0.92', vu: 'mL', du: 'g/mL' }, { id: 'gold', rho: '19.3', vu: 'cm³', du: 'g/cm³' },
+    { id: 'copper', rho: '8.96', vu: 'cm³', du: 'g/cm³' }, { id: 'seawater', rho: '1.025', vu: 'mL', du: 'g/mL' }
+  ];
+  function sciTrapValue(value) {
+    var e = Math.floor(Math.log10(Math.abs(value)) + 1e-12);
+    var mant = value / Math.pow(10, e);
+    return Number((mant * Math.pow(10, -e)).toPrecision(12));
+  }
+  var CHEM_KINDS = { sigfigs: ['sigFigs'], sci: ['sciNotation'], mole: ['mole'], density: ['densityChain'] };
+  var CHEM_GENERATORS = {
+    sigFigs: function(rng, band, opt) {
+      var mode = opt && ['prefix', 'density', 'inch'].indexOf(opt.mode) !== -1 ? opt.mode : pickFrom(rng, ['prefix', 'prefix', 'density', 'inch']);
+      var item;
+      if (mode === 'prefix') {
+        var pair = pickFrom(rng, SIG_PREFIX_PAIRS);
+        var n = randInt(rng, 2, 5);
+        var given = makeMeasured(rng, n, pair[2] > 0 ? 0.01 : 0.1, pair[2] > 0 ? 99 : 999);
+        var exact = shiftDecimal(given.value, pair[2]);
+        item = {
+          sig: ['prefix', pair[0], pair[1], given.text].join('|'), params: { mode: mode, given: given.text, from: pair[0], to: pair[1], n: n },
+          exact: exact, sf: n, exactSf: 1, fromUnit: pair[0], toUnit: pair[1], unit: pair[1], inputValue: given.value,
+          sizeRel: pair[2] > 0 ? 'toSmaller' : 'toBigger',
+          facts: [{ s: 'sigCount', p: { value: { num: given.text }, unit: pair[0], n: n } }, { s: 'sigExactRule', p: {} }],
+          setup: localizeNumberText(given.text) + (pair[2] > 0 ? ' × ' : ' ÷ ') + fmtN(Math.pow(10, Math.abs(pair[2]))),
+          traps: [{ id: 'inverse', value: shiftDecimal(given.value, -pair[2]) }]
+        };
+        item.steps = [localizeNumberText(given.text) + ' ' + pair[0] + (pair[2] > 0 ? ' × ' : ' ÷ ') + fmtN(Math.pow(10, Math.abs(pair[2]))) + ' = ' + fmtN(exact) + ' ' + pair[1]];
+      } else if (mode === 'density') {
+        var mat = pickFrom(rng, SIG_DENSITIES);
+        var nV = pickFrom(rng, [2, 3, 4]);
+        var vol = makeMeasured(rng, nV, 2, 500);
+        var nRho = countSigFigs(mat.rho).count;
+        var nD = Math.min(nV, nRho);
+        var exactD = Number((vol.value * Number(mat.rho)).toPrecision(12));
+        item = {
+          sig: ['density', mat.id, vol.text].join('|'), params: { mode: mode, mat: mat.id, rho: mat.rho, vol: vol.text, vu: mat.vu, du: mat.du, n: nD, nV: nV, nRho: nRho },
+          exact: exactD, sf: nD, exactSf: null, fromUnit: mat.vu, toUnit: 'g', unit: 'g', inputValue: vol.value, sizeRel: null,
+          facts: [{ s: 'sigMeasuredRule', p: { a: localizeNumberText(vol.text) + ' ' + mat.vu, na: nV, b: localizeNumberText(mat.rho) + ' ' + mat.du, nb: nRho, n: nD } }],
+          setup: localizeNumberText(vol.text + ' × ' + mat.rho),
+          traps: [{ id: 'densityInverted', value: vol.value / Number(mat.rho) }]
+        };
+        item.steps = [localizeNumberText(vol.text) + ' ' + mat.vu + ' × ' + localizeNumberText(mat.rho) + ' ' + mat.du + ' = ' + fmtN(exactD) + ' g'];
+      } else {
+        var nI = randInt(rng, 2, 4);
+        var inches = makeMeasured(rng, nI, 0.5, 99);
+        var exactI = Number((inches.value * 2.54).toPrecision(12));
+        item = {
+          sig: ['inch', inches.text].join('|'), params: { mode: mode, given: inches.text, from: 'in', to: 'cm', n: nI },
+          exact: exactI, sf: nI, exactSf: 3, fromUnit: 'in', toUnit: 'cm', unit: 'cm', inputValue: inches.value, sizeRel: 'toSmaller',
+          facts: [{ s: 'sigCount', p: { value: { num: inches.text }, unit: 'in', n: nI } }, { s: 'sigInchExact', p: {} }],
+          setup: localizeNumberText(inches.text + ' × 2.54'),
+          traps: [{ id: 'inverse', value: inches.value / 2.54 }]
+        };
+        item.steps = [localizeNumberText(inches.text) + ' in × ' + fmtN(2.54) + ' cm/in = ' + fmtN(exactI) + ' cm'];
+      }
+      item.kind = 'sigFigs';
+      item.grade = 'sigfigs';
+      item.cat = null;
+      item.a = roundSig(item.exact, item.sf);
+      item.tol = Math.abs(item.a) * 1e-9;
+      item.steps.push({ s: 'sigRound', p: { n: item.sf, value: { sig: item.a, n: item.sf }, unit: item.unit } });
+      item.q = (item.params.given || item.params.vol) + ' ' + item.fromUnit + ' → ? ' + item.toUnit + ' (' + item.sf + ' s.f.)';
+      return item;
+    },
+    sciNotation: function(rng, band, opt) {
+      var mode = opt && ['toSci', 'fromSci', 'sciConvert'].indexOf(opt.mode) !== -1 ? opt.mode : pickFrom(rng, ['toSci', 'fromSci', 'sciConvert']);
+      var mantDigits = rng() < 0.5 ? 2 : 3;
+      var mant = randInt(rng, Math.pow(10, mantDigits - 1) + 1, Math.pow(10, mantDigits) - 1) / Math.pow(10, mantDigits - 1);
+      if (Math.round(mant * 100) % 10 === 0 && mantDigits === 3) mant = Number((mant + 0.01).toFixed(2));
+      var exp = pickFrom(rng, [-6, -5, -4, -3, -2, 3, 4, 5, 6, 7, 8]);
+      var value = Number((mant * Math.pow(10, exp)).toPrecision(mantDigits));
+      var item = { kind: 'sciNotation', cat: null, tol: 0, sizeRel: null, unit: '' };
+      if (mode === 'toSci' || mode === 'fromSci') {
+        Object.assign(item, {
+          sig: [mode, value].join('|'), params: { mode: mode, value: value, digits: mantDigits },
+          a: value, grade: mode === 'toSci' ? 'sciForm' : 'value', requireSci: mode === 'toSci', noPredict: true,
+          fromUnit: '', toUnit: '', inputValue: value,
+          facts: [{ s: mode === 'toSci' ? 'sciRuleTo' : 'sciRuleFrom', p: {} }],
+          // toSci: the power as an ordinary number, so the hint is not the answer.
+          setup: mode === 'toSci' ? plainNumber(value) + ' = ' + fmtN(mant) + (exp > 0 ? ' × ' : ' ÷ ') + fmtN(Math.pow(10, Math.abs(exp))) : sciText(value, mantDigits) + ' = ' + fmtN(mant) + (exp > 0 ? ' × ' : ' ÷ ') + fmtN(Math.pow(10, Math.abs(exp))),
+          steps: [{ s: mode === 'toSci' ? (exp > 0 ? 'sciMoveLeft' : 'sciMoveRight') : (exp > 0 ? 'sciExpandRight' : 'sciExpandLeft'), p: { n: Math.abs(exp) } },{ s: 'sciEquals', p: { plain: { plain: value }, sci: { sci: value, n: mantDigits } } }],
+          traps: [{ id: 'sciExponentSign', value: sciTrapValue(value) }, { id: 'sciExponentOff', value: value * 10 }, { id: 'sciExponentOff', value: value / 10 }]
+        });
+        item.q = mode === 'toSci' ? 'sci(' + value + ')' : 'plain(' + value + ')';
+      } else {
+        var pair = pickFrom(rng, [['mg', 'kg', -6], ['mm', 'km', -6], ['km', 'cm', 5], ['µm', 'm', -6], ['nm', 'm', -9], ['kg', 'mg', 6], ['L', 'mL', 3], ['g', 'µg', 6], ['s', 'ms', 3], ['m', 'nm', 9]]);
+        var a = shiftDecimal(value, pair[2]);
+        Object.assign(item, {
+          sig: [mode, value, pair[0], pair[1]].join('|'), params: { mode: mode, value: value, digits: mantDigits, from: pair[0], to: pair[1] },
+          a: a, grade: 'sciForm', requireSci: true, fromUnit: pair[0], toUnit: pair[1], unit: pair[1], inputValue: value,
+          sizeRel: pair[2] > 0 ? 'toSmaller' : 'toBigger',
+          facts: ['1 ' + (pair[2] > 0 ? pair[0] : pair[1]) + ' = 10' + superscriptInt(Math.abs(pair[2])) + ' ' + (pair[2] > 0 ? pair[1] : pair[0])],
+          setup: sciText(value, mantDigits) + ' × 10' + superscriptInt(pair[2]),
+          steps: [{ s: 'sciAddExponents', p: { a: exp, b: pair[2], c: exp + pair[2] } }, sciText(value, mantDigits) + ' ' + pair[0] + ' = ' + sciText(a, mantDigits) + ' ' + pair[1]],
+          traps: [{ id: 'inverse', value: shiftDecimal(value, -pair[2]) }, { id: 'sciExponentSign', value: sciTrapValue(a) }, { id: 'sciExponentOff', value: a * 10 }, { id: 'sciExponentOff', value: a / 10 }]
+        });
+        item.q = sciText(value, mantDigits) + ' ' + pair[0] + ' = ? ' + pair[1];
+      }
+      item.sf = mantDigits;
+      item.tol = Math.abs(item.a) * 1e-9;
+      return item;
+    },
+    mole: function(rng, band, opt) {
+      var modes = ['massToMol', 'molToMass', 'molToParticles', 'massToParticles', 'particlesToMass'];
+      var mode = opt && modes.indexOf(opt.mode) !== -1 ? opt.mode : pickFrom(rng, modes);
+      var c = pickFrom(rng, COMPOUNDS);
+      var M = molarMass(c);
+      var Mflat = molarMassNoSubscripts(c);
+      var Matom = c.diatomic ? ATOMIC_MASS[c.atoms[0][0]] : null;
+      var mass = makeMeasured(rng, 3, 1, 500);
+      var mol = makeMeasured(rng, 3, 0.1, 9.99);
+      var pm = randInt(rng, 101, 999) / 100;
+      var pe = randInt(rng, 22, 24);
+      var particles = Number((pm * Math.pow(10, pe)).toPrecision(3));
+      var mFact = molarMassFact(c);
+      var naTxt = sciText(AVOGADRO, 4);
+      var naFact = 'Nₐ = ' + naTxt + ' /mol';
+      var item = { kind: 'mole', cat: null, sizeRel: null };
+      var traps = [];
+      // For O₂, N₂, Cl₂ ignoring the subscript IS using the atomic mass: one named mistake.
+      var subs = !Matom && Math.abs(Mflat - M) > M * 0.005;
+      if (mode === 'massToMol') {
+        Object.assign(item, { a: mass.value / M, inputValue: mass.value, fromUnit: 'g', toUnit: 'mol', unit: 'mol', facts: [mFact],
+          setup: localizeNumberText(mass.text) + ' g × (1 mol / ' + fmtN(M) + ' g)', steps: [localizeNumberText(mass.text) + ' g × (1 mol / ' + fmtN(M) + ' g) = ' + formatUnitNumber(mass.value / M, 4) + ' mol'] });
+        traps = [{ id: 'molarMassWrongWay', value: mass.value * M }, { id: 'inverse', value: M / mass.value }];
+        if (subs) traps.push({ id: 'moleSubscripts', value: mass.value / Mflat });
+        if (Matom) traps.push({ id: 'moleAtomicMass', value: mass.value / Matom });
+        item.params = { mode: mode, cmp: c.id, mass: mass.text };
+      } else if (mode === 'molToMass') {
+        Object.assign(item, { a: mol.value * M, inputValue: mol.value, fromUnit: 'mol', toUnit: 'g', unit: 'g', facts: [mFact],
+          setup: localizeNumberText(mol.text) + ' mol × (' + fmtN(M) + ' g / 1 mol)', steps: [localizeNumberText(mol.text) + ' mol × (' + fmtN(M) + ' g / 1 mol) = ' + formatUnitNumber(mol.value * M, 4) + ' g'] });
+        traps = [{ id: 'molarMassWrongWay', value: mol.value / M }];
+        if (subs) traps.push({ id: 'moleSubscripts', value: mol.value * Mflat });
+        if (Matom) traps.push({ id: 'moleAtomicMass', value: mol.value * Matom });
+        item.params = { mode: mode, cmp: c.id, mol: mol.text };
+      } else if (mode === 'molToParticles') {
+        Object.assign(item, { a: mol.value * AVOGADRO, inputValue: mol.value, fromUnit: 'mol', toUnit: 'particles', unit: 'particles', facts: [naFact],
+          setup: localizeNumberText(mol.text) + ' mol × ' + naTxt + ' /mol', steps: [localizeNumberText(mol.text) + ' mol × (' + naTxt + ' / 1 mol) = ' + formatUnitNumber(mol.value * AVOGADRO, 4)] });
+        traps = [{ id: 'avogadroWrongWay', value: mol.value / AVOGADRO }];
+        item.params = { mode: mode, cmp: c.id, mol: mol.text };
+      } else if (mode === 'massToParticles') {
+        var nMol = mass.value / M;
+        Object.assign(item, { a: nMol * AVOGADRO, inputValue: mass.value, fromUnit: 'g', toUnit: 'particles', unit: 'particles', facts: [mFact, naFact],
+          setup: localizeNumberText(mass.text) + ' g × (1 mol / ' + fmtN(M) + ' g) × (' + naTxt + ' / 1 mol)',
+          steps: [localizeNumberText(mass.text) + ' g × (1 mol / ' + fmtN(M) + ' g) = ' + formatUnitNumber(nMol, 4) + ' mol', formatUnitNumber(nMol, 4) + ' mol × (' + naTxt + ' / 1 mol) = ' + formatUnitNumber(nMol * AVOGADRO, 4)] });
+        traps = [{ id: 'moleSkippedStep', value: mass.value * AVOGADRO }, { id: 'moleStoppedEarly', value: nMol }, { id: 'molarMassWrongWay', value: mass.value * M * AVOGADRO }];
+        if (subs) traps.push({ id: 'moleSubscripts', value: mass.value / Mflat * AVOGADRO });
+        if (Matom) traps.push({ id: 'moleAtomicMass', value: mass.value / Matom * AVOGADRO });
+        item.params = { mode: mode, cmp: c.id, mass: mass.text };
+      } else {
+        var nMol2 = particles / AVOGADRO;
+        Object.assign(item, { a: nMol2 * M, inputValue: particles, fromUnit: 'particles', toUnit: 'g', unit: 'g', facts: [naFact, mFact],
+          setup: sciText(particles, 3) + ' × (1 mol / ' + naTxt + ') × (' + fmtN(M) + ' g / 1 mol)',
+          steps: [sciText(particles, 3) + ' ÷ ' + naTxt + ' = ' + formatUnitNumber(nMol2, 4) + ' mol', formatUnitNumber(nMol2, 4) + ' mol × ' + fmtN(M) + ' g/mol = ' + formatUnitNumber(nMol2 * M, 4) + ' g'] });
+        traps = [{ id: 'avogadroWrongWay', value: particles * AVOGADRO * M }, { id: 'moleStoppedEarly', value: nMol2 }, { id: 'molarMassWrongWay', value: nMol2 / M }];
+        item.params = { mode: mode, cmp: c.id, particles: particles };
+      }
+      item.sig = [mode, c.id, item.inputValue].join('|');
+      item.tol = Math.abs(item.a) * 0.01;
+      item.traps = traps;
+      item.particle = c.particle;
+      item.q = mode + ' ' + c.f + ' ' + item.inputValue;
+      return item;
+    },
+    densityChain: function(rng, band, opt) {
+      var modes = ['mLtoKg', 'kgToCm3', 'LtoG', 'mLtoMol'];
+      var mode = opt && modes.indexOf(opt.mode) !== -1 ? opt.mode : pickFrom(rng, modes);
+      var item = { kind: 'densityChain', cat: null, sizeRel: null };
+      if (mode === 'mLtoKg') {
+        var v = randInt(rng, 2, 18) * 50;
+        var a = v * 0.789 / 1000;
+        Object.assign(item, { params: { mode: mode, v: v }, a: a, inputValue: v, fromUnit: 'mL', toUnit: 'kg', unit: 'kg',
+          facts: ['ρ = ' + fmtN(0.789) + ' g/mL', '1 kg = 1,000 g'], setup: fmtN(v) + ' mL × (' + fmtN(0.789) + ' g / 1 mL) × (1 kg / 1,000 g)',
+          steps: [fmtN(v) + ' mL × ' + fmtN(0.789) + ' g/mL = ' + fmtN(v * 0.789) + ' g', fmtN(v * 0.789) + ' g × (1 kg / 1,000 g) = ' + fmtN(a) + ' kg'],
+          traps: [{ id: 'densityInverted', value: v / 0.789 / 1000 }, { id: 'chainMissedStep', value: v * 0.789 }] });
+      } else if (mode === 'kgToCm3') {
+        var k = randInt(rng, 2, 30);
+        var mKg = Number((k * 0.27).toFixed(2));
+        var a2 = mKg * 1000 / 2.7;
+        Object.assign(item, { params: { mode: mode, m: mKg }, a: a2, inputValue: mKg, fromUnit: 'kg', toUnit: 'cm³', unit: 'cm³',
+          facts: ['ρ = ' + localizeNumberText('2.70') + ' g/cm³', '1 kg = 1,000 g'], setup: fmtN(mKg) + ' kg × (1,000 g / 1 kg) × (1 cm³ / ' + localizeNumberText('2.70') + ' g)',
+          steps: [fmtN(mKg) + ' kg × 1,000 g/kg = ' + fmtN(mKg * 1000) + ' g', fmtN(mKg * 1000) + ' g ÷ ' + localizeNumberText('2.70') + ' g/cm³ = ' + fmtN(a2) + ' cm³'],
+          traps: [{ id: 'densityInverted', value: mKg * 1000 * 2.7 }, { id: 'chainMissedStep', value: mKg / 2.7 }] });
+      } else if (mode === 'LtoG') {
+        var vL = randInt(rng, 2, 12) / 4;
+        var a3 = vL * 1000 * 0.92;
+        Object.assign(item, { params: { mode: mode, v: vL }, a: a3, inputValue: vL, fromUnit: 'L', toUnit: 'g', unit: 'g',
+          facts: ['ρ = ' + fmtN(0.92) + ' g/mL', '1 L = 1,000 mL'], setup: fmtN(vL) + ' L × (1,000 mL / 1 L) × (' + fmtN(0.92) + ' g / 1 mL)',
+          steps: [fmtN(vL) + ' L × 1,000 mL/L = ' + fmtN(vL * 1000) + ' mL', fmtN(vL * 1000) + ' mL × ' + fmtN(0.92) + ' g/mL = ' + fmtN(a3) + ' g'],
+          traps: [{ id: 'chainMissedStep', value: vL * 0.92 }, { id: 'densityInverted', value: vL * 1000 / 0.92 }] });
+      } else {
+        var vw = randInt(rng, 1, 20) * 9;
+        var Mw = molarMass(compoundById('water'));
+        var a4 = vw * 1.00 / Mw;
+        Object.assign(item, { params: { mode: mode, v: vw }, a: a4, inputValue: vw, fromUnit: 'mL', toUnit: 'mol', unit: 'mol',
+          facts: ['ρ = ' + localizeNumberText('1.00') + ' g/mL', molarMassFact(compoundById('water'))], setup: fmtN(vw) + ' mL × (' + localizeNumberText('1.00') + ' g / 1 mL) × (1 mol / ' + fmtN(Mw) + ' g)',
+          steps: [fmtN(vw) + ' mL × ' + localizeNumberText('1.00') + ' g/mL = ' + fmtN(vw) + ' g', fmtN(vw) + ' g ÷ ' + fmtN(Mw) + ' g/mol = ' + formatUnitNumber(a4, 4) + ' mol'],
+          traps: [{ id: 'molarMassWrongWay', value: vw * Mw }, { id: 'chainMissedStep', value: vw }] });
+      }
+      item.sig = [mode, item.inputValue].join('|');
+      item.tol = Math.abs(item.a) * 0.005;
+      item.q = mode + ' ' + item.inputValue;
+      return item;
+    }
+  };
+  var EXTRA_GENERATORS = Object.assign({ ladder: makeLadderGenerator }, EVERYDAY_GENERATORS, CHEM_GENERATORS);
+
+  // family: 'ladder' | 'everyday' | 'chem'; mode narrows the kinds.
+  function makeExtraItem(family, band, seed, mode, kindOverride, opt) {
+    var rng = makeRng(seed);
+    var kind, itemBand;
+    if (family === 'ladder') { kind = 'ladder'; itemBand = PRACTICE_BANDS.indexOf(band) !== -1 ? band : 'b67'; }
+    else if (family === 'everyday') {
+      var dayKinds = EVERYDAY_KINDS[mode] || [].concat(EVERYDAY_KINDS.time, EVERYDAY_KINDS.elapsed, EVERYDAY_KINDS.money);
+      kind = kindOverride && EVERYDAY_GENERATORS[kindOverride] ? kindOverride : pickFrom(rng, dayKinds);
+      itemBand = 'b35';
+    } else {
+      var chemKinds = CHEM_KINDS[mode] || ['sigFigs', 'sciNotation', 'mole', 'densityChain'];
+      kind = kindOverride && CHEM_GENERATORS[kindOverride] ? kindOverride : pickFrom(rng, chemKinds);
+      itemBand = 'chem';
+    }
+    var item = EXTRA_GENERATORS[kind](rng, itemBand, opt || null);
+    item.kind = kind;
+    item.family = family;
+    item.mode = mode || 'all';
+    if (family !== 'chem') item.exactTraps = true;
+    return finishPracticeItem(item, itemBand);
+  }
+  // A parallel item for a fading worked example (same kind and sub-mode).
+  function makeExampleItem(item, seed) {
+    if (!item) return null;
+    if (item.family) return makeExtraItem(item.family, item.band, seed, item.mode, item.kind, item.params && item.params.mode ? { mode: item.params.mode } : null);
+    return makePracticeItem(item.band, seed, item.kind);
+  }
+
+  // ── Graders for the new answer kinds ──
+  function diagnoseTimeAnswer(item, raw) {
+    var r = raw && typeof raw === 'object' ? raw : {};
+    var hs = foldNativeDigits(r.h == null ? '' : r.h).trim();
+    var ms = foldNativeDigits(r.m == null ? '' : r.m).trim();
+    if ((hs === '' && ms === '') || (hs !== '' && !/^\d{1,3}$/.test(hs)) || (ms !== '' && !/^\d{1,4}$/.test(ms))) return { valid: false, correct: false, misconception: null, answer: NaN };
+    var h = hs === '' ? 0 : Number(hs);
+    var m = ms === '' ? 0 : Number(ms);
+    var clock = item.answerType === 'clock';
+    var text = h + ':' + pad2(m);
+    function same(hh, mm) { return clock ? (hh % 12 === item.ah % 12 && mm === item.am) : (hh === item.ah && mm === item.am); }
+    if (same(h, m)) return { valid: true, correct: true, misconception: null, answer: text };
+    if (m >= 60 && same(h + Math.floor(m / 60), m % 60)) return { valid: true, correct: false, misconception: 'regroupMinutes', answer: text };
+    var traps = Array.isArray(item.traps) ? item.traps : [];
+    for (var i = 0; i < traps.length; i++) {
+      if (clock ? (traps[i].h % 12 === h % 12 && traps[i].m === m) : (traps[i].h === h && traps[i].m === m)) return { valid: true, correct: false, misconception: traps[i].id, answer: text };
+    }
+    return { valid: true, correct: false, misconception: 'generic', answer: text };
+  }
+  function valueTrapId(item, value) {
+    var traps = Array.isArray(item.traps) ? item.traps : [];
+    for (var i = 0; i < traps.length; i++) {
+      if (Math.abs(value - traps[i].value) <= Math.max(Math.abs(traps[i].value) * 0.01, 1e-12)) return traps[i].id;
+    }
+    if (item.a !== 0 && value !== 0 && (value > 0) === (item.a > 0)) {
+      var ratio = value / item.a;
+      var power = Math.round(Math.log10(Math.abs(ratio)));
+      if (power !== 0 && Math.abs(ratio / Math.pow(10, power) - 1) <= 0.01) return item.grade === 'sciForm' ? 'sciExponentOff' : 'prefixSlip';
+    }
+    return 'generic';
+  }
+  function diagnoseSigFigAnswer(item, raw) {
+    var norm = normalizeNumberText(raw);
+    var value = norm.state === 'ok' ? Number(norm.text) : NaN;
+    if (!Number.isFinite(value)) return { valid: false, correct: false, misconception: null, answer: NaN };
+    var sf = countSigFigs(norm.text);
+    var n = item.sf;
+    var out = function(mis) { return { valid: true, correct: !mis, misconception: mis || null, answer: value, sigCount: sf.count }; };
+    var tooFewOrExact = function(count) { return count === item.exactSf ? 'sigExactFactor' : 'sigTooFew'; };
+    if (sameNumber(value, item.a)) {
+      if (!sf.ambiguous && sf.count === n) return out(null);
+      if (sf.ambiguous && n >= sf.count && n <= sf.maxCount) return out('sigAmbiguousZeros');
+      if (sf.count > n) return out('sigTooMany');
+      return out(tooFewOrExact(sf.count));
+    }
+    if (sameNumber(value, roundSig(item.exact, sf.count)) || (sf.ambiguous && sameNumber(value, roundSig(item.exact, sf.maxCount)))) {
+      return out(sf.count > n ? 'sigTooMany' : tooFewOrExact(sf.count));
+    }
+    if (sf.count === n && sameNumber(value, truncSig(item.exact, n))) return out('sigTruncated');
+    // A wrong method, then rounded: compare with each trap rounded the same way.
+    var traps = Array.isArray(item.traps) ? item.traps : [];
+    for (var i = 0; i < traps.length; i++) {
+      if (sameNumber(value, roundSig(traps[i].value, sf.count))) return out(traps[i].id);
+    }
+    return out(valueTrapId(item, value));
+  }
+  function diagnoseSciAnswer(item, raw, requirePlain) {
+    var norm = normalizeNumberText(raw);
+    var value = norm.state === 'ok' ? Number(norm.text) : NaN;
+    if (!Number.isFinite(value)) return { valid: false, correct: false, misconception: null, answer: NaN };
+    var out = function(mis) { return { valid: true, correct: !mis, misconception: mis || null, answer: value }; };
+    if (sameNumber(value, item.a)) {
+      if (requirePlain && norm.sci) return out('sciNotPlain');
+      if (item.requireSci) {
+        if (!norm.sci) return out('sciNotSci');
+        var mant = Math.abs(Number(norm.mantissa));
+        if (!(mant >= 1 && mant < 10)) return out('sciNotNormalized');
+      }
+      return out(null);
+    }
+    return out(valueTrapId(item, value));
+  }
+
+  // ── Benchmark comparisons ("Is a door about 2 m or 20 m?") ──
+  var COMPARE_BENCHMARKS = [
+    { id: 'door', value: 2, unit: 'm' }, { id: 'paperclip', value: 1, unit: 'g' }, { id: 'bottle', value: 1, unit: 'L' },
+    { id: 'pencil', value: 20, unit: 'cm' }, { id: 'teaspoon', value: 5, unit: 'mL' }, { id: 'textbook', value: 1, unit: 'kg' },
+    { id: 'classroom', value: 10, unit: 'm' }, { id: 'car', value: 1000, unit: 'kg' }, { id: 'bathtub', value: 200, unit: 'L' },
+    { id: 'thumb', value: 1, unit: 'in' }, { id: 'milk', value: 1, unit: 'gal' }, { id: 'field', value: 100, unit: 'yd' },
+    { id: 'bread', value: 1, unit: 'oz' }, { id: 'walk', value: 1, unit: 'km' }, { id: 'fingernail', value: 1, unit: 'cm' }
+  ];
+  var UNIT_MIXUPS = { m: ['cm', 'km'], cm: ['mm', 'm'], km: ['m'], g: ['kg', 'mg'], kg: ['g'], L: ['mL'], mL: ['L'], gal: ['cup'], yd: ['in'], 'in': ['ft'], oz: ['lb'] };
+  function makeCompareItem(band, seed) {
+    var rng = makeRng(seed);
+    var b = pickFrom(rng, COMPARE_BENCHMARKS);
+    var alts = [{ value: b.value * 10, unit: b.unit, mis: 'estTenTimes', dir: 'big' }];
+    if (b.value >= 10 || b.unit === 'in' || b.unit === 'cm') alts.push({ value: b.value / 10, unit: b.unit, mis: 'estTenTimes', dir: 'small' });
+    (UNIT_MIXUPS[b.unit] || []).forEach(function(u) { alts.push({ value: b.value, unit: u, mis: 'estUnitMixup', dir: '' }); });
+    var alt = pickFrom(rng, alts);
+    var right = { value: b.value, unit: b.unit };
+    var options = rng() < 0.5 ? [right, alt] : [alt, right];
+    return { type: 'compare', id: 'cmp|' + b.id + '|' + alt.value + alt.unit, bench: b.id, options: options, correctIndex: options.indexOf(right), alt: alt, band: PRACTICE_BANDS.indexOf(band) !== -1 ? band : 'b67' };
+  }
+
+  // ── Unit-size model: one of each unit, drawn to scale ──
+  function unitSizeComparison(category, from, to) {
+    if (category === 'temperature' || !UNIT_FACTORS[category]) return null;
+    var f = UNIT_FACTORS[category][from];
+    var g = UNIT_FACTORS[category][to];
+    if (!(f > 0) || !(g > 0)) return null;
+    if (Math.abs(f - g) <= 1e-12 * Math.max(f, g)) return { same: true, big: from, small: to, ratio: 1 };
+    return { same: false, big: f > g ? from : to, small: f > g ? to : from, ratio: Math.max(f, g) / Math.min(f, g) };
+  }
+  // Ticks for a bar holding `count` units: one tick per unit while that is
+  // readable, otherwise one tick per 10, 100, ... units.
+  function tickPlan(count, maxTicks) {
+    var limit = maxTicks || 40;
+    if (!(count > 0) || !Number.isFinite(count)) return null;
+    var every = 1;
+    while (count / every > limit) every *= 10;
+    return { every: every, ticks: Math.floor(count / every + 1e-9), spacingPct: 100 * every / count };
+  }
+
+  // ── Guess first (2026-11-04): a log-scale estimate before the result ──
+  // Slider steps are the "nice" numbers 1, 2, 5 x 10^n. The scale is centred
+  // on the number the student typed and reaches as far as the category's
+  // largest unit ratio, so it depends on the category, never on the chosen
+  // pair: its ends cannot hint at the answer.
+  var GUESS_MANTISSAS = [1, 2, 5];
+  var GUESS_K_MIN = -900, GUESS_K_MAX = 924; // 1e-300 and 1e308
+  function guessSpanFor(category) {
+    var f = UNIT_FACTORS[category];
+    if (!f || category === 'temperature') return 0;
+    var vals = Object.keys(f).map(function(k) { return f[k]; }).filter(function(v) { return v > 0; });
+    if (vals.length < 2) return 0;
+    var span = Math.log10(Math.max.apply(null, vals) / Math.min.apply(null, vals));
+    return Math.min(12, Math.max(3, Math.ceil(span - 1e-9)));
+  }
+  function guessValueAt(k) {
+    var i = Math.round(Number(k)) || 0;
+    var m = ((i % 3) + 3) % 3;
+    return Number((GUESS_MANTISSAS[m] * Math.pow(10, Math.floor(i / 3))).toPrecision(12));
+  }
+  function guessIndexNear(x) {
+    if (!(x > 0) || !Number.isFinite(x)) return 0;
+    var e = Math.floor(Math.log10(x));
+    var best = 3 * e, bestD = Infinity;
+    for (var k = 3 * (e - 1); k <= 3 * (e + 2); k++) {
+      var dd = Math.abs(Math.log10(guessValueAt(k) / x));
+      if (dd < bestD - 1e-12) { bestD = dd; best = k; }
+    }
+    return best;
+  }
+  function guessScale(category, value) {
+    var span = guessSpanFor(category);
+    if (!span || !(value > 0) || !Number.isFinite(value)) return null;
+    var k0 = guessIndexNear(value);
+    // Stop short of what a number can hold: a step past 1e308 is Infinity, and
+    // a comparison scale built on Infinity never ends.
+    if (k0 < GUESS_K_MIN || k0 > GUESS_K_MAX) return null;
+    return { min: Math.max(GUESS_K_MIN, k0 - 3 * span - 2), max: Math.min(GUESS_K_MAX, k0 + 3 * span + 2), start: k0 };
+  }
+  // How far a guess is from the true value: never scored, never paid.
+  function guessCloseness(guess, truth) {
+    if (!(guess > 0) || !(truth > 0)) return null;
+    var factor = Math.max(guess, truth) / Math.min(guess, truth);
+    var decades = Math.abs(Math.log10(guess / truth));
+    var level = factor <= 1 + 1e-9 ? 'exact' : factor <= 2 + 1e-9 ? 'close' : factor < 10 - 1e-9 ? 'size' : 'far';
+    return { factor: factor, decades: decades, powers: Math.max(1, Math.round(decades)), times: guessValueAt(guessIndexNear(factor)), level: level, high: guess > truth };
+  }
+  // After the lock: a log scale of whole powers of ten that holds both the
+  // guess and the true value with one power of ten to spare on each side.
+  // Returns bar lengths (percent) and the powers of ten for the tick labels.
+  function guessCompareScale(guess, truth) {
+    if (!(guess > 0) || !(truth > 0)) return null;
+    var lo = Math.floor(Math.log10(Math.min(guess, truth)) + 1e-9) - 1;
+    var hi = Math.ceil(Math.log10(Math.max(guess, truth)) - 1e-9) + 1;
+    if (hi - lo < 3) hi = lo + 3;
+    var pct = function(x) { return Math.max(0, Math.min(100, 100 * (Math.log10(x) - lo) / (hi - lo))); };
+    return { lo: lo, hi: hi, guessPct: pct(guess), truePct: pct(truth) };
+  }
+
+  // ── Unit stacker: small blocks fill one big unit. The number of blocks
+  // that fit is read from UNIT_FACTORS (big / small), never typed in.
+  var STACK_PAIRS = [
+    { cat: 'length', small: 'cm', big: 'm' }, { cat: 'length', small: 'mm', big: 'cm' },
+    { cat: 'length', small: 'in', big: 'ft' }, { cat: 'length', small: 'ft', big: 'yd' }, { cat: 'length', small: 'in', big: 'yd' },
+    { cat: 'volume', small: 'cup', big: 'qt' }, { cat: 'volume', small: 'pt', big: 'qt' }, { cat: 'volume', small: 'cup', big: 'pt' }, { cat: 'volume', small: 'qt', big: 'gal' },
+    { cat: 'weight', small: 'oz', big: 'lb' },
+    { cat: 'time', small: 'sec', big: 'min' }, { cat: 'time', small: 'min', big: 'hr' }, { cat: 'time', small: 'hr', big: 'day' }, { cat: 'time', small: 'day', big: 'week' }
+  ];
+  STACK_PAIRS.forEach(function(p) { p.id = p.small + '|' + p.big; });
+  function stackCount(pair) {
+    var f = pair && UNIT_FACTORS[pair.cat];
+    if (!f || !(f[pair.big] > 0) || !(f[pair.small] > 0)) return 0;
+    var r = f[pair.big] / f[pair.small];
+    var n = Math.round(r);
+    return n >= 2 && n <= 100 && Math.abs(r - n) <= 1e-9 * n ? n : 0;
+  }
+  function stackPairFor(category, from, to, savedId) {
+    var byId = STACK_PAIRS.filter(function(p) { return p.id === savedId; })[0];
+    if (byId) return byId;
+    var same = STACK_PAIRS.filter(function(p) { return p.cat === category && ((p.small === from && p.big === to) || (p.small === to && p.big === from)); })[0];
+    return same || STACK_PAIRS.filter(function(p) { return p.cat === category; })[0] || STACK_PAIRS[0];
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Factor-chain (dimensional analysis) engine. A unit string becomes a map
+  // of base tokens to exponents ("km/h" -> {km: 1, hr: -1}, "cm²" -> {cm: 2}).
+  // A chain step is a fraction topN topU / botN botU, optionally squared or
+  // cubed. The checker verifies each step is a TRUE equality and that the
+  // units cancel down to exactly the target, and names what went wrong.
+  // ═══════════════════════════════════════════════════════════════════════
+  var CHAIN_TOKENS = {
+    mm: ['L', 0.001], cm: ['L', 0.01], m: ['L', 1], km: ['L', 1000], 'in': ['L', 0.0254], ft: ['L', 0.3048], yd: ['L', 0.9144], mi: ['L', 1609.344], nmi: ['L', 1852],
+    sec: ['T', 1], min: ['T', 60], hr: ['T', 3600], day: ['T', 86400], week: ['T', 604800], year: ['T', 31536000],
+    mg: ['M', 0.001], g: ['M', 1], kg: ['M', 1000], t: ['M', 1000000], ton: ['M', 907184.74], oz: ['M', 28.349523125], lb: ['M', 453.59237],
+    mL: ['L3', 1e-6], L: ['L3', 0.001], 'fl oz': ['L3', 0.0000295735295625], cup: ['L3', 0.0002365882365], pt: ['L3', 0.000473176473], qt: ['L3', 0.000946352946], gal: ['L3', 0.003785411784], 'imp gal': ['L3', 0.00454609],
+    acre: ['L2', 4046.8564224], ha: ['L2', 10000],
+    J: ['E', 1], kJ: ['E', 1000], cal: ['E', 4.184], kcal: ['E', 4184], Wh: ['E', 3600], kWh: ['E', 3600000],
+    Pa: ['P', 1], kPa: ['P', 1000], bar: ['P', 100000], psi: ['P', 6894.757293168], atm: ['P', 101325]
+  };
+  var CHAIN_TOKEN_ALIASES = { s: 'sec', h: 'hr' };
+  var CHAIN_UNIT_ALIASES = { mph: 'mi/hr', knots: 'nmi/hr' };
+  function parseChainUnit(unit) {
+    var text = String(unit == null ? '' : unit).trim();
+    if (!text) return null;
+    if (CHAIN_UNIT_ALIASES[text]) text = CHAIN_UNIT_ALIASES[text];
+    var parts = text.split('/');
+    if (parts.length > 2) return null;
+    var out = {};
+    for (var i = 0; i < parts.length; i++) {
+      var piece = parts[i].trim();
+      var power = 1;
+      var last = piece.slice(-1);
+      if (last === '²') { power = 2; piece = piece.slice(0, -1); }
+      else if (last === '³') { power = 3; piece = piece.slice(0, -1); }
+      piece = CHAIN_TOKEN_ALIASES[piece] || piece;
+      if (!Object.prototype.hasOwnProperty.call(CHAIN_TOKENS, piece)) return null;
+      out[piece] = (out[piece] || 0) + (i === 0 ? power : -power);
+      if (out[piece] === 0) delete out[piece];
+    }
+    return out;
+  }
+  function chainDimsKey(map) {
+    var dims = {};
+    Object.keys(map).forEach(function(token) {
+      var spec = CHAIN_TOKENS[token][0];
+      var base = spec.charAt(0);
+      var power = spec.length > 1 ? Number(spec.slice(1)) : 1;
+      dims[base] = (dims[base] || 0) + power * map[token];
+    });
+    return Object.keys(dims).filter(function(k) { return dims[k] !== 0; }).sort().map(function(k) { return k + dims[k]; }).join(',');
+  }
+  function chainSI(map) {
+    var value = 1;
+    Object.keys(map).forEach(function(token) { value *= Math.pow(CHAIN_TOKENS[token][1], map[token]); });
+    return value;
+  }
+  function chainUnitText(map) {
+    var sup = function(token, power) { return token + (power === 1 ? '' : power === 2 ? '²' : power === 3 ? '³' : superscriptInt(power)); };
+    var num = [], den = [];
+    Object.keys(map).forEach(function(token) {
+      if (map[token] > 0) num.push(sup(token, map[token]));
+      else if (map[token] < 0) den.push(sup(token, -map[token]));
+    });
+    var top = num.length ? num.join('·') : '1';
+    return den.length ? top + '/' + den.join('·') : top;
+  }
+  function chainMapsEqual(a, b) {
+    var keys = Object.keys(a).concat(Object.keys(b));
+    return keys.every(function(k) { return (a[k] || 0) === (b[k] || 0); });
+  }
+  function parseChainNumber(value) {
+    // A number (from code, not typing) is already a value in any locale.
+    var v = typeof value === 'number' ? (Number.isFinite(value) ? value : NaN) : parseNumberInput(value);
+    return v >= 0 ? v : NaN;
+  }
+
+  function checkFactorChain(fromUnit, toUnit, steps) {
+    var from = parseChainUnit(fromUnit);
+    var to = parseChainUnit(toUnit);
+    if (!from || !to || chainDimsKey(from) !== chainDimsKey(to)) return { ok: false, code: 'unsupported' };
+    var list = Array.isArray(steps) ? steps : [];
+    if (!list.length) return { ok: false, code: 'empty', leftover: chainUnitText(from) };
+    var running = Object.assign({}, from);
+    var factor = 1;
+    for (var i = 0; i < list.length; i++) {
+      var step = list[i] || {};
+      var top = parseChainUnit(step.topU);
+      var bot = parseChainUnit(step.botU);
+      var topN = parseChainNumber(step.topN);
+      var botN = parseChainNumber(step.botN);
+      var power = [1, 2, 3].indexOf(Number(step.pow)) !== -1 ? Number(step.pow) : 1;
+      if (!top || !bot || !(topN > 0) || !(botN > 0)) return { ok: false, code: 'incomplete', step: i };
+      if (chainDimsKey(top) !== chainDimsKey(bot)) return { ok: false, code: 'mismatch', step: i };
+      var lhs = topN * chainSI(top);
+      var rhs = botN * chainSI(bot);
+      if (Math.abs(lhs - rhs) > 1e-3 * Math.max(lhs, rhs)) return { ok: false, code: 'falseEquality', step: i };
+      var cancels = false;
+      var flippedCancels = false;
+      Object.keys(bot).forEach(function(k) { if ((running[k] || 0) * bot[k] > 0) cancels = true; if ((running[k] || 0) * bot[k] < 0) flippedCancels = true; });
+      Object.keys(top).forEach(function(k) { if ((running[k] || 0) * top[k] < 0) cancels = true; if ((running[k] || 0) * top[k] > 0) flippedCancels = true; });
+      if (!cancels) return { ok: false, code: flippedCancels ? 'upsideDown' : 'noCancel', step: i };
+      Object.keys(top).forEach(function(k) { running[k] = (running[k] || 0) + power * top[k]; if (!running[k]) delete running[k]; });
+      Object.keys(bot).forEach(function(k) { running[k] = (running[k] || 0) - power * bot[k]; if (!running[k]) delete running[k]; });
+      factor *= Math.pow(topN / botN, power);
+    }
+    var exactFactor = chainSI(from) / chainSI(to);
+    if (chainMapsEqual(running, to)) return { ok: true, factor: factor, exactFactor: exactFactor, remaining: chainUnitText(running) };
+    // A token left over with the same sign it started with, after being
+    // only partly cancelled, means a linear factor was used for a square or
+    // cube unit (100 cm/1 m once for m², instead of squared).
+    var needPower = Object.keys(running).some(function(k) {
+      return from[k] && running[k] * from[k] > 0 && Math.abs(running[k]) < Math.abs(from[k]) && !to[k];
+    });
+    var left = {};
+    Object.keys(running).forEach(function(k) { var diff = running[k] - (to[k] || 0); if (diff) left[k] = diff; });
+    return { ok: false, code: needPower ? 'needPower' : 'leftover', leftover: chainUnitText(left), remaining: chainUnitText(running) };
+  }
+
+  function chainNumberValue(x) { return Number(Number(x).toPrecision(10)); }
+  function suggestFactorChain(fromUnit, toUnit) {
+    var from = parseChainUnit(fromUnit);
+    var to = parseChainUnit(toUnit);
+    if (!from || !to || chainDimsKey(from) !== chainDimsKey(to)) return null;
+    var steps = [];
+    var used = {};
+    Object.keys(from).forEach(function(token) {
+      var e = from[token];
+      if (to[token] === e) return;
+      var match = Object.keys(to).filter(function(j) {
+        return !used[j] && j !== token && CHAIN_TOKENS[j][0] === CHAIN_TOKENS[token][0] && to[j] === e;
+      })[0];
+      if (!match) return;
+      used[match] = true;
+      var q = CHAIN_TOKENS[token][1] / CHAIN_TOKENS[match][1]; // 1 token = q match
+      var step;
+      if (e > 0) step = q >= 1 ? { topN: chainNumberValue(q), topU: match, botN: 1, botU: token } : { topN: 1, topU: match, botN: chainNumberValue(1 / q), botU: token };
+      else step = q >= 1 ? { topN: 1, topU: token, botN: chainNumberValue(q), botU: match } : { topN: chainNumberValue(1 / q), topU: token, botN: 1, botU: match };
+      step.pow = Math.abs(e);
+      steps.push(step);
+    });
+    if (steps.length && checkFactorChain(fromUnit, toUnit, steps).ok) return steps;
+    var whole = chainSI(from) / chainSI(to); // 1 from = whole to
+    return [whole >= 1
+      ? { topN: chainNumberValue(whole), topU: String(toUnit), botN: 1, botU: String(fromUnit), pow: 1 }
+      : { topN: 1, topU: String(toUnit), botN: chainNumberValue(1 / whole), botU: String(fromUnit), pow: 1 }];
+  }
+  // Units a student may pick for a chain step: every token sharing a
+  // dimension with the pair, plus the pair itself and the square/cube units.
+  function chainUnitChoices(fromUnit, toUnit) {
+    var from = parseChainUnit(fromUnit) || {};
+    var to = parseChainUnit(toUnit) || {};
+    var dims = {};
+    Object.keys(from).concat(Object.keys(to)).forEach(function(token) { dims[CHAIN_TOKENS[token][0].charAt(0)] = true; });
+    var out = [];
+    Object.keys(CHAIN_TOKENS).forEach(function(token) { if (dims[CHAIN_TOKENS[token][0].charAt(0)]) out.push(token); });
+    var powered = Object.keys(from).concat(Object.keys(to)).some(function(token) { return Math.abs(from[token] || to[token] || 0) > 1 || CHAIN_TOKENS[token][0].length > 1; });
+    if (powered && dims.L) out = out.concat(['mm²', 'cm²', 'm²', 'km²', 'in²', 'ft²', 'yd²', 'mm³', 'cm³', 'm³', 'in³', 'ft³', 'yd³']);
+    [String(fromUnit), String(toUnit)].forEach(function(u) { if (out.indexOf(u) === -1) out.push(u); });
+    var seen = {};
+    return out.filter(function(u) { if (seen[u]) return false; seen[u] = true; return true; });
   }
 
   window.__UnitConvertCore = Object.assign({}, window.__UnitConvertCore || {}, {
     factors: UNIT_FACTORS,
+    defaultPairs: DEFAULT_PAIRS,
     validateTemperatureValue: validateTemperatureValue,
+    validateQuantityValue: validateQuantityValue,
     parseNumericDraft: parseNumericDraft,
     describeTemperatureConversion: describeTemperatureConversion,
     convertUnitValue: convertUnitValue,
     formatUnitNumber: formatUnitNumber,
     parseWordProblemResponse: parseWordProblemResponse,
     makeOfflineWordProblem: makeOfflineWordProblem,
+    wordProblemSignature: wordProblemSignature,
     diagnosePracticeAnswer: diagnosePracticeAnswer,
     evaluateNumericAnswer: evaluateNumericAnswer,
-    diagnoseNumericAnswer: diagnoseNumericAnswer
+    diagnoseNumericAnswer: diagnoseNumericAnswer,
+    practiceBandFor: practiceBandFor,
+    practiceKinds: PRACTICE_KINDS,
+    withinSystemPairs: WITHIN_SYSTEM,
+    metricPairs: METRIC_PAIRS,
+    makePracticeItem: makePracticeItem,
+    diagnosePracticeItem: diagnosePracticeItem,
+    makeEstimateItem: makeEstimateItem,
+    unitSizeComparison: unitSizeComparison,
+    tickPlan: tickPlan,
+    parseChainUnit: parseChainUnit,
+    checkFactorChain: checkFactorChain,
+    suggestFactorChain: suggestFactorChain,
+    chainUnitChoices: chainUnitChoices,
+    // Stage B
+    setNumberLocale: setNumberLocale,
+    getNumberLocale: function() { return { locale: _numberLocale, group: _numberMarks.group, decimal: _numberMarks.decimal }; },
+    resolveNumberLocale: resolveNumberLocale,
+    normalizeNumberText: normalizeNumberText,
+    foldNativeDigits: foldNativeDigits,
+    // Stage C
+    learningPathFor: function(b) { return learningPathFor(b); },
+    tabOrderFor: function(b) { return tabOrderFor(b); },
+    pathStepDone: function(step, d) { return pathStepDone(step, d); },
+    tabShortcutOrder: function() { return UNIT_CONVERT_TAB_ORDER.slice(); },
+    // Engagement build (2026-11-04)
+    guessSpanFor: guessSpanFor,
+    guessValueAt: guessValueAt,
+    guessIndexNear: guessIndexNear,
+    guessScale: guessScale,
+    guessCloseness: guessCloseness,
+    guessCompareScale: guessCompareScale,
+    stackPairs: STACK_PAIRS,
+    stackCount: stackCount,
+    stackPairFor: stackPairFor,
+    localizeNumberText: localizeNumberText,
+    countSigFigs: countSigFigs,
+    roundSig: roundSig,
+    truncSig: truncSig,
+    sigText: sigText,
+    sciText: sciText,
+    shiftDecimal: shiftDecimal,
+    ladderRungs: ladderRungs,
+    makeExtraItem: makeExtraItem,
+    makeExampleItem: makeExampleItem,
+    makeCompareItem: makeCompareItem,
+    elapsedJumps: elapsedJumps,
+    molarMass: molarMass,
+    compounds: COMPOUNDS,
+    atomicMass: ATOMIC_MASS,
+    avogadro: AVOGADRO,
+    avogadroExact: AVOGADRO_EXACT,
+    everydayKinds: EVERYDAY_KINDS,
+    chemKinds: CHEM_KINDS
   });
 
+  // Grade band from the host, or from the grade level when an older host
+  // passes no band (same rules as stem_lab_module.js).
+  function gradeBandFromLevel(gradeLevel) {
+    var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+    if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+    if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+    if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+    if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+    return 'g68';
+  }
+  // Fill {name} placeholders. split/join never expands "$&"-style patterns.
+  // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
+  function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+  function fill(text, params) {
+    var out = String(text == null ? '' : text);
+    Object.keys(params || {}).forEach(function(key) { out = out.split('{' + key + '}').join(String(params[key])); });
+    return __alloOneWord(out);
+  }
+  function newSeed() { return (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) >>> 0; }
+
+  // ── Dark theme: a scoped remap of the light Tailwind palette this tool
+  // uses, applied under [data-uc-theme="dark"] on the tool root. Text
+  // colours are >= 7:1 on the dark surfaces; borders of controls >= 3:1.
+  var UC_DARK_MAP = {
+    bg: { 'bg-white': '#1e293b', 'bg-white\\/70': '#0f172a', 'bg-slate-50': '#172033', 'bg-slate-100': '#1e293b', 'bg-slate-200': '#334155',
+      'bg-cyan-50': '#0b2a33', 'bg-teal-50': '#082a28', 'bg-emerald-50': '#06281d', 'bg-emerald-100': '#0a3a2a', 'bg-amber-50': '#2b1e07', 'bg-amber-100': '#3b2a08',
+      'bg-red-50': '#2d1215', 'bg-violet-50': '#1e1638', 'bg-violet-100': '#2a1f4d', 'bg-purple-50': '#231338', 'bg-purple-100': '#2e1a48', 'bg-indigo-50': '#1a1d3d', 'bg-orange-100': '#3a1f0a' },
+    color: { 'text-slate-600': '#cbd5e1', 'text-slate-700': '#e2e8f0', 'text-slate-800': '#e2e8f0', 'text-slate-900': '#f8fafc', 'text-slate-950': '#f8fafc',
+      'text-cyan-700': '#67e8f9', 'text-cyan-800': '#67e8f9', 'text-cyan-900': '#a5f3fc', 'text-teal-800': '#5eead4', 'text-teal-900': '#99f6e4',
+      'text-emerald-700': '#6ee7b7', 'text-emerald-800': '#6ee7b7', 'text-emerald-900': '#a7f3d0', 'text-amber-800': '#fcd34d', 'text-amber-900': '#fde68a',
+      'text-red-700': '#fca5a5', 'text-red-800': '#fca5a5', 'text-red-900': '#fecaca', 'text-violet-700': '#c4b5fd', 'text-violet-800': '#c4b5fd', 'text-violet-900': '#ddd6fe',
+      'text-purple-700': '#d8b4fe', 'text-purple-800': '#d8b4fe', 'text-indigo-700': '#a5b4fc', 'text-orange-800': '#fdba74', 'text-blue-700': '#93c5fd' },
+    border: { 'border-slate-100': '#334155', 'border-slate-200': '#334155', 'border-slate-300': '#475569', 'border-slate-400': '#64748b', 'border-slate-500': '#94a3b8',
+      'border-slate-600': '#94a3b8', 'border-slate-700': '#94a3b8', 'border-cyan-200': '#155e75', 'border-cyan-300': '#0e7490', 'border-cyan-600': '#22d3ee', 'border-cyan-700': '#22d3ee',
+      'border-amber-200': '#78350f', 'border-amber-300': '#92400e', 'border-amber-400': '#d97706', 'border-amber-600': '#f59e0b', 'border-emerald-300': '#047857',
+      'border-emerald-400': '#10b981', 'border-emerald-700': '#34d399', 'border-red-300': '#b91c1c', 'border-red-400': '#ef4444', 'border-red-700': '#f87171',
+      'border-violet-200': '#5b21b6', 'border-purple-200': '#6b21a8', 'border-purple-700': '#c084fc', 'border-teal-300': '#0f766e', 'border-teal-700': '#2dd4bf',
+      'border-blue-200': '#1e3a8a', 'border-blue-300': '#1d4ed8' },
+    hoverBg: { 'hover\\:bg-cyan-50': '#164e63', 'hover\\:bg-cyan-100': '#164e63', 'hover\\:bg-slate-100': '#334155', 'hover\\:bg-amber-50': '#4a3510', 'hover\\:bg-amber-100': '#4a3510',
+      'hover\\:bg-amber-200': '#4a3510', 'hover\\:bg-violet-200': '#3b2a6b', 'hover\\:bg-purple-100': '#3f2463', 'hover\\:bg-purple-200': '#3f2463', 'hover\\:bg-indigo-100': '#272b5c',
+      'hover\\:bg-red-50': '#3f1519', 'hover\\:bg-teal-100': '#134e4a' },
+    hoverColor: { 'hover\\:text-slate-700': '#f8fafc', 'hover\\:text-slate-900': '#f8fafc', 'hover\\:text-red-700': '#fecaca', 'hover\\:text-red-800': '#fecaca', 'hover\\:text-violet-900': '#ede9fe' }
+  };
+  function unitConvertDarkCss() {
+    var S = '[data-uc-theme="dark"] ';
+    var out = [];
+    Object.keys(UC_DARK_MAP.bg).forEach(function(c) { out.push(S + '.' + c + '{background-color:' + UC_DARK_MAP.bg[c] + '!important}'); });
+    Object.keys(UC_DARK_MAP.color).forEach(function(c) { out.push(S + '.' + c + '{color:' + UC_DARK_MAP.color[c] + '!important}'); });
+    Object.keys(UC_DARK_MAP.border).forEach(function(c) { out.push(S + '.' + c + '{border-color:' + UC_DARK_MAP.border[c] + '!important}'); });
+    Object.keys(UC_DARK_MAP.hoverBg).forEach(function(c) { out.push(S + '.' + c + ':hover{background-color:' + UC_DARK_MAP.hoverBg[c] + '!important}'); });
+    Object.keys(UC_DARK_MAP.hoverColor).forEach(function(c) { out.push(S + '.' + c + ':hover{color:' + UC_DARK_MAP.hoverColor[c] + '!important}'); });
+    out.push(S + '.from-amber-50{background-image:none!important;background-color:#2b1e07!important}');
+    out.push(S + '.from-purple-50{background-image:none!important;background-color:#231338!important}');
+    out.push(S + 'input:not([type=checkbox]):not([type=radio]):not([type=range]),' + S + 'select,' + S + 'textarea{background-color:#0b1220!important;color:#f1f5f9!important;color-scheme:dark}');
+    out.push(S + 'input::placeholder,' + S + 'textarea::placeholder{color:#94a3b8!important;opacity:1}');
+    out.push(S + 'summary{color:inherit}');
+    return out.join('');
+  }
+
+  var UNIT_CONVERT_TAB_ORDER = ['convert', 'table', 'quiz', 'wordproblem', 'magHunt', 'chain', 'estimate', 'ladder', 'everyday', 'chem'];
+
+  // ── Stage C: band-aware learning path and tab order ──
+  // UNIT_CONVERT_TAB_ORDER stays the stable shortcut order (digit n always
+  // opens the same activity, as each tab's tooltip says). The visible order
+  // puts Convert first, then the band's path activities, then the rest.
+  // Each step's tick reads progress that is already saved.
+  // Step 1 of every band is the converter itself (guess, then check), so the
+  // tab a new student opens on IS the path's first step.
+  var LEARNING_PATHS = {
+    b45: [
+      { id: 'guess', tab: 'convert' },
+      { id: 'time', tab: 'everyday', mode: 'time' },
+      { id: 'money', tab: 'everyday', mode: 'money' },
+      { id: 'within', tab: 'quiz', band: 'b45' },
+      { id: 'bench', tab: 'estimate' }
+    ],
+    b67: [
+      { id: 'guess', tab: 'convert' },
+      { id: 'rates', tab: 'quiz', band: 'b67' },
+      { id: 'ladder', tab: 'ladder' },
+      { id: 'chain', tab: 'chain' },
+      { id: 'wordproblem', tab: 'wordproblem' }
+    ],
+    b8: [
+      { id: 'guess', tab: 'convert' },
+      { id: 'areavol', tab: 'quiz', band: 'b8' },
+      { id: 'chain', tab: 'chain' },
+      { id: 'sigfigs', tab: 'chem', mode: 'sigfigs' },
+      { id: 'moles', tab: 'chem', mode: 'mole' }
+    ]
+  };
+  function learningPathFor(band) { return LEARNING_PATHS[band] || LEARNING_PATHS.b67; }
+  function tabOrderFor(band) {
+    var order = ['convert'];
+    learningPathFor(band).forEach(function(step) { if (order.indexOf(step.tab) === -1) order.push(step.tab); });
+    UNIT_CONVERT_TAB_ORDER.forEach(function(id) { if (order.indexOf(id) === -1) order.push(id); });
+    return order;
+  }
+  function creditedWith(xpCredited, prefix, pred) {
+    var keys = Object.keys(xpCredited || {});
+    for (var i = 0; i < keys.length; i++) {
+      if (xpCredited[keys[i]] && keys[i].indexOf(prefix) === 0 && (!pred || pred(keys[i]))) return true;
+    }
+    return false;
+  }
+  // Done = at least one verified solve of that kind. Reads only saved
+  // progress: xpCredited item ids, fadeByKind counts, estimateCorrect, badges.
+  var PATH_KIND_GROUPS = {
+    time: ['hoursToMin', 'minToHours', 'elapsed', 'elapsedEnd'],
+    money: ['centsToDollars', 'dollarsToCents', 'moneyMixed'],
+    within: ['mixedToSmall', 'bigToSmall', 'smallToBig', 'metricDecimal'],
+    rates: ['unitRate', 'rateConvert'],
+    ladder: ['ladder'],
+    areavol: ['area', 'volume'],
+    sigfigs: ['sigFigs'],
+    moles: ['mole']
+  };
+  function pathStepDone(step, d) {
+    var data = d || {};
+    var credited = data.xpCredited && typeof data.xpCredited === 'object' ? data.xpCredited : {};
+    var fade = data.fadeByKind && typeof data.fadeByKind === 'object' ? data.fadeByKind : {};
+    var badges = data.badges && typeof data.badges === 'object' ? data.badges : {};
+    if (step.id === 'guess') return (Number(data.guessCount) || 0) >= 1;
+    if (step.id === 'bench') return (Number(data.estimateCorrect) || 0) >= 1 || !!badges.estimator;
+    if (step.id === 'chain') return !!badges.chainBuilder || creditedWith(credited, 'chain|');
+    if (step.id === 'wordproblem') return !!badges.wordProblem || creditedWith(credited, 'wp|');
+    var kinds = PATH_KIND_GROUPS[step.id] || [];
+    for (var i = 0; i < kinds.length; i++) if ((Number(fade[kinds[i]]) || 0) >= 1) return true;
+    // Item ids start with the kind ("area|...", "sigFigs|..."): a solve that
+    // was not first-try still counts.
+    return kinds.some(function(k) { return creditedWith(credited, k + '|'); });
+  }
+  var FIRST_VISIT_PAIR = ['m', 'cm'];
+  // A record with nothing but an open tab belongs to a student new to the tool.
+  function isFreshUnitConvertRecord(rec) {
+    if (!rec || typeof rec !== 'object') return true;
+    return Object.keys(rec).every(function(k) { return k === 'tab'; });
+  }
+  var _questT = null;
+  function questTranslator() { return typeof _questT === 'function' ? _questT : function(key, fallback) { return fallback; }; }
+
   window.StemLab.registerTool('unitConvert', {
-    icon: '\u21C4',
+    icon: '⇄',
     label: 'Unit Converter',
-    desc: 'Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts',
+    desc: 'Convert units, climb the metric prefix ladder, practice time and money, chemistry (significant figures, moles) and factor chains, with named-mistake feedback',
     color: 'cyan',
     category: 'math',
+    // Quest labels are read by the host outside render, so they use the
+    // translator of the most recent render (English before the first one).
     questHooks: [
-      { id: 'explore_4_categories', label: 'Convert in 4 different unit categories', icon: '🌍', check: function(d) { return Object.keys(d.catsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.catsUsed || {}).length + '/4 categories'; } },
-      { id: 'quiz_10', label: 'Answer 10 quiz questions', icon: '🧠', check: function(d) { return (d.quizTotal || 0) >= 10; }, progress: function(d) { return (d.quizTotal || 0) + '/10 answered'; } },
-      { id: 'streak_5', label: 'Reach a 5-answer streak', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+      { id: 'explore_4_categories', icon: '🌍',
+        get label() { var t = questTranslator(); return t('stem.unitconvert.quest_explore', 'Convert in 4 different unit categories'); },
+        check: function(d) { return Object.keys((d && d.catsUsed) || {}).length >= 4; },
+        progress: function(d) { var t = questTranslator(); return fill(t('stem.unitconvert.quest_explore_progress', '{n}/4 categories'), { n: Object.keys((d && d.catsUsed) || {}).length }); } },
+      { id: 'quiz_10', icon: '🧠',
+        get label() { var t = questTranslator(); return t('stem.unitconvert.quest_quiz', 'Answer 10 practice questions'); },
+        check: function(d) { return ((d && d.quizTotal) || 0) >= 10; },
+        progress: function(d) { var t = questTranslator(); return fill(t('stem.unitconvert.quest_quiz_progress', '{n}/10 answered'), { n: (d && d.quizTotal) || 0 }); } },
+      { id: 'streak_5', icon: '🔥',
+        get label() { var t = questTranslator(); return t('stem.unitconvert.quest_streak', 'Reach a streak of 5 first-try answers'); },
+        check: function(d) { return ((d && d.bestStreak) || 0) >= 5; },
+        progress: function(d) { var t = questTranslator(); return fill(t('stem.unitconvert.quest_streak_progress', 'Best streak: {n}/5'), { n: (d && d.bestStreak) || 0 }); } }
     ],
     render: function(ctx) {
+      if (ctx && typeof ctx.t === 'function') _questT = ctx.t;
       // The tab strip and the word-problem header sit on the HOST surface -
       // white in light and dark, pure BLACK in the contrast theme, where the
       // inactive tabs measured 2.77:1.
       var isContrast = !!ctx.isContrast;
       var onHostInk = isContrast ? ' text-white' : '';
+      // Dark theme: the tool paints its own dark surface (like the flagship
+      // math tools) instead of sitting on the host's light card.
+      var isDarkUI = !isContrast && ctx.theme !== 'contrast' && (ctx.isDark === true || ctx.theme === 'dark');
+      // Number marks follow the student's language: ctx first, then the app's
+      // text language, then the browser.
+      setNumberLocale([ctx.locale, ctx.lang, ctx.language, ctx.uiLanguage,
+        typeof window !== 'undefined' ? window.__alloTextLanguage : null,
+        typeof navigator !== 'undefined' ? navigator.language : null]);
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
+      var labToolData = ctx.toolData || {};
+      // Guess first is the default for a student new to this tool (no saved
+      // record yet). The choice is written with the first save, so it never
+      // flips in the middle of a session.
+      var freshRecord = isFreshUnitConvertRecord(labToolData.unitConvert);
+      var rawSetToolData = ctx.setToolData;
+      var setLabToolData = typeof rawSetToolData !== 'function' ? rawSetToolData : function(updater) {
+        rawSetToolData(function(prev) {
+          var next = typeof updater === 'function' ? updater(prev) : updater;
+          var before = prev && prev.unitConvert;
+          var after = next && next.unitConvert;
+          if (after && typeof after === 'object' && isFreshUnitConvertRecord(before)) {
+            var stamp = {};
+            if (after.guessFirst === undefined) stamp.guessFirst = true;
+            // Keep the first-visit pair (1 m to cm) once something is saved,
+            // including when the save names only one of the two units.
+            if (!after.category || after.category === 'length') {
+              if (after.fromUnit === undefined) stamp.fromUnit = FIRST_VISIT_PAIR[0];
+              if (after.toUnit === undefined) stamp.toUnit = FIRST_VISIT_PAIR[1];
+            }
+            next = Object.assign({}, next, { unitConvert: Object.assign({}, after, stamp) });
+          }
+          return next;
+        });
+      };
       var setStemLabTool = ctx.setStemLabTool;
-      var addToast = ctx.addToast;
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
       var t = ctx.t;
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
@@ -396,39 +2352,141 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       var callGemini = ctx.callGemini;
       var setToolSnapshots = ctx.setToolSnapshots;
       var announceToSR = ctx.announceToSR;
-      var a11yClick = ctx.a11yClick;
+      var isTeacher = ctx.isTeacherMode === true;
+      // AI is optional: only with a live backend and hints switched on.
+      var aiOK = typeof callGemini === 'function' && ctx.aiHintsEnabled !== false;
 
       return (function() {
         var d = Object.assign({}, labToolData.unitConvert || {});
+        // Damaged saves: lists keep only their object entries (a null in
+        // history, pins or the mistake log used to crash the whole tool).
+        ['history', 'pinnedConversions', 'missed'].forEach(function(k) {
+          if (Array.isArray(d[k])) d[k] = d[k].filter(function(x) { return !!x && typeof x === 'object'; });
+        });
 
         var upd = function(key, val) {
           setLabToolData(function(prev) {
-            return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, typeof key === 'object' ? key : { [key]: val }) });
+            return Object.assign({}, prev, { unitConvert: Object.assign({}, (prev || {}).unitConvert, typeof key === 'object' ? key : { [key]: val }) });
           });
         };
+        function say(message) { if (message && typeof announceToSR === 'function') announceToSR(message); }
+        // After an answer closes its input box, keep keyboard focus on the
+        // card (the next button) instead of dropping it to the page body.
+        // ids: the first one that exists and is enabled gets focus.
+        function focusSoon(ids) {
+          // A host that re-renders a little later than a timer tick still
+          // gets focus moved: retry a few times while no target exists yet.
+          var tries = 0;
+          function attempt() {
+            var done = false;
+            try {
+              done = [].concat(ids).some(function(id) {
+                var el = typeof document !== 'undefined' ? document.getElementById(id) : null;
+                if (!el || el.disabled || typeof el.focus !== 'function') return false;
+                el.focus();
+                return true;
+              });
+            } catch (e) { done = true; /* unmounted */ }
+            if (!done && ++tries < 6) setTimeout(attempt, 40);
+          }
+          setTimeout(attempt, 0);
+        }
 
         // ── CATEGORIES ──
         var CATEGORIES = {
-          length:      { label: t('stem.unitconvert.length', '\uD83D\uDCCF Length'), units: UNIT_FACTORS.length },
-          weight:      { label: t('stem.unitconvert.weight', '\u2696\uFE0F Mass'), units: UNIT_FACTORS.weight },
-          temperature: { label: t('stem.unitconvert.temp', '\uD83C\uDF21\uFE0F Temp'), units: UNIT_FACTORS.temperature },
-          speed:       { label: t('stem.unitconvert.speed', '\uD83D\uDE80 Speed'), units: UNIT_FACTORS.speed },
-          volume:      { label: t('stem.unitconvert.volume', '\uD83E\uDDEA Volume'), units: UNIT_FACTORS.volume },
-          time:        { label: t('stem.unitconvert.time', '\u23F0 Time'), units: UNIT_FACTORS.time },
-          area:        { label: t('stem.unitconvert.area', '\uD83D\uDDD2\uFE0F Area'), units: UNIT_FACTORS.area },
-          pressure:    { label: t('stem.unitconvert.pressure', '\uD83D\uDCA8 Pressure'), units: UNIT_FACTORS.pressure },
-          energy:      { label: t('stem.unitconvert.energy', '\u26A1 Energy'), units: UNIT_FACTORS.energy }
+          length:      { label: t('stem.unitconvert.length', '📏 Length'), name: t('stem.unitconvert.catname_length', 'Length'), units: UNIT_FACTORS.length },
+          weight:      { label: t('stem.unitconvert.weight', '⚖️ Mass'), name: t('stem.unitconvert.catname_weight', 'Mass'), units: UNIT_FACTORS.weight },
+          temperature: { label: t('stem.unitconvert.temp', '🌡️ Temp'), name: t('stem.unitconvert.catname_temperature', 'Temperature'), units: UNIT_FACTORS.temperature },
+          speed:       { label: t('stem.unitconvert.speed', '🚀 Speed'), name: t('stem.unitconvert.catname_speed', 'Speed'), units: UNIT_FACTORS.speed },
+          volume:      { label: t('stem.unitconvert.volume', '🧪 Volume'), name: t('stem.unitconvert.catname_volume', 'Volume'), units: UNIT_FACTORS.volume },
+          time:        { label: t('stem.unitconvert.time', '⏰ Time'), name: t('stem.unitconvert.catname_time', 'Time'), units: UNIT_FACTORS.time },
+          area:        { label: t('stem.unitconvert.area', '🗒️ Area'), name: t('stem.unitconvert.catname_area', 'Area'), units: UNIT_FACTORS.area },
+          pressure:    { label: t('stem.unitconvert.pressure', '💨 Pressure'), name: t('stem.unitconvert.catname_pressure', 'Pressure'), units: UNIT_FACTORS.pressure },
+          energy:      { label: t('stem.unitconvert.energy', '⚡ Energy'), name: t('stem.unitconvert.catname_energy', 'Energy'), units: UNIT_FACTORS.energy }
         };
+        // Option labels say which ton and which gallon.
+        var UNIT_LABELS = {
+          ton: t('stem.unitconvert.unit_ton', 'ton (US short ton, 2,000 lb)'),
+          t: t('stem.unitconvert.unit_tonne', 't (metric tonne, 1,000 kg)'),
+          gal: t('stem.unitconvert.unit_gal', 'gal (US gallon)'),
+          qt: t('stem.unitconvert.unit_qt', 'qt (US quart)'),
+          pt: t('stem.unitconvert.unit_pt', 'pt (US pint)'),
+          cup: t('stem.unitconvert.unit_cup', 'cup (US cup)'),
+          'fl oz': t('stem.unitconvert.unit_floz', 'fl oz (US fluid ounce)'),
+          'imp gal': t('stem.unitconvert.unit_imp_gal', 'gal (imperial / UK gallon)'),
+          ha: t('stem.unitconvert.unit_ha', 'ha (hectare)'),
+          knots: t('stem.unitconvert.unit_knots', 'knots (nautical miles per hour)')
+        };
+        var UNIT_SHORT = {
+          ton: t('stem.unitconvert.unit_short_ton', 'US ton'),
+          gal: t('stem.unitconvert.unit_short_gal', 'US gal'),
+          qt: t('stem.unitconvert.unit_short_qt', 'US qt'),
+          pt: t('stem.unitconvert.unit_short_pt', 'US pt'),
+          cup: t('stem.unitconvert.unit_short_cup', 'US cup'),
+          'fl oz': t('stem.unitconvert.unit_short_floz', 'US fl oz'),
+          'imp gal': t('stem.unitconvert.unit_short_imp_gal', 'imp gal')
+        };
+        // "ton (US short ton, 2,000 lb)" prints the factor of ton to lb, so
+        // while the result is hidden the label names the unit only.
+        var UNIT_LABELS_NO_NUMBER = {
+          ton: t('stem.unitconvert.unit_ton_plain', 'ton (US short ton)'),
+          t: t('stem.unitconvert.unit_tonne_plain', 't (metric tonne)')
+        };
+        function unitOption(u) { return (tab === 'convert' && hideConversionResult && UNIT_LABELS_NO_NUMBER[u]) || UNIT_LABELS[u] || u; }
+        function unitShort(u) { return UNIT_SHORT[u] || u; }
+
+        function categoryFor(unitA, unitB) {
+          var keys = Object.keys(UNIT_FACTORS);
+          for (var i = 0; i < keys.length; i++) {
+            var units = UNIT_FACTORS[keys[i]];
+            if (Object.prototype.hasOwnProperty.call(units, unitA) && Object.prototype.hasOwnProperty.call(units, unitB)) return keys[i];
+          }
+          return null;
+        }
 
         d.category = CATEGORIES[d.category] ? d.category : 'length';
         var cat = CATEGORIES[d.category];
-        var validUnits = Object.keys(cat.units);
+        // A first visit opens on 1 m to cm (a whole-number answer, and the
+        // stacker's cm-into-m bar), not 1 mm to cm.
+        var defaultPair = freshRecord && d.category === 'length' ? FIRST_VISIT_PAIR : DEFAULT_PAIRS[d.category];
         d.value = Number.isFinite(Number(d.value)) ? Number(d.value) : 1;
-        var valueDraft = typeof d.valueDraft === 'string' ? d.valueDraft : String(d.value);
-        var valueDraftState = parseNumericDraft(valueDraft);
+        // A draft written by code (Ratios Lab's handoff, old saves) is
+        // String(value) in machine form: read it as that number, so "1.125"
+        // never turns into 1125 in German. A typed draft is shown as typed;
+        // only a machine "1.125" (which no German typing produces) and a
+        // missing draft are shown in the student's marks.
+        var machineDraft = typeof d.valueDraft !== 'string' || d.valueDraft === String(d.value);
+        var valueDraft = typeof d.valueDraft === 'string' && !(machineDraft && _numberMarks.group === '.' && /^-?[1-9]\d{0,2}\.\d{3}$/.test(d.valueDraft))
+          ? d.valueDraft : localizeNumberText(String(d.value));
+        var valueDraftState = machineDraft ? { valid: true, complete: true, value: d.value === 0 ? 0 : d.value, message: '' } : parseNumericDraft(valueDraft);
         var conversionValue = valueDraftState.valid ? valueDraftState.value : NaN;
-        d.fromUnit = Object.prototype.hasOwnProperty.call(cat.units, d.fromUnit) ? d.fromUnit : validUnits[0];
-        d.toUnit = Object.prototype.hasOwnProperty.call(cat.units, d.toUnit) ? d.toUnit : (validUnits[1] || validUnits[0]);
+        d.fromUnit = Object.prototype.hasOwnProperty.call(cat.units, d.fromUnit) ? d.fromUnit : defaultPair[0];
+        d.toUnit = Object.prototype.hasOwnProperty.call(cat.units, d.toUnit) ? d.toUnit : defaultPair[1];
+
+        var NEGATIVE_TEXT = {
+          length: t('stem.unitconvert.neg_length', 'A length cannot be negative. Enter 0 or a positive number.'),
+          weight: t('stem.unitconvert.neg_weight', 'A mass cannot be negative. Enter 0 or a positive number.'),
+          speed: t('stem.unitconvert.neg_speed', 'A speed cannot be negative. Enter 0 or a positive number.'),
+          volume: t('stem.unitconvert.neg_volume', 'A volume cannot be negative. Enter 0 or a positive number.'),
+          time: t('stem.unitconvert.neg_time', 'An amount of time cannot be negative. Enter 0 or a positive number.'),
+          area: t('stem.unitconvert.neg_area', 'An area cannot be negative. Enter 0 or a positive number.'),
+          pressure: t('stem.unitconvert.neg_pressure', 'This pressure is measured from a perfect vacuum, so it cannot be negative. Enter 0 or a positive number.'),
+          energy: t('stem.unitconvert.neg_energy', 'An amount of energy cannot be negative. Enter 0 or a positive number.')
+        };
+        var DRAFT_TEXT = {
+          'Finish entering a number.': t('stem.unitconvert.msg_finish_number', 'Finish entering a number.'),
+          'Enter a valid number.': t('stem.unitconvert.msg_valid_number', 'Enter a valid number.'),
+          'Enter a finite number.': t('stem.unitconvert.msg_finite_number', 'Enter a finite number.'),
+          'Enter a valid temperature.': t('stem.unitconvert.msg_valid_temperature', 'Enter a valid temperature.'),
+          'Temperatures cannot be below absolute zero (-273.15 °C, -459.67 °F, or 0 K).': t('stem.unitconvert.msg_absolute_zero', 'Temperatures cannot be below absolute zero (-273.15 °C, -459.67 °F, or 0 K).')
+        };
+        function checkQuantity(state, category, unit) {
+          if (!state.valid) return { valid: false, message: DRAFT_TEXT[state.message] || state.message };
+          var check = validateQuantityValue(state.value, category, unit);
+          if (check.valid) return check;
+          if (check.code === 'negative') return { valid: false, message: NEGATIVE_TEXT[category] || check.message };
+          return { valid: false, message: DRAFT_TEXT[check.message] || check.message };
+        }
 
         // ── CONVERSION ──
         var convert = function(val, from, to, catKey) {
@@ -440,18 +2498,36 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           return formatUnitNumber(n, significantFigures);
         };
 
-        var temperatureCheck = !valueDraftState.valid
-          ? { valid: false, message: valueDraftState.message }
-          : d.category === 'temperature'
-            ? validateTemperatureValue(conversionValue, d.fromUnit)
-            : { valid: true, message: '' };
+        // Kept under its old name: every view reads it, and it now also
+        // rejects negative lengths, masses, volumes, times ...
+        var temperatureCheck = checkQuantity(valueDraftState, d.category, d.fromUnit);
         var result = temperatureCheck.valid ? convert(conversionValue, d.fromUnit, d.toUnit) : NaN;
         var fmtResult = Number.isFinite(result) ? fmt(result) : '—';
+        var fmtValue = Number.isFinite(conversionValue) ? fmt(conversionValue) : '—';
         var predictionEligible = d.category !== 'temperature' && temperatureCheck.valid && conversionValue >= 0 && Number.isFinite(result);
         var predictionSignature = JSON.stringify([d.category, conversionValue, d.fromUnit, d.toUnit]);
-        var predictingConversion = !!d.predictBeforeConvert && predictionEligible;
+        // Guess first: the student sets a log-scale estimate and locks it;
+        // only then do the result, the equation and the bars appear.
+        var guessOn = d.guessFirst === true || (d.guessFirst === undefined && freshRecord);
+        var guessScaleNow = guessOn && predictionEligible && conversionValue > 0 && result > 0 ? guessScale(d.category, conversionValue) : null;
+        var guessState = d.guess && typeof d.guess === 'object' && d.guess.sig === predictionSignature ? d.guess : null;
+        var guessK = guessScaleNow
+          ? (guessState && Number.isFinite(Number(guessState.k)) ? Math.min(guessScaleNow.max, Math.max(guessScaleNow.min, Math.round(Number(guessState.k)))) : guessScaleNow.start)
+          : 0;
+        var guessLocked = !!(guessScaleNow && guessState && guessState.locked === true);
+        var guessPending = !!guessScaleNow && !guessLocked;
+        var predictingConversion = !!d.predictBeforeConvert && predictionEligible && !guessOn;
         var predictionChoice = d.conversionPredictionSignature === predictionSignature ? d.conversionPrediction : null;
-        var hideConversionResult = predictingConversion && d.conversionRevealSignature !== predictionSignature;
+        // Typing 0.5 passes through 0: no slider yet, and no equation either.
+        var guessOpen = guessPending || (guessOn && predictionEligible && conversionValue === 0);
+        var hideConversionResult = (predictingConversion && d.conversionRevealSignature !== predictionSignature) || guessOpen;
+        // A unit change is announced from the render before it, when the OLD
+        // pair may be locked: judge the NEW pair.
+        function resultStaysHidden(from, to) {
+          var sig = JSON.stringify([d.category, conversionValue, from, to]);
+          if (guessOn && predictionEligible) return !(d.guess && d.guess.sig === sig && d.guess.locked === true);
+          return predictingConversion && d.conversionRevealSignature !== sig;
+        }
         var predictionDirection = conversionValue === 0 || cat.units[d.fromUnit] === cat.units[d.toUnit] ? 'same' : cat.units[d.fromUnit] > cat.units[d.toUnit] ? 'larger' : 'smaller';
         var predictionLabels = { larger: t('stem.unitconvert.predict_larger', 'Larger'), smaller: t('stem.unitconvert.predict_smaller', 'Smaller'), same: t('stem.unitconvert.predict_same', 'The same') };
         function predictionExplanation() {
@@ -464,130 +2540,272 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var temperatureReasoning = d.category === 'temperature' && temperatureCheck.valid
           ? describeTemperatureConversion(conversionValue, d.fromUnit, d.toUnit)
           : null;
+        function resultAnnouncement(value, from, to) {
+          var r = convert(value, from, to);
+          if (!Number.isFinite(r)) return '';
+          return fill(t('stem.unitconvert.sr_result', 'Converted result: {value} {from} is {result} {to}.'), { value: fmt(value), from: unitShort(from), result: fmt(r), to: unitShort(to) });
+        }
 
         // ── FORMULA ──
         var getFormula = function() {
-          if (!temperatureCheck.valid) return 'Enter a complete, valid number to see the conversion.';
+          if (!temperatureCheck.valid) return t('stem.unitconvert.formula_need_number', 'Enter a complete, valid number to see the conversion.');
           if (d.category === 'temperature') {
-            if (d.fromUnit === '\u00B0C' && d.toUnit === '\u00B0F') return 'F = C \u00D7 9/5 + 32';
-            if (d.fromUnit === '\u00B0F' && d.toUnit === '\u00B0C') return 'C = (F \u2212 32) \u00D7 5/9';
-            if (d.fromUnit === '\u00B0C' && d.toUnit === 'K')       return 'K = C + 273.15';
-            if (d.fromUnit === 'K' && d.toUnit === '\u00B0C')       return 'C = K \u2212 273.15';
-            if (d.fromUnit === '\u00B0F' && d.toUnit === 'K')       return 'K = (F \u2212 32) \u00D7 5/9 + 273.15';
-            if (d.fromUnit === 'K' && d.toUnit === '\u00B0F')       return 'F = (K \u2212 273.15) \u00D7 9/5 + 32';
-            return 'Same unit';
+            if (d.fromUnit === '°C' && d.toUnit === '°F') return 'F = C × 9/5 + 32';
+            if (d.fromUnit === '°F' && d.toUnit === '°C') return 'C = (F − 32) × 5/9';
+            if (d.fromUnit === '°C' && d.toUnit === 'K')       return localizeNumberText('K = C + 273.15');
+            if (d.fromUnit === 'K' && d.toUnit === '°C')       return localizeNumberText('C = K − 273.15');
+            if (d.fromUnit === '°F' && d.toUnit === 'K')       return localizeNumberText('K = (F − 32) × 5/9 + 273.15');
+            if (d.fromUnit === 'K' && d.toUnit === '°F')       return localizeNumberText('F = (K − 273.15) × 9/5 + 32');
+            return t('stem.unitconvert.formula_same_unit', 'Same unit');
           }
           var fF = cat.units[d.fromUnit] || 1;
           var tF = cat.units[d.toUnit] || 1;
-          if (fF === tF) return 'Same unit \u2014 result equals input';
-          return d.value + ' ' + d.fromUnit + ' \u00D7 ' + fmt(fF / tF) + ' = ' + fmtResult + ' ' + d.toUnit;
+          if (fF === tF) return t('stem.unitconvert.formula_same_unit_result', 'Same unit: the result equals the input');
+          return fmtValue + ' ' + unitShort(d.fromUnit) + ' × ' + fmt(fF / tF) + ' = ' + fmtResult + ' ' + unitShort(d.toUnit);
         };
 
-        // ── REAL-WORLD REFERENCES ──
+        // ── REAL-WORLD REFERENCES (benchmarks) ──
+        function refLine(text, params) { return fill(text, params); }
         var REFS = {
           length: function(m) {
-            if (m < 0.01) return '\uD83D\uDC1C About ' + (m * 1000).toFixed(1) + ' ant lengths';
-            if (m < 1)    return '\uD83D\uDCCF About ' + (m * 100).toFixed(0) + ' cm \u2014 a ruler is 30 cm';
-            if (m < 10)   return '\uD83D\uDEB6 About ' + (m / 0.75).toFixed(0) + ' walking steps';
-            if (m < 100)  return '\uD83C\uDFCA An Olympic pool is 50 m \u2014 that\'s ' + (m / 50).toFixed(1) + ' pools';
-            if (m < 1000) return '\u26BD A soccer field is 100 m \u2014 that\'s ' + (m / 100).toFixed(1) + ' fields';
-            return '\uD83D\uDE97 ' + (m / 1609.34).toFixed(1) + ' miles, ~' + (m / 400).toFixed(0) + ' track laps';
+            if (m < 0.01) return refLine(t('stem.unitconvert.ref_ant', '🐜 About {n} ant lengths (an ant is about 1 mm)'), { n: formatUnitNumber(m * 1000, 3) });
+            if (m < 1)    return refLine(t('stem.unitconvert.ref_ruler', '📏 About {n} cm. A school ruler is 30 cm.'), { n: formatUnitNumber(m * 100, 3) });
+            if (m < 10)   return refLine(t('stem.unitconvert.ref_steps', '🚶 About {n} walking steps (a step is about 0.75 m)'), { n: formatUnitNumber(m / 0.75, 2) });
+            if (m < 100)  return refLine(t('stem.unitconvert.ref_pool', '🏊 An Olympic pool is 50 m long. That is {n} pools.'), { n: formatUnitNumber(m / 50, 2) });
+            if (m < 1000) return refLine(t('stem.unitconvert.ref_field', '⚽ A soccer field is about 100 m long. That is {n} fields.'), { n: formatUnitNumber(m / 100, 2) });
+            return refLine(t('stem.unitconvert.ref_laps', '🚗 That is {mi} miles, or about {laps} laps of a 400 m track.'), { mi: formatUnitNumber(m / 1609.344, 3), laps: formatUnitNumber(Math.round(m / 400), 'auto') });
           },
           weight: function(g) {
-            if (g < 1)     return '\uD83D\uDC1D A bee weighs ~0.1 g \u2014 that\'s ' + (g / 0.1).toFixed(0) + ' bees';
-            if (g < 100)   return '\uD83E\uDD55 A carrot weighs ~60 g \u2014 that\'s ' + (g / 60).toFixed(1) + ' carrots';
-            if (g < 1000)  return '\uD83C\uDF4E An apple weighs ~180 g \u2014 that\'s ' + (g / 180).toFixed(1) + ' apples';
-            if (g < 10000) return '\uD83D\uDCDA A textbook weighs ~1 kg \u2014 that\'s ' + (g / 1000).toFixed(1) + ' textbooks';
-            return '\uD83D\uDC18 An elephant weighs ~5000 kg \u2014 that\'s ' + (g / 5000000).toFixed(4) + ' elephants';
+            if (g < 1)     return refLine(t('stem.unitconvert.ref_bee', '🐝 A honeybee has a mass of about 0.1 g. That is {n} bees.'), { n: formatUnitNumber(g / 0.1, 2) });
+            if (g < 100)   return refLine(t('stem.unitconvert.ref_carrot', '🥕 A carrot is about 60 g. That is {n} carrots.'), { n: formatUnitNumber(g / 60, 2) });
+            if (g < 1000)  return refLine(t('stem.unitconvert.ref_apple', '🍎 An apple is about 180 g. That is {n} apples.'), { n: formatUnitNumber(g / 180, 2) });
+            if (g < 10000) return refLine(t('stem.unitconvert.ref_textbook', '📚 A textbook is about 1 kg. That is {n} textbooks.'), { n: formatUnitNumber(g / 1000, 2) });
+            return refLine(t('stem.unitconvert.ref_elephant', '🐘 An elephant is about 5,000 kg. That is {n} elephants.'), { n: formatUnitNumber(g / 5000000, 3) });
           },
           speed: function(ms) {
-            if (ms < 2)   return '\uD83D\uDEB6 Walking speed is ~1.4 m/s';
-            if (ms < 12)  return '\uD83C\uDFC3 Usain Bolt peaks at ~12 m/s \u2014 you\'re at ' + (ms / 12 * 100).toFixed(0) + '%';
-            if (ms < 100) return '\uD83D\uDE97 Highway speed ~30 m/s \u2014 you\'re at ' + (ms / 30 * 100).toFixed(0) + '%';
-            return '\u2708\uFE0F A jet is ~250 m/s \u2014 you\'re at ' + (ms / 250 * 100).toFixed(0) + '%';
+            if (ms < 2)   return t('stem.unitconvert.ref_walk', '🚶 Walking speed is about 1.4 m/s.');
+            if (ms < 12)  return refLine(t('stem.unitconvert.ref_bolt', '🏃 A top sprinter peaks near 12 m/s. This is {n}% of that.'), { n: formatUnitNumber(Math.round(ms / 12 * 100), 'auto') });
+            if (ms < 100) return refLine(t('stem.unitconvert.ref_highway', '🚗 Highway speed is about 30 m/s. This is {n}% of that.'), { n: formatUnitNumber(Math.round(ms / 30 * 100), 'auto') });
+            return refLine(t('stem.unitconvert.ref_jet', '✈️ A jet cruises near 250 m/s. This is {n}% of that.'), { n: formatUnitNumber(Math.round(ms / 250 * 100), 'auto') });
           },
           volume: function(L) {
-            if (L < 0.5) return '\u2615 A teacup holds ~0.24 L \u2014 that\'s ' + (L / 0.24).toFixed(1) + ' cups';
-            if (L < 5)   return '\uD83E\uDD5B A water bottle is 1 L \u2014 that\'s ' + L.toFixed(1) + ' bottles';
-            return '\uD83D\uDEC1 A bathtub holds ~300 L \u2014 that\'s ' + (L / 300).toFixed(2) + ' tubs';
+            if (L < 0.5) return refLine(t('stem.unitconvert.ref_cup', '☕ A US cup holds about 0.24 L. That is {n} cups.'), { n: formatUnitNumber(L / 0.24, 2) });
+            if (L < 5)   return refLine(t('stem.unitconvert.ref_bottle', '🥛 A large water bottle holds 1 L. That is {n} bottles.'), { n: formatUnitNumber(L, 2) });
+            return refLine(t('stem.unitconvert.ref_tub', '🛁 A filled bathtub holds about 150 L. That is {n} tubs.'), { n: formatUnitNumber(L / 150, 2) });
           },
           time: function(s) {
-            if (s < 60)    return '\uD83D\uDCA8 A sneeze lasts ~0.5 s \u2014 that\'s ' + (s / 0.5).toFixed(0) + ' sneezes';
-            if (s < 3600)  return '\u23F0 A class period ~50 min \u2014 that\'s ' + (s / 3000).toFixed(1) + ' classes';
-            if (s < 86400) return '\uD83C\uDF1E A day has 24 hrs \u2014 that\'s ' + (s / 86400).toFixed(2) + ' days';
-            return '\uD83D\uDCC5 A year has 365 days \u2014 that\'s ' + (s / 31536000).toFixed(3) + ' years';
+            if (s < 60)    return refLine(t('stem.unitconvert.ref_sneeze', '💨 A sneeze lasts about 0.5 s. That is {n} sneezes.'), { n: formatUnitNumber(s / 0.5, 2) });
+            if (s < 3600)  return refLine(t('stem.unitconvert.ref_class', '⏰ A class period is about 50 min. That is {n} classes.'), { n: formatUnitNumber(s / 3000, 2) });
+            if (s < 86400) return refLine(t('stem.unitconvert.ref_day', '🌞 A day has 24 hours. That is {n} days.'), { n: formatUnitNumber(s / 86400, 2) });
+            return refLine(t('stem.unitconvert.ref_year', '📅 A year has 365 days. That is {n} years.'), { n: formatUnitNumber(s / 31536000, 3) });
           },
           area: function(m2) {
-            if (m2 < 1)    return '\uD83D\uDCF1 A phone screen ~0.01 m\u00B2 \u2014 that\'s ' + (m2 / 0.01).toFixed(0) + ' screens';
-            if (m2 < 100)  return '\uD83C\uDFE0 A room is ~20 m\u00B2 \u2014 that\'s ' + (m2 / 20).toFixed(1) + ' rooms';
-            if (m2 < 5000) return '\u26BD A soccer field ~7140 m\u00B2 \u2014 that\'s ' + (m2 / 7140).toFixed(3) + ' fields';
-            return '\uD83C\uDFD9\uFE0F Central Park is ~3.4 km\u00B2';
+            if (m2 < 1)      return refLine(t('stem.unitconvert.ref_phone', '📱 A phone screen is about 0.01 m². That is {n} screens.'), { n: formatUnitNumber(m2 / 0.01, 2) });
+            if (m2 < 100)    return refLine(t('stem.unitconvert.ref_room', '🏠 A bedroom is about 20 m². That is {n} rooms.'), { n: formatUnitNumber(m2 / 20, 2) });
+            if (m2 < 100000) return refLine(t('stem.unitconvert.ref_soccer_area', '⚽ A soccer field is about 7,140 m². That is {n} fields.'), { n: formatUnitNumber(m2 / 7140, 3) });
+            return refLine(t('stem.unitconvert.ref_central_park', '🏙️ Central Park in New York is about 3.4 km². That is {n} Central Parks.'), { n: formatUnitNumber(m2 / 3410000, 3) });
           },
           pressure: function(Pa) {
-            if (Pa < 200000) return '\uD83C\uDF0A Sea level is 101,325 Pa \u2014 you\'re at ' + (Pa / 101325 * 100).toFixed(0) + '%';
-            return '\uD83D\uDE97 A car tire ~220,000 Pa \u2014 you\'re at ' + (Pa / 220000 * 100).toFixed(0) + '%';
+            if (Pa < 200000) return refLine(t('stem.unitconvert.ref_sea_level', '🌊 Air at sea level pushes with about 101,325 Pa. This is {n}% of that.'), { n: formatUnitNumber(Math.round(Pa / 101325 * 100), 'auto') });
+            return refLine(t('stem.unitconvert.ref_tire', '🚗 Inside a car tire the pressure is about 320,000 Pa (about 220,000 Pa more than the air outside). This is {n}% of that.'), { n: formatUnitNumber(Math.round(Pa / 320000 * 100), 'auto') });
           },
           energy: function(J) {
-            if (J < 1000) return '\uD83D\uDCA1 A 60W bulb uses 60 J per second';
-            if (J < 1000000) return '\uD83C\uDF6A A candy bar ~630,000 J (150 kcal)';
-            return '\u26A1 A lightning bolt releases ~1 billion J';
-          },
+            if (J < 1000) return t('stem.unitconvert.ref_bulb', '💡 A 60 W bulb uses 60 J every second.');
+            if (J < 1000000) return t('stem.unitconvert.ref_snack', '🍪 A snack bar has about 630,000 J of food energy (150 kcal).');
+            return t('stem.unitconvert.ref_lightning', '⚡ One lightning bolt releases roughly 1,000,000,000 J.');
+          }
         };
 
-        // ── FUN FACTS ──
+        // ── FUN FACTS (each checked: no "exact" claims that are not exact) ──
         var FACTS = {
-          length:      ['\uD83C\uDF1F A light-year is 9.46 trillion km', '\uD83E\uDDAB Human DNA stretched out: ~2 m long', '\uD83D\uDE80 ISS orbits at 408 km altitude'],
-          weight:      ['\uD83E\uDD8B A blue whale\'s heart weighs ~180 kg', '\uD83C\uDF6B A M&M weighs exactly 1 gram', '\uD83C\uDF0D Earth\'s atmosphere weighs 5.15 \u00D7 10\u00B9\u2078 kg'],
-          temperature: ['\uD83D\uDD25 The sun\'s core is 15 million \u00B0C', '\u2744\uFE0F Coldest natural temp: \u221289.2\u00B0C (Antarctica)', '\uD83C\uDF21\uFE0F Body temp: 37\u00B0C = 98.6\u00B0F = 310.15 K'],
-          speed:       ['\uD83D\uDCA1 Light travels at 299,792,458 m/s', '\uD83E\uDD85 Peregrine falcon dives at 390 km/h', '\uD83C\uDF0E Earth orbits the sun at 29.8 km/s'],
-          volume:      ['\uD83E\uDD71 A raindrop is ~0.05 mL', '\uD83C\uDF0A The Pacific Ocean holds 710 million km\u00B3', '\uD83C\uDF7C A human body is ~60% water (~42 L)'],
-          time:        ['\uD83E\uDD2F A hummingbird beats wings 70\u00D7/sec', '\u2764\uFE0F Your heart beats ~100,000\u00D7/day', '\uD83C\uDF10 Moonlight takes 1.28 s to reach Earth'],
-          area:        ['\uD83C\uDF0D Russia: 17.1 million km\u00B2 (largest country)', '\uD83D\uDCF3 A credit card is 85.6 \u00D7 53.98 mm', '\uD83C\uDFC0 An NBA court is 436 m\u00B2'],
-          pressure:    ['\uD83E\uDD1F Mariana Trench: ~1,100 atm pressure', '\uD83D\uDE80 A space suit maintains ~29.6 kPa internally', '\uD83C\uDF2A\uFE0F A hurricane\'s eye drops to ~90 kPa'],
-          energy:      ['\uD83C\uDF31 A tree absorbs ~22 kg CO\u2082/year via photosynthesis', '\uD83E\uDDB4 The human brain uses ~20 W', '\u26A1 Lightning heats air to ~30,000 K'],
+          length: [t('stem.unitconvert.fact_length_1', '🌟 A light-year is about 9.46 trillion km.'), t('stem.unitconvert.fact_length_2', '🦫 The DNA in one human cell, stretched out, is about 2 m long.'), t('stem.unitconvert.fact_length_3', '🚀 The International Space Station orbits about 400 km up.')],
+          weight: [t('stem.unitconvert.fact_weight_1', '🦋 A blue whale\'s heart has a mass of about 180 kg.'), t('stem.unitconvert.fact_weight_2', '🍫 A plain chocolate candy piece has a mass of about 0.9 g, not exactly 1 g.'), t('stem.unitconvert.fact_weight_3', '🌍 Earth\'s atmosphere has a mass of about 5.15 × 10¹⁸ kg.')],
+          temperature: [t('stem.unitconvert.fact_temp_1', '🔥 The Sun\'s core is about 15 million °C.'), t('stem.unitconvert.fact_temp_2', '❄️ The coldest air temperature measured on Earth is −89.2 °C (Antarctica).'), t('stem.unitconvert.fact_temp_3', '🌡️ Typical body temperature: 37 °C = 98.6 °F = 310.15 K.')],
+          speed: [t('stem.unitconvert.fact_speed_1', '💡 Light travels at exactly 299,792,458 m/s.'), t('stem.unitconvert.fact_speed_2', '🦅 A diving peregrine falcon can reach about 390 km/h.'), t('stem.unitconvert.fact_speed_3', '🌎 Earth orbits the Sun at about 29.8 km/s.')],
+          volume: [t('stem.unitconvert.fact_volume_1', '💧 A raindrop is about 0.05 mL.'), t('stem.unitconvert.fact_volume_2', '🌊 The Pacific Ocean holds about 710 million km³ of water.'), t('stem.unitconvert.fact_volume_3', '🧍 An adult body holds about 42 L of water.')],
+          time: [t('stem.unitconvert.fact_time_1', '🐦 A hummingbird can beat its wings about 70 times a second.'), t('stem.unitconvert.fact_time_2', '❤️ Your heart beats about 100,000 times a day.'), t('stem.unitconvert.fact_time_3', '🌕 Moonlight takes about 1.28 s to reach Earth.')],
+          area: [t('stem.unitconvert.fact_area_1', '🌍 Russia covers about 17.1 million km².'), t('stem.unitconvert.fact_area_2', '💳 A credit card is about 46 cm² (85.6 mm × 53.98 mm).'), t('stem.unitconvert.fact_area_3', '🏀 An NBA court is about 437 m².')],
+          pressure: [t('stem.unitconvert.fact_pressure_1', '🌊 At the bottom of the Mariana Trench the pressure is about 1,100 atm.'), t('stem.unitconvert.fact_pressure_2', '🚀 A spacesuit keeps about 29.6 kPa inside.'), t('stem.unitconvert.fact_pressure_3', '🌀 In a strong hurricane\'s eye, air pressure can drop to about 90 kPa.')],
+          energy: [t('stem.unitconvert.fact_energy_1', '☀️ At noon, sunlight brings about 1,000 J each second to every square meter of ground.'), t('stem.unitconvert.fact_energy_2', '🧠 Your brain uses about 20 J every second (20 W).'), t('stem.unitconvert.fact_energy_3', '🍎 One food Calorie (1 kcal) is 4,184 J.')]
         };
 
-        // ── QUIZ QUESTIONS ──
-        var QUIZ_QS = [
-          { q: 'How many centimeters in 1 meter?',              a: 100,    unit: 'cm'  },
-          { q: 'How many grams in 1 kilogram?',                 a: 1000,   unit: 'g'   },
-          { q: 'How many inches in 1 foot?',                    a: 12,     unit: 'in'  },
-          { q: 'How many seconds in 1 minute?',                 a: 60,     unit: 'sec' },
-          { q: 'How many seconds in 1 hour?',                   a: 3600,   unit: 'sec' },
-          { q: 'How many mL in 1 liter?',                       a: 1000,   unit: 'mL'  },
-          { q: 'How many ounces in 1 pound?',                   a: 16,     unit: 'oz'  },
-          { q: 'How many feet in 1 mile?',                      a: 5280,   unit: 'ft'  },
-          { q: 'How many minutes in 1 day?',                    a: 1440,   unit: 'min' },
-          { q: 'How many mm in 1 cm?',                          a: 10,     unit: 'mm'  },
-          { q: 'How many meters in 1 km?',                      a: 1000,   unit: 'm'   },
-          { q: 'How many feet in 1 yard?',                      a: 3,      unit: 'ft'  },
-          { q: 'How many hours in 1 week?',                     a: 168,    unit: 'hr'  },
-          { q: 'How many days in 1 year?',                      a: 365,    unit: 'days'},
-          { q: 'How many cm in 1 inch? (approx)',               a: 2.54,   unit: 'cm',   tol: 0.05 },
-          { q: 'How many liters in 1 gallon? (approx)',         a: 3.785,  unit: 'L',    tol: 0.05 },
-          { q: 'How many grams in 1 ounce? (approx)',           a: 28.35,  unit: 'g',    tol: 0.5  },
-          { q: 'How many kg in 1 metric ton?',                  a: 1000,   unit: 'kg'  },
-          { q: 'How many m/s is 1 km/h? (3 decimal places)',    a: 0.278,  unit: 'm/s',  tol: 0.001 },
-          { q: '0\u00B0C in Fahrenheit?',                       a: 32,     unit: '\u00B0F' },
-          { q: '100\u00B0C in Fahrenheit?',                     a: 212,    unit: '\u00B0F' },
-          { q: 'Body temp 37\u00B0C in Fahrenheit?',            a: 98.6,   unit: '\u00B0F', tol: 0.1 },
-        ];
+        // ── NAMED MISCONCEPTIONS ──
+        var MIS = {
+          inverse: { name: t('stem.unitconvert.mis_inverse_name', 'Multiplied instead of divided (or the reverse)'), text: t('stem.unitconvert.mis_inverse', 'It looks like you multiplied where you should divide, or divided where you should multiply. Ask: is the new unit bigger or smaller? Smaller units need a bigger number.') },
+          linearForArea: { name: t('stem.unitconvert.mis_area_name', 'Used the length factor for an area'), text: t('stem.unitconvert.mis_area', 'You used the length factor for an area. 1 m = 100 cm, but 1 m² is a square 100 cm by 100 cm, which is 10,000 cm². Square the length factor.') },
+          linearForVolume: { name: t('stem.unitconvert.mis_volume_name', 'Used the length factor for a volume'), text: t('stem.unitconvert.mis_volume', 'You used a length (or area) factor for a volume. A cube 1 m on each side is 100 × 100 × 100 = 1,000,000 cm³. Cube the length factor.') },
+          tempOrder: { name: t('stem.unitconvert.mis_temp_order_name', 'Temperature steps in the wrong order'), text: t('stem.unitconvert.mis_temp_order', 'Check the order of the steps. For °F to °C, subtract 32 first, then multiply by 5/9. For °C to °F, multiply by 9/5 first, then add 32.') },
+          tempNoOffset: { name: t('stem.unitconvert.mis_temp_offset_name', 'Forgot the 32-degree offset'), text: t('stem.unitconvert.mis_temp_offset', 'The two scales start at different zero points: water freezes at 0 °C but at 32 °F. Remember to add or subtract 32.') },
+          tempNoScale: { name: t('stem.unitconvert.mis_temp_scale_missing_name', 'Forgot the 5/9 scale factor'), text: t('stem.unitconvert.mis_temp_scale_missing', 'Subtracting 32 is only the first step. A Celsius degree is bigger than a Fahrenheit degree, so you also multiply by 5/9.') },
+          tempWrongScale: { name: t('stem.unitconvert.mis_temp_scale_name', 'Used 9/5 and 5/9 the wrong way round'), text: t('stem.unitconvert.mis_temp_scale', 'You used the other scale factor. °C to °F uses 9/5 (the number grows); °F to °C uses 5/9.') },
+          tempKelvinSign: { name: t('stem.unitconvert.mis_kelvin_name', 'Added or subtracted 273.15 the wrong way'), text: t('stem.unitconvert.mis_kelvin', 'Kelvin starts at absolute zero, so the kelvin number is always 273.15 MORE than the Celsius number.') },
+          usImperial: { name: t('stem.unitconvert.mis_us_imperial_name', 'Mixed up US and imperial gallons'), text: t('stem.unitconvert.mis_us_imperial', 'It looks like you used the other gallon. A US gallon (3.785 L) is smaller than an imperial (UK) gallon (4.546 L).') },
+          prefixSlip: { name: t('stem.unitconvert.mis_prefix_name', 'Slipped a prefix power of ten'), text: t('stem.unitconvert.mis_prefix', 'Your digits look right, but the size is off by a power of ten. Check the prefixes: kilo = 1,000, centi = 1/100, milli = 1/1,000.') },
+          mixedIgnoredSmall: { name: t('stem.unitconvert.mis_mixed_small_name', 'Left out the extra small units'), text: t('stem.unitconvert.mis_mixed_small', 'You changed the big units but left out the extra small units. Add them on at the end.') },
+          mixedDecimal: { name: t('stem.unitconvert.mis_mixed_decimal_name', 'Read a mixed measurement as a decimal'), text: t('stem.unitconvert.mis_mixed_decimal', 'A mixed measurement like 5 ft 3 in is not the decimal 5.3 ft, because a foot is 12 inches, not 10. Convert the big units, then add the small ones.') },
+          baseTenHabit: { name: t('stem.unitconvert.mis_base_ten_name', 'Treated customary units as tens'), text: t('stem.unitconvert.mis_base_ten', 'Customary units do not go in tens. Check how many of the small unit make one big unit (12 in = 1 ft, 16 oz = 1 lb, 60 min = 1 h).') },
+          rateInverted: { name: t('stem.unitconvert.mis_rate_inverted_name', 'Divided the rate the wrong way'), text: t('stem.unitconvert.mis_rate_inverted', 'A unit rate "per hour" (or per minute) tells how much for ONE of them, so divide the amount by the time, not the time by the amount.') },
+          rateMultiplied: { name: t('stem.unitconvert.mis_rate_multiplied_name', 'Multiplied instead of finding a rate'), text: t('stem.unitconvert.mis_rate_multiplied', 'Multiplying makes a bigger total. A unit rate shares the total out over each single unit of time, so divide.') },
+          chainOneStep: { name: t('stem.unitconvert.mis_chain_name', 'Converted only one part of a compound unit'), text: t('stem.unitconvert.mis_chain', 'A compound unit like km/h has two parts. Convert BOTH: the top unit (km to m) and the bottom unit (h to s).') },
+          densityInverted: { name: t('stem.unitconvert.mis_density_name', 'Mixed up mass and volume in density'), text: t('stem.unitconvert.mis_density', 'Density is mass ÷ volume. So mass = density × volume, and volume = mass ÷ density. Check which one you divided by.') },
+          ladderWrongWay: { name: t('stem.unitconvert.mis_ladder_wrong_way_name', 'Moved the decimal point the wrong way'), text: t('stem.unitconvert.mis_ladder_wrong_way', 'You moved the decimal point the wrong way. Going DOWN the ladder to a smaller unit, the number gets bigger (× 10 for each place). Going UP to a bigger unit, it gets smaller (÷ 10 for each place).') },
+          ladderCount: { name: t('stem.unitconvert.mis_ladder_count_name', 'Counted the places wrong'), text: t('stem.unitconvert.mis_ladder_count', 'The direction is right, but the number of places is off. Count the powers of ten between the two prefixes again: from kilo to the base unit is 3 places.') },
+          ladderRungsNotPowers: { name: t('stem.unitconvert.mis_ladder_rungs_name', 'Counted rungs instead of powers of ten'), text: t('stem.unitconvert.mis_ladder_rungs', 'Mega and kilo are 1,000 apart, and so are milli and micro. That is 3 places, even though it is one step on the ladder.') },
+          hundredMinutes: { name: t('stem.unitconvert.mis_hundred_minutes_name', 'Used 100 minutes in an hour'), text: t('stem.unitconvert.mis_hundred_minutes', 'An hour has 60 minutes, not 100. Clock time is not a decimal: 1:30 means 1 hour and 30 minutes, and 60 minutes make the next hour.') },
+          decimalHours: { name: t('stem.unitconvert.mis_decimal_hours_name', 'Read part of an hour as minutes'), text: t('stem.unitconvert.mis_decimal_hours', '2.5 hours means 2 and a half hours. Half an hour is 30 minutes, not 50. Divide by 60 and keep the remainder as minutes.') },
+          regroupMinutes: { name: t('stem.unitconvert.mis_regroup_name', 'Did not regroup 60 minutes'), text: t('stem.unitconvert.mis_regroup', 'Your total is right, but 60 minutes make an hour. Trade each 60 minutes for 1 hour so fewer than 60 minutes are left.') },
+          subtractedBackwards: { name: t('stem.unitconvert.mis_backwards_name', 'Subtracted the minutes backwards'), text: t('stem.unitconvert.mis_backwards', 'You took the smaller minutes away from the bigger ones. When the end minutes are smaller, count on to the next hour first, or trade 1 hour for 60 minutes.') },
+          centsTenths: { name: t('stem.unitconvert.mis_cents_tenths_name', 'Moved the decimal point one place, not two'), text: t('stem.unitconvert.mis_cents_tenths', 'A dollar has 100 cents, so a cent is a hundredth: move the decimal point TWO places. 275 cents is $2.75.') },
+          moneyNotConverted: { name: t('stem.unitconvert.mis_money_same_name', 'Did not change the number'), text: t('stem.unitconvert.mis_money_same', 'When the unit changes, the number changes too. Dollars to cents: × 100. Cents to dollars: ÷ 100.') },
+          droppedZero: { name: t('stem.unitconvert.mis_dropped_zero_name', 'Dropped the zero in the cents'), text: t('stem.unitconvert.mis_dropped_zero', '$3.05 is 3 dollars and 5 cents. The 0 holds the tens place, so it is 305 cents, not 35 cents.') },
+          sigTooMany: { name: t('stem.unitconvert.mis_sig_many_name', 'Kept too many significant figures'), text: t('stem.unitconvert.mis_sig_many', 'Your answer claims more precision than the measurement had. Round to the number of significant figures the data supports.') },
+          sigTooFew: { name: t('stem.unitconvert.mis_sig_few_name', 'Dropped significant figures'), text: t('stem.unitconvert.mis_sig_few', 'Your answer has fewer significant figures than the data supports. Zeros at the end of a number with a decimal point are significant: keep them.') },
+          sigExactFactor: { name: t('stem.unitconvert.mis_sig_exact_name', 'Let an exact factor limit the figures'), text: t('stem.unitconvert.mis_sig_exact', 'Exact numbers, like 1 kg = 1,000 g or 1 in = 2.54 cm, do not limit significant figures. Only the measured values do.') },
+          sigAmbiguousZeros: { name: t('stem.unitconvert.mis_sig_zeros_name', 'Zeros that could mean anything'), text: t('stem.unitconvert.mis_sig_zeros', 'Zeros at the end of a whole number are unclear: 480 could have 2 or 3 significant figures. Write it in scientific notation, like 4.80 × 10², or put a decimal point after it: 480.') },
+          sigTruncated: { name: t('stem.unitconvert.mis_sig_cut_name', 'Cut digits off instead of rounding'), text: t('stem.unitconvert.mis_sig_cut', 'You cut the extra digits off. Round instead: look at the next digit, and round up if it is 5 or more.') },
+          sciNotSci: { name: t('stem.unitconvert.mis_sci_not_name', 'Not written in scientific notation'), text: t('stem.unitconvert.mis_sci_not', 'The value is right, but the question asks for scientific notation: a number from 1 up to (not including) 10, times a power of ten.') },
+          sciNotPlain: { name: t('stem.unitconvert.mis_sci_plain_name', 'Still in scientific notation'), text: t('stem.unitconvert.mis_sci_plain', 'The value is right, but the question asks for an ordinary number. Write out every digit, without × 10.') },
+          sciNotNormalized: { name: t('stem.unitconvert.mis_sci_norm_name', 'Front number not between 1 and 10'), text: t('stem.unitconvert.mis_sci_norm', 'The value is right, but the front number must be at least 1 and less than 10. For example, 45 × 10⁻⁶ is written 4.5 × 10⁻⁵.') },
+          sciExponentSign: { name: t('stem.unitconvert.mis_sci_sign_name', 'Exponent sign flipped'), text: t('stem.unitconvert.mis_sci_sign', 'Check the sign of the exponent. Numbers smaller than 1 have a negative exponent; numbers of 10 or more have a positive one.') },
+          sciExponentOff: { name: t('stem.unitconvert.mis_sci_off_name', 'Power of ten off'), text: t('stem.unitconvert.mis_sci_off', 'The digits are right, but the power of ten is off. Count again how many places the decimal point moves.') },
+          molarMassWrongWay: { name: t('stem.unitconvert.mis_molar_way_name', 'Used the molar mass the wrong way'), text: t('stem.unitconvert.mis_molar_way', 'Grams to moles: divide by the molar mass (g/mol). Moles to grams: multiply. Check that grams cancel.') },
+          avogadroWrongWay: { name: t('stem.unitconvert.mis_avogadro_way_name', 'Used Avogadro’s number the wrong way'), text: t('stem.unitconvert.mis_avogadro_way', 'Moles to particles: multiply by 6.022 × 10²³. Particles to moles: divide. One mole is a huge number of particles.') },
+          moleSkippedStep: { name: t('stem.unitconvert.mis_mole_skip_name', 'Skipped the mole step'), text: t('stem.unitconvert.mis_mole_skip', 'Grams cannot turn straight into particles. First change grams to moles (÷ molar mass), then moles to particles (× 6.022 × 10²³).') },
+          moleStoppedEarly: { name: t('stem.unitconvert.mis_mole_stop_name', 'Stopped one step early'), text: t('stem.unitconvert.mis_mole_stop', 'That is the number of moles, the middle of the chain. The question asks for the next quantity: add one more factor.') },
+          moleSubscripts: { name: t('stem.unitconvert.mis_mole_subscripts_name', 'Ignored the subscripts'), text: t('stem.unitconvert.mis_mole_subscripts', 'The small numbers count atoms. H₂O has 2 hydrogen atoms, so its molar mass is 2 × 1.008 + 15.999 g/mol.') },
+          moleAtomicMass: { name: t('stem.unitconvert.mis_mole_atomic_name', 'Used one atom’s mass for a molecule'), text: t('stem.unitconvert.mis_mole_atomic', 'Oxygen, nitrogen and chlorine gas are molecules of two atoms (O₂, N₂, Cl₂). Their molar mass is twice the atomic mass.') },
+          chainMissedStep: { name: t('stem.unitconvert.mis_chain_missed_name', 'Left out a step of the chain'), text: t('stem.unitconvert.mis_chain_missed', 'Your first step is right, but the answer is not yet in the unit the question asks for. Add the next factor (for example 1 kg / 1,000 g).') },
+          estTooBig: { name: t('stem.unitconvert.mis_est_big_name', 'Estimate 10 times too big'), text: t('stem.unitconvert.mis_est_big', 'That is about 10 times too big. Picture the benchmark for this unit and try again.') },
+          estTooSmall: { name: t('stem.unitconvert.mis_est_small_name', 'Estimate 10 times too small'), text: t('stem.unitconvert.mis_est_small', 'That is about 10 times too small. Picture the benchmark for this unit and try again.') },
+          estTenTimes: { name: t('stem.unitconvert.mis_est_ten_name', 'Off by a factor of ten'), text: t('stem.unitconvert.mis_est_ten', 'The unit is right but the number is 10 times off.') },
+          estUnitMixup: { name: t('stem.unitconvert.mis_est_unit_name', 'Right number, wrong unit'), text: t('stem.unitconvert.mis_est_unit', 'The number is right but the unit is not, and the units are very different sizes.') },
+          generic: { name: t('stem.unitconvert.mis_generic_name', 'Other mistake'), text: t('stem.unitconvert.mis_generic', 'Not yet. Check that the starting unit cancels and the target unit is left, then check the arithmetic.') }
+        };
+        function misOf(id) { return MIS[id] || MIS.generic; }
 
-        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
-        // id this build does not know matched NONE of them: the tool rendered its
-        // header and tab strip over an empty body -- a dead end that looks functional.
-        // `|| 'convert'` only catches null/empty. Allow-list the ids that actually have a
-        // branch. Declared here, at the READ site, because any existing tab-id array
-        // is assigned further down and `var` hoists the declaration, not the value.
-        var TAB_IDS = ['convert', 'magHunt', 'quiz', 'table', 'wordproblem'];
+        // ── Stage B text helpers ──
+        var CMP_NAME = {
+          water: t('stem.unitconvert.cmp_water', 'water'), co2: t('stem.unitconvert.cmp_co2', 'carbon dioxide'), nacl: t('stem.unitconvert.cmp_nacl', 'sodium chloride'),
+          caco3: t('stem.unitconvert.cmp_caco3', 'calcium carbonate'), glucose: t('stem.unitconvert.cmp_glucose', 'glucose'), nh3: t('stem.unitconvert.cmp_nh3', 'ammonia'),
+          ch4: t('stem.unitconvert.cmp_ch4', 'methane'), o2: t('stem.unitconvert.cmp_o2', 'oxygen gas'), n2: t('stem.unitconvert.cmp_n2', 'nitrogen gas'),
+          cl2: t('stem.unitconvert.cmp_cl2', 'chlorine gas'), kcl: t('stem.unitconvert.cmp_kcl', 'potassium chloride'), mgo: t('stem.unitconvert.cmp_mgo', 'magnesium oxide'),
+          fe: t('stem.unitconvert.cmp_fe', 'iron'), cu: t('stem.unitconvert.cmp_cu', 'copper'), al: t('stem.unitconvert.cmp_al', 'aluminum'),
+          zn: t('stem.unitconvert.cmp_zn', 'zinc'), ag: t('stem.unitconvert.cmp_ag', 'silver'), au: t('stem.unitconvert.cmp_au', 'gold'), s: t('stem.unitconvert.cmp_s', 'sulfur')
+        };
+        var ELEMENT_NAME = {
+          H: t('stem.unitconvert.el_h', 'hydrogen'), C: t('stem.unitconvert.el_c', 'carbon'), N: t('stem.unitconvert.el_n', 'nitrogen'), O: t('stem.unitconvert.el_o', 'oxygen'),
+          Na: t('stem.unitconvert.el_na', 'sodium'), Mg: t('stem.unitconvert.el_mg', 'magnesium'), Al: t('stem.unitconvert.el_al', 'aluminum'), S: t('stem.unitconvert.el_s', 'sulfur'),
+          Cl: t('stem.unitconvert.el_cl', 'chlorine'), K: t('stem.unitconvert.el_k', 'potassium'), Ca: t('stem.unitconvert.el_ca', 'calcium'), Fe: t('stem.unitconvert.el_fe', 'iron'),
+          Cu: t('stem.unitconvert.el_cu', 'copper'), Zn: t('stem.unitconvert.el_zn', 'zinc'), Ag: t('stem.unitconvert.el_ag', 'silver'), Au: t('stem.unitconvert.el_au', 'gold')
+        };
+        var PARTICLE_WORD = { molecule: t('stem.unitconvert.particles_molecules', 'molecules'), atom: t('stem.unitconvert.particles_atoms', 'atoms'), formulaUnit: t('stem.unitconvert.particles_formula_units', 'formula units') };
+        function particleWord(item) { return PARTICLE_WORD[item && item.particle] || PARTICLE_WORD.molecule; }
+        var STEP_TEXT = {
+          ladderDown: t('stem.unitconvert.step_ladder_down', 'From {from} down to {to}, the decimal point moves {n} places to the right (× {factor}).'),
+          ladderUp: t('stem.unitconvert.step_ladder_up', 'From {from} up to {to}, the decimal point moves {n} places to the left (÷ {factor}).'),
+          ladderDownOne: t('stem.unitconvert.step_ladder_down_one', 'From {from} down to {to}, the decimal point moves 1 place to the right (× {factor}).'),
+          ladderUpOne: t('stem.unitconvert.step_ladder_up_one', 'From {from} up to {to}, the decimal point moves 1 place to the left (÷ {factor}).'),
+          divRemainder: t('stem.unitconvert.step_div_remainder', '{t} ÷ 60 = {h} remainder {m}'),
+          jump: t('stem.unitconvert.step_jump', 'From {from} to {to}: {d}'),
+          jumpTotal: t('stem.unitconvert.step_jump_total', 'Add the jumps: {parts} = {total}'),
+          endsAt: t('stem.unitconvert.step_ends_at', 'It ends at {time}.'),
+          sigCount: t('stem.unitconvert.step_sig_count', '{value} {unit} has {n} significant figures.'),
+          sigExactRule: t('stem.unitconvert.step_sig_exact', 'A metric prefix change is exact (1 kg = 1,000 g), so the answer keeps the same significant figures.'),
+          sigInchExact: t('stem.unitconvert.step_sig_inch', '1 in = 2.54 cm is exact by definition, so only the measurement limits the significant figures.'),
+          sigMeasuredRule: t('stem.unitconvert.step_sig_measured', '{a} has {na} significant figures and {b} has {nb}. A product keeps the smaller number: {n}.'),
+          sigRound: t('stem.unitconvert.step_sig_round', 'Round to {n} significant figures: {value} {unit}'),
+          sciRuleTo: t('stem.unitconvert.step_sci_rule_to', 'Scientific notation is a number from 1 up to (not including) 10, times a power of ten.'),
+          sciRuleFrom: t('stem.unitconvert.step_sci_rule_from', 'The exponent tells how many places the decimal point moves: right if it is positive, left if it is negative.'),
+          sciMoveLeft: t('stem.unitconvert.step_sci_move_left', 'The decimal point moves {n} places to the left, so the exponent is {n}.'),
+          sciMoveRight: t('stem.unitconvert.step_sci_move_right', 'The decimal point moves {n} places to the right, so the exponent is −{n}.'),
+          sciExpandRight: t('stem.unitconvert.step_sci_expand_right', 'The exponent is positive: move the decimal point {n} places to the right.'),
+          sciExpandLeft: t('stem.unitconvert.step_sci_expand_left', 'The exponent is negative: move the decimal point {n} places to the left.'),
+          sciEquals: t('stem.unitconvert.step_sci_equals', '{plain} = {sci}'),
+          sciAddExponents: t('stem.unitconvert.step_sci_add', 'Multiplying powers of ten adds the exponents: {a} + ({b}) = {c}.')
+        };
+        // A step object {s, p} as a translated sentence. Param values may ask
+        // for formatting: {clock: minutes}, {num: '12.50'}, {sig: x, n},
+        // {plain: x}, {sci: x, n}. blank hides the result for a faded example.
+        function stepParam(v) {
+          if (v && typeof v === 'object') {
+            if (v.clock != null) return formatClock(v.clock);
+            if (v.num != null) return localizeNumberText(v.num);
+            if (v.sig != null) return sigText(v.sig, v.n);
+            if (v.plain != null) return plainNumber(v.plain);
+            if (v.sci != null) return sciText(v.sci, v.n);
+            return '';
+          }
+          return v == null ? '' : String(v);
+        }
+        // blank: true hides the usual result params; an array names them.
+        function stepText(step, blank) {
+          if (!step || typeof step !== 'object') return String(step == null ? '' : step);
+          var params = {};
+          Object.keys(step.p || {}).forEach(function(k) { params[k] = stepParam(step.p[k]); });
+          if (blank) (Array.isArray(blank) ? blank : ['value', 'total', 'time', 'sci', 'm']).forEach(function(k) { if (params[k] != null && params[k] !== '') params[k] = '?'; });
+          // One place is singular ("moves 1 place", not "1 places").
+          var key = (step.s === 'ladderDown' || step.s === 'ladderUp') && step.p && Number(step.p.n) === 1 ? step.s + 'One' : step.s;
+          return fill(STEP_TEXT[key] || '', params);
+        }
+        function unitLabel(item) {
+          if (!item) return '';
+          if (item.money) return item.unit === '$' ? '$' : '¢';
+          if (item.unit === 'particles') return particleWord(item);
+          return unitShort(item.unit || '');
+        }
+        function answerText(item) {
+          if (!item) return '';
+          if (item.answerType === 'hm') return fill(t('stem.unitconvert.hm_value', '{h} h {m} min'), { h: item.ah, m: item.am });
+          if (item.answerType === 'clock') return formatClock(item.a);
+          if (item.money) return item.unit === '$' ? formatMoney(item.a) : fmtN(item.a) + '¢';
+          if (item.grade === 'sigfigs') return sigText(item.a, item.sf) + ' ' + unitShort(item.unit);
+          if (item.kind === 'sciNotation') {
+            var s = item.params && item.params.mode === 'fromSci' ? plainNumber(item.a) : sciText(item.a, item.sf);
+            return item.unit ? s + ' ' + item.unit : s;
+          }
+          if (item.unit === 'particles') return formatUnitNumber(item.a, 4) + ' ' + particleWord(item);
+          if (item.family === 'chem') return formatUnitNumber(item.a, 4) + ' ' + unitShort(item.unit);
+          return fmtN(item.a) + (item.unit ? ' ' + unitShort(item.unit) : '');
+        }
+        function correctMessage(item, paid) {
+          if (!item.family) {
+            return paid > 0
+              ? fill(t('stem.unitconvert.practice_correct_xp', 'Correct! {answer} {unit}. +{xp} XP'), { answer: fmtN(item.a), unit: unitShort(item.unit), xp: paid })
+              : fill(t('stem.unitconvert.practice_correct', 'Correct! {answer} {unit}.'), { answer: fmtN(item.a), unit: unitShort(item.unit) });
+          }
+          return paid > 0
+            ? fill(t('stem.unitconvert.practice_correct_full_xp', 'Correct! {answer}. +{xp} XP'), { answer: answerText(item), xp: paid })
+            : fill(t('stem.unitconvert.practice_correct_full', 'Correct! {answer}.'), { answer: answerText(item) });
+        }
+
+        var BADGE_TEXT = {
+          firstConvert: [t('stem.unitconvert.badge_firstConvert', 'First Convert'), t('stem.unitconvert.badgedesc_firstConvert', 'Make your first unit conversion')],
+          quizStreak5: [t('stem.unitconvert.badge_quizStreak5', 'On Fire'), t('stem.unitconvert.badgedesc_quizStreak5_v2', 'Solve 5 practice problems in a row on the first try')],
+          quizStreak10: [t('stem.unitconvert.badge_quizStreak10', 'Lightning'), t('stem.unitconvert.badgedesc_quizStreak10_v2', 'Solve 10 practice problems in a row on the first try')],
+          quizMaster: [t('stem.unitconvert.badge_quizMaster', 'Quiz Master'), t('stem.unitconvert.badgedesc_quizMaster_v2', 'Finish 20 practice problems')],
+          misconceptionFixer: [t('stem.unitconvert.badge_misconceptionFixer', 'Mistake Fixer'), t('stem.unitconvert.badgedesc_misconceptionFixer', 'Fix a named mistake on your second try')],
+          wordProblem: [t('stem.unitconvert.badge_wordProblem', 'Word Wizard'), t('stem.unitconvert.badgedesc_wordProblem_v2', 'Solve a word problem')],
+          chainBuilder: [t('stem.unitconvert.badge_chainBuilder', 'Chain Builder'), t('stem.unitconvert.badgedesc_chainBuilder', 'Build a correct factor chain yourself')],
+          estimator: [t('stem.unitconvert.badge_estimator', 'Sharp Estimator'), t('stem.unitconvert.badgedesc_estimator', 'Make 5 good estimates')],
+          allCategories: [t('stem.unitconvert.badge_allCategories', 'World Explorer'), t('stem.unitconvert.badgedesc_allCategories', 'Use all 9 unit categories')],
+          pinCollector: [t('stem.unitconvert.badge_pinCollector', 'Pin Collector'), t('stem.unitconvert.badgedesc_pinCollector', 'Pin 5 conversions')],
+          historian: [t('stem.unitconvert.badge_historian', 'Historian'), t('stem.unitconvert.badgedesc_historian', 'Save 10 conversions to history')],
+          tempMaster: [t('stem.unitconvert.badge_tempMaster', 'Temp Master'), t('stem.unitconvert.badgedesc_tempMaster', 'Convert between all 3 temperature units')]
+        };
+
+        var TAB_IDS = UNIT_CONVERT_TAB_ORDER;
         var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'convert';
-        var facts = FACTS[d.category] || [];
+        // While a guess is open, a fact that names both units (1 kcal is
+        // 4,184 J) would give the answer away, so it waits.
+        var facts = (FACTS[d.category] || []).filter(function(fact) {
+          return !guessOpen || fact.indexOf(unitShort(d.fromUnit)) === -1 || fact.indexOf(unitShort(d.toUnit)) === -1;
+        });
         var factIdx = d.factIdx || 0;
         var currentFact = facts[factIdx % facts.length];
         var baseValue = d.category === 'temperature' ? conversionValue : conversionValue * (cat.units[d.fromUnit] || 1);
         var refText = temperatureCheck.valid && REFS[d.category] ? REFS[d.category](baseValue) : null;
 
-        // ── Badge state ──
+        // ── Persistent progress ──
         var badges = d.badges || {};
         var showBadges = d.showBadges || false;
         var showTutor = d.showTutor || false;
@@ -598,15 +2816,53 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var quizTotal = d.quizTotal || 0;
         var historySaveCount = d.historySaveCount || 0;
         var wordProblem = d.wordProblem && typeof d.wordProblem === 'object' ? d.wordProblem : null;
+        var xpCredited = d.xpCredited && typeof d.xpCredited === 'object' ? d.xpCredited : {};
+        var teacher = d.teacher && typeof d.teacher === 'object' ? d.teacher : {};
+        var revealsAllowed = teacher.noReveal !== true;
+        var autoBand = practiceBandFor(typeof ctx.gradeBand === 'string' && ctx.gradeBand ? ctx.gradeBand : gradeBandFromLevel(ctx.gradeLevel));
+        var lockedBand = PRACTICE_BANDS.indexOf(teacher.lockBand) !== -1 ? teacher.lockBand : '';
+        var band = lockedBand || (PRACTICE_BANDS.indexOf(d.practiceBand) !== -1 ? d.practiceBand : autoBand);
+        // The Start here path and the tab order follow the grade band (or a
+        // teacher's locked level), not the student's practice-level picker,
+        // so the tabs never jump around while a student explores levels.
+        var pathBand = lockedBand || autoBand;
+        var pathSteps = learningPathFor(pathBand);
+        var pathTabs = pathSteps.map(function(s) { return s.tab; });
+        var visibleTabOrder = tabOrderFor(pathBand);
+        var BAND_LABELS = {
+          b45: t('stem.unitconvert.band_45', 'Grades 4–5: one system, mixed units'),
+          b67: t('stem.unitconvert.band_67', 'Grades 6–7: rates and unit rates'),
+          b8: t('stem.unitconvert.band_8', 'Grade 8+ and chemistry: chains, area, volume, density')
+        };
+        var BAND_SHORT = { b45: t('stem.unitconvert.band_45_short', 'Grades 4–5'), b67: t('stem.unitconvert.band_67_short', 'Grades 6–7'), b8: t('stem.unitconvert.band_8_short', 'Grade 8+'), b35: t('stem.unitconvert.band_35_short', 'Grades 3–5'), chem: t('stem.unitconvert.band_chem_short', 'Chemistry, grades 9–12') };
+
+        // Award XP once per distinct item; returns the points actually paid.
+        // A shown answer is remembered as 'rev|' + key (in the saved
+        // xpCredited map), so the same problem drawn again later pays nothing.
+        function markRevealed(itemKey) {
+          if (!itemKey || xpCredited['rev|' + itemKey]) return;
+          xpCredited = Object.assign({}, xpCredited);
+          xpCredited['rev|' + itemKey] = true;
+          upd('xpCredited', xpCredited);
+        }
+        function payOnce(itemKey, points, reason) {
+          if (!itemKey || !(points > 0) || xpCredited[itemKey] || xpCredited['rev|' + itemKey]) return 0;
+          xpCredited = Object.assign({}, xpCredited);
+          xpCredited[itemKey] = true;
+          upd('xpCredited', xpCredited);
+          if (typeof awardStemXP === 'function') awardStemXP('unitConvert', points, reason);
+          return points;
+        }
 
         function updateConversionValueDraft(rawValue) {
           var raw = String(rawValue);
           var parsed = parseNumericDraft(raw);
           var patch = { valueDraft: raw };
-          if (parsed.valid) patch.value = parsed.value;
+          var ok = parsed.valid && validateQuantityValue(parsed.value, d.category, d.fromUnit).valid;
+          if (ok) patch.value = parsed.value;
           upd(patch);
-          if (!parsed.valid) return;
-          checkBadges({ firstConvert: true });
+          if (!ok) return;
+          if (!guessOpen) checkBadges({ firstConvert: true });
           if (d.category === 'temperature') {
             var tu = Object.assign({}, tempUnitsUsed);
             tu[d.fromUnit] = true;
@@ -617,10 +2873,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         }
 
         function reportConversionValueError() {
-          if (!temperatureCheck.valid && typeof announceToSR === 'function') announceToSR(temperatureCheck.message);
+          if (!temperatureCheck.valid) { say(temperatureCheck.message); return; }
+          if (!hideConversionResult) say(resultAnnouncement(conversionValue, d.fromUnit, d.toUnit));
         }
 
-        // ── Badge checker ──
+        // ── Badge checker ── (badges are one-time; only learning badges pay)
         function checkBadges(updates) {
           var changed = {};
           var newBadges = Object.assign({}, badges);
@@ -631,19 +2888,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             }
           });
           if (Object.keys(changed).length > 0) {
+            badges = newBadges;
             upd('badges', newBadges);
             Object.keys(changed).forEach(function(bid) {
               var badge = BADGES.find(function(b) { return b.id === bid; });
               if (badge) {
                 playBadgeSound();
-                addToast(badge.icon + t('stem.unitconvert.badge_toast', ' Badge: ') + t('stem.unitconvert.badge_' + badge.id, badge.label) + '!', 'success');
-                if (typeof awardStemXP === 'function') awardStemXP('unitConvert', 15, 'badge');
+                addToast(fill(t('stem.unitconvert.badge_toast_v2', '{icon} Badge: {name}!'), { icon: badge.icon, name: (BADGE_TEXT[badge.id] || [badge.id])[0] }), 'success');
+                if (badge.xp > 0 && typeof awardStemXP === 'function') awardStemXP('unitConvert', badge.xp, 'badge');
               }
             });
           }
         }
 
-        // Track category usage for badge
         function trackCategory(catKey) {
           var newCats = Object.assign({}, catsUsed);
           newCats[catKey] = true;
@@ -651,37 +2908,74 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (Object.keys(newCats).length >= 9) checkBadges({ allCategories: true });
         }
 
-        // ── AI Tutor ──
+        // ── Cross-links (open another STEM tool when the host can load it) ──
+        function toolReachable(id) {
+          try {
+            if (typeof setStemLabTool !== 'function' || !window.StemLab) return false;
+            return !!((window.StemLab.isRegistered && window.StemLab.isRegistered(id)) || typeof window.__alloEnsureStemPluginLoaded === 'function');
+          } catch (e) { return false; }
+        }
+        function openTool(id, name) {
+          var ok = false;
+          try { ok = !!(window.StemLab.isRegistered && window.StemLab.isRegistered(id)); } catch (e) { ok = false; }
+          if (!ok) {
+            try { ok = typeof window.__alloEnsureStemPluginLoaded === 'function' && window.__alloEnsureStemPluginLoaded(id) !== false; } catch (e2) { ok = false; }
+          }
+          if (!ok || typeof setStemLabTool !== 'function') {
+            say(fill(t('stem.unitconvert.tool_unavailable', '{name} is not available in this build.'), { name: name }));
+            return;
+          }
+          setStemLabTool(id);
+        }
+        function ratioLabLink(reasonText) {
+          if (!toolReachable('ratioLab')) return null;
+          return h('div', { className: 'mt-3 rounded-lg border border-teal-300 bg-teal-50 p-3', 'data-unitconvert-crosslink': 'ratioLab' },
+            h('p', { className: 'text-xs text-teal-900' }, reasonText),
+            h('button', { type: 'button', onClick: function() { openTool('ratioLab', t('stem.unitconvert.ratiolab_name', 'Ratios Lab')); }, className: 'mt-2 min-h-[2.75rem] rounded-lg border border-teal-700 bg-white px-3 py-2 text-xs font-bold text-teal-800 hover:bg-teal-100' },
+              t('stem.unitconvert.open_ratiolab', '➗ Open Ratios Lab: tables, double number lines and unit rates')));
+        }
+
+        // ── AI Tutor (optional; never required) ──
         function askTutor() {
-          if (tutorLoading) return;
-          if (!temperatureCheck.valid) {
+          if (tutorLoading || !aiOK) return;
+          if (!temperatureCheck.valid && tab === 'convert') {
             addToast(temperatureCheck.message, 'error');
-            if (typeof announceToSR === 'function') announceToSR(temperatureCheck.message);
+            say(temperatureCheck.message);
             return;
           }
           upd({ showTutor: true, tutorLoading: true, tutorResponse: '' });
           var catLabel = d.category;
           var prompt = 'You are a friendly math tutor helping a student learn unit conversions. ';
-          prompt += 'They are converting ' + catLabel + ' units: ' + d.value + ' ' + d.fromUnit + ' to ' + d.toUnit + ' (= ' + fmtResult + '). ';
-          if (d.quiz && d.quiz.answered && !d.quiz.correct) {
-            prompt += 'They just got a quiz question wrong: "' + d.quiz.q + '". The answer was ' + d.quiz.a + ' ' + d.quiz.unit + '. ';
-            prompt += 'Explain this conversion step by step with a memory trick. Keep it to 2-3 sentences.';
+          prompt += 'They are converting ' + catLabel + ' units: ' + fmtValue + ' ' + d.fromUnit + ' to ' + d.toUnit + (hideConversionResult ? '. They are working out the answer first and have not seen it, so do NOT state the result or the conversion factor. ' : ' (= ' + fmtResult + '). ');
+          var item = d.quiz && typeof d.quiz === 'object' ? d.quiz : null;
+          if (tab === 'quiz' && item && item.q) {
+            if (item.answered) {
+              prompt += 'They just worked on: "' + item.q + '". The answer is ' + item.a + ' ' + item.unit + '. ';
+              prompt += 'Explain this conversion step by step with a memory trick. Keep it to 2-3 sentences.';
+            } else {
+              prompt += 'They are working on: "' + item.q + '". Do NOT give the final answer. Give one hint about which way to convert and why. Keep it to 2 sentences.';
+            }
           } else {
             prompt += 'Give a helpful tip about converting ' + catLabel + ' units, or share an interesting real-world application. Keep it to 2-3 sentences.';
           }
-          callGemini(prompt, false, false, 0.7).then(function(resp) {
-            upd({ tutorResponse: resp || 'No response received.', tutorLoading: false });
-          }).catch(function() {
-            upd({ tutorResponse: 'AI tutor is unavailable right now. Try again later!', tutorLoading: false });
-          });
+          var unavailable = function() {
+            upd({ tutorResponse: t('stem.unitconvert.tutor_unavailable', 'The AI tutor is unavailable right now. The hints in each activity still work.'), tutorLoading: false });
+          };
+          var pending;
+          try { pending = callGemini(prompt, false, false, 0.7); } catch (e) { unavailable(); return; }
+          Promise.resolve(pending).then(function(resp) {
+            upd({ tutorResponse: (typeof resp === 'string' ? resp : '') || t('stem.unitconvert.tutor_no_response', 'No response received.'), tutorLoading: false });
+          }).catch(unavailable);
         }
 
+        // ── Word problems ──
         function useOfflineWordProblem(notice, request) {
           if (request && request.id !== _unitConvertWordProblemRequestId) return;
           var requestCategory = request ? request.category : d.category;
           var requestFrom = request ? request.fromUnit : d.fromUnit;
           var requestTo = request ? request.toUnit : d.toUnit;
-          var fallback = makeOfflineWordProblem(requestCategory, requestFrom, requestTo);
+          var seq = request ? request.seq : (Number(d.wpSeq) || 0);
+          var fallback = makeOfflineWordProblem(requestCategory, requestFrom, requestTo, seq);
           upd({
             wordProblem: fallback,
             loadingWP: false,
@@ -689,41 +2983,45 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             wordProblemFeedback: notice || '',
             wordProblemSolved: false,
             wordProblemRevealed: false,
-            wordProblemHintLevel: 0
+            wordProblemHintLevel: 0, wordProblemTries: 0, wordProblemInputError: ''
           });
-          if (notice && addToast) addToast(notice, 'info');
-          if (typeof announceToSR === 'function') announceToSR('Offline practice problem ready. Math verified locally.');
+          if (notice) addToast(notice, 'info');
+          say(t('stem.unitconvert.sr_offline_ready', 'Offline practice problem ready. Math verified locally.'));
         }
 
         function generateWordProblem() {
           if (d.loadingWP) return;
+          var seq = Math.max(0, Math.floor(Number(d.wpSeq) || 0));
           var request = {
             id: ++_unitConvertWordProblemRequestId,
             category: d.category,
             fromUnit: d.fromUnit,
             toUnit: d.toUnit,
             unitList: Object.keys(cat.units),
-            categoryLabel: d.category
+            categoryLabel: d.category,
+            seq: seq
           };
           upd({
             loadingWP: true,
             wordProblem: null,
+            wpSeq: seq + 1,
             wordProblemAttempt: '',
             wordProblemFeedback: '',
             wordProblemSolved: false,
             wordProblemRevealed: false,
-            wordProblemHintLevel: 0
+            wordProblemHintLevel: 0, wordProblemTries: 0, wordProblemInputError: ''
           });
 
-          if (typeof callGemini !== 'function') {
-            useOfflineWordProblem(t('stem.unitconvert.offline_problem_ready', 'AI is unavailable, so an offline practice problem is ready.'), request);
+          if (!aiOK) {
+            useOfflineWordProblem(t('stem.unitconvert.offline_problem_ready_v2', 'Here is an offline practice problem. Its math is checked by the app.'), request);
             return;
           }
 
           var prompt = [
             'Create one safe, engaging grade 5-8 real-world context for a unit-conversion practice problem.',
+            'Pitch it for this level: ' + BAND_SHORT[band] + '.',
             'Category: ' + request.categoryLabel + '. Allowed units: ' + request.unitList.join(', ') + '.',
-            'Choose two different allowed units and a physically valid finite input value.',
+            'Choose two different allowed units and a physically valid, positive, finite input value.',
             'CONTEXT must be one short sentence with no numbers, unit symbols, answer, or calculation instructions.',
             'Compute the conversion carefully. ANSWER_VALUE must be a finite decimal number with at least six significant digits when needed.',
             'ANSWER_UNIT must exactly equal TO_UNIT, and all unit fields must exactly match an allowed unit.',
@@ -748,6 +3046,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               useOfflineWordProblem(t('stem.unitconvert.ai_problem_invalid', 'The AI problem could not be verified, so an offline practice problem is ready.'), request);
               return;
             }
+            // Generating pays nothing: XP comes only from solving it.
             upd({
               wordProblem: parsed,
               loadingWP: false,
@@ -755,146 +3054,671 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               wordProblemFeedback: '',
               wordProblemSolved: false,
               wordProblemRevealed: false,
-              wordProblemHintLevel: 0
+              wordProblemHintLevel: 0, wordProblemTries: 0, wordProblemInputError: ''
             });
-            awardStemXP && awardStemXP('unitConvert', 2, 'word problem');
-            checkBadges({ wordProblem: true });
-            if (typeof announceToSR === 'function') announceToSR('New word problem ready. The answer is hidden and the math is verified locally.');
+            say(t('stem.unitconvert.sr_ai_ready', 'New word problem ready. The answer is hidden and the math is verified locally.'));
           }).catch(function() {
             useOfflineWordProblem(t('stem.unitconvert.offline_problem_ready', 'AI is unavailable, so an offline practice problem is ready.'), request);
           });
         }
+        var WP_DIAGNOSIS_TEXT = {
+          'The conversion ratio may be reversed. Flip it so the starting unit cancels.': t('stem.unitconvert.wp_diag_reversed', 'The conversion ratio may be reversed. Flip it so the starting unit cancels.'),
+          'Check the decimal place or metric prefix before trying again.': t('stem.unitconvert.wp_diag_prefix', 'Check the decimal place or metric prefix before trying again.'),
+          'Remember that temperature conversions use an offset as well as a scale factor.': t('stem.unitconvert.wp_diag_temperature', 'Remember that temperature conversions use an offset as well as a scale factor.'),
+          'Not yet. Check that the starting unit cancels and the requested unit remains.': t('stem.unitconvert.wp_diag_generic', 'Not yet. Check that the starting unit cancels and the requested unit remains.'),
+          'Enter a valid number before checking your answer.': t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.')
+        };
         function gradeWordProblemAttempt() {
-          if (!wordProblem || d.wordProblemSolved) return;
+          if (!wordProblem || d.wordProblemSolved || d.wordProblemRevealed) return;
           var tolerance = Math.max(Math.abs(wordProblem.answer) * 0.005, 1e-12);
           var evaluation = evaluateNumericAnswer(d.wordProblemAttempt, wordProblem.answer, tolerance);
           if (!evaluation.valid) {
-            upd('wordProblemFeedback', t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.'));
+            // Shown in a role=alert line under the box, like the other
+            // activities; an unreadable entry is not a try.
+            upd('wordProblemInputError', t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.'));
             return;
           }
           if (evaluation.correct) {
             var success = t('stem.unitconvert.word_problem_correct', 'Correct! Your conversion and unit match.');
             upd({ wordProblemSolved: true, wordProblemFeedback: success });
+            focusSoon('unitconvert-wp-new');
             stemBeep && stemBeep(784, 0.12);
-            awardStemXP && awardStemXP('unitConvert', 3, 'word problem solved');
-            if (typeof announceToSR === 'function') announceToSR(success);
+            // Once per distinct problem: re-solving a repeat pays nothing.
+            payOnce(wordProblemSignature(wordProblem), 2, 'word problem solved');
+            checkBadges({ wordProblem: true });
+            say(success);
             return;
           }
           var feedback = diagnosePracticeAnswer(evaluation.answer, wordProblem.answer, wordProblem.unit, Number(wordProblem.inputValue));
-          upd('wordProblemFeedback', feedback);
-          if (typeof announceToSR === 'function') announceToSR(feedback);
+          feedback = WP_DIAGNOSIS_TEXT[feedback] || feedback;
+          var wpTries = (Number(d.wordProblemTries) || 0) + 1;
+          upd({ wordProblemFeedback: feedback, wordProblemTries: wpTries });
+          say(wpTries >= 2 && revealsAllowed
+            ? fill(t('stem.unitconvert.sr_wp_try_or_reveal', 'Not yet. {mistake} Try again, or choose Reveal Answer.'), { mistake: feedback })
+            : fill(t('stem.unitconvert.sr_practice_try_again', 'Not yet. {mistake} Try again.'), { mistake: feedback }));
         }
 
         function showNextWordProblemHint() {
           if (!wordProblem) return;
           var nextLevel = Math.min(2, (d.wordProblemHintLevel || 0) + 1);
           upd('wordProblemHintLevel', nextLevel);
-          var hint = wordProblem.hints[nextLevel - 1];
-          if (hint && typeof announceToSR === 'function') announceToSR('Hint ' + nextLevel + ': ' + hint);
+          var hint = wordProblemHints()[nextLevel - 1];
+          if (hint) say(fill(t('stem.unitconvert.sr_hint', 'Hint {n}: {hint}'), { n: nextLevel, hint: hint }));
         }
 
         function revealWordProblemAnswer() {
-          if (!wordProblem) return;
+          if (!wordProblem || !revealsAllowed || d.wordProblemSolved || d.wordProblemRevealed || !((Number(d.wordProblemTries) || 0) >= 2)) return;
+          markRevealed(wordProblemSignature(wordProblem));
           upd({ wordProblemRevealed: true, wordProblemHintLevel: 2 });
-          if (typeof announceToSR === 'function') {
-            announceToSR('Answer revealed: ' + fmt(wordProblem.answer) + ' ' + wordProblem.unit + '.');
+          focusSoon('unitconvert-wp-new');
+          say(fill(t('stem.unitconvert.sr_answer_revealed', 'Answer revealed: {answer} {unit}.'), { answer: fmt(wordProblem.answer), unit: unitShort(wordProblem.unit) }));
+        }
+        var OFFLINE_CONTEXT_TEXT = {
+          length: [t('stem.unitconvert.wp_ctx_length_0', 'A design team is measuring material for a model.'), t('stem.unitconvert.wp_ctx_length_1', 'A runner is planning a training route.'), t('stem.unitconvert.wp_ctx_length_2', 'A carpenter is cutting a board for a shelf.'), t('stem.unitconvert.wp_ctx_length_3', 'A class is measuring how far a paper airplane flew.')],
+          weight: [t('stem.unitconvert.wp_ctx_weight_0', 'A science class is measuring the mass of a sample.'), t('stem.unitconvert.wp_ctx_weight_1', 'A baker is weighing flour for bread.'), t('stem.unitconvert.wp_ctx_weight_2', 'A vet is checking the mass of a puppy.'), t('stem.unitconvert.wp_ctx_weight_3', 'A shipping clerk is weighing a box.')],
+          temperature: [t('stem.unitconvert.wp_ctx_temperature_0', 'A weather station is comparing temperature scales.'), t('stem.unitconvert.wp_ctx_temperature_1', 'A nurse is reading a patient thermometer.'), t('stem.unitconvert.wp_ctx_temperature_2', 'A chef is checking an oven setting.'), t('stem.unitconvert.wp_ctx_temperature_3', 'A scientist is recording a lab temperature.')],
+          speed: [t('stem.unitconvert.wp_ctx_speed_0', 'A robotics team is checking a vehicle speed.'), t('stem.unitconvert.wp_ctx_speed_1', 'A coach is timing a sprinter.'), t('stem.unitconvert.wp_ctx_speed_2', 'A pilot is reading an airspeed gauge.'), t('stem.unitconvert.wp_ctx_speed_3', 'A cyclist is checking a bike computer.')],
+          volume: [t('stem.unitconvert.wp_ctx_volume_0', 'A kitchen lab is measuring a liquid.'), t('stem.unitconvert.wp_ctx_volume_1', 'A gardener is filling a watering can.'), t('stem.unitconvert.wp_ctx_volume_2', 'A pharmacist is measuring a liquid medicine.'), t('stem.unitconvert.wp_ctx_volume_3', 'A family is filling a fish tank.')],
+          time: [t('stem.unitconvert.wp_ctx_time_0', 'A space mission is planning an activity.'), t('stem.unitconvert.wp_ctx_time_1', 'A student is timing a science experiment.'), t('stem.unitconvert.wp_ctx_time_2', 'A coach is planning practice time.'), t('stem.unitconvert.wp_ctx_time_3', 'A family is planning a road trip.')],
+          area: [t('stem.unitconvert.wp_ctx_area_0', 'A garden team is measuring a plot.'), t('stem.unitconvert.wp_ctx_area_1', 'A painter is measuring a wall.'), t('stem.unitconvert.wp_ctx_area_2', 'A farmer is measuring a field.'), t('stem.unitconvert.wp_ctx_area_3', 'A class is measuring the floor of a room.')],
+          pressure: [t('stem.unitconvert.wp_ctx_pressure_0', 'An engineering team is checking a pressure reading.'), t('stem.unitconvert.wp_ctx_pressure_1', 'A cyclist is checking tire pressure.'), t('stem.unitconvert.wp_ctx_pressure_2', 'A diver is reading a depth gauge.'), t('stem.unitconvert.wp_ctx_pressure_3', 'A weather station is recording air pressure.')],
+          energy: [t('stem.unitconvert.wp_ctx_energy_0', 'A sustainability team is tracking energy use.'), t('stem.unitconvert.wp_ctx_energy_1', 'A nutrition class is reading a food label.'), t('stem.unitconvert.wp_ctx_energy_2', 'A family is reading an electricity bill.'), t('stem.unitconvert.wp_ctx_energy_3', 'An engineer is testing a battery.')]
+        };
+        function wordProblemText(problem) {
+          if (problem && problem.source === 'offline' && OFFLINE_CONTEXT_TEXT[problem.category] && typeof problem.contextIndex === 'number' && problem.fromUnit) {
+            return fill(t('stem.unitconvert.wp_offline_problem', '{context} The measurement is {value} {from}. What is this value in {to}?'), {
+              context: OFFLINE_CONTEXT_TEXT[problem.category][problem.contextIndex % 4], value: formatUnitNumber(problem.inputValue, 'auto'), from: unitShort(problem.fromUnit), to: unitShort(problem.toUnit)
+            });
           }
+          if (problem && problem.source === 'ai' && problem.context && problem.fromUnit) {
+            return fill(t('stem.unitconvert.wp_ai_problem', '{context} The measurement is {value} {from}. What is this value in {to}?'), {
+              context: problem.context, value: formatUnitNumber(problem.inputValue, 'auto'), from: unitShort(problem.fromUnit), to: unitShort(problem.toUnit)
+            });
+          }
+          return problem ? problem.problem : '';
+        }
+        function wordProblemHints() {
+          if (!wordProblem) return [];
+          if (!wordProblem.fromUnit || !wordProblem.toUnit) return Array.isArray(wordProblem.hints) ? wordProblem.hints : [];
+          if (wordProblem.unit === '°C' || wordProblem.unit === '°F' || wordProblem.unit === 'K') {
+            return [
+              t('stem.unitconvert.wp_hint_temp_1', 'Temperature scales have different zero points, so a single conversion ratio is not enough.'),
+              t('stem.unitconvert.wp_hint_temp_2', 'Identify the scale change and the zero-point offset, then apply them in the correct order.')
+            ];
+          }
+          return [
+            fill(t('stem.unitconvert.wp_hint_1', 'Arrange a conversion factor so {from} cancels and {to} remains.'), { from: unitShort(wordProblem.fromUnit), to: unitShort(wordProblem.toUnit) }),
+            t('stem.unitconvert.wp_hint_2', 'Compare each unit to the category base unit, then multiply the two conversion ratios.')
+          ];
         }
 
-        function startQuizQuestion() {
-          var question = QUIZ_QS[Math.floor(Math.random() * QUIZ_QS.length)];
-          upd({ quiz: { q: question.q, a: question.a, unit: question.unit, tol: question.tol || 0.01, answered: false, startTime: Date.now() }, quizDraft: '', quizDraftError: '' });
+        // ═══ PRACTICE (generated by grade band) ═══
+        // Four practice "slots" share one card: the Practice tab, the prefix
+        // ladder, Time & money and Chemistry. Each keeps its own item and
+        // typed draft; streaks, totals, fading and the mistake log are shared.
+        var SLOT_CFG = {
+          quiz: { item: 'quiz', draft: 'quizDraft', err: 'quizDraftError', idp: 'uc-practice', reason: 'unit practice correct' },
+          ladder: { item: 'ladderItem', draft: 'ladderDraft', err: 'ladderDraftError', idp: 'uc-ladder', reason: 'ladder practice correct' },
+          everyday: { item: 'dayItem', draft: 'dayDraft', err: 'dayDraftError', idp: 'uc-day', reason: 'everyday practice correct' },
+          chem: { item: 'chemItem', draft: 'chemDraft', err: 'chemDraftError', idp: 'uc-chem', reason: 'chemistry practice correct' }
+        };
+        function slotItem(slot) {
+          var v = d[SLOT_CFG[slot].item];
+          if (!v || typeof v !== 'object') return null;
+          // The new slots only hold generated items; anything else (a damaged
+          // save) is dropped rather than drawn.
+          if (slot !== 'quiz' && (!EXTRA_GENERATORS[v.kind] || !Number.isFinite(v.a) || !Array.isArray(v.steps))) return null;
+          return v;
+        }
+        var practiceItem = slotItem('quiz');
+        var isLegacyItem = !!practiceItem && !practiceItem.kind;
+        var fadeByKind = d.fadeByKind && typeof d.fadeByKind === 'object' ? d.fadeByKind : {};
+        var CHEM_MODES = ['all', 'sigfigs', 'sci', 'mole', 'density'];
+        var DAY_MODES = ['all', 'time', 'elapsed', 'money'];
+        var lockedChemMode = CHEM_MODES.indexOf(teacher.lockChemMode) > 0 ? teacher.lockChemMode : '';
+        var lockedDayMode = DAY_MODES.indexOf(teacher.lockDayMode) > 0 ? teacher.lockDayMode : '';
+        var chemMode = lockedChemMode || (CHEM_MODES.indexOf(d.chemMode) !== -1 ? d.chemMode : 'all');
+        var dayMode = lockedDayMode || (DAY_MODES.indexOf(d.dayMode) !== -1 ? d.dayMode : 'all');
+
+        // opts (from a Start here step): { band, mode, kinds } narrow the
+        // next problem; without them the tab's own level and type are used.
+        function generateSlotItem(slot, seed, opts) {
+          var o = opts || {};
+          var kind = Array.isArray(o.kinds) && o.kinds.length ? o.kinds[seed % o.kinds.length] : undefined;
+          var dm = o.mode || dayMode, cm = o.mode || chemMode;
+          if (slot === 'ladder') return makeExtraItem('ladder', o.band || band, seed);
+          if (slot === 'everyday') return makeExtraItem('everyday', 'b35', seed, dm === 'all' ? null : dm, kind);
+          if (slot === 'chem') return makeExtraItem('chem', 'chem', seed, cm === 'all' ? null : cm, kind);
+          return makePracticeItem(o.band || band, seed, kind);
+        }
+        function startSlotItem(slot, opts) {
+          var cfg = SLOT_CFG[slot];
+          var current = slotItem(slot);
+          var previous = current && current.id;
+          var recent = Array.isArray(d.recentItems) ? d.recentItems : [];
+          var item = null;
+          for (var tries = 0; tries < 8; tries++) {
+            var seed = newSeed();
+            item = generateSlotItem(slot, seed, opts);
+            item.seed = seed;
+            if (item.id !== previous && recent.indexOf(item.id) === -1) break;
+          }
+          var patch = { recentItems: recent.concat([item.id]).slice(-12) };
+          patch[cfg.item] = item;
+          patch[cfg.draft] = '';
+          patch[cfg.draft + 'H'] = '';
+          patch[cfg.draft + 'M'] = '';
+          patch[cfg.err] = '';
+          upd(patch);
+          // Only when focus was on the card's own Next button, which this
+          // removes; the tab-bar start buttons stay where they are.
+          if (typeof document !== 'undefined' && document.activeElement && document.activeElement.id === cfg.idp + '-next') {
+            focusSoon([cfg.idp + '-predict-first', cfg.idp + '-answer', cfg.idp + '-answer-h']);
+          }
           stemBeep && stemBeep(600, 0.06);
         }
+        function startQuizQuestion() { startSlotItem('quiz'); }
 
-        function gradeQuizAnswer(rawAnswer) {
-          if (!d.quiz || d.quiz.answered) return;
-          var evaluation = evaluateNumericAnswer(rawAnswer, d.quiz.a, d.quiz.tol || 0.01);
-          if (!evaluation.valid) {
-            var inputMessage = 'Enter a valid number before checking your answer.';
-            upd('quizDraftError', inputMessage);
-            if (typeof announceToSR === 'function') announceToSR(inputMessage);
+        function practiceQuestionText(item) {
+          if (!item) return '';
+          if (!item.kind) return item.q;
+          var p = item.params || {};
+          var MAT = {
+            water: t('stem.unitconvert.mat_water', 'water'), aluminum: t('stem.unitconvert.mat_aluminum', 'aluminum'), iron: t('stem.unitconvert.mat_iron', 'iron'),
+            gold: t('stem.unitconvert.mat_gold', 'gold'), ice: t('stem.unitconvert.mat_ice', 'ice'), copper: t('stem.unitconvert.mat_copper', 'copper'),
+            ethanol: t('stem.unitconvert.mat_ethanol', 'ethanol'), oliveOil: t('stem.unitconvert.mat_olive_oil', 'olive oil'), seawater: t('stem.unitconvert.mat_seawater', 'seawater')
+          };
+          switch (item.kind) {
+            case 'ladder':
+              return fill(t('stem.unitconvert.q_ladder', 'Use the prefix ladder: write {n} {from} in {to}.'), { n: fmtN(p.n), from: p.from, to: p.to });
+            case 'hoursToMin':
+              return fill(t('stem.unitconvert.q_hours_to_min', 'How many minutes are in {h} h {m} min?'), { h: p.h, m: p.m });
+            case 'minToHours':
+              return fill(t('stem.unitconvert.q_min_to_hours', 'Write {t} minutes as hours and minutes.'), { t: p.t });
+            case 'elapsed':
+              return fill(t('stem.unitconvert.q_elapsed', 'A field trip starts at {start} and ends at {end}. How long is the trip?'), { start: formatClock(p.start), end: formatClock(p.end) });
+            case 'elapsedEnd':
+              return fill(t('stem.unitconvert.q_elapsed_end', 'A movie starts at {start} and lasts {dur}. What time does it end?'), { start: formatClock(p.start), dur: durationText(p.dh * 60 + p.dm) });
+            case 'centsToDollars':
+              return fill(t('stem.unitconvert.q_cents_to_dollars', 'Write {c} cents in dollars.'), { c: fmtN(p.c) });
+            case 'dollarsToCents':
+              return fill(t('stem.unitconvert.q_dollars_to_cents', 'How many cents is {money}?'), { money: formatMoney(p.v) });
+            case 'moneyMixed':
+              return fill(t('stem.unitconvert.q_money_mixed', 'A pencil case costs {d} dollars and {c} cents. How many cents is that?'), { d: p.dollars, c: p.cents });
+            case 'sigFigs':
+              if (p.mode === 'density') return fill(t('stem.unitconvert.q_sig_density', 'A sample of {mat} has a volume of {vol} {vu} and a density of {rho} {du}. What is its mass in g? Use the correct number of significant figures.'), { mat: MAT[p.mat] || p.mat, vol: localizeNumberText(p.vol), vu: p.vu, rho: localizeNumberText(p.rho), du: p.du });
+              if (p.mode === 'inch') return fill(t('stem.unitconvert.q_sig_inch', 'A bolt is {given} in long. Write its length in cm (1 in = 2.54 cm exactly). Use the correct number of significant figures.'), { given: localizeNumberText(p.given) });
+              return fill(t('stem.unitconvert.q_sig_prefix', 'A measurement reads {given} {from}. Write it in {to} with the correct number of significant figures.'), { given: localizeNumberText(p.given), from: p.from, to: p.to });
+            case 'sciNotation':
+              if (p.mode === 'toSci') return fill(t('stem.unitconvert.q_sci_to', 'Write {plain} in scientific notation.'), { plain: plainNumber(p.value) });
+              if (p.mode === 'fromSci') return fill(t('stem.unitconvert.q_sci_from', 'Write {sci} as an ordinary number.'), { sci: sciText(p.value, p.digits) });
+              return fill(t('stem.unitconvert.q_sci_convert', 'Convert {sci} {from} to {to}. Give your answer in scientific notation.'), { sci: sciText(p.value, p.digits), from: p.from, to: p.to });
+            case 'mole': {
+              var cmp = compoundById(p.cmp);
+              var cv = { name: CMP_NAME[cmp.id] || cmp.f, formula: cmp.f, particles: particleWord(item), mass: localizeNumberText(p.mass || ''), mol: localizeNumberText(p.mol || ''), count: p.particles ? sciText(p.particles, 3) : '' };
+              if (p.mode === 'massToMol') return fill(t('stem.unitconvert.q_mole_mass_to_mol', 'How many moles are in {mass} g of {name} ({formula})?'), cv);
+              if (p.mode === 'molToMass') return fill(t('stem.unitconvert.q_mole_mol_to_mass', 'What is the mass in grams of {mol} mol of {name} ({formula})?'), cv);
+              if (p.mode === 'molToParticles') return fill(t('stem.unitconvert.q_mole_mol_to_particles', 'How many {particles} are in {mol} mol of {name} ({formula})?'), cv);
+              if (p.mode === 'massToParticles') return fill(t('stem.unitconvert.q_mole_mass_to_particles', 'How many {particles} are in {mass} g of {name} ({formula})?'), cv);
+              return fill(t('stem.unitconvert.q_mole_particles_to_mass', 'What is the mass in grams of {count} {particles} of {name} ({formula})?'), cv);
+            }
+            case 'densityChain':
+              if (p.mode === 'mLtoKg') return fill(t('stem.unitconvert.q_dchain_ml_kg', 'What is the mass in kg of {v} mL of ethanol (density {rho} g/mL)?'), { v: fmtN(p.v), rho: fmtN(0.789) });
+              if (p.mode === 'kgToCm3') return fill(t('stem.unitconvert.q_dchain_kg_cm3', 'A block of aluminum has a mass of {m} kg and a density of {rho} g/cm³. What is its volume in cm³?'), { m: fmtN(p.m), rho: localizeNumberText('2.70') });
+              if (p.mode === 'LtoG') return fill(t('stem.unitconvert.q_dchain_l_g', 'What is the mass in grams of {v} L of olive oil (density about {rho} g/mL)?'), { v: fmtN(p.v), rho: fmtN(0.92) });
+              return fill(t('stem.unitconvert.q_dchain_ml_mol', 'How many moles of water are in {v} mL of water (density {rho} g/mL)?'), { v: fmtN(p.v), rho: localizeNumberText('1.00') });
+            case 'mixedToSmall':
+              return fill(t('stem.unitconvert.q_mixed', 'Write {n} {big} {s} {small} using only {small}. How many {small} is that?'), { n: p.n, big: unitShort(p.big), s: p.s, small: unitShort(p.small) });
+            case 'unitRate': {
+              var rateText = {
+                car: t('stem.unitconvert.q_rate_car', 'A car travels {total} {u1} in {time} {u2}. What is its unit rate in {u1} per {u2}?'),
+                cyclist: t('stem.unitconvert.q_rate_cyclist', 'A cyclist rides {total} {u1} in {time} {u2}. How many {u1} does she ride per {u2}?'),
+                hose: t('stem.unitconvert.q_rate_hose', 'A hose puts {total} {u1} of water into a pool in {time} {u2}. How many {u1} is that per {u2}?'),
+                snail: t('stem.unitconvert.q_rate_snail', 'A snail crawls {total} {u1} in {time} {u2}. What is its speed in {u1} per {u2}?')
+              }[p.ctx] || t('stem.unitconvert.q_rate_generic', '{total} {u1} in {time} {u2}. What is the unit rate in {u1} per {u2}?');
+              return fill(rateText, { total: fmtN(p.total), time: p.time, u1: p.u1, u2: p.u2 });
+            }
+            case 'rateConvert': {
+              var convText = {
+                faucet: t('stem.unitconvert.q_rconv_faucet', 'A leaky faucet drips {r} {q} of water per {fromT}. How many {q} is that per {toT}?'),
+                walker: t('stem.unitconvert.q_rconv_walker', 'A walker covers {r} {q} per {fromT}. How many {q} is that per {toT}?'),
+                ant: t('stem.unitconvert.q_rconv_ant', 'An ant marches {r} {q} per {fromT}. How many {q} is that per {toT}?'),
+                pump: t('stem.unitconvert.q_rconv_pump', 'A pump moves {r} {q} of water per {fromT}. How many {q} is that per {toT}?')
+              }[p.ctx] || t('stem.unitconvert.q_rconv_generic', '{r} {q} per {fromT}. How many {q} per {toT}?');
+              return fill(convText, { r: fmtN(p.r), q: p.q, fromT: p.fromT, toT: p.toT });
+            }
+            case 'givenFactor':
+              return fill(t('stem.unitconvert.q_given', 'Use 1 {factFrom} = {shown} {factTo}. Convert {n} {from} to {to}.'), { factFrom: unitShort(p.factFrom), shown: p.shown, factTo: unitShort(p.factTo), n: fmtN(p.n), from: unitShort(p.from), to: unitShort(p.to) });
+            case 'density':
+              if (p.mode === 'toSI') return fill(t('stem.unitconvert.q_density_si', 'The density of {mat} is {rho} g/cm³. What is its density in kg/m³?'), { mat: MAT[p.mat] || p.mat, rho: fmtN(p.rho) });
+              if (p.mode === 'mass') return fill(t('stem.unitconvert.q_density_mass', 'A piece of {mat} (density {rho} g/cm³) has a volume of {vol} cm³. What is its mass in g?'), { mat: MAT[p.mat] || p.mat, rho: fmtN(p.rho), vol: p.vol });
+              return fill(t('stem.unitconvert.q_density_volume', 'A piece of {mat} (density {rho} g/cm³) has a mass of {mass} g. What is its volume in cm³?'), { mat: MAT[p.mat] || p.mat, rho: fmtN(p.rho), mass: fmtN(p.mass) });
+            case 'usImperial':
+              if (p.mode === 'impToL') return fill(t('stem.unitconvert.q_imp_to_l', 'A recipe from the UK needs {n} imperial gallons of water. How many liters is that?'), { n: p.n });
+              if (p.mode === 'usToL') return fill(t('stem.unitconvert.q_us_to_l', 'A fish tank in the US holds {n} US gallons. How many liters is that?'), { n: p.n });
+              return fill(t('stem.unitconvert.q_imp_to_us', 'A UK fuel tank holds {n} imperial gallons. How many US gallons is that?'), { n: p.n });
+            default:
+              return fill(t('stem.unitconvert.q_convert', 'Convert {n} {from} to {to}.'), { n: fmtN(p.n), from: unitShort(p.from || item.fromUnit), to: unitShort(p.to || item.toUnit) });
+          }
+        }
+        function practiceHint(item, level) {
+          var p = item.params || {};
+          var elapsedKind = item.kind === 'elapsed' || item.kind === 'elapsedEnd';
+          if (level === 1) {
+            if (item.kind === 'ladder') return fill(t('stem.unitconvert.hint_ladder', 'Find {from} and {to} on the ladder. Each step down multiplies by 10; each step up divides by 10. Which way are you going?'), { from: p.from, to: p.to });
+            if (item.kind === 'hoursToMin') return t('stem.unitconvert.hint_hours_to_min', 'One hour is 60 minutes, not 100. Change the hours to minutes first, then add the extra minutes.');
+            if (item.kind === 'minToHours') return fill(t('stem.unitconvert.hint_min_to_hours', 'How many groups of 60 minutes fit in {t} minutes? The minutes left over stay as minutes.'), { t: p.t });
+            if (elapsedKind) return t('stem.unitconvert.hint_elapsed', 'Count on from the start time. First jump to the next whole hour.');
+            if (item.money) return t('stem.unitconvert.hint_money', 'One dollar is 100 cents, so cents are hundredths of a dollar: two places after the decimal point.');
+            if (item.kind === 'sigFigs') return p.mode === 'density'
+              ? t('stem.unitconvert.hint_sig_density', 'Count the significant figures in each measurement. A product keeps the smaller count.')
+              : t('stem.unitconvert.hint_sig_count', 'Count the significant figures in the measurement first. Your answer keeps that many.');
+            if (item.kind === 'sciNotation') {
+              if (p.mode === 'toSci') return t('stem.unitconvert.hint_sci_to', 'Move the decimal point until exactly one non-zero digit is in front of it. Count how many places it moved.');
+              if (p.mode === 'fromSci') return t('stem.unitconvert.hint_sci_from', 'A positive exponent makes a big number; a negative exponent makes a number smaller than 1.');
+              return t('stem.unitconvert.hint_sci_convert', 'Write the prefix change as a power of ten, then add the exponents.');
+            }
+            if (item.kind === 'mole') {
+              if (item.fromUnit === 'g') return t('stem.unitconvert.hint_mole_from_g', 'Grams to moles: divide by the molar mass. Work out the molar mass from the formula first.');
+              if (item.fromUnit === 'particles') return t('stem.unitconvert.hint_mole_from_particles', 'Particles to moles: divide by 6.022 × 10²³. Then moles to grams: multiply by the molar mass.');
+              if (item.toUnit === 'particles') return t('stem.unitconvert.hint_mole_to_particles', 'Moles to particles: multiply by 6.022 × 10²³.');
+              return t('stem.unitconvert.hint_mole_to_g', 'Moles to grams: multiply by the molar mass.');
+            }
+            if (item.kind === 'densityChain') return t('stem.unitconvert.hint_density_chain', 'Use the density to change between volume and mass, then add one more factor to reach the unit the question asks for.');
+            if (item.sizeRel === 'toSmaller') return fill(t('stem.unitconvert.hint_to_smaller', 'A {to} is smaller than a {from}, so it takes more of them. Will the number get bigger or smaller?'), { to: unitShort(item.toUnit), from: unitShort(item.fromUnit) });
+            if (item.sizeRel === 'toBigger') return fill(t('stem.unitconvert.hint_to_bigger', 'A {to} is bigger than a {from}, so it takes fewer of them. Will the number get bigger or smaller?'), { to: unitShort(item.toUnit), from: unitShort(item.fromUnit) });
+            if (item.kind === 'temperature') return t('stem.unitconvert.hint_temperature', 'Write the formula first. Temperature needs a scale factor AND an offset, in the right order.');
+            if (item.kind === 'unitRate') return fill(t('stem.unitconvert.hint_unit_rate', 'A unit rate tells how much happens in ONE {u2}. Share the total out over the {u2}.'), { u2: p.u2 });
+            if (item.kind === 'rateConvert') return fill(t('stem.unitconvert.hint_rate_convert', 'Is one {toT} longer or shorter than one {fromT}? More time means more {q}.'), { toT: p.toT, fromT: p.fromT, q: p.q });
+            if (item.kind === 'chainRate') return t('stem.unitconvert.hint_chain', 'Change one unit at a time: first the top unit, then the bottom unit. Try the Factor chain activity.');
+            if (item.kind === 'density') return t('stem.unitconvert.hint_density', 'Density links mass and volume: density = mass ÷ volume.');
+            if (item.kind === 'usImperial') return t('stem.unitconvert.hint_us_imperial', 'Which gallon is it? US and imperial gallons are different sizes.');
+            return t('stem.unitconvert.hint_generic', 'Is the new unit bigger or smaller than the old one? Decide if the number should grow or shrink.');
+          }
+          if (level === 2 && elapsedKind) return t('stem.unitconvert.hint_elapsed_line', 'Use the number line below: jump to the next hour, then whole hours, then the minutes left.');
+          if (level === 2) return fill(t('stem.unitconvert.hint_fact', 'Use this fact: {fact}'), { fact: (item.facts || []).map(function(f) { return typeof f === 'string' ? f : stepText(f); }).join('; ') });
+          return fill(t('stem.unitconvert.hint_setup', 'Set it up like this, then calculate: {setup}'), { setup: item.setup || '' });
+        }
+        function finishPracticeLog(item, outcome, firstAnswer, firstMis) {
+          var missed = Array.isArray(d.missed) ? d.missed : [];
+          return missed.concat([{ id: item.id, kind: item.kind || 'legacy', q: item.family ? practiceQuestionText(item) : item.q, a: item.a, aText: item.family ? answerText(item) : undefined, unit: item.unit, answer: firstAnswer, mis: firstMis || '', outcome: outcome, band: item.band || '', ts: Date.now() }]).slice(-30);
+        }
+
+        function gradeQuizAnswer(rawAnswer) { gradeSlotAnswer('quiz', rawAnswer); }
+        function slotRawAnswer(slot) {
+          var cfg = SLOT_CFG[slot];
+          var item = slotItem(slot);
+          if (item && (item.answerType === 'hm' || item.answerType === 'clock')) return { h: d[cfg.draft + 'H'], m: d[cfg.draft + 'M'] };
+          return d[cfg.draft];
+        }
+        function gradeSlotAnswer(slot, rawAnswer) {
+          var cfg = SLOT_CFG[slot];
+          var item = slotItem(slot);
+          if (!item || item.answered) return;
+          if (slot === 'quiz' && isLegacyItem) { gradeLegacyQuizAnswer(rawAnswer); return; }
+          var res = diagnosePracticeItem(item, rawAnswer);
+          var errPatch = {};
+          if (!res.valid) {
+            // Shown in a role=alert line, so no second announcement here.
+            errPatch[cfg.err] = item.answerType === 'hm' || item.answerType === 'clock'
+              ? t('stem.unitconvert.enter_valid_time', 'Enter the hours and the minutes as whole numbers.')
+              : t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.');
+            upd(errPatch);
             return;
           }
-
-          var answer = evaluation.answer;
-          var correct = evaluation.correct;
-          var feedback = correct ? '' : diagnoseNumericAnswer(answer, d.quiz.a, d.quiz.unit, evaluation.tolerance);
-          var elapsed = d.quiz.startTime ? (Date.now() - d.quiz.startTime) / 1000 : 0;
-          var xp = correct ? (elapsed < 5 ? 3 : elapsed < 10 ? 2 : 1) : 0;
-          var newStreak = correct ? (d.streak || 0) + 1 : 0;
-          var newBest = Math.max(d.bestStreak || 0, newStreak);
-          var newQTotal = quizTotal + 1;
-
-          if (correct) {
+          var tries = (item.tries || 0) + 1;
+          var hintsUsed = item.hintLevel || 0;
+          var misTally = Object.assign({}, d.misTally || {});
+          if (res.correct) {
+            var points = tries === 1 && hintsUsed === 0 ? 2 : 1;
+            var paid = payOnce(item.id, points, cfg.reason);
+            var newStreak = tries === 1 ? (d.streak || 0) + 1 : 0;
+            var newBest = Math.max(d.bestStreak || 0, newStreak);
+            var fade = Object.assign({}, fadeByKind);
+            if (tries === 1 && hintsUsed < 3) fade[item.kind] = (fade[item.kind] || 0) + 1;
+            var patch = {
+              streak: newStreak, bestStreak: newBest, quizTotal: quizTotal + 1,
+              score: (d.score || 0) + paid, fadeByKind: fade
+            };
+            patch[cfg.item] = Object.assign({}, item, { answered: true, correct: true, tries: tries, userAns: res.answer, xp: paid });
+            patch[cfg.err] = '';
+            if (tries > 1) patch.missed = finishPracticeLog(item, 'fixed', item.firstAnswer, item.firstMis);
+            upd(patch);
+            focusSoon(cfg.idp + '-next');
             stemBeep && stemBeep(784, 0.15);
             if (newStreak >= 5) { stemCelebrate && stemCelebrate(); }
-            awardStemXP && awardStemXP('unitConvert', xp, 'quiz correct');
-            addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
-            if (typeof announceToSR === 'function') announceToSR('Correct. The answer is ' + d.quiz.a + ' ' + d.quiz.unit + '.');
-          } else {
-            stemBeep && stemBeep(220, 0.2);
-            if (typeof announceToSR === 'function') announceToSR('Not quite. ' + feedback);
-            addToast('Not quite - see why below', 'error');
+            say(correctMessage(item, paid));
+            checkBadges({ quizStreak5: newStreak >= 5, quizStreak10: newStreak >= 10, quizMaster: quizTotal + 1 >= 20, misconceptionFixer: tries === 2 && !!item.firstMis && item.firstMis !== 'generic' });
+            return;
           }
+          misTally[res.misconception] = (misTally[res.misconception] || 0) + 1;
+          var firstAnswer = item.firstAnswer != null ? item.firstAnswer : res.answer;
+          var firstMis = item.firstMis || res.misconception;
+          var wrongPatch = { streak: 0, misTally: misTally };
+          wrongPatch[cfg.err] = '';
+          // Stage C: never auto-reveal. After two tries the student may
+          // choose "Show the answer" (no XP) or keep trying with the hints.
+          wrongPatch[cfg.item] = Object.assign({}, item, { tries: tries, userAns: res.answer, lastMis: res.misconception, firstAnswer: firstAnswer, firstMis: firstMis });
+          upd(wrongPatch);
+          stemBeep && stemBeep(220, 0.2);
+          say(tries >= 2 && revealsAllowed
+            ? fill(t('stem.unitconvert.sr_practice_try_or_reveal', 'Not yet. {mistake} Try again, or choose Show the answer.'), { mistake: misOf(res.misconception).text })
+            : fill(t('stem.unitconvert.sr_practice_try_again', 'Not yet. {mistake} Try again.'), { mistake: misOf(res.misconception).text }));
+        }
 
+        function revealPracticeAnswer() { revealSlotAnswer('quiz'); }
+        function revealSlotAnswer(slot) {
+          var cfg = SLOT_CFG[slot];
+          var item = slotItem(slot);
+          if (!item || item.answered || !revealsAllowed || !(item.tries >= 2)) return;
+          var patch = { streak: 0, quizTotal: quizTotal + 1, missed: finishPracticeLog(item, 'revealed', item.firstAnswer, item.firstMis) };
+          patch[cfg.item] = Object.assign({}, item, { answered: true, correct: false, revealed: true, xp: 0 });
+          markRevealed(item.id);
+          upd(patch);
+          focusSoon(cfg.idp + '-next');
+          say(item.family
+            ? fill(t('stem.unitconvert.sr_answer_revealed_full', 'Answer revealed: {answer}.'), { answer: answerText(item) })
+            : fill(t('stem.unitconvert.sr_answer_revealed', 'Answer revealed: {answer} {unit}.'), { answer: fmtN(item.a), unit: unitShort(item.unit) }));
+        }
+        function practiceHintNext() { slotHintNext('quiz'); }
+        function slotHintNext(slot) {
+          var item = slotItem(slot);
+          if (!item || item.answered) return;
+          var next = Math.min(3, (item.hintLevel || 0) + 1);
+          upd(SLOT_CFG[slot].item, Object.assign({}, item, { hintLevel: next }));
+          say(fill(t('stem.unitconvert.sr_hint', 'Hint {n}: {hint}'), { n: next, hint: practiceHint(item, next) }));
+        }
+        function predictPractice(choice) { slotPredict('quiz', choice); }
+        function slotPredict(slot, choice) {
+          var item = slotItem(slot);
+          if (!item || item.answered || item.predict) return;
+          upd(SLOT_CFG[slot].item, Object.assign({}, item, { predict: choice }));
+          focusSoon([SLOT_CFG[slot].idp + '-answer', SLOT_CFG[slot].idp + '-answer-h']);
+          say(t('stem.unitconvert.sr_prediction_saved', 'Prediction saved. Now work out the answer.'));
+        }
+        // Saved quiz items from before the rebuild still load and grade.
+        function gradeLegacyQuizAnswer(rawAnswer) {
+          var item = practiceItem;
+          var evaluation = evaluateNumericAnswer(rawAnswer, item.a, item.tol || 0.01);
+          if (!evaluation.valid) {
+            // Shown in a role=alert line, so no second announcement here.
+            upd('quizDraftError', t('stem.unitconvert.enter_valid_attempt', 'Enter a valid number before checking your answer.'));
+            return;
+          }
+          var correct = evaluation.correct;
+          var feedback = correct ? '' : diagnoseNumericAnswer(evaluation.answer, item.a, item.unit, evaluation.tolerance);
+          var paid = correct ? payOnce('legacy|' + item.q, 1, 'quiz correct') : 0;
+          var newStreak = correct ? (d.streak || 0) + 1 : 0;
           setLabToolData(function(prev) {
-            var previous = prev.unitConvert || {};
+            var previous = (prev || {}).unitConvert || {};
             return Object.assign({}, prev, { unitConvert: Object.assign({}, previous, {
-              score: (previous.score || 0) + xp,
+              score: (previous.score || 0) + paid,
               streak: newStreak,
-              bestStreak: newBest,
-              quizTotal: newQTotal,
+              bestStreak: Math.max(previous.bestStreak || 0, newStreak),
+              quizTotal: (previous.quizTotal || 0) + 1,
               quizDraftError: '',
-              quiz: Object.assign({}, previous.quiz, { answered: true, userAns: answer, correct: correct, xp: xp, elapsed: elapsed.toFixed(1), fb: feedback })
+              quiz: Object.assign({}, previous.quiz, { answered: true, userAns: evaluation.answer, correct: correct, xp: paid, fb: feedback })
             }) });
           });
-          checkBadges({
-            quizStreak5: correct && newStreak >= 5,
-            quizStreak10: correct && newStreak >= 10,
-            speedster: correct && elapsed < 3,
-            quizMaster: newQTotal >= 20
-          });
+          say(correct ? fill(t('stem.unitconvert.practice_correct', 'Correct! {answer} {unit}.'), { answer: fmtN(item.a), unit: item.unit }) : feedback);
         }
 
-        // ── Keyboard shortcuts (no hooks — plain render function) ──
-        function handleKey(e) {
-          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-          var key = e.key;
-          if (key === '1') { e.preventDefault(); upd('tab', 'convert'); }
-          if (key === '2') { e.preventDefault(); upd('tab', 'table'); }
-          if (key === '3') { e.preventDefault(); upd('tab', 'quiz'); }
-          if (key === '4') { e.preventDefault(); upd('tab', 'wordproblem'); }
-          if (key === '5') { e.preventDefault(); upd('tab', 'magHunt'); }
-          if (key.toLowerCase() === 'n' && tab === 'quiz') {
-            e.preventDefault();
-            startQuizQuestion();
+        // ═══ ESTIMATE ═══
+        // A saved estimate needs its choices (two for a comparison, numbers
+        // otherwise); a damaged one is dropped rather than drawn.
+        var estimateItemOk = function(it) {
+          if (!it || typeof it !== 'object' || !Array.isArray(it.options)) return false;
+          if (it.type === 'compare') return it.options.length === 2 && it.options.every(function(o) { return o && typeof o === 'object' && Number.isFinite(o.value); }) && (it.correctIndex === 0 || it.correctIndex === 1) && !!it.alt && typeof it.alt === 'object';
+          return it.options.length >= 2 && it.options.every(function(o) { return Number.isFinite(o); }) && Number.isFinite(it.correct);
+        };
+        var estimate = d.estimate && typeof d.estimate === 'object' && estimateItemOk(d.estimate.item) ? d.estimate : null;
+        // Saved estimates from before stage B (no `wrong` list) count as finished
+        // once a choice is recorded.
+        var estimateDone = !!estimate && (estimate.done === true || (estimate.choice != null && !Array.isArray(estimate.wrong)));
+        function newEstimate() {
+          var seed = newSeed();
+          // Every third question compares two sizes for a benchmark.
+          var seq = Math.max(0, Math.floor(Number(d.estimateSeq) || 0)) + 1;
+          var item = seq % 3 === 0 ? makeCompareItem(band, seed) : makeEstimateItem(band, seed);
+          upd({ estimate: { item: item, choice: null, wrong: [], done: false }, estimateSeq: seq });
+        }
+        function unitBenchText(unit) {
+          return UNIT_BENCH[unit] || t('stem.unitconvert.unit_bench_generic', 'Compare with a size you know, then try again.');
+        }
+        function chooseEstimate(option) {
+          if (!estimate || estimateDone) return;
+          var item = estimate.item;
+          var wrong = Array.isArray(estimate.wrong) ? estimate.wrong : [];
+          if (wrong.indexOf(option) !== -1) return;
+          var firstTry = wrong.length === 0;
+          var right = Math.abs(option - item.correct) <= 1e-9 * Math.max(1, Math.abs(item.correct));
+          var patch = {};
+          var misTally = Object.assign({}, d.misTally || {});
+          if (right) {
+            patch.estimate = Object.assign({}, estimate, { choice: option, right: true, wrong: wrong, done: true });
+            // Only a first-try estimate counts as good and pays.
+            if (firstTry) {
+              patch.estimateCorrect = (d.estimateCorrect || 0) + 1;
+              payOnce(item.id, 1, 'estimate');
+            }
+            upd(patch);
+            say(firstTry ? t('stem.unitconvert.sr_estimate_right', 'Good estimate.') : t('stem.unitconvert.sr_estimate_fixed', 'That is the sensible size. Read why below.'));
+            if (firstTry && patch.estimateCorrect >= 5) checkBadges({ estimator: true });
+            return;
           }
-          if (key === '?' || (e.shiftKey && key === '/')) { e.preventDefault(); askTutor(); }
-          if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
+          var mis = option > item.correct ? 'estTooBig' : 'estTooSmall';
+          misTally[mis] = (misTally[mis] || 0) + 1;
+          patch.misTally = misTally;
+          // Stage C: a wrong pick is named and stays open (no auto-reveal);
+          // after two the student may choose to see the answer.
+          var nextWrong = wrong.concat([option]);
+          patch.estimate = Object.assign({}, estimate, { choice: null, right: false, wrong: nextWrong, done: false, mis: mis });
+          upd(patch);
+          var detail = fill(t('stem.unitconvert.sr_estimate_try_again', '{mistake} {benchmark}'), { mistake: misOf(mis).text, benchmark: unitBenchText(item.to) });
+          say(nextWrong.length >= 2 && revealsAllowed
+            ? fill(t('stem.unitconvert.sr_practice_try_or_reveal', 'Not yet. {mistake} Try again, or choose Show the answer.'), { mistake: detail })
+            : fill(t('stem.unitconvert.sr_practice_try_again', 'Not yet. {mistake} Try again.'), { mistake: detail }));
+        }
+        function revealEstimate() {
+          if (!estimate || estimateDone || !revealsAllowed) return;
+          var wrong = Array.isArray(estimate.wrong) ? estimate.wrong : [];
+          if (wrong.length < 2) return;
+          markRevealed(estimate.item.id);
+          upd('estimate', Object.assign({}, estimate, { choice: null, right: false, revealed: true, done: true }));
+          say(t('stem.unitconvert.sr_estimate_wrong', 'Not quite. Read why below.'));
+        }
+        function chooseCompare(index) {
+          if (!estimate || estimateDone) return;
+          var item = estimate.item;
+          var wrong = Array.isArray(estimate.wrong) ? estimate.wrong : [];
+          if (wrong.indexOf(index) !== -1) return;
+          var firstTry = wrong.length === 0;
+          var right = index === item.correctIndex;
+          var patch = {};
+          if (right) {
+            // Only a first-try pick counts as good and pays; with two choices
+            // the second pick is the remaining one.
+            patch.estimate = Object.assign({}, estimate, { choice: index, right: true, wrong: wrong, done: true });
+            if (firstTry) {
+              patch.estimateCorrect = (d.estimateCorrect || 0) + 1;
+              payOnce(item.id, 1, 'estimate');
+            }
+            upd(patch);
+            say(firstTry ? t('stem.unitconvert.sr_estimate_right', 'Good estimate.') : t('stem.unitconvert.sr_estimate_fixed', 'That is the sensible size. Read why below.'));
+            if (firstTry && patch.estimateCorrect >= 5) checkBadges({ estimator: true });
+            return;
+          }
+          var misTally = Object.assign({}, d.misTally || {});
+          misTally[item.alt.mis] = (misTally[item.alt.mis] || 0) + 1;
+          patch.misTally = misTally;
+          patch.estimate = Object.assign({}, estimate, { choice: null, right: false, wrong: wrong.concat([index]), done: false, mis: item.alt.mis });
+          upd(patch);
+          say(fill(t('stem.unitconvert.sr_practice_try_again', 'Not yet. {mistake} Try again.'), { mistake: misOf(item.alt.mis).text }));
+        }
+        var UNIT_BENCH = {
+          m: t('stem.unitconvert.unit_bench_m', '1 m is about one big step.'),
+          cm: t('stem.unitconvert.unit_bench_cm', '1 cm is about the width of a fingernail.'),
+          mm: t('stem.unitconvert.unit_bench_mm', '1 mm is about the thickness of a bank card.'),
+          km: t('stem.unitconvert.unit_bench_km', '1 km is about a 12-minute walk.'),
+          g: t('stem.unitconvert.unit_bench_g', '1 g is about the mass of a paper clip.'),
+          kg: t('stem.unitconvert.unit_bench_kg', '1 kg is about the mass of a 1-liter bottle of water.'),
+          mg: t('stem.unitconvert.unit_bench_mg', '1 mg is one thousandth of a gram, far less than a paper clip.'),
+          L: t('stem.unitconvert.unit_bench_l', '1 L is a large bottle of water.'),
+          mL: t('stem.unitconvert.unit_bench_ml', '1 mL is about 20 drops of water.'),
+          'in': t('stem.unitconvert.unit_bench_in', '1 in is about the width of a thumb.'),
+          ft: t('stem.unitconvert.unit_bench_ft', '1 ft is the length of a school ruler.'),
+          yd: t('stem.unitconvert.unit_bench_yd', '1 yd is about the width of a front door.'),
+          gal: t('stem.unitconvert.unit_bench_gal', '1 gal is a big jug of milk.'),
+          cup: t('stem.unitconvert.unit_bench_cup', '1 cup fills a small mug.'),
+          oz: t('stem.unitconvert.unit_bench_oz', '1 oz is about a slice of bread.'),
+          lb: t('stem.unitconvert.unit_bench_lb', '1 lb is about a loaf of sandwich bread.')
+        };
+        var BENCH_TEXT = {
+          door: [t('stem.unitconvert.bench_door', 'About how tall is a classroom door?'), t('stem.unitconvert.bench_door_why', 'A door is a little taller than an adult: about 2 m.')],
+          paperclip: [t('stem.unitconvert.bench_paperclip', 'About how much mass does a small paper clip have?'), t('stem.unitconvert.bench_paperclip_why', 'A small paper clip is about 1 g. It is a good benchmark for a gram.')],
+          bottle: [t('stem.unitconvert.bench_bottle', 'About how much does a large water bottle hold?'), t('stem.unitconvert.bench_bottle_why', 'A large water bottle holds about 1 L.')],
+          pencil: [t('stem.unitconvert.bench_pencil', 'About how long is a new pencil?'), t('stem.unitconvert.bench_pencil_why', 'A new pencil is about 18 to 20 cm long.')],
+          teaspoon: [t('stem.unitconvert.bench_teaspoon', 'About how much does a teaspoon hold?'), t('stem.unitconvert.bench_teaspoon_why', 'A teaspoon holds about 5 mL.')],
+          textbook: [t('stem.unitconvert.bench_textbook', 'About what is the mass of a big textbook?'), t('stem.unitconvert.bench_textbook_why', 'A big textbook is about 1 kg.')],
+          classroom: [t('stem.unitconvert.bench_classroom', 'About how long is a classroom?'), t('stem.unitconvert.bench_classroom_why', 'Most classrooms are about 8 to 10 m long.')],
+          marathon: [t('stem.unitconvert.bench_marathon', 'About how long is a marathon race?'), t('stem.unitconvert.bench_marathon_why', 'A marathon is 42.195 km, so about 40 km.')],
+          car: [t('stem.unitconvert.bench_car', 'About what is the mass of a small car?'), t('stem.unitconvert.bench_car_why', 'A small car is roughly 1,000 to 1,500 kg.')],
+          nickel: [t('stem.unitconvert.bench_nickel', 'About what is the mass of a US nickel coin?'), t('stem.unitconvert.bench_nickel_why', 'A US nickel is 5 g.')],
+          adult: [t('stem.unitconvert.bench_adult', 'About how tall is a tall adult?'), t('stem.unitconvert.bench_adult_why', 'A tall adult is a little under 2 m.')],
+          bathtub: [t('stem.unitconvert.bench_bathtub', 'About how much water fills a bathtub?'), t('stem.unitconvert.bench_bathtub_why', 'A filled bathtub holds roughly 150 to 200 L.')],
+          thumb: ['', t('stem.unitconvert.bench_thumb_why', 'A thumb is about 1 inch wide.')],
+          milk: ['', t('stem.unitconvert.bench_milk_why', 'A big jug of milk holds 1 gallon.')],
+          field: ['', t('stem.unitconvert.bench_field_why', 'An American football field is 100 yards between the goal lines.')],
+          bread: ['', t('stem.unitconvert.bench_bread_why', 'A slice of bread is about 1 ounce.')],
+          walk: ['', t('stem.unitconvert.bench_walk_why', 'At an easy walking pace you cover about 1 km in 12 minutes.')],
+          fingernail: ['', t('stem.unitconvert.bench_fingernail_why', 'A fingernail is about 1 cm wide.')]
+        };
+        var COMPARE_Q = {
+          door: t('stem.unitconvert.cmp_q_door', 'Is a classroom door about {a} or {b} tall?'),
+          paperclip: t('stem.unitconvert.cmp_q_paperclip', 'Does a small paper clip have a mass of about {a} or {b}?'),
+          bottle: t('stem.unitconvert.cmp_q_bottle', 'Does a large water bottle hold about {a} or {b}?'),
+          pencil: t('stem.unitconvert.cmp_q_pencil', 'Is a new pencil about {a} or {b} long?'),
+          teaspoon: t('stem.unitconvert.cmp_q_teaspoon', 'Does a teaspoon hold about {a} or {b}?'),
+          textbook: t('stem.unitconvert.cmp_q_textbook', 'Does a big textbook have a mass of about {a} or {b}?'),
+          classroom: t('stem.unitconvert.cmp_q_classroom', 'Is a classroom about {a} or {b} long?'),
+          car: t('stem.unitconvert.cmp_q_car', 'Does a small car have a mass of about {a} or {b}?'),
+          bathtub: t('stem.unitconvert.cmp_q_bathtub', 'Does a full bathtub hold about {a} or {b} of water?'),
+          thumb: t('stem.unitconvert.cmp_q_thumb', 'Is your thumb about {a} or {b} wide?'),
+          milk: t('stem.unitconvert.cmp_q_milk', 'Does a big jug of milk hold about {a} or {b}?'),
+          field: t('stem.unitconvert.cmp_q_field', 'Is an American football field about {a} or {b} long?'),
+          bread: t('stem.unitconvert.cmp_q_bread', 'Does a slice of bread weigh about {a} or {b}?'),
+          walk: t('stem.unitconvert.cmp_q_walk', 'Is a 12-minute walk about {a} or {b} long?'),
+          fingernail: t('stem.unitconvert.cmp_q_fingernail', 'Is a fingernail about {a} or {b} wide?')
+        };
+
+        // ═══ FACTOR CHAIN ═══
+        var CHAIN_PRESETS = [
+          ['km/h', 'm/s'], ['ft', 'cm'], ['m²', 'cm²'], ['g/cm³', 'kg/m³'], ['gal', 'L'], ['mph', 'm/s'], ['hr', 'sec'], ['ft³', 'in³']
+        ];
+        var chain = d.chain && typeof d.chain === 'object' ? d.chain : null;
+        var converterPairChainable = d.category !== 'temperature' && d.fromUnit !== d.toUnit && !!parseChainUnit(d.fromUnit) && !!parseChainUnit(d.toUnit);
+        var chainFrom = chain && parseChainUnit(chain.from) ? chain.from : (converterPairChainable ? d.fromUnit : 'km/h');
+        var chainTo = chain && parseChainUnit(chain.to) ? chain.to : (converterPairChainable ? d.toUnit : 'm/s');
+        var chainSteps = chain && Array.isArray(chain.steps) && chain.steps.length
+          ? chain.steps.map(function(st) { return st && typeof st === 'object' ? st : { topN: '', topU: '', botN: '', botU: '', pow: 1 }; })
+          : [{ topN: '', topU: '', botN: '', botU: '', pow: 1 }];
+        var chainValueDraft = chain && typeof chain.valueDraft === 'string' ? chain.valueDraft : '1';
+        var chainValueState = parseNumericDraft(chainValueDraft);
+        var chainValueOk = chainValueState.valid && chainValueState.value >= 0;
+        var chainKey = 'chain|' + chainFrom + '|' + chainTo;
+        var chainRevealed = !!(chain && chain.revealed && chain.revealed[chainKey]);
+        // Failed checks per pair: "Show a correct chain" appears after two.
+        var chainTries = chain && chain.tries && typeof chain.tries === 'object' ? (Number(chain.tries[chainKey]) || 0) : 0;
+        function setChain(patch) {
+          var base = { from: chainFrom, to: chainTo, steps: chainSteps, valueDraft: chainValueDraft, result: null, revealed: chain && chain.revealed ? chain.revealed : {} };
+          upd('chain', Object.assign({}, base, chain || {}, patch));
+        }
+        function setChainStep(index, patch) {
+          var steps = chainSteps.map(function(st, i) { return i === index ? Object.assign({}, st, patch) : st; });
+          setChain({ steps: steps, result: null });
+        }
+        function choosePreset(value) {
+          var parts = String(value).split('→');
+          if (parts.length !== 2) return;
+          setChain({ from: parts[0], to: parts[1], steps: [{ topN: '', topU: '', botN: '', botU: '', pow: 1 }], result: null });
+        }
+        function checkChainNow() {
+          var res = checkFactorChain(chainFrom, chainTo, chainSteps);
+          setChain({ result: res });
+          if (res.ok) {
+            if (!chainRevealed) {
+              payOnce(chainKey, 2, 'factor chain');
+              checkBadges({ chainBuilder: true });
+            }
+            say(t('stem.unitconvert.sr_chain_ok', 'Your chain works: every unwanted unit cancels.'));
+          } else {
+            // An unfinished chain is not a try; a wrong finished one is.
+            var counts = res.code === 'empty' || res.code === 'incomplete' ? null : Object.assign({}, chain && chain.tries && typeof chain.tries === 'object' ? chain.tries : {});
+            if (counts) { counts[chainKey] = chainTries + 1; setChain({ result: res, tries: counts }); }
+            var n = counts ? chainTries + 1 : chainTries;
+            say(n >= 2 && revealsAllowed && !chainRevealed
+              ? fill(t('stem.unitconvert.sr_chain_try_or_reveal', 'Not yet. {mistake} Try again, or choose Show a correct chain.'), { mistake: chainFeedback(res) })
+              : fill(t('stem.unitconvert.sr_practice_try_again', 'Not yet. {mistake} Try again.'), { mistake: chainFeedback(res) }));
+          }
+        }
+        function revealChain() {
+          if (!revealsAllowed || chainTries < 2) return;
+          var steps = suggestFactorChain(chainFrom, chainTo);
+          if (!steps) return;
+          var revealed = Object.assign({}, chain && chain.revealed ? chain.revealed : {});
+          revealed[chainKey] = true;
+          markRevealed(chainKey);
+          // In the student's marks, so the boxes read back as the same numbers.
+          var shown = steps.map(function(st) { return { topN: localizeNumberText(String(st.topN)), topU: st.topU, botN: localizeNumberText(String(st.botN)), botU: st.botU, pow: st.pow || 1 }; });
+          setChain({ steps: shown, revealed: revealed, result: checkFactorChain(chainFrom, chainTo, shown) });
+          say(t('stem.unitconvert.sr_chain_shown', 'A correct chain is shown. Study why each unit cancels, then try a new pair yourself.'));
+        }
+        function chainFeedback(res) {
+          var n = (res.step || 0) + 1;
+          switch (res.code) {
+            case 'empty': return t('stem.unitconvert.chain_empty', 'Add at least one conversion factor.');
+            case 'incomplete': return fill(t('stem.unitconvert.chain_incomplete', 'Factor {n} is not finished: give it a number and a unit on top and on the bottom.'), { n: n });
+            case 'mismatch': return fill(t('stem.unitconvert.chain_mismatch', 'Factor {n} compares different kinds of units. Top and bottom must measure the same thing, like length with length.'), { n: n });
+            case 'falseEquality': return fill(t('stem.unitconvert.chain_false', 'Factor {n} is not equal to 1: its top and bottom are not the same amount. Check the numbers (for example 1 ft = 12 in).'), { n: n });
+            case 'upsideDown': return fill(t('stem.unitconvert.chain_upside_down', 'Factor {n} is upside down, so nothing cancels. Flip it: the unit you want to get rid of goes on the opposite side.'), { n: n });
+            case 'noCancel': return fill(t('stem.unitconvert.chain_no_cancel', 'Factor {n} does not cancel any unit you have. Use a fact that includes a unit in your current answer.'), { n: n });
+            case 'needPower': return fill(t('stem.unitconvert.chain_need_power', 'Your units are now {have}, but you want {want}. For square or cubic units, square (²) or cube (³) the factor, because 1 m² = 100 cm × 100 cm.'), { have: res.remaining, want: unitShort(chainTo) });
+            case 'leftover': return fill(t('stem.unitconvert.chain_leftover', 'Your units are now {have}, but you want {want}. Add a factor that changes the extra units.'), { have: res.remaining, want: unitShort(chainTo) });
+            default: return t('stem.unitconvert.chain_unsupported', 'These two units cannot be linked by multiplying factors (temperature, for example, also needs an offset).');
+          }
         }
 
-        // ── Earned badges count ──
+        // ── Keyboard: digits switch activities, but only from the tab strip
+        // or the tool frame itself, never from a focused button or field.
+        function handleKey(e) {
+          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+          var target = e.target || {};
+          if (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName || '')) return;
+          var role = target.getAttribute ? target.getAttribute('role') : null;
+          if (target !== e.currentTarget && role !== 'tab') return;
+          var index = '1234567890'.indexOf(e.key);
+          if (e.key && e.key.length === 1 && index !== -1) { e.preventDefault(); upd('tab', UNIT_CONVERT_TAB_ORDER[index]); }
+        }
+
         var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
         var earnedCount = earnedBadges.length;
-        var tabLabel = { convert: 'Convert', table: 'All units', quiz: 'Quiz', wordproblem: 'Word problem', magHunt: 'Magnitude' }[tab] || 'Convert';
-        var unitNext = tab === 'convert' && historySaveCount === 0
-          ? 'Choose compatible units, estimate the scale, then save one conversion.'
-          : tab === 'table'
-            ? 'Compare units in one category and identify the base-unit relationship.'
-            : tab === 'quiz'
-              ? 'Solve with a conversion factor and check that unwanted units cancel.'
-              : tab === 'wordproblem'
-                ? 'Underline the given unit and target unit before calculating.'
-                : 'Use powers of ten to explain the size difference between scales.';
+        var TAB_LABELS = {
+          convert: t('stem.unitconvert.nav_convert', 'Convert'),
+          table: t('stem.unitconvert.nav_all_units', 'All units'),
+          quiz: t('stem.unitconvert.nav_practice', 'Practice'),
+          wordproblem: t('stem.unitconvert.nav_word_problems', 'Word problems'),
+          magHunt: t('stem.unitconvert.nav_compare_scales', 'Compare scales'),
+          chain: t('stem.unitconvert.nav_chain', 'Factor chain'),
+          estimate: t('stem.unitconvert.nav_estimate', 'Estimate'),
+          ladder: t('stem.unitconvert.nav_ladder', 'Prefix ladder'),
+          everyday: t('stem.unitconvert.nav_everyday', 'Time & money'),
+          chem: t('stem.unitconvert.nav_chem', 'Chemistry')
+        };
 
-        // ── CSS ANIMATIONS ──
-        var css = '@keyframes ucResultPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}' +
-          '@keyframes ucCorrect{0%{background:#dcfce7}50%{background:#86efac}100%{background:#dcfce7}}' +
-          '@keyframes ucWrong{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:translateX(0)}}' +
+        // ── CSS ANIMATIONS ── (the result line no longer animates or remounts)
+        var css = '@keyframes ucCorrect{0%{background:#dcfce7}50%{background:#86efac}100%{background:#dcfce7}}' +
           '@keyframes ucFactSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}' +
-          '@keyframes spin{to{transform:rotate(360deg)}}';
-        var UNIT_CONVERT_TAB_ORDER = ['convert', 'table', 'quiz', 'wordproblem', 'magHunt'];
+          '@keyframes spin{to{transform:rotate(360deg)}}' + (isDarkUI ? unitConvertDarkCss() : '');
         var unitConvertTabKeyDown = function(e, index) {
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % UNIT_CONVERT_TAB_ORDER.length;
@@ -912,207 +3736,434 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             nextTab.click();
           }
         };
-
-        // ── RENDER ──
-        return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
-
-          h('style', null, css),
-
-          // Header
-          h('section', { 'data-unitconvert-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-xl' },
-            h('div', { className: 'p-4 sm:p-5' },
-              h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
-                h('div', { className: 'min-w-0' },
-                  h('div', { className: 'flex flex-wrap items-center gap-2' },
-                    h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
-                    h('span', { className: 'rounded-full bg-teal-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-teal-100 ring-1 ring-teal-200/30' }, 'Measurement workbench'),
-                    earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-amber-100', title: t('stem.unitconvert.view_badges_b', 'View badges (B)') }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-                    h('button', { onClick: askTutor, 'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': !!tutorLoading, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-violet-100' }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
-                  ),
-                  h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.unitconvert.unit_converter', '\uD83D\uDCCF Unit Converter')),
-                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-teal-100' }, 'Preserve the quantity while changing its unit, and verify every step through dimensional reasoning.'),
-                  h('p', { className: 'mt-2 text-sm text-white' }, unitNext)
-                ),
-                h('div', { className: 'hidden sm:grid grid-cols-3 gap-2 lg:w-[22rem]' },
-                  [
-                    { label: 'Focus', value: tabLabel },
-                    { label: 'Category', value: cat.label },
-                    { label: 'Saved', value: String(historySaveCount) }
-                  ].map(function(metric) {
-                    return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
-                      h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
-                      h('div', { className: 'mt-1 text-[0.625rem] font-bold uppercase tracking-wider text-teal-200' }, metric.label)
-                    );
-                  })
-                )
-              ),
-              h('details', { className: 'mt-3 text-white' }, h('summary', { className: 'cursor-pointer text-sm font-bold' }, t('stem.unitconvert.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.unitconvert.unit_conversion_reasoning_pathway','Unit conversion reasoning pathway') },
-                [
-                  { n: '1', title: 'Select', detail: 'Name the given and target units.' },
-                  { n: '2', title: 'Convert', detail: 'Apply a factor equal to one.' },
-                  { n: '3', title: 'Verify', detail: 'Check units, scale, and context.' }
-                ].map(function(step) {
-                  return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
-                    h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-300 font-black text-slate-950' }, step.n),
-                    h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-teal-200' }, step.detail))
-                  );
-                })
-              ))
-            )
-          ),
-
-          // ── Badge panel ──
-          showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
-            h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
-              h('button', { onClick: function() { upd('showBadges', false); }, className: 'transition-colors text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
+        var btnBase = 'min-h-[2.75rem] rounded-lg px-3 py-2 text-xs font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 ';
+        // ── Shared practice pieces (stage C): every activity uses the same
+        // rule and the same look. Commit an answer; a wrong answer is named
+        // and gets a second try; after two tries the student MAY choose to
+        // see the answer; a shown answer earns nothing.
+        function revealButton(onClick, label) {
+          return h('button', { type: 'button', onClick: onClick, 'data-reveal-button': true, className: btnBase + 'bg-amber-100 text-amber-900 hover:bg-amber-200' }, label || t('stem.unitconvert.show_answer', '👀 Show the answer (no XP)'));
+        }
+        function triesNote(tries) {
+          var text = tries <= 1
+            ? (revealsAllowed ? t('stem.unitconvert.second_try_v2', 'You have one more try before you can choose to see the answer.') : t('stem.unitconvert.keep_trying', 'Use the hints and try again.'))
+            : (revealsAllowed ? t('stem.unitconvert.try_or_reveal', 'Keep trying with the hints, or choose Show the answer (no XP).') : t('stem.unitconvert.keep_trying', 'Use the hints and try again.'));
+          return h('p', { className: 'mt-1 text-xs font-bold text-amber-900', 'data-tries-note': tries }, text);
+        }
+        function hintButton(level, total, onClick) {
+          return h('button', { type: 'button', onClick: onClick, 'data-hint-button': true, className: btnBase + 'bg-violet-100 text-violet-800 hover:bg-violet-200' },
+            fill(t('stem.unitconvert.hint_button_of', '💡 Hint {n} of {total}'), { n: level, total: total }));
+        }
+        function hintList(hints) {
+          return h('ol', { className: 'mt-3 space-y-2', 'aria-label': t('stem.unitconvert.revealed_hints', 'Revealed hints') },
+            hints.map(function(hint, index) {
+              return h('li', { key: index, className: 'rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900' },
+                h('span', { className: 'font-black' }, fill(t('stem.unitconvert.hint_n', 'Hint {n}:'), { n: index + 1 }) + ' '), hint);
+            }));
+        }
+        function notYetBox(attrs, heading, detail, tries, note) {
+          return h('div', Object.assign({ className: 'rounded-lg border border-amber-400 bg-amber-50 p-3' }, attrs || {}),
+            h('p', { className: 'text-sm font-black text-amber-900' }, heading),
+            detail && h('p', { className: 'mt-1 text-sm text-amber-900' }, detail),
+            note ? h('p', { className: 'mt-1 text-xs font-bold text-amber-900', 'data-tries-note': tries }, note) : triesNote(tries));
+        }
+        // ═══ VIEW: CONVERT ═══
+        function unitSelect(id, label, value, onChange) {
+          return [
+            h('label', { key: id + '-label', htmlFor: id, className: 'block mt-2 text-sm font-bold' }, label),
+            h('select', {
+              key: id,
+              id: id,
+              'aria-label': label, value: value,
+              onChange: onChange,
+              style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
+              className: 'block w-full mt-2 min-h-[2.75rem] text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
+            }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, unitOption(u)); }))
+          ];
+        }
+        function equalityBar(index, count, unit) {
+          var plan = tickPlan(count, 40);
+          var spacing = plan && plan.spacingPct >= 0.8 && plan.spacingPct <= 100 ? plan.spacingPct : null;
+          var fillColor = index ? (isDarkUI ? '#818cf8' : '#4338ca') : (isDarkUI ? '#22d3ee' : '#0e7490');
+          var gapColor = isDarkUI ? '#0f172a' : '#ffffff';
+          var bg = spacing
+            ? 'repeating-linear-gradient(90deg,transparent 0,transparent calc(' + spacing + '% - 2px),' + gapColor + ' calc(' + spacing + '% - 2px),' + gapColor + ' ' + spacing + '%)'
+            : 'none';
+          var tickNote = !plan || !(count > 0) ? '' : plan.ticks < 1
+            ? fill(t('stem.unitconvert.bar_less_than_one', 'Less than one whole {unit}, so no ticks.'), { unit: unitShort(unit) })
+            : plan.every === 1
+              ? fill(t('stem.unitconvert.bar_ticks_each', 'Each section is 1 {unit}.'), { unit: unitShort(unit) })
+              : fill(t('stem.unitconvert.bar_ticks_group', 'Each section is {every} {unit}.'), { every: fmtN(plan.every), unit: unitShort(unit) });
+          return h('div', { key: index },
+            h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, fmt(count) + ' ' + unitShort(unit)),
+            h('div', { style: { height: 28, border: '2px solid ' + (isDarkUI ? '#94a3b8' : '#475569'), borderRadius: 4, background: gapColor, overflow: 'hidden' } },
+              h('div', { 'data-equal-quantity-bar': index, 'data-tick-every': plan ? plan.every : 0, style: { height: '100%', width: Number(count) === 0 ? '0%' : '100%', background: fillColor, backgroundImage: bg } })
             ),
-            h('div', { className: 'grid grid-cols-3 sm:grid-cols-5 gap-2' },
-              BADGES.map(function(badge) {
-                var earned = !!badges[badge.id];
-                return h('div', {
-                  key: badge.id,
-                  className: 'text-center p-2 rounded-lg border transition-all ' +
-                    (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-50'),
-                  title: t('stem.unitconvert.badgedesc_' + badge.id, badge.desc)
+            tickNote && h('p', { className: 'text-xs text-slate-700 mt-0.5' }, tickNote)
+          );
+        }
+        function unitSizeModel() {
+          var cmp = unitSizeComparison(d.category, d.fromUnit, d.toUnit);
+          if (!cmp || cmp.same) return null;
+          var ratio = cmp.ratio;
+          var W = 300, X0 = 10, BW = 280;
+          var smallW = Math.max(1.5, BW / ratio);
+          var tickable = ratio <= 60 && Math.abs(ratio - Math.round(ratio)) < 1e-9;
+          var ticks = [];
+          if (tickable) for (var i = 1; i < Math.round(ratio); i++) ticks.push(X0 + BW * i / ratio);
+          var ratioText = fmtN(ratio);
+          var desc = fill(t('stem.unitconvert.size_desc', 'One {big} equals {ratio} {small}. One {small} is 1/{ratio} of a {big}.'), { big: unitShort(cmp.big), small: unitShort(cmp.small), ratio: ratioText });
+          return h('figure', { className: 'mt-3 rounded-xl border bg-white p-3', 'data-unit-size-model': true },
+            h('figcaption', { className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
+            h('svg', { viewBox: '0 0 ' + W + ' 86', width: '100%', role: 'img', 'aria-labelledby': 'uc-size-title uc-size-desc', className: 'mt-2', style: { maxWidth: 520 } },
+              h('title', { id: 'uc-size-title' }, t('stem.unitconvert.size_title', 'How big is one of each unit?')),
+              h('desc', { id: 'uc-size-desc' }, desc),
+              h('rect', { x: X0, y: 8, width: BW, height: 24, fill: isDarkUI ? '#0b2a33' : '#cffafe', stroke: isDarkUI ? '#22d3ee' : '#0e7490', strokeWidth: 2 }),
+              ticks.map(function(x, k) { return h('line', { key: k, x1: x, x2: x, y1: 8, y2: 32, stroke: isDarkUI ? '#22d3ee' : '#0e7490', strokeWidth: 1 }); }),
+              h('text', { x: X0, y: 46, fontSize: 11, fill: isDarkUI ? '#f1f5f9' : '#0f172a', fontWeight: 700 }, '1 ' + unitShort(cmp.big)),
+              h('rect', { x: X0, y: 54, width: smallW, height: 20, fill: isDarkUI ? '#818cf8' : '#4338ca' }),
+              h('text', { x: Math.min(X0 + smallW + 6, W - 60), y: 68, fontSize: 11, fill: isDarkUI ? '#f1f5f9' : '#0f172a', fontWeight: 700 }, '1 ' + unitShort(cmp.small))
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, desc),
+            !tickable && h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.size_too_many', 'There are too many small units to draw each one, so only one is shown to scale.'))
+          );
+        }
+        // ── Guess first: slider, lock, then the guess-vs-true bars ──
+        function guessText(k) {
+          return fill(t('stem.unitconvert.guess_valuetext', 'about {value} {unit}'), { value: fmtN(guessValueAt(k)), unit: unitShort(d.toUnit) });
+        }
+        function closenessText(c) {
+          if (!c) return '';
+          if (c.level === 'exact') return t('stem.unitconvert.guess_exact', 'Exactly right!');
+          if (c.level === 'close') return t('stem.unitconvert.guess_close_v2', 'Very close: within 2 times of the true value.');
+          if (c.level === 'size') return t('stem.unitconvert.guess_size', 'Right size: less than 10 times off.');
+          var times = fmtN(c.times);
+          return c.high
+            ? fill(t('stem.unitconvert.guess_far_high', 'Your guess is about {times} times too big.'), { times: times })
+            : fill(t('stem.unitconvert.guess_far_low', 'Your guess is about {times} times too small.'), { times: times });
+        }
+        function reducedMotionNow() {
+          try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+        }
+        // The true-value bar grows from the guess to the real value. Reduced
+        // motion is read when the animation starts (and again each frame), so
+        // a change of the setting applies at once.
+        function animateGuessBar(el, fromPct, toPct, sig) {
+          if (!el || el.getAttribute('data-anim-sig') === sig) return;
+          el.setAttribute('data-anim-sig', sig);
+          if (reducedMotionNow()) { el.style.transition = 'none'; el.style.width = toPct + '%'; el.setAttribute('data-anim', 'none'); return; }
+          el.style.transition = 'none';
+          el.style.width = fromPct + '%';
+          void el.offsetWidth;
+          el.setAttribute('data-anim', 'start');
+          var raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function(f) { return setTimeout(f, 16); };
+          raf(function() {
+            if (!el.isConnected) return;
+            var still = reducedMotionNow();
+            el.style.transition = still ? 'none' : 'width 900ms ease-out';
+            el.style.width = toPct + '%';
+            el.setAttribute('data-anim', still ? 'none' : 'run');
+            if (still) return;
+            // Reduced motion turned on mid-run: a running CSS transition would
+            // carry on, so stop it here.
+            try {
+              var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+              if (!mq || !mq.addEventListener) return;
+              var snap = function() {
+                if (mq.matches && el.isConnected) { el.style.transition = 'none'; el.setAttribute('data-anim', 'none'); }
+                mq.removeEventListener('change', snap);
+              };
+              mq.addEventListener('change', snap);
+              setTimeout(function() { mq.removeEventListener('change', snap); }, 1000);
+            } catch (e) { /* no matchMedia: nothing to follow */ }
+          });
+        }
+        function lockGuess() {
+          if (!guessScaleNow || guessLocked) return;
+          var g = guessValueAt(guessK);
+          var c = guessCloseness(g, result);
+          // The result shows either way; only a guess of their own counts.
+          var counts = !!guessState && cat.units[d.fromUnit] !== cat.units[d.toUnit];
+          upd({ guess: { sig: predictionSignature, k: guessK, locked: true, counted: counts }, guessCount: (Number(d.guessCount) || 0) + (counts ? 1 : 0) });
+          checkBadges({ firstConvert: true });
+          say(fill(t('stem.unitconvert.sr_guess_locked', 'Guess locked: {guess}. The true value is {result} {unit}. {how}'), { guess: guessText(guessK), result: fmtResult, unit: unitShort(d.toUnit), how: closenessText(c) }));
+          focusSoon(['uc-guess-result']);
+        }
+        function renderGuessToggle() {
+          return h('label', { className: 'mt-2 flex items-center gap-2 text-xs font-bold text-slate-700 min-h-[2.75rem]' },
+            h('input', { type: 'checkbox', id: 'uc-guess-toggle', className: 'w-5 h-5', 'data-guess-toggle': true, checked: guessOn, onChange: function(e) {
+              // A saved 'flag' cannot hold false, but a saved count of 0 marks
+              // this record as not new, so off stays off after a reload.
+              upd(e.target.checked ? { guessFirst: true } : { guessFirst: false, guessCount: Number(d.guessCount) || 0 });
+              // The toggle moves to another panel, and focus goes with it. The
+              // host may re-render late, so look a few times; focus that has
+              // gone anywhere but the page body is the student's, left alone.
+              var looks = 0;
+              (function keepFocus() {
+                var el = document.getElementById('uc-guess-toggle');
+                var active = document.activeElement;
+                if (el && active !== el && (!active || active === document.body)) el.focus();
+                if (++looks < 6) setTimeout(keepFocus, 40);
+              })();
+            } }),
+            t('stem.unitconvert.guess_toggle', 'Guess before I see the answer'));
+        }
+        function renderGuessPanel() {
+          if (!guessOn) return null;
+          if (!guessScaleNow) {
+            return h('section', { 'data-guess-panel': 'off', className: 'mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3' },
+              h('p', { className: 'text-xs text-slate-700' }, d.category === 'temperature'
+                ? t('stem.unitconvert.guess_temp_note', 'Temperature scales start at different zero points, so there is no guess slider here.')
+                : t('stem.unitconvert.guess_need_number', 'Type a number above 0 to make a guess.')),
+              renderGuessToggle());
+          }
+          var g = guessValueAt(guessK);
+          var c = guessLocked ? guessCloseness(g, result) : null;
+          var cmpScale = guessLocked ? guessCompareScale(g, result) : null;
+          var gPct = cmpScale ? cmpScale.guessPct : 0;
+          var tPct = cmpScale ? cmpScale.truePct : 0;
+          var decades = cmpScale ? cmpScale.hi - cmpScale.lo : 1;
+          var decadeStep = 100 / decades;
+          var track = isContrast ? '#000000' : isDarkUI ? '#0f172a' : '#f1f5f9';
+          var tickColor = isContrast ? '#ffffff' : isDarkUI ? '#64748b' : '#94a3b8';
+          var trackBg = 'repeating-linear-gradient(90deg,transparent 0,transparent calc(' + decadeStep + '% - 1px),' + tickColor + ' calc(' + decadeStep + '% - 1px),' + tickColor + ' ' + decadeStep + '%)';
+          var tickLabels = [];
+          if (cmpScale) for (var p = cmpScale.lo; p <= cmpScale.hi; p += Math.max(1, Math.ceil(decades / 4))) {
+            var at = 100 * (p - cmpScale.lo) / decades;
+            tickLabels.push(h('span', { key: p, style: { position: 'absolute', left: at + '%', transform: at <= 0 ? 'none' : at >= 100 ? 'translateX(-100%)' : 'translateX(-50%)', whiteSpace: 'nowrap' } }, Math.abs(p) <= 3 ? fmtN(Math.pow(10, p)) : '10' + superscriptInt(p)));
+          }
+          var plain35 = pathBand === 'b45';
+          function bar(kind, pct, label, color) {
+            return h('div', { key: kind },
+              h('p', { className: 'text-xs font-bold text-slate-800 mb-1' }, label),
+              h('div', { style: { height: 22, border: '2px solid ' + (isContrast ? '#ffffff' : isDarkUI ? '#94a3b8' : '#475569'), borderRadius: 4, background: track, backgroundImage: trackBg, overflow: 'hidden' } },
+                h('div', {
+                  'data-guess-bar': kind, 'data-target-pct': pct.toFixed(2),
+                  ref: kind === 'true' ? function(el) { animateGuessBar(el, gPct, pct, predictionSignature); } : undefined,
+                  style: { height: '100%', width: pct + '%', background: color }
+                })));
+          }
+          return h('section', { 'data-guess-panel': guessLocked ? 'locked' : 'open', 'aria-labelledby': 'uc-guess-title', className: 'mt-3 rounded-lg border-2 border-cyan-600 bg-cyan-50 p-3' },
+            h('h4', { id: 'uc-guess-title', className: 'text-sm font-black text-cyan-900' },
+              fill(t('stem.unitconvert.guess_title', 'Guess first: {value} {from} is about how many {to}?'), { value: fmtValue, from: unitShort(d.fromUnit), to: unitShort(d.toUnit) })),
+            !guessLocked && h('div', { className: 'mt-2' },
+              h('label', { htmlFor: 'uc-guess-slider', className: 'block text-sm font-bold text-slate-800' },
+                t('stem.unitconvert.guess_label', 'Your guess'), ': ', h('span', { 'data-guess-readout': true, className: 'font-black text-cyan-900' }, guessText(guessK))),
+              h('input', {
+                id: 'uc-guess-slider', type: 'range', min: guessScaleNow.min, max: guessScaleNow.max, step: 1, value: guessK,
+                'aria-valuetext': guessText(guessK),
+                // Chromium moves a range to the finger on touchstart, so a swipe
+                // that lands here to scroll the page would change the guess. A
+                // mostly vertical touch is a scroll: put the guess back.
+                onTouchStart: function(e) {
+                  var p = e.touches && e.touches[0];
+                  e.currentTarget._ucTouch = p ? { x: p.clientX, y: p.clientY, before: d.guess, scroll: false } : null;
                 },
-                  h('div', { className: 'text-xl' }, earned ? badge.icon : '\uD83D\uDD12'),
-                  h('div', { className: 'text-[0.6875rem] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-600') }, t('stem.unitconvert.badge_' + badge.id, badge.label))
-                );
+                onTouchMove: function(e) {
+                  var tr = e.currentTarget._ucTouch, p = e.touches && e.touches[0];
+                  if (!tr || !p || tr.scroll) return;
+                  var dy = Math.abs(p.clientY - tr.y);
+                  if (dy > 10 && dy > Math.abs(p.clientX - tr.x)) { tr.scroll = true; upd('guess', tr.before); }
+                },
+                onTouchEnd: function(e) { e.currentTarget._ucTouch = null; },
+                onTouchCancel: function(e) { e.currentTarget._ucTouch = null; },
+                onChange: function(e) {
+                  if (e.currentTarget._ucTouch && e.currentTarget._ucTouch.scroll) return;
+                  upd('guess', { sig: predictionSignature, k: Number(e.target.value), locked: false });
+                },
+                className: 'mt-1 block w-full', style: { minHeight: 44, accentColor: isDarkUI ? '#22d3ee' : '#0e7490' }
+              }),
+              h('div', { className: 'flex justify-between text-[0.6875rem] text-slate-700', 'aria-hidden': 'true' },
+                plain35 ? h('span', null, t('stem.unitconvert.guess_end_smaller', '← smaller')) : h('span', null, fmtN(guessValueAt(guessScaleNow.min))),
+                plain35 ? h('span', null, t('stem.unitconvert.guess_end_bigger', 'bigger →')) : h('span', null, fmtN(guessValueAt(guessScaleNow.max)))),
+              h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.unitconvert.guess_scale_note', 'Each step to the right is about 2 times bigger; three steps make 10 times.')),
+              h('button', { type: 'button', 'data-guess-lock': true, onClick: lockGuess, className: btnBase + 'mt-2 bg-cyan-800 text-white hover:bg-cyan-900' },
+                t('stem.unitconvert.guess_lock', 'Lock my guess'))),
+            guessLocked && h('div', { id: 'uc-guess-result', tabIndex: -1, 'data-guess-result': c ? c.level : '', className: 'mt-2 rounded-lg border border-cyan-300 bg-white p-3 outline-none focus-visible:ring-2 focus-visible:ring-cyan-500' },
+              h('p', { className: 'text-sm text-slate-800' }, fill(t('stem.unitconvert.guess_yours', 'Your guess: {guess}'), { guess: guessText(guessK) })),
+              h('p', { className: 'text-sm font-bold text-slate-900' }, fill(t('stem.unitconvert.guess_true', 'True value: {result} {unit}'), { result: fmtResult, unit: unitShort(d.toUnit) })),
+              h('p', { className: 'mt-1 text-sm font-black text-cyan-900' }, closenessText(c)),
+              h('figure', { className: 'mt-2', 'data-guess-compare': true },
+                h('figcaption', { className: 'sr-only' }, t('stem.unitconvert.guess_compare_title', 'Your guess and the true value')),
+                h('div', { role: 'img', className: 'space-y-2', 'aria-label': fill(t('stem.unitconvert.guess_compare_aria', 'Bars on a scale where each mark is 10 times the one before: your guess, {guess}, and the true value, {result} {unit}.'), { guess: guessText(guessK), result: fmtResult, unit: unitShort(d.toUnit) }) },
+                  bar('guess', gPct, t('stem.unitconvert.guess_bar_label', 'Your guess'), isContrast ? '#ffff00' : isDarkUI ? '#fbbf24' : '#b45309'),
+                  bar('true', tPct, t('stem.unitconvert.guess_true_bar_label', 'True value'), isContrast ? '#00ffff' : isDarkUI ? '#22d3ee' : '#0e7490')),
+                h('div', { 'aria-hidden': 'true', className: 'relative mt-1 h-4 text-[0.6875rem] text-slate-700' }, tickLabels)),
+              guessState.counted === false && !((Number(d.guessCount) || 0) >= 1) && h('p', { className: 'mt-1 text-xs font-bold text-slate-800', 'data-guess-not-counted': true }, t('stem.unitconvert.guess_not_counted', 'To tick this path step, move the slider to your own guess, using two different units.')),
+              h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.unitconvert.guess_again_note', 'Change the number or a unit to guess again. Guesses earn no XP.'))),
+            renderGuessToggle());
+        }
+
+        // ── Unit stacker: tap or drag small blocks into one big unit ──
+        function renderStacker() {
+          var savedStack = d.stack && typeof d.stack === 'object' ? d.stack : {};
+          var pair = stackPairFor(d.category, d.fromUnit, d.toUnit, savedStack.pair);
+          var target = stackCount(pair);
+          if (!target) return null;
+          var n = savedStack.pair === pair.id ? Math.max(0, Math.min(target, Math.round(Number(savedStack.n) || 0))) : 0;
+          var full = n >= target;
+          // While a guess about this same pair is still open, building it
+          // would show the answer, so the stacker waits.
+          var blocked = hideConversionResult && pair.cat === d.category && ((pair.small === d.fromUnit && pair.big === d.toUnit) || (pair.small === d.toUnit && pair.big === d.fromUnit));
+          var small = unitShort(pair.small), big = unitShort(pair.big);
+          var smallPlural = { day: t('stem.unitconvert.stack_days', 'days'), cup: t('stem.unitconvert.stack_cups', 'US cups') }[pair.small] || small;
+          function smallFor(count) { return count === 1 ? small : smallPlural; }
+          function addBlocks(k) {
+            var next = Math.max(0, Math.min(target, n + k));
+            if (next === n) { say(k > 0 ? t('stem.unitconvert.stack_already_full', 'The bar is already full.') : t('stem.unitconvert.stack_empty', 'The bar is empty.')); return; }
+            upd('stack', { pair: pair.id, n: next });
+            say(next >= target
+              ? fill(t('stem.unitconvert.stack_full', 'Full! {n} {small} make 1 {big}.'), { n: fmtN(next), small: smallFor(next), big: big })
+              : fill(t('stem.unitconvert.stack_count_sr', '{n} {small} blocks in the bar.'), { n: fmtN(next), small: small }));
+          }
+          function startDrag(e) {
+            var el = e.currentTarget;
+            el._ucDrag = { x: e.clientX, y: e.clientY, moved: false };
+            el._ucSuppressClickUntil = 0;
+            try { if (el.setPointerCapture) el.setPointerCapture(e.pointerId); } catch (err) {}
+          }
+          function moveDrag(e) {
+            var el = e.currentTarget, dr = el._ucDrag;
+            if (!dr) return;
+            if (!dr.moved && Math.abs(e.clientX - dr.x) + Math.abs(e.clientY - dr.y) > 8) {
+              dr.moved = true;
+              try {
+                var gh = document.createElement('div');
+                gh.setAttribute('aria-hidden', 'true');
+                gh.setAttribute('data-stack-ghost', 'true');
+                gh.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;width:28px;height:28px;border-radius:4px;border:2px solid #0f172a;background:' + (isDarkUI ? '#818cf8' : '#4338ca');
+                document.body.appendChild(gh);
+                dr.ghost = gh;
+                // If the tool goes away mid-drag React never sees the pointer
+                // lift, so the page cleans the ghost up itself.
+                var dropGhost = function() {
+                  window.removeEventListener('pointerup', dropGhost);
+                  window.removeEventListener('pointercancel', dropGhost);
+                  if (gh.parentNode) gh.parentNode.removeChild(gh);
+                };
+                window.addEventListener('pointerup', dropGhost);
+                window.addEventListener('pointercancel', dropGhost);
+              } catch (err) {}
+            }
+            if (dr.ghost) { dr.ghost.style.left = (e.clientX - 14) + 'px'; dr.ghost.style.top = (e.clientY - 14) + 'px'; }
+          }
+          function endDrag(e, dropped) {
+            var el = e.currentTarget, dr = el._ucDrag;
+            el._ucDrag = null;
+            if (!dr) return;
+            if (dr.ghost && dr.ghost.parentNode) dr.ghost.parentNode.removeChild(dr.ghost);
+            if (!dr.moved || !dropped) return;
+            // A mouse drag ends in a click, a touch drag does not, so this only
+            // covers the click that comes straight after the lift.
+            el._ucSuppressClickUntil = Date.now() + 300;
+            var barEl = document.getElementById('uc-stack-bar');
+            if (!barEl) return;
+            var r = barEl.getBoundingClientRect();
+            if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top - 16 && e.clientY <= r.bottom + 16) addBlocks(1);
+          }
+          var blockFill = isContrast ? '#ffff00' : isDarkUI ? '#818cf8' : '#4338ca';
+          var edge = isContrast ? '#000000' : isDarkUI ? '#0f172a' : '#ffffff';
+          var blocks = [];
+          for (var i = 0; i < n; i++) blocks.push(h('div', { key: i, 'data-stack-block': true, style: { width: (100 / target) + '%', height: '100%', background: blockFill, boxShadow: 'inset -1px 0 0 ' + edge, flexShrink: 0 } }));
+          return h('section', { 'data-unit-stacker': pair.id, 'aria-labelledby': 'uc-stack-title', className: 'mt-3 rounded-xl border border-slate-300 bg-white p-3' },
+            h('h4', { id: 'uc-stack-title', className: 'text-sm font-black text-slate-900' },
+              fill(t('stem.unitconvert.stack_title', 'Unit stacker: fill 1 {big} with {small} blocks'), { big: big, small: small })),
+            h('label', { htmlFor: 'uc-stack-pair', className: 'mt-2 block text-xs font-bold text-slate-800' }, t('stem.unitconvert.stack_pair_label', 'Blocks and bar')),
+            h('select', { id: 'uc-stack-pair', value: pair.id, onChange: function(e) { upd('stack', { pair: e.target.value, n: 0 }); },
+              className: 'mt-1 w-full max-w-xs min-h-[2.75rem] rounded border border-slate-500 bg-white px-2 text-sm text-slate-800' },
+              STACK_PAIRS.filter(function(p) { return stackCount(p) > 0; }).map(function(p) {
+                return h('option', { key: p.id, value: p.id }, fill(t('stem.unitconvert.stack_pair_option', '{small} blocks into 1 {big}'), { small: unitShort(p.small), big: unitShort(p.big) }));
+              })),
+            blocked
+              ? h('p', { className: 'mt-2 text-sm font-bold text-amber-900', 'data-stack-blocked': true }, (guessOpen ? t('stem.unitconvert.stack_wait_guess', 'Lock your guess above first, then build it here.') : t('stem.unitconvert.stack_wait_prediction', 'Compare your prediction above first, then build it here.')))
+              : h('div', { className: 'mt-2' },
+                  h('p', { className: 'text-xs font-bold text-slate-800 mb-1' }, fill(t('stem.unitconvert.stack_bar_label', 'One {big}'), { big: big })),
+                  h('div', {
+                    id: 'uc-stack-bar', 'data-stack-bar': true, 'data-stack-full': full ? 'true' : 'false', role: 'img',
+                    'aria-label': full
+                      ? fill(t('stem.unitconvert.stack_bar_full_aria', 'The 1 {big} bar is full: {n} {small} blocks.'), { big: big, n: fmtN(n), small: small })
+                      : fill(t('stem.unitconvert.stack_bar_aria', 'A 1 {big} bar with {n} {small} blocks in it.'), { big: big, n: fmtN(n), small: small }),
+                    onClick: function() { if (!full) addBlocks(1); },
+                    style: { display: 'flex', height: 36, border: '3px solid ' + (full ? (isContrast ? '#00ff00' : isDarkUI ? '#34d399' : '#047857') : (isContrast ? '#ffffff' : isDarkUI ? '#94a3b8' : '#475569')), borderRadius: 6, background: isContrast ? '#000000' : isDarkUI ? '#0f172a' : '#f8fafc', overflow: 'hidden', cursor: full ? 'default' : 'pointer' }
+                  }, blocks),
+                  h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+                    h('button', { type: 'button', 'data-stack-source': true,
+                      'aria-label': fill(t('stem.unitconvert.stack_source_aria', 'Add one {small} block (tap, or drag it into the bar)'), { small: small }),
+                      onPointerDown: startDrag, onPointerMove: moveDrag,
+                      onPointerUp: function(e) { endDrag(e, true); }, onPointerCancel: function(e) { endDrag(e, false); },
+                      onClick: function(e) { var quiet = e.currentTarget._ucSuppressClickUntil; e.currentTarget._ucSuppressClickUntil = 0; if (quiet && Date.now() < quiet) return; addBlocks(1); },
+                      style: { touchAction: 'none', minHeight: 44, minWidth: 44 },
+                      className: 'flex items-center gap-2 rounded-lg border-2 border-dashed border-slate-500 bg-white px-3 py-2 text-xs font-bold text-slate-800' },
+                      h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 18, height: 18, borderRadius: 3, background: blockFill } }),
+                      fill(t('stem.unitconvert.stack_source', '1 {small} block'), { small: small })),
+                    h('button', { type: 'button', 'data-stack-add': '1', disabled: full, onClick: function() { addBlocks(1); }, className: btnBase + 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50' }, t('stem.unitconvert.stack_add_one', 'Add one')),
+                    h('button', { type: 'button', 'data-stack-add': '10', disabled: full, onClick: function() { addBlocks(10); }, className: btnBase + 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50' }, t('stem.unitconvert.stack_add_ten', 'Add ten')),
+                    h('button', { type: 'button', 'data-stack-add': '-1', disabled: n === 0, onClick: function() { addBlocks(-1); }, className: btnBase + 'border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-50' }, t('stem.unitconvert.stack_take_one', 'Take one away')),
+                    h('button', { type: 'button', 'data-stack-reset': true, disabled: n === 0, onClick: function() { upd('stack', { pair: pair.id, n: 0 }); say(t('stem.unitconvert.stack_reset_sr', 'The bar is empty again.')); }, className: btnBase + 'border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-50' }, t('stem.unitconvert.stack_reset', 'Start over'))),
+                  h('p', { className: 'mt-2 text-sm font-bold ' + (full ? 'text-emerald-800' : 'text-slate-800'), 'data-stack-count': n },
+                    full
+                      ? fill(t('stem.unitconvert.stack_full', 'Full! {n} {small} make 1 {big}.'), { n: fmtN(n), small: smallFor(n), big: big })
+                      : fill(t('stem.unitconvert.stack_count', 'Count: {n} {small}'), { n: fmtN(n), small: smallFor(n) }))));
+        }
+
+        // Category selector: the full set behind a named, keyboard-operable disclosure.
+        function renderCategoryPicker() {
+          return h('details', { 'data-unit-category-picker': true, className: 'mt-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
+            h('summary', { className: 'cursor-pointer rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500', style: { minHeight: 44, color: isDarkUI ? '#67e8f9' : '#0e7490' } }, fill(t('stem.unitconvert.change_measurement_v2', 'Change measurement: {category}'), { category: cat.label })),
+            h('div', { className: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5', role: 'group', 'aria-label': t('stem.unitconvert.measurement_categories', 'Measurement categories') },
+              Object.keys(CATEGORIES).map(function(k) {
+                var v = CATEGORIES[k];
+                return h('button', { key: k, type: 'button', 'aria-pressed': d.category === k,
+                  onClick: function() {
+                    var pair = DEFAULT_PAIRS[k];
+                    _unitConvertWordProblemRequestId += 1;
+                    setLabToolData(function(prev) {
+                      return Object.assign({}, prev, { unitConvert: Object.assign({}, (prev || {}).unitConvert, {
+                        category: k,
+                        fromUnit: pair[0],
+                        toUnit: pair[1],
+                        loadingWP: false,
+                        wordProblem: null,
+                        wordProblemFeedback: '',
+                        wordProblemHintLevel: 0, wordProblemTries: 0, wordProblemInputError: ''
+                      }) });
+                    });
+                    trackCategory(k);
+                    if (!guessOpen) checkBadges({ firstConvert: true });
+                  },
+                  className: 'min-h-[2.75rem] px-2.5 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-cyan-50 active:scale-[0.97]')
+                }, v.label);
               })
             )
-          ),
+          );
+        }
 
-          // ── AI Tutor panel ──
-          showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
-            h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.unitconvert.ai_unit_tutor', '\uD83E\uDDE0 AI Unit Tutor')),
-              h('button', { 'aria-label': t('stem.unitconvert.close_tutor', 'Close AI Tutor'), onClick: function() { upd('showTutor', false); }, className: 'transition-colors text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
-            ),
-            tutorLoading
-              ? h('div', { className: 'flex items-center gap-2' },
-                  h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full motion-reduce:animate-none animate-spin' }),
-                  h('span', { className: 'text-xs text-purple-600' }, 'Thinking...')
-                )
-              : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
-            !tutorLoading && h('button', { 'aria-label': t('stem.unitconvert.ask_again', 'Ask Again'),
-              onClick: askTutor,
-              className: 'mt-2 text-[0.6875rem] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all active:scale-[0.97]'
-            }, t('stem.unitconvert.ask_again_2', '\uD83D\uDD04 Ask Again'))
-          ),
-
-          // Category selector: retain the full set behind a named, keyboard-operable disclosure.
-          h('details', { 'data-unit-category-picker': true, className: 'mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
-            h('summary', { className: 'cursor-pointer rounded-lg px-2 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500', style: { minHeight: 44, color: '#0e7490' } }, t('stem.unitconvert.change_measurement', 'Change measurement') + ': ' + cat.label),
-            h('div', { className: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5', role: 'group', 'aria-label': t('stem.unitconvert.measurement_categories','Measurement categories') },
-            Object.entries(CATEGORIES).map(function(e) {
-              var k = e[0], v = e[1];
-              return h('button', { key: k,
-                onClick: function() {
-                  var units = Object.keys(v.units);
-                  _unitConvertWordProblemRequestId += 1;
-                  setLabToolData(function(prev) {
-                    return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
-                      category: k,
-                      fromUnit: units[0],
-                      toUnit: units[1] || units[0],
-                      loadingWP: false,
-                      wordProblem: null,
-                      wordProblemFeedback: '',
-                      wordProblemHintLevel: 0
-                    }) });
-                  });
-                  trackCategory(k);
-                  checkBadges({ firstConvert: true });
-                },
-                className: 'min-h-[2.5rem] px-2.5 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-cyan-50 active:scale-[0.97]')
-              }, v.label);
-            })
-            )
-          ),
-
-          // Tool tabs
-          h('div', { className: 'gap-1 mb-3 border-b border-slate-200', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 125px), 1fr))' }, role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
-            [['convert', t("stem.unitconvert.nav_convert", "Convert")], ['table', t("stem.unitconvert.nav_all_units", "All units")], ['quiz', t("stem.unitconvert.nav_quiz", "Quiz")], ['wordproblem', t("stem.unitconvert.nav_word_problems", "Word problems")], ['magHunt', t("stem.unitconvert.nav_compare_scales", "Compare scales")]].map(function(item, idx) {
-              return h('button', { key: item[0],
-                id: 'stem-unitconvert-tab-' + item[0],
-                style: { color: ctx.isContrast ? '#00ff00' : undefined, minHeight: 44, minWidth: 0, whiteSpace: 'normal' },
-                onClick: function() { upd('tab', item[0]); },
-                role: 'tab', 'aria-selected': tab === item[0],
-                'aria-controls': 'stem-unitconvert-panel-' + item[0],
-                tabIndex: tab === item[0] ? 0 : -1,
-                onKeyDown: function(e) { unitConvertTabKeyDown(e, idx); },
-                className: 'px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : ('transition-colors text-slate-600 hover:text-slate-700' + onHostInk)),
-                title: (idx + 1) + ' key'
-              }, item[1]);
-            })
-          ),
-
-          // ── Topic-accent hero band per tab ──
-          (function() {
-            var TAB_META = {
-              convert:     { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDD04', title: t('stem.unitconvert.convert_the_math_behind_units', 'Convert \u2014 the math behind units'),  hint: t('stem.unitconvert.conversion_factor_ratio_equal_to_1_e_g', 'Conversion factor = ratio equal to 1 (e.g., 1 ft = 12 in \u2192 12 in / 1 ft). Multiplying by it changes the unit without changing the value. SI prefixes (kilo, milli) are powers of 10 \u2014 just shift the decimal.') },
-              table:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: t('stem.unitconvert.all_units_reference_table', 'All units \u2014 reference table'),     hint: t('stem.unitconvert.length_mass_volume_temperature_time_en', 'Length, mass, volume, temperature, time, energy, pressure. The single rule that matters: track units through every step. If your final answer is in m\u00b2 when you wanted seconds, you made an error somewhere upstream.') },
-              quiz:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: t('stem.unitconvert.quiz_conversion_practice', 'Quiz \u2014 conversion practice'),      hint: t('stem.unitconvert.daily_life_conversions_f_c_mph_km_h_lb', 'Daily-life conversions (\u00b0F\u2194\u00b0C, mph\u2194km/h, lb\u2194kg) plus AP / SAT / lab measurements. Each question shows the conversion factor after answering so you build the muscle memory.') },
-              wordproblem: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDD', title: t('stem.unitconvert.word_problem_apply_in_context', 'Word problem \u2014 apply in context'),  hint: t('stem.unitconvert.real_world_unit_conversion_scenarios_g', 'Real-world unit-conversion scenarios: gas mileage, recipe scaling, dosage calculations, travel-distance estimates. Word problems are 80% reading comprehension + 20% conversion math.') },
-              magHunt:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u2699\uFE0F', title: t('stem.unitconvert.magnitude_orders_of_magnitude_discover', 'Magnitude \u2014 orders of magnitude discovery'), hint: t('stem.unitconvert.every_si_prefix_is_a_power_of_10_slide', 'Every SI prefix is a power of 10. Slide the source and target exponents to feel how far apart scales really are \u2014 the core skill behind scientific notation and Fermi estimates.') }
-            };
-            var meta = TAB_META[tab] || TAB_META.convert;
-              var startInstructions = {"convert":"Choose a measurement, enter a value, and select the From and To units. The result updates as you edit.","table":"Choose a measurement to compare its units in the reference table.","quiz":"Choose a practice question, enter your answer, then check the conversion.","wordproblem":"Choose a word problem, identify the units, then enter and check your answer.","magHunt":"Compare the quantities and use their units to decide which is larger."};
-            return h('div', {
-              role: 'tabpanel',
-              id: 'stem-unitconvert-panel-' + tab,
-              'aria-labelledby': 'stem-unitconvert-tab-' + tab,
-              tabIndex: 0,
-              style: {
-                margin: '0 0 12px',
-                padding: '12px 14px',
-                borderRadius: 12,
-                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                border: '1px solid ' + meta.accent + '55',
-                borderLeft: '4px solid ' + meta.accent,
-                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-              }
-            },
-              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-              h('div', { style: { flex: 1, minWidth: 220 } },
-                h('h3', { style: { color: 'rgb(' + [16, 8, 0].map(function (s) { return Math.round((parseInt(meta.accent.slice(1), 16) >> s & 255) * 0.55); }).join(',') + ')', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.unitconvert.start_' + tab, startInstructions[tab] || startInstructions.convert)),
-              h('details', { className: 'math-learning-note' },
-                h('summary', null, t('stem.unitconvert.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
-              )
-            );
-          })(),
-
-          // ═══ TAB: CONVERT ═══
-          tab === 'convert' && h('div', { key: 'convert' },
-            h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 mb-3', 'aria-label': t('stem.unitconvert.prediction_activity', 'Conversion prediction') },
-              h('label', { className: 'flex gap-2 items-center text-sm font-bold text-cyan-900' },
-                h('input', { type: 'checkbox', checked: !!d.predictBeforeConvert, onChange: function(e) { upd({ predictBeforeConvert: e.target.checked, conversionRevealSignature: null, conversionPredictionSignature: null }); } }),
+        function renderConvert() {
+          return h('div', { key: 'convert' },
+            !guessOn && h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 mb-3', 'aria-label': t('stem.unitconvert.prediction_activity', 'Conversion prediction') },
+              renderGuessToggle(),
+              h('label', { className: 'flex gap-2 items-center text-sm font-bold text-cyan-900 min-h-[2.75rem]' },
+                h('input', { type: 'checkbox', className: 'w-5 h-5', checked: !!d.predictBeforeConvert, onChange: function(e) { upd({ predictBeforeConvert: e.target.checked, conversionRevealSignature: null, conversionPredictionSignature: null }); } }),
                 t('stem.unitconvert.predict_before_converting', 'Predict before revealing the result')),
               d.predictBeforeConvert && !predictionEligible && h('p', { className: 'mt-2 text-sm text-slate-700' }, t('stem.unitconvert.predict_supported_quantities', 'Choose a valid nonnegative quantity outside the temperature category to compare unit sizes.')),
               predictingConversion && h('div', { className: 'mt-3 space-y-3' },
                 h('p', { className: 'text-sm text-slate-800' }, t('stem.unitconvert.predict_question', 'Will the numerical value become larger, smaller, or stay the same? Think about the size of one unit.')),
-                h('div', { role: 'group', 'aria-label': t('stem.unitconvert.your_prediction', 'Your prediction'), className: 'flex flex-wrap gap-2' }, ['larger','smaller','same'].map(function(choice) {
-                  return h('button', { key: choice, type: 'button', disabled: !hideConversionResult, 'aria-pressed': predictionChoice === choice, onClick: function() { upd({ conversionPredictionSignature: predictionSignature, conversionPrediction: choice }); }, className: 'rounded-lg border border-cyan-700 px-3 py-2 text-sm font-bold ' + (predictionChoice === choice ? 'bg-cyan-800 text-white' : 'bg-white text-cyan-900') }, predictionLabels[choice]);
+                h('div', { role: 'group', 'aria-label': t('stem.unitconvert.your_prediction', 'Your prediction'), className: 'flex flex-wrap gap-2' }, ['larger', 'smaller', 'same'].map(function(choice) {
+                  return h('button', { key: choice, type: 'button', disabled: !hideConversionResult, 'aria-pressed': predictionChoice === choice, onClick: function() { upd({ conversionPredictionSignature: predictionSignature, conversionPrediction: choice }); }, className: 'min-h-[2.75rem] rounded-lg border border-cyan-700 px-3 py-2 text-sm font-bold ' + (predictionChoice === choice ? 'bg-cyan-800 text-white' : 'bg-white text-cyan-900') }, predictionLabels[choice]);
                 })),
-                hideConversionResult && h('button', { type: 'button', disabled: !predictionChoice, onClick: function() { upd('conversionRevealSignature', predictionSignature); }, className: 'rounded-lg bg-cyan-800 text-white px-3 py-2 text-sm font-bold disabled:opacity-50' }, t('stem.unitconvert.check_prediction', 'Compare with my prediction')),
+                hideConversionResult && h('button', { type: 'button', disabled: !predictionChoice, onClick: function() { upd('conversionRevealSignature', predictionSignature); }, className: 'min-h-[2.75rem] rounded-lg bg-cyan-800 text-white px-3 py-2 text-sm font-bold disabled:opacity-50' }, t('stem.unitconvert.check_prediction', 'Compare with my prediction')),
                 !hideConversionResult && h('p', { role: 'status', className: 'rounded-lg border border-cyan-300 bg-white p-3 text-sm text-slate-800' }, (predictionChoice === predictionDirection ? t('stem.unitconvert.prediction_matches', 'Your prediction matches. ') : t('stem.unitconvert.prediction_revisit', 'Revisit your prediction. ')) + predictionExplanation())
               )
             ),
 
             h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-6 shadow-sm' },
-
               h('div', { className: 'math-conversion-fields' },
-
                 h('div', { className: 'text-center' },
                   h('label', { htmlFor: 'unitconvert-value', className: 'block text-sm font-bold mb-1' }, t('stem.unitconvert.value_to_convert', 'Value to convert')),
                   h('input', {
                     id: 'unitconvert-value',
                     type: 'text', inputMode: 'decimal', value: valueDraft,
                     'aria-label': t('stem.unitconvert.value_to_convert', 'Value to convert'),
-                    min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
                     'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-value-error',
                     autoComplete: 'off', spellCheck: false,
@@ -1120,52 +4171,46 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     onBlur: reportConversionValueError,
                     onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
                     style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
-                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight',
-                    step: '0.01'
+                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight'
                   }),
-                  h('label', { htmlFor: 'unitconvert-from', className: 'block mt-2 text-sm font-bold' }, t('stem.unitconvert.from_unit', 'From unit')),
-                  h('select', {
-                    id: 'unitconvert-from',
-                    'aria-label': t('stem.unitconvert.from_unit', 'From unit'), value: d.fromUnit,
-                    onChange: function(e) { upd('fromUnit', e.target.value); },
-                    style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
-                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
-                  }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
+                  unitSelect('unitconvert-from', t('stem.unitconvert.from_unit', 'From unit'), d.fromUnit, function(e) {
+                    var next = e.target.value;
+                    upd('fromUnit', next);
+                    if (!resultStaysHidden(next, d.toUnit)) say(resultAnnouncement(conversionValue, next, d.toUnit));
+                  })
                 ),
 
                 h('button', { 'aria-label': t('stem.unitconvert.swap_units', 'Swap units'),
+                  type: 'button',
                   onClick: function() {
                     stemBeep && stemBeep(600, 0.06);
                     setLabToolData(function(prev) {
-                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) });
+                      return Object.assign({}, prev, { unitConvert: Object.assign({}, (prev || {}).unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) });
                     });
+                    if (!resultStaysHidden(d.toUnit, d.fromUnit)) say(resultAnnouncement(conversionValue, d.toUnit, d.fromUnit));
                   },
-                  // cyan-700, matching the 14 other cyan controls in this file.
-                  // This was the file's only text-cyan-400: 1.81:1 on the white
-                  // card, so the swap control was the palest thing on screen.
-                  className: 'text-2xl text-cyan-700 font-bold hover:scale-125 transition-transform px-2 tracking-tight',
+                  // cyan-700, matching the other cyan controls in this file.
+                  className: 'min-h-[2.75rem] min-w-[2.75rem] text-2xl text-cyan-700 font-bold hover:scale-125 transition-transform px-2 tracking-tight',
                   title: t('stem.unitconvert.swap_units_2', 'Swap units')
-                }, '\u21C4'),
+                }, '⇄'),
 
                 h('div', { className: 'text-center' },
                   h('p', { className: 'text-sm font-bold' }, t('stem.unitconvert.result_label', 'Converted result')),
-                  h('p', {
-                    key: fmtResult,
-                    role: 'status',
-                    'aria-live': 'polite',
-                    'aria-atomic': 'true',
-                    'aria-label': hideConversionResult ? t('stem.unitconvert.result_waiting', 'Result hidden while you predict') : temperatureCheck.valid ? 'Converted result: ' + fmtResult + ' ' + d.toUnit : temperatureCheck.message,
-                    className: 'text-2xl font-black text-cyan-700 py-1 tracking-tight',
-                    style: { animation: 'ucResultPop 0.3s ease-out' }
-                  }, hideConversionResult ? '?' : fmtResult),
-                  h('label', { htmlFor: 'unitconvert-to', className: 'block mt-2 text-sm font-bold' }, t('stem.unitconvert.to_unit', 'To unit')),
-                  h('select', {
-                    id: 'unitconvert-to',
-                    'aria-label': t('stem.unitconvert.to_unit', 'To unit'), value: d.toUnit,
-                    onChange: function(e) { upd('toUnit', e.target.value); },
-                    style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0e7490' },
-                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
-                  }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
+                  // No key and no animation: the old line remounted on every
+                  // keystroke (key = the result) inside a live region, so
+                  // screen readers re-read or dropped it. Results are now
+                  // announced once, on Enter/blur or a unit change.
+                  h('div', {
+                    role: 'group',
+                    'data-unit-result': true,
+                    'aria-label': hideConversionResult ? t('stem.unitconvert.result_waiting', 'Result hidden while you predict') : temperatureCheck.valid ? fill(t('stem.unitconvert.result_aria', 'Converted result: {result} {unit}'), { result: fmtResult, unit: unitShort(d.toUnit) }) : temperatureCheck.message,
+                    className: 'text-2xl font-black text-cyan-700 py-1 tracking-tight'
+                  }, h('span', { 'aria-hidden': 'true' }, hideConversionResult ? '?' : fmtResult)),
+                  unitSelect('unitconvert-to', t('stem.unitconvert.to_unit', 'To unit'), d.toUnit, function(e) {
+                    var next = e.target.value;
+                    upd('toUnit', next);
+                    if (!resultStaysHidden(d.fromUnit, next)) say(resultAnnouncement(conversionValue, d.fromUnit, next));
+                  })
                 )
               ),
 
@@ -1175,9 +4220,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 className: 'mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
               }, '⚠️ ' + temperatureCheck.message),
 
+              renderGuessPanel(),
+              renderCategoryPicker(),
+
               // Formula + display precision
               h('div', { className: 'mt-3 flex flex-wrap items-center justify-center gap-3 rounded-lg bg-slate-50 p-2' },
-                h('span', { className: 'text-[0.6875rem] font-mono text-slate-600' }, hideConversionResult ? t('stem.unitconvert.formula_after_prediction', 'The equation will appear after you compare your prediction.') : '📊 ' + getFormula()),
+                h('span', { className: 'text-[0.6875rem] font-mono text-slate-600' }, hideConversionResult ? (guessOpen ? t('stem.unitconvert.formula_after_guess', 'The equation will appear after you lock your guess.') : t('stem.unitconvert.formula_after_prediction', 'The equation will appear after you compare your prediction.')) : '📊 ' + getFormula()),
                 h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-slate-600' },
                   t('stem.unitconvert.display_precision', 'Display:'),
                   h('select', {
@@ -1188,57 +4236,41 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   },
                     h('option', { value: 'auto' }, t('stem.unitconvert.precision_auto', 'Auto')),
                     [2, 3, 4, 5, 6].map(function(figureCount) {
-                      return h('option', { key: figureCount, value: String(figureCount) }, figureCount + ' sig figs');
+                      return h('option', { key: figureCount, value: String(figureCount) }, fill(t('stem.unitconvert.sig_figs_option', '{n} sig figs'), { n: figureCount }));
                     })
                   )
                 )
               ),
-              // \u2500\u2500 Dimensional-analysis cancellation card \u2500\u2500
-              // Shows the canonical chem/physics technique: multiply by (1 toUnit / N fromUnit)
-              // and watch the fromUnit cancel. Skipped for temperature (additive offset).
+              // Dimensional-analysis card: multiply by a fraction equal to 1
+              // and watch the starting unit cancel. Skipped for temperature.
               !hideConversionResult && d.category !== 'temperature' && temperatureCheck.valid && (function() {
                 var fF = cat.units[d.fromUnit] || 1;
                 var tF = cat.units[d.toUnit] || 1;
                 if (fF === tF) return null;
-                // Express conversion factor as (1 toUnit / X fromUnit) when possible.
-                // Find a clean integer "X" such that X fromUnit = 1 toUnit (i.e., X = tF/fF).
                 var ratioOver = tF / fF;
-                var ratioUnder = fF / tF;
-                var topNum, botNum, topUnit, botUnit;
-                if (ratioOver >= 1) {
-                  topNum = '1';
-                  botNum = fmt(ratioOver);
-                  topUnit = d.toUnit;
-                  botUnit = d.fromUnit;
-                } else {
-                  topNum = fmt(1 / ratioOver);
-                  botNum = '1';
-                  topUnit = d.toUnit;
-                  botUnit = d.fromUnit;
-                }
+                var topNum, botNum;
+                if (ratioOver >= 1) { topNum = '1'; botNum = fmt(ratioOver); }
+                else { topNum = fmt(1 / ratioOver); botNum = '1'; }
                 return h('div', { className: 'mt-2 bg-cyan-50 rounded-lg p-2.5 border border-cyan-200' },
-                  h('p', { className: 'text-[0.625rem] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, t('stem.unitconvert.dimensional_analysis', '\uD83D\uDD2C Dimensional Analysis')),
-                  h('div', { className: 'flex items-center justify-center gap-2 font-mono text-sm' },
-                    h('span', { className: 'font-bold text-cyan-900' }, d.value),
-                    h('span', { className: 'text-cyan-800 line-through decoration-2 decoration-amber-500' }, d.fromUnit),
-                    h('span', { className: 'text-cyan-800 font-bold' }, '\u00D7'),
+                  h('p', { className: 'text-[0.625rem] font-bold text-cyan-700 uppercase tracking-wider text-center mb-1.5' }, t('stem.unitconvert.dimensional_analysis', '🔬 Dimensional Analysis')),
+                  h('div', { className: 'flex flex-wrap items-center justify-center gap-2 font-mono text-sm' },
+                    h('span', { className: 'font-bold text-cyan-900' }, fmtValue),
+                    h('span', { className: 'text-cyan-800 line-through decoration-2 decoration-amber-500' }, unitShort(d.fromUnit)),
+                    h('span', { className: 'text-cyan-800 font-bold' }, '×'),
                     h('div', { className: 'inline-flex flex-col items-center' },
-                      h('div', { className: 'flex items-baseline gap-1' },
-                        h('span', { className: 'text-cyan-900 font-bold' }, topNum),
-                        h('span', { className: 'text-cyan-700' }, topUnit)
-                      ),
+                      h('div', { className: 'flex items-baseline gap-1' }, h('span', { className: 'text-cyan-900 font-bold' }, topNum), h('span', { className: 'text-cyan-700' }, unitShort(d.toUnit))),
                       h('div', { className: 'border-t-2 border-cyan-700 w-full my-0.5' }),
-                      h('div', { className: 'flex items-baseline gap-1' },
-                        h('span', { className: 'text-cyan-900 font-bold' }, botNum),
-                        h('span', { className: 'text-cyan-700 line-through decoration-2 decoration-amber-500' }, botUnit)
-                      )
+                      h('div', { className: 'flex items-baseline gap-1' }, h('span', { className: 'text-cyan-900 font-bold' }, botNum), h('span', { className: 'text-cyan-700 line-through decoration-2 decoration-amber-500' }, unitShort(d.fromUnit)))
                     ),
                     h('span', { className: 'text-cyan-800 font-bold' }, '='),
                     h('span', { className: 'font-bold text-emerald-700' }, fmtResult),
-                    h('span', { className: 'text-emerald-700' }, d.toUnit)
+                    h('span', { className: 'text-emerald-700' }, unitShort(d.toUnit))
                   ),
                   h('p', { className: 'text-[0.625rem] text-cyan-800 italic text-center mt-1.5' },
-                    'The "' + d.fromUnit + '" cancels on the diagonal \u2014 only "' + d.toUnit + '" remains.')
+                    fill(t('stem.unitconvert.cancel_note', '"{from}" is on the bottom of the factor, so it cancels. Only "{to}" remains.'), { from: unitShort(d.fromUnit), to: unitShort(d.toUnit) })),
+                  converterPairChainable && h('div', { className: 'text-center mt-1' },
+                    h('button', { type: 'button', onClick: function() { upd({ tab: 'chain', chain: { from: d.fromUnit, to: d.toUnit, steps: [{ topN: '', topU: '', botN: '', botU: '', pow: 1 }], valueDraft: Number.isFinite(conversionValue) ? localizeNumberText(String(conversionValue)) : '1', result: null, revealed: chain && chain.revealed ? chain.revealed : {} } }); }, className: btnBase + 'bg-white border border-cyan-700 text-cyan-800 hover:bg-cyan-100' },
+                      t('stem.unitconvert.build_chain_yourself', '🔗 Build this chain yourself')))
                 );
               })(),
 
@@ -1247,86 +4279,78 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 role: 'region',
                 'aria-labelledby': 'unitconvert-temperature-reasoning-title'
               },
-                h('p', {
-                  id: 'unitconvert-temperature-reasoning-title',
-                  className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800 text-center'
-                }, '🌡️ Why temperature is different'),
-                h('p', { className: 'mt-1 text-xs text-amber-900 text-center' }, temperatureReasoning.message),
-                h('ol', {
-                  className: 'mt-2 space-y-1 rounded-md bg-white/70 p-2 font-mono text-xs text-slate-800',
-                  'aria-label': t('stem.unitconvert.temperature_conversion_steps','Temperature conversion steps')
-                }, temperatureReasoning.steps.map(function(step, index) {
-                  return h('li', { key: 'temperature-step-' + index }, (index + 1) + '. ' + step);
-                }))
+                h('p', { id: 'unitconvert-temperature-reasoning-title', className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800 text-center' }, t('stem.unitconvert.why_temperature_different', '🌡️ Why temperature is different')),
+                h('p', { className: 'mt-1 text-xs text-amber-900 text-center' }, d.fromUnit === d.toUnit ? t('stem.unitconvert.temp_same_scale', 'The scale did not change, so neither an offset nor a scale factor is needed.') : t('stem.unitconvert.temp_different_zero', 'Temperature scales have different zero points, so the conversion needs an offset as well as a scale factor.')),
+                h('ol', { className: 'mt-2 space-y-1 rounded-md bg-white/70 p-2 font-mono text-xs text-slate-800', 'aria-label': t('stem.unitconvert.temperature_conversion_steps', 'Temperature conversion steps') },
+                  temperatureReasoning.steps.map(function(step, index) { return h('li', { key: 'temperature-step-' + index }, (index + 1) + '. ' + step); }))
               ),
 
               // Save / Pin / AI buttons
-              h('div', { className: 'flex justify-center gap-2 mt-3' },
+              h('div', { className: 'flex flex-wrap justify-center gap-2 mt-3' },
                 h('button', { 'aria-label': t('stem.unitconvert.save', 'Save'),
+                  type: 'button',
                   disabled: !temperatureCheck.valid || hideConversionResult,
                   onClick: function() {
                     if (!temperatureCheck.valid || hideConversionResult) return;
-                    var entry = { from: d.value + ' ' + d.fromUnit, to: fmtResult + ' ' + d.toUnit, ts: Date.now() };
+                    var entry = { from: fmtValue + ' ' + unitShort(d.fromUnit), to: fmtResult + ' ' + unitShort(d.toUnit), ts: Date.now() };
                     var newSaveCount = historySaveCount + 1;
                     setLabToolData(function(prev) {
-                      return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { history: [entry].concat(((prev.unitConvert || {}).history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
+                      return Object.assign({}, prev, { unitConvert: Object.assign({}, (prev || {}).unitConvert, { history: [entry].concat((((prev || {}).unitConvert || {}).history || []).slice(0, 9)), historySaveCount: newSaveCount }) });
                     });
                     stemBeep && stemBeep(784, 0.15);
-                    addToast('\u2705 Saved to history', 'success');
+                    addToast(t('stem.unitconvert.toast_saved', '✅ Saved to history'), 'success');
                     if (newSaveCount >= 10) checkBadges({ historian: true });
                   },
-                  className: 'px-4 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold hover:bg-indigo-100 transition-all active:scale-[0.97]'
-                }, t('stem.unitconvert.save_2', '\uD83D\uDCBE Save')),
-                h('button', { 'aria-label': 'Pin',
+                  className: 'min-h-[2.75rem] px-4 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-100 transition-all active:scale-[0.97] disabled:opacity-50'
+                }, t('stem.unitconvert.save_2', '💾 Save')),
+                h('button', { 'aria-label': t('stem.unitconvert.pin_pair', 'Pin this unit pair'),
+                  type: 'button',
                   onClick: function() {
                     var pinned = Array.isArray(d.pinnedConversions) ? d.pinnedConversions : [];
-                    if (pinned.length >= 10) { addToast('Max 10 pinned conversions', 'warning'); return; }
+                    if (pinned.length >= 10) { addToast(t('stem.unitconvert.toast_max_pins', 'You can pin up to 10 conversions.'), 'warning'); return; }
                     var key = d.category + '_' + d.fromUnit + '_' + d.toUnit;
-                    if (pinned.find(function(p) { return p.key === key; })) { addToast('Already pinned', 'warning'); return; }
-                    var newPinned = pinned.concat([{ key: key, from: d.fromUnit, to: d.toUnit, category: d.category, label: d.fromUnit + ' \u2192 ' + d.toUnit }]);
+                    if (pinned.find(function(p) { return p.key === key; })) { addToast(t('stem.unitconvert.toast_already_pinned', 'Already pinned'), 'warning'); return; }
+                    var newPinned = pinned.concat([{ key: key, from: d.fromUnit, to: d.toUnit, category: d.category, label: d.fromUnit + ' → ' + d.toUnit }]);
                     upd('pinnedConversions', newPinned);
-                    addToast('\uD83D\uDCCC Pinned!', 'success');
+                    addToast(t('stem.unitconvert.toast_pinned', '📌 Pinned!'), 'success');
                     if (newPinned.length >= 5) checkBadges({ pinCollector: true });
                   },
-                  className: 'px-4 py-1 bg-amber-50 text-amber-800 rounded-full text-xs font-bold hover:bg-amber-100 transition-all active:scale-[0.97]'
-                }, t('stem.unitconvert.pin', '\uD83D\uDCCC Pin')),
-                h('button', { 'aria-label': t('stem.unitconvert.tutor', 'Tutor'),
+                  className: 'min-h-[2.75rem] px-4 py-1 bg-amber-50 text-amber-800 rounded-full text-xs font-bold hover:bg-amber-100 transition-all active:scale-[0.97]'
+                }, t('stem.unitconvert.pin', '📌 Pin')),
+                aiOK && h('button', { 'aria-label': t('stem.unitconvert.tutor', 'Tutor'),
+                  type: 'button',
                   onClick: askTutor,
-                  className: 'px-4 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-bold hover:bg-purple-100 transition-all active:scale-[0.97]'
-                }, t('stem.unitconvert.tutor_2', '\uD83E\uDDE0 Tutor'))
+                  className: 'min-h-[2.75rem] px-4 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-100 transition-all active:scale-[0.97]'
+                }, t('stem.unitconvert.tutor_2', '🧠 Tutor'))
               )
             ),
 
-            // The representation conserves quantity: changing units never changes its length.
+            // Same quantity, two units: equal-length bars whose sections are
+            // each one unit (or 10, 100 ... units) long, so a bar of 12 in has
+            // 12 narrow sections and the 1 ft bar has one wide one.
             !hideConversionResult && d.category !== 'temperature' && temperatureCheck.valid && h('figure', { className: 'mt-3 bg-slate-50 rounded-xl border p-3', 'data-unit-equality-model': true },
-              h('figcaption', { className: 'text-sm font-bold text-slate-800 mb-3', style: { color: isContrast ? '#ffffff' : '#1e293b' } }, t('stem.unitconvert.same_quantity', 'Same quantity; different units')),
-              h('div', { role: 'img', 'aria-label': d.value + ' ' + d.fromUnit + ' = ' + fmtResult + ' ' + d.toUnit, className: 'space-y-3' },
-                [d.value + ' ' + d.fromUnit, fmtResult + ' ' + d.toUnit].map(function(label, index) {
-                  return h('div', { key: index },
-                    h('p', { className: 'text-sm font-bold text-slate-800 mb-1' }, label),
-                    h('div', { style: { height: 28, border: '2px solid #475569', borderRadius: 4, background: '#ffffff', overflow: 'hidden' } },
-                      h('div', { 'data-equal-quantity-bar': index, style: { height: '100%', width: Number(d.value) === 0 ? '0%' : '100%', background: index ? '#4338ca' : '#0e7490', backgroundImage: 'repeating-linear-gradient(90deg,transparent,transparent calc(10% - 1px),#ffffff calc(10% - 1px),#ffffff 10%)' } })
-                    )
-                  );
-                })
+              h('figcaption', { className: 'text-sm font-bold text-slate-800 mb-3', style: { color: isContrast ? '#ffffff' : isDarkUI ? '#e2e8f0' : '#1e293b' } }, t('stem.unitconvert.same_quantity', 'Same quantity; different units')),
+              h('div', { role: 'img', 'aria-label': fill(t('stem.unitconvert.equality_aria', '{value} {from} equals {result} {to}. Both bars are the same length.'), { value: fmtValue, from: unitShort(d.fromUnit), result: fmtResult, to: unitShort(d.toUnit) }), className: 'space-y-3' },
+                equalityBar(0, conversionValue, d.fromUnit),
+                equalityBar(1, result, d.toUnit)
               ),
-              h('p', { className: 'text-sm text-slate-700 mt-2' }, Number(d.value) === 0 ? t('stem.unitconvert.zero_quantity', 'Zero in either unit: neither bar is filled.') : t('stem.unitconvert.equal_length_explanation', 'Both bars represent the same quantity. The unit changes how we name it, not how much there is. Divisions show equal tenths of that quantity.'))
+              h('p', { className: 'text-sm text-slate-700 mt-2' }, conversionValue === 0 ? t('stem.unitconvert.zero_quantity', 'Zero in either unit: neither bar is filled.') : t('stem.unitconvert.equal_length_explanation_v2', 'Both bars show the same amount. The sections show the unit size: smaller units make more, narrower sections.'))
             ),
+            !hideConversionResult && temperatureCheck.valid && unitSizeModel(),
+            renderStacker(),
 
             // Temperature thermometer visual
-            d.category === 'temperature' && temperatureCheck.valid && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-10' },
+            d.category === 'temperature' && temperatureCheck.valid && Number.isFinite(result) && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-4 flex items-center justify-center gap-10', role: 'img', 'aria-label': fill(t('stem.unitconvert.thermo_aria', 'Two thermometers at the same temperature: {value} {from} and {result} {to}.'), { value: formatTemperatureNumber(conversionValue), from: d.fromUnit, result: formatTemperatureNumber(result), to: d.toUnit }) },
               (function() {
-                var fromVal = d.value;
-                var toVal = parseFloat(fmtResult);
                 var toCelsius = function(val, unit) {
-                  if (unit === '\u00B0C') return val;
-                  if (unit === '\u00B0F') return (val - 32) * 5 / 9;
+                  if (unit === '°C') return val;
+                  if (unit === '°F') return (val - 32) * 5 / 9;
                   return val - 273.15;
                 };
                 var thermo = function(val, unit, color) {
                   var pct = Math.min(100, Math.max(2, ((toCelsius(val, unit) + 50) / 150) * 100));
-                  return h('div', { key: unit, className: 'text-center' },
-                    h('p', { className: 'text-xs font-bold mb-1', style: { color: color } }, val.toFixed(1) + ' ' + unit),
+                  return h('div', { key: unit + color, className: 'text-center' },
+                    h('p', { className: 'text-xs font-bold mb-1', style: { color: isDarkUI ? '#f1f5f9' : '#0f172a' } }, formatUnitNumber(val, 4) + ' ' + unit),
                     h('div', { className: 'relative w-8 h-28 mx-auto bg-slate-200 rounded-full overflow-hidden' },
                       h('div', { className: 'absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700', style: { backgroundColor: color, height: pct + '%' } })
                     ),
@@ -1334,62 +4358,59 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   );
                 };
                 return [
-                  thermo(fromVal, d.fromUnit, '#06b6d4'),
-                  h('span', { key: 'arr', className: 'text-2xl text-slate-600 mt-8' }, '\u2192'),
-                  thermo(toVal, d.toUnit, '#6366f1')
+                  thermo(conversionValue, d.fromUnit, isDarkUI ? '#22d3ee' : '#0e7490'),
+                  h('span', { key: 'arr', className: 'text-2xl text-slate-600 mt-8', 'aria-hidden': 'true' }, '→'),
+                  thermo(result, d.toUnit, isDarkUI ? '#a5b4fc' : '#4338ca')
                 ];
               })()
             ),
 
             // Real-world reference
             !hideConversionResult && refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '\uD83C\uDF0D Real-World Reference')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider mb-1' }, t('stem.unitconvert.real_world_reference', '🌍 Real-World Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             ),
 
             // Fun fact
             facts.length > 0 && h('div', { className: 'mt-3 bg-violet-50 rounded-xl border border-violet-200 p-3 flex items-start gap-2' },
               h('div', { className: 'flex-1' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.fun_fact', '\uD83D\uDCA1 Fun Fact')),
+                h('p', { className: 'text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider mb-1' }, t('stem.unitconvert.fun_fact', '💡 Fun Fact')),
                 h('p', { key: factIdx, className: 'text-sm text-violet-800', style: { animation: 'ucFactSlide 0.4s ease-out' } }, currentFact)
               ),
-              h('button', { type: 'button', 'aria-label': t('stem.unitconvert.show_next_unit_fact','Show next unit fact'), title: t('stem.unitconvert.next_fact','Next fact'), onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
-                className: 'transition-colors text-violet-500 hover:text-violet-700 text-xs font-bold shrink-0 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1'
-              }, '\u27A1\uFE0F')
+              h('button', { type: 'button', 'aria-label': t('stem.unitconvert.show_next_unit_fact', 'Show next unit fact'), title: t('stem.unitconvert.next_fact', 'Next fact'), onClick: function() { upd('factIdx', ((d.factIdx || 0) + 1) % facts.length); },
+                className: 'min-h-[2.75rem] min-w-[2.75rem] transition-colors text-violet-700 hover:text-violet-900 text-xs font-bold shrink-0 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1'
+              }, '➡️')
             ),
 
-            // Pinned conversions
+            // Pinned conversions: open and remove are two separate buttons.
             Array.isArray(d.pinnedConversions) && d.pinnedConversions.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.pinned_conversions', '\uD83D\uDCCC Pinned Conversions')),
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                (Array.isArray(d.pinnedConversions) ? d.pinnedConversions : []).map(function(p, i) {
-                  return h('button', { key: p.key,
-                    onClick: function() {
-                      var c2 = CATEGORIES[p.category];
-                      if (!c2) return;
-                      _unitConvertWordProblemRequestId += 1;
-                      setLabToolData(function(prev) {
-                        return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
-                          category: p.category,
-                          fromUnit: p.from,
-                          toUnit: p.to,
-                          loadingWP: false,
-                          wordProblem: null,
-                          wordProblemFeedback: '',
-                          wordProblemHintLevel: 0
-                        }) });
-                      });
-                    },
-                    className: 'transition-colors flex items-center gap-1 px-2 py-1 bg-white border border-amber-600 rounded-full text-xs font-bold text-amber-700 hover:bg-amber-50 active:scale-[0.97]'
-                  },
-                    p.label,
-                    h('span', { 
-                      onClick: function(e) {
-                        e.stopPropagation();
-                        upd('pinnedConversions', d.pinnedConversions.filter(function(_, j) { return j !== i; }));
+              h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.pinned_conversions', '📌 Pinned Conversions')),
+              h('ul', { className: 'flex flex-wrap gap-1.5', 'aria-label': t('stem.unitconvert.pinned_conversions_list', 'Pinned conversions') },
+                d.pinnedConversions.map(function(p, i) {
+                  var label = unitShort(p.from) + ' → ' + unitShort(p.to);
+                  return h('li', { key: p.key || i, className: 'flex items-center rounded-full border border-amber-600 bg-white' },
+                    h('button', {
+                      type: 'button',
+                      'aria-label': fill(t('stem.unitconvert.open_pin', 'Open pinned conversion {pair}'), { pair: label }),
+                      onClick: function() {
+                        if (!CATEGORIES[p.category]) return;
+                        _unitConvertWordProblemRequestId += 1;
+                        setLabToolData(function(prev) {
+                          return Object.assign({}, prev, { unitConvert: Object.assign({}, (prev || {}).unitConvert, {
+                            category: p.category, fromUnit: p.from, toUnit: p.to, loadingWP: false, wordProblem: null, wordProblemFeedback: '', wordProblemHintLevel: 0, wordProblemTries: 0, wordProblemInputError: ''
+                          }) });
+                        });
                       },
-                      className: 'transition-colors ml-1 text-slate-600 hover:text-red-500 cursor-pointer font-bold'
-                    }, '\u00D7')
+                      className: 'min-h-[2.75rem] rounded-l-full px-3 text-xs font-bold text-amber-800 hover:bg-amber-50'
+                    }, label),
+                    h('button', {
+                      type: 'button',
+                      'aria-label': fill(t('stem.unitconvert.remove_pin', 'Remove pinned conversion {pair}'), { pair: label }),
+                      onClick: function() { upd('pinnedConversions', d.pinnedConversions.filter(function(_, j) { return j !== i; })); say(fill(t('stem.unitconvert.sr_pin_removed', 'Removed pin {pair}.'), { pair: label })); },
+                      // Inline: the arbitrary min-w class is not in every build's CSS (12 px measured at 320 px).
+                      style: { minWidth: 44, flexShrink: 0 },
+                      className: 'min-h-[2.75rem] min-w-[2.75rem] rounded-r-full border-l border-amber-300 text-slate-700 hover:text-red-700 font-bold'
+                    }, h('span', { 'aria-hidden': 'true' }, '×'))
                   );
                 })
               )
@@ -1398,15 +4419,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // Conversion history
             !hideConversionResult && Array.isArray(d.history) && d.history.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('div', { className: 'flex items-center justify-between mb-2' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '\uD83D\uDCDD History')),
-                h('button', { 'aria-label': t('stem.unitconvert.clear', 'Clear'), onClick: function() { upd('history', []); }, className: 'transition-colors text-[0.6875rem] text-red-400 hover:text-red-600 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
+                h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.unitconvert.history', '📝 History')),
+                h('button', { type: 'button', 'aria-label': t('stem.unitconvert.clear_history', 'Clear history'), onClick: function() { upd('history', []); }, className: 'min-h-[2.75rem] px-2 transition-colors text-[0.6875rem] text-red-700 hover:text-red-800 font-bold' }, t('stem.unitconvert.clear_2', 'Clear'))
               ),
-              h('div', { className: 'space-y-1' },
-                (Array.isArray(d.history) ? d.history : []).map(function(item, i) {
-                  return h('div', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
+              h('ul', { className: 'space-y-1' },
+                d.history.map(function(item, i) {
+                  return h('li', { key: i, className: 'flex items-center gap-2 text-xs bg-white rounded-lg px-2 py-1.5 border' },
                     h('span', { className: 'text-cyan-800 font-bold' }, item.from),
-                    h('span', { className: 'text-slate-600' }, '\u2192'),
-                    h('span', { className: 'text-indigo-600 font-bold' }, item.to)
+                    h('span', { className: 'text-slate-600', 'aria-hidden': 'true' }, '→'),
+                    h('span', { className: 'sr-only' }, t('stem.unitconvert.equals_word', 'equals')),
+                    h('span', { className: 'text-indigo-700 font-bold' }, item.to)
                   );
                 })
               )
@@ -1414,41 +4436,40 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Snapshot
             h('button', { 'aria-label': t('stem.unitconvert.snapshot', 'Snapshot'),
+              type: 'button',
               onClick: function() {
+                if (typeof setToolSnapshots !== 'function') return;
                 setToolSnapshots(function(prev) {
-                  return prev.concat([{ id: 'uc-' + Date.now(), tool: 'unitConvert', label: d.value + ' ' + d.fromUnit + ' \u2192 ' + d.toUnit, data: Object.assign({}, d), timestamp: Date.now() }]);
+                  return (prev || []).concat([{ id: 'uc-' + Date.now(), tool: 'unitConvert', label: fmtValue + ' ' + d.fromUnit + ' → ' + d.toUnit, data: Object.assign({}, d), timestamp: Date.now() }]);
                 });
-                addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                addToast(t('stem.unitconvert.toast_snapshot', '📸 Snapshot saved!'), 'success');
               },
-              className: 'mt-3 ml-auto block px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
-            }, t('stem.unitconvert.snapshot_2', '\uD83D\uDCF8 Snapshot'))
+              className: 'mt-3 ml-auto block min-h-[2.75rem] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
+            }, t('stem.unitconvert.snapshot_2', '📸 Snapshot'))
+          );
+        }
 
-          ),
-
-          // ═══ TAB: ALL UNITS TABLE ═══
-          tab === 'table' && h('div', { key: 'table' },
+        // ═══ VIEW: ALL UNITS TABLE ═══
+        function renderTable() {
+          return h('div', { key: 'table' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
-              h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
-                h('p', { className: 'text-xs font-bold text-slate-600' }, 'All ' + cat.label.replace(/[^\w\s]/g, '').trim() + ' conversions for:'),
+              h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2' },
+                h('p', { className: 'text-xs font-bold text-slate-700' }, fill(t('stem.unitconvert.table_heading', 'All {category} conversions for:'), { category: cat.name })),
                 h('div', { className: 'flex items-center gap-2' },
                   h('input', {
                     type: 'text', inputMode: 'decimal', value: valueDraft,
-                    min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
                     'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-value-error',
                     'aria-label': t('stem.unitconvert.table_value_to_convert', 'Value to convert in unit table'),
                     autoComplete: 'off', spellCheck: false,
                     onChange: function(e) { updateConversionValueDraft(e.target.value); },
-                    onBlur: reportConversionValueError,
+                    onBlur: function() { if (!temperatureCheck.valid) say(temperatureCheck.message); },
                     onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
-                    className: 'w-24 text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
-                    step: '0.01'
+                    className: 'w-24 min-h-[2.75rem] text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500'
                   }),
-                  h('span', { className: 'text-xs font-bold text-slate-600' }, d.fromUnit),
-                  h('button', { 'aria-label': t('stem.unitconvert.change', 'Change'),
-                    onClick: function() { upd('tab', 'convert'); },
-                    className: 'text-xs text-cyan-800 hover:underline font-bold'
-                  }, t('stem.unitconvert.change_2', 'Change \u2192'))
+                  h('span', { className: 'text-xs font-bold text-slate-700' }, unitShort(d.fromUnit)),
+                  h('button', { type: 'button', onClick: function() { upd('tab', 'convert'); }, className: 'min-h-[2.75rem] px-2 text-xs text-cyan-800 hover:underline font-bold' },
+                    t('stem.unitconvert.change_units', 'Change units'))
                 )
               ),
               !temperatureCheck.valid && h('div', {
@@ -1457,31 +4478,26 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 className: 'm-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
               }, '⚠️ ' + temperatureCheck.message),
               temperatureCheck.valid && h('table', { className: 'w-full text-sm' },
-                h('caption', { className: 'sr-only' }, t('stem.unitconvert.change_3', 'Change \u2192')), h('thead', null,
+                h('caption', { className: 'sr-only' }, fill(t('stem.unitconvert.table_caption', '{category}: {value} {unit} written in every unit'), { category: cat.name, value: fmtValue, unit: unitShort(d.fromUnit) })),
+                h('thead', null,
                   h('tr', { className: 'bg-cyan-50' },
-                    h('th', { scope: 'col', className: 'text-left px-4 py-2 text-xs font-bold text-cyan-700' }, t('stem.unitconvert.unit', 'Unit')),
-                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, t('stem.unitconvert.value', 'Value')),
-                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' },
-                      h('span', { className: 'sr-only' }, t('stem.unitconvert.action', 'Action')))
+                    h('th', { scope: 'col', className: 'text-left px-4 py-2 text-xs font-bold text-cyan-800' }, t('stem.unitconvert.unit', 'Unit')),
+                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-800' }, t('stem.unitconvert.value', 'Value')),
+                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-800' }, h('span', { className: 'sr-only' }, t('stem.unitconvert.action', 'Action')))
                   )
                 ),
                 h('tbody', null,
                   Object.keys(cat.units).map(function(u, i) {
-                    var val = convert(d.value, d.fromUnit, u);
+                    var val = convert(conversionValue, d.fromUnit, u);
                     var isFrom = u === d.fromUnit;
-                    return h('tr', {
-                      key: u,
-                      className: (isFrom ? 'bg-cyan-50 ' : i % 2 === 0 ? 'bg-white ' : 'bg-slate-50 ') + 'border-b border-slate-100'
-                    },
-                      h('td', { className: 'px-4 py-2 font-bold ' + (isFrom ? 'text-cyan-700' : 'text-slate-700') },
-                        u + (isFrom ? ' \u2190' : '')
-                      ),
-                      h('td', { className: 'px-4 py-2 text-right font-mono ' + (isFrom ? 'text-cyan-700 font-bold' : 'text-slate-600') }, fmt(val)),
+                    return h('tr', { key: u, className: (isFrom ? 'bg-cyan-50 ' : i % 2 === 0 ? 'bg-white ' : 'bg-slate-50 ') + 'border-b border-slate-100' },
+                      h('th', { scope: 'row', className: 'text-left px-4 py-2 font-bold ' + (isFrom ? 'text-cyan-800' : 'text-slate-700') }, unitOption(u) + (isFrom ? ' ' + t('stem.unitconvert.table_start_marker', '(start)') : '')),
+                      h('td', { className: 'px-4 py-2 text-right font-mono ' + (isFrom ? 'text-cyan-800 font-bold' : 'text-slate-700') }, fmt(val)),
                       h('td', { className: 'px-4 py-2 text-right' },
-                        !isFrom && h('button', { 'aria-label': 'Use',
-                          onClick: function() { upd('toUnit', u); upd('tab', 'convert'); },
-                          className: 'text-[0.6875rem] font-bold text-cyan-800 hover:underline'
-                        }, t('stem.unitconvert.use', 'Use \u2192'))
+                        !isFrom && h('button', { type: 'button', 'aria-label': fill(t('stem.unitconvert.use_unit', 'Convert to {unit}'), { unit: unitOption(u) }),
+                          onClick: function() { upd({ toUnit: u, tab: 'convert' }); },
+                          className: 'min-h-[2.75rem] px-2 text-[0.6875rem] font-bold text-cyan-800 hover:underline'
+                        }, t('stem.unitconvert.use', 'Use →'))
                       )
                     );
                   })
@@ -1489,320 +4505,1034 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               )
             ),
             refText && h('div', { className: 'mt-3 bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase mb-1' }, t('stem.unitconvert.reference', '\uD83C\uDF0D Reference')),
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase mb-1' }, t('stem.unitconvert.reference', '🌍 Reference')),
               h('p', { className: 'text-sm font-bold text-amber-800' }, refText)
             )
-          ),
+          );
+        }
 
-          // ═══ TAB: QUIZ ═══
-          tab === 'quiz' && h('div', { key: 'quiz' },
+        // ═══ VIEW: PRACTICE ═══
+        function renderLegacyQuiz(item) {
+          return h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm' },
+            h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.question', '🧠 Question')),
+            h('p', { className: 'text-lg font-bold text-slate-800 mb-4 tracking-tight' }, item.q),
+            !item.answered
+              ? h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                  h('input', {
+                    type: 'text', inputMode: 'decimal', placeholder: t('stem.unitconvert.your_answer', 'Your answer...'),
+                    'aria-label': t('stem.unitconvert.quiz_answer', 'Quiz answer'),
+                    className: 'flex-1 min-h-[2.75rem] px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
+                    value: d.quizDraft === undefined || d.quizDraft === null ? '' : d.quizDraft,
+                    onChange: function(e) { upd({ quizDraft: e.target.value, quizDraftError: '' }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
+                  }),
+                  h('span', { className: 'text-xs text-slate-700 shrink-0' }, item.unit),
+                  h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'min-h-[2.75rem] px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, t('stem.unitconvert.check_answer', 'Check answer')),
+                  d.quizDraftError && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d.quizDraftError)
+                )
+              : h('div', null,
+                  h('p', { className: 'text-base font-bold mb-1 ' + (item.correct ? 'text-emerald-700' : 'text-red-700') },
+                    item.correct ? t('stem.unitconvert.legacy_correct', '✅ Correct!') : fill(t('stem.unitconvert.legacy_answer_was', '❌ The answer was {answer} {unit}'), { answer: item.a, unit: item.unit })),
+                  !item.correct && item.fb && h('p', { className: 'text-xs leading-relaxed text-red-700 mb-2' }, item.fb),
+                  h('button', { type: 'button', 'aria-label': t('stem.unitconvert.next_question', 'Next Question'), onClick: startQuizQuestion, className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800' }, t('stem.unitconvert.next_question_2', '🔄 Next Question'))
+                )
+          );
+        }
+        // blankLast (a partial example) hides the last result, and any
+        // earlier step that already states the answer: the quotient and
+        // remainder of a minutes-to-hours division, the end time of the last
+        // elapsed-time jump, and the ordinary number when that is asked for.
+        function stepsList(steps, label, blankLast, item) {
+          var list = steps || [];
+          var plainAsked = !!item && item.kind === 'sciNotation' && !!item.params && item.params.mode === 'fromSci';
+          return h('ol', { className: 'mt-1 space-y-1 font-mono text-xs text-slate-800', 'aria-label': label },
+            list.map(function(step, i) {
+              var last = blankLast && i === list.length - 1;
+              var obj = step && typeof step === 'object';
+              var hide = last ? (obj && step.s === 'sciEquals' && plainAsked ? ['plain'] : true) : false;
+              if (blankLast && !last && obj) {
+                var next = list[i + 1];
+                if (step.s === 'divRemainder') hide = ['h', 'm'];
+                else if (step.s === 'jump' && !(next && typeof next === 'object' && next.s === 'jump')) hide = ['to'];
+              }
+              var text = typeof step === 'string'
+                ? (last ? step.replace(/=\s*[^=]*$/, '= ?') : step)
+                : stepText(step, hide);
+              return h('li', { key: i }, (i + 1) + '. ' + text);
+            }));
+        }
+        // Elapsed time on a number line: jumps to the next hour, whole hours,
+        // then the minutes left. The jumps are also listed as text.
+        function elapsedNumberLine(item) {
+          var jumps = Array.isArray(item.jumps) && item.jumps.length ? item.jumps : [];
+          if (!jumps.length) return null;
+          var S = jumps[0].from, E = jumps[jumps.length - 1].to;
+          var W = 320, X0 = 18, XW = 284, Y = 62;
+          var xAt = function(m) { return X0 + (E === S ? 0 : (m - S) / (E - S) * XW); };
+          var ink = isDarkUI ? '#e2e8f0' : '#0f172a';
+          var arc = isDarkUI ? '#67e8f9' : '#0e7490';
+          var points = [S].concat(jumps.map(function(j) { return j.to; }));
+          // For "what time does it end?" the end time IS the answer: it shows
+          // as ? (label, description and list) until the problem is answered.
+          var hideEnd = item.kind === 'elapsedEnd' && !item.answered;
+          var jumpLine = function(j, k) { return stepText({ s: 'jump', p: { from: { clock: j.from }, to: { clock: j.to }, d: durationText(j.d) } }, hideEnd && k === jumps.length - 1 ? ['to'] : false); };
+          var desc = jumps.map(jumpLine).join(' ');
+          return h('figure', { className: 'mt-3 rounded-lg border border-slate-300 bg-white p-2', 'data-elapsed-number-line': true },
+            h('figcaption', { className: 'text-xs font-bold text-slate-800' }, t('stem.unitconvert.numberline_title', 'Elapsed time on a number line')),
+            h('svg', { viewBox: '0 0 ' + W + ' 96', width: '100%', role: 'img', 'aria-labelledby': 'uc-nl-title uc-nl-desc', style: { maxWidth: 520 } },
+              h('title', { id: 'uc-nl-title' }, t('stem.unitconvert.numberline_title', 'Elapsed time on a number line')),
+              h('desc', { id: 'uc-nl-desc' }, desc),
+              h('line', { x1: X0 - 8, x2: X0 + XW + 8, y1: Y, y2: Y, stroke: ink, strokeWidth: 2 }),
+              points.map(function(m, k) {
+                var x = xAt(m);
+                return h('g', { key: 'p' + k },
+                  h('line', { x1: x, x2: x, y1: Y - 6, y2: Y + 6, stroke: ink, strokeWidth: 2 }),
+                  h('text', { x: x, y: Y + 22, fontSize: 10, fontWeight: 700, fill: ink, textAnchor: k === 0 ? 'start' : k === points.length - 1 ? 'end' : 'middle' }, hideEnd && k === points.length - 1 ? '?' : formatClock(m)));
+              }),
+              jumps.map(function(j, k) {
+                var x1 = xAt(j.from), x2 = xAt(j.to);
+                var mid = (x1 + x2) / 2;
+                return h('g', { key: 'j' + k },
+                  h('path', { d: 'M ' + x1 + ' ' + (Y - 4) + ' Q ' + mid + ' ' + (Y - 40) + ' ' + x2 + ' ' + (Y - 4), fill: 'none', stroke: arc, strokeWidth: 2.5 }),
+                  h('text', { x: mid, y: Y - 26, fontSize: 10, fontWeight: 700, fill: arc, textAnchor: 'middle' }, '+' + durationText(j.d)));
+              })
+            ),
+            h('ol', { className: 'mt-1 space-y-0.5 text-xs text-slate-800', 'aria-label': t('stem.unitconvert.numberline_jumps', 'Jumps on the number line') },
+              jumps.map(function(j, k) { return h('li', { key: k }, jumpLine(j, k)); }))
+          );
+        }
+        function renderPracticeItem(item, slotArg) {
+          var slot = slotArg || 'quiz';
+          var cfg = SLOT_CFG[slot];
+          var idp = cfg.idp;
+          var fadeLevel = Math.min(2, fadeByKind[item.kind] || 0);
+          var example = null;
+          if (fadeLevel === 0 && !item.answered) {
+            // Never the student's own problem worked out in full: small pools
+            // (11 olive-oil volumes) repeated it about once in 150.
+            var exSeeds = [7919, 104729, 1299709, 15485863, 179424673, 2038074743];
+            for (var ex = 0; ex < exSeeds.length; ex++) {
+              example = makeExampleItem(item, ((Number(item.seed) || 1) + exSeeds[ex]) >>> 0);
+              if (!example || example.id !== item.id) break;
+            }
+            if (example && example.id === item.id) example = null;
+          }
+          var mis = item.lastMis ? misOf(item.lastMis) : null;
+          var unitText = unitLabel(item);
+          var predictLabels = { bigger: t('stem.unitconvert.predict_bigger_number', 'A bigger number'), smaller: t('stem.unitconvert.predict_smaller_number', 'A smaller number'), same: t('stem.unitconvert.predict_same_number', 'About the same') };
+          var needsPrediction = !item.noPredict && !item.predict && !item.answered;
+          var crossLinkKinds = { unitRate: true, rateConvert: true, givenFactor: true };
+          var timeAnswer = item.answerType === 'hm' || item.answerType === 'clock';
+          var answerAria = slot === 'quiz' ? t('stem.unitconvert.quiz_answer', 'Quiz answer') : t('stem.unitconvert.practice_answer_aria', 'Your answer');
+          var showLine = (item.kind === 'elapsed' || item.kind === 'elapsedEnd') && ((item.hintLevel || 0) >= 2 || item.answered);
+          function readTimeInputs() {
+            var hEl = typeof document !== 'undefined' ? document.getElementById(idp + '-answer-h') : null;
+            var mEl = typeof document !== 'undefined' ? document.getElementById(idp + '-answer-m') : null;
+            return { h: hEl ? hEl.value : d[cfg.draft + 'H'], m: mEl ? mEl.value : d[cfg.draft + 'M'] };
+          }
+          function setDraft(key, value) { var p = {}; p[key] = value; p[cfg.err] = ''; upd(p); }
+          var inputCls = 'min-h-[2.75rem] px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400';
+          var answerInputs = timeAnswer
+            ? [
+                h('label', { key: 'hl', htmlFor: idp + '-answer-h', className: 'text-sm font-bold text-slate-800' }, item.answerType === 'clock' ? t('stem.unitconvert.answer_hour', 'Hour') : t('stem.unitconvert.answer_hours', 'Hours')),
+                h('input', { key: 'hi', id: idp + '-answer-h', disabled: needsPrediction, type: 'text', inputMode: 'numeric', autoComplete: 'off', 'aria-describedby': idp + '-feedback',
+                  className: 'w-20 ' + inputCls, value: d[cfg.draft + 'H'] == null ? '' : d[cfg.draft + 'H'],
+                  onChange: function(e) { setDraft(cfg.draft + 'H', e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
+                h('span', { key: 'sep', 'aria-hidden': 'true', className: 'text-lg font-black text-slate-700' }, item.answerType === 'clock' ? ':' : 'h'),
+                h('label', { key: 'ml', htmlFor: idp + '-answer-m', className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.answer_minutes', 'Minutes')),
+                h('input', { key: 'mi', id: idp + '-answer-m', disabled: needsPrediction, type: 'text', inputMode: 'numeric', autoComplete: 'off', 'aria-describedby': idp + '-feedback',
+                  className: 'w-20 ' + inputCls, value: d[cfg.draft + 'M'] == null ? '' : d[cfg.draft + 'M'],
+                  onChange: function(e) { setDraft(cfg.draft + 'M', e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
+                item.answerType === 'hm' && h('span', { key: 'mu', className: 'text-sm font-bold text-slate-700' }, 'min')
+              ]
+            : [
+                h('label', { key: 'l', htmlFor: idp + '-answer', className: 'sr-only' }, fill(t('stem.unitconvert.practice_answer_label', 'Your answer in {unit}'), { unit: unitText })),
+                h('input', {
+                  key: 'i', id: idp + '-answer',
+                  disabled: needsPrediction,
+                  type: 'text', inputMode: item.family === 'chem' ? 'text' : 'decimal', autoComplete: 'off', spellCheck: false,
+                  placeholder: needsPrediction ? t('stem.unitconvert.predict_first', 'Predict first') : item.family === 'chem' && item.kind !== 'densityChain' ? t('stem.unitconvert.your_answer_sci', 'e.g. 4.5 × 10^-3 or 4.5e-3') : t('stem.unitconvert.your_answer', 'Your answer...'),
+                  'aria-label': answerAria,
+                  'aria-describedby': idp + '-feedback',
+                  className: 'flex-1 min-w-[8rem] ' + inputCls,
+                  value: d[cfg.draft] === undefined || d[cfg.draft] === null ? '' : d[cfg.draft],
+                  onChange: function(e) { setDraft(cfg.draft, e.target.value); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, e.currentTarget.value); } }
+                }),
+                h('span', { key: 'u', className: 'text-sm font-bold text-slate-700 shrink-0' }, unitText)
+              ];
+          return h('article', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm', 'aria-labelledby': idp + '-q', 'data-practice-kind': item.kind, 'data-practice-slot': slot },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('p', { className: 'text-[0.6875rem] font-bold text-slate-700 uppercase tracking-wider' }, t('stem.unitconvert.question', '🧠 Question')),
+              h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[0.6875rem] font-bold text-slate-700' }, BAND_SHORT[item.band] || '')
+            ),
+            h('p', { id: idp + '-q', className: 'text-lg font-bold text-slate-900 mb-3 tracking-tight' }, practiceQuestionText(item)),
 
-            h('div', { className: 'flex items-center justify-between mb-3' },
-              h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                h('span', { className: 'px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full' }, '\u2B50 ' + (d.score || 0) + ' XP'),
-                h('span', { className: 'px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full' }, '\uD83D\uDD25 ' + (d.streak || 0)),
-                (d.bestStreak || 0) > 0 && h('span', { className: 'px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-full' }, '\uD83C\uDFC6 Best: ' + d.bestStreak)
+            // Fading worked examples: a full parallel example first, then just
+            // the set-up, then nothing once this kind is solved twice.
+            example && h('details', { className: 'mb-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3', open: true, 'data-worked-example': 'full' },
+              h('summary', { className: 'cursor-pointer text-xs font-black text-emerald-900' }, t('stem.unitconvert.worked_example_title', 'Worked example (a similar problem)')),
+              h('p', { className: 'mt-1 text-sm font-bold text-slate-800' }, practiceQuestionText(example)),
+              stepsList(example.steps, t('stem.unitconvert.worked_example_steps', 'Worked example steps')),
+              h('p', { className: 'mt-1 text-xs text-emerald-900' }, t('stem.unitconvert.worked_example_now_you', 'Now solve yours the same way.'))
+            ),
+            fadeLevel === 1 && !item.answered && h('div', { className: 'mb-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3', 'data-worked-example': 'partial' },
+              h('p', { className: 'text-xs font-black text-emerald-900' }, t('stem.unitconvert.partial_example_title', 'Start of a solution: finish it')),
+              stepsList(item.steps, t('stem.unitconvert.partial_example_steps', 'Partial solution steps'), true, item)
+            ),
+
+            needsPrediction && h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3', 'data-practice-predict': true },
+              h('p', { className: 'text-sm font-bold text-cyan-900' }, fill(t('stem.unitconvert.practice_predict', 'Before you calculate: will your answer be a bigger or a smaller number than {value}?'), { value: item.kind === 'sigFigs' && item.params ? localizeNumberText(item.params.given || item.params.vol) : fmtN(item.inputValue) })),
+              h('div', { role: 'group', 'aria-label': t('stem.unitconvert.your_prediction', 'Your prediction'), className: 'mt-2 flex flex-wrap gap-2' },
+                ['bigger', 'smaller', 'same'].map(function(choice, ci) {
+                  return h('button', { key: choice, type: 'button', id: ci === 0 ? idp + '-predict-first' : undefined, onClick: function() { slotPredict(slot, choice); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-100' }, predictLabels[choice]);
+                }))
+            ),
+
+            // The answer box is present from the start but stays locked until
+            // the prediction is committed.
+            !item.answered && h('div', { className: needsPrediction ? 'mt-3' : '', 'data-practice-locked': needsPrediction ? 'true' : undefined },
+              !needsPrediction && item.predict && h('p', { className: 'text-xs text-slate-700 mb-2' }, fill(t('stem.unitconvert.practice_predicted', 'You predicted: {choice}.'), { choice: predictLabels[item.predict] || '' })),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                answerInputs,
+                h('button', { type: 'button', disabled: needsPrediction, onClick: function() { gradeSlotAnswer(slot, timeAnswer ? readTimeInputs() : d[cfg.draft]); }, className: 'min-h-[2.75rem] px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 disabled:opacity-50' }, t('stem.unitconvert.check_answer', 'Check answer')),
+                aiOK && !needsPrediction && slot === 'quiz' && h('button', { type: 'button', 'aria-label': t('stem.unitconvert.ask_tutor_2', 'Ask Tutor'),
+                  onClick: askTutor,
+                  className: 'min-h-[2.75rem] px-2 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm active:scale-[0.97]',
+                  title: t('stem.unitconvert.get_a_hint_from_ai', 'Get a hint from AI')
+                }, '🧠'),
+                d[cfg.err] && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d[cfg.err])
               ),
-              h('button', { 'aria-label': t('stem.unitconvert.next_question_n', 'Next question (N)'),
+              !needsPrediction && h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                (item.hintLevel || 0) < 3 && hintButton((item.hintLevel || 0) + 1, 3, function() { slotHintNext(slot); }),
+                revealsAllowed && item.tries >= 2 && revealButton(function() { revealSlotAnswer(slot); })
+              )
+            ),
+
+            (item.hintLevel || 0) > 0 && hintList([1, 2, 3].filter(function(level) { return level <= (item.hintLevel || 0); }).map(function(level) { return practiceHint(item, level); })),
+            showLine && elapsedNumberLine(item),
+
+            // One persistent live container for feedback (never remounted).
+            h('div', { id: idp + '-feedback', className: 'mt-3' },
+              !item.answered && mis && notYetBox({ 'data-misconception': item.lastMis }, fill(t('stem.unitconvert.mis_heading', 'Not yet. Possible mistake: {name}'), { name: mis.name }), mis.text, item.tries || 0),
+              item.answered && h('div', { className: 'rounded-lg border p-3 ' + (item.correct ? 'border-emerald-400 bg-emerald-50' : 'border-red-300 bg-red-50') },
+                h('p', { className: 'text-base font-black ' + (item.correct ? 'text-emerald-800' : 'text-red-800') },
+                  item.family
+                    ? (item.correct ? fill(t('stem.unitconvert.practice_correct_full', 'Correct! {answer}.'), { answer: answerText(item) }) : fill(t('stem.unitconvert.practice_answer_is_full', 'The answer is {answer}.'), { answer: answerText(item) }))
+                    : item.correct
+                      ? fill(t('stem.unitconvert.practice_correct', 'Correct! {answer} {unit}.'), { answer: fmtN(item.a), unit: unitText })
+                      : fill(t('stem.unitconvert.practice_answer_is', 'The answer is {answer} {unit}.'), { answer: fmtN(item.a), unit: unitText })),
+                item.correct && item.xp > 0 && h('p', { className: 'text-xs font-bold text-emerald-800' }, fill(t('stem.unitconvert.xp_earned', '+{xp} XP earned'), { xp: item.xp })),
+                !item.correct && item.lastMis && h('p', { className: 'mt-1 text-sm text-red-900' }, misOf(item.lastMis).text),
+                item.predict && item.direction && predictLabels[item.direction] && h('p', { className: 'mt-1 text-xs text-slate-800' }, item.predict === item.direction
+                  ? fill(t('stem.unitconvert.prediction_was_right', 'Your prediction was right: the answer is {dir}.'), { dir: predictLabels[item.direction].toLowerCase() })
+                  : fill(t('stem.unitconvert.prediction_was_off', 'Your prediction was {pred}, but the answer is {dir}. Compare the size of the two units.'), { pred: (predictLabels[item.predict] || '').toLowerCase(), dir: predictLabels[item.direction].toLowerCase() })),
+                h('p', { className: 'mt-2 text-xs font-black uppercase tracking-wider text-slate-700' }, t('stem.unitconvert.worked_solution', 'Worked solution')),
+                stepsList(item.steps, t('stem.unitconvert.worked_solution', 'Worked solution'))
+              )
+            ),
+
+            item.answered && h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+              h('button', { type: 'button', id: idp + '-next', 'aria-label': t('stem.unitconvert.next_question', 'Next Question'), onClick: function() { startSlotItem(slot); }, className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800' }, t('stem.unitconvert.next_question_2', '🔄 Next Question')),
+              aiOK && !item.correct && slot === 'quiz' && h('button', { type: 'button', 'aria-label': t('stem.unitconvert.explain', 'Explain'), onClick: askTutor, className: 'min-h-[2.75rem] px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all active:scale-[0.97]' }, t('stem.unitconvert.explain_2', '🧠 Explain'))
+            ),
+            crossLinkKinds[item.kind] && ratioLabLink(t('stem.unitconvert.ratiolab_reason', 'A rate or a conversion factor is a ratio. Ratios Lab shows the same idea with ratio tables and double number lines.'))
+          );
+        }
+        function renderPractice() {
+          return h('div', { key: 'quiz' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full' }, fill(t('stem.unitconvert.score_chip', '⭐ {n} XP'), { n: d.score || 0 })),
+                h('span', { className: 'px-2.5 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full' }, fill(t('stem.unitconvert.streak_chip', '🔥 Streak {n}'), { n: d.streak || 0 })),
+                (d.bestStreak || 0) > 0 && h('span', { className: 'px-2.5 py-1 bg-violet-100 text-violet-800 text-xs font-bold rounded-full' }, fill(t('stem.unitconvert.best_chip', '🏆 Best: {n}'), { n: d.bestStreak }))
+              ),
+              h('button', { type: 'button', 'aria-label': practiceItem ? t('stem.unitconvert.new_practice_problem', 'New practice problem') : t('stem.unitconvert.start_practice', 'Start practice'),
                 onClick: startQuizQuestion,
-                className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all active:scale-[0.97]',
-                title: t('stem.unitconvert.next_question_n_2', 'Next question (N)')
-              }, d.quiz ? '\uD83D\uDD04 Next' : '\uD83E\uDDE0 Start Quiz')
+                className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800'
+              }, practiceItem ? t('stem.unitconvert.new_problem_btn', '🔄 New problem') : t('stem.unitconvert.start_practice_btn', '🧠 Start practice'))
             ),
-
-            !d.quiz && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200' },
-              h('p', { className: 'text-4xl mb-3' }, '\uD83E\uDDE0'),
-              h('p', { className: 'text-sm font-bold text-slate-600' }, t('stem.unitconvert.test_your_unit_conversion_knowledge', 'Test your unit conversion knowledge!')),
-              h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.unitconvert.22_questions_speed_bonus_streak_reward', '22 questions \u2022 Speed bonus \u2022 Streak rewards'))
+            h('fieldset', { className: 'mb-3 rounded-xl border border-slate-300 bg-white p-3' },
+              h('legend', { className: 'px-1 text-xs font-black text-slate-800' }, t('stem.unitconvert.level_legend', 'Practice level')),
+              h('div', { className: 'flex flex-wrap gap-2' }, PRACTICE_BANDS.map(function(b) {
+                return h('button', { key: b, type: 'button', 'aria-pressed': band === b, disabled: !!lockedBand && b !== lockedBand,
+                  onClick: function() { if (lockedBand) return; upd({ practiceBand: b }); say(fill(t('stem.unitconvert.sr_level_set', 'Practice level: {level}. Start a new problem to use it.'), { level: BAND_LABELS[b] })); },
+                  className: btnBase + (band === b ? 'bg-cyan-800 text-white' : 'border border-slate-400 bg-white text-slate-800 hover:bg-slate-100') + ' disabled:opacity-50'
+                }, BAND_LABELS[b]);
+              })),
+              lockedBand && h('p', { className: 'mt-2 text-xs text-slate-700' }, t('stem.unitconvert.level_locked', 'Your teacher has set this level.')),
+              !lockedBand && band === autoBand && h('p', { className: 'mt-2 text-xs text-slate-700' }, t('stem.unitconvert.level_auto', 'Chosen from your grade level. You can change it.'))
             ),
+            !practiceItem && h('div', { className: 'text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300' },
+              h('p', { className: 'text-4xl mb-3', 'aria-hidden': 'true' }, '🧠'),
+              h('p', { className: 'text-sm font-bold text-slate-700' }, t('stem.unitconvert.practice_intro', 'New problems are made for your level every time, so practice never runs out.')),
+              h('p', { className: 'text-xs text-slate-700 mt-1' }, t('stem.unitconvert.practice_rules', 'Predict first. A wrong answer gets a named hint and a second try. XP is paid once per problem, never for speed.'))
+            ),
+            practiceItem && (isLegacyItem ? renderLegacyQuiz(practiceItem) : renderPracticeItem(practiceItem))
+          );
+        }
 
-            d.quiz && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-1' }, t('stem.unitconvert.question', '\uD83E\uDDE0 Question')),
-              h('p', { className: 'text-lg font-bold text-slate-800 mb-4 tracking-tight' }, d.quiz.q),
-
-              !d.quiz.answered
-                ? h('div', { className: 'flex flex-wrap gap-2 items-center' },
-                    h('input', {
-                      type: 'number', placeholder: t('stem.unitconvert.your_answer', 'Your answer...'), autoFocus: true,
-                      step: '0.01',
-                      'aria-label': t('stem.unitconvert.quiz_answer', 'Quiz answer'),
-                      className: 'flex-1 px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
-                      value: d.quizDraft === undefined || d.quizDraft === null ? '' : d.quizDraft,
-                      onChange: function(e) { upd({ quizDraft: e.target.value, quizDraftError: '' }); },
-                      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
-                    }),
-                    h('span', { className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit),
-                    h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, 'Check answer'),
-                    h('button', { type: 'button', 'aria-label': t('stem.unitconvert.ask_tutor_2', 'Ask Tutor'),
-                      onClick: askTutor,
-                      className: 'px-2 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm active:scale-[0.97]',
-                      title: t('stem.unitconvert.get_a_hint_from_ai', 'Get a hint from AI')
-                    }, '\uD83E\uDDE0'),
-                    d.quizDraftError && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d.quizDraftError)
-                  )
-                : h('div', { style: { animation: d.quiz.correct ? 'ucCorrect 0.5s ease' : 'ucWrong 0.4s ease' } },
-                    h('p', { className: 'text-base font-bold mb-1 ' + (d.quiz.correct ? 'text-emerald-600' : 'text-red-500') },
-                      d.quiz.correct
-                        ? '\u2705 Correct! ' + (d.quiz.xp === 3 ? '\u26A1 Lightning!' : d.quiz.xp === 2 ? '\uD83D\uDE80 Quick!' : '') + ' (' + d.quiz.elapsed + 's)'
-                        : '\u274C Answer was: ' + d.quiz.a + ' ' + d.quiz.unit
-                    ),
-                    !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-700 mb-2' }, d.quiz.fb),
-                    d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
-                    h('div', { className: 'flex gap-2' },
-                      h('button', { 'aria-label': t('stem.unitconvert.next_question', 'Next Question'),
-                        onClick: startQuizQuestion,
-                        className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-all active:scale-[0.97]'
-                      }, t('stem.unitconvert.next_question_2', '\uD83D\uDD04 Next Question')),
-                      !d.quiz.correct && h('button', { 'aria-label': t('stem.unitconvert.explain', 'Explain'),
-                        onClick: askTutor,
-                        className: 'px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all active:scale-[0.97]'
-                      }, t('stem.unitconvert.explain_2', '\uD83E\uDDE0 Explain'))
-                    )
-                  )
-            )
-
-          ),
-
-          // ═══ TAB: WORD PROBLEM ═══
-          tab === 'wordproblem' && h('div', { key: 'wp' },
-
-            h('div', { className: 'flex items-center justify-between gap-3 mb-3' },
+        // ═══ VIEW: WORD PROBLEMS ═══
+        function renderWordProblems() {
+          var hints = wordProblemHints();
+          return h('div', { key: 'wp' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-3 mb-3' },
               h('div', null,
-                h('p', { className: 'text-sm font-bold text-slate-700' + onHostInk },
-                  t('stem.unitconvert.practice_before_reveal', 'Practice first, then reveal')),
-                h('p', { className: 'text-xs text-slate-600 mt-0.5' + onHostInk },
-                  t('stem.unitconvert.word_problem_flow_description', 'Try the conversion, request up to two hints, and reveal the worked answer only when you choose.'))
+                h('p', { className: 'text-sm font-bold text-slate-700' + onHostInk }, t('stem.unitconvert.practice_before_reveal', 'Practice first, then reveal')),
+                h('p', { className: 'text-xs text-slate-700 mt-0.5' + onHostInk }, t('stem.unitconvert.word_problem_flow_v2', 'Try the conversion and use up to two hints. After two tries you may choose to reveal the worked answer, which earns no XP.'))
               ),
               h('button', {
                 type: 'button',
+                id: 'unitconvert-wp-new',
                 disabled: !!d.loadingWP,
                 onClick: generateWordProblem,
                 'aria-label': wordProblem ? t('stem.unitconvert.new_problem', 'New Problem') : t('stem.unitconvert.generate_problem', 'Generate practice problem'),
-                className: 'shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-800 active:scale-[0.97]')
+                className: 'shrink-0 min-h-[2.75rem] px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-800 active:scale-[0.97]')
               }, d.loadingWP
                 ? t('stem.unitconvert.generating_problem', '⏳ Generating...')
                 : wordProblem
                   ? t('stem.unitconvert.new_problem_2', '🔄 New Problem')
                   : t('stem.unitconvert.generate_problem_2', '✨ Generate Problem'))
             ),
-
-            d.loadingWP && h('div', {
-              className: 'text-center py-12',
-              role: 'status',
-              'aria-live': 'polite'
-            },
-              h('div', {
-                className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full',
-                style: { animation: 'spin 1s linear infinite' },
-                'aria-hidden': 'true'
-              }),
-              h('p', { className: 'text-sm text-slate-600 mt-3' },
-                t('stem.unitconvert.crafting_your_word_problem', 'Crafting your word problem...'))
+            d.loadingWP && h('div', { className: 'text-center py-12', role: 'status', 'aria-live': 'polite' },
+              h('div', { className: 'inline-block w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full motion-reduce:animate-none', style: { animation: 'spin 1s linear infinite' }, 'aria-hidden': 'true' }),
+              h('p', { className: 'text-sm text-slate-700 mt-3' }, t('stem.unitconvert.crafting_your_word_problem', 'Crafting your word problem...'))
             ),
-
-            !wordProblem && !d.loadingWP && h('div', {
-              className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300'
-            },
+            !wordProblem && !d.loadingWP && h('div', { className: 'text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300' },
               h('p', { className: 'text-4xl mb-3', 'aria-hidden': 'true' }, '📝'),
-              h('p', { className: 'text-sm font-bold text-slate-700' },
-                t('stem.unitconvert.generate_or_use_offline_problem', 'Generate a practice problem. If AI is unavailable, an offline problem appears automatically.')),
-              h('p', { className: 'text-xs text-slate-600 mt-1' },
-                t('stem.unitconvert.current_category', 'Current category: ') + cat.label)
+              h('p', { className: 'text-sm font-bold text-slate-700' }, t('stem.unitconvert.generate_or_use_offline_problem', 'Generate a practice problem. If AI is unavailable, an offline problem appears automatically.')),
+              h('p', { className: 'text-xs text-slate-700 mt-1' }, fill(t('stem.unitconvert.current_category_v2', 'Current category: {category}'), { category: cat.name }))
             ),
-
-            wordProblem && !d.loadingWP && h('article', {
-              className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm animate-in fade-in duration-300',
-              'aria-labelledby': 'unitconvert-word-problem-title'
-            },
-              h('div', { className: 'flex items-center justify-between gap-2 mb-3' },
-                h('h3', {
-                  id: 'unitconvert-word-problem-title',
-                  className: 'text-sm font-black text-cyan-800'
-                }, t('stem.unitconvert.practice_problem', '📝 Practice Problem')),
+            wordProblem && !d.loadingWP && h('article', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-5 shadow-sm', 'aria-labelledby': 'unitconvert-word-problem-title' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3' },
+                h('h3', { id: 'unitconvert-word-problem-title', className: 'text-sm font-black text-cyan-800' }, t('stem.unitconvert.practice_problem', '📝 Practice Problem')),
                 h('div', { className: 'flex flex-wrap justify-end gap-1.5' },
-                  h('span', {
-                    className: 'rounded-full px-2 py-1 text-[0.625rem] font-bold ' + (wordProblem.source === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700')
-                  }, wordProblem.source === 'offline'
-                    ? t('stem.unitconvert.offline_practice', 'Offline practice')
-                    : t('stem.unitconvert.ai_practice', 'AI practice')),
-                  wordProblem.verified && h('span', {
-                    className: 'rounded-full bg-emerald-100 px-2 py-1 text-[0.625rem] font-bold text-emerald-800',
-                    'aria-label': t('stem.unitconvert.math_verified_detail', 'Math verified locally. The app independently calculated the answer, hints, and explanation.')
-                  }, t('stem.unitconvert.math_verified', '✓ Math verified locally'))
+                  h('span', { className: 'rounded-full px-2 py-1 text-[0.625rem] font-bold ' + (wordProblem.source === 'offline' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-700') },
+                    wordProblem.source === 'offline' ? t('stem.unitconvert.offline_practice', 'Offline practice') : t('stem.unitconvert.ai_practice', 'AI practice')),
+                  wordProblem.verified && h('span', { className: 'rounded-full bg-emerald-100 px-2 py-1 text-[0.625rem] font-bold text-emerald-800', 'aria-label': t('stem.unitconvert.math_verified_detail', 'Math verified locally. The app independently calculated the answer, hints, and explanation.') },
+                    t('stem.unitconvert.math_verified', '✓ Math verified locally'))
                 )
               ),
-
-              h('p', { className: 'rounded-lg bg-cyan-50 p-4 text-base font-bold leading-relaxed text-slate-800' }, wordProblem.problem),
-
-              !d.wordProblemSolved && h('div', { className: 'mt-4' },
-                h('label', {
-                  htmlFor: 'unitconvert-word-problem-attempt',
-                  className: 'block text-xs font-bold text-slate-700 mb-1'
-                }, t('stem.unitconvert.your_conversion_answer', 'Your conversion answer')),
+              h('p', { className: 'rounded-lg bg-cyan-50 p-4 text-base font-bold leading-relaxed text-slate-800' }, wordProblemText(wordProblem)),
+              // The answer box closes once the answer is revealed: copying a
+              // revealed answer earns nothing.
+              !d.wordProblemSolved && !d.wordProblemRevealed && h('div', { className: 'mt-4' },
+                h('label', { htmlFor: 'unitconvert-word-problem-attempt', className: 'block text-xs font-bold text-slate-700 mb-1' }, t('stem.unitconvert.your_conversion_answer', 'Your conversion answer')),
                 h('div', { className: 'flex flex-wrap items-center gap-2' },
                   h('input', {
                     id: 'unitconvert-word-problem-attempt',
-                    type: 'number',
-                    step: 'any',
+                    type: 'text', inputMode: 'decimal',
                     value: d.wordProblemAttempt == null ? '' : d.wordProblemAttempt,
-                    onChange: function(event) {
-                      upd({ wordProblemAttempt: event.target.value, wordProblemFeedback: '' });
-                    },
-                    onKeyDown: function(event) {
-                      if (event.key === 'Enter') {
-                        event.preventDefault();
-                        gradeWordProblemAttempt();
-                      }
-                    },
+                    onChange: function(event) { upd({ wordProblemAttempt: event.target.value, wordProblemInputError: '' }); },
+                    onKeyDown: function(event) { if (event.key === 'Enter') { event.preventDefault(); gradeWordProblemAttempt(); } },
                     'aria-label': t('stem.unitconvert.word_problem_numeric_answer', 'Numeric answer for the word problem'),
-                    className: 'min-w-0 flex-1 rounded-lg border-2 border-cyan-300 px-3 py-2 font-mono text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300'
+                    className: 'min-w-0 flex-1 min-h-[2.75rem] rounded-lg border-2 border-cyan-600 px-3 py-2 font-mono text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300'
                   }),
-                  h('span', { className: 'text-sm font-bold text-slate-700' }, wordProblem.unit),
-                  h('button', {
-                    type: 'button',
-                    onClick: gradeWordProblemAttempt,
-                    className: 'rounded-lg bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1'
-                  }, t('stem.unitconvert.check_attempt', 'Check attempt'))
+                  h('span', { className: 'text-sm font-bold text-slate-700' }, unitShort(wordProblem.unit)),
+                  h('button', { type: 'button', onClick: gradeWordProblemAttempt, className: 'min-h-[2.75rem] rounded-lg bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, t('stem.unitconvert.check_attempt', 'Check attempt')),
+                  d.wordProblemInputError && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d.wordProblemInputError)
                 )
               ),
-
-              d.wordProblemFeedback && h('p', {
-                role: 'status',
-                'aria-live': 'polite',
-                'aria-atomic': 'true',
-                className: 'mt-3 rounded-lg border p-3 text-sm font-bold ' + (d.wordProblemSolved ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-amber-300 bg-amber-50 text-amber-900')
-              }, d.wordProblemFeedback),
-
-              (d.wordProblemHintLevel || 0) > 0 && h('div', {
-                className: 'mt-3 space-y-2',
-                'aria-label': t('stem.unitconvert.revealed_hints', 'Revealed hints')
-              }, wordProblem.hints.slice(0, d.wordProblemHintLevel || 0).map(function(hint, index) {
-                return h('div', {
-                  key: 'word-problem-hint-' + index,
-                  className: 'rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900'
-                },
-                  h('span', { className: 'font-black' }, t('stem.unitconvert.hint', 'Hint') + ' ' + (index + 1) + ': '),
-                  hint
-                );
-              })),
-
-              (d.wordProblemSolved || d.wordProblemRevealed) && h('section', {
-                className: 'mt-4 rounded-lg border border-emerald-300 bg-emerald-50 p-4',
-                'aria-labelledby': 'unitconvert-worked-answer-title'
-              },
-                h('h4', {
-                  id: 'unitconvert-worked-answer-title',
-                  className: 'text-xs font-black uppercase tracking-wider text-emerald-800'
-                }, t('stem.unitconvert.worked_answer', 'Worked answer')),
-                h('p', { className: 'mt-1 text-lg font-black text-emerald-900' },
-                  fmt(wordProblem.answer) + ' ' + wordProblem.unit),
+              h('div', { className: 'mt-3', 'data-wp-feedback': true },
+                d.wordProblemFeedback && (d.wordProblemSolved
+                  ? h('p', { className: 'rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm font-bold text-emerald-800' }, d.wordProblemFeedback)
+                  : d.wordProblemRevealed
+                    ? null
+                    : notYetBox({ 'data-misconception': 'wordProblem' }, t('stem.unitconvert.not_yet', 'Not yet.'), d.wordProblemFeedback, Math.max(1, Number(d.wordProblemTries) || 0)))),
+              (d.wordProblemHintLevel || 0) > 0 && hintList(hints.slice(0, d.wordProblemHintLevel || 0)),
+              (d.wordProblemSolved || d.wordProblemRevealed) && h('section', { className: 'mt-4 rounded-lg border border-emerald-300 bg-emerald-50 p-4', 'aria-labelledby': 'unitconvert-worked-answer-title' },
+                h('h4', { id: 'unitconvert-worked-answer-title', className: 'text-xs font-black uppercase tracking-wider text-emerald-800' }, t('stem.unitconvert.worked_answer', 'Worked answer')),
+                h('p', { className: 'mt-1 text-lg font-black text-emerald-900' }, fmt(wordProblem.answer) + ' ' + unitShort(wordProblem.unit)),
                 h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-700' }, wordProblem.explanation)
               ),
-
               h('div', { className: 'mt-4 flex flex-wrap gap-2' },
-                !d.wordProblemSolved && (d.wordProblemHintLevel || 0) < 2 && h('button', {
-                  type: 'button',
-                  onClick: showNextWordProblemHint,
-                  className: 'rounded-lg bg-violet-100 px-3 py-2 text-xs font-bold text-violet-700 hover:bg-violet-200'
-                }, t('stem.unitconvert.show_hint', '💡 Show Hint ') + ((d.wordProblemHintLevel || 0) + 1)),
-                !d.wordProblemSolved && !d.wordProblemRevealed && h('button', {
-                  type: 'button',
-                  onClick: revealWordProblemAnswer,
-                  className: 'rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-200'
-                }, t('stem.unitconvert.reveal_answer', '👀 Reveal Answer')),
+                !d.wordProblemSolved && !d.wordProblemRevealed && (d.wordProblemHintLevel || 0) < hints.length && hintButton((d.wordProblemHintLevel || 0) + 1, hints.length, showNextWordProblemHint),
+                !d.wordProblemSolved && !d.wordProblemRevealed && revealsAllowed && (Number(d.wordProblemTries) || 0) >= 2 && revealButton(revealWordProblemAnswer, t('stem.unitconvert.reveal_answer_v2', '👀 Reveal Answer (no XP)')),
                 h('button', {
                   type: 'button',
-                  'aria-label': t('stem.unitconvert.save_3', 'Save'),
+                  'aria-label': t('stem.unitconvert.save_problem', 'Save problem'),
                   onClick: function() {
+                    if (typeof setToolSnapshots !== 'function') return;
                     setToolSnapshots(function(prev) {
-                      return prev.concat([{
-                        id: 'ucwp-' + Date.now(),
-                        tool: 'unitConvert',
-                        label: 'Word Problem: ' + cat.label,
-                        data: {
-                          wordProblem: wordProblem,
-                          solved: !!d.wordProblemSolved,
-                          revealed: !!d.wordProblemRevealed,
-                          hintLevel: d.wordProblemHintLevel || 0
-                        },
-                        timestamp: Date.now()
-                      }]);
+                      return (prev || []).concat([{ id: 'ucwp-' + Date.now(), tool: 'unitConvert', label: fill(t('stem.unitconvert.snapshot_wp_label', 'Word problem: {category}'), { category: cat.name }), data: { wordProblem: wordProblem, solved: !!d.wordProblemSolved, revealed: !!d.wordProblemRevealed, hintLevel: d.wordProblemHintLevel || 0 }, timestamp: Date.now() }]);
                     });
                     addToast(t('stem.unitconvert.problem_saved', '📸 Problem saved!'), 'success');
                   },
-                  className: 'rounded-lg bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100'
+                  className: btnBase + 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                 }, t('stem.unitconvert.save_4', '💾 Save'))
               )
             )
+          );
+        }
 
-          ),
-          tab === 'magHunt' && (function() {
-            var iq = d.magHunt || { sourceExp: 0, targetExp: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd('magHunt', Object.assign({}, iq, patch)); }
-            var diff = Math.abs(iq.targetExp - iq.sourceExp);
-            var mag;
-            if (diff < 2) mag = 'tiny';
-            else if (diff < 5) mag = 'small';
-            else if (diff < 9) mag = 'medium';
-            else if (diff < 13) mag = 'large';
-            else mag = 'massive';
-            var mm = {
-              // Each example must land in its own band: cm→m is 2 OOM (small).
-              tiny:    { label: t('stem.unitconvert.tiny_scale_change', '🐜 Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.tiny_band_close_cousins_mm_cm', '<2 orders of magnitude — close cousins (mm→cm).') },
-              small:   { label: t('stem.unitconvert.small_scale_change', '🟢 Small scale change'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.unitconvert.2_4_oom_same_domain_g_kg', '2-4 OOM — same domain (g→kg).') },
-              medium:  { label: t('stem.unitconvert.medium_scale_change', '🟡 Medium scale change'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.unitconvert.5_8_oom_biology_to_geology_scales', '5-8 OOM — biology to geology scales.') },
-              large:   { label: t('stem.unitconvert.large_scale_change', '🔴 Large scale change'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.unitconvert.9_12_oom_micro_to_macro_span', '9-12 OOM — micro to macro span.') },
-              massive: { label: t('stem.unitconvert.massive_scale_change', '🌌 Massive scale change'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.unitconvert.13_oom_atomic_to_cosmic', '13+ OOM — atomic to cosmic.') }
-            }[mag];
-            return h('div', { key: 'mh', className: 'p-3' },
-              h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.unitconvert.magnitude_discovery', '⚙️ Magnitude discovery')),
-                h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.unitconvert.adjust_source_and_target_exponents_10_', 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.')),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: mm.bg, border: '2px solid ' + mm.border } },
-                  h('div', { className: 'text-base font-black', style: { color: mm.color } }, mm.label),
-                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, mm.desc),
-                  h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
+        // ═══ VIEW: MAGNITUDE (inquiry, unchanged behaviour) ═══
+        function renderMagHunt() {
+          var iq = d.magHunt || { sourceExp: 0, targetExp: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          function setIQ(patch) { upd('magHunt', Object.assign({}, iq, patch)); }
+          var diff = Math.abs(iq.targetExp - iq.sourceExp);
+          var mag;
+          if (diff < 2) mag = 'tiny';
+          else if (diff < 5) mag = 'small';
+          else if (diff < 9) mag = 'medium';
+          else if (diff < 13) mag = 'large';
+          else mag = 'massive';
+          var mm = {
+            // Each example must land in its own band: cm→m is 2 OOM (small).
+            tiny:    { label: t('stem.unitconvert.tiny_scale_change', '🐜 Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.tiny_band_close_cousins_mm_cm', '<2 orders of magnitude — close cousins (mm→cm).') },
+            small:   { label: t('stem.unitconvert.small_scale_change', '🟢 Small scale change'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.unitconvert.2_4_oom_same_domain_g_kg', '2-4 OOM — same domain (g→kg).') },
+            medium:  { label: t('stem.unitconvert.medium_scale_change', '🟡 Medium scale change'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.unitconvert.5_8_oom_biology_to_geology_scales', '5-8 OOM — biology to geology scales.') },
+            large:   { label: t('stem.unitconvert.large_scale_change', '🔴 Large scale change'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.unitconvert.9_12_oom_micro_to_macro_span', '9-12 OOM — micro to macro span.') },
+            massive: { label: t('stem.unitconvert.massive_scale_change', '🌌 Massive scale change'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.unitconvert.13_oom_atomic_to_cosmic', '13+ OOM — atomic to cosmic.') }
+          }[mag];
+          if (isDarkUI) mm = Object.assign({}, mm, {
+            tiny: { color: '#cbd5e1', bg: '#1e293b', border: '#64748b' }, small: { color: '#6ee7b7', bg: '#06281d', border: '#10b981' },
+            medium: { color: '#fcd34d', bg: '#2b1e07', border: '#d97706' }, large: { color: '#fca5a5', bg: '#2d1215', border: '#ef4444' },
+            massive: { color: '#c4b5fd', bg: '#1e1638', border: '#8b5cf6' }
+          }[mag]);
+          return h('div', { key: 'mh', className: 'p-3' },
+            h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
+              h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.unitconvert.magnitude_discovery', '⚙️ Magnitude discovery')),
+              h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.unitconvert.adjust_source_and_target_exponents_10_', 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.')),
+              h('div', { className: 'p-3 rounded-lg text-center', style: { background: mm.bg, border: '2px solid ' + mm.border } },
+                h('div', { className: 'text-base font-black', style: { color: mm.color } }, mm.label),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, mm.desc),
+                h('div', { className: 'text-[0.625rem] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-3' },
+                [{ k: 'sourceExp', l: t('stem.unitconvert.mag_source_exp', 'Source power of ten, 10^') }, { k: 'targetExp', l: t('stem.unitconvert.mag_target_exp', 'Target power of ten, 10^') }].map(function(s) {
+                  return h('div', { key: s.k },
+                    h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
+                    h('input', { id: 'mh-' + s.k, type: 'range', min: -18, max: 24, step: 1, value: iq[s.k],
+                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full min-h-[2.75rem]', 'aria-valuetext': '10^' + iq[s.k] }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'min-h-[2.75rem] px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', '📋 Log')),
+                h('button', { type: 'button', onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'min-h-[2.75rem] px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-700 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
+              ),
+              Array.isArray(iq.log) && iq.log.length > 0 && h('ul', { className: 'text-[0.6875rem] font-mono text-slate-700', 'aria-label': t('stem.unitconvert.mag_log', 'Logged comparisons') },
+                iq.log.map(function(entry, i) { return h('li', { key: i }, '10^' + entry.s + ' → 10^' + entry.t + ' (Δ ' + Math.abs(entry.t - entry.s) + ')'); })),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.unitconvert.hypothesis_what_real_world_examples_sp', 'Hypothesis: What real-world examples span each magnitude band?'),
+                'aria-label': t('stem.unitconvert.magnitude_hypothesis', 'Magnitude relationship hypothesis'),
+                className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+              !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'min-h-[2.75rem] px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
+                h('ul', { className: 'list-disc pl-5 space-y-1' },
+                  h('li', null, t('stem.unitconvert.compare_cm_km_mm_light_year_how_many_o', 'Compare cm→km, mm→light-year. How many OOM each?')),
+                  h('li', null, t('stem.unitconvert.why_are_scientists_trained_in_orders_o', 'Why are scientists trained in orders of magnitude?')))),
+              h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer min-h-[2.75rem]' },
+                h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-5 h-5' }),
+                t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.unitconvert.explain_why_dimensional_reasoning_acro', 'Explain why dimensional reasoning across many OOM is hard.'),
+                'aria-label': t('stem.unitconvert.magnitude_explanation', 'Explain dimensional reasoning across orders of magnitude'),
+                className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+              h('div', { className: 'text-[0.625rem] italic text-slate-600' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
+            )
+          );
+        }
+
+        // ═══ VIEW: FACTOR CHAIN (dimensional analysis builder) ═══
+        function renderChain() {
+          var choices = chainUnitChoices(chainFrom, chainTo);
+          var res = chain && chain.result ? chain.result : null;
+          var presetValue = chainFrom + '→' + chainTo;
+          var presetOptions = (converterPairChainable ? [[d.fromUnit, d.toUnit]] : []).concat(CHAIN_PRESETS);
+          var seenPreset = {};
+          presetOptions = presetOptions.filter(function(p) { var k = p[0] + '→' + p[1]; if (seenPreset[k]) return false; seenPreset[k] = true; return true; });
+          if (!seenPreset[presetValue]) presetOptions.unshift([chainFrom, chainTo]);
+          var resultValue = res && res.ok && chainValueOk ? chainValueState.value * res.factor : NaN;
+          var exactValue = res && res.ok && chainValueOk ? chainValueState.value * res.exactFactor : NaN;
+          var cancelled = [];
+          if (res && res.ok) {
+            var tokensSeen = {};
+            var target = parseChainUnit(chainTo) || {};
+            [chainFrom].concat(chainSteps.map(function(s) { return s.topU; }), chainSteps.map(function(s) { return s.botU; })).forEach(function(u) {
+              Object.keys(parseChainUnit(u) || {}).forEach(function(tok) { if (!target[tok] && !tokensSeen[tok]) { tokensSeen[tok] = true; cancelled.push(tok); } });
+            });
+          }
+          var POW_LABELS = { 1: t('stem.unitconvert.pow_1', 'as is'), 2: t('stem.unitconvert.pow_2', 'squared (²)'), 3: t('stem.unitconvert.pow_3', 'cubed (³)') };
+          return h('div', { key: 'chain' },
+            h('div', { className: 'rounded-xl border-2 border-cyan-200 bg-white p-4' },
+              h('div', { className: 'flex flex-wrap items-end gap-3' },
+                h('div', null,
+                  h('label', { htmlFor: 'uc-chain-preset', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.chain_pair', 'Conversion to build')),
+                  h('select', { id: 'uc-chain-preset', value: presetValue, onChange: function(e) { choosePreset(e.target.value); }, className: 'mt-1 min-h-[2.75rem] rounded-lg border border-cyan-600 bg-white px-2 text-sm font-bold text-cyan-900' },
+                    presetOptions.map(function(p) { var k = p[0] + '→' + p[1]; return h('option', { key: k, value: k }, unitShort(p[0]) + ' → ' + unitShort(p[1])); }))
                 ),
-                h('div', { className: 'grid grid-cols-2 gap-3' },
-                  [{ k: 'sourceExp', l: 'source 10^' }, { k: 'targetExp', l: 'target 10^' }].map(function(s) {
-                    return h('div', { key: s.k },
-                      h('label', { htmlFor: 'mh-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-cyan-700' }, iq[s.k])),
-                      h('input', { id: 'mh-' + s.k, type: 'range', min: -18, max: 24, step: 1, value: iq[s.k],
-                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
-                  })
-                ),
-                h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
-                ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.unitconvert.hypothesis_what_real_world_examples_sp', 'Hypothesis: What real-world examples span each magnitude band?'),
-                  'aria-label': t('stem.unitconvert.magnitude_hypothesis', 'Magnitude relationship hypothesis'),
-                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
-                  h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, t('stem.unitconvert.compare_cm_km_mm_light_year_how_many_o', 'Compare cm→km, mm→light-year. How many OOM each?')),
-                    h('li', null, t('stem.unitconvert.why_are_scientists_trained_in_orders_o', 'Why are scientists trained in orders of magnitude?')))),
-                h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-800 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.unitconvert.explain_why_dimensional_reasoning_acro', 'Explain why dimensional reasoning across many OOM is hard.'),
-                  'aria-label': t('stem.unitconvert.magnitude_explanation', 'Explain dimensional reasoning across orders of magnitude'),
-                  className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
+                h('div', null,
+                  h('label', { htmlFor: 'uc-chain-value', className: 'block text-xs font-bold text-slate-800' }, fill(t('stem.unitconvert.chain_start_value', 'Starting amount in {unit}'), { unit: unitShort(chainFrom) })),
+                  h('input', { id: 'uc-chain-value', type: 'text', inputMode: 'decimal', value: chainValueDraft, 'aria-invalid': chainValueOk ? undefined : 'true',
+                    onChange: function(e) { setChain({ valueDraft: e.target.value }); },
+                    className: 'mt-1 w-28 min-h-[2.75rem] rounded-lg border border-slate-500 px-2 text-sm font-bold' })
+                )
+              ),
+              !chainValueOk && h('p', { role: 'alert', className: 'mt-2 text-xs font-bold text-red-700' }, t('stem.unitconvert.chain_value_invalid', 'Enter a number that is 0 or more.')),
+              h('p', { className: 'mt-3 text-sm text-slate-800' }, fill(t('stem.unitconvert.chain_instructions', 'Multiply {value} {from} by fractions that each equal 1 (top and bottom are the same amount). Arrange each one so the unit you do not want is on the opposite side and cancels, until only {to} is left.'), { value: chainValueOk ? fmtN(chainValueState.value) : '?', from: unitShort(chainFrom), to: unitShort(chainTo) })),
+
+              h('ol', { className: 'mt-3 space-y-3', 'aria-label': t('stem.unitconvert.chain_factors', 'Conversion factors') },
+                chainSteps.map(function(step, i) {
+                  var nLabel = i + 1;
+                  return h('li', { key: i, className: 'rounded-lg border border-slate-300 bg-slate-50 p-3', 'data-chain-step': i },
+                    h('fieldset', null,
+                      h('legend', { className: 'text-xs font-black text-slate-800' }, fill(t('stem.unitconvert.chain_factor_n', 'Factor {n}'), { n: nLabel })),
+                      h('div', { className: 'mt-1 flex flex-wrap items-center gap-2' },
+                        h('span', { 'aria-hidden': 'true', className: 'text-lg font-black text-slate-700' }, '× ('),
+                        h('div', { className: 'flex flex-col gap-1' },
+                          h('div', { className: 'flex gap-1' },
+                            h('input', { type: 'text', inputMode: 'decimal', value: step.topN == null ? '' : String(step.topN), 'aria-label': fill(t('stem.unitconvert.chain_top_number', 'Factor {n} top number'), { n: nLabel }), onChange: function(e) { setChainStep(i, { topN: e.target.value }); }, className: 'w-24 min-h-[2.75rem] rounded border border-slate-500 px-2 text-sm font-mono' }),
+                            h('select', { value: step.topU || '', 'aria-label': fill(t('stem.unitconvert.chain_top_unit', 'Factor {n} top unit'), { n: nLabel }), onChange: function(e) { setChainStep(i, { topU: e.target.value }); }, className: 'min-h-[2.75rem] rounded border border-slate-500 bg-white px-1 text-sm' },
+                              h('option', { value: '' }, t('stem.unitconvert.chain_pick_unit', 'unit…')),
+                              choices.map(function(u) { return h('option', { key: u, value: u }, unitShort(u)); }))
+                          ),
+                          h('div', { className: 'border-t-2 border-slate-700', 'aria-hidden': 'true' }),
+                          h('div', { className: 'flex gap-1' },
+                            h('input', { type: 'text', inputMode: 'decimal', value: step.botN == null ? '' : String(step.botN), 'aria-label': fill(t('stem.unitconvert.chain_bottom_number', 'Factor {n} bottom number'), { n: nLabel }), onChange: function(e) { setChainStep(i, { botN: e.target.value }); }, className: 'w-24 min-h-[2.75rem] rounded border border-slate-500 px-2 text-sm font-mono' }),
+                            h('select', { value: step.botU || '', 'aria-label': fill(t('stem.unitconvert.chain_bottom_unit', 'Factor {n} bottom unit'), { n: nLabel }), onChange: function(e) { setChainStep(i, { botU: e.target.value }); }, className: 'min-h-[2.75rem] rounded border border-slate-500 bg-white px-1 text-sm' },
+                              h('option', { value: '' }, t('stem.unitconvert.chain_pick_unit', 'unit…')),
+                              choices.map(function(u) { return h('option', { key: u, value: u }, unitShort(u)); }))
+                          )
+                        ),
+                        h('span', { 'aria-hidden': 'true', className: 'text-lg font-black text-slate-700' }, ')'),
+                        h('label', { className: 'flex items-center gap-1 text-xs font-bold text-slate-800' },
+                          t('stem.unitconvert.chain_power', 'Use it'),
+                          h('select', { value: String(step.pow || 1), onChange: function(e) { setChainStep(i, { pow: Number(e.target.value) }); }, className: 'min-h-[2.75rem] rounded border border-slate-500 bg-white px-1 text-sm' },
+                            [1, 2, 3].map(function(p) { return h('option', { key: p, value: String(p) }, POW_LABELS[p]); }))
+                        ),
+                        h('button', { type: 'button', onClick: function() { setChainStep(i, { topN: step.botN, topU: step.botU, botN: step.topN, botU: step.topU }); }, 'aria-label': fill(t('stem.unitconvert.chain_flip', 'Flip factor {n} upside down'), { n: nLabel }), className: btnBase + 'border border-slate-500 bg-white text-slate-800 hover:bg-slate-100' }, t('stem.unitconvert.chain_flip_short', '⇅ Flip')),
+                        chainSteps.length > 1 && h('button', { type: 'button', onClick: function() { setChain({ steps: chainSteps.filter(function(_, j) { return j !== i; }), result: null }); }, 'aria-label': fill(t('stem.unitconvert.chain_remove', 'Remove factor {n}'), { n: nLabel }), className: btnBase + 'border border-red-300 bg-white text-red-700 hover:bg-red-50' }, '×')
+                      )
+                    )
+                  );
+                })
+              ),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                chainSteps.length < 4 && h('button', { type: 'button', onClick: function() { setChain({ steps: chainSteps.concat([{ topN: '', topU: '', botN: '', botU: '', pow: 1 }]), result: null }); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50' }, t('stem.unitconvert.chain_add', '+ Add a factor')),
+                h('button', { type: 'button', onClick: checkChainNow, className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800' }, t('stem.unitconvert.chain_check', 'Check my chain')),
+                revealsAllowed && !chainRevealed && chainTries >= 2 && revealButton(revealChain, t('stem.unitconvert.chain_show', '👀 Show a correct chain (no XP for this pair)'))
+              ),
+              h('div', { className: 'mt-3' },
+                res && !res.ok && (res.code === 'empty' || res.code === 'incomplete' || chainTries === 0
+                  ? h('p', { className: 'rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm font-bold text-amber-900', 'data-chain-error': res.code }, chainFeedback(res))
+                  : notYetBox({ 'data-chain-error': res.code }, t('stem.unitconvert.not_yet', 'Not yet.'), chainFeedback(res), chainTries)),
+                res && res.ok && h('div', { className: 'rounded-lg border border-emerald-400 bg-emerald-50 p-3', 'data-chain-ok': true },
+                  h('p', { className: 'text-sm font-black text-emerald-900' }, t('stem.unitconvert.chain_ok', 'It works! Every unwanted unit cancels.')),
+                  cancelled.length > 0 && h('p', { className: 'mt-1 text-sm text-emerald-900' }, fill(t('stem.unitconvert.chain_cancelled', 'Cancelled: {list}. Left: {left}.'), { list: cancelled.map(unitShort).join(', '), left: unitShort(chainTo) })),
+                  chainValueOk && h('p', { className: 'mt-1 font-mono text-sm text-slate-900' },
+                    fmtN(chainValueState.value) + ' ' + unitShort(chainFrom) + ' ' + chainSteps.map(function(s) { return '× (' + s.topN + ' ' + unitShort(s.topU) + ' / ' + s.botN + ' ' + unitShort(s.botU) + ')' + (Number(s.pow) === 2 ? '²' : Number(s.pow) === 3 ? '³' : ''); }).join(' ') + ' = ' + fmtN(resultValue) + ' ' + unitShort(chainTo)),
+                  chainValueOk && Math.abs(resultValue - exactValue) > 1e-9 * Math.max(1, Math.abs(exactValue)) && h('p', { className: 'mt-1 text-xs text-slate-800' }, fill(t('stem.unitconvert.chain_rounded', 'Your factors are rounded; the exact answer is {exact} {unit}.'), { exact: fmtN(exactValue), unit: unitShort(chainTo) })),
+                  chainRevealed && h('p', { className: 'mt-1 text-xs text-slate-800' }, t('stem.unitconvert.chain_revealed_note', 'This chain was shown to you, so it earns no XP. Try another pair on your own.'))
+                )
               )
-            );
-          })(),
+            ),
+            ratioLabLink(t('stem.unitconvert.ratiolab_chain_reason', 'Each factor is a ratio equal to 1. Ratios Lab lets you scale ratios with tables and double number lines.'))
+          );
+        }
 
-          // ── Keyboard shortcuts legend ──
-          h('div', { className: 'text-[0.6875rem] text-center mt-3 space-x-3 rounded-lg p-2', style: { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
-            h('span', null, t("stem.unitconvert.nav_shortcuts", "1–5 Activities")),
-            h('span', null, t('stem.unitconvert.n_next_quiz', 'N Next Quiz')),
-            h('span', null, t('stem.unitconvert.b_badges', 'B Badges')),
-            h('span', null, t('stem.unitconvert.ai_tutor_2', '? AI Tutor'))
-          ),
+        // ═══ VIEW: ESTIMATE ═══
+        function renderEstimate() {
+          var item = estimate ? estimate.item : null;
+          var question = '';
+          var why = '';
+          var isCompare = !!item && item.type === 'compare';
+          var optText = function(o) { return fmtN(o.value) + ' ' + unitShort(o.unit); };
+          if (item) {
+            if (isCompare) {
+              question = fill(COMPARE_Q[item.bench] || '', { a: optText(item.options[0]), b: optText(item.options[1]) });
+              why = (BENCH_TEXT[item.bench] || ['', ''])[1];
+            } else if (item.type === 'convert') {
+              question = fill(t('stem.unitconvert.est_convert_q', 'About how many {to} are in {value} {from}?'), { to: unitShort(item.to), value: fmtN(item.value), from: unitShort(item.from) });
+              // "exactly" only when the four figures shown ARE exact (2 km is
+              // 1.24274... mi, not exactly 1.243 mi).
+              var exactShown = Math.abs(Number(Number(item.exact).toPrecision(4)) - item.exact) <= Math.abs(item.exact) * 1e-12;
+              why = fill(exactShown
+                ? t('stem.unitconvert.est_convert_why', '{value} {from} is exactly {exact} {to}, which rounds to about {about} {to}.')
+                : t('stem.unitconvert.est_convert_why_approx', '{value} {from} is about {exact} {to} (rounded to four figures), so the sensible size is about {about} {to}.'), { value: fmtN(item.value), from: unitShort(item.from), exact: formatUnitNumber(item.exact, 4), to: unitShort(item.to), about: fmtN(item.correct) });
+            } else {
+              var bench = BENCH_TEXT[item.bench] || ['', ''];
+              question = bench[0];
+              why = bench[1];
+            }
+          }
+          var wrongList = estimate && Array.isArray(estimate.wrong) ? estimate.wrong : [];
+          // Named feedback for a two-way comparison: the picked wrong option
+          // (open, before the second pick) or the saved choice (old saves).
+          var compareWrongIndex = isCompare ? (wrongList.length ? wrongList[0] : (estimateDone && !estimate.right ? estimate.choice : null)) : null;
+          var compareNamed = null;
+          if (isCompare && compareWrongIndex != null) {
+            var wrongOpt = item.options[compareWrongIndex] || item.alt;
+            compareNamed = item.alt.mis === 'estUnitMixup'
+              ? fill(t('stem.unitconvert.est_cmp_unit', '{wrong} has the right number but the wrong unit. {benchmark}'), { wrong: optText(wrongOpt), benchmark: unitBenchText(item.options[item.correctIndex].unit) })
+              : item.alt.dir === 'small'
+                ? fill(t('stem.unitconvert.est_cmp_small', '{wrong} is 10 times too small.'), { wrong: optText(wrongOpt) })
+                : fill(t('stem.unitconvert.est_cmp_big', '{wrong} is 10 times too big.'), { wrong: optText(wrongOpt) });
+          }
+          var compareFeedback = isCompare && estimateDone && !estimate.right && compareNamed
+            ? h('p', { className: 'mt-1 text-sm text-slate-800', 'data-misconception': item.alt.mis }, fill(t('stem.unitconvert.est_cmp_named', '{name}: {detail}'), { name: misOf(item.alt.mis).name, detail: compareNamed }))
+            : null;
+          return h('div', { key: 'estimate' },
+            h('div', { className: 'rounded-xl border-2 border-cyan-200 bg-white p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('p', { className: 'text-sm text-slate-800' }, t('stem.unitconvert.est_intro', 'No calculator: pick the sensible size. The choices are 10 times apart, so a good benchmark is enough.')),
+                h('button', { type: 'button', onClick: newEstimate, className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800' }, item ? t('stem.unitconvert.est_new', '🔄 New question') : t('stem.unitconvert.est_start', '🎯 Start estimating'))
+              ),
+              item && h('div', { className: 'mt-3' },
+                h('p', { id: 'uc-est-q', className: 'text-lg font-bold text-slate-900' }, question),
+                h('div', { role: 'group', 'aria-labelledby': 'uc-est-q', className: 'mt-2 flex flex-wrap gap-2' },
+                  isCompare
+                    ? item.options.map(function(o, i) {
+                        var chosen = estimate.choice === i;
+                        var isRight = i === item.correctIndex;
+                        var triedWrong = wrongList.indexOf(i) !== -1;
+                        return h('button', { key: i, type: 'button', disabled: estimateDone || triedWrong, 'aria-pressed': chosen || triedWrong, onClick: function() { chooseCompare(i); },
+                          className: btnBase + 'min-w-[6rem] border text-sm ' + (estimateDone && isRight ? 'border-emerald-700 bg-emerald-100 text-emerald-900' : (chosen || triedWrong) ? 'border-red-700 bg-red-50 text-red-900' : 'border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-50')
+                        }, (estimateDone && isRight ? '✓ ' : triedWrong ? '✗ ' : '') + optText(o));
+                      })
+                    : item.options.map(function(option) {
+                        var chosen = estimate.choice === option;
+                        var isRight = option === item.correct;
+                        var triedWrong = wrongList.indexOf(option) !== -1;
+                        return h('button', { key: option, type: 'button', disabled: estimateDone || triedWrong, 'aria-pressed': chosen || triedWrong, onClick: function() { chooseEstimate(option); },
+                          className: btnBase + 'min-w-[6rem] border text-sm ' + (estimateDone && isRight ? 'border-emerald-700 bg-emerald-100 text-emerald-900' : (chosen || triedWrong) ? 'border-red-700 bg-red-50 text-red-900' : 'border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-50')
+                        }, (estimateDone && isRight ? '✓ ' : triedWrong ? '✗ ' : '') + fmtN(option) + ' ' + unitShort(item.to));
+                      })),
+                !estimateDone && !isCompare && wrongList.length >= 2 && revealsAllowed && h('div', { className: 'mt-2 flex flex-wrap gap-2' }, revealButton(revealEstimate)),
+                h('div', null,
+                  !estimateDone && wrongList.length > 0 && (isCompare
+                    ? notYetBox({ className: 'mt-3 rounded-lg border border-amber-400 bg-amber-50 p-3', 'data-misconception': item.alt.mis }, fill(t('stem.unitconvert.mis_heading', 'Not yet. Possible mistake: {name}'), { name: misOf(item.alt.mis).name }), compareNamed, 1, t('stem.unitconvert.est_cmp_second_try', 'Pick again. Only a first-try pick counts as a good estimate.'))
+                    : notYetBox({ className: 'mt-3 rounded-lg border border-amber-400 bg-amber-50 p-3', 'data-misconception': estimate.mis }, fill(t('stem.unitconvert.mis_heading', 'Not yet. Possible mistake: {name}'), { name: misOf(estimate.mis).name }), fill(t('stem.unitconvert.sr_estimate_try_again', '{mistake} {benchmark}'), { mistake: misOf(estimate.mis).text, benchmark: unitBenchText(item.to) }), wrongList.length)),
+                  estimateDone && h('div', { className: 'mt-3 rounded-lg border p-3 ' + (estimate.right ? 'border-emerald-400 bg-emerald-50' : 'border-amber-400 bg-amber-50') },
+                    h('p', { className: 'text-sm font-black ' + (estimate.right ? 'text-emerald-900' : 'text-amber-900') }, estimate.right
+                      ? (wrongList.length ? t('stem.unitconvert.est_right_later', 'That is the sensible size. Only a first-try estimate counts as good.') : t('stem.unitconvert.est_right', 'Good estimate!'))
+                      : isCompare
+                        ? fill(t('stem.unitconvert.est_wrong', 'Not quite: about {about} {unit} is closer.'), { about: fmtN(item.options[item.correctIndex].value), unit: unitShort(item.options[item.correctIndex].unit) })
+                        : fill(t('stem.unitconvert.est_wrong', 'Not quite: about {about} {unit} is closer.'), { about: fmtN(item.correct), unit: unitShort(item.to) })),
+                    compareFeedback,
+                    h('p', { className: 'mt-1 text-sm text-slate-800' }, why)
+                  ))
+              ),
+              h('p', { className: 'mt-3 text-xs text-slate-700' }, fill(t('stem.unitconvert.est_count', 'Good estimates so far: {n}'), { n: d.estimateCorrect || 0 }))
+            )
+          );
+        }
 
+        // ═══ VIEW: METRIC PREFIX LADDER ═══
+        var RUNG_NAME = {
+          mega: t('stem.unitconvert.rung_mega', 'mega'), kilo: t('stem.unitconvert.rung_kilo', 'kilo'), hecto: t('stem.unitconvert.rung_hecto', 'hecto'),
+          deca: t('stem.unitconvert.rung_deca', 'deca'), base: t('stem.unitconvert.rung_base', 'base unit'), deci: t('stem.unitconvert.rung_deci', 'deci'),
+          centi: t('stem.unitconvert.rung_centi', 'centi'), milli: t('stem.unitconvert.rung_milli', 'milli'), micro: t('stem.unitconvert.rung_micro', 'micro')
+        };
+        var BASE_NAME = { m: t('stem.unitconvert.base_m', 'meter (m), for length'), g: t('stem.unitconvert.base_g', 'gram (g), for mass'), L: t('stem.unitconvert.base_l', 'liter (L), for volume') };
+        function practiceSlotHeader(slot, startLabel, newLabel) {
+          var item = slotItem(slot);
+          return h('div', { className: 'mt-4 mb-2 flex flex-wrap items-center justify-between gap-2' },
+            h('div', { className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { className: 'px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full' }, fill(t('stem.unitconvert.score_chip', '⭐ {n} XP'), { n: d.score || 0 })),
+              h('span', { className: 'px-2.5 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full' }, fill(t('stem.unitconvert.streak_chip', '🔥 Streak {n}'), { n: d.streak || 0 }))),
+            h('button', { type: 'button', onClick: function() { startSlotItem(slot); }, className: btnBase + 'bg-cyan-700 text-white hover:bg-cyan-800', 'data-slot-start': slot }, item ? newLabel : startLabel));
+        }
+        function modePicker(id, legend, modes, labels, current, locked, onPick) {
+          return h('fieldset', { className: 'mb-3 rounded-xl border border-slate-300 bg-white p-3', 'data-mode-picker': id },
+            h('legend', { className: 'px-1 text-xs font-black text-slate-800' }, legend),
+            h('div', { className: 'flex flex-wrap gap-2' }, modes.map(function(m) {
+              return h('button', { key: m, type: 'button', 'aria-pressed': current === m, disabled: !!locked && m !== locked,
+                onClick: function() { if (locked) return; onPick(m); say(fill(t('stem.unitconvert.sr_mode_set', 'Problem type: {mode}. Start a new problem to use it.'), { mode: labels[m] })); },
+                className: btnBase + (current === m ? 'bg-cyan-800 text-white' : 'border border-slate-400 bg-white text-slate-800 hover:bg-slate-100') + ' disabled:opacity-50'
+              }, labels[m]);
+            })),
+            locked && h('p', { className: 'mt-2 text-xs text-slate-700' }, t('stem.unitconvert.mode_locked', 'Your teacher has set this problem type.')));
+        }
+        function renderLadder() {
+          var lad = d.ladder && typeof d.ladder === 'object' ? d.ladder : {};
+          var rungs = ladderRungs(band);
+          var hasRung = function(id) { return rungs.some(function(r) { return r.id === id; }); };
+          var base = LADDER_BASES.indexOf(lad.base) !== -1 ? lad.base : 'm';
+          var start = hasRung(lad.start) ? lad.start : 'base';
+          var at = hasRung(lad.at) ? lad.at : start;
+          var draft = typeof lad.draft === 'string' ? lad.draft : '2.5';
+          var st = parseNumericDraft(draft);
+          var ok = st.valid && st.value >= 0;
+          var startR = ladderRung(start), atR = ladderRung(at);
+          var atIndex = 0;
+          rungs.forEach(function(r, i) { if (r.id === at) atIndex = i; });
+          var valueAt = function(id) { return ok ? shiftDecimal(st.value, startR.exp - ladderRung(id).exp) : NaN; };
+          var unitOf = function(r) { return r.sym + base; };
+          function setLad(patch) { upd('ladder', Object.assign({ base: base, start: start, at: at, draft: draft }, lad, patch)); }
+          function stepTo(id) {
+            if (!hasRung(id) || id === at) return;
+            var toR = ladderRung(id);
+            var places = atR.exp - toR.exp;
+            setLad({ at: id });
+            if (!ok) return;
+            var one = Math.abs(places) === 1;
+            say(fill(places > 0
+              ? (one ? t('stem.unitconvert.sr_ladder_down_one', 'Down to {unit}: the decimal point moves 1 place to the right. {value} {start} = {result} {unit}.') : t('stem.unitconvert.sr_ladder_down', 'Down to {unit}: the decimal point moves {n} places to the right. {value} {start} = {result} {unit}.'))
+              : (one ? t('stem.unitconvert.sr_ladder_up_one', 'Up to {unit}: the decimal point moves 1 place to the left. {value} {start} = {result} {unit}.') : t('stem.unitconvert.sr_ladder_up', 'Up to {unit}: the decimal point moves {n} places to the left. {value} {start} = {result} {unit}.')),
+              { unit: unitOf(toR), n: Math.abs(places), value: fmtN(st.value), start: unitOf(startR), result: fmtN(valueAt(id)) }));
+          }
+          function onRungKey(e, i) {
+            var next = -1;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = Math.min(rungs.length - 1, i + 1);
+            else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = Math.max(0, i - 1);
+            else if (e.key === 'Home') next = 0;
+            else if (e.key === 'End') next = rungs.length - 1;
+            if (next < 0) return;
+            e.preventDefault();
+            stepTo(rungs[next].id);
+            var group = e.currentTarget && e.currentTarget.parentNode;
+            var nodes = group ? group.querySelectorAll('[role="radio"]') : [];
+            if (nodes[next]) nodes[next].focus();
+          }
+          var placesFromStart = startR.exp - atR.exp;
+          var factorText = fmtN(Math.pow(10, Math.abs(placesFromStart)));
+          var readout = !ok ? '' : placesFromStart === 0
+            ? t('stem.unitconvert.ladder_at_start', 'This is the unit you started with.')
+            : Math.abs(placesFromStart) === 1
+              ? fill(placesFromStart > 0
+                ? t('stem.unitconvert.ladder_moved_right_one', 'The decimal point moved 1 place to the right: × {factor}. A smaller unit needs a bigger number.')
+                : t('stem.unitconvert.ladder_moved_left_one', 'The decimal point moved 1 place to the left: ÷ {factor}. A bigger unit needs a smaller number.'), { factor: factorText })
+              : fill(placesFromStart > 0
+                ? t('stem.unitconvert.ladder_moved_right', 'The decimal point moved {n} places to the right: × {factor}. A smaller unit needs a bigger number.')
+                : t('stem.unitconvert.ladder_moved_left', 'The decimal point moved {n} places to the left: ÷ {factor}. A bigger unit needs a smaller number.'), { n: Math.abs(placesFromStart), factor: factorText });
+          var gap = function(i) { return Math.pow(10, rungs[i].exp - rungs[i + 1].exp); };
+          var inkSoft = isDarkUI ? '#cbd5e1' : '#334155';
+          return h('div', { key: 'ladder' },
+            h('div', { className: 'rounded-xl border-2 border-cyan-200 bg-white p-4' },
+              h('div', { className: 'flex flex-wrap items-end gap-3' },
+                h('div', null,
+                  h('label', { htmlFor: 'uc-ladder-base', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.ladder_base', 'Base unit')),
+                  h('select', { id: 'uc-ladder-base', value: base, onChange: function(e) { setLad({ base: e.target.value }); }, className: 'mt-1 min-h-[2.75rem] rounded-lg border border-cyan-600 bg-white px-2 text-sm font-bold text-cyan-900' },
+                    LADDER_BASES.map(function(b) { return h('option', { key: b, value: b }, BASE_NAME[b]); }))),
+                h('div', null,
+                  h('label', { htmlFor: 'uc-ladder-value', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.ladder_amount', 'Starting amount')),
+                  h('input', { id: 'uc-ladder-value', type: 'text', inputMode: 'decimal', autoComplete: 'off', value: draft, 'aria-invalid': ok ? undefined : 'true', 'aria-describedby': ok ? undefined : 'uc-ladder-value-error',
+                    onChange: function(e) { setLad({ draft: e.target.value }); },
+                    className: 'mt-1 w-28 min-h-[2.75rem] rounded-lg border border-slate-500 px-2 text-sm font-bold' })),
+                h('div', null,
+                  h('label', { htmlFor: 'uc-ladder-start', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.ladder_start_unit', 'Starting unit')),
+                  h('select', { id: 'uc-ladder-start', value: start, onChange: function(e) { setLad({ start: e.target.value, at: e.target.value }); }, className: 'mt-1 min-h-[2.75rem] rounded-lg border border-cyan-600 bg-white px-2 text-sm font-bold text-cyan-900' },
+                    rungs.map(function(r) { return h('option', { key: r.id, value: r.id }, unitOf(r) + ' (' + RUNG_NAME[r.id] + ')'); })))
+              ),
+              !ok && h('p', { id: 'uc-ladder-value-error', role: 'alert', className: 'mt-2 text-xs font-bold text-red-700' }, t('stem.unitconvert.chain_value_invalid', 'Enter a number that is 0 or more.')),
+              h('p', { className: 'mt-3 text-sm text-slate-800' }, t('stem.unitconvert.ladder_intro', 'Each step down the ladder is a unit 10 times smaller, so the number is multiplied by 10. Each step up divides by 10. Use the arrow keys or click a rung.')),
+              h('div', { className: 'mt-3 grid gap-4 sm:grid-cols-2' },
+                h('div', { role: 'radiogroup', 'aria-label': t('stem.unitconvert.ladder_label', 'Metric prefix ladder'), 'data-prefix-ladder': true, className: 'flex flex-col' },
+                  rungs.map(function(r, i) {
+                    var selected = r.id === at;
+                    var isStart = r.id === start;
+                    var nodes = [h('div', {
+                      key: r.id, role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1,
+                      'aria-label': fill(t('stem.unitconvert.ladder_rung_label', '{prefix}: {unit}, 10 to the power {exp}'), { prefix: RUNG_NAME[r.id], unit: unitOf(r), exp: r.exp }),
+                      onClick: function() { stepTo(r.id); },
+                      onKeyDown: function(e) { onRungKey(e, i); },
+                      'data-rung': r.id,
+                      className: 'flex min-h-[2.75rem] cursor-pointer items-center justify-between gap-2 rounded-lg border-2 px-3 py-1.5 text-sm ' + (selected ? 'border-cyan-700 bg-cyan-50 font-black text-cyan-900' : 'border-slate-300 bg-white text-slate-800')
+                    },
+                      h('span', null, RUNG_NAME[r.id], isStart ? ' ' + t('stem.unitconvert.table_start_marker', '(start)') : ''),
+                      h('span', { className: 'font-mono font-bold' }, unitOf(r)),
+                      h('span', { className: 'font-mono text-xs' }, '10' + superscriptInt(r.exp)))];
+                    if (i < rungs.length - 1) nodes.push(h('div', { key: r.id + '-gap', 'aria-hidden': 'true', className: 'flex justify-between px-4 text-[0.6875rem] font-bold', style: { color: inkSoft } },
+                      h('span', null, '↓ × ' + fmtN(gap(i))), h('span', null, '↑ ÷ ' + fmtN(gap(i)))));
+                    return nodes;
+                  })),
+                h('div', null,
+                  h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3', 'data-ladder-readout': true },
+                    h('p', { className: 'text-xs font-black uppercase tracking-wider text-cyan-900' }, t('stem.unitconvert.ladder_readout', 'Same amount, this unit')),
+                    h('p', { className: 'mt-1 text-2xl font-black text-cyan-900' }, ok ? fmtN(valueAt(at)) + ' ' + unitOf(atR) : '—'),
+                    ok && h('p', { className: 'mt-1 text-sm text-slate-800' }, fill(t('stem.unitconvert.ladder_equation', '{value} {start} = {result} {unit}'), { value: fmtN(st.value), start: unitOf(startR), result: fmtN(valueAt(at)), unit: unitOf(atR) })),
+                    readout && h('p', { className: 'mt-1 text-sm text-slate-800' }, readout)),
+                  h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                    h('button', { type: 'button', disabled: atIndex === 0, onClick: function() { if (atIndex > 0) stepTo(rungs[atIndex - 1].id); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-50 disabled:opacity-50' },
+                      atIndex > 0 ? fill(t('stem.unitconvert.ladder_up_btn', '▲ Up one rung (÷ {f})'), { f: fmtN(gap(atIndex - 1)) }) : t('stem.unitconvert.ladder_top', '▲ Top of the ladder')),
+                    h('button', { type: 'button', disabled: atIndex === rungs.length - 1, onClick: function() { if (atIndex < rungs.length - 1) stepTo(rungs[atIndex + 1].id); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-50 disabled:opacity-50' },
+                      atIndex < rungs.length - 1 ? fill(t('stem.unitconvert.ladder_down_btn', '▼ Down one rung (× {f})'), { f: fmtN(gap(atIndex)) }) : t('stem.unitconvert.ladder_bottom', '▼ Bottom of the ladder'))),
+                  h('p', { className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900' }, t('stem.unitconvert.ladder_watch_out', 'Watch out: moving to a SMALLER unit makes the number BIGGER. Moving the decimal point the wrong way is the most common prefix mistake.')),
+                  band !== 'b8' && h('p', { className: 'mt-2 text-xs text-slate-700' }, t('stem.unitconvert.ladder_more_rungs', 'From grade 8 the ladder adds mega (10⁶) and micro (10⁻⁶), which are 1,000 times the next rung.')))
+              ),
+              h('details', { className: 'mt-3' },
+                h('summary', { className: 'cursor-pointer min-h-[2.75rem] flex items-center text-sm font-bold text-cyan-900' }, t('stem.unitconvert.ladder_table_toggle', 'Show the amount on every rung as a table')),
+                ok && h('table', { className: 'mt-1 w-full text-sm' },
+                  h('caption', { className: 'sr-only' }, fill(t('stem.unitconvert.ladder_table_caption', '{value} {unit} written with every prefix'), { value: fmtN(st.value), unit: unitOf(startR) })),
+                  h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.ladder_col_prefix', 'Prefix')),
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.unit', 'Unit')),
+                    h('th', { scope: 'col', className: 'text-right' }, t('stem.unitconvert.value', 'Value')))),
+                  h('tbody', null, rungs.map(function(r) {
+                    return h('tr', { key: r.id, className: 'border-t border-slate-200' },
+                      h('th', { scope: 'row', className: 'text-left font-normal' }, RUNG_NAME[r.id] + ' (10' + superscriptInt(r.exp) + ')'),
+                      h('td', { className: 'font-mono' }, unitOf(r)),
+                      h('td', { className: 'text-right font-mono' }, fmtN(valueAt(r.id))));
+                  }))))
+            ),
+            practiceSlotHeader('ladder', t('stem.unitconvert.ladder_practice_start', '🪜 Start ladder practice'), t('stem.unitconvert.new_problem_btn', '🔄 New problem')),
+            slotItem('ladder') && renderPracticeItem(slotItem('ladder'), 'ladder')
+          );
+        }
+
+        // ═══ VIEW: TIME AND MONEY (grades 3-5) ═══
+        function renderEveryday() {
+          var labels = { all: t('stem.unitconvert.day_mode_all', 'Mixed'), time: t('stem.unitconvert.day_mode_time', 'Hours and minutes'), elapsed: t('stem.unitconvert.day_mode_elapsed', 'Elapsed time'), money: t('stem.unitconvert.day_mode_money', 'Money') };
+          var item = slotItem('everyday');
+          return h('div', { key: 'everyday' },
+            modePicker('everyday', t('stem.unitconvert.day_mode_legend', 'Problem type'), DAY_MODES, labels, dayMode, lockedDayMode, function(m) { upd('dayMode', m); }),
+            h('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900' },
+              h('p', { className: 'font-black' }, t('stem.unitconvert.day_remember', 'Remember')),
+              h('ul', { className: 'mt-1 list-disc pl-5 space-y-0.5' },
+                h('li', null, t('stem.unitconvert.day_fact_hour', '1 hour = 60 minutes. Time does not go in hundreds.')),
+                h('li', null, t('stem.unitconvert.day_fact_dollar', '1 dollar = 100 cents. Money does go in hundreds: $2.75 is 275 cents.')))),
+            practiceSlotHeader('everyday', t('stem.unitconvert.day_start', '🕒 Start time and money practice'), t('stem.unitconvert.new_problem_btn', '🔄 New problem')),
+            !item && h('p', { className: 'text-sm text-slate-700' }, t('stem.unitconvert.day_intro', 'Change hours and minutes, find elapsed time on a number line, and change cents and dollars. New problems every time.')),
+            item && renderPracticeItem(item, 'everyday')
+          );
+        }
+
+        // ═══ VIEW: CHEMISTRY (grades 9-12) ═══
+        function renderChem() {
+          var labels = { all: t('stem.unitconvert.chem_mode_all', 'Mixed'), sigfigs: t('stem.unitconvert.chem_mode_sigfigs', 'Significant figures'), sci: t('stem.unitconvert.chem_mode_sci', 'Scientific notation'), mole: t('stem.unitconvert.chem_mode_mole', 'Moles'), density: t('stem.unitconvert.chem_mode_density', 'Density chains') };
+          var item = slotItem('chem');
+          return h('div', { key: 'chem' },
+            modePicker('chem', t('stem.unitconvert.chem_mode_legend', 'Problem type'), CHEM_MODES, labels, chemMode, lockedChemMode, function(m) { upd('chemMode', m); }),
+            h('p', { className: 'mb-2 text-sm text-slate-800' }, t('stem.unitconvert.chem_input_help', 'Type scientific notation as 6.02 × 10^23, 6.02x10^23 or 6.02e23.')),
+            practiceSlotHeader('chem', t('stem.unitconvert.chem_start', '⚗️ Start chemistry practice'), t('stem.unitconvert.new_problem_btn', '🔄 New problem')),
+            !item && h('p', { className: 'text-sm text-slate-700' }, t('stem.unitconvert.chem_intro', 'Significant figures, scientific notation, grams to moles to particles, and density chains. New problems every time.')),
+            item && renderPracticeItem(item, 'chem'),
+            h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+              h('button', { type: 'button', onClick: function() { upd({ tab: 'chain', chain: { from: 'g/cm³', to: 'kg/m³', steps: [{ topN: '', topU: '', botN: '', botU: '', pow: 1 }], valueDraft: '1', result: null, revealed: chain && chain.revealed ? chain.revealed : {} } }); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-800 hover:bg-cyan-50' },
+                t('stem.unitconvert.chem_to_chain', '🔗 Build a density chain in Factor chain'))),
+            h('details', { className: 'mt-3 rounded-xl border border-slate-300 bg-white p-3', 'data-chem-data': true },
+              h('summary', { className: 'cursor-pointer min-h-[2.75rem] flex items-center text-sm font-bold text-slate-900' }, t('stem.unitconvert.chem_data_title', 'Data used: atomic masses and constants')),
+              h('div', { className: 'overflow-x-auto' }, h('table', { className: 'mt-1 w-full text-xs' },
+                h('caption', { className: 'sr-only' }, t('stem.unitconvert.chem_data_caption', 'Standard atomic weights used in these problems')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.chem_col_element', 'Element')),
+                  h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.chem_col_symbol', 'Symbol')),
+                  h('th', { scope: 'col', className: 'text-right' }, t('stem.unitconvert.chem_col_mass', 'Atomic mass (g/mol)')))),
+                h('tbody', null, Object.keys(ATOMIC_MASS).map(function(sym) {
+                  return h('tr', { key: sym, className: 'border-t border-slate-200' },
+                    h('th', { scope: 'row', className: 'text-left font-normal' }, ELEMENT_NAME[sym] || sym),
+                    h('td', { className: 'font-mono' }, sym),
+                    h('td', { className: 'text-right font-mono' }, fmtN(ATOMIC_MASS[sym])));
+                })))),
+              h('p', { className: 'mt-2 text-xs text-slate-700' }, t('stem.unitconvert.chem_citation', 'Source: IUPAC Commission on Isotopic Abundances and Atomic Weights (CIAAW), standard atomic weights 2021, abridged to five significant figures. Hydrogen, carbon, nitrogen, oxygen, magnesium, sulfur and chlorine have a range of values; their conventional values are used.')),
+              h('p', { className: 'mt-1 text-xs text-slate-700' }, fill(t('stem.unitconvert.chem_avogadro', 'Avogadro constant: exactly {exact} per mole (SI, 2019). The problems use {rounded}.'), { exact: sciText(AVOGADRO_EXACT, 9), rounded: sciText(AVOGADRO, 4) })),
+              h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.unitconvert.chem_density_note', 'Densities are typical values near room temperature: ethanol 0.789 g/mL, aluminum 2.70 g/cm³, olive oil about 0.92 g/mL, water about 1.00 g/mL.')))
+          );
+        }
+
+        // ═══ START HERE: a short path for the grade band ═══
+        var PATH_TEXT = {
+          guess: t('stem.unitconvert.path_guess', 'Guess, then check a conversion'),
+          time: t('stem.unitconvert.path_time', 'Time: minutes, hours and elapsed time'),
+          money: t('stem.unitconvert.path_money', 'Dollars and cents'),
+          within: t('stem.unitconvert.path_within', 'Convert within one system (ft and in, kg and g)'),
+          bench: t('stem.unitconvert.path_bench', 'Estimate with benchmarks'),
+          rates: t('stem.unitconvert.path_rates', 'Unit rates and rate conversions'),
+          ladder: t('stem.unitconvert.path_ladder', 'Climb the metric prefix ladder'),
+          chain: t('stem.unitconvert.path_chain', 'Build a factor chain'),
+          wordproblem: t('stem.unitconvert.path_wordproblem', 'Solve a word problem'),
+          areavol: t('stem.unitconvert.path_areavol', 'Area and volume units'),
+          sigfigs: t('stem.unitconvert.path_sigfigs', 'Keep the right number of significant figures'),
+          moles: t('stem.unitconvert.path_moles', 'Grams, moles and particles')
+        };
+        var PATH_BAND_NAME = { b45: BAND_SHORT.b35, b67: BAND_SHORT.b67, b8: BAND_SHORT.b8 };
+        function openPathStep(step) {
+          var pathPatch = { tab: step.tab };
+          if (step.id === 'guess') {
+            // Step 1 is the guess: a student with it off, or in Temperature
+            // (no slider), would otherwise land on nothing to do.
+            pathPatch.guessFirst = true;
+            if (d.category === 'temperature') Object.assign(pathPatch, { category: 'length', fromUnit: FIRST_VISIT_PAIR[0], toUnit: FIRST_VISIT_PAIR[1], value: 1, valueDraft: null });
+          }
+          upd(pathPatch);
+          var slot = SLOT_CFG[step.tab] ? step.tab : null;
+          if (slot) {
+            // A teacher's problem-type lock wins over the path's suggestion.
+            var locked = (slot === 'chem' && lockedChemMode) || (slot === 'everyday' && lockedDayMode);
+            var kinds = locked ? [] : (PATH_KIND_GROUPS[step.id] || []);
+            var open = slotItem(slot);
+            // Keep a problem the student is already working on if it fits.
+            var fits = open && !open.answered && (kinds.length === 0 || kinds.indexOf(open.kind) !== -1);
+            if (!fits) startSlotItem(slot, { band: step.band || pathBand, kinds: kinds });
+          }
+          say(fill(t('stem.unitconvert.sr_path_open', 'Opened {tab}: {step}.'), { tab: TAB_LABELS[step.tab], step: PATH_TEXT[step.id] || '' }));
+          // Take the student to the activity: the value box on Convert,
+          // otherwise the opened tab panel.
+          focusSoon(step.tab === 'convert' ? ['unitconvert-value', 'stem-unitconvert-panel-convert'] : ['stem-unitconvert-panel-' + step.tab]);
+        }
+        // The path is a one-line "Next" strip; the full list opens on demand.
+        function renderStartHere() {
+          var doneFlags = pathSteps.map(function(s) { return pathStepDone(s, d); });
+          var doneCount = doneFlags.filter(Boolean).length;
+          var nextIndex = doneFlags.indexOf(false);
+          var nextStep = nextIndex >= 0 ? pathSteps[nextIndex] : null;
+          var collapsed = d.pathCollapsed !== false;
+          return h('section', { 'data-start-here': pathBand, 'aria-labelledby': 'uc-path-title', className: 'mb-3 rounded-xl border border-cyan-300 bg-cyan-50 px-3 py-2' },
+            h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-1' },
+              h('h3', { id: 'uc-path-title', className: 'text-sm font-black text-cyan-900' }, fill(t('stem.unitconvert.path_title', 'Start here: {band}'), { band: PATH_BAND_NAME[pathBand] || '' })),
+              h('span', { className: 'text-xs font-bold text-cyan-900', 'data-path-progress': doneCount }, fill(t('stem.unitconvert.path_progress', '{n} of {total} done'), { n: doneCount, total: pathSteps.length })),
+              nextStep
+                ? h('span', { className: 'flex min-w-0 flex-wrap items-center gap-2', style: { flex: '1 1 16rem' } },
+                    h('span', { className: 'text-sm text-cyan-900', 'data-path-next': nextStep.id }, fill(t('stem.unitconvert.path_next_strip', 'Next: {step}'), { step: PATH_TEXT[nextStep.id] || '' })),
+                    h('button', { type: 'button', 'data-path-go': nextStep.id,
+                      'aria-label': fill(t('stem.unitconvert.path_go_aria', 'Start step {n}: {step}'), { n: nextIndex + 1, step: PATH_TEXT[nextStep.id] || '' }),
+                      onClick: function() { openPathStep(nextStep); },
+                      className: btnBase + 'bg-cyan-800 text-white hover:bg-cyan-900' }, t('stem.unitconvert.path_go', 'Start')))
+                : h('span', { className: 'flex-1 text-sm font-bold text-emerald-800', 'data-path-next': 'done' }, t('stem.unitconvert.path_all_done', 'All steps done. Every activity is still in the tabs.')),
+              h('button', { type: 'button', 'aria-expanded': !collapsed, 'aria-controls': 'uc-path-list', onClick: function() { upd('pathCollapsed', !collapsed); }, className: btnBase + 'border border-cyan-700 bg-white text-cyan-900 hover:bg-cyan-100' },
+                collapsed ? t('stem.unitconvert.path_show', 'Show steps') : t('stem.unitconvert.path_hide', 'Hide steps'))),
+            !collapsed && h('ol', { id: 'uc-path-list', className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+              pathSteps.map(function(step, i) {
+                var done = doneFlags[i];
+                var isNext = i === nextIndex;
+                return h('li', { key: step.id },
+                  h('button', { type: 'button', onClick: function() { openPathStep(step); }, 'data-path-step': step.id, 'data-path-done': done ? 'true' : 'false',
+                    'aria-current': isNext ? 'step' : undefined,
+                    className: 'w-full min-h-[2.75rem] rounded-lg border px-3 py-2 text-left text-xs font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ' + (done ? 'border-emerald-700 bg-emerald-50 text-emerald-900' : isNext ? 'border-cyan-700 bg-white text-cyan-900 shadow-sm' : 'border-slate-500 bg-white text-slate-800 hover:bg-slate-100') },
+                    h('span', { 'aria-hidden': 'true', className: 'mr-1 font-black' }, done ? '✓' : String(i + 1) + '.'),
+                    PATH_TEXT[step.id],
+                    h('span', { className: 'block text-[0.6875rem] font-normal' }, done
+                      ? t('stem.unitconvert.path_done', 'Done')
+                      : isNext ? fill(t('stem.unitconvert.path_next', 'Next: open {tab}'), { tab: TAB_LABELS[step.tab] }) : fill(t('stem.unitconvert.path_in_tab', 'In {tab}'), { tab: TAB_LABELS[step.tab] }))));
+              })),
+            !collapsed && h('p', { className: 'mt-2 text-xs text-cyan-900' }, t('stem.unitconvert.path_note', 'A tick appears after you solve one problem of that kind yourself. Every other activity is still in the tabs below.')));
+        }
+
+        // ═══ TEACHER PANEL (ctx.isTeacherMode only) ═══
+        function teacherCsv() {
+          var rows = [['when', 'level', 'kind', 'question', 'correct_answer', 'unit', 'first_answer', 'mistake', 'outcome']];
+          (Array.isArray(d.missed) ? d.missed : []).forEach(function(m) {
+            rows.push([new Date(m.ts || 0).toISOString(), m.band || '', m.kind || '', m.q || '', m.a, m.unit || '', m.answer == null ? '' : m.answer, m.mis ? misOf(m.mis).name : '', m.outcome || '']);
+          });
+          rows.push([]);
+          rows.push(['mistake', 'times']);
+          var tally = d.misTally && typeof d.misTally === 'object' ? d.misTally : {};
+          Object.keys(tally).forEach(function(k) { rows.push([misOf(k).name, tally[k]]); });
+          return rows.map(function(r) { return r.map(function(cell) { var s = String(cell == null ? '' : cell); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\r\n');
+        }
+        function copyTeacherCsv() {
+          var csv = teacherCsv();
+          var done = function(ok) {
+            var msg = ok ? t('stem.unitconvert.teacher_copied', 'Summary copied as CSV.') : t('stem.unitconvert.teacher_copy_failed', 'Copy is not available here.');
+            upd('teacherMsg', msg); say(msg);
+          };
+          try {
+            var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;
+            var p = api ? api(csv) : (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(csv) : Promise.reject(new Error('no clipboard')));
+            Promise.resolve(p).then(function() { done(true); }, function() { done(false); });
+          } catch (e) { done(false); }
+        }
+        function renderTeacherPanel() {
+          if (!isTeacher) return null;
+          var tally = d.misTally && typeof d.misTally === 'object' ? d.misTally : {};
+          var tallyKeys = Object.keys(tally).sort(function(a, b) { return tally[b] - tally[a]; });
+          var missed = Array.isArray(d.missed) ? d.missed.slice(-15).reverse() : [];
+          function setTeacher(patch) { upd('teacher', Object.assign({}, teacher, patch)); }
+          return h('section', { 'data-unitconvert-teacher': true, 'aria-labelledby': 'uc-teacher-title', className: 'mb-3 rounded-xl border-2 border-slate-500 bg-white p-3' },
+            h('h3', { id: 'uc-teacher-title', className: 'text-sm font-black text-slate-900' }, t('stem.unitconvert.teacher_title', '🧑‍🏫 Teacher controls')),
+            h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.teacher_note', 'Students do not see this panel. Settings are saved with this tool\'s work on this device.')),
+            h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.unitconvert.teacher_path_note', 'Locking the practice level also sets the Start here path and the tab order. These controls apply to every tab.')),
+            h('div', { className: 'mt-2 flex flex-wrap items-end gap-4' },
+              h('div', { className: 'min-w-0 w-full sm:w-auto' },
+                h('label', { htmlFor: 'uc-teacher-band', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.teacher_lock_level', 'Lock the practice level')),
+                h('select', { id: 'uc-teacher-band', value: lockedBand, onChange: function(e) { setTeacher({ lockBand: e.target.value }); }, className: 'mt-1 w-full max-w-full min-h-[2.75rem] rounded border border-slate-500 bg-white px-2 text-sm' },
+                  h('option', { value: '' }, t('stem.unitconvert.teacher_unlocked', 'Not locked (students choose)')),
+                  PRACTICE_BANDS.map(function(b) { return h('option', { key: b, value: b }, BAND_LABELS[b]); }))
+              ),
+              h('label', { className: 'flex items-center gap-2 text-sm font-bold text-slate-800 min-h-[2.75rem]' },
+                h('input', { type: 'checkbox', className: 'w-5 h-5', checked: revealsAllowed, onChange: function(e) { setTeacher({ noReveal: !e.target.checked }); } }),
+                t('stem.unitconvert.teacher_allow_reveal_v2', 'Allow "Show the answer" after two tries, in every activity')),
+              h('div', { className: 'min-w-0 w-full sm:w-auto' },
+                h('label', { htmlFor: 'uc-teacher-day', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.teacher_lock_day', 'Lock the Time & money problem type')),
+                h('select', { id: 'uc-teacher-day', value: lockedDayMode, onChange: function(e) { setTeacher({ lockDayMode: e.target.value }); }, className: 'mt-1 w-full max-w-full min-h-[2.75rem] rounded border border-slate-500 bg-white px-2 text-sm' },
+                  h('option', { value: '' }, t('stem.unitconvert.teacher_unlocked', 'Not locked (students choose)')),
+                  h('option', { value: 'time' }, t('stem.unitconvert.day_mode_time', 'Hours and minutes')),
+                  h('option', { value: 'elapsed' }, t('stem.unitconvert.day_mode_elapsed', 'Elapsed time')),
+                  h('option', { value: 'money' }, t('stem.unitconvert.day_mode_money', 'Money')))),
+              h('div', { className: 'min-w-0 w-full sm:w-auto' },
+                h('label', { htmlFor: 'uc-teacher-chem', className: 'block text-xs font-bold text-slate-800' }, t('stem.unitconvert.teacher_lock_chem', 'Lock the Chemistry problem type')),
+                h('select', { id: 'uc-teacher-chem', value: lockedChemMode, onChange: function(e) { setTeacher({ lockChemMode: e.target.value }); }, className: 'mt-1 w-full max-w-full min-h-[2.75rem] rounded border border-slate-500 bg-white px-2 text-sm' },
+                  h('option', { value: '' }, t('stem.unitconvert.teacher_unlocked', 'Not locked (students choose)')),
+                  h('option', { value: 'sigfigs' }, t('stem.unitconvert.chem_mode_sigfigs', 'Significant figures')),
+                  h('option', { value: 'sci' }, t('stem.unitconvert.chem_mode_sci', 'Scientific notation')),
+                  h('option', { value: 'mole' }, t('stem.unitconvert.chem_mode_mole', 'Moles')),
+                  h('option', { value: 'density' }, t('stem.unitconvert.chem_mode_density', 'Density chains'))))
+            ),
+            h('h4', { className: 'mt-3 text-xs font-black uppercase tracking-wider text-slate-800' }, t('stem.unitconvert.teacher_mistakes', 'Mistakes seen (this device)')),
+            tallyKeys.length === 0
+              ? h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.teacher_none', 'No mistakes recorded yet.'))
+              : h('table', { className: 'mt-1 w-full text-xs' },
+                  h('caption', { className: 'sr-only' }, t('stem.unitconvert.teacher_mistakes', 'Mistakes seen (this device)')),
+                  h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_mistake', 'Mistake')), h('th', { scope: 'col', className: 'text-right' }, t('stem.unitconvert.teacher_col_times', 'Times')))),
+                  h('tbody', null, tallyKeys.map(function(k) { return h('tr', { key: k }, h('th', { scope: 'row', className: 'text-left font-normal' }, misOf(k).name), h('td', { className: 'text-right font-mono' }, tally[k])); }))),
+            h('h4', { className: 'mt-3 text-xs font-black uppercase tracking-wider text-slate-800' }, t('stem.unitconvert.teacher_missed', 'Problems not solved on the first try')),
+            missed.length === 0
+              ? h('p', { className: 'text-xs text-slate-700' }, t('stem.unitconvert.teacher_missed_none', 'None yet.'))
+              : h('div', { className: 'overflow-x-auto' }, h('table', { className: 'mt-1 w-full text-xs' },
+                  h('caption', { className: 'sr-only' }, t('stem.unitconvert.teacher_missed', 'Problems not solved on the first try')),
+                  h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_problem', 'Problem')),
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_answer', 'Correct')),
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_first', 'First try')),
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_mistake', 'Mistake')),
+                    h('th', { scope: 'col', className: 'text-left' }, t('stem.unitconvert.teacher_col_outcome', 'Outcome')))),
+                  h('tbody', null, missed.map(function(m, i) {
+                    return h('tr', { key: i, className: 'border-t border-slate-200' },
+                      h('td', { className: 'pr-2' }, m.q || ''),
+                      h('td', { className: 'pr-2 font-mono' }, m.aText || (fmtN(m.a) + ' ' + unitShort(m.unit || ''))),
+                      h('td', { className: 'pr-2 font-mono' }, m.answer == null ? '' : typeof m.answer === 'string' ? m.answer : fmtN(m.answer)),
+                      h('td', { className: 'pr-2' }, m.mis ? misOf(m.mis).name : ''),
+                      h('td', null, m.outcome === 'fixed' ? t('stem.unitconvert.teacher_fixed', 'Fixed on 2nd try') : t('stem.unitconvert.teacher_revealed', 'Answer shown')));
+                  })))),
+            h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+              h('button', { type: 'button', onClick: copyTeacherCsv, className: btnBase + 'border border-slate-600 bg-white text-slate-800 hover:bg-slate-100' }, t('stem.unitconvert.teacher_copy', 'Copy summary as CSV')),
+              !d.teacherConfirmClear && h('button', { type: 'button', onClick: function() { upd('teacherConfirmClear', true); }, className: btnBase + 'border border-red-400 bg-white text-red-700 hover:bg-red-50' }, t('stem.unitconvert.teacher_clear', 'Clear summary')),
+              d.teacherConfirmClear && h('span', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': t('stem.unitconvert.teacher_confirm_label', 'Confirm clearing the summary') },
+                h('span', { className: 'text-xs font-bold text-red-800' }, t('stem.unitconvert.teacher_confirm', 'Clear all recorded mistakes?')),
+                h('button', { type: 'button', onClick: function() { upd({ misTally: {}, missed: [], teacherConfirmClear: false }); say(t('stem.unitconvert.teacher_cleared', 'Summary cleared.')); }, className: btnBase + 'bg-red-700 text-white hover:bg-red-800' }, t('stem.unitconvert.teacher_confirm_yes', 'Yes, clear')),
+                h('button', { type: 'button', onClick: function() { upd('teacherConfirmClear', false); }, className: btnBase + 'border border-slate-500 bg-white text-slate-800' }, t('stem.unitconvert.teacher_confirm_no', 'Cancel')))
+            ),
+            d.teacherMsg && h('p', { className: 'mt-2 text-xs text-slate-800' }, d.teacherMsg)
+          );
+        }
+
+        var TAB_META = {
+          convert:     { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '🔄', title: t('stem.unitconvert.convert_the_math_behind_units', 'Convert — the math behind units'), start: t('stem.unitconvert.start_convert', 'Choose a measurement, enter a value, and select the From and To units. The result updates as you edit.'), hint: t('stem.unitconvert.conversion_factor_ratio_equal_to_1_e_g', 'Conversion factor = ratio equal to 1 (e.g., 1 ft = 12 in → 12 in / 1 ft). Multiplying by it changes the unit without changing the value. SI prefixes (kilo, milli) are powers of 10 — just shift the decimal.') },
+          table:       { accent: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '📊', title: t('stem.unitconvert.all_units_reference_table', 'All units — reference table'), start: t('stem.unitconvert.start_table', 'Choose a measurement to compare its units in the reference table.'), hint: t('stem.unitconvert.table_hint_v2', 'Every row is the same amount written in a different unit. Track units through every step: if an answer comes out in m² when you wanted seconds, something went wrong upstream.') },
+          quiz:        { accent: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '🧠', title: t('stem.unitconvert.practice_title', 'Practice — made for your level'), start: t('stem.unitconvert.start_practice_tab', 'Pick a level, predict whether the number grows or shrinks, then solve. Hints come in three steps.'), hint: t('stem.unitconvert.practice_hint', 'Grades 4–5: mixed units in one system (4.MD.1, 5.MD.1). Grades 6–7: rates and unit rates (6.RP.2, 6.RP.3d). Grade 8+: multi-step factor chains, area and volume units, and density.') },
+          wordproblem: { accent: '#b45309', soft: 'rgba(245,158,11,0.10)', icon: '📝', title: t('stem.unitconvert.word_problem_apply_in_context', 'Word problem — apply in context'), start: t('stem.unitconvert.start_wordproblem', 'Choose a word problem, identify the units, then enter and check your answer.'), hint: t('stem.unitconvert.word_problem_hint_v2', 'Real-world unit conversions: read for the starting unit and the unit the question asks for, then set up a factor that cancels the first and leaves the second.') },
+          magHunt:     { accent: '#0f766e', soft: 'rgba(13,148,136,0.10)', icon: '⚙️', title: t('stem.unitconvert.magnitude_orders_of_magnitude_discover', 'Magnitude — orders of magnitude discovery'), start: t('stem.unitconvert.start_maghunt', 'Compare the quantities and use their units to decide which is larger.'), hint: t('stem.unitconvert.every_si_prefix_is_a_power_of_10_slide', 'Every SI prefix is a power of 10. Slide the source and target exponents to feel how far apart scales really are — the core skill behind scientific notation and Fermi estimates.') },
+          chain:       { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '🔗', title: t('stem.unitconvert.chain_title', 'Factor chain — dimensional analysis'), start: t('stem.unitconvert.start_chain', 'Build a chain of fractions equal to 1. Units cancel when the same unit is on the top and the bottom.'), hint: t('stem.unitconvert.chain_hint', 'Chemists and engineers use this method for every multi-step conversion: km/h to m/s, g/cm³ to kg/m³, or m² to cm² (square the factor).') },
+          estimate:    { accent: '#be185d', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: t('stem.unitconvert.estimate_title', 'Estimate — benchmarks and sense of size'), start: t('stem.unitconvert.start_estimate', 'Choose the answer that makes sense without calculating exactly.'), hint: t('stem.unitconvert.estimate_hint', 'Benchmarks: a door is about 2 m, a paper clip about 1 g, a large bottle about 1 L, a teaspoon about 5 mL.') },
+          ladder:      { accent: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '🪜', title: t('stem.unitconvert.ladder_title', 'Prefix ladder — move the decimal point'), start: t('stem.unitconvert.start_ladder', 'Pick a starting amount, then step up or down the ladder and watch the decimal point move.'), hint: t('stem.unitconvert.ladder_hint', 'kilo, hecto, deca, base, deci, centi, milli: each rung is 10 times the one below (5.MD.1, 5.NBT.2). From grade 8, mega and micro are 1,000 times the next rung.') },
+          everyday:    { accent: '#b45309', soft: 'rgba(245,158,11,0.10)', icon: '🕒', title: t('stem.unitconvert.everyday_title', 'Time and money — grades 3 to 5'), start: t('stem.unitconvert.start_everyday', 'Choose a problem type, then solve. Elapsed time comes with a number line.'), hint: t('stem.unitconvert.everyday_hint', 'Elapsed time (3.MD.1) and money (4.MD.2). An hour has 60 minutes, so clock times are not decimals.') },
+          chem:        { accent: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '⚗️', title: t('stem.unitconvert.chem_title', 'Chemistry — significant figures and moles'), start: t('stem.unitconvert.start_chem', 'Choose a problem type. Answers are checked for both the value and, where asked, the significant figures or scientific notation.'), hint: t('stem.unitconvert.chem_hint', 'High-school chemistry: significant figures in conversions, scientific notation, grams to moles to particles, and density chains (HS-PS1-7).') }
+        };
+        var meta = TAB_META[tab] || TAB_META.convert;
+        // Grades 3-5 get plainer subtitles (short sentences, everyday words).
+        var PLAIN_35 = pathBand !== 'b45' ? {} : {
+          convert: { title: t('stem.unitconvert.title35_convert', 'Convert: same amount, new unit'), start: t('stem.unitconvert.start35_convert', 'Type a number and pick two units. Guess the answer first, then check it.'), hint: t('stem.unitconvert.hint35_convert', 'A conversion factor is a fraction equal to 1, like 100 cm over 1 m. Multiplying by it changes the unit but not the amount.') },
+          table: { start: t('stem.unitconvert.start35_table', 'Pick a measurement. Each row shows the same amount in a different unit.') },
+          quiz: { start: t('stem.unitconvert.start35_quiz', 'Will the number get bigger or smaller? Choose, then solve. You can get up to three hints.') },
+          wordproblem: { start: t('stem.unitconvert.start35_wordproblem', 'Pick a story problem. Find the two units, then type your answer and check it.') },
+          estimate: { start: t('stem.unitconvert.start35_estimate', 'Pick the answer that makes sense. You do not need to work it out exactly.') },
+          ladder: { start: t('stem.unitconvert.start35_ladder', 'Pick an amount. Step up or down the ladder and watch the decimal point move.') },
+          everyday: { start: t('stem.unitconvert.start35_everyday', 'Pick a kind of problem. Time problems show a number line to help.') }
+        };
+        if (PLAIN_35[tab]) meta = Object.assign({}, meta, PLAIN_35[tab]);
+        var introHeadColor = 'rgb(' + [16, 8, 0].map(function (sh) { var ch = parseInt(meta.accent.slice(1), 16) >> sh & 255; return Math.round(isDarkUI ? ch * 0.4 + 255 * 0.6 : ch * 0.55); }).join(',') + ')';
+        var tabContent = tab === 'convert' ? renderConvert()
+          : tab === 'table' ? renderTable()
+          : tab === 'quiz' ? renderPractice()
+          : tab === 'wordproblem' ? renderWordProblems()
+          : tab === 'magHunt' ? renderMagHunt()
+          : tab === 'chain' ? renderChain()
+          : tab === 'ladder' ? renderLadder()
+          : tab === 'everyday' ? renderEveryday()
+          : tab === 'chem' ? renderChem()
+          : renderEstimate();
+        var prefixPanel = (
           // ═══ METRIC PREFIXES ═══
           h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
             h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.unitconvert.metric_prefixes_powers_of_10_from_atom', '🔬 Metric Prefixes — Powers of 10 from atoms to galaxies')),
@@ -1817,7 +5547,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(147,197,253,0.6)', color: '#dbeafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
               }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
-                role: 'img', tabIndex: 0, 'aria-label': t('stem.unitconvert.unit_conversion_scale_visualization','Unit conversion scale visualization.'),
+                role: 'img', tabIndex: 0, 'aria-label': t('stem.unitconvert.prefix_scale_desc', 'Metric prefixes from small to large: pico 10⁻¹², nano 10⁻⁹, micro 10⁻⁶, milli 10⁻³, the base unit 10⁰, kilo 10³, mega 10⁶, giga 10⁹ and tera 10¹². Each step is 1,000 times the one before. The highlight moves from one prefix to the next.'),
                 ref: function(cvEl) {
                   if (!cvEl) {
                     try { if (window.__alloMetricPrefixCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
@@ -1828,6 +5558,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   try { if (window.__alloMetricPrefixCleanup && window.__alloMetricPrefixCleanup !== cvEl._mpCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
                   var c2 = cvEl.getContext('2d');
                   if (!c2) return;
+                  // Translated once here: inside drawMp the name t is the clock.
+                  var mpExampleText = t('stem.unitconvert.prefix_example', 'Example: {example}');
+                  var mpFooterText = t('stem.unitconvert.prefix_footer', 'These prefixes step by 1,000. Centi (10⁻²) and deci (10⁻¹) sit in between.');
+                  var mpExamples = { pico: t('stem.unitconvert.prefix_ex_pico', 'pm = bond lengths'), nano: t('stem.unitconvert.prefix_ex_nano', 'nm = wavelengths of light'), micro: t('stem.unitconvert.prefix_ex_micro', 'µm = bacteria'), milli: t('stem.unitconvert.prefix_ex_milli', 'mm = grains of sand'), base: t('stem.unitconvert.prefix_ex_base', 'meter, second, gram, ampere'), kilo: t('stem.unitconvert.prefix_ex_kilo', 'km = walking distance'), mega: t('stem.unitconvert.prefix_ex_mega', 'Mm = continents'), giga: t('stem.unitconvert.prefix_ex_giga', 'Gm = Sun to Earth'), tera: t('stem.unitconvert.prefix_ex_tera', 'Tm = Sun to Jupiter') };
                   var W = cvEl.offsetWidth || 600;
                   var H = cvEl.offsetHeight || 180;
                   cvEl.width = W * 2; cvEl.height = H * 2;
@@ -1931,11 +5665,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       'giga': 'Gm = Sun-Earth',
                       'tera': 'Tm = Jupiter-Sun'
                     };
-                    c2.fillText('Example: ' + (examples[cur.name] || ''), W / 2, H - 24);
+                    c2.fillText(mpExampleText.split('{example}').join(mpExamples[cur.name] || examples[cur.name] || ''), W / 2, H - 24);
                     c2.fillStyle = 'rgba(0,0,0,0.85)';
                     c2.fillRect(8, H - 14, W - 16, 12);
                     c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
-                    c2.fillText('SI metric system — every prefix steps by 1000. Used everywhere except weird corners of US measurement.', W / 2, H - 5);
+                    c2.fillText(mpFooterText, W / 2, H - 5);
                     scheduleMetricPrefixFrame();
                   }
                   drawMp();
@@ -1949,6 +5683,141 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               })
             )
           )
+        );
+
+        // ── RENDER ──
+        return h('div', { className: 'max-w-5xl mx-auto outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1, 'data-unitconvert-root': true, 'data-uc-theme': isDarkUI ? 'dark' : undefined,
+          style: isDarkUI ? { background: '#0f172a', color: '#e2e8f0', colorScheme: 'dark', borderRadius: 12, padding: 10 } : undefined },
+
+          h('style', null, css),
+
+          // Header: one line (back, title, status chips, badges, AI).
+          h('section', { 'data-unitconvert-command': 'true', className: 'mb-3 overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-xl' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 px-3 py-2 sm:px-4' },
+              h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, className: 'shrink-0 min-h-[2.75rem] min-w-[2.75rem] rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+              h('h3', { className: 'text-lg font-black tracking-tight sm:text-xl' }, t('stem.unitconvert.unit_converter', '📏 Unit Converter')),
+              h('ul', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': t('stem.unitconvert.status_chips', 'Current activity, measurement and grade') },
+                [
+                  { id: 'focus', label: t('stem.unitconvert.metric_focus', 'Focus'), value: TAB_LABELS[tab] },
+                  { id: 'category', label: t('stem.unitconvert.metric_category', 'Category'), value: cat.name },
+                  // One grade label everywhere: the same band name as the path.
+                  { id: 'level', label: t('stem.unitconvert.metric_grade', 'Grade'), value: PATH_BAND_NAME[pathBand] || '' }
+                ].map(function(chip) {
+                  return h('li', { key: chip.id, 'data-hero-chip': chip.id, className: 'rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-bold text-white' },
+                    h('span', { className: 'sr-only' }, chip.label + ': '), chip.value);
+                })),
+              earnedCount > 0 && h('button', { type: 'button', 'aria-expanded': !!showBadges, onClick: function() { upd('showBadges', !showBadges); }, className: 'min-h-[2.75rem] rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-amber-100' }, fill(t('stem.unitconvert.badges_button', '🏅 Badges {n}/{total}'), { n: earnedCount, total: BADGES.length })),
+              aiOK && h('button', { type: 'button', onClick: askTutor, 'aria-label': tutorLoading ? t('stem.unitconvert.tutor_thinking', 'AI Tutor thinking') : t('stem.unitconvert.ask_ai_tutor', 'Ask AI Tutor'), 'aria-busy': !!tutorLoading, className: 'min-h-[2.75rem] rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[0.625rem] font-bold text-violet-100' }, t('stem.unitconvert.ai', '🧠 AI'))
+            )
+          ),
+
+          // ── Badge panel ──
+          showBadges && h('section', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3', 'aria-labelledby': 'uc-badges-title' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('h3', { id: 'uc-badges-title', className: 'text-sm font-bold text-amber-800' }, fill(t('stem.unitconvert.badges_heading', '🏅 Badges ({n}/{total})'), { n: earnedCount, total: BADGES.length })),
+              h('button', { type: 'button', 'aria-label': t('stem.unitconvert.close_badges', 'Close badges'), onClick: function() { upd('showBadges', false); }, className: 'min-h-[2.75rem] min-w-[2.75rem] transition-colors text-sm text-slate-700 hover:text-slate-900' }, h('span', { 'aria-hidden': 'true' }, '✕'))
+            ),
+            h('ul', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+              BADGES.map(function(badge) {
+                var earned = !!badges[badge.id];
+                var text = BADGE_TEXT[badge.id] || [badge.id, ''];
+                return h('li', { key: badge.id, className: 'text-center p-2 rounded-lg border ' + (earned ? 'bg-white border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-300') },
+                  h('div', { className: 'text-xl', 'aria-hidden': 'true' }, earned ? badge.icon : '🔒'),
+                  h('div', { className: 'text-[0.6875rem] font-bold mt-0.5 ' + (earned ? 'text-amber-800' : 'text-slate-700') }, text[0]),
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, text[1]),
+                  h('span', { className: 'sr-only' }, earned ? t('stem.unitconvert.badge_earned', 'Earned') : t('stem.unitconvert.badge_locked', 'Not earned yet'))
+                );
+              })
+            )
+          ),
+
+          // ── AI Tutor panel ──
+          showTutor && aiOK && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.unitconvert.ai_unit_tutor', '🧠 AI Unit Tutor')),
+              h('button', { type: 'button', 'aria-label': t('stem.unitconvert.close_tutor', 'Close AI Tutor'), onClick: function() { upd('showTutor', false); }, className: 'min-h-[2.75rem] min-w-[2.75rem] transition-colors text-sm text-slate-700 hover:text-slate-900' }, h('span', { 'aria-hidden': 'true' }, '✕'))
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite' },
+              tutorLoading
+                ? h('div', { className: 'flex items-center gap-2' },
+                    h('div', { className: 'w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full motion-reduce:animate-none animate-spin', 'aria-hidden': 'true' }),
+                    h('span', { className: 'text-xs text-purple-700' }, t('stem.unitconvert.thinking', 'Thinking...')))
+                : h('p', { className: 'text-sm text-purple-800 whitespace-pre-wrap leading-relaxed' }, tutorResponse)),
+            !tutorLoading && h('button', { type: 'button', 'aria-label': t('stem.unitconvert.ask_again', 'Ask Again'),
+              onClick: askTutor,
+              className: 'mt-2 min-h-[2.75rem] text-[0.6875rem] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all active:scale-[0.97]'
+            }, t('stem.unitconvert.ask_again_2', '🔄 Ask Again'))
+          ),
+
+          renderTeacherPanel(),
+
+          // Tool tabs
+          renderStartHere(),
+
+          h('div', { className: 'gap-1 mb-3 border-b border-slate-200', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 110px), 1fr))' }, role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections'), 'data-tab-order': visibleTabOrder.join(' ') },
+            visibleTabOrder.map(function(id) { return [id, TAB_LABELS[id]]; }).map(function(item, idx) {
+              var inPath = pathTabs.indexOf(item[0]) !== -1;
+              var shortcut = (UNIT_CONVERT_TAB_ORDER.indexOf(item[0]) + 1) % 10;
+              return h('button', { key: item[0],
+                type: 'button',
+                id: 'stem-unitconvert-tab-' + item[0],
+                style: { color: ctx.isContrast ? '#00ff00' : undefined, minHeight: 44, minWidth: 0, whiteSpace: 'normal', boxShadow: inPath && tab !== item[0] ? 'inset 0 3px 0 ' + (isContrast ? '#ffff00' : isDarkUI ? '#22d3ee' : '#0e7490') : undefined },
+                onClick: function() { upd('tab', item[0]); },
+                role: 'tab', 'aria-selected': tab === item[0],
+                'aria-controls': 'stem-unitconvert-panel-' + item[0],
+                'aria-describedby': inPath ? 'uc-path-tab-note' : undefined,
+                'data-in-path': inPath ? 'true' : undefined,
+                tabIndex: tab === item[0] ? 0 : -1,
+                onKeyDown: function(e) { unitConvertTabKeyDown(e, idx); },
+                className: 'px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : ('transition-colors text-slate-600 hover:text-slate-700' + onHostInk)),
+                title: fill(t('stem.unitconvert.tab_key_hint', 'Shortcut: {n} (while the tab strip has focus)'), { n: shortcut })
+              }, item[1]);
+            })
+          ),
+          h('span', { id: 'uc-path-tab-note', className: 'sr-only' }, t('stem.unitconvert.path_tab_note', 'Part of your Start here path.')),
+
+          // The tab panel wraps the hero band AND the activity itself. On
+          // Convert the panel's first child is the value box, so the panel
+          // itself is not an extra tab stop, and the intro sits closed below.
+          h('div', { role: 'tabpanel', id: 'stem-unitconvert-panel-' + tab, 'aria-labelledby': 'stem-unitconvert-tab-' + tab, tabIndex: tab === 'convert' ? -1 : 0, className: 'outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-xl' },
+            tab !== 'convert' && h('div', {
+              'data-unitconvert-hero': tab,
+              style: {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: introHeadColor, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { className: 'mt-2 text-sm leading-relaxed' + onHostInk }, meta.start),
+                h('details', { className: 'math-learning-note' },
+                  h('summary', null, t('stem.unitconvert.about_model', 'About this activity')),
+                  h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : isDarkUI ? '#cbd5e1' : '#334155', fontSize: 12, lineHeight: 1.45 } }, meta.hint))
+              )
+            ),
+            (tab === 'table' || tab === 'wordproblem') && h('div', { className: 'mb-3' }, renderCategoryPicker()),
+            tabContent,
+            tab === 'convert' && h('details', { 'data-unitconvert-hero': tab, 'data-intro-closed': 'true', className: 'mt-3 math-learning-note',
+              style: { padding: '4px 14px', borderRadius: 12, background: isContrast ? '#000000' : isDarkUI ? '#172033' : '#ffffff', border: '1px solid ' + meta.accent + '55', borderLeft: '4px solid ' + meta.accent } },
+              h('summary', { className: 'cursor-pointer text-sm font-bold', style: { minHeight: 44, paddingTop: 12, color: isContrast ? '#ffffff' : introHeadColor } },
+                fill(t('stem.unitconvert.about_activity_named', 'About this activity: {title}'), { title: meta.title })),
+              h('p', { className: 'mt-1 text-sm leading-relaxed' + onHostInk }, meta.start),
+              h('p', { style: { margin: '6px 0 8px', color: isContrast ? '#ffffff' : isDarkUI ? '#cbd5e1' : '#334155', fontSize: 12, lineHeight: 1.45 } }, meta.hint))
+          ),
+
+          // ── Keyboard shortcuts legend ──
+          h('p', { className: 'text-[0.6875rem] text-center mt-3 rounded-lg p-2', style: isDarkUI ? { color: '#cbd5e1', background: '#172033' } : { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
+            t('stem.unitconvert.nav_shortcuts_v3', 'Keys: arrow keys move between activity tabs; 1–9 and 0 jump to an activity while the tab strip has focus.')),
+
+          // The pico-to-tera scale is for grade 6 and up.
+          // While a result is hidden on Convert it waits: kilo 10³ is km to m.
+          pathBand !== 'b45' && !(tab === 'convert' && hideConversionResult) && prefixPanel
 
         );
       })();
@@ -1957,3 +5826,4 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
   console.log('[StemLab] stem_tool_unitconvert.js loaded');
 })();
+

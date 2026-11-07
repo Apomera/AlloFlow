@@ -142,6 +142,30 @@ describe('dive navigation', () => {
     expect(ctl.swimTo).toHaveBeenLastCalledWith('fish-1');
   });
 
+  it('moves keyboard focus on when an automatic swim ends by itself while Stop swimming has it', async () => {
+    const t = await mountTool(), ctl = await start(t), nav = navigation(t), stop = button(nav, 'Stop swimming');
+    await emit(ctl, { focused: nearby()[0], navigation: { uid: 'fish-1' } });
+    await act(async () => stop.focus());
+    expect(document.activeElement).toBe(stop);
+    await emit(ctl, { navigation: null });
+    expect(stop.disabled).toBe(true);
+    await act(async () => { await new Promise((r) => setTimeout(r, 120)); });
+    expect(document.activeElement, 'focus is on a working navigator button').not.toBe(stop);
+    expect(document.activeElement.closest('[data-dive-navigation]')).toBeTruthy();
+    expect(document.activeElement.disabled).toBe(false);
+  });
+
+  it('leaves focus alone when a swim ends while the student is somewhere else', async () => {
+    const t = await mountTool(), ctl = await start(t);
+    await emit(ctl, { focused: nearby()[0], navigation: { uid: 'fish-1' } });
+    const other = document.createElement('button'); document.body.appendChild(other);
+    await act(async () => other.focus());
+    await emit(ctl, { navigation: null });
+    await act(async () => { await new Promise((r) => setTimeout(r, 120)); });
+    expect(document.activeElement).toBe(other);
+    other.remove();
+  });
+
   it.each([false, true])('stops an automatic swim while paused=%s without clearing selection or changing pause', async paused => {
     const t = await mountTool(), ctl = await start(t), nav = navigation(t);
     const status = nav.querySelector('[role="status"]'), stop = button(nav, 'Stop swimming');

@@ -54,7 +54,7 @@ describe('Galaxy keyboard accessibility', () => {
 
   it.each([true, false])('restores the Crab model and preserves meaningful focus when the recovery button was focused: %s', async focused => {
     const canvas = await mount();
-    await act(() => { canvas._galaxyFocusNebula('stem.galaxy.crab_nebula'); canvas._galaxyInspectSelection(); }); await step();
+    await act(() => { canvas._galaxyFocusNebula('Crab Nebula'); canvas._galaxyInspectSelection(); }); await step();
     await act(() => { canvas._galaxySetCrabComponent('filaments', false); canvas._galaxySetCrabComponent('wind', false); }); await step();
     host.querySelector('[data-galaxy-object-context]').open = true;
     const recovery = host.querySelector('[data-galaxy-crab-show-both]');

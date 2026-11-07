@@ -112,7 +112,8 @@ function mountWorldBuilder({ prompt, dialogAvailable = true, imageEdit } = {}) {
       updateMulti,
       addToast,
       announceToSR,
-      callGemini: null,
+      // A usable text provider: without one a student sees the "needs AI" state (student AI-off sweep).
+      callGemini: () => new Promise(() => {}),
       callTTS: null,
       callImagen: null,
       callGeminiVision: null,

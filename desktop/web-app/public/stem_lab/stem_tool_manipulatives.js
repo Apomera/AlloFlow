@@ -62,6 +62,14 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-manipulatives-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-manipulatives-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-manipulatives-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"base10\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"base10\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"base10\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"base10\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -647,7 +655,12 @@ window.StemLab = window.StemLab || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
-      var callGemini = ctx.callGemini || window.callGemini;
+      // Student AI-off: no window.callGemini alias; null unless text AI is usable, so the Tutor button hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
 
       // ── State ──
       var ld = ctx.toolData || {};
@@ -2035,7 +2048,7 @@ window.StemLab = window.StemLab || {
                 upd({ tfChallenge: { type: t, target: n, q: 'Fill the ten frame so it shows ' + n + '.' }, tfFeedback: null, tenFrameFilled: 0 });
               } else if (t === 'makeTen') {
                 var have = 1 + Math.floor(Math.random() * 9);
-                upd({ tfChallenge: { type: t, target: 10 - have, prefill: have, q: 'There are already ' + have + ' dots. Add the right number more to make 10.' }, tfFeedback: null, tenFrameFilled: have });
+                upd({ tfChallenge: { type: t, target: 10 - have, prefill: have, q: (have === 1 ? 'There is already 1 dot.' : 'There are already ' + have + ' dots.') + ' Add the right number more to make 10.' }, tfFeedback: null, tenFrameFilled: have });
               } else {
                 // Add-to-make (with double frame)
                 var goal = 11 + Math.floor(Math.random() * 9);
@@ -4351,7 +4364,7 @@ window.StemLab = window.StemLab || {
           { id: 'tf_makeTen', cat: 'Ten Frames',
             gen: function() {
               var have = 1 + Math.floor(Math.random() * 9);
-              return { q: 'A ten frame shows ' + have + ' dots. How many MORE to make 10?', a: 10 - have };
+              return { q: 'A ten frame shows ' + have + (have === 1 ? ' dot' : ' dots') + '. How many MORE to make 10?', a: 10 - have };
             }, mode: 'tenFrame', goal: 'tenFrame' },
           { id: 'tf_subitize', cat: 'Ten Frames',
             gen: function() {

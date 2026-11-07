@@ -1495,6 +1495,13 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
   id: `evt-${i}`,
   colorIdx: Math.floor(Math.random() * TIMELINE_PASTEL_COLORS.length)
 }));
+const gamesTextAiOff = () => {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !window.__alloAiUsable("text");
+  } catch (_) {
+  }
+  return typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+};
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
   const reducedMotion = useReducedMotion();
@@ -1691,7 +1698,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       if (playSound) playSound("incorrect");
     }
   };
-  const studentAiOff = typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+  const studentAiOff = gamesTextAiOff();
   const handleExplainClick = async (item) => {
     if (!onExplainIncorrect || studentAiOff) return;
     const key = item.originalIndex;
@@ -2181,7 +2188,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       }
     }
   };
-  const studentAiOff = typeof window !== "undefined" && window.__alloStudentAiDisabled === true;
+  const studentAiOff = gamesTextAiOff();
   const handleExplainClick = async (item) => {
     if (!onExplainIncorrect || studentAiOff) return;
     if (explanations[item.id] && explanations[item.id] !== "loading") {

@@ -229,6 +229,8 @@ uses an open range.
 | [lz-string](https://github.com/pieroxy/lz-string) | compressing saved work | MIT | Copyright (c) 2013 pieroxy |
 | [idb-keyval](https://github.com/jakearchibald/idb-keyval) | offline browser storage | Apache-2.0 | Copyright (c) Jake Archibald |
 | [jsdiff](https://github.com/kpdecker/jsdiff) | comparing text revisions | BSD-3-Clause | Copyright (c) 2009-2015 Kevin Decker |
+| [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) | syllable counts and stress for Word Sounds and syllable checking | BSD-2-Clause | Copyright (C) 1993-2015 Carnegie Mellon University |
+| [Moby Hyphenator (Grady Ward)](https://www.gutenberg.org/ebooks/3204) | English syllable divisions | Public domain | Public domain by grant of the author, January 2001 |
 | [jsonrepair](https://github.com/josdejong/jsonrepair) | repairing AI-generated JSON | ISC | Copyright (c) 2020-present Jos de Jong |
 | [lamejs](https://github.com/zhuker/lamejs) | MP3 audio encoding | LGPL-3.0 | Copyright (c) 2013 Zhuker; based on LAME © the LAME developers |
 | [DragDropTouch](https://github.com/Bernardo-Castilho/dragdroptouch) | touch drag-and-drop on tablets | MIT | Copyright (c) 2016-present Bernardo Castilho |

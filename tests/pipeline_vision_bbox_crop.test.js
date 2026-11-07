@@ -39,7 +39,10 @@ describe('_alloImageBbox', () => {
     expect(bbox({ bbox: [0.1, 0.5, 0.135, 0.9] })).toBeNull(); // 3.5% wide
     expect(bbox({ bbox: [0.1, 0.5, 0.9, 0.515] })).toBeNull(); // 1.5% tall
     expect(bbox({ bbox: [0.385, 0.471, 0.623, 0.496] })).not.toBeNull(); // newsletter calendar key, 2.5% tall
-    expect(bbox({ bbox: [0.1, 0.5, 0.16, 0.56] })).toBeNull(); // 0.36% of the page
+    // (2026-11-03) a logo-sized box is a real image: budget's Maine DOE logo (0.4%) shipped as an upload placeholder
+    expect(bbox({ bbox: [0.347, 0.777, 0.444, 0.818] })).not.toBeNull();
+    expect(bbox({ bbox: [0.1, 0.5, 0.16, 0.56] })).not.toBeNull(); // 0.36% of the page
+    expect(bbox({ bbox: [0.1, 0.5, 0.14, 0.54] })).toBeNull(); // 0.16% of the page
     expect(bbox({ bbox: [0.01, 0.01, 0.99, 0.99] })).toBeNull(); // 96% of the page
     expect(bbox({ bbox: [0.1, 0.2, 0.9] })).toBeNull();
     expect(bbox({ bbox: [0.1, 'wide', 0.9, 0.7] })).toBeNull();

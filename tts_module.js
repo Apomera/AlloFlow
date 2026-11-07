@@ -43,7 +43,42 @@ const createTTS = deps => {
   // the actual transport too, including after a queued request resumes.
   // Match the existing policy's absent/null behavior; never use a browser
   // preference as district approval. Local/device speech remains available.
+  // Student AI off (owner decision 2026-11-04): learners get no cloud voice.
+  // Prepared clips play first in each surface. An on-device engine (Kokoro,
+  // Piper) that is ALREADY on this device may still read, since nothing
+  // leaves the device; it is never downloaded for the learner. Otherwise
+  // callers receive the existing "no URL" result and read aloud with the
+  // device voice (speechSynthesis). Teachers never carry this flag.
+  const _studentCloudTtsOff = () => {
+    try {
+      return typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
+    } catch (_) {
+      return false;
+    }
+  };
+  const _studentDeviceVoiceRoute = (fn, voiceName, text) => {
+    _ttsTrace(fn + ':student-device-voice', {
+      chars: String(text || '').length
+    });
+    try {
+      window.__ttsLastRoute = {
+        at: Date.now(),
+        fn: fn,
+        voice: String(voiceName || ''),
+        route: 'student-device-voice',
+        detail: 'studentAiDisabled'
+      };
+    } catch (_) {}
+    return null;
+  };
   const _assertCloudTtsAllowed = () => {
+    if (_studentCloudTtsOff()) {
+      const studentError = new Error('Student AI is off. Read aloud with the device voice.');
+      studentError.code = 'BROWSER_TTS_REQUIRED';
+      studentError.useBrowserTts = true;
+      studentError.studentAiOff = true;
+      throw studentError;
+    }
     if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return;
     const error = new Error('Cloud speech is not approved by the managed AI deployment. Use a local or device voice.');
     error.code = 'managed-ai-blocked';
@@ -833,6 +868,11 @@ const createTTS = deps => {
       return false;
     }
   };
+  // Lets a tool start the 20-45 s wake before its first sentence needs it.
+  // Only an on-device model is woken: this path never starts a download.
+  if (typeof window !== 'undefined') {
+    window.__alloWarmOnDeviceKokoro = async () => (await kokoroModelOnDevice()) ? ensureKokoroTts() : null;
+  }
   const ensureKokoroTts = async (timeoutMs, signal) => {
     try {
       const throwIfCancelled = () => {
@@ -929,6 +969,65 @@ const createTTS = deps => {
   // These backends already use the local/OpenAI-compatible speech ladder
   // in AIProvider. Keep reader and bot Auto routing consistent with it.
   const _usesLocalTtsBackend = config => ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'openai', 'claude', 'custom'].includes(config?.backend);
+
+  // Student AI off: read with an on-device engine only when it is already
+  // here. English uses Kokoro when the learner picked a Kokoro voice and the
+  // model is loaded or saved on this device (waking a saved model is not a
+  // download). Other languages use Piper only when that language's model is
+  // already loaded. Anything else returns null: the device voice reads.
+  const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming) => {
+    const voice = String(voiceName || '').trim();
+    const provider = String((getAiUserConfig() || {}).ttsProvider || 'auto');
+    if (!voice || voice.toLowerCase() === 'browser' || provider === 'off' || provider === 'browser') return null;
+    const note = route => {
+      _ttsTrace(fn + ':' + route, {
+        chars: String(text || '').length
+      });
+      try {
+        window.__ttsLastRoute = {
+          at: Date.now(),
+          fn: fn,
+          voice: voice,
+          route: route,
+          detail: 'studentAiDisabled'
+        };
+      } catch (_) {}
+    };
+    try {
+      const profile = _normalizeTtsSpeechProfile(languageValue || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
+      const lang = String(languageToTTSCode(profile.baseLanguage) || 'en').split('-')[0].toLowerCase();
+      const localText = cleanTextForLocalTTS(text);
+      if (!localText.trim()) return null;
+      if (lang === 'en') {
+        if (!KOKORO_VOICE_PREFIX.test(voice)) return null;
+        if (!(window._kokoroTTS && window._kokoroTTS.ready)) {
+          if (typeof window.__loadKokoroTTS !== 'function' || !(await kokoroModelOnDevice())) return null;
+          await ensureKokoroTts(undefined, signal);
+        }
+        const kokoro = window._kokoroTTS;
+        if (!kokoro || !kokoro.ready) return null;
+        const speakFn = streaming && typeof kokoro.speakStreaming === 'function' ? kokoro.speakStreaming : kokoro.speak;
+        const url = await speakFn.call(kokoro, localText, voice, speed, {
+          signal
+        });
+        if (url) note('student-on-device-kokoro');
+        return url || null;
+      }
+      const piper = window._piperTTS;
+      if (!piper || typeof piper.isLanguageReady !== 'function' || !piper.isLanguageReady(lang)) return null;
+      const url = await piper.speak(localText, lang, speed, {
+        signal
+      });
+      if (url) note('student-on-device-piper');
+      return url || null;
+    } catch (error) {
+      if (error && error.name === 'AbortError') throw error;
+      _ttsTrace(fn + ':student-on-device-failed', {
+        error: _ttsDiagnosticCode(error)
+      });
+      return null;
+    }
+  };
   const callTTS = async (text, voiceName, speed = 1, maxRetriesOrOpts = 2, languageArg) => {
     if (isGlobalMuted()) {
       _ttsTrace('calltts:muted', {
@@ -940,6 +1039,12 @@ const createTTS = deps => {
       console.warn('[TTS] Skipped: empty text (a caller passed a missing field)');
       _ttsTrace('calltts:empty-text', null);
       return null;
+    }
+    if (_studentCloudTtsOff()) {
+      const studentOpts = maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object' ? maxRetriesOrOpts : {};
+      const studentVoice = _resolveRequestedVoice(voiceName);
+      const onDeviceUrl = await _studentOnDeviceVoice('calltts', text, studentVoice, speed, languageArg || studentOpts.language, studentOpts.signal || null, false);
+      return onDeviceUrl || _studentDeviceVoiceRoute('calltts', studentVoice, text);
     }
     const _geminiModel = GEMINI_MODELS?.tts;
     var _requestedVoice = String(voiceName || '');
@@ -1793,6 +1898,12 @@ const createTTS = deps => {
     if (text == null || !String(text).trim()) {
       console.warn('[TTS] Skipped: empty text');
       return null;
+    }
+    if (_studentCloudTtsOff()) {
+      const studentOpts = maxRetries && typeof maxRetries === 'object' ? maxRetries : {};
+      const studentVoice = _resolveRequestedVoice(voiceName);
+      const onDeviceUrl = await _studentOnDeviceVoice('callttsdirect', text, studentVoice, speed, studentOpts.language, studentOpts.signal || null, true);
+      return onDeviceUrl || _studentDeviceVoiceRoute('callttsdirect', studentVoice, text);
     }
     var _directOpts = maxRetries && typeof maxRetries === 'object' ? maxRetries : {};
     maxRetries = typeof maxRetries === 'number' ? maxRetries : typeof _directOpts.maxRetries === 'number' ? _directOpts.maxRetries : 2;

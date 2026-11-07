@@ -32,7 +32,7 @@ test.describe('Raptor mission results',()=>{
 
   test('keeps results and next-flight actions usable in compact flight views',async({page})=>{
     for(let i=0;i<12;i++){
-      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
+      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);const n=w.huntScene.getObjectByName('raptor-nest');if(n){const s=c._rhSnapshot();n.position.set(s.raptorPosition.x+2,s.raptorPosition.y-(s.nest.y-n.position.y),s.raptorPosition.z);w.stepHunt(25);}if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
     }
     const dialog=page.getByRole('dialog',{name:'Mission complete',exact:true});await expect(dialog).toBeVisible();await expect(page.locator('.rh-flight-pause')).toBeHidden();
     for(const width of [880,420,320]){

@@ -44,20 +44,19 @@ function useAiTextAvailable() {
 function createPathFork() {
   const SKIP_KEY = 'allo_path_fork_skip';
   let settled = false;
-  const say = (t, key, fallback) => {
-    let value;
-    try { value = typeof t === 'function' ? t(key) : ''; } catch (_) {}
-    return typeof value === 'string' && value && value !== key ? value : fallback;
-  };
-  const toast = (t, key, fallback) => {
-    try { if (typeof window.__alloAddToast === 'function') window.__alloAddToast(say(t, key, fallback), 'info'); } catch (_) {}
+  // Keys stay literal t('…') calls so the i18n scanner sees them; a missing or echoed key falls back to English.
+  const say = (value, fallback) => (typeof value === 'string' && value && !/^[\w-]+(\.[\w-]+)+$/.test(value) ? value : fallback);
+  const noText = () => '';
+  const toast = (value, fallback) => {
+    try { if (typeof window.__alloAddToast === 'function') window.__alloAddToast(say(value, fallback), 'info'); } catch (_) {}
   };
   const quickStart = () => (typeof window !== 'undefined' && typeof window.__alloOpenQuickStart === 'function' ? window.__alloOpenQuickStart : null);
   const takeGuidedPath = (t) => {
+    if (typeof t !== 'function') t = noText;
     const open = quickStart();
     if (!open) return;
     try { open(); } catch (_) {}
-    toast(t, 'sidebar.path_fork_toast_guided', 'Back on the guided path. There and back again.');
+    toast(t('sidebar.path_fork_toast_guided'), 'Back on the guided path. There and back again.');
   };
   const wanted = () => {
     if (settled || !quickStart()) return false;
@@ -65,6 +64,7 @@ function createPathFork() {
   };
 
   function Dialog({ t, onGuided, onLessTraveled, onCancel }) {
+    if (typeof t !== 'function') t = noText;
     const [remember, setRemember] = React.useState(false);
     const boxRef = React.useRef(null);
     const restoreFocus = React.useRef(true);
@@ -94,40 +94,43 @@ function createPathFork() {
         onKeyDown={onKeyDown} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
         <div ref={boxRef} role="dialog" aria-modal="true" aria-labelledby={id + '-title'} aria-describedby={id + '-body'}
           className="w-full max-w-md rounded-2xl border border-slate-300 bg-white p-5 text-slate-900 shadow-xl">
-          <h2 id={id + '-title'} className="m-0 text-lg font-bold">{say(t, 'sidebar.path_fork_title', 'Two roads diverged in a wood')}</h2>
-          <p className="m-0 mt-0.5 text-xs italic text-slate-700">{say(t, 'sidebar.path_fork_attribution', 'Robert Frost, “The Road Not Taken”')}</p>
+          <h2 id={id + '-title'} className="m-0 text-lg font-bold">{say(t('sidebar.path_fork_title'), 'Two roads diverged in a wood')}</h2>
+          <p className="m-0 mt-0.5 text-xs italic text-slate-700">{say(t('sidebar.path_fork_attribution'), 'Robert Frost, “The Road Not Taken”')}</p>
           <p id={id + '-body'} className="mb-4 mt-3 text-sm leading-relaxed">
-            {say(t, 'sidebar.path_fork_body', 'Most lessons start from a passage, and Guided Quick Start walks you through it. You can also start from a topic, a word list, or a blank page. Those starts are experimental, so check the facts before you share.')}
+            {say(t('sidebar.path_fork_body'), 'Most lessons start from a passage, and Guided Quick Start walks you through it. You can also start from a topic, a word list, or a blank page. Those starts are experimental, so check the facts before you share.')}
           </p>
           <div className="space-y-2">
             <button type="button" data-path-fork-guided onClick={() => { restoreFocus.current = false; onGuided(remember); }}
               className={action + ' border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'}>
-              {say(t, 'sidebar.path_fork_guided', 'Take the guided path (recommended)')}
+              {say(t('sidebar.path_fork_guided'), 'Take the guided path (recommended)')}
             </button>
             <button type="button" data-path-fork-less-traveled onClick={() => onLessTraveled(remember)}
               className={action + ' border-slate-400 bg-white text-slate-900 hover:bg-slate-100'}>
-              {say(t, 'sidebar.path_fork_less_traveled', 'Take the one less traveled by')}
+              {say(t('sidebar.path_fork_less_traveled'), 'Take the one less traveled by')}
             </button>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
             <label className="flex min-h-11 items-center gap-2 text-sm">
               <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="h-5 w-5" />
-              {say(t, 'sidebar.path_fork_remember', 'Don’t ask me again')}
+              {say(t('sidebar.path_fork_remember'), 'Don’t ask me again')}
             </label>
             <button type="button" onClick={onCancel}
               className="min-h-11 rounded-lg px-3 text-sm font-semibold text-slate-800 underline underline-offset-2 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
-              {say(t, 'sidebar.path_fork_not_now', 'Not now')}
+              {say(t('sidebar.path_fork_not_now'), 'Not now')}
             </button>
           </div>
         </div>
       </div>
     );
-    return window.ReactDOM && window.ReactDOM.createPortal ? window.ReactDOM.createPortal(dialog, document.body) : dialog;
+    // Inside the app's theme wrapper, or dark and high-contrast themes never reach the dialog.
+    const host = document.querySelector('.theme-dark, .theme-contrast, .theme-light') || document.body;
+    return window.ReactDOM && window.ReactDOM.createPortal ? window.ReactDOM.createPortal(dialog, host) : dialog;
   }
 
   // request(next) runs next() at once, or after "Take the one less traveled by".
   // Cancelling runs nothing and asks again next time.
   function useFork(t) {
+    if (typeof t !== 'function') t = noText;
     const [pending, setPending] = React.useState(null);
     const settle = (remember) => {
       settled = true;
@@ -142,21 +145,22 @@ function createPathFork() {
           const next = pending;
           settle(remember);
           next();
-          toast(t, 'sidebar.path_fork_toast_less_traveled', 'Experimental start is on. Not all those who wander are lost.');
+          toast(t('sidebar.path_fork_toast_less_traveled'), 'Experimental start is on. Not all those who wander are lost.');
         }} />
     ) : null;
     return [request, dialog];
   }
 
   function Note({ t, onBack }) {
+    if (typeof t !== 'function') t = noText;
     const canGoBack = !!quickStart();
     return (
       <p data-path-less-traveled className="m-0 text-xs text-slate-700">
-        <span className="font-semibold">{say(t, 'sidebar.path_fork_badge', 'The path less traveled · experimental')}</span>
+        <span className="font-semibold">{say(t('sidebar.path_fork_badge'), 'The path less traveled · experimental')}</span>
         {canGoBack && <>{' · '}
           <button type="button" data-path-fork-back onClick={() => { if (onBack) onBack(); takeGuidedPath(t); }}
             className="min-h-[24px] font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
-            {say(t, 'sidebar.path_fork_back', 'Back to the guided path')}
+            {say(t('sidebar.path_fork_back'), 'Back to the guided path')}
           </button>
         </>}
       </p>
@@ -167,11 +171,31 @@ function createPathFork() {
 }
 const PathFork = createPathFork();
 
+// A tool's "Other ways to start" can open the Source panel chooser on one start. The request
+// waits here if the chooser has not mounted yet (the Source panel was collapsed).
+const sourceStartRequests = (() => {
+  let pending = null;
+  const listeners = new Set();
+  return {
+    request(mode, options = {}) {
+      if (!['topic', 'word-list', 'blank'].includes(mode)) return false;
+      const topic = typeof options.topic === 'string' ? options.topic.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
+      pending = { mode, topic };
+      listeners.forEach((listener) => listener());
+      return true;
+    },
+    take() { const next = pending; pending = null; return next; },
+    subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+  };
+})();
+// The host's topic note ("Pick key words for this topic") opens this chooser through here.
+if (typeof window !== 'undefined') window.__alloRequestSourceStart = (mode, options) => sourceStartRequests.request(mode, options || {});
+
 // "Other ways to start": one collapsed line that lists only what this tool supports,
 // an experimental topic start (needs AI) and a blank resource the teacher fills in.
 // With no AI connected, Generate cannot run, so the blank start is shown directly.
 // framed: a tinted strip for use outside the Source Needed notice.
-function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
+function OtherWaysToStart({ t, onStartFromTopic, onStartFromWordList, onStartBlank, busy, framed }) {
   const aiTextAvailable = useAiTextAvailable();
   const [open, setOpen] = React.useState(false);
   const [topicOpen, setTopicOpen] = React.useState(false);
@@ -179,8 +203,9 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
   const topicId = 'start-topic-' + (React.useId ? React.useId().replace(/[^\w-]/g, '') : 'field');
   const [requestFork, forkDialog] = PathFork.useFork(t);
   const canTopic = typeof onStartFromTopic === 'function' && aiTextAvailable;
+  const canWords = typeof onStartFromWordList === 'function' && aiTextAvailable;
   const canBlank = typeof onStartBlank === 'function';
-  if (!canTopic && !canBlank) return null;
+  if (!canTopic && !canWords && !canBlank) return null;
   const action = 'min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1';
   const link = 'min-h-[24px] text-xs font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500';
   const blankButton = canBlank ? (
@@ -217,6 +242,11 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
               </button>
             </form>
           ))}
+          {canWords && (
+            <button type="button" data-help-key="sidebar_start_word_list" disabled={!!busy} onClick={() => onStartFromWordList()} className={link + ' block disabled:cursor-not-allowed disabled:opacity-60'}>
+              {t('sidebar.start_word_list') || 'From a word list (experimental)'}
+            </button>
+          )}
           {blankButton}
         </div>
       )}
@@ -229,14 +259,51 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
   );
 }
 
-function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
+// AI word ideas ({"terms": [...]}, an array, or one per line) become new, short entries
+// appended to the teacher's list; existing entries are never reordered or replaced.
+function mergeSuggestedTerms(existing, raw, limit) {
+  const text = String(raw == null ? '' : raw).trim();
+  let list;
+  try {
+    const start = text.search(/[[{]/);
+    const parsed = JSON.parse(start >= 0 ? text.slice(start, Math.max(text.lastIndexOf(']'), text.lastIndexOf('}')) + 1) : text);
+    list = Array.isArray(parsed) ? parsed : Array.isArray(parsed && parsed.terms) ? parsed.terms : [];
+  } catch (_) { list = text.split(/\r?\n/).filter(line => !/[{}[\]"]/.test(line)); }
+  const seen = new Set(existing.map(term => term.toLowerCase()));
+  const out = [];
+  for (const item of list) {
+    const term = String(typeof item === 'string' ? item : (item && (item.term || item.word)) || '')
+      .replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').replace(/\s+/g, ' ').trim();
+    if (!term || term.length > 160 || seen.has(term.toLowerCase())) continue;
+    seen.add(term.toLowerCase());
+    out.push(term);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = '' }) {
   const aiAvailable = useAiTextAvailable();
+  const [suggesting, setSuggesting] = React.useState(false);
+  const [suggestNote, setSuggestNote] = React.useState('');
+  const wordsRef = React.useRef(null);
+  const suggestRef = React.useRef(null);
+  const focusAfterSuggest = React.useRef(null);
+  const [suggestDone, setSuggestDone] = React.useState(0);
+  // After a suggestion the fields are enabled again: focus the list (words added) or the button (none).
+  React.useEffect(() => {
+    if (!suggestDone || !focusAfterSuggest.current) return;
+    const target = focusAfterSuggest.current.current;
+    focusAfterSuggest.current = null;
+    if (target) target.focus();
+  }, [suggestDone]);
   const [mode, setMode] = React.useState('');
   const [topic, setTopic] = React.useState('');
   const [topicType, setTopicType] = React.useState('anchor-chart');
   const [wordList, setWordList] = React.useState('');
   const [termLanguage, setTermLanguage] = React.useState('English');
   const [blankType, setBlankType] = React.useState('quiz');
+  const [wordType, setWordType] = React.useState('glossary');
   const [submitting, setSubmitting] = React.useState(false);
   const [requestError, setRequestError] = React.useState('');
   const pending = React.useRef(false);
@@ -244,28 +311,58 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const uid = React.useId();
   const [requestFork, forkDialog] = PathFork.useFork(t);
   const id = 'source-start-' + uid.replace(/[^\w-]/g, '');
-  const say = (key, fallback, values = {}) => {
-    const fullKey = 'source_start.' + key;
-    let value;
-    try { value = typeof t === 'function' ? t(fullKey, values) : ''; } catch (_) {}
-    const text = typeof value === 'string' && value && value !== fullKey ? value : fallback;
+  if (typeof t !== 'function') t = () => '';
+  // Literal t('source_start.…') calls keep every key visible to the i18n scanner.
+  const say = (value, fallback, values = {}) => {
+    const text = typeof value === 'string' && value && !/^[\w-]+(\.[\w-]+)+$/.test(value) ? value : fallback;
     return text.replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
   };
   React.useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
+  // Choosing a start moves focus to its first field (after the fork dialog returns focus).
+  const panelRef = React.useRef(null);
+  const focusField = React.useRef(false);
+  const [requestCount, setRequestCount] = React.useState(0);
+  React.useEffect(() => {
+    if (!mode || !focusField.current) return;
+    const target = focusField.current;
+    focusField.current = false;
+    // The word list's language comes prefilled, so its terms box is the first thing to fill in;
+    // a topic sent with the request makes "Suggest words" the next step.
+    const panel = panelRef.current;
+    const suggest = target === 'suggest' && panel && panel.querySelector('[data-source-word-suggest-run]:not([disabled])');
+    const first = suggest || (panel && panel.querySelector(mode === 'word-list' ? 'textarea' : 'input, textarea, select'));
+    if (first) first.focus();
+    try { if (panel && panel.scrollIntoView) panel.scrollIntoView({ block: 'nearest' }); } catch (_) {}
+  }, [mode, requestCount]);
+  // A tool asked for this start; the path fork was already answered there.
+  React.useEffect(() => {
+    const consume = () => {
+      const requested = sourceStartRequests.take();
+      if (!requested || pending.current) return;
+      if (requested.topic) { setTopic(requested.topic); setSuggestNote(''); }
+      focusField.current = requested.topic && requested.mode === 'word-list' ? 'suggest' : true;
+      setMode(requested.mode);
+      setRequestError('');
+      setRequestCount(count => count + 1);
+    };
+    consume();
+    return sourceStartRequests.subscribe(consume);
+  }, []);
   const topicTypes = [
-    ['anchor-chart', say('anchor_chart', 'Anchor Chart')],
-    ['concept-sort', say('concept_sort', 'Concept Sort')],
-    ['persona', say('persona', 'Interview candidates')],
+    ['anchor-chart', say(t('source_start.anchor_chart'), 'Anchor Chart')],
+    ['concept-sort', say(t('source_start.concept_sort'), 'Concept Sort')],
+    ['persona', say(t('source_start.persona'), 'Interview candidates')],
+    ['timeline', say(t('source_start.timeline'), 'Sequence Builder')],
   ];
   const blankTypes = [
-    ['quiz', say('quiz', 'Assess')],
-    ['glossary', say('glossary', 'Glossary')],
-    ['timeline', say('timeline', 'Sequence Builder')],
-    ['concept-sort', say('concept_sort', 'Concept Sort')],
-    ['anchor-chart', say('anchor_chart', 'Anchor Chart')],
+    ['quiz', say(t('source_start.quiz'), 'Assess')],
+    ['glossary', say(t('source_start.glossary'), 'Glossary')],
+    ['timeline', say(t('source_start.timeline'), 'Sequence Builder')],
+    ['concept-sort', say(t('source_start.concept_sort'), 'Concept Sort')],
+    ['anchor-chart', say(t('source_start.anchor_chart'), 'Anchor Chart')],
   ].filter(([type]) => typeof window !== 'undefined' && Array.isArray(window.__alloBlankStartTypes)
     && window.__alloBlankStartTypes.includes(type));
   const selectedBlankType = blankTypes.some(([type]) => type === blankType) ? blankType : (blankTypes[0]?.[0] || '');
@@ -273,40 +370,76 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const duplicateTerms = new Set(terms).size !== terms.length;
   let validation = '';
   if (mode === 'topic') {
-    if (!topic.trim()) validation = say('topic_required', 'Enter a topic.');
-    else if (topic.length > 300) validation = say('topic_limit', 'Use no more than 300 characters for the topic.');
-    else if (!topicTypes.some(([type]) => type === topicType)) validation = say('choose_resource', 'Choose a supported resource.');
+    if (!topic.trim()) validation = say(t('source_start.topic_required'), 'Enter a topic.');
+    else if (topic.length > 300) validation = say(t('source_start.topic_limit'), 'Use no more than 300 characters for the topic.');
+    else if (!topicTypes.some(([type]) => type === topicType)) validation = say(t('source_start.choose_resource'), 'Choose a supported resource.');
   } else if (mode === 'word-list') {
-    if (!terms.length) validation = say('words_required', 'Enter at least one term or phrase.');
-    else if (wordList.length > 6000) validation = say('words_total_limit', 'Keep the complete list within 6,000 characters.');
-    else if (terms.length > 40) validation = say('words_count_limit', 'Use no more than 40 terms or phrases.');
-    else if (terms.some(term => term.length > 160)) validation = say('words_entry_limit', 'Keep each term or phrase within 160 characters.');
-    else if (duplicateTerms) validation = say('words_duplicate', 'Remove repeated entries. Each exact term or phrase should appear once.');
-    else if (!termLanguage.trim() || termLanguage.trim().length > 120) validation = say('words_language_required', 'Enter the language of this word list.');
+    if (!terms.length) validation = say(t('source_start.words_required'), 'Enter at least one term or phrase.');
+    else if (wordList.length > 6000) validation = say(t('source_start.words_total_limit'), 'Keep the complete list within 6,000 characters.');
+    else if (terms.length > 40) validation = say(t('source_start.words_count_limit'), 'Use no more than 40 terms or phrases.');
+    else if (terms.some(term => term.length > 160)) validation = say(t('source_start.words_entry_limit'), 'Keep each term or phrase within 160 characters.');
+    else if (duplicateTerms) validation = say(t('source_start.words_duplicate'), 'Remove repeated entries. Each exact term or phrase should appear once.');
+    else if (!termLanguage.trim() || termLanguage.trim().length > 120) validation = say(t('source_start.words_language_required'), 'Enter the language of this word list.');
   } else if (mode === 'blank' && !selectedBlankType) {
-    validation = say('blank_unavailable', 'Blank resources are still loading. Try again shortly.');
+    validation = say(t('source_start.blank_unavailable'), 'Blank resources are still loading. Try again shortly.');
   }
-  const blocked = !!busy || submitting;
+  const blocked = !!busy || submitting || suggesting;
   const needsAi = mode === 'topic' || mode === 'word-list';
+  const resolveWordAi = () => (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);
+  const wordAi = resolveWordAi();
+  // The suggest box's topic (visible only with AI) travels with the list to pick each word's sense.
+  const wordTopic = aiAvailable && wordAi ? topic.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
+  const suggestRoom = Math.min(12, 40 - terms.length);
+  const suggestWords = async () => {
+    const subject = topic.replace(/\s+/g, ' ').trim().slice(0, 300);
+    const ai = resolveWordAi();
+    if (!subject || !ai || !aiAvailable || suggestRoom < 1 || pending.current || blocked) return;
+    pending.current = true;
+    setSuggesting(true);
+    setSuggestNote('');
+    setRequestError('');
+    const language = termLanguage.trim() || 'English';
+    const prompt = `List up to ${suggestRoom} key vocabulary terms that ${gradeLevel ? gradeLevel + ' ' : ''}students should learn for the topic ${JSON.stringify(subject)}.
+Write every term in ${JSON.stringify(language)}. Use single words or short phrases that are really used when teaching this topic, most important first.
+No definitions, numbering, or explanations.${terms.length ? ' Do not repeat any term already on the list: ' + JSON.stringify(terms) + '.' : ''}
+Return only JSON: {"terms": ["term"]}`;
+    let added = null;
+    try {
+      added = mergeSuggestedTerms(terms, await ai(prompt, true), suggestRoom);
+    } catch (_) { added = null; }
+    pending.current = false;
+    if (!mounted.current) return;
+    if (added && added.length) {
+      setWordList(previous => { const base = previous.replace(/\s+$/, ''); return (base ? base + '\n' : '') + added.join('\n'); });
+      setSuggestNote(say(t('source_start.suggest_added', { count: added.length }), 'Added {count} suggested words to your list. Edit or remove any before you create.', { count: added.length }));
+      focusAfterSuggest.current = wordsRef;
+    } else {
+      setSuggestNote(added ? say(t('source_start.suggest_none'), 'No new words came back. Try a more specific topic.')
+        : say(t('source_start.suggest_failed'), 'Words could not be suggested. Your list is unchanged; try again.'));
+      focusAfterSuggest.current = suggestRef;
+    }
+    setSuggesting(false);
+    setSuggestDone(count => count + 1);
+  };
   const showValidation = !!validation && (mode === 'blank' || (mode === 'topic' ? !!topic.length : !!wordList.length));
   const choose = value => {
     if (blocked) return;
-    const apply = () => { setMode(value); setRequestError(''); };
+    const apply = () => { focusField.current = !!value; setMode(value); setRequestError(''); };
     if (value && !mode) requestFork(apply); else apply();
   };
   const submit = async event => {
     event.preventDefault();
     if (pending.current || blocked || !mode || validation || (needsAi && !aiAvailable) || typeof handleGenerate !== 'function') return;
-    const type = mode === 'topic' ? topicType : mode === 'word-list' ? 'glossary' : selectedBlankType;
+    const type = mode === 'topic' ? topicType : mode === 'word-list' ? wordType : selectedBlankType;
     const seed = mode === 'topic' ? { kind: 'topic', text: topic.trim() }
-      : mode === 'word-list' ? { kind: 'word-list', terms: [...terms], termLanguage: termLanguage.trim() } : { kind: 'blank' };
+      : mode === 'word-list' ? { kind: 'word-list', terms: [...terms], termLanguage: termLanguage.trim(), ...(wordTopic ? { topic: wordTopic } : {}) } : { kind: 'blank' };
     pending.current = true;
     setSubmitting(true);
     setRequestError('');
     try {
       await handleGenerate(type, null, false, null, { seed, rethrowErrors: true });
     } catch (_) {
-      if (mounted.current) setRequestError(say('request_failed', 'The resource could not be created. Your entries are kept; try again.'));
+      if (mounted.current) setRequestError(say(t('source_start.request_failed'), 'The resource could not be created. Your entries are kept; try again.'));
     } finally {
       pending.current = false;
       if (mounted.current) setSubmitting(false);
@@ -316,66 +449,92 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const fieldClass = 'mt-1 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
   const helpIds = [id + '-help', showValidation && id + '-validation'].filter(Boolean).join(' ');
   return <section data-source-start-chooser aria-labelledby={id + '-title'} className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900">
-    <h3 id={id + '-title'} className="m-0 text-sm font-bold">{say('title', 'Start without a passage')}</h3>
-    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{say('preserve_source', 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
-    <div role="group" aria-label={say('choose_start', 'Choose a starting point')} className="flex flex-wrap gap-2">
+    <h3 id={id + '-title'} className="m-0 text-sm font-bold">{say(t('source_start.title'), 'Start without a passage')}</h3>
+    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{say(t('source_start.preserve_source'), 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
+    <div role="group" aria-label={say(t('source_start.choose_start'), 'Choose a starting point')} className="flex flex-wrap gap-2">
       {[
-        ['topic', say('topic', 'Topic')],
-        ['word-list', say('word_list', 'Word list')],
-        ['blank', say('blank', 'Blank resource')],
+        ['topic', say(t('source_start.topic'), 'From a topic')],
+        ['word-list', say(t('source_start.word_list'), 'From a word list')],
+        ['blank', say(t('source_start.blank'), 'Blank resource')],
       ].map(([value, label]) => <button key={value} type="button" aria-pressed={mode === value} aria-expanded={mode === value}
         aria-controls={id + '-panel'} disabled={blocked} onClick={() => choose(value)}
         className={actionClass + (mode === value ? ' border-indigo-700 bg-indigo-700 text-white' : ' border-sky-300 bg-white text-sky-900 hover:bg-sky-100')}>{label}</button>)}
     </div>
-    <div id={id + '-panel'}>
+    <div id={id + '-panel'} ref={panelRef}>
       {mode && <form onSubmit={submit} className="mt-3 space-y-3 border-t border-sky-200 pt-3">
         <PathFork.Note t={t} onBack={() => choose('')} />
         {mode === 'topic' && <>
-          <label className="block text-xs font-bold" htmlFor={id + '-topic'}>{say('topic_label', 'Topic')}
+          <label className="block text-xs font-bold" htmlFor={id + '-topic'}>{say(t('source_start.topic_label'), 'Topic')}
             <input id={id + '-topic'} type="text" value={topic} maxLength={300} disabled={blocked} aria-describedby={helpIds}
               aria-invalid={showValidation || undefined} onChange={event => { setTopic(event.target.value); setRequestError(''); }} className={fieldClass} />
           </label>
-          <label className="block text-xs font-bold" htmlFor={id + '-topic-resource'}>{say('resource_label', 'Resource to create')}
+          <label className="block text-xs font-bold" htmlFor={id + '-topic-resource'}>{say(t('source_start.resource_label'), 'Resource to create')}
             <select id={id + '-topic-resource'} value={topicType} disabled={blocked} onChange={event => setTopicType(event.target.value)} className={fieldClass}>
               {topicTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}
             </select>
           </label>
-          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('topic_help', 'Experimental: this uses the topic alone, without checking against your passage. Review the facts before sharing.')}</p>
+          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say(t('source_start.topic_help'), 'Experimental: AI writes this from the topic alone, with no passage to check it against. Review the facts before sharing.')}</p>
         </>}
         {mode === 'word-list' && <>
-          <label className="block text-xs font-bold" htmlFor={id + '-word-language'}>{say('words_language', 'Language of this word list')}
+          <label className="block text-xs font-bold" htmlFor={id + '-word-language'}>{say(t('source_start.words_language'), 'Language of this word list')}
             <input id={id + '-word-language'} data-source-word-language type="text" value={termLanguage} maxLength={120} disabled={blocked}
               aria-describedby={helpIds} aria-invalid={showValidation && !termLanguage.trim() || undefined}
               onChange={event => { setTermLanguage(event.target.value); setRequestError(''); }} className={fieldClass} />
           </label>
-          <label className="block text-xs font-bold" htmlFor={id + '-words'}>{say('words_label', 'Terms or phrases, one per line')}
-            <textarea id={id + '-words'} rows={5} value={wordList} disabled={blocked} aria-describedby={helpIds}
-              aria-invalid={showValidation || undefined} onChange={event => { setWordList(event.target.value); setRequestError(''); }} className={fieldClass + ' resize-y'} />
+          <label className="block text-xs font-bold" htmlFor={id + '-words'}>{say(t('source_start.words_label'), 'Terms or phrases, one per line')}
+            <textarea id={id + '-words'} ref={wordsRef} rows={5} value={wordList} disabled={blocked} aria-describedby={helpIds}
+              aria-invalid={showValidation || undefined} onChange={event => { setWordList(event.target.value); setRequestError(''); setSuggestNote(''); }} className={fieldClass + ' resize-y'} />
           </label>
-          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('words_help', 'Use one language per list. Create a glossary from up to 40 exact terms or phrases, 160 characters each, and 6,000 characters total. Definitions follow glossary language settings and need your review.')}</p>
-          <p className="m-0 text-xs text-slate-700">{say('words_count', '{count}/40 entries · {characters}/6,000 characters', { count: terms.length, characters: wordList.length })}</p>
+          {aiAvailable && wordAi && <div data-source-word-suggest className="rounded-lg border border-sky-200 bg-white p-2">
+            <label className="block text-xs font-bold" htmlFor={id + '-word-suggest'}>{say(t('source_start.suggest_label'), 'Need ideas? Suggest words for a topic')}
+              <input id={id + '-word-suggest'} data-source-word-suggest-topic type="text" value={topic} maxLength={300} disabled={blocked}
+                aria-describedby={id + '-word-suggest-help'} onChange={event => { setTopic(event.target.value); setSuggestNote(''); }}
+                onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); suggestWords(); } }} className={fieldClass} />
+            </label>
+            <p id={id + '-word-suggest-help'} className="m-0 mt-1 text-xs leading-relaxed text-slate-700">{suggestRoom < 1
+              ? say(t('source_start.suggest_full'), 'Your list already has 40 entries.')
+              : say(t('source_start.suggest_help'), 'AI adds up to 12 words to the end of your list. Nothing is created until you choose Create.')}</p>
+            <button type="button" ref={suggestRef} data-source-word-suggest-run disabled={blocked || !topic.trim() || suggestRoom < 1} aria-busy={suggesting || undefined}
+              onClick={suggestWords} className={actionClass + ' mt-2 border-sky-300 bg-white text-sky-900 hover:bg-sky-100'}>
+              {suggesting ? say(t('source_start.suggesting'), 'Suggesting…') : say(t('source_start.suggest_run'), 'Suggest words')}
+            </button>
+            <p role="status" aria-live="polite" aria-atomic="true" className="m-0 mt-1 text-xs leading-relaxed text-slate-700">{suggestNote}</p>
+          </div>}
+          <label className="block text-xs font-bold" htmlFor={id + '-word-resource'}>{say(t('source_start.resource_label'), 'Resource to create')}
+            <select id={id + '-word-resource'} data-source-word-resource value={wordType} disabled={blocked} onChange={event => setWordType(event.target.value)} className={fieldClass}>
+              <option value="glossary">{say(t('source_start.glossary'), 'Glossary')}</option>
+              <option value="concept-sort">{say(t('source_start.concept_sort'), 'Concept Sort')}</option>
+              <option value="sentence-frames">{say(t('source_start.scaffolds'), 'Writing Scaffolds')}</option>
+            </select>
+          </label>
+          {wordType === 'sentence-frames'
+            ? <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say(t('source_start.words_help_scaffolds'), 'Use one language per list, up to 40 terms. AI writes prompts that use up to 12 of your words, exactly as you wrote them. Every word goes in the word bank. Check them before sharing.')}</p>
+            : wordType === 'concept-sort'
+            ? <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say(t('source_start.words_help_sort'), 'Use one language per list, up to 40 terms. Each term becomes one card, exactly as you wrote it. AI suggests 2 or 3 categories; check them before sharing.')}</p>
+            : <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say(t('source_start.words_help'), 'Use one language per list. Create a glossary from up to 40 exact terms or phrases, 160 characters each, and 6,000 characters total. Definitions follow glossary language settings and need your review.')}</p>}
+          <p className="m-0 text-xs text-slate-700">{say(t('source_start.words_count', { count: terms.length, characters: wordList.length }), '{count}/40 entries · {characters}/6,000 characters', { count: terms.length, characters: wordList.length })}</p>
         </>}
         {mode === 'blank' && <>
-          <label className="block text-xs font-bold" htmlFor={id + '-blank-resource'}>{say('blank_resource_label', 'Resource to fill in yourself')}
+          <label className="block text-xs font-bold" htmlFor={id + '-blank-resource'}>{say(t('source_start.blank_resource_label'), 'Resource to fill in yourself')}
             <select id={id + '-blank-resource'} value={selectedBlankType} disabled={blocked || !blankTypes.length} aria-describedby={helpIds} onChange={event => setBlankType(event.target.value)} className={fieldClass}>
-              {!blankTypes.length && <option value="">{say('blank_loading', 'Blank resources are loading')}</option>}
+              {!blankTypes.length && <option value="">{say(t('source_start.blank_loading'), 'Blank resources are loading')}</option>}
               {blankTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}
             </select>
           </label>
-          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say('blank_help', 'Open an empty draft and fill it in by hand. No AI is needed. Complete the draft before sharing.')}</p>
+          <p id={id + '-help'} className="m-0 text-xs leading-relaxed text-slate-700">{say(t('source_start.blank_help'), 'Open an empty draft and fill it in by hand. No AI is needed. Complete the draft before sharing.')}</p>
         </>}
-        {needsAi && !aiAvailable && <p role="status" className="m-0 text-xs leading-relaxed text-amber-900">{say('ai_needed', 'Connect AI to create from a topic or word list. You can still start a blank resource.')}</p>}
+        {needsAi && !aiAvailable && <p role="status" className="m-0 text-xs leading-relaxed text-amber-900">{say(t('source_start.ai_needed'), 'Connect AI to create from a topic or word list. You can still start a blank resource.')}</p>}
         {showValidation && <p id={id + '-validation'} role="status" className="m-0 text-xs leading-relaxed text-red-800">{validation}</p>}
         {requestError && <p role="alert" className="m-0 text-xs leading-relaxed text-red-800">{requestError}</p>}
         <div className="flex flex-wrap gap-2">
           <button type="submit" disabled={blocked || !!validation || (needsAi && !aiAvailable) || typeof handleGenerate !== 'function'} aria-busy={submitting || undefined}
             className={actionClass + ' border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800'}>
-            {submitting ? say('creating', 'Creating…') : mode === 'topic' ? say('create_topic', 'Create from topic')
-              : mode === 'word-list' ? say('create_glossary', 'Create glossary') : say('create_blank', 'Open blank draft')}
+            {submitting ? say(t('source_start.creating'), 'Creating…') : mode === 'topic' ? say(t('source_start.create_topic'), 'Create from topic')
+              : mode === 'word-list' ? (wordType === 'sentence-frames' ? say(t('source_start.create_scaffolds'), 'Create writing scaffolds') : wordType === 'concept-sort' ? say(t('source_start.create_concept_sort'), 'Create concept sort') : say(t('source_start.create_glossary'), 'Create glossary')) : say(t('source_start.create_blank'), 'Open blank draft')}
           </button>
-          <button type="button" disabled={blocked} onClick={() => choose('')} className={actionClass + ' border-slate-400 bg-white text-slate-800 hover:bg-slate-100'}>{say('cancel', 'Cancel')}</button>
+          <button type="button" disabled={blocked} onClick={() => choose('')} className={actionClass + ' border-slate-400 bg-white text-slate-800 hover:bg-slate-100'}>{say(t('source_start.cancel'), 'Cancel')}</button>
         </div>
-        <p role="status" aria-live="polite" aria-atomic="true" className="m-0 text-xs text-slate-700">{submitting ? say('creating_status', 'Creating the resource. Your current source is kept.') : ''}</p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="m-0 text-xs text-slate-700">{submitting ? say(t('source_start.creating_status'), 'Creating the resource. Your current source is kept.') : ''}</p>
       </form>}
     </div>
     {forkDialog}
@@ -385,7 +544,7 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
 
 // Shown inside a tool that builds from source material while there is none yet, so
 // a disabled Generate button explains itself and offers the way forward.
-function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, busy }) {
+function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartFromWordList, onStartBlank, busy }) {
   const openQuickStart = typeof window !== 'undefined' && typeof window.__alloOpenQuickStart === 'function' ? window.__alloOpenQuickStart : null;
   const action = 'min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1';
   return (
@@ -403,7 +562,7 @@ function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, bu
           </button>
         )}
       </div>
-      <OtherWaysToStart t={t} onStartFromTopic={onStartFromTopic} onStartBlank={onStartBlank} busy={busy} />
+      <OtherWaysToStart t={t} onStartFromTopic={onStartFromTopic} onStartFromWordList={onStartFromWordList} onStartBlank={onStartBlank} busy={busy} />
     </div>
   );
 }
@@ -460,6 +619,7 @@ const UNIVERSAL_GRADE_CHOICES = [
 // product without moving any controls or changing their behavioural wiring.
 const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: 'border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5',
+  settingsGroup: 'space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm',
   label: 'block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700',
   control: 'w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
   textarea: 'w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none',
@@ -1051,6 +1211,7 @@ function UniversalSettingsPanel(props) {
     studentInterests.length > 0 ? studentInterests.length + ' ' + (t('universal.summary_interests') || 'interests') : null,
     dokLevel ? dokLevel.split(':')[0] : null,
   ].filter(Boolean);
+  const diffRunCount = Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades);
   return (
             <div id="tour-universal-settings" data-help-key="tool_universal_settings" className="mb-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <button type="button"
@@ -1073,7 +1234,9 @@ function UniversalSettingsPanel(props) {
                     <p className="text-[11px] leading-relaxed text-slate-600">
                       {t('universal.scope_note') || 'These steer what AlloFlow writes for you.'}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* One column at every width: the panel lives in the sidebar, and viewport
+                        breakpoints split it into 108px columns on desktop (2026-11-03). */}
+                    <div className={SIDEBAR_PANEL_UI.settingsGroup}>
                         <div>
                             <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.grade_level')}</label>
                             <select aria-label={t('common.selection')}
@@ -1100,6 +1263,30 @@ function UniversalSettingsPanel(props) {
                             </select>
                         </div>
                         <div>
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
+                                {t('quiz.dok_target')}
+                                <InfoTooltip text={languageText('help_mode.wizard_dok_select', 'Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis).')} />
+                            </label>
+                            <select aria-label={t('common.selection')}
+                                data-help-key="simplified_dok"
+                                value={dokLevel}
+                                onChange={(e) => setDokLevel(e.target.value)}
+                                className={SIDEBAR_PANEL_UI.control}
+                            >
+                                <option value="">{t('wizard.dok_levels.none')}</option>
+                                <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
+                                <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
+                                <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
+                                <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
+                                {/* Mixed is also offered in the quiz panel and writes the same
+                                    state; omitting it here rendered this select blank whenever a
+                                    teacher had chosen it there. */}
+                                <option value="Mixed">{t('wizard.dok_levels.mixed')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className={SIDEBAR_PANEL_UI.settingsGroup}>
+                        <div>
                             <label htmlFor="universal-output-language" className={SIDEBAR_PANEL_UI.label}>{t('wizard.output_language')}</label>
                             <select id="universal-output-language"
                                 data-help-key="simplified_language"
@@ -1111,12 +1298,13 @@ function UniversalSettingsPanel(props) {
                                 {outputLanguages.map(lang => <option key={lang} value={lang}>{lang === 'English' ? t('languages.english') : lang}</option>)}
                                 <option value="All Selected Languages">{languageText('universal.all_generation_languages', 'App and added languages ({count})', { count: allLanguages.length })}</option>
                             </select>
+                            <p className={SIDEBAR_PANEL_UI.help}>{languageText('universal.report_language_note', 'Teacher reports, like the source check, use the app language.')}</p>
                             {/* The builder for this list used to live in the Glossary panel while
                                 its main consumer was this dropdown — so adding a language meant
                                 opening an unrelated tool. The list is shared by three consumers
                                 (this select, Adventure's language mode, and Glossary's
                                 translations), so it belongs with the shared settings. */}
-                            <div className="mt-2" data-help-key="glossary_language_input">
+                            <div className="mt-3" data-help-key="glossary_language_input">
                                 <label className={SIDEBAR_PANEL_UI.label}>
                                     {languageText('universal.additional_languages', 'Additional languages')}
                                 </label>
@@ -1155,8 +1343,7 @@ function UniversalSettingsPanel(props) {
                                         </span>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-slate-500 mt-1">{languageText('universal.language_limit_hint', '{count}/4 added languages. App language is available automatically.', { count: extraLanguages.length })}</p>
-                                <p className="text-[10px] text-slate-500 mt-1">{languageText('universal.languages_new_resources', 'Changes apply to new resources. Saved resources keep their languages.')}</p>
+                                <p className={SIDEBAR_PANEL_UI.help}>{languageText('universal.language_limit_hint', '{count}/4 added languages. App language is available automatically.', { count: extraLanguages.length })}{' '}{languageText('universal.languages_new_resources', 'Changes apply to new resources. Saved resources keep their languages.')}</p>
                             </div>
                             {/* One selector, two questions. "Include translations?"
                                 and "into which language?" are genuinely separate,
@@ -1169,7 +1356,7 @@ function UniversalSettingsPanel(props) {
                                 It sits directly under Output language because it
                                 is meaningless without one. */}
                             {showTranslationControl && (
-                            <div className="mt-2" data-help-key="universal_translations">
+                            <div className="mt-3" data-help-key="universal_translations">
                                 <label className={SIDEBAR_PANEL_UI.label} htmlFor="universal-translations-select">
                                     {t('universal.translations') || 'Translations'}
                                 </label>
@@ -1189,7 +1376,7 @@ function UniversalSettingsPanel(props) {
                                         <option key={lang} value={lang}>{lang}</option>
                                     ))}
                                 </select>
-                                <p className="text-[10px] text-slate-500 leading-snug mt-1">
+                                <p className={SIDEBAR_PANEL_UI.help}>
                                     {allOutputLanguages ? languageText('universal.translations_all_hint', 'Applies to each output language. Matching languages do not add a second version.') : translationPolicy.enabled
                                         ? (t('universal.translations_on_hint') || 'Resources in {output} will also include a version in {target}.')
                                             .replace('{output}', leveledTextLanguage).replace('{target}', translationPolicy.target)
@@ -1199,45 +1386,22 @@ function UniversalSettingsPanel(props) {
                             </div>
                             )}
                         </div>
-                        <div>
-                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
-                                {t('quiz.dok_target')}
-                                <InfoTooltip text="Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." />
-                            </label>
-                            <select aria-label={t('common.selection')}
-                                data-help-key="simplified_dok"
-                                value={dokLevel}
-                                onChange={(e) => setDokLevel(e.target.value)}
-                                className={SIDEBAR_PANEL_UI.control}
-                            >
-                                <option value="">{t('wizard.dok_levels.none')}</option>
-                                <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
-                                <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
-                                <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
-                                <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
-                                {/* Mixed is also offered in the quiz panel and writes the same
-                                    state; omitting it here rendered this select blank whenever a
-                                    teacher had chosen it there. */}
-                                <option value="Mixed">{t('wizard.dok_levels.mixed')}</option>
-                            </select>
-                        </div>
                     </div>
-                    <div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" data-help-key="simplified_standards">
-                            <div className="flex justify-between items-center mb-2">
+                        <div className={SIDEBAR_PANEL_UI.settingsGroup} data-help-key="simplified_standards">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <span id="simplified-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                     <CheckCircle size={12} className="text-indigo-600"/> {t('standards.target_standard_label') || 'Target Standard'}
                                 </span>
                                 <div role="group" aria-labelledby="simplified-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
                                     <button type="button"
                                         aria-pressed={standardMode === 'ai'} onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                        className={`min-h-8 px-2.5 text-xs font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-700'}`}
                                     >
                                         {t('standards.mode_ai_match') || 'AI Match'}
                                     </button>
                                     <button type="button"
                                         aria-pressed={standardMode === 'manual'} onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                        className={`min-h-8 px-2.5 text-xs font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-700'}`}
                                     >
                                         {t('standards.mode_manual') || 'Manual'}
                                     </button>
@@ -1402,9 +1566,8 @@ function UniversalSettingsPanel(props) {
                                     )}
                                 </div>
                             )}
-                        </div>
                         {targetStandards.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                            <div className="flex flex-wrap gap-2">
                                 {targetStandards.map((std, idx) => (
                                     <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
                                         <span className="truncate" title={std}>{std}</span>
@@ -1420,8 +1583,10 @@ function UniversalSettingsPanel(props) {
                                 ))}
                             </div>
                         )}
+                        </div>
+                        <div className={SIDEBAR_PANEL_UI.settingsGroup}>
                         <div data-help-key="simplified_interests">
-                            <label className={`${SIDEBAR_PANEL_UI.label} mt-2 flex items-center gap-1`}>
+                            <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Heart size={12} className="text-indigo-500"/> {t('input.interests_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
                             </label>
                             <div className="flex gap-2 mb-2">
@@ -1451,7 +1616,7 @@ function UniversalSettingsPanel(props) {
                                 {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
                             </div>
                         </div>
-                        <div className="mt-2" data-help-key="simplified_emojis">
+                        <div data-help-key="simplified_emojis">
                             <div className="flex items-center gap-2">
                                 <input aria-label={t('common.toggle_use_emojis')}
                                     id="useEmojis"
@@ -1465,7 +1630,9 @@ function UniversalSettingsPanel(props) {
                                 </label>
                             </div>
                         </div>
-                        <div className="mt-3 pt-3 border-t border-slate-200" data-help-key="simplified_differentiation">
+                        </div>
+                        <div className={SIDEBAR_PANEL_UI.settingsGroup}>
+                        <div data-help-key="simplified_differentiation">
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Layout size={12} className="text-indigo-500"/> {t('simplified.diff_label')}
                             </label>
@@ -1482,7 +1649,7 @@ function UniversalSettingsPanel(props) {
                             </select>
                             {differentiationRange === 'Custom' && (
                               <div className="mt-2">
-                                <p className="text-[10px] text-slate-500 mb-1">
+                                <p className="mb-1.5 text-[11px] leading-relaxed text-slate-500">
                                   {t('universal.diff_custom_hint') || 'Pick any mix. Your target grade is always included.'}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -1497,7 +1664,7 @@ function UniversalSettingsPanel(props) {
                                           on ? (differentiationCustomGrades || []).filter((x) => x !== g)
                                              : [...(differentiationCustomGrades || []), g]
                                         )}
-                                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-300'} ${locked ? 'cursor-default opacity-80' : ''}`}
+                                        className={`min-h-8 px-2.5 rounded-lg text-xs font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-300'} ${locked ? 'cursor-default opacity-80' : ''}`}
                                       >{g.replace(' Grade', '').replace('Kindergarten', 'K')}</button>
                                     );
                                   })}
@@ -1506,7 +1673,7 @@ function UniversalSettingsPanel(props) {
                             )}
                             {differentiationRange !== 'None' && (
                               <div className="mt-2">
-                                <p className="text-[10px] text-slate-500 mb-1">
+                                <p className="mb-1.5 text-[11px] leading-relaxed text-slate-500">
                                   {t('universal.diff_types_hint') || 'Generate a differentiated set for:'}
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -1518,19 +1685,21 @@ function UniversalSettingsPanel(props) {
                                           on ? (differentiationTypes || []).filter((x) => x !== id)
                                              : [...(differentiationTypes || []), id]
                                         )}
-                                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 border-slate-300 hover:border-emerald-300'}`}
+                                        className={`min-h-8 px-2.5 rounded-lg text-xs font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 border-slate-300 hover:border-emerald-300'}`}
                                       >{universalToolLabel(id, t)}</button>
                                     );
                                   })}
                                 </div>
-                                <p className="text-[10px] text-amber-700 mt-1">
-                                  {(t('universal.diff_cost') || 'About {n} generations per run.')
-                                    .replace('{n}', String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))}
-                                </p>
+                                {/* One generation is an ordinary run: no extra cost to flag, and no "1 generations". */}
+                                {diffRunCount > 1 && <p className="mt-1.5 text-[11px] leading-relaxed text-amber-800">
+                                  {(t('universal.diff_cost') || 'About {n} generations per run.').replace('{n}', String(diffRunCount))}
+                                </p>}
                               </div>
                             )}
                         </div>
-                        <div className="mt-2" data-help-key="universal_image_style">
+                        </div>
+                        <div className={SIDEBAR_PANEL_UI.settingsGroup}>
+                        <div data-help-key="universal_image_style">
                             {window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle)}
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>
                                 <Palette size={12} className="text-indigo-500"/> {t('universal.image_style') || 'Image Style (default)'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
@@ -2369,6 +2538,22 @@ const SourceRecord = {
       .find((item) => item && item.type === 'analysis' && !item.error && item.data?.analysisNeedsRecheck !== true && !SourceRecord.incomplete(item) && item.data?.originalText === text
         && !/^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(item.status || '')) || null;
   },
+  // Close rewording is the same passage; a different passage keeps its own report.
+  sameSource(a, b) {
+    const tokens = (value) => new Set(String(value || '').toLowerCase().match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]|[\p{L}\p{M}\p{N}]+/gu) || []);
+    const left = tokens(a), right = tokens(b);
+    if (!left.size || !right.size) return false;
+    let shared = 0;
+    left.forEach((word) => { if (right.has(word)) shared += 1; });
+    return shared / Math.max(left.size, right.size) >= 0.6;
+  },
+  // The latest report that an edit of this text should update.
+  priorCheck(history, text, unitId) {
+    const inUnit = (item) => !unitId || unitId === 'all' || String(item.unitId || 'uncategorized') === String(unitId);
+    const reports = (Array.isArray(history) ? history : []).filter((item) => item?.type === 'analysis' && !item.error && typeof item.data?.originalText === 'string'
+      && item.data.originalText !== text && item.instructionalText?.form !== 'adapted' && inUnit(item));
+    return reports.slice(-5).reverse().find((item) => SourceRecord.sameSource(item.data.originalText, text)) || null;
+  },
   summary(item, say) {
     if (!item || !item.data) return '';
     const tr = typeof say === 'function' ? say : (key, fallback) => fallback;
@@ -2392,7 +2577,7 @@ function SourceView(props) {
     history, handleGenerate, isProcessing, isGeneratingSource, generationStep, isExtracting, setIsExtracting,
     setGenerationStep, callGeminiVision, addToast, checkAccuracyWithSearch, setCheckAccuracyWithSearch,
     handleFormatText, refineSourceSuggestion, openAnalysis, onRecheckAnalysis, aiTextAvailable, isDraftSaving, isCanvas,
-    focusRequest, onShowResources, setSourceTopic, handleSpeak, isPlaying, playingContentId
+    focusRequest, onShowResources, setSourceTopic, handleSpeak, isPlaying, playingContentId, sourceCheckText, onSourceCheckChange, activeUnitId
   } = props;
   const say = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
   const fill = (text, values) => String(text).replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
@@ -2406,7 +2591,7 @@ function SourceView(props) {
   const [refineInstruction, setRefineInstruction] = React.useState('');
   const [refining, setRefining] = React.useState(false);
   const editorRef = React.useRef(null);
-  const readOnly = status === 'in-use' && !editing;
+  const checkLineRef = React.useRef(null);
   React.useEffect(() => { if (focusRequest && editorRef.current) editorRef.current.focus(); }, [focusRequest]);
   React.useEffect(() => { if (editing && editorRef.current) editorRef.current.focus(); }, [editing]);
   const aiReady = aiTextAvailable !== false;
@@ -2415,28 +2600,43 @@ function SourceView(props) {
     && item.data?.originalText === text && SourceRecord.incomplete(item));
   const partial = incomplete && window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(incomplete);
   const runForText = checkRun?.text === text;
-  const checkState = check ? 'done' : runForText && checkRun.state === 'running' ? 'running'
-    : partial && !partial.complete ? 'partial' : incomplete || runForText ? 'failed' : (aiReady ? 'none' : 'unavailable');
+  // An edit made on the analysis screen, or the last check of the wording this text came from.
+  const editedReport = !check && !incomplete ? (Array.isArray(history) ? history : []).slice().reverse().find(item => item?.type === 'analysis' && item.data?.originalText === text && item.data.analysisNeedsRecheck === true) : null;
+  const priorReport = React.useMemo(() => (check || incomplete || editedReport ? null : SourceRecord.priorCheck(history, text, activeUnitId)), [history, text, activeUnitId]);
+  const changedReport = editedReport || priorReport;
+  // This view stays on screen during its check; the text is held still until it ends.
+  const checkBusy = sourceCheckText === text || (runForText && checkRun.state === 'running');
+  const readOnly = checkBusy || (status === 'in-use' && !editing);
+  const checkState = checkBusy ? 'running' : check ? 'done'
+    : partial && !partial.complete ? 'partial' : incomplete || runForText ? 'failed' : !aiReady ? 'unavailable' : changedReport ? 'changed' : 'none';
   const latestSource = React.useRef(text);
   latestSource.current = text;
   const checkRequest = React.useRef(null);
   React.useEffect(() => () => { checkRequest.current = null; }, []);
   const runCheck = async (value, openResult = false) => {
     const target = typeof value === 'string' ? value : text;
-    if (!target.trim() || typeof handleGenerate !== 'function' || checkRequest.current?.text === target) return;
+    if (!target.trim() || typeof handleGenerate !== 'function' || checkRequest.current?.text === target || isProcessing) return;
     const request = { text: target };
+    let failure = '';
     checkRequest.current = request;
     setCheckRun({ text: target, state: 'running' });
+    if (typeof onSourceCheckChange === 'function') onSourceCheckChange(target);
+    // The pressed button leaves during the check; keep keyboard users at its status line.
+    if (checkLineRef.current) checkLineRef.current.focus({ preventScroll: true });
     try {
-      const result = incomplete && typeof onRecheckAnalysis === 'function' ? await onRecheckAnalysis(incomplete)
-        : await handleGenerate('analysis', null, false, target, { selectedReadingSourceId: '__input__', stayOnView: true }, false);
+      const canRecheck = typeof onRecheckAnalysis === 'function';
+      const result = canRecheck && (incomplete || editedReport) ? await onRecheckAnalysis(incomplete || editedReport, { inlineFailure: true })
+        : canRecheck && (check || priorReport) ? await onRecheckAnalysis(check || priorReport, { inlineFailure: true, replace: true, text: target })
+        : await handleGenerate('analysis', null, false, target, { selectedReadingSourceId: '__input__', stayOnView: true, inlineFailure: true }, false);
+      failure = typeof result?.failureMessage === 'string' ? result.failureMessage : '';
       if (openResult && checkRequest.current === request && latestSource.current === target && result?.type === 'analysis' && result.data?.originalText === target && typeof openAnalysis === 'function') openAnalysis(result);
     } catch (_) { /* The dispatcher reports the failure; leave the source open for retry. */ }
     finally {
       if (checkRequest.current === request) {
         checkRequest.current = null;
-        setCheckRun({ text: target, state: 'finished' });
+        setCheckRun({ text: target, state: 'finished', failure });
       }
+      if (typeof onSourceCheckChange === 'function') onSourceCheckChange(null);
     }
   };
   const useSource = () => {
@@ -2507,6 +2707,7 @@ function SourceView(props) {
     : checkState === 'partial' ? say('analysis.partial', 'Partial analysis')
     : checkState === 'failed' && incomplete ? say('analysis.incomplete', 'Analysis incomplete')
     : checkState === 'failed' ? say('source_view.check_failed', 'The source check didn’t finish.')
+    : checkState === 'changed' ? say('analysis.recheck_reason', 'The source text changed. Run the analysis again to check its concepts, accuracy and reading demands.')
     : checkState === 'unavailable' ? say('source_view.check_unavailable', 'The source check needs AI, which isn’t set up here.')
     : say('source_view.check_none', 'Not checked yet.');
   const reviewTitle = replacement && replacement.reason === 'refine' ? say('source_view.review_refine_title', 'A suggested rewrite is ready') : say('sidebar.source_review_title', 'A new passage is ready');
@@ -2530,7 +2731,7 @@ function SourceView(props) {
         <div className="flex flex-wrap items-center gap-3">
           {status === 'draft' && <button type="button" data-source-use data-help-key="source_view_use" onClick={useSource} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{inUse ? say('source_view.use_version', 'Use this version') : say('source_view.use', 'Use this source')}</button>}
           {status === 'draft' && aiReady && <label className="inline-flex min-h-11 items-center gap-2 text-sm text-slate-700"><input type="checkbox" data-source-skip-check checked={skipCheck} onChange={(event) => setSkipCheck(event.target.checked)} />{say('source_view.skip_check', 'Skip the source check')}</label>}
-          {status === 'draft' && inUse && !(replacement && replacement.status === 'replaced' && replacement.previous === inUse.text) && <button type="button" data-source-discard onClick={discardChanges} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{fill(say('source_view.discard', 'Discard changes (back to version {version})'), { version: inUse.version })}</button>}
+          {status === 'draft' && inUse && !(replacement && replacement.status === 'replaced' && replacement.previous === inUse.text) && <button type="button" data-source-discard disabled={checkBusy} onClick={discardChanges} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{fill(say('source_view.discard', 'Discard changes (back to version {version})'), { version: inUse.version })}</button>}
           {status === 'in-use' && <button type="button" data-source-make-resources onClick={() => { if (typeof onShowResources === 'function') onShowResources(); }} className="min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800">{say('source_view.make_resources', 'Make resources')}</button>}
           {typeof handleSpeak === 'function' && !!text.trim() && <button type="button" data-source-read-aloud aria-pressed={reading} onClick={readAloud} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{reading ? say('source_view.stop_reading', 'Stop reading') : say('source_view.read_aloud', 'Read aloud')}</button>}
         </div>
@@ -2538,7 +2739,7 @@ function SourceView(props) {
       {readOnly ? (
         <div className="space-y-2">
           <div data-source-readonly aria-describedby="source-view-status" className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-900">{text}</div>
-          <button type="button" data-source-edit onClick={() => setEditing(true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50">{say('source_view.edit', 'Edit source')}</button>
+          <button type="button" data-source-edit disabled={checkBusy} onClick={() => setEditing(true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60">{say('source_view.edit', 'Edit source')}</button>
         </div>
       ) : (
         <div className="space-y-2">
@@ -2596,11 +2797,13 @@ function SourceView(props) {
       <section id="source-check-panel" data-source-check data-help-key="source_view_check" aria-labelledby="source-check-title" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
         <h3 id="source-check-title" className="font-bold text-slate-900">{say('source_view.check_title', 'Source check')}</h3>
         <p className="mt-1 text-xs text-slate-600">{say('source_view.check_desc', 'Reading level, key concepts and accuracy for this text. It runs when you use the source.')}</p>
-        <p data-source-check-state={checkState} role="status" className="mt-2 text-slate-800">{checkLine}</p>
+        <p ref={checkLineRef} tabIndex={-1} data-source-check-state={checkState} role="status" className="mt-2 text-slate-800 focus:outline-none">{checkLine}</p>
+        {checkBusy && !!isProcessing && !!generationStep && <p data-source-check-step className="mt-1 text-xs text-slate-600">{generationStep}</p>}
+        {!checkBusy && runForText && !!checkRun.failure && <p data-source-check-failure role="alert" className="mt-1 text-red-800">{checkRun.failure}</p>}
         {typeof setCheckAccuracyWithSearch === 'function' && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700"><input type="checkbox" data-source-web-check checked={!!checkAccuracyWithSearch} onChange={(event) => setCheckAccuracyWithSearch(event.target.checked)} />{say('source_view.web_check', 'Check accuracy with a web search')}</label>}
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {(check || partial) && typeof openAnalysis === 'function' && <button type="button" data-source-check-details onClick={() => openAnalysis(check || incomplete)} className="min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800">{partial ? say('analysis.view_partial', 'View partial analysis') : say('source_view.check_details', 'View analyzed source material')}</button>}
-          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text, true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60">{checkState === 'done' ? say('source_view.check_again', 'Analyze again') : checkState === 'partial' ? (partial.legacy ? say('analysis.check_all_sections', 'Check all sections') : say('analysis.check_remaining', 'Check remaining sections')) : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : say('source_view.check_run', 'Analyze source material')}</button>}
+          {aiReady && checkState !== 'running' && !!text.trim() && <button type="button" data-source-run-check disabled={!!isProcessing} onClick={() => runCheck(text, true)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60">{checkState === 'done' ? say('source_view.check_again', 'Analyze again') : checkState === 'partial' ? (partial.legacy ? say('analysis.check_all_sections', 'Check all sections') : say('analysis.check_remaining', 'Check remaining sections')) : checkState === 'failed' ? say('source_view.check_retry', 'Retry') : checkState === 'changed' ? say('analysis.recheck_action', 'Recheck edited source') : say('source_view.check_run', 'Analyze source material')}</button>}
         </div>
       </section>
       {!readOnly && aiReady && typeof refineSourceSuggestion === 'function' && !!text.trim() && (
@@ -4515,6 +4718,11 @@ function GeneratorActionsView(props) {
       if (field) try { field.focus({ preventScroll: true }); } catch (_) {}
     }, 60);
   };
+  // Glossary's "From a word list": the Source panel chooser owns the form, so open it there.
+  const openWordListStart = () => {
+    if (typeof setExpandedTools === 'function') setExpandedTools((prev) => (prev.includes('source-input') ? prev : [...prev, 'source-input']));
+    sourceStartRequests.request('word-list');
+  };
   return (
 <div id="tour-generator-actions" data-help-key="generator_actions" className="grid min-w-0 grid-cols-1 gap-4">
             <style>{`
@@ -4624,7 +4832,7 @@ function GeneratorActionsView(props) {
                 </div>
                 {expandedTools.includes('glossary') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
               </button>
-                {expandedTools.includes('glossary') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('glossary') ? () => startBlank('glossary') : undefined} />}
+                {expandedTools.includes('glossary') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('glossary') ? () => startBlank('glossary') : undefined} onStartFromWordList={isTeacherMode ? openWordListStart : undefined} />}
                 {expandedTools.includes('glossary') && hasSourceOrAnalysis && canStartBlank('glossary') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('glossary')} />}
                 {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
@@ -4893,7 +5101,7 @@ function GeneratorActionsView(props) {
                   <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><ListOrdered size={16}/> {t('timeline.title')}</div>
                   {expandedTools.includes('timeline') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
                 </button>
-                  {expandedTools.includes('timeline') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartBlank={canStartBlank('timeline') ? () => startBlank('timeline') : undefined} />}
+                  {expandedTools.includes('timeline') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} busy={isProcessing} onStartFromTopic={(topic) => handleGenerate('timeline', null, false, null, { seed: { kind: 'topic', text: topic } })} onStartBlank={canStartBlank('timeline') ? () => startBlank('timeline') : undefined} />}
                   {expandedTools.includes('timeline') && hasSourceOrAnalysis && canStartBlank('timeline') && <OtherWaysToStart t={t} framed busy={isProcessing} onStartBlank={() => startBlank('timeline')} />}
                 {/* ── TimelinePanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('timeline') && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
@@ -5459,7 +5667,7 @@ function SourceInputShellView(props) {
                      </>}
                  </div>
             </div>
-            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} handleGenerate={handleGenerate} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
+            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} handleGenerate={handleGenerate} gradeLevel={gradeLevel} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
             <SourceShellWatch inputText={inputText} sourceStatus={sourceStatus} sourceReplacement={sourceReplacement} setSourceReplacement={setSourceReplacement} openSourceView={openSourceView} />
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
             {expandedTools.includes('source-input') && videoTranscriptSourceContext && (

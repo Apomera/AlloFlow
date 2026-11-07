@@ -351,7 +351,14 @@ const ImmersiveToggleButton = React.memo(({ active, onClick, settingKey, toggleS
   },
   children
 ));
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+function _irAiUsable(kind, fn) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+}
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, syllablesOnDevice, isFocusReaderActive, onToggleFocusReader }) => {
   const focusReaderActive = typeof isFocusReaderActive === "boolean" ? isFocusReaderActive : !!isSpeedReaderActive || !!isBionicReaderActive;
   const toggleFocusReader = onToggleFocusReader || onToggleSpeedReader || onToggleBionicReader;
   const { t } = useContext(LanguageContext);
@@ -366,6 +373,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   };
   const [settingsExpanded, setSettingsExpanded] = useState(true);
   const toggleSetting = useCallback((key) => setSettings((prev) => ({ ...prev, [key]: !prev[key] })), [setSettings]);
+  const _irAiOk = _irAiUsable("text", typeof window !== "undefined" ? window.callGemini : null);
+  const posAvailable = !!posReady || _irAiOk;
+  const syllablesAvailable = !!syllablesReady || !!syllablesOnDevice || !!posReady || _irAiOk;
   const handlePosToggle = useCallback((settingKey) => {
     if (!posReady && onGeneratePOS && !isGeneratingPOS) {
       try {
@@ -421,7 +431,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       "data-help-key": "immersive_wide_text"
     },
     t("immersive.wide_text")
-  ), /* @__PURE__ */ React.createElement(
+  ), syllablesAvailable && /* @__PURE__ */ React.createElement(
     ImmersiveToggleButton,
     {
       toggleSetting,
@@ -547,7 +557,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement("option", { value: "typewriter" }, "\u2328\uFE0F Typewriter"),
     /* @__PURE__ */ React.createElement("option", { value: "popin" }, "\u{1F388} Pop-In"),
     /* @__PURE__ */ React.createElement("option", { value: "pulse" }, "\u{1F497} Pulse")
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), /* @__PURE__ */ React.createElement(
+  ))))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), posAvailable && /* @__PURE__ */ React.createElement(
     ImmersiveToggleButton,
     {
       toggleSetting,
@@ -559,7 +569,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     t("immersive.nouns"),
     isGeneratingPOS && settings.showNouns ? " \u2026" : ""
-  ), /* @__PURE__ */ React.createElement(
+  ), posAvailable && /* @__PURE__ */ React.createElement(
     ImmersiveToggleButton,
     {
       toggleSetting,
@@ -571,7 +581,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     t("immersive.verbs"),
     isGeneratingPOS && settings.showVerbs ? " \u2026" : ""
-  ), /* @__PURE__ */ React.createElement(
+  ), posAvailable && /* @__PURE__ */ React.createElement(
     ImmersiveToggleButton,
     {
       toggleSetting,
@@ -583,7 +593,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     t("immersive.adjectives"),
     isGeneratingPOS && settings.showAdjectives ? " \u2026" : ""
-  ), /* @__PURE__ */ React.createElement(
+  ), posAvailable && /* @__PURE__ */ React.createElement(
     ImmersiveToggleButton,
     {
       toggleSetting,
@@ -1843,7 +1853,7 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
       } catch (_) {
       }
     }
-    if (/^[ab][fm]_/i.test(requestedVoice || "") && !kokoroUsesDeviceProvider) {
+    if (/^[ab][fm]_/i.test(requestedVoice || "") && !kokoroUsesDeviceProvider && window.__alloStudentAiDisabled !== true) {
       finishAudioLoad(audioLoadOwner);
       setPlaybackFallbackNotice("The selected Kokoro voice could not read this sentence. Check the voice download or choose another voice, then press Play to retry.");
       setIsPlaying(false);

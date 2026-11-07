@@ -291,7 +291,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     const strike = functionBody(init, 'strike');
     expect(strike).toContain('resolveTalonThrow(true)');
     expect(functionBody(init, 'resolveTalonThrow')).toMatch(/acquireTarget\(\)/);
-    expect(init).toMatch(/var targetInfo\s*=\s*targetLockOn\s*&&\s*!soaring\s*\?\s*acquireTarget\(true\)\s*:\s*null/);
+    expect(init).toMatch(/var targetInfo\s*=\s*targetLockOn\s*&&\s*!soaring\s*&&\s*!delivering\s*\?\s*acquireTarget\(true\)\s*:\s*null/);
     expect(init).toMatch(/inStrikeRange\s*=\s*!!\(targetInfo\s*&&\s*targetInfo\.canStrike/);
   });
 

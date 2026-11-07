@@ -708,16 +708,28 @@
   // Mixes attenuated radiance with water scattering in linear light before the
   // renderer tone-maps it (as in Reef3DExplore): near colours stay vivid while
   // distant ones fade to blue-green. Ordinary output-space fog is removed.
+  // Lane hb13: the same single-scattering column as the dive (Reef3DExplore's
+  // reefWaterSource): sunlit water near the surface glows more than the same
+  // path lower down, so near colours stay clear and the haze has depth.
+  var WATER_COLUMN_SOURCE = [
+    'float reefWaterSource(float extinction,float distanceM,float eyeDepth,float rayUp,float sunFalloff){',
+    'float d=max(0.0,distanceM),k=max(extinction,0.0001);',
+    'float transmission=exp(-k*d);',
+    'float sunPath=max(0.001,k-sunFalloff*clamp(rayUp,-1.0,1.0));',
+    'float sunIntegral=(1.0-exp(-sunPath*d))*k/sunPath;',
+    'float sunlight=exp(-max(0.0,sunFalloff)*max(0.0,eyeDepth));',
+    'return min(1.08*(1.0-transmission),0.36*(1.0-transmission)+0.72*sunlight*sunIntegral);}'
+  ].join('\n');
   var WATER_COLUMN = [
     '#ifdef USE_FOG',
     'float reefOpticalDistance=length(vViewPosition);',
-    'float reefMeanDepth=max(0.0,reefSurfaceY-0.5*(reefWaterEye.y+vReefWorld.y));',
-    'vec3 reefTransmission=exp(-reefWaterExtinction*reefOpticalDistance*(1.0+0.012*reefMeanDepth));',
-    'vec3 reefWaterRay=normalize(vReefWorld-reefWaterEye+vec3(0.0,0.00001,0.0));',
-    'float reefColumnLight=mix(0.72,1.12,smoothstep(-0.72,0.6,reefWaterRay.y));',
-    'float reefForwardGlow=pow(max(0.0,dot(reefWaterRay,normalize(vec3(0.42,1.0,0.3)))),6.0);',
-    'vec3 reefInscatter=reefWaterScatter*(reefColumnLight+0.1*reefForwardGlow);',
-    'gl_FragColor.rgb=gl_FragColor.rgb*reefTransmission+reefInscatter*(1.0-reefTransmission);',
+    'vec3 reefTransmission=exp(-reefWaterExtinction*reefOpticalDistance);',
+    'vec3 reefWaterRay=(vReefWorld-reefWaterEye)/max(reefOpticalDistance,0.0001);',
+    'float reefEyeDepth=max(0.0,reefSurfaceY-reefWaterEye.y);',
+    'vec3 reefColumnSource=vec3(reefWaterSource(reefWaterExtinction.r,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,0.024),reefWaterSource(reefWaterExtinction.g,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,0.024),reefWaterSource(reefWaterExtinction.b,reefOpticalDistance,reefEyeDepth,reefWaterRay.y,0.024));',
+    'float reefForwardCos=clamp(dot(reefWaterRay,normalize(vec3(0.42,1.0,0.3))),-1.0,1.0),reefForwardDen=1.0-0.48*reefForwardCos;',
+    'vec3 reefInscatter=reefWaterScatter*reefColumnSource*(0.88+0.1*(1.0-0.2304)/(reefForwardDen*reefForwardDen));',
+    'gl_FragColor.rgb=gl_FragColor.rgb*reefTransmission+reefInscatter;',
     '#endif'
   ].join('\n');
   function applyParts(shader, parts, where) {
@@ -845,7 +857,7 @@
       parts.fCommon.push('uniform vec3 reefWaterExtinction;uniform vec3 reefWaterScatter;uniform vec3 reefWaterEye;uniform float reefSurfaceY;');
       if (derivatives) parts.fCommon.push('#ifndef REEF_DERIVATIVES\n#define REEF_DERIVATIVES\n#endif');
       if (high) parts.fCommon.push('#define REEF_CAUSTIC_LAYERS');
-      parts.fCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''), GLSL_NOISE, CAUSTIC_COMMON);
+      parts.fCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''), GLSL_NOISE, CAUSTIC_COMMON, WATER_COLUMN_SOURCE);
       parts.vCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''));
       parts.vProject.push(WORLD_VERTEX + (local ? '\nvReefLocal=position;' : ''));
       parts.fLighting = [CAUSTIC_APPLY];
@@ -1026,6 +1038,9 @@
           '  float reefTurfN=reefNoise(vReefLocal*30.0+vec3(2.1,7.7,4.4))*0.65+reefTissue*0.35;',
           '  reefTurf=smoothstep(0.62-reefCoralA.y*0.5,0.82-reefCoralA.y*0.5,reefTurfN)*0.9;',
           '  float reefFuzz=reefNoise(vReefLocal*150.0+vec3(1.1,2.2,3.3));',
+          // Lane hb13: a thin, even film of turf dulls the whole skeleton (a recently
+          // dead colony is never clean white); thicker tufts grow over it in patches.
+          '  diffuseColor.rgb=mix(diffuseColor.rgb,reefTurfColor*(0.85+0.6*reefFuzz)+diffuseColor.rgb*0.22,min(0.8,reefCoralA.y*(1.5+0.5*reefTissue)));',
           '  diffuseColor.rgb=mix(diffuseColor.rgb,reefTurfColor*(0.6+0.8*reefFuzz),reefTurf*(0.72+0.28*reefNoise(vReefLocal*60.0)));',
           '}',
           ABSORB
@@ -1108,10 +1123,11 @@
     };
     // Bleached tissue is clear over white skeleton, some with a pastel glow (as in the 2D close-ups).
     var BLEACHED_TIPS = [0xffffff, 0xfbe3ee, 0xe2edfc, 0xf7f1cf, 0xeee4fa];
+    // Lane hb13: living blades are olive to golden brown and catch the light at their tips.
     var algaeTints = [
-      { base: lin(0x4a3f18), tip: lin(0x9a8638), bladder: lin(0x6e5e22) },
-      { base: lin(0x45461c), tip: lin(0x8e8e3a), bladder: lin(0x66642a) },
-      { base: lin(0x52381a), tip: lin(0xa07a3c), bladder: lin(0x704e24) }
+      { base: lin(0x5a4c1c), tip: lin(0xb89c40), bladder: lin(0x84702a) },
+      { base: lin(0x4f5420), tip: lin(0xa3a845), bladder: lin(0x787a30) },
+      { base: lin(0x5e4220), tip: lin(0xbf9146), bladder: lin(0x8a5f2c) }
     ];
     var algaeMotion = plantMotion(0.24), algaeMaterial = null, rockMaterial = null;
 
@@ -1229,9 +1245,10 @@
       var form = p.coralForm, c = p.category, pick = function (list, salt) { return list[Math.floor(hash2(pc.colonyKey, salt) * list.length) % list.length]; };
       var group = form === 'branching' ? (pc.style === 2 ? 'pocillopora' : 'acropora') : form === 'massive' ? (pc.brain ? 'brain' : 'porites') : form;
       var base = lin(pick(LIVE[group].base, 21)), tipHex = pick(LIVE[group].tip, 23), color, tip, gain = 1;
-      if (c === 'hard_coral') { color = base; tip = lin(tipHex); gain = form === 'encrusting' ? 1.1 : 1.3; }
+      // Lane hb13: a little brighter, so living tissue reads as tissue, not shadow.
+      if (c === 'hard_coral') { color = base; tip = lin(tipHex); gain = form === 'encrusting' ? 1.2 : 1.38; }
       else if (c === 'bleached_coral') { color = lin(hash2(pc.colonyKey, 25) < 0.5 ? 0xf6f5f0 : 0xf1f4f6); tip = lin(pick(BLEACHED_TIPS, 27)); }
-      else { color = lin(0xc8c3b6); tip = lin(0xd8d4ca); }
+      else { color = lin(0xbcb5a4); tip = lin(0xc9c3b4); }
       // tint scales the vertex colours: 1 at the base of the tissue, the accent at the tips.
       return { color: color, tint: [tip.r / color.r, tip.g / color.g, tip.b / color.b], gain: gain };
     }
@@ -1440,6 +1457,8 @@
         var yaw = yawRoll * TAU, s = (0.72 + 1.08 * scaleRoll * scaleRoll + 0.14 * patchHere) * (az < belt + 1 ? 0.75 : 1), gy = groundTop(dx, dz) - 0.02 * s, room = az - 0.32, kind2;
         if (kindRoll < pc) {
           kind2 = variant > 0.93 ? 'soft' : variant > 0.88 ? 'fan' : coralForm(variant / 0.88);
+          // Lane hb13: keep tall forms out of the strip between the diver and the tape.
+          if (dz > 0 && az < 1.4 && (kind2 === 'soft' || kind2 === 'fan')) kind2 = 'massive';
           s = Math.min(s * (kind2 === 'soft' || kind2 === 'fan' ? 1.5 : 1), room / REACH[kind2]); if (s < 0.3) continue;
           push(kind2, dx, gy, dz, yaw, s, s * (0.85 + 0.3 * jx), s, coralColor(colorRoll, dx, dz, kind2), kind2 === 'fan' ? 0 : (jz - 0.5) * 0.2);
           if (az > 1.35 && outside < 7 && patchHere > 0.38 && scaleRoll > 0.36) {
@@ -1453,7 +1472,7 @@
         else if (kindRoll < pc + pa + pr) {
           var rs = Math.min(s * 0.8, room / REACH.rock); if (rs < 0.25) continue;
           var tone = 0.85 + 0.2 * colorRoll; push('rock', dx, gy, dz, yaw, rs, rs * (0.55 + 0.5 * jx) / 0.8, rs, [tone, tone * (0.97 + 0.06 * jz), tone * 0.95], 0);
-        } else if (kindRoll < pc + pa + pr + ps) push('sponge', dx, gy, dz, yaw, s, s * (0.8 + 0.6 * jx), s, coralColor(colorRoll, dx, dz, 'sponge'), 0);
+        } else if (kindRoll < pc + pa + pr + ps) { if (!(dz > 0 && az < 1.4)) push('sponge', dx, gy, dz, yaw, s, s * (0.8 + 0.6 * jx), s, coralColor(colorRoll, dx, dz, 'sponge'), 0); }
         else if (kindRoll < pc + pa + pr + ps + pu) push('rubble', dx, gy + 0.01, dz, yaw, 0.7 + 0.3 * s, 0.7 + 0.3 * s, 0.7 + 0.3 * s, [0.9, 0.88, 0.84], 0);
       }
       // A crowded garden along the belt, as on a healthy reef: colonies touch and
@@ -1470,6 +1489,9 @@
         else if (a4 < gc + ga + gu) ukind = 'rubble';
         else if (a6 < 0.3) ukind = 'rock';
         else continue;
+        // Lane hb13: the diver looks at the point from the +Z side of the tape, so
+        // nothing tall (sponge, soft coral) grows in the strip between them.
+        if (uz > 0 && uaz < 1.4 && (ukind === 'soft' || ukind === 'sponge')) ukind = 'massive';
         if (ukind === 'finger' || ukind === 'antler' || ukind === 'corymbose') us = Math.max(us, 0.62);
         us = Math.min(us * (ukind === 'algae' ? 1.3 : ukind === 'soft' || ukind === 'sponge' ? 1.4 : 1), uroom / REACH[ukind]); if (us < 0.28) continue;
         var ucol = ukind === 'algae' ? [1, 1, 1] : ukind === 'rubble' ? [0.9, 0.88, 0.84] : ukind === 'rock' ? [0.9, 0.9, 0.86] : coralColor(a7, ux, uz, ukind);

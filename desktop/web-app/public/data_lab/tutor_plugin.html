@@ -37,7 +37,7 @@
 </style>
 </head>
 <body>
-  <div><span id="dot" class="dot"></span><strong>AlloFlow tutor link</strong></div>
+  <div><span id="dot" class="dot"></span><strong id="pluginTitle">AlloFlow tutor link</strong></div>
   <div id="status">Connecting to CODAP…</div>
 
 <script src="vendor/iframe-phone.js"></script>
@@ -45,13 +45,39 @@
 (function () {
   'use strict';
   var statusEl = document.getElementById('status');
+  var titleEl = document.getElementById('pluginTitle');
   var dotEl = document.getElementById('dot');
   var connected = false;
+  var registered = false;
+  // English defaults; the Data Lab page sends translations (it gets them from
+  // the AlloFlow launcher) with allodatalab-plugin-strings.
+  var STR = {
+    plugin_title: 'AlloFlow tutor link',
+    plugin_connected: 'Connected. The tutor can see your columns, summary statistics, and up to 20 rows from each table.',
+    plugin_failed: 'Could not reach CODAP. The tutor will work without a data snapshot.'
+  };
+  function renderStatus() {
+    titleEl.textContent = STR.plugin_title;
+    if (!registered) return;
+    statusEl.textContent = connected ? STR.plugin_connected : STR.plugin_failed;
+  }
 
   // ── CODAP RPC endpoint (plugin side of iframe-phone) ──────────────
   var endpoint = new iframePhone.IframePhoneRpcEndpoint(function (request, callback) {
     // CODAP pushes notifications here; acknowledge everything politely.
     try { callback({ success: true }); } catch (_) {}
+    // A graph was made, changed or closed (documented "component" notice):
+    // tell the Data Lab page so a graph check can re-run. Only the fact, no data.
+    try {
+      var reqs = Array.isArray(request) ? request : [request];
+      for (var i = 0; i < reqs.length; i++) {
+        var r = reqs[i];
+        if (r && r.action === 'notify' && typeof r.resource === 'string' && /^component/.test(r.resource)) {
+          window.top.postMessage({ type: 'allodatalab-codap-component-changed' }, '*');
+          break;
+        }
+      }
+    } catch (_) {}
   }, 'data-interactive', window.parent);
 
   function codapCall(message) {
@@ -69,15 +95,14 @@
   }
 
   // Register this plugin with CODAP.
-  codapCall({
+  var registration = codapCall({
     action: 'update',
     resource: 'interactiveFrame',
-    values: { name: 'AlloFlow Tutor Link', title: 'AlloFlow Tutor Link', version: '1.0', dimensions: { width: 240, height: 84 }, preventDataContextReorg: false }
+    values: { name: 'AlloFlow Tutor Link', title: 'AlloFlow Tutor Link', version: '1.0', dimensions: { width: 260, height: 112 }, preventDataContextReorg: false }
   }).then(function (res) {
     connected = Boolean(res && res.success);
-    statusEl.textContent = connected
-      ? 'Connected. The tutor can see your columns, summary statistics, and a sample of rows.'
-      : 'Could not reach CODAP. The tutor will work without a data snapshot.';
+    registered = true;
+    renderStatus();
     if (connected) dotEl.className = 'dot on';
   });
 
@@ -207,14 +232,169 @@
     return snapshot;
   }
 
+  // == dataset prep start (pure; tests run this slice) ==
+  // A dataset from the Data Lab page (starter data, a teacher assignment, or
+  // another tool's run log) is re-checked here before it reaches CODAP, with the
+  // same caps the launcher applies: names cannot carry CODAP resource brackets,
+  // cells are plain strings or finite numbers, and sizes are bounded.
+  var DS_MAX_ATTRS = 30, DS_MAX_ROWS = 2000, DS_MAX_NAME = 50, DS_MAX_CELL = 200;
+  function dsText(v, max) {
+    return String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+  }
+  function dsName(v, max) { return dsText(v, max).replace(/[[\]`.]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function prepareDataset(input, existingNames) {
+    if (!input || typeof input !== 'object') return null;
+    var attrs = [];
+    var seen = Object.create(null);
+    var cols = [];
+    (Array.isArray(input.attributes) ? input.attributes : []).slice(0, DS_MAX_ATTRS).forEach(function (a, srcIndex) {
+      var name = dsName(a && a.name, DS_MAX_NAME);
+      if (!name) return;
+      // A repeated name ("Score", "score") is renamed, not dropped: dropping it
+      // shifted every later column's values into the wrong column.
+      var base = name, k = 2;
+      while (seen[name.toLowerCase()]) { name = base.slice(0, DS_MAX_NAME - 3) + ' ' + k; k++; }
+      seen[name.toLowerCase()] = true;
+      cols.push(srcIndex);
+      var out = { name: name };
+      var unit = dsText(a.unit, 30); if (unit) out.unit = unit;
+      var desc = dsText(a.description, 200); if (desc) out.description = desc;
+      if (a.type === 'numeric' || a.type === 'categorical') out.type = a.type;
+      attrs.push(out);
+    });
+    if (!attrs.length) return null;
+    var items = [];
+    var rows = Array.isArray(input.rows) ? input.rows : [];
+    for (var i = 0; i < rows.length && items.length < DS_MAX_ROWS; i++) {
+      var r = rows[i];
+      if (!Array.isArray(r)) continue;
+      var item = {};
+      for (var j = 0; j < attrs.length; j++) {
+        var v = r[cols[j]];
+        item[attrs[j].name] = (typeof v === 'number') ? (isFinite(v) ? v : '') : dsText(v, DS_MAX_CELL);
+      }
+      items.push(item);
+    }
+    var title = dsText(input.title, 80) || 'Data';
+    var base = dsName(input.name || title, 40) || 'Data';
+    var taken = Object.create(null);
+    (existingNames || []).forEach(function (n) { taken[String(n).toLowerCase()] = true; });
+    var name = base, k = 2;
+    while (taken[name.toLowerCase()]) { name = base + ' ' + k; k++; }
+    return { name: name, title: title, collection: dsName(title, 40) || 'Cases', attrs: attrs, items: items };
+  }
+  // == dataset prep end ==
+
+  // withGraph: also open an EMPTY graph of the new data beside its table
+  // (documented "create component", type graph, no axis attributes). The
+  // student still drags the columns onto its axes; the graph check reads them.
+  async function createDataset(input, withGraph) {
+    var list = valuesOf(await codapCall({ action: 'get', resource: 'dataContextList' })) || [];
+    var prepared = prepareDataset(input, list.map(function (c) { return c && (c.name || c.title); }).filter(Boolean));
+    if (!prepared) return { ok: false, error: 'invalid-dataset' };
+    var made = await codapCall({
+      action: 'create',
+      resource: 'dataContext',
+      values: { name: prepared.name, title: prepared.title, collections: [{ name: prepared.collection, title: prepared.collection, attrs: prepared.attrs }] }
+    });
+    if (!(made && made.success)) return { ok: false, error: 'create-context-failed' };
+    for (var start = 0; start < prepared.items.length; start += 500) {
+      var added = await codapCall({ action: 'create', resource: 'dataContext[' + prepared.name + '].item', values: prepared.items.slice(start, start + 500) });
+      if (!(added && added.success)) return { ok: false, error: 'create-items-failed', name: prepared.name };
+    }
+    await codapCall({ action: 'create', resource: 'component', values: { type: 'caseTable', dataContext: prepared.name } });
+    var graph = false;
+    if (withGraph) {
+      var madeGraph = await codapCall({ action: 'create', resource: 'component', values: { type: 'graph', dataContext: prepared.name } });
+      graph = !!(madeGraph && madeGraph.success);
+    }
+    return { ok: true, name: prepared.name, rows: prepared.items.length, graph: graph };
+  }
+
+  // Rows typed into the Data Lab's class-survey form, added to a dataset this
+  // plugin made earlier. The context must already exist; names are re-checked.
+  async function addItems(input) {
+    var target = dsText(input && input.contextName, 60);
+    var list = valuesOf(await codapCall({ action: 'get', resource: 'dataContextList' })) || [];
+    var exists = list.some(function (c) { return c && c.name === target; });
+    if (!target || !exists) return { ok: false, error: 'no-context' };
+    var prepared = prepareDataset({ title: target, attributes: input.attributes, rows: input.rows }, []);
+    if (!prepared || !prepared.items.length) return { ok: false, error: 'invalid-rows' };
+    var added = await codapCall({ action: 'create', resource: 'dataContext[' + target + '].item', values: prepared.items.slice(0, 500) });
+    return added && added.success ? { ok: true, name: target, rows: Math.min(prepared.items.length, 500) } : { ok: false, error: 'create-items-failed' };
+  }
+
+  // Which graphs exist and which columns sit on their axes (documented
+  // "get componentList" and "get component[id]"; CODAP 3.1.2 returns
+  // dataContext, xAttributeName, yAttributeName, legendAttributeName,
+  // topSplitAttributeName, rightSplitAttributeName and plotType for a graph).
+  // Names only: no values leave CODAP through this call.
+  function attrText(v) { return typeof v === 'string' ? v.slice(0, 60) : ''; }
+  async function buildGraphReport() {
+    var comps = valuesOf(await codapCall({ action: 'get', resource: 'componentList' }));
+    if (!Array.isArray(comps)) return { ok: false, error: 'no-component-list' };
+    var graphs = [], tables = 0, unreadable = 0;
+    for (var i = 0; i < comps.length && i < 30; i++) {
+      var c = comps[i];
+      if (!c) continue;
+      if (c.type === 'caseTable') tables++;
+      if (c.type !== 'graph' || graphs.length >= 10) continue;
+      var g = null;
+      if (c.id != null) g = valuesOf(await codapCall({ action: 'get', resource: 'component[' + c.id + ']' }));
+      if (!g && c.name) g = valuesOf(await codapCall({ action: 'get', resource: 'component[' + c.name + ']' }));
+      if (!g) { unreadable++; continue; }
+      graphs.push({
+        dataContext: attrText(g.dataContext), x: attrText(g.xAttributeName), y: attrText(g.yAttributeName),
+        legend: attrText(g.legendAttributeName), top: attrText(g.topSplitAttributeName), right: attrText(g.rightSplitAttributeName),
+        plotType: attrText(g.plotType)
+      });
+    }
+    return { ok: true, graphs: graphs, tables: tables, unreadable: unreadable };
+  }
+
   // ── Requests from the Data Lab page (window.top) ───────────────────
   window.addEventListener('message', function (event) {
     var data = event && event.data;
-    if (!data || data.type !== 'allodatalab-snapshot-request') return;
+    if (!data || typeof data.type !== 'string') return;
     if (event.source !== window.top) return;
+    if (data.type === 'allodatalab-plugin-strings') {
+      var incoming = data.strings && typeof data.strings === 'object' ? data.strings : {};
+      Object.keys(STR).forEach(function (k) { if (typeof incoming[k] === 'string' && incoming[k].trim()) STR[k] = incoming[k].slice(0, 300); });
+      if (typeof data.lang === 'string' && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$/.test(data.lang)) document.documentElement.lang = data.lang;
+      if (data.dir === 'rtl' || data.dir === 'ltr') document.documentElement.dir = data.dir;
+      renderStatus();
+      return;
+    }
+    if (data.type !== 'allodatalab-snapshot-request' && data.type !== 'allodatalab-create-dataset' && data.type !== 'allodatalab-graph-check' && data.type !== 'allodatalab-add-items') return;
     var requestId = typeof data.id === 'string' ? data.id.slice(0, 80) : '';
     if (!requestId) return;
     var responseOrigin = event.origin && event.origin !== 'null' ? event.origin : '*';
+    if (data.type === 'allodatalab-graph-check' || data.type === 'allodatalab-add-items') {
+      var replyType = data.type === 'allodatalab-graph-check' ? 'allodatalab-graph-report' : 'allodatalab-items-added';
+      registration
+        .then(function () {
+          if (!connected) return { ok: false, error: 'not-connected' };
+          return data.type === 'allodatalab-graph-check' ? buildGraphReport() : addItems(data);
+        })
+        .then(function (result) {
+          window.top.postMessage(Object.assign({ type: replyType, id: requestId }, result), responseOrigin);
+        })
+        .catch(function (error) {
+          window.top.postMessage({ type: replyType, id: requestId, ok: false, error: String((error && error.message) || error).slice(0, 120) }, responseOrigin);
+        });
+      return;
+    }
+    if (data.type === 'allodatalab-create-dataset') {
+      registration
+        .then(function () { return connected ? createDataset(data.dataset, data.graph === true) : { ok: false, error: 'not-connected' }; })
+        .then(function (result) {
+          window.top.postMessage({ type: 'allodatalab-dataset-created', id: requestId, ok: !!result.ok, rows: result.rows || 0, name: result.name || '', graph: !!result.graph, error: result.error || '' }, responseOrigin);
+        })
+        .catch(function (error) {
+          window.top.postMessage({ type: 'allodatalab-dataset-created', id: requestId, ok: false, error: String((error && error.message) || error).slice(0, 120) }, responseOrigin);
+        });
+      return;
+    }
     Promise.resolve()
       .then(buildSnapshot)
       .then(function (snapshot) {
@@ -231,6 +411,8 @@
   }
   announce();
   setTimeout(announce, 1200);
+  // Real-browser probe seam (only on the test host name).
+  if (window.location.hostname === 'data-lab.test') window.__pluginTest = { call: codapCall, graphReport: buildGraphReport };
 })();
 </script>
 </body>

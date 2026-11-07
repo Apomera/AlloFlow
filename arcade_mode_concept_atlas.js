@@ -26,6 +26,24 @@
   // collaboration follows the proven Realm-Builder Phase D pattern.
   // ═══════════════════════════════════════════
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
+  var __alloT = function (key, fallback) {
+    if (typeof window !== 'undefined' && typeof window.__alloT === 'function') {
+      try {
+        var v = window.__alloT(key);
+        if (typeof v === 'string' && v !== '' && v !== key) return v;
+      } catch (e) {}
+    }
+    return fallback != null ? fallback : key;
+  };
+
   function waitForRegistry(cb) {
     if (window.AlloHavenArcade && typeof window.AlloHavenArcade.registerMode === 'function') {
       cb(); return;
@@ -70,6 +88,13 @@
   }
   function getGrader() {
     return window.AlloHavenArcade && window.AlloHavenArcade.gradeCardJustification;
+  }
+  function getClassWork() {
+    return (window.AlloHavenArcade && window.AlloHavenArcade.classWork) || null;
+  }
+
+  function getSelfCheck() {
+    return (window.AlloHavenArcade && window.AlloHavenArcade.selfCheck) || null;
   }
 
   function newAtlasId() {
@@ -404,6 +429,9 @@
 
   function register() {
     window.AlloHavenArcade.registerMode('concept-atlas', {
+      // The student's own map of how ideas relate is the point, and it needs no
+      // grade to exist: self-rated solo, teacher-scored in class.
+      aiOffPath: 'self-check',
       label: 'Concept Atlas',
       icon: '🗺',
       blurb: 'Build a map of how concepts relate. Each card play draws a labeled edge between two cards — a structured graph of your understanding.',
@@ -442,7 +470,14 @@
     var disabled = !!session;
     var minutesAsked = 10;
     var tokensCost = Math.ceil(minutesAsked / (ctx.minutesPerToken || 5));
-    var canAfford = ctx.tokens >= tokensCost && deckSize >= MIN_DECK_FOR_LAUNCH;
+    // AI off: the self-check pays nothing, so starting one costs nothing.
+    var aiOff = !_aiUsable('text', ctx.callGemini);
+    var canAfford = (aiOff || ctx.tokens >= tokensCost) && deckSize >= MIN_DECK_FOR_LAUNCH;
+
+    function startSelfCheck() {
+      var launch = ctx.onLaunchSelfCheck || ctx.onLaunchHosted;
+      if (typeof launch === 'function') launch(minutesAsked);
+    }
 
     // In-progress local atlas? Resume path.
     var atlases = (ctx.atlases || []).filter(function (a) { return a && !a.isComplete; });
@@ -472,6 +507,7 @@
       }
       window.__alloHavenAtlasResume = null;
       window.__alloHavenAtlasClassMode = null;
+      if (aiOff) { startSelfCheck(); return; }
       ctx.onLaunch(minutesAsked);
     }
 
@@ -479,6 +515,7 @@
       if (disabled || !resumable) return;
       window.__alloHavenAtlasResume = { atlasId: resumable.id };
       window.__alloHavenAtlasClassMode = null;
+      if (aiOff) { startSelfCheck(); return; }
       ctx.onLaunch(minutesAsked);
     }
 
@@ -535,7 +572,8 @@
           h('div', { style: { fontSize: '15px', fontWeight: 700, color: palette.text || '#e2e8f0', marginBottom: '3px' } },
             'Concept Atlas'),
           h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', lineHeight: '1.45' } },
-            'Map how ideas relate. Pick two cards, name the relation (illuminates / connects / transforms / supports / contrasts), justify it. The atlas grows into a relational graph of your understanding.')
+            'Map how ideas relate. Pick two cards, name the relation (illuminates / connects / transforms / supports / contrasts), justify it. The atlas grows into a relational graph of your understanding.'
+            + (aiOff ? ' ' + __alloT('arcade.atlas.ai_off_note', 'You check your own work, so no tokens are spent or earned.') : ''))
         )
       ),
       resumable ? h('button', {
@@ -562,7 +600,7 @@
           h('div', { style: { fontSize: '13px', fontWeight: 700 } },
             'Continue: ' + (resumable.name || resumable.topic || 'untitled atlas')),
           h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginTop: '2px' } },
-            (resumable.nodes || []).length + ' nodes · ' + (resumable.edges || []).length + ' edges · ' + tokensCost + ' 🪙 to resume')
+            (resumable.nodes || []).length + ' nodes · ' + (resumable.edges || []).length + ' edges · ' + (aiOff ? __alloT('arcade.self_check.no_tokens', 'no tokens') : tokensCost + ' 🪙 to resume'))
         )
       ) : null,
       h('button', {
@@ -587,7 +625,7 @@
         h('span', { style: { flex: 1 } },
           h('div', { style: { fontSize: '13px', fontWeight: 700 } }, resumable ? 'Start a new atlas' : 'Start mapping'),
           h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
-            tokensCost + ' 🪙 · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
+            (aiOff ? __alloT('arcade.self_check.no_tokens', 'no tokens') : tokensCost + ' 🪙') + ' · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
         )
       ),
       // ── Phase S1 — Class-mode launchers ──
@@ -651,7 +689,7 @@
       ) : null,
       deckSize < MIN_DECK_FOR_LAUNCH ? h('div', {
         style: { fontSize: '11px', color: palette.warn || '#f59e0b', marginTop: '8px', fontStyle: 'italic', lineHeight: '1.45' }
-      }, 'You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to map. Earn decorations or generate a unit glossary first.') : null
+      }, aiOff ? __alloT('arcade.self_check.need_more_cards', 'You need at least {count} cards. Earn decorations, or ask your teacher to share a glossary.').replace('{count}', MIN_DECK_FOR_LAUNCH) : 'You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to map. Earn decorations or generate a unit glossary first.') : null
     );
   }
 
@@ -671,6 +709,9 @@
     var verbs = getAtlasVerbs();
     var helpers = getCardHelpers();
     var grader = getGrader();
+    var selfCheck = getSelfCheck();
+    var aiOff = !_aiUsable('text', ctx.callGemini);
+    var participantId = ctx.sessionParticipantId || '';
     var nickname = ctx.studentNickname || 'Student';
 
     // Resume sentinel
@@ -783,6 +824,10 @@
     var lastFeedback = lastFeedbackTuple[0];
     var setLastFeedback = lastFeedbackTuple[1];
 
+    var checksTuple = useState([]);          // AI off: ids of the evidence chips ticked
+    var checks = checksTuple[0];
+    var setChecks = checksTuple[1];
+
     // ── Voice state (Phase G parity) ──
     var voiceModeTuple = useState('idle');
     var voiceMode = voiceModeTuple[0];
@@ -846,7 +891,7 @@
       if (!isClassHost) return;
       if (typeof ctx.sessionUpdate !== 'function') return;
       if (!atlas.topic) return; // wait until host sets a topic
-      var edgeCount = (atlas.edges || []).length;
+      var edgeCount = (atlas.edges || []).filter(function (e) { return !e.selfRated; }).length;
       var conceptAtlas = {
         status: atlas.isComplete ? 'closed' : 'open',
         hostNickname: nickname,
@@ -856,7 +901,16 @@
         topic: atlas.topic || '',
         name: atlas.name || '',
         nodes: atlas.nodes || [],
-        edges: atlas.edges || [],
+        // Writing and teacher notes stay off classmates' devices.
+        edges: (atlas.edges || []).map(function (e) {
+          var copy = Object.assign({}, e);
+          delete copy.justification;
+          delete copy.ackText;
+          delete copy.followUp;
+          delete copy.selfCheck;
+          delete copy.selfCheckText;
+          return copy;
+        }),
         milestones: atlas.milestones || [],
         isComplete: !!atlas.isComplete
       };
@@ -899,15 +953,61 @@
       }
     }, [sessionState, isClassStudent]); // eslint-disable-line
 
+    // Class work from students' private documents. See classChannel in the Boss module.
+    var privateDocsTuple = useState({});
+    var privateDocs = privateDocsTuple[0];
+    var setPrivateDocs = privateDocsTuple[1];
+    var classIssueTuple = useState(null);
+    var classIssue = classIssueTuple[0];
+    var setClassIssue = classIssueTuple[1];
+    useEffect(function () {
+      if (!isClassHost && !isClassStudent) return;
+      var kit = getClassWork();
+      var chan = kit ? kit.channel(ctx) : { kind: 'legacy' };
+      if (chan.kind === 'unavailable') { setClassIssue('transport'); return; }
+      if (chan.kind !== 'private') return;
+      return chan.watch(isClassHost, 'atlas', setPrivateDocs, setClassIssue);
+    }, [isClassHost, isClassStudent, ctx.sessionCode]); // eslint-disable-line
+    var classKit = getClassWork();
+    var classSubs = (function () {
+      var legacy = sessionState && sessionState.conceptAtlas && sessionState.conceptAtlas.submissions;
+      return classKit ? classKit.queue(legacy, privateDocs) : (legacy || {});
+    })();
+    var classSendBlocked = isClassStudent && (classIssue === 'rules' || classIssue === 'transport');
+
+    function classFailMessage(err) {
+      return classKit ? classKit.message(err) : __alloT('arcade.class_send.failed', 'That did not send. Your work is still here. Check your connection and try again.');
+    }
+
+    function deliverClassWork(subId, data, legacyPayload) {
+      var chan = classKit ? classKit.channel(ctx) : { kind: 'legacy' };
+      if (chan.kind === 'private') return chan.send('atlas', subId, data);
+      if (chan.kind === 'unavailable') {
+        var err = new Error('This class connection cannot carry game work.');
+        err.classReason = 'transport';
+        return Promise.reject(err);
+      }
+      return Promise.resolve(ctx.sessionUpdate(legacyPayload));
+    }
+
+    function renderClassNotice() {
+      var text = classKit && (isClassHost || isClassStudent) ? classKit.noticeText(classIssue, isClassHost) : '';
+      if (!text) return null;
+      return h('p', {
+        role: 'status',
+        'data-class-notice': classIssue,
+        style: { margin: '0 0 12px 0', padding: '8px 12px', fontSize: '12px', lineHeight: '1.5', borderRadius: '8px', border: '1.5px solid ' + (palette.accent || '#60a5fa'), background: palette.surface || '#1e293b', color: palette.text || '#e2e8f0' }
+      }, text);
+    }
+
     // ── Phase S5 — Host drainer effect ──
-    // Consumes session.conceptAtlas.submissions, applies each as an edge
-    // to local atlas, then clears the submission. processedSubsRef dedupes
-    // so the same UUID isn't applied twice across re-renders.
+    // Each graded edge arrives as a private document (older hosts: in
+    // session.conceptAtlas.submissions). The host applies it, then clears it.
+    // processedSubsRef dedupes so the same id isn't applied twice across re-renders.
     var processedSubsRef = useRef({});
     useEffect(function () {
       if (!isClassHost) return;
-      if (!sessionState || !sessionState.conceptAtlas) return;
-      var subs = sessionState.conceptAtlas.submissions || {};
+      var subs = classSubs;
       var keys = Object.keys(subs);
       if (keys.length === 0) return;
       // Order by submittedAt so simultaneous submits stay deterministic.
@@ -921,14 +1021,62 @@
         if (processed[k]) return;
         var sub = subs[k];
         if (!sub || !sub.fromCardName || !sub.toCardName || !sub.verb) return;
+        if (sub.awaitingTeacher) return; // not graded: stays queued until the teacher scores it
         processed[k] = true;
         applyEdgeFromSubmission(sub);
+        if (sub.privateDoc) {
+          var drainChan = classKit && classKit.channel(ctx);
+          if (drainChan && drainChan.kind === 'private') drainChan.remove(k).catch(function () {});
+          return;
+        }
         // Clear the submission from Firestore so the queue stays small.
         var clearPayload = { conceptAtlas: { submissions: {} } };
         clearPayload.conceptAtlas.submissions[k] = null;
         Promise.resolve(ctx.sessionUpdate(clearPayload)).catch(function () {});
       });
-    }, [sessionState, isClassHost]); // eslint-disable-line
+    }, [sessionState, privateDocs, isClassHost]); // eslint-disable-line
+
+    // AI-off class play: the teacher's score is the first real result. The edge
+    // lands once the session write succeeds, so a failed write can be retried.
+    var scoringRef = useRef({});
+    function scoreSubmission(subId, sub, band, note) {
+      if (!isClassHost || !selfCheck || scoringRef.current[subId]) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      scoringRef.current[subId] = true;
+      var record = selfCheck.teacherScoreRecord(subId, sub, band, note);
+      var payload = { conceptAtlas: { submissions: {}, teacherScores: {} } };
+      payload.conceptAtlas.submissions[subId] = null;
+      payload.conceptAtlas.teacherScores[subId] = record;
+      var scoreChan = sub.privateDoc && classKit ? classKit.channel(ctx) : null;
+      var scoreWrite = scoreChan && scoreChan.kind === 'private' ? scoreChan.score(subId, record) : Promise.resolve(ctx.sessionUpdate(payload));
+      scoreWrite.then(function () {
+        applyEdgeFromSubmission(Object.assign({}, sub, {
+          score: band.score, ackText: record.note, followUp: '', scoredBy: 'teacher'
+        }));
+      }).catch(function () {
+        scoringRef.current[subId] = false;
+        ctx.addToast(__alloT('arcade.teacher_queue.save_failed', 'That score did not save. Try again.'));
+      });
+    }
+
+    // Class student: pick up the teacher's scores for this student's work.
+    var teacherSeenRef = useRef({});
+    useEffect(function () {
+      if (!isClassStudent || !selfCheck) return;
+      var ca = sessionState && sessionState.conceptAtlas;
+      var scores = classKit ? classKit.scores(ca && ca.teacherScores, privateDocs) : (ca && ca.teacherScores);
+      if (!scores) return;
+      selfCheck.claimTeacherScores(ctx, scores, teacherSeenRef.current, participantId, nickname, 'atlas-teacher-score', function (entry) {
+        setLastFeedback({
+          score: entry.score,
+          tag: selfCheck.scoreTag({ scoredBy: 'teacher', score: entry.score }),
+          ackText: entry.note || '',
+          followUp: '',
+          summary: entry.summary || '',
+          resonant: entry.score >= 18
+        });
+      });
+    }, [sessionState, privateDocs, isClassStudent, ctx.tokens]); // eslint-disable-line
 
     // Helper used by drainer — analog of applyEdge but takes a submission
     // object instead of using closure state. Reconstructs FROM/TO cards
@@ -948,7 +1096,7 @@
         imageBase64: sub.toCardImageBase64 || null,
         source: sub.toCardSource || null
       };
-      var newEdge = {
+      var newEdge = Object.assign({
         id: 'edge-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         fromCardId: fromCard.id,
         fromCardName: fromCard.name,
@@ -963,18 +1111,19 @@
         addedAt: nowIso,
         resonant: isResonant,
         contributorNickname: contributorNickname
-      };
+      }, selfCheck ? selfCheck.evidenceFields(sub) : {});
       var nextEdgeCount = (atlas.edges || []).length + 1;
+      var countedEdges = (atlas.edges || []).filter(function (e) { return !e.selfRated; }).length + 1;
       var alreadyLevels = (atlas.milestones || []).map(function (m) { return m.level; });
       var newMilestones = MILESTONES.filter(function (m) {
-        return nextEdgeCount >= m.edges && alreadyLevels.indexOf(m.level) === -1;
+        return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
       }).map(function (m) {
         return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
       });
       if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
         newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokens, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokens + ' 🪙');
+          ctx.onAwardTokens(m.tokensAwarded, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
+          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
         });
       }
       var isComplete = atlas.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
@@ -1020,7 +1169,7 @@
         : { webSpeech: false, mediaRecorder: false, whisperLoaded: false };
       if (engine === 'auto') {
         if (caps.whisperLoaded) return 'whisper';
-        if (typeof ctx.callGeminiAudio === 'function') return 'gemini';
+        if (_aiUsable('audio', ctx.callGeminiAudio)) return 'gemini';
         if (caps.webSpeech) return 'webspeech';
         return 'off';
       }
@@ -1029,7 +1178,7 @@
       if (engine === 'whisper' && !caps.whisperLoaded) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
-      if (engine === 'gemini' && typeof ctx.callGeminiAudio !== 'function') {
+      if (engine === 'gemini' && !_aiUsable('audio', ctx.callGeminiAudio)) {
         return caps.webSpeech ? 'webspeech' : 'off';
       }
       if (engine === 'webspeech' && !caps.webSpeech) {
@@ -1147,6 +1296,67 @@
     // ──────────────────────────────────────────────────────────────────
     // PHASE: PLAY — submit an edge
     // ──────────────────────────────────────────────────────────────────
+    // AI-off class student: saves the UNGRADED edge for the teacher to score.
+    // Card images stay out: an unscored edge waits on Firestore, possibly in
+    // the shared session doc on an older host, and that doc has a size limit.
+    function submitForTeacher(evidence) {
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class mode unavailable — session update missing.');
+        return;
+      }
+      var room = selfCheck.queueRoom(classSubs, participantId, nickname);
+      if (room !== 'ok') {
+        ctx.addToast(selfCheck.queueBlockedMessage(room));
+        return;
+      }
+      setSubmitting(true);
+      var subId = 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+      var payload = { conceptAtlas: { submissions: {} } };
+      payload.conceptAtlas.submissions[subId] = {
+        subId: subId,
+        awaitingTeacher: true,
+        nickname: nickname,
+        participantId: participantId,
+        fromCardId: fromCard.id,
+        fromCardName: fromCard.name,
+        fromCardImageBase64: null,
+        fromCardSource: fromCard.source || null,
+        toCardId: toCard.id,
+        toCardName: toCard.name,
+        toCardImageBase64: null,
+        toCardSource: toCard.source || null,
+        verb: pickedVerb.id,
+        verbLabel: pickedVerb.label,
+        summary: fromCard.name + ' — ' + pickedVerb.label + ' → ' + toCard.name,
+        justification: (justification || '').trim(),
+        score: null,
+        selfCheck: evidence.selfCheck,
+        selfCheckText: evidence.selfCheckText,
+        submittedAt: new Date().toISOString()
+      };
+      deliverClassWork(subId, payload.conceptAtlas.submissions[subId], payload).then(function () {
+        setLastFeedback({
+          score: null,
+          tag: __alloT('arcade.teacher_queue.waiting_tag', 'waiting for teacher'),
+          ackText: __alloT('arcade.teacher_queue.sent_atlas', 'Sent to your teacher. It joins the atlas once they score it.'),
+          followUp: '',
+          fromCardName: fromCard.name,
+          toCardName: toCard.name,
+          verbLabel: pickedVerb.label,
+          resonant: false,
+          submittedToClass: true
+        });
+        setFromCard(null); setToCard(null);
+        setPickedVerb(null); setJustification('');
+        setChecks([]);
+        setSubmitting(false);
+        refreshHand();
+      }).catch(function (err) {
+        setSubmitting(false);
+        ctx.addToast(classFailMessage(err));
+      });
+    }
+
     // Phase S6 — Student-side: write a graded edge to the host's
     // submissions queue. Host's drainer applies it as a real edge.
     function submitToClassQueue(parsed) {
@@ -1177,7 +1387,7 @@
         followUp: parsed.followUp || '',
         submittedAt: nowIso
       };
-      Promise.resolve(ctx.sessionUpdate(payload))
+      deliverClassWork(subId, payload.conceptAtlas.submissions[subId], payload)
         .then(function () {
           // Show student feedback locally so they see their grade.
           setLastFeedback({
@@ -1219,6 +1429,20 @@
       var text = (justification || '').trim();
       if (text.length < 10) {
         ctx.addToast('Write at least a sentence about how these two cards relate.');
+        return;
+      }
+      if (aiOff) {
+        if (!selfCheck) {
+          ctx.addToast(__alloT('arcade.self_check.unavailable', 'This check did not load. Close the game and open it again.'));
+          return;
+        }
+        if (checks.length === 0) {
+          ctx.addToast(__alloT('arcade.self_check.need_one', 'Tick what your writing does first. If none fit yet, add to your writing.'));
+          return;
+        }
+        var evidence = selfCheck.selfRatedResult('atlas', checks);
+        if (isClassStudent) submitForTeacher(evidence);
+        else applyEdge(evidence);
         return;
       }
       if (typeof grader !== 'function') {
@@ -1272,10 +1496,11 @@
     }
 
     function applyEdge(parsed) {
-      var score = parsed.score || 1;
+      var isSelfRated = parsed.selfRated === true;
+      var score = isSelfRated ? null : (parsed.score || 1);
       var isResonant = score >= 18;
       var nowIso = new Date().toISOString();
-      var newEdge = {
+      var newEdge = Object.assign({
         id: 'edge-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         fromCardId: fromCard.id,
         fromCardName: fromCard.name,
@@ -1290,19 +1515,22 @@
         addedAt: nowIso,
         resonant: isResonant,
         contributorNickname: nickname
-      };
+      }, isSelfRated && selfCheck ? selfCheck.evidenceFields(parsed) : {});
 
+      // Self-rated edges draw the map but never count toward these milestones,
+      // because milestones pay tokens.
       var nextEdgeCount = (atlas.edges || []).length + 1;
+      var countedEdges = (atlas.edges || []).filter(function (e) { return !e.selfRated; }).length + 1;
       var alreadyLevels = (atlas.milestones || []).map(function (m) { return m.level; });
-      var newMilestones = MILESTONES.filter(function (m) {
-        return nextEdgeCount >= m.edges && alreadyLevels.indexOf(m.level) === -1;
+      var newMilestones = isSelfRated ? [] : MILESTONES.filter(function (m) {
+        return countedEdges >= m.edges && alreadyLevels.indexOf(m.level) === -1;
       }).map(function (m) {
         return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
       });
       if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
         newMilestones.forEach(function (m) {
-          ctx.onAwardTokens(m.tokens, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
-          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokens + ' 🪙');
+          ctx.onAwardTokens(m.tokensAwarded, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
+          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokensAwarded + ' 🪙');
         });
       }
       var isComplete = atlas.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
@@ -1320,7 +1548,16 @@
         });
       });
 
-      setLastFeedback({
+      setLastFeedback(isSelfRated ? {
+        score: null,
+        tag: selfCheck ? selfCheck.scoreTag(newEdge) : '',
+        ackText: __alloT('arcade.self_check.you_said_edge', 'Added. You said:') + ' ' + (parsed.selfCheckText || ''),
+        followUp: __alloT('arcade.self_check.reread', 'Not graded. Read it once more: would a classmate follow your reason?'),
+        fromCardName: fromCard.name,
+        toCardName: toCard.name,
+        verbLabel: pickedVerb.label,
+        resonant: false
+      } : {
         score: score,
         ackText: parsed.ackText || '',
         followUp: parsed.followUp || '',
@@ -1335,6 +1572,7 @@
       setFromCard(null);
       setToCard(null);
       setJustification('');
+      setChecks([]);
       setSubmitting(false);
       refreshHand();
     }
@@ -1343,6 +1581,8 @@
       var nowIso = new Date().toISOString();
       setAtlas(function (prev) { return Object.assign({}, prev, { isComplete: true, updatedAt: nowIso }); });
       setPhase('complete');
+      var endChan = isClassHost && classKit && classKit.channel(ctx);
+      if (endChan && endChan.kind === 'private') endChan.clear('atlas').catch(function () {});
     }
 
     function closeArcade() {
@@ -1570,9 +1810,15 @@
       var viewAtlas = isClassStudent ? (classAtlas || { nodes: [], edges: [] }) : atlas;
       var canSubmit = !!fromCard && !!toCard && fromCard.id !== toCard.id
                     && !!pickedVerb && (justification || '').trim().length >= 10
-                    && !submitting && voiceMode !== 'transcribing';
+                    && !submitting && voiceMode !== 'transcribing'
+                    && (!aiOff || checks.length > 0) && !classSendBlocked;
+      var myWaiting = (isClassStudent && selfCheck) ? selfCheck.pendingSubmissions(classSubs).filter(function (p) {
+        return selfCheck.isMine(p.sub, participantId, nickname);
+      }).length : 0;
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
+        renderClassNotice(),
+        renderTeacherQueue(),
         // Atlas diagram — visual heart of the experience. Updates live as
         // edges are added. Highlighted node = the FROM card the student
         // is currently selecting (gives spatial feedback).
@@ -1613,9 +1859,9 @@
             lastFeedback.resonant ? h('span', { className: 'ah-resonant-pulse', 'aria-label': 'Resonant relation', style: { fontSize: '14px' } }, '🌟') : null,
             h('span', null,
               (lastFeedback.resonant ? 'Resonant relation · ' : '') +
-              lastFeedback.fromCardName + ' — ' + lastFeedback.verbLabel + ' → ' + lastFeedback.toCardName),
+              (lastFeedback.summary || (lastFeedback.fromCardName + ' — ' + lastFeedback.verbLabel + ' → ' + lastFeedback.toCardName))),
             h('span', {
-              key: 'sp-' + lastFeedback.score + '-' + (lastFeedback.fromCardName || ''),
+              key: 'sp-' + (lastFeedback.tag || lastFeedback.score) + '-' + (lastFeedback.fromCardName || lastFeedback.summary || ''),
               className: 'ah-score-pop',
               style: {
                 marginLeft: 'auto',
@@ -1626,7 +1872,7 @@
                 fontWeight: lastFeedback.score >= 18 ? 800 : 700,
                 fontSize: '11px', letterSpacing: 0
               }
-            }, lastFeedback.score + '/20')
+            }, lastFeedback.tag || (lastFeedback.score + '/20'))
           ),
           lastFeedback.ackText ? h('p', { style: { margin: '0 0 6px 0', fontSize: '13px', lineHeight: '1.5' } }, lastFeedback.ackText) : null,
           lastFeedback.followUp ? h('p', { style: { margin: 0, fontSize: '12px', fontStyle: 'italic', color: palette.textDim || '#cbd5e1' } }, '💭 ' + lastFeedback.followUp) : null
@@ -1738,6 +1984,12 @@
             style: { fontSize: '10px', color: '#dc2626', marginTop: '4px', fontStyle: 'italic' }
           }, '🎤 ' + voiceError) : null
         ),
+        (aiOff && selfCheck) ? selfCheck.renderSelfCheck(h, palette, {
+          frameAs: 'atlas', idPrefix: 'ca', value: checks, onChange: setChecks,
+          disabled: submitting, toTeacher: isClassStudent
+        }) : null,
+        myWaiting > 0 ? h('div', { role: 'status', style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginBottom: '8px' } },
+          __alloT('arcade.teacher_queue.my_waiting', 'Waiting for your teacher:') + ' ' + myWaiting) : null,
         // Submit
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
           h('button', {
@@ -1754,7 +2006,9 @@
               fontFamily: 'inherit',
               opacity: canSubmit ? 1 : 0.6
             }
-          }, submitting ? 'Grading…' : '🗺 Add edge to atlas')
+          }, submitting
+            ? (aiOff ? __alloT('arcade.teacher_queue.sending', 'Sending…') : 'Grading…')
+            : (aiOff && isClassStudent ? __alloT('arcade.teacher_queue.send', 'Send to your teacher') : '🗺 Add edge to atlas'))
         ),
         // Edges-so-far recap (with resonant edges flagged 🌟)
         (atlas.edges || []).length > 0 ? h('div', { style: { marginTop: '14px', padding: '10px 12px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' } },
@@ -1789,7 +2043,7 @@
                       fontWeight: sc >= 18 ? 700 : 400,
                       fontSize: '10px'
                     }
-                  }, sc + '/20');
+                  }, selfCheck ? selfCheck.scoreTag(e) : sc + '/20');
                 })()
               );
             })
@@ -1797,6 +2051,18 @@
           atlas.edges.length > 8 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 8 — full list in print packet') : null
         ) : null
       );
+    }
+
+    function renderTeacherQueue() {
+      if (!isClassHost || !selfCheck) return null;
+      return h(selfCheck.TeacherQueue, {
+        palette: palette,
+        submissions: classSubs,
+        describe: function (sub) {
+          return sub.fromCardName + ' — ' + sub.verbLabel + ' → ' + sub.toCardName;
+        },
+        onScore: scoreSubmission
+      });
     }
 
     function renderCompletePhase() {
@@ -1825,6 +2091,7 @@
           h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🗺'),
           h('h3', { style: { margin: '0 0 8px 0', color: palette.text || '#e2e8f0', fontSize: '17px', fontWeight: 700 } },
             headline),
+          renderTeacherQueue(),
           h('p', { style: { margin: '0 0 14px 0', color: palette.textDim || '#cbd5e1', fontSize: '13px', lineHeight: '1.55' } },
             summary),
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },

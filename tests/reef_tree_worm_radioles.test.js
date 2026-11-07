@@ -13,7 +13,10 @@ describe('Christmas tree worm fine radiolar crowns', () => {
       try {
         const pos = g.attributes.position, normal = g.attributes.normal, index = g.index, a = new T.Vector3(), b = new T.Vector3(), c = new T.Vector3();
         expect(mesh.count).toBe(quality === 'high' ? 28 : 16);
-        expect(index.count / 3).toBe(quality === 'high' ? 160 : 80);
+        // Two triangles per spiral station (an open fringe); the shrimp/worm pass funded the shared tube and
+        // operculum with fewer stations (60/26 instead of 80/40) inside the same animal budget.
+        expect(index.count / 3).toBe(pos.count / 2);
+        expect(index.count / 3).toBeGreaterThanOrEqual(quality === 'high' ? 100 : 48);
         expect(pos.count).toBeGreaterThan(index.count / 3 + 2);
         const used = new Set(index.array);
         expect(used.size).toBe(pos.count);

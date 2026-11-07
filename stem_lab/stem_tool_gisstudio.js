@@ -1,4 +1,5 @@
 // GIS Studio - accessible, Maine-first geographic information systems lab.
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function () {
   // Translator reachable from module scope, IIFE-private so it is not a global.
   // Installed because this tool had no fallback-aware helper: labels built in
@@ -12,6 +13,15 @@
   };
   'use strict';
 
+  // Contrast theme fixes owned by this tool (allo-gisstudio-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-gisstudio-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gisstudio-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-control-attribution{background:#000!important;color:#ff0!important;outline:1px solid #ff0}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-control-attribution a{color:#ff0!important;text-decoration:underline!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip{background:#000!important;color:#ff0!important;border-color:#ff0!important;opacity:1!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-top::before{border-top-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-bottom::before{border-bottom-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-left::before{border-left-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-right::before{border-right-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] :is(.leaflet-popup-content-wrapper,.leaflet-popup-tip){background:#000!important;color:#ff0!important;outline:1px solid #ff0}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] [style*=\"background: rgb(255, 247, 237)\"]{background:#000!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-bar a{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-bar a:hover{background:#00ff00!important;color:#000!important}";
+    document.head.appendChild(st);
+  })();
+  // end contrast theme fixes
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
     registerTool: function (id, config) {
@@ -217,9 +227,9 @@
   var GIS_PACK_LON_ALIASES = ['longitude', 'lon', 'lng', 'long', 'longitud', 'lengtegraad', 'längengrad', '经度', '経度', 'خط الطول', 'долгота', 'x'];
 
   function gisFillTemplate(text, vars) {
-    return String(text == null ? '' : text).replace(/\{([a-z0-9_]+)\}/gi, function (match, key) {
+    return __alloOneWord(String(text == null ? '' : text).replace(/\{([a-z0-9_]+)\}/gi, function (match, key) {
       return vars && Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match;
-    });
+    }));
   }
 
   var GIS_CUSTOM_PACK_BOUNDARY_LIMIT = 500;

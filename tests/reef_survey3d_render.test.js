@@ -46,7 +46,10 @@ async function shoot(layout, quality, points) {
       ctl.goToPoint(i);
       const hl = scene.getObjectByName('reef-highlight'); hl.updateMatrixWorld(true);
       v.copy(hl.children[0].position); v.y -= 0.012; v.project(camera);
-      hl.visible = false; renderer.render(scene, camera); hl.visible = true;
+      // Lane sv14: the tape and its marks run right over the plumb spot, so the window
+      // read mostly yellow tape. Hide them with the highlight to read the bottom itself.
+      const hide = [hl]; scene.traverse((o) => { if (/^reef-tape($|-marks)/.test(o.name)) hide.push(o); });
+      hide.forEach((o) => { o.visible = false; }); renderer.render(scene, camera); hide.forEach((o) => { o.visible = true; });
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
       const cx = Math.round((v.x * 0.5 + 0.5) * w), cy = Math.round((v.y * 0.5 + 0.5) * h), win = [0, 0, 0];
       let n = 0;
@@ -74,7 +77,11 @@ describe('Survey 3D view, rendered', () => {
         expect(s.inside, `point ${s.point + 1} is in view`).toBe(true);
         at[s.category] = s.at;
         // The water's colour: red is absorbed first, blue and green carry.
-        expect(s.frame[2] - s.frame[0], `point ${s.point + 1} frame ${s.frame.map(Math.round)}`).toBeGreaterThan(15);
+        // Lane sv14: the closer, steeper diver view looks down at the floor and sees
+        // little open water, so the frame is less blue (about 14 on the GPU) than at
+        // 1.9 m (about 18). A frame with no water colour (fog or backdrop lost, the
+        // dive's red absorption copied in) measures about 4 or less.
+        expect(s.frame[2] - s.frame[0], `point ${s.point + 1} frame ${s.frame.map(Math.round)}`).toBeGreaterThan(9);
         expect(s.frame[1] - s.frame[0], `point ${s.point + 1} frame ${s.frame.map(Math.round)}`).toBeGreaterThan(20);
       });
       const cats = Object.keys(PICK);

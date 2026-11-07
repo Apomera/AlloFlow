@@ -12,10 +12,10 @@ const SOURCE = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_
 
 const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
-    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish'],
+    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish', 'blackfin_barracuda', 'titan_triggerfish', 'bluefin_trevally', 'blacktip_reef_shark', 'dusky_farmerfish'],
   reptile: ['green_turtle', 'hawksbill_turtle', 'banded_sea_krait'],
-  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm'],
-  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata'],
+  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm', 'drupella_snail', 'pincushion_sea_star', 'spanish_dancer', 'banded_coral_shrimp'],
+  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
 const ALL = Object.values(EXPECTED_IDS).flat();
@@ -28,7 +28,7 @@ const ANEMONE_BUDGET = [2500, 8300];
 // for the magnified specimen view, while retaining only two draw calls.
 const FEATHER_DUSTER_BUDGET = [3000, 16000];
 // Corals, sponges and frames do not move; everything else must animate.
-const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata'];
+const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral'];
 
 function load() {
   const local = {};
@@ -156,7 +156,7 @@ describe('Reef3DSpecies contract', () => {
       expect(i.depthM[1], id).toBeGreaterThan(i.depthM[0]);
       // Published ecological ranges can extend beyond the simulation's dive
       // depths (Fishes of Australia: forceps fish 145 m, regal angelfish 80 m).
-      const depthCap = { longfin_bannerfish:75, bigfin_reef_squid:100, yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100, leaf_scorpionfish:135, longnose_hawkfish:100 }[id] || 60;
+      const depthCap = { blackfin_barracuda:100, bluefin_trevally:190, blacktip_reef_shark:75, longfin_bannerfish:75, bigfin_reef_squid:100, yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100, leaf_scorpionfish:135, longnose_hawkfish:100 }[id] || 60;
       expect(i.depthM[1], id).toBeLessThanOrEqual(depthCap);
       if (i.habit === 'school') { expect(i.schoolSize[0], id).toBeGreaterThanOrEqual(2); expect(i.schoolSize[1], id).toBeGreaterThan(i.schoolSize[0]); }
       else expect(i.schoolSize, id).toBeNull();
@@ -238,8 +238,8 @@ describe('Reef3DSpecies schools', () => {
   it('builds a school as instanced meshes with the requested count and moves it as a school', () => {
     // Every schooling species, so a new one cannot skip the member budget.
     const schooling = S.ids.filter((i) => S.info(i).habit === 'school');
-    expect(schooling.sort()).toEqual(['anthias', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish']);
-    for (const [id, count] of schooling.map((i, k) => [i, [37, 12, 24, 9][k]])) {
+    expect(schooling.sort()).toEqual(['anthias', 'blackfin_barracuda', 'blue_green_chromis', 'bluestripe_snapper', 'bumphead_parrotfish']);
+    for (const [id, count] of schooling.map((i, k) => [i, [37, 16, 12, 24, 9][k]])) {
       for (const quality of ['low', 'high']) {
         const s = S.createSchool(THREE, id, count, { seed: 4, quality }), ms = meshes(s.root);
         expect(s.count).toBe(count);
@@ -390,7 +390,8 @@ describe('Reef3DSpecies growth and health', () => {
 
   it('colours bleached corals white and dead corals as dull skeleton with turf', () => {
     // Tubastraea has no algal symbionts; its healthy/dead states are covered separately.
-    for (const id of EXPECTED_IDS.coral.filter(id => id !== 'orange_cup_coral')) {
+    // Blue coral bleaches pale blue and organ pipe coral keeps its red pipes (tests/reef_reef_builders.test.js).
+    for (const id of EXPECTED_IDS.coral.filter(id => !['orange_cup_coral', 'blue_coral', 'pipe_organ_coral'].includes(id))) {
       const look = {};
       for (const health of ['healthy', 'bleached', 'dead']) { const h = S.create(THREE, id, { seed: 9, quality: 'low', health }); look[health] = appearance(h.root); h.dispose(); }
       const dist = (p, q) => Math.hypot(p.r - q.r, p.g - q.g, p.b - q.b);

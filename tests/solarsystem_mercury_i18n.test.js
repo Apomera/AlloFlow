@@ -34,7 +34,7 @@ describe('solar system Mercury naming', () => {
       expect(source, `${p}: the planet still uses the periodic-table key for Mercury`)
         .not.toContain("t('stem.periodic.mercury')");
       expect(source, `${p}: Mercury is not named from the solar_sys namespace`)
-        .toContain("name: t('stem.solar_sys.mercury')");
+        .toContain("name: t('stem.solar_sys.mercury', 'Mercury')");
     });
   });
 
@@ -45,7 +45,7 @@ describe('solar system Mercury naming', () => {
       // namespace and a comparison did not, they would still match in English and
       // silently STOP matching in any locale where the pack has one key and not the
       // other — Mercury's facts would vanish for those students only.
-      const nameKeys = (source.match(/t\('stem\.solar_sys\.mercury'\)/g) || []).length;
+      const nameKeys = (source.match(/t\('stem\.solar_sys\.mercury', 'Mercury'\)/g) || []).length;
       expect(nameKeys, `${p}: expected the name plus both fact-chain comparisons`)
         .toBeGreaterThanOrEqual(3);
     });

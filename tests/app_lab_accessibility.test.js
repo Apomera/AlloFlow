@@ -42,6 +42,8 @@ describe('App Lab accessibility', () => {
       const ctx = makeCtx({
         toolData,
         setToolData,
+        // Build controls are AI-only and render only when text AI is usable (2026-11-03 AI-off sweep).
+        callGemini: () => Promise.resolve(''),
         update: (toolId, key, value) => setToolData((previous) => ({
           ...previous,
           [toolId]: { ...(previous[toolId] || {}), [key]: value },

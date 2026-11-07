@@ -22,7 +22,7 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-dataplot-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-dataplot-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(13, 148, 136)\"],[style*=\"background-color: rgb(13, 148, 136)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(244, 63, 94)\"],[style*=\"background-color: rgb(244, 63, 94)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(13, 148, 136)\"],[style*=\"background-color: rgb(13, 148, 136)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(244, 63, 94)\"],[style*=\"background-color: rgb(244, 63, 94)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -47,6 +47,1163 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
 
+  // == alloGraphAccess core v2 (keep byte-identical in graphcalc + funcgrapher) ==
+  // Describe, hear and step through a sampled curve. Both graphing tools carry this
+  // block; the first copy loaded installs window.StemLab._graphAccess. Samples are
+  // [{x, y}] with y null where the curve is undefined; text goes through the caller's
+  // t(key, fallback). Nothing here writes toolData; the AudioContext stays in this closure.
+  // v2: one root engine, rate of change, exact family features, hints and worked examples.
+  // A newer copy replaces an older one, so a stale cached v1 never hides v2.
+  (function () {
+    if (!window.StemLab || (window.StemLab._graphAccess && window.StemLab._graphAccess.version >= 2)) return;
+    var FMIN = 220, FMAX = 880, PANMAX = 0.8, CLICKHZ = 1600, SECONDS = 4;
+    function fin(v) { return typeof v === 'number' && isFinite(v); }
+    function tOf(t) {
+      return function (key, fb) { var v = null; try { v = typeof t === 'function' ? t(key, fb) : null; } catch (e) { v = null; } return (v == null || v === key) ? fb : v; };
+    }
+    function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+    function fill(s, map) { return __alloOneWord(String(s).replace(/\{(\w+)\}/g, function (m, k) { return map && map[k] != null ? String(map[k]) : m; })); }
+    // Two decimals, a true minus sign (read as "minus"), no "-0".
+    function num(v) {
+      if (!fin(v)) return '?';
+      var r = Math.round(v * 100) / 100;
+      if (r === 0) r = 0;
+      var s = String(r);
+      return s.charAt(0) === '-' ? '−' + s.slice(1) : s;
+    }
+    function listOf(items, __alloT) {
+      if (items.length < 2) return items.join('');
+      return items.slice(0, -1).join(', ') + ' ' + __alloT('stem.graph_access.and', 'and') + ' ' + items[items.length - 1];
+    }
+    function evalAt(ev, x) { var v; try { v = ev(x); } catch (e) { v = NaN; } return fin(v) ? v : null; }
+    function sample(evaluate, xmin, xmax, n) {
+      var out = [];
+      if (typeof evaluate !== 'function' || !fin(xmin) || !fin(xmax) || !(xmax > xmin)) return out;
+      n = fin(n) && n >= 2 ? Math.floor(n) : 201;
+      for (var i = 0; i < n; i++) {
+        var x = i === n - 1 ? xmax : xmin + (xmax - xmin) * i / (n - 1);
+        if (Math.abs(x) < (xmax - xmin) * 1e-12) x = 0;
+        out.push({ x: x, y: evalAt(evaluate, x) });
+      }
+      return out;
+    }
+    // A jump between two finite samples: a pole or a step, not a steep stretch.
+    function jumpAt(ev, x0, y0, x1, y1, span) {
+      if (!(Math.abs(y1 - y0) > span)) return null;
+      if (!ev) return (y0 > 0) !== (y1 > 0) ? (x0 + x1) / 2 : null;
+      var a = x0, b = x1, ya = y0, yb = y1;
+      for (var k = 0; k < 30; k++) {
+        var m = (a + b) / 2, ym = evalAt(ev, m);
+        if (ym === null) return m;
+        if (Math.abs(ym - ya) >= Math.abs(yb - ym)) { b = m; yb = ym; } else { a = m; ya = ym; }
+      }
+      return Math.abs(yb - ya) > span * 1e-3 ? (a + b) / 2 : null;
+    }
+    // Where the curve stops being defined, between an undefined x and a defined x.
+    function edgeAt(ev, xu, xd) {
+      if (!ev) return xd;
+      for (var k = 0; k < 40; k++) { var m = (xu + xd) / 2; if (evalAt(ev, m) !== null) xd = m; else xu = m; }
+      return xd;
+    }
+    function refineZero(ev, a, ya, b, yb) {
+      if (!ev) return a - ya * (b - a) / (yb - ya);
+      for (var k = 0; k < 60; k++) {
+        var m = (a + b) / 2, ym = evalAt(ev, m);
+        if (ym === null) break;
+        if (ym === 0) return m;
+        if ((ym < 0) === (ya < 0)) { a = m; ya = ym; } else { b = m; yb = ym; }
+      }
+      return Math.abs(ya) <= Math.abs(yb) ? a : b;
+    }
+    function refineTurn(ev, a, b, isMax, fallback) {
+      if (!ev) return fallback;
+      var r = (Math.sqrt(5) - 1) / 2, c = b - r * (b - a), d = a + r * (b - a);
+      function f(x) { var v = evalAt(ev, x); return v === null ? Infinity : (isMax ? -v : v); }
+      var fc = f(c), fd = f(d);
+      for (var k = 0; k < 60; k++) {
+        if (fc < fd) { b = d; d = c; fd = fc; c = b - r * (b - a); fc = f(c); }
+        else { a = c; c = d; fc = fd; d = a + r * (b - a); fd = f(d); }
+      }
+      var x = (a + b) / 2, y = evalAt(ev, x);
+      if (y === null) return fallback;
+      return (isMax ? y >= fallback.y : y <= fallback.y) ? { x: x, y: y } : fallback;
+    }
+    // Key features of one sampled curve. opts: evaluate, ymin, ymax, zeros (x list from a
+    // better root finder; it replaces the sample scan).
+    function analyse(samples, opts) {
+      opts = opts || {};
+      var ev = typeof opts.evaluate === 'function' ? opts.evaluate : null;
+      var pts = (Array.isArray(samples) ? samples : []).filter(function (s) { return s && fin(s.x); }).map(function (s) { return { x: s.x, y: fin(s.y) ? s.y : null }; });
+      var n = pts.length;
+      var out = { defined: false, runs: [], gaps: [], zeros: [], extrema: [], intervals: [], yIntercept: null, ends: { left: null, right: null }, xmin: n ? pts[0].x : 0, xmax: n ? pts[n - 1].x : 0, ymin: opts.ymin, ymax: opts.ymax };
+      if (n < 2) return out;
+      var xmin = pts[0].x, xmax = pts[n - 1].x, step = (xmax - xmin) / (n - 1);
+      var ys = []; pts.forEach(function (p) { if (p.y !== null) ys.push(p.y); });
+      if (!ys.length) return out;
+      out.defined = true;
+      var dataLo = Math.min.apply(null, ys), dataHi = Math.max.apply(null, ys);
+      var lo = fin(opts.ymin) ? opts.ymin : dataLo, hi = fin(opts.ymax) ? opts.ymax : dataHi;
+      var span = hi > lo ? hi - lo : Math.max(1, Math.abs(hi));
+      var flat = span * 1e-9, zeroTol = span * 1e-12;
+      function clean(x) { var r = Math.round(x); if (Math.abs(x - r) < Math.max(1e-9, step * 1e-6)) x = r; return x === 0 ? 0 : x; }
+      function cleanY(y) { return Math.abs(y) < zeroTol ? 0 : y; }
+      var runs = [], cur = null, i, k;
+      for (i = 0; i < n; i++) {
+        var p = pts[i];
+        if (p.y === null) { cur = null; continue; }
+        if (cur && jumpAt(ev, pts[i - 1].x, pts[i - 1].y, p.x, p.y, span) !== null) cur = null;
+        if (!cur) { cur = []; runs.push(cur); }
+        p.i = i; cur.push(p);
+      }
+      out.runs = runs;
+      var first = runs[0][0], lastRun = runs[runs.length - 1], last = lastRun[lastRun.length - 1];
+      if (first.i > 0) out.gaps.push({ kind: 'left', x: clean(edgeAt(ev, pts[first.i - 1].x, first.x)) });
+      for (k = 1; k < runs.length; k++) {
+        var A = runs[k - 1][runs[k - 1].length - 1], B = runs[k][0];
+        if (B.i - A.i <= 2) {
+          var bx = B.i - A.i === 1 ? jumpAt(ev, A.x, A.y, B.x, B.y, span) : (A.x + B.x) / 2;
+          out.gaps.push({ kind: 'break', x: clean(bx === null ? (A.x + B.x) / 2 : bx) });
+        } else out.gaps.push({ kind: 'missing', from: clean(edgeAt(ev, pts[A.i + 1].x, A.x)), to: clean(edgeAt(ev, pts[B.i - 1].x, B.x)) });
+      }
+      if (last.i < n - 1) out.gaps.push({ kind: 'right', x: clean(edgeAt(ev, pts[last.i + 1].x, last.x)) });
+      var zeros = out.zeros;
+      // Zeros handed in by the root engine are kept as found (two close roots stay two).
+      function addZero(x, kind) {
+        x = clean(x);
+        var near = given && !out.alongAxis ? Math.max(1e-10, step * 1e-6) : step * 0.5;
+        for (var z = 0; z < zeros.length; z++) if (Math.abs(zeros[z].x - x) <= near) return;
+        zeros.push({ x: x, y: 0, kind: kind });
+      }
+      out.alongAxis = ys.every(function (y) { return Math.abs(y) <= zeroTol; });
+      var given = Array.isArray(opts.zeros);
+      if (out.alongAxis) given = true;
+      else if (given) opts.zeros.forEach(function (z) { var zx = fin(z) ? z : (z && fin(z.x) ? z.x : null); if (zx !== null && zx >= xmin - 1e-9 && zx <= xmax + 1e-9) addZero(zx, 'cross'); });
+      else runs.forEach(function (run) {
+        for (var j = 0; j < run.length; j++) {
+          var s = run[j];
+          if (Math.abs(s.y) <= zeroTol) { addZero(s.x, 'cross'); continue; }
+          var t2 = run[j + 1];
+          if (t2 && Math.abs(t2.y) > zeroTol && (s.y < 0) !== (t2.y < 0)) addZero(refineZero(ev, s.x, s.y, t2.x, t2.y), 'cross');
+        }
+      });
+      runs.forEach(function (run) {
+        var dir = 0;
+        for (var j = 1; j < run.length; j++) {
+          var dy = run[j].y - run[j - 1].y, d = Math.abs(dy) <= flat ? 0 : (dy > 0 ? 1 : -1);
+          if (d === 0) continue;
+          if (dir !== 0 && d !== dir) {
+            var isMax = dir > 0, at = run[j - 1];
+            var e = refineTurn(ev, run[Math.max(0, j - 2)].x, run[j].x, isMax, { x: at.x, y: at.y });
+            out.extrema.push({ x: clean(e.x), y: cleanY(e.y), kind: isMax ? 'max' : 'min' });
+          }
+          dir = d;
+        }
+      });
+      out.extrema.forEach(function (e) { if (!given && Math.abs(e.y) <= Math.max(zeroTol, 1e-9)) addZero(e.x, 'touch'); });
+      zeros.sort(function (a, b) { return a.x - b.x; });
+      zeros.forEach(function (z, zi) {
+        var gap = Infinity;
+        if (zi > 0) gap = z.x - zeros[zi - 1].x;
+        if (zi < zeros.length - 1) gap = Math.min(gap, zeros[zi + 1].x - z.x);
+        var d = Math.max(Math.min(step * 0.5, gap / 2), 1e-6), l = ev ? evalAt(ev, z.x - d) : null, r = ev ? evalAt(ev, z.x + d) : null;
+        if (l !== null && r !== null && Math.abs(l) > zeroTol && Math.abs(r) > zeroTol && (l > 0) === (r > 0)) z.kind = 'touch';
+      });
+      runs.forEach(function (run) {
+        var a = run[0], b = run[run.length - 1];
+        var cuts = [{ x: a.x, y: a.y }].concat(out.extrema.filter(function (e) { return e.x > a.x && e.x < b.x; })).concat([{ x: b.x, y: b.y }]);
+        var level = run.every(function (s) { return Math.abs(s.y - a.y) <= flat * 10; });
+        for (var c = 1; c < cuts.length; c++) {
+          if (cuts[c].x - cuts[c - 1].x < step * 0.5) continue;
+          var dy = cuts[c].y - cuts[c - 1].y;
+          out.intervals.push({ from: clean(cuts[c - 1].x), to: clean(cuts[c].x), dir: level || Math.abs(dy) <= flat ? 'constant' : (dy > 0 ? 'increasing' : 'decreasing') });
+        }
+      });
+      if (xmin <= 0 && xmax >= 0) {
+        var y0 = null;
+        if (ev) y0 = evalAt(ev, 0);
+        else pts.forEach(function (p) { if (p.x === 0) y0 = p.y; });
+        out.yIntercept = { x: 0, y: y0 === null ? null : cleanY(y0) };
+      }
+      var reach = Math.max(2, Math.round((n - 1) * 0.04));
+      function trend(run, left) {
+        if (run.length < 2) return null;
+        var s0 = left ? run[0] : run[run.length - 1], s1 = left ? run[Math.min(run.length - 1, reach)] : run[Math.max(0, run.length - 1 - reach)];
+        var dy = s0.y - s1.y;
+        if (Math.abs(dy) <= span * 0.002) return { trend: 'levels', y: cleanY(s0.y) };
+        if (dy > 0) return { trend: fin(opts.ymax) && s0.y > opts.ymax ? 'past_top' : 'increases' };
+        return { trend: fin(opts.ymin) && s0.y < opts.ymin ? 'past_bottom' : 'decreases' };
+      }
+      out.ends = { left: trend(runs[0], true), right: trend(lastRun, false) };
+      return out;
+    }
+    // Plain-language summary. opts: t, name, evaluate, zeros, ymin, ymax, hide {zeros, yIntercept}.
+    function describeGraph(samples, opts) {
+      opts = opts || {};
+      var __alloT = tOf(opts.t), f = analyse(samples, opts), hide = opts.hide || {};
+      var lead = opts.name ? fill(__alloT('stem.graph_access.graph_of', 'Graph of {name}.'), { name: opts.name }) : '';
+      if (!f.defined) {
+        var none = __alloT('stem.graph_access.empty', 'No part of this graph is in the current window.');
+        return { text: (lead + ' ' + none).trim(), short: (lead + ' ' + none).trim(), features: f, points: [] };
+      }
+      var zeros = hide.zeros ? [] : f.zeros.filter(function (z) { return !(hide.yIntercept && z.x === 0); });
+      var turns = f.extrema.filter(function (e) { return !(hide.yIntercept && e.x === 0) && !(hide.zeros && e.y === 0); });
+      var yint = f.yIntercept && !hide.yIntercept && !(hide.zeros && f.yIntercept.y === 0) ? f.yIntercept : null;
+      var parts = [], shortParts = [];
+      var gapText = f.gaps.map(function (g) {
+        if (g.kind === 'left') return fill(__alloT('stem.graph_access.gap_left', 'There is no graph left of x = {x}.'), { x: num(g.x) });
+        if (g.kind === 'right') return fill(__alloT('stem.graph_access.gap_right', 'There is no graph right of x = {x}.'), { x: num(g.x) });
+        if (g.kind === 'break') return fill(__alloT('stem.graph_access.gap_break', 'The graph breaks at x = {x}.'), { x: num(g.x) });
+        return fill(__alloT('stem.graph_access.gap_missing', 'There is no graph from x = {from} to x = {to}.'), { from: num(g.from), to: num(g.to) });
+      });
+      parts.push(gapText.length ? gapText.join(' ') : fill(__alloT('stem.graph_access.domain_all', 'It is drawn across the whole window, from x = {from} to x = {to}.'), { from: num(f.xmin), to: num(f.xmax) }));
+      var zeroText = hide.zeros ? __alloT('stem.graph_access.zeros_hidden', 'Explore with keys to find where it meets the x-axis.')
+        : f.alongAxis ? __alloT('stem.graph_access.zeros_along', 'It lies along the x-axis across this window.')
+        : !zeros.length ? __alloT('stem.graph_access.zeros_none', 'It does not meet the x-axis in this window.')
+        : fill(__alloT('stem.graph_access.zeros_list', 'It meets the x-axis at {list}.'), { list: listOf(zeros.slice(0, 6).map(function (z) { return 'x = ' + num(z.x) + (z.kind === 'touch' ? ' ' + __alloT('stem.graph_access.zero_touches', '(touching, not crossing)') : ''); }), __alloT) + (zeros.length > 6 ? ' ' + fill(__alloT('stem.graph_access.and_more', 'and {n} more'), { n: zeros.length - 6 }) : '') });
+      parts.push(zeroText); shortParts.push(zeroText);
+      if (yint) {
+        var yText = yint.y === null ? __alloT('stem.graph_access.yint_undefined', 'It is undefined at x = 0, so there is no y-intercept.') : fill(__alloT('stem.graph_access.yint', 'It crosses the y-axis at y = {y}.'), { y: num(yint.y) });
+        parts.push(yText); shortParts.push(yText);
+      }
+      function turnText(e) { return fill(e.kind === 'max' ? __alloT('stem.graph_access.turn_max', 'a local maximum at ({x}, {y})') : __alloT('stem.graph_access.turn_min', 'a local minimum at ({x}, {y})'), { x: num(e.x), y: num(e.y) }); }
+      var oscillates = turns.length >= 4;
+      if (oscillates) {
+        var osc = fill(__alloT('stem.graph_access.oscillates', 'It rises and falls repeatedly, with {n} turning points in this window, including {list}.'), { n: turns.length, list: listOf(turns.slice(0, 2).map(turnText), __alloT) });
+        parts.push(osc); shortParts.push(osc);
+      } else if (turns.length) {
+        var tt = fill(__alloT('stem.graph_access.turning_points', 'It has {list}.'), { list: listOf(turns.map(turnText), __alloT) });
+        parts.push(tt); shortParts.push(tt);
+      } else parts.push(__alloT('stem.graph_access.no_turns', 'It has no turning points in this window.'));
+      if (!oscillates && f.intervals.length) {
+        parts.push(fill(__alloT('stem.graph_access.intervals', 'Reading left to right, it is {list}.'), { list: listOf(f.intervals.map(function (iv) {
+          var word = iv.dir === 'increasing' ? __alloT('stem.graph_access.increasing', 'increasing') : iv.dir === 'decreasing' ? __alloT('stem.graph_access.decreasing', 'decreasing') : __alloT('stem.graph_access.constant', 'constant');
+          return fill(__alloT('stem.graph_access.interval', '{dir} from x = {from} to x = {to}'), { dir: word, from: num(iv.from), to: num(iv.to) });
+        }), __alloT) }));
+      }
+      function trendText(e) { return trendWords(e, __alloT); }
+      if (!oscillates && f.ends.left) parts.push(fill(__alloT('stem.graph_access.end_left', 'As x moves left, y {trend}.'), { trend: trendText(f.ends.left) }));
+      if (!oscillates && f.ends.right) parts.push(fill(__alloT('stem.graph_access.end_right', 'As x moves right, y {trend}.'), { trend: trendText(f.ends.right) }));
+      if (fin(opts.ymin) && fin(opts.ymax)) parts.push(fill(__alloT('stem.graph_access.window', 'Window: x from {x0} to {x1}, y from {y0} to {y1}.'), { x0: num(f.xmin), x1: num(f.xmax), y0: num(opts.ymin), y1: num(opts.ymax) }));
+      var points = [];
+      zeros.forEach(function (z) { points.push({ x: z.x, y: 0, kind: z.kind === 'touch' ? 'touch' : 'zero' }); });
+      if (yint) points.push({ x: 0, y: yint.y, kind: 'yint' });
+      turns.forEach(function (e) { points.push({ x: e.x, y: e.y, kind: e.kind }); });
+      f.gaps.forEach(function (g) {
+        if (g.kind === 'break') points.push({ x: g.x, y: null, kind: 'break' });
+        else if (g.kind === 'left') points.push({ x: g.x, y: opts.evaluate ? evalAt(opts.evaluate, g.x) : null, kind: 'start' });
+        else if (g.kind === 'right') points.push({ x: g.x, y: opts.evaluate ? evalAt(opts.evaluate, g.x) : null, kind: 'end' });
+        else { points.push({ x: g.from, y: opts.evaluate ? evalAt(opts.evaluate, g.from) : null, kind: 'end' }); points.push({ x: g.to, y: opts.evaluate ? evalAt(opts.evaluate, g.to) : null, kind: 'start' }); }
+      });
+      points.sort(function (a, b) { return a.x - b.x; });
+      return { text: [lead].concat(parts).join(' ').trim(), short: [lead].concat(shortParts).join(' ').trim(), features: f, points: points };
+    }
+    function trendWords(e, __alloT) {
+      if (!e) return '';
+      if (e.trend === 'levels') return fill(__alloT('stem.graph_access.trend_levels', 'levels off near y = {y}'), { y: num(e.y) });
+      if (e.trend === 'past_top') return __alloT('stem.graph_access.trend_past_top', 'increases past the top of the window');
+      if (e.trend === 'past_bottom') return __alloT('stem.graph_access.trend_past_bottom', 'decreases past the bottom of the window');
+      return e.trend === 'increases' ? __alloT('stem.graph_access.trend_increases', 'increases') : __alloT('stem.graph_access.trend_decreases', 'decreases');
+    }
+    function featureLabel(kind, __alloT) {
+      if (kind === 'zero') return __alloT('stem.graph_access.feature_zero', 'meets the x-axis');
+      if (kind === 'touch') return __alloT('stem.graph_access.feature_touch', 'touches the x-axis');
+      if (kind === 'yint') return __alloT('stem.graph_access.feature_yint', 'y-intercept');
+      if (kind === 'max') return __alloT('stem.graph_access.feature_max', 'local maximum');
+      if (kind === 'min') return __alloT('stem.graph_access.feature_min', 'local minimum');
+      if (kind === 'break') return __alloT('stem.graph_access.feature_break', 'break in the graph');
+      if (kind === 'start') return __alloT('stem.graph_access.feature_start', 'the graph starts here');
+      if (kind === 'end') return __alloT('stem.graph_access.feature_end', 'the graph ends here');
+      return '';
+    }
+    // Samples with the key features merged in, in x order, for keyboard stepping.
+    function explorePoints(samples, desc, t) {
+      var __alloT = tOf(t), out = (Array.isArray(samples) ? samples : []).filter(function (s) { return s && fin(s.x); }).map(function (s) { return { x: s.x, y: fin(s.y) ? s.y : null, kind: '', feature: '' }; });
+      var tol = out.length > 1 ? (out[out.length - 1].x - out[0].x) / (out.length - 1) * 1e-6 : 1e-9;
+      ((desc && desc.points) || []).forEach(function (p) {
+        var item = { x: p.x, y: fin(p.y) ? p.y : null, kind: p.kind, feature: featureLabel(p.kind, __alloT) }, j = 0;
+        while (j < out.length && out[j].x < p.x - tol) j++;
+        if (j < out.length && Math.abs(out[j].x - p.x) <= tol) {
+          if (out[j].feature) item.feature = out[j].feature + ', ' + item.feature;
+          out[j] = item;
+        } else out.splice(j, 0, item);
+      });
+      return out;
+    }
+    function pointText(p, t) {
+      var __alloT = tOf(t);
+      if (!p) return '';
+      var s = p.y === null ? fill(__alloT('stem.graph_access.point_undefined', 'x = {x}, y is undefined'), { x: num(p.x) }) : fill(__alloT('stem.graph_access.point', 'x = {x}, y = {y}'), { x: num(p.x), y: num(p.y) });
+      return p.feature ? s + ': ' + p.feature : s;
+    }
+    function stepIndex(points, index, key) {
+      var n = Array.isArray(points) ? points.length : 0;
+      if (!n) return { index: -1, handled: false };
+      var i = fin(index) && index >= 0 && index < n ? index : -1;
+      if (key === 'ArrowRight') return { index: Math.min(n - 1, i + 1), handled: true, edge: i === n - 1 };
+      if (key === 'ArrowLeft') return { index: i < 0 ? 0 : Math.max(0, i - 1), handled: true, edge: i === 0 };
+      if (key === 'Home') return { index: 0, handled: true };
+      if (key === 'End') return { index: n - 1, handled: true };
+      if (key === 'PageDown' || key === 'PageUp') {
+        var dir = key === 'PageDown' ? 1 : -1;
+        for (var j = (i < 0 && dir < 0 ? n : i) + dir; j >= 0 && j < n; j += dir) if (points[j].feature) return { index: j, handled: true };
+        return { index: i < 0 ? 0 : i, handled: true, none: true };
+      }
+      return { index: i, handled: false };
+    }
+    // Spoken updates, throttled: the first is immediate, a burst collapses to its last.
+    var speech = { last: 0, timer: null, pending: null };
+    function liveRegion(text) {
+      var el = document.getElementById('allo-live-graph-access');
+      if (!el) {
+        el = document.createElement('div'); el.id = 'allo-live-graph-access';
+        el.setAttribute('aria-live', 'polite'); el.setAttribute('aria-atomic', 'true'); el.setAttribute('role', 'status'); el.className = 'sr-only';
+        el.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+        document.body.appendChild(el);
+      }
+      el.textContent = ''; el.textContent = text;
+    }
+    function say(text, announce) {
+      if (!text) return;
+      var fn = typeof announce === 'function' ? announce : liveRegion, now = Date.now();
+      if (!speech.timer && now - speech.last >= 150) { speech.last = now; try { fn(text); } catch (e) {} return; }
+      speech.pending = { text: text, fn: fn };
+      if (!speech.timer) speech.timer = setTimeout(function () {
+        var p = speech.pending; speech.timer = null; speech.pending = null;
+        if (p) { speech.last = Date.now(); try { p.fn(p.text); } catch (e) {} }
+      }, 150);
+    }
+    // A button press is its own event: announce now and drop any queued step update.
+    function sayNow(text, announce) {
+      if (!text) return;
+      if (speech.timer) { clearTimeout(speech.timer); speech.timer = null; speech.pending = null; }
+      speech.last = Date.now();
+      try { (typeof announce === 'function' ? announce : liveRegion)(text); } catch (e) {}
+    }
+    function stepperKeyDown(e, cfg) {
+      cfg = cfg || {};
+      var r = stepIndex(cfg.points, cfg.index, e && e.key);
+      if (!r.handled) return false;
+      if (e.preventDefault) e.preventDefault();
+      var __alloT = tOf(cfg.t), text = pointText(cfg.points[r.index], cfg.t);
+      if (r.none) text = __alloT('stem.graph_access.no_more_features', 'No more key features this way.') + ' ' + text;
+      else if (r.edge) text = __alloT('stem.graph_access.at_edge', 'Edge of the window.') + ' ' + text;
+      if (typeof cfg.onMove === 'function' && r.index !== cfg.index) cfg.onMove(r.index);
+      say(text, cfg.announce);
+      return true;
+    }
+    // Pitch follows y (log scale between ymin and ymax), pan follows x, a click marks each
+    // x-axis crossing, and an undefined stretch or a jump is silence between segments.
+    function sonifyPlan(samples, opts) {
+      opts = opts || {};
+      var pts = (Array.isArray(samples) ? samples : []).filter(function (s) { return s && fin(s.x); });
+      if (pts.length < 2) return null;
+      var x0 = pts[0].x, x1 = pts[pts.length - 1].x;
+      if (!(x1 > x0)) return null;
+      for (var i = 1; i < pts.length; i++) if (!(pts[i].x > pts[i - 1].x)) return null;
+      var ys = pts.filter(function (p) { return fin(p.y); }).map(function (p) { return p.y; });
+      if (!ys.length) return null;
+      var lo = fin(opts.ymin) ? opts.ymin : Math.min.apply(null, ys), hi = fin(opts.ymax) ? opts.ymax : Math.max.apply(null, ys);
+      if (!(hi > lo)) { lo -= 1; hi += 1; }
+      var duration = fin(opts.seconds) && opts.seconds > 0 ? Math.min(20, opts.seconds) : SECONDS;
+      var ratio = FMAX / FMIN, ev = typeof opts.evaluate === 'function' ? opts.evaluate : null;
+      function frac(x) { return (x - x0) / (x1 - x0); }
+      function freq(y) { return FMIN * Math.pow(ratio, Math.min(1, Math.max(0, (y - lo) / (hi - lo)))); }
+      var segments = [], cur = null, prev = null;
+      pts.forEach(function (p) {
+        if (!fin(p.y)) { cur = null; prev = null; return; }
+        if (cur && prev && jumpAt(ev, prev.x, prev.y, p.x, p.y, hi - lo) !== null) cur = null;
+        if (!cur) { cur = []; segments.push(cur); }
+        cur.push(Object.freeze({ t: frac(p.x) * duration, freq: freq(p.y), pan: PANMAX * (2 * frac(p.x) - 1), x: p.x, y: p.y }));
+        prev = p;
+      });
+      var zx = Array.isArray(opts.zeros) ? opts.zeros.map(function (z) { return fin(z) ? z : (z && fin(z.x) ? z.x : null); }).filter(function (z) { return z !== null && z >= x0 && z <= x1; })
+        : analyse(pts, { evaluate: ev, ymin: lo, ymax: hi }).zeros.map(function (z) { return z.x; });
+      var cues = zx.sort(function (a, b) { return a - b; }).map(function (z) { return Object.freeze({ t: frac(z) * duration, kind: 'zero', x: z, freq: CLICKHZ }); });
+      var sounding = 0;
+      segments.forEach(function (s) { sounding += s[s.length - 1].t - s[0].t; });
+      return Object.freeze({ duration: duration, segments: Object.freeze(segments.map(function (s) { return Object.freeze(s); })), cues: Object.freeze(cues), x0: x0, x1: x1, ymin: lo, ymax: hi, silentFraction: Math.max(0, 1 - sounding / duration) });
+    }
+    var audio = { ctx: null, handle: null };
+    function audioCtx() {
+      var SL = window.StemLab;
+      try { if (SL && typeof SL.audioContext === 'function') return SL.audioContext(); } catch (e) {}
+      if (audio.ctx && audio.ctx.state !== 'closed') { if (audio.ctx.state === 'suspended' && audio.ctx.resume) { try { audio.ctx.resume(); } catch (e) {} } return audio.ctx; }
+      var Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return null;
+      try { audio.ctx = new Ctor(); } catch (e) { audio.ctx = null; }
+      return audio.ctx;
+    }
+    function isMuted() { return !!window._alloGlobalMute; }
+    function isPlaying(key) { return !!audio.handle && (key == null || audio.handle.key === key); }
+    function stop() { var hd = audio.handle; audio.handle = null; if (hd) hd.stop(); }
+    // Call only from a click or key press. Returns { key, duration, stop } or null.
+    function playPlan(plan, opts) {
+      opts = opts || {};
+      stop();
+      if (!plan || !plan.segments || opts.muted || isMuted()) return null;
+      var ac = audioCtx();
+      if (!ac || typeof ac.createOscillator !== 'function' || typeof ac.createGain !== 'function') return null;
+      var nodes = [], ended = false, timer = null;
+      var handle = { key: opts.key == null ? null : opts.key, duration: plan.duration, stop: function () {} };
+      function finish() {
+        if (ended) return;
+        ended = true; if (timer) clearTimeout(timer);
+        if (audio.handle === handle) audio.handle = null;
+        if (typeof opts.onEnd === 'function') { try { opts.onEnd(); } catch (e) {} }
+      }
+      function voice(type, f, at, until, peak) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.setValueAtTime(f, at);
+        g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak, at + 0.02);
+        g.gain.setValueAtTime(peak, Math.max(at + 0.025, until - 0.03)); g.gain.exponentialRampToValueAtTime(0.0001, until + 0.02);
+        o.connect(g);
+        nodes.push({ osc: o, gain: g });
+        return { o: o, g: g };
+      }
+      try {
+        var t0 = ac.currentTime + 0.06;
+        plan.segments.forEach(function (seg) {
+          var start = t0 + seg[0].t, end = Math.max(start + 0.05, t0 + seg[seg.length - 1].t);
+          var v = voice('sine', seg[0].freq, start, end, 0.09), pan = typeof ac.createStereoPanner === 'function' ? ac.createStereoPanner() : null;
+          if (pan) pan.pan.setValueAtTime(seg[0].pan, start);
+          for (var j = 1; j < seg.length; j++) {
+            v.o.frequency.exponentialRampToValueAtTime(seg[j].freq, t0 + seg[j].t);
+            if (pan) pan.pan.linearRampToValueAtTime(seg[j].pan, t0 + seg[j].t);
+          }
+          if (pan) { v.g.connect(pan); pan.connect(ac.destination); } else v.g.connect(ac.destination);
+          v.o.start(start); v.o.stop(end + 0.06);
+        });
+        plan.cues.forEach(function (c) {
+          var at = t0 + c.t, v = voice('triangle', c.freq, at, at + 0.04, 0.08);
+          v.g.connect(ac.destination); v.o.start(at); v.o.stop(at + 0.1);
+        });
+        timer = setTimeout(finish, (plan.duration + 0.35) * 1000);
+      } catch (e) {
+        nodes.forEach(function (nd) { try { nd.osc.stop(); } catch (er) {} try { nd.osc.disconnect(); } catch (er) {} });
+        finish(); return null;
+      }
+      handle.stop = function () {
+        if (ended) return;
+        nodes.forEach(function (nd) { try { nd.gain.gain.cancelScheduledValues(0); nd.gain.gain.setValueAtTime(0.0001, ac.currentTime); } catch (e) {} try { nd.osc.stop(); } catch (e) {} try { nd.osc.disconnect(); } catch (e) {} });
+        finish();
+      };
+      audio.handle = handle;
+      return handle;
+    }
+    function speak(text, callTTS) {
+      if (!text || isMuted()) return false;
+      if (typeof callTTS === 'function') {
+        try { var r = callTTS(text, undefined, undefined, { force: true }); if (r && typeof r.catch === 'function') r.catch(function () {}); return true; } catch (e) {}
+      }
+      try {
+        if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+          var u = new window.SpeechSynthesisUtterance(text); u.rate = 0.95;
+          window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+    // First differences and ratios between consecutive rows, for linear-vs-exponential reasoning.
+    function differencesTable(rows) {
+      var out = [], dxs = [];
+      function r12(v) { var r = Number(v.toPrecision(12)); return r === 0 ? 0 : r; }
+      (Array.isArray(rows) ? rows : []).forEach(function (row, i) {
+        var x = row && fin(row.x) ? row.x : null, y = row && fin(row.y) ? row.y : null, prev = i > 0 ? out[i - 1] : null;
+        var item = { x: x, y: y, dy: null, ratio: null, d2: null };
+        if (prev && prev.y !== null && y !== null) { item.dy = r12(y - prev.y); if (prev.y !== 0) item.ratio = r12(y / prev.y); }
+        if (prev && prev.dy !== null && item.dy !== null) item.d2 = r12(item.dy - prev.dy);
+        if (prev && prev.x !== null && x !== null) dxs.push(x - prev.x);
+        out.push(item);
+      });
+      function same(list) {
+        if (list.length < 2 || list.some(function (v) { return v === null; })) return false;
+        return list.every(function (v) { return Math.abs(v - list[0]) <= 1e-9 * Math.max(1, Math.abs(list[0])); });
+      }
+      var diffs = out.slice(1).map(function (r) { return r.dy; }), ratios = out.slice(1).map(function (r) { return r.ratio; }), d2s = out.slice(2).map(function (r) { return r.d2; });
+      var equalSteps = dxs.length === out.length - 1 && dxs.length > 0 && same(dxs.length > 1 ? dxs : dxs.concat(dxs));
+      var pattern = out.length < 3 ? 'short' : !equalSteps ? 'unequal' : same(diffs) && diffs[0] === 0 ? 'constant' : same(diffs) ? 'linear' : same(ratios) ? 'exponential' : same(d2s) ? 'quadratic' : 'neither';
+      return { rows: out, equalSteps: equalSteps, pattern: pattern, difference: same(diffs) ? diffs[0] : null, ratio: same(ratios) ? ratios[0] : null, secondDifference: same(d2s) ? d2s[0] : null };
+    }
+    function differencesSummary(table, t) {
+      var __alloT = tOf(t), p = table && table.pattern;
+      if (p === 'short') return __alloT('stem.graph_access.diff_short', 'Add more rows to compare differences.');
+      if (p === 'unequal') return __alloT('stem.graph_access.diff_unequal', 'The x steps are not equal, so the differences cannot be compared.');
+      if (p === 'constant') return __alloT('stem.graph_access.diff_constant', 'Every difference is 0: y stays the same.');
+      if (p === 'linear') return fill(__alloT('stem.graph_access.diff_linear', 'Each equal step in x adds the same amount ({d}) to y: a linear pattern.'), { d: num(table.difference) });
+      if (p === 'exponential') return fill(__alloT('stem.graph_access.diff_exponential', 'Each equal step in x multiplies y by the same factor ({r}): an exponential pattern.'), { r: num(table.ratio) });
+      if (p === 'quadratic') return fill(__alloT('stem.graph_access.diff_quadratic', 'The differences change by the same amount ({d}) each step: a quadratic pattern.'), { d: num(table.secondDifference) });
+      return __alloT('stem.graph_access.diff_neither', 'Neither the differences nor the ratios are constant.');
+    }
+    // Function Grapher's nine families, so another tool can hand a curve over exactly.
+    function familyValue(type, a, b, c, x) {
+      if (type === 'linear') return a * x + b;
+      if (type === 'quadratic') return a * x * x + b * x + c;
+      if (type === 'trig') return a * Math.sin(b * x + c);
+      if (type === 'cubic') return a * x * x * x + b * x + c;
+      if (type === 'exponential') return a * Math.exp(b * x) + c;
+      if (type === 'absolute') return a * Math.abs(x + b) + c;
+      if (type === 'sqrt') return a * Math.sqrt(x + b) + c;
+      if (type === 'log') return a * Math.log(x + b) + c;
+      if (type === 'rational') return a / (x + b) + c;
+      return NaN;
+    }
+    var MATCH_XS = [-3.7, -2.6, -1.45, -0.55, 0.35, 1.2, 2.15, 3.05, 3.9, 4.65];
+    function solveLinear(M, v) {
+      var n = v.length, A = M.map(function (row, i) { return row.concat([v[i]]); });
+      for (var c = 0; c < n; c++) {
+        var p = c;
+        for (var r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+        if (Math.abs(A[p][c]) < 1e-12) return null;
+        var tmp = A[c]; A[c] = A[p]; A[p] = tmp;
+        for (var r2 = 0; r2 < n; r2++) if (r2 !== c) { var f = A[r2][c] / A[c][c]; for (var k = c; k <= n; k++) A[r2][k] -= f * A[c][k]; }
+      }
+      return A.map(function (row, i) { return row[n] / row[i]; });
+    }
+    // The family and slider values (a, b, c on 0.1 steps within [-5, 5]) that reproduce the
+    // curve exactly at ten probe points, or null.
+    function matchFamily(evaluate) {
+      if (typeof evaluate !== 'function') return null;
+      var ys = MATCH_XS.map(function (x) { return evalAt(evaluate, x); });
+      if (ys.filter(function (y) { return y !== null; }).length < 4) return null;
+      var scale = 1;
+      ys.forEach(function (y) { if (y !== null) scale = Math.max(scale, Math.abs(y)); });
+      function r1(v) { var r = Math.round(v * 10) / 10; return r === 0 ? 0 : r; }
+      function verify(type, a, b, c) {
+        if (![a, b, c].every(function (v) { return fin(v) && Math.abs(v) <= 5 + 1e-9; })) return false;
+        var used = 0;
+        for (var i = 0; i < MATCH_XS.length; i++) {
+          var f = familyValue(type, a, b, c, MATCH_XS[i]), ok = fin(f);
+          if (ok !== (ys[i] !== null)) return false;
+          if (!ok) continue;
+          used++;
+          if (Math.abs(f - ys[i]) > 1e-6 * scale) return false;
+        }
+        return used >= 4;
+      }
+      function tryFit(type, basis, map) {
+        var rows = [], vals = [];
+        for (var i = 0; i < MATCH_XS.length; i++) {
+          var r = basis(MATCH_XS[i]), ok = r.every(fin);
+          if (ok !== (ys[i] !== null)) return null;
+          if (ok) { rows.push(r); vals.push(ys[i]); }
+        }
+        if (rows.length < 4) return null;
+        var m = rows[0].length, M = [], v = [];
+        for (var p = 0; p < m; p++) { M.push([]); v.push(0); for (var q = 0; q < m; q++) M[p].push(0); }
+        rows.forEach(function (row, k) { for (var p2 = 0; p2 < m; p2++) { v[p2] += row[p2] * vals[k]; for (var q2 = 0; q2 < m; q2++) M[p2][q2] += row[p2] * row[q2]; } });
+        var sol = solveLinear(M, v);
+        if (!sol) return null;
+        var cands = map(sol) || [];
+        for (var j = 0; j < cands.length; j++) {
+          var a = r1(cands[j][0]), b = r1(cands[j][1]), c = r1(cands[j][2]);
+          if (verify(type, a, b, c)) return { type: type, a: a, b: b, c: c };
+        }
+        return null;
+      }
+      var hit = tryFit('linear', function (x) { return [x, 1]; }, function (p) { return [[p[0], p[1], 0]]; })
+        || tryFit('quadratic', function (x) { return [x * x, x, 1]; }, function (p) { return Math.abs(p[0]) < 1e-9 ? [] : [p]; })
+        || tryFit('cubic', function (x) { return [x * x * x, x, 1]; }, function (p) { return Math.abs(p[0]) < 1e-9 ? [] : [p]; });
+      if (hit) return hit;
+      var families = ['exponential', 'absolute', 'sqrt', 'log', 'rational', 'trig'];
+      function basisFor(type, b) {
+        if (type === 'exponential') return function (x) { return [Math.exp(b * x), 1]; };
+        if (type === 'absolute') return function (x) { return [Math.abs(x + b), 1]; };
+        if (type === 'sqrt') return function (x) { return [Math.sqrt(x + b), 1]; };
+        if (type === 'log') return function (x) { return [Math.log(x + b), 1]; };
+        if (type === 'rational') return function (x) { return [1 / (x + b), 1]; };
+        return function (x) { return [Math.sin(b * x), Math.cos(b * x)]; };
+      }
+      function mapFor(type, b) {
+        if (type === 'trig') return function (p) {
+          var amp = Math.sqrt(p[0] * p[0] + p[1] * p[1]), ph = Math.atan2(p[1], p[0]);
+          if (amp < 1e-9) return [];
+          var alt = ph > 0 ? ph - Math.PI : ph + Math.PI;
+          return [[amp, b, ph], [-amp, b, alt]];
+        };
+        return function (p) { return Math.abs(p[0]) < 1e-9 ? [] : [[p[0], b, p[1]]]; };
+      }
+      // Positive b first, so sin(x) comes back as a = 1, b = 1 rather than a = -1, b = -1.
+      for (var fi = 0; fi < families.length; fi++) {
+        for (var bi = 0; bi <= 100; bi++) {
+          var b = bi <= 50 ? bi / 10 : (50 - bi) / 10;
+          if (b === 0 && (families[fi] === 'exponential' || families[fi] === 'trig')) continue;
+          hit = tryFit(families[fi], basisFor(families[fi], b), mapFor(families[fi], b));
+          if (hit) return hit;
+        }
+      }
+      return null;
+    }
+    // Canvas and SVG colours per app theme, each curve with its own dash so colour is
+    // never the only cue. Canvas cannot read CSS var(), so these are literal.
+    var PALETTES = {
+      light: { bg: '#ffffff', grid: '#c3cedb', axis: '#334155', label: '#1e293b', muted: '#475569', curves: ['#1d4ed8', '#be185d', '#047857', '#b45309', '#6d28d9', '#c2410c'] },
+      dark: { bg: '#0f172a', grid: '#3a4a61', axis: '#94a3b8', label: '#e2e8f0', muted: '#cbd5e1', curves: ['#38bdf8', '#f472b6', '#34d399', '#fbbf24', '#a78bfa', '#fb923c'] },
+      contrast: { bg: '#000000', grid: '#6b7280', axis: '#ffffff', label: '#ffffff', muted: '#ffffff', curves: ['#ffff00', '#00ffff', '#ffffff', '#ff80ff', '#80ff80', '#ffb366'] }
+    };
+    var DASHES = [[], [10, 5], [2, 5], [12, 4, 2, 4], [6, 6], [16, 6]];
+    function palette(theme) {
+      var p = PALETTES[theme] || PALETTES.light;
+      return { theme: PALETTES[theme] ? theme : 'light', bg: p.bg, grid: p.grid, axis: p.axis, label: p.label, muted: p.muted,
+        curve: function (i) { var k = ((i % 6) + 6) % 6; return { color: p.curves[k], dash: DASHES[k].slice() }; } };
+    }
+    // A 1-2-5 tick step that keeps labels at least minPx apart.
+    function niceStep(range, pixels, minPx) {
+      if (!(range > 0) || !(pixels > 0)) return 1;
+      var raw = range * (minPx || 40) / pixels, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), m = raw / p;
+      return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+    }
+    // Describe / Hear / explore-with-keys controls. cfg: id, t, desc, points, index,
+    // samples, sonify, open, onToggle, onIndex, onChange, announce, callTTS, styles.
+    function panel(React, cfg) {
+      cfg = cfg || {};
+      var h = React.createElement, __alloT = tOf(cfg.t), id = String(cfg.id || 'graph-access'), st = cfg.styles || {};
+      var desc = cfg.desc || { text: '', points: [] }, points = cfg.points || [];
+      var idx = fin(cfg.index) && cfg.index >= 0 && cfg.index < points.length ? cfg.index : -1;
+      var playing = isPlaying(id);
+      function changed() { if (typeof cfg.onChange === 'function') cfg.onChange(); }
+      function hear() {
+        if (isPlaying(id)) { stop(); sayNow(__alloT('stem.graph_access.sound_stopped', 'Sound stopped.'), cfg.announce); changed(); return; }
+        if (isMuted()) { sayNow(__alloT('stem.graph_access.sound_muted', 'Sound is muted. Turn sound on to hear the graph.'), cfg.announce); return; }
+        var plan = sonifyPlan(cfg.samples || [], cfg.sonify || {});
+        var hd = plan ? playPlan(plan, { key: id, onEnd: changed }) : null;
+        if (!hd) { sayNow(__alloT('stem.graph_access.sound_unavailable', 'Sound is not available here.'), cfg.announce); return; }
+        sayNow(fill(__alloT('stem.graph_access.sound_playing', 'Playing the graph from left to right in {s} seconds. Higher pitch means a greater y-value, a click marks each x-axis crossing, and silence marks a gap.'), { s: num(plan.duration) }), cfg.announce);
+        changed();
+      }
+      function read() {
+        if (isMuted()) { sayNow(__alloT('stem.graph_access.sound_muted', 'Sound is muted. Turn sound on to hear the graph.'), cfg.announce); return; }
+        if (!speak(desc.text, cfg.callTTS)) sayNow(desc.text, cfg.announce);
+      }
+      var row = { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' };
+      return h('div', { 'data-graph-access': id, style: st.wrap },
+        h('div', { style: row },
+          h('button', { type: 'button', 'data-graph-access-describe': true, 'aria-expanded': !!cfg.open, 'aria-controls': id + '-text', onClick: cfg.onToggle, style: st.button }, __alloT('stem.graph_access.describe', 'Describe this graph')),
+          h('button', { type: 'button', 'data-graph-access-hear': playing ? 'playing' : 'idle', onClick: hear, style: st.button }, playing ? __alloT('stem.graph_access.stop', 'Stop') : __alloT('stem.graph_access.hear', 'Hear this graph')),
+          cfg.open ? h('button', { type: 'button', 'data-graph-access-read': true, onClick: read, style: st.button }, __alloT('stem.graph_access.read_aloud', 'Read aloud')) : null,
+          cfg.extra || null),
+        h('p', { id: id + '-text', 'data-graph-access-text': true, hidden: !cfg.open, style: Object.assign({ margin: '8px 0 0', lineHeight: 1.5 }, st.text, cfg.open ? null : { display: 'none' }) }, cfg.open ? desc.text : ''),
+        h('div', { role: 'application', tabIndex: 0, 'data-graph-access-explore': true, 'aria-label': __alloT('stem.graph_access.explore_label', 'Explore the graph with keys'), 'aria-describedby': id + '-help',
+          onKeyDown: function (e) { stepperKeyDown(e, { points: points, index: idx, t: cfg.t, announce: cfg.announce, onMove: cfg.onIndex }); }, style: Object.assign({ marginTop: 8 }, st.region) },
+          h('span', { 'data-graph-access-point': true }, idx >= 0 ? pointText(points[idx], cfg.t) : __alloT('stem.graph_access.explore_start', 'Select this box, then press the Right arrow or Page Down to start.'))),
+        h('p', { id: id + '-help', style: Object.assign({ margin: '4px 0 0' }, st.help) }, __alloT('stem.graph_access.explore_help', 'Left and Right arrows step along the curve. Page Down and Page Up jump to the next or previous key feature. Home and End go to the edges.')));
+    }
+    // ── v2 ── Root x-values from the shared scanner, snapped and kept apart the way analyse()
+    // does, so chips, descriptions and sound list the same roots. xs is undefined when the
+    // curve is zero at every sample (analyse then says it lies along the axis).
+    function zerosOf(evaluate, xmin, xmax) {
+      var scan = gcScanRoots(evaluate, xmin, xmax);
+      if (scan.error) return { xs: [], scan: scan };
+      if (scan.zeroThroughoutSamples) return { xs: undefined, scan: scan };
+      var step = (xmax - xmin) / 200, tol = Math.max(1e-9, step * 1e-6), xs = [];
+      scan.candidates.forEach(function (c) {
+        var x = c.x, r = Math.round(x);
+        if (Math.abs(x - r) < tol) x = r;
+        if (x === 0) x = 0;
+        if (!xs.some(function (o) { return Math.abs(o - x) <= Math.max(1e-10, step * 1e-6); })) xs.push(x);
+      });
+      return { xs: xs, scan: scan };
+    }
+    // Average rate of change between two points of one curve.
+    function rateOfChange(evaluate, x1, x2) {
+      if (typeof evaluate !== 'function' || !fin(x1) || !fin(x2) || x1 === x2) return null;
+      var y1 = evalAt(evaluate, x1), y2 = evalAt(evaluate, x2), dy = y1 === null || y2 === null ? null : y2 - y1;
+      return { x1: x1, y1: y1, x2: x2, y2: y2, dx: x2 - x1, dy: dy, rate: dy === null ? null : dy / (x2 - x1) };
+    }
+    // From x1 to x2 in n equal steps, with first differences and ratios.
+    function rateSteps(evaluate, x1, x2, n) {
+      var rows = [];
+      n = fin(n) && n >= 2 ? Math.floor(n) : 4;
+      if (typeof evaluate === 'function' && fin(x1) && fin(x2) && x1 !== x2) {
+        for (var i = 0; i <= n; i++) { var x = i === n ? x2 : x1 + (x2 - x1) * i / n; rows.push({ x: Number(x.toPrecision(12)), y: evalAt(evaluate, x) }); }
+      }
+      return differencesTable(rows);
+    }
+    function sig(v) { if (!fin(v)) return '—'; var r = Number(v.toPrecision(4)); if (r === 0) r = 0; var s = String(r); return s.charAt(0) === '-' ? '−' + s.slice(1) : s; }
+    function paren(v) { return fin(v) && v < 0 ? '(' + num(v) + ')' : num(v); }
+    // Intervals: { lo, hi, loC, hiC }; an infinite end is always open.
+    function iv(lo, hi, loC, hiC) { return { lo: lo, hi: hi, loC: !!loC && fin(lo), hiC: !!hiC && fin(hi) }; }
+    function intervalText(list) {
+      if (!Array.isArray(list) || !list.length) return '∅';
+      return list.map(function (r) {
+        if (r.lo === r.hi) return '{' + num(r.lo) + '}';
+        return (r.lo === -Infinity ? '(−∞' : (r.loC ? '[' : '(') + num(r.lo)) + ', ' + (r.hi === Infinity ? '∞)' : num(r.hi) + (r.hiC ? ']' : ')'));
+      }).join(' ∪ ');
+    }
+    var FAMILIES = ['linear', 'quadratic', 'cubic', 'trig', 'exponential', 'absolute', 'sqrt', 'log', 'rational'];
+    // Exact features of Function Grapher's families, worked out from the rule (not from samples).
+    function familyFeatures(type, a, b, c) {
+      if (FAMILIES.indexOf(type) < 0 || ![a, b, c].every(fin)) return null;
+      function f(x) { return familyValue(type, a, b, c, x); }
+      function inf(s) { return s > 0 ? Infinity : -Infinity; }
+      var ALL = [iv(-Infinity, Infinity)];
+      var o = { exact: true, domain: ALL, range: ALL, inc: [], dec: [], flat: [], extrema: [], ends: [], vAsym: [], hAsym: [], levels: [], breaks: [], period: null };
+      function constant(k, dom) {
+        o.domain = dom || ALL; o.range = [iv(k, k, true, true)]; o.flat = o.domain;
+        if (o.domain[0].lo === -Infinity) o.ends.push({ at: -Infinity, to: k });
+        if (o.domain[o.domain.length - 1].hi === Infinity) o.ends.push({ at: Infinity, to: k });
+        return o;
+      }
+      function line(m, q) {
+        if (m === 0) return constant(q);
+        (m > 0 ? o.inc : o.dec).push(iv(-Infinity, Infinity));
+        o.ends.push({ at: -Infinity, to: inf(-m) }, { at: Infinity, to: inf(m) });
+        return o;
+      }
+      if (type === 'linear') return line(a, b);
+      if (type === 'quadratic' || type === 'cubic') {
+        if (a === 0) return line(b, c);
+        if (type === 'quadratic') {
+          var xv = -b / (2 * a), yv = f(xv);
+          o.range = [a > 0 ? iv(yv, Infinity, true) : iv(-Infinity, yv, false, true)];
+          o.dec.push(a > 0 ? iv(-Infinity, xv) : iv(xv, Infinity));
+          o.inc.push(a > 0 ? iv(xv, Infinity) : iv(-Infinity, xv));
+          o.extrema.push({ x: xv, y: yv, kind: a > 0 ? 'min' : 'max', scope: 'absolute' });
+          o.ends.push({ at: -Infinity, to: inf(a) }, { at: Infinity, to: inf(a) });
+          return o;
+        }
+        o.ends.push({ at: -Infinity, to: inf(-a) }, { at: Infinity, to: inf(a) });
+        if (b / a >= 0) { (a > 0 ? o.inc : o.dec).push(iv(-Infinity, Infinity)); return o; }
+        var r = Math.sqrt(-b / (3 * a)), up = a > 0 ? o.inc : o.dec, down = a > 0 ? o.dec : o.inc;
+        up.push(iv(-Infinity, -r), iv(r, Infinity)); down.push(iv(-r, r));
+        o.extrema.push({ x: -r, y: f(-r), kind: a > 0 ? 'max' : 'min', scope: 'local' }, { x: r, y: f(r), kind: a > 0 ? 'min' : 'max', scope: 'local' });
+        return o;
+      }
+      if (type === 'trig') {
+        if (a === 0 || b === 0) return constant(f(0));
+        var P = 2 * Math.PI / Math.abs(b), A = Math.abs(a);
+        var rep = function (x) { x = ((x % P) + P) % P; return x > P / 2 + 1e-12 ? x - P : x; };
+        var xMax = rep(((a > 0 ? 1 : -1) * Math.PI / 2 - c) / b), xMin = rep(xMax + P / 2);
+        o.range = [iv(-A, A, true, true)];
+        o.inc.push(iv(xMin, xMin + P / 2)); o.dec.push(iv(xMax, xMax + P / 2));
+        o.extrema.push({ x: xMax, y: A, kind: 'max', scope: 'periodic' }, { x: xMin, y: -A, kind: 'min', scope: 'periodic' });
+        o.period = { p: P, amp: A, mid: 0 };
+        o.ends.push({ at: -Infinity, to: 'osc' }, { at: Infinity, to: 'osc' });
+        return o;
+      }
+      if (type === 'exponential') {
+        if (a === 0 || b === 0) return constant(f(0));
+        o.range = [a > 0 ? iv(c, Infinity) : iv(-Infinity, c)];
+        (a * b > 0 ? o.inc : o.dec).push(iv(-Infinity, Infinity));
+        o.hAsym.push(c);
+        if (b > 0) o.ends.push({ at: -Infinity, to: c }, { at: Infinity, to: inf(a) });
+        else o.ends.push({ at: -Infinity, to: inf(a) }, { at: Infinity, to: c });
+        return o;
+      }
+      if (type === 'absolute') {
+        if (a === 0) return constant(c);
+        o.range = [a > 0 ? iv(c, Infinity, true) : iv(-Infinity, c, false, true)];
+        (a > 0 ? o.dec : o.inc).push(iv(-Infinity, -b)); (a > 0 ? o.inc : o.dec).push(iv(-b, Infinity));
+        o.extrema.push({ x: -b, y: c, kind: a > 0 ? 'min' : 'max', scope: 'absolute' });
+        o.ends.push({ at: -Infinity, to: inf(a) }, { at: Infinity, to: inf(a) });
+        return o;
+      }
+      if (type === 'sqrt') {
+        var sdom = [iv(-b, Infinity, true)];
+        if (a === 0) return constant(c, sdom);
+        o.domain = sdom; o.range = [a > 0 ? iv(c, Infinity, true) : iv(-Infinity, c, false, true)];
+        (a > 0 ? o.inc : o.dec).push(iv(-b, Infinity));
+        o.extrema.push({ x: -b, y: c, kind: a > 0 ? 'min' : 'max', scope: 'endpoint' });
+        o.ends.push({ at: Infinity, to: inf(a) });
+        return o;
+      }
+      if (type === 'log') {
+        var ldom = [iv(-b, Infinity)];
+        if (a === 0) return constant(c, ldom);
+        o.domain = ldom; (a > 0 ? o.inc : o.dec).push(iv(-b, Infinity)); o.vAsym.push(-b);
+        o.ends.push({ at: -b, side: 'right', to: inf(-a) }, { at: Infinity, to: inf(a) });
+        return o;
+      }
+      var rdom = [iv(-Infinity, -b), iv(-b, Infinity)];
+      if (a === 0) return constant(c, rdom);
+      o.domain = rdom; o.range = [iv(-Infinity, c), iv(c, Infinity)];
+      (a > 0 ? o.dec : o.inc).push(iv(-Infinity, -b), iv(-b, Infinity));
+      o.vAsym.push(-b); o.hAsym.push(c);
+      o.ends.push({ at: -Infinity, to: c }, { at: -b, side: 'left', to: inf(-a) }, { at: -b, side: 'right', to: inf(a) }, { at: Infinity, to: c });
+      return o;
+    }
+    // Features read from one window's samples, for a rule with no family model.
+    function windowFeatures(f, evaluate) {
+      var o = { exact: false, domain: [], range: [], inc: [], dec: [], flat: [], extrema: [], ends: [], vAsym: [], hAsym: [], levels: [], breaks: [], period: null, window: f ? [f.xmin, f.xmax] : [0, 0] };
+      if (!f || !f.defined) return o;
+      var ev = typeof evaluate === 'function' ? evaluate : null, span = fin(f.ymax) && fin(f.ymin) && f.ymax > f.ymin ? f.ymax - f.ymin : 1;
+      // A value too large to plot at a break is a pole, not a point of the graph.
+      function at(x) { if (!ev) return true; var v = evalAt(ev, x); return v !== null && Math.abs(v) < span * 1e6; }
+      var lo = f.xmin, loC = true;
+      f.gaps.forEach(function (g) {
+        if (lo === null) return;
+        if (g.kind === 'left') { lo = g.x; loC = at(g.x); }
+        else if (g.kind === 'break') { o.breaks.push(g.x); if (at(g.x)) return; o.domain.push(iv(lo, g.x, loC, false)); lo = g.x; loC = false; }
+        else if (g.kind === 'missing') { o.domain.push(iv(lo, g.from, loC, at(g.from))); lo = g.to; loC = at(g.to); }
+        else { o.domain.push(iv(lo, g.x, loC, at(g.x))); lo = null; }
+      });
+      if (lo !== null) o.domain.push(iv(lo, f.xmax, loC, true));
+      f.runs.map(function (run) {
+        var ys = run.map(function (p) { return p.y; });
+        f.extrema.forEach(function (e) { if (e.x >= run[0].x && e.x <= run[run.length - 1].x) ys.push(e.y); });
+        return [Math.min.apply(null, ys), Math.max.apply(null, ys)];
+      }).sort(function (p, q) { return p[0] - q[0]; }).forEach(function (s) {
+        var last = o.range[o.range.length - 1];
+        if (last && s[0] <= last.hi) last.hi = Math.max(last.hi, s[1]); else o.range.push(iv(s[0], s[1], true, true));
+      });
+      f.intervals.forEach(function (r) { (r.dir === 'increasing' ? o.inc : r.dir === 'decreasing' ? o.dec : o.flat).push(iv(r.from, r.to)); });
+      o.extrema = f.extrema.map(function (e) { return { x: e.x, y: e.y, kind: e.kind, scope: 'local' }; });
+      if (f.ends.left) o.ends.push({ at: 'left', trend: f.ends.left });
+      if (f.ends.right) o.ends.push({ at: 'right', trend: f.ends.right });
+      [f.ends.left, f.ends.right].forEach(function (e) { if (e && e.trend === 'levels' && o.levels.indexOf(e.y) < 0) o.levels.push(e.y); });
+      return o;
+    }
+    // Plain-language rows for the features panel (interval notation for sets).
+    function featureRows(o, t) {
+      var __alloT = tOf(t);
+      if (!o) return [];
+      var none = __alloT('stem.graph_access.kf_none', 'none'), nowhere = __alloT('stem.graph_access.kf_nowhere', 'nowhere');
+      var every = o.period ? ' ' + fill(__alloT('stem.graph_access.kf_every', '(and again every {p} units along x)'), { p: num(o.period.p) }) : '';
+      function ext(e) {
+        var s = e.scope === 'absolute' ? (e.kind === 'max' ? __alloT('stem.graph_access.kf_abs_max', 'an absolute maximum at ({x}, {y})') : __alloT('stem.graph_access.kf_abs_min', 'an absolute minimum at ({x}, {y})'))
+          : e.scope === 'endpoint' ? (e.kind === 'max' ? __alloT('stem.graph_access.kf_end_max', 'a maximum at the endpoint ({x}, {y})') : __alloT('stem.graph_access.kf_end_min', 'a minimum at the endpoint ({x}, {y})'))
+          : e.scope === 'periodic' ? (e.kind === 'max' ? __alloT('stem.graph_access.kf_wave_max', 'maximum value {y} at x = {x}') : __alloT('stem.graph_access.kf_wave_min', 'minimum value {y} at x = {x}'))
+          : (e.kind === 'max' ? __alloT('stem.graph_access.turn_max', 'a local maximum at ({x}, {y})') : __alloT('stem.graph_access.turn_min', 'a local minimum at ({x}, {y})'));
+        return fill(s, { x: num(e.x), y: num(e.y) });
+      }
+      function inft(v) { return v === Infinity ? '∞' : v === -Infinity ? '−∞' : num(v); }
+      function endText(e) {
+        if (e.at === 'left' || e.at === 'right') return fill(e.at === 'left' ? __alloT('stem.graph_access.end_left', 'As x moves left, y {trend}.') : __alloT('stem.graph_access.end_right', 'As x moves right, y {trend}.'), { trend: trendWords(e.trend, __alloT) });
+        if (e.to === 'osc') return fill(__alloT('stem.graph_access.kf_end_osc', 'As x → {at}, y keeps rising and falling between {lo} and {hi}.'), { at: inft(e.at), lo: num(o.range[0].lo), hi: num(o.range[0].hi) });
+        return fill(__alloT('stem.graph_access.kf_end_to', 'As x → {at}, y → {to}.'), { at: inft(e.at) + (e.side === 'left' ? '⁻' : e.side === 'right' ? '⁺' : ''), to: inft(e.to) });
+      }
+      var asym = [];
+      if (o.vAsym.length) asym.push(fill(__alloT('stem.graph_access.kf_vasym', 'vertical: x = {list}'), { list: o.vAsym.map(num).join(', ') }));
+      if (o.hAsym.length) asym.push(fill(__alloT('stem.graph_access.kf_hasym', 'horizontal: y = {list}'), { list: o.hAsym.map(num).join(', ') }));
+      if (o.breaks.length) asym.push(fill(__alloT('stem.graph_access.kf_breaks', 'the graph breaks at x = {list}: check for a vertical asymptote or a jump'), { list: o.breaks.map(num).join(', ') }));
+      if (o.levels.length) asym.push(fill(__alloT('stem.graph_access.kf_levels', 'it levels off near y = {list} at a window edge'), { list: o.levels.map(num).join(', ') }));
+      var rows = [
+        { id: 'domain', label: __alloT('stem.graph_access.kf_domain', 'Domain'), value: intervalText(o.domain) },
+        { id: 'range', label: __alloT('stem.graph_access.kf_range', 'Range'), value: intervalText(o.range) },
+        { id: 'inc', label: __alloT('stem.graph_access.kf_increasing', 'Increasing on'), value: o.inc.length ? intervalText(o.inc) + every : nowhere },
+        { id: 'dec', label: __alloT('stem.graph_access.kf_decreasing', 'Decreasing on'), value: o.dec.length ? intervalText(o.dec) + every : nowhere }
+      ];
+      if (o.flat.length) rows.push({ id: 'flat', label: __alloT('stem.graph_access.kf_constant', 'Constant on'), value: intervalText(o.flat) });
+      return rows.concat([
+        { id: 'ext', label: __alloT('stem.graph_access.kf_extrema', 'Turning points and extreme values'), value: o.extrema.length ? listOf(o.extrema.map(ext), __alloT) + every : none },
+        { id: 'ends', label: __alloT('stem.graph_access.kf_ends', 'End behaviour'), value: o.ends.length ? o.ends.map(endText).join(' ') : none },
+        { id: 'asym', label: __alloT('stem.graph_access.kf_asymptotes', 'Asymptotes and breaks'), value: asym.length ? asym.join('; ') : none }
+      ]);
+    }
+    function polyText(terms) {
+      var s = '';
+      terms.forEach(function (tm) {
+        var v = tm[0], body = tm[1];
+        if (!v) return;
+        var part = body ? (Math.abs(v) === 1 ? body : num(Math.abs(v)) + body) : num(Math.abs(v));
+        s += s ? (v < 0 ? ' − ' : ' + ') + part : (v < 0 ? '−' : '') + part;
+      });
+      return s || '0';
+    }
+    function factorText(r) { return r === 0 ? 'x' : '(x ' + (r > 0 ? '− ' : '+ ') + num(Math.abs(r)) + ')'; }
+    // Three examples per skill; every number in a step comes from evaluating the example.
+    function workedSet(kind, t) {
+      var __alloT = tOf(t);
+      if (kind === 'yint') {
+        return [
+          { f: function (x) { return 2 * x * x - 3 * x + 5; }, eq: polyText([[2, 'x²'], [-3, 'x'], [5, '']]), sub: '2(0)² − 3(0) + 5', work: '0 − 0 + 5' },
+          { f: function (x) { return -x * x * x + 4 * x - 1; }, eq: polyText([[-1, 'x³'], [4, 'x'], [-1, '']]), sub: '−(0)³ + 4(0) − 1', work: '0 + 0 − 1' },
+          { f: function (x) { return 3 * Math.pow(2, x) + 1; }, eq: '3·2^x + 1', sub: '3·2^0 + 1', work: '3·1 + 1' }
+        ].map(function (ex) {
+          var y = evalAt(ex.f, 0);
+          return { problem: fill(__alloT('stem.graph_access.we_y_problem', 'Find the y-intercept of f(x) = {eq}.'), { eq: ex.eq }), answer: '(0, ' + num(y) + ')', steps: [
+            __alloT('stem.graph_access.we_y_where', 'The y-intercept is where the graph crosses the y-axis, where x = 0.'),
+            fill(__alloT('stem.graph_access.we_y_sub', 'Substitute x = 0: f(0) = {expr}.'), { expr: ex.sub }),
+            fill(__alloT('stem.graph_access.we_y_work', 'Work it out: {work} = {y}.'), { work: ex.work, y: num(y) }),
+            fill(__alloT('stem.graph_access.we_y_point', 'So the graph crosses the y-axis at (0, {y}).'), { y: num(y) })] };
+        });
+      }
+      if (kind === 'transform') {
+        return [{ a: 1, h: 2, k: -1 }, { a: -2, h: -1, k: 3 }, { a: 0.5, h: 3, k: 2 }].map(function (p) {
+          var f = function (x) { return p.a * (x - p.h) * (x - p.h) + p.k; };
+          var eq = 'y = ' + (p.a === 1 ? '' : p.a === -1 ? '−' : num(p.a)) + factorText(p.h) + '²' + (p.k ? (p.k > 0 ? ' + ' : ' − ') + num(Math.abs(p.k)) : '');
+          var fx = [];
+          if (p.a < 0) fx.push(__alloT('stem.graph_access.we_a_flip', 'flipped over the x-axis'));
+          if (Math.abs(p.a) > 1) fx.push(__alloT('stem.graph_access.we_a_stretch', 'stretched vertically (narrower)'));
+          if (Math.abs(p.a) < 1) fx.push(__alloT('stem.graph_access.we_a_compress', 'compressed vertically (wider)'));
+          var effect = fx.length ? listOf(fx, __alloT) : __alloT('stem.graph_access.we_a_same', 'the same shape as y = x²');
+          return { problem: fill(__alloT('stem.graph_access.we_t_problem', 'How is {eq} moved from the parent y = x²?'), { eq: eq }), answer: '(' + num(p.h) + ', ' + num(p.k) + ')', steps: [
+            fill(__alloT('stem.graph_access.we_t_form', 'Match it to y = a(x − h)² + k: {eq} has a = {a}, h = {h}, k = {k}.'), { eq: eq, a: num(p.a), h: num(p.h), k: num(p.k) }),
+            fill(__alloT('stem.graph_access.we_t_h', 'Inside the square, h = {h}: the graph moves {dir} {n} units.'), { h: num(p.h), n: num(Math.abs(p.h)), dir: p.h > 0 ? __alloT('stem.graph_access.we_right', 'right') : __alloT('stem.graph_access.we_left', 'left') }),
+            fill(__alloT('stem.graph_access.we_t_k', 'Outside, k = {k}: the graph moves {dir} {n} units.'), { k: num(p.k), n: num(Math.abs(p.k)), dir: p.k > 0 ? __alloT('stem.graph_access.we_up', 'up') : __alloT('stem.graph_access.we_down', 'down') }),
+            fill(__alloT('stem.graph_access.we_t_a', 'The factor a = {a}: the parabola is {effect}.'), { a: num(p.a), effect: effect }),
+            fill(__alloT('stem.graph_access.we_t_vertex', 'The vertex moves from (0, 0) to ({h}, {k}). Check: f({h}) = {y}.'), { h: num(p.h), k: num(p.k), y: num(evalAt(f, p.h)) })] };
+        });
+      }
+      if (kind === 'rate') {
+        return [
+          { f: function (x) { return x * x; }, eq: 'x²', x1: 1, x2: 3 },
+          { f: function (x) { return 3 * x - 1; }, eq: '3x − 1', x1: -1, x2: 2 },
+          { f: function (x) { return Math.pow(2, x); }, eq: '2^x', x1: 0, x2: 3 }
+        ].map(function (ex) {
+          var r = rateOfChange(ex.f, ex.x1, ex.x2);
+          return { problem: fill(__alloT('stem.graph_access.we_r_problem', 'Find the average rate of change of f(x) = {eq} from x = {x1} to x = {x2}.'), { eq: ex.eq, x1: num(ex.x1), x2: num(ex.x2) }), answer: num(r.rate), steps: [
+            fill(__alloT('stem.graph_access.we_r_def', 'Average rate of change = (f({x2}) − f({x1})) ÷ ({x2} − {x1}).'), { x1: paren(ex.x1), x2: num(ex.x2) }),
+            fill(__alloT('stem.graph_access.we_r_values', 'Evaluate: f({x1}) = {y1} and f({x2}) = {y2}.'), { x1: num(r.x1), y1: num(r.y1), x2: num(r.x2), y2: num(r.y2) }),
+            fill(__alloT('stem.graph_access.we_r_diff', 'Δy = {y2} − {y1} = {dy} and Δx = {x2} − {x1} = {dx}.'), { y2: num(r.y2), y1: paren(r.y1), dy: num(r.dy), x2: num(r.x2), x1: paren(r.x1), dx: num(r.dx) }),
+            fill(__alloT('stem.graph_access.we_r_rate', 'Rate = {dy} ÷ {dx} = {rate}: on average, y changes by {rate} for each 1 added to x.'), { dy: num(r.dy), dx: num(r.dx), rate: num(r.rate) })] };
+        });
+      }
+      return [[-2, 3], [-4, 2], [1, 5]].map(function (pr) {
+        var B = -(pr[0] + pr[1]), C = pr[0] * pr[1], f = function (x) { return x * x + B * x + C; };
+        var eq = polyText([[1, 'x²'], [B, 'x'], [C, '']]), xs = zerosOf(f, -10, 10).xs || [];
+        return { problem: fill(__alloT('stem.graph_access.we_z_problem', 'Find the zeros of f(x) = {eq}.'), { eq: eq }), answer: xs.map(num).join(', '), steps: [
+          fill(__alloT('stem.graph_access.we_z_set', 'Set f(x) = 0: {eq} = 0.'), { eq: eq }),
+          fill(__alloT('stem.graph_access.we_z_pair', 'Find two numbers that multiply to {c} and add to {b}: {p} and {q}.'), { c: num(C), b: num(B), p: num(-pr[0]), q: num(-pr[1]) }),
+          fill(__alloT('stem.graph_access.we_z_factor', 'Factor: {factored} = 0.'), { factored: factorText(pr[0]) + factorText(pr[1]) }),
+          fill(__alloT('stem.graph_access.we_z_solve', 'A product is 0 only when a factor is 0, so x = {r1} or x = {r2}.'), { r1: num(pr[0]), r2: num(pr[1]) }),
+          fill(__alloT('stem.graph_access.we_z_check', 'Check on the graph: it meets the x-axis at x = {list}.'), { list: listOf(xs.map(num), __alloT) })] };
+      });
+    }
+    // Teacher exports: CSV rows, a file download, and printing through a new window that holds
+    // the content (window.print() on the tool's own page is ignored in Gemini Canvas).
+    function csvText(rows) {
+      return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
+    }
+    function downloadText(name, text, mime) {
+      try {
+        var url = URL.createObjectURL(new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' })), a = document.createElement('a');
+        a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        return true;
+      } catch (e) { return false; }
+    }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function printReport(title, rows, extra) {
+      var w = null;
+      try { w = window.open('', '_blank'); } catch (e) { w = null; }
+      if (!w || !w.document) return false;
+      w.document.open();
+      w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>body{font-family:system-ui,sans-serif;margin:24px;color:#0f172a;background:#fff}table{border-collapse:collapse}th,td{border:1px solid #64748b;padding:4px 8px;text-align:left}pre{white-space:pre-wrap}</style></head><body><h1>' + esc(title) + '</h1><table><tbody>' +
+        rows.map(function (r) { return '<tr><th scope="row">' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table>' + (extra ? '<pre>' + esc(extra) + '</pre>' : '') + '<script>window.onload=function(){window.print();};<\/script></body></html>');
+      w.document.close();
+      return true;
+    }
+    // Nudge, strategy, worked step, answer: one more each press.
+    function hintLadder(React, cfg) {
+      cfg = cfg || {};
+      var h = React.createElement, __alloT = tOf(cfg.t), st = cfg.styles || {}, steps = Array.isArray(cfg.steps) ? cfg.steps : [], id = String(cfg.id || 'hints');
+      if (!steps.length) return null;
+      var lv = fin(cfg.level) ? Math.max(0, Math.min(steps.length, Math.floor(cfg.level))) : 0;
+      var names = [__alloT('stem.graph_access.hint_nudge', 'Nudge'), __alloT('stem.graph_access.hint_strategy', 'Strategy'), __alloT('stem.graph_access.hint_worked', 'Worked step'), __alloT('stem.graph_access.hint_answer', 'Answer')];
+      function more() {
+        var next = Math.min(steps.length, lv + 1);
+        if (typeof cfg.onLevel === 'function') cfg.onLevel(next);
+        sayNow((names[next - 1] || '') + ': ' + steps[next - 1], cfg.announce);
+      }
+      return h('div', { 'data-hint-ladder': id, 'data-hint-level': lv, style: Object.assign({ marginTop: 8 }, st.card) },
+        h('p', { style: Object.assign({ margin: 0, fontWeight: 700 }, st.text) }, __alloT('stem.graph_access.hint_title', 'Hints')),
+        lv ? h('ol', { style: Object.assign({ margin: '6px 0', paddingLeft: 22 }, st.text) }, steps.slice(0, lv).map(function (s, i) { return h('li', { key: i, 'data-hint-step': i + 1, style: { marginTop: 4 } }, h('strong', null, (names[i] || '') + ': '), s); })) : null,
+        lv < steps.length ? h('button', { type: 'button', 'data-hint-next': lv + 1, onClick: more, style: Object.assign({ marginTop: 6 }, st.button) },
+          lv === steps.length - 1 ? __alloT('stem.graph_access.hint_show_answer', 'Show the answer') : lv ? fill(__alloT('stem.graph_access.hint_more', 'Next hint ({n} of {m})'), { n: lv + 1, m: steps.length }) : __alloT('stem.graph_access.hint_next', 'Show a hint')) : null,
+        cfg.noXpNote && lv >= steps.length - 1 ? h('p', { style: Object.assign({ margin: '6px 0 0' }, st.help) }, __alloT('stem.graph_access.hint_answer_note', 'Once the answer is shown, this question earns no XP.')) : null);
+    }
+    // Two points on the curve, a predict-then-check on the direction, a calculation the
+    // student can check, a hint ladder, and equal steps that contrast Δy with ratios.
+    // cfg: id, t, evaluate, name, key, x1, x2, min, max, step, state, onSet, onCorrect, announce, styles.
+    function ratePanel(React, cfg) {
+      cfg = cfg || {};
+      var h = React.createElement, __alloT = tOf(cfg.t), st = cfg.styles || {}, id = String(cfg.id || 'rate'), s = cfg.state || {}, key = String(cfg.key || '');
+      function set(patch) { if (typeof cfg.onSet === 'function') cfg.onSet(patch); }
+      var r = rateOfChange(cfg.evaluate, cfg.x1, cfg.x2);
+      var pred = s.pred && s.pred.key === key ? s.pred.choice : '', shown = s.shown === key, hint = s.hint && s.hint.key === key && fin(s.hint.level) ? s.hint.level : 0;
+      var check = s.check && s.check.key === key ? s.check : null, guess = s.guess && s.guess.key === key && typeof s.guess.text === 'string' ? s.guess.text : '';
+      var dir = !r || r.dy === null ? '' : Math.abs(r.dy) <= 1e-12 * Math.max(1, Math.abs(r.y1)) ? 'flat' : r.dy > 0 ? 'up' : 'down';
+      var line = Object.assign({ margin: '6px 0 0' }, st.text);
+      var dirSay = { up: __alloT('stem.graph_access.roc_dir_up', 'Δy is positive, so y goes up from A to B'), down: __alloT('stem.graph_access.roc_dir_down', 'Δy is negative, so y goes down from A to B'), flat: __alloT('stem.graph_access.roc_dir_flat', 'Δy is 0, so y stays the same from A to B') };
+      function verdict(choice) {
+        if (!dir) return '';
+        if (choice === 'unsure') return fill(__alloT('stem.graph_access.roc_look', 'Now look: {dir}.'), { dir: dirSay[dir] });
+        return fill(choice === dir ? __alloT('stem.graph_access.roc_match', 'Your prediction matched: {dir}.') : __alloT('stem.graph_access.roc_miss', 'Not what you predicted: {dir}.'), { dir: dirSay[dir] });
+      }
+      function slider(which, label) {
+        var x = which === 'x1' ? cfg.x1 : cfg.x2, vt = pointText({ x: x, y: evalAt(cfg.evaluate, x) }, cfg.t);
+        return h('label', { style: Object.assign({ display: 'block', marginTop: 8, fontWeight: 700 }, st.text) }, label + ': ' + vt,
+          h('input', { type: 'range', 'data-rate-slider': which, min: cfg.min, max: cfg.max, step: cfg.step, value: x, 'aria-valuetext': vt,
+            onChange: function (e) { var v = Number(e.target.value), p = {}; if (fin(v)) { p[which] = v; set(p); } }, style: { display: 'block', width: '100%', minHeight: 28, margin: '4px 0 0' } }));
+      }
+      function parseGuess(text) {
+        var m = /^\s*([−-])?\s*(\d+(?:\.\d*)?|\.\d+)\s*(?:\/\s*(\d+(?:\.\d*)?))?\s*$/.exec(String(text));
+        if (!m) return NaN;
+        var v = Number(m[2]) / (m[3] ? Number(m[3]) : 1);
+        return m[1] ? -v : v;
+      }
+      function doCheck() {
+        if (!r || r.rate === null) return;
+        var g = parseGuess(guess), ok = fin(g) && Math.abs(g - r.rate) <= 0.01 + 1e-9 * Math.abs(r.rate);
+        set({ check: { key: key, ok: ok } });
+        sayNow(ok ? fill(__alloT('stem.graph_access.roc_correct', 'Correct: the average rate of change is {rate}.'), { rate: num(r.rate) }) : __alloT('stem.graph_access.roc_wrong', 'Not yet. Find Δy and Δx, then divide Δy by Δx.'), cfg.announce);
+        if (ok && !shown && hint < 4 && typeof cfg.onCorrect === 'function') cfg.onCorrect(key);
+      }
+      var steps = r && r.dy !== null ? [
+        __alloT('stem.graph_access.hint_rate_nudge', 'Average rate of change compares how much y changes with how much x changes.'),
+        __alloT('stem.graph_access.hint_rate_strategy', 'Subtract the y-values to get Δy, subtract the x-values in the same order to get Δx, then divide Δy by Δx.'),
+        fill(__alloT('stem.graph_access.we_r_diff', 'Δy = {y2} − {y1} = {dy} and Δx = {x2} − {x1} = {dx}.'), { y2: num(r.y2), y1: paren(r.y1), dy: num(r.dy), x2: num(r.x2), x1: paren(r.x1), dx: num(r.dx) }),
+        fill(__alloT('stem.graph_access.hint_rate_answer', 'Δy ÷ Δx = {dy} ÷ {dx} = {rate}.'), { dy: num(r.dy), dx: paren(r.dx), rate: num(r.rate) })
+      ] : [];
+      var table = s.stepsOpen ? rateSteps(cfg.evaluate, cfg.x1, cfg.x2, 4) : null, cell = { padding: '2px 8px', textAlign: 'right' };
+      var note = !table ? '' : table.pattern === 'linear' ? __alloT('stem.graph_access.roc_linear_note', 'Equal steps add the same Δy, so the average rate is the same between any two points: a linear function.')
+        : table.pattern === 'exponential' ? __alloT('stem.graph_access.roc_exp_note', 'Equal steps multiply y by the same ratio, so Δy keeps changing and the average rate depends on where you look: an exponential function.')
+        : table.pattern === 'constant' || table.pattern === 'short' || table.pattern === 'unequal' ? '' : __alloT('stem.graph_access.roc_other_note', 'The Δy values change from step to step, so the average rate depends on which two points you choose.');
+      return h('section', { 'data-rate-panel': id, 'aria-labelledby': id + '-title', style: st.wrap },
+        h('h3', { id: id + '-title', style: Object.assign({ margin: 0, fontSize: 16, fontWeight: 800 }, st.text) }, __alloT('stem.graph_access.roc_title', 'Average rate of change')),
+        h('p', { style: line }, fill(__alloT('stem.graph_access.roc_intro', 'Choose two points on {name}: drag A and B on the graph, or use these sliders.'), { name: cfg.name || 'f(x)' })),
+        slider('x1', __alloT('stem.graph_access.roc_point_a', 'Point A')),
+        slider('x2', __alloT('stem.graph_access.roc_point_b', 'Point B')),
+        !r ? h('p', { role: 'status', style: line }, __alloT('stem.graph_access.roc_same', 'Choose two different x-values.'))
+        : r.dy === null ? h('p', { role: 'status', style: line }, __alloT('stem.graph_access.roc_undefined', 'The curve is undefined at A or at B. Move that point onto the curve.'))
+        : h('div', null,
+          h('fieldset', { 'data-rate-predict': true, style: Object.assign({ borderRadius: 8, padding: '6px 8px', margin: '8px 0 0', minWidth: 0 }, st.card) },
+            h('legend', { style: Object.assign({ fontWeight: 700, padding: '0 4px' }, st.text) }, __alloT('stem.graph_access.roc_predict_q', 'Predict first: from A to B, does y go up, go down, or stay the same?')),
+            [['up', __alloT('stem.graph_access.roc_up', 'Goes up')], ['down', __alloT('stem.graph_access.roc_down', 'Goes down')], ['flat', __alloT('stem.graph_access.roc_flat', 'Stays the same')], ['unsure', __alloT('stem.graph_access.roc_unsure', 'Not sure yet')]].map(function (o) {
+              return h('label', { key: o[0], style: Object.assign({ display: 'flex', alignItems: 'center', gap: 6, minHeight: 32 }, st.text) },
+                h('input', { type: 'radio', name: id + '-pred', value: o[0], checked: pred === o[0], onChange: function () { set({ pred: { key: key, choice: o[0] } }); sayNow(verdict(o[0]), cfg.announce); }, style: { width: 18, height: 18, margin: 0, flexShrink: 0 } }), o[1]);
+            })),
+          pred ? h('p', { 'data-rate-pred-result': pred === 'unsure' ? 'unsure' : pred === dir ? 'match' : 'miss', style: line }, verdict(pred)) : null,
+          pred ? h('div', null,
+            h('label', { style: Object.assign({ display: 'block', marginTop: 8, fontWeight: 700 }, st.text) }, __alloT('stem.graph_access.roc_try', 'Calculate the average rate of change from A to B'),
+              h('input', { type: 'text', inputMode: 'decimal', 'data-rate-guess': true, value: guess, onChange: function (e) { set({ guess: { key: key, text: e.target.value.slice(0, 40) } }); }, onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); doCheck(); } }, style: Object.assign({ display: 'block', width: '100%', maxWidth: 220, minHeight: 36, marginTop: 4 }, st.input) })),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 } },
+              h('button', { type: 'button', 'data-rate-check': true, onClick: doCheck, style: st.button }, __alloT('stem.graph_access.roc_check', 'Check my rate')),
+              h('button', { type: 'button', 'data-rate-show': true, 'aria-expanded': shown, onClick: function () { set({ shown: shown ? '' : key }); }, style: st.button }, shown ? __alloT('stem.graph_access.roc_hide', 'Hide the calculation') : __alloT('stem.graph_access.roc_show', 'Show the calculation'))),
+            check ? h('p', { role: 'status', 'data-rate-check-result': check.ok ? 'correct' : 'wrong', style: line }, check.ok ? fill(__alloT('stem.graph_access.roc_correct', 'Correct: the average rate of change is {rate}.'), { rate: num(r.rate) }) : __alloT('stem.graph_access.roc_wrong', 'Not yet. Find Δy and Δx, then divide Δy by Δx.')) : null,
+            shown ? h('p', { 'data-rate-result': true, style: line }, fill(__alloT('stem.graph_access.roc_result', 'Δy = {dy} and Δx = {dx}, so the average rate of change is Δy ÷ Δx = {rate}.'), { dy: num(r.dy), dx: num(r.dx), rate: num(r.rate) })) : null,
+            hintLadder(React, { id: id + '-hints', t: cfg.t, steps: steps, level: hint, onLevel: function (n) { set({ hint: { key: key, level: n } }); }, announce: cfg.announce, styles: st, noXpNote: true })) : null,
+          h('button', { type: 'button', 'data-rate-steps': true, 'aria-expanded': !!s.stepsOpen, onClick: function () { set({ stepsOpen: !s.stepsOpen }); }, style: Object.assign({ marginTop: 8 }, st.button) }, __alloT('stem.graph_access.roc_steps', 'Compare equal steps from A to B')),
+          table ? h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.graph_access.roc_steps_caption', 'A to B in four equal steps'), style: { overflowX: 'auto', marginTop: 6 } },
+            h('table', { 'data-rate-steps-table': true, style: Object.assign({ borderCollapse: 'collapse', fontFamily: 'monospace' }, st.text) },
+              h('caption', { style: { textAlign: 'left', fontWeight: 700 } }, __alloT('stem.graph_access.roc_steps_caption', 'A to B in four equal steps')),
+              h('thead', null, h('tr', null, ['x', 'y', 'Δy', __alloT('stem.graph_access.roc_ratio', 'ratio')].map(function (c) { return h('th', { key: c, scope: 'col', style: cell }, c); }))),
+              h('tbody', null, table.rows.map(function (row, i) { return h('tr', { key: i }, [row.x, row.y, row.dy, row.ratio].map(function (v, j) { return h('td', { key: j, style: cell }, sig(v)); })); })))) : null,
+          table ? h('p', { 'data-rate-steps-summary': table.pattern, style: line }, differencesSummary(table, cfg.t) + (note ? ' ' + note : '')) : null));
+    }
+    // Domain, range and key features, each predicted first and then revealed.
+    // cfg: id, t, info (familyFeatures or windowFeatures), key, state, onSet, announce, styles.
+    function featuresPanel(React, cfg) {
+      cfg = cfg || {};
+      var h = React.createElement, __alloT = tOf(cfg.t), st = cfg.styles || {}, id = String(cfg.id || 'features'), s = cfg.state || {}, key = String(cfg.key || ''), info = cfg.info;
+      var rows = featureRows(info, cfg.t), same = s.key === key;
+      var shown = same && s.revealed && typeof s.revealed === 'object' ? s.revealed : {}, preds = same && s.preds && typeof s.preds === 'object' ? s.preds : {};
+      function save(revealed, p) { if (typeof cfg.onSet === 'function') cfg.onSet({ key: key, revealed: revealed, preds: p }); }
+      var line = Object.assign({ margin: '6px 0 0' }, st.text);
+      var note = !info ? '' : info.exact ? __alloT('stem.graph_access.kf_exact', 'Exact: worked out from the rule of the function, not read off the picture.')
+        : fill(__alloT('stem.graph_access.kf_window', 'Estimated from samples between x = {x0} and x = {x1}: only what this window shows, not the whole function.'), { x0: num(info.window[0]), x1: num(info.window[1]) });
+      return h('section', { 'data-features-panel': id, 'aria-labelledby': id + '-title', style: st.wrap },
+        h('h3', { id: id + '-title', style: Object.assign({ margin: 0, fontSize: 16, fontWeight: 800 }, st.text) }, __alloT('stem.graph_access.kf_title', 'Domain, range and key features')),
+        h('p', { style: line }, __alloT('stem.graph_access.kf_intro', 'Predict each feature, then reveal it and compare. Interval notation: [ ] includes an endpoint, ( ) leaves it out, ∪ joins pieces.')),
+        note ? h('p', { 'data-features-source': info.exact ? 'exact' : 'window', style: line }, note) : null,
+        !rows.length ? h('p', { style: line }, __alloT('stem.graph_access.kf_empty', 'Enter a function to see its features.')) : null,
+        rows.map(function (row) {
+          var open = !!shown[row.id], pid = id + '-pred-' + row.id, mine = typeof preds[row.id] === 'string' ? preds[row.id] : '';
+          return h('div', { key: row.id, 'data-features-row': row.id, style: Object.assign({ marginTop: 8, padding: 8, borderRadius: 8 }, st.card) },
+            h('label', { htmlFor: pid, style: Object.assign({ display: 'block', fontWeight: 700 }, st.text) }, row.label),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginTop: 4 } },
+              h('input', { id: pid, type: 'text', value: mine, 'aria-describedby': open ? id + '-ans-' + row.id : undefined, onChange: function (e) { var p = Object.assign({}, preds); p[row.id] = e.target.value.slice(0, 200); save(shown, p); }, style: Object.assign({ flex: '1 1 140px', minWidth: 0, minHeight: 36 }, st.input) }),
+              h('button', { type: 'button', 'data-features-reveal': row.id, 'aria-expanded': open, 'aria-controls': id + '-ans-' + row.id, onClick: function () { var r = Object.assign({}, shown); r[row.id] = !open; save(r, preds); if (!open) sayNow(row.label + ': ' + row.value, cfg.announce); }, style: st.button },
+                open ? __alloT('stem.graph_access.kf_hide', 'Hide') : __alloT('stem.graph_access.kf_reveal', 'Reveal'))),
+            h('p', { id: id + '-ans-' + row.id, 'data-features-answer': row.id, hidden: !open, style: Object.assign({}, line, open ? null : { display: 'none' }) },
+              open ? row.value + (mine.trim() ? ' ' + fill(__alloT('stem.graph_access.kf_yours', '(You predicted: {v})'), { v: mine.trim() }) : '') : ''));
+        }),
+        rows.length ? h('button', { type: 'button', 'data-features-reveal-all': true, onClick: function () { var r = {}; rows.forEach(function (row) { r[row.id] = true; }); save(r, preds); }, style: Object.assign({ marginTop: 8 }, st.button) }, __alloT('stem.graph_access.kf_reveal_all', 'Reveal all')) : null);
+    }
+    // A worked example that fades: example 1 is fully worked, each later one leaves one more
+    // final step for the student. cfg: id, t, state, onSet, announce, styles.
+    function workedPanel(React, cfg) {
+      cfg = cfg || {};
+      var h = React.createElement, __alloT = tOf(cfg.t), st = cfg.styles || {}, id = String(cfg.id || 'worked'), s = cfg.state || {};
+      var kinds = [['zeros', __alloT('stem.graph_access.we_kind_zeros', 'Finding zeros')], ['yint', __alloT('stem.graph_access.we_kind_yint', 'Finding the y-intercept')], ['transform', __alloT('stem.graph_access.we_kind_transform', 'Transformations')], ['rate', __alloT('stem.graph_access.we_kind_rate', 'Rate of change')]];
+      var kind = kinds.some(function (k) { return k[0] === s.kind; }) ? s.kind : 'zeros', list = workedSet(kind, cfg.t);
+      var idx = fin(s.index) ? Math.max(0, Math.min(list.length - 1, Math.floor(s.index))) : 0, ex = list[idx], n = ex.steps.length, fadeFrom = n - idx;
+      var count = fin(s.shown) ? Math.max(1, Math.min(n, Math.floor(s.shown))) : 1;
+      var opened = s.opened && typeof s.opened === 'object' ? s.opened : {}, yours = s.yours && typeof s.yours === 'object' ? s.yours : {};
+      function set(patch) { if (typeof cfg.onSet === 'function') cfg.onSet(Object.assign({ kind: kind, index: idx, shown: count, opened: opened, yours: yours }, patch)); }
+      function go(i) { set({ index: i, shown: 1, opened: {}, yours: {} }); }
+      var line = Object.assign({ margin: '6px 0 0' }, st.text);
+      return h('section', { 'data-worked-panel': id, 'aria-labelledby': id + '-title', style: st.wrap },
+        h('h3', { id: id + '-title', style: Object.assign({ margin: 0, fontSize: 16, fontWeight: 800 }, st.text) }, __alloT('stem.graph_access.we_title', 'Worked examples')),
+        h('p', { style: line }, __alloT('stem.graph_access.we_fade_note', 'Study example 1 step by step. Each later example leaves more of the last steps for you to write.')),
+        h('div', { role: 'group', 'aria-label': __alloT('stem.graph_access.we_pick', 'Choose a skill'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 } },
+          kinds.map(function (k) { return h('button', { key: k[0], type: 'button', 'data-worked-kind': k[0], 'aria-pressed': k[0] === kind, onClick: function () { set({ kind: k[0], index: 0, shown: 1, opened: {}, yours: {} }); }, style: Object.assign({}, st.button, k[0] === kind ? { fontWeight: 800, borderWidth: 3 } : null) }, k[1]); })),
+        h('p', { 'data-worked-problem': true, style: Object.assign({}, line, { fontWeight: 700 }) }, fill(__alloT('stem.graph_access.we_example', 'Example {n} of {m}'), { n: idx + 1, m: list.length }) + ': ' + ex.problem),
+        h('ol', { style: Object.assign({ margin: '6px 0 0', paddingLeft: 22 }, st.text) }, ex.steps.slice(0, count).map(function (text, i) {
+          if (i < fadeFrom) return h('li', { key: i, 'data-worked-step': i + 1, style: { marginTop: 4 } }, text);
+          var tid = id + '-yours-' + i;
+          return h('li', { key: i, 'data-worked-step': i + 1, 'data-worked-yours': opened[i] ? 'shown' : 'open', style: { marginTop: 4 } },
+            h('label', { htmlFor: tid, style: { display: 'block', fontWeight: 700 } }, __alloT('stem.graph_access.we_your_turn', 'Your turn: write this step, then show it to check.')),
+            h('textarea', { id: tid, rows: 2, value: typeof yours[i] === 'string' ? yours[i] : '', onChange: function (e) { var y = Object.assign({}, yours); y[i] = e.target.value.slice(0, 500); set({ yours: y }); }, style: Object.assign({ display: 'block', width: '100%', marginTop: 4 }, st.input) }),
+            opened[i] ? h('p', { 'data-worked-check': i + 1, style: line }, fill(__alloT('stem.graph_access.we_compare', 'Compare with: {step}'), { step: text }))
+              : h('button', { type: 'button', 'data-worked-show': i + 1, onClick: function () { var o = Object.assign({}, opened); o[i] = true; set({ opened: o }); sayNow(text, cfg.announce); }, style: Object.assign({ marginTop: 4 }, st.button) }, __alloT('stem.graph_access.we_show_step', 'Show this step')));
+        })),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+          count < n ? h('button', { type: 'button', 'data-worked-next': true, onClick: function () { set({ shown: count + 1 }); sayNow(count < fadeFrom ? ex.steps[count] : __alloT('stem.graph_access.we_your_turn', 'Your turn: write this step, then show it to check.'), cfg.announce); }, style: st.button }, __alloT('stem.graph_access.we_next_step', 'Show the next step')) : null,
+          idx > 0 ? h('button', { type: 'button', 'data-worked-prev': true, onClick: function () { go(idx - 1); }, style: st.button }, __alloT('stem.graph_access.we_prev', 'Previous example')) : null,
+          idx < list.length - 1 ? h('button', { type: 'button', 'data-worked-next-example': true, onClick: function () { go(idx + 1); }, style: st.button }, __alloT('stem.graph_access.we_next_example', 'Next example: more steps for you')) : null));
+    }
+    window.StemLab._graphAccess = Object.freeze({
+      version: 2, sample: sample, analyse: analyse, describeGraph: describeGraph, explorePoints: explorePoints, pointText: pointText,
+      stepIndex: stepIndex, stepperKeyDown: stepperKeyDown, announce: say, announceNow: sayNow, sonifyPlan: sonifyPlan, playPlan: playPlan, stop: stop,
+      isPlaying: isPlaying, isMuted: isMuted, speak: speak, differencesTable: differencesTable, differencesSummary: differencesSummary,
+      familyValue: familyValue, matchFamily: matchFamily, palette: palette, niceStep: niceStep, formatNumber: num, fill: fill, panel: panel,
+      scanRoots: gcScanRoots, zerosOf: zerosOf, rateOfChange: rateOfChange, rateSteps: rateSteps, intervalText: intervalText, familyFeatures: familyFeatures,
+      windowFeatures: windowFeatures, featureRows: featureRows, workedSet: workedSet, hintLadder: hintLadder, ratePanel: ratePanel, featuresPanel: featuresPanel, workedPanel: workedPanel,
+      csvText: csvText, downloadText: downloadText, printReport: printReport
+    });
+  })();
+  // The one root engine (calculator Analyze, chips, descriptions and sound in both tools).
+  // Numerical candidates, with a substitution residual and the search interval attached.
+  // Declared outside the install closure above so it hoists into the tool's own scope.
+  function gcScanRoots(evaluate, min, max) {
+    var count=500,tolerance=1e-8,results=[],invalid=0;
+    if(!Number.isFinite(min)||!Number.isFinite(max)||max<=min||!Number.isFinite(max-min))return {candidates:[],error:'Choose a finite increasing x interval.',errorCode:'interval'};
+    var step=(max-min)/count,xTolerance=Math.max(1e-10,step*1e-6),samples=[];
+    function value(x){try{var y=evaluate(x);if(typeof y==='number'&&Number.isFinite(y))return y;}catch(e){}invalid++;return NaN;}
+    function add(x,y,method,lo,hi){
+      if(!Number.isFinite(y)||Math.abs(y)>tolerance)return;
+      if(results.some(function(r){return Math.abs(r.x-x)<=xTolerance;}))return;
+      results.push({x:x,residual:Math.abs(y),method:method,bracket:[lo,hi]});
+    }
+    for(var i=0;i<=count;i++){var x=min+(max-min)*(i/count),y=value(x);samples.push({x:x,y:y});if(y===0)add(x,y,'sample zero',x,x);}
+    if(samples.every(function(sample){return sample.y===0;}))return {candidates:[],zeroThroughoutSamples:true,interval:[min,max],samples:count+1,step:step,tolerance:tolerance,invalidEvaluations:invalid};
+    for(var j=1;j<samples.length;j++){
+      var a=samples[j-1],b=samples[j];
+      if(!Number.isFinite(a.y)||!Number.isFinite(b.y)||a.y===0||b.y===0||Math.sign(a.y)===Math.sign(b.y))continue;
+      var lo=a.x,hi=b.x,yl=a.y,best=Math.abs(a.y)<Math.abs(b.y)?a:b;
+      for(var k=0;k<64;k++){
+        var mid=lo+(hi-lo)/2;if(mid===lo||mid===hi)break;
+        var ym=value(mid);if(!Number.isFinite(ym)){best=null;break;}
+        if(!best||Math.abs(ym)<Math.abs(best.y))best={x:mid,y:ym};
+        if(ym===0){lo=hi=mid;break;}
+        if(Math.sign(yl)!==Math.sign(ym))hi=mid;else{lo=mid;yl=ym;}
+      }
+      // A jump can change sign without approaching zero. Require substantial residual reduction.
+      if(best&&Math.abs(best.y)<=Math.max(Math.abs(a.y),Math.abs(b.y))*1e-4)add(best.x,best.y,'sign change',lo,hi);
+    }
+    // A local minimum of |f| can reveal a touching root that a sign-change scan misses.
+    for(var m=1;m<samples.length-1;m++){
+      var left=samples[m-1],center=samples[m],right=samples[m+1];
+      if(!Number.isFinite(left.y)||!Number.isFinite(center.y)||!Number.isFinite(right.y)||center.y===0||!(Math.abs(center.y)<Math.abs(left.y)&&Math.abs(center.y)<Math.abs(right.y)))continue;
+      var l=left.x,r=right.x,ratio=(Math.sqrt(5)-1)/2,c=r-ratio*(r-l),e=l+ratio*(r-l),fc=value(c),fe=value(e);
+      for(var n=0;n<48&&Number.isFinite(fc)&&Number.isFinite(fe);n++){
+        if(Math.abs(fc)<Math.abs(fe)){r=e;e=c;fe=fc;c=r-ratio*(r-l);fc=value(c);}
+        else{l=c;c=e;fc=fe;e=l+ratio*(r-l);fe=value(e);}
+      }
+      var cx=Math.abs(fc)<Math.abs(fe)?c:e,cy=Math.abs(fc)<Math.abs(fe)?fc:fe;
+      if(Math.abs(cy)<=Math.max(Math.abs(left.y),Math.abs(right.y))*1e-4)add(cx,cy,'touching-root candidate',l,r);
+    }
+    // A root on a window edge (sin x at ±2π) has no sign change inside the window; the
+    // edge value must also be far below its neighbour's, so a decaying tail is not one.
+    [[samples[0],samples[1]],[samples[count],samples[count-1]]].forEach(function(p){
+      var s=p[0],nb=p[1];
+      if(Number.isFinite(s.y)&&s.y!==0&&Number.isFinite(nb.y)&&Math.abs(s.y)<=tolerance&&Math.abs(s.y)<=Math.abs(nb.y)*1e-4)add(s.x,s.y,'window edge',s.x,s.x);
+    });
+    results.sort(function(a,b){return a.x-b.x;});
+    return {candidates:results,interval:[min,max],samples:count+1,step:step,tolerance:tolerance,invalidEvaluations:invalid};
+  }
+  // == end alloGraphAccess core v2 ==
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects ──
@@ -54,6 +1211,7 @@ window.StemLab = window.StemLab || {
   var _audioCtx = null;
   function getAC() { if (!_audioCtx) try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} return _audioCtx; }
   function playTone(f, dur, type, vol) {
+    if (window._alloGlobalMute) return;
     var ac = getAC(); if (!ac) return;
     try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.12)); } catch(e) {}
   }
@@ -68,21 +1226,911 @@ window.StemLab = window.StemLab || {
   // ── Gallery Storage ──
   // ══════════════════════════════════════════════════════════════
   var GALLERY_KEY = 'alloflow_dataplot_charts';
-  function loadGallery() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); } catch(e) { return []; } }
-  function saveGallery(arr) { try { localStorage.setItem(GALLERY_KEY, JSON.stringify(arr)); } catch(e) { console.warn('[DataPlot] Gallery save failed (quota or permission); charts will not persist on refresh:', e.message || e); } }
+  function loadGallery() { try { var g = JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); return Array.isArray(g) ? g.filter(function (it) { return it && Array.isArray(it.points); }) : []; } catch(e) { return []; } }
+  function saveGallery(arr) { try { localStorage.setItem(GALLERY_KEY, JSON.stringify(arr)); return true; } catch(e) { console.warn('[DataPlot] Gallery save failed (quota or permission); charts will not persist on refresh:', e.message || e); return false; } }
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Pure helpers (also exposed as registry.dataPlot._math for tests) ──
+  // ══════════════════════════════════════════════════════════════
+  // Translator for module-level text (quest labels): the last ctx seen, else the English fallback.
+  var __alloCtx_dataplot = null;
+  var __alloT = function (k, fb) {
+    var v; try { v = (__alloCtx_dataplot && typeof __alloCtx_dataplot.t === 'function') ? __alloCtx_dataplot.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null || v === k) ? (fb != null ? fb : k) : v;
+  };
+  var QUIZ_XP_CAP = 100;
+  var UNDO_CAP = 20;
+  var PASTE_CAP = 2000;
+  function dpFin(v) { return typeof v === 'number' && isFinite(v); }
+  // Fill {name} placeholders. A function replacer, so "$&" in a value stays literal.
+  // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
+  function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+  function fillT(s, map) { return __alloOneWord(String(s).replace(/\{(\w+)\}/g, function (m, k) { return map && map[k] != null ? String(map[k]) : m; })); }
+  function fmtFixed(v, d) {
+    if (!dpFin(v)) return '—';
+    var s = v.toFixed(d == null ? 2 : d);
+    return /^-0(\.0+)?$/.test(s) ? s.slice(1) : s;
+  }
+  // Up to `maxDec` decimals, trailing zeros dropped: 2.5, 0.125, 88.
+  function fmtNum(v, maxDec) {
+    if (!dpFin(v)) return '—';
+    var p = Math.pow(10, maxDec == null ? 3 : maxDec), r = Math.round(v * p) / p;
+    if (r === 0) r = 0;
+    return String(r);
+  }
+  function niceStep(range, target) {
+    if (!(range > 0)) return 1;
+    var raw = range / (target || 5), p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+  }
+  function decimalsFor(step) { return step >= 1 ? 0 : Math.min(6, Math.ceil(-Math.log(step) / Math.LN10 - 1e-9)); }
+  // A padded axis with 1-2-5 ticks. includeZero keeps 0 on the axis (bar charts).
+  function niceAxis(lo, hi, includeZero) {
+    if (!dpFin(lo) || !dpFin(hi)) { lo = 0; hi = 10; }
+    if (hi < lo) { var sw = lo; lo = hi; hi = sw; }
+    if (includeZero) { lo = Math.min(0, lo); hi = Math.max(0, hi); }
+    if (hi === lo) { var p0 = lo === 0 ? 1 : Math.abs(lo) * 0.1; lo -= p0; hi += p0; if (includeZero) { lo = Math.min(0, lo + p0); hi = Math.max(0, hi - p0); if (hi === lo) hi = lo + 1; } }
+    var span = hi - lo;
+    var padLo = includeZero && lo === 0 ? 0 : span * 0.05, padHi = includeZero && hi === 0 ? 0 : span * 0.05;
+    var step = niceStep(span + padLo + padHi, 5);
+    var a = Math.floor((lo - padLo) / step + 1e-9) * step, b = Math.ceil((hi + padHi) / step - 1e-9) * step;
+    if (includeZero && lo >= 0) a = 0;
+    if (includeZero && hi <= 0) b = 0;
+    var dec = decimalsFor(step), ticks = [];
+    for (var v = a, k = 0; v <= b + step / 2 && k < 60; v += step, k++) ticks.push(Number(v.toFixed(dec + 2)));
+    return { min: a, max: b, step: step, ticks: ticks, decimals: dec };
+  }
+  // A fixed axis from lo to hi (no padding), with 1-2-5 ticks inside it: a frozen chart view.
+  function axisFromRange(lo, hi) {
+    if (!dpFin(lo) || !dpFin(hi) || !(hi > lo)) return niceAxis(lo, hi);
+    var step = niceStep(hi - lo, 5), dec = decimalsFor(step), ticks = [];
+    for (var v = Math.ceil(lo / step - 1e-9) * step, k = 0; v <= hi + step * 1e-6 && k < 60; v += step, k++) ticks.push(Number(v.toFixed(dec + 2)));
+    return { min: lo, max: hi, step: step, ticks: ticks, decimals: dec };
+  }
+  // A saved chart view {x0, x1, y0, y1}, or null when it is missing or broken.
+  function viewOf(v) {
+    if (!v || typeof v !== 'object' || ![v.x0, v.x1, v.y0, v.y1].every(dpFin) || !(v.x1 > v.x0) || !(v.y1 > v.y0) || !dpFin(v.x1 - v.x0) || !dpFin(v.y1 - v.y0)) return null;
+    return { x0: v.x0, x1: v.x1, y0: v.y0, y1: v.y1 };
+  }
+  // The display axis for a frozen view: the view itself, widened (never shrunk) only when a
+  // typed or imported value falls outside it. Clicks always land inside, so they never rescale.
+  function viewAxis(lo, hi, vals) {
+    var mn = vals.length ? Math.min.apply(null, vals) : lo, mx = vals.length ? Math.max.apply(null, vals) : hi;
+    var eps = (hi - lo) * 1e-9;
+    return mn >= lo - eps && mx <= hi + eps ? axisFromRange(lo, hi) : niceAxis(Math.min(lo, mn), Math.max(hi, mx));
+  }
+  // How many of the points on the chart the student placed (clicked, keyed or typed): a
+  // multiset match against ownPts {"x,y": count}. Preset, pasted and imported points never count.
+  function ownMatchCount(pts, own) {
+    if (!own || typeof own !== 'object') return 0;
+    var left = {}, k = 0;
+    Object.keys(own).forEach(function (key) { if (dpFin(own[key]) && own[key] > 0) left[key] = Math.floor(own[key]); });
+    pts.forEach(function (p) { var key = p.x + ',' + p.y; if (left[key] > 0) { left[key]--; k++; } });
+    return k;
+  }
+  // Different positions among the student's own points: the same spot again and again is one point.
+  function ownDistinctCount(pts, own) {
+    if (!own || typeof own !== 'object') return 0;
+    var seen = {}, k = 0;
+    pts.forEach(function (p) { var key = p.x + ',' + p.y; if (!seen[key] && dpFin(own[key]) && own[key] > 0) { seen[key] = true; k++; } });
+    return k;
+  }
+  function questOwn(d) { d = d || {}; return ownDistinctCount(Array.isArray(d.points) ? d.points.filter(function (p) { return p && typeof p === 'object'; }) : [], d.ownPts); }
+  function meanOf(arr) { if (!arr.length) return NaN; var s = 0; for (var i = 0; i < arr.length; i++) s += arr[i]; return s / arr.length; }
+  function sortedOf(arr) { return arr.slice().sort(function (a, b) { return a - b; }); }
+  function medianSorted(s) { if (!s.length) return NaN; var m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+  function medianOf(arr) { return medianSorted(sortedOf(arr)); }
+  // Quartiles by the median-of-halves method: with an odd count the middle value
+  // belongs to neither half. A single value is its own quartiles.
+  function quartilesOf(arr) {
+    var s = sortedOf(arr), n = s.length;
+    if (!n) return { q1: NaN, med: NaN, q3: NaN };
+    if (n < 2) return { q1: s[0], med: s[0], q3: s[0] };
+    return { q1: medianSorted(s.slice(0, Math.floor(n / 2))), med: medianSorted(s), q3: medianSorted(s.slice(Math.ceil(n / 2))) };
+  }
+  function sdOf(arr, sample) {
+    var n = arr.length; if (!n || (sample && n < 2)) return NaN;
+    var m = meanOf(arr), ss = 0; for (var i = 0; i < n; i++) ss += (arr[i] - m) * (arr[i] - m);
+    return Math.sqrt(ss / (sample ? n - 1 : n));
+  }
+  function madOf(arr) { var n = arr.length; if (!n) return NaN; var m = meanOf(arr), s = 0; for (var i = 0; i < n; i++) s += Math.abs(arr[i] - m); return s / n; }
+  // Every mode, or none: kind 'one' | 'many' | 'none' (each value once) | 'all' (every value equally often) | 'empty'.
+  function modesOf(values) {
+    var freq = {}, order = [];
+    (values || []).forEach(function (v) { if (!dpFin(v)) return; var k = String(Math.round(v * 1e6) / 1e6); if (!(k in freq)) { freq[k] = 0; order.push(k); } freq[k]++; });
+    if (!order.length) return { modes: [], count: 0, kind: 'empty' };
+    var max = 0; order.forEach(function (k) { if (freq[k] > max) max = freq[k]; });
+    if (max <= 1) return { modes: [], count: 1, kind: 'none' };
+    var modes = order.filter(function (k) { return freq[k] === max; }).map(Number).sort(function (a, b) { return a - b; });
+    if (modes.length === order.length && order.length > 1) return { modes: [], count: max, kind: 'all' };
+    return { modes: modes, count: max, kind: modes.length === 1 ? 'one' : 'many' };
+  }
+  function pearsonOf(pts) {
+    var n = pts.length; if (n < 2) return 0;
+    var mx = 0, my = 0, i; for (i = 0; i < n; i++) { mx += pts[i].x; my += pts[i].y; } mx /= n; my /= n;
+    var sxy = 0, sxx = 0, syy = 0; for (i = 0; i < n; i++) { var dx = pts[i].x - mx, dy = pts[i].y - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+    return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
+  }
+  function linFit(pts) {
+    var n = pts.length; if (n < 2) return { ok: false, m: 0, b: 0, r2: 0 };
+    var mx = 0, my = 0, i; for (i = 0; i < n; i++) { mx += pts[i].x; my += pts[i].y; } mx /= n; my /= n;
+    var sxy = 0, sxx = 0, syy = 0; for (i = 0; i < n; i++) { var dx = pts[i].x - mx, dy = pts[i].y - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+    if (!(sxx > 0)) return { ok: false, m: 0, b: my, r2: 0 };
+    var m = sxy / sxx, b = my - m * mx;
+    return { ok: true, m: m, b: b, r2: syy > 0 ? (sxy * sxy) / (sxx * syy) : 0 };
+  }
+  function distinctCount(arr) { var seen = {}, c = 0; arr.forEach(function (v) { var k = String(v); if (!seen[k]) { seen[k] = 1; c++; } }); return c; }
+  // Can this model be fitted to these points? why: need2 | need3 | sameX | need3x | yNotPositive | xNotPositive
+  function fitStatus(type, pts) {
+    var n = pts.length, xs = pts.map(function (p) { return p.x; }), dx = distinctCount(xs);
+    if (n < 2) return { ok: false, why: 'need2' };
+    if (type === 'quadratic') {
+      if (n < 3) return { ok: false, why: 'need3' };
+      if (dx < 3) return { ok: false, why: 'need3x' };
+      return { ok: true };
+    }
+    if (dx < 2) return { ok: false, why: 'sameX' };
+    if (type === 'exponential') { var bad = pts.filter(function (p) { return !(p.y > 0); }).length; return bad ? { ok: false, why: 'yNotPositive', count: bad } : { ok: true }; }
+    if (type === 'logarithmic') { var badX = pts.filter(function (p) { return !(p.x > 0); }).length; return badX ? { ok: false, why: 'xNotPositive', count: badX } : { ok: true }; }
+    return { ok: true };
+  }
+  // "y = 2.00x − 4.00" with a true minus sign and no "+ -".
+  // A coefficient too small for `dec` decimals keeps 3 significant figures (0.000123, 1.23×10^-218):
+  // a·e^(bx) fitted to years printed "y = 0.00e^(0.2500x)".
+  function fmtCoef(v, dec) {
+    if (!dpFin(v) || v === 0 || Math.abs(v) >= 0.5 * Math.pow(10, -dec)) return fmtFixed(v, dec);
+    var s = v.toPrecision(3), m = s.match(/^(-?[\d.]+)e([-+]\d+)$/);
+    return m ? m[1] + '×10^' + Number(m[2]) : s;
+  }
+  function signedPart(v, dec, suffix) { var s = fmtCoef(Math.abs(v), dec); return (v < 0 && s !== fmtFixed(0, dec) ? ' − ' : ' + ') + s + suffix; }
+  function leadPart(v, dec, suffix) { var s = fmtCoef(v, dec); return (s.charAt(0) === '-' ? '−' + s.slice(1) : s) + suffix; }
+  function equationText(type, c) {
+    c = c || {};
+    if (type === 'quadratic') return 'y = ' + leadPart(c.a, 4, 'x²') + signedPart(c.b, 2, 'x') + signedPart(c.c, 2, '');
+    if (type === 'exponential') return 'y = ' + leadPart(c.a, 2, '') + 'e^(' + leadPart(c.b, 4, 'x') + ')';
+    if (type === 'logarithmic') return 'y = ' + leadPart(c.a, 2, '') + signedPart(c.b, 2, ' ln(x)');
+    return 'y = ' + leadPart(c.m, 2, 'x') + signedPart(c.b, 2, '');
+  }
+  // Shape from Pearson's second skewness coefficient, 3(mean - median) / SD.
+  function shapeOf(values) {
+    if (values.length < 3) return { shape: 'symmetric', skew: 0 };
+    var sd = sdOf(values, false); if (!(sd > 0)) return { shape: 'symmetric', skew: 0 };
+    var sk = 3 * (meanOf(values) - medianOf(values)) / sd;
+    return { shape: sk > 0.35 ? 'right' : sk < -0.35 ? 'left' : 'symmetric', skew: sk };
+  }
+  function dataSignature(pts) {
+    var s = pts.length + ':', sx = 0, sy = 0, sq = 0;
+    pts.forEach(function (p, i) { sx += p.x * (i + 1); sy += p.y; sq += p.y * p.y; });
+    return s + Math.round(sx * 1000) + ':' + Math.round(sy * 1000) + ':' + Math.round(sq * 100);
+  }
+  // Mean y for each distinct x, x ascending: a strictly increasing series to sonify.
+  function seriesByX(pts) {
+    var map = {}, keys = [];
+    pts.forEach(function (p) { var k = String(p.x); if (!map[k]) { map[k] = { x: p.x, s: 0, c: 0 }; keys.push(k); } map[k].s += p.y; map[k].c++; });
+    return keys.map(function (k) { return { x: map[k].x, y: map[k].s / map[k].c }; }).sort(function (a, b) { return a.x - b.x; });
+  }
+
+  // ── Paste / CSV parsing: tab (Sheets, Excel), comma, semicolon or spaces; quoted cells;
+  // decimal commas when commas are not the separator; a text header row; one column = y only.
+  function splitCells(line, delim) {
+    if (delim === 'ws') return line.trim().split(/\s+/);
+    var cells = [], cur = '', q = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line.charAt(i);
+      if (q) { if (c === '"') { if (line.charAt(i + 1) === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+      else if (c === '"') q = true;
+      else if (c === delim) { cells.push(cur); cur = ''; }
+      else cur += c;
+    }
+    cells.push(cur);
+    return cells.map(function (s) { return s.trim(); });
+  }
+  function toNumber(s, delim) {
+    s = String(s == null ? '' : s).trim().replace(/^\$/, '').replace(/%$/, '').replace(/−/g, '-');
+    // Semicolon files come from decimal-comma locales: 1.234,5 = 1234.5. Elsewhere 1,500 = 1500 and 2,5 = 2.5.
+    if (delim === ';') { if (/^[-+]?\d+(\.\d{3})*,\d+$/.test(s)) s = s.replace(/\./g, '').replace(',', '.'); }
+    else if (/^[-+]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    else if (/^[-+]?\d*,\d+$/.test(s)) s = s.replace(',', '.');
+    if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return NaN;
+    return parseFloat(s);
+  }
+  function stripQuoted(line) { return line.replace(/"(?:[^"]|"")*"/g, '""'); }
+  function parseTable(text) {
+    var lines = String(text == null ? '' : text).replace(/\r\n?/g, '\n').split('\n');
+    var live = lines.filter(function (l) { return l.trim(); });
+    var delim = live.some(function (l) { return l.indexOf('\t') >= 0; }) ? '\t'
+      : live.some(function (l) { return stripQuoted(l).indexOf(';') >= 0; }) ? ';'
+      : live.some(function (l) { return stripQuoted(l).indexOf(',') >= 0; }) ? ',' : 'ws';
+    var pairs = [], singles = [], skipped = [], header = null, seenData = false;
+    lines.forEach(function (line, i) {
+      if (!line.trim()) return;
+      var cells = splitCells(line, delim).filter(function (c, k, all) { return delim !== 'ws' || c !== ''; });
+      var nums = cells.map(function (c) { return toNumber(c, delim); });
+      if (cells.length >= 2 && dpFin(nums[0]) && dpFin(nums[1])) { pairs.push({ x: nums[0], y: nums[1], line: i + 1 }); seenData = true; return; }
+      if (cells.length === 1 && dpFin(nums[0])) { singles.push({ y: nums[0], line: i + 1 }); seenData = true; return; }
+      if (!seenData && !header && cells.length >= 2 && !dpFin(nums[0]) && !dpFin(nums[1]) && cells[0] && cells[1]) { header = [cells[0].slice(0, 60), cells[1].slice(0, 60)]; return; }
+      if (!seenData && !header && cells.length === 1 && !dpFin(nums[0]) && cells[0]) { header = [null, cells[0].slice(0, 60)]; return; }
+      skipped.push(i + 1);
+    });
+    var singleColumn = !pairs.length && singles.length > 0;
+    if (!singleColumn) singles.forEach(function (s) { skipped.push(s.line); });
+    skipped.sort(function (a, b) { return a - b; });
+    var points = singleColumn ? singles.map(function (s, k) { return { x: k + 1, y: s.y }; }) : pairs.map(function (p) { return { x: p.x, y: p.y }; });
+    return { points: points, skipped: skipped, header: header, delimiter: delim, singleColumn: singleColumn };
+  }
+  function parseValues(text) {
+    var out = [];
+    String(text == null ? '' : text).split(/[\s,;\t]+/).forEach(function (s) { var v = toNumber(s, ';'); if (dpFin(v)) out.push(v); });
+    return out;
+  }
+
+  // ── Quiz item generators. Every item is plain JSON (saved in toolData), keyed so
+  // XP is paid once per distinct item. rand defaults to Math.random.
+  function rnd(rand) { return (typeof rand === 'function' ? rand : Math.random)(); }
+  function pickIdx(n, rand) { return Math.min(n - 1, Math.floor(rnd(rand) * n)); }
+  function randInt(lo, hi, rand) { return lo + pickIdx(hi - lo + 1, rand); }
+  // Unbiased Fisher-Yates; the Math.random()-0.5 comparator it replaced left
+  // correct answers clustered near their authored position.
+  function fyShuffle(arr, rand) {
+    for (var fi = arr.length - 1; fi > 0; fi--) { var fj = pickIdx(fi + 1, rand); var ft = arr[fi]; arr[fi] = arr[fj]; arr[fj] = ft; }
+    return arr;
+  }
+  function quizItem(o) { return Object.assign({ v: 2, tries: 0, answered: false, correct: false, revealed: false, hint: 0, chosen: null, feedback: '' }, o); }
+  function numChoices(answer, distractors, rand) {
+    var seen = {}, out = [];
+    [answer].concat(distractors).forEach(function (v) { if (!dpFin(v) || v < 0) return; var k = fmtNum(v, 2); if (seen[k] || out.length >= 4) return; seen[k] = 1; out.push({ id: k, label: k }); });
+    for (var d = 1; out.length < 4 && d < 20; d++) { [answer + d, answer - d].forEach(function (v) { var k = fmtNum(v, 2); if (v >= 0 && !seen[k] && out.length < 4) { seen[k] = 1; out.push({ id: k, label: k }); } }); }
+    return fyShuffle(out, rand);
+  }
+  function corrScenarioText(t, key) {
+    switch (key) {
+      case 'hours_test': return t('stem.dataplot.cs_hours_test', 'Hours studied vs. test score');
+      case 'temp_cocoa': return t('stem.dataplot.cs_temp_cocoa', 'Temperature vs. hot chocolate sales');
+      case 'shoe_iq': return t('stem.dataplot.cs_shoe_iq', 'Adult shoe size vs. puzzle score');
+      case 'car_value': return t('stem.dataplot.cs_car_value', 'Age of car vs. resale value');
+      case 'practice_ft': return t('stem.dataplot.cs_practice_ft', 'Practice hours vs. free throw %');
+      case 'pets_color': return t('stem.dataplot.cs_pets_color', 'Number of pets vs. favourite colour number');
+      case 'exercise_hr': return t('stem.dataplot.cs_exercise_hr', 'Exercise hours vs. resting heart rate');
+      case 'altitude_temp': return t('stem.dataplot.cs_altitude_temp', 'Altitude vs. temperature');
+      case 'sleep_test': return t('stem.dataplot.cs_sleep_test', 'Hours of sleep vs. test score');
+      default: return t('stem.dataplot.cs_distance_land', 'Distance from the city vs. land price');
+    }
+  }
+  function chartNameText(t, id) {
+    switch (id) {
+      case 'scatter': case 'Scatter': return t('stem.dataplot.scatter', 'Scatter');
+      case 'line': case 'Line': return t('stem.dataplot.line', 'Line');
+      case 'bar': case 'Bar': return t('stem.dataplot.bar', 'Bar');
+      case 'pie': case 'Pie': return t('stem.dataplot.pie', 'Pie');
+      case 'histogram': case 'Histogram': return t('stem.dataplot.histogram', 'Histogram');
+      case 'boxplot': case 'Box Plot': return t('stem.dataplot.box_plot', 'Box Plot');
+      case 'ogive': case 'Ogive': return t('stem.dataplot.ogive', 'Ogive');
+      case 'dotplot': return t('stem.dataplot.dot_plot', 'Dot plot');
+      default: return t('stem.dataplot.pictograph', 'Pictograph');
+    }
+  }
+  function chartPurpose(t, id) {
+    switch (id) {
+      case 'Pie': return t('stem.dataplot.purpose_pie', 'a pie chart shows the parts of ONE whole that add up to 100%.');
+      case 'Scatter': return t('stem.dataplot.purpose_scatter', 'a scatter plot shows how two measured variables relate, one point for each pair.');
+      case 'Histogram': return t('stem.dataplot.purpose_histogram', 'a histogram shows how ONE numeric variable is spread out, counted in bins.');
+      case 'Bar': return t('stem.dataplot.purpose_bar', 'a bar chart compares separate categories.');
+      case 'Line': return t('stem.dataplot.purpose_line', 'a line graph shows change over an ordered sequence such as time.');
+      case 'Box Plot': return t('stem.dataplot.purpose_boxplot', 'a box plot summarises spread (quartiles) and outliers, often to compare groups.');
+      default: return t('stem.dataplot.purpose_ogive', 'an ogive shows running totals (cumulative frequency).');
+    }
+  }
+  function matchChartText(t, key) {
+    switch (key) {
+      case 'proportions': return t('stem.dataplot.mc_proportions', 'Show the parts of a whole (a budget breakdown)');
+      case 'distribution': return t('stem.dataplot.mc_distribution', 'Show the distribution shape of test scores');
+      case 'relationship': return t('stem.dataplot.mc_relationship', 'Show the relationship between height and weight');
+      case 'compare_quarters': return t('stem.dataplot.mc_compare_quarters', 'Compare sales across 4 quarters');
+      case 'temp_week': return t('stem.dataplot.mc_temp_week', 'Show temperature change over a week');
+      case 'spread_groups': return t('stem.dataplot.mc_spread_groups', 'Compare spread and outliers across groups');
+      default: return t('stem.dataplot.mc_cumulative', 'Show the cumulative growth of savings');
+    }
+  }
+  function outlierScenarioText(t, key) {
+    switch (key) {
+      case 'scores': return t('stem.dataplot.os_scores', 'student test scores');
+      case 'temps': return t('stem.dataplot.os_temps', 'daily temperatures (°C)');
+      default: return t('stem.dataplot.os_marathon', 'marathon finish times (min)');
+    }
+  }
+  function hintSteps(t, nudge, strategy, worked, answerText) {
+    return [nudge, strategy, worked, fillT(t('stem.dataplot.hint_answer_is', 'The answer is {a}.'), { a: answerText })];
+  }
+  function genCorrelationItem(t, rand) {
+    var s = correlationScenarios[pickIdx(correlationScenarios.length, rand)], pts = [], r = 0;
+    for (var k = 0; k < 30; k++) {
+      pts = s.gen().map(function (p) { return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 }; });
+      r = pearsonOf(pts);
+      if (s.a === 'Positive' ? r > 0.6 : s.a === 'Negative' ? r < -0.6 : Math.abs(r) < 0.25) break;
+    }
+    var label = { Positive: t('stem.dataplot.corr_positive', 'Positive'), Negative: t('stem.dataplot.corr_negative', 'Negative'), None: t('stem.dataplot.corr_none', 'No correlation') };
+    var mis = {};
+    ['Positive', 'Negative', 'None'].forEach(function (o) {
+      if (o === s.a) return;
+      mis[o] = s.a === 'None' ? t('stem.dataplot.mis_pattern_in_noise', 'Misconception: seeing a pattern in noise. With no correlation the cloud has no tilt: the points on the right are not clearly higher or lower than those on the left.')
+        : o === 'None' ? t('stem.dataplot.mis_scattered_means_none', 'Misconception: "scattered means no correlation". The points do not have to form a line. If the whole cloud tilts, there is a correlation.')
+        : t('stem.dataplot.mis_direction', 'Misconception: a direction mix-up. Read left to right: if y tends to rise as x grows, the correlation is positive; if y tends to fall, it is negative.');
+    });
+    var srt = pts.slice().sort(function (a, b) { return a.x - b.x; }), half = Math.floor(srt.length / 2);
+    var left = meanOf(srt.slice(0, half).map(function (p) { return p.y; })), right = meanOf(srt.slice(srt.length - half).map(function (p) { return p.y; }));
+    return quizItem({
+      type: 'correlation', key: 'corr:' + s.key,
+      text: fillT(t('stem.dataplot.q_corr', 'Data: {scenario}. Look at the scatter plot. What kind of correlation does it show?'), { scenario: corrScenarioText(t, s.key) }),
+      chart: { kind: 'scatter', pts: pts },
+      choices: fyShuffle(['Positive', 'Negative', 'None'].map(function (id) { return { id: id, label: label[id] }; }), rand),
+      answer: s.a, answerText: label[s.a], mis: mis,
+      hints: hintSteps(t, t('stem.dataplot.hc_nudge', 'Read the plot from left to right, like a sentence.'),
+        t('stem.dataplot.hc_strategy', 'Compare the points on the left half with those on the right half. Are the right-hand points mostly higher, lower, or about the same?'),
+        fillT(t('stem.dataplot.hc_worked', 'The left half averages y ≈ {l}; the right half averages y ≈ {r}.'), { l: fmtNum(left, 1), r: fmtNum(right, 1) }), label[s.a]),
+      explain: fillT(t('stem.dataplot.ex_corr', 'For these points the correlation coefficient is r = {r}.'), { r: fmtFixed(r, 2) })
+    });
+  }
+  function genGuessR2Item(t, rand) {
+    var sc = guessR2Scenarios[pickIdx(guessR2Scenarios.length, rand)];
+    var pts = generateCorrelated(sc.r, 15), fit = linFit(pts), actual = Math.round(Math.max(0, fit.r2) * 100) / 100;
+    var opts = [actual], guard = 0;
+    while (opts.length < 4 && guard++ < 400) { var c = Math.round((0.02 + rnd(rand) * 0.96) * 100) / 100; if (opts.every(function (o) { return Math.abs(o - c) >= 0.15; })) opts.push(c); }
+    [0.05, 0.35, 0.65, 0.95, 0.2, 0.5, 0.8].forEach(function (c) { if (opts.length < 4 && opts.every(function (o) { return Math.abs(o - c) >= 0.15; })) opts.push(c); });
+    var mis = {};
+    opts.forEach(function (o) {
+      if (o === actual) return;
+      mis[o.toFixed(2)] = o > actual ? t('stem.dataplot.mis_r2_over', 'Misconception: "a clear tilt means a tight fit". R² measures how closely the points hug the line, and these points spread out more than that.')
+        : t('stem.dataplot.mis_r2_under', 'Misconception: "a few stray points ruin the fit". Most of these points still sit close to a straight line, so R² is higher than that.');
+    });
+    var r = Math.sqrt(actual) * (fit.m < 0 ? -1 : 1);
+    return quizItem({
+      type: 'guessR2', key: 'r2:' + actual.toFixed(2),
+      text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R² for this scatter plot'),
+      chart: { kind: 'scatter', pts: pts.map(function (p) { return { x: p.x, y: p.y }; }) },
+      choices: fyShuffle(opts.map(function (o) { return { id: o.toFixed(2), label: o.toFixed(2) }; }), rand),
+      answer: actual.toFixed(2), answerText: actual.toFixed(2), mis: mis,
+      hints: hintSteps(t, t('stem.dataplot.hr_nudge', 'R² near 1 means the points hug a straight line; near 0 means there is no straight-line pattern.'),
+        t('stem.dataplot.hr_strategy', 'Imagine the best-fit line. Are most points close to it, or spread far above and below it?'),
+        fillT(t('stem.dataplot.hr_worked', 'Here the correlation r is about {r}, and R² = r × r.'), { r: fmtFixed(r, 2) }), actual.toFixed(2)),
+      explain: fillT(t('stem.dataplot.ex_r2', 'R² = {v}: the straight line explains about {pct}% of the variation in y.'), { v: actual.toFixed(2), pct: Math.round(actual * 100) })
+    });
+  }
+  function genMatchChartItem(t, rand) {
+    var mc = matchChartScenarios[pickIdx(matchChartScenarios.length, rand)], mis = {};
+    mc.opts.forEach(function (o) { if (o !== mc.a) mis[o] = fillT(t('stem.dataplot.mis_chart_purpose', 'Not this one. Remember: {purpose}'), { purpose: chartPurpose(t, o) }); });
+    return quizItem({
+      type: 'matchChart', key: 'chart:' + mc.key,
+      text: fillT(t('stem.dataplot.q_match_chart', 'Best chart type for: {task}'), { task: matchChartText(t, mc.key) }),
+      chart: { kind: 'none' },
+      choices: fyShuffle(mc.opts.map(function (o) { return { id: o, label: chartNameText(t, o) }; }), rand),
+      answer: mc.a, answerText: chartNameText(t, mc.a), mis: mis,
+      hints: hintSteps(t, t('stem.dataplot.hm_nudge', 'Ask: am I comparing categories, showing change over time, showing parts of a whole, or showing how values spread?'),
+        t('stem.dataplot.hm_strategy', 'Count the variables. Two measured variables suggest a scatter plot; one variable with many values suggests a histogram or box plot.'),
+        fillT(t('stem.dataplot.hm_worked', 'The best chart here: {purpose}'), { purpose: chartPurpose(t, mc.a) }), chartNameText(t, mc.a)),
+      explain: chartPurpose(t, mc.a)
+    });
+  }
+  function genOutlierItem(t, rand) {
+    var os = outlierScenarios[pickIdx(outlierScenarios.length, rand)], res = null, pts, ys;
+    // Keep only sets where the planted value is the ONE value beyond the 1.5 × IQR fences: the
+    // feedback quotes that rule, and about 1 set in 18 also put a cluster value past a fence.
+    var lone = function (r) {
+      var v = r.pts.map(function (p) { return p.y; }), q = quartilesOf(v), f = 1.5 * (q.q3 - q.q1);
+      var out = v.map(function (y, k) { return y < q.q1 - f || y > q.q3 + f ? k : -1; }).filter(function (k) { return k >= 0; });
+      return out.length === 1 && out[0] === r.outlierIdx;
+    };
+    for (var g = 0; g < 60 && !(res && lone(res)); g++) res = os.gen();
+    if (!lone(res)) { var rest = res.pts.filter(function (p, k) { return k !== res.outlierIdx; }).map(function (p) { return p.y; }), mid = medianOf(rest); res.pts.forEach(function (p, k) { if (k !== res.outlierIdx) p.y = mid; }); }
+    pts = res.pts; ys = pts.map(function (p) { return p.y; });
+    var mis = {};
+    pts.forEach(function (p, k) { if (k !== res.outlierIdx) mis[String(k)] = fillT(t('stem.dataplot.mis_outlier_inside', 'The value {v} sits with the cluster of other values. An outlier is far from the rest, with a big gap: more than 1.5 × IQR beyond the box.'), { v: p.y }); });
+    return quizItem({
+      type: 'outlier', key: 'out:' + os.key + ':' + ys.join('-'),
+      text: fillT(t('stem.dataplot.q_outlier', 'Which point is the outlier in these {what}?'), { what: outlierScenarioText(t, os.key) }),
+      chart: { kind: 'scatter', pts: pts, numbered: true },
+      choices: pts.map(function (p, k) { return { id: String(k), label: fillT(t('stem.dataplot.point_n_value', 'Point {n}: {v}'), { n: k + 1, v: p.y }) }; }),
+      answer: String(res.outlierIdx), answerText: fillT(t('stem.dataplot.point_n_value', 'Point {n}: {v}'), { n: res.outlierIdx + 1, v: pts[res.outlierIdx].y }), mis: mis,
+      hints: hintSteps(t, t('stem.dataplot.ho_nudge', 'Find the value that sits far away from all the others.'),
+        t('stem.dataplot.ho_strategy', 'Put the values in order and look for a big gap at one end.'),
+        fillT(t('stem.dataplot.ho_worked', 'In order: {list}.'), { list: sortedOf(ys).join(', ') }),
+        fillT(t('stem.dataplot.point_n_value', 'Point {n}: {v}'), { n: res.outlierIdx + 1, v: pts[res.outlierIdx].y })),
+      explain: t('stem.dataplot.ex_outlier', 'The outlier is separated from the cluster by a big gap. It pulls the mean toward itself but barely moves the median.')
+    });
+  }
+  function barCatText(t, set, i) {
+    switch (set + i) {
+      case 'fruit0': return t('stem.dataplot.cat_apples', 'Apples');
+      case 'fruit1': return t('stem.dataplot.cat_bananas', 'Bananas');
+      case 'fruit2': return t('stem.dataplot.cat_grapes', 'Grapes');
+      case 'fruit3': return t('stem.dataplot.cat_pears', 'Pears');
+      case 'pets0': return t('stem.dataplot.cat_dogs', 'Dogs');
+      case 'pets1': return t('stem.dataplot.cat_cats', 'Cats');
+      case 'pets2': return t('stem.dataplot.cat_fish', 'Fish');
+      case 'pets3': return t('stem.dataplot.cat_birds', 'Birds');
+      case 'weather0': return t('stem.dataplot.cat_sunny', 'Sunny');
+      case 'weather1': return t('stem.dataplot.cat_rainy', 'Rainy');
+      case 'weather2': return t('stem.dataplot.cat_cloudy', 'Cloudy');
+      case 'weather3': return t('stem.dataplot.cat_snowy', 'Snowy');
+      case 'sports0': return t('stem.dataplot.cat_soccer', 'Soccer');
+      case 'sports1': return t('stem.dataplot.cat_basketball', 'Basketball');
+      case 'sports2': return t('stem.dataplot.cat_swimming', 'Swimming');
+      default: return t('stem.dataplot.cat_running', 'Running');
+    }
+  }
+  function barSetTitle(t, set) {
+    switch (set) {
+      case 'fruit': return t('stem.dataplot.set_fruit', 'Our class’s favourite fruit');
+      case 'pets': return t('stem.dataplot.set_pets', 'Pets our class has');
+      case 'weather': return t('stem.dataplot.set_weather', 'Weather this month (days)');
+      default: return t('stem.dataplot.set_sports', 'Favourite sport');
+    }
+  }
+  function genReadBarItem(t, rand, pictograph) {
+    var sets = ['fruit', 'pets', 'weather', 'sports'], set = sets[pickIdx(4, rand)], counts = [], guard = 0;
+    do {
+      counts = [0, 1, 2, 3].map(function () { return randInt(1, 9, rand); });
+      var mx = Math.max.apply(null, counts), mn = Math.min.apply(null, counts);
+      var ok = counts.filter(function (c) { return c === mx; }).length === 1 && counts.filter(function (c) { return c === mn; }).length === 1;
+    } while (!ok && guard++ < 50);
+    var cats = counts.map(function (c, i) { return { label: barCatText(t, set, i), value: c }; });
+    var kinds = ['most', 'least', 'more', 'total'], kind = kinds[pickIdx(4, rand)];
+    var unit = pictograph ? t('stem.dataplot.pictograph_key_one', 'Each symbol stands for 1.') : '';
+    var base = { type: 'readBar', chart: { kind: pictograph ? 'pictograph' : 'bar', cats: cats, title: barSetTitle(t, set) } };
+    var amax = counts.indexOf(Math.max.apply(null, counts)), amin = counts.indexOf(Math.min.apply(null, counts));
+    if (kind === 'most' || kind === 'least') {
+      var ans = kind === 'most' ? amax : amin, mis = {};
+      cats.forEach(function (c, i) { if (i !== ans) mis['c' + i] = kind === 'most' ? t('stem.dataplot.mis_bar_most', 'Compare the heights again: the tallest bar (or the longest row of symbols) shows the most.') : t('stem.dataplot.mis_bar_least', 'Compare the heights again: the shortest bar (or the shortest row of symbols) shows the least.'); });
+      return quizItem(Object.assign(base, {
+        key: 'bar:' + kind + ':' + set + ':' + counts.join('-'),
+        text: kind === 'most' ? t('stem.dataplot.q_bar_most', 'Which one has the most?') : t('stem.dataplot.q_bar_least', 'Which one has the least?'),
+        choices: fyShuffle(cats.map(function (c, i) { return { id: 'c' + i, label: c.label }; }), rand),
+        answer: 'c' + ans, answerText: cats[ans].label, mis: mis,
+        hints: hintSteps(t, t('stem.dataplot.hb_nudge', 'Look at how tall each bar is.'), t('stem.dataplot.hb_strategy', 'Read the number at the top of each bar, then compare them.'),
+          fillT(t('stem.dataplot.hb_worked_list', 'The numbers are {list}.'), { list: cats.map(function (c) { return c.label + ' ' + c.value; }).join(', ') }), cats[ans].label),
+        explain: unit
+      }));
+    }
+    if (kind === 'more') {
+      var hi = amax, lo = amin, diff = counts[hi] - counts[lo], misM = {};
+      misM[fmtNum(counts[hi], 2)] = fillT(t('stem.dataplot.mis_more_found_count', 'That is how many {a} there are. "How many more" asks for the gap between the two bars: subtract the smaller from the bigger.'), { a: cats[hi].label });
+      misM[fmtNum(counts[hi] + counts[lo], 2)] = t('stem.dataplot.mis_more_added', 'That adds both amounts together. "How many more" means find the difference: take the smaller away from the bigger.');
+      return quizItem(Object.assign(base, {
+        key: 'bar:more:' + set + ':' + counts.join('-'),
+        text: fillT(t('stem.dataplot.q_bar_more', 'How many more {a} than {b}?'), { a: cats[hi].label, b: cats[lo].label }),
+        choices: numChoices(diff, [counts[hi], counts[hi] + counts[lo], diff + 1], rand),
+        answer: fmtNum(diff, 2), answerText: fmtNum(diff, 2), mis: misM, misDefault: t('stem.dataplot.mis_bar_read', 'Read the top of each bar against the scale again, then subtract.'),
+        hints: hintSteps(t, t('stem.dataplot.hb_more_nudge', 'Find the two bars named in the question.'), t('stem.dataplot.hb_more_strategy', '"How many more" means subtract: bigger number minus smaller number.'),
+          fillT(t('stem.dataplot.hb_more_worked', '{a} = {x} and {b} = {y}, so work out {x} − {y}.'), { a: cats[hi].label, b: cats[lo].label, x: counts[hi], y: counts[lo] }), fmtNum(diff, 2)),
+        explain: fillT(t('stem.dataplot.ex_bar_more', '{x} − {y} = {d}.'), { x: counts[hi], y: counts[lo], d: diff })
+      }));
+    }
+    var total = counts.reduce(function (a, b) { return a + b; }, 0), misT = {};
+    misT[fmtNum(counts[amax], 2)] = t('stem.dataplot.mis_total_one_bar', 'That is just one bar. "In all" means add every bar together.');
+    return quizItem(Object.assign(base, {
+      key: 'bar:total:' + set + ':' + counts.join('-'),
+      text: t('stem.dataplot.q_bar_total', 'How many are there in all?'),
+      choices: numChoices(total, [counts[amax], total - 1, total + 2], rand),
+      answer: fmtNum(total, 2), answerText: fmtNum(total, 2), mis: misT, misDefault: t('stem.dataplot.mis_total_recount', 'Add the number for every bar. Check each one against the scale.'),
+      hints: hintSteps(t, t('stem.dataplot.hb_total_nudge', 'Every bar counts.'), t('stem.dataplot.hb_total_strategy', 'Read each bar’s number, then add them all.'),
+        fillT(t('stem.dataplot.hb_total_worked', 'Add {list}.'), { list: counts.join(' + ') }), fmtNum(total, 2)),
+      explain: fillT(t('stem.dataplot.ex_total', '{sum} = {total}.'), { sum: counts.join(' + '), total: total })
+    }));
+  }
+  function genDotItem(t, rand) {
+    var n = randInt(10, 14, rand), vals = [], counts = [0, 0, 0, 0, 0, 0], guard = 0, kinds = ['countAt', 'mode', 'total'], kind = kinds[pickIdx(3, rand)];
+    do {
+      vals = []; counts = [0, 0, 0, 0, 0, 0];
+      for (var i = 0; i < n; i++) { var v = Math.min(5, Math.max(0, Math.round(1.5 + (rnd(rand) + rnd(rand) - 1) * 3))); vals.push(v); counts[v]++; }
+    } while (kind === 'mode' && modesOf(vals).kind !== 'one' && guard++ < 60);
+    if (kind === 'mode' && modesOf(vals).kind !== 'one') kind = 'total';
+    var title = t('stem.dataplot.dot_title_pets', 'Number of pets each student has');
+    var base = { type: 'dotPlot', chart: { kind: 'dots', values: vals, min: 0, max: 5, title: title } };
+    if (kind === 'countAt') {
+      var opts = []; counts.forEach(function (c, v) { if (c > 0) opts.push(v); });
+      var k = opts[pickIdx(opts.length, rand)], mis = {};
+      if (k !== counts[k]) mis[fmtNum(k, 2)] = fillT(t('stem.dataplot.mis_dot_value', '{k} is the number on the line. Count the dots stacked above {k}.'), { k: k });
+      return quizItem(Object.assign(base, {
+        key: 'dot:count:' + k + ':' + vals.join(''),
+        text: fillT(t('stem.dataplot.q_dot_count', 'How many students have {k} pets?'), { k: k }),
+        choices: numChoices(counts[k], [k, counts[k] + 1, n], rand), answer: fmtNum(counts[k], 2), answerText: fmtNum(counts[k], 2), mis: mis,
+        misDefault: t('stem.dataplot.mis_dot_recount', 'Each dot is one student. Count the dots in that one stack again.'),
+        hints: hintSteps(t, t('stem.dataplot.hd_nudge', 'Each dot is one student.'), fillT(t('stem.dataplot.hd_strategy', 'Find {k} on the number line and count the dots above it.'), { k: k }),
+          fillT(t('stem.dataplot.hd_worked', 'Point at each dot above {k} as you count.'), { k: k }), fmtNum(counts[k], 2)),
+        explain: ''
+      }));
+    }
+    if (kind === 'mode') {
+      var md = modesOf(vals).modes[0], misMode = {};
+      misMode[fmtNum(counts[md], 2)] = t('stem.dataplot.mis_mode_count', 'That is how many dots are in the tallest stack. The mode is the VALUE under that stack.');
+      return quizItem(Object.assign(base, {
+        key: 'dot:mode:' + vals.join(''),
+        text: t('stem.dataplot.q_dot_mode', 'What number of pets is most common (the mode)?'),
+        choices: numChoices(md, [counts[md], md + 1, 5], rand), answer: fmtNum(md, 2), answerText: fmtNum(md, 2), mis: misMode,
+        misDefault: t('stem.dataplot.mis_mode_tallest', 'Find the tallest stack of dots; the mode is the number under it.'),
+        hints: hintSteps(t, t('stem.dataplot.hdm_nudge', 'The mode is the value that appears most often.'), t('stem.dataplot.hdm_strategy', 'Find the tallest stack of dots.'),
+          fillT(t('stem.dataplot.hdm_worked', 'The tallest stack has {c} dots.'), { c: counts[md] }), fmtNum(md, 2)),
+        explain: ''
+      }));
+    }
+    return quizItem(Object.assign(base, {
+      key: 'dot:total:' + vals.join(''),
+      text: t('stem.dataplot.q_dot_total', 'How many students answered in all?'),
+      choices: numChoices(n, [n - 1, n + 1, 5], rand), answer: fmtNum(n, 2), answerText: fmtNum(n, 2), mis: {},
+      misDefault: t('stem.dataplot.mis_dot_total', 'Count every dot on the plot: each dot is one student.'),
+      hints: hintSteps(t, t('stem.dataplot.hdt_nudge', 'Each dot is one student.'), t('stem.dataplot.hdt_strategy', 'Count the dots stack by stack, then add.'),
+        fillT(t('stem.dataplot.hdt_worked', 'Stacks from 0 to 5: {list}.'), { list: counts.join(', ') }), fmtNum(n, 2)),
+      explain: ''
+    }));
+  }
+  function trapsFrom(answer, list, tol) {
+    var out = [];
+    list.forEach(function (tr) { if (dpFin(tr.v) && Math.abs(tr.v - answer) > tol && !out.some(function (o) { return Math.abs(o.v - tr.v) <= tol; })) out.push(tr); });
+    return out;
+  }
+  function genCentreItem(t, rand) {
+    var kinds = ['mean', 'median', 'mode'], kind = kinds[pickIdx(3, rand)], n = randInt(5, 9, rand), vals = [], guard = 0;
+    for (var g = 0; g < 60; g++) {
+      vals = []; for (var i = 0; i < n; i++) vals.push(randInt(1, 20, rand));
+      if (kind === 'mean') { var sum0 = vals.reduce(function (a, b) { return a + b; }, 0), r = sum0 % n; if (r) { if (vals[n - 1] - r >= 1) vals[n - 1] -= r; else vals[n - 1] += n - r; } }
+      if (kind === 'mode') { vals[pickIdx(n - 1, rand) + 1] = vals[0]; if (modesOf(vals).kind !== 'one') continue; }
+      break;
+    }
+    if (kind === 'mode' && modesOf(vals).kind !== 'one') kind = 'median';
+    var sum = vals.reduce(function (a, b) { return a + b; }, 0), s = sortedOf(vals), mean = sum / n, med = medianSorted(s), md = modesOf(vals);
+    var unsortedMid = n % 2 ? vals[Math.floor(n / 2)] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+    var answer = kind === 'mean' ? mean : kind === 'median' ? med : md.modes[0], tol = 0.01, traps;
+    if (kind === 'mean') traps = trapsFrom(answer, [
+      { v: med, text: t('stem.dataplot.mis_median_for_mean', 'That is the median (the middle value). The mean adds every value and divides by how many there are.') },
+      { v: sum, text: fillT(t('stem.dataplot.mis_sum_not_divided', 'That is the total. To get the mean, divide the total by how many values there are ({n}).'), { n: n }) },
+      { v: sum / (n - 1), text: t('stem.dataplot.mis_wrong_count', 'Check how many values there are: divide by the full count.') }], tol);
+    else if (kind === 'median') traps = trapsFrom(answer, [
+      { v: unsortedMid, text: t('stem.dataplot.mis_sort_first', 'Sort first. The median is the middle of the values IN ORDER, not the middle of the list as written.') },
+      { v: mean, text: t('stem.dataplot.mis_mean_for_median', 'That is the mean (the fair-share average). The median is the middle value once the values are in order.') },
+      n % 2 ? { v: NaN } : { v: s[n / 2 - 1], text: t('stem.dataplot.mis_even_middle', 'With an even count there are two middle values. The median is halfway between them.') },
+      n % 2 ? { v: NaN } : { v: s[n / 2], text: t('stem.dataplot.mis_even_middle', 'With an even count there are two middle values. The median is halfway between them.') }], tol);
+    else traps = trapsFrom(answer, [
+      { v: s[n - 1], text: t('stem.dataplot.mis_mode_largest', 'The mode is the value that appears most often, not the largest value.') },
+      { v: md.count, text: t('stem.dataplot.mis_mode_count', 'That is how many dots are in the tallest stack. The mode is the VALUE under that stack.') }], tol);
+    var name = kind === 'mean' ? t('stem.dataplot.stat_mean', 'mean') : kind === 'median' ? t('stem.dataplot.stat_median', 'median') : t('stem.dataplot.stat_mode', 'mode');
+    var strategy = kind === 'mean' ? t('stem.dataplot.hcm_strategy_mean', 'Add all the values, then divide by how many there are.')
+      : kind === 'median' ? t('stem.dataplot.hcm_strategy_median', 'Put the values in order, then find the middle one.') : t('stem.dataplot.hcm_strategy_mode', 'Find the value that appears most often.');
+    var worked = kind === 'mean' ? fillT(t('stem.dataplot.hcm_worked_mean', 'The total is {sum} and there are {n} values.'), { sum: sum, n: n })
+      : fillT(t('stem.dataplot.hcm_worked_sorted', 'In order: {list}.'), { list: s.join(', ') });
+    return quizItem({
+      type: 'centre', key: 'centre:' + kind + ':' + vals.join('-'),
+      text: fillT(t('stem.dataplot.q_centre', 'Find the {stat} of these values: {list}'), { stat: name, list: vals.join(', ') }),
+      chart: { kind: 'list', values: vals }, numeric: { answer: answer, tol: tol }, answer: fmtNum(answer, 2), answerText: fmtNum(answer, 2),
+      traps: traps, misDefault: t('stem.dataplot.mis_recheck', 'Not yet. Check each step of your working.'),
+      hints: hintSteps(t, fillT(t('stem.dataplot.hcm_nudge', 'The {stat} is one way to describe the centre of the data.'), { stat: name }), strategy, worked, fmtNum(answer, 2)),
+      explain: kind === 'mean' ? fillT(t('stem.dataplot.ex_mean', '{sum} ÷ {n} = {a}.'), { sum: sum, n: n, a: fmtNum(answer, 2) }) : fillT(t('stem.dataplot.hcm_worked_sorted', 'In order: {list}.'), { list: s.join(', ') })
+    });
+  }
+  function genSpreadItem(t, rand) {
+    var kinds = ['range', 'iqr', 'mad'], kind = kinds[pickIdx(3, rand)], n = kind === 'iqr' ? randInt(8, 9, rand) : randInt(5, 8, rand), vals = [];
+    for (var i = 0; i < n; i++) vals.push(randInt(2, 30, rand));
+    if (kind === 'mad') { var sum0 = vals.reduce(function (a, b) { return a + b; }, 0), r = sum0 % n; if (r) { if (vals[n - 1] - r >= 1) vals[n - 1] -= r; else vals[n - 1] += n - r; } }
+    var s = sortedOf(vals), qs = quartilesOf(vals), mean = meanOf(vals), answer, traps, tol = 0.01, strategy, worked;
+    var dists = vals.map(function (v) { return Math.abs(v - mean); }), sumD = dists.reduce(function (a, b) { return a + b; }, 0);
+    if (kind === 'range') {
+      answer = s[n - 1] - s[0]; strategy = t('stem.dataplot.hs_strategy_range', 'Range = largest value − smallest value.');
+      worked = fillT(t('stem.dataplot.hs_worked_range', 'The largest is {hi} and the smallest is {lo}.'), { hi: s[n - 1], lo: s[0] });
+      traps = trapsFrom(answer, [{ v: s[n - 1], text: t('stem.dataplot.mis_range_max', 'That is the largest value. The range is the largest minus the smallest.') },
+        { v: s[n - 1] + s[0], text: t('stem.dataplot.mis_range_added', 'The range subtracts: largest minus smallest.') }], tol);
+    } else if (kind === 'iqr') {
+      answer = qs.q3 - qs.q1; strategy = t('stem.dataplot.hs_strategy_iqr', 'Sort the values, find Q1 (middle of the lower half) and Q3 (middle of the upper half), then IQR = Q3 − Q1.');
+      worked = fillT(t('stem.dataplot.hs_worked_iqr', 'In order: {list}. Q1 = {q1} and Q3 = {q3}.'), { list: s.join(', '), q1: fmtNum(qs.q1, 2), q3: fmtNum(qs.q3, 2) });
+      traps = trapsFrom(answer, [{ v: s[n - 1] - s[0], text: t('stem.dataplot.mis_iqr_range', 'That is the range. The IQR only uses the middle half of the data: Q3 − Q1.') },
+        { v: qs.q3, text: t('stem.dataplot.mis_iqr_q3', 'That is Q3. The IQR is the distance from Q1 to Q3.') }], tol);
+    } else {
+      answer = Math.round(sumD / n * 100) / 100; tol = 0.05; strategy = t('stem.dataplot.hs_strategy_mad', 'Find the mean. Find how far each value is from it. Then take the mean of those distances.');
+      worked = fillT(t('stem.dataplot.hs_worked_mad', 'The mean is {m}. The distances add up to {d}, and there are {n} values.'), { m: fmtNum(mean, 2), d: fmtNum(sumD, 2), n: n });
+      traps = trapsFrom(answer, [{ v: mean, text: t('stem.dataplot.mis_mad_mean', 'That is the mean itself. MAD is the average DISTANCE of the values from the mean.') },
+        { v: sumD, text: fillT(t('stem.dataplot.mis_mad_sum', 'That is the total distance. Divide it by how many values there are ({n}).'), { n: n }) }], tol);
+    }
+    var name = kind === 'range' ? t('stem.dataplot.stat_range', 'range') : kind === 'iqr' ? t('stem.dataplot.stat_iqr', 'interquartile range (IQR)') : t('stem.dataplot.stat_mad', 'mean absolute deviation (MAD)');
+    return quizItem({
+      type: 'spread', key: 'spread:' + kind + ':' + vals.join('-'),
+      text: fillT(t('stem.dataplot.q_spread', 'Find the {stat} of these values: {list}'), { stat: name, list: vals.join(', ') }),
+      chart: { kind: 'list', values: vals }, numeric: { answer: answer, tol: tol }, answer: fmtNum(answer, 2), answerText: fmtNum(answer, 2),
+      traps: traps, misDefault: t('stem.dataplot.mis_recheck', 'Not yet. Check each step of your working.'),
+      hints: hintSteps(t, t('stem.dataplot.hs_nudge', 'Spread measures how far apart the values are.'), strategy, worked, fmtNum(answer, 2)),
+      explain: worked
+    });
+  }
+  function genResidualItem(t, rand) {
+    var slopes = [0.5, 1, 1.5, 2, -0.5, -1], m = slopes[pickIdx(slopes.length, rand)], b = m < 0 ? randInt(14, 20, rand) : randInt(1, 6, rand);
+    var pts = [], j = 0, guard = 0;
+    do {
+      pts = []; for (var x = 1; x <= 8; x++) pts.push({ x: x, y: m * x + b + randInt(-3, 3, rand) });
+      j = pickIdx(8, rand);
+    } while (Math.abs(pts[j].y - (m * pts[j].x + b)) < 0.5 && guard++ < 40);
+    var pred = m * pts[j].x + b, res = pts[j].y - pred;
+    return quizItem({
+      type: 'residual', key: 'res:' + m + ':' + b + ':' + j + ':' + pts.map(function (p) { return p.y; }).join('-'),
+      text: fillT(t('stem.dataplot.q_residual', 'The line of fit is {eq}. What is the residual of the highlighted point ({x}, {y})?'), { eq: equationText('linear', { m: m, b: b }).replace('y =', 'ŷ ='), x: pts[j].x, y: fmtNum(pts[j].y, 2) }),
+      chart: { kind: 'scatter', pts: pts, line: { m: m, b: b }, highlight: j }, numeric: { answer: res, tol: 0.05 }, answer: fmtNum(res, 2), answerText: fmtNum(res, 2),
+      traps: trapsFrom(res, [{ v: -res, text: t('stem.dataplot.mis_residual_sign', 'Check the sign. Residual = observed − predicted, so a point ABOVE the line has a positive residual.') },
+        { v: pred, text: t('stem.dataplot.mis_residual_pred', 'That is the predicted value ŷ. The residual is the observed y minus that prediction.') },
+        { v: pts[j].y, text: t('stem.dataplot.mis_residual_obs', 'That is the observed y. Subtract the line’s prediction from it.') }], 0.05),
+      misDefault: t('stem.dataplot.mis_recheck', 'Not yet. Check each step of your working.'),
+      hints: hintSteps(t, t('stem.dataplot.hres_nudge', 'A residual is how far a point is above or below the line.'), t('stem.dataplot.hres_strategy', 'Put the point’s x into the equation to get the prediction ŷ, then work out y − ŷ.'),
+        fillT(t('stem.dataplot.hres_worked', 'At x = {x} the line predicts ŷ = {p}.'), { x: pts[j].x, p: fmtNum(pred, 2) }), fmtNum(res, 2)),
+      explain: fillT(t('stem.dataplot.ex_residual', '{y} − {p} = {r}.'), { y: fmtNum(pts[j].y, 2), p: fmtNum(pred, 2), r: fmtNum(res, 2) })
+    });
+  }
+  // Stage C: reading a box plot (6.SP.4, 6.SP.5c). The five numbers are labelled on the plot,
+  // so the questions test what they MEAN: median vs middle of the box, IQR vs range, and the
+  // "longer part holds more data" misconception. Constant-answer kinds share one XP key.
+  var BOX_FALLBACK = [4, 7, 8, 10, 12, 13, 15, 19, 27];
+  function genBoxItem(t, rand) {
+    var kinds = ['median', 'iqr', 'range', 'half', 'whisker'], kind = kinds[pickIdx(5, rand)];
+    var s = [], q = null, ok = false, guard = 0;
+    var check = function () {
+      var mn = s[0], mx = s[s.length - 1], lw = q.q1 - mn, rw = mx - q.q3;
+      var good = mn < q.q1 && q.q1 < q.med && q.med < q.q3 && q.q3 < mx;
+      if (kind === 'median') good = good && Math.abs((q.q1 + q.q3) / 2 - q.med) >= 1;
+      if (kind === 'whisker') good = good && Math.min(lw, rw) >= 1 && Math.max(lw, rw) >= 2 * Math.min(lw, rw);
+      return good;
+    };
+    while (!ok && guard++ < 80) {
+      var n = randInt(9, 13, rand), vals = [], skewRight = rnd(rand) < 0.5;
+      for (var i = 0; i < n; i++) { var u = rnd(rand); vals.push(Math.round(10 + 22 * (skewRight ? u * u : 1 - (1 - u) * (1 - u))) + randInt(0, 3, rand)); }
+      s = sortedOf(vals); q = quartilesOf(vals); ok = check();
+    }
+    if (!ok) { s = BOX_FALLBACK.slice(); q = quartilesOf(s); if (kind === 'median') kind = 'iqr'; }
+    var mn = s[0], mx = s[s.length - 1], F = function (v) { return fmtNum(v, 2); };
+    var sum = { min: mn, q1: q.q1, med: q.med, q3: q.q3, max: mx };
+    var list = [mn, q.q1, q.med, q.q3, mx].map(F).join(', ');
+    var base = { type: 'boxPlot', chart: { kind: 'box', values: s, sum: sum, title: t('stem.dataplot.box_title_jump', 'Standing long jump of each student (dm)') } };
+    var nudge = t('stem.dataplot.hbx_nudge', 'A box plot shows five numbers: minimum, Q1, median, Q3 and maximum.');
+    var worked = fillT(t('stem.dataplot.hbx_worked', 'The labels from left to right are {list}.'), { list: list });
+    var misOf = function (answer, pairs) { var m = {}; pairs.forEach(function (p) { if (dpFin(p[0]) && F(p[0]) !== F(answer) && !m[F(p[0])]) m[F(p[0])] = p[1]; }); return m; };
+    if (kind === 'median' || kind === 'iqr' || kind === 'range') {
+      var answer, mis, text, strategy, distract;
+      if (kind === 'median') {
+        answer = q.med; distract = [(q.q1 + q.q3) / 2, q.q1, q.q3]; text = t('stem.dataplot.q_box_median', 'What is the median of these data?');
+        strategy = t('stem.dataplot.hbx_median', 'The median is the line drawn inside the box.');
+        mis = misOf(answer, [[(q.q1 + q.q3) / 2, t('stem.dataplot.mis_box_mid', 'That is halfway across the box. The median is the line drawn INSIDE the box, and it is not always in the middle of the box.')],
+          [q.q1, t('stem.dataplot.mis_box_q1', 'That is Q1, the left edge of the box. The median is the line inside the box.')], [q.q3, t('stem.dataplot.mis_box_q3', 'That is Q3, the right edge of the box. The median is the line inside the box.')]]);
+      } else if (kind === 'iqr') {
+        answer = q.q3 - q.q1; distract = [mx - mn, q.q3, q.med]; text = t('stem.dataplot.q_box_iqr', 'What is the interquartile range (IQR) of these data?');
+        strategy = t('stem.dataplot.hbx_iqr', 'The IQR is the width of the box: Q3 − Q1.');
+        mis = misOf(answer, [[mx - mn, t('stem.dataplot.mis_box_range_for_iqr', 'That is the range (maximum − minimum). The IQR is only the width of the box: Q3 − Q1.')],
+          [q.q3, t('stem.dataplot.mis_box_q3_iqr', 'That is Q3 itself. The IQR is the distance from Q1 to Q3: subtract.')], [q.med, t('stem.dataplot.mis_box_med_iqr', 'That is the median, a measure of centre. The IQR measures spread: Q3 − Q1.')]]);
+      } else {
+        answer = mx - mn; distract = [q.q3 - q.q1, mx, mx + mn]; text = t('stem.dataplot.q_box_range', 'What is the range of these data?');
+        strategy = t('stem.dataplot.hbx_range', 'The range runs from the end of one whisker to the end of the other: maximum − minimum.');
+        mis = misOf(answer, [[q.q3 - q.q1, t('stem.dataplot.mis_box_iqr_for_range', 'That is the IQR, the width of the box. The range runs from whisker end to whisker end: maximum − minimum.')],
+          [mx, t('stem.dataplot.mis_box_max', 'That is the maximum. The range is maximum − minimum.')], [mx + mn, t('stem.dataplot.mis_box_added', 'The range subtracts: maximum − minimum.')]]);
+      }
+      // The median question cannot label the median: the plot shows the five values unnamed.
+      if (kind === 'median') base.chart.plain = true;
+      return quizItem(Object.assign(base, {
+        key: 'box:' + kind + ':' + s.join('-'), text: text,
+        choices: numChoices(answer, distract, rand), answer: F(answer), answerText: F(answer), mis: mis,
+        misDefault: t('stem.dataplot.mis_box_read', 'Find the five labelled numbers first, then decide which ones the question needs.'),
+        hints: hintSteps(t, nudge, strategy, worked, F(answer)),
+        explain: kind === 'median' ? fillT(t('stem.dataplot.ex_box_median', 'The median is {m}; halfway across the box would be {mid}.'), { m: F(q.med), mid: F((q.q1 + q.q3) / 2) })
+          : kind === 'iqr' ? fillT(t('stem.dataplot.ex_box_iqr', 'IQR = {q3} − {q1} = {a}.'), { q3: F(q.q3), q1: F(q.q1), a: F(answer) }) : fillT(t('stem.dataplot.ex_box_range', 'Range = {mx} − {mn} = {a}.'), { mx: F(mx), mn: F(mn), a: F(answer) })
+      }));
+    }
+    var quarterNote = t('stem.dataplot.ex_box_quarters', 'The five numbers split the data into four parts with about the same number of values in each.');
+    if (kind === 'half') {
+      return quizItem(Object.assign(base, {
+        key: 'box:half', text: t('stem.dataplot.q_box_half', 'About what percent of the values are inside the box, from Q1 to Q3?'),
+        choices: fyShuffle([{ id: '25', label: t('stem.dataplot.pct_25', 'About 25%') }, { id: '50', label: t('stem.dataplot.pct_50', 'About 50%') }, { id: '75', label: t('stem.dataplot.pct_75', 'About 75%') }, { id: '100', label: t('stem.dataplot.pct_100', 'All of them') }], rand),
+        answer: '50', answerText: t('stem.dataplot.pct_50', 'About 50%'),
+        mis: { '25': t('stem.dataplot.mis_box_half_25', 'Each of the four parts of a box plot holds about a quarter of the values. The box is two of those parts, so it holds about 50%.'),
+          '75': t('stem.dataplot.mis_box_half_75', 'Count the parts inside the box: Q1 to the median, and the median to Q3. That is two quarters, so about 50%.'),
+          '100': t('stem.dataplot.mis_box_half_100', 'The whiskers hold values too: about a quarter on each side. The box holds about 50%.') },
+        hints: hintSteps(t, t('stem.dataplot.hbx_quarters_nudge', 'The five numbers cut the data into four parts.'), t('stem.dataplot.hbx_quarters_strategy', 'Each part holds about the same number of values: about a quarter.'),
+          t('stem.dataplot.hbx_half_worked', 'The box runs from Q1 to Q3, so it is two of the four parts.'), t('stem.dataplot.pct_50', 'About 50%')),
+        explain: quarterNote
+      }));
+    }
+    var rightLonger = (mx - q.q3) > (q.q1 - mn), same = t('stem.dataplot.box_w_same', 'Neither: each holds about a quarter of the values');
+    return quizItem(Object.assign(base, {
+      key: 'box:whisker', text: rightLonger ? t('stem.dataplot.q_box_whisker_right', 'The right whisker is longer than the left whisker. Which whisker holds more of the values?') : t('stem.dataplot.q_box_whisker_left', 'The left whisker is longer than the right whisker. Which whisker holds more of the values?'),
+      choices: fyShuffle([{ id: 'long', label: t('stem.dataplot.box_w_long', 'The longer whisker') }, { id: 'short', label: t('stem.dataplot.box_w_short', 'The shorter whisker') }, { id: 'same', label: same }], rand),
+      answer: 'same', answerText: same,
+      mis: { long: t('stem.dataplot.mis_box_long', 'Misconception: "a longer part of a box plot holds more data." Each whisker holds about a quarter of the values. A long whisker means those values are more spread out, not that there are more of them.'),
+        short: t('stem.dataplot.mis_box_short', 'Each whisker holds about a quarter of the values, whatever its length. A short whisker only means those values are bunched close together.') },
+      hints: hintSteps(t, t('stem.dataplot.hbx_quarters_nudge', 'The five numbers cut the data into four parts.'), t('stem.dataplot.hbx_quarters_strategy', 'Each part holds about the same number of values: about a quarter.'),
+        t('stem.dataplot.hbx_whisker_worked', 'Long or short, each whisker is one of the four parts.'), same),
+      explain: quarterNote
+    }));
+  }
+  var QUIZ_TYPES = ['readBar', 'dotPlot', 'centre', 'spread', 'correlation', 'guessR2', 'residual', 'matchChart', 'outlier', 'pictograph', 'boxPlot'];
+  // Stage C: K-5 gets pictographs AND bar charts (each its own type); 6-8 gets box plots.
+  var QUIZ_BY_LEVEL = { k5: ['pictograph', 'readBar', 'dotPlot', 'matchChart'], '68': ['dotPlot', 'centre', 'spread', 'boxPlot', 'outlier', 'matchChart'], '912': ['correlation', 'guessR2', 'residual', 'outlier', 'matchChart'] };
+  function genQuizItem(type, t, rand, opts) {
+    switch (type) {
+      case 'pictograph': { var pq = genReadBarItem(t, rand, true); pq.type = 'pictograph'; pq.key = 'pic:' + pq.key; return pq; }
+      case 'boxPlot': return genBoxItem(t, rand);
+      case 'readBar': return genReadBarItem(t, rand, !!(opts && opts.pictograph));
+      case 'dotPlot': return genDotItem(t, rand);
+      case 'centre': return genCentreItem(t, rand);
+      case 'spread': return genSpreadItem(t, rand);
+      case 'guessR2': return genGuessR2Item(t, rand);
+      case 'residual': return genResidualItem(t, rand);
+      case 'matchChart': return genMatchChartItem(t, rand);
+      case 'outlier': return genOutlierItem(t, rand);
+      default: return genCorrelationItem(t, rand);
+    }
+  }
+  // ── Stage C: a short "Start here" path per grade band. Each tick reads progress the tool
+  // already keeps: skillsDone flags (saved), with quizXpItems keys and in-session tab state as
+  // fallbacks for older saves. Every other activity stays in the tabs.
+  var LEARNING_PATHS = {
+    k5: [{ id: 'pictograph', tab: 'quiz', quiz: 'pictograph' }, { id: 'bar', tab: 'quiz', quiz: 'readBar' }, { id: 'dot', tab: 'quiz', quiz: 'dotPlot' }, { id: 'project', tab: 'project' }],
+    '68': [{ id: 'centre', tab: 'stats' }, { id: 'box', tab: 'quiz', quiz: 'boxPlot' }, { id: 'compare', tab: 'compare' }, { id: 'sampling', tab: 'samples' }, { id: 'twoway', tab: 'twoway' }, { id: 'fiteye', tab: 'fit', mode: 'eye' }],
+    '912': [{ id: 'regression', tab: 'fit', mode: 'eye' }, { id: 'residplot', tab: 'fit', mode: 'resid' }, { id: 'cause', tab: 'cause' }]
+  };
+  var CAUSE_PATH_NEED = 4;
+  // Tabs in the order a band meets them: the path's tabs first (after Chart, the data home), then the rest.
+  var TAB_ORDER_BY_LEVEL = {
+    k5: ['chart', 'quiz', 'project', 'stats', 'tools'],
+    '68': ['chart', 'stats', 'quiz', 'compare', 'samples', 'twoway', 'fit', 'cause', 'project', 'tools', 'inquiry'],
+    '912': ['chart', 'fit', 'cause', 'stats', 'quiz', 'compare', 'twoway', 'samples', 'project', 'tools', 'inquiry']
+  };
+  function pathStepDone(step, st) {
+    st = st || {};
+    var sd = st.skillsDone || {}, xp = st.quizXpItems || {};
+    var any = function (map, re) { return Object.keys(map).some(function (k) { return re.test(k) && !!map[k]; }); };
+    switch (step.id) {
+      case 'pictograph': return !!sd['quiz:pictograph'] || any(xp, /^pic:/);
+      case 'bar': return !!sd['quiz:readBar'] || any(xp, /^bar:/);
+      case 'dot': return !!sd['quiz:dotPlot'] || any(xp, /^dot:/);
+      case 'project': return !!sd.project;
+      case 'centre': return !!sd.pred || any(xp, /^pred:/) || ((!!sd['quiz:centre'] || any(xp, /^centre:/)) && (!!sd['quiz:spread'] || any(xp, /^spread:/)));
+      case 'box': return !!sd['quiz:boxPlot'] || any(xp, /^box:/);
+      case 'compare': return any(sd, /^compare:/) || any(xp, /^compare:/) || any(st.compareDone || {}, /./);
+      case 'sampling': return any(sd, /^sampling:/);
+      case 'twoway': return any(sd, /^(twoway|twmine):/);
+      case 'fiteye': case 'regression': return any(sd, /^fit:/);
+      case 'residplot': return any(sd, /^resid:/);
+      case 'cause': {
+        var ca = st.causeAnswers || {};
+        return CAUSE_CARDS.filter(function (c) { return !!sd['cause:' + c.id] || !!(ca[c.id] && ca[c.id].done && ca[c.id].correct); }).length >= CAUSE_PATH_NEED;
+      }
+      default: return false;
+    }
+  }
+  function pathLevelFor(level) { return level === 'k5' || level === '68' ? level : '912'; }
+
+  // Grade one attempt. Returns { correct, feedback }.
+  function gradeQuiz(item, response) {
+    if (!item) return { correct: false, feedback: '' };
+    if (item.numeric) {
+      var v = toNumber(String(response == null ? '' : response).replace(',', '.'), ';');
+      if (!dpFin(v)) return { correct: false, invalid: true, feedback: '' };
+      if (Math.abs(v - item.numeric.answer) <= item.numeric.tol + 1e-9) return { correct: true, feedback: '' };
+      var trap = (item.traps || []).filter(function (tr) { return Math.abs(v - tr.v) <= Math.max(item.numeric.tol, 0.01) + 1e-9; })[0];
+      return { correct: false, feedback: trap ? trap.text : (item.misDefault || '') };
+    }
+    var id = String(response);
+    if (id === String(item.answer)) return { correct: true, feedback: '' };
+    return { correct: false, feedback: (item.mis && item.mis[id]) || item.misDefault || '' };
+  }
+
+  // ── Correlation vs causation cards ──
+  var CAUSE_CARDS = [
+    { id: 'icecream', answer: 'lurking' }, { id: 'fertilizer', answer: 'cause' }, { id: 'doctor', answer: 'reverse' }, { id: 'shoesize', answer: 'lurking' },
+    { id: 'tallscores', answer: 'chance' }, { id: 'firefighters', answer: 'lurking' }, { id: 'tutoring', answer: 'cause' }, { id: 'umbrellas', answer: 'reverse' }
+  ];
+  var CAUSE_OPTIONS = ['cause', 'lurking', 'reverse', 'chance'];
+  function causeOptionText(t, id) {
+    switch (id) {
+      case 'cause': return t('stem.dataplot.co_cause', 'Yes: the way the data were collected supports cause and effect');
+      case 'lurking': return t('stem.dataplot.co_lurking', 'No: a third (lurking) variable drives both');
+      case 'reverse': return t('stem.dataplot.co_reverse', 'No: it is the other way round');
+      default: return t('stem.dataplot.co_chance', 'No: there is too little data, so it could be chance');
+    }
+  }
+  function causeCardText(t, id) {
+    switch (id) {
+      case 'icecream': return { story: t('stem.dataplot.cc_icecream_story', 'Over a year, weeks with more ice cream sales also have more swimming accidents.'), claim: t('stem.dataplot.cc_icecream_claim', 'Claim: eating ice cream causes swimming accidents.'), explain: t('stem.dataplot.cc_icecream_explain', 'Hot weather drives both: more people buy ice cream AND more people swim. Temperature is the lurking variable.') };
+      case 'fertilizer': return { story: t('stem.dataplot.cc_fertilizer_story', 'A class split 40 bean plants at random: 20 got fertilizer, 20 did not. The fertilized plants grew clearly taller.'), claim: t('stem.dataplot.cc_fertilizer_claim', 'Claim: the fertilizer made the plants grow taller.'), explain: t('stem.dataplot.cc_fertilizer_explain', 'This is a randomized experiment. Chance decided which plants got fertilizer, so other differences balance out between the groups. That design can support cause and effect.') };
+      case 'doctor': return { story: t('stem.dataplot.cc_doctor_story', 'People who visit the doctor more often tend to be less healthy.'), claim: t('stem.dataplot.cc_doctor_claim', 'Claim: visiting the doctor makes people less healthy.'), explain: t('stem.dataplot.cc_doctor_explain', 'Being unwell is what makes people visit the doctor. The cause runs the other way round: reverse causation.') };
+      case 'shoesize': return { story: t('stem.dataplot.cc_shoesize_story', 'At an elementary school, children with bigger feet score higher on reading tests.'), claim: t('stem.dataplot.cc_shoesize_claim', 'Claim: bigger feet make children better readers.'), explain: t('stem.dataplot.cc_shoesize_explain', 'Age drives both: older children have bigger feet and have had more years of reading. Age is the lurking variable.') };
+      case 'tallscores': return { story: t('stem.dataplot.cc_tallscores_story', 'In a group of 5 friends, the 2 tallest got the top scores on a quiz.'), claim: t('stem.dataplot.cc_tallscores_claim', 'Claim: being tall makes you better at quizzes.'), explain: t('stem.dataplot.cc_tallscores_explain', 'With only 5 people a pattern like this easily happens by chance. You would need far more data before it means anything.') };
+      case 'firefighters': return { story: t('stem.dataplot.cc_firefighters_story', 'Fires where more firefighters turn up cause more damage.'), claim: t('stem.dataplot.cc_firefighters_claim', 'Claim: sending more firefighters causes more damage.'), explain: t('stem.dataplot.cc_firefighters_explain', 'The size of the fire drives both: big fires do more damage AND need more firefighters. Fire size is the lurking variable.') };
+      case 'tutoring': return { story: t('stem.dataplot.cc_tutoring_story', 'A school used a lottery to give half of 200 volunteers extra tutoring. The tutored group scored higher on the next test.'), claim: t('stem.dataplot.cc_tutoring_claim', 'Claim: the tutoring raised the test scores.'), explain: t('stem.dataplot.cc_tutoring_explain', 'The lottery made the two groups alike except for the tutoring, and the groups are large. This randomized design supports cause and effect.') };
+      default: return { story: t('stem.dataplot.cc_umbrellas_story', 'On days when many people carry umbrellas, it rains more.'), claim: t('stem.dataplot.cc_umbrellas_claim', 'Claim: carrying umbrellas makes it rain.'), explain: t('stem.dataplot.cc_umbrellas_explain', 'Rain (and the forecast of rain) is what makes people carry umbrellas. The cause runs the other way round.') };
+    }
+  }
+  function causeMisText(t, chosen, answer) {
+    if (chosen === 'cause') return t('stem.dataplot.cm_corr_is_cause', 'Misconception: correlation proves causation. Two things moving together does not show that one causes the other. Ask how the data were collected.');
+    if (answer === 'cause') return t('stem.dataplot.cm_over_sceptic', 'Misconception: "nothing can ever show cause". A randomized experiment, where chance decides who gets the treatment, CAN support cause and effect.');
+    if (answer === 'chance') return t('stem.dataplot.cm_small_sample', 'Look at how much data there is. With only a handful of cases, a pattern like this easily happens by chance.');
+    if (chosen === 'chance') return t('stem.dataplot.cm_dismiss_chance', 'Misconception: dismissing a real pattern as chance. This pattern comes from lots of data, so ask WHY the two things move together.');
+    if (answer === 'reverse') return t('stem.dataplot.cm_reverse', 'Look at the direction again: could the second thing be what produces the first?');
+    return t('stem.dataplot.cm_lurking', 'Neither one causes the other here. Look for something else that changes both of them.');
+  }
+
+  // ── Two-group comparison presets ──
+  var COMPARE_PRESETS = [
+    { id: 'plants', a: [14, 16, 15, 18, 17, 15, 19, 16, 14, 17, 18, 20], b: [9, 11, 10, 12, 8, 13, 10, 11, 9, 12, 10, 15] },
+    { id: 'reaction', a: [245, 260, 238, 270, 251, 262, 248, 255, 300, 243, 258, 250], b: [262, 280, 255, 295, 270, 285, 268, 276, 330, 265, 290, 272] },
+    { id: 'jump', a: [120, 135, 128, 140, 118, 132, 125, 138, 130, 122, 145, 127], b: [150, 138, 162, 145, 170, 155, 148, 160, 142, 158, 135, 175] }
+  ];
+  function comparePresetText(t, id) {
+    switch (id) {
+      case 'plants': return { title: t('stem.dataplot.cp_plants_title', 'Bean plant height after 3 weeks (cm)'), a: t('stem.dataplot.cp_plants_a', 'Sunny window'), b: t('stem.dataplot.cp_plants_b', 'Shady corner') };
+      case 'reaction': return { title: t('stem.dataplot.cp_reaction_title', 'Reaction time (milliseconds)'), a: t('stem.dataplot.cp_reaction_a', 'Before lunch'), b: t('stem.dataplot.cp_reaction_b', 'After lunch') };
+      case 'jump': return { title: t('stem.dataplot.cp_jump_title', 'Standing long jump (cm)'), a: t('stem.dataplot.cp_jump_a', 'Grade 6'), b: t('stem.dataplot.cp_jump_b', 'Grade 8') };
+      default: return { title: t('stem.dataplot.cp_mine_title', 'My two groups'), a: t('stem.dataplot.cp_mine_a', 'Group A'), b: t('stem.dataplot.cp_mine_b', 'Group B') };
+    }
+  }
+  function groupSummary(vals) {
+    var qs = quartilesOf(vals), s = sortedOf(vals);
+    return { n: vals.length, mean: meanOf(vals), median: qs.med, q1: qs.q1, q3: qs.q3, iqr: qs.q3 - qs.q1, min: s[0], max: s[s.length - 1], mad: madOf(vals), shape: shapeOf(vals).shape };
+  }
+  // Which group is larger on a measure, with a tolerance band that counts as "about the same".
+  function compareVerdict(a, b, tol) { return Math.abs(a - b) <= tol ? 'same' : a > b ? 'A' : 'B'; }
+
+  // ── Lab handoff: other tools send run logs here ──
+  function sanitizeImport(p) {
+    if (!p || typeof p !== 'object') return { ok: false, reason: 'not-object' };
+    var raw = Array.isArray(p.points) ? p.points : [], clean = [];
+    for (var i = 0; i < raw.length && clean.length < 2000; i++) {
+      var q = raw[i], x = q ? Number(q.x) : NaN, y = q ? Number(q.y) : NaN;
+      if (q && q.x !== null && q.y !== null && q.x !== '' && q.y !== '' && dpFin(x) && dpFin(y)) clean.push({ x: x, y: y });
+    }
+    if (!clean.length) return { ok: false, reason: 'no-points' };
+    function str(s, max) { return typeof s === 'string' ? s.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : ''; }
+    return { ok: true, data: { title: str(p.title, 120), xLabel: str(p.xLabel, 60), yLabel: str(p.yLabel, 60), source: str(p.source, 60), points: clean, dropped: raw.length - clean.length } };
+  }
+  function applyImport(prevLab, data) {
+    var prev = prevLab && typeof prevLab === 'object' ? prevLab : {};
+    var dp = Object.assign({}, prev.dataPlot && typeof prev.dataPlot === 'object' ? prev.dataPlot : {});
+    var undo = Array.isArray(dp.undoStack) ? dp.undoStack.slice() : [];
+    if (Array.isArray(dp.points) && dp.points.length) { undo.push(dp.points); if (undo.length > UNDO_CAP) undo = undo.slice(-UNDO_CAP); }
+    Object.assign(dp, { points: data.points.slice(), xLabel: data.xLabel || 'x', yLabel: data.yLabel || 'y', undoStack: undo, stepMode: false, stepIdx: 0, activeTab: 'chart', view: null, viewPrev: null, myLine: null,
+      chartType: dp.chartType === 'pie' || dp.chartType === 'pictograph' ? 'scatter' : (dp.chartType || 'scatter'),
+      importedFrom: { title: data.title, source: data.source, count: data.points.length, dropped: data.dropped, at: Date.now() }, importNoticePending: true });
+    var ds = Object.assign({}, prev._dataStudio && typeof prev._dataStudio === 'object' ? prev._dataStudio : {}, { studioMode: 'regression' });
+    return Object.assign({}, prev, { dataPlot: dp, _dataStudio: ds });
+  }
+  // window.StemLab.dataPlotImport(payload, hostCtx?)
+  //   payload: { title, xLabel, yLabel, source, points: [{x, y}] } (non-finite rows dropped, at most 2000 kept)
+  //   hostCtx: the calling tool's ctx. With it, the data is written into toolData.dataPlot at once
+  //   and Charts & Graphs opens in its Regression mode. Without it, the data waits in an inbox that
+  //   Data Plot reads the next time it renders.
+  //   Returns { ok, count, dropped, opened, queued, reason }.
+  function dataPlotImport(payload, hostCtx) {
+    var res = sanitizeImport(payload);
+    if (!res.ok) return { ok: false, reason: res.reason, count: 0 };
+    var SL = window.StemLab;
+    if (hostCtx && typeof hostCtx.setToolData === 'function') {
+      hostCtx.setToolData(function (prev) { return applyImport(prev, res.data); });
+      var target = null;
+      try {
+        if (SL.isRegistered && SL.isRegistered('dataStudio')) target = 'dataStudio';
+        else if (typeof window.__alloEnsureStemPluginLoaded === 'function') { Promise.resolve(window.__alloEnsureStemPluginLoaded('dataStudio')).catch(function () {}); target = 'dataStudio'; }
+        else if (SL.isRegistered && SL.isRegistered('dataPlot')) target = 'dataPlot';
+      } catch (e) { target = null; }
+      if (target && typeof hostCtx.setStemLabTool === 'function') hostCtx.setStemLabTool(target);
+      return { ok: true, count: res.data.points.length, dropped: res.data.dropped, opened: target };
+    }
+    SL._dataPlotInbox = res.data;
+    return { ok: true, count: res.data.points.length, dropped: res.data.dropped, queued: true };
+  }
+  if (window.StemLab) window.StemLab.dataPlotImport = dataPlotImport;
 
   // ══════════════════════════════════════════════════════════════
   // ── Built-in Dataset Library ──
   // ══════════════════════════════════════════════════════════════
   var datasetLibrary = [
-    { label: '\uD83D\uDCCA Height/Weight', pts: [{x:150,y:50},{x:155,y:52},{x:160,y:58},{x:165,y:62},{x:170,y:68},{x:175,y:72},{x:180,y:78},{x:185,y:82},{x:190,y:88}], xLabel: 'Height (cm)', yLabel: 'Weight (kg)' },
-    { label: '\uD83D\uDCDA Study/Grade', pts: [{x:0,y:55},{x:1,y:62},{x:2,y:68},{x:3,y:72},{x:4,y:78},{x:5,y:85},{x:6,y:88},{x:7,y:92},{x:8,y:95}], xLabel: 'Hours Studied', yLabel: 'Grade (%)' },
-    { label: '\uD83C\uDF21\uFE0F Temp/IceCream', pts: [{x:15,y:20},{x:18,y:35},{x:22,y:45},{x:25,y:60},{x:28,y:70},{x:30,y:85},{x:33,y:90},{x:35,y:95}], xLabel: 'Temperature (\u00B0C)', yLabel: 'Sales ($)' },
-    { label: '\uD83D\uDE97 Age/CarValue', pts: [{x:0,y:30000},{x:1,y:25000},{x:2,y:21000},{x:3,y:18000},{x:5,y:13000},{x:7,y:9000},{x:10,y:5500},{x:15,y:3000}], xLabel: 'Age (years)', yLabel: 'Value ($)' },
-    { label: '\uD83C\uDFC0 Practice/FT%', pts: [{x:0,y:42},{x:2,y:48},{x:4,y:55},{x:6,y:63},{x:8,y:68},{x:10,y:74},{x:12,y:78},{x:14,y:82},{x:16,y:85}], xLabel: 'Practice (hrs/week)', yLabel: 'Free Throw %' },
-    { label: '\uD83C\uDF31 Sun/Growth', pts: [{x:1,y:2},{x:2,y:5},{x:3,y:9},{x:4,y:14},{x:5,y:18},{x:6,y:20},{x:7,y:21},{x:8,y:21.5}], xLabel: 'Sunlight (hrs)', yLabel: 'Growth (cm)' },
-    { label: '\uD83C\uDFE0 Size/Price', pts: [{x:800,y:150000},{x:1000,y:200000},{x:1200,y:250000},{x:1500,y:320000},{x:1800,y:380000},{x:2200,y:450000},{x:2800,y:560000},{x:3500,y:700000}], xLabel: 'Size (sq ft)', yLabel: 'Price ($)' },
-    { label: '\uD83C\uDFB2 Random', pts: Array.from({length:12}, function() { return {x: Math.round(Math.random()*100)/10, y: Math.round(Math.random()*100)/10}; }), xLabel: 'X', yLabel: 'Y' }
+    { id: 'height_weight', label: '📊 Height/Weight', pts: [{x:150,y:50},{x:155,y:52},{x:160,y:58},{x:165,y:62},{x:170,y:68},{x:175,y:72},{x:180,y:78},{x:185,y:82},{x:190,y:88}], xLabel: 'Height (cm)', yLabel: 'Weight (kg)' },
+    { id: 'study_grade', label: '📚 Study/Grade', pts: [{x:0,y:55},{x:1,y:62},{x:2,y:68},{x:3,y:72},{x:4,y:78},{x:5,y:85},{x:6,y:88},{x:7,y:92},{x:8,y:95}], xLabel: 'Hours Studied', yLabel: 'Grade (%)' },
+    { id: 'temp_icecream', label: '🌡️ Temp/IceCream', pts: [{x:15,y:20},{x:18,y:35},{x:22,y:45},{x:25,y:60},{x:28,y:70},{x:30,y:85},{x:33,y:90},{x:35,y:95}], xLabel: 'Temperature (°C)', yLabel: 'Sales ($)' },
+    { id: 'age_car', label: '🚗 Age/CarValue', pts: [{x:0,y:30000},{x:1,y:25000},{x:2,y:21000},{x:3,y:18000},{x:5,y:13000},{x:7,y:9000},{x:10,y:5500},{x:15,y:3000}], xLabel: 'Age (years)', yLabel: 'Value ($)' },
+    { id: 'practice_ft', label: '🏀 Practice/FT%', pts: [{x:0,y:42},{x:2,y:48},{x:4,y:55},{x:6,y:63},{x:8,y:68},{x:10,y:74},{x:12,y:78},{x:14,y:82},{x:16,y:85}], xLabel: 'Practice (hrs/week)', yLabel: 'Free Throw %' },
+    { id: 'sun_growth', label: '🌱 Sun/Growth', pts: [{x:1,y:2},{x:2,y:5},{x:3,y:9},{x:4,y:14},{x:5,y:18},{x:6,y:20},{x:7,y:21},{x:8,y:21.5}], xLabel: 'Sunlight (hrs)', yLabel: 'Growth (cm)' },
+    { id: 'size_price', label: '🏠 Size/Price', pts: [{x:800,y:150000},{x:1000,y:200000},{x:1200,y:250000},{x:1500,y:320000},{x:1800,y:380000},{x:2200,y:450000},{x:2800,y:560000},{x:3500,y:700000}], xLabel: 'Size (sq ft)', yLabel: 'Price ($)' },
+    { id: 'class_pets', label: '🐶 Class pets', pts: [{x:1,y:6},{x:2,y:4},{x:3,y:3},{x:4,y:2},{x:5,y:1},{x:6,y:2}], xLabel: 'Pet (1 dog, 2 cat, 3 fish, 4 bird, 5 rabbit, 6 hamster)', yLabel: 'Students' },
+    { id: 'random', label: '🎲 Random', pts: Array.from({length:12}, function() { return {x: Math.round(Math.random()*100)/10, y: Math.round(Math.random()*100)/10}; }), xLabel: 'X', yLabel: 'Y' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -101,42 +2149,33 @@ window.StemLab = window.StemLab || {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // ── Badge Definitions (17) ──
+  // ── Badge Definitions (17) ── names and descriptions come from badgeText()
   // ══════════════════════════════════════════════════════════════
   var badgeDefs = [
-    { id: 'first_point', icon: '\uD83D\uDCCD', name: 'First Plot', desc: 'Plot your first data point' },
-    { id: 'ten_points', icon: '\uD83D\uDCCA', name: 'Data Collector', desc: 'Have 10+ points on chart' },
-    { id: 'fifty_points', icon: '\uD83D\uDCC8', name: 'Big Data', desc: 'Have 50+ points on chart' },
-    { id: 'strong_r2', icon: '\u2B50', name: 'Perfect Fit', desc: 'Achieve R\u00B2 > 0.95' },
-    { id: 'quiz_5', icon: '\uD83E\uDDE0', name: 'Quiz Whiz', desc: 'Answer 5 quiz questions correctly' },
-    { id: 'streak_5', icon: '\uD83D\uDD25', name: 'On Fire', desc: '5 correct answers in a row' },
-    { id: 'all_charts', icon: '\uD83C\uDFA8', name: 'Chart Master', desc: 'View all 7 chart types' },
-    { id: 'saved_3', icon: '\uD83D\uDCBE', name: 'Archivist', desc: 'Save 3 charts to gallery' },
-    { id: 'csv_export', icon: '\uD83D\uDCE5', name: 'Data Exporter', desc: 'Export data as CSV' },
-    { id: 'ai_analyst', icon: '\uD83E\uDD16', name: 'AI Analyst', desc: 'Use the AI data analyst' },
-    { id: 'outlier_found', icon: '\uD83D\uDD0D', name: 'Outlier Hunter', desc: 'Find an outlier in your data' },
-    { id: 'predictor', icon: '\uD83D\uDD2E', name: 'Fortune Teller', desc: 'Use the prediction tool' },
-    { id: 'z_score', icon: '\uD83D\uDCD0', name: 'Z-Score Pro', desc: 'Calculate a z-score' },
-    { id: 'transform', icon: '\uD83D\uDD04', name: 'Transformer', desc: 'Apply a data transformation' },
-    { id: 'step_through', icon: '\uD83D\uDC63', name: 'Step Master', desc: 'Complete a step-through' },
-    { id: 'spearman', icon: '\uD83C\uDFC5', name: 'Rank Expert', desc: 'View Spearman correlation' },
-    { id: 'all_quiz_types', icon: '\uD83C\uDF93', name: 'Quiz Champion', desc: 'Try all 4 quiz types' }
+    { id: 'first_point', icon: '📍' }, { id: 'ten_points', icon: '📊' }, { id: 'fifty_points', icon: '📈' },
+    { id: 'strong_r2', icon: '⭐' }, { id: 'quiz_5', icon: '🧠' }, { id: 'streak_5', icon: '🔥' },
+    { id: 'all_charts', icon: '🎨' }, { id: 'saved_3', icon: '💾' }, { id: 'csv_export', icon: '📥' },
+    { id: 'ai_analyst', icon: '🤖' }, { id: 'outlier_found', icon: '🔍' }, { id: 'predictor', icon: '🔮' },
+    { id: 'z_score', icon: '📐' }, { id: 'transform', icon: '🔄' }, { id: 'step_through', icon: '👣' },
+    { id: 'spearman', icon: '🏅' }, { id: 'all_quiz_types', icon: '🎓' }
   ];
+  // "Perfect Fit" needs at least this many points: two points always fit a line exactly.
+  var STRONG_FIT_MIN_N = 5;
 
   // ══════════════════════════════════════════════════════════════
   // ── Quiz Scenarios ──
   // ══════════════════════════════════════════════════════════════
   var correlationScenarios = [
-    { q: 'Hours studied vs. Test score', a: 'Positive', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i+1, y:50+i*3.5+(Math.random()*10-5)}; }); } },
-    { q: 'Temperature vs. Hot chocolate sales', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:30+i*5, y:100-i*7+(Math.random()*10-5)}; }); } },
-    { q: 'Shoe size vs. IQ', a: 'None', gen: function() { return Array.from({length:12}, function() { return {x:5+Math.random()*10, y:80+Math.random()*40}; }); } },
-    { q: 'Age of car vs. Resale value', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i, y:30000-i*2500+(Math.random()*3000-1500)}; }); } },
-    { q: 'Practice hours vs. Free throw %', a: 'Positive', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i*2, y:40+i*4+(Math.random()*8-4)}; }); } },
-    { q: 'Number of pets vs. Favorite color', a: 'None', gen: function() { return Array.from({length:12}, function() { return {x:Math.floor(Math.random()*6), y:Math.floor(Math.random()*8)}; }); } },
-    { q: 'Exercise hours vs. Resting heart rate', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i, y:85-i*3+(Math.random()*6-3)}; }); } },
-    { q: 'Altitude vs. Temperature', a: 'Negative', gen: function() { return Array.from({length:10}, function(_,i) { return {x:i*500, y:30-i*3+(Math.random()*4-2)}; }); } },
-    { q: 'Hours of sleep vs. Test score', a: 'Positive', gen: function() { return Array.from({length:10}, function(_,i) { return {x:4+i*0.8, y:50+i*4.5+(Math.random()*8-4)}; }); } },
-    { q: 'Distance from city vs. Land price', a: 'Negative', gen: function() { return Array.from({length:10}, function(_,i) { return {x:i*5, y:500-i*40+(Math.random()*60-30)}; }); } }
+    { key: 'hours_test', q: 'Hours studied vs. Test score', a: 'Positive', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i+1, y:50+i*3.5+(Math.random()*10-5)}; }); } },
+    { key: 'temp_cocoa', q: 'Temperature vs. Hot chocolate sales', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:30+i*5, y:100-i*7+(Math.random()*10-5)}; }); } },
+    { key: 'shoe_iq', q: 'Shoe size vs. IQ', a: 'None', gen: function() { return Array.from({length:12}, function() { return {x:5+Math.random()*10, y:80+Math.random()*40}; }); } },
+    { key: 'car_value', q: 'Age of car vs. Resale value', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i, y:30000-i*2500+(Math.random()*3000-1500)}; }); } },
+    { key: 'practice_ft', q: 'Practice hours vs. Free throw %', a: 'Positive', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i*2, y:40+i*4+(Math.random()*8-4)}; }); } },
+    { key: 'pets_color', q: 'Number of pets vs. Favorite color', a: 'None', gen: function() { return Array.from({length:12}, function() { return {x:Math.floor(Math.random()*6), y:Math.floor(Math.random()*8)}; }); } },
+    { key: 'exercise_hr', q: 'Exercise hours vs. Resting heart rate', a: 'Negative', gen: function() { return Array.from({length:12}, function(_,i) { return {x:i, y:85-i*3+(Math.random()*6-3)}; }); } },
+    { key: 'altitude_temp', q: 'Altitude vs. Temperature', a: 'Negative', gen: function() { return Array.from({length:10}, function(_,i) { return {x:i*500, y:30-i*3+(Math.random()*4-2)}; }); } },
+    { key: 'sleep_test', q: 'Hours of sleep vs. Test score', a: 'Positive', gen: function() { return Array.from({length:10}, function(_,i) { return {x:4+i*0.8, y:50+i*4.5+(Math.random()*8-4)}; }); } },
+    { key: 'distance_land', q: 'Distance from city vs. Land price', a: 'Negative', gen: function() { return Array.from({length:10}, function(_,i) { return {x:i*5, y:500-i*40+(Math.random()*60-30)}; }); } }
   ];
   var guessR2Scenarios = [
     { r: 0.95, label: 'Very strong positive' },
@@ -147,26 +2186,26 @@ window.StemLab = window.StemLab || {
     { r: -0.50, label: 'Moderate negative' }
   ];
   var matchChartScenarios = [
-    { q: 'Show proportions of a whole (budget breakdown)', a: 'Pie', opts: ['Scatter', 'Pie', 'Histogram', 'Box Plot'] },
-    { q: 'Show the distribution shape of test scores', a: 'Histogram', opts: ['Scatter', 'Bar', 'Histogram', 'Line'] },
-    { q: 'Show the relationship between height and weight', a: 'Scatter', opts: ['Scatter', 'Pie', 'Box Plot', 'Histogram'] },
-    { q: 'Compare sales across 4 quarters', a: 'Bar', opts: ['Scatter', 'Bar', 'Box Plot', 'Histogram'] },
-    { q: 'Show temperature change over a week', a: 'Line', opts: ['Line', 'Pie', 'Box Plot', 'Scatter'] },
-    { q: 'Compare spread and outliers across groups', a: 'Box Plot', opts: ['Line', 'Pie', 'Box Plot', 'Histogram'] },
-    { q: 'Show cumulative growth of savings', a: 'Ogive', opts: ['Ogive', 'Scatter', 'Pie', 'Bar'] }
+    { key: 'proportions', q: 'Show proportions of a whole (budget breakdown)', a: 'Pie', opts: ['Scatter', 'Pie', 'Histogram', 'Box Plot'] },
+    { key: 'distribution', q: 'Show the distribution shape of test scores', a: 'Histogram', opts: ['Scatter', 'Bar', 'Histogram', 'Line'] },
+    { key: 'relationship', q: 'Show the relationship between height and weight', a: 'Scatter', opts: ['Scatter', 'Pie', 'Box Plot', 'Histogram'] },
+    { key: 'compare_quarters', q: 'Compare sales across 4 quarters', a: 'Bar', opts: ['Scatter', 'Bar', 'Box Plot', 'Histogram'] },
+    { key: 'temp_week', q: 'Show temperature change over a week', a: 'Line', opts: ['Line', 'Pie', 'Box Plot', 'Scatter'] },
+    { key: 'spread_groups', q: 'Compare spread and outliers across groups', a: 'Box Plot', opts: ['Line', 'Pie', 'Box Plot', 'Histogram'] },
+    { key: 'cumulative', q: 'Show cumulative growth of savings', a: 'Ogive', opts: ['Ogive', 'Scatter', 'Pie', 'Bar'] }
   ];
   var outlierScenarios = [
-    { label: 'student test scores', gen: function() {
+    { key: 'scores', label: 'student test scores', gen: function() {
       var pts = []; for (var i = 0; i < 10; i++) pts.push({ x: i+1, y: Math.round(70 + Math.random() * 15) });
       var oi = Math.floor(Math.random() * 10); pts[oi].y = Math.round(20 + Math.random() * 10);
       return { pts: pts, outlierIdx: oi };
     }},
-    { label: 'daily temperatures (\u00B0C)', gen: function() {
+    { key: 'temps', label: 'daily temperatures (°C)', gen: function() {
       var pts = []; for (var i = 0; i < 10; i++) pts.push({ x: i+1, y: Math.round(20 + Math.random() * 5) });
       var oi = Math.floor(Math.random() * 10); pts[oi].y = Math.round(45 + Math.random() * 10);
       return { pts: pts, outlierIdx: oi };
     }},
-    { label: 'marathon finish times (min)', gen: function() {
+    { key: 'marathon', label: 'marathon finish times (min)', gen: function() {
       var pts = []; for (var i = 0; i < 10; i++) pts.push({ x: i+1, y: Math.round(230 + Math.random() * 30) });
       var oi = Math.floor(Math.random() * 10); pts[oi].y = Math.round(350 + Math.random() * 30);
       return { pts: pts, outlierIdx: oi };
@@ -174,16 +2213,53 @@ window.StemLab = window.StemLab || {
   ];
 
   // ══════════════════════════════════════════════════════════════
-  // ── Point Color Palettes ──
+  // ── Point Color Palettes (fills all 3:1+ on white) ──
   // ══════════════════════════════════════════════════════════════
   var palettes = [
-    { id: 'teal', name: 'Teal', fill: '#0d9488', stroke: '#fff', line: '#ef4444' },
-    { id: 'blue', name: 'Ocean', fill: '#3b82f6', stroke: '#fff', line: '#f59e0b' },
-    { id: 'purple', name: 'Grape', fill: '#8b5cf6', stroke: '#fff', line: '#22c55e' },
-    { id: 'rose', name: 'Rose', fill: '#f43f5e', stroke: '#fff', line: '#06b6d4' },
-    { id: 'amber', name: 'Sunset', fill: '#f59e0b', stroke: '#fff', line: '#6366f1' },
-    { id: 'emerald', name: 'Forest', fill: '#10b981', stroke: '#fff', line: '#ef4444' }
+    { id: 'teal', name: 'Teal', fill: '#0f766e', stroke: '#fff', line: '#b91c1c' },
+    { id: 'blue', name: 'Ocean', fill: '#1d4ed8', stroke: '#fff', line: '#b45309' },
+    { id: 'purple', name: 'Grape', fill: '#6d28d9', stroke: '#fff', line: '#047857' },
+    { id: 'rose', name: 'Rose', fill: '#be123c', stroke: '#fff', line: '#0e7490' },
+    { id: 'amber', name: 'Sunset', fill: '#b45309', stroke: '#fff', line: '#4338ca' },
+    { id: 'emerald', name: 'Forest', fill: '#047857', stroke: '#fff', line: '#b91c1c' }
   ];
+
+  // Stage C dark surface. SVG ink: each light-theme colour maps to a light tone that keeps
+  // 3:1+ (graphics) and 4.5:1+ (text) on the dark chart background #0f172a.
+  var DP_DARK_TONE = { '#7e22ce': '#d8b4fe', '#1d4ed8': '#93c5fd', '#b91c1c': '#fca5a5', '#047857': '#6ee7b7', '#6d28d9': '#c4b5fd', '#b45309': '#fcd34d',
+    '#0f766e': '#5eead4', '#be123c': '#fda4af', '#0e7490': '#67e8f9', '#4338ca': '#a5b4fc', '#9d174d': '#f9a8d4', '#4d7c0f': '#bef264', '#155e75': '#a5f3fc',
+    '#475569': '#cbd5e1', '#1e293b': '#e2e8f0', '#334155': '#94a3b8', '#0f172a': '#f8fafc', '#ffffff': '#0f172a' };
+  // Tailwind classes the tool uses, remapped inside [data-dp-theme="dark"] (same approach as Unit Converter).
+  var DP_DARK_MAP = {
+    bg: { 'bg-white': '#1e293b', 'bg-slate-50': '#172033', 'bg-slate-100': '#1e293b', 'bg-slate-200': '#334155', 'bg-teal-50': '#082a28', 'bg-cyan-50': '#0b2a33',
+      'bg-emerald-50': '#06281d', 'bg-emerald-100': '#0a3a2a', 'bg-amber-50': '#2b1e07', 'bg-amber-100': '#3b2a08', 'bg-red-50': '#2d1215', 'bg-red-100': '#3f1519',
+      'bg-violet-50': '#1e1638', 'bg-indigo-50': '#1a1d3d', 'bg-sky-50': '#0b2236', 'bg-sky-100': '#0c2a44', 'bg-pink-200': '#4a1530',
+      'bg-teal-700': '#0f766e', 'bg-amber-700': '#92400e', 'bg-violet-700': '#6d28d9', 'bg-indigo-700': '#4338ca', 'bg-red-700': '#b91c1c', 'bg-pink-700': '#be185d', 'bg-sky-800': '#075985' },
+    color: { 'text-slate-700': '#e2e8f0', 'text-slate-800': '#e2e8f0', 'text-slate-900': '#f8fafc', 'text-teal-800': '#5eead4', 'text-teal-900': '#99f6e4', 'text-cyan-900': '#a5f3fc',
+      'text-emerald-700': '#6ee7b7', 'text-emerald-800': '#6ee7b7', 'text-emerald-900': '#a7f3d0', 'text-amber-800': '#fcd34d', 'text-amber-900': '#fde68a',
+      'text-red-700': '#fca5a5', 'text-red-800': '#fca5a5', 'text-red-900': '#fecaca', 'text-violet-800': '#c4b5fd', 'text-violet-900': '#ddd6fe', 'text-purple-800': '#d8b4fe',
+      'text-indigo-800': '#a5b4fc', 'text-indigo-900': '#c7d2fe', 'text-sky-800': '#7dd3fc', 'text-sky-900': '#bae6fd', 'text-pink-800': '#f9a8d4', 'text-pink-900': '#fbcfe8', 'text-rose-800': '#fda4af' },
+    border: { 'border-slate-300': '#475569', 'border-slate-400': '#64748b', 'border-slate-500': '#94a3b8', 'border-teal-200': '#115e59', 'border-teal-300': '#0f766e', 'border-teal-600': '#2dd4bf', 'border-teal-700': '#2dd4bf',
+      'border-cyan-200': '#155e75', 'border-cyan-300': '#0e7490', 'border-cyan-700': '#22d3ee', 'border-emerald-200': '#065f46', 'border-emerald-300': '#047857', 'border-emerald-600': '#34d399', 'border-emerald-700': '#34d399',
+      'border-amber-200': '#78350f', 'border-amber-300': '#92400e', 'border-amber-400': '#d97706', 'border-amber-700': '#f59e0b', 'border-red-200': '#7f1d1d', 'border-red-300': '#b91c1c', 'border-red-400': '#ef4444', 'border-red-700': '#f87171',
+      'border-violet-200': '#5b21b6', 'border-violet-300': '#6d28d9', 'border-violet-700': '#a78bfa', 'border-indigo-100': '#312e81', 'border-indigo-200': '#3730a3', 'border-indigo-300': '#4338ca', 'border-indigo-400': '#6366f1', 'border-indigo-500': '#818cf8', 'border-indigo-700': '#a5b4fc',
+      'border-sky-300': '#0369a1', 'border-sky-700': '#38bdf8', 'border-sky-800': '#38bdf8', 'border-pink-200': '#9d174d' },
+    hoverBg: { 'hover\\:bg-teal-50': '#134e4a', 'hover\\:bg-teal-100': '#134e4a', 'hover\\:bg-slate-100': '#334155', 'hover\\:bg-slate-200': '#334155', 'hover\\:bg-indigo-50': '#272b5c',
+      'hover\\:bg-red-50': '#3f1519', 'hover\\:bg-amber-100': '#4a3510', 'hover\\:bg-violet-100': '#3b2a6b' },
+    hoverColor: { 'hover\\:text-teal-800': '#99f6e4' }
+  };
+  function dataPlotDarkCss() {
+    var S = '[data-dp-theme="dark"] ', out = [];
+    Object.keys(DP_DARK_MAP.bg).forEach(function (c) { out.push(S + '.' + c + '{background-color:' + DP_DARK_MAP.bg[c] + '!important}'); });
+    Object.keys(DP_DARK_MAP.color).forEach(function (c) { out.push(S + '.' + c + '{color:' + DP_DARK_MAP.color[c] + '!important}'); });
+    Object.keys(DP_DARK_MAP.border).forEach(function (c) { out.push(S + '.' + c + '{border-color:' + DP_DARK_MAP.border[c] + '!important}'); });
+    Object.keys(DP_DARK_MAP.hoverBg).forEach(function (c) { out.push(S + '.' + c + ':hover{background-color:' + DP_DARK_MAP.hoverBg[c] + '!important}'); });
+    Object.keys(DP_DARK_MAP.hoverColor).forEach(function (c) { out.push(S + '.' + c + ':hover{color:' + DP_DARK_MAP.hoverColor[c] + '!important}'); });
+    out.push(S + 'input:not([type=checkbox]):not([type=radio]):not([type=range]),' + S + 'select,' + S + 'textarea{background-color:#0b1220!important;color:#f1f5f9!important;color-scheme:dark}');
+    out.push(S + 'input::placeholder,' + S + 'textarea::placeholder{color:#94a3b8!important;opacity:1}');
+    out.push(S + 'summary{color:inherit}' + S + 'kbd{background-color:#0b1220!important;color:#f1f5f9}');
+    return out.join('');
+  }
 
   // ══════════════════════════════════════════════════════════════
   // ── Z-Score to Percentile (CDF approx) ──
@@ -205,50 +2281,308 @@ window.StemLab = window.StemLab || {
     return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
   }
 
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Stage B logic: best fit by eye, residual checks, two-way tables, sampling ──
+  // Pure and seeded, so the same seed always gives the same data (tests run them).
+  // ══════════════════════════════════════════════════════════════
+  function seededRand(seed) {
+    var a = seed >>> 0;
+    return function () { a = (a + 0x6D2B79F5) >>> 0; var z = a; z = Math.imul(z ^ (z >>> 15), z | 1); z ^= z + Math.imul(z ^ (z >>> 7), z | 61); return ((z ^ (z >>> 14)) >>> 0) / 4294967296; };
+  }
+  function hashSeed() {
+    var hsh = 2166136261;
+    for (var i = 0; i < arguments.length; i++) {
+      var s = String(arguments[i]);
+      for (var j = 0; j < s.length; j++) { hsh ^= s.charCodeAt(j); hsh = Math.imul(hsh, 16777619) >>> 0; }
+      hsh ^= 124; hsh = Math.imul(hsh, 16777619) >>> 0;
+    }
+    return hsh >>> 0;
+  }
+  function gaussRand(rand) { var u = 0; while (u === 0) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); }
+  function round1(v) { return Math.round(v * 10) / 10; }
+  function corrOf(a, b) {
+    var n = Math.min(a.length, b.length); if (n < 2) return 0;
+    var ma = meanOf(a.slice(0, n)), mb = meanOf(b.slice(0, n)), sab = 0, saa = 0, sbb = 0;
+    for (var i = 0; i < n; i++) { sab += (a[i] - ma) * (b[i] - mb); saa += (a[i] - ma) * (a[i] - ma); sbb += (b[i] - mb) * (b[i] - mb); }
+    return saa > 0 && sbb > 0 ? sab / Math.sqrt(saa * sbb) : 0;
+  }
+
+  // ── Line of best fit by eye (8.SP.2) ──
+  var FIT_CONTEXTS = ['study', 'arm', 'temp', 'phone'];
+  // trap: four points sit exactly on one steeper line, so a line "through the most points" exists and fits badly.
+  function genFitSet(seed, level) {
+    var rand = seededRand(hashSeed('fit', seed, level));
+    var context = FIT_CONTEXTS[pickIdx(FIT_CONTEXTS.length, rand)];
+    var n = level === '68' ? randInt(9, 12, rand) : randInt(10, 15, rand);
+    var neg = rand() < 0.3, m = (neg ? -1 : 1) * (0.8 + rand() * 1.8);
+    var b = neg ? 12 + 20 * Math.abs(m) + rand() * 8 : 4 + rand() * 12;
+    var sd = 1.5 + rand() * 2;
+    var trap = rand() < 0.45;
+    var pts = [], i;
+    if (trap) {
+      var y0 = m * 10 + b, m2 = m * 2.2;
+      [3, 7, 13, 17].forEach(function (x) { pts.push({ x: x, y: round1(y0 + m2 * (x - 10)) }); });
+    }
+    for (i = pts.length; i < n; i++) {
+      var x = round1(1 + 18 * (i + rand() * 0.9) / n);
+      pts.push({ x: x, y: round1(m * x + b + gaussRand(rand) * sd) });
+    }
+    return { seed: seed, context: context, trap: trap, pts: pts };
+  }
+  function lineFromHandles(xA, yA, xB, yB) { var m = (yB - yA) / ((xB - xA) || 1); return { m: m, b: yA - m * xA }; }
+  function ssrOf(pts, m, b) { var s = 0; for (var i = 0; i < pts.length; i++) { var r = pts[i].y - (m * pts[i].x + b); s += r * r; } return s; }
+  // Compare a student's line with the least-squares line; name the misconception when it fits badly.
+  // mis: '' | direction | mostPoints | halfHalf | shifted | tooSteep | tooFlat
+  function evalLineFit(pts, line) {
+    var ls = linFit(pts);
+    var ys = pts.map(function (p) { return p.y; }), yr = (Math.max.apply(null, ys) - Math.min.apply(null, ys)) || 1;
+    var tol = 0.03 * yr;
+    var resU = pts.map(function (p) { return p.y - (line.m * p.x + line.b); }), resL = pts.map(function (p) { return p.y - (ls.m * p.x + ls.b); });
+    var ssrU = ssrOf(pts, line.m, line.b), ssrL = ssrOf(pts, ls.m, ls.b);
+    var ratio = ssrL > 1e-12 ? ssrU / ssrL : (ssrU < 1e-9 ? 1 : Infinity);
+    var hitsU = resU.filter(function (r) { return Math.abs(r) <= tol; }).length, hitsL = resL.filter(function (r) { return Math.abs(r) <= tol; }).length;
+    var above = resU.filter(function (r) { return r > 0; }).length, below = resU.filter(function (r) { return r < 0; }).length;
+    var meanRes = meanOf(resU);
+    var mis = '';
+    if (ratio > 1.3) {
+      if (Math.abs(ls.m) > 1e-9 && (line.m === 0 ? 0 : line.m > 0 ? 1 : -1) !== (ls.m > 0 ? 1 : -1)) mis = 'direction';
+      else if (hitsU >= 3) mis = 'mostPoints';
+      else if (Math.abs(above - below) <= 1) mis = 'halfHalf';
+      else if (Math.abs(line.m - ls.m) <= 0.25 * Math.abs(ls.m) + 1e-9) mis = 'shifted';
+      else mis = Math.abs(line.m) > Math.abs(ls.m) ? 'tooSteep' : 'tooFlat';
+    }
+    var quality = ratio <= 1.1 ? 'excellent' : ratio <= 1.3 ? 'good' : ratio <= 2 ? 'fair' : 'far';
+    return { ls: ls, ssrUser: ssrU, ssrLs: ssrL, ratio: ratio, hitsUser: hitsU, hitsLs: hitsL, above: above, below: below, meanRes: meanRes, mis: mis, quality: quality, resUser: resU, resLs: resL };
+  }
+
+  // ── Residual plots: is a linear model appropriate? ──
+  var RESID_KINDS = ['random', 'curve', 'fan'];
+  function residualPattern(pts) {
+    var f = linFit(pts);
+    if (!f.ok || pts.length < 6) return { kind: 'unknown', curveR: 0, fanR: 0, r2: f.r2 || 0 };
+    var xs = pts.map(function (p) { return p.x; }), mx = meanOf(xs);
+    var res = pts.map(function (p) { return p.y - (f.m * p.x + f.b); });
+    var curveR = corrOf(xs.map(function (x) { return (x - mx) * (x - mx); }), res);
+    var fanR = corrOf(xs, res.map(Math.abs));
+    var kind = Math.abs(curveR) >= 0.55 ? 'curve' : (fanR >= 0.45 && Math.abs(curveR) < 0.35) ? 'fan' : (Math.abs(curveR) < 0.35 && fanR < 0.3) ? 'random' : 'unclear';
+    return { kind: kind, curveR: curveR, fanR: fanR, r2: f.r2, fit: f, residuals: res };
+  }
+  // Generated sets are kept only when the pattern classifier agrees with how they were made.
+  function genResidSet(seed) {
+    var outer = seededRand(hashSeed('resid', seed));
+    var kind = RESID_KINDS[pickIdx(RESID_KINDS.length, outer)];
+    for (var attempt = 0; attempt < 40; attempt++) {
+      var rand = seededRand(hashSeed('resid', seed, attempt));
+      var n = randInt(14, 20, rand), m = 1 + rand() * 2, pts = [];
+      var concave = rand() < 0.5;
+      for (var i = 0; i < n; i++) {
+        var x = round1(1 + 19 * (i + rand() * 0.8) / n), y;
+        if (kind === 'curve') y = concave ? 60 - 0.13 * (21 - x) * (21 - x) + gaussRand(rand) * 0.9 : 3 + 0.13 * x * x + gaussRand(rand) * 0.9;
+        else if (kind === 'fan') y = 5 + m * x + gaussRand(rand) * 0.22 * x * m;
+        else y = 5 + m * x + gaussRand(rand) * 2.2;
+        pts.push({ x: x, y: round1(y) });
+      }
+      var pat = residualPattern(pts);
+      if (pat.kind === kind) return { seed: seed, kind: kind, pts: pts, r2: pat.r2 };
+    }
+    // Unreachable in practice (tests sweep seeds); fall back to a plain linear set.
+    var fb = []; for (var k = 0; k < 15; k++) fb.push({ x: k + 1, y: round1(5 + 2 * (k + 1) + ((k * 7) % 5 - 2)) });
+    return { seed: seed, kind: residualPattern(fb).kind, pts: fb, r2: linFit(fb).r2 };
+  }
+  // answer: 'yes' (random scatter) | 'curve' | 'fan'
+  function residAnswerFor(kind) { return kind === 'curve' ? 'curve' : kind === 'fan' ? 'fan' : 'yes'; }
+
+  // ── Two-way tables and relative frequency (8.SP.4) ──
+  var TWOWAY_CONTEXTS = ['sport_breakfast', 'grade_instrument', 'screens_sleep', 'bus_late'];
+  function twoWayFrom(records, rowLabels, colLabels) {
+    var counts = rowLabels.map(function () { return colLabels.map(function () { return 0; }); });
+    records.forEach(function (r) { if (r && counts[r[0]] && counts[r[0]][r[1]] != null) counts[r[0]][r[1]]++; });
+    var rowTot = counts.map(function (row) { return row.reduce(function (s, v) { return s + v; }, 0); });
+    var colTot = colLabels.map(function (_, c) { return counts.reduce(function (s, row) { return s + row[c]; }, 0); });
+    return { rows: rowLabels.slice(), cols: colLabels.slice(), counts: counts, rowTot: rowTot, colTot: colTot, total: rowTot.reduce(function (s, v) { return s + v; }, 0) };
+  }
+  // Row percents (each row adds to 100), column percents, and the biggest gap between rows.
+  // verdict: 'yes' (a gap of 20 points or more) | 'no' (8 points or less) | 'weak'
+  function twoWayStats(tb) {
+    var rowPct = tb.counts.map(function (row, r) { return row.map(function (v) { return tb.rowTot[r] ? v / tb.rowTot[r] : NaN; }); });
+    var colPct = tb.counts.map(function (row) { return row.map(function (v, c) { return tb.colTot[c] ? v / tb.colTot[c] : NaN; }); });
+    var gap = 0, gapCol = 0;
+    tb.cols.forEach(function (_, c) {
+      var vals = rowPct.map(function (row) { return row[c]; }).filter(dpFin);
+      if (vals.length >= 2) { var g = Math.max.apply(null, vals) - Math.min.apply(null, vals); if (g > gap) { gap = g; gapCol = c; } }
+    });
+    return { rowPct: rowPct, colPct: colPct, gap: gap, gapCol: gapCol, verdict: gap >= 0.2 - 1e-9 ? 'yes' : gap <= 0.08 + 1e-9 ? 'no' : 'weak' };
+  }
+  // Stage C: grade an association choice (answer AND reason) for ANY table, generated or the
+  // student's own. The answer follows twoWayStats' verdict on the conditional (row) percents.
+  // mis codes: rawCounts | unequal | smallGap | bigGap | weakGap
+  var TWOWAY_CHOICE_FOR = { yes: 'yes_pct', no: 'no_pct', weak: 'weak_pct' };
+  function twoWayGrade(tb, st, chosen) {
+    var answer = TWOWAY_CHOICE_FOR[st.verdict] || 'no_pct';
+    if (chosen === answer) return { correct: true, answer: answer, mis: '' };
+    var mis = chosen === 'yes_count' ? 'rawCounts' : chosen === 'no_size' ? 'unequal'
+      : st.verdict === 'yes' ? 'bigGap' : st.verdict === 'no' ? 'smallGap' : 'weakGap';
+    return { correct: false, answer: answer, mis: mis, equalSizes: tb.rowTot.every(function (v) { return v === tb.rowTot[0]; }) };
+  }
+  // A generated 2 x 2 table with UNEQUAL group sizes, so raw counts mislead; association is clear-cut.
+  function genTwoWay(seed) {
+    for (var attempt = 0; attempt < 60; attempt++) {
+      var rand = seededRand(hashSeed('twoway', seed, attempt));
+      var context = TWOWAY_CONTEXTS[pickIdx(TWOWAY_CONTEXTS.length, rand)];
+      var assoc = seededRand(hashSeed('twoway-assoc', seed))() < 0.5;
+      var n1 = randInt(14, 24, rand), n2 = randInt(6, 12, rand);
+      if (rand() < 0.5) { var sw = n1; n1 = n2; n2 = sw; }
+      var p = 0.3 + rand() * 0.4, p1 = p, p2 = p;
+      if (assoc) { p1 = Math.min(0.92, p + 0.15 + rand() * 0.15); p2 = Math.max(0.08, p - 0.15 - rand() * 0.15); if (rand() < 0.5) { var s2 = p1; p1 = p2; p2 = s2; } }
+      var a = Math.round(n1 * p1), c = Math.round(n2 * p2);
+      var counts = [[a, n1 - a], [c, n2 - c]];
+      var records = [];
+      counts.forEach(function (row, r) { row.forEach(function (v, cc) { for (var k = 0; k < v; k++) records.push([r, cc]); }); });
+      var tb = twoWayFrom(records, ['0', '1'], ['0', '1']), st = twoWayStats(tb);
+      if (st.verdict !== (assoc ? 'yes' : 'no')) continue;
+      // The trap: the biggest single cell is in the bigger group even when its percent is not higher.
+      // The raw-counts feedback says so, so a table whose biggest cell is in the smaller group is redrawn.
+      var bigRow = n1 >= n2 ? 0 : 1;
+      if (Math.max(counts[bigRow][0], counts[bigRow][1]) < Math.max(counts[1 - bigRow][0], counts[1 - bigRow][1])) continue;
+      return { seed: seed, context: context, assoc: assoc, counts: counts, records: fyShuffle(records, rand) };
+    }
+    return { seed: seed, context: TWOWAY_CONTEXTS[0], assoc: false, counts: [[9, 9], [4, 4]], records: [] };
+  }
+  // "A, B" per line (comma, tab or semicolon). At most 4 levels per variable.
+  function parseCategoryPairs(text) {
+    var rows = [], cols = [], records = [], skipped = [];
+    String(text || '').split(/\r?\n/).forEach(function (line, i) {
+      if (!line.trim()) return;
+      var cells = line.split(/[,;\t]/).map(function (s) { return s.trim().slice(0, 30); });
+      if (cells.length < 2 || !cells[0] || !cells[1]) { skipped.push(i + 1); return; }
+      var r = rows.indexOf(cells[0]), c = cols.indexOf(cells[1]);
+      if (r < 0) { rows.push(cells[0]); r = rows.length - 1; }
+      if (c < 0) { cols.push(cells[1]); c = cols.length - 1; }
+      records.push([r, c]);
+    });
+    if (rows.length > 4 || cols.length > 4) return { ok: false, why: 'tooMany', rows: rows, cols: cols, records: [], skipped: skipped };
+    if (records.length < 4 || rows.length < 2 || cols.length < 2) return { ok: false, why: 'tooFew', rows: rows, cols: cols, records: records, skipped: skipped };
+    return { ok: true, rows: rows, cols: cols, records: records, skipped: skipped };
+  }
+
+  // ── Sampling distributions (7.SP.1-2) ──
+  var SAMPLING_POPS = ['commute', 'sleep', 'books'];
+  var POP_SIZE = 400;
+  function genPopulation(id) {
+    var rand = seededRand(hashSeed('pop', id)), vals = [];
+    for (var i = 0; i < POP_SIZE; i++) {
+      if (id === 'sleep') vals.push(round1(Math.max(5, Math.min(12, 8.6 + gaussRand(rand) * 1.1))));
+      else if (id === 'books') vals.push(Math.min(30, Math.floor(-Math.log(1 - rand()) * 4 + -Math.log(1 - rand()) * 2)));
+      else vals.push(Math.min(75, Math.round(4 + -Math.log(1 - rand()) * 9 + -Math.log(1 - rand()) * 5)));
+    }
+    return vals;
+  }
+  // The k-th sample of size n (without replacement) from a population, from one seed: redrawable, never stored.
+  function sampleAt(pop, n, k, seed) {
+    var rand = seededRand(hashSeed('sample', seed, n, k)), seen = {}, out = [];
+    n = Math.min(n, pop.length);
+    while (out.length < n) { var j = pickIdx(pop.length, rand); if (!seen[j]) { seen[j] = 1; out.push(pop[j]); } }
+    return out;
+  }
+  function sampleMeans(pop, n, count, seed) { var out = []; for (var k = 0; k < count; k++) out.push(meanOf(sampleAt(pop, n, k, seed))); return out; }
+  // Middle 90% of a list (5th to 95th percentile, nearest rank).
+  function middle90(vals) { var s = sortedOf(vals), n = s.length; if (!n) return { lo: NaN, hi: NaN }; return { lo: s[Math.max(0, Math.ceil(0.05 * n) - 1)], hi: s[Math.min(n - 1, Math.ceil(0.95 * n) - 1)] }; }
+  // pred: 'narrower' (right) | 'wider' | 'higher' (a bigger sample changes the average) | 'same'
+  var SAMPLING_PREDS = ['narrower', 'wider', 'higher', 'same'];
+
+  // ── Data project: a statistical question expects answers that vary ──
+  var STAT_Q_ITEMS = [{ id: 'me_tall', answer: 'no' }, { id: 'class_tall', answer: 'yes' }, { id: 'grade_pets', answer: 'yes' }, { id: 'may_days', answer: 'no' }];
+  function parseProjectValue(kind, raw, raw2) {
+    if (kind === 'category') { var s = String(raw || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 30); return s ? { ok: true, v: s } : { ok: false }; }
+    var a = toNumber(String(raw == null ? '' : raw), ';');
+    if (kind === 'pairs') { var b = toNumber(String(raw2 == null ? '' : raw2), ';'); return dpFin(a) && dpFin(b) ? { ok: true, v: [a, b] } : { ok: false }; }
+    return dpFin(a) ? { ok: true, v: a } : { ok: false };
+  }
+  // Light checks on a claim-evidence-reasoning write-up: never grades the ideas, only that each part is there.
+  function cerChecks(cer) {
+    var c = cer && typeof cer === 'object' ? cer : {};
+    var str = function (k) { return typeof c[k] === 'string' ? c[k].trim() : ''; };
+    var miss = [];
+    if (str('claim').length < 10) miss.push('claim');
+    if (!/\d/.test(str('evidence'))) miss.push('evidence');
+    if (str('reasoning').length < 15) miss.push('reasoning');
+    return miss;
+  }
   // ══════════════════════════════════════════════════════════════
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('dataPlot', {
-    icon: '\uD83D\uDCC9', label: 'Data Plotter',
-    desc: 'Plot data, calculate regression & R\u00B2',
+    icon: '📉', label: 'Data Plotter',
+    desc: 'Plot data, calculate regression & R²',
     color: 'slate', category: 'creative',
     questHooks: [
-      { id: 'plot_5_points', label: 'Plot 5+ data points', icon: '\uD83D\uDCCD', check: function(d) { return (d.points || []).length >= 5; }, progress: function(d) { return (d.points || []).length + '/5 points'; } },
-      { id: 'plot_10_points', label: 'Plot 10+ data points for regression analysis', icon: '\uD83D\uDCC8', check: function(d) { return (d.points || []).length >= 10; }, progress: function(d) { return (d.points || []).length + '/10 points'; } },
-      { id: 'view_residuals', label: 'View residuals to evaluate fit quality', icon: '\uD83D\uDD2C', check: function(d) { return d.showResiduals || false; }, progress: function(d) { return d.showResiduals ? 'Viewing!' : 'Toggle residuals'; } }
+      // Only points the student placed count (ownPts): a loaded preset used to finish both.
+      { id: 'plot_5_points', get label() { return __alloT('stem.dataplot.quest_plot5', 'Plot 5+ data points'); }, icon: '📍', check: function(d) { return questOwn(d) >= 5; }, progress: function(d) { return fillT(__alloT('stem.dataplot.quest_own_points_of', '{k}/{n} points you placed'), { k: questOwn(d), n: 5 }); } },
+      { id: 'plot_10_points', get label() { return __alloT('stem.dataplot.quest_plot10', 'Plot 10+ data points for regression analysis'); }, icon: '📈', check: function(d) { return questOwn(d) >= 10; }, progress: function(d) { return fillT(__alloT('stem.dataplot.quest_own_points_of', '{k}/{n} points you placed'), { k: questOwn(d), n: 10 }); } },
+      { id: 'view_residuals', get label() { return __alloT('stem.dataplot.quest_residuals', 'View residuals to evaluate fit quality'); }, icon: '🔬', check: function(d) { return d.showResiduals || false; }, progress: function(d) { return d.showResiduals ? __alloT('stem.dataplot.quest_viewing', 'Viewing!') : __alloT('stem.dataplot.quest_toggle_residuals', 'Toggle residuals'); } }
     ],
-    render: function(ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
-      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      // No ground of its own, so the header row, the toggle strip and the
-      // empty-state line sit on the HOST surface - white in light and dark,
-      // pure BLACK in the contrast theme, where the tool's own title measured
-      // 1.44:1. Only host-ground chrome is corrected; text on the tool's own
-      // cards reads as authored.
-      var isContrast = !!ctx.isContrast;
-      var onHostInk = isContrast ? ' text-white' : '';
+    // Pure helpers for tests and for other tools (read-only).
+    _math: {
+      parseTable: parseTable, parseValues: parseValues, modesOf: modesOf, quartilesOf: quartilesOf, sdOf: sdOf, madOf: madOf, meanOf: meanOf, medianOf: medianOf,
+      niceAxis: niceAxis, fitStatus: fitStatus, equationText: equationText, shapeOf: shapeOf, pearsonOf: pearsonOf, linFit: linFit, seriesByX: seriesByX,
+      genQuizItem: genQuizItem, gradeQuiz: gradeQuiz, QUIZ_TYPES: QUIZ_TYPES, QUIZ_BY_LEVEL: QUIZ_BY_LEVEL, QUIZ_XP_CAP: QUIZ_XP_CAP, fyShuffle: fyShuffle,
+      CAUSE_CARDS: CAUSE_CARDS, COMPARE_PRESETS: COMPARE_PRESETS, groupSummary: groupSummary, compareVerdict: compareVerdict,
+      sanitizeImport: sanitizeImport, applyImport: applyImport, inquiryPopulationR: inquiryPopulationR, fmtFixed: fmtFixed,
+      seededRand: seededRand, hashSeed: hashSeed, genFitSet: genFitSet, evalLineFit: evalLineFit, lineFromHandles: lineFromHandles, ssrOf: ssrOf,
+      residualPattern: residualPattern, genResidSet: genResidSet, residAnswerFor: residAnswerFor,
+      twoWayFrom: twoWayFrom, twoWayStats: twoWayStats, genTwoWay: genTwoWay, parseCategoryPairs: parseCategoryPairs,
+      genPopulation: genPopulation, sampleAt: sampleAt, sampleMeans: sampleMeans, middle90: middle90, SAMPLING_POPS: SAMPLING_POPS,
+      STAT_Q_ITEMS: STAT_Q_ITEMS, parseProjectValue: parseProjectValue, cerChecks: cerChecks,
+      LEARNING_PATHS: LEARNING_PATHS, TAB_ORDER_BY_LEVEL: TAB_ORDER_BY_LEVEL, pathStepDone: pathStepDone, twoWayGrade: twoWayGrade,
+      axisFromRange: axisFromRange, viewOf: viewOf, viewAxis: viewAxis, ownMatchCount: ownMatchCount, ownDistinctCount: ownDistinctCount
+    },
+    render: function(ctx) { __alloCtx_dataplot = ctx; return ctx.React.createElement(DataPlotView, { ctx: ctx }); }
+  });
+
+  // Population r of the Sampling-effects generator: y = r*z + sqrt(1 - r^2) * sd * e, with z and e
+  // standardized, so the noise slider changes the population r itself. At noise SD 1 it equals the slider.
+  function inquiryPopulationR(trueR, noiseSD) {
+    var r = Math.max(-1, Math.min(1, Number(trueR) || 0)), s = Math.max(0, Number(noiseSD) || 0);
+    var den = Math.sqrt(r * r + (1 - r * r) * s * s);
+    return den > 0 ? r / den : 0;
+  }
+
+  // Data Plot renders as its own component so its hooks stay balanced when Charts & Graphs
+  // shows it in one mode and not the other.
+  function DataPlotView(props) {
+      var ctx = props.ctx;
       var React = ctx.React;
       var h = React.createElement;
+      // honor the 2nd-arg English fallback (ctx.t may ignore it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; };
+      var GA = window.StemLab && window.StemLab._graphAccess && window.StemLab._graphAccess.version >= 2 ? window.StemLab._graphAccess : null;
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
+      // Stage C: the tool paints its own dark surface (as Unit Converter does); contrast mode wins.
+      var isDarkUI = !isContrast && ctx.theme !== 'contrast' && (ctx.isDark === true || ctx.theme === 'dark');
+      var dc = function (hex) { return isDarkUI && DP_DARK_TONE[hex] ? DP_DARK_TONE[hex] : hex; };
       var setStemLabTool = ctx.setStemLabTool;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
-      var callGemini = ctx.callGemini || window.callGemini;
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      // AI only when the host offers it AND the teacher has not switched AI hints off.
+      var callGemini = ctx.aiHintsEnabled === false ? null : (ctx.callGemini || null);
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var announceToSR = ctx.announceToSR;
-      var a11yClick = ctx.a11yClick;
-      // Data Plotter is now a MODE inside Data Studio (Charts & Graphs) rather than
-      // its own catalog tile. When Data Studio hosts it, the host already renders the
-      // mode switcher and the Back control, so suppress ours to avoid two back buttons
-      // and a nested title. Standalone rendering is unchanged.
       var embedded = !!ctx.embedded;
+      var say = function (text) {
+        if (!text) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(text); return; } catch (e) {} }
+        var el = typeof document !== 'undefined' && document.getElementById('allo-live-dataplot');
+        if (el) { el.textContent = ''; el.textContent = text; }
+      };
 
       // ── State ──
-      var d = (ctx.toolData && ctx.toolData.dataPlot) || {};
-      // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
-      var points = Array.isArray(d.points) ? d.points : [];
+      var d = (ctx.toolData && ctx.toolData.dataPlot && typeof ctx.toolData.dataPlot === 'object') ? ctx.toolData.dataPlot : {};
+      // Saved state is INPUT: keep only finite points.
+      var points = Array.isArray(d.points) ? d.points.filter(function (p) { return p && dpFin(p.x) && dpFin(p.y); }) : [];
       var upd = function(key, val) {
         if (ctx.update) ctx.update('dataPlot', key, val);
         else ctx.setToolData(function(prev) { var dp = Object.assign({}, (prev && prev.dataPlot) || {}); dp[key] = val; return Object.assign({}, prev, { dataPlot: dp }); });
@@ -257,73 +2591,103 @@ window.StemLab = window.StemLab || {
         if (ctx.updateMulti) ctx.updateMulti('dataPlot', obj);
         else ctx.setToolData(function(prev) { return Object.assign({}, prev, { dataPlot: Object.assign({}, (prev && prev.dataPlot) || {}, obj) }); });
       };
+      var obj = function (v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
 
-      var soundEnabled = d.soundEnabled != null ? d.soundEnabled : true;
-      var chartType = d.chartType || 'scatter';
-      var showResiduals = d.showResiduals || false;
-      var showLabels = d.showLabels || false;
-      var showGrid = d.showGrid != null ? d.showGrid : true;
-      var tableMode = d.tableMode || false;
+      // ── Grade band, teacher settings ──
+      var teacherCfg = obj(d.teacher);
+      var LEVELS = ['k5', '68', '912'];
+      var bandLevel = ctx.gradeBand === 'k2' || ctx.gradeBand === 'g35' ? 'k5' : ctx.gradeBand === 'g68' ? '68' : ctx.gradeBand === 'g912' ? '912' : 'all';
+      var lockedLevel = LEVELS.indexOf(teacherCfg.lockLevel) >= 0 ? teacherCfg.lockLevel : '';
+      var level = lockedLevel || (LEVELS.indexOf(d.level) >= 0 ? d.level : bandLevel);
+      var isK5 = level === 'k5', is68 = level === '68', isHS = level === '912' || level === 'all';
+      var requirePredict = teacherCfg.requirePredict !== false;
+      var allowReveal = teacherCfg.allowReveal !== false;
+      var isTeacher = ctx.isTeacherMode === true;
+
+      var soundEnabled = d.soundEnabled != null ? !!d.soundEnabled : true;
+      var ALL_CHARTS = ['scatter', 'line', 'bar', 'pie', 'histogram', 'boxplot', 'ogive', 'dotplot', 'pictograph'];
+      var levelCharts = isK5 ? ['pictograph', 'bar', 'dotplot', 'line', 'scatter'] : is68 ? ['dotplot', 'histogram', 'boxplot', 'scatter', 'line', 'bar', 'pie'] : ALL_CHARTS;
+      var chartType = ALL_CHARTS.indexOf(d.chartType) >= 0 ? d.chartType : (isK5 ? 'bar' : 'scatter');
+      var showResiduals = !!d.showResiduals;
+      var showLabels = !!d.showLabels;
+      var showGrid = d.showGrid != null ? !!d.showGrid : true;
+      var tableMode = !!d.tableMode;
       var paletteId = d.paletteId || 'teal';
       var xLabel = typeof d.xLabel === 'string' ? d.xLabel : '';
       var yLabel = typeof d.yLabel === 'string' ? d.yLabel : '';
-      var activeTab = d.activeTab || 'chart';
-      var regressionType = d.regressionType || 'linear';
-      var predX = d.predX || '';
-      var aiInsight = d.aiInsight || '';
-      var aiLoading = d.aiLoading || false;
-      var undoStack = d.undoStack || [];
-      var earnedBadges = d.earnedBadges || {};
-      var showBadges = d.showBadges || false;
-      var dpQuiz = d.dpQuiz || null;
-      var dpScore = d.dpScore || 0;
-      var dpStreak = d.dpStreak || 0;
-      var chartsViewed = d.chartsViewed || {};
+      var pathLevel = pathLevelFor(level);
+      var dataPlotTabOrder = TAB_ORDER_BY_LEVEL[pathLevel];
+      var activeTab = dataPlotTabOrder.indexOf(d.activeTab) >= 0 ? d.activeTab : 'chart';
+      var REG_TYPES = ['linear', 'quadratic', 'exponential', 'logarithmic'];
+      var regressionType = REG_TYPES.indexOf(d.regressionType) >= 0 ? d.regressionType : 'linear';
+      var predX = typeof d.predX === 'string' || typeof d.predX === 'number' ? String(d.predX) : '';
+      var aiInsight = typeof d.aiInsight === 'string' ? d.aiInsight : '';
+      var aiLoading = !!d.aiLoading;
+      var undoStack = Array.isArray(d.undoStack) ? d.undoStack.filter(Array.isArray) : [];
+      var earnedBadges = obj(d.earnedBadges);
+      var showBadges = !!d.showBadges;
+      var dpQuiz = d.dpQuiz && typeof d.dpQuiz === 'object' ? d.dpQuiz : null;
+      var dpScore = dpFin(d.dpScore) ? d.dpScore : 0;
+      var dpStreak = dpFin(d.dpStreak) ? d.dpStreak : 0;
+      var chartsViewed = obj(d.chartsViewed);
+      // Chart types shown with 3+ points, all placed by the student (Chart Master).
+      var chartsOwn = obj(d.chartsOwn);
       var galleryItems = loadGallery();
-      var showGallery = d.showGallery || false;
-      var showOutliers = d.showOutliers || false;
-
-      // ── v2 State ──
-      var showCI = d.showCI || false;
-      var showResidualPlot = d.showResidualPlot || false;
-      var showNormalOverlay = d.showNormalOverlay || false;
-      var zScoreInput = d.zScoreInput || '';
-      var showStemLeaf = d.showStemLeaf || false;
-      var stepMode = d.stepMode || false;
+      var showGallery = !!d.showGallery;
+      var showOutliers = !!d.showOutliers;
+      var showCI = !!d.showCI;
+      var showResidualPlot = !!d.showResidualPlot;
+      var showNormalOverlay = !!d.showNormalOverlay;
+      var zScoreInput = d.zScoreInput != null ? String(d.zScoreInput) : '';
+      var showStemLeaf = !!d.showStemLeaf;
+      var stepMode = !!d.stepMode;
       var stepIdx = (typeof d.stepIdx === 'number' && isFinite(d.stepIdx)) ? d.stepIdx : 0;
-      var showShortcuts = d.showShortcuts || false;
-      var quizType = d.quizType || 'correlation';
-      var quizTypesUsed = d.quizTypesUsed || {};
-      var kernelSQL = d.kernelSQL || 'SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data';
+      var showShortcuts = !!d.showShortcuts;
+      var quizTypesUsed = obj(d.quizTypesUsed);
+      var levelQuizTypes = isK5 ? QUIZ_BY_LEVEL.k5 : is68 ? QUIZ_BY_LEVEL['68'] : level === '912' ? QUIZ_BY_LEVEL['912'] : QUIZ_TYPES;
+      var quizTypeList = d.quizAllTypes ? QUIZ_TYPES : levelQuizTypes;
+      var quizType = quizTypeList.indexOf(d.quizType) >= 0 ? d.quizType : quizTypeList[0];
+      var quizXpItems = obj(d.quizXpItems);
+      var quizXpTotal = dpFin(d.quizXpTotal) ? d.quizXpTotal : 0;
+      var xpCapCorrect = dpFin(d.xpCapCorrect) && d.xpCapCorrect >= 0 ? Math.floor(d.xpCapCorrect) : 0;
+      var missedLog = Array.isArray(d.missedLog) ? d.missedLog.filter(function (m) { return m && typeof m === 'object'; }) : [];
+      var clickMode = d.clickMode === 'remove' ? 'remove' : 'add';
+      // Engagement build (2026-11-04): a frozen chart view so clicks land where clicked, the
+      // student's own points (badges), and the 6-8 "draw your line first" state.
+      var savedView = viewOf(d.view), savedViewPrev = d.viewPrev === 'auto' ? 'auto' : viewOf(d.viewPrev);
+      var ownPts = obj(d.ownPts);
+      var myLine = obj(d.myLine);
+      var exploreIdx = dpFin(d.exploreIdx) ? d.exploreIdx : -1;
+      var pasteMode = d.pasteMode === 'append' ? 'append' : 'replace';
+      var importedFrom = d.importedFrom && typeof d.importedFrom === 'object' ? d.importedFrom : null;
+      var kernelSQL = typeof d.kernelSQL === 'string' ? d.kernelSQL : 'SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data';
       var kernelBusy = !!d.kernelBusy;
-      var kernelError = d.kernelError || '';
-      var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' ? d.kernelResult : null;
-
+      var kernelError = typeof d.kernelError === 'string' ? d.kernelError : '';
+      var kernelResult = d.kernelResult && typeof d.kernelResult === 'object' && Array.isArray(d.kernelResult.rows) ? d.kernelResult : null;
       var kernelRecipeId = d.kernelRecipeId || '';
-      var kernelRecipes = window.AlloDataKernel && typeof window.AlloDataKernel.suggestRecipes === 'function' ? window.AlloDataKernel.suggestRecipes(points) : [];
-      var kernelHistory = window.AlloDataKernel && window.AlloDataKernel.queryHistory && typeof window.AlloDataKernel.queryHistory.list === 'function' ? window.AlloDataKernel.queryHistory.list() : [];
+      var kernelRecipes = [], kernelHistory = [];
+      try { kernelRecipes = window.AlloDataKernel && typeof window.AlloDataKernel.suggestRecipes === 'function' ? (window.AlloDataKernel.suggestRecipes(points) || []) : []; } catch (e) { kernelRecipes = []; }
+      try { kernelHistory = window.AlloDataKernel && window.AlloDataKernel.queryHistory && typeof window.AlloDataKernel.queryHistory.list === 'function' ? (window.AlloDataKernel.queryHistory.list() || []) : []; } catch (e) { kernelHistory = []; }
       var applyKernelRecipe = function(recipe) {
         if (!recipe) return;
         updMulti({ kernelSQL: recipe.sql, kernelRecipeId: recipe.id, kernelError: '', kernelResult: null });
       };
       var pal = palettes.find(function(p) { return p.id === paletteId; }) || palettes[0];
+      // Chart ink on the tool's white card: every label 4.5:1 or better, contrast theme black/white/yellow.
+      var INK = isContrast ? { bg: '#000000', text: '#ffffff', muted: '#ffffff', axis: '#ffffff', grid: '#6b7280', accent: '#ffff00', fill: '#ffff00', line: '#00ffff', bad: '#ff8080' }
+        : isDarkUI ? { bg: '#0f172a', text: '#e2e8f0', muted: '#cbd5e1', axis: '#94a3b8', grid: '#334155', accent: '#5eead4', fill: dc(pal.fill), line: dc(pal.line), bad: '#fca5a5' }
+        : { bg: '#ffffff', text: '#1e293b', muted: '#475569', axis: '#334155', grid: '#cbd5e1', accent: '#0f766e', fill: pal.fill, line: pal.line, bad: '#b91c1c' };
 
       // ══════════════════════════════════════════════════════════════
-      // ── SVG Dimensions ──
+      // ── Points in view ──
       // ══════════════════════════════════════════════════════════════
-      var W = 440, H = 320, pad = 45;
       var visiblePoints = stepMode ? points.slice(0, Math.min(stepIdx, points.length)) : points;
       var allX = visiblePoints.map(function(p) { return p.x; });
       var allY = visiblePoints.map(function(p) { return p.y; });
-      var xMin = allX.length ? Math.min.apply(null, allX) - 1 : 0;
-      var xMax = allX.length ? Math.max.apply(null, allX) + 1 : 10;
-      var yMin = allY.length ? Math.min.apply(null, allY) - 1 : 0;
-      var yMax = allY.length ? Math.max.apply(null, allY) + 1 : 10;
-      var toSX = function(x) { return pad + ((x - xMin) / (xMax - xMin || 1)) * (W - 2 * pad); };
-      var toSY = function(y) { return (H - pad) - ((y - yMin) / (yMax - yMin || 1)) * (H - 2 * pad); };
 
       // ══════════════════════════════════════════════════════════════
-      // ── Statistical Calculations ──
+      // ── Statistical Calculations ── (sliced and run by tests/stem_dataplot_engine.test.js
+      // and tests/math_review_geodata_dataplot_stats.test.js: keep it free of outside helpers)
       // ══════════════════════════════════════════════════════════════
       var n = visiblePoints.length;
       var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -341,37 +2705,44 @@ window.StemLab = window.StemLab || {
         r2 = ssTot > 0 ? 1 - ssRes / ssTot : 0;
       }
 
-      // Quadratic regression (y = ax\u00B2 + bx + c) via Cramer's rule
-      var quadA = 0, quadB = 0, quadC = 0, quadR2 = 0;
+      // Quadratic regression (y = ax² + bx + c). Solved with x centred at its mean (u = x − x̄),
+      // then expanded: raw sums of x⁴ cancelled to garbage for x near 2000 (years), R² below 0.
+      // quadK* are the centred coefficients; predictions use them.
+      var quadA = 0, quadB = 0, quadC = 0, quadR2 = 0, quadK0 = 0, quadK1 = 0, quadK2 = 0;
       if (n >= 3) {
-        var qsx1 = sumX, qsx2 = sumX2, qsx3 = 0, qsx4 = 0, qsxy = sumXY, qsx2y = 0;
-        visiblePoints.forEach(function(p) { qsx3 += p.x*p.x*p.x; qsx4 += p.x*p.x*p.x*p.x; qsx2y += p.x*p.x*p.y; });
-        var det = n*(qsx2*qsx4-qsx3*qsx3) - qsx1*(qsx1*qsx4-qsx3*qsx2) + qsx2*(qsx1*qsx3-qsx2*qsx2);
-        if (Math.abs(det) > 1e-10) {
-          quadC = (sumY*(qsx2*qsx4-qsx3*qsx3) - qsx1*(qsxy*qsx4-qsx2y*qsx3) + qsx2*(qsxy*qsx3-qsx2y*qsx2)) / det;
-          quadB = (n*(qsxy*qsx4-qsx2y*qsx3) - sumY*(qsx1*qsx4-qsx3*qsx2) + qsx2*(qsx1*qsx2y-qsxy*qsx2)) / det;
-          quadA = (n*(qsx2*qsx2y-qsx3*qsxy) - qsx1*(qsx1*qsx2y-qsxy*qsx2) + sumY*(qsx1*qsx3-qsx2*qsx2)) / det;
-          var ssResQ = visiblePoints.reduce(function(s, p) { return s + Math.pow(p.y - (quadA*p.x*p.x + quadB*p.x + quadC), 2); }, 0);
+        var qsu2 = 0, qsu3 = 0, qsu4 = 0, qsuy = 0, qsu2y = 0;
+        visiblePoints.forEach(function(p) { var u = p.x - meanX, dy = p.y - meanY; qsu2 += u*u; qsu3 += u*u*u; qsu4 += u*u*u*u; qsuy += u*dy; qsu2y += u*u*dy; });
+        // dy = k0 + k1 u + k2 u², with sum(u) = sum(dy) = 0, so k0 = -k2 * sum(u²) / n.
+        var q44 = qsu4 - qsu2 * qsu2 / n, det = qsu2 * q44 - qsu3 * qsu3;
+        if (det > 1e-12 * (qsu2 * qsu4 || 1)) {
+          quadK1 = (qsuy * q44 - qsu3 * qsu2y) / det;
+          quadK2 = (qsu2 * qsu2y - qsu3 * qsuy) / det;
+          quadK0 = meanY - quadK2 * qsu2 / n;
+          quadA = quadK2; quadB = quadK1 - 2 * quadK2 * meanX; quadC = quadK0 - quadK1 * meanX + quadK2 * meanX * meanX;
+          var ssResQ = visiblePoints.reduce(function(s, p) { var u = p.x - meanX; return s + Math.pow(p.y - (quadK0 + quadK1*u + quadK2*u*u), 2); }, 0);
           var ssTotQ = allY.reduce(function(s, y) { return s + (y - meanY)*(y - meanY); }, 0);
           quadR2 = ssTotQ > 0 ? 1 - ssResQ / ssTotQ : 0;
         }
       }
 
-      // Exponential regression (y = ae^(bx)) via log transform
-      var expA = 0, expB = 0, expR2 = 0;
+      // Exponential regression (y = ae^(bx)) via log transform. Only offered when every y > 0
+      // (see fitStatus); the subset fit here is what the comparison table reports.
+      // Predictions use ln y at the mean x (expLnK, expMx): a·e^(bx) overflowed to NaN for years.
+      var expA = 0, expB = 0, expR2 = 0, expLnK = 0, expMx = 0;
       if (n >= 2) {
         var posPoints = visiblePoints.filter(function(p) { return p.y > 0; });
         if (posPoints.length >= 2) {
           var lnY = posPoints.map(function(p) { return Math.log(p.y); });
-          var slnY = lnY.reduce(function(s, v) { return s + v; }, 0);
-          var spXlnY = posPoints.reduce(function(s, p, i) { return s + p.x * lnY[i]; }, 0);
-          var espX = posPoints.reduce(function(s, p) { return s + p.x; }, 0);
-          var espX2 = posPoints.reduce(function(s, p) { return s + p.x * p.x; }, 0);
           var enp = posPoints.length;
-          expB = (enp * spXlnY - espX * slnY) / (enp * espX2 - espX * espX || 1);
-          expA = Math.exp((slnY - expB * espX) / enp);
+          var slnY = lnY.reduce(function(s, v) { return s + v; }, 0);
+          expMx = posPoints.reduce(function(s, p) { return s + p.x; }, 0) / enp;
+          var eSuu = posPoints.reduce(function(s, p) { return s + (p.x - expMx) * (p.x - expMx); }, 0);
+          var eSuy = posPoints.reduce(function(s, p, i) { return s + (p.x - expMx) * lnY[i]; }, 0);
+          expB = eSuu > 0 ? eSuy / eSuu : 0;
+          expLnK = slnY / enp;
+          expA = Math.exp(expLnK - expB * expMx);
           var ssTotE = allY.reduce(function(s, y) { return s + (y - meanY)*(y - meanY); }, 0);
-          var ssResE = visiblePoints.reduce(function(s, p) { return s + Math.pow(p.y - expA * Math.exp(expB * p.x), 2); }, 0);
+          var ssResE = visiblePoints.reduce(function(s, p) { return s + Math.pow(p.y - Math.exp(expLnK + expB * (p.x - expMx)), 2); }, 0);
           expR2 = ssTotE > 0 ? 1 - ssResE / ssTotE : 0;
         }
       }
@@ -397,51 +2768,18 @@ window.StemLab = window.StemLab || {
         }
       }
 
-      // Current regression equation & R\u00B2
-      var regEq = '', regR2 = r2;
-      if (regressionType === 'quadratic' && n >= 3) { regEq = 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2); regR2 = quadR2; }
-      else if (regressionType === 'exponential' && expA) { regEq = 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)'; regR2 = expR2; }
-      else if (regressionType === 'logarithmic' && logB) { regEq = 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)'; regR2 = logR2; }
-      else { regEq = 'y = ' + slope.toFixed(2) + 'x + ' + intercept.toFixed(2); regR2 = r2; }
-
-      // Predict Y helper
-      var predictY = function(xv) {
-        if (regressionType === 'quadratic') return quadA*xv*xv + quadB*xv + quadC;
-        if (regressionType === 'exponential' && expA) return expA * Math.exp(expB * xv);
-        if (regressionType === 'logarithmic' && xv > 0) return logA + logB * Math.log(xv);
-        return slope * xv + intercept;
-      };
-
-      // Prediction
-      var predResult = '';
-      var predIsExtrapolation = false;
-      if (predX !== '' && !isNaN(parseFloat(predX))) {
-        var px = parseFloat(predX);
-        predResult = predictY(px).toFixed(2);
-        var dataXMin = allX.length ? Math.min.apply(null, allX) : 0;
-        var dataXMax = allX.length ? Math.max.apply(null, allX) : 0;
-        predIsExtrapolation = n > 0 && (px < dataXMin || px > dataXMax);
-      }
-
-      // Extended stats
+      // Extended stats. Quartiles: median of each half, the middle value left out when n is odd.
       var sortedY = allY.slice().sort(function(a, b) { return a - b; });
       var median = function(arr) { if (!arr.length) return 0; var m = Math.floor(arr.length / 2); return arr.length % 2 ? arr[m] : (arr[m-1] + arr[m]) / 2; };
       var yMedian = median(sortedY);
       var yMin_ = sortedY[0] || 0, yMax_ = sortedY[sortedY.length-1] || 0;
       var yRange = yMax_ - yMin_;
       // A single value has no lower or upper half: its quartiles are the value itself.
-      // median([]) = 0 made Q1 = Q3 = 0 and flagged the lone point as an outlier.
       var q1 = sortedY.length < 2 ? yMedian : median(sortedY.slice(0, Math.floor(sortedY.length / 2)));
       var q3 = sortedY.length < 2 ? yMedian : median(sortedY.slice(Math.ceil(sortedY.length / 2)));
       var iqr = q3 - q1;
+      // Population SD (divide by n); the sample SD (divide by n - 1) is shown beside it.
       var stdDev = n > 0 ? Math.sqrt(allY.reduce(function(s, y) { return s + (y - meanY)*(y - meanY); }, 0) / n) : 0;
-
-      // Mode
-      var freqMap = {};
-      allY.forEach(function(y) { var key = Math.round(y*10)/10; freqMap[key] = (freqMap[key]||0)+1; });
-      var maxFreq = 0, modeVal = 'N/A';
-      Object.keys(freqMap).forEach(function(k) { if (freqMap[k] > maxFreq) { maxFreq = freqMap[k]; modeVal = k; } });
-      if (maxFreq <= 1) modeVal = 'None';
 
       // Outlier detection (IQR)
       var lowerFence = q1 - 1.5 * iqr;
@@ -466,9 +2804,7 @@ window.StemLab = window.StemLab || {
       }
       var maxBinCount = Math.max.apply(null, histBins.map(function(b) { return b.count; }).concat([1]));
 
-      // ══════════════════════════════════════════════════════════════
       // ── Spearman Rank Correlation ──
-      // ══════════════════════════════════════════════════════════════
       var spearmanR = 0;
       if (n >= 3) {
         // Tied values share their average rank, and rho is Pearson r of the ranks.
@@ -497,9 +2833,7 @@ window.StemLab = window.StemLab || {
       }
       var pearsonR = n >= 2 ? (slope >= 0 ? 1 : -1) * Math.sqrt(Math.max(0, Math.abs(r2))) : 0;
 
-      // ══════════════════════════════════════════════════════════════
       // ── Confidence Interval (95% for linear) ──
-      // ══════════════════════════════════════════════════════════════
       var seRegression = 0, sxDevSq = 0;
       if (n >= 3 && regressionType === 'linear') {
         var ssResCI = visiblePoints.reduce(function(s, p) { return s + Math.pow(p.y - (slope * p.x + intercept), 2); }, 0);
@@ -514,9 +2848,7 @@ window.StemLab = window.StemLab || {
       var tValue = tDf < 1 ? T975[0] : tDf <= 30 ? T975[tDf - 1]
         : 1.959964 + (Math.pow(1.959964, 3) + 1.959964) / (4 * tDf) + (5 * Math.pow(1.959964, 5) + 16 * Math.pow(1.959964, 3) + 3 * 1.959964) / (96 * tDf * tDf);
 
-      // ══════════════════════════════════════════════════════════════
       // ── Cumulative Frequency ──
-      // ══════════════════════════════════════════════════════════════
       var cumulativeFreq = [];
       if (n > 0 && histBins.length > 0) {
         var cumTotal = 0;
@@ -527,9 +2859,7 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // ══════════════════════════════════════════════════════════════
       // ── Stem-and-Leaf Data ──
-      // ══════════════════════════════════════════════════════════════
       var stemLeafData = [];
       if (n > 0) {
         var stemMap = {};
@@ -553,81 +2883,305 @@ window.StemLab = window.StemLab || {
       // ── Undo System ──
       // ══════════════════════════════════════════════════════════════
       var pushUndo = function() {
-        var stack = (undoStack || []).slice();
-        stack.push(JSON.parse(JSON.stringify(points)));
-        if (stack.length > 30) stack = stack.slice(-30);
+        var stack = undoStack.slice();
+        stack.push(points.map(function (p) { return { x: p.x, y: p.y }; }));
+        if (stack.length > UNDO_CAP) stack = stack.slice(-UNDO_CAP);
         return stack;
       };
       var doUndo = function() {
-        if (!undoStack || !undoStack.length) return;
+        if (!undoStack.length) return;
         var stack = undoStack.slice();
         var prev = stack.pop();
-        updMulti({ points: prev, undoStack: stack });
+        updMulti({ points: prev, undoStack: stack, exploreIdx: -1 });
+        say(fillT(t('stem.dataplot.sr_undo', 'Undone. {n} points now.'), { n: prev.length }));
       };
 
+      // ── Derived statistics outside the sliced block ──
+      var modeInfo = modesOf(allY);
+      var sampleSD = sdOf(allY, true);
+      var madY = madOf(allY);
+      var shapeInfo = shapeOf(allY);
+      var fitOk = {}; REG_TYPES.forEach(function (rt) { fitOk[rt] = fitStatus(rt, visiblePoints); });
+      var regFit = fitOk[regressionType];
+      var coefs = { linear: { m: slope, b: intercept }, quadratic: { a: quadA, b: quadB, c: quadC }, exponential: { a: expA, b: expB }, logarithmic: { a: logA, b: logB } };
+      var r2By = { linear: r2, quadratic: quadR2, exponential: expR2, logarithmic: logR2 };
+      var regEq = regFit.ok ? equationText(regressionType, coefs[regressionType]) : '';
+      var regR2 = regFit.ok ? r2By[regressionType] : NaN;
+      var regR2Shown = dpFin(regR2) ? regR2 : 0;
+      // NaN where the model has no value (ln of x <= 0, or the model could not be fitted): never a silent switch to linear.
+      var predictY = function(xv) {
+        if (!regFit.ok) return NaN;
+        if (regressionType === 'quadratic') { var qu = xv - meanX; return quadK0 + quadK1*qu + quadK2*qu*qu; }
+        if (regressionType === 'exponential') return Math.exp(expLnK + expB * (xv - expMx));
+        if (regressionType === 'logarithmic') return xv > 0 ? logA + logB * Math.log(xv) : NaN;
+        return slope * xv + intercept;
+      };
+      var fitWhyText = function (st) {
+        if (!st || st.ok) return '';
+        switch (st.why) {
+          case 'need2': return t('stem.dataplot.why_need2', 'Add at least 2 points to fit a model.');
+          case 'need3': return t('stem.dataplot.why_need3', 'A quadratic needs at least 3 points.');
+          case 'need3x': return t('stem.dataplot.why_need3x', 'A quadratic needs at least 3 different x values.');
+          case 'sameX': return t('stem.dataplot.why_same_x', 'Every point has the same x, so no line can be fitted: the slope would be undefined.');
+          case 'yNotPositive': return fillT(t('stem.dataplot.why_exp_y', 'An exponential model needs every y value above 0, because ln(y) is used. {k} of your y values are 0 or below. Choose another model or remove those points.'), { k: st.count });
+          case 'xNotPositive': return fillT(t('stem.dataplot.why_log_x', 'A logarithmic model needs every x value above 0, because ln(x) is undefined for x ≤ 0. {k} of your x values are 0 or below.'), { k: st.count });
+          default: return '';
+        }
+      };
+      var regName = function (rt) {
+        if (rt === 'quadratic') return t('stem.dataplot.quadratic', 'Quadratic');
+        if (rt === 'exponential') return t('stem.dataplot.exponential', 'Exponential');
+        if (rt === 'logarithmic') return t('stem.dataplot.logarithmic', 'Logarithmic');
+        return t('stem.dataplot.linear', 'Linear');
+      };
+      // Prediction
+      var predResult = '', predWhy = '', predIsExtrapolation = false;
+      if (predX !== '' && dpFin(parseFloat(predX)) && n >= 2) {
+        var px = parseFloat(predX), pv = predictY(px);
+        if (dpFin(pv)) predResult = fmtFixed(pv, 2);
+        else predWhy = !regFit.ok ? fitWhyText(regFit) : t('stem.dataplot.why_pred_log', 'ln(x) is undefined for x ≤ 0, so this logarithmic model cannot predict there.');
+        var dataXMin = allX.length ? Math.min.apply(null, allX) : 0;
+        var dataXMax = allX.length ? Math.max.apply(null, allX) : 0;
+        predIsExtrapolation = n > 0 && (px < dataXMin || px > dataXMax);
+      }
+      var strengthWord = function (r) {
+        var a = Math.abs(r);
+        return a >= 0.9 ? t('stem.dataplot.str_very_strong', 'very strong') : a >= 0.7 ? t('stem.dataplot.str_strong', 'strong') : a >= 0.5 ? t('stem.dataplot.str_moderate', 'moderate') : a >= 0.3 ? t('stem.dataplot.str_weak', 'weak') : t('stem.dataplot.str_very_weak', 'very weak or no');
+      };
+      var xName = xLabel || 'x', yName = yLabel || 'y';
+      var smallN = n >= 2 && n < 10;
+
+      // Axes from every point (not just the stepped-in ones), so step-through does not rescale.
+      // Scatter and line charts keep a frozen view once the student clicks (see viewAxis); an
+      // empty one starts at a plain 0 to 10. Everything else fits the data as before.
+      var xyChart = chartType === 'scatter' || chartType === 'line';
+      var ptXs = points.map(function (p) { return p.x; }), ptYs = points.map(function (p) { return p.y; });
+      var axX = xyChart && savedView ? viewAxis(savedView.x0, savedView.x1, ptXs) : xyChart && !points.length ? axisFromRange(0, 10)
+        : niceAxis(points.length ? Math.min.apply(null, ptXs) : 0, points.length ? Math.max.apply(null, ptXs) : 10);
+      var axY = xyChart && savedView ? viewAxis(savedView.y0, savedView.y1, ptYs) : xyChart && !points.length ? axisFromRange(0, 10)
+        : niceAxis(points.length ? Math.min.apply(null, ptYs) : 0, points.length ? Math.max.apply(null, ptYs) : 10, chartType === 'bar');
+      var shownView = { x0: axX.min, x1: axX.max, y0: axY.min, y1: axY.max };
+      var fitView = function () {
+        var drawn = lineMoved && canDrawLine, fxs = drawn ? ptXs.concat([myXA, myXB]) : ptXs, fys = drawn ? ptYs.concat([myYA, myYB]) : ptYs;
+        var fx = niceAxis(Math.min.apply(null, fxs), Math.max.apply(null, fxs)), fy = niceAxis(Math.min.apply(null, fys), Math.max.apply(null, fys));
+        return { x0: fx.min, x1: fx.max, y0: fy.min, y1: fy.max };
+      };
+      var ownCount = ownMatchCount(points, ownPts), ownDistinct = ownDistinctCount(points, ownPts);
+      var allOwn = points.length > 0 && ownCount === points.length;
+
+      // ── 6-8: draw your line first ── The least-squares model and R² stay hidden until the
+      // student commits a line of their own (or asks for the best fit). Then both lines show,
+      // with the squared residuals of each, all from the real fit.
+      var modelHidden = is68 && n >= 2 && (regFit.ok || fitOk.linear.ok) && !myLine.shown;
+      // An R² the student may see: saved charts and snapshots carry none otherwise.
+      var r2Known = n >= 2 && regFit.ok && !isK5 && !modelHidden;
+      var canDrawLine = is68 && xyChart && n >= 2 && fitOk.linear.ok;
+      var lineStep = axY.step / 20, lineDec = decimalsFor(lineStep);
+      var snapLineY = function (v) { return Number(Math.max(axY.min, Math.min(axY.max, Math.round(v / lineStep) * lineStep)).toFixed(lineDec)); };
+      var dataX0 = allX.length ? Math.min.apply(null, allX) : 0, dataX1 = allX.length ? Math.max.apply(null, allX) : 10;
+      var lineMoved = !!myLine.moved && [myLine.xA, myLine.xB, myLine.yA, myLine.yB].every(dpFin) && myLine.xB !== myLine.xA;
+      var myXA = lineMoved ? myLine.xA : dataX0 + 0.1 * (dataX1 - dataX0), myXB = lineMoved ? myLine.xB : dataX1 - 0.1 * (dataX1 - dataX0);
+      var myYA = lineMoved ? myLine.yA : snapLineY(meanY), myYB = lineMoved ? myLine.yB : snapLineY(meanY);
+      var myLineEq = lineFromHandles(myXA, myYA, myXB, myYB);
+      var myEval = canDrawLine && myLine.shown && lineMoved ? evalLineFit(visiblePoints, myLineEq) : null;
+      var mySquares = myLine.squares === 'ls' || myLine.squares === 'mine' || myLine.squares === 'none' ? myLine.squares : 'both';
+      var moveMyLine = function (which, v) {
+        var patch = { xA: myXA, xB: myXB, yA: myYA, yB: myYB, moved: true, shown: !!myLine.shown, squares: myLine.squares };
+        patch[which] = snapLineY(v);
+        upd('myLine', patch);
+      };
+      var myCompareText = function (ev) {
+        var vals = { mine: equationText('linear', myLineEq), u: fmtNum(ev.ssrUser, 2), ls: equationText('linear', ev.ls), l: fmtNum(ev.ssrLs, 2), k: fmtFixed(ev.ratio, 2) };
+        return dpFin(ev.ratio) ? fillT(t('stem.dataplot.sr_myline_compare', 'Your line {mine} has a sum of squared residuals of {u}. The best-fit line {ls} has {l}. Yours is {k} times as large.'), vals)
+          : fillT(t('stem.dataplot.sr_myline_compare_exact', 'Your line {mine} has a sum of squared residuals of {u}. The best-fit line {ls} goes through every point, so its sum is 0.'), vals);
+      };
+      var showBestFit = function () {
+        var lineFits = fitOk.linear.ok;
+        updMulti({ myLine: Object.assign({}, myLine, { shown: true }), regressionType: lineFits ? 'linear' : regressionType });
+        focusAfterRef.current = ['[data-dataplot-myline-result]', '[data-dataplot-regression]'];
+        if (!lineMoved || !canDrawLine) { say(fillT(t('stem.dataplot.sr_bestfit_shown', 'The best-fit line is now shown: {eq}.'), { eq: lineFits ? equationText('linear', coefs.linear) : regEq })); return; }
+        say(myCompareText(evalLineFit(visiblePoints, myLineEq)));
+      };
+      var lineDragRef = React.useRef(null), lineDraggedRef = React.useRef(false);
+      // A control that takes itself away (Compare, Fit axes, Undo axis fit) hands focus on.
+      var focusAfterRef = React.useRef(null);
+      React.useEffect(function () {
+        var list = focusAfterRef.current;
+        if (!list) return;
+        focusAfterRef.current = null;
+        for (var i = 0; i < list.length; i++) { var el = document.querySelector(list[i]); if (el) { el.focus(); return; } }
+      });
+      // Keyboard add-point cursor: kept in this view only (not saved).
+      var curHook = React.useState(null), cursor = curHook[0], setCursor = curHook[1];
+      var curOnHook = React.useState(false), cursorOn = curOnHook[0], setCursorOn = curOnHook[1];
+      var W = 440, H = 320, PL = 56, PR = 16, PT = 18, PB = 46;
+      var xMin = axX.min, xMax = axX.max, yMin = axY.min, yMax = axY.max;
+      var toSX = function(x) { return PL + ((x - xMin) / (xMax - xMin || 1)) * (W - PL - PR); };
+      var toSY = function(y) { return (H - PB) - ((y - yMin) / (yMax - yMin || 1)) * (H - PT - PB); };
+
+      // Points in x order, for keyboard exploring and the data table.
+      var ordered = visiblePoints.map(function (p, i) { return { x: p.x, y: p.y, i: i }; }).sort(function (a, b) { return a.x - b.x || a.y - b.y; });
+      var explorePt = exploreIdx >= 0 && exploreIdx < ordered.length ? ordered[exploreIdx] : null;
+
       // ══════════════════════════════════════════════════════════════
-      // ── Badge Checker ──
+      // ── Badges ── (names from literal keys)
       // ══════════════════════════════════════════════════════════════
+      var badgeText = function (id) {
+        switch (id) {
+          case 'first_point': return [t('stem.dataplot.badge_first_point', 'First Plot'), t('stem.dataplot.first_point_desc', 'Plot your first data point')];
+          case 'ten_points': return [t('stem.dataplot.badge_ten_points', 'Data Collector'), t('stem.dataplot.ten_points_desc_v2', 'Plot 10 or more points yourself')];
+          case 'fifty_points': return [t('stem.dataplot.badge_fifty_points', 'Big Data'), t('stem.dataplot.fifty_points_desc_v2', 'Plot 50 or more points yourself')];
+          case 'strong_r2': return [t('stem.dataplot.badge_strong_r2', 'Perfect Fit'), t('stem.dataplot.strong_r2_desc_v3', 'Reach R² above 0.95 with at least 5 points, all placed by you')];
+          case 'quiz_5': return [t('stem.dataplot.badge_quiz_5', 'Quiz Whiz'), t('stem.dataplot.quiz_5_desc', 'Answer 5 quiz questions correctly')];
+          case 'streak_5': return [t('stem.dataplot.badge_streak_5', 'On Fire'), t('stem.dataplot.streak_5_desc', '5 correct answers in a row')];
+          case 'all_charts': return [t('stem.dataplot.badge_all_charts', 'Chart Master'), t('stem.dataplot.all_charts_desc_v2', 'Show all 7 chart types with at least 3 points you placed yourself')];
+          case 'saved_3': return [t('stem.dataplot.badge_saved_3', 'Archivist'), t('stem.dataplot.saved_3_desc', 'Save 3 charts to gallery')];
+          case 'csv_export': return [t('stem.dataplot.badge_csv_export', 'Data Exporter'), t('stem.dataplot.csv_export_desc', 'Export data as CSV')];
+          case 'ai_analyst': return [t('stem.dataplot.badge_ai_analyst', 'AI Analyst'), t('stem.dataplot.ai_analyst_desc', 'Use the AI data analyst')];
+          case 'outlier_found': return [t('stem.dataplot.badge_outlier_found', 'Outlier Hunter'), t('stem.dataplot.outlier_found_desc', 'Find an outlier in your data')];
+          case 'predictor': return [t('stem.dataplot.badge_predictor', 'Fortune Teller'), t('stem.dataplot.predictor_desc', 'Use the prediction tool')];
+          case 'z_score': return [t('stem.dataplot.badge_z_score', 'Z-Score Pro'), t('stem.dataplot.z_score_desc', 'Calculate a z-score')];
+          case 'transform': return [t('stem.dataplot.badge_transform', 'Transformer'), t('stem.dataplot.transform_desc', 'Apply a data transformation')];
+          case 'step_through': return [t('stem.dataplot.badge_step_through', 'Step Master'), t('stem.dataplot.step_through_desc', 'Complete a step-through')];
+          case 'spearman': return [t('stem.dataplot.badge_spearman', 'Rank Expert'), t('stem.dataplot.spearman_desc_v2', 'Open and read Spearman’s ρ')];
+          default: return [t('stem.dataplot.badge_all_quiz_types', 'Quiz Champion'), t('stem.dataplot.all_quiz_types_desc_v2', 'Try 4 different quiz types')];
+        }
+      };
       var checkBadges = function(updates) {
         var newB = Object.assign({}, earnedBadges);
         var awarded = [];
         var chk = function(id, cond) { if (!newB[id] && cond) { newB[id] = Date.now(); awarded.push(id); } };
         var s = updates || {};
-        chk('first_point', points.length >= 1);
-        chk('ten_points', points.length >= 10);
-        chk('fifty_points', points.length >= 50);
-        chk('strong_r2', n >= 2 && Math.max(0, regR2) > 0.95);
+        // Point badges count only the student's own points (clicked, keyed or typed): loading a
+        // preset used to pay First Plot and Perfect Fit for one click. Earned badges stay earned.
+        chk('first_point', ownCount >= 1);
+        chk('ten_points', ownDistinct >= 10);
+        chk('fifty_points', ownDistinct >= 50);
+        // Two points always fit exactly: Perfect Fit needs at least STRONG_FIT_MIN_N points, every
+        // one placed by the student, and (6-8) the fit on show.
+        chk('strong_r2', !stepMode && allOwn && ownDistinct >= STRONG_FIT_MIN_N && regFit.ok && regR2 > 0.95 && !modelHidden);
         chk('quiz_5', (s.dpScore || dpScore) >= 5);
         chk('streak_5', (s.dpStreak || dpStreak) >= 5);
-        chk('all_charts', Object.keys(s.chartsViewed || chartsViewed).length >= 7);
+        chk('all_charts', Object.keys(s.chartsOwn || chartsOwn).length >= 7);
         chk('saved_3', galleryItems.length >= 3);
         chk('csv_export', !!s.csvExported);
         chk('ai_analyst', !!s.aiUsed);
-        chk('outlier_found', outliers.length > 0 && showOutliers);
+        chk('outlier_found', outliers.length > 0 && (showOutliers || !!s.outliersShown));
         chk('predictor', !!s.predicted);
         chk('z_score', !!s.zScoreUsed);
         chk('transform', !!s.transformed);
         chk('step_through', !!s.stepComplete);
-        chk('spearman', !!s.spearmanViewed);
+        // Only when the student actually opens rho (stats tab or the chart's "Compare with Spearman").
+        chk('spearman', !!s.spearmanViewed && n >= 3);
         chk('all_quiz_types', Object.keys(s.quizTypesUsed || quizTypesUsed).length >= 4);
         if (awarded.length > 0) {
           upd('earnedBadges', newB);
           awarded.forEach(function(bid) {
-            var badge = badgeDefs.find(function(b) { return b.id === bid; });
-            if (badge && addToast) addToast('\uD83C\uDFC5 Badge: ' + badge.icon + ' ' + badge.name + '!', 'success');
-            if (awardXP) awardXP('dataPlot_badge_' + bid, 5, 'Badge: ' + (badge ? badge.name : bid));
+            var badge = badgeDefs.find(function(b) { return b.id === bid; }), bt = badgeText(bid);
+            if (addToast) addToast(fillT(t('stem.dataplot.toast_badge', 'Badge earned: {icon} {name}!'), { icon: badge ? badge.icon : '', name: bt[0] }), 'success');
+            // Rank Expert is for opening rho, with nothing to answer: the badge, no XP.
+            if (awardXP && bid !== 'spearman') awardXP('dataPlot_badge_' + bid, 5,fillT(t('stem.dataplot.xp_badge', 'Badge: {name}'), { name: bt[0] }));
           });
           if (soundEnabled) sfxBadge();
           if (celebrate) celebrate();
         }
       };
-      if (points.length > 0) setTimeout(function() { checkBadges(points.length >= 3 ? { spearmanViewed: true } : {}); }, 0);
+
+      // ── Effects: data-driven badges, the import inbox, stop sound on unmount ──
+      var badgeSig = points.length + '|' + (regFit.ok ? Math.round(regR2Shown * 1000) : 'x') + '|' + n + '|' + stepMode + '|' + ownCount + '|' + modelHidden;
+      React.useEffect(function () { if (points.length > 0) checkBadges({}); }, [badgeSig]);
+      React.useEffect(function () {
+        var SL = window.StemLab;
+        if (SL && SL._dataPlotInbox) {
+          // A caller may have filled the inbox before this plugin loaded: sanitize it here too.
+          var inbox = sanitizeImport(SL._dataPlotInbox); SL._dataPlotInbox = null;
+          if (inbox.ok) ctx.setToolData(function (prev) { return applyImport(prev, inbox.data); });
+        }
+      });
+      React.useEffect(function () {
+        if (!d.importNoticePending || !importedFrom) return;
+        upd('importNoticePending', false);
+        say(fillT(t('stem.dataplot.sr_imported_from', 'Imported {n} points from {source}.'), { n: importedFrom.count || points.length, source: importedFrom.source || importedFrom.title || t('stem.dataplot.another_tool', 'another tool') }));
+      }, [!!d.importNoticePending]);
+      React.useEffect(function () {
+        return function () { try { var ga = window.StemLab && window.StemLab._graphAccess; if (ga && ga.isPlaying && ga.isPlaying('dataplot-sound') && ga.stop) ga.stop(); } catch (e) {} };
+      }, []);
 
       // ══════════════════════════════════════════════════════════════
       // ── Actions ──
       // ══════════════════════════════════════════════════════════════
-      var addPoint = function(x, y) {
-        var newUndo = pushUndo();
-        updMulti({ points: points.concat([{x:x, y:y}]), undoStack: newUndo });
+      // Every point added here is the student's own (clicked, keyed or typed): it is counted in
+      // ownPts for the badges. extra: more fields for the same update (the frozen view).
+      var addPoint = function(x, y, extra) {
+        var newUndo = pushUndo(), ownKey = x + ',' + y, own = Object.assign({}, ownPts);
+        if (own[ownKey] || Object.keys(own).length < PASTE_CAP) own[ownKey] = (dpFin(own[ownKey]) ? Math.floor(own[ownKey]) : 0) + 1;
+        var nextPts = points.concat([{ x: x, y: y }]), madePatch = points.length ? {} : { myLine: null };
+        if (ownDistinctCount(nextPts, own) >= 3 && !chartsOwn[chartType] && ownMatchCount(nextPts, own) === nextPts.length) { madePatch.chartsOwn = Object.assign({}, chartsOwn); madePatch.chartsOwn[chartType] = true; }
+        updMulti(Object.assign({ points: nextPts, undoStack: newUndo, ownPts: own }, madePatch, extra || {}));
         if (soundEnabled) sfxPlot();
+        say(fillT(t('stem.dataplot.sr_point_added', 'Point added at x = {x}, y = {y}. {n} points.'), { x: fmtNum(x), y: fmtNum(y), n: points.length + 1 }));
       };
-      var removePoint = function(idx) {
+      var removePoint = function(idx, extra) {
+        var p = points[idx]; if (!p) return;
         var newUndo = pushUndo();
-        updMulti({ points: points.filter(function(_, i) { return i !== idx; }), undoStack: newUndo });
-        if (addToast) addToast('\uD83D\uDDD1\uFE0F Removed point', 'info');
+        updMulti(Object.assign({ points: points.filter(function(_, i) { return i !== idx; }), undoStack: newUndo, exploreIdx: -1 }, extra || {}));
+        say(fillT(t('stem.dataplot.sr_point_removed', 'Removed the point at x = {x}, y = {y}. Undo brings it back.'), { x: fmtNum(p.x), y: fmtNum(p.y) }));
+      };
+      var editPoint = function (idx, field, raw) {
+        var v = toNumber(raw, ';');
+        if (!dpFin(v) || !points[idx] || points[idx][field] === v) return false;
+        var next = points.map(function (p, i) { if (i !== idx) return p; var q = { x: p.x, y: p.y }; q[field] = v; return q; });
+        var editPatch = { points: next, undoStack: pushUndo() }, oldKey = points[idx].x + ',' + points[idx].y;
+        if (dpFin(ownPts[oldKey]) && ownPts[oldKey] > 0 && Object.keys(ownPts).length < PASTE_CAP) {
+          // The old key stays: Undo brings that point back.
+          var newKey = next[idx].x + ',' + next[idx].y;
+          editPatch.ownPts = Object.assign({}, ownPts);
+          editPatch.ownPts[newKey] = (dpFin(ownPts[newKey]) ? Math.floor(ownPts[newKey]) : 0) + 1;
+        }
+        updMulti(editPatch);
+        return true;
       };
       var clearAll = function() {
         var newUndo = pushUndo();
-        updMulti({ points: [], undoStack: newUndo, stepMode: false, stepIdx: 0 });
+        updMulti({ points: [], undoStack: newUndo, stepMode: false, stepIdx: 0, exploreIdx: -1, view: null, viewPrev: null, myLine: null });
+        say(t('stem.dataplot.sr_cleared', 'All points cleared. Undo brings them back.'));
+      };
+      var datasetName = function (ds) {
+        switch (ds.id) {
+          case 'height_weight': return t('stem.dataplot.ds_height_weight', 'Height and weight');
+          case 'study_grade': return t('stem.dataplot.ds_study_grade', 'Study hours and grade');
+          case 'temp_icecream': return t('stem.dataplot.ds_temp_icecream', 'Temperature and ice cream sales');
+          case 'age_car': return t('stem.dataplot.ds_age_car', 'Car age and value');
+          case 'practice_ft': return t('stem.dataplot.ds_practice_ft', 'Practice and free throws');
+          case 'sun_growth': return t('stem.dataplot.ds_sun_growth', 'Sunlight and plant growth');
+          case 'size_price': return t('stem.dataplot.ds_size_price', 'House size and price');
+          case 'class_pets': return t('stem.dataplot.ds_class_pets', 'Class pets');
+          default: return t('stem.dataplot.ds_random', 'Random points');
+        }
+      };
+      var datasetAxis = function (ds) {
+        switch (ds.id) {
+          case 'height_weight': return [t('stem.dataplot.ax_height_cm', 'Height (cm)'), t('stem.dataplot.ax_weight_kg', 'Weight (kg)')];
+          case 'study_grade': return [t('stem.dataplot.ax_hours_studied', 'Hours studied'), t('stem.dataplot.ax_grade_pct', 'Grade (%)')];
+          case 'temp_icecream': return [t('stem.dataplot.ax_temp_c', 'Temperature (°C)'), t('stem.dataplot.ax_sales_usd', 'Sales ($)')];
+          case 'age_car': return [t('stem.dataplot.ax_age_years', 'Age (years)'), t('stem.dataplot.ax_value_usd', 'Value ($)')];
+          case 'practice_ft': return [t('stem.dataplot.ax_practice_hours', 'Practice (hours per week)'), t('stem.dataplot.ax_free_throw_pct', 'Free throws made (%)')];
+          case 'sun_growth': return [t('stem.dataplot.ax_sunlight_hours', 'Sunlight (hours)'), t('stem.dataplot.ax_growth_cm', 'Growth (cm)')];
+          case 'size_price': return [t('stem.dataplot.ax_size_sqft', 'Size (sq ft)'), t('stem.dataplot.ax_price_usd', 'Price ($)')];
+          case 'class_pets': return [t('stem.dataplot.ax_pet_kind', 'Pet (1 dog, 2 cat, 3 fish, 4 bird, 5 rabbit, 6 hamster)'), t('stem.dataplot.ax_students', 'Students')];
+          default: return ['X', 'Y'];
+        }
       };
       var loadDataset = function(ds) {
-        var newUndo = pushUndo();
-        updMulti({ points: ds.pts, undoStack: newUndo, xLabel: ds.xLabel || '', yLabel: ds.yLabel || '', stepMode: false });
+        var newUndo = pushUndo(), ax = datasetAxis(ds);
+        var pts = ds.id === 'random' ? Array.from({ length: 12 }, function () { return { x: Math.round(Math.random() * 100) / 10, y: Math.round(Math.random() * 100) / 10 }; }) : ds.pts.map(function (p) { return { x: p.x, y: p.y }; });
+        updMulti({ points: pts, undoStack: newUndo, xLabel: ax[0], yLabel: ax[1], stepMode: false, exploreIdx: -1, view: null, viewPrev: null, myLine: null });
+        say(fillT(t('stem.dataplot.sr_dataset_loaded', 'Loaded {name}: {n} points.'), { name: datasetName(ds), n: pts.length }));
       };
       var runKernelQuery = function() {
         var kernel = window.AlloDataKernel;
         if (!kernel || typeof kernel.queryRows !== 'function') {
-          updMulti({ kernelBusy: false, kernelError: 'Local analytical engine is still loading. Please try again in a moment.', kernelResult: null });
+          updMulti({ kernelBusy: false, kernelError: t('stem.dataplot.kernel_loading', 'Local analytical engine is still loading. Please try again in a moment.'), kernelResult: null });
           return;
         }
         updMulti({ kernelSQL: kernelSQL, kernelBusy: true, kernelError: '', kernelResult: null });
@@ -636,101 +3190,88 @@ window.StemLab = window.StemLab || {
           var columns = rows.length ? Object.keys(rows[0]) : ((result.provenance && result.provenance.columns) || []);
           if (kernel.queryHistory && typeof kernel.queryHistory.record === 'function') kernel.queryHistory.record({ tool: 'dataPlot', recipe: kernelRecipeId || null, sql: result.query || kernelSQL, backend: result.backend || 'local', rowCount: rows.length, sourceRowCount: result.provenance && result.provenance.rowCount, columns: result.provenance && result.provenance.columns });
           updMulti({ kernelBusy: false, kernelError: '', kernelResult: { rows: rows, columns: columns, backend: result.backend || 'local', provenance: result.provenance || null, summary: result.summary || null } });
-          if (announceToSR) announceToSR('Local query returned ' + rows.length + ' row' + (rows.length === 1 ? '' : 's') + '.');
-          if (addToast) addToast('Local query complete (' + rows.length + ' rows)', 'success');
+          say(fillT(t('stem.dataplot.sr_query_rows', 'Local query returned {n} rows.'), { n: rows.length }));
         }).catch(function(error) {
-          var message = error && error.message ? error.message : String(error || 'Query failed');
+          var message = error && error.message ? error.message : String(error || t('stem.dataplot.kernel_failed', 'The query failed.'));
           updMulti({ kernelBusy: false, kernelError: message, kernelResult: null });
-          if (addToast) addToast('Local query failed: ' + message, 'error');
+          say(fillT(t('stem.dataplot.sr_query_failed', 'Local query failed: {msg}'), { msg: message }));
         });
       };
       var saveChart = function() {
         if (n === 0) return;
-        var item = { id: 'dp_' + Date.now(), points: JSON.parse(JSON.stringify(points)), xLabel: xLabel, yLabel: yLabel, chartType: chartType, n: n, r2: regR2, timestamp: Date.now(), kernel: kernelResult ? { recipe: kernelRecipeId || null, sql: kernelSQL, backend: kernelResult.backend, provenance: kernelResult.provenance, rows: kernelResult.rows, notebook: { version: 1, entries: kernelHistory } } : null };
-        saveGallery(galleryItems.concat([item]));
+        var item = { id: 'dp_' + Date.now(), points: points.map(function (p) { return { x: p.x, y: p.y }; }), xLabel: xLabel, yLabel: yLabel, chartType: chartType, n: n, r2: r2Known ? regR2Shown : null, timestamp: Date.now(), kernel: kernelResult ? { recipe: kernelRecipeId || null, sql: kernelSQL, backend: kernelResult.backend, provenance: kernelResult.provenance, rows: kernelResult.rows, notebook: { version: 1, entries: kernelHistory } } : null };
+        var ok = saveGallery(galleryItems.concat([item]));
         upd('_galleryRefresh', Date.now());
-        if (addToast) addToast('\uD83D\uDCBE Chart saved!', 'success');
-        checkBadges({});
+        if (addToast) addToast(ok ? t('stem.dataplot.toast_saved', 'Chart saved to this device.') : t('stem.dataplot.toast_save_failed', 'This device would not save the chart. Export a CSV to keep a copy.'), ok ? 'success' : 'error');
+        if (ok) checkBadges({});
       };
       var loadChart = function(item) {
         var newUndo = pushUndo();
-        updMulti({ points: item.points, undoStack: newUndo, xLabel: item.xLabel || '', yLabel: item.yLabel || '', chartType: item.chartType || 'scatter' });
-        if (addToast) addToast('\uD83D\uDCE5 Chart loaded', 'info');
+        updMulti({ points: item.points.filter(function (p) { return p && dpFin(p.x) && dpFin(p.y); }), undoStack: newUndo, xLabel: item.xLabel || '', yLabel: item.yLabel || '', chartType: ALL_CHARTS.indexOf(item.chartType) >= 0 ? item.chartType : 'scatter', exploreIdx: -1, view: null, viewPrev: null, myLine: null });
+        say(t('stem.dataplot.sr_chart_loaded', 'Saved chart loaded.'));
       };
       var deleteChart = function(id) {
         saveGallery(galleryItems.filter(function(g) { return g.id !== id; }));
         upd('_galleryRefresh', Date.now());
       };
+      var download = function (name, text, mime) {
+        if (GA && GA.downloadText) return GA.downloadText(name, text, mime);
+        try { var url = URL.createObjectURL(new Blob([text], { type: mime })), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000); return true; } catch (e) { return false; }
+      };
+      var csvOf = function (rows) {
+        if (GA && GA.csvText) return GA.csvText(rows);
+        return rows.map(function (r) { return r.map(function (v) { var s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(','); }).join('\n');
+      };
       var exportCSV = function() {
         if (n === 0) return;
-        var csv = (xLabel || 'x') + ',' + (yLabel || 'y') + '\n' + points.map(function(p) { return p.x + ',' + p.y; }).join('\n');
-        var blob = new Blob([csv], { type: 'text/csv' });
-        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'data_plot_' + Date.now() + '.csv'; a.click();
-        if (addToast) addToast('\uD83D\uDCE5 CSV exported!', 'success');
-        checkBadges({ csvExported: true });
+        var ok = download('data_plot_' + Date.now() + '.csv', csvOf([[xLabel || 'x', yLabel || 'y']].concat(points.map(function (p) { return [p.x, p.y]; }))), 'text/csv');
+        say(ok ? t('stem.dataplot.sr_csv_done', 'CSV file downloaded.') : t('stem.dataplot.sr_csv_blocked', 'The download was blocked here. Use the data table to copy your data instead.'));
+        if (ok) checkBadges({ csvExported: true });
       };
       var exportSVG = function() {
         var el = document.querySelector('[data-dataplot-svg]');
         if (!el) return;
-        var blob = new Blob([new XMLSerializer().serializeToString(el)], { type: 'image/svg+xml' });
-        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chart_' + Date.now() + '.svg'; a.click();
-        if (addToast) addToast('\uD83D\uDCD0 SVG exported!', 'success');
+        var ok = download('chart_' + Date.now() + '.svg', new XMLSerializer().serializeToString(el), 'image/svg+xml');
+        say(ok ? t('stem.dataplot.sr_svg_done', 'SVG picture of the chart downloaded.') : t('stem.dataplot.sr_svg_blocked', 'The download was blocked here.'));
       };
+      // The AI asks questions; it does not hand out conclusions.
       var askAI = function() {
-        if (!callGemini || aiLoading) return;
+        if (!callGemini || aiLoading || n < 2) return;
         upd('aiLoading', true);
-        var desc = n === 0 ? 'No data points yet.'
-          : n + ' pts. X: ' + (xLabel || 'X') + ' (' + Math.min.apply(null,allX).toFixed(1) + '-' + Math.max.apply(null,allX).toFixed(1) + '), Y: ' + (yLabel || 'Y') + ' (' + yMin_.toFixed(1) + '-' + yMax_.toFixed(1) + '). '
-          + regEq + ', R\u00B2=' + regR2.toFixed(3) + '. Mean=' + meanY.toFixed(2) + ', Median=' + yMedian.toFixed(2) + ', StdDev=' + stdDev.toFixed(2)
-          + ', Pearson r=' + pearsonR.toFixed(3) + ', Spearman r=' + spearmanR.toFixed(3) + '. '
-          + (outliers.length > 0 ? outliers.length + ' outliers. ' : '');
-        var prompt = 'You are an AI data analyst in a kids\' educational data plotter. ' + desc +
-          ' Give 3 SHORT insights about this data. Include a real-world connection. Use emoji. Ages 8-14. Return JSON: {"insights":["...","...","..."],"funFact":"..."}';
-        callGemini(prompt, true, false, 0.8).then(function(resp) {
-          try {
-            var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g,'').replace(/```/g,'').trim()) : resp;
-            var text = '';
-            if (parsed.insights) parsed.insights.forEach(function(ins,i) { text += (i > 0 ? '\n' : '') + ins; });
-            if (parsed.funFact) text += '\n\n\uD83D\uDCCA ' + parsed.funFact;
-            updMulti({ aiInsight: text, aiLoading: false });
-          } catch(e) { updMulti({ aiInsight: typeof resp === 'string' ? resp : 'Try adding more data!', aiLoading: false }); }
-        }).catch(function() { updMulti({ aiInsight: '\u26A0\uFE0F Could not reach AI. Try again!', aiLoading: false }); });
+        var desc = n + ' points. X: ' + xName + ' (' + fmtNum(Math.min.apply(null, allX), 2) + ' to ' + fmtNum(Math.max.apply(null, allX), 2) + '), Y: ' + yName + ' (' + fmtNum(yMin_, 2) + ' to ' + fmtNum(yMax_, 2) + '). '
+          + (modelHidden ? '' : 'Pearson r=' + fmtFixed(pearsonR, 2) + ', ') + 'mean y=' + fmtNum(meanY, 2) + ', median y=' + fmtNum(yMedian, 2) + ', ' + outliers.length + ' IQR outliers.';
+        var prompt = 'You are a Socratic data coach for a student (grade band ' + level + ') using a data plotter. The data: ' + desc
+          + ' Ask exactly 3 short questions that help the student notice the pattern, the spread, unusual points and what could explain them. Do NOT state conclusions, numbers the student has not found, or answers. Plain language. Return JSON: {"questions":["...","...","..."]}';
+        Promise.resolve().then(function () { return callGemini(prompt, true, false, 0.7); }).then(function(resp) {
+          var qs = [];
+          try { var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp; qs = Array.isArray(parsed && parsed.questions) ? parsed.questions : []; } catch(e) { qs = []; }
+          qs = qs.filter(function (q) { return typeof q === 'string' && q.trim(); }).map(function (q) { return q.trim().slice(0, 240); }).slice(0, 3);
+          updMulti({ aiInsight: qs.length ? qs.join('\n') : t('stem.dataplot.ai_no_questions', 'The coach had no questions this time. Try the questions below.'), aiLoading: false });
+          say(t('stem.dataplot.sr_ai_ready', 'The data coach has three questions for you.'));
+        }).catch(function() { updMulti({ aiInsight: t('stem.dataplot.ai_unreachable', 'Could not reach the AI coach. The questions below work without it.'), aiLoading: false }); });
         checkBadges({ aiUsed: true });
       };
-
-      // SVG click handler
-      var handleSvgClick = function(e) {
-        if (chartType !== 'scatter' && chartType !== 'line') return;
-        if (stepMode) return;
-        var svg = e.currentTarget;
-        var rect = svg.getBoundingClientRect();
-        var scale = Math.min(rect.width / W, rect.height / H) || 1;
-        var offX = (rect.width - W * scale) / 2;
-        var offY = (rect.height - H * scale) / 2;
-        var sx = (e.clientX - rect.left - offX) / scale;
-        var sy = (e.clientY - rect.top - offY) / scale;
-        var x = Math.round((xMin + (sx - pad) / (W - 2 * pad) * (xMax - xMin)) * 10) / 10;
-        var y = Math.round((yMin + ((H - pad - sy) / (H - 2 * pad)) * (yMax - yMin)) * 10) / 10;
-        addPoint(x, y);
-      };
       var switchChart = function(type) {
-        var viewed = Object.assign({}, chartsViewed);
+        var viewed = Object.assign({}, chartsViewed), made = chartsOwn;
         viewed[type] = true;
-        updMulti({ chartType: type, chartsViewed: viewed });
-        checkBadges({ chartsViewed: viewed });
+        if (allOwn && ownDistinct >= 3) { made = Object.assign({}, chartsOwn); made[type] = true; }
+        updMulti({ chartType: type, chartsViewed: viewed, chartsOwn: made });
+        say(fillT(t('stem.dataplot.sr_chart_switched', 'Showing a {chart}.'), { chart: chartNameText(t, type) }));
+        checkBadges({ chartsOwn: made });
       };
 
       // ── Data Transformations ──
       var transformData = function(type) {
         if (points.length === 0) return;
         var newUndo = pushUndo();
-        var transformed;
+        var transformed, dropped = 0;
         if (type === 'normalize') {
           transformed = points.map(function(p) { return { x: p.x, y: yRange > 0 ? Math.round((p.y - yMin_) / yRange * 100 * 100) / 100 : 0 }; });
         } else if (type === 'standardize') {
           transformed = points.map(function(p) { return { x: p.x, y: stdDev > 0 ? Math.round((p.y - meanY) / stdDev * 100) / 100 : 0 }; });
         } else if (type === 'log') {
           transformed = points.filter(function(p) { return p.y > 0; }).map(function(p) { return { x: p.x, y: Math.round(Math.log(p.y) * 100) / 100 }; });
+          dropped = points.length - transformed.length;
         } else if (type === 'noise') {
           var nl = stdDev > 0 ? stdDev * 0.2 : yRange * 0.1 || 1;
           transformed = points.map(function(p) { return { x: p.x, y: Math.round((p.y + (Math.random() * 2 - 1) * nl) * 100) / 100 }; });
@@ -740,157 +3281,221 @@ window.StemLab = window.StemLab || {
           transformed = points.map(function(p) { return { x: p.y, y: p.x }; });
         }
         if (transformed) {
-          updMulti({ points: transformed, undoStack: newUndo });
-          if (addToast) addToast('\uD83D\uDD04 ' + type.charAt(0).toUpperCase() + type.slice(1) + ' applied!', 'success');
+          updMulti({ points: transformed, undoStack: newUndo, exploreIdx: -1 });
+          say(dropped ? fillT(t('stem.dataplot.sr_log_dropped', 'Log transform applied. {k} points with y of 0 or below were removed, because ln(y) is undefined there. Undo brings them back.'), { k: dropped })
+            : fillT(t('stem.dataplot.sr_transform_done', '{name} applied. Undo reverses it.'), { name: transformName(type) }));
           if (soundEnabled) sfxTransform();
           checkBadges({ transformed: true });
         }
       };
-
-      // ── Random Data Generator ──
+      var transformName = function (type) {
+        switch (type) {
+          case 'normalize': return t('stem.dataplot.normalize_0_100', 'Normalize (0–100)');
+          case 'standardize': return t('stem.dataplot.standardize_z', 'Standardize (Z)');
+          case 'log': return t('stem.dataplot.log_transform', 'Log Transform');
+          case 'noise': return t('stem.dataplot.add_noise', 'Add Noise');
+          case 'sort': return t('stem.dataplot.sort_by_x', 'Sort by X');
+          default: return t('stem.dataplot.flip_x_y', 'Flip X↔Y');
+        }
+      };
       var generateRandom = function(targetR) {
         var pts = generateCorrelated(targetR, 20);
         var newUndo = pushUndo();
-        updMulti({ points: pts, undoStack: newUndo, xLabel: 'X', yLabel: 'Y' });
-        if (addToast) addToast('\uD83C\uDFB2 Generated r\u2248' + targetR.toFixed(1), 'success');
+        updMulti({ points: pts, undoStack: newUndo, xLabel: 'X', yLabel: 'Y', exploreIdx: -1, view: null, viewPrev: null, myLine: null });
+        say(fillT(t('stem.dataplot.sr_generated', 'Generated 20 points aiming for r near {r}.'), { r: fmtFixed(targetR, 2) }));
       };
-
-      // ── Step-Through Mode ──
       var startStepThrough = function() {
         if (points.length < 2) return;
         updMulti({ stepMode: true, stepIdx: 1 });
         if (soundEnabled) sfxStep();
+        say(t('stem.dataplot.sr_step_start', 'Step-through started: 1 point shown.'));
       };
       var stepNext = function() {
         if (stepIdx >= points.length) {
           updMulti({ stepMode: false });
           checkBadges({ stepComplete: true });
-          if (addToast) addToast('\u2705 Step-through complete!', 'success');
+          say(t('stem.dataplot.sr_step_done', 'Step-through complete.'));
           return;
         }
         upd('stepIdx', stepIdx + 1);
         if (soundEnabled) sfxStep();
+        say(fillT(t('stem.dataplot.sr_step_n', '{k} of {n} points shown.'), { k: stepIdx + 1, n: points.length }));
       };
       var stopStep = function() { updMulti({ stepMode: false, stepIdx: 0 }); };
 
-      // ══════════════════════════════════════════════════════════════
-      // ── Quiz System (4 types) ──
-      // ══════════════════════════════════════════════════════════════
-      // Unbiased Fisher-Yates; the Math.random()-0.5 comparator it replaces left
-      // correct answers clustered near their authored position.
-      var fyShuffle = function(arr) {
-        for (var fi = arr.length - 1; fi > 0; fi--) {
-          var fj = Math.floor(Math.random() * (fi + 1));
-          var ft = arr[fi]; arr[fi] = arr[fj]; arr[fj] = ft;
-        }
-        return arr;
-      };
-      var makeQuiz = function() {
-        var used = Object.assign({}, quizTypesUsed);
-        used[quizType] = true;
-        // Quizzes replace the plotted data — record an undo entry so the
-        // student's own dataset is recoverable afterwards.
-        var quizUndo = pushUndo();
-        if (quizType === 'correlation') {
-          var s = correlationScenarios[Math.floor(Math.random() * correlationScenarios.length)];
-          var pts = s.gen();
-          updMulti({ dpQuiz: { type: 'correlation', text: s.q, answer: s.a, pts: pts, opts: fyShuffle(['Positive', 'Negative', 'None']), answered: false }, points: pts, undoStack: quizUndo, quizTypesUsed: used });
-        } else if (quizType === 'guessR2') {
-          var sc = guessR2Scenarios[Math.floor(Math.random() * guessR2Scenarios.length)];
-          var pts2 = generateCorrelated(sc.r, 15);
-          var n2 = pts2.length, gsx = 0, gsy = 0, gsxy = 0, gsxx = 0;
-          pts2.forEach(function(p) { gsx += p.x; gsy += p.y; gsxy += p.x*p.y; gsxx += p.x*p.x; });
-          var gsl = (n2*gsxy - gsx*gsy) / (n2*gsxx - gsx*gsx || 1);
-          var gint = (gsy - gsl*gsx) / n2;
-          var gmy = gsy / n2;
-          var gsst = pts2.reduce(function(s,p) { return s + (p.y-gmy)*(p.y-gmy); }, 0);
-          var gssr = pts2.reduce(function(s,p) { return s + Math.pow(p.y-(gsl*p.x+gint),2); }, 0);
-          var actualR2 = gsst > 0 ? Math.round((1 - gssr/gsst)*100)/100 : 0;
-          var opts2 = [actualR2];
-          while (opts2.length < 4) {
-            var fake = Math.round(Math.random() * 100) / 100;
-            if (opts2.indexOf(fake) === -1 && Math.abs(fake - actualR2) > 0.1) opts2.push(fake);
-          }
-          fyShuffle(opts2);
-          updMulti({ dpQuiz: { type: 'guessR2', text: t('stem.dataplot.estimate_the_r_for_this_scatter_plot', 'Estimate the R\u00B2 for this scatter plot'), answer: actualR2.toFixed(2), pts: pts2, opts: opts2.map(function(o) { return o.toFixed(2); }), answered: false }, points: pts2, undoStack: quizUndo, quizTypesUsed: used });
-        } else if (quizType === 'matchChart') {
-          var mc = matchChartScenarios[Math.floor(Math.random() * matchChartScenarios.length)];
-          updMulti({ dpQuiz: { type: 'matchChart', text: mc.q, answer: mc.a, opts: fyShuffle(mc.opts.slice()), answered: false }, quizTypesUsed: used });
-        } else if (quizType === 'outlier') {
-          var os = outlierScenarios[Math.floor(Math.random() * outlierScenarios.length)];
-          var result = os.gen();
-          updMulti({ dpQuiz: { type: 'outlier', text: 'Which point is the outlier in ' + os.label + '?', answer: result.outlierIdx, pts: result.pts, answered: false }, points: result.pts, undoStack: quizUndo, quizTypesUsed: used });
-        }
-        checkBadges({ quizTypesUsed: used });
-      };
-      var answerQuiz = function(opt) {
-        if (!dpQuiz || dpQuiz.answered) return;
-        var correct = dpQuiz.type === 'outlier' ? parseInt(opt) === dpQuiz.answer : opt === dpQuiz.answer;
-        var newScore = dpScore + (correct ? 1 : 0);
-        var newStreak = correct ? dpStreak + 1 : 0;
-        updMulti({ dpQuiz: Object.assign({}, dpQuiz, { answered: true, chosen: opt }), dpScore: newScore, dpStreak: newStreak });
-        if (correct) {
-          if (addToast) addToast('\u2705 Correct!', 'success');
-          if (awardXP) awardXP('dataPlot', 10, 'Data Quiz');
-          if (soundEnabled) sfxCorrect();
-          checkBadges({ dpScore: newScore, dpStreak: newStreak });
-        } else {
-          var ans = dpQuiz.type === 'outlier' ? 'Point #' + (dpQuiz.answer + 1) : dpQuiz.answer;
-          if (addToast) addToast('\u274C Answer: ' + ans, 'error');
-          if (soundEnabled) sfxWrong();
-        }
-      };
-
-      // ── Keyboard Handler ──
+      // Ctrl+Z only. No single-letter shortcuts (WCAG 2.1.4); Delete no longer removes points.
       var handleKey = function(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.ctrlKey && e.key === 'z') { e.preventDefault(); doUndo(); }
-        else if (e.key === 'g') upd('showGrid', !showGrid);
-        else if (e.key === 'l') upd('showLabels', !showLabels);
-        else if (e.key === 'r') upd('showResiduals', !showResiduals);
-        else if (e.key === 'o') upd('showOutliers', !showOutliers);
-        else if (e.key === 'c') upd('showCI', !showCI);
-        else if (e.key === 'Delete' && points.length > 0) removePoint(points.length - 1);
-        else if (e.key === 'ArrowRight' && stepMode) stepNext();
+        var tag = e.target && e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); doUndo(); }
       };
 
-      var dataPlotTabOrder = ['chart', 'stats', 'quiz', 'tools', 'inquiry'];
-      var dataPlotPanelProps = function(id, props) { return Object.assign({ id: 'data-plot-panel-' + id, role: 'tabpanel', 'aria-labelledby': 'data-plot-tab-' + id, tabIndex: 0 }, props); };
-      // ── Tab button helper ──
-      var tabBtn = function(id, label, icon) {
-        var active = activeTab === id;
-        return h('button', { id: 'data-plot-tab-' + id, 'aria-controls': 'data-plot-panel-' + id, tabIndex: active ? 0 : -1, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onKeyDown: function(e) {
-          var index = dataPlotTabOrder.indexOf(id), next = index;
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % dataPlotTabOrder.length;
-          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + dataPlotTabOrder.length - 1) % dataPlotTabOrder.length;
-          else if (e.key === 'Home') next = 0;
-          else if (e.key === 'End') next = dataPlotTabOrder.length - 1;
-          else return;
-          e.preventDefault(); e.stopPropagation();
-          var buttons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-          if (buttons[next]) buttons[next].focus();
-          upd('activeTab', dataPlotTabOrder[next]);
-        }, onClick: function() { upd('activeTab', id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-700 hover:bg-teal-50 border border-teal-600') }, icon + ' ' + label);
+      // ── Graph access: description, sound, keyboard explore ──
+      var GA_KEY = 'dataplot-sound';
+      var playing = !!(GA && GA.isPlaying && GA.isPlaying(GA_KEY));
+      var hearSeries = function (series, label) {
+        if (!GA) { say(t('stem.dataplot.sound_unavailable', 'Sound is not available here.')); return; }
+        if (GA.isPlaying(GA_KEY)) { GA.stop(); say(t('stem.dataplot.sound_stopped', 'Sound stopped.')); upd('_soundTick', Date.now()); return; }
+        if (GA.isMuted && GA.isMuted()) { say(t('stem.dataplot.sound_muted', 'Sound is muted. Turn sound on to hear the data.')); return; }
+        var plan = series.length >= 2 ? GA.sonifyPlan(series, { zeros: [], ymin: yMin, ymax: yMax, seconds: Math.min(8, Math.max(3, series.length * 0.25)) }) : null;
+        if (!plan) { say(t('stem.dataplot.sound_need_two', 'Sound needs at least two different x values.')); return; }
+        var hd = GA.playPlan(plan, { key: GA_KEY, onEnd: function () { upd('_soundTick', Date.now()); } });
+        say(hd ? label : t('stem.dataplot.sound_unavailable', 'Sound is not available here.'));
+        upd('_soundTick', Date.now());
+      };
+      var hearData = function () {
+        hearSeries(seriesByX(visiblePoints), t('stem.dataplot.sound_playing_data', 'Playing the data from left to right: higher pitch means a larger y value.'));
+      };
+      var hearTrend = function () {
+        if (!regFit.ok) { say(fitWhyText(regFit)); return; }
+        var xs0 = Math.min.apply(null, allX), xs1 = Math.max.apply(null, allX), series = [];
+        for (var i = 0; i <= 60; i++) { var xv = xs0 + (xs1 - xs0) * i / 60, yv = predictY(xv); series.push({ x: xv, y: dpFin(yv) ? yv : null }); }
+        hearSeries(series, t('stem.dataplot.sound_playing_trend', 'Playing the fitted model from left to right.'));
+      };
+      var pointSentence = function (p, idx) {
+        var base = fillT(t('stem.dataplot.sr_point_n', 'Point {k} of {n}: {xn} {x}, {yn} {y}.'), { k: idx + 1, n: ordered.length, xn: xName, x: fmtNum(p.x), yn: yName, y: fmtNum(p.y) });
+        var extra = [];
+        if (outlierSet[p.x + ',' + p.y]) extra.push(t('stem.dataplot.sr_point_outlier', 'This value is an outlier.'));
+        if (n >= 2 && regFit.ok && !isK5 && !modelHidden) {
+          var res = p.y - predictY(p.x);
+          if (dpFin(res)) extra.push(Math.abs(res) < 1e-9 ? t('stem.dataplot.sr_on_line', 'It sits on the fitted model.') : fillT(res > 0 ? t('stem.dataplot.sr_above_line', '{r} above the fitted model.') : t('stem.dataplot.sr_below_line', '{r} below the fitted model.'), { r: fmtNum(Math.abs(res), 2) }));
+        }
+        return base + (extra.length ? ' ' + extra.join(' ') : '');
+      };
+      var exploreKey = function (e) {
+        var k = e.key, i = exploreIdx, last = ordered.length - 1;
+        if (!ordered.length) return;
+        var next = k === 'ArrowRight' || k === 'ArrowDown' ? Math.min(last, i + 1) : k === 'ArrowLeft' || k === 'ArrowUp' ? Math.max(0, i < 0 ? 0 : i - 1) : k === 'Home' ? 0 : k === 'End' ? last : null;
+        if (next === null) return;
+        e.preventDefault();
+        upd('exploreIdx', next);
+        var text = pointSentence(ordered[next], next);
+        if ((k === 'ArrowRight' || k === 'ArrowDown') && i === last) text = t('stem.dataplot.sr_last_point', 'Last point.') + ' ' + text;
+        if (GA && GA.announce) GA.announce(text, typeof announceToSR === 'function' ? announceToSR : undefined); else say(text);
       };
 
-      // Regression line/curve path
+      // ── Paste / import ──
+      var importText = function (text) {
+        var res = parseTable(text);
+        if (!res.points.length) {
+          say(t('stem.dataplot.sr_import_none', 'No numbers found. Put one x and y pair on each line, separated by a comma, tab, semicolon or space.'));
+          upd('importReport', { ok: false, skipped: res.skipped.slice(0, 20) });
+          return false;
+        }
+        // At most PASTE_CAP points, as for imports from other tools: 150,000 pasted rows overflowed the stack and blanked the tool.
+        var all = pasteMode === 'append' ? points.concat(res.points) : res.points, cut = Math.max(0, all.length - PASTE_CAP);
+        var kept = Math.max(0, res.points.length - cut);
+        var patch = { points: cut ? all.slice(0, PASTE_CAP) : all, undoStack: pushUndo(), exploreIdx: -1, stepMode: false,
+          importReport: { ok: true, count: kept, cut: cut, skipped: res.skipped.slice(0, 20), skippedCount: res.skipped.length, single: res.singleColumn, mode: pasteMode } };
+        if (pasteMode === 'replace' || !points.length) { patch.view = null; patch.viewPrev = null; patch.myLine = null; }
+        if (res.header && pasteMode === 'replace') { if (res.header[0]) patch.xLabel = res.header[0]; if (res.header[1]) patch.yLabel = res.header[1]; }
+        if (res.singleColumn && pasteMode === 'replace' && !res.header) { patch.xLabel = t('stem.dataplot.ax_item_number', 'Item number'); }
+        updMulti(patch);
+        say(fillT(res.skipped.length ? t('stem.dataplot.sr_import_some', 'Imported {n} points. Skipped {k} lines that were not numbers: {lines}.') : t('stem.dataplot.sr_import_all', 'Imported {n} points.'),
+          { n: kept, k: res.skipped.length, lines: res.skipped.slice(0, 10).join(', ') }) + (cut ? ' ' + fillT(t('stem.dataplot.import_capped', 'The tool keeps at most {cap} points, so {k} were left out.'), { cap: PASTE_CAP, k: cut }) : ''));
+        return true;
+      };
+
+      // ══════════════════════════════════════════════════════════════
+      // ── Chart helpers ──
+      // ══════════════════════════════════════════════════════════════
+      var pieParts = visiblePoints.map(function (p, i) { return { label: fmtNum(p.x), value: p.y, i: i }; }).filter(function (q) { return q.value > 0; });
+      var pieDropped = visiblePoints.length - pieParts.length;
+      var pieTotal = pieParts.reduce(function (s, q) { return s + q.value; }, 0);
+      var barOrder = visiblePoints.map(function (p, i) { return { x: p.x, y: p.y, i: i }; }).sort(function (a, b) { return a.x - b.x; });
+      var pictoUnit = (function () {
+        var mx = Math.max.apply(null, [0].concat(allY.map(function (v) { return Math.max(0, v); }))), units = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+        for (var i = 0; i < units.length; i++) if (mx / units[i] <= 10) return units[i];
+        return Math.pow(10, Math.ceil(Math.log(mx / 10) / Math.LN10));
+      })();
+      var dotStacks = (function () {
+        var map = {}, keys = [];
+        allY.forEach(function (v) { var k = fmtNum(v, 3); if (!map[k]) { map[k] = { v: Number(k), c: 0 }; keys.push(k); } map[k].c++; });
+        return keys.map(function (k) { return map[k]; }).sort(function (a, b) { return a.v - b.v; });
+      })();
+      var histDec = histBins.length ? decimalsFor(Math.max(1e-6, histBins[0].high - histBins[0].low) / 2) : 0;
+      var binLabel = function (b) { return fmtFixed(b.low, histDec) + '–' + fmtFixed(b.high, histDec); };
+
+      var describeChart = function () {
+        if (!n) return t('stem.dataplot.desc_empty', 'The chart is empty. Click the chart, load a dataset, or type points into the data table.');
+        var parts = [];
+        if (chartType === 'scatter' || chartType === 'line') {
+          var xs0 = Math.min.apply(null, allX), xs1 = Math.max.apply(null, allX);
+          parts.push(fillT(chartType === 'line' ? t('stem.dataplot.desc_line_head', 'Line graph of {y} against {x}, {n} points joined from left to right.') : t('stem.dataplot.desc_scatter_head', 'Scatter plot of {y} against {x}, {n} points.'), { y: yName, x: xName, n: n }));
+          parts.push(fillT(t('stem.dataplot.desc_ranges', '{x} runs from {x0} to {x1}; {y} runs from {y0} to {y1}.'), { x: xName, x0: fmtNum(xs0), x1: fmtNum(xs1), y: yName, y0: fmtNum(yMin_), y1: fmtNum(yMax_) }));
+          if (n >= 3 && fitOk.linear.ok && modelHidden) {
+            // 6-8 before the student's line: the trend in words, without r (r² is R²).
+            parts.push(Math.abs(pearsonR) < 0.3 ? fillT(t('stem.dataplot.desc_trend_none_v2', 'There is little or no straight-line trend: as {x} increases, {y} does not clearly rise or fall.'), { x: xName, y: yName })
+              : fillT(pearsonR > 0 ? t('stem.dataplot.desc_trend_up_v2', 'As {x} increases, {y} tends to increase.') : t('stem.dataplot.desc_trend_down_v2', 'As {x} increases, {y} tends to decrease.'), { x: xName, y: yName }));
+          } else if (n >= 3 && fitOk.linear.ok) {
+            var r = pearsonR;
+            parts.push(Math.abs(r) < 0.3 ? fillT(t('stem.dataplot.desc_trend_none', 'There is little or no straight-line trend: as {x} increases, {y} does not clearly rise or fall (r = {r}).'), { x: xName, y: yName, r: fmtFixed(r, 3) })
+              : fillT(r > 0 ? t('stem.dataplot.desc_trend_up', 'As {x} increases, {y} tends to increase: a {strength} positive linear relationship (r = {r}).') : t('stem.dataplot.desc_trend_down', 'As {x} increases, {y} tends to decrease: a {strength} negative linear relationship (r = {r}).'), { x: xName, y: yName, strength: strengthWord(r), r: fmtFixed(r, 3) }));
+          }
+          if (canDrawLine && (!myLine.shown || lineMoved)) parts.push(fillT(t('stem.dataplot.sr_fit_line_now', 'Your line: {eq}.'), { eq: equationText('linear', myLineEq) }));
+          if (!isK5 && regFit.ok && n >= 2 && !modelHidden) parts.push(fillT(t('stem.dataplot.desc_model', 'Fitted {model} model: {eq}, R² = {r2}.'), { model: regName(regressionType), eq: regEq, r2: fmtFixed(regR2, 3) }));
+          if (outliers.length) parts.push(fillT(t('stem.dataplot.desc_outliers', 'Outliers in {y}: {list}.'), { y: yName, list: outliers.slice(0, 6).map(function (p) { return '(' + fmtNum(p.x) + ', ' + fmtNum(p.y) + ')'; }).join(', ') }));
+        } else if (chartType === 'bar') {
+          var hi = barOrder.reduce(function (a, b) { return b.y > a.y ? b : a; }, barOrder[0]), lo = barOrder.reduce(function (a, b) { return b.y < a.y ? b : a; }, barOrder[0]);
+          parts.push(fillT(t('stem.dataplot.desc_bar_head', 'Bar chart of {y} for each {x}, {n} bars, all starting at zero.'), { y: yName, x: xName, n: n }));
+          parts.push(fillT(t('stem.dataplot.desc_bar_extremes', 'Tallest: {x1} with {y1}. Shortest: {x2} with {y2}.'), { x1: fmtNum(hi.x), y1: fmtNum(hi.y), x2: fmtNum(lo.x), y2: fmtNum(lo.y) }));
+          if (allY.some(function (v) { return v < 0; })) parts.push(t('stem.dataplot.desc_bar_negative', 'Negative values hang down below the zero line.'));
+        } else if (chartType === 'pie') {
+          if (!pieParts.length) parts.push(t('stem.dataplot.desc_pie_none', 'A pie chart needs positive values; there are none to draw.'));
+          else {
+            var big = pieParts.reduce(function (a, b) { return b.value > a.value ? b : a; }, pieParts[0]);
+            parts.push(fillT(t('stem.dataplot.desc_pie_head', 'Pie chart with {n} slices. The largest slice is {x} at {pct}% of the total.'), { n: pieParts.length, x: big.label, pct: fmtNum(big.value / pieTotal * 100, 1) }));
+          }
+          if (pieDropped) parts.push(fillT(t('stem.dataplot.desc_pie_dropped', '{k} values of 0 or below are left out: a pie chart only shows positive parts of a whole.'), { k: pieDropped }));
+        } else if (chartType === 'histogram') {
+          parts.push(fillT(t('stem.dataplot.desc_hist_head', 'Histogram of {y} in {k} bins.'), { y: yName, k: histBins.length }));
+          parts.push(histBins.map(function (b) { return fillT(t('stem.dataplot.desc_hist_bin', '{range}: {c}'), { range: binLabel(b), c: b.count }); }).join('; ') + '.');
+        } else if (chartType === 'boxplot') {
+          parts.push(fillT(t('stem.dataplot.desc_box', 'Box plot of {y}: minimum {min}, Q1 {q1}, median {med}, Q3 {q3}, maximum {max}.'), { y: yName, min: fmtNum(yMin_), q1: fmtNum(q1), med: fmtNum(yMedian), q3: fmtNum(q3), max: fmtNum(yMax_) }));
+          if (outliers.length) parts.push(fillT(t('stem.dataplot.desc_box_outliers', 'Outliers drawn as separate dots: {list}.'), { list: outliers.map(function (p) { return fmtNum(p.y); }).join(', ') }));
+        } else if (chartType === 'ogive') {
+          var half = cumulativeFreq.filter(function (c) { return c.pct >= 50; })[0];
+          parts.push(fillT(t('stem.dataplot.desc_ogive', 'Cumulative frequency of {y}: the running total climbs from 0 to {n} values. Half of the values are at or below about {x}.'), { y: yName, n: n, x: half ? fmtNum(half.x, 2) : '—' }));
+        } else if (chartType === 'dotplot') {
+          var tall = dotStacks.reduce(function (a, b) { return b.c > a.c ? b : a; }, dotStacks[0]);
+          parts.push(fillT(t('stem.dataplot.desc_dots', 'Dot plot of {y}: {n} dots, one per value, from {lo} to {hi}. The tallest stack is at {v} with {c} dots.'), { y: yName, n: n, lo: fmtNum(yMin_), hi: fmtNum(yMax_), v: fmtNum(tall.v), c: tall.c }));
+        } else {
+          parts.push(fillT(t('stem.dataplot.desc_picto', 'Pictograph: each symbol stands for {u}. {list}.'), { u: pictoUnit, list: barOrder.slice(0, 12).map(function (b) { return fmtNum(b.x) + ': ' + fmtNum(b.y); }).join('; ') }));
+        }
+        return parts.join(' ');
+      };
+
+      var axisTicks = function (ax, horizontal, map, y0, x0) {
+        var els = [];
+        ax.ticks.forEach(function (v, k) {
+          var label = fmtFixed(v, ax.decimals);
+          if (horizontal) {
+            var sx = map(v);
+            if (showGrid) els.push(h('line', { key: 'gx' + k, x1: sx, y1: PT, x2: sx, y2: H - PB, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }));
+            els.push(h('text', { key: 'tx' + k, x: sx, y: H - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, label));
+          } else {
+            var sy = map(v);
+            if (showGrid) els.push(h('line', { key: 'gy' + k, x1: PL, y1: sy, x2: W - PR, y2: sy, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }));
+            els.push(h('text', { key: 'ty' + k, x: PL - 6, y: sy + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, label));
+          }
+        });
+        return els;
+      };
+
+      // Regression line/curve path, clipped to the plot box.
       var regPath = function() {
-        if (n < 2) return null;
-        if (regressionType === 'linear') {
-          return h('line', { x1: toSX(xMin), y1: toSY(slope*xMin+intercept), x2: toSX(xMax), y2: toSY(slope*xMax+intercept), stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3', style: { filter: 'drop-shadow(0 0 3px ' + pal.line + ')' } });
+        if (n < 2 || !regFit.ok || isK5 || modelHidden) return null;
+        var cpts = [], pen = false, x0 = Math.max(xMin, regressionType === 'logarithmic' ? 1e-9 : xMin);
+        for (var si = 0; si <= 80; si++) {
+          var cx_ = x0 + (xMax - x0) * si / 80, cy_ = predictY(cx_);
+          if (!dpFin(cy_) || cy_ < yMin - (yMax - yMin) || cy_ > yMax + (yMax - yMin)) { pen = false; continue; }
+          cpts.push((pen ? 'L' : 'M') + toSX(cx_).toFixed(1) + ',' + toSY(cy_).toFixed(1)); pen = true;
         }
-        var cpts = [];
-        for (var si = 0; si <= 50; si++) {
-          var cx_ = xMin + (xMax - xMin) * si / 50;
-          var cy_ = predictY(cx_);
-          cpts.push((si === 0 ? 'M' : 'L') + toSX(cx_).toFixed(1) + ',' + toSY(cy_).toFixed(1));
-        }
-        return h('path', { d: cpts.join(' '), fill: 'none', stroke: pal.line, strokeWidth: 2, strokeDasharray: '6 3', style: { filter: 'drop-shadow(0 0 3px ' + pal.line + ')' } });
+        if (!cpts.length) return null;
+        return h('path', { d: cpts.join(' '), fill: 'none', stroke: INK.line, strokeWidth: 2.5, strokeDasharray: '7 4', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-fit': regressionType });
       };
-
-      // Confidence interval band
       var ciPath = function() {
-        if (!showCI || n < 3 || regressionType !== 'linear' || seRegression === 0) return null;
+        if (!showCI || n < 3 || regressionType !== 'linear' || seRegression === 0 || isK5 || modelHidden) return null;
         var upper = [], lower = [];
         for (var ci = 0; ci <= 30; ci++) {
           var cx = xMin + (xMax - xMin) * ci / 30;
@@ -900,823 +3505,2180 @@ window.StemLab = window.StemLab || {
           upper.push((ci === 0 ? 'M' : 'L') + toSX(cx).toFixed(1) + ',' + toSY(yPred + margin).toFixed(1));
           lower.unshift('L' + toSX(cx).toFixed(1) + ',' + toSY(yPred - margin).toFixed(1));
         }
-        return h('path', { d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: pal.line, fillOpacity: 0.1, stroke: pal.line, strokeWidth: 0.5, strokeDasharray: '3 3', strokeOpacity: 0.4 });
+        return h('path', { d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: INK.line, fillOpacity: 0.12, stroke: INK.line, strokeWidth: 0.8, strokeDasharray: '3 3', clipPath: 'url(#dp-plot-clip)' });
       };
 
-      // ══════════════════════════════════════════════════════════════
-      // ── RENDER ──
-      // ══════════════════════════════════════════════════════════════
-      return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200 space-y-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1', tabIndex: 0, onKeyDown: handleKey },
+      // SVG click: add a point (Add mode). Remove mode works on the points themselves.
+      // The first click freezes the view on show, so this and later clicks land where clicked.
+      var freezePatch = function () { return savedView && savedView.x0 === shownView.x0 && savedView.x1 === shownView.x1 && savedView.y0 === shownView.y0 && savedView.y1 === shownView.y1 ? {} : { view: shownView }; };
+      var handleSvgClick = function(e) {
+        if (chartType !== 'scatter' && chartType !== 'line') return;
+        // A drag of a line end ends with a click: it must not add a point.
+        if (lineDraggedRef.current && Date.now() - lineDraggedRef.current < 400) { lineDraggedRef.current = false; return; }
+        if (stepMode || clickMode !== 'add') return;
+        var svg = e.currentTarget;
+        var rect = svg.getBoundingClientRect();
+        var scale = Math.min(rect.width / W, rect.height / H) || 1;
+        var offX = (rect.width - W * scale) / 2;
+        var offY = (rect.height - H * scale) / 2;
+        var sx = (e.clientX - rect.left - offX) / scale;
+        var sy = (e.clientY - rect.top - offY) / scale;
+        if (sx < PL || sx > W - PR || sy < PT || sy > H - PB) return;
+        var dec = Math.max(axX.decimals, axY.decimals) + 1, p10 = Math.pow(10, dec);
+        var x = Math.round((xMin + (sx - PL) / (W - PL - PR) * (xMax - xMin)) * p10) / p10;
+        var y = Math.round((yMin + ((H - PB - sy) / (H - PT - PB)) * (yMax - yMin)) * p10) / p10;
+        setCursor({ x: x, y: y });
+        addPoint(x, y, freezePatch());
+      };
+      // Keyboard add-point cursor (Add mode on scatter and line charts): arrow keys move it by half
+      // a grid step (Shift: a whole step), Enter or Space adds a point there, Home centres it.
+      var curStepX = axX.step / 2, curStepY = axY.step / 2;
+      var curPlaces = function (step) { return Math.min(20, Math.max(0, Math.ceil(-Math.log(step) / Math.LN10 - 1e-9) + 1)); };
+      var curDec = Math.max(curPlaces(curStepX), curPlaces(curStepY));
+      var curClampX = function (v) { return Number(Math.max(xMin, Math.min(xMax, Math.round(v / curStepX) * curStepX)).toFixed(curPlaces(curStepX))); };
+      var curClampY = function (v) { return Number(Math.max(yMin, Math.min(yMax, Math.round(v / curStepY) * curStepY)).toFixed(curPlaces(curStepY))); };
+      var curPos = cursor && dpFin(cursor.x) && dpFin(cursor.y) ? { x: curClampX(cursor.x), y: curClampY(cursor.y) } : { x: curClampX((xMin + xMax) / 2), y: curClampY((yMin + yMax) / 2) };
+      var cursorText = function (p) { return fillT(t('stem.dataplot.sr_cursor_at', 'Cursor at {xn} {x}, {yn} {y}.'), { xn: xName, x: fmtNum(p.x), yn: yName, y: fmtNum(p.y) }); };
+      var cursorKey = function (e) {
+        var k = e.key, big = e.shiftKey, p = curPos, next = null;
+        if (k === 'ArrowRight') next = { x: p.x + (big ? 2 : 1) * curStepX, y: p.y };
+        else if (k === 'ArrowLeft') next = { x: p.x - (big ? 2 : 1) * curStepX, y: p.y };
+        else if (k === 'ArrowUp') next = { x: p.x, y: p.y + (big ? 2 : 1) * curStepY };
+        else if (k === 'ArrowDown') next = { x: p.x, y: p.y - (big ? 2 : 1) * curStepY };
+        else if (k === 'Home') next = { x: (xMin + xMax) / 2, y: (yMin + yMax) / 2 };
+        else if (k === 'Enter' || k === ' ') {
+          e.preventDefault(); setCursorOn(true);
+          if (e.repeat) return;
+          var dec = Math.max(curDec, Math.max(axX.decimals, axY.decimals) + 1), p10 = Math.pow(10, dec);
+          addPoint(Math.round(p.x * p10) / p10, Math.round(p.y * p10) / p10, freezePatch());
+          return;
+        }
+        if (!next) return;
+        e.preventDefault();
+        next = { x: curClampX(next.x), y: curClampY(next.y) };
+        setCursor(next); setCursorOn(true);
+        say(cursorText(next));
+      };
+      var svgBase = function (label, extra) {
+        return Object.assign({ role: 'img', 'aria-label': label, 'aria-describedby': 'dp-chart-desc', viewBox: '0 0 ' + W + ' ' + H, className: 'w-full rounded-xl border border-teal-200', style: { maxHeight: '360px', background: INK.bg }, 'data-dataplot-svg': true }, extra || {});
+      };
+      var axisLabels = function () {
+        return [
+          h('line', { key: 'ax', x1: PL, y1: H - PB, x2: W - PR, y2: H - PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { key: 'ay', x1: PL, y1: PT, x2: PL, y2: H - PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('text', { key: 'lx', x: (PL + W - PR) / 2, y: H - 8, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, xName),
+          h('text', { key: 'ly', x: 14, y: (PT + H - PB) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' }, transform: 'rotate(-90,14,' + ((PT + H - PB) / 2) + ')' }, yName)
+        ];
+      };
 
-        // ── Header ──
-        h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          !embedded && h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.dataplot.back', 'Back') }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-slate-800' + onHostInk }, embedded
-            ? t('stem.dataplot.regression_mode', '\uD83D\uDCC8 Regression & Residuals')
-            : t('stem.dataplot.data_plotter', '\uD83D\uDCCA Data Plotter')),
-          h('span', { className: 'text-xs text-slate-600' + onHostInk }, n + ' pts' + (stepMode ? ' (' + stepIdx + '/' + points.length + ')' : '')),
-          n >= 2 && h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + regR2.toFixed(3)),
-          h('div', { className: 'ml-auto flex gap-1.5' },
-            h('button', { 'aria-label': showBadges ? t('stem.dataplot.hide_badges', 'Hide badges') : t('stem.dataplot.show_badges', 'Show badges'), onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
-            h('button', { 'aria-label': showShortcuts ? t('stem.dataplot.hide_keyboard_shortcuts', 'Hide keyboard shortcuts') : t('stem.dataplot.show_keyboard_shortcuts', 'Show keyboard shortcuts'), onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-600 text-sky-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\u2328\uFE0F'),
-            h('button', { 'aria-label': soundEnabled ? t('stem.dataplot.mute_sound', 'Mute sound') : t('stem.dataplot.enable_sound', 'Enable sound'), onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-            h('button', { 'aria-label': t('stem.dataplot.set_tool_snapshots', 'Set Tool Snapshots'), onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: n + ' pts r\u00B2=' + regR2.toFixed(2), data: { points: points.slice() }, timestamp: Date.now() }]); }); if (addToast) addToast('\uD83D\uDCF8 Snapshot!', 'success'); }, className: 'text-[0.6875rem] font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '\uD83D\uDCF8')
-          )
-        ),
+      var renderXYChart = function () {
+        var isBar = chartType === 'bar';
+        var bw = isBar ? Math.max(4, Math.min(48, (W - PL - PR) / Math.max(n, 1) * 0.7)) : 0;
+        var barX = function (k) { return PL + (W - PL - PR) * (k + 0.5) / Math.max(n, 1); };
+        var zeroY = toSY(0);
+        // 6-8: the student's own line, its two ends and (once compared) the squared residuals.
+        // The least-squares squares share the fitted line's own colour (INK.line).
+        var mineCol = isContrast ? '#ffff00' : dc('#b45309'), lsCol = INK.line;
+        var lineY = function (ln, x) { return ln.m * x + ln.b; };
+        var dragTo = function (e) {
+          var which = lineDragRef.current; if (!which) return;
+          var svg = e.currentTarget, rect = svg.getBoundingClientRect(); if (!rect.height) return;
+          var scale = Math.min(rect.width / W, rect.height / H) || 1, offY = (rect.height - H * scale) / 2;
+          var sy = (e.clientY - rect.top - offY) / scale;
+          moveMyLine(which, yMin + ((H - PB - sy) / (H - PT - PB)) * (yMax - yMin));
+        };
+        var endDrag = function () {
+          if (!lineDragRef.current) return;
+          lineDragRef.current = null; lineDraggedRef.current = Date.now();
+          say(fillT(t('stem.dataplot.sr_fit_line_now', 'Your line: {eq}.'), { eq: equationText('linear', myLineEq) }));
+        };
+        var squareEls = function (res, color, key) {
+          return visiblePoints.map(function (p, i) {
+            var r = res[i], y0 = toSY(p.y), y1 = toSY(p.y - r), side = Math.abs(y1 - y0);
+            if (!(side > 0.5)) return null;
+            var sx = toSX(p.x), x0 = sx + side > W - PR ? sx - side : sx;
+            return h('rect', { key: key + i, x: x0, y: Math.min(y0, y1), width: side, height: side, fill: color, fillOpacity: 0.14, stroke: color, strokeWidth: 1, strokeDasharray: key === 'ls' ? '4 3' : undefined, clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-my-square': key });
+          });
+        };
+        var myLineEls = canDrawLine && (!myLine.shown || lineMoved) ? [
+          myEval && regressionType === 'linear' && (mySquares === 'ls' || mySquares === 'both') ? squareEls(myEval.resLs, lsCol, 'ls') : null,
+          myEval && (mySquares === 'mine' || mySquares === 'both') ? squareEls(myEval.resUser, mineCol, 'mine') : null,
+          visiblePoints.map(function (p, i) { return h('line', { key: 'mr' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(lineY(myLineEq, p.x)), stroke: mineCol, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }); }),
+          h('line', { key: 'myl', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 3, clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-my-line': true }),
+          [['yA', myXA, myYA], ['yB', myXB, myYB]].map(function (hd) {
+            // touch-action is ignored on inline SVG children: without display:block the browser pans and
+            // cancels a finger drag after about 20 px. The clear ring is a finger-sized grab area; it stays
+            // out of Remove mode, where it would cover the points beside a handle.
+            var noPan = { display: 'block', cursor: 'ns-resize', touchAction: 'none' };
+            return h('g', { key: 'mh' + hd[0], style: noPan,
+              onPointerDown: function (e) { e.stopPropagation(); lineDragRef.current = hd[0]; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); },
+              onClick: function (e) { e.stopPropagation(); } },
+              clickMode === 'add' && h('circle', { cx: toSX(hd[1]), cy: toSY(hd[2]), r: 20, fill: 'transparent', style: noPan, 'data-dataplot-my-handle-hit': hd[0] }),
+              h('circle', { cx: toSX(hd[1]), cy: toSY(hd[2]), r: 11, fill: mineCol, stroke: INK.bg, strokeWidth: 2, style: noPan, 'data-dataplot-my-handle': hd[0] }));
+          })
+        ] : null;
+        var showCursor = cursorOn && xyChart && clickMode === 'add' && !stepMode;
+        return h('svg', svgBase(chartType === 'bar' ? t('stem.dataplot.bar_img_label', 'Bar chart of the current data set') : t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
+          { onClick: handleSvgClick, onPointerMove: myLineEls ? dragTo : undefined, onPointerUp: myLineEls ? endDrag : undefined, onPointerCancel: myLineEls ? endDrag : undefined, onLostPointerCapture: myLineEls ? endDrag : undefined,
+            className: 'w-full rounded-xl border border-teal-200' + ((chartType === 'scatter' || chartType === 'line') && clickMode === 'add' && !stepMode ? ' cursor-crosshair' : '') }),
+          h('defs', null, h('clipPath', { id: 'dp-plot-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: H - PT - PB }))),
+          axisTicks(axY, false, toSY),
+          isBar ? barOrder.map(function (b, k) { return n <= 20 || k % Math.ceil(n / 20) === 0 ? h('text', { key: 'bl' + k, x: barX(k), y: H - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtNum(b.x)) : null; }) : axisTicks(axX, true, toSX),
+          axisLabels(),
+          ciPath(),
+          showResiduals && !isBar && regFit.ok && !isK5 && !modelHidden && visiblePoints.map(function(p, i) {
+            var py = predictY(p.x);
+            return dpFin(py) ? h('line', { key: 'r' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(py), stroke: isContrast ? '#ff80ff' : dc('#7e22ce'), strokeWidth: 1.5, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)' }) : null;
+          }),
+          // Bars grow from zero: up for positive values, down for negative ones.
+          isBar && barOrder.map(function (b, k) {
+            var top = toSY(Math.max(0, b.y)), bottom = toSY(Math.min(0, b.y));
+            return h('rect', { key: 'bar' + k, x: barX(k) - bw / 2, y: top, width: bw, height: Math.max(1, bottom - top), fill: b.y < 0 ? INK.bad : INK.fill, fillOpacity: 0.9, rx: 2, stroke: INK.bg, strokeWidth: 0.5 });
+          }),
+          isBar && yMin < 0 && h('line', { x1: PL, y1: zeroY, x2: W - PR, y2: zeroY, stroke: INK.axis, strokeWidth: 1.5, 'data-dataplot-zero': true }),
+          chartType === 'line' && n >= 2 && h('path', { d: visiblePoints.slice().sort(function(a,b) { return a.x - b.x; }).map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' '), fill: 'none', stroke: INK.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          !isBar && visiblePoints.map(function(p, i) {
+            var isOutlier = showOutliers && outlierSet[p.x + ',' + p.y], cx = toSX(p.x), cy = toSY(p.y);
+            // Points are pictures, not buttons: keyboard users explore and edit through the
+            // explorer and the data table, so tabbing never deletes data.
+            return h('g', { key: 'pt' + i, 'aria-hidden': 'true', 'data-dataplot-point': i, style: { cursor: clickMode === 'remove' ? 'not-allowed' : undefined },
+              onClick: clickMode === 'remove' ? function (e) { e.stopPropagation(); removePoint(points.indexOf(p) >= 0 ? points.indexOf(p) : i, xyChart ? freezePatch() : null); } : undefined },
+              h('circle', { cx: cx, cy: cy, r: 11, fill: 'transparent' }),
+              h('circle', { cx: cx, cy: cy, r: isOutlier ? 7 : 5, fill: isOutlier ? INK.bad : INK.fill, stroke: INK.bg, strokeWidth: 1.5 }),
+              showLabels && h('text', { x: cx, y: cy - 9, textAnchor: 'middle', fill: INK.text, style: { fontSize: '10px', fontWeight: 'bold' } }, '(' + fmtNum(p.x) + ', ' + fmtNum(p.y) + ')'));
+          }),
+          explorePt && !isBar && h('circle', { cx: toSX(explorePt.x), cy: toSY(explorePt.y), r: 10, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 3, 'data-dataplot-explore': true }),
+          explorePt && isBar && (function () { var k = barOrder.map(function (b) { return b.i; }).indexOf(explorePt.i); return k < 0 ? null : h('rect', { x: barX(k) - bw / 2 - 3, y: PT, width: bw + 6, height: H - PT - PB, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5, 'data-dataplot-explore': true }); })(),
+          !isBar && n >= 2 && regPath(),
+          !isBar && myLineEls,
+          showCursor && h('g', { 'data-dataplot-cursor-mark': true, 'aria-hidden': 'true', pointerEvents: 'none' },
+            h('line', { x1: PL, y1: toSY(curPos.y), x2: W - PR, y2: toSY(curPos.y), stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
+            h('line', { x1: toSX(curPos.x), y1: PT, x2: toSX(curPos.x), y2: H - PB, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
+            h('circle', { cx: toSX(curPos.x), cy: toSY(curPos.y), r: 8, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5 }),
+            h('text', { x: Math.min(W - PR - 4, toSX(curPos.x) + 12), y: Math.max(PT + 12, toSY(curPos.y) - 10), textAnchor: toSX(curPos.x) > W - 120 ? 'end' : 'start', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, '(' + fmtNum(curPos.x) + ', ' + fmtNum(curPos.y) + ')'))
+        );
+      };
+      // Scatter and line charts in Add mode sit in a focusable box: the keyboard add-point cursor.
+      var chartWithCursor = function (svgEl) {
+        if (!xyChart || clickMode !== 'add' || stepMode) return svgEl;
+        return h('div', { tabIndex: 0, role: 'application', 'data-dataplot-cursor': true, 'aria-roledescription': t('stem.dataplot.cursor_role', 'chart with a point cursor'),
+          'aria-label': t('stem.dataplot.cursor_label', 'Add points with the keyboard: the arrow keys move the cursor, Shift moves it further, Enter adds a point at the cursor.'),
+          'aria-describedby': 'dp-chart-desc', onKeyDown: cursorKey,
+          onFocus: function (e) { var kb = true; try { kb = e.currentTarget.matches(':focus-visible'); } catch (er) { kb = true; } if (kb) { setCursorOn(true); say(cursorText(curPos)); } },
+          onBlur: function () { setCursorOn(false); },
+          className: 'rounded-xl outline-none focus-visible:ring-4 focus-visible:ring-sky-500', style: { position: 'relative' } }, svgEl);
+      };
 
-        // ── Keyboard Shortcuts Panel ──
-        showShortcuts && h('div', { className: 'bg-sky-50 rounded-xl p-3 border border-sky-200' },
-          h('div', { className: 'text-xs font-bold text-sky-700 uppercase mb-2' }, t('stem.dataplot.keyboard_shortcuts', '\u2328\uFE0F Keyboard Shortcuts')),
-          h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
-            [
-              { key: 'Ctrl+Z', desc: t('stem.dataplot.undo', 'Undo') }, { key: 'Delete', desc: t('stem.dataplot.remove_last', 'Remove last') },
-              { key: 'G', desc: t('stem.dataplot.toggle_grid', 'Toggle grid') }, { key: 'L', desc: t('stem.dataplot.toggle_labels', 'Toggle labels') },
-              { key: 'R', desc: t('stem.dataplot.toggle_residuals', 'Toggle residuals') }, { key: 'O', desc: t('stem.dataplot.toggle_outliers', 'Toggle outliers') },
-              { key: 'C', desc: t('stem.dataplot.toggle_ci_band', 'Toggle CI band') }, { key: '\u2192', desc: t('stem.dataplot.step_next', 'Step next') }
-            ].map(function(s) {
-              return h('div', { key: s.key, className: 'flex items-center gap-2' },
-                h('kbd', { className: 'text-[0.6875rem] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-sky-200 text-sky-700' }, s.key),
-                h('span', { className: 'text-[0.6875rem] text-sky-600' }, s.desc)
-              );
-            })
-          )
-        ),
+      var renderPie = function () {
+        var cols = isContrast ? ['#ffff00', '#00ffff', '#ff80ff', '#80ff80', '#ffb366', '#ffffff'] : ['#0f766e', '#1d4ed8', '#6d28d9', '#be123c', '#b45309', '#047857', '#4338ca', '#9d174d', '#0e7490', '#b91c1c', '#4d7c0f', '#155e75'];
+        var startAngle = -Math.PI / 2;
+        return h('div', { className: 'rounded-xl border border-teal-200 p-4 flex justify-center', style: { background: INK.bg } },
+          h('svg', { role: 'img', 'aria-label': t('stem.dataplot.pie_img_label', 'Pie chart of the current data set'), 'aria-describedby': 'dp-chart-desc', viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
+            !pieParts.length ? h('text', { x: 150, y: 150, textAnchor: 'middle', fill: INK.text, style: { fontSize: '13px' } }, t('stem.dataplot.pie_no_positive', 'No positive values to draw')) :
+            pieParts.map(function(q, i) {
+              var pct = q.value / pieTotal, fillC = isContrast ? cols[i % cols.length] : dc(cols[i % cols.length]), ink = isContrast ? '#000000' : dc('#ffffff');
+              var midA = startAngle + pct * Math.PI;
+              var lx = 150 + 80 * Math.cos(midA), ly = 150 + 80 * Math.sin(midA);
+              var shape;
+              // One slice is the whole circle: an arc from a point back to itself draws nothing.
+              if (pct >= 0.9999) { shape = h('circle', { cx: 150, cy: 150, r: 120, fill: fillC, stroke: INK.bg, strokeWidth: 2 }); lx = 150; ly = 150; }
+              else {
+                var angle = pct * 2 * Math.PI;
+                var x1 = 150 + 120 * Math.cos(startAngle), y1 = 150 + 120 * Math.sin(startAngle);
+                var x2 = 150 + 120 * Math.cos(startAngle + angle), y2 = 150 + 120 * Math.sin(startAngle + angle);
+                shape = h('path', { d: 'M 150 150 L ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' A 120 120 0 ' + (angle > Math.PI ? 1 : 0) + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z', fill: fillC, stroke: INK.bg, strokeWidth: 2 });
+              }
+              startAngle += pct * 2 * Math.PI;
+              return h('g', { key: 'pie' + i }, shape, pct > 0.05 && h('text', { x: lx, y: ly + 4, textAnchor: 'middle', fill: ink, style: { fontSize: '12px', fontWeight: 'bold' } }, fmtNum(pct * 100, 0) + '%'));
+            })));
+      };
 
-        // ── Badges drawer ──
-        showBadges && h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
-          h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, t('stem.dataplot.badges', '\uD83C\uDFC5 Badges')),
-          h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
-            badgeDefs.map(function(badge) {
-              var earned = !!earnedBadges[badge.id];
-              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-400 opacity-40') },
-                h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
-                h('div', null,
-                  h('div', { className: 'text-[0.6875rem] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-600') }, badge.name),
-                  h('div', { className: 'text-[0.6875rem] ' + (earned ? 'text-amber-600' : 'text-slate-600') }, __alloT('stem.dataplot.' + (badge.id) + '_desc', badge.desc))
-                )
-              );
-            })
-          )
-        ),
-
-        // ── Step-through banner ──
-        stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-200 flex items-center gap-3' },
-          h('span', { className: 'text-xs font-bold text-violet-700' }, '\uD83D\uDC63 Step-Through Mode: ' + stepIdx + '/' + points.length),
-          h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next Point'),
-          h('button', { 'aria-label': t('stem.dataplot.stop', 'Stop'), onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, t('stem.dataplot.stop_2', '\u2716 Stop')),
-          n >= 2 && h('span', { className: 'text-[0.6875rem] text-violet-500 ml-auto' }, 'R\u00B2=' + regR2.toFixed(3) + ' | Mean=' + meanY.toFixed(1)),
-          h('span', { className: 'text-[0.6875rem] text-violet-400' }, t('stem.dataplot.or_press', '(or press \u2192)'))
-        ),
-
-        // ── Tab nav ──
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }, className: 'gap-2', role: 'tablist', 'aria-label': t('stem.dataplot.data_plot_sections', 'Data Plot sections') },
-          tabBtn('chart', 'Chart', '\uD83D\uDCCA'),
-          tabBtn('stats', 'Statistics', '\uD83D\uDCC8'),
-          tabBtn('quiz', 'Quiz', '\uD83C\uDFAF'),
-          tabBtn('tools', t('stem.dataplot.tab_data_tools', 'Data tools'), '\uD83D\uDEE0\uFE0F'),
-          tabBtn('inquiry', t('stem.dataplot.tab_sampling_effects', 'Sampling effects'), '\uD83D\uDD2C')
-        ),
-
-        // ── Topic-accent hero band per tab ──
-        (function() {
-          var TAB_META = {
-            chart: { accent: '#0d9488', ink: '#0f766e', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: t('stem.dataplot.chart_pick_the_right_visualization', 'Chart \u2014 pick the right visualization'), hint: t('stem.dataplot.scatter_for_relationships_line_for_tim', 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.') },
-            stats: { accent: '#0ea5e9', ink: '#0369a1', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: t('stem.dataplot.statistics_center_spread_shape', 'Statistics \u2014 center, spread, shape'),  hint: t('stem.dataplot.mean_vs_median_median_wins_for_skewed_', 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).') },
-            quiz:  { accent: '#a855f7', ink: '#7e22ce', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: t('stem.dataplot.quiz_practice_apply', 'Quiz \u2014 practice + apply'),           hint: t('stem.dataplot.ap_stats_data_literacy_items_each_ques', 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.') },
-            tools: { accent: '#f59e0b', ink: '#92400e', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: t('stem.dataplot.tools_load_clean_export', 'Tools \u2014 load + clean + export'),  hint: t('stem.dataplot.paste_from_google_sheets_generate_samp', 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).') },
-            inquiry: { accent: '#8b5cf6', ink: '#6d28d9', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD2C', title: t('stem.dataplot.inquiry_when_samples_mislead', 'Inquiry \u2014 when samples mislead'), hint: t('stem.dataplot.set_a_true_population_r_then_watch_how', 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal \u2014 form a hypothesis and explore.') }
-          };
-          var meta = TAB_META[activeTab] || TAB_META.chart;
-          return h('div', {
-            className: 'mt-2',
-            style: {
-              padding: '12px 14px',
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
-              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+      var renderHistogram = function () {
+        var hAx = niceAxis(0, maxBinCount, true), plotW = W - PL - PR;
+        var hy = function (c) { return (H - PB) - (c - hAx.min) / (hAx.max - hAx.min || 1) * (H - PT - PB); };
+        var hx = function (v) { return PL + ((v - yMin_) / (yRange || 1)) * plotW; };
+        return h('svg', svgBase(t('stem.dataplot.histogram_img_label', 'Histogram of the current data set')),
+          axisTicks(hAx, false, hy),
+          h('line', { x1: PL, y1: H-PB, x2: W-PR, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { x1: PL, y1: PT, x2: PL, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          histBins.map(function(bin, i) {
+            var bw = plotW / histBins.length, bx = PL + i * bw, top = hy(bin.count);
+            return h('g', { key: 'hb'+i },
+              h('rect', { x: bx + 1, y: top, width: bw - 2, height: Math.max(0, H - PB - top), fill: INK.fill, fillOpacity: 0.85, rx: 2 }),
+              h('text', { x: bx + bw / 2, y: H - PB + 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: histBins.length > 8 ? '9px' : '10px' } }, binLabel(bin)),
+              bin.count > 0 && h('text', { x: bx + bw / 2, y: top - 4, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count));
+          }),
+          showNormalOverlay && stdDev > 0 && (function() {
+            var bw = (yRange || 1) / histBins.length, normPts = [];
+            for (var ni = 0; ni <= 60; ni++) {
+              var nx = yMin_ + (yMax_ - yMin_) * ni / 60;
+              var ny = normalPDF(nx, meanY, stdDev) * n * bw;
+              normPts.push((ni === 0 ? 'M' : 'L') + hx(nx).toFixed(1) + ',' + hy(ny).toFixed(1));
             }
-          },
-            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
-              // Darker title ink + fixed hint ink: the band stays light in dark theme (light tool card).
-              h('h3', { style: { color: meta.ink, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
-            )
-          );
-        })(),
-
-        // ══════════════════════════════════════════════════════════
-        // ── TAB: Chart ──
-        // ══════════════════════════════════════════════════════════
-        activeTab === 'chart' && h('div', dataPlotPanelProps('chart', { className: 'space-y-2' }),
-
-          // Chart type selector (7 types now)
-          h('div', { className: 'flex gap-1.5 flex-wrap' },
-            [
-              { id: 'scatter', icon: '\u2022', label: t('stem.dataplot.scatter', 'Scatter') },
-              { id: 'line', icon: '\uD83D\uDCC8', label: t('stem.dataplot.line', 'Line') },
-              { id: 'bar', icon: '\uD83D\uDCCA', label: 'Bar' },
-              { id: 'pie', icon: '\uD83E\uDD67', label: 'Pie' },
-              { id: 'histogram', icon: '\uD83D\uDCF6', label: t('stem.dataplot.histogram', 'Histogram') },
-              { id: 'boxplot', icon: '\uD83D\uDCE6', label: t('stem.dataplot.box_plot', 'Box Plot') },
-              { id: 'ogive', icon: '\uD83D\uDCC9', label: t('stem.dataplot.ogive', 'Ogive') }
-            ].map(function(ct) {
-              return h('button', { 'aria-label': t('stem.dataplot.switch_chart', 'Switch Chart'), key: ct.id, onClick: function() { switchChart(ct.id); },
-                className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + (chartType === ct.id ? 'bg-teal-700 text-white shadow' : 'bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100')
-              }, ct.icon + ' ' + ct.label);
-            }),
-            h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, 'aria-label': t('stem.dataplot.color_palette', 'Color palette'), className: 'ml-auto text-[0.6875rem] px-2 py-1 rounded-lg border border-slate-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' },
-              palettes.map(function(p) { return h('option', { key: p.id, value: p.id }, '\uD83C\uDFA8 ' + p.name); })
-            )
-          ),
-
-          // Datasets
-          h('div', { className: 'flex gap-1.5 flex-wrap' },
-            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center' + onHostInk }, 'Datasets:'),
-            datasetLibrary.map(function(ds) {
-              return h('button', { 'aria-label': t('stem.dataplot.load_dataset', 'Load Dataset'), key: ds.label, onClick: function() { loadDataset(ds); }, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100 transition-all' }, ds.label);
-            })
-          ),
-
-          // Axis labels
-          h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2' },
-            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'min-w-0 w-full px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' }),
-            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value); }, placeholder: t('stem.dataplot.y_axis_label', 'Y-axis label'), 'aria-label': t('stem.dataplot.y_axis_label_2', 'Y-axis label'), className: 'min-w-0 w-full px-2 py-1 text-xs border border-teal-600 rounded-lg outline-none focus:ring-1 focus:ring-teal-400' })
-          ),
-
-          // ── SVG Chart (scatter / line / bar) ──
-          (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
-            viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200 cursor-crosshair', style: { maxHeight: '340px' },
-            'data-dataplot-svg': true, onClick: handleSvgClick
-          },
-            // Grid
-            showGrid && (function() {
-              var elems = []; var nt = 5;
-              for (var gi = 0; gi <= nt; gi++) {
-                var gx = xMin + gi * (xMax - xMin) / nt;
-                var gy = yMin + gi * (yMax - yMin) / nt;
-                elems.push(h('line', { key: 'gv'+gi, x1: toSX(gx), y1: pad, x2: toSX(gx), y2: H-pad, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
-                elems.push(h('line', { key: 'gh'+gi, x1: pad, y1: toSY(gy), x2: W-pad, y2: toSY(gy), stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }));
-                elems.push(h('text', { key: 'xt'+gi, x: toSX(gx), y: H-pad+14, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '11px' } }, (Math.round(gx*10)/10).toString()));
-                elems.push(h('text', { key: 'yt'+gi, x: pad-5, y: toSY(gy)+3, textAnchor: 'end', fill: '#64748b', style: { fontSize: '11px' } }, (Math.round(gy*10)/10).toString()));
-              }
-              return elems;
-            })(),
-            // Axes
-            h('line', { x1: pad, y1: H-pad, x2: W-pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('line', { x1: pad, y1: pad, x2: pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            xLabel && h('text', { x: W/2, y: H-3, textAnchor: 'middle', fill: '#0d9488', style: { fontSize: '11px', fontWeight: 'bold' } }, xLabel),
-            yLabel && h('text', { x: 12, y: H/2, textAnchor: 'middle', fill: '#0d9488', style: { fontSize: '11px', fontWeight: 'bold' }, transform: 'rotate(-90,12,' + (H/2) + ')' }, yLabel),
-            // CI band (behind everything)
-            ciPath(),
-            // Residuals
-            showResiduals && n >= 2 && visiblePoints.map(function(p, i) {
-              var predYv = predictY(p.x);
-              return h('line', { key: 'r'+i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(predYv), stroke: '#a855f7', strokeWidth: 1.5, strokeDasharray: '2 2' });
-            }),
-            // Bar chart
-            chartType === 'bar' && visiblePoints.map(function(p, i) {
-              var barW = Math.max(4, (W - 2*pad) / Math.max(n, 1) * 0.7);
-              return h('rect', { key: 'bar'+i, x: toSX(p.x) - barW/2, y: toSY(p.y), width: barW, height: Math.max(1, (H-pad) - toSY(p.y)), fill: pal.fill, fillOpacity: 0.8, rx: 2, stroke: pal.stroke, strokeWidth: 0.5 });
-            }),
-            // Line connector
-            chartType === 'line' && n >= 2 && (function() {
-              var sorted = visiblePoints.slice().sort(function(a,b) { return a.x - b.x; });
-              var ld = sorted.map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' ');
-              return h('path', { d: ld, fill: 'none', stroke: pal.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' });
-            })(),
-            // Data points
-            (chartType === 'scatter' || chartType === 'line') && visiblePoints.map(function(p, i) {
-              var isOutlier = showOutliers && outlierSet[p.x+','+p.y];
-              return h('g', { key: 'pt'+i, tabIndex: 0, role: 'button', 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', style: { cursor: 'pointer' }, onClick: function(e) { e.stopPropagation(); removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } },
-                h('circle', { cx: toSX(p.x), cy: toSY(p.y), r: 12, fill: 'transparent' }),
-                h('circle', { cx: toSX(p.x), cy: toSY(p.y), r: isOutlier ? 7 : 5, fill: isOutlier ? '#ef4444' : pal.fill, stroke: isOutlier ? '#fca5a5' : pal.stroke, strokeWidth: isOutlier ? 2 : 1.5 }),
-                showLabels && h('text', { x: toSX(p.x), y: toSY(p.y)-8, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '8px', fontWeight: 'bold' } }, '(' + p.x + ',' + p.y + ')'),
-                h('title', null, '(' + p.x + ', ' + p.y + ')' + (isOutlier ? ' \u26A0\uFE0F OUTLIER' : '') + ' \u2014 click to remove')
-              );
-            }),
-            // Regression curve
-            n >= 2 && regPath()
-          ),
-
-          // ── Residual Plot (mini SVG) ──
-          showResidualPlot && n >= 2 && (chartType === 'scatter' || chartType === 'line' || chartType === 'bar') && (function() {
-            var rH = 140;
-            var residuals = visiblePoints.map(function(p) { return { x: p.x, r: p.y - predictY(p.x) }; });
-            var maxR = Math.max.apply(null, residuals.map(function(r) { return Math.abs(r.r); }).concat([1]));
-            var rToSY = function(r) { return rH/2 + 10 - (r / maxR) * (rH/2 - 15); };
-            return h('div', { className: 'space-y-1' },
-              h('div', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase' }, t('stem.dataplot.residual_plot', '\uD83D\uDCC9 Residual Plot')),
-              h('svg', { role: 'img', 'aria-label': t('stem.dataplot.residual_img_label', 'Residual plot'), viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full bg-white rounded-lg border border-violet-200', style: { maxHeight: '140px' } },
-                // Zero line
-                h('line', { x1: pad, y1: rH/2+10, x2: W-pad, y2: rH/2+10, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }),
-                h('text', { x: pad-5, y: rH/2+13, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '8px' } }, '0'),
-                h('text', { x: pad-5, y: 18, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '8px' } }, '+' + maxR.toFixed(0)),
-                h('text', { x: pad-5, y: rH-2, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '8px' } }, '-' + maxR.toFixed(0)),
-                // Residual points
-                residuals.map(function(r, i) {
-                  return h('circle', { key: 'rp'+i, cx: toSX(r.x), cy: rToSY(r.r), r: 4, fill: r.r > 0 ? '#22c55e' : '#ef4444', stroke: '#fff', strokeWidth: 1 });
-                })
-              )
-            );
+            return h('path', { d: normPts.join(' '), fill: 'none', stroke: isContrast ? '#ff80ff' : dc('#6d28d9'), strokeWidth: 2, strokeDasharray: '4 2' });
           })(),
+          !isK5 && [
+            h('line', { key: 'mean-line', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: isContrast ? '#ff8080' : dc('#b91c1c'), strokeWidth: 1.5, strokeDasharray: '5 3' }),
+            h('text', { key: 'mean-lbl', x: hx(meanY), y: PT + 10, textAnchor: 'middle', fill: isContrast ? '#ff8080' : dc('#b91c1c'), style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(meanY, 2) })),
+            h('line', { key: 'med-line', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1.5, strokeDasharray: '5 3' }),
+            h('text', { key: 'med-lbl', x: hx(yMedian), y: PT + 22, textAnchor: 'middle', fill: isContrast ? '#00ffff' : dc('#1d4ed8'), style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
+          ],
+          h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.hist_axis', '{y} (bins)'), { y: yName })),
+          h('text', { x: 14, y: (PT + H - PB) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' }, transform: 'rotate(-90,14,' + ((PT + H - PB) / 2) + ')' }, t('stem.dataplot.count_axis', 'Count'))
+        );
+      };
 
-          // ── Pie chart ──
-          chartType === 'pie' && n > 0 && h('div', { className: 'bg-white rounded-xl border border-teal-200 p-4 flex justify-center' },
-            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.pie_img_label', 'Pie chart of the current data set'), viewBox: '0 0 300 300', width: 260, height: 260, 'data-dataplot-svg': true },
-              (function() {
-                var total = allY.reduce(function(s,v) { return s + Math.abs(v); }, 0) || 1;
-                var cols = ['#0d9488','#3b82f6','#8b5cf6','#f43f5e','#f59e0b','#10b981','#6366f1','#ec4899','#14b8a6','#ef4444','#84cc16','#06b6d4'];
-                var startAngle = 0;
-                return visiblePoints.map(function(p, i) {
-                  var pct = Math.abs(p.y) / total;
-                  var angle = pct * 2 * Math.PI;
-                  var x1 = 150 + 120 * Math.cos(startAngle), y1 = 150 + 120 * Math.sin(startAngle);
-                  var x2 = 150 + 120 * Math.cos(startAngle + angle), y2 = 150 + 120 * Math.sin(startAngle + angle);
-                  var large = angle > Math.PI ? 1 : 0;
-                  var pd = 'M 150 150 L ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' A 120 120 0 ' + large + ' 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z';
-                  var midA = startAngle + angle/2;
-                  var lx = 150 + 80 * Math.cos(midA), ly = 150 + 80 * Math.sin(midA);
-                  startAngle += angle;
-                  return h('g', { key: 'pie'+i },
-                    h('path', { d: pd, fill: cols[i % cols.length], stroke: '#fff', strokeWidth: 2 }),
-                    pct > 0.05 && h('text', { x: lx, y: ly+3, textAnchor: 'middle', fill: '#fff', style: { fontSize: '10px', fontWeight: 'bold' } }, (pct*100).toFixed(0) + '%')
-                  );
-                });
-              })()
-            )
+      var renderBoxPlot = function () {
+        var bAx = niceAxis(yMin_, yMax_), BH = 170;
+        var bx = function(v) { return PL + ((v - bAx.min) / (bAx.max - bAx.min || 1)) * (W - PL - PR); };
+        var inner = visiblePoints.filter(function(p) { return outliers.indexOf(p) < 0; }).map(function(p) { return p.y; });
+        var wLo = inner.length ? Math.min.apply(null, inner) : yMin_, wHi = inner.length ? Math.max.apply(null, inner) : yMax_;
+        var lab = isK5 ? [] : [
+          h('text', { key: 'l-q1', x: bx(q1), y: 46, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q1 ' + fmtNum(q1, 2)),
+          h('text', { key: 'l-q3', x: bx(q3), y: 46, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q3 ' + fmtNum(q3, 2)),
+          h('text', { key: 'l-med', x: bx(yMedian), y: 124, textAnchor: 'middle', fill: INK.bad, style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
+        ];
+        return h('svg', { role: 'img', 'aria-label': t('stem.dataplot.boxplot_img_label', 'Box plot of the current data set'), 'aria-describedby': 'dp-chart-desc', viewBox: '0 0 ' + W + ' ' + BH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg }, 'data-dataplot-svg': true },
+          // Whiskers stop at the most extreme values that are not flagged outliers (first line in the SVG).
+          h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 62, x2: bx(wLo), y2: 98, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 62, x2: bx(wHi), y2: 98, stroke: INK.axis, strokeWidth: 1.5 }),
+          outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: INK.bad, stroke: INK.bg, strokeWidth: 1 }); }),
+          h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: INK.fill, fillOpacity: 0.25, stroke: INK.fill, strokeWidth: 2, rx: 4 }),
+          h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 3 }),
+          lab,
+          h('line', { x1: PL, y1: 140, x2: W - PR, y2: 140, stroke: INK.axis, strokeWidth: 1 }),
+          bAx.ticks.map(function (v, k) { return h('g', { key: 'bt' + k }, h('line', { x1: bx(v), y1: 140, x2: bx(v), y2: 145, stroke: INK.axis }), h('text', { x: bx(v), y: 158, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, bAx.decimals))); }),
+          h('text', { x: W - PR, y: 168, textAnchor: 'end', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' } }, yName)
+        );
+      };
+
+      var renderOgive = function () {
+        if (!cumulativeFreq.length) return null;
+        var oAx = niceAxis(cumulativeFreq[0].x, cumulativeFreq[cumulativeFreq.length - 1].x);
+        var oToX = function(v) { return PL + ((v - oAx.min) / (oAx.max - oAx.min || 1)) * (W - PL - PR); };
+        var oToY = function(v) { return (H - PB) - (v / n) * (H - PT - PB); };
+        var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
+        return h('svg', svgBase(t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph')),
+          [0, 25, 50, 75, 100].map(function(pct) {
+            var gy = oToY(n * pct / 100);
+            return h('g', { key: 'og'+pct }, h('line', { x1: PL, y1: gy, x2: W-PR, y2: gy, stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: PL-6, y: gy+4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, pct + '%'));
+          }),
+          axisTicks(oAx, true, oToX),
+          h('line', { x1: PL, y1: H-PB, x2: W-PR, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { x1: PL, y1: PT, x2: PL, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('path', { d: pathD + ' L' + oToX(cumulativeFreq[cumulativeFreq.length-1].x).toFixed(1) + ',' + (H-PB) + ' L' + oToX(cumulativeFreq[0].x).toFixed(1) + ',' + (H-PB) + ' Z', fill: INK.fill, fillOpacity: 0.15 }),
+          h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          cumulativeFreq.map(function(pt, i) { return h('circle', { key: 'op'+i, cx: oToX(pt.x), cy: oToY(pt.y), r: 4, fill: INK.fill, stroke: INK.bg, strokeWidth: 1.5 }); }),
+          h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.ogive_axis', '{y} (running total)'), { y: yName }))
+        );
+      };
+
+      // A dot plot: one dot per value, equal values stacked. Shared by the chart tab, the quiz and the demos.
+      var dotPlotSvg = function (values, opts) {
+        opts = opts || {};
+        var ax = opts.axis || niceAxis(opts.min != null ? opts.min : Math.min.apply(null, values.length ? values : [0]), opts.max != null ? opts.max : Math.max.apply(null, values.length ? values : [1]));
+        if (opts.integer) ax = { min: opts.min, max: opts.max, ticks: (function () { var a = []; for (var v = opts.min; v <= opts.max; v++) a.push(v); return a; })(), decimals: 0 };
+        var DW = opts.width || W, DH = opts.height || 170, L = 30, R = 16, base = DH - 36;
+        var dx = function (v) { return L + ((v - ax.min) / (ax.max - ax.min || 1)) * (DW - L - R); };
+        var stacks = {}, maxC = 1;
+        values.forEach(function (v) { var k = fmtNum(v, 3); stacks[k] = (stacks[k] || 0) + 1; if (stacks[k] > maxC) maxC = stacks[k]; });
+        var rStep = Math.min(14, (base - 16) / maxC), rad = Math.max(3, Math.min(6, rStep / 2 - 0.5)), seen = {};
+        return h('svg', Object.assign({ role: 'img', 'aria-label': opts.label || t('stem.dataplot.dotplot_img_label', 'Dot plot of the values'), viewBox: '0 0 ' + DW + ' ' + DH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: (DH + 30) + 'px' } }, opts.svgProps || {}),
+          opts.children ? opts.children(dx, base) : null,
+          values.map(function (v, i) {
+            var k = fmtNum(v, 3); seen[k] = (seen[k] || 0) + 1;
+            var hl = opts.highlight === i;
+            return h('circle', { key: 'd' + i, cx: dx(v), cy: base - 8 - (seen[k] - 1) * rStep, r: hl ? rad + 2 : rad, fill: hl ? INK.bad : (opts.color || INK.fill), stroke: INK.bg, strokeWidth: 1 });
+          }),
+          h('line', { x1: L, y1: base, x2: DW - R, y2: base, stroke: INK.axis, strokeWidth: 1.5 }),
+          ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: dx(v), y1: base, x2: dx(v), y2: base + 5, stroke: INK.axis }), h('text', { x: dx(v), y: base + 18, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); }),
+          opts.axisLabel ? h('text', { x: DW - R, y: DH - 4, textAnchor: 'end', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' } }, opts.axisLabel) : null
+        );
+      };
+
+      // Pictograph and bar-reading charts for categories [{label, value}].
+      var pictographSvg = function (cats, unit, label, title) {
+        var rowH = 34, PH = 40 + cats.length * rowH, symR = 10;
+        return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + PH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg } },
+          title ? h('text', { x: 12, y: 18, fill: INK.text, style: { fontSize: '13px', fontWeight: 'bold' } }, title) : null,
+          cats.map(function (c, k) {
+            var y = 34 + k * rowH + rowH / 2, full = Math.floor(Math.max(0, c.value) / unit), part = (Math.max(0, c.value) - full * unit) / unit >= 0.5, icons = [];
+            for (var j = 0; j < Math.min(full, 20); j++) icons.push(h('circle', { key: 'i' + j, cx: 130 + j * (symR * 2 + 4), cy: y, r: symR, fill: INK.fill }));
+            if (part) { var px = 130 + Math.min(full, 20) * (symR * 2 + 4); icons.push(h('path', { key: 'half', d: 'M ' + px + ' ' + (y - symR) + ' A ' + symR + ' ' + symR + ' 0 0 0 ' + px + ' ' + (y + symR) + ' Z', fill: INK.fill })); }
+            return h('g', { key: 'row' + k }, h('text', { x: 118, y: y + 4, textAnchor: 'end', fill: INK.text, style: { fontSize: '12px' } }, c.label), icons);
+          }),
+          h('text', { x: 12, y: PH - 8, fill: INK.muted, style: { fontSize: '11px' } }, fillT(t('stem.dataplot.picto_key', 'Key: each ● = {u}; half a symbol = {h}'), { u: unit, h: fmtNum(unit / 2, 2) })));
+      };
+      var catBarSvg = function (cats, label, title) {
+        var ax = niceAxis(0, Math.max.apply(null, cats.map(function (c) { return c.value; }).concat([1])), true), CH = 240, L = 40, B = 40, T = 26;
+        if (ax.step < 1) ax = { min: 0, max: Math.max(1, Math.ceil(ax.max)), ticks: (function () { var a = []; for (var v = 0; v <= Math.max(1, Math.ceil(ax.max)); v++) a.push(v); return a; })(), decimals: 0 };
+        var cy = function (v) { return (CH - B) - (v - ax.min) / (ax.max - ax.min || 1) * (CH - T - B); };
+        var slot = (W - L - 16) / cats.length;
+        return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + CH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg } },
+          title ? h('text', { x: L, y: 16, fill: INK.text, style: { fontSize: '13px', fontWeight: 'bold' } }, title) : null,
+          ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: L, y1: cy(v), x2: W - 16, y2: cy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: cy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); }),
+          cats.map(function (c, k) { var x = L + slot * k + slot * 0.2; return h('g', { key: 'b' + k }, h('rect', { x: x, y: cy(c.value), width: slot * 0.6, height: Math.max(1, cy(0) - cy(c.value)), fill: INK.fill, rx: 2 }), h('text', { x: x + slot * 0.3, y: CH - B + 16, textAnchor: 'middle', fill: INK.text, style: { fontSize: '12px' } }, c.label)); }),
+          h('line', { x1: L, y1: cy(0), x2: W - 16, y2: cy(0), stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { x1: L, y1: T, x2: L, y2: cy(0), stroke: INK.axis, strokeWidth: 1.5 }));
+      };
+
+      // Scatter for quiz items and demos: no line unless given, no numbers, optional numbered points.
+      var miniScatter = function (pts, opts) {
+        opts = opts || {};
+        var ax1 = niceAxis(Math.min.apply(null, pts.map(function (p) { return p.x; })), Math.max.apply(null, pts.map(function (p) { return p.x; })));
+        var ay1 = niceAxis(Math.min.apply(null, pts.map(function (p) { return p.y; }).concat(opts.line ? [opts.line.m * ax1.min + opts.line.b, opts.line.m * ax1.max + opts.line.b] : [])), Math.max.apply(null, pts.map(function (p) { return p.y; }).concat(opts.line ? [opts.line.m * ax1.min + opts.line.b, opts.line.m * ax1.max + opts.line.b] : [])));
+        var MW = W, MH = 280, L = 52, R = 16, T = 14, B = 34;
+        var sx = function (x) { return L + (x - ax1.min) / (ax1.max - ax1.min || 1) * (MW - L - R); };
+        var sy = function (y) { return (MH - B) - (y - ay1.min) / (ay1.max - ay1.min || 1) * (MH - T - B); };
+        return h('svg', { role: 'img', 'aria-label': opts.label || t('stem.dataplot.quiz_scatter_label', 'Scatter plot for this question'), viewBox: '0 0 ' + MW + ' ' + MH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '320px' }, 'data-dataplot-quiz-chart': true },
+          ay1.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: L, y1: sy(v), x2: MW - R, y2: sy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: L - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ay1.decimals))); }),
+          ax1.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: sx(v), y: MH - B + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax1.decimals)); }),
+          h('line', { x1: L, y1: MH - B, x2: MW - R, y2: MH - B, stroke: INK.axis, strokeWidth: 1.5 }),
+          h('line', { x1: L, y1: T, x2: L, y2: MH - B, stroke: INK.axis, strokeWidth: 1.5 }),
+          opts.line ? h('line', { x1: sx(ax1.min), y1: sy(opts.line.m * ax1.min + opts.line.b), x2: sx(ax1.max), y2: sy(opts.line.m * ax1.max + opts.line.b), stroke: INK.line, strokeWidth: 2, strokeDasharray: '7 4' }) : null,
+          pts.map(function (p, i) {
+            var hl = opts.highlight === i;
+            return h('g', { key: 'p' + i },
+              h('circle', { cx: sx(p.x), cy: sy(p.y), r: hl ? 8 : 5, fill: hl ? INK.bad : INK.fill, stroke: INK.bg, strokeWidth: 1.5 }),
+              opts.numbered ? h('text', { x: sx(p.x), y: sy(p.y) - 9, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, String(i + 1)) : null);
+          }));
+      };
+
+      // ── Common UI bits ──
+      var btnCls = function (on) { return 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' + (on ? 'bg-teal-700 text-white shadow' : 'bg-white text-teal-800 border border-teal-600 hover:bg-teal-50'); };
+      var chipStyle = { minHeight: 36, whiteSpace: 'normal', overflowWrap: 'anywhere' };
+      var bigStyle = { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' };
+      var card = function (props) { var rest = Array.prototype.slice.call(arguments, 1); return h.apply(null, ['div', Object.assign({ className: 'bg-white rounded-xl p-3 border border-slate-300 text-slate-800' }, props || {})].concat(rest)); };
+      var cardTitle = function (text) { return h('h4', { className: 'text-xs font-bold text-slate-800 uppercase mb-2' }, text); };
+      var hintLadder = function (id, steps, level0, onLevel, noXpNote) {
+        var gaStyles = isDarkUI ? { card: { padding: 8, borderRadius: 8, border: '1px solid #64748b', background: '#1e293b', color: '#f1f5f9' }, text: { color: '#f1f5f9', fontSize: 13 }, help: { color: '#cbd5e1', fontSize: 12 }, button: Object.assign({ padding: '6px 12px', borderRadius: 8, border: '1px solid #2dd4bf', background: '#0b1220', color: '#5eead4', fontSize: 13, fontWeight: 700, cursor: 'pointer' }, bigStyle) }
+          : { card: { padding: 8, borderRadius: 8, border: '1px solid #64748b', background: '#ffffff', color: '#0f172a' }, text: { color: '#0f172a', fontSize: 13 }, help: { color: '#334155', fontSize: 12 }, button: Object.assign({ padding: '6px 12px', borderRadius: 8, border: '1px solid #0f766e', background: '#ffffff', color: '#115e59', fontSize: 13, fontWeight: 700, cursor: 'pointer' }, bigStyle) };
+        if (GA && GA.hintLadder) return GA.hintLadder(React, { id: id, t: t, steps: steps, level: level0, onLevel: onLevel, announce: typeof announceToSR === 'function' ? announceToSR : undefined, styles: gaStyles, noXpNote: noXpNote });
+        return h('div', { 'data-hint-ladder': id, className: 'mt-2 p-2 rounded-lg border border-slate-400' },
+          h('ol', { className: 'list-decimal pl-5 text-sm text-slate-800' }, steps.slice(0, level0).map(function (s, i) { return h('li', { key: i }, s); })),
+          level0 < steps.length ? h('button', { type: 'button', style: bigStyle, onClick: function () { onLevel(level0 + 1); say(steps[level0]); }, className: 'px-3 py-1 rounded-lg text-sm font-bold border border-teal-700 text-teal-800 bg-white' }, t('stem.dataplot.show_a_hint', 'Show a hint')) : null);
+      };
+      // Stage C: one reveal pattern for every tab. After two tries the answer stays hidden until the
+      // student presses Show the answer (it earns nothing); with reveals off, a plain note instead.
+      var revealRow = function (id, onShow, label) {
+        if (!allowReveal) return h('p', { className: 'text-xs text-slate-800', 'data-dataplot-reveal-off': id }, t('stem.dataplot.reveal_off', 'Two tries used. Your teacher has turned answer reveals off, so try a new one.'));
+        return h('div', { className: 'flex gap-2 flex-wrap items-center', 'data-dataplot-reveal-row': id },
+          h('span', { className: 'text-xs text-slate-800' }, t('stem.dataplot.reveal_note', 'Two tries used. You can see the answer now; it earns no XP.')),
+          h('button', { type: 'button', style: bigStyle, 'data-dataplot-reveal': id, onClick: onShow, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white hover:bg-slate-100' }, label || t('stem.dataplot.reveal_btn', 'Show the answer')));
+      };
+      // Another STEM tool, only once the host can actually load it.
+      var toolReachable = function (id) {
+        try { if (typeof setStemLabTool !== 'function' || !window.StemLab) return false; return !!((window.StemLab.isRegistered && window.StemLab.isRegistered(id)) || typeof window.__alloEnsureStemPluginLoaded === 'function'); } catch (e) { return false; }
+      };
+      var openTool = function (id, name) {
+        var ok = false;
+        try { ok = !!(window.StemLab.isRegistered && window.StemLab.isRegistered(id)); } catch (e) { ok = false; }
+        if (!ok) { try { ok = typeof window.__alloEnsureStemPluginLoaded === 'function' && window.__alloEnsureStemPluginLoaded(id) !== false; } catch (e2) { ok = false; } }
+        if (!ok || typeof setStemLabTool !== 'function') { say(fillT(t('stem.dataplot.tool_unavailable', '{name} is not available in this build.'), { name: name })); return; }
+        setStemLabTool(id);
+      };
+      var crossLink = function (id, name, text) {
+        if (!toolReachable(id)) return null;
+        return h('button', { type: 'button', key: 'x-' + id, 'data-dataplot-crosslink': id, style: bigStyle, onClick: function () { openTool(id, name); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold border border-indigo-700 text-indigo-800 bg-white hover:bg-indigo-50' }, text);
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Chart ──
+      // ══════════════════════════════════════════════════════════
+      var renderChartTab = function () {
+        var chartList = levelCharts.indexOf(chartType) >= 0 ? levelCharts : levelCharts.concat([chartType]);
+        var canSound = n >= 2 && distinctCount(allX) >= 2 && (chartType === 'scatter' || chartType === 'line' || chartType === 'bar');
+        var dsPick = datasetLibrary.filter(function (x) { return x.id === d.dsPick; })[0] || datasetLibrary[0];
+        var fv = points.length ? fitView() : null;
+        var canFit = xyChart && !!fv && !!savedView && !(savedView.x0 === fv.x0 && savedView.x1 === fv.x1 && savedView.y0 === fv.y0 && savedView.y1 === fv.y1);
+        var fitAxes = function () {
+          updMulti({ view: fv, viewPrev: savedView || 'auto' });
+          focusAfterRef.current = ['[data-dataplot-undo-fit]', '[data-dataplot-cursor]'];
+          say(fillT(t('stem.dataplot.sr_axes_fitted', 'Axes fitted to your data: {x} from {x0} to {x1}, {y} from {y0} to {y1}. Undo axis fit puts them back.'), { x: xName, x0: fmtNum(fv.x0), x1: fmtNum(fv.x1), y: yName, y0: fmtNum(fv.y0), y1: fmtNum(fv.y1) }));
+        };
+        var undoFit = function () {
+          updMulti({ view: savedViewPrev === 'auto' ? null : savedViewPrev, viewPrev: null });
+          focusAfterRef.current = ['[data-dataplot-fit-axes]', '[data-dataplot-cursor]'];
+          say(t('stem.dataplot.sr_axes_back', 'Axes put back as they were.'));
+        };
+        var tbBtn = 'px-3 py-1 rounded-lg text-xs font-bold disabled:opacity-40 ';
+        return h('div', dataPlotPanelProps('chart', { className: 'space-y-2', tabIndex: undefined }),
+          importedFrom && h('div', { className: 'rounded-lg p-2 border border-sky-300 bg-sky-50 text-sky-900 text-xs', 'data-dataplot-imported': true },
+            fillT(t('stem.dataplot.imported_note', 'Data from {source}: {n} points.'), { source: importedFrom.source || importedFrom.title || t('stem.dataplot.another_tool', 'another tool'), n: importedFrom.count || points.length }),
+            importedFrom.title ? ' ' + importedFrom.title : ''),
+          // Toolbar row 1: the data (an example set, undo, clear, the axes)
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.datasets_group', 'Example datasets'), className: 'flex gap-1.5 flex-wrap items-center', 'data-dataplot-toolbar': 'data' },
+            h('label', { htmlFor: 'dp-dataset-pick', className: 'text-xs font-bold text-slate-700' + onHostInk }, t('stem.dataplot.datasets_label', 'Datasets:')),
+            h('select', { id: 'dp-dataset-pick', value: dsPick.id, 'data-dataplot-dataset': true, onChange: function (e) { upd('dsPick', e.target.value); }, className: 'text-xs px-2 py-1 rounded-lg border border-teal-600 bg-white text-slate-800', style: Object.assign({ maxWidth: '100%' }, chipStyle) },
+              datasetLibrary.map(function (ds) { return h('option', { key: ds.id, value: ds.id }, ds.label.split(' ')[0] + ' ' + datasetName(ds)); })),
+            h('button', { type: 'button', style: chipStyle, 'data-dataplot-dataset-load': true, 'aria-label': fillT(t('stem.dataplot.load_dataset_named', 'Load the {name} dataset'), { name: datasetName(dsPick) }), onClick: function () { loadDataset(dsPick); }, className: tbBtn + 'bg-teal-700 text-white hover:bg-teal-800' }, t('stem.dataplot.load', 'Load')),
+            h('button', { type: 'button', style: chipStyle, onClick: doUndo, disabled: !undoStack.length, className: tbBtn + 'bg-slate-100 text-slate-800 border border-slate-400' }, t('stem.dataplot.undo_2', '↩ Undo')),
+            h('button', { type: 'button', style: chipStyle, onClick: clearAll, disabled: !points.length, className: tbBtn + 'bg-red-50 text-red-800 border border-red-300' }, t('stem.dataplot.clear_2', '🗑️ Clear')),
+            canFit && h('button', { type: 'button', style: chipStyle, 'data-dataplot-fit-axes': true, onClick: fitAxes, className: tbBtn + 'bg-white text-sky-900 border border-sky-700' }, t('stem.dataplot.fit_axes', 'Fit axes to my data')),
+            xyChart && savedViewPrev && h('button', { type: 'button', style: chipStyle, 'data-dataplot-undo-fit': true, onClick: undoFit, className: tbBtn + 'bg-white text-sky-900 border border-sky-700' }, t('stem.dataplot.undo_fit_axes', 'Undo axis fit'))),
+          // Toolbar row 2: the picture (chart type, what a click does)
+          h('div', { className: 'flex gap-x-3 gap-y-1.5 flex-wrap items-center', 'data-dataplot-toolbar': 'view' },
+            h('div', { role: 'group', 'aria-label': t('stem.dataplot.chart_type_group', 'Chart type'), className: 'flex gap-1.5 flex-wrap items-center' },
+              chartList.map(function (id) {
+                var icon = { scatter: '•', line: '📈', bar: '📊', pie: '🥧', histogram: '📶', boxplot: '📦', ogive: '📉', dotplot: '⁙', pictograph: '☺' }[id];
+                return h('button', { type: 'button', key: id, 'data-dataplot-chart': id, 'aria-pressed': chartType === id, style: chipStyle, onClick: function() { switchChart(id); }, className: btnCls(chartType === id) },
+                  h('span', { 'aria-hidden': 'true' }, icon + ' '), chartNameText(t, id));
+              })),
+            xyChart && h('div', { role: 'group', 'aria-label': t('stem.dataplot.click_mode_group', 'Clicking the chart'), className: 'flex gap-1.5 flex-wrap items-center text-xs' },
+              h('span', { className: 'sr-only' }, t('stem.dataplot.click_mode_label', 'Clicking the chart:')),
+              h('button', { type: 'button', 'aria-pressed': clickMode === 'add', style: chipStyle, onClick: function () { upd('clickMode', 'add'); }, className: btnCls(clickMode === 'add') }, t('stem.dataplot.click_add', 'Adds a point')),
+              h('button', { type: 'button', 'aria-pressed': clickMode === 'remove', style: chipStyle, onClick: function () { upd('clickMode', 'remove'); }, className: btnCls(clickMode === 'remove') }, t('stem.dataplot.click_remove', 'Removes the point clicked')))),
+          n === 0 && chartType !== 'scatter' && chartType !== 'line' && chartType !== 'bar'
+            ? h('p', { className: 'text-sm text-slate-700 py-6 text-center' + onHostInk }, t('stem.dataplot.add_data_first_chart', 'Add data to draw this chart.'))
+            : chartType === 'pie' ? renderPie()
+            : chartType === 'histogram' ? renderHistogram()
+            : chartType === 'boxplot' ? renderBoxPlot()
+            : chartType === 'ogive' ? renderOgive()
+            : chartType === 'dotplot' ? dotPlotSvg(allY, { label: t('stem.dataplot.dotplot_chart_label', 'Dot plot of the current data set'), axisLabel: yName, svgProps: { 'data-dataplot-svg': true, 'aria-describedby': 'dp-chart-desc' } })
+            : chartType === 'pictograph' ? h('div', { 'data-dataplot-svg-wrap': true }, pictographSvg(barOrder.map(function (b) { return { label: fmtNum(b.x), value: b.y }; }), pictoUnit, t('stem.dataplot.picto_chart_label', 'Pictograph of the current data set'), yName))
+            : chartWithCursor(renderXYChart()),
+          // Text alternative: always rendered, read by aria-describedby.
+          h('p', { id: 'dp-chart-desc', 'data-dataplot-description': true, className: 'text-xs text-slate-700 leading-relaxed' + onHostInk }, describeChart()),
+          // The model sits right under the chart (6-8: the student's line comes first).
+          renderMyLineResult(),
+          renderRegressionBox(),
+          // Hear + explore
+          n > 0 && h('div', { className: 'flex gap-2 flex-wrap items-center' },
+            canSound && h('button', { type: 'button', style: bigStyle, 'data-dataplot-hear': 'data', onClick: hearData, 'aria-pressed': playing, className: 'px-3 py-1 rounded-lg text-xs font-bold border border-indigo-700 text-indigo-800 bg-white hover:bg-indigo-50' }, playing ? t('stem.dataplot.stop_sound', '⏹ Stop sound') : t('stem.dataplot.hear_data', '🔊 Hear the data')),
+            canSound && !isK5 && regFit.ok && !modelHidden && h('button', { type: 'button', style: bigStyle, 'data-dataplot-hear': 'trend', onClick: hearTrend, className: 'px-3 py-1 rounded-lg text-xs font-bold border border-indigo-700 text-indigo-800 bg-white hover:bg-indigo-50' }, t('stem.dataplot.hear_trend', '🎵 Hear the fitted model')),
+            h('div', { tabIndex: 0, role: 'group', 'data-dataplot-explorer': true, 'aria-roledescription': t('stem.dataplot.explorer_role', 'point explorer'), 'aria-label': t('stem.dataplot.explorer_label', 'Explore points: use the arrow keys to move from point to point, Home and End for the first and last.'), onKeyDown: exploreKey,
+              className: 'px-3 py-2 rounded-lg text-xs border-2 border-dashed border-slate-500 text-slate-800 bg-white', style: Object.assign({ minWidth: 200 }, bigStyle) },
+              explorePt ? pointSentence(explorePt, exploreIdx) : t('stem.dataplot.explorer_idle', 'Focus here and press the arrow keys to step through the points.'))
           ),
-
-          // ── Histogram (with normal overlay + mean/median/mode lines) ──
-          chartType === 'histogram' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.histogram_img_label', 'Histogram of the current data set'),
-            viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '340px' }, 'data-dataplot-svg': true
-          },
-            h('line', { x1: pad, y1: H-pad, x2: W-pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            h('line', { x1: pad, y1: pad, x2: pad, y2: H-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-            // Histogram bars
-            histBins.map(function(bin, i) {
-              var barW = (W - 2*pad) / histBins.length - 2;
-              var barX = pad + i * ((W - 2*pad) / histBins.length) + 1;
-              var barH = maxBinCount > 0 ? (bin.count / maxBinCount) * (H - 2*pad) : 0;
-              return h('g', { key: 'hb'+i },
-                h('rect', { x: barX, y: H-pad-barH, width: barW, height: Math.max(1, barH), fill: pal.fill, fillOpacity: 0.8, rx: 2 }),
-                h('text', { x: barX+barW/2, y: H-pad+12, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '8px' } }, bin.low.toFixed(0) + '-' + bin.high.toFixed(0)),
-                h('text', { x: barX+barW/2, y: H-pad-barH-4, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count)
-              );
-            }),
-            // Normal distribution overlay
-            showNormalOverlay && stdDev > 0 && (function() {
-              var maxPDF = normalPDF(meanY, meanY, stdDev);
-              var normPts = [];
-              for (var ni = 0; ni <= 50; ni++) {
-                var nx = yMin_ + (yMax_ - yMin_) * ni / 50;
-                var ny = normalPDF(nx, meanY, stdDev) / maxPDF * maxBinCount;
-                var sx_ = pad + ((nx - yMin_) / (yRange || 1)) * (W - 2*pad);
-                var sy_ = (H - pad) - (ny / maxBinCount) * (H - 2*pad);
-                normPts.push((ni === 0 ? 'M' : 'L') + sx_.toFixed(1) + ',' + sy_.toFixed(1));
-              }
-              return h('path', { d: normPts.join(' '), fill: 'none', stroke: '#8b5cf6', strokeWidth: 2, strokeDasharray: '4 2' });
-            })(),
-            // Mean / Median / Mode lines
-            (function() {
-              var lines = [];
-              var toHX = function(v) { return pad + ((v - yMin_) / (yRange || 1)) * (W - 2*pad); };
-              // Mean line
-              lines.push(h('line', { key: 'mean-line', x1: toHX(meanY), y1: pad, x2: toHX(meanY), y2: H-pad, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '5 3' }));
-              lines.push(h('text', { key: 'mean-lbl', x: toHX(meanY), y: pad-4, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '8px', fontWeight: 'bold' } }, '\u03BC=' + meanY.toFixed(1)));
-              // Median line
-              lines.push(h('line', { key: 'med-line', x1: toHX(yMedian), y1: pad, x2: toHX(yMedian), y2: H-pad, stroke: '#3b82f6', strokeWidth: 1.5, strokeDasharray: '5 3' }));
-              lines.push(h('text', { key: 'med-lbl', x: toHX(yMedian), y: pad-14, textAnchor: 'middle', fill: '#3b82f6', style: { fontSize: '8px', fontWeight: 'bold' } }, 'Med=' + yMedian.toFixed(1)));
-              return lines;
-            })(),
-            yLabel && h('text', { x: W/2, y: H-2, textAnchor: 'middle', fill: '#0d9488', style: { fontSize: '10px', fontWeight: 'bold' } }, yLabel + ' (bins)')
-          ),
-
-          // ── Box plot ──
-          chartType === 'boxplot' && n > 0 && h('svg', { role: 'img', 'aria-label': t('stem.dataplot.boxplot_img_label', 'Box plot of the current data set'),
-            viewBox: '0 0 ' + W + ' 160', className: 'w-full bg-white rounded-xl border border-teal-200', 'data-dataplot-svg': true
-          },
-            (function() {
-              var bx = function(v) { return pad + ((v - yMin_) / (yRange || 1)) * (W - 2*pad); };
-              return h('g', null,
-                // Whiskers stop at the most extreme values that are not flagged outliers.
-                (function(inner) { var wLo = inner.length ? Math.min.apply(null, inner) : yMin_, wHi = inner.length ? Math.max.apply(null, inner) : yMax_; return [
-                  h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: '#94a3b8', strokeWidth: 1.5 }),
-                  h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 60, x2: bx(wLo), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 }),
-                  h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 60, x2: bx(wHi), y2: 100, stroke: '#94a3b8', strokeWidth: 1.5 })
-                ]; })(visiblePoints.filter(function(p) { return outliers.indexOf(p) < 0; }).map(function(p) { return p.y; })),
-                h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: pal.fill, fillOpacity: 0.3, stroke: pal.fill, strokeWidth: 2, rx: 4 }),
-                h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: '#ef4444', strokeWidth: 2.5 }),
-                h('text', { x: bx(yMin_), y: 50, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, 'Min: ' + yMin_.toFixed(1)),
-                h('text', { x: bx(q1), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q1: ' + q1.toFixed(1)),
-                h('text', { x: bx(yMedian), y: 120, textAnchor: 'middle', fill: '#ef4444', style: { fontSize: '11px', fontWeight: 'bold' } }, 'Med: ' + yMedian.toFixed(1)),
-                h('text', { x: bx(q3), y: 50, textAnchor: 'middle', fill: pal.fill, style: { fontSize: '11px', fontWeight: 'bold' } }, 'Q3: ' + q3.toFixed(1)),
-                h('text', { x: bx(yMax_), y: 50, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, 'Max: ' + yMax_.toFixed(1)),
-                outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: '#ef4444', stroke: '#fff', strokeWidth: 1 }); }),
-                h('text', { x: bx((q1+q3)/2), y: 145, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '11px' } }, 'IQR: ' + iqr.toFixed(1))
-              );
-            })()
-          ),
-
-          // ── Ogive (Cumulative Frequency) ──
-          chartType === 'ogive' && n > 0 && cumulativeFreq.length > 0 && (function() {
-            var oH = 280;
-            var oMin = cumulativeFreq[0].x, oMax = cumulativeFreq[cumulativeFreq.length-1].x;
-            var oRange = oMax - oMin || 1;
-            var oToX = function(v) { return pad + ((v - oMin) / oRange) * (W - 2*pad); };
-            var oToY = function(v) { return (oH - pad) - (v / n) * (oH - 2*pad); };
-            var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
-            return h('svg', { role: 'img', 'aria-label': t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph'), viewBox: '0 0 ' + W + ' ' + oH, className: 'w-full bg-white rounded-xl border border-teal-200', style: { maxHeight: '300px' }, 'data-dataplot-svg': true },
-              // Grid
-              [0, 25, 50, 75, 100].map(function(pct) {
-                var gy = oToY(n * pct / 100);
-                return h('g', { key: 'og'+pct },
-                  h('line', { x1: pad, y1: gy, x2: W-pad, y2: gy, stroke: '#e2e8f0', strokeWidth: 0.5, strokeDasharray: '3 3' }),
-                  h('text', { x: pad-5, y: gy+3, textAnchor: 'end', fill: '#94a3b8', style: { fontSize: '11px' } }, pct + '%')
-                );
-              }),
-              h('line', { x1: pad, y1: oH-pad, x2: W-pad, y2: oH-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-              h('line', { x1: pad, y1: pad, x2: pad, y2: oH-pad, stroke: '#94a3b8', strokeWidth: 1.5 }),
-              // Area fill
-              h('path', { d: pathD + ' L' + oToX(oMax).toFixed(1) + ',' + (oH-pad) + ' L' + oToX(oMin).toFixed(1) + ',' + (oH-pad) + ' Z', fill: pal.fill, fillOpacity: 0.15 }),
-              // Line
-              h('path', { d: pathD, fill: 'none', stroke: pal.fill, strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-              // Points with labels
-              cumulativeFreq.map(function(pt, i) {
-                return h('g', { key: 'op'+i },
-                  h('circle', { cx: oToX(pt.x), cy: oToY(pt.y), r: 4, fill: pal.fill, stroke: '#fff', strokeWidth: 1.5 }),
-                  h('text', { x: oToX(pt.x), y: oToY(pt.y)-8, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '8px', fontWeight: 'bold' } }, pt.pct + '%')
-                );
-              }),
-              h('text', { x: W/2, y: oH-3, textAnchor: 'middle', fill: '#0d9488', style: { fontSize: '10px', fontWeight: 'bold' } }, (yLabel || 'Y') + ' (cumulative)')
-            );
-          })(),
-
-          // ── Controls row ──
+          // Controls row
           h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('button', { onClick: doUndo, disabled: !undoStack.length, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.undo_2', '\u21A9 Undo')),
-            h('button', { 'aria-label': t('stem.dataplot.clear', 'Clear'), onClick: clearAll, disabled: !points.length, className: 'px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-lg text-sm disabled:opacity-40' }, t('stem.dataplot.clear_2', '\uD83D\uDDD1\uFE0F Clear')),
-            h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-violet-600 cursor-pointer' + onHostInk },
+            !isK5 && !modelHidden && h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-violet-800 cursor-pointer' + onHostInk },
               h('input', { type: 'checkbox', checked: showResiduals, onChange: function() { upd('showResiduals', !showResiduals); }, className: 'accent-violet-600' }), t('stem.dataplot.residuals', 'Residuals')),
-              h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-teal-700 cursor-pointer' + onHostInk },
+            h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-teal-800 cursor-pointer' + onHostInk },
               h('input', { type: 'checkbox', checked: showLabels, onChange: function() { upd('showLabels', !showLabels); }, className: 'accent-teal-600' }), t('stem.dataplot.labels', 'Labels')),
-              h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-sky-700 cursor-pointer' + onHostInk },
+            h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-sky-800 cursor-pointer' + onHostInk },
               h('input', { type: 'checkbox', checked: showGrid, onChange: function() { upd('showGrid', !showGrid); }, className: 'accent-sky-600' }), t('stem.dataplot.grid', 'Grid')),
-              h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-red-700 cursor-pointer' + onHostInk },
-              h('input', { type: 'checkbox', checked: showOutliers, onChange: function() { upd('showOutliers', !showOutliers); if (!showOutliers && outliers.length > 0) checkBadges({}); }, className: 'accent-red-500' }), 'Outliers' + (outliers.length > 0 ? ' (' + outliers.length + ')' : '')),
-              h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-rose-700 cursor-pointer' + onHostInk },
+            !isK5 && h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-red-800 cursor-pointer' + onHostInk },
+              h('input', { type: 'checkbox', checked: showOutliers, onChange: function() { upd('showOutliers', !showOutliers); if (!showOutliers && outliers.length > 0) checkBadges({ outliersShown: true }); }, className: 'accent-red-500' }),
+              fillT(t('stem.dataplot.outliers_count', 'Outliers ({k})'), { k: outliers.length })),
+            isHS && h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-rose-800 cursor-pointer' + onHostInk },
               h('input', { type: 'checkbox', checked: showCI, onChange: function() { upd('showCI', !showCI); }, className: 'accent-rose-500' }), t('stem.dataplot.95_ci', '95% CI')),
-              h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-violet-700 cursor-pointer' + onHostInk },
-              h('input', { type: 'checkbox', checked: showResidualPlot, onChange: function() { upd('showResidualPlot', !showResidualPlot); }, className: 'accent-violet-500' }), t('stem.dataplot.resid_plot', 'Resid Plot')),
-            chartType === 'histogram' && h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-purple-500 cursor-pointer' + onHostInk },
+            !isK5 && !modelHidden && h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-violet-800 cursor-pointer' + onHostInk },
+              h('input', { type: 'checkbox', checked: showResidualPlot, onChange: function() { upd('showResidualPlot', !showResidualPlot); }, className: 'accent-violet-500' }), t('stem.dataplot.resid_plot_v2', 'Residual plot')),
+            chartType === 'histogram' && !isK5 && h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-purple-800 cursor-pointer' + onHostInk },
               h('input', { type: 'checkbox', checked: showNormalOverlay, onChange: function() { upd('showNormalOverlay', !showNormalOverlay); }, className: 'accent-purple-500' }), t('stem.dataplot.normal_curve', 'Normal Curve')),
-            h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-slate-600 cursor-pointer' + onHostInk },
-              h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), t('stem.dataplot.table', 'Table')),
-            h('div', { className: 'ml-auto flex gap-1.5' },
-              h('button', { onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-[0.6875rem] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.csv', '\uD83D\uDCE5 CSV')),
-              h('button', { onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-[0.6875rem] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.svg', '\uD83D\uDCD0 SVG')),
-              h('button', { 'aria-label': t('stem.dataplot.save', 'Save'), onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-[0.6875rem] font-bold bg-teal-50 text-teal-700 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.save_2', '\uD83D\uDCBE Save'))
-            )
+            h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-slate-800 cursor-pointer' + onHostInk },
+              h('input', { type: 'checkbox', checked: tableMode, onChange: function() { upd('tableMode', !tableMode); }, className: 'accent-teal-600' }), t('stem.dataplot.table_edit', 'Edit data table')),
+            h('div', { className: 'ml-auto flex gap-1.5 flex-wrap' },
+              h('button', { type: 'button', style: chipStyle, onClick: exportCSV, disabled: !n, className: 'px-2 py-1 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.csv', '📥 CSV')),
+              h('button', { type: 'button', style: chipStyle, onClick: exportSVG, disabled: !n, className: 'px-2 py-1 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.svg', '📐 SVG')),
+              h('button', { type: 'button', style: chipStyle, onClick: saveChart, disabled: !n, className: 'px-2 py-1 text-xs font-bold bg-teal-50 text-teal-800 border border-teal-600 rounded-lg disabled:opacity-40' }, t('stem.dataplot.save_2', '💾 Save')),
+              n > 0 && codapButton(pointsDataset))
           ),
-
-          // ── Table input ──
-          tableMode && h('div', { className: 'bg-slate-50 rounded-lg p-3' },
-            h('div', { className: 'flex gap-2 items-end mb-2' },
-              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-[0.6875rem] font-bold text-slate-600 block' }, 'X'), h('input', { type: 'number', step: '0.1', id: 'dp-x-input', 'aria-label': t('stem.dataplot.x_coordinate_for_new_data_point', 'X coordinate for new data point'), className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-[0.6875rem] font-bold text-slate-600 block' }, 'Y'), h('input', { type: 'number', step: '0.1', id: 'dp-y-input', 'aria-label': t('stem.dataplot.y_coordinate_for_new_data_point', 'Y coordinate for new data point'), className: 'w-20 px-2 py-1 text-sm border rounded text-center font-mono', placeholder: '0' })),
-              h('button', { 'aria-label': t('stem.dataplot.add', '+ Add'), onClick: function() { var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input'); if (xi && yi && xi.value && yi.value) { addPoint(parseFloat(xi.value), parseFloat(yi.value)); xi.value = ''; yi.value = ''; } }, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, t('stem.dataplot.add_2', '+ Add'))
-            ),
-            n > 0 && h('div', { className: 'max-h-24 overflow-y-auto text-xs font-mono text-slate-600' },
-              visiblePoints.map(function(p, i) { return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': 'Remove point (' + p.x + ', ' + p.y + ')', className: 'inline-block mr-2 bg-white px-1.5 py-0.5 rounded border mb-1 cursor-pointer hover:bg-red-50', onClick: function() { removePoint(i); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); removePoint(i); } } }, '(' + p.x + ',' + p.y + ')'); })
-            )
-          ),
-
-          // ── Regression info (with Spearman + Pearson) ──
-          n >= 2 && h('div', { className: 'bg-white rounded-lg border p-2' },
-            h('div', { role: 'group', 'aria-label': t('stem.dataplot.regression_model_choice', 'Regression model'), className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
-              h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Regression:'),
-              ['linear', 'quadratic', 'exponential', 'logarithmic'].map(function(rt) {
-                return h('button', { key: rt, 'data-regression-model': rt, 'aria-pressed': regressionType === rt, style: { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function() { upd('regressionType', rt); },
-                  className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                }, rt.charAt(0).toUpperCase() + rt.slice(1));
-              })
-            ),
-            h('div', { className: 'flex items-center gap-3 flex-wrap' },
-              h('span', { className: 'text-xs font-mono text-slate-700' }, regEq),
-              h('span', { className: 'text-[0.6875rem] font-bold text-slate-500', title: t('stem.dataplot.sample_size_interpret_r_with_n_in_mind', 'Sample size — interpret R² with n in mind') }, 'n = ' + n),
-              h('span', { className: 'text-xs font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2 = ' + regR2.toFixed(4)),
-              h('span', { className: 'text-[0.6875rem] text-slate-600' }, slope > 0 ? '\u2197 Positive' : slope < 0 ? '\u2198 Negative' : '\u2794 None'),
-              n >= 3 && h('span', { className: 'text-[0.6875rem] font-bold text-indigo-500', title: t('stem.dataplot.pearson_r_spearman_2', 'Pearson r / Spearman \u03C1') }, 'r=' + pearsonR.toFixed(3) + ' | \u03C1=' + spearmanR.toFixed(3))
-            ),
-            // Correlation strength bar
-            h('div', { className: 'flex items-center gap-2 mt-1.5' },
-              h('div', { className: 'flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden' },
-                h('div', { style: { width: (Math.max(0, regR2)*100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: Math.max(0, regR2) > 0.8 ? '#22c55e' : Math.max(0, regR2) > 0.5 ? '#eab308' : Math.max(0, regR2) > 0.3 ? '#f97316' : '#ef4444', transition: 'all 0.4s' } })
-              ),
-              h('span', { className: 'text-[0.6875rem] font-bold ' + (Math.max(0, regR2) > 0.8 ? 'text-emerald-600' : Math.max(0, regR2) > 0.5 ? 'text-yellow-600' : 'text-red-500') },
-                Math.max(0, regR2) > 0.9 ? '\u2B50 Very Strong' : Math.max(0, regR2) > 0.7 ? 'Strong' : Math.max(0, regR2) > 0.5 ? 'Moderate' : Math.max(0, regR2) > 0.3 ? 'Weak' : 'Very Weak'
-              )
-            )
-          ),
-
-          // ── Gallery ──
-          showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-400' },
-            h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, t('stem.dataplot.saved_charts', '\uD83D\uDCBE Saved Charts')),
+          // Axis labels and colours (moved below the chart: the first screen is the chart)
+          h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-3 items-center', 'data-dataplot-settings': true },
+            h('input', { type: 'text', value: xLabel, onChange: function(e) { upd('xLabel', e.target.value.slice(0, 60)); }, placeholder: t('stem.dataplot.x_axis_label', 'X-axis label'), 'aria-label': t('stem.dataplot.x_axis_label_2', 'X-axis label'), className: 'min-w-0 w-full px-2 py-1 text-sm border border-teal-600 rounded-lg', style: chipStyle }),
+            h('input', { type: 'text', value: yLabel, onChange: function(e) { upd('yLabel', e.target.value.slice(0, 60)); }, placeholder: t('stem.dataplot.y_axis_label', 'Y-axis label'), 'aria-label': t('stem.dataplot.y_axis_label_2', 'Y-axis label'), className: 'min-w-0 w-full px-2 py-1 text-sm border border-teal-600 rounded-lg', style: chipStyle }),
+            h('label', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1' + onHostInk }, t('stem.dataplot.colours', 'Colours'),
+              h('select', { value: paletteId, onChange: function(e) { upd('paletteId', e.target.value); }, className: 'text-xs px-2 py-1 rounded-lg border border-slate-500 bg-white text-slate-800', style: chipStyle },
+                palettes.map(function(p) { return h('option', { key: p.id, value: p.id }, paletteName(p.id)); })))),
+          // Residual plot
+          showResidualPlot && !isK5 && n >= 2 && regFit.ok && !modelHidden && (function() {
+            var rH = 150, residuals = visiblePoints.map(function(p) { return { x: p.x, r: p.y - predictY(p.x) }; }).filter(function (r) { return dpFin(r.r); });
+            var maxR = Math.max.apply(null, residuals.map(function(r) { return Math.abs(r.r); }).concat([1e-9]));
+            var rAx = niceAxis(-maxR, maxR);
+            var rToSY = function(r) { return (rH - 14) - (r - rAx.min) / (rAx.max - rAx.min || 1) * (rH - 28); };
+            return h('div', { className: 'space-y-1' },
+              h('div', { className: 'text-xs font-bold text-violet-800 uppercase' + onHostInk }, t('stem.dataplot.residual_plot', '📉 Residual Plot')),
+              h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.residual_img_label_v2', 'Residual plot: {above} points above the model, {below} below. A random scatter around zero means the model fits; a curve or fan shape means it does not.'), { above: residuals.filter(function (r) { return r.r > 0; }).length, below: residuals.filter(function (r) { return r.r < 0; }).length }), viewBox: '0 0 ' + W + ' ' + rH, className: 'w-full rounded-lg border border-violet-200', style: { maxHeight: '150px', background: INK.bg } },
+                rAx.ticks.map(function (v, k) { return h('text', { key: 'rt' + k, x: PL - 6, y: rToSY(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, rAx.decimals)); }),
+                h('line', { x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 1, strokeDasharray: '4 4' }),
+                residuals.map(function(r, i) { return h('circle', { key: 'rp'+i, cx: toSX(r.x), cy: rToSY(r.r), r: 4, fill: r.r > 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad, stroke: INK.bg, strokeWidth: 1 }); })),
+              regressionType === 'linear' && n >= 6 && (function () {
+                var pat = residualPattern(visiblePoints);
+                return h('p', { className: 'text-xs text-slate-800' + onHostInk, 'data-dataplot-resid-reading': pat.kind },
+                  pat.kind === 'curve' ? t('stem.dataplot.rmine_curve', 'Your residuals seem to follow a curve: a straight line may not be the right model. Try a quadratic or exponential model on the Chart tab.')
+                  : pat.kind === 'fan' ? t('stem.dataplot.rmine_fan', 'Your residuals seem to fan out: the line is less reliable for large x.')
+                  : pat.kind === 'random' ? t('stem.dataplot.rmine_random', 'Your residuals look like a patternless band: a straight line seems appropriate.')
+                  : t('stem.dataplot.rmine_unclear', 'The pattern is unclear. Collect more data, then look again.'));
+              })());
+          })(),
+          renderDataTable(),
+          // Gallery
+          showGallery && h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-400 text-slate-800' },
+            h('div', { className: 'text-xs font-bold text-slate-800 uppercase mb-2' }, t('stem.dataplot.saved_charts', '💾 Saved Charts')),
             galleryItems.length === 0
-              ? h('div', { className: 'text-xs text-slate-600 text-center py-2' }, t('stem.dataplot.no_saved_charts_yet', 'No saved charts yet'))
-              : h('div', { className: 'space-y-1.5' }, galleryItems.map(function(item) {
-                  return h('div', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-400' },
-                    h('span', { className: 'text-xs font-bold text-slate-700' }, item.n + ' pts'),
-                    h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'R\u00B2=' + (item.r2||0).toFixed(3)),
-                    h('span', { className: 'text-[0.6875rem] text-slate-600 ml-auto' }, new Date(item.timestamp).toLocaleDateString()),
-                    h('button', { onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-[0.6875rem] font-bold bg-teal-50 text-teal-700 rounded hover:bg-teal-100' }, t('stem.dataplot.load', 'Load')),
-                    h('button', { 'aria-label': t('stem.dataplot.remove_item', 'Remove item'), onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-[0.6875rem] font-bold text-red-400 hover:text-red-600' }, '\u2715')
-                  );
+              ? h('div', { className: 'text-xs text-slate-700 text-center py-2' }, t('stem.dataplot.no_saved_charts_yet', 'No saved charts yet'))
+              : h('ul', { className: 'space-y-1.5' }, galleryItems.map(function(item, gi) {
+                  return h('li', { key: item.id, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-400 flex-wrap' },
+                    h('span', { className: 'text-xs font-bold text-slate-800' }, fillT(t('stem.dataplot.gallery_pts', '{n} points'), { n: item.n || item.points.length })),
+                    !isK5 && dpFin(item.r2) && h('span', { className: 'text-xs text-slate-700' }, 'R² = ' + fmtFixed(item.r2, 3)),
+                    h('span', { className: 'text-xs text-slate-700 ml-auto' }, new Date(item.timestamp || Date.now()).toLocaleDateString()),
+                    h('button', { type: 'button', style: chipStyle, 'aria-label': fillT(t('stem.dataplot.gallery_load_n', 'Load saved chart {k}'), { k: gi + 1 }), onClick: function() { loadChart(item); }, className: 'px-2 py-0.5 text-xs font-bold bg-teal-50 text-teal-800 rounded border border-teal-600' }, t('stem.dataplot.load', 'Load')),
+                    h('button', { type: 'button', style: chipStyle, 'aria-label': fillT(t('stem.dataplot.gallery_delete_n', 'Delete saved chart {k}'), { k: gi + 1 }), onClick: function() { deleteChart(item.id); }, className: 'px-2 py-0.5 text-xs font-bold text-red-800 border border-red-300 rounded' }, '✕'));
                 }))
           ),
-          h('button', { 'aria-label': showGallery ? 'Hide saved charts gallery' : 'Show saved charts gallery', onClick: function() { upd('showGallery', !showGallery); }, className: 'text-[0.6875rem] font-bold text-slate-600 hover:text-teal-600' + onHostInk }, showGallery ? '\u25B2 Hide Gallery' : '\u25BC Show Gallery (' + galleryItems.length + ')')
-        ),
+          h('button', { type: 'button', style: chipStyle, 'aria-expanded': showGallery, onClick: function() { upd('showGallery', !showGallery); }, className: 'text-xs font-bold text-slate-800 hover:text-teal-800 underline' + onHostInk },
+            showGallery ? t('stem.dataplot.hide_gallery', '▲ Hide saved charts') : fillT(t('stem.dataplot.show_gallery', '▼ Show saved charts ({n})'), { n: galleryItems.length }))
+        );
+      };
+      var paletteName = function (id) {
+        switch (id) {
+          case 'blue': return t('stem.dataplot.pal_ocean', 'Ocean');
+          case 'purple': return t('stem.dataplot.pal_grape', 'Grape');
+          case 'rose': return t('stem.dataplot.pal_rose', 'Rose');
+          case 'amber': return t('stem.dataplot.pal_sunset', 'Sunset');
+          case 'emerald': return t('stem.dataplot.pal_forest', 'Forest');
+          default: return t('stem.dataplot.pal_teal', 'Teal');
+        }
+      };
 
-        // ══════════════════════════════════════════════════════════
-        // ── TAB: Statistics ──
-        // ══════════════════════════════════════════════════════════
-        activeTab === 'stats' && h('div', dataPlotPanelProps('stats', { className: 'space-y-3' }),
-          n === 0
-            ? h('div', { className: 'text-center text-sm text-slate-600 py-8' + onHostInk }, t('stem.dataplot.add_data_points_to_see_statistics', 'Add data points to see statistics'))
-            : h('div', { className: 'space-y-3' },
+      // Stage C perf: the table body (up to 500 rows x 3 controls) was rebuilt on every render of the
+      // Chart tab. It is memoised on everything it shows (exact values, model, explorer row, labels,
+      // language), so unrelated updates skip it. Measured in the report.
+      var tableKey = [activeTab === 'chart' ? 1 : 0, points.map(function (p) { return p.x + ',' + p.y; }).join(';'), regressionType, exploreIdx, level, modelHidden ? 1 : 0, stepMode ? stepIdx : -1, xName, yName, undoStack.length, soundEnabled ? 1 : 0,
+        t('stem.dataplot.cell_x', '{x}, row {k}'), t('stem.dataplot.cell_y', '{y}, row {k}'), t('stem.dataplot.delete_row', 'Delete row {k} ({x}, {y})'), t('stem.dataplot.sr_row_changed', 'Row {k} changed.')].join('|');
+      var tableBody = React.useMemo(function () {
+        if (activeTab !== 'chart') return null;
+        var commit = function (idx, field) { return function (e) { var raw = e.target.value; if (!editPoint(idx, field, raw)) { var p = points[idx]; if (p) e.target.value = String(p[field]); if (String(raw).trim() && !dpFin(toNumber(raw, ';'))) say(t('stem.dataplot.sr_not_number', 'That is not a number, so the value was not changed.')); } else say(fillT(t('stem.dataplot.sr_row_changed', 'Row {k} changed.'), { k: idx + 1 })); }; };
+        var enterBlur = function (e) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
+        return h('tbody', null, points.slice(0, 500).map(function (p, i) {
+          var res = p.y - predictY(p.x), isOut = outlierSet[p.x + ',' + p.y];
+          return h('tr', { key: i + ':' + p.x + ':' + p.y, 'data-dataplot-row': i, className: explorePt && explorePt.i === i ? 'bg-sky-50' : '' },
+            h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-300 font-normal' }, String(i + 1) + (isOut ? ' ⚠' : '')),
+            h('td', { className: 'px-1 py-0.5 border border-slate-300' }, h('input', { type: 'text', inputMode: 'decimal', defaultValue: String(p.x), 'aria-label': fillT(t('stem.dataplot.cell_x', '{x}, row {k}'), { x: xName, k: i + 1 }), onBlur: commit(i, 'x'), onKeyDown: enterBlur, className: 'w-24 px-1 py-0.5 font-mono border border-slate-300 rounded', style: { minHeight: 32 } })),
+            h('td', { className: 'px-1 py-0.5 border border-slate-300' }, h('input', { type: 'text', inputMode: 'decimal', defaultValue: String(p.y), 'aria-label': fillT(t('stem.dataplot.cell_y', '{y}, row {k}'), { y: yName, k: i + 1 }), onBlur: commit(i, 'y'), onKeyDown: enterBlur, className: 'w-24 px-1 py-0.5 font-mono border border-slate-300 rounded', style: { minHeight: 32 } })),
+            !isK5 && regFit.ok && n >= 2 && !stepMode && !modelHidden && h('td', { className: 'px-2 py-1 border border-slate-300 font-mono' }, dpFin(res) ? fmtNum(res, 2) : '—'),
+            h('td', { className: 'px-1 py-0.5 border border-slate-300' }, h('button', { type: 'button', style: { minHeight: 32, minWidth: 32 }, 'aria-label': fillT(t('stem.dataplot.delete_row', 'Delete row {k} ({x}, {y})'), { k: i + 1, x: fmtNum(p.x), y: fmtNum(p.y) }), onClick: function () { removePoint(i); }, className: 'px-2 text-red-800 font-bold rounded border border-red-300 bg-white hover:bg-red-50' }, '✕')));
+        }));
+      }, [tableKey]);
+      // The data behind every chart: a real table, editable in place.
+      var renderDataTable = function () {
+        var addRow = function () {
+          var xi = document.getElementById('dp-x-input'), yi = document.getElementById('dp-y-input');
+          var xv = xi ? toNumber(xi.value, ';') : NaN, yv = yi ? toNumber(yi.value, ';') : NaN;
+          if (!dpFin(yv) || (!dpFin(xv) && xi && xi.value.trim())) { say(t('stem.dataplot.sr_need_numbers', 'Type a number for y (and for x, or leave x empty to number the row).')); return; }
+          addPoint(dpFin(xv) ? xv : points.length + 1, yv);
+          if (xi) xi.value = ''; if (yi) { yi.value = ''; yi.focus(); }
+        };
+        return h('details', { className: 'rounded-xl border border-slate-300 bg-white text-slate-800', open: tableMode || undefined, 'data-dataplot-table': true },
+          h('summary', { className: 'px-3 py-2 text-sm font-bold cursor-pointer', style: bigStyle }, fillT(t('stem.dataplot.table_summary', 'Data table ({n} rows)'), { n: points.length })),
+          h('div', { className: 'p-3 pt-0 space-y-2' },
+            h('div', { className: 'flex gap-2 items-end flex-wrap' },
+              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_x', 'New {x}'), { x: xName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-x-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.key === 'Enter') addRow(); } })),
+              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_y', 'New {y}'), { y: yName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-y-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.key === 'Enter') addRow(); } })),
+              h('button', { type: 'button', style: bigStyle, onClick: addRow, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, t('stem.dataplot.add_row', '+ Add row'))),
+            points.length > 0 && h('div', { className: 'overflow-x-auto', style: { maxHeight: 320, overflowY: 'auto', position: 'relative' } },
+              h('table', { className: 'w-full text-sm border-collapse' },
+                h('caption', { className: 'text-left text-xs text-slate-700 pb-1' }, t('stem.dataplot.table_caption', 'Every point on the chart. Change a value and press Enter; Undo reverses a change.')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, '#'),
+                  h('th', { scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, xName),
+                  h('th', { scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, yName),
+                  !isK5 && regFit.ok && n >= 2 && !stepMode && !modelHidden && h('th', { scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, t('stem.dataplot.col_residual', 'Residual')),
+                  h('th', { scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, h('span', { className: 'sr-only' }, t('stem.dataplot.col_actions', 'Actions'))))),
+                tableBody),
+              points.length > 500 && h('p', { className: 'text-xs text-slate-700 mt-1' }, fillT(t('stem.dataplot.table_first_500', 'Showing the first 500 of {n} rows.'), { n: points.length })))));
+      };
 
-              // Summary stats grid (expanded)
-              h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
-                [
-                  { label: t('stem.dataplot.count', 'Count'), value: n, icon: '\uD83D\uDCCA' },
-                  { label: t('stem.dataplot.mean_y', 'Mean Y'), value: meanY.toFixed(2), icon: '\uD83D\uDCCF' },
-                  { label: t('stem.dataplot.median_y', 'Median Y'), value: yMedian.toFixed(2), icon: '\u2796' },
-                  { label: t('stem.dataplot.mode_y', 'Mode Y'), value: modeVal, icon: '\uD83D\uDD01' },
-                  { label: t('stem.dataplot.std_dev', 'Std Dev'), value: stdDev.toFixed(2), icon: '\uD83D\uDCC9' },
-                  { label: t('stem.dataplot.min_y', 'Min Y'), value: yMin_.toFixed(2), icon: '\u2B07\uFE0F' },
-                  { label: t('stem.dataplot.max_y', 'Max Y'), value: yMax_.toFixed(2), icon: '\u2B06\uFE0F' },
-                  { label: t('stem.dataplot.range', 'Range'), value: yRange.toFixed(2), icon: '\u2194\uFE0F' },
-                  { label: 'Q1', value: q1.toFixed(2), icon: '\uD83D\uDCD0' },
-                  { label: 'Q3', value: q3.toFixed(2), icon: '\uD83D\uDCD0' },
-                  { label: 'IQR', value: iqr.toFixed(2), icon: '\uD83D\uDCE6' },
-                  { label: t('stem.dataplot.outliers', 'Outliers'), value: outliers.length, icon: '\u26A0\uFE0F' },
-                  { label: t('stem.dataplot.mean_x', 'Mean X'), value: meanX.toFixed(2), icon: '\uD83D\uDCCF' },
-                  { label: t('stem.dataplot.slope', 'Slope'), value: slope.toFixed(4), icon: '\uD83D\uDCC8' },
-                  { label: t('stem.dataplot.pearson_r', 'Pearson r'), value: pearsonR.toFixed(4), icon: '\uD83D\uDD17' },
-                  { label: t('stem.dataplot.spearman', 'Spearman \u03C1'), value: spearmanR.toFixed(4), icon: '\uD83C\uDFC5' }
-                ].map(function(stat) {
-                  return h('div', { key: stat.label, className: 'p-2 bg-white rounded-lg border border-teal-100 text-center' },
-                    h('div', { className: 'text-[0.6875rem] font-bold text-teal-600 uppercase' }, stat.icon + ' ' + stat.label),
-                    h('div', { className: 'text-sm font-bold text-teal-900' }, stat.value)
-                  );
-                })
-              ),
+      // Regression model choice, equation, R², small-n caveat and the reason when a model cannot fit.
+      // 6-8: draw your line first. The model, its equation and R² wait behind this card.
+      var myLineSliders = function () {
+        var sl = function (which, hx, val, label) {
+          return h('label', { key: which, className: 'block text-xs font-bold text-slate-900' }, fillT(label, { x: fmtNum(hx, 2), y: fmtNum(val, lineDec) }),
+            h('input', { type: 'range', min: axY.min, max: axY.max, step: lineStep, value: val, 'data-dataplot-my-slider': which, 'aria-valuetext': fillT(t('stem.dataplot.fit_slider_value', 'height {y}'), { y: fmtNum(val, lineDec) }),
+              onChange: function (e) { moveMyLine(which, parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 32 } }));
+        };
+        return h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+          sl('yA', myXA, myYA, t('stem.dataplot.fit_left_end', 'Left end of my line (at x = {x}): {y}')),
+          sl('yB', myXB, myYB, t('stem.dataplot.fit_right_end', 'Right end of my line (at x = {x}): {y}')));
+      };
+      var renderMyLineCard = function () {
+        return h('section', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-400 text-slate-900 space-y-2', 'data-dataplot-myline': true, 'aria-labelledby': 'dp-myline-title' },
+          h('h4', { id: 'dp-myline-title', className: 'text-sm font-bold text-amber-900' }, t('stem.dataplot.myline_title', 'Draw your line first')),
+          h('p', { className: 'text-xs text-slate-800' }, canDrawLine
+            ? t('stem.dataplot.myline_intro', 'Drag the two orange ends (or use the sliders) to the line you think fits the points best. Then compare it with the best-fit line and its R².')
+            : allowReveal ? t('stem.dataplot.myline_intro_other', 'Switch to the scatter plot to draw your own line first, or show the best-fit line now.')
+            : t('stem.dataplot.myline_intro_other_noreveal', 'Switch to the scatter plot to draw your own line first.')),
+          canDrawLine && myLineSliders(),
+          canDrawLine && lineMoved && h('p', { className: 'text-xs text-slate-800', 'data-dataplot-my-eq': true }, fillT(t('stem.dataplot.sr_fit_line_now', 'Your line: {eq}.'), { eq: equationText('linear', myLineEq) })),
+          (allowReveal || (lineMoved && canDrawLine)) && h('button', { type: 'button', style: bigStyle, onClick: showBestFit, 'data-dataplot-show-fit': lineMoved && canDrawLine ? 'compare' : 'show', className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' },
+            lineMoved && canDrawLine ? t('stem.dataplot.myline_compare_btn', 'Compare my line with the best fit') : t('stem.dataplot.myline_show_btn', 'Show best fit')));
+      };
+      // After the comparison: the real fit's numbers beside the student's line.
+      var renderMyLineResult = function () {
+        if (!myEval) return null;
+        var close = myEval.ratio <= 1.3;
+        return h('div', { className: 'space-y-1', 'data-dataplot-myline-result': true, tabIndex: -1 },
+          feedbackBox(close, myCompareText(myEval)
+            + ' ' + fitQualityText(myEval.quality) + (close ? '' : ' ' + fitMisText(myEval)), { role: undefined }),
+          myLineSliders(),
+          regressionType === 'linear' && h('div', { role: 'group', 'aria-label': t('stem.dataplot.fit_squares_group', 'Squares to draw'), className: 'flex gap-1.5 flex-wrap items-center text-xs' },
+            h('span', { className: 'font-bold text-slate-800' + onHostInk }, t('stem.dataplot.fit_squares_label', 'Draw the squared residuals for:')),
+            [['mine', t('stem.dataplot.fit_sq_mine', 'My line')], ['ls', t('stem.dataplot.fit_sq_ls', 'Least-squares line')], ['both', t('stem.dataplot.fit_sq_both', 'Both')], ['none', t('stem.dataplot.fit_sq_none', 'Neither')]].map(function (o) {
+              return h('button', { key: o[0], type: 'button', 'aria-pressed': mySquares === o[0], style: chipStyle, 'data-dataplot-my-squares': o[0], onClick: function () { upd('myLine', Object.assign({}, myLine, { squares: o[0] })); }, className: btnCls(mySquares === o[0]) }, o[1]);
+            })));
+      };
+      var renderRegressionBox = function () {
+        if (n < 2 || isK5) return null;
+        if (modelHidden) return renderMyLineCard();
+        var spearOpen = !!d.showSpearman;
+        var rCls = !regFit.ok ? 'text-slate-700' : regR2 > 0.8 ? 'text-emerald-800' : regR2 > 0.5 ? 'text-amber-800' : 'text-red-800';
+        return h('div', { className: 'bg-white rounded-lg border border-slate-300 p-2 text-slate-800', 'data-dataplot-regression': true, tabIndex: -1 },
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.regression_model_choice', 'Regression model'), className: 'flex gap-2 items-center mb-1.5 flex-wrap' },
+            h('span', { className: 'text-xs font-bold text-slate-800' }, t('stem.dataplot.regression_label', 'Regression:')),
+            REG_TYPES.map(function(rt) {
+              return h('button', { key: rt, type: 'button', 'data-regression-model': rt, 'aria-pressed': regressionType === rt, style: { minHeight: 44, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function() { upd('regressionType', rt); say(fitOk[rt].ok ? fillT(t('stem.dataplot.sr_model_now', '{model} model: {eq}.'), { model: regName(rt), eq: equationText(rt, coefs[rt]) }) : fitWhyText(fitOk[rt])); },
+                className: 'px-2 py-0.5 rounded text-xs font-bold transition-all ' + (regressionType === rt ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200') + (fitOk[rt].ok ? '' : ' line-through')
+              }, regName(rt));
+            })
+          ),
+          !regFit.ok ? h('p', { role: 'note', 'data-dataplot-fit-why': regFit.why, className: 'text-xs text-red-800 bg-red-50 border border-red-200 rounded p-2' }, fitWhyText(regFit))
+          : h('div', { className: 'flex items-center gap-3 flex-wrap' },
+            h('span', { className: 'text-sm font-mono text-slate-800', 'data-dataplot-equation': true }, regEq),
+            h('span', { className: 'text-xs font-bold text-slate-700' }, 'n = ' + n),
+            h('span', { className: 'text-xs font-bold ' + rCls }, 'R² = ' + fmtFixed(regR2, 4)),
+            h('span', { className: 'text-xs text-slate-700' }, slope > 0 ? t('stem.dataplot.dir_positive', '↗ Positive') : slope < 0 ? t('stem.dataplot.dir_negative', '↘ Negative') : t('stem.dataplot.dir_none', '➔ No slope')),
+            n >= 3 && h('span', { className: 'text-xs font-bold text-indigo-800' }, 'r = ' + fmtFixed(pearsonR, 3)),
+            n >= 3 && isHS && h('button', { type: 'button', style: chipStyle, 'aria-expanded': spearOpen, 'data-dataplot-spearman-toggle': true, onClick: function () { upd('showSpearman', !spearOpen); if (!spearOpen) { checkBadges({ spearmanViewed: true }); say(fillT(t('stem.dataplot.sr_spearman', 'Spearman rho = {rho}. It ranks the values, so it measures any steady rise or fall, not just a straight line.'), { rho: fmtFixed(spearmanR, 3) })); } }, className: 'px-2 py-0.5 rounded text-xs font-bold border border-indigo-700 text-indigo-800 bg-white' },
+              spearOpen ? 'ρ = ' + fmtFixed(spearmanR, 3) : t('stem.dataplot.compare_spearman', 'Compare with Spearman ρ'))),
+          regFit.ok && smallN && h('p', { className: 'text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded p-2 mt-1.5', 'data-dataplot-small-n': true },
+            fillT(t('stem.dataplot.small_n_caveat', 'Only {n} points: with this few, R² can look high just by chance (2 points always fit a line exactly). Collect more data before trusting the model.'), { n: n })),
+          regFit.ok && h('div', { className: 'flex items-center gap-2 mt-1.5' },
+            h('div', { className: 'flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': 'true' },
+              h('div', { style: { width: (Math.max(0, Math.min(1, regR2)) * 100) + '%', height: '100%', borderRadius: '9999px', backgroundColor: dc(regR2 > 0.8 ? '#047857' : regR2 > 0.5 ? '#b45309' : '#b91c1c') } })),
+            h('span', { className: 'text-xs font-bold ' + rCls }, fillT(t('stem.dataplot.fit_strength', 'Fit: {word}'), { word: regR2 > 0.9 ? t('stem.dataplot.fit_very_strong', 'very strong') : regR2 > 0.7 ? t('stem.dataplot.fit_strong', 'strong') : regR2 > 0.5 ? t('stem.dataplot.fit_moderate', 'moderate') : regR2 > 0.3 ? t('stem.dataplot.fit_weak', 'weak') : t('stem.dataplot.fit_very_weak', 'very weak') })))
+        );
+      };
 
-              // Correlation explainer
-              n >= 3 && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-                h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-1' }, t('stem.dataplot.pearson_vs_spearman', '\uD83D\uDD17 Pearson vs Spearman')),
-                h('div', { className: 'text-[0.6875rem] text-indigo-600 leading-relaxed' },
-                  'Pearson r (' + pearsonR.toFixed(3) + ') measures linear correlation. Spearman \u03C1 (' + spearmanR.toFixed(3) + ') measures monotonic (rank-based) correlation. '
-                  + (Math.abs(spearmanR) > Math.abs(pearsonR) + 0.1 ? 'Spearman is higher \u2014 your data may have a non-linear but monotonic trend!' : Math.abs(pearsonR) > Math.abs(spearmanR) + 0.1 ? 'Pearson is higher \u2014 the linear relationship is stronger than the rank relationship.' : 'Both are similar \u2014 the relationship is approximately linear.')
-                )
-              ),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Statistics ── predict shape, centre and spread first
+      // ══════════════════════════════════════════════════════════
+      var dataSig = dataSignature(visiblePoints);
+      var statsPred = obj(d.statsPred);
+      var predFor = statsPred.sig === dataSig ? statsPred : {};
+      var predNeeded = requirePredict && n >= 5 && !stepMode;
+      var predDone = !predNeeded || !!predFor.committed;
+      var shapeName = function (s) { return s === 'right' ? t('stem.dataplot.shape_right', 'Skewed right (long tail to the right)') : s === 'left' ? t('stem.dataplot.shape_left', 'Skewed left (long tail to the left)') : t('stem.dataplot.shape_symmetric', 'Roughly symmetric'); };
+      var spreadIsRange = isK5;
+      var actualSpread = spreadIsRange ? yRange : iqr;
+      var modeText = function () {
+        if (modeInfo.kind === 'one') return fmtNum(modeInfo.modes[0]);
+        if (modeInfo.kind === 'many') return fillT(t('stem.dataplot.mode_many', '{list} (each appears {k} times)'), { list: modeInfo.modes.map(function (m) { return fmtNum(m); }).join(', '), k: modeInfo.count });
+        if (modeInfo.kind === 'all') return t('stem.dataplot.mode_all_equal', 'No mode: every value appears equally often');
+        if (modeInfo.kind === 'none') return t('stem.dataplot.mode_none', 'No mode: every value appears once');
+        return '—';
+      };
+      var commitPrediction = function () {
+        var shape = predFor.shape || statsPred.draftShape, centre = toNumber(statsPred.draftCentre, ';'), spread = toNumber(statsPred.draftSpread, ';');
+        if (!isK5 && !shape) { say(t('stem.dataplot.sr_pred_need_shape', 'Choose a shape first.')); return; }
+        if (!dpFin(centre) || !dpFin(spread)) { say(t('stem.dataplot.sr_pred_need_numbers', 'Type a number for both estimates first.')); return; }
+        upd('statsPred', { sig: dataSig, shape: isK5 ? '' : shape, centre: centre, spread: spread, committed: true, at: Date.now() });
+        var okShape = isK5 || shape === shapeInfo.shape, near = function (a, b) { return Math.abs(a - b) <= Math.max(0.1 * (yRange || 1), 1e-9); };
+        say(fillT(t('stem.dataplot.sr_pred_checked', 'Predictions saved. Shape: {shape}. Centre: the median is {med}. Spread: {spread}. Compare them with yours below.'),
+          { shape: isK5 ? '—' : (okShape ? t('stem.dataplot.word_correct', 'correct') : shapeName(shapeInfo.shape)), med: fmtNum(yMedian, 2), spread: fmtNum(actualSpread, 2) }));
+        if (okShape && near(centre, yMedian) && Math.abs(spread - actualSpread) <= Math.max(0.25 * actualSpread, 0.1 * (yRange || 1))) {
+          // XP once only: adding one point makes a "new" data set whose statistics were just shown.
+          var key = 'pred:' + dataSig, paidBefore = Object.keys(quizXpItems).some(function (k) { return /^pred:/.test(k) && quizXpItems[k]; });
+          var x2 = Object.assign(paidBefore ? {} : xpPatch(key, 5, t('stem.dataplot.xp_prediction', 'Accurate shape, centre and spread prediction')), progressPatch('pred'));
+          if (Object.keys(x2).length) updMulti(x2);
+        }
+      };
+      var renderPredictCard = function () {
+        var draftShape = statsPred.sig === dataSig ? (predFor.shape || statsPred.draftShape) : statsPred.draftShape;
+        // Drafts carry over between data sets; a commitment belongs to one data set only.
+        var setDraft = function (patch) { upd('statsPred', Object.assign({}, statsPred, { sig: dataSig, committed: statsPred.sig === dataSig && !!statsPred.committed }, patch)); };
+        return h('section', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-400 text-slate-900', 'data-dataplot-predict': true, 'aria-labelledby': 'dp-pred-title' },
+          h('h4', { id: 'dp-pred-title', className: 'text-sm font-bold text-amber-900 mb-1' }, fillT(t('stem.dataplot.pred_title_named', 'Predict first, then check: {y}'), { y: yName })),
+          // The data themselves, as a dot plot of the named variable: the statistics stay locked
+          // until the student locks in a prediction. The text equivalent lists the values in order.
+          dotPlotSvg(allY, { axisLabel: yName, height: 120, label: fillT(t('stem.dataplot.pred_dot_label', 'Dot plot of {y}, {n} values. The values in order: {list}.'), { y: yName, n: n, list: sortedY.slice(0, 60).map(function (v) { return fmtNum(v); }).join(', ') + (n > 60 ? ', …' : '') }),
+            svgProps: { 'data-dataplot-pred-dotplot': true } }),
+          h('p', { className: 'text-xs text-slate-800 mb-2 mt-2' }, isK5 ? t('stem.dataplot.pred_intro_k5_v2', 'Look at the dots. Guess the middle value and how far apart the smallest and largest values are. Then the numbers appear.')
+            : t('stem.dataplot.pred_intro_v2', 'Look at the dot plot. Commit to a shape, a centre and a spread. Then the statistics appear so you can compare.')),
+          !isK5 && h('div', { role: 'radiogroup', 'aria-label': t('stem.dataplot.pred_shape_label', 'Shape of the y values'), className: 'flex gap-1.5 flex-wrap mb-2' },
+            ['symmetric', 'right', 'left'].map(function (s) {
+              return h('button', { key: s, type: 'button', role: 'radio', 'aria-checked': draftShape === s, style: chipStyle, onClick: function () { setDraft({ draftShape: s }); }, className: btnCls(draftShape === s) }, shapeName(s));
+            })),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+            h('label', { className: 'text-xs font-bold text-slate-800' }, isK5 ? t('stem.dataplot.pred_centre_k5', 'My guess for the middle value') : t('stem.dataplot.pred_centre', 'My estimate of the median'),
+              h('input', { type: 'text', inputMode: 'decimal', value: statsPred.draftCentre != null ? String(statsPred.draftCentre) : '', onChange: function (e) { setDraft({ draftCentre: e.target.value.slice(0, 20) }); }, className: 'block w-full mt-1 px-2 py-1 text-sm border border-slate-500 rounded', style: chipStyle })),
+            h('label', { className: 'text-xs font-bold text-slate-800' }, isK5 ? t('stem.dataplot.pred_spread_k5', 'My guess for largest minus smallest') : t('stem.dataplot.pred_spread', 'My estimate of the IQR (width of the middle half)'),
+              h('input', { type: 'text', inputMode: 'decimal', value: statsPred.draftSpread != null ? String(statsPred.draftSpread) : '', onChange: function (e) { setDraft({ draftSpread: e.target.value.slice(0, 20) }); }, className: 'block w-full mt-1 px-2 py-1 text-sm border border-slate-500 rounded', style: chipStyle }))),
+          h('button', { type: 'button', style: bigStyle, onClick: commitPrediction, 'data-dataplot-pred-commit': true, className: 'mt-2 px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, t('stem.dataplot.pred_commit', 'Lock in my predictions')));
+      };
+      var renderPredictResult = function () {
+        if (!predNeeded || !predFor.committed) return null;
+        var near = function (a, b) { return Math.abs(a - b) <= Math.max(0.1 * (yRange || 1), 1e-9); };
+        var spreadNear = Math.abs(predFor.spread - actualSpread) <= Math.max(0.25 * actualSpread, 0.1 * (yRange || 1));
+        var lines = [];
+        if (!isK5) lines.push(predFor.shape === shapeInfo.shape ? fillT(t('stem.dataplot.pr_shape_ok', 'Shape: you said {s}. Yes.'), { s: shapeName(predFor.shape) })
+          : fillT(t('stem.dataplot.pr_shape_no', 'Shape: you said {s}; the data are {a}. Remember: a skew is named after its long TAIL, not after where the peak is.'), { s: shapeName(predFor.shape), a: shapeName(shapeInfo.shape) }));
+        lines.push(fillT(near(predFor.centre, yMedian) ? t('stem.dataplot.pr_centre_ok', 'Centre: you estimated {g}; the median is {a}. Close.') : t('stem.dataplot.pr_centre_no', 'Centre: you estimated {g}; the median is {a}. The median splits the values into two equal halves: count in from both ends.'), { g: fmtNum(predFor.centre, 2), a: fmtNum(yMedian, 2) }));
+        lines.push(fillT(spreadNear ? t('stem.dataplot.pr_spread_ok', 'Spread: you estimated {g}; the answer is {a}. Close.') : (isK5 ? t('stem.dataplot.pr_spread_no_k5', 'Spread: you guessed {g}; largest minus smallest is {a}.') : t('stem.dataplot.pr_spread_no', 'Spread: you estimated {g}; the IQR is {a}. The IQR ignores the extremes: it is the width of the middle half only.')), { g: fmtNum(predFor.spread, 2), a: fmtNum(actualSpread, 2) }));
+        return h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-400 text-slate-900 text-xs space-y-1', 'data-dataplot-pred-result': true, role: 'status' },
+          h('p', { className: 'font-bold text-amber-900' }, t('stem.dataplot.pr_title', 'Your predictions compared')), lines.map(function (l, i) { return h('p', { key: i }, l); }));
+      };
 
-              // Regression comparison
-              n >= 2 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
-                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, t('stem.dataplot.regression_comparison', '\uD83D\uDD2C Regression Comparison')),
-                h('div', { className: 'space-y-1.5' },
-                  [
-                    { name: t('stem.dataplot.linear', 'Linear'), eq: 'y = ' + slope.toFixed(2) + 'x + ' + intercept.toFixed(2), r2: r2 },
-                    n >= 3 ? { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: 'y = ' + quadA.toFixed(4) + 'x\u00B2 + ' + quadB.toFixed(2) + 'x + ' + quadC.toFixed(2), r2: quadR2 } : null,
-                    expA ? { name: t('stem.dataplot.exponential', 'Exponential'), eq: 'y = ' + expA.toFixed(2) + 'e^(' + expB.toFixed(4) + 'x)', r2: expR2 } : null,
-                    // A log fit drops every x <= 0 point, so it is not ranked against fits of all points.
-                    logB && allX.every(function(x) { return x > 0; }) ? { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: 'y = ' + logA.toFixed(2) + ' + ' + logB.toFixed(2) + 'ln(x)', r2: logR2 } : null
-                  // Sort and color by RAW R\u00B2, not |R\u00B2|: a negative R\u00B2 means the fit is
-                  // WORSE than the mean line \u2014 abs() ranked catastrophic fits first
-                  // and painted them green.
-                  ].filter(Boolean).sort(function(a, b) { return b.r2 - a.r2; }).map(function(reg) {
-                    var best = reg.r2 === Math.max(r2, quadR2, expR2, allX.every(function(x) { return x > 0; }) ? logR2 : -Infinity);
-                    return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
-                      best && h('span', { className: 'text-[0.6875rem] font-bold text-emerald-600' }, t('stem.dataplot.best', '\u2B50 Best')),
-                      h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
-                      h('span', { className: 'text-[0.6875rem] font-mono text-slate-600 flex-1' }, reg.eq),
-                      h('span', { className: 'text-xs font-bold ' + (reg.r2 > 0.8 ? 'text-emerald-600' : reg.r2 > 0.3 ? 'text-yellow-600' : 'text-red-500') }, 'R\u00B2=' + reg.r2.toFixed(4))
-                    );
-                  })
-                )
-              ),
+      // Mean vs median: one value the student drags.
+      var SHIFT_BASE = [5, 6, 6, 7, 8, 8, 9, 10, 12], SHIFT_START = 10, SHIFT_AXIS = { min: 0, max: 100, ticks: [0, 20, 40, 60, 80, 100], decimals: 0 };
+      var shift = obj(d.shiftDemo);
+      // Kept across renders (a per-render object forgot the drag after the first move).
+      var shiftDragRef = React.useRef(false);
+      var moverVal = dpFin(shift.value) ? Math.max(0, Math.min(100, shift.value)) : SHIFT_START;
+      var shiftVals = SHIFT_BASE.concat([moverVal]), shiftStartVals = SHIFT_BASE.concat([SHIFT_START]);
+      var sMean = meanOf(shiftVals), sMed = medianOf(shiftVals), sMean0 = meanOf(shiftStartVals), sMed0 = medianOf(shiftStartVals);
+      var setShift = function (patch) { upd('shiftDemo', Object.assign({}, shift, patch)); };
+      var moveShift = function (v) {
+        v = Math.max(0, Math.min(100, Math.round(v)));
+        var patch = { value: v };
+        if (Math.abs(v - SHIFT_START) >= 30 && shift.pred && !shift.done) {
+          patch.done = true;
+          // Inside the shared cap (it used to add a flat 5 and could pass 100).
+          var x3 = xpPatch('shift:demo', 5, t('stem.dataplot.xp_shift', 'Tested a mean-versus-median prediction'));
+          if (Object.keys(x3).length) updMulti(x3);
+        }
+        setShift(patch);
+      };
+      var renderShiftDemo = function () {
+        var predicted = shift.pred === 'mean' || shift.pred === 'median' || shift.pred === 'same';
+        var svgDrag = function (e) {
+          var svg = e.currentTarget.ownerSVGElement || e.currentTarget, r = svg.getBoundingClientRect();
+          if (!r.width) return;
+          var scale = Math.min(r.width / W, r.height / 170) || 1, sx = (e.clientX - r.left - (r.width - W * scale) / 2) / scale;
+          moveShift((sx - 30) / (W - 46) * 100);
+        };
+        return h('section', { className: 'bg-white rounded-xl p-3 border border-indigo-300 text-slate-800', 'data-dataplot-shift': true, 'aria-labelledby': 'dp-shift-title' },
+          h('h4', { id: 'dp-shift-title', className: 'text-sm font-bold text-indigo-900' }, t('stem.dataplot.shift_title', 'Drag an outlier: mean versus median')),
+          h('p', { className: 'text-xs text-slate-800 mb-2' }, t('stem.dataplot.shift_intro', 'Ten students’ weekly pocket money in dollars. The red dot is one student. Predict first: if that value grows to 100, which moves further?')),
+          h('div', { role: 'radiogroup', 'aria-label': t('stem.dataplot.shift_pred_label', 'Which moves further?'), className: 'flex gap-1.5 flex-wrap mb-2' },
+            [['mean', t('stem.dataplot.shift_opt_mean', 'The mean')], ['median', t('stem.dataplot.shift_opt_median', 'The median')], ['same', t('stem.dataplot.shift_opt_same', 'They move the same')]].map(function (o) {
+              return h('button', { key: o[0], type: 'button', role: 'radio', 'aria-checked': shift.pred === o[0], disabled: predicted && shift.pred !== o[0], style: chipStyle, onClick: function () { if (!predicted) { setShift({ pred: o[0] }); say(t('stem.dataplot.sr_shift_locked', 'Prediction locked. Now move the value and watch.')); } }, className: btnCls(shift.pred === o[0]) + ' disabled:opacity-50' }, o[1]);
+            })),
+          // A fixed 0-100 axis: the padded nice axis (-50 to 150) put the dot far from the finger.
+          dotPlotSvg(shiftVals, { axis: SHIFT_AXIS, height: 170, highlight: shiftVals.length - 1, label: fillT(t('stem.dataplot.shift_svg_label', 'Dot plot: the moving value is {v}; mean {mean}, median {med}.'), { v: moverVal, mean: fmtNum(sMean, 2), med: fmtNum(sMed, 2) }),
+            svgProps: predicted ? { 'data-dataplot-shift-svg': true, onPointerDown: function (e) { shiftDragRef.current = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); svgDrag(e); }, onPointerMove: function (e) { if (shiftDragRef.current) svgDrag(e); },
+              onPointerUp: function () { if (shiftDragRef.current) { shiftDragRef.current = false; say(fillT(t('stem.dataplot.shift_valuetext', '{v} dollars. Mean {mean}, median {med}.'), { v: moverVal, mean: fmtNum(sMean, 2), med: fmtNum(sMed, 2) })); } },
+              onPointerCancel: function () { shiftDragRef.current = false; }, onLostPointerCapture: function () { shiftDragRef.current = false; }, style: { background: INK.bg, touchAction: 'none', cursor: 'ew-resize' } } : null,
+            children: function (dx, base) {
+              return [
+                h('line', { key: 'ml', x1: dx(sMed), y1: 10, x2: dx(sMed), y2: base, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5 }),
+                h('text', { key: 'mt', x: dx(sMed), y: 10, textAnchor: dx(sMed) > W - 80 ? 'end' : 'start', fill: isContrast ? '#00ffff' : dc('#1d4ed8'), style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(sMed, 2) })),
+                h('path', { key: 'mean', d: 'M ' + dx(sMean) + ' ' + (base + 3) + ' l -7 12 l 14 0 Z', fill: isContrast ? '#ff8080' : dc('#b91c1c') }),
+                h('text', { key: 'mtx', x: dx(sMean), y: 26, textAnchor: dx(sMean) > W - 80 ? 'end' : 'start', fill: isContrast ? '#ff8080' : dc('#b91c1c'), style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(sMean, 2) }))
+              ];
+            } }),
+          h('label', { className: 'block text-xs font-bold text-slate-800 mt-2' }, t('stem.dataplot.shift_slider', 'Move the red value (dollars)'),
+            h('input', { type: 'range', min: 0, max: 100, step: 1, value: moverVal, disabled: !predicted, 'aria-valuetext': fillT(t('stem.dataplot.shift_valuetext', '{v} dollars. Mean {mean}, median {med}.'), { v: moverVal, mean: fmtNum(sMean, 2), med: fmtNum(sMed, 2) }), onChange: function (e) { moveShift(parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 32 } })),
+          !predicted && h('p', { className: 'text-xs text-slate-700' }, t('stem.dataplot.shift_locked_note', 'Make a prediction to unlock the slider.')),
+          h('p', { className: 'text-xs text-slate-800 mt-1', role: 'status' }, fillT(t('stem.dataplot.shift_moved', 'Since the start, the mean has moved {dm} and the median has moved {dmed}.'), { dm: fmtNum(Math.abs(sMean - sMean0), 2), dmed: fmtNum(Math.abs(sMed - sMed0), 2) })),
+          shift.done && h('p', { className: 'text-xs mt-1 p-2 rounded border ' + (shift.pred === 'mean' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900'), 'data-dataplot-shift-verdict': shift.pred },
+            shift.pred === 'mean' ? t('stem.dataplot.shift_ok', 'Your prediction held: the mean uses the SIZE of every value, so one far value drags it along. The median only depends on which value is in the middle, so it barely moves. That is why the median describes skewed data better.')
+              : shift.pred === 'median' ? t('stem.dataplot.shift_mis_median', 'Misconception: "the median follows every value". The median only cares about the middle position, so one far-away value barely moves it. The mean uses every value’s size, so it moved much further.')
+              : t('stem.dataplot.shift_mis_same', 'They respond differently: the mean uses every value’s size; the median only uses the middle position. One extreme value pulls the mean much further.')),
+          h('button', { type: 'button', style: chipStyle, onClick: function () { setShift({ value: SHIFT_START, pred: '', done: false }); }, className: 'mt-2 px-3 py-1 rounded-lg text-xs font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.shift_reset', 'Start again')));
+      };
 
-              // Five-number summary
-              h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
-                h('div', { className: 'text-xs font-bold text-teal-700 uppercase mb-2' }, t('stem.dataplot.five_number_summary_y', '\uD83D\uDCE6 Five-Number Summary (Y)')),
-                h('div', { className: 'flex gap-2 justify-around text-center' },
-                  [
-                    { label: 'Min', value: yMin_.toFixed(1) },
-                    { label: 'Q1', value: q1.toFixed(1) },
-                    { label: t('stem.dataplot.median', 'Median'), value: yMedian.toFixed(1) },
-                    { label: 'Q3', value: q3.toFixed(1) },
-                    { label: 'Max', value: yMax_.toFixed(1) }
-                  ].map(function(s) {
-                    return h('div', { key: s.label },
-                      h('div', { className: 'text-[0.6875rem] font-bold text-teal-500' }, s.label),
-                      h('div', { className: 'text-sm font-bold text-teal-900' }, s.value)
-                    );
-                  })
-                )
-              ),
+      // Worked examples that fade: example 1 is fully worked; each later one leaves one more
+      // final step for the student to calculate. Median (K-5), MAD (6-8), SD (9-12).
+      var WORKED_SETS = { median: [[7, 3, 9, 5, 1], [8, 2, 6, 4, 10, 12], [15, 11, 14, 10, 13]], mad: [[2, 4, 6, 8], [3, 5, 6, 9, 12], [10, 12, 15, 15, 18]], sd: [[2, 4, 4, 4, 5, 5, 7, 9], [1, 3, 5, 7], [6, 8, 10, 12, 14]] };
+      var workedKind = isK5 ? 'median' : is68 ? 'mad' : 'sd';
+      var workedSteps = function (kind, vals) {
+        var nV = vals.length, s = sortedOf(vals), sum = vals.reduce(function (a, b) { return a + b; }, 0), mu = sum / nV;
+        if (kind === 'median') {
+          var mid = medianSorted(s);
+          return [{ text: fillT(t('stem.dataplot.we_med_sort', 'Put the values in order: {list}.'), { list: s.join(', ') }) },
+            { text: fillT(t('stem.dataplot.we_med_count', 'Count them: there are {n} values.'), { n: nV }), value: nV },
+            { text: nV % 2 ? fillT(t('stem.dataplot.we_med_odd', 'With an odd count, the middle one is value number {k}.'), { k: (nV + 1) / 2 }) : fillT(t('stem.dataplot.we_med_even', 'With an even count, the two middle values are {a} and {b}.'), { a: s[nV / 2 - 1], b: s[nV / 2] }) },
+            { text: fillT(t('stem.dataplot.we_med_result', 'The median is {m}.'), { m: fmtNum(mid, 2) }), value: mid, prompt: t('stem.dataplot.we_med_prompt', 'What is the median?') }];
+        }
+        if (kind === 'mad') {
+          var dist = vals.map(function (v) { return Math.abs(v - mu); }), tot = dist.reduce(function (a, b) { return a + b; }, 0);
+          return [{ text: fillT(t('stem.dataplot.we_sum', 'Add the values: the total is {sum}.'), { sum: fmtNum(sum, 2) }), value: sum },
+            { text: fillT(t('stem.dataplot.we_mean', 'Mean = {sum} ÷ {n} = {m}.'), { sum: fmtNum(sum, 2), n: nV, m: fmtNum(mu, 2) }), value: mu, prompt: t('stem.dataplot.we_mean_prompt', 'What is the mean?') },
+            { text: fillT(t('stem.dataplot.we_mad_dist', 'Distances from the mean: {list}. They add up to {tot}.'), { list: dist.map(function (v) { return fmtNum(v, 2); }).join(', '), tot: fmtNum(tot, 2) }), value: tot, prompt: t('stem.dataplot.we_mad_dist_prompt', 'What do the distances from the mean add up to?') },
+            { text: fillT(t('stem.dataplot.we_mad_result', 'MAD = {tot} ÷ {n} = {mad}.'), { tot: fmtNum(tot, 2), n: nV, mad: fmtNum(tot / nV, 2) }), value: tot / nV, prompt: t('stem.dataplot.we_mad_prompt', 'What is the MAD?') }];
+        }
+        var ss = vals.reduce(function (a, v) { return a + (v - mu) * (v - mu); }, 0);
+        return [{ text: fillT(t('stem.dataplot.we_mean', 'Mean = {sum} ÷ {n} = {m}.'), { sum: fmtNum(sum, 2), n: nV, m: fmtNum(mu, 2) }), value: mu, prompt: t('stem.dataplot.we_mean_prompt', 'What is the mean?') },
+          { text: fillT(t('stem.dataplot.we_sd_ss', 'Square each distance from the mean and add them: {ss}.'), { ss: fmtNum(ss, 2) }), value: ss, prompt: t('stem.dataplot.we_sd_ss_prompt', 'What do the squared distances add up to?') },
+          { text: fillT(t('stem.dataplot.we_sd_var', 'Variance σ² = {ss} ÷ {n} = {v}.'), { ss: fmtNum(ss, 2), n: nV, v: fmtNum(ss / nV, 2) }), value: ss / nV, prompt: t('stem.dataplot.we_sd_var_prompt', 'What is the variance?') },
+          { text: fillT(t('stem.dataplot.we_sd_result', 'σ = √{v} = {sd}.'), { v: fmtNum(ss / nV, 2), sd: fmtNum(Math.sqrt(ss / nV), 2) }), value: Math.sqrt(ss / nV), prompt: t('stem.dataplot.we_sd_prompt', 'What is σ, the population SD?') }];
+      };
+      var renderWorked = function () {
+        var ws = obj(d.worked), sets = WORKED_SETS[workedKind];
+        var idx = ws.kind === workedKind && dpFin(ws.idx) ? Math.max(0, Math.min(sets.length - 1, Math.floor(ws.idx))) : 0;
+        var vals = sets[idx], steps = workedSteps(workedKind, vals), answers = ws.kind === workedKind && ws.idx === idx ? obj(ws.answers) : {};
+        var graded = steps.map(function (s, i) { return { s: s, i: i }; }).filter(function (o) { return o.s.value != null; });
+        var yours = graded.slice(graded.length - idx).map(function (o) { return o.i; });
+        var setW = function (patch) { upd('worked', Object.assign({ kind: workedKind, idx: idx, answers: answers }, patch)); };
+        var title = workedKind === 'median' ? t('stem.dataplot.we_title_median', 'Worked examples: finding the median') : workedKind === 'mad' ? t('stem.dataplot.we_title_mad', 'Worked examples: mean absolute deviation (MAD)') : t('stem.dataplot.we_title_sd', 'Worked examples: standard deviation (σ)');
+        return h('section', { className: 'bg-white rounded-xl p-3 border border-sky-300 text-slate-900', 'data-dataplot-worked': workedKind, 'aria-labelledby': 'dp-we-title' },
+          h('h4', { id: 'dp-we-title', className: 'text-sm font-bold text-sky-900' }, title),
+          h('p', { className: 'text-xs text-slate-800' }, t('stem.dataplot.we_fade_note', 'Example 1 is fully worked. Each later example leaves one more final step for you.')),
+          h('p', { className: 'text-sm font-bold mt-1' }, fillT(t('stem.dataplot.we_example', 'Example {k} of {n}: {list}'), { k: idx + 1, n: sets.length, list: vals.join(', ') })),
+          h('ol', { className: 'list-decimal pl-5 text-sm space-y-1 mt-1' }, steps.map(function (s, i) {
+            if (yours.indexOf(i) < 0) return h('li', { key: i }, s.text);
+            var a = obj(answers[i]), id = 'dp-we-' + i;
+            if (a.ok || a.shown) return h('li', { key: i, 'data-dataplot-worked-step': a.ok ? 'right' : 'shown' }, (a.ok ? '✓ ' : '') + s.text);
+            return h('li', { key: i, 'data-dataplot-worked-step': 'yours' },
+              h('label', { htmlFor: id, className: 'font-bold block' }, s.prompt || t('stem.dataplot.we_your_turn', 'Your turn: work out this step.')),
+              h('div', { className: 'flex gap-2 flex-wrap items-center mt-1' },
+                h('input', { id: id, type: 'text', inputMode: 'decimal', key: id + ':' + (a.tries || 0), defaultValue: '', className: 'w-28 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: chipStyle,
+                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.parentNode.querySelector('button').click(); } } }),
+                h('button', { type: 'button', style: chipStyle, onClick: function (e) {
+                  var el = document.getElementById(id), v = el ? toNumber(el.value, ';') : NaN, nx = Object.assign({}, answers);
+                  if (!dpFin(v)) { say(t('stem.dataplot.sr_type_number', 'Type a number first.')); return; }
+                  var ok = Math.abs(v - s.value) <= Math.max(0.011, Math.abs(s.value) * 0.005);
+                  nx[i] = { ok: ok, tries: (a.tries || 0) + 1 };
+                  setW({ answers: nx });
+                  say(ok ? t('stem.dataplot.sr_step_right', 'Right. That step is done.') : t('stem.dataplot.sr_step_wrong', 'Not yet. Look back at the steps above and try again.'));
+                }, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-sky-800 text-white' }, t('stem.dataplot.check', 'Check')),
+                (a.tries || 0) >= 2 && h('button', { type: 'button', style: chipStyle, onClick: function () { var nx = Object.assign({}, answers); nx[i] = { shown: true, tries: a.tries }; setW({ answers: nx }); say(s.text); }, className: 'px-3 py-1 rounded-lg text-xs font-bold border border-sky-800 text-sky-900 bg-white' }, t('stem.dataplot.we_show_step', 'Show this step')),
+                a.tries && !a.ok ? h('span', { role: 'status', className: 'text-xs text-red-800' }, t('stem.dataplot.we_not_yet', 'Not yet: check your arithmetic.')) : null));
+          })),
+          h('div', { className: 'flex gap-2 flex-wrap mt-2' },
+            idx > 0 && h('button', { type: 'button', style: chipStyle, onClick: function () { setW({ idx: idx - 1, answers: {} }); }, className: 'px-3 py-1 rounded-lg text-xs font-bold border border-slate-500 text-slate-900 bg-white' }, t('stem.dataplot.we_prev', 'Previous example')),
+            idx < sets.length - 1 && h('button', { type: 'button', style: chipStyle, 'data-dataplot-worked-next': true, onClick: function () { setW({ idx: idx + 1, answers: {} }); }, className: 'px-3 py-1 rounded-lg text-xs font-bold border border-sky-800 text-sky-900 bg-white' }, t('stem.dataplot.we_next', 'Next example: more steps for you'))));
+      };
 
-              // Z-Score Calculator
-              h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-200' },
-                h('div', { className: 'text-xs font-bold text-cyan-700 uppercase mb-2' }, t('stem.dataplot.z_score_calculator', '\uD83D\uDCD0 Z-Score Calculator')),
-                stdDev === 0
-                  ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.need_variation_in_y_values', 'Need variation in Y values'))
-                  : h('div', { className: 'space-y-2' },
-                    h('div', { className: 'flex gap-2 items-center' },
-                      h('span', { className: 'text-xs font-bold text-cyan-600' }, t('stem.dataplot.y_value', 'Y value:')),
-                      h('input', { type: 'number', step: '0.1', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value); checkBadges({ zScoreUsed: true }); }, placeholder: meanY.toFixed(1), 'aria-label': t('stem.dataplot.y_value_for_z_score_calculation', 'Y value for z-score calculation'), className: 'w-24 px-2 py-1.5 border-2 border-cyan-600 rounded-lg text-sm font-bold text-cyan-800 text-center focus:border-cyan-400' }),
-                      zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
-                        var zVal = (parseFloat(zScoreInput) - meanY) / stdDev;
-                        var pct = zToPercentile(zVal);
-                        return h('div', { className: 'flex gap-3 items-center' },
-                          h('div', { className: 'px-3 py-1.5 rounded-lg text-sm font-bold text-center ' + (Math.abs(zVal) > 2 ? 'bg-red-50 text-red-700 border border-red-200' : Math.abs(zVal) > 1 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') }, 'z = ' + zVal.toFixed(3)),
-                          h('div', { className: 'px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-lg text-sm font-bold text-cyan-800' }, pct.toFixed(1) + 'th percentile'),
-                          Math.abs(zVal) > 2 && h('span', { className: 'text-[0.6875rem] text-red-500 font-bold' }, t('stem.dataplot.unusual', '\u26A0\uFE0F Unusual!'))
-                        );
-                      })()
-                    ),
-                    h('div', { className: 'text-[0.6875rem] text-cyan-500' }, 'z = (value \u2212 mean) / std dev = (value \u2212 ' + meanY.toFixed(2) + ') / ' + stdDev.toFixed(2)),
-                    // Mini visual
-                    h('div', { className: 'flex items-center gap-1 mt-1' },
-                      h('span', { className: 'text-[0.6875rem] text-slate-600' }, '-3\u03C3'),
-                      h('div', { className: 'flex-1 h-4 bg-slate-100 rounded-full relative overflow-hidden' },
-                        h('div', { style: { position: 'absolute', left: '2.3%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
-                        h('div', { style: { position: 'absolute', left: '15.8%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
-                        h('div', { style: { position: 'absolute', left: '50%', width: '34.2%', height: '100%', backgroundColor: '#dcfce7' } }),
-                        h('div', { style: { position: 'absolute', left: '84.2%', width: '13.5%', height: '100%', backgroundColor: '#fee2e2' } }),
-                        h('div', { style: { position: 'absolute', left: '50%', top: 0, width: '2px', height: '100%', backgroundColor: '#94a3b8' } }),
-                        zScoreInput !== '' && !isNaN(parseFloat(zScoreInput)) && (function() {
-                          var zv2 = (parseFloat(zScoreInput) - meanY) / stdDev;
-                          var pct2 = Math.max(0, Math.min(100, (zv2 + 3) / 6 * 100));
-                          return h('div', { style: { position: 'absolute', left: pct2 + '%', top: 0, width: '3px', height: '100%', backgroundColor: '#0d9488', borderRadius: '2px' } });
-                        })()
-                      ),
-                      h('span', { className: 'text-[0.6875rem] text-slate-600' }, '+3\u03C3')
-                    )
-                  )
-              ),
+      var statCell = function (label, value, key, note) {
+        return h('div', { key: key || label, className: 'p-2 bg-white rounded-lg border border-teal-200 text-center', 'data-dataplot-stat': key || label },
+          h('div', { className: 'text-xs font-bold text-teal-900' }, label),
+          h('div', { className: 'text-sm font-bold text-slate-900 break-words' }, value),
+          note ? h('div', { className: 'text-[0.6875rem] text-slate-700' }, note) : null);
+      };
+      var renderStatsTab = function () {
+        if (n === 0) return h('div', dataPlotPanelProps('stats', { className: 'space-y-3' }), h('div', { className: 'text-center text-sm text-slate-700 py-8' + onHostInk }, t('stem.dataplot.add_data_points_to_see_statistics', 'Add data points to see statistics')), renderWorked(), !isK5 && renderShiftDemo());
+        var cells = [statCell(t('stem.dataplot.count', 'Count'), n, 'count'), statCell(t('stem.dataplot.min_y_v2', 'Smallest y'), fmtNum(yMin_, 3), 'min'), statCell(t('stem.dataplot.max_y_v2', 'Largest y'), fmtNum(yMax_, 3), 'max'),
+          statCell(t('stem.dataplot.range', 'Range'), fmtNum(yRange, 3), 'range'), statCell(t('stem.dataplot.median_y_v2', 'Median y'), fmtNum(yMedian, 3), 'median'), statCell(t('stem.dataplot.mode_y_v2', 'Mode y'), modeText(), 'mode')];
+        if (!isK5) cells = cells.concat([statCell(t('stem.dataplot.mean_y_v2', 'Mean y'), fmtNum(meanY, 3), 'mean'), statCell('Q1', fmtNum(q1, 3), 'q1'), statCell('Q3', fmtNum(q3, 3), 'q3'),
+          statCell(t('stem.dataplot.iqr_label', 'IQR'), fmtNum(iqr, 3), 'iqr'), statCell(t('stem.dataplot.mad_label', 'MAD (mean absolute deviation)'), fmtNum(madY, 3), 'mad'), statCell(t('stem.dataplot.outliers', 'Outliers'), outliers.length, 'outliers')]);
+        if (isHS) cells = cells.concat([statCell(t('stem.dataplot.sd_population', 'SD, population (σ)'), fmtNum(stdDev, 3), 'sdpop', t('stem.dataplot.sd_pop_note', 'divides by n')),
+          statCell(t('stem.dataplot.sd_sample', 'SD, sample (s)'), dpFin(sampleSD) ? fmtNum(sampleSD, 3) : '—', 'sdsample', t('stem.dataplot.sd_sample_note', 'divides by n − 1')),
+          statCell(t('stem.dataplot.mean_x_v2', 'Mean x'), fmtNum(meanX, 3), 'meanx'), statCell(t('stem.dataplot.slope', 'Slope'), fitOk.linear.ok ? fmtFixed(slope, 4) : '—', 'slope'),
+          statCell(t('stem.dataplot.pearson_r', 'Pearson r'), fitOk.linear.ok ? fmtFixed(pearsonR, 4) : '—', 'pearson'), statCell(t('stem.dataplot.spearman', 'Spearman ρ'), n >= 3 ? fmtFixed(spearmanR, 4) : '—', 'spearman')]);
+        var regRows = [
+          { name: t('stem.dataplot.linear', 'Linear'), eq: equationText('linear', coefs.linear), r2: r2, ok: fitOk.linear.ok },
+          { name: t('stem.dataplot.quadratic', 'Quadratic'), eq: equationText('quadratic', coefs.quadratic), r2: quadR2, ok: fitOk.quadratic.ok },
+          { name: t('stem.dataplot.exponential', 'Exponential'), eq: equationText('exponential', coefs.exponential), r2: expR2, ok: fitOk.exponential.ok },
+          // A log fit drops every x <= 0 point, so it is only ranked when every x > 0.
+          { name: t('stem.dataplot.logarithmic', 'Logarithmic'), eq: equationText('logarithmic', coefs.logarithmic), r2: logR2, ok: fitOk.logarithmic.ok }
+        ].filter(function (r) { return r.ok; });
+        var bestR2 = Math.max.apply(null, regRows.map(function (r) { return r.r2; }).concat([-Infinity]));
+        return h('div', dataPlotPanelProps('stats', { className: 'space-y-3' }),
+          !predDone ? renderPredictCard() : h('div', { className: 'space-y-3' },
+            renderPredictResult(),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2' }, cells),
+            h('p', { className: 'text-xs text-slate-800 bg-slate-50 rounded-lg p-2 border border-slate-300' },
+              isK5 ? t('stem.dataplot.k5_stats_note', 'The median is the middle value when the values are in order. The mode is the value that shows up most. The range is the largest minus the smallest.')
+                : t('stem.dataplot.quartile_method', 'Quartiles here: Q1 is the median of the lower half and Q3 the median of the upper half; with an odd count the middle value is left out of both halves. Calculators and spreadsheets may use a different method and give slightly different values.')),
+            isHS && h('p', { className: 'text-xs text-slate-800 bg-slate-50 rounded-lg p-2 border border-slate-300' }, t('stem.dataplot.sd_explainer', 'Use σ (divide by n) when your data are the whole group you care about. Use s (divide by n − 1) when they are a sample from a bigger group: s is slightly larger, to make up for the sample’s tendency to miss extremes.')),
+            !isK5 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 text-slate-800' },
+              h('div', { className: 'text-xs font-bold text-teal-900 uppercase mb-2' }, t('stem.dataplot.five_number_summary_y', '📦 Five-Number Summary (Y)')),
+              h('table', { className: 'w-full text-center text-sm' }, h('thead', null, h('tr', null, [t('stem.dataplot.fn_min', 'Min'), 'Q1', t('stem.dataplot.median', 'Median'), 'Q3', t('stem.dataplot.fn_max', 'Max')].map(function (l, i) { return h('th', { key: i, scope: 'col', className: 'text-xs font-bold text-teal-900' }, l); }))),
+                h('tbody', null, h('tr', null, [yMin_, q1, yMedian, q3, yMax_].map(function (v, i) { return h('td', { key: i, className: 'font-bold text-slate-900' }, fmtNum(v, 2)); }))))),
+            isHS && n >= 3 && fitOk.linear.ok && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-300 text-slate-900' },
+              h('div', { className: 'text-xs font-bold text-indigo-900 uppercase mb-1' }, t('stem.dataplot.pearson_vs_spearman', '🔗 Pearson vs Spearman')),
+              h('p', { className: 'text-xs text-slate-900 leading-relaxed' },
+                fillT(t('stem.dataplot.pvs_body', 'Pearson r ({r}) measures straight-line correlation. Spearman ρ ({rho}) ranks the values first, so it measures any steady rise or fall.'), { r: fmtFixed(pearsonR, 3), rho: fmtFixed(spearmanR, 3) }) + ' ' +
+                (Math.abs(spearmanR) > Math.abs(pearsonR) + 0.1 ? t('stem.dataplot.pvs_spearman_higher', 'Spearman is higher: the trend may be curved but steady.') : Math.abs(pearsonR) > Math.abs(spearmanR) + 0.1 ? t('stem.dataplot.pvs_pearson_higher', 'Pearson is higher: a few large values may be strengthening the straight-line pattern.') : t('stem.dataplot.pvs_similar', 'Both are similar: the relationship is roughly a straight line.')))),
+            !isK5 && h('div', null,
+              h('button', { type: 'button', style: chipStyle, 'aria-expanded': showStemLeaf, onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-xs font-bold text-slate-800 underline' }, (showStemLeaf ? '▲ ' : '▼ ') + t('stem.dataplot.stem_leaf_title', 'Stem-and-leaf plot')),
+              showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 text-sm text-slate-900' },
+                h('table', { className: 'font-mono' },
+                  h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'text-right pr-2 text-xs font-sans' }, t('stem.dataplot.stem_2', 'Stem')), h('th', { scope: 'col', className: 'text-left pl-2 text-xs font-sans' }, t('stem.dataplot.leaf', 'Leaf')))),
+                  h('tbody', null, stemLeafData.map(function(row) { return h('tr', { key: row.stem }, h('th', { scope: 'row', className: 'text-right pr-2 border-r border-slate-500' }, row.stem), h('td', { className: 'pl-2 tracking-wider' }, row.leaves.join(' '))); }))),
+                h('p', { className: 'text-xs text-slate-700 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: 7|3 = 73. Negative stems read away from zero: -2|3 = -23.'))))
+          ),
+          // Regression comparison (fitting, not shape/centre/spread: visible before predicting)
+          isHS && n >= 2 && regRows.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 text-slate-800' },
+            h('div', { className: 'text-xs font-bold text-teal-900 uppercase mb-2' }, t('stem.dataplot.regression_comparison', '🔬 Regression Comparison')),
+            h('div', { className: 'space-y-1.5' },
+              // Sort and color by RAW R², not |R²|: a negative R² means the fit is
+              // WORSE than the mean line — abs() ranked catastrophic fits first and painted them green.
+              regRows.slice().sort(function(a, b) { return b.r2 - a.r2; }).map(function(reg) {
+                var best = reg.r2 === bestR2;
+                return h('div', { key: reg.name, className: 'flex items-center gap-2 p-2 rounded-lg ' + (best ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50') },
+                  best && h('span', { className: 'text-xs font-bold text-emerald-800' }, t('stem.dataplot.best', '⭐ Best')),
+                  h('span', { className: 'text-xs font-bold text-slate-700 w-20' }, reg.name),
+                  h('span', { className: 'text-xs font-mono text-slate-700 flex-1' }, reg.eq),
+                  h('span', { className: 'text-xs font-bold ' + (reg.r2 > 0.8 ? 'text-emerald-800' : reg.r2 > 0.3 ? 'text-amber-800' : 'text-red-800') }, 'R²=' + fmtFixed(reg.r2, 4)));
+              })),
+            REG_TYPES.filter(function (rt) { return !fitOk[rt].ok; }).map(function (rt) { return h('p', { key: 'why-' + rt, className: 'text-xs text-slate-700 mt-1' }, regName(rt) + ': ' + fitWhyText(fitOk[rt])); }),
+            smallN && h('p', { className: 'text-xs text-amber-900 mt-1' }, fillT(t('stem.dataplot.small_n_caveat', 'Only {n} points: with this few, R² can look high just by chance (2 points always fit a line exactly). Collect more data before trusting the model.'), { n: n }))),
+          // Z-score calculator
+          isHS && predDone && h('div', { className: 'bg-white rounded-xl p-3 border border-cyan-300 text-slate-800' },
+            h('div', { className: 'text-xs font-bold text-cyan-900 uppercase mb-2' }, t('stem.dataplot.z_score_calculator', '📐 Z-Score Calculator')),
+            stdDev === 0 ? h('div', { className: 'text-xs text-slate-700' }, t('stem.dataplot.need_variation_in_y_values', 'Need variation in Y values'))
+            : h('div', { className: 'space-y-2' },
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('label', { htmlFor: 'dp-z-input', className: 'text-xs font-bold text-cyan-900' }, t('stem.dataplot.y_value', 'Y value:')),
+                  h('input', { id: 'dp-z-input', type: 'text', inputMode: 'decimal', value: zScoreInput, onChange: function(e) { upd('zScoreInput', e.target.value.slice(0, 20)); checkBadges({ zScoreUsed: true }); }, placeholder: fmtNum(meanY, 1), className: 'w-24 px-2 py-1.5 border-2 border-cyan-700 rounded-lg text-sm font-bold text-cyan-900 text-center', style: chipStyle }),
+                  dpFin(toNumber(zScoreInput, ';')) && (function() {
+                    var zVal = (toNumber(zScoreInput, ';') - meanY) / stdDev, pct = zToPercentile(zVal);
+                    return h('div', { className: 'flex gap-2 items-center flex-wrap', role: 'status' },
+                      h('div', { className: 'px-3 py-1.5 rounded-lg text-sm font-bold ' + (Math.abs(zVal) > 2 ? 'bg-red-50 text-red-800 border border-red-200' : Math.abs(zVal) > 1 ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200') }, 'z = ' + fmtFixed(zVal, 3)),
+                      h('div', { className: 'px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-lg text-sm font-bold text-cyan-900' }, fillT(t('stem.dataplot.percentile', 'about the {p}th percentile'), { p: fmtFixed(pct, 1) })),
+                      Math.abs(zVal) > 2 && h('span', { className: 'text-xs text-red-800 font-bold' }, t('stem.dataplot.unusual', '⚠️ Unusual!')));
+                  })()),
+                h('p', { className: 'text-xs text-cyan-900' }, fillT(t('stem.dataplot.z_formula', 'z = (value − mean) / σ = (value − {m}) / {s}. The percentile assumes a roughly normal shape.'), { m: fmtNum(meanY, 2), s: fmtNum(stdDev, 2) })))),
+          renderWorked(),
+          !isK5 && renderShiftDemo()
+        );
+      };
 
-              // Stem-and-Leaf Display
-              h('div', null,
-                h('button', { 'aria-label': t('stem.dataplot.stem', 'Stem'), onClick: function() { upd('showStemLeaf', !showStemLeaf); }, className: 'text-[0.6875rem] font-bold ' + (showStemLeaf ? 'text-teal-600' : 'text-slate-600') + ' hover:text-teal-600' }, (showStemLeaf ? '\u25B2' : '\u25BC') + ' \uD83C\uDF3F Stem-and-Leaf Plot'),
-                showStemLeaf && stemLeafData.length > 0 && h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200 mt-1.5 font-mono text-sm' },
-                  h('div', { className: 'flex gap-1 mb-2' },
-                    h('span', { className: 'text-[0.6875rem] font-bold text-teal-600 font-sans' }, t('stem.dataplot.stem_2', 'Stem')),
-                    h('span', { className: 'text-[0.6875rem] text-slate-600 font-sans' }, '|'),
-                    h('span', { className: 'text-[0.6875rem] font-bold text-teal-600 font-sans' }, t('stem.dataplot.leaf', 'Leaf'))
-                  ),
-                  stemLeafData.map(function(row) {
-                    return h('div', { key: row.stem, className: 'flex gap-1 items-center py-0.5' },
-                      h('span', { className: 'text-right w-8 font-bold text-teal-700' }, row.stem),
-                      h('span', { className: 'text-slate-600' }, '|'),
-                      h('span', { className: 'text-slate-600 tracking-wider' }, row.leaves.join(' '))
-                    );
-                  }),
-                  h('div', { className: 'text-[0.6875rem] text-slate-600 font-sans mt-2' }, t('stem.dataplot.key_stem_leaf_stem_10_leaf_e_g_7_3_73', 'Key: 7|3 = 73. Negative stems read away from zero: -2|3 = -23.'))
-                )
-              )
-            )
-        ),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Compare two groups ──
+      // ══════════════════════════════════════════════════════════
+      var cmp = obj(d.compare);
+      var cmpPresetId = cmp.preset === 'mine' || COMPARE_PRESETS.some(function (p) { return p.id === cmp.preset; }) ? cmp.preset : 'plants';
+      var cmpPreset = COMPARE_PRESETS.filter(function (p) { return p.id === cmpPresetId; })[0];
+      var cmpText = comparePresetText(t, cmpPresetId);
+      var groupA = cmpPreset ? cmpPreset.a : parseValues(cmp.customA), groupB = cmpPreset ? cmpPreset.b : parseValues(cmp.customB);
+      var labelA = cmpPreset ? cmpText.a : (typeof cmp.labelA === 'string' && cmp.labelA.trim() ? cmp.labelA.slice(0, 40) : cmpText.a);
+      var labelB = cmpPreset ? cmpText.b : (typeof cmp.labelB === 'string' && cmp.labelB.trim() ? cmp.labelB.slice(0, 40) : cmpText.b);
+      var setCmp = function (patch) { upd('compare', Object.assign({}, cmp, patch)); };
+      var cmpChecked = cmp.checkedFor === cmpPresetId + ':' + groupA.join(',') + '|' + groupB.join(',');
+      var renderCompareTab = function () {
+        var ok = groupA.length >= 3 && groupB.length >= 3;
+        var sA = ok ? groupSummary(groupA) : null, sB = ok ? groupSummary(groupB) : null;
+        var all = groupA.concat(groupB), ax = niceAxis(all.length ? Math.min.apply(null, all) : 0, all.length ? Math.max.apply(null, all) : 10);
+        var CW = W, CH = 250, L = 96, R = 16;
+        var cx = function (v) { return L + (v - ax.min) / (ax.max - ax.min || 1) * (CW - L - R); };
+        var colA = isContrast ? '#ffff00' : dc('#1d4ed8'), colB = isContrast ? '#00ffff' : dc('#b45309');
+        var dotsRow = function (vals, y0, col) { var seen = {}; return vals.map(function (v, i) { var k = fmtNum(v, 3); seen[k] = (seen[k] || 0) + 1; return h('circle', { key: 'd' + i, cx: cx(v), cy: y0 - (seen[k] - 1) * 9, r: 4, fill: col, stroke: INK.bg, strokeWidth: 1 }); }); };
+        var boxRow = function (s, y0, col) {
+          return h('g', null, h('line', { x1: cx(s.min), y1: y0, x2: cx(s.max), y2: y0, stroke: col, strokeWidth: 1.5 }),
+            h('rect', { x: cx(s.q1), y: y0 - 10, width: Math.max(2, cx(s.q3) - cx(s.q1)), height: 20, fill: col, fillOpacity: 0.2, stroke: col, strokeWidth: 2 }),
+            h('line', { x1: cx(s.median), y1: y0 - 10, x2: cx(s.median), y2: y0 + 10, stroke: col, strokeWidth: 3 }));
+        };
+        var verdictCentre = ok ? compareVerdict(sA.median, sB.median, 0.05 * ((ax.max - ax.min) || 1)) : '';
+        var verdictSpread = ok ? compareVerdict(sA.iqr, sB.iqr, 0.15 * Math.max(sA.iqr, sB.iqr, 1e-9)) : '';
+        var notes = obj(cmp.notes);
+        var done = obj(cmp.done);
+        var setNote = function (k, v) { var nn = Object.assign({}, notes); nn[k] = v.slice(0, 800); setCmp({ notes: nn }); };
+        var check = function () {
+          if (!cmp.predCentre || !cmp.predSpread) { say(t('stem.dataplot.sr_cmp_need_pred', 'Make both predictions first.')); return; }
+          setCmp({ checkedFor: cmpPresetId + ':' + groupA.join(',') + '|' + groupB.join(',') });
+          say(fillT(t('stem.dataplot.sr_cmp_checked', 'Numbers shown. Centre: {c}. Spread: {s}.'), { c: cmp.predCentre === verdictCentre ? t('stem.dataplot.word_correct', 'correct') : t('stem.dataplot.word_not_quite', 'not quite'), s: cmp.predSpread === verdictSpread ? t('stem.dataplot.word_correct', 'correct') : t('stem.dataplot.word_not_quite', 'not quite') }));
+        };
+        var writeupOk = ['shape', 'centre', 'spread'].every(function (k) { return typeof notes[k] === 'string' && notes[k].trim().length >= 15; });
+        var finish = function () {
+          if (!cmpChecked || !writeupOk) { say(t('stem.dataplot.sr_cmp_need_writeup', 'Check your predictions and write at least a sentence for shape, centre and spread first.')); return; }
+          var again = !!done[cmpPresetId];
+          var nd = Object.assign({}, done); nd[cmpPresetId] = true; setCmp({ done: nd });
+          var key = 'compare:' + cmpPresetId;
+          // Presets only: own groups get the path tick but no XP (new numbers would mean new XP).
+          // Saving the same comparison again is not new work for the teacher's past-the-cap count.
+          var pp4 = progressPatch(key); if (again) delete pp4.xpCapCorrect;
+          var x4 = Object.assign(cmpPreset ? xpPatch(key, 10, t('stem.dataplot.xp_compare', 'Wrote a two-group comparison')) : {}, pp4);
+          if (Object.keys(x4).length) updMulti(x4);
+          say(t('stem.dataplot.sr_cmp_saved', 'Comparison saved.'));
+        };
+        var whichOpts = [['A', labelA], ['B', labelB], ['same', t('stem.dataplot.cmp_same', 'About the same')]];
+        var diffMeansInMad = ok ? Math.abs(sA.mean - sB.mean) / Math.max(1e-9, Math.max(sA.mad, sB.mad)) : 0;
+        return h('div', dataPlotPanelProps('compare', { className: 'space-y-3' }),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.cmp_pick', 'Choose a comparison'), className: 'flex gap-1.5 flex-wrap' },
+            COMPARE_PRESETS.map(function (p) { return h('button', { key: p.id, type: 'button', 'aria-pressed': cmpPresetId === p.id, style: chipStyle, onClick: function () { setCmp({ preset: p.id, predCentre: '', predSpread: '' }); }, className: btnCls(cmpPresetId === p.id) }, comparePresetText(t, p.id).title + (done[p.id] ? ' ✓' : '')); }),
+            h('button', { type: 'button', 'aria-pressed': cmpPresetId === 'mine', style: chipStyle, onClick: function () { setCmp({ preset: 'mine', predCentre: '', predSpread: '' }); }, className: btnCls(cmpPresetId === 'mine') }, t('stem.dataplot.cmp_mine', 'My own two groups'))),
+          !cmpPreset && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+            [['A', 'customA', 'labelA'], ['B', 'customB', 'labelB']].map(function (g) {
+              return h('div', { key: g[0], className: 'space-y-1' },
+                h('label', { className: 'text-xs font-bold text-slate-800 block' + onHostInk }, fillT(t('stem.dataplot.cmp_group_name', 'Name of group {g}'), { g: g[0] }),
+                  h('input', { type: 'text', value: typeof cmp[g[2]] === 'string' ? cmp[g[2]] : '', onChange: function (e) { var p = {}; p[g[2]] = e.target.value.slice(0, 40); setCmp(p); }, className: 'block w-full px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900', style: chipStyle })),
+                h('label', { className: 'text-xs font-bold text-slate-800 block' + onHostInk }, fillT(t('stem.dataplot.cmp_group_values', 'Values for group {g} (commas, spaces or new lines)'), { g: g[0] }),
+                  h('textarea', { rows: 3, value: typeof cmp[g[1]] === 'string' ? cmp[g[1]] : '', onChange: function (e) { var p = {}; p[g[1]] = e.target.value.slice(0, 4000); setCmp(p); }, className: 'block w-full px-2 py-1 text-sm font-mono border border-slate-500 rounded bg-white text-slate-900' })));
+            })),
+          !ok ? h('p', { className: 'text-sm text-slate-800' + onHostInk }, t('stem.dataplot.cmp_need3', 'Each group needs at least 3 numbers.'))
+          : h('div', { className: 'space-y-3' },
+            h('h4', { className: 'text-sm font-bold text-slate-900' + onHostInk }, cmpText.title),
+            h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.cmp_svg_label', 'Parallel dot plots and box plots of {a} (top) and {b} (bottom) on one shared scale.'), { a: labelA, b: labelB }), viewBox: '0 0 ' + CW + ' ' + CH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg }, 'data-dataplot-compare-svg': true },
+              h('text', { x: L - 8, y: 64, textAnchor: 'end', fill: colA, style: { fontSize: '12px', fontWeight: 'bold' } }, labelA),
+              h('text', { x: L - 8, y: 154, textAnchor: 'end', fill: colB, style: { fontSize: '12px', fontWeight: 'bold' } }, labelB),
+              dotsRow(groupA, 70, colA), boxRow(sA, 94, colA),
+              dotsRow(groupB, 160, colB), boxRow(sB, 184, colB),
+              h('line', { x1: L, y1: 214, x2: CW - R, y2: 214, stroke: INK.axis, strokeWidth: 1.5 }),
+              ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: cx(v), y1: 214, x2: cx(v), y2: 219, stroke: INK.axis }), h('text', { x: cx(v), y: 233, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); })),
+            h('section', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-400 text-slate-900', 'data-dataplot-cmp-predict': true },
+              h('h4', { className: 'text-sm font-bold text-amber-900 mb-1' }, t('stem.dataplot.cmp_pred_title', 'Predict from the picture')),
+              [['predCentre', t('stem.dataplot.cmp_pred_centre', 'Which group has the larger centre (typical value)?')], ['predSpread', t('stem.dataplot.cmp_pred_spread', 'Which group is more spread out (wider middle half)?')]].map(function (q) {
+                return h('div', { key: q[0], role: 'radiogroup', 'aria-label': q[1], className: 'mb-2' },
+                  h('p', { className: 'text-xs font-bold text-slate-900 mb-1' }, q[1]),
+                  h('div', { className: 'flex gap-1.5 flex-wrap' }, whichOpts.map(function (o) {
+                    return h('button', { key: o[0], type: 'button', role: 'radio', 'aria-checked': cmp[q[0]] === o[0], disabled: cmpChecked, style: chipStyle, onClick: function () { var p = {}; p[q[0]] = o[0]; setCmp(p); }, className: btnCls(cmp[q[0]] === o[0]) + ' disabled:opacity-60' }, o[1]);
+                  })));
+              }),
+              !cmpChecked && h('button', { type: 'button', style: bigStyle, onClick: check, 'data-dataplot-cmp-check': true, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, t('stem.dataplot.cmp_check', 'Check with the numbers'))),
+            cmpChecked && h('div', { className: 'space-y-2', 'data-dataplot-cmp-numbers': true },
+              h('table', { className: 'w-full text-sm border-collapse bg-white text-slate-900' },
+                h('caption', { className: 'text-left text-xs text-slate-800 pb-1' + onHostInk }, t('stem.dataplot.cmp_table_caption', 'Summary of each group')),
+                h('thead', null, h('tr', null, ['', 'n', t('stem.dataplot.median', 'Median'), t('stem.dataplot.mean_word', 'Mean'), 'IQR', 'MAD', t('stem.dataplot.shape_word', 'Shape')].map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'px-2 py-1 border border-slate-300 text-left text-xs' }, c); }))),
+                h('tbody', null, [[labelA, sA], [labelB, sB]].map(function (row) {
+                  var s = row[1];
+                  return h('tr', { key: row[0] }, h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-300 text-left' }, row[0]),
+                    [s.n, fmtNum(s.median, 2), fmtNum(s.mean, 2), fmtNum(s.iqr, 2), fmtNum(s.mad, 2), shapeName(s.shape)].map(function (v, i) { return h('td', { key: i, className: 'px-2 py-1 border border-slate-300' }, v); }));
+                }))),
+              h('p', { className: 'text-xs p-2 rounded border ' + (cmp.predCentre === verdictCentre ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900') },
+                fillT(t('stem.dataplot.cmp_centre_result', 'Centre: the medians are {a} and {b}, so {w}.'), { a: fmtNum(sA.median, 2), b: fmtNum(sB.median, 2), w: verdictCentre === 'same' ? t('stem.dataplot.cmp_w_same', 'the centres are about the same') : fillT(t('stem.dataplot.cmp_w_larger', '{g} is larger'), { g: verdictCentre === 'A' ? labelA : labelB }) })
+                + (cmp.predCentre === verdictCentre ? '' : ' ' + t('stem.dataplot.cmp_centre_tip', 'Compare where the middles of the two boxes sit, not where the longest whisker reaches.'))),
+              h('p', { className: 'text-xs p-2 rounded border ' + (cmp.predSpread === verdictSpread ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900') },
+                fillT(t('stem.dataplot.cmp_spread_result', 'Spread: the IQRs are {a} and {b}, so {w}.'), { a: fmtNum(sA.iqr, 2), b: fmtNum(sB.iqr, 2), w: verdictSpread === 'same' ? t('stem.dataplot.cmp_w_same_spread', 'the spreads are about the same') : fillT(t('stem.dataplot.cmp_w_wider', '{g} is more spread out'), { g: verdictSpread === 'A' ? labelA : labelB }) })
+                + (cmp.predSpread === verdictSpread ? '' : ' ' + t('stem.dataplot.cmp_spread_tip', 'Spread is about how wide each group is, not about which group has bigger values.'))),
+              !isK5 && h('p', { className: 'text-xs text-slate-900 bg-slate-50 border border-slate-300 rounded p-2' },
+                fillT(t('stem.dataplot.cmp_mad_ratio', 'The means differ by {d}, which is {k} times the larger MAD. A difference of more than about 2 MADs means the groups barely overlap.'), { d: fmtNum(Math.abs(sA.mean - sB.mean), 2), k: fmtNum(diffMeansInMad, 1) }))),
+            h('section', { className: 'bg-white rounded-xl p-3 border border-slate-300 text-slate-900', 'data-dataplot-writeup': true, 'aria-labelledby': 'dp-cmp-write' },
+              h('h4', { id: 'dp-cmp-write', className: 'text-sm font-bold text-slate-900 mb-1' }, t('stem.dataplot.cmp_write_title', 'Write the comparison: shape, centre, spread')),
+              [['shape', t('stem.dataplot.cmp_w_shape', 'Shape: describe each group (symmetric, skewed, clusters, gaps, outliers).'), t('stem.dataplot.cmp_w_shape_starter', 'The {a} values are ... while the {b} values ...')],
+               ['centre', t('stem.dataplot.cmp_w_centre', 'Centre: compare the typical values, with numbers.'), t('stem.dataplot.cmp_w_centre_starter', 'The median for {a} is ..., which is ... than ...')],
+               ['spread', t('stem.dataplot.cmp_w_spread', 'Spread: compare how spread out each group is, with numbers.'), t('stem.dataplot.cmp_w_spread_starter', 'The IQR for {a} is ..., so ...')],
+               ['conclusion', t('stem.dataplot.cmp_w_conclusion', 'So what? What can you conclude, and what can you NOT conclude from these data?'), t('stem.dataplot.cmp_w_conclusion_starter', 'These data suggest ... but they do not show ... because ...')]].map(function (f) {
+                return h('label', { key: f[0], className: 'block text-xs font-bold text-slate-900 mt-2' }, f[1],
+                  h('textarea', { rows: 2, value: typeof notes[f[0]] === 'string' ? notes[f[0]] : '', placeholder: fillT(f[2], { a: labelA, b: labelB }), onChange: function (e) { setNote(f[0], e.target.value); }, className: 'block w-full mt-1 px-2 py-1 text-sm border border-slate-500 rounded font-normal' }));
+              }),
+              h('div', { className: 'flex gap-2 flex-wrap items-center mt-2' },
+                h('button', { type: 'button', style: bigStyle, onClick: finish, 'data-dataplot-cmp-finish': true, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-teal-700 text-white hover:bg-teal-800' }, t('stem.dataplot.cmp_finish', 'Save my comparison')),
+                done[cmpPresetId] && h('span', { className: 'text-xs font-bold text-emerald-800' }, t('stem.dataplot.cmp_saved', '✓ Saved')),
+                isHS && crossLink('statsLab', t('stem.dataplot.statslab_name', 'Statistical Tests'), t('stem.dataplot.cmp_to_statslab', 'Is the difference real? Test it in Statistical Tests')))))
+        );
+      };
 
-        // ══════════════════════════════════════════════════════════
-        // ── TAB: Quiz (4 types) ──
-        // ══════════════════════════════════════════════════════════
-        activeTab === 'quiz' && h('div', dataPlotPanelProps('quiz', { className: 'space-y-3' }),
-          // Quiz type selector
-          h('div', { className: 'flex gap-2 flex-wrap items-center' },
-            h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' + onHostInk }, 'Type:'),
-            [
-              { id: 'correlation', icon: '\uD83D\uDCC8', label: t('stem.dataplot.correlation', 'Correlation') },
-              { id: 'guessR2', icon: '\uD83C\uDFAF', label: t('stem.dataplot.guess_r', 'Guess R\u00B2') },
-              { id: 'matchChart', icon: '\uD83D\uDCCA', label: t('stem.dataplot.match_chart', 'Match Chart') },
-              { id: 'outlier', icon: '\uD83D\uDD0D', label: t('stem.dataplot.find_outlier', 'Find Outlier') }
-            ].map(function(qt) {
-              var active = quizType === qt.id;
-              var used = !!quizTypesUsed[qt.id];
-              return h('button', { 'aria-label': t('stem.dataplot.make_quiz', 'Make Quiz'), key: qt.id, onClick: function() { upd('quizType', qt.id); },
-                className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow' : 'bg-white text-teal-700 border border-teal-600 hover:bg-teal-50') + (used ? '' : '')
-              }, qt.icon + ' ' + qt.label + (used ? ' \u2713' : ''));
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Quiz ── generated items, two tries, named misconceptions, hint ladder
+      // ══════════════════════════════════════════════════════════
+      var quizItemNow = dpQuiz && dpQuiz.v === 2 ? dpQuiz : null;
+      var quizOpen = !!(quizItemNow && !quizItemNow.answered);
+      var quizTypeName = function (id) {
+        switch (id) {
+          case 'pictograph': return t('stem.dataplot.qt_pictograph', 'Pictographs');
+          case 'boxPlot': return t('stem.dataplot.qt_box_plot', 'Box plots');
+          case 'readBar': return isK5 ? t('stem.dataplot.qt_bar_chart', 'Bar charts') : t('stem.dataplot.qt_read_bar', 'Read a chart');
+          case 'dotPlot': return t('stem.dataplot.qt_dot_plot', 'Dot plots');
+          case 'centre': return t('stem.dataplot.qt_centre', 'Mean, median, mode');
+          case 'spread': return t('stem.dataplot.qt_spread', 'Range, IQR, MAD');
+          case 'guessR2': return t('stem.dataplot.guess_r', 'Guess R²');
+          case 'residual': return t('stem.dataplot.qt_residual', 'Residuals');
+          case 'matchChart': return t('stem.dataplot.match_chart', 'Match Chart');
+          case 'outlier': return t('stem.dataplot.find_outlier', 'Find Outlier');
+          default: return t('stem.dataplot.correlation', 'Correlation');
+        }
+      };
+      // Remember a revealed answer by item key (kept in the saved quizXpItems map, so it survives a reload).
+      var shownMark = function (key) { var m = Object.assign({}, quizXpItems); m['shown:' + key] = true; return m; };
+      var logMiss = function (item, text) {
+        var log = missedLog.concat([{ type: item.type, key: String(item.key).slice(0, 80), mis: String(text || '').slice(0, 160), at: Date.now() }]);
+        return log.length > 60 ? log.slice(-60) : log;
+      };
+      var makeQuiz = function() {
+        var used = Object.assign({}, quizTypesUsed); used[quizType] = true;
+        var item = genQuizItem(quizType, t, Math.random, {});
+        updMulti({ dpQuiz: item, quizTypesUsed: used });
+        checkBadges({ quizTypesUsed: used });
+        say(item.text);
+      };
+      var answerQuiz = function (response) {
+        var q = quizItemNow;
+        if (!q || q.answered) return;
+        var g = gradeQuiz(q, response);
+        if (g.invalid) { say(t('stem.dataplot.sr_type_number', 'Type a number first.')); return; }
+        var tries = (q.tries || 0) + 1;
+        if (g.correct) {
+          var award = 0;
+          // 'shown:<key>': this item's answer was revealed before, and fixed-answer items come back.
+          if (!q.revealed && !quizXpItems[q.key] && !quizXpItems['shown:' + q.key] && quizXpTotal < QUIZ_XP_CAP) award = Math.min(tries === 1 ? 10 : 5, QUIZ_XP_CAP - quizXpTotal);
+          var newScore = q.revealed ? dpScore : dpScore + 1, newStreak = q.revealed || tries > 1 ? 0 : dpStreak + 1;
+          var patch = { dpQuiz: Object.assign({}, q, { answered: true, correct: true, chosen: String(response), tries: tries, feedback: '' }), dpScore: newScore, dpStreak: newStreak };
+          if (award > 0) { var m = Object.assign({}, quizXpItems); m[q.key] = true; patch.quizXpItems = m; patch.quizXpTotal = quizXpTotal + award; }
+          if (!q.revealed) Object.assign(patch, progressPatch('quiz:' + q.type));
+          updMulti(patch);
+          if (award > 0 && awardXP) awardXP('dataPlot', award, t('stem.dataplot.xp_quiz', 'Data quiz: correct answer'));
+          if (soundEnabled) sfxCorrect();
+          say(q.revealed ? t('stem.dataplot.sr_correct_revealed', 'Correct. The answer had been shown, so this one earns no XP.') : tries === 1 ? t('stem.dataplot.sr_correct', 'Correct!') : t('stem.dataplot.sr_correct_second', 'Correct on the second try.'));
+          checkBadges({ dpScore: newScore, dpStreak: newStreak });
+        } else if (tries < 2 && !q.revealed) {
+          updMulti({ dpQuiz: Object.assign({}, q, { tries: tries, chosen: String(response), feedback: g.feedback, wrong: (q.wrong || []).concat([String(response)]) }), dpStreak: 0, missedLog: logMiss(q, g.feedback) });
+          if (soundEnabled) sfxWrong();
+          say((g.feedback ? g.feedback + ' ' : '') + t('stem.dataplot.sr_try_again', 'Try once more.'));
+        } else {
+          // Two tries used: the answer stays hidden until the student asks for it (no auto-reveal).
+          updMulti({ dpQuiz: Object.assign({}, q, { tries: tries, chosen: String(response), answered: true, correct: false, feedback: g.feedback, wrong: (q.wrong || []).concat([String(response)]) }), dpStreak: 0, missedLog: logMiss(q, g.feedback) });
+          if (soundEnabled) sfxWrong();
+          say((g.feedback ? g.feedback + ' ' : '') + (allowReveal ? t('stem.dataplot.sr_two_tries', 'Two tries used. Press Show the answer to see it, or try a new question.') : t('stem.dataplot.sr_two_tries_noreveal', 'Two tries used. Try a new question.')));
+        }
+      };
+      // A labelled box plot for the box-plot questions: the five numbers sit above the plot,
+      // and the same five numbers are the text alternative.
+      var boxQuizSvg = function (s, title, plain) {
+        var BH = 150, L = 24, R = 24, ax = niceAxis(s.min, s.max);
+        var bx = function (v) { return L + (v - ax.min) / (ax.max - ax.min || 1) * (W - L - R); };
+        // plain: values only (the median question); the description names the parts of the drawing instead.
+        var lab = plain ? [['min', s.min, '{v}'], ['q1', s.q1, '{v}'], ['med', s.med, '{v}'], ['q3', s.q3, '{v}'], ['max', s.max, '{v}']]
+          : [['min', s.min, t('stem.dataplot.box_lab_min', 'min {v}')], ['q1', s.q1, t('stem.dataplot.box_lab_q1', 'Q1 {v}')], ['med', s.med, t('stem.dataplot.box_lab_med', 'median {v}')], ['q3', s.q3, t('stem.dataplot.box_lab_q3', 'Q3 {v}')], ['max', s.max, t('stem.dataplot.box_lab_max', 'max {v}')]];
+        var desc = fillT(plain ? t('stem.dataplot.box_quiz_label_plain', 'Box plot of {title}: the left whisker starts at {min}, the box runs from {q1} to {q3} with a line inside it at {med}, and the right whisker ends at {max}.')
+          : t('stem.dataplot.box_quiz_label', 'Box plot of {title}: minimum {min}, Q1 {q1}, median {med}, Q3 {q3}, maximum {max}.'), { title: title, min: fmtNum(s.min, 2), q1: fmtNum(s.q1, 2), med: fmtNum(s.med, 2), q3: fmtNum(s.q3, 2), max: fmtNum(s.max, 2) });
+        return h('div', null, h('p', { className: 'text-xs font-bold text-slate-900 mb-1' }, title),
+          h('svg', { role: 'img', 'aria-label': desc, viewBox: '0 0 ' + W + ' ' + BH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '190px' }, 'data-dataplot-box-quiz': true },
+            lab.map(function (l, i) { return h('text', { key: l[0], x: bx(l[1]), y: i % 2 ? 34 : 16, textAnchor: i === 0 ? 'start' : i === 4 ? 'end' : 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, fillT(l[2], { v: fmtNum(l[1], 2) })); }),
+            h('line', { x1: bx(s.min), y1: 76, x2: bx(s.q1), y2: 76, stroke: INK.axis, strokeWidth: 2 }),
+            h('line', { x1: bx(s.q3), y1: 76, x2: bx(s.max), y2: 76, stroke: INK.axis, strokeWidth: 2 }),
+            h('line', { x1: bx(s.min), y1: 62, x2: bx(s.min), y2: 90, stroke: INK.axis, strokeWidth: 2 }),
+            h('line', { x1: bx(s.max), y1: 62, x2: bx(s.max), y2: 90, stroke: INK.axis, strokeWidth: 2 }),
+            h('rect', { x: bx(s.q1), y: 52, width: Math.max(2, bx(s.q3) - bx(s.q1)), height: 48, fill: INK.fill, fillOpacity: 0.22, stroke: INK.fill, strokeWidth: 2 }),
+            h('line', { x1: bx(s.med), y1: 52, x2: bx(s.med), y2: 100, stroke: INK.bad, strokeWidth: 3 }),
+            h('line', { x1: L, y1: 118, x2: W - R, y2: 118, stroke: INK.axis, strokeWidth: 1.5 }),
+            ax.ticks.map(function (v, k) { return h('g', { key: 't' + k }, h('line', { x1: bx(v), y1: 118, x2: bx(v), y2: 123, stroke: INK.axis }), h('text', { x: bx(v), y: 137, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, ax.decimals))); })));
+      };
+      var renderQuizChart = function (q) {
+        var c = q.chart || {};
+        // The scatter's text equivalent is its data table: correlation and R² questions had none.
+        if (c.kind === 'scatter' && Array.isArray(c.pts) && c.pts.length) return h('div', null, miniScatter(c.pts, { line: c.line, highlight: c.highlight, numbered: c.numbered }),
+          h('details', { className: 'mt-1 text-xs text-slate-900', 'data-dataplot-quiz-table': true },
+            h('summary', { className: 'font-bold cursor-pointer', style: chipStyle }, fillT(t('stem.dataplot.quiz_table_summary', 'Data table ({n} points)'), { n: c.pts.length })),
+            h('table', { className: 'mt-1 border-collapse font-mono' },
+              h('thead', null, h('tr', null, [t('stem.dataplot.quiz_table_point', 'Point'), 'x', 'y'].map(function (hd, i) { return h('th', { key: i, scope: 'col', className: 'px-2 py-0.5 border border-slate-300 text-left' }, hd); }))),
+              h('tbody', null, c.pts.map(function (p, i) { return h('tr', { key: i }, h('th', { scope: 'row', className: 'px-2 py-0.5 border border-slate-300 font-normal' }, String(i + 1)), h('td', { className: 'px-2 py-0.5 border border-slate-300' }, fmtNum(p.x, 2)), h('td', { className: 'px-2 py-0.5 border border-slate-300' }, fmtNum(p.y, 2))); })))));
+        if ((c.kind === 'bar' || c.kind === 'pictograph') && Array.isArray(c.cats)) {
+          var lbl = fillT(t('stem.dataplot.quiz_bar_label', '{title}: {list}.'), { title: c.title || '', list: c.cats.map(function (k) { return k.label + ' ' + k.value; }).join(', ') });
+          return c.kind === 'pictograph' ? pictographSvg(c.cats, 1, lbl, c.title) : catBarSvg(c.cats, lbl, c.title);
+        }
+        if (c.kind === 'box' && c.sum && dpFin(c.sum.min) && dpFin(c.sum.max)) return boxQuizSvg(c.sum, c.title || '', !!c.plain);
+        if (c.kind === 'dots' && Array.isArray(c.values)) {
+          var counts = {}; c.values.forEach(function (v) { counts[v] = (counts[v] || 0) + 1; });
+          return h('div', null, h('p', { className: 'text-xs font-bold text-slate-900 mb-1' }, c.title || ''),
+            dotPlotSvg(c.values, { integer: true, min: c.min != null ? c.min : 0, max: c.max != null ? c.max : 5, axisLabel: c.title, label: fillT(t('stem.dataplot.quiz_dots_label', 'Dot plot. Dots above each number: {list}.'), { list: Object.keys(counts).sort(function (a, b) { return a - b; }).map(function (k) { return k + ': ' + counts[k]; }).join(', ') }) }));
+        }
+        return null;
+      };
+      var renderQuizTab = function () {
+        var q = quizItemNow;
+        var hintMax = allowReveal ? 4 : 3;
+        return h('div', dataPlotPanelProps('quiz', { className: 'space-y-3' }),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.quiz_type_group', 'Question type'), className: 'flex gap-1.5 flex-wrap items-center' },
+            quizTypeList.map(function (id) {
+              return h('button', { key: id, type: 'button', 'data-dataplot-quiz-type': id, 'aria-pressed': quizType === id, style: chipStyle, onClick: function() { upd('quizType', id); }, className: btnCls(quizType === id) },
+                quizTypeName(id), quizTypesUsed[id] ? h('span', { 'aria-label': t('stem.dataplot.tried', '(tried)') }, ' ✓') : null);
             }),
-            dpScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-600 ml-auto' }, '\u2B50 ' + dpScore),
-            dpStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + dpStreak)
-          ),
+            h('label', { style: chipStyle, className: 'flex items-center gap-1 text-xs font-bold text-slate-800 ml-1' + onHostInk }, h('input', { type: 'checkbox', checked: !!d.quizAllTypes, onChange: function () { upd('quizAllTypes', !d.quizAllTypes); } }), t('stem.dataplot.quiz_all_types', 'Show every question type')),
+            h('span', { className: 'text-xs font-bold text-emerald-800 ml-auto' + onHostInk }, fillT(t('stem.dataplot.quiz_score', 'Score {s} · streak {k}'), { s: dpScore, k: dpStreak }))),
+          h('button', { type: 'button', style: bigStyle, onClick: makeQuiz, 'data-dataplot-quiz-new': true, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (q ? 'bg-white text-teal-800 border border-teal-700' : 'bg-teal-700 text-white') },
+            q ? t('stem.dataplot.new_question', '🔄 New question') : t('stem.dataplot.start_quiz', '🎯 Start quiz')),
+          quizXpTotal >= QUIZ_XP_CAP && h('p', { className: 'text-xs text-slate-800' + onHostInk }, t('stem.dataplot.quiz_xp_capped', 'You have earned all the quiz XP on offer here. Keep practising: the questions keep coming.')),
+          !q && h('p', { className: 'text-center text-sm text-slate-800 py-4' + onHostInk }, t('stem.dataplot.select_a_quiz_type_and_click_start_qui_v2', 'Choose a question type and press Start quiz.')),
+          q && h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-300 text-slate-900 space-y-3', 'data-dataplot-quiz': q.type },
+            h('p', { className: 'text-sm font-bold text-teal-900', id: 'dp-quiz-q' }, q.text),
+            renderQuizChart(q),
+            q.choices ? h('div', { role: 'group', 'aria-labelledby': 'dp-quiz-q', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(' + (q.type === 'outlier' ? 110 : 140) + 'px, 1fr))' } },
+              q.choices.map(function (o) {
+                var tried = (q.wrong || []).indexOf(o.id) >= 0, isAns = q.answered && (q.correct || q.shown) && o.id === String(q.answer);
+                return h('button', { key: o.id, type: 'button', 'data-dataplot-choice': o.id, disabled: q.answered || tried, style: bigStyle, onClick: function () { answerQuiz(o.id); },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all ' + (isAns ? 'bg-emerald-100 text-emerald-900 border-emerald-700' : tried ? 'bg-red-50 text-red-900 border-red-400 line-through' : 'bg-white text-slate-900 border-slate-400 hover:border-teal-600') }, o.label);
+              }))
+            : q.numeric ? h('div', { className: 'flex gap-2 items-end flex-wrap' },
+                h('label', { className: 'text-xs font-bold text-slate-900' }, t('stem.dataplot.your_answer', 'Your answer'),
+                  h('input', { id: 'dp-quiz-num', type: 'text', inputMode: 'decimal', disabled: q.answered, key: 'num-' + q.key + '-' + (q.tries || 0), defaultValue: '', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); answerQuiz(e.target.value); } }, className: 'block mt-1 w-32 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: chipStyle })),
+                !q.answered && h('button', { type: 'button', style: bigStyle, 'data-dataplot-quiz-check': true, onClick: function () { var el = document.getElementById('dp-quiz-num'); answerQuiz(el ? el.value : ''); }, className: 'px-4 py-1.5 rounded-lg text-sm font-bold bg-teal-700 text-white' }, t('stem.dataplot.check', 'Check')))
+            : null,
+            h('div', { role: 'status', 'aria-live': 'polite', 'data-dataplot-quiz-feedback': true },
+              !q.answered && q.feedback ? h('p', { className: 'text-sm p-2 rounded border bg-red-50 border-red-300 text-red-900' }, q.feedback + ' ' + t('stem.dataplot.try_once_more', 'Try once more.')) : null,
+              q.answered && q.correct ? h('p', { className: 'text-sm p-2 rounded border bg-emerald-50 border-emerald-300 text-emerald-900' }, (q.revealed ? t('stem.dataplot.correct_revealed', 'Correct. The answer had been shown, so no XP for this one.') : q.tries > 1 ? t('stem.dataplot.correct_second', 'Correct on your second try.') : t('stem.dataplot.correct_first', 'Correct!')) + (q.explain ? ' ' + q.explain : '')) : null,
+              q.answered && !q.correct ? h('p', { className: 'text-sm p-2 rounded border bg-red-50 border-red-300 text-red-900' }, (q.feedback ? q.feedback + ' ' : '') + (q.shown ? fillT(t('stem.dataplot.answer_was', 'The answer is {a}.'), { a: q.answerText }) + (q.explain ? ' ' + q.explain : '') : '')) : null),
+            q.answered && !q.correct && !q.shown && revealRow('quiz', function () { updMulti({ dpQuiz: Object.assign({}, q, { shown: true, revealed: true }), quizXpItems: shownMark(q.key) }); say(fillT(t('stem.dataplot.answer_was', 'The answer is {a}.'), { a: q.answerText }) + (q.explain ? ' ' + q.explain : '')); }),
+            !q.answered && Array.isArray(q.hints) && hintLadder('dp-quiz-hints', q.hints.slice(0, hintMax), Math.min(q.hint || 0, hintMax), function (lv) { var p = { dpQuiz: Object.assign({}, q, { hint: lv, revealed: q.revealed || lv >= 4 }) }; if (lv >= 4) p.quizXpItems = shownMark(q.key); updMulti(p); }, allowReveal),
+            q.answered && h('button', { type: 'button', style: bigStyle, onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-teal-700 text-white' }, t('stem.dataplot.next_2', '➡ Next')))
+        );
+      };
 
-          h('button', { 'aria-label': t('stem.dataplot.make_quiz_2', 'Make Quiz'), onClick: makeQuiz, className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (dpQuiz ? 'bg-teal-100 text-teal-700' : 'bg-teal-700 text-white') + ' hover:opacity-90 transition-all' },
-            dpQuiz ? '\uD83D\uDD04 New Question' : '\uD83C\uDFAF Start Quiz'
-          ),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Correlation or causation? ──
+      // ══════════════════════════════════════════════════════════
+      var causeAnswers = obj(d.causeAnswers);
+      var causeIdx = dpFin(d.causeIdx) ? Math.max(0, Math.min(CAUSE_CARDS.length - 1, Math.floor(d.causeIdx))) : 0;
+      var answerCause = function (card, opt) {
+        var st = obj(causeAnswers[card.id]);
+        if (st.done) return;
+        var tries = (st.tries || 0) + 1, correct = opt === card.answer, next = Object.assign({}, causeAnswers);
+        var tx = causeCardText(t, card.id);
+        if (correct || tries >= 2) {
+          next[card.id] = { tries: tries, chosen: opt, correct: correct, done: true, hint: st.hint || 0, wrong: (st.wrong || []).concat(correct ? [] : [opt]) };
+          var patch = { causeAnswers: next };
+          var key = 'cause:' + card.id;
+          if (correct) Object.assign(patch, xpPatch(key, tries === 1 ? 5 : 3, t('stem.dataplot.xp_cause', 'Correlation or causation: reasoned correctly')), progressPatch(key));
+          if (!correct) patch.missedLog = logMiss({ type: 'cause', key: card.id }, causeMisText(t, opt, card.answer));
+          updMulti(patch);
+          // Two tries used: the explanation waits for "Show the answer", as on every other tab.
+          say(correct ? t('stem.dataplot.sr_correct', 'Correct!') + ' ' + tx.explain : causeMisText(t, opt, card.answer) + ' ' + (allowReveal ? t('stem.dataplot.sr_two_tries_card', 'Two tries used. Press Show the answer to see it, or go to the next card.') : t('stem.dataplot.sr_two_tries_card_noreveal', 'Two tries used. Go on to the next card.')));
+        } else {
+          next[card.id] = { tries: tries, chosen: opt, correct: false, done: false, hint: st.hint || 0, wrong: (st.wrong || []).concat([opt]) };
+          updMulti({ causeAnswers: next, missedLog: logMiss({ type: 'cause', key: card.id }, causeMisText(t, opt, card.answer)) });
+          say(causeMisText(t, opt, card.answer) + ' ' + t('stem.dataplot.sr_try_again', 'Try once more.'));
+        }
+      };
+      var renderCauseTab = function () {
+        var card = CAUSE_CARDS[causeIdx], st = obj(causeAnswers[card.id]), tx = causeCardText(t, card.id);
+        var doneCount = CAUSE_CARDS.filter(function (c) { return obj(causeAnswers[c.id]).done; }).length;
+        return h('div', dataPlotPanelProps('cause', { className: 'space-y-3' }),
+          h('p', { className: 'text-sm text-slate-900' + onHostInk }, t('stem.dataplot.cause_intro', 'Two things that rise and fall together are correlated. That alone does not prove one causes the other. For each card, decide what the data can really support.')),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.cause_cards', 'Cards'), className: 'flex gap-1.5 flex-wrap' },
+            CAUSE_CARDS.map(function (c, i) {
+              var s2 = obj(causeAnswers[c.id]);
+              return h('button', { key: c.id, type: 'button', 'aria-current': i === causeIdx ? 'true' : undefined, style: { minHeight: 36, minWidth: 36 }, onClick: function () { upd('causeIdx', i); },
+                'aria-label': fillT(t('stem.dataplot.cause_card_n', 'Card {n}{state}'), { n: i + 1, state: s2.done ? (s2.correct ? t('stem.dataplot.cause_state_right', ', answered correctly') : t('stem.dataplot.cause_state_done', ', answered')) : '' }),
+                className: 'px-2 rounded-lg text-xs font-bold border ' + (i === causeIdx ? 'bg-teal-700 text-white border-teal-700' : s2.done ? (s2.correct ? 'bg-emerald-50 text-emerald-900 border-emerald-600' : 'bg-red-50 text-red-900 border-red-400') : 'bg-white text-slate-900 border-slate-400') }, String(i + 1));
+            }),
+            h('span', { className: 'text-xs font-bold text-slate-800 ml-auto self-center' + onHostInk }, fillT(t('stem.dataplot.cause_progress', '{k} of {n} done'), { k: doneCount, n: CAUSE_CARDS.length }))),
+          h('article', { className: 'bg-white rounded-xl p-4 border border-slate-300 text-slate-900 space-y-2', 'data-dataplot-cause': card.id, 'aria-labelledby': 'dp-cause-claim' },
+            h('p', { className: 'text-sm' }, tx.story),
+            h('p', { id: 'dp-cause-claim', className: 'text-sm font-bold' }, tx.claim),
+            h('p', { className: 'text-xs font-bold text-slate-800' }, t('stem.dataplot.cause_question', 'Does the evidence support the claim?')),
+            h('div', { role: 'group', 'aria-labelledby': 'dp-cause-claim', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' } },
+              CAUSE_OPTIONS.map(function (o) {
+                var tried = (st.wrong || []).indexOf(o) >= 0, isAns = st.done && (st.correct || st.shown) && o === card.answer;
+                return h('button', { key: o, type: 'button', 'data-dataplot-cause-opt': o, disabled: st.done || tried, style: bigStyle, onClick: function () { answerCause(card, o); },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border-2 text-left ' + (isAns ? 'bg-emerald-100 text-emerald-900 border-emerald-700' : tried ? 'bg-red-50 text-red-900 border-red-400 line-through' : 'bg-white text-slate-900 border-slate-400 hover:border-teal-600') }, causeOptionText(t, o));
+              })),
+            h('div', { role: 'status', 'aria-live': 'polite' },
+              !st.done && st.tries ? h('p', { className: 'text-sm p-2 rounded border bg-red-50 border-red-300 text-red-900' }, causeMisText(t, st.chosen, card.answer) + ' ' + t('stem.dataplot.try_once_more', 'Try once more.')) : null,
+              st.done && !st.correct ? h('p', { className: 'text-sm p-2 rounded border bg-red-50 border-red-300 text-red-900' }, causeMisText(t, st.chosen, card.answer)) : null,
+              st.done && (st.correct || st.shown) ? h('p', { className: 'text-sm p-2 rounded border ' + (st.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-amber-50 border-amber-300 text-amber-900'), 'data-dataplot-cause-explain': true }, (st.correct ? '' : fillT(t('stem.dataplot.answer_was', 'The answer is {a}.'), { a: causeOptionText(t, card.answer) }) + ' ') + tx.explain) : null),
+            st.done && !st.correct && !st.shown && revealRow('cause', function () { var nx = Object.assign({}, causeAnswers); nx[card.id] = Object.assign({}, st, { shown: true }); upd('causeAnswers', nx); say(fillT(t('stem.dataplot.answer_was', 'The answer is {a}.'), { a: causeOptionText(t, card.answer) }) + ' ' + tx.explain); }),
+            !st.done && hintLadder('dp-cause-hints-' + card.id, [t('stem.dataplot.hc_1', 'Ask first: did someone randomly assign who got the treatment? Only a randomized experiment can show cause on its own.'),
+              t('stem.dataplot.hc_2', 'Could a third thing be changing both? Could the cause run the other way round?'),
+              t('stem.dataplot.hc_3', 'How many cases are there? A pattern in a handful of cases can easily be chance.')], dpFin(st.hint) ? st.hint : 0, function (lv) { var nx = Object.assign({}, causeAnswers); nx[card.id] = Object.assign({}, st, { hint: lv }); upd('causeAnswers', nx); }),
+            st.done && causeIdx < CAUSE_CARDS.length - 1 && h('button', { type: 'button', style: bigStyle, onClick: function () { upd('causeIdx', causeIdx + 1); }, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-teal-700 text-white' }, t('stem.dataplot.cause_next', 'Next card'))),
+          h('details', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-300 text-slate-900 text-xs' },
+            h('summary', { className: 'font-bold cursor-pointer', style: chipStyle }, t('stem.dataplot.cause_guide_title', 'Four questions to ask about any correlation')),
+            h('ol', { className: 'list-decimal pl-5 space-y-1 mt-1' },
+              h('li', null, t('stem.dataplot.cause_q1', 'Could a third (lurking) variable be changing both?')),
+              h('li', null, t('stem.dataplot.cause_q2', 'Could the cause run the other way round?')),
+              h('li', null, t('stem.dataplot.cause_q3', 'Is there enough data, or could this be chance?')),
+              h('li', null, t('stem.dataplot.cause_q4', 'Was it a randomized experiment? Only then can the data alone support cause and effect.'))))
+        );
+      };
 
-          // ── Quiz question display ──
-          dpQuiz && !dpQuiz.answered && h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
-            h('p', { className: 'text-sm font-bold text-teal-800 mb-3' },
-              dpQuiz.type === 'correlation' ? '\u201C' + dpQuiz.text + '\u201D \u2014 What correlation do you predict?'
-              : dpQuiz.type === 'guessR2' ? dpQuiz.text
-              : dpQuiz.type === 'matchChart' ? '\uD83D\uDCCA Best chart type for: ' + dpQuiz.text
-              : dpQuiz.text
-            ),
-            // Options for correlation / guessR2 / matchChart
-            dpQuiz.type !== 'outlier' && h('div', { className: 'flex gap-3 flex-wrap' },
-              dpQuiz.opts.map(function(opt) {
-                return h('button', { key: opt, onClick: function() { answerQuiz(opt); },
-                  className: 'flex-1 min-w-[80px] px-4 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-teal-400 hover:bg-teal-50 transition-all cursor-pointer'
-                }, opt);
-              })
-            ),
-            // Outlier quiz: clickable points
-            dpQuiz.type === 'outlier' && h('div', { className: 'grid grid-cols-5 gap-2' },
-              dpQuiz.pts.map(function(p, i) {
-                return h('button', { 'aria-label': '#', key: i, onClick: function() { answerQuiz(i.toString()); },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-slate-200 hover:border-red-400 hover:bg-red-50 transition-all'
-                }, '#' + (i+1) + ': (' + p.x + ',' + p.y + ')');
-              })
-            )
-          ),
+      // ══════════════════════════════════════════════════════════
+      // ── Stage B shared bits: progress flags, XP once per item, misconception log, CODAP hand-off ──
+      // ══════════════════════════════════════════════════════════
+      var skillsDone = obj(d.skillsDone);
+      // XP for one verified item, once, inside the shared cap. Returns the patch to merge (or {}).
+      var xpPatch = function (key, pts, reason) {
+        if (!awardXP || quizXpItems[key] || quizXpTotal >= QUIZ_XP_CAP) return {};
+        var px = Math.min(pts, QUIZ_XP_CAP - quizXpTotal), m = Object.assign({}, quizXpItems); m[key] = true;
+        awardXP('dataPlot', px, reason);
+        return { quizXpItems: m, quizXpTotal: quizXpTotal + px };
+      };
+      // A verified, un-revealed success: set its progress flag (path ticks, teacher counts) even
+      // after the XP cap, and count successes past the cap so the teacher can see work continued.
+      var progressPatch = function (key) {
+        var out = {};
+        if (!skillsDone[key]) { var f = Object.assign({}, skillsDone); f[key] = true; out.skillsDone = f; }
+        if (quizXpTotal >= QUIZ_XP_CAP) out.xpCapCorrect = xpCapCorrect + 1;
+        return out;
+      };
+      var doneFlag = function (key) { var f = Object.assign({}, skillsDone); f[key] = true; var out = { skillsDone: f }; if (quizXpTotal >= QUIZ_XP_CAP) out.xpCapCorrect = xpCapCorrect + 1; return out; };
+      var missEntry = function (type, key, text) {
+        var log = missedLog.concat([{ type: type, key: String(key).slice(0, 80), mis: String(text || '').slice(0, 160), at: Date.now() }]);
+        return { missedLog: log.length > 60 ? log.slice(-60) : log };
+      };
+      var dataLabReachable = function () { var SL = window.StemLab || {}; return typeof SL.openInDataLab === 'function' || toolReachable('dataLab'); };
+      // Data Lab's hook when it is loaded; otherwise its inbox, then open Data Lab (same contract as Skate Lab).
+      var sendToDataLab = function (dataset) {
+        if (!dataset || !dataset.rows || !dataset.rows.length) { say(t('stem.dataplot.codap_empty', 'There is no data to send yet.')); return { ok: false }; }
+        var SL = window.StemLab || {};
+        if (typeof SL.openInDataLab === 'function') {
+          var res; try { res = SL.openInDataLab(dataset); } catch (e) { res = { ok: false }; }
+          if (res && res.ok) say(fillT(t('stem.dataplot.codap_sent', 'Sent {n} rows to CODAP in a new window.'), { n: dataset.rows.length }));
+          else if (res && res.error === 'popup-blocked') say(t('stem.dataplot.codap_blocked', 'The browser blocked the CODAP window. Allow pop-ups for this site, then try again.'));
+          else say(t('stem.dataplot.codap_failed', 'That data could not be sent. Export a CSV instead.'));
+          return res || { ok: false };
+        }
+        if (!toolReachable('dataLab')) { say(fillT(t('stem.dataplot.tool_unavailable', '{name} is not available in this build.'), { name: t('stem.dataplot.datalab_name', 'CODAP Data Science') })); return { ok: false }; }
+        if (!Array.isArray(window.__alloDataLabInbox)) window.__alloDataLabInbox = [];
+        window.__alloDataLabInbox.push(dataset);
+        openTool('dataLab', t('stem.dataplot.datalab_name', 'CODAP Data Science'));
+        say(t('stem.dataplot.codap_inbox', 'Opening Data Lab. Press "Open it in CODAP" there to see your data.'));
+        return { ok: true, queued: true };
+      };
+      var pointsDataset = function () {
+        return { title: (importedFrom && importedFrom.title) || t('stem.dataplot.codap_title', 'Data Plot data'), source: t('stem.dataplot.codap_source', 'Data Plot'),
+          attributes: [{ name: xName, type: 'numeric' }, { name: yName === xName ? yName + ' (y)' : yName, type: 'numeric' }], rows: points.map(function (p) { return [p.x, p.y]; }) };
+      };
+      var codapButton = function (getDataset, label) {
+        if (!dataLabReachable()) return null;
+        return h('button', { type: 'button', style: bigStyle, 'data-dataplot-codap': true, onClick: function () { sendToDataLab(getDataset()); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold border border-indigo-700 text-indigo-800 bg-white hover:bg-indigo-50' }, label || t('stem.dataplot.send_codap', '🗃️ Send to Data Lab (CODAP)'));
+      };
+      var section = function (props) { var rest = Array.prototype.slice.call(arguments, 1); return h.apply(null, ['section', Object.assign({ className: 'bg-white rounded-xl p-3 border border-slate-300 text-slate-900 space-y-2' }, props || {})].concat(rest)); };
+      var choiceRow = function (label, opts, value, onPick, disabled) {
+        return h('div', { role: 'radiogroup', 'aria-label': label, className: 'space-y-1' },
+          h('p', { className: 'text-xs font-bold text-slate-900' }, label),
+          h('div', { className: 'flex gap-1.5 flex-wrap' }, opts.map(function (o) {
+            return h('button', { key: o[0], type: 'button', role: 'radio', 'aria-checked': value === o[0], disabled: !!disabled, 'data-choice': o[0], style: chipStyle, onClick: function () { onPick(o[0]); }, className: btnCls(value === o[0]) + ' text-left disabled:opacity-60' }, o[1]);
+          })));
+      };
+      var feedbackBox = function (ok, text, extra) {
+        if (!text) return null;
+        return h('p', Object.assign({ role: 'status', className: 'text-xs p-2 rounded border ' + (ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900') }, extra || {}), text);
+      };
+      var clamp = function (v, lo, hi) { return Math.max(lo, Math.min(hi, v)); };
 
-          // ── Quiz answer feedback ──
-          dpQuiz && dpQuiz.answered && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (dpQuiz.chosen === (dpQuiz.type === 'outlier' ? dpQuiz.answer.toString() : dpQuiz.answer) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
-            (function() {
-              var isRight = dpQuiz.type === 'outlier' ? parseInt(dpQuiz.chosen) === dpQuiz.answer : dpQuiz.chosen === dpQuiz.answer;
-              var ansText = dpQuiz.type === 'outlier' ? 'Point #' + (dpQuiz.answer + 1) : dpQuiz.answer;
-              return isRight ? '\u2705 Correct! ' + ansText : '\u274C Answer: ' + ansText;
-            })(),
-            h('button', { 'aria-label': t('stem.dataplot.next', 'Next'), onClick: makeQuiz, className: 'ml-3 text-xs font-bold underline' }, t('stem.dataplot.next_2', '\u27A1 Next'))
-          ),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Best fit ── line by eye vs least squares (8.SP.2), residual check (HS)
+      // ══════════════════════════════════════════════════════════
+      var fitRaw = obj(d.fitLab);
+      var fitMode = isHS && fitRaw.mode === 'resid' ? 'resid' : 'eye';
+      var fitSeed = dpFin(fitRaw.seed) ? fitRaw.seed : 1;
+      var fitLevel = is68 ? '68' : '912';
+      var fitUseMine = !!fitRaw.useMine && n >= 3 && fitOk.linear.ok;
+      var fitSet = fitUseMine ? { seed: 'mine', context: 'mine', pts: visiblePoints.map(function (p) { return { x: p.x, y: p.y }; }) } : genFitSet(fitSeed, fitLevel);
+      var fitKey = fitUseMine ? 'mine:' + dataSignature(visiblePoints) : 'gen:' + fitLevel + ':' + fitSeed;
+      var fitBase = { mode: fitRaw.mode, seed: fitSeed, useMine: !!fitRaw.useMine };
+      var fs = fitRaw.key === fitKey ? fitRaw : Object.assign({}, fitBase, { key: fitKey });
+      var setFs = function (patch) { upd('fitLab', Object.assign({}, fs, { key: fitKey }, patch)); };
+      var fitCtxText = function (id) {
+        switch (id) {
+          case 'study': return [t('stem.dataplot.fc_study_x', 'Hours of practice'), t('stem.dataplot.fc_study_y', 'Quiz score')];
+          case 'arm': return [t('stem.dataplot.fc_arm_x', 'Arm span (dm)'), t('stem.dataplot.fc_arm_y', 'Jump distance (dm)')];
+          case 'temp': return [t('stem.dataplot.fc_temp_x', 'Temperature (°C)'), t('stem.dataplot.fc_temp_y', 'Lemonade cups sold')];
+          case 'phone': return [t('stem.dataplot.fc_phone_x', 'Hours of phone use'), t('stem.dataplot.fc_phone_y', 'Battery left (tens of %)')];
+          default: return [xName, yName];
+        }
+      };
+      var fitAx = fitCtxText(fitSet.context);
+      var fxs = fitSet.pts.map(function (p) { return p.x; }), fys = fitSet.pts.map(function (p) { return p.y; });
+      var fAxX = niceAxis(Math.min.apply(null, fxs), Math.max.apply(null, fxs)), fAxY = niceAxis(Math.min.apply(null, fys), Math.max.apply(null, fys));
+      var fSpanX = fAxX.max - fAxX.min, fSpanY = fAxY.max - fAxY.min;
+      var hxA = fAxX.min + 0.1 * fSpanX, hxB = fAxX.max - 0.1 * fSpanX;
+      var fStep = fAxY.step / 20, fDec = decimalsFor(fStep);
+      var snapY = function (v) { return Number(clamp(Math.round(v / fStep) * fStep, fAxY.min, fAxY.max).toFixed(fDec)); };
+      var fMid = snapY((fAxY.min + fAxY.max) / 2);
+      var yA = dpFin(fs.yA) ? clamp(fs.yA, fAxY.min, fAxY.max) : fMid, yB = dpFin(fs.yB) ? clamp(fs.yB, fAxY.min, fAxY.max) : fMid;
+      var userLine = lineFromHandles(hxA, yA, hxB, yB);
+      var fitEval = evalLineFit(fitSet.pts, userLine);
+      var fitTries = dpFin(fs.tries) ? fs.tries : 0;
+      var fitRevealed = !!fs.revealed;
+      var fitChecked = fitTries > 0;
+      var fitSquares = fs.squares === 'ls' || fs.squares === 'both' || fs.squares === 'none' ? fs.squares : 'mine';
+      var fitSvgRef = React.useRef(null), fitDragRef = React.useRef(null);
+      var FH = 320;
+      var fsx = function (x) { return PL + (x - fAxX.min) / (fSpanX || 1) * (W - PL - PR); };
+      var fsy = function (y) { return (FH - PB) - (y - fAxY.min) / (fSpanY || 1) * (FH - PT - PB); };
+      var fInvY = function (sy) { return fAxY.min + ((FH - PB) - sy) / (FH - PT - PB) * (fSpanY || 1); };
+      var lineSentence = function (ln) { return equationText('linear', ln); };
+      var fitMisText = function (ev) {
+        var ls = ev.ls;
+        switch (ev.mis) {
+          case 'mostPoints': return fillT(t('stem.dataplot.fm_most_points', 'Misconception: "the best line must pass through as many points as possible." Your line goes right through {k} points but misses the others by a lot. The best line keeps ALL the misses small, so its total of squared misses is the smallest.'), { k: ev.hitsUser });
+          case 'halfHalf': return fillT(t('stem.dataplot.fm_half_half', 'Misconception: "half the points above and half below is enough." Your line has {a} points above and {b} below, but it is tilted wrong: the misses are big at the ends. Balance the SIZES of the misses all along the line, not just the count.'), { a: ev.above, b: ev.below });
+          case 'direction': return ls.m > 0 ? t('stem.dataplot.fm_direction_up', 'Your line slopes down, but the points rise from left to right. Follow the cloud of points first.') : t('stem.dataplot.fm_direction_down', 'Your line slopes up, but the points fall from left to right. Follow the cloud of points first.');
+          case 'shifted': return ev.meanRes > 0 ? t('stem.dataplot.fm_shift_up', 'The tilt is about right, but the whole line is too low: most points are above it. Move both ends up together.') : t('stem.dataplot.fm_shift_down', 'The tilt is about right, but the whole line is too high: most points are below it. Move both ends down together.');
+          case 'tooSteep': return t('stem.dataplot.fm_too_steep', 'Your line is steeper than the trend: at one end the points are mostly above it and at the other end mostly below. Turn it to be flatter.');
+          case 'tooFlat': return t('stem.dataplot.fm_too_flat', 'Your line is flatter than the trend: at one end the points are mostly above it and at the other end mostly below. Turn it to be steeper.');
+          default: return '';
+        }
+      };
+      var fitQualityText = function (q) {
+        return q === 'excellent' ? t('stem.dataplot.fq_excellent', 'Excellent: almost as good as the least-squares line.') : q === 'good' ? t('stem.dataplot.fq_good', 'Good: close to the least-squares line.')
+          : q === 'fair' ? t('stem.dataplot.fq_fair', 'Fair: the least-squares line fits clearly better.') : t('stem.dataplot.fq_far', 'Far off: the least-squares line fits much better.');
+      };
+      var fitCheck = function () {
+        var ev = fitEval, tries = fitTries + 1, close = ev.ratio <= 1.3;
+        // Success shows the comparison; a miss never auto-reveals (the reveal button appears after 2 checks).
+        var reveal = close;
+        var misText = close ? '' : fitMisText(ev);
+        var patch = { tries: tries, revealed: fitRevealed || reveal, squares: reveal ? 'both' : 'mine', last: { ratio: ev.ratio, ssr: ev.ssrUser, mis: ev.mis, m: userLine.m, b: userLine.b, at: Date.now() } };
+        var extra = {};
+        if (close && !fitRevealed) {
+          extra = doneFlag('fit:' + fitKey);
+          if (!fitUseMine) Object.assign(extra, xpPatch('fit:' + fitKey, tries === 1 ? 10 : 5, t('stem.dataplot.xp_fit', 'Placed a line of best fit by eye')));
+        }
+        if (!close) Object.assign(extra, missEntry('fit', fitKey, misText));
+        setFs(patch);
+        if (Object.keys(extra).length) updMulti(extra);
+        if (soundEnabled) { if (close) sfxCorrect(); else sfxWrong(); }
+        say(close ? fillT(t('stem.dataplot.sr_fit_close', 'Your sum of squared residuals is {u}, only {k} times the least-squares line’s {l}. {q}'), { u: fmtNum(ev.ssrUser, 1), l: fmtNum(ev.ssrLs, 1), k: fmtFixed(ev.ratio, 2), q: fitQualityText(ev.quality) })
+          : fillT(t('stem.dataplot.sr_fit_not_yet', 'Your sum of squared residuals is {u}. {mis}'), { u: fmtNum(ev.ssrUser, 1), mis: misText }) + ' ' + t('stem.dataplot.sr_fit_try_again', 'Move your line and check again.'));
+      };
+      var fitNewSet = function () { upd('fitLab', Object.assign({}, fitBase, { seed: fitSeed + 1, useMine: false })); say(t('stem.dataplot.sr_fit_new', 'New scatter plot. Place your line, then check it.')); };
+      var fitMoveEnd = function (which, v) { var p = {}; p[which] = snapY(v); setFs(p); };
+      var fitSquareEls = function (resList, color, key) {
+        return fitSet.pts.map(function (p, i) {
+          var r = resList[i], side = Math.abs(fsy(p.y) - fsy(p.y - r));
+          if (!(side > 0.5)) return null;
+          var top = Math.min(fsy(p.y), fsy(p.y - r)), x0 = fsx(p.x) + side > W - PR ? fsx(p.x) - side : fsx(p.x);
+          return h('rect', { key: key + i, x: x0, y: top, width: side, height: side, fill: color, fillOpacity: 0.14, stroke: color, strokeWidth: 1, clipPath: 'url(#dp-fit-clip)' });
+        });
+      };
+      var renderFitEye = function () {
+        var col = isContrast ? '#ffff00' : dc('#b45309'), colL = isContrast ? '#00ffff' : dc('#1d4ed8');
+        var showMineSq = fitChecked && (fitSquares === 'mine' || fitSquares === 'both');
+        var showLsSq = fitRevealed && (fitSquares === 'ls' || fitSquares === 'both');
+        var ls = fitEval.ls;
+        var onMove = function (e) { var which = fitDragRef.current; if (!which) return; var svg = fitSvgRef.current; if (!svg) return; var rect = svg.getBoundingClientRect(); var scale = Math.min(rect.width / W, rect.height / FH) || 1; var offY = (rect.height - FH * scale) / 2; fitMoveEnd(which, fInvY((e.clientY - rect.top - offY) / scale)); };
+        var endDrag = function () { if (!fitDragRef.current) return; fitDragRef.current = null; say(fillT(t('stem.dataplot.sr_fit_line_now', 'Your line: {eq}.'), { eq: lineSentence(userLine) })); };
+        var handle = function (which, hx, hy) {
+          return h('circle', { key: 'h' + which, cx: fsx(hx), cy: fsy(hy), r: 11, fill: col, stroke: INK.bg, strokeWidth: 2, style: { cursor: 'ns-resize', touchAction: 'none' }, 'data-dataplot-fit-handle': which,
+            onPointerDown: function (e) { fitDragRef.current = which; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); } });
+        };
+        var slider = function (which, hx, val, label) {
+          return h('label', { key: which, className: 'block text-xs font-bold text-slate-900' }, fillT(label, { x: fmtNum(hx, 2), y: fmtNum(val, fDec) }),
+            h('input', { type: 'range', min: fAxY.min, max: fAxY.max, step: fStep, value: val, 'data-dataplot-fit-slider': which, 'aria-valuetext': fillT(t('stem.dataplot.fit_slider_value', 'height {y}'), { y: fmtNum(val, fDec) }), onChange: function (e) { fitMoveEnd(which, parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 32 } }));
+        };
+        var rows = fitSet.pts.map(function (p, i) { return { p: p, ru: fitEval.resUser[i], rl: fitEval.resLs[i] }; }).sort(function (a, b) { return a.p.x - b.p.x; });
+        var hints = [t('stem.dataplot.fit_hint1', 'Follow the cloud of points: does it rise or fall from left to right? Tilt your line the same way.'),
+          t('stem.dataplot.fit_hint2', 'Look at each end of your line. Are the points there mostly above it, mostly below it, or balanced?'),
+          t('stem.dataplot.fit_hint3', 'A big miss counts much more than a small one, because the misses are squared. Make the biggest squares smaller.')];
+        return h('div', { className: 'space-y-2', 'data-dataplot-fit-eye': true },
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, fitUseMine ? t('stem.dataplot.fit_intro_mine', 'Your own points from the Chart tab. Drag the two orange ends (or use the sliders) to place the line you think fits best, then check it against the least-squares line.')
+            : t('stem.dataplot.fit_intro', 'Drag the two orange ends of the line (or use the sliders) until it fits the points as well as you can. Then check it: the computer compares your line with the least-squares line.')),
+          h('svg', { ref: fitSvgRef, role: 'img', 'aria-label': fillT(t('stem.dataplot.fit_svg_label', 'Scatter plot of {y} against {x}, {n} points, with your line {eq}.'), { y: fitAx[1], x: fitAx[0], n: fitSet.pts.length, eq: lineSentence(userLine) }), 'aria-describedby': 'dp-fit-desc',
+            viewBox: '0 0 ' + W + ' ' + FH, className: 'w-full rounded-xl border border-teal-200', style: { maxHeight: '360px', background: INK.bg, touchAction: 'none' }, 'data-dataplot-fit-svg': true,
+            onPointerMove: onMove, onPointerUp: endDrag, onPointerCancel: endDrag, onPointerLeave: endDrag },
+            h('defs', null, h('clipPath', { id: 'dp-fit-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: FH - PT - PB }))),
+            fAxY.ticks.map(function (v, k) { return h('g', { key: 'y' + k }, h('line', { x1: PL, y1: fsy(v), x2: W - PR, y2: fsy(v), stroke: INK.grid, strokeWidth: 0.6, strokeDasharray: '3 3' }), h('text', { x: PL - 6, y: fsy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, fAxY.decimals))); }),
+            fAxX.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: fsx(v), y: FH - PB + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, fAxX.decimals)); }),
+            h('line', { x1: PL, y1: FH - PB, x2: W - PR, y2: FH - PB, stroke: INK.axis, strokeWidth: 1.5 }),
+            h('line', { x1: PL, y1: PT, x2: PL, y2: FH - PB, stroke: INK.axis, strokeWidth: 1.5 }),
+            h('text', { x: (PL + W - PR) / 2, y: FH - 8, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fitAx[0]),
+            h('text', { x: 14, y: (PT + FH - PB) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' }, transform: 'rotate(-90,14,' + ((PT + FH - PB) / 2) + ')' }, fitAx[1]),
+            showLsSq ? fitSquareEls(fitEval.resLs, colL, 'sl') : null,
+            showMineSq ? fitSquareEls(fitEval.resUser, col, 'su') : null,
+            fitSet.pts.map(function (p, i) { return h('line', { key: 'rs' + i, x1: fsx(p.x), y1: fsy(p.y), x2: fsx(p.x), y2: fsy(userLine.m * p.x + userLine.b), stroke: col, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-fit-clip)' }); }),
+            fitRevealed && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 2.5, strokeDasharray: '8 4', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-lsrl': true }),
+            h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 3, clipPath: 'url(#dp-fit-clip)', 'data-dataplot-user-line': true }),
+            fitSet.pts.map(function (p, i) { return h('circle', { key: 'p' + i, cx: fsx(p.x), cy: fsy(p.y), r: 5, fill: INK.fill, stroke: INK.bg, strokeWidth: 1.5 }); }),
+            handle('yA', hxA, yA), handle('yB', hxB, yB)),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+            slider('yA', hxA, yA, t('stem.dataplot.fit_left_end', 'Left end of my line (at x = {x}): {y}')),
+            slider('yB', hxB, yB, t('stem.dataplot.fit_right_end', 'Right end of my line (at x = {x}): {y}'))),
+          h('p', { id: 'dp-fit-desc', className: 'text-xs text-slate-800' + onHostInk, 'data-dataplot-fit-desc': true },
+            fillT(t('stem.dataplot.fit_desc', 'Your line is {eq}. {a} points are above it and {b} below it.'), { eq: lineSentence(userLine), a: fitEval.above, b: fitEval.below })
+            + (fitChecked ? ' ' + fillT(t('stem.dataplot.fit_desc_ssr', 'Sum of squared residuals for your line: {u}.'), { u: fmtNum(fitEval.ssrUser, 1) }) : '')
+            + (fitRevealed ? ' ' + fillT(t('stem.dataplot.fit_desc_ls', 'Least-squares line: {eq}, sum of squared residuals {l}.'), { eq: lineSentence(ls), l: fmtNum(fitEval.ssrLs, 1) }) : '')),
+          h('div', { className: 'flex gap-2 flex-wrap items-center' },
+            h('button', { type: 'button', style: bigStyle, onClick: fitCheck, 'data-dataplot-fit-check': true, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, fitChecked ? t('stem.dataplot.fit_check_again', 'Check my line again') : t('stem.dataplot.fit_check', 'Check my line')),
+            h('button', { type: 'button', style: bigStyle, onClick: fitNewSet, 'data-dataplot-fit-new': true, className: 'px-3 py-2 rounded-lg text-sm font-bold border border-teal-700 text-teal-800 bg-white' }, t('stem.dataplot.fit_new', 'New scatter plot')),
+            n >= 3 && fitOk.linear.ok && h('button', { type: 'button', style: bigStyle, 'aria-pressed': fitUseMine, onClick: function () { upd('fitLab', Object.assign({}, fitBase, { useMine: !fitUseMine })); }, className: btnCls(fitUseMine) }, t('stem.dataplot.fit_use_mine', 'Use my points from the Chart tab'))),
+          fitChecked && fs.last && h('div', { 'data-dataplot-fit-result': true, className: 'space-y-1' },
+            fs.last.ratio <= 1.3 ? feedbackBox(true, fillT(t('stem.dataplot.fit_result_close', 'Your line’s sum of squared residuals is {u}; the least-squares line’s is {l}. Yours is {k} times as large. {q}'), { u: fmtNum(fs.last.ssr, 1), l: fmtNum(fitEval.ssrLs, 1), k: fmtFixed(fs.last.ratio, 2), q: fitQualityText(fs.last.ratio <= 1.1 ? 'excellent' : 'good') }))
+              : feedbackBox(false, fillT(t('stem.dataplot.fit_result_far', 'Your line’s sum of squared residuals is {u}.'), { u: fmtNum(fs.last.ssr, 1) }) + ' ' + fitMisText(evalLineFit(fitSet.pts, { m: fs.last.m, b: fs.last.b }))
+                + (fitRevealed ? ' ' + fillT(t('stem.dataplot.fit_result_ls', 'The least-squares line’s is {l}: yours is {k} times as large.'), { l: fmtNum(fitEval.ssrLs, 1), k: fmtFixed(fs.last.ratio, 2) }) : '')),
+            fitRevealed && h('p', { className: 'text-xs text-slate-900 bg-sky-50 border border-sky-300 rounded p-2' }, fillT(t('stem.dataplot.fit_ls_explain', 'The least-squares line {eq} is the one line whose squares add up to the smallest total. Every other line, yours included, has a bigger total.'), { eq: lineSentence(ls) })),
+            fitChecked && h('div', { role: 'group', 'aria-label': t('stem.dataplot.fit_squares_group', 'Squares to draw'), className: 'flex gap-1.5 flex-wrap items-center text-xs' },
+              h('span', { className: 'font-bold text-slate-800' + onHostInk }, t('stem.dataplot.fit_squares_label', 'Draw the squared residuals for:')),
+              [['mine', t('stem.dataplot.fit_sq_mine', 'My line')], ['ls', t('stem.dataplot.fit_sq_ls', 'Least-squares line')], ['both', t('stem.dataplot.fit_sq_both', 'Both')], ['none', t('stem.dataplot.fit_sq_none', 'Neither')]]
+                .filter(function (o) { return fitRevealed || o[0] === 'mine' || o[0] === 'none'; })
+                .map(function (o) { return h('button', { key: o[0], type: 'button', 'aria-pressed': fitSquares === o[0], style: chipStyle, onClick: function () { setFs({ squares: o[0] }); }, className: btnCls(fitSquares === o[0]) }, o[1]); }))),
+          !fitRevealed && fitTries >= 2 && revealRow('fit', function () { setFs({ revealed: true, squares: 'both' }); say(fillT(t('stem.dataplot.sr_fit_shown', 'The least-squares line {eq} is now shown for comparison. Copying it now earns no XP.'), { eq: lineSentence(fitEval.ls) })); }, t('stem.dataplot.reveal_lsrl', 'Show the least-squares line')),
+          !fitRevealed && hintLadder('dp-fit-hints', hints, dpFin(fs.hint) ? fs.hint : 0, function (lv) { setFs({ hint: lv }); }),
+          h('details', { className: 'rounded-xl border border-slate-300 bg-white text-slate-800', 'data-dataplot-fit-table': true },
+            h('summary', { className: 'px-3 py-2 text-sm font-bold cursor-pointer', style: bigStyle }, t('stem.dataplot.fit_table_summary', 'Residuals table')),
+            h('div', { className: 'p-3 pt-0 overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.dataplot.fit_table_summary', 'Residuals table'), style: { position: 'relative' } },
+              h('table', { className: 'w-full text-sm border-collapse' },
+                h('caption', { className: 'text-left text-xs text-slate-700 pb-1' }, t('stem.dataplot.fit_table_caption', 'Residual = actual y minus the y on the line. Squaring makes every miss positive and big misses count more.')),
+                h('thead', null, h('tr', null, [fitAx[0], fitAx[1], t('stem.dataplot.fit_col_mine', 'My residual'), t('stem.dataplot.fit_col_mine_sq', 'Squared')].concat(fitRevealed ? [t('stem.dataplot.fit_col_ls', 'Least-squares residual'), t('stem.dataplot.fit_col_ls_sq', 'Squared')] : [])
+                  .map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, c); }))),
+                h('tbody', null, rows.map(function (r, i) {
+                  var cells = [fmtNum(r.p.x), fmtNum(r.p.y), fmtNum(r.ru, 2), fitChecked ? fmtNum(r.ru * r.ru, 2) : '—'].concat(fitRevealed ? [fmtNum(r.rl, 2), fmtNum(r.rl * r.rl, 2)] : []);
+                  return h('tr', { key: i }, cells.map(function (c, k) { return h(k === 0 ? 'th' : 'td', { key: k, scope: k === 0 ? 'row' : undefined, className: 'px-2 py-1 border border-slate-300 font-mono font-normal' }, c); }));
+                })),
+                fitChecked && h('tfoot', null, h('tr', null, h('th', { scope: 'row', colSpan: 3, className: 'text-left px-2 py-1 border border-slate-300' }, t('stem.dataplot.fit_total', 'Sum of squares')), h('td', { className: 'px-2 py-1 border border-slate-300 font-mono font-bold' }, fmtNum(fitEval.ssrUser, 2)),
+                  fitRevealed && h('td', { className: 'px-2 py-1 border border-slate-300' }, ''), fitRevealed && h('td', { className: 'px-2 py-1 border border-slate-300 font-mono font-bold' }, fmtNum(fitEval.ssrLs, 2)))))))
+        );
+      };
 
-          !dpQuiz && h('div', { className: 'text-center text-sm text-slate-600 py-4' + onHostInk }, t('stem.dataplot.select_a_quiz_type_and_click_start_qui', 'Select a quiz type and click "Start Quiz"!'))
-        ),
+      // Residual check (HS): predict from the scatter, then read the residual plot.
+      var rlRaw = obj(d.residLab);
+      var rlSeed = dpFin(rlRaw.seed) ? rlRaw.seed : 1;
+      var rlKey = 'resid:' + rlSeed;
+      var rl = rlRaw.key === rlKey ? rlRaw : { key: rlKey, seed: rlSeed };
+      var setRl = function (patch) { upd('residLab', Object.assign({}, rl, { key: rlKey, seed: rlSeed }, patch)); };
+      var residPlotSvg = function (pts, line, label) {
+        var res = pts.map(function (p) { return { x: p.x, r: p.y - (line.m * p.x + line.b) }; });
+        var ax1 = niceAxis(Math.min.apply(null, pts.map(function (p) { return p.x; })), Math.max.apply(null, pts.map(function (p) { return p.x; })));
+        var mr = Math.max.apply(null, res.map(function (r) { return Math.abs(r.r); }).concat([1e-9])), ar = niceAxis(-mr, mr), RH = 190;
+        var sx = function (x) { return PL + (x - ax1.min) / (ax1.max - ax1.min || 1) * (W - PL - PR); };
+        var sy = function (r) { return (RH - 30) - (r - ar.min) / (ar.max - ar.min || 1) * (RH - 44); };
+        return h('svg', { role: 'img', 'aria-label': label, viewBox: '0 0 ' + W + ' ' + RH, className: 'w-full rounded-xl border border-violet-300', style: { background: INK.bg, maxHeight: '220px' }, 'data-dataplot-resid-svg': true },
+          ar.ticks.map(function (v, k) { return h('text', { key: 'r' + k, x: PL - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ar.decimals)); }),
+          ax1.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: sx(v), y: RH - 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ax1.decimals)); }),
+          h('line', { x1: PL, y1: sy(0), x2: W - PR, y2: sy(0), stroke: INK.axis, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+          h('line', { x1: PL, y1: 10, x2: PL, y2: RH - 30, stroke: INK.axis, strokeWidth: 1 }),
+          h('text', { x: 12, y: (RH - 20) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' }, transform: 'rotate(-90,12,' + ((RH - 20) / 2) + ')' }, t('stem.dataplot.residual_word', 'Residual')),
+          res.map(function (r, i) { return h('circle', { key: 'c' + i, cx: sx(r.x), cy: sy(r.r), r: 4.5, fill: r.r >= 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad, stroke: INK.bg, strokeWidth: 1 }); }));
+      };
+      var residDescribe = function (pts, line) {
+        var res = pts.slice().sort(function (a, b) { return a.x - b.x; }).map(function (p) { return p.y - (line.m * p.x + line.b); });
+        var third = Math.max(1, Math.floor(res.length / 3)), seg = function (a) { return a.filter(function (r) { return r > 0; }).length + '/' + a.length; };
+        var spread = function (a) { return fmtNum(meanOf(a.map(Math.abs)), 2); };
+        return fillT(t('stem.dataplot.resid_desc', 'Residuals from left to right. Left third: {l} above zero, typical size {sl}. Middle third: {m} above zero, typical size {sm}. Right third: {r} above zero, typical size {sr}.'),
+          { l: seg(res.slice(0, third)), sl: spread(res.slice(0, third)), m: seg(res.slice(third, res.length - third)), sm: spread(res.slice(third, res.length - third)), r: seg(res.slice(res.length - third)), sr: spread(res.slice(res.length - third)) });
+      };
+      var residMisText = function (chosen, answer, r2v) {
+        if (chosen === 'yes' && answer === 'curve') return fillT(t('stem.dataplot.rm_high_r2', 'Misconception: "a high R² proves a straight line is the right model." R² here is {r2}, yet the residuals bend in an arch or a U: the line misses in a pattern. A curved model would fit better.'), { r2: fmtFixed(r2v, 3) });
+        if (chosen === 'yes' && answer === 'fan') return t('stem.dataplot.rm_fan_missed', 'Look at the spread of the residuals: it grows from left to right like a fan. The line follows the trend, but its predictions get much less reliable for large x.');
+        if (answer === 'yes') return t('stem.dataplot.rm_want_zero', 'Misconception: "good residuals are all tiny or all zero." Real data always miss the line. What matters is that the misses form an even, patternless band around zero, as they do here.');
+        if (chosen === 'curve') return t('stem.dataplot.rm_fan_not_curve', 'Not a curve: the residuals stay centred on zero all the way along. It is their SPREAD that changes, growing from left to right.');
+        return t('stem.dataplot.rm_curve_not_fan', 'Not a fan: look where the residuals sit. They are mostly on one side of zero in the middle and the other side at the ends: that is a curve.');
+      };
+      var residAnswerText = function (a) { return a === 'curve' ? t('stem.dataplot.ra_curve', 'No: the residuals curve, so a curved model fits better.') : a === 'fan' ? t('stem.dataplot.ra_fan', 'No: the residuals fan out, so the line is less reliable for large x.') : t('stem.dataplot.ra_yes', 'Yes: the residuals are a patternless band around zero.'); };
+      var renderFitResid = function () {
+        var set = genResidSet(rlSeed), lf = linFit(set.pts), answer = residAnswerFor(set.kind);
+        var opts = [['yes', t('stem.dataplot.ro_yes', 'Yes: random scatter around zero, no pattern')], ['curve', t('stem.dataplot.ro_curve', 'No: the residuals make a curve (U or arch)')], ['fan', t('stem.dataplot.ro_fan', 'No: the residuals fan out (spread grows)')]];
+        var answered = !!rl.answered;
+        var pick = function (id) {
+          if (answered) return;
+          var tries = (rl.tries || 0) + 1, ok = id === answer;
+          if (ok) {
+            var extra = doneFlag(rlKey);
+            if (!rl.revealed) Object.assign(extra, xpPatch(rlKey, tries === 1 ? 10 : 5, t('stem.dataplot.xp_resid', 'Judged a model from its residual plot')));
+            setRl({ tries: tries, chosen: id, answered: true, correct: true, feedback: '' }); updMulti(extra);
+            if (soundEnabled) sfxCorrect();
+            say(t('stem.dataplot.sr_correct', 'Correct!') + ' ' + residAnswerText(answer));
+          } else {
+            var fb = residMisText(id, answer, lf.r2), last = tries >= 2;
+            setRl({ tries: tries, chosen: id, answered: last, correct: false, feedback: fb });
+            updMulti(missEntry('resid', rlKey, fb));
+            if (soundEnabled) sfxWrong();
+            say(fb + ' ' + (last ? (allowReveal ? t('stem.dataplot.sr_two_tries_set', 'Two tries used. Press Show the answer to see it, or try a new data set.') : t('stem.dataplot.sr_two_tries_set_noreveal', 'Two tries used. Try a new data set.')) : t('stem.dataplot.sr_try_again', 'Try once more.')));
+          }
+        };
+        var mine = n >= 6 && fitOk.linear.ok ? residualPattern(visiblePoints) : null;
+        return h('div', { className: 'space-y-2', 'data-dataplot-resid-check': true },
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, t('stem.dataplot.resid_intro', 'A least-squares line has been fitted. First judge from the scatter plot alone, then read the residual plot and decide whether a straight line is an appropriate model.')),
+          miniScatter(set.pts, { line: { m: lf.m, b: lf.b }, label: fillT(t('stem.dataplot.resid_scatter_label', 'Scatter plot of {n} points with the least-squares line {eq}. R² = {r2}.'), { n: set.pts.length, eq: lineSentence(lf), r2: fmtFixed(lf.r2, 3) }) }),
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, fillT(t('stem.dataplot.resid_line_info', 'Least-squares line: {eq}. R² = {r2}.'), { eq: lineSentence(lf), r2: fmtFixed(lf.r2, 3) })),
+          section({ 'data-dataplot-resid-predict': true },
+            choiceRow(t('stem.dataplot.resid_pred_q', 'Predict from the scatter plot alone: is a straight line a good model here?'), [['yes', t('stem.dataplot.rp_yes', 'Yes')], ['no', t('stem.dataplot.rp_no', 'No')], ['unsure', t('stem.dataplot.rp_unsure', 'I cannot tell yet')]], rl.pred || '', function (id) { setRl({ pred: id }); say(t('stem.dataplot.sr_resid_pred', 'Prediction saved. Now the residual plot appears.')); }, !!rl.pred)),
+          rl.pred && h('div', { className: 'space-y-2' },
+            residPlotSvg(set.pts, lf, fillT(t('stem.dataplot.resid_svg_label', 'Residual plot of {n} points. {desc}'), { n: set.pts.length, desc: residDescribe(set.pts, lf) })),
+            h('p', { className: 'text-xs text-slate-800' + onHostInk }, residDescribe(set.pts, lf)),
+            section({ 'data-dataplot-resid-question': true },
+              choiceRow(t('stem.dataplot.resid_q', 'Is a linear model appropriate for these data?'), opts, rl.chosen || '', pick, answered),
+              rl.feedback && feedbackBox(false, rl.feedback),
+              answered && (rl.correct || rl.revealed) && feedbackBox(true, residAnswerText(answer) + ' ' + (rl.pred === 'yes' && answer !== 'yes' ? t('stem.dataplot.resid_pred_changed', 'The scatter plot looked straight enough, but the residual plot magnifies the pattern the line misses.') : ''), { 'data-dataplot-resid-answer': answer }),
+              answered && !rl.correct && !rl.revealed && revealRow('resid', function () { setRl({ revealed: true }); say(residAnswerText(answer)); }),
+              !answered && hintLadder('dp-resid-hints', [t('stem.dataplot.hr_1', 'Look only at the residual plot: are the dots spread evenly above and below the zero line all the way across?'),
+                t('stem.dataplot.hr_2', 'Dots mostly on one side in the middle and the other side at the ends make a U or an arch: a curve. A band that widens from left to right is a fan.'),
+                t('stem.dataplot.hr_3', 'Read the description under the plot: compare how many residuals are above zero, and how big they are, in each third.')], dpFin(rl.hint) ? rl.hint : 0, function (lv) { setRl({ hint: lv }); }))),
+          h('button', { type: 'button', style: bigStyle, 'data-dataplot-resid-new': true, onClick: function () { upd('residLab', { seed: rlSeed + 1 }); say(t('stem.dataplot.sr_resid_new', 'New data set. Predict from the scatter plot first.')); }, className: 'px-3 py-2 rounded-lg text-sm font-bold border border-teal-700 text-teal-800 bg-white' }, t('stem.dataplot.resid_new', 'New data set')),
+          mine && h('details', { className: 'rounded-xl border border-slate-300 bg-white text-slate-800', 'data-dataplot-resid-mine': true },
+            h('summary', { className: 'px-3 py-2 text-sm font-bold cursor-pointer', style: bigStyle }, t('stem.dataplot.resid_mine_summary', 'Check my own data from the Chart tab')),
+            h('div', { className: 'p-3 pt-0 space-y-1' },
+              residPlotSvg(visiblePoints, { m: slope, b: intercept }, fillT(t('stem.dataplot.resid_svg_label', 'Residual plot of {n} points. {desc}'), { n: n, desc: residDescribe(visiblePoints, { m: slope, b: intercept }) })),
+              h('p', { className: 'text-xs' }, mine.kind === 'curve' ? t('stem.dataplot.rmine_curve', 'Your residuals seem to follow a curve: a straight line may not be the right model. Try a quadratic or exponential model on the Chart tab.')
+                : mine.kind === 'fan' ? t('stem.dataplot.rmine_fan', 'Your residuals seem to fan out: the line is less reliable for large x.')
+                : mine.kind === 'random' ? t('stem.dataplot.rmine_random', 'Your residuals look like a patternless band: a straight line seems appropriate.')
+                : t('stem.dataplot.rmine_unclear', 'The pattern is unclear. Collect more data, then look again.')),
+              h('p', { className: 'text-xs text-slate-700' }, fillT(t('stem.dataplot.rmine_numbers', 'Curve signal r = {c}; fan signal r = {f}. These are rough guides, not proof: with few points, patterns appear by chance.'), { c: fmtFixed(mine.curveR, 2), f: fmtFixed(mine.fanR, 2) })))));
+      };
+      var renderFitTab = function () {
+        return h('div', dataPlotPanelProps('fit', { className: 'space-y-3' }),
+          isHS && h('div', { role: 'group', 'aria-label': t('stem.dataplot.fit_mode_group', 'Best-fit activity'), className: 'flex gap-1.5 flex-wrap' },
+            [['eye', t('stem.dataplot.fit_mode_eye', 'Line by eye')], ['resid', t('stem.dataplot.fit_mode_resid', 'Residual plot check')]].map(function (o) {
+              return h('button', { key: o[0], type: 'button', 'aria-pressed': fitMode === o[0], 'data-dataplot-fit-mode': o[0], style: chipStyle, onClick: function () { setFs({ mode: o[0] }); }, className: btnCls(fitMode === o[0]) }, o[1]);
+            })),
+          fitMode === 'resid' ? renderFitResid() : renderFitEye());
+      };
 
-        // ══════════════════════════════════════════════════════════
-        // ── TAB: Tools ──
-        // ══════════════════════════════════════════════════════════
-        activeTab === 'tools' && h('div', dataPlotPanelProps('tools', { className: 'space-y-3' }),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Two-way tables (8.SP.4) ──
+      // ══════════════════════════════════════════════════════════
+      var twRaw = obj(d.twoWay);
+      var twSeed = dpFin(twRaw.seed) ? twRaw.seed : 1;
+      var twMine = twRaw.mode === 'mine';
+      var twCustomText = typeof twRaw.customText === 'string' ? twRaw.customText : '';
+      var twCtxText = function (id) {
+        switch (id) {
+          case 'grade_instrument': return { title: t('stem.dataplot.tw_gi_title', 'Do 7th and 8th graders differ in playing an instrument?'), rowHead: t('stem.dataplot.tw_gi_rowhead', 'Grade'), colHead: t('stem.dataplot.tw_gi_colhead', 'Instrument?'), rows: [t('stem.dataplot.tw_gi_r0', 'Grade 7'), t('stem.dataplot.tw_gi_r1', 'Grade 8')], cols: [t('stem.dataplot.tw_gi_c0', 'Plays an instrument'), t('stem.dataplot.tw_gi_c1', 'No instrument')] };
+          case 'screens_sleep': return { title: t('stem.dataplot.tw_ss_title', 'Is a screen in the bedroom linked to sleep?'), rowHead: t('stem.dataplot.tw_ss_rowhead', 'Screen in bedroom?'), colHead: t('stem.dataplot.tw_ss_colhead', 'Sleep'), rows: [t('stem.dataplot.tw_ss_r0', 'Screen in bedroom'), t('stem.dataplot.tw_ss_r1', 'No screen in bedroom')], cols: [t('stem.dataplot.tw_ss_c0', '8 hours or more'), t('stem.dataplot.tw_ss_c1', 'Under 8 hours')] };
+          case 'bus_late': return { title: t('stem.dataplot.tw_bl_title', 'Are bus riders late more often?'), rowHead: t('stem.dataplot.tw_bl_rowhead', 'How they travel'), colHead: t('stem.dataplot.tw_bl_colhead', 'Late this month?'), rows: [t('stem.dataplot.tw_bl_r0', 'Takes the bus'), t('stem.dataplot.tw_bl_r1', 'Walks or bikes')], cols: [t('stem.dataplot.tw_bl_c0', 'Late at least once'), t('stem.dataplot.tw_bl_c1', 'Never late')] };
+          default: return { title: t('stem.dataplot.tw_sb_title', 'Do students who play a sport eat breakfast?'), rowHead: t('stem.dataplot.tw_sb_rowhead', 'Sport?'), colHead: t('stem.dataplot.tw_sb_colhead', 'Breakfast?'), rows: [t('stem.dataplot.tw_sb_r0', 'Plays a sport'), t('stem.dataplot.tw_sb_r1', 'No sport')], cols: [t('stem.dataplot.tw_sb_c0', 'Eats breakfast'), t('stem.dataplot.tw_sb_c1', 'Skips breakfast')] };
+        }
+      };
+      var twGen = twMine ? null : genTwoWay(twSeed);
+      var twCustom = twMine ? parseCategoryPairs(twCustomText) : null;
+      var twLabels = twMine ? { title: t('stem.dataplot.tw_mine_title', 'My category data'), rowHead: t('stem.dataplot.tw_mine_rowhead', 'First answer'), colHead: t('stem.dataplot.tw_mine_colhead', 'Second answer'), rows: twCustom.rows, cols: twCustom.cols } : twCtxText(twGen.context);
+      var twRecords = twMine ? (twCustom.ok ? twCustom.records : []) : twGen.records;
+      var twTable = twRecords.length ? twoWayFrom(twRecords, twLabels.rows, twLabels.cols) : null;
+      var twSt = twTable ? twoWayStats(twTable) : null;
+      var twKey = twMine ? 'twmine:' + hashSeed(twCustomText) : 'twoway:' + twSeed;
+      var twBase = { mode: twRaw.mode, seed: twSeed, customText: twCustomText };
+      var tw = twRaw.key === twKey ? twRaw : Object.assign({}, twBase, { key: twKey });
+      var setTw = function (patch) { upd('twoWay', Object.assign({}, tw, { key: twKey }, patch)); };
+      var twBuilt = twMine ? !!twTable : !!tw.built;
+      var twView = tw.view === 'row' || tw.view === 'col' ? tw.view : 'count';
+      var pctText = function (v) { return dpFin(v) ? fmtNum(v * 100, 1) + '%' : '—'; };
+      var twCheckCells = function () {
+        var cells = obj(tw.cells), wrong = [];
+        twTable.counts.forEach(function (row, r) { row.forEach(function (v, c) { var g = toNumber(cells[r + ',' + c], ';'); if (g !== v) wrong.push(r + ',' + c); }); });
+        var tries = (tw.tries || 0) + 1;
+        if (!wrong.length) {
+          var extra = tw.revealedTable ? {} : xpPatch('twbuild:' + twKey, tries === 1 ? 5 : 3, t('stem.dataplot.xp_twoway_build', 'Built a two-way table from records'));
+          setTw({ tries: tries, built: true, wrong: [] }); if (Object.keys(extra).length) updMulti(extra);
+          if (soundEnabled) sfxCorrect();
+          say(t('stem.dataplot.sr_tw_built', 'Every count is right. Now compare the groups with percents.'));
+        } else {
+          setTw({ tries: tries, wrong: wrong });
+          if (soundEnabled) sfxWrong();
+          say(fillT(t('stem.dataplot.sr_tw_wrong', '{k} of the 4 counts are off. Count each record once, in the cell where its row and its column meet.'), { k: wrong.length }));
+        }
+      };
+      var twAssocOpts = [['yes_pct', t('stem.dataplot.ta_yes_pct', 'Yes: the row percents are very different')], ['no_pct', t('stem.dataplot.ta_no_pct', 'No: the row percents are about the same')],
+        ['yes_count', t('stem.dataplot.ta_yes_count', 'Yes: one cell has a much bigger count than the others')], ['no_size', t('stem.dataplot.ta_no_size', 'No: the groups have different totals, so they cannot be compared')]];
+      var twAssocMis = function (chosen) {
+        var st = twSt, tb = twTable, big = tb.rowTot[0] >= tb.rowTot[1] ? 0 : 1;
+        var map = { r0: twLabels.rows[0], r1: twLabels.rows[1], c0: twLabels.cols[0], p0: pctText(st.rowPct[0][0]), p1: pctText(st.rowPct[1][0]), big: twLabels.rows[big], n0: tb.rowTot[0], n1: tb.rowTot[1] };
+        if (chosen === 'yes_count') return fillT(t('stem.dataplot.tm_raw_counts', 'Misconception: comparing raw counts. "{big}" has the biggest counts mainly because it is the bigger group ({n0} vs {n1} people). Compare PERCENTS within each row instead: {p0} of {r0} versus {p1} of {r1} answered "{c0}".'), map);
+        if (chosen === 'no_size') return fillT(t('stem.dataplot.tm_unequal', 'Misconception: "groups of different sizes cannot be compared." That is exactly what relative frequency is for: turn each row into percents ({p0} of {r0} versus {p1} of {r1}) and the group sizes no longer matter.'), map);
+        if (chosen === 'yes_pct') return fillT(t('stem.dataplot.tm_small_gap', 'Look at the row percents again: {p0} of {r0} and {p1} of {r1} answered "{c0}". They are within a few points of each other, which is no evidence of an association.'), map);
+        return fillT(t('stem.dataplot.tm_big_gap', 'Look at the row percents again: {p0} of {r0} but {p1} of {r1} answered "{c0}". A gap that big is evidence of an association.'), map);
+      };
+      // Stage C: the student's own table is graded too, with the same answer-and-reason choices plus
+      // "weak", because real data are not always clear-cut. Feedback names every row's percent.
+      var twMineOpts = twAssocOpts.slice(0, 2).concat([['weak_pct', t('stem.dataplot.ta_weak_pct', 'Only weakly: the row percents differ a little, so more data would help')]]).concat(twAssocOpts.slice(2));
+      var twMineMis = function (g) {
+        var st = twSt, tb = twTable, c = st.gapCol;
+        var map = { c: twLabels.cols[c], g: fmtNum(st.gap * 100, 1),
+          list: twLabels.rows.map(function (r, i) { return fillT(t('stem.dataplot.tw_row_pct_item', '{p} of {r}'), { p: pctText(st.rowPct[i][c]), r: r }); }).join(', '),
+          sizes: twLabels.rows.map(function (r, i) { return fillT(t('stem.dataplot.tw_row_size_item', '{r}: {n}'), { r: r, n: tb.rowTot[i] }); }).join(', ') };
+        switch (g.mis) {
+          case 'rawCounts': return g.equalSizes ? fillT(t('stem.dataplot.tmc_raw_counts_equal', 'Here the groups happen to be the same size, but one big count is still not the reason. Compare the percents within each row: for "{c}", {list}.'), map)
+            : fillT(t('stem.dataplot.tmc_raw_counts', 'Misconception: comparing raw counts. The groups have different sizes ({sizes}), so a bigger group has bigger counts. Compare PERCENTS within each row instead: for "{c}", {list}.'), map);
+          case 'unequal': return fillT(t('stem.dataplot.tmc_unequal', 'Misconception: "groups of different sizes cannot be compared." Relative frequency fixes exactly that: for "{c}", {list}.'), map);
+          case 'bigGap': return fillT(t('stem.dataplot.tmc_big_gap', 'Look at the row percents again: for "{c}", {list}. A gap of {g} points is evidence of an association.'), map);
+          case 'smallGap': return fillT(t('stem.dataplot.tmc_small_gap', 'Look at the row percents again: for "{c}", {list}. The biggest gap is only {g} points, which is no real evidence of an association.'), map);
+          default: return fillT(t('stem.dataplot.tmc_weak_gap', 'Look at the row percents again: for "{c}", {list}. A gap of {g} points is more than none but not a clear difference: call it weak, and collect more data.'), map);
+        }
+      };
+      var twAssocAnswer = twGen ? (twGen.assoc ? 'yes_pct' : 'no_pct') : (twSt ? twoWayGrade(twTable, twSt, '').answer : '');
+      var twPick = function (id) {
+        if (tw.assocDone) return;
+        var tries = (tw.assocTries || 0) + 1;
+        if (id === twAssocAnswer) {
+          var extra = doneFlag(twKey);
+          // Own data earn the path tick, not XP: new text would otherwise mean new XP every time.
+          if (!twMine) Object.assign(extra, xpPatch('twassoc:' + twKey, tries === 1 ? 10 : 5, t('stem.dataplot.xp_twoway_assoc', 'Judged an association from relative frequencies')));
+          setTw({ assocTries: tries, assocChoice: id, assocDone: true, assocCorrect: true, assocFeedback: '' }); updMulti(extra);
+          if (soundEnabled) sfxCorrect();
+          say(t('stem.dataplot.sr_correct', 'Correct!') + ' ' + twVerdictText());
+        } else {
+          var fb = twMine ? twMineMis(twoWayGrade(twTable, twSt, id)) : twAssocMis(id), last = tries >= 2;
+          setTw({ assocTries: tries, assocChoice: id, assocDone: last, assocCorrect: false, assocFeedback: fb });
+          updMulti(missEntry('twoway', twKey, fb));
+          if (soundEnabled) sfxWrong();
+          say(fb + ' ' + (last ? (allowReveal ? t('stem.dataplot.sr_two_tries', 'Two tries used. Press Show the answer to see it, or try a new question.') : t('stem.dataplot.sr_two_tries_noreveal', 'Two tries used. Try a new question.')) : t('stem.dataplot.sr_try_again', 'Try once more.')));
+        }
+      };
+      var twVerdictText = function () {
+        var st = twSt, c = st.gapCol;
+        var rowsTxt = twLabels.rows.map(function (r, i) { return fillT(t('stem.dataplot.tw_row_pct_item', '{p} of {r}'), { p: pctText(st.rowPct[i][c]), r: r }); }).join(', ');
+        return fillT(st.verdict === 'yes' ? t('stem.dataplot.tw_verdict_yes', 'For "{c}": {list}. The percents differ by {g} points, so these data show an association.')
+          : st.verdict === 'no' ? t('stem.dataplot.tw_verdict_no', 'For "{c}": {list}. The percents differ by only {g} points, so these data show little or no association.')
+          : t('stem.dataplot.tw_verdict_weak', 'For "{c}": {list}. The percents differ by {g} points: a weak association at most. More data would help.'), { c: twLabels.cols[c], list: rowsTxt, g: fmtNum(st.gap * 100, 1) });
+      };
+      var renderTwoWayTable = function () {
+        var tb = twTable, st = twSt, cells = obj(tw.cells), wrong = Array.isArray(tw.wrong) ? tw.wrong : [];
+        var editing = !twBuilt;
+        var cellOf = function (r, c) {
+          if (editing) return h('input', { type: 'text', inputMode: 'numeric', value: cells[r + ',' + c] != null ? String(cells[r + ',' + c]) : '', 'aria-invalid': wrong.indexOf(r + ',' + c) >= 0 ? 'true' : undefined, 'data-dataplot-tw-cell': r + ',' + c,
+            'aria-label': fillT(t('stem.dataplot.tw_cell_label', 'Count for {r} and {c}'), { r: tb.rows[r], c: tb.cols[c] }), onChange: function (e) { var cc = Object.assign({}, cells); cc[r + ',' + c] = e.target.value.slice(0, 5); setTw({ cells: cc }); },
+            className: 'w-16 px-1 py-0.5 font-mono border rounded text-center ' + (wrong.indexOf(r + ',' + c) >= 0 ? 'border-red-700 bg-red-50' : 'border-slate-500'), style: { minHeight: 32 } });
+          var v = tb.counts[r][c];
+          return twView === 'row' ? pctText(st.rowPct[r][c]) : twView === 'col' ? pctText(st.colPct[r][c]) : String(v);
+        };
+        var totalCell = function (v, base) { return editing ? '' : twView === 'count' ? String(v) : twView === 'row' ? (base === 'row' ? '100%' : pctText(v / tb.total)) : (base === 'col' ? '100%' : pctText(v / tb.total)); };
+        return h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': twLabels.title, style: { position: 'relative' } }, h('table', { className: 'w-full text-sm border-collapse bg-white text-slate-900', 'data-dataplot-tw-table': true },
+          h('caption', { className: 'text-left text-xs text-slate-800 pb-1' }, editing ? t('stem.dataplot.tw_caption_build', 'Fill in each count from the records.') : twView === 'row' ? t('stem.dataplot.tw_caption_row', 'Row percents: each row adds up to 100%.') : twView === 'col' ? t('stem.dataplot.tw_caption_col', 'Column percents: each column adds up to 100%.') : t('stem.dataplot.tw_caption_count', 'Counts (frequencies).')),
+          h('thead', null, h('tr', null, h('td', { className: 'px-2 py-1 border border-slate-300' }, ''), tb.cols.map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'px-2 py-1 border border-slate-300 text-left' }, c); }), h('th', { scope: 'col', className: 'px-2 py-1 border border-slate-300 text-left' }, t('stem.dataplot.tw_total', 'Total')))),
+          h('tbody', null, tb.rows.map(function (rLabel, r) {
+            return h('tr', { key: r }, h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-300 text-left' }, rLabel),
+              tb.cols.map(function (_, c) { return h('td', { key: c, className: 'px-2 py-1 border border-slate-300 font-mono' }, cellOf(r, c)); }),
+              h('td', { className: 'px-2 py-1 border border-slate-300 font-mono font-bold' }, totalCell(tb.rowTot[r], 'row')));
+          }),
+            h('tr', null, h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-300 text-left' }, t('stem.dataplot.tw_total', 'Total')),
+              tb.cols.map(function (_, c) { return h('td', { key: c, className: 'px-2 py-1 border border-slate-300 font-mono font-bold' }, totalCell(tb.colTot[c], 'col')); }),
+              h('td', { className: 'px-2 py-1 border border-slate-300 font-mono font-bold' }, editing ? '' : twView === 'count' ? String(tb.total) : '100%')))));
+      };
+      var renderTwoWayTab = function () {
+        var tb = twTable, st = twSt;
+        return h('div', dataPlotPanelProps('twoway', { className: 'space-y-3' }),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.tw_source_group', 'Which data'), className: 'flex gap-1.5 flex-wrap' },
+            h('button', { type: 'button', 'aria-pressed': !twMine, style: chipStyle, onClick: function () { upd('twoWay', Object.assign({}, twBase, { mode: 'gen' })); }, className: btnCls(!twMine) }, t('stem.dataplot.tw_mode_gen', 'Survey records')),
+            h('button', { type: 'button', 'aria-pressed': twMine, style: chipStyle, 'data-dataplot-tw-mine': true, onClick: function () { upd('twoWay', Object.assign({}, twBase, { mode: 'mine' })); }, className: btnCls(twMine) }, t('stem.dataplot.tw_mode_mine', 'My own category data')),
+            !twMine && h('button', { type: 'button', style: chipStyle, 'data-dataplot-tw-new': true, onClick: function () { upd('twoWay', Object.assign({}, twBase, { mode: 'gen', seed: twSeed + 1 })); say(t('stem.dataplot.sr_tw_new', 'New survey. Build the table from the records.')); }, className: 'px-2.5 py-1 rounded-lg text-xs font-bold border border-teal-700 text-teal-800 bg-white' }, t('stem.dataplot.tw_new', 'New survey'))),
+          h('h4', { className: 'text-sm font-bold text-slate-900' + onHostInk }, twLabels.title),
+          twMine && h('label', { className: 'block text-xs font-bold text-slate-900' + onHostInk }, t('stem.dataplot.tw_mine_label', 'One record per line: two answers separated by a comma (for example "Grade 7, yes"). Up to 4 different answers for each.'),
+            h('textarea', { rows: 6, value: twCustomText, onChange: function (e) { upd('twoWay', Object.assign({}, twBase, { mode: 'mine', customText: e.target.value.slice(0, 6000) })); }, className: 'block w-full mt-1 px-2 py-1 text-sm font-mono border border-slate-500 rounded bg-white text-slate-900 font-normal' })),
+          twMine && !twCustom.ok && h('p', { className: 'text-xs text-slate-900' + onHostInk, role: 'status' }, twCustom.why === 'tooMany' ? t('stem.dataplot.tw_too_many', 'A two-way table here can have at most 4 different answers for each question. Group some answers together.') : t('stem.dataplot.tw_too_few', 'Type at least 4 records, with at least 2 different answers for each question.')),
+          !twMine && h('details', { className: 'rounded-xl border border-slate-300 bg-white text-slate-800', open: !twBuilt || undefined, 'data-dataplot-tw-records': true },
+            h('summary', { className: 'px-3 py-2 text-sm font-bold cursor-pointer', style: bigStyle }, fillT(t('stem.dataplot.tw_records_summary', 'Survey records ({n} people)'), { n: twRecords.length })),
+            h('div', { className: 'p-3 pt-0 overflow-y-auto', style: { maxHeight: 260 }, tabIndex: 0, role: 'region', 'aria-label': t('stem.dataplot.tw_records_region', 'Survey records, scrollable') },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('thead', null, h('tr', null, ['#', twLabels.rowHead, twLabels.colHead].map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'text-left px-2 py-1 border border-slate-300 bg-slate-50' }, c); }))),
+                h('tbody', null, twRecords.map(function (rec, i) { return h('tr', { key: i }, h('th', { scope: 'row', className: 'px-2 py-0.5 border border-slate-300 font-normal' }, String(i + 1)), h('td', { className: 'px-2 py-0.5 border border-slate-300' }, twLabels.rows[rec[0]]), h('td', { className: 'px-2 py-0.5 border border-slate-300' }, twLabels.cols[rec[1]])); }))))),
+          tb && h('div', { className: 'space-y-2' },
+            renderTwoWayTable(),
+            !twBuilt && h('div', { className: 'flex gap-2 flex-wrap items-center' },
+              h('button', { type: 'button', style: bigStyle, onClick: twCheckCells, 'data-dataplot-tw-check': true, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, t('stem.dataplot.tw_check', 'Check my counts')),
+              (tw.tries || 0) >= 2 && allowReveal && h('button', { type: 'button', style: bigStyle, 'data-dataplot-tw-fill': true, onClick: function () { setTw({ built: true, revealedTable: true, wrong: [] }); say(t('stem.dataplot.sr_tw_filled', 'The table has been filled in. Compare it with your counts.')); }, className: 'px-3 py-2 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.tw_fill', 'Fill in the table for me'))),
+            Array.isArray(tw.wrong) && tw.wrong.length > 0 && !twBuilt && feedbackBox(false, fillT(t('stem.dataplot.tw_wrong_box', '{k} of the counts (outlined in red) are off. Tip: tally one column of the records at a time, and check that all the counts add up to {n}.'), { k: tw.wrong.length, n: tb.total })),
+            twBuilt && h('div', { role: 'group', 'aria-label': t('stem.dataplot.tw_view_group', 'Show the table as'), className: 'flex gap-1.5 flex-wrap items-center' },
+              [['count', t('stem.dataplot.tw_view_count', 'Counts')], ['row', t('stem.dataplot.tw_view_row', 'Row percents')], ['col', t('stem.dataplot.tw_view_col', 'Column percents')]].map(function (o) {
+                return h('button', { key: o[0], type: 'button', 'aria-pressed': twView === o[0], 'data-dataplot-tw-view': o[0], style: chipStyle, onClick: function () { setTw({ view: o[0] }); }, className: btnCls(twView === o[0]) }, o[1]);
+              })),
+            twBuilt && section(twMine ? { 'data-dataplot-tw-mine-verdict': true } : { 'data-dataplot-tw-assoc': true },
+              choiceRow(twMine ? fillT(t('stem.dataplot.tw_mine_assoc_q', 'Do your data show an association between your first and second answers? Choose the answer AND the reason.'), {})
+                : fillT(t('stem.dataplot.tw_assoc_q', 'Is there an association between {a} and {b}? Choose the answer AND the reason.'), { a: twLabels.rowHead, b: twLabels.colHead }), twMine ? twMineOpts : twAssocOpts, tw.assocChoice || '', twPick, !!tw.assocDone),
+              tw.assocFeedback && !(tw.assocDone && tw.assocCorrect) && feedbackBox(false, tw.assocFeedback),
+              tw.assocDone && (tw.assocCorrect || tw.assocShown) && feedbackBox(true, twVerdictText() + (twMine && tb.total < 30 ? ' ' + fillT(t('stem.dataplot.tw_small_n', 'With only {n} records, a gap this size could still be chance: collect more data to be sure.'), { n: tb.total }) : ''), { 'data-dataplot-tw-verdict': st.verdict }),
+              tw.assocDone && !tw.assocCorrect && !tw.assocShown && revealRow('twoway', function () { setTw({ assocShown: true }); say(twVerdictText()); }),
+              !tw.assocDone && hintLadder('dp-tw-hints', [t('stem.dataplot.ht_1', 'Switch the table to row percents: each row then adds up to 100%, whatever the group size.'),
+                t('stem.dataplot.ht_2', 'Compare the percent in the SAME column for every row. Ignore the raw counts.'),
+                t('stem.dataplot.ht_3', 'Here a gap of 20 points or more counts as an association, 8 points or less as none, and anything in between as weak.')], dpFin(tw.assocHint) ? tw.assocHint : 0, function (lv) { setTw({ assocHint: lv }); }),
+              tw.assocDone && h('p', { className: 'text-xs text-slate-800' }, t('stem.dataplot.tw_not_cause', 'An association is not proof of cause and effect. The Cause? tab shows why.'))),
+            twBuilt && h('div', { className: 'flex gap-2 flex-wrap' },
+              codapButton(function () { return { title: twLabels.title, source: t('stem.dataplot.codap_source', 'Data Plot'), attributes: [{ name: twLabels.rowHead, type: 'categorical' }, { name: twLabels.colHead, type: 'categorical' }], rows: twRecords.map(function (rec) { return [twLabels.rows[rec[0]], twLabels.cols[rec[1]]]; }) }; })))
+        );
+      };
 
-          // ── Prediction tool (with interpolation/extrapolation) ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-200' },
-            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-2' }, t('stem.dataplot.prediction_tool', '\uD83D\uDD2E Prediction Tool')),
-            n < 2
-              ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.need_2_points_to_predict', 'Need 2+ points to predict'))
-              : h('div', null,
-                  h('div', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, 'Using ' + regressionType + ': ' + regEq),
-                  h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.if_x', 'If X =')),
-                    h('input', { type: 'number', step: '0.1', value: predX, onChange: function(e) { upd('predX', e.target.value); checkBadges({ predicted: true }); }, 'aria-label': t('stem.dataplot.x_value_for_prediction', 'X value for prediction'), className: 'w-24 px-2 py-1.5 border-2 border-indigo-600 rounded-lg text-sm font-bold text-indigo-800 text-center focus:border-indigo-500', placeholder: '?' }),
-                    h('span', { className: 'text-xs font-bold text-indigo-600' }, t('stem.dataplot.then_y', 'then Y \u2248')),
-                    h('div', { className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-700' : 'bg-indigo-50 border-indigo-200 text-indigo-800') }, predResult || '?'),
-                    predX !== '' && predResult && h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') },
-                      predIsExtrapolation ? '\u26A0\uFE0F Extrapolation (outside data range!)' : '\u2705 Interpolation (within data range)')
-                  )
-                )
-          ),
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Sampling distributions (7.SP.1-2) ──
+      // ══════════════════════════════════════════════════════════
+      var spRaw = obj(d.sampling);
+      var spPop = SAMPLING_POPS.indexOf(spRaw.pop) >= 0 ? spRaw.pop : 'commute';
+      var spSeed = dpFin(spRaw.seed) ? spRaw.seed : 1;
+      var spSizes = isHS ? [5, 10, 25, 50, 100] : [5, 10, 25, 50];
+      var spN = spSizes.indexOf(spRaw.n) >= 0 ? spRaw.n : spSizes[0];
+      var spDraws = obj(spRaw.draws);
+      var SP_MAX = 400;
+      var drawsOf = function (sz) { return dpFin(spDraws[sz]) ? clamp(Math.round(spDraws[sz]), 0, SP_MAX) : 0; };
+      var spDrawSig = spSizes.map(drawsOf).join(',');
+      var spPopVals = React.useMemo(function () { return genPopulation(spPop); }, [spPop]);
+      var spMeans = React.useMemo(function () { var o = {}; spSizes.forEach(function (sz) { o[sz] = sampleMeans(spPopVals, sz, drawsOf(sz), spSeed); }); return o; }, [spPop, spSeed, spDrawSig, spSizes.length]);
+      var setSp = function (patch) { upd('sampling', Object.assign({}, spRaw, { pop: spPop, seed: spSeed, n: spN }, patch)); };
+      var spMu = meanOf(spPopVals), spSigma = sdOf(spPopVals, false);
+      var spPopText = function (id) {
+        return id === 'sleep' ? { title: t('stem.dataplot.pop_sleep', 'Hours of sleep last night'), unit: t('stem.dataplot.pop_sleep_unit', 'hours') }
+          : id === 'books' ? { title: t('stem.dataplot.pop_books', 'Books read this year'), unit: t('stem.dataplot.pop_books_unit', 'books') }
+          : { title: t('stem.dataplot.pop_commute', 'Minutes to get to school'), unit: t('stem.dataplot.pop_commute_unit', 'minutes') };
+      };
+      var spText = spPopText(spPop);
+      var spPredOk = !!spRaw.pred;
+      var spCanDraw = spPredOk || !requirePredict;
+      var spDraw = function (k) {
+        if (!spCanDraw) { say(t('stem.dataplot.sr_sp_predict_first', 'Lock in your prediction first.')); return; }
+        var have = drawsOf(spN), next = Math.min(SP_MAX, have + k);
+        if (next === have) { say(fillT(t('stem.dataplot.sr_sp_max', 'That is the most samples kept for size {n}.'), { n: spN })); return; }
+        var dr = Object.assign({}, spDraws); dr[spN] = next; setSp({ draws: dr });
+        var lastMean = meanOf(sampleAt(spPopVals, spN, next - 1, spSeed));
+        say(fillT(t('stem.dataplot.sr_sp_drew', 'Drew {k} samples of size {n}. Last sample mean: {m}. {total} sample means for size {n} so far.'), { k: next - have, n: spN, m: fmtNum(lastMean, 2), total: next }));
+      };
+      var spSummary = spSizes.filter(function (sz) { return drawsOf(sz) > 0; }).map(function (sz) {
+        var ms = spMeans[sz] || [], m90 = middle90(ms);
+        return { n: sz, count: ms.length, mean: meanOf(ms), sd: ms.length >= 2 ? sdOf(ms, true) : NaN, lo: m90.lo, hi: m90.hi, theory: spSigma / Math.sqrt(sz) };
+      });
+      var spReady = spSummary.filter(function (s) { return s.count >= 20; });
+      var spPair = spReady.length >= 2 && spReady[spReady.length - 1].n >= 4 * spReady[0].n ? [spReady[0], spReady[spReady.length - 1]] : null;
+      var spPredText = function (id) {
+        switch (id) {
+          case 'narrower': return t('stem.dataplot.spp_narrower', 'The means for bigger samples cluster more tightly around the population mean');
+          case 'wider': return t('stem.dataplot.spp_wider', 'The means for bigger samples spread out more');
+          case 'higher': return t('stem.dataplot.spp_higher', 'The means for bigger samples move to a bigger average');
+          default: return t('stem.dataplot.spp_same', 'Sample size makes no difference to the means');
+        }
+      };
+      var spResultText = function () {
+        var a = spPair[0], b = spPair[1], map = { n1: a.n, n2: b.n, s1: fmtNum(a.sd, 2), s2: fmtNum(b.sd, 2), c1: fmtNum(a.mean, 2), c2: fmtNum(b.mean, 2), mu: fmtNum(spMu, 2) };
+        switch (spRaw.pred) {
+          case 'narrower': return fillT(t('stem.dataplot.spr_narrower', 'Your prediction holds. The SD of the sample means fell from {s1} (n = {n1}) to {s2} (n = {n2}), while both centred near the population mean μ = {mu} ({c1} and {c2}).'), map);
+          case 'higher': return fillT(t('stem.dataplot.spr_higher', 'Misconception: "a bigger sample changes the average." The means for n = {n1} centre at {c1} and for n = {n2} at {c2}: both near the population mean μ = {mu}. Sample size changes how SPREAD OUT the means are (SD {s1} versus {s2}), not where they centre.'), map);
+          case 'wider': return fillT(t('stem.dataplot.spr_wider', 'The opposite happened: the SD of the sample means fell from {s1} (n = {n1}) to {s2} (n = {n2}). In a bigger sample, unusual values are averaged with many ordinary ones, so the means vary LESS.'), map);
+          default: return fillT(t('stem.dataplot.spr_same', 'Sample size matters: the SD of the sample means fell from {s1} (n = {n1}) to {s2} (n = {n2}). Bigger samples give more consistent estimates of μ = {mu}.'), map);
+        }
+      };
+      var spCheck = function () {
+        if (!spPair || spRaw.checked) return;
+        // Chance can (rarely) hide the pattern in a few draws: ask for more instead of claiming a result.
+        if (!(spPair[1].sd < spPair[0].sd)) { say(t('stem.dataplot.sr_sp_more', 'These draws do not show a clear difference yet. Draw more samples of each size, then check again.')); return; }
+        var ok = spRaw.pred === 'narrower', text = spResultText(), extra = {};
+        if (ok) { extra = doneFlag('sampling:' + spPop); Object.assign(extra, xpPatch('sampling:' + spPop, 10, t('stem.dataplot.xp_sampling', 'Tested a prediction about sample size'))); }
+        else extra = missEntry('sampling', spPop, text);
+        setSp({ checked: true }); updMulti(extra);
+        if (soundEnabled) { if (ok) sfxCorrect(); else sfxWrong(); }
+        say(text);
+      };
+      var spAx = niceAxis(Math.min.apply(null, spPopVals), Math.max.apply(null, spPopVals));
+      var spBin = niceStep(spAx.max - spAx.min, 40);
+      var popHistSvg = function () {
+        var bins = [], nb = Math.max(1, Math.round((spAx.max - spAx.min) / spBin)), HH = 150, L = 40, R = 16, B = 30;
+        for (var i = 0; i < nb; i++) bins.push(0);
+        spPopVals.forEach(function (v) { bins[clamp(Math.floor((v - spAx.min) / spBin), 0, nb - 1)]++; });
+        var mx = Math.max.apply(null, bins.concat([1])), bw = (W - L - R) / nb;
+        var hx = function (v) { return L + (v - spAx.min) / (spAx.max - spAx.min || 1) * (W - L - R); };
+        return h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.pop_svg_label', 'Histogram of the whole population: {n} values of {what}, mean μ = {mu}, SD σ = {sd}, shape: {shape}.'), { n: spPopVals.length, what: spText.title, mu: fmtNum(spMu, 2), sd: fmtNum(spSigma, 2), shape: shapeName(shapeOf(spPopVals).shape) }), viewBox: '0 0 ' + W + ' ' + HH, className: 'w-full rounded-xl border border-teal-200', style: { background: INK.bg, maxHeight: '180px' }, 'data-dataplot-pop-svg': true },
+          bins.map(function (c, i) { var bh = c / mx * (HH - B - 14); return h('rect', { key: i, x: L + i * bw + 0.5, y: HH - B - bh, width: Math.max(1, bw - 1), height: bh, fill: INK.fill, fillOpacity: 0.85 }); }),
+          h('line', { x1: L, y1: HH - B, x2: W - R, y2: HH - B, stroke: INK.axis, strokeWidth: 1.5 }),
+          spAx.ticks.map(function (v, k) { return h('text', { key: 't' + k, x: hx(v), y: HH - B + 15, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '11px' } }, fmtFixed(v, spAx.decimals)); }),
+          h('line', { x1: hx(spMu), y1: 8, x2: hx(spMu), y2: HH - B, stroke: INK.line, strokeWidth: 2, strokeDasharray: '5 3' }),
+          h('text', { x: hx(spMu) + 4, y: 16, fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, 'μ = ' + fmtNum(spMu, 2)));
+      };
+      // Stage C perf: up to 5 x 400 dots. Memoised on the draws, palette, theme and language.
+      var spDistKey = [activeTab === 'samples' ? 1 : 0, spPop, spSeed, spDrawSig, spSizes.length, INK.fill, INK.line, INK.bg, onHostInk,
+        t('stem.dataplot.sp_dist_title', 'Sample means for n = {n} ({k} samples)'), t('stem.dataplot.sp_dist_label', 'Dot plot of {k} sample means for samples of size {n}: centre {c}, SD {sd}, middle 90% from {lo} to {hi}.')].join('|');
+      var spDistEls = React.useMemo(function () {
+        if (activeTab !== 'samples') return null;
+        return spSummary.map(function (s) {
+          var vals = (spMeans[s.n] || []).map(function (v) { return Math.round(v / spBin * 2) / 2 * spBin; });
+          return h('div', { key: s.n, className: 'space-y-1', 'data-dataplot-sp-dist': s.n },
+            h('p', { className: 'text-xs font-bold text-slate-900' + onHostInk }, fillT(t('stem.dataplot.sp_dist_title', 'Sample means for n = {n} ({k} samples)'), { n: s.n, k: s.count })),
+            dotPlotSvg(vals, { min: spAx.min, max: spAx.max, height: 130, label: fillT(t('stem.dataplot.sp_dist_label', 'Dot plot of {k} sample means for samples of size {n}: centre {c}, SD {sd}, middle 90% from {lo} to {hi}.'), { k: s.count, n: s.n, c: fmtNum(s.mean, 2), sd: fmtNum(s.sd, 2), lo: fmtNum(s.lo, 2), hi: fmtNum(s.hi, 2) }),
+              children: function (dx, base) { return h('line', { x1: dx(spMu), y1: 6, x2: dx(spMu), y2: base, stroke: INK.line, strokeWidth: 1.5, strokeDasharray: '5 3' }); } }));
+        });
+      }, [spDistKey]);
+      var renderSamplingTab = function () {
+        var lastK = drawsOf(spN), lastSample = lastK > 0 ? sampleAt(spPopVals, spN, lastK - 1, spSeed) : null;
+        var gauge = spReady.length ? spReady[spReady.length - 1] : null;
+        return h('div', dataPlotPanelProps('samples', { className: 'space-y-3' }),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.sp_pop_group', 'Population'), className: 'flex gap-1.5 flex-wrap' },
+            SAMPLING_POPS.map(function (id) { return h('button', { key: id, type: 'button', 'aria-pressed': spPop === id, style: chipStyle, onClick: function () { upd('sampling', { pop: id, seed: spSeed, n: spN }); }, className: btnCls(spPop === id) }, spPopText(id).title); })),
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, fillT(t('stem.dataplot.sp_intro', 'This population is all {n} students in a school. You cannot usually ask everyone, so you take random samples and use each sample’s mean to estimate the population mean.'), { n: spPopVals.length })),
+          popHistSvg(),
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, fillT(t('stem.dataplot.sp_pop_desc', '{what}: mean μ = {mu} {unit}, SD σ = {sd}, shape: {shape}.'), { what: spText.title, mu: fmtNum(spMu, 2), unit: spText.unit, sd: fmtNum(spSigma, 2), shape: shapeName(shapeOf(spPopVals).shape) })),
+          section({ 'data-dataplot-sp-predict': true },
+            choiceRow(fillT(t('stem.dataplot.sp_pred_q', 'Predict before you sample: you will take many samples of {a} students and many samples of {b}. How will the means of the bigger samples compare?'), { a: spSizes[0], b: spSizes[spSizes.length - 2] }),
+              SAMPLING_PREDS.map(function (id) { return [id, spPredText(id)]; }), spRaw.pred || spRaw.draftPred || '', function (id) { setSp({ draftPred: id }); }, spPredOk),
+            !spPredOk && h('button', { type: 'button', style: bigStyle, disabled: !spRaw.draftPred, 'data-dataplot-sp-lock': true, onClick: function () { setSp({ pred: spRaw.draftPred }); say(t('stem.dataplot.sr_sp_locked', 'Prediction locked. Now draw samples.')); }, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-50' }, t('stem.dataplot.pred_lock', 'Lock in my prediction'))),
+          h('div', { role: 'group', 'aria-label': t('stem.dataplot.sp_size_group', 'Sample size'), className: 'flex gap-1.5 flex-wrap items-center' },
+            h('span', { className: 'text-xs font-bold text-slate-800' + onHostInk }, t('stem.dataplot.sp_size_label', 'Sample size n:')),
+            spSizes.map(function (sz) { return h('button', { key: sz, type: 'button', 'aria-pressed': spN === sz, 'data-dataplot-sp-size': sz, style: chipStyle, onClick: function () { setSp({ n: sz }); }, className: btnCls(spN === sz) }, String(sz)); })),
+          h('div', { className: 'flex gap-2 flex-wrap' },
+            [[1, t('stem.dataplot.sp_draw1', 'Draw 1 sample')], [10, t('stem.dataplot.sp_draw10', 'Draw 10 samples')], [100, t('stem.dataplot.sp_draw100', 'Draw 100 samples')]].map(function (b) {
+              return h('button', { key: b[0], type: 'button', style: bigStyle, disabled: !spCanDraw, 'data-dataplot-sp-draw': b[0], onClick: function () { spDraw(b[0]); }, className: 'px-3 py-2 rounded-lg text-sm font-bold bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-50' }, b[1]);
+            }),
+            h('button', { type: 'button', style: bigStyle, onClick: function () { upd('sampling', { pop: spPop, seed: spSeed + 1, n: spN, pred: spRaw.pred, draftPred: spRaw.draftPred, checked: spRaw.checked }); say(t('stem.dataplot.sr_sp_cleared', 'Sample means cleared. New random draws from now on.')); }, className: 'px-3 py-2 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.sp_clear', 'Clear samples'))),
+          lastSample && h('p', { className: 'text-xs text-slate-800' + onHostInk, 'data-dataplot-sp-last': true }, spN <= 25 ? fillT(t('stem.dataplot.sp_last_list', 'Last sample of {n}: {list}. Its mean is {m}.'), { n: spN, list: lastSample.map(function (v) { return fmtNum(v, 1); }).join(', '), m: fmtNum(meanOf(lastSample), 2) })
+            : fillT(t('stem.dataplot.sp_last_mean', 'Last sample of {n}: its mean is {m}.'), { n: spN, m: fmtNum(meanOf(lastSample), 2) })),
+          spDistEls,
+          spSummary.length > 0 && h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.dataplot.sp_table_region', 'Sampling results table, scrollable'), style: { position: 'relative' } }, h('table', { className: 'w-full text-sm border-collapse bg-white text-slate-900', 'data-dataplot-sp-table': true },
+            h('caption', { className: 'text-left text-xs text-slate-800 pb-1' + onHostInk }, fillT(t('stem.dataplot.sp_table_caption', 'Your sampling distributions. The population mean is μ = {mu}.'), { mu: fmtNum(spMu, 2) })),
+            h('thead', null, h('tr', null, ['n', t('stem.dataplot.sp_col_samples', 'Samples'), t('stem.dataplot.sp_col_centre', 'Mean of the sample means'), t('stem.dataplot.sp_col_sd', 'SD of the sample means'), t('stem.dataplot.sp_col_mid90', 'Middle 90%')].concat(isHS ? [t('stem.dataplot.sp_col_theory', 'Theory σ/√n')] : []).map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'px-2 py-1 border border-slate-300 text-left text-xs' }, c); }))),
+            h('tbody', null, spSummary.map(function (s) {
+              return h('tr', { key: s.n }, h('th', { scope: 'row', className: 'px-2 py-1 border border-slate-300 text-left' }, String(s.n)),
+                [String(s.count), fmtNum(s.mean, 2), fmtNum(s.sd, 2), fmtNum(s.lo, 2) + ' – ' + fmtNum(s.hi, 2)].concat(isHS ? [fmtNum(s.theory, 2)] : []).map(function (v, i) { return h('td', { key: i, className: 'px-2 py-1 border border-slate-300 font-mono' }, v); }));
+            })))),
+          isHS && spSummary.length > 0 && h('p', { className: 'text-xs text-slate-800' + onHostInk }, t('stem.dataplot.sp_theory_note', 'Theory: the SD of sample means is about σ/√n. Sampling without replacement from only 400 students makes it slightly smaller for the biggest samples.')),
+          gauge && h('p', { className: 'text-xs text-slate-900 bg-sky-50 border border-sky-300 rounded p-2', 'data-dataplot-sp-gauge': true }, fillT(t('stem.dataplot.sp_gauge', 'With samples of {n}, 90% of your sample means were between {lo} and {hi}. So one sample of {n} usually estimates the population mean to within about {e} {unit}.'), { n: gauge.n, lo: fmtNum(gauge.lo, 2), hi: fmtNum(gauge.hi, 2), e: fmtNum(Math.max(Math.abs(gauge.lo - spMu), Math.abs(gauge.hi - spMu)), 1), unit: spText.unit })),
+          spPredOk && !spRaw.checked && h('p', { className: 'text-xs text-slate-800' + onHostInk }, fillT(t('stem.dataplot.sp_need', 'To check your prediction, draw at least 20 samples for a small size and for a size at least 4 times bigger (for example {a} and {b}).'), { a: spSizes[0], b: spSizes[2] })),
+          spPredOk && spPair && !spRaw.checked && h('button', { type: 'button', style: bigStyle, 'data-dataplot-sp-check': true, onClick: spCheck, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, t('stem.dataplot.sp_check', 'Check my prediction')),
+          spRaw.checked && spPair && feedbackBox(spRaw.pred === 'narrower', spResultText(), { 'data-dataplot-sp-result': spRaw.pred }),
+          spSummary.length > 0 && h('div', { className: 'flex gap-2 flex-wrap' }, codapButton(function () {
+            var rowsS = []; spSummary.forEach(function (s) { (spMeans[s.n] || []).forEach(function (m, k) { rowsS.push([s.n, k + 1, Math.round(m * 1000) / 1000]); }); });
+            return { title: fillT(t('stem.dataplot.sp_codap_title', 'Sample means: {what}'), { what: spText.title }), source: t('stem.dataplot.codap_source', 'Data Plot'),
+              attributes: [{ name: t('stem.dataplot.sp_attr_n', 'sample size'), type: 'numeric' }, { name: t('stem.dataplot.sp_attr_k', 'sample number'), type: 'numeric' }, { name: t('stem.dataplot.sp_attr_mean', 'sample mean'), type: 'numeric', unit: spText.unit }], rows: rowsS.slice(0, 2000) };
+          }, t('stem.dataplot.sp_codap', '🗃️ Explore the sample means in CODAP')))
+        );
+      };
 
-          // ── AI Data Analyst ──
-          callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
-            h('div', { className: 'flex items-center gap-2 mb-2' },
-              h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, t('stem.dataplot.ai_data_analyst', '\uD83E\uDD16 AI Data Analyst')),
-              h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[0.6875rem] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
-                aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
-            ),
-            aiInsight
-              ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, aiInsight)
-              : h('div', { className: 'text-xs text-pink-400' }, n < 2 ? 'Add at least 2 data points first' : 'Click to get AI insights about your data!')
-          ),
-
-          // ── Data Transformations ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-amber-200' },
-            h('div', { className: 'text-xs font-bold text-amber-700 uppercase mb-2' }, t('stem.dataplot.data_transformations', '\uD83D\uDD04 Data Transformations')),
-            points.length === 0
-              ? h('div', { className: 'text-xs text-slate-600' }, t('stem.dataplot.add_data_points_first', 'Add data points first'))
-              : h('div', { className: 'space-y-2' },
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: My data project ── question, plan, collect, display, conclude (CER)
+      // Typed text lives in toolData only for this session (not in the progress autosave).
+      // ══════════════════════════════════════════════════════════
+      var pj = obj(d.project);
+      var pjPlan = obj(pj.plan);
+      var pjKind = pjPlan.kind === 'category' || (pjPlan.kind === 'pairs' && !isK5) ? pjPlan.kind : 'numeric';
+      var pjValues = Array.isArray(pj.values) ? pj.values.filter(function (v) { return pjKind === 'category' ? typeof v === 'string' && v : pjKind === 'pairs' ? Array.isArray(v) && dpFin(v[0]) && dpFin(v[1]) : dpFin(v); }).slice(0, 500) : [];
+      var pjStep = dpFin(pj.step) ? clamp(Math.round(pj.step), 0, 4) : 0;
+      var pjMinN = isK5 ? 6 : 10;
+      var setPj = function (patch) { upd('project', Object.assign({}, pj, patch)); };
+      var setPlan = function (patch) { setPj({ plan: Object.assign({}, pjPlan, patch) }); };
+      var pjVarName = (typeof pjPlan.variable === 'string' && pjPlan.variable.trim()) || t('stem.dataplot.pj_value_word', 'Value');
+      var pjVar2Name = (typeof pjPlan.variable2 === 'string' && pjPlan.variable2.trim()) || t('stem.dataplot.pj_value2_word', 'Second value');
+      var pjCats = (function () { var map = {}, order = []; if (pjKind !== 'category') return []; pjValues.forEach(function (v) { if (!(v in map)) { map[v] = 0; order.push(v); } map[v]++; }); return order.map(function (k) { return { label: k, value: map[k] }; }).sort(function (a, b) { return b.value - a.value; }); })();
+      var pjNums = pjKind === 'numeric' ? pjValues : [];
+      var pjPairs = pjKind === 'pairs' ? pjValues.map(function (v) { return { x: v[0], y: v[1] }; }) : [];
+      var pjSummaryLines = function () {
+        var nn = pjValues.length; if (!nn) return [];
+        if (pjKind === 'category') return [fillT(t('stem.dataplot.pj_sum_cat', '{n} responses in {k} categories.'), { n: nn, k: pjCats.length })].concat(pjCats.slice(0, 6).map(function (c) { return fillT(t('stem.dataplot.pj_sum_cat_item', '{c}: {k} ({p}%)'), { c: c.label, k: c.value, p: fmtNum(c.value / nn * 100, 1) }); }));
+        if (pjKind === 'pairs') { var lf2 = linFit(pjPairs); return [fillT(t('stem.dataplot.pj_sum_pairs', '{n} pairs.'), { n: nn })].concat(lf2.ok && nn >= 3 ? [fillT(t('stem.dataplot.pj_sum_r', 'Correlation r = {r}; least-squares line {eq}.'), { r: fmtFixed(pearsonOf(pjPairs), 2), eq: lineSentence(lf2) })] : []); }
+        var qs = quartilesOf(pjNums), s = sortedOf(pjNums);
+        var lines = [fillT(t('stem.dataplot.pj_sum_num', '{n} values from {lo} to {hi}. Median {med}, mean {mean}.'), { n: nn, lo: fmtNum(s[0], 2), hi: fmtNum(s[nn - 1], 2), med: fmtNum(qs.med, 2), mean: fmtNum(meanOf(pjNums), 2) })];
+        if (!isK5) lines.push(fillT(t('stem.dataplot.pj_sum_spread', 'IQR {iqr}, MAD {mad}, range {range}.'), { iqr: fmtNum(qs.q3 - qs.q1, 2), mad: fmtNum(madOf(pjNums), 2), range: fmtNum(s[nn - 1] - s[0], 2) }));
+        else lines.push(fillT(t('stem.dataplot.pj_sum_range', 'The largest minus the smallest is {range}.'), { range: fmtNum(s[nn - 1] - s[0], 2) }));
+        return lines;
+      };
+      var pjAdd = function () {
+        var a = document.getElementById('dp-pj-in'), b = document.getElementById('dp-pj-in2');
+        var res = parseProjectValue(pjKind, a ? a.value : '', b ? b.value : '');
+        if (!res.ok) { say(pjKind === 'category' ? t('stem.dataplot.sr_pj_need_text', 'Type an answer first.') : t('stem.dataplot.sr_pj_need_num', 'Type a number first.')); return; }
+        if (pjValues.length >= 500) { say(t('stem.dataplot.sr_pj_full', 'The project keeps at most 500 values.')); return; }
+        setPj({ values: pjValues.concat([res.v]), confirmClear: false });
+        if (a) { a.value = ''; a.focus(); } if (b) b.value = '';
+        say(fillT(t('stem.dataplot.sr_pj_added', 'Added {v}. {n} values collected.'), { v: Array.isArray(res.v) ? '(' + fmtNum(res.v[0]) + ', ' + fmtNum(res.v[1]) + ')' : String(res.v), n: pjValues.length + 1 }));
+      };
+      var pjToChart = function () {
+        var pts2, patch;
+        if (pjKind === 'category') { pts2 = pjCats.map(function (c, i) { return { x: i + 1, y: c.value }; }); patch = { xLabel: fillT(t('stem.dataplot.pj_cat_axis', 'Category ({list})'), { list: pjCats.map(function (c, i) { return (i + 1) + ' = ' + c.label; }).join(', ') }).slice(0, 60), yLabel: t('stem.dataplot.ax_count', 'Count'), chartType: 'bar' }; }
+        else if (pjKind === 'pairs') { pts2 = pjPairs.slice(); patch = { xLabel: pjVarName.slice(0, 60), yLabel: pjVar2Name.slice(0, 60), chartType: 'scatter' }; }
+        else { pts2 = pjNums.map(function (v, i) { return { x: i + 1, y: v }; }); patch = { xLabel: t('stem.dataplot.ax_response_number', 'Response number'), yLabel: pjVarName.slice(0, 60), chartType: 'dotplot' }; }
+        if (!pts2.length) return;
+        updMulti(Object.assign(patch, { points: pts2, undoStack: pushUndo(), activeTab: 'chart', stepMode: false, exploreIdx: -1 }));
+        say(fillT(t('stem.dataplot.sr_pj_to_chart', 'Your project data is on the Chart tab: {n} points. Undo there brings back the old data.'), { n: pts2.length }));
+      };
+      var pjDataset = function () {
+        var title = (typeof pj.question === 'string' && pj.question.trim()) ? pj.question.trim().slice(0, 80) : t('stem.dataplot.pj_title', 'My data project');
+        if (pjKind === 'pairs') return { title: title, source: t('stem.dataplot.codap_source', 'Data Plot'), attributes: [{ name: pjVarName, type: 'numeric' }, { name: pjVar2Name, type: 'numeric' }], rows: pjValues.map(function (v) { return [v[0], v[1]]; }) };
+        return { title: title, source: t('stem.dataplot.codap_source', 'Data Plot'), attributes: [{ name: pjVarName, type: pjKind === 'category' ? 'categorical' : 'numeric', unit: pjPlan.unit || undefined }], rows: pjValues.map(function (v) { return [v]; }) };
+      };
+      var cerMissText = function (k) {
+        return k === 'claim' ? t('stem.dataplot.cer_need_claim', 'Claim: answer your question in a full sentence.')
+          : k === 'evidence' ? t('stem.dataplot.cer_need_evidence', 'Evidence needs at least one number from your data, such as the median, a count or a percent.')
+          : t('stem.dataplot.cer_need_reasoning', 'Reasoning explains WHY the evidence supports the claim. Try starting with "This shows ... because ...".');
+      };
+      var pjFinish = function () {
+        var miss = cerChecks(pj.cer);
+        if (pjValues.length < pjMinN) { setPj({ cerMiss: ['data'] }); say(fillT(t('stem.dataplot.sr_pj_need_data', 'Collect at least {k} values before you conclude.'), { k: pjMinN })); return; }
+        if (miss.length) { setPj({ cerMiss: miss }); say(miss.map(cerMissText).join(' ')); return; }
+        var again = !!pj.done;
+        setPj({ cerMiss: [], done: true });
+        var extra = doneFlag('project'); if (again) delete extra.xpCapCorrect; Object.assign(extra, xpPatch('project:done', 15, t('stem.dataplot.xp_project', 'Finished a data project with a claim, evidence and reasoning')));
+        updMulti(extra);
+        if (soundEnabled) sfxBadge();
+        say(t('stem.dataplot.sr_pj_done', 'Project finished. You can print it or send the data to Data Lab.'));
+      };
+      var pjPrint = function () {
+        var cer = obj(pj.cer), rowsP = [[t('stem.dataplot.pj_step_question', 'Question'), pj.question || ''], [t('stem.dataplot.pj_plan_variable', 'What I measured or counted'), pjPlan.variable || ''], [t('stem.dataplot.pj_plan_who', 'Who or what I collected data from'), pjPlan.who || '']]
+          .concat(pjSummaryLines().map(function (l) { return [t('stem.dataplot.pj_summary', 'Summary'), l]; }))
+          .concat([[t('stem.dataplot.cer_claim', 'Claim'), cer.claim || ''], [t('stem.dataplot.cer_evidence', 'Evidence'), cer.evidence || ''], [t('stem.dataplot.cer_reasoning', 'Reasoning'), cer.reasoning || ''], [t('stem.dataplot.cer_limits', 'What could make this conclusion wrong'), cer.limits || '']]);
+        var ok = GA && GA.printReport ? GA.printReport(t('stem.dataplot.pj_title', 'My data project'), rowsP) : false;
+        if (!ok) say(t('stem.dataplot.sr_print_blocked', 'Printing opens a new window, and it was blocked here.'));
+      };
+      var STAT_Q_TEXT = { me_tall: t('stem.dataplot.sq_me_tall', 'How tall am I?'), class_tall: t('stem.dataplot.sq_class_tall', 'How tall are the students in my class?'), grade_pets: t('stem.dataplot.sq_grade_pets', 'How many pets do students in my grade have?'), may_days: t('stem.dataplot.sq_may_days', 'How many days are in May?') };
+      var renderProjectStep = function () {
+        var sq = obj(pj.sq);
+        if (pjStep === 0) {
+          var checked = !!pj.sqChecked;
+          return h('div', { className: 'space-y-2' },
+            section({ 'data-dataplot-pj-sq': true },
+              h('h5', { className: 'text-sm font-bold text-slate-900' }, t('stem.dataplot.sq_title', 'Warm-up: which questions are statistical?')),
+              h('p', { className: 'text-xs text-slate-800' }, t('stem.dataplot.sq_intro', 'A statistical question expects answers that VARY, so you need data to answer it.')),
+              STAT_Q_ITEMS.map(function (it) {
+                var wrong = checked && sq[it.id] && sq[it.id] !== it.answer;
+                return h('div', { key: it.id, className: 'space-y-1' },
+                  choiceRow(STAT_Q_TEXT[it.id], [['yes', t('stem.dataplot.sq_yes', 'Statistical')], ['no', t('stem.dataplot.sq_no', 'Not statistical')]], sq[it.id] || '', function (id) { var s2 = Object.assign({}, sq); s2[it.id] = id; setPj({ sq: s2, sqChecked: false }); }),
+                  wrong && feedbackBox(false, it.answer === 'no' ? fillT(t('stem.dataplot.sq_mis_single', '"{q}" has one answer, so there is nothing to vary: not statistical.'), { q: STAT_Q_TEXT[it.id] }) : fillT(t('stem.dataplot.sq_mis_varies', '"{q}" expects different answers from different people, so it IS statistical.'), { q: STAT_Q_TEXT[it.id] })));
+              }),
+              h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-sq-check': true, onClick: function () {
+                var right = STAT_Q_ITEMS.filter(function (it) { return sq[it.id] === it.answer; }).length;
+                setPj({ sqChecked: true });
+                say(fillT(t('stem.dataplot.sr_sq_checked', '{k} of {n} right.'), { k: right, n: STAT_Q_ITEMS.length }) + (right < STAT_Q_ITEMS.length ? ' ' + t('stem.dataplot.sr_sq_retry', 'Read the notes, change your answers and check again.') : ''));
+              }, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-amber-700 text-white hover:bg-amber-800' }, t('stem.dataplot.sq_check', 'Check'))),
+            h('label', { className: 'block text-xs font-bold text-slate-900' + onHostInk }, t('stem.dataplot.pj_question_label', 'My statistical question'),
+              h('textarea', { rows: 2, value: typeof pj.question === 'string' ? pj.question : '', 'data-dataplot-pj-question': true, placeholder: isK5 ? t('stem.dataplot.pj_question_ph_k5', 'What is the favourite fruit in our class?') : t('stem.dataplot.pj_question_ph', 'How many minutes do students in my grade read each night?'), onChange: function (e) { setPj({ question: e.target.value.slice(0, 300) }); }, className: 'block w-full mt-1 px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900 font-normal' })),
+            h('label', { style: chipStyle, className: 'flex items-center gap-2 text-xs font-bold text-slate-900' + onHostInk },
+              h('input', { type: 'checkbox', checked: !!pj.varies, onChange: function () { setPj({ varies: !pj.varies }); } }), t('stem.dataplot.pj_varies', 'I expect the answers to vary from person to person (or thing to thing).')));
+        }
+        if (pjStep === 1) {
+          var fair = obj(pjPlan.fair);
+          var txt = function (key, label, ph, max) { return h('label', { key: key, className: 'block text-xs font-bold text-slate-900' + onHostInk }, label, h('input', { type: 'text', value: typeof pjPlan[key] === 'string' ? pjPlan[key] : '', placeholder: ph || '', onChange: function (e) { var p = {}; p[key] = e.target.value.slice(0, max || 80); setPlan(p); }, className: 'block w-full mt-1 px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900 font-normal', style: chipStyle })); };
+          return h('div', { className: 'space-y-2', 'data-dataplot-pj-plan': true },
+            txt('variable', t('stem.dataplot.pj_plan_variable', 'What I measured or counted'), t('stem.dataplot.pj_plan_variable_ph', 'minutes of reading'), 40),
+            choiceRow(t('stem.dataplot.pj_plan_kind', 'What kind of answers will you get?'), [['numeric', t('stem.dataplot.pj_kind_numeric', 'A number for each person or thing')], ['category', t('stem.dataplot.pj_kind_category', 'A category or word (like a favourite colour)')]].concat(isK5 ? [] : [['pairs', t('stem.dataplot.pj_kind_pairs', 'Two numbers for each (to look for a relationship)')]]), pjKind, function (id) {
+              if (id === pjKind) return;
+              setPj({ plan: Object.assign({}, pjPlan, { kind: id }), values: [] });
+              say(pjValues.length ? t('stem.dataplot.sr_pj_kind_changed', 'Kind of data changed. The values you had collected were cleared.') : t('stem.dataplot.sr_pj_kind', 'Kind of data chosen.'));
+            }),
+            pjKind === 'pairs' && txt('variable2', t('stem.dataplot.pj_plan_variable2', 'The second thing I measured'), t('stem.dataplot.pj_plan_variable2_ph', 'test score'), 40),
+            pjKind !== 'category' && txt('unit', t('stem.dataplot.pj_plan_unit', 'Unit (optional)'), t('stem.dataplot.pj_plan_unit_ph', 'minutes'), 20),
+            txt('who', t('stem.dataplot.pj_plan_who', 'Who or what I collected data from'), t('stem.dataplot.pj_plan_who_ph', 'students in my class'), 80),
+            h('label', { className: 'block text-xs font-bold text-slate-900' + onHostInk }, t('stem.dataplot.pj_plan_size', 'How many I plan to ask or measure'),
+              h('input', { type: 'number', min: 1, max: 500, value: dpFin(pjPlan.size) ? pjPlan.size : '', onChange: function (e) { var v = parseInt(e.target.value, 10); setPlan({ size: dpFin(v) ? clamp(v, 1, 500) : null }); }, className: 'block w-32 mt-1 px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900 font-normal', style: chipStyle })),
+            dpFin(pjPlan.size) && pjPlan.size < pjMinN && h('p', { className: 'text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded p-2' }, fillT(t('stem.dataplot.pj_plan_small', 'With fewer than {k} answers, a pattern can easily be chance. Plan for more if you can.'), { k: pjMinN })),
+            h('fieldset', { className: 'space-y-1' }, h('legend', { className: 'text-xs font-bold text-slate-900' + onHostInk }, t('stem.dataplot.pj_fair_legend', 'How I will keep it fair')),
+              [['same', t('stem.dataplot.pj_fair_same', 'Everyone gets the same question, asked the same way')], ['who', t('stem.dataplot.pj_fair_who', 'I collect from a group that represents everyone my question is about (or a random sample)')], ['tool', t('stem.dataplot.pj_fair_tool', 'I measure with the same tool and unit every time')]].map(function (f) {
+                return h('label', { key: f[0], style: chipStyle, className: 'flex items-center gap-2 text-xs text-slate-900' + onHostInk }, h('input', { type: 'checkbox', checked: !!fair[f[0]], onChange: function () { var f2 = Object.assign({}, fair); f2[f[0]] = !fair[f[0]]; setPlan({ fair: f2 }); } }), f[1]);
+              })));
+        }
+        if (pjStep === 2) {
+          var keyAdd = function (e) { if (e.key === 'Enter') { e.preventDefault(); pjAdd(); } };
+          return h('div', { className: 'space-y-2', 'data-dataplot-pj-collect': true },
+            h('div', { className: 'flex gap-2 items-end flex-wrap' },
+              h('div', null, h('label', { htmlFor: 'dp-pj-in', className: 'text-xs font-bold text-slate-900 block' + onHostInk }, fillT(t('stem.dataplot.pj_new_value', 'New {v}'), { v: pjVarName })), h('input', { id: 'dp-pj-in', type: 'text', inputMode: pjKind === 'category' ? 'text' : 'decimal', onKeyDown: keyAdd, className: 'w-40 px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900', style: chipStyle })),
+              pjKind === 'pairs' && h('div', null, h('label', { htmlFor: 'dp-pj-in2', className: 'text-xs font-bold text-slate-900 block' + onHostInk }, fillT(t('stem.dataplot.pj_new_value', 'New {v}'), { v: pjVar2Name })), h('input', { id: 'dp-pj-in2', type: 'text', inputMode: 'decimal', onKeyDown: keyAdd, className: 'w-40 px-2 py-1 text-sm border border-slate-500 rounded bg-white text-slate-900', style: chipStyle })),
+              h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-add': true, onClick: pjAdd, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, t('stem.dataplot.add_row', '+ Add row'))),
+            h('p', { className: 'text-xs text-slate-800' + onHostInk, 'data-dataplot-pj-count': true }, fillT(dpFin(pjPlan.size) ? t('stem.dataplot.pj_count_plan', '{n} of {k} planned values collected.') : t('stem.dataplot.pj_count', '{n} values collected.'), { n: pjValues.length, k: pjPlan.size })),
+            pjValues.length > 0 && h('p', { className: 'text-xs font-mono text-slate-900 bg-slate-50 border border-slate-300 rounded p-2', style: { maxHeight: 120, overflowY: 'auto' } }, pjValues.map(function (v) { return Array.isArray(v) ? '(' + fmtNum(v[0]) + ', ' + fmtNum(v[1]) + ')' : String(v); }).join(', ')),
+            pjValues.length > 0 && h('div', { className: 'flex gap-2 flex-wrap' },
+              h('button', { type: 'button', style: bigStyle, onClick: function () { setPj({ values: pjValues.slice(0, -1) }); say(t('stem.dataplot.sr_pj_removed', 'Last value removed.')); }, className: 'px-3 py-1 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.pj_remove_last', 'Remove the last value')),
+              !pj.confirmClear ? h('button', { type: 'button', style: bigStyle, onClick: function () { setPj({ confirmClear: true }); }, className: 'px-3 py-1 rounded-lg text-sm font-bold border border-red-300 text-red-800 bg-white' }, t('stem.dataplot.pj_clear', 'Clear all values'))
+                : h('span', { className: 'flex gap-2 items-center text-xs font-bold text-red-900' + onHostInk, role: 'group', 'aria-label': t('stem.dataplot.pj_clear_confirm', 'Clear every value?') }, t('stem.dataplot.pj_clear_confirm', 'Clear every value?'),
+                  h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-clear-yes': true, onClick: function () { setPj({ values: [], confirmClear: false }); say(t('stem.dataplot.sr_pj_cleared', 'All values cleared.')); }, className: 'px-3 py-1 rounded-lg bg-red-700 text-white' }, t('stem.dataplot.yes_clear', 'Yes, clear')),
+                  h('button', { type: 'button', style: bigStyle, onClick: function () { setPj({ confirmClear: false }); }, className: 'px-3 py-1 rounded-lg border border-slate-500 bg-white text-slate-800' }, t('stem.dataplot.cancel', 'Cancel')))));
+        }
+        if (pjStep === 3) {
+          if (!pjValues.length) return h('p', { className: 'text-sm text-slate-800' + onHostInk }, t('stem.dataplot.pj_no_data', 'Collect some data first.'));
+          return h('div', { className: 'space-y-2', 'data-dataplot-pj-display': true },
+            pjKind === 'category' ? catBarSvg(pjCats.slice(0, 12).map(function (c) { return { label: c.label.slice(0, 10), value: c.value }; }), fillT(t('stem.dataplot.pj_bar_label', 'Bar chart of {v}: {list}.'), { v: pjVarName, list: pjCats.map(function (c) { return c.label + ' ' + c.value; }).join(', ') }), pjVarName)
+              : pjKind === 'pairs' ? (pjPairs.length >= 2 ? miniScatter(pjPairs, { label: fillT(t('stem.dataplot.pj_scatter_label', 'Scatter plot of {y} against {x}, {n} points.'), { y: pjVar2Name, x: pjVarName, n: pjPairs.length }) }) : null)
+              : dotPlotSvg(pjNums, { label: fillT(t('stem.dataplot.pj_dot_label', 'Dot plot of {n} values of {v}.'), { n: pjNums.length, v: pjVarName }), axisLabel: pjVarName }),
+            h('ul', { className: 'text-xs text-slate-900 list-disc pl-5' + onHostInk, 'data-dataplot-pj-summary': true }, pjSummaryLines().map(function (l, i) { return h('li', { key: i }, l); })),
+            h('div', { className: 'flex gap-2 flex-wrap' },
+              h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-to-chart': true, onClick: pjToChart, className: 'px-3 py-1.5 rounded-lg text-xs font-bold border border-teal-700 text-teal-800 bg-white hover:bg-teal-50' }, t('stem.dataplot.pj_to_chart', 'Open my data in the Chart tab')),
+              codapButton(pjDataset)));
+        }
+        var cer = obj(pj.cer), miss = Array.isArray(pj.cerMiss) ? pj.cerMiss : [];
+        var setCer = function (k, v) { var c2 = Object.assign({}, cer); c2[k] = v.slice(0, 1000); setPj({ cer: c2 }); };
+        return h('div', { className: 'space-y-2', 'data-dataplot-pj-conclude': true },
+          pjValues.length > 0 && h('div', { className: 'text-xs text-slate-900 bg-slate-50 border border-slate-300 rounded p-2' }, h('p', { className: 'font-bold' }, t('stem.dataplot.pj_your_numbers', 'Your numbers')), h('ul', { className: 'list-disc pl-5' }, pjSummaryLines().map(function (l, i) { return h('li', { key: i }, l); }))),
+          pj.question && h('p', { className: 'text-xs font-bold text-slate-900' + onHostInk }, fillT(t('stem.dataplot.pj_question_echo', 'Your question: {q}'), { q: pj.question })),
+          [['claim', t('stem.dataplot.cer_claim_label', 'Claim: your answer to the question'), isK5 ? t('stem.dataplot.cer_claim_ph_k5', 'I found that ...') : t('stem.dataplot.cer_claim_ph', 'Most students in my grade read ...')],
+           ['evidence', t('stem.dataplot.cer_evidence_label', 'Evidence: numbers from your data that support the claim'), t('stem.dataplot.cer_evidence_ph', 'The median was ..., and ... out of ... said ...')],
+           ['reasoning', t('stem.dataplot.cer_reasoning_label', 'Reasoning: why the evidence supports the claim'), t('stem.dataplot.cer_reasoning_ph', 'This shows ... because ...')],
+           ['limits', t('stem.dataplot.cer_limits_label', 'Optional: what could make this conclusion wrong? (who you asked, how many, how you measured)'), t('stem.dataplot.cer_limits_ph', 'I only asked ..., so ...')]].map(function (f) {
+            return h('label', { key: f[0], className: 'block text-xs font-bold text-slate-900' + onHostInk }, f[1],
+              h('textarea', { rows: 2, value: typeof cer[f[0]] === 'string' ? cer[f[0]] : '', placeholder: f[2], 'data-dataplot-cer': f[0], 'aria-invalid': miss.indexOf(f[0]) >= 0 ? 'true' : undefined, onChange: function (e) { setCer(f[0], e.target.value); }, className: 'block w-full mt-1 px-2 py-1 text-sm border rounded bg-white text-slate-900 font-normal ' + (miss.indexOf(f[0]) >= 0 ? 'border-red-700' : 'border-slate-500') }));
+          }),
+          miss.length > 0 && h('div', { role: 'status', 'data-dataplot-cer-miss': true }, h('ul', { className: 'text-xs text-red-900 bg-red-50 border border-red-300 rounded p-2 list-disc pl-5' }, miss.map(function (k) { return h('li', { key: k }, k === 'data' ? fillT(t('stem.dataplot.sr_pj_need_data', 'Collect at least {k} values before you conclude.'), { k: pjMinN }) : cerMissText(k)); }))),
+          h('div', { className: 'flex gap-2 flex-wrap items-center' },
+            h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-finish': true, onClick: pjFinish, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-teal-700 text-white hover:bg-teal-800' }, t('stem.dataplot.pj_finish', 'Check and finish my project')),
+            pj.done && h('span', { className: 'text-xs font-bold text-emerald-800' + onHostInk }, t('stem.dataplot.pj_done', '✓ Project finished')),
+            h('button', { type: 'button', style: bigStyle, onClick: pjPrint, className: 'px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.teacher_print', 'Print'))));
+      };
+      var renderProjectTab = function () {
+        var steps = [t('stem.dataplot.pj_step_question', 'Question'), t('stem.dataplot.pj_step_plan', 'Plan'), t('stem.dataplot.pj_step_collect', 'Collect'), t('stem.dataplot.pj_step_display', 'Display'), t('stem.dataplot.pj_step_conclude', 'Conclude')];
+        return h('div', dataPlotPanelProps('project', { className: 'space-y-3' }),
+          h('p', { className: 'text-xs text-slate-800' + onHostInk }, t('stem.dataplot.pj_intro', 'Run your own investigation: ask a question, plan how to collect data, collect it, display it, and write a conclusion. What you type stays in this session only.')),
+          h('ol', { className: 'flex gap-1.5 flex-wrap', 'aria-label': t('stem.dataplot.pj_steps', 'Project steps') }, steps.map(function (s, i) {
+            return h('li', { key: i }, h('button', { type: 'button', 'aria-current': pjStep === i ? 'step' : undefined, 'data-dataplot-pj-step': i, style: chipStyle, onClick: function () { setPj({ step: i }); }, className: btnCls(pjStep === i) }, fillT(t('stem.dataplot.pj_step_n', '{k}. {name}'), { k: i + 1, name: s })));
+          })),
+          h('h4', { className: 'text-sm font-bold text-slate-900' + onHostInk }, fillT(t('stem.dataplot.pj_step_heading', 'Step {k} of 5: {name}'), { k: pjStep + 1, name: steps[pjStep] })),
+          renderProjectStep(),
+          h('div', { className: 'flex gap-2' },
+            pjStep > 0 && h('button', { type: 'button', style: bigStyle, onClick: function () { setPj({ step: pjStep - 1 }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.dataplot.pj_back', '← Back')),
+            pjStep < 4 && h('button', { type: 'button', style: bigStyle, 'data-dataplot-pj-next': true, onClick: function () { setPj({ step: pjStep + 1 }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold bg-teal-700 text-white hover:bg-teal-800' }, t('stem.dataplot.pj_next', 'Next →'))));
+      };
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Data tools ──
+      // ══════════════════════════════════════════════════════════
+      var offlineQuestions = function () {
+        var qs = [];
+        if (n < 2) return [t('stem.dataplot.oq_more_data', 'What data could you collect to answer a question you care about? Add at least two points.')];
+        qs.push(fillT(t('stem.dataplot.oq_trend', 'As {x} increases, what happens to {y}? Point to the evidence on the chart.'), { x: xName, y: yName }));
+        if (outliers.length) qs.push(fillT(t('stem.dataplot.oq_outlier', 'The point ({px}, {py}) is far from the rest. Is it a mistake or something real? How could you find out?'), { px: fmtNum(outliers[0].x), py: fmtNum(outliers[0].y) }));
+        if (!isK5 && regFit.ok && n >= 3 && !modelHidden) qs.push(t('stem.dataplot.oq_residual', 'Which point is farthest from the fitted model? What might explain it?'));
+        qs.push(t('stem.dataplot.oq_more_points', 'If you collected 10 more points, would the pattern stay the same? Why or why not?'));
+        if (!isK5) qs.push(fillT(t('stem.dataplot.oq_cause', 'Besides {x}, what else could be affecting {y}?'), { x: xName, y: yName }));
+        return qs;
+      };
+      var importReport = d.importReport && typeof d.importReport === 'object' ? d.importReport : null;
+      var renderToolsTab = function () {
+        return h('div', dataPlotPanelProps('tools', { className: 'space-y-3' }),
+          // Paste / import
+          card({ 'data-dataplot-import': true },
+            cardTitle(t('stem.dataplot.import_data_csv_v2', '📋 Paste or import data')),
+            h('label', { htmlFor: 'dp-import-csv', className: 'block text-xs text-slate-800 mb-1' }, t('stem.dataplot.import_help', 'Paste two columns copied from Google Sheets or Excel, or type x,y pairs (commas, tabs, semicolons or spaces all work). A header row becomes the axis labels. One column of numbers becomes y values numbered 1, 2, 3...')),
+            h('textarea', { id: 'dp-import-csv', placeholder: t('stem.dataplot.paste_csv_data_x_y_1_5_2_8_3_12_v2', 'x,y\n1,5\n2,8\n3,12'), className: 'w-full h-24 px-3 py-2 text-sm font-mono border border-slate-500 rounded-lg resize-y', rows: 4 }),
+            h('div', { role: 'radiogroup', 'aria-label': t('stem.dataplot.import_mode', 'When importing'), className: 'flex gap-1.5 flex-wrap mt-2 items-center' },
+              h('button', { type: 'button', role: 'radio', 'aria-checked': pasteMode === 'replace', style: chipStyle, onClick: function () { upd('pasteMode', 'replace'); }, className: btnCls(pasteMode === 'replace') }, t('stem.dataplot.import_replace', 'Replace my data')),
+              h('button', { type: 'button', role: 'radio', 'aria-checked': pasteMode === 'append', style: chipStyle, onClick: function () { upd('pasteMode', 'append'); }, className: btnCls(pasteMode === 'append') }, t('stem.dataplot.import_append', 'Add to my data')),
+              h('button', { type: 'button', style: bigStyle, 'data-dataplot-import-go': true, onClick: function() { var el = document.getElementById('dp-import-csv'); if (!el || !el.value.trim()) { say(t('stem.dataplot.sr_import_empty', 'Paste some data into the box first.')); return; } if (importText(el.value)) el.value = ''; }, className: 'ml-auto px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-800' }, t('stem.dataplot.import_2', '⇩ Import'))),
+            importReport && h('p', { role: 'status', className: 'text-xs mt-2 p-2 rounded border ' + (importReport.ok ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900') },
+              importReport.ok ? fillT(importReport.skippedCount ? t('stem.dataplot.import_report_some', 'Imported {n} points ({mode}). Skipped lines that were not numbers: {lines}.') : t('stem.dataplot.import_report_all', 'Imported {n} points ({mode}).'),
+                { n: importReport.count, mode: importReport.mode === 'append' ? t('stem.dataplot.import_mode_added', 'added') : t('stem.dataplot.import_mode_replaced', 'replaced'), lines: (importReport.skipped || []).join(', ') })
+                + (dpFin(importReport.cut) && importReport.cut > 0 ? ' ' + fillT(t('stem.dataplot.import_capped', 'The tool keeps at most {cap} points, so {k} were left out.'), { cap: PASTE_CAP, k: importReport.cut }) : '')
+                : t('stem.dataplot.import_report_none', 'No numbers found. Put one x and y pair on each line.'))),
+          // Prediction tool
+          !isK5 && card({ 'data-dataplot-predict-tool': true },
+            cardTitle(t('stem.dataplot.prediction_tool', '🔮 Prediction Tool')),
+            n < 2 ? h('div', { className: 'text-xs text-slate-700' }, t('stem.dataplot.need_2_points_to_predict', 'Need 2+ points to predict'))
+            // 6-8: the model stays hidden here too until the student's line (or Show best fit).
+            : modelHidden ? h('p', { className: 'text-xs text-slate-800', 'data-dataplot-pred-locked': true }, allowReveal ? t('stem.dataplot.pred_draw_first', 'Draw your own line on the chart first, or press Show best fit there. Then you can predict with the fitted model.') : t('stem.dataplot.pred_draw_first_noreveal', 'Draw your own line on the chart first. Then you can predict with the fitted model.'))
+            : !regFit.ok ? h('p', { className: 'text-xs text-red-800' }, fitWhyText(regFit))
+            : h('div', null,
+                h('div', { className: 'text-xs text-slate-800 mb-2' }, fillT(t('stem.dataplot.pred_using', 'Using the {model} model: {eq}'), { model: regName(regressionType), eq: regEq })),
+                h('div', { className: 'flex gap-2 items-center flex-wrap' },
+                  h('label', { htmlFor: 'dp-pred-x', className: 'text-xs font-bold text-indigo-900' }, t('stem.dataplot.if_x', 'If X =')),
+                  h('input', { id: 'dp-pred-x', type: 'text', inputMode: 'decimal', value: predX, onChange: function(e) { upd('predX', e.target.value.slice(0, 20)); checkBadges({ predicted: true }); }, className: 'w-24 px-2 py-1.5 border-2 border-indigo-700 rounded-lg text-sm font-bold text-indigo-900 text-center', style: chipStyle }),
+                  h('span', { className: 'text-xs font-bold text-indigo-900' }, t('stem.dataplot.then_y', 'then Y ≈')),
+                  h('output', { htmlFor: 'dp-pred-x', 'aria-live': 'polite', className: 'px-3 py-1.5 border rounded-lg text-sm font-bold text-center min-w-[60px] ' + (predIsExtrapolation ? 'bg-red-50 border-red-200 text-red-800' : 'bg-indigo-50 border-indigo-200 text-indigo-900') }, predResult || '?'),
+                  predX !== '' && predResult && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full ' + (predIsExtrapolation ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') },
+                    predIsExtrapolation ? t('stem.dataplot.extrapolation', '⚠️ Extrapolation: outside the data, so less trustworthy') : t('stem.dataplot.interpolation', '✅ Interpolation: inside the data range'))),
+                predWhy && h('p', { className: 'text-xs text-red-800 mt-1', role: 'status' }, predWhy))),
+          // Questions to ask (always available) + the optional AI coach
+          card({ 'data-dataplot-questions': true },
+            cardTitle(t('stem.dataplot.questions_title', '🤔 Questions to ask about your data')),
+            h('ul', { className: 'list-disc pl-5 text-sm text-slate-900 space-y-1' }, offlineQuestions().map(function (q, i) { return h('li', { key: i }, q); })),
+            callGemini && h('div', { className: 'mt-3 pt-2 border-t border-pink-200' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'text-xs font-bold text-pink-900 uppercase' }, t('stem.dataplot.ai_data_coach', '🤖 AI data coach')),
+                h('button', { type: 'button', style: bigStyle, onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-xs font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-800') + ' disabled:opacity-60' },
+                  aiLoading ? t('stem.dataplot.ai_thinking', '⏳ Thinking...') : t('stem.dataplot.ai_ask', '✨ Ask me questions about my data'))),
+              h('p', { className: 'text-xs text-slate-800 mt-1' }, t('stem.dataplot.ai_note', 'The coach asks questions; it does not give answers. It only sees summary numbers, not your names.')),
+              aiInsight && h('ul', { className: 'list-disc pl-5 text-sm text-slate-900 mt-1 space-y-1', role: 'status' }, aiInsight.split('\n').filter(Boolean).map(function (q, i) { return h('li', { key: i }, q); })))),
+          // Transformations
+          isHS && card(null,
+            cardTitle(t('stem.dataplot.data_transformations', '🔄 Data Transformations')),
+            points.length === 0 ? h('div', { className: 'text-xs text-slate-700' }, t('stem.dataplot.add_data_points_first', 'Add data points first'))
+            : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
-                  [
-                    { id: 'normalize', icon: '\uD83D\uDCCF', label: t('stem.dataplot.normalize_0_100', 'Normalize (0\u2013100)'), desc: t('stem.dataplot.scale_y_to_0_100', 'Scale Y to 0\u2013100') },
-                    { id: 'standardize', icon: '\uD83D\uDCC0', label: t('stem.dataplot.standardize_z', 'Standardize (Z)'), desc: t('stem.dataplot.z_score_transform_y', 'Z-score transform Y') },
-                    { id: 'log', icon: '\uD83D\uDCC9', label: t('stem.dataplot.log_transform', 'Log Transform'), desc: t('stem.dataplot.ln_y_for_positive_values', 'ln(Y) for positive values') },
-                    { id: 'noise', icon: '\uD83C\uDF2A\uFE0F', label: t('stem.dataplot.add_noise', 'Add Noise'), desc: t('stem.dataplot.random_noise_20_stddev', 'Random noise \u00B120% stdDev') },
-                    { id: 'sort', icon: '\uD83D\uDD22', label: t('stem.dataplot.sort_by_x', 'Sort by X'), desc: t('stem.dataplot.sort_points_by_x_value', 'Sort points by X value') },
-                    { id: 'flipXY', icon: '\uD83D\uDD00', label: t('stem.dataplot.flip_x_y', 'Flip X\u2194Y'), desc: t('stem.dataplot.swap_x_and_y_values', 'Swap X and Y values') }
-                  ].map(function(tr) {
-                    return h('button', { 'aria-label': t('stem.dataplot.transform_data', 'Transform Data'), key: tr.id, onClick: function() { transformData(tr.id); }, title: tr.desc,
-                      className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all'
-                    }, tr.icon + ' ' + tr.label);
-                  })
-                ),
-                h('div', { className: 'text-[0.6875rem] text-amber-500' }, t('stem.dataplot.transformations_modify_data_in_place_u', '\uD83D\uDCA1 Transformations modify data in-place. Use Undo (\u21A9) to revert.'))
-              )
-          ),
-
-          // ── Random Data Generator ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.random_data_generator', '\uD83C\uDFB2 Random Data Generator')),
-            h('div', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, t('stem.dataplot.generate_20_points_with_a_target_corre', 'Generate 20 points with a target correlation strength:')),
+                  [['normalize', t('stem.dataplot.scale_y_to_0_100', 'Scale Y to 0–100')], ['standardize', t('stem.dataplot.z_score_transform_y', 'Z-score transform Y')], ['log', t('stem.dataplot.ln_y_for_positive_values', 'ln(Y) for positive values')],
+                   ['noise', t('stem.dataplot.random_noise_20_stddev', 'Random noise ±20% stdDev')], ['sort', t('stem.dataplot.sort_points_by_x_value', 'Sort points by X value')], ['flipXY', t('stem.dataplot.swap_x_and_y_values', 'Swap X and Y values')]].map(function(tr) {
+                    return h('button', { type: 'button', key: tr[0], style: chipStyle, 'data-dataplot-transform': tr[0], 'aria-describedby': 'dp-tr-' + tr[0], onClick: function() { transformData(tr[0]); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-700 hover:bg-amber-100' },
+                      transformName(tr[0]), h('span', { id: 'dp-tr-' + tr[0], className: 'sr-only' }, tr[1]));
+                  })),
+                h('div', { className: 'text-xs text-slate-800' }, t('stem.dataplot.transformations_modify_data_in_place_u_v2', '💡 Transformations change the data in place. Use Undo (↩) to go back.')))),
+          // Random generator
+          isHS && card(null,
+            cardTitle(t('stem.dataplot.random_data_generator', '🎲 Random Data Generator')),
+            h('div', { className: 'text-xs text-slate-800 mb-2' }, t('stem.dataplot.generate_20_points_with_a_target_corre', 'Generate 20 points with a target correlation strength:')),
             h('div', { className: 'flex gap-1.5 flex-wrap' },
-              [
-                { r: 0.95, label: 'r\u22480.95', color: 'emerald' },
-                { r: 0.70, label: 'r\u22480.70', color: 'emerald' },
-                { r: 0.40, label: 'r\u22480.40', color: 'yellow' },
-                { r: 0.0, label: 'r\u22480.00', color: 'slate' },
-                { r: -0.70, label: 'r\u2248-0.70', color: 'orange' },
-                { r: -0.95, label: 'r\u2248-0.95', color: 'red' }
-              ].map(function(g) {
-                return h('button', { 'aria-label': 'Generate 20 points with ' + g.label, key: g.r, onClick: function() { generateRandom(g.r); },
-                  className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100 transition-all'
-                }, '\uD83C\uDFB2 ' + g.label);
-              })
-            )
-          ),
-
-          // ── Step-Through Mode ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-violet-200' },
-            h('div', { className: 'text-xs font-bold text-violet-700 uppercase mb-2' }, t('stem.dataplot.step_through_mode', '\uD83D\uDC63 Step-Through Mode')),
-            h('div', { className: 'text-[0.6875rem] text-violet-700 mb-2' }, t('stem.dataplot.watch_how_statistics_change_as_each_po', 'Watch how statistics change as each point is revealed one-by-one.')),
+              [0.95, 0.70, 0.40, 0, -0.70, -0.95].map(function(r) {
+                return h('button', { type: 'button', key: r, style: chipStyle, 'aria-label': fillT(t('stem.dataplot.generate_r_aria', 'Generate 20 points with r near {r}'), { r: fmtFixed(r, 2) }), onClick: function() { generateRandom(r); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-900 border border-violet-700 hover:bg-violet-100' }, 'r ≈ ' + fmtFixed(r, 2));
+              }))),
+          // Step-through
+          card(null,
+            cardTitle(t('stem.dataplot.step_through_mode', '👣 Step-Through Mode')),
+            h('div', { className: 'text-xs text-slate-800 mb-2' }, t('stem.dataplot.watch_how_statistics_change_as_each_po', 'Watch how statistics change as each point is revealed one-by-one.')),
             !stepMode
-              ? h('button', { onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700 disabled:opacity-40' }, '\u25B6 Start Step-Through (' + points.length + ' points)')
-              : h('div', { className: 'flex items-center gap-3' },
-                h('span', { className: 'text-sm font-bold text-violet-700' }, stepIdx + ' / ' + points.length + ' revealed'),
-                h('button', { onClick: stepNext, className: 'px-3 py-1 bg-violet-600 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? '\u2705 Done' : '\u27A1 Next'),
-                h('button', { 'aria-label': t('stem.dataplot.stop_3', 'Stop'), onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-600 font-bold rounded-lg text-xs border border-violet-600' }, t('stem.dataplot.stop_4', 'Stop'))
-              )
-          ),
-
-          // ── Local analytical workspace ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-indigo-300' },
-            h('div', { className: 'text-xs font-bold text-indigo-700 uppercase mb-1' }, '🧮 Local analytical workspace'),
-            h('div', { className: 'text-[0.6875rem] text-slate-600 mb-2' }, 'Run read-only SQL over the current X/Y points. Data stays in this browser; the result includes its local provenance.'),
-            h('textarea', { value: kernelSQL, onChange: function(e) { upd('kernelSQL', e.target.value); upd('kernelRecipeId', ''); }, rows: 2, spellCheck: false, 'aria-label': __alloT('stem.dataplot.a11y_local_analytical_sql_query', 'Local analytical SQL query'), className: 'w-full px-3 py-2 text-xs font-mono border border-indigo-500 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 resize-y', placeholder: __alloT('stem.dataplot.select_count_as_rows_avg_y_as_mean_y_from_da','SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data') }),
+              ? h('button', { type: 'button', style: bigStyle, onClick: startStepThrough, disabled: points.length < 2, className: 'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-800 disabled:opacity-40' }, fillT(t('stem.dataplot.step_start', '▶ Start step-through ({n} points)'), { n: points.length }))
+              : h('div', { className: 'flex items-center gap-3 flex-wrap' },
+                  h('span', { className: 'text-sm font-bold text-violet-900' }, fillT(t('stem.dataplot.step_progress', '{k} of {n} revealed'), { k: stepIdx, n: points.length })),
+                  h('button', { type: 'button', style: bigStyle, onClick: stepNext, className: 'px-3 py-1 bg-violet-700 text-white font-bold rounded-lg text-xs' }, stepIdx >= points.length ? t('stem.dataplot.step_done', '✅ Done') : t('stem.dataplot.step_next_btn', '➡ Next point')),
+                  h('button', { type: 'button', style: bigStyle, onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-900 font-bold rounded-lg text-xs border border-violet-700' }, t('stem.dataplot.stop_4', 'Stop')))),
+          // Local analytical workspace
+          isHS && card(null,
+            cardTitle(t('stem.dataplot.kernel_title', '🧮 Local analytical workspace')),
+            h('div', { className: 'text-xs text-slate-800 mb-2' }, t('stem.dataplot.kernel_intro', 'Run read-only SQL over the current X/Y points. Data stays in this browser; the result includes its local provenance.')),
+            h('textarea', { value: kernelSQL, onChange: function(e) { updMulti({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'aria-label': t('stem.dataplot.a11y_local_analytical_sql_query', 'Local analytical SQL query'), className: 'w-full px-3 py-2 text-xs font-mono border border-indigo-500 rounded-lg resize-y', placeholder: t('stem.dataplot.select_count_as_rows_avg_y_as_mean_y_from_da', 'SELECT COUNT(*) AS rows, AVG(y) AS mean_y FROM data') }),
             kernelRecipes.length > 0 && h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
-              h('label', { htmlFor: 'dp-kernel-recipe', className: 'text-[0.6875rem] font-bold text-indigo-700' }, 'Starter recipe'),
-              h('select', { id: 'dp-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, className: 'flex-1 min-w-[180px] px-2 py-1.5 text-[0.6875rem] border border-indigo-500 rounded-lg bg-white text-indigo-900' },
-                h('option', { value: '' }, 'Choose a local analysis…'),
-                kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); })
-              ),
-              h('span', { className: 'text-[0.625rem] text-indigo-700' }, 'Recipes use the current column shape.')
-            ),
+              h('label', { htmlFor: 'dp-kernel-recipe', className: 'text-xs font-bold text-indigo-900' }, t('stem.dataplot.kernel_recipe', 'Starter recipe')),
+              h('select', { id: 'dp-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, className: 'flex-1 min-w-[180px] px-2 py-1.5 text-xs border border-indigo-500 rounded-lg bg-white text-indigo-900', style: chipStyle },
+                h('option', { value: '' }, t('stem.dataplot.kernel_choose', 'Choose a local analysis…')),
+                kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); }))),
             h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
-              h('button', { onClick: runKernelQuery, disabled: kernelBusy || !points.length, className: 'px-3 py-1.5 bg-indigo-700 text-white font-bold rounded-lg text-xs hover:bg-indigo-800 disabled:opacity-40' }, kernelBusy ? '⏳ Loading local engine…' : '▶ Run local query'),
-              !points.length && h('span', { className: 'text-[0.6875rem] text-slate-500' }, 'Add at least one point first.')
-            ),
-            kernelError && h('div', { role: 'alert', className: 'mt-2 text-[0.6875rem] text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 whitespace-pre-wrap' }, kernelError),
+              h('button', { type: 'button', style: bigStyle, onClick: runKernelQuery, disabled: kernelBusy || !points.length, className: 'px-3 py-1.5 bg-indigo-700 text-white font-bold rounded-lg text-xs hover:bg-indigo-800 disabled:opacity-40' }, kernelBusy ? t('stem.dataplot.kernel_busy', '⏳ Loading local engine…') : t('stem.dataplot.kernel_run', '▶ Run local query')),
+              !points.length && h('span', { className: 'text-xs text-slate-700' }, t('stem.dataplot.kernel_need_point', 'Add at least one point first.'))),
+            kernelError && h('div', { role: 'alert', className: 'mt-2 text-xs text-red-800 bg-red-50 border border-red-200 rounded-lg p-2 whitespace-pre-wrap' }, kernelError),
             kernelResult && h('div', { className: 'mt-3 border-t border-indigo-100 pt-2' },
-              h('div', { className: 'text-[0.6875rem] text-indigo-700 font-bold mb-1' }, 'Result · ' + kernelResult.rows.length + ' row' + (kernelResult.rows.length === 1 ? '' : 's') + ' · ' + (kernelResult.backend || 'local')),
-              kernelResult.provenance && h('div', { className: 'text-[0.625rem] text-slate-500 mb-2' }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
-              kernelResult.rows.length > 0 && h('div', { className: 'overflow-x-auto' },
-                h('table', { className: 'w-full text-[0.6875rem] border-collapse' },
-                  h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { scope: 'col', key: column, className: 'text-left px-2 py-1 bg-indigo-50 border border-indigo-100 font-bold text-indigo-800' }, column); }))),
-                  h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, className: 'px-2 py-1 border border-indigo-100 font-mono text-slate-700' }, row[column] == null ? '—' : String(row[column])); })); }))
-                )
-              ),
-              kernelResult.rows.length === 100 && h('div', { className: 'text-[0.625rem] text-slate-500 mt-1' }, 'Showing the first 100 result rows.')
-            )
-          ),
+              h('div', { className: 'text-xs text-indigo-900 font-bold mb-1' }, fillT(t('stem.dataplot.kernel_result', 'Result: {n} rows ({backend})'), { n: kernelResult.rows.length, backend: kernelResult.backend || 'local' })),
+              kernelResult.rows.length > 0 && h('div', { className: 'overflow-x-auto', tabIndex: 0, role: 'region', 'aria-label': t('stem.dataplot.kernel_result_region', 'Query result, scrollable'), style: { position: 'relative' } },
+                h('table', { className: 'w-full text-xs border-collapse' },
+                  h('thead', null, h('tr', null, (kernelResult.columns || []).map(function(column) { return h('th', { scope: 'col', key: column, className: 'text-left px-2 py-1 bg-indigo-50 border border-indigo-100 font-bold text-indigo-900' }, column); }))),
+                  h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, (kernelResult.columns || []).map(function(column) { return h('td', { key: column, className: 'px-2 py-1 border border-indigo-100 font-mono text-slate-800' }, row[column] == null ? '—' : String(row[column])); })); })))))),
+          h('div', { className: 'flex gap-2 flex-wrap' },
+            crossLink('statsLab', t('stem.dataplot.statslab_name', 'Statistical Tests'), t('stem.dataplot.to_statslab', 'Test a difference or a correlation in Statistical Tests')),
+            crossLink('dataLab', t('stem.dataplot.datalab_name', 'CODAP Data Science'), t('stem.dataplot.to_datalab', 'Explore bigger data sets in CODAP')),
+            n > 0 && codapButton(pointsDataset))
+        );
+      };
 
-          // ── CSV Import ──
-          h('div', { className: 'bg-white rounded-xl p-4 border border-slate-400' },
-            h('div', { className: 'text-xs font-bold text-slate-700 uppercase mb-2' }, t('stem.dataplot.import_data_csv', '\uD83D\uDCCB Import Data (CSV)')),
-            h('textarea', { id: 'dp-import-csv', placeholder: t('stem.dataplot.paste_csv_data_x_y_1_5_2_8_3_12', 'Paste CSV data:\nx,y\n1,5\n2,8\n3,12'), className: 'w-full h-20 px-3 py-2 text-xs font-mono border border-slate-400 rounded-lg outline-none focus:ring-1 focus:ring-teal-400 resize-none', rows: 4 }),
-            h('button', { 'aria-label': t('stem.dataplot.import', 'Import'), onClick: function() {
-              var el = document.getElementById('dp-import-csv');
-              if (!el || !el.value.trim()) return;
-              var lines = el.value.trim().split('\n');
-              var imported = [];
-              lines.forEach(function(line) {
-                var parts = line.split(',').map(function(s) { return parseFloat(s.trim()); });
-                if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) imported.push({ x: parts[0], y: parts[1] });
-              });
-              if (imported.length > 0) {
-                var newUndo = pushUndo();
-                updMulti({ points: imported, undoStack: newUndo });
-                if (addToast) addToast('\uD83D\uDCE5 Imported ' + imported.length + ' points!', 'success');
-                el.value = '';
-              } else {
-                if (addToast) addToast('\u26A0\uFE0F No valid data found. Format: x,y per line', 'error');
-              }
-            }, className: 'mt-2 px-4 py-1.5 bg-teal-700 text-white font-bold rounded-lg text-sm hover:bg-teal-800' }, t('stem.dataplot.import_2', '\u21E9 Import'))
-          )
-        ),
-
-        // ── Coach tip ──
-        h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg p-3 border border-teal-100 text-xs text-teal-700 leading-relaxed' },
-          n === 0 ? '\uD83D\uDCCA Click the chart to plot points, or load a dataset to get started! Try the Tools tab for data generation.'
-            : n < 3 ? '\uD83D\uDCA1 Add more points to see regression analysis. At least 2 needed for a trend line!'
-            : stepMode ? '\uD83D\uDC63 Step-through mode: press \u2192 or click Next to reveal one point at a time. Watch how R\u00B2 changes!'
-            : Math.max(0, regR2) > 0.9 ? '\u2B50 Nearly perfect correlation! Toggle the 95% CI band (C key) to see the confidence interval.'
-            : Math.max(0, regR2) > 0.7 ? '\uD83D\uDCC8 Strong trend! Try the Z-Score Calculator in Statistics to explore individual values.'
-            : Math.max(0, regR2) < 0.3 ? '\uD83E\uDD14 Weak correlation. Check Spearman \u03C1 \u2014 there may be a non-linear monotonic trend!'
-            : '\uD83D\uDCA1 Try Histogram mode and toggle Normal Curve to see how your data compares to a bell curve!'
-        ),
-
-        // \u2550\u2550 CORRELATION INQUIRY widget (H7b'') \u2550\u2550
-        activeTab === 'inquiry' && (function() {
-          var iq = d.corrInquiry || { trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Sampling effects (correlation inquiry) ──
+      // ══════════════════════════════════════════════════════════
+      var renderInquiryTab = function () {
+          var iqRaw = obj(d.corrInquiry);
+          var iq = { trueR: dpFin(iqRaw.trueR) ? Math.max(-1, Math.min(1, iqRaw.trueR)) : 0.7, n: dpFin(iqRaw.n) ? Math.max(5, Math.min(200, Math.round(iqRaw.n))) : 30, noiseSD: dpFin(iqRaw.noiseSD) ? Math.max(0, Math.min(3, iqRaw.noiseSD)) : 1.0,
+            outlierCount: dpFin(iqRaw.outlierCount) ? Math.max(0, Math.min(10, Math.round(iqRaw.outlierCount))) : 0, hypothesis: typeof iqRaw.hypothesis === 'string' ? iqRaw.hypothesis : '',
+            stuckRevealed: !!iqRaw.stuckRevealed, understood: !!iqRaw.understood, explanation: typeof iqRaw.explanation === 'string' ? iqRaw.explanation : '', log: Array.isArray(iqRaw.log) ? iqRaw.log : [] };
           function setIQ(patch) { upd('corrInquiry', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           function lcg(seed) { var s = seed; return function() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -1740,80 +5702,350 @@ window.StemLab = window.StemLab || {
           var sxy = 0, sxx = 0, syy = 0;
           for (var j = 0; j < nn; j++) { var dx = xs[j] - mx, dy = ys[j] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
           var observedR = sxy / Math.max(0.0001, Math.sqrt(sxx * syy));
-          var diff = Math.abs(observedR - iq.trueR);
+          // The noise slider changes the population r itself (r / sqrt(r^2 + (1 - r^2) sd^2)): the verdict
+          // compares the sample with THAT population r, so a large clean sample is never "misleading".
+          var popDen = Math.sqrt(iq.trueR * iq.trueR + (1 - iq.trueR * iq.trueR) * iq.noiseSD * iq.noiseSD);
+          var popR = popDen > 0 ? iq.trueR / popDen : 0;
+          var diff = Math.abs(observedR - popR);
           var state = diff < 0.05 ? 'agree' : diff < 0.15 ? 'noisy' : diff < 0.30 ? 'masked' : 'misleading';
           var sm = ({
-            agree: { label: t('stem.dataplot.sample_reflects_truth', 'Sample reflects truth'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.dataplot.observed_r_matches_the_true_population', 'Observed r matches the true population r within 0.05.') },
-            noisy: { label: t('stem.dataplot.noisy_estimate', 'Noisy estimate'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dataplot.observed_r_is_off_by_0_05_0_15_expecte', 'Observed r is off by 0.05-0.15. Expected for small n or moderate noise.') },
-            masked: { label: t('stem.dataplot.truth_obscured', 'Truth obscured'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.dataplot.observed_r_differs_by_0_15_0_30_a_real', 'Observed r differs by 0.15-0.30. A real effect can look weak (or vice versa).') },
-            misleading: { label: t('stem.dataplot.misleading_sample', 'Misleading sample'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dataplot.observed_r_is_wildly_off_0_30_outliers', 'Observed r is wildly off (>0.30). Outliers or tiny n can completely flip apparent direction.') }
+            agree: { label: t('stem.dataplot.sample_reflects_truth', 'Sample reflects truth'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.dataplot.observed_r_matches_the_population_v2', 'The sample r is within 0.05 of the population r.') },
+            noisy: { label: t('stem.dataplot.noisy_estimate', 'Noisy estimate'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.dataplot.observed_r_off_v2', 'The sample r is 0.05 to 0.15 away from the population r. Expected for small samples.') },
+            masked: { label: t('stem.dataplot.truth_obscured', 'Truth obscured'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.dataplot.observed_r_differs_v2', 'The sample r is 0.15 to 0.30 away from the population r. A real effect can look weak, or a weak one strong.') },
+            misleading: { label: t('stem.dataplot.misleading_sample', 'Misleading sample'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.dataplot.observed_r_wild_v2', 'The sample r is more than 0.30 away from the population r. Outliers or a tiny sample can even flip the direction.') }
           })[state];
+          var exX = Math.max(5, Math.max.apply(null, xs.map(Math.abs))), exY = Math.max(3, Math.max.apply(null, ys.map(Math.abs))) * 1.08;
+          var ipx = function (v) { return 160 + v / exX * 140; }, ipy = function (v) { return 100 - v / exY * 88; };
+          var attenuated = Math.abs(popR - iq.trueR) > 0.005;
           return h('div', dataPlotPanelProps('inquiry', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
-            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.dataplot.correlation_inquiry_when_samples_misle', '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead')),
-            h('p', { className: 'text-[0.625rem] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set population r, sample size, noise, and outliers, then observe how far the sampled r drifts. The result updates live; record a hypothesis or pattern you notice.')),
-            h('div', { className: 'inline-block px-2 py-1 rounded-full text-[0.625rem] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
-            h('p', { className: 'text-[0.625rem] opacity-80 mb-2' }, sm.desc),
-            h('svg', { role: 'img', 'aria-label': t('stem.dataplot.sampling_img_label', 'Sampling distribution chart'), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-              h('line', { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
-              h('line', { x1: 160, y1: 10, x2: 160, y2: 190, stroke: '#1e293b' }),
+            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.dataplot.correlation_inquiry_when_samples_misle', '🔬 Correlation Inquiry - When Samples Mislead')),
+            h('p', { className: 'text-xs mb-2 leading-snug' }, t('stem.dataplot.inquiry_intro_v2', 'Set the relationship, sample size, noise and outliers, then watch how far one sample’s r lands from the population r. The result updates live; record a hypothesis or pattern you notice.')),
+            h('div', { className: 'inline-block px-2 py-1 rounded-full text-xs font-bold mb-2', role: 'status', style: { background: sm.color, color: '#000' } },
+              fillT(t('stem.dataplot.inquiry_badge', '{label} · population r = {pop}, this sample r = {obs}'), { label: sm.label, pop: fmtFixed(popR, 2), obs: fmtFixed(observedR, 2) })),
+            h('p', { className: 'text-xs mb-1' }, sm.desc),
+            attenuated && h('p', { className: 'text-xs mb-2', 'data-dataplot-attenuation': true }, fillT(t('stem.dataplot.inquiry_attenuation', 'Noise changes the population itself: with noise SD {sd}, a relationship set at r = {set} becomes r = {pop} in the whole population. More noise always weakens r; at noise SD 1 the population r equals the slider.'), { sd: fmtFixed(iq.noiseSD, 1), set: fmtFixed(iq.trueR, 2), pop: fmtFixed(popR, 2) })),
+            h('svg', { role: 'img', 'aria-label': fillT(t('stem.dataplot.sampling_img_label_v2', 'Scatter plot of this sample: {n} points, {k} of them outliers. Sample r = {obs}.'), { n: nn, k: iq.outlierCount, obs: fmtFixed(observedR, 2) }), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+              h('line', { x1: 20, y1: ipy(0), x2: 300, y2: ipy(0), stroke: '#475569' }),
+              h('line', { x1: ipx(0), y1: 10, x2: ipx(0), y2: 190, stroke: '#475569' }),
               xs.map(function(xv, k) {
-                var px = 160 + xv * 20;
-                var py = 100 - ys[k] * 12;
-                if (px < 30 || px > 310 || py < 10 || py > 190) return null;
                 var isOutlier = k >= iq.n;
-                return h('circle', { key: 'p' + k, cx: px, cy: py, r: isOutlier ? 4 : 2.5, fill: isOutlier ? '#f87171' : sm.color, opacity: 0.75 });
+                return h('circle', { key: 'p' + k, cx: ipx(xv), cy: ipy(ys[k]), r: isOutlier ? 4 : 2.5, fill: isOutlier ? '#f87171' : sm.color, opacity: 0.85 });
               }),
-              h('text', { x: 160, y: 196, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n=' + nn + ' points (' + iq.outlierCount + ' outliers in red)')
-            ),
-            h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-              h('label', { className: 'text-[0.625rem]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.true_population_r', 'True population r')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.trueR.toFixed(2))),
-                h('input', { type: 'range', min: -1, max: 1, step: 0.05, value: iq.trueR, onChange: function(e) { setKey('trueR', parseFloat(e.target.value)); }, className: 'w-full' })
-              ),
-              h('label', { className: 'text-[0.625rem]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.sample_size_n', 'Sample size n')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.n)),
-                h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.n, onChange: function(e) { setKey('n', parseInt(e.target.value, 10)); }, className: 'w-full' })
-              ),
-              h('label', { className: 'text-[0.625rem]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.noise_sd', 'Noise SD')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.noiseSD.toFixed(1))),
-                h('input', { type: 'range', min: 0, max: 3, step: 0.1, value: iq.noiseSD, onChange: function(e) { setKey('noiseSD', parseFloat(e.target.value)); }, className: 'w-full' })
-              ),
-              h('label', { className: 'text-[0.625rem]' },
-                h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.dataplot.outliers_2', 'Outliers')), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, iq.outlierCount)),
-                h('input', { type: 'range', min: 0, max: 10, step: 1, value: iq.outlierCount, onChange: function(e) { setKey('outlierCount', parseInt(e.target.value, 10)); }, className: 'w-full' })
-              )
-            ),
+              h('text', { x: 160, y: 197, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle' }, fillT(t('stem.dataplot.inquiry_caption', 'n = {n} points ({k} outliers in red)'), { n: nn, k: iq.outlierCount }))),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2' },
+              [['trueR', t('stem.dataplot.true_population_r_v2', 'Relationship (population r at noise SD 1)'), -1, 1, 0.05, fmtFixed(iq.trueR, 2)], ['n', t('stem.dataplot.sample_size_n', 'Sample size n'), 5, 200, 1, String(iq.n)],
+               ['noiseSD', t('stem.dataplot.noise_sd', 'Noise SD'), 0, 3, 0.1, fmtFixed(iq.noiseSD, 1)], ['outlierCount', t('stem.dataplot.outliers_2', 'Outliers'), 0, 10, 1, String(iq.outlierCount)]].map(function (s) {
+                return h('label', { key: s[0], className: 'text-xs' },
+                  h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, s[1]), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, s[5])),
+                  h('input', { type: 'range', min: s[2], max: s[3], step: s[4], value: iq[s[0]], onChange: function(e) { setKey(s[0], s[0] === 'n' || s[0] === 'outlierCount' ? parseInt(e.target.value, 10) : parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 28 } }));
+              })),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('button', { onClick: function() {
-                var t = new Date().toISOString().slice(11, 19);
-                setIQ({ log: iq.log.concat([{ t: t, tr: iq.trueR.toFixed(2), n: iq.n, sd: iq.noiseSD.toFixed(1), out: iq.outlierCount, obs: observedR.toFixed(2), state: sm.label }]) });
-              }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.dataplot.log_this_draw', '\uD83D\uDCCB Log this draw')),
-              h('button', { onClick: function() { setIQ({ trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0 }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.dataplot.reset', 'Reset'))
-            ),
-            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[0.5625rem] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
-              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' \u00B7 tr' + e.tr + ' n' + e.n + ' sd' + e.sd + ' out' + e.out + ' \u2192 obs ' + e.obs); })
-            ),
-            h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.dataplot.your_hypothesis_which_single_change_mo', 'Your hypothesis (which single change most distorts the observed r?)')),
-            h('textarea', { 'aria-label': t('stem.dataplot.hypothesis_input', 'Outlier impact hypothesis'), value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.e_g_2_outliers_at_n_20_do_more_damage_', 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.dataplot.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck - show open questions")),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+              h('button', { type: 'button', style: chipStyle, onClick: function() {
+                var tm = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: tm, tr: iq.trueR.toFixed(2), pop: popR.toFixed(2), n: iq.n, sd: iq.noiseSD.toFixed(1), out: iq.outlierCount, obs: observedR.toFixed(2), state: sm.label }]).slice(-40) });
+                say(t('stem.dataplot.sr_logged', 'Draw logged.'));
+              }, className: 'flex-1 px-2 py-1 rounded text-xs font-bold', style: Object.assign({ background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' }, chipStyle) }, t('stem.dataplot.log_this_draw', '📋 Log this draw')),
+              h('button', { type: 'button', onClick: function() { setIQ({ trueR: 0.7, n: 30, noiseSD: 1.0, outlierCount: 0 }); }, className: 'px-2 py-1 rounded text-xs', style: Object.assign({ background: '#0a0a1a', color: '#e2e8f0', border: '1px solid #475569', cursor: 'pointer' }, chipStyle) }, t('stem.dataplot.reset', 'Reset'))),
+            iq.log.length > 0 && h('table', { className: 'w-full text-[0.6875rem] font-mono mb-2', style: { background: '#0a0a1a', border: '1px solid #475569' } },
+              h('caption', { className: 'text-left text-xs font-sans font-bold' }, t('stem.dataplot.inquiry_log_caption', 'Your last draws')),
+              h('thead', null, h('tr', null, [t('stem.dataplot.il_set', 'set r'), t('stem.dataplot.il_pop', 'population r'), 'n', t('stem.dataplot.il_noise', 'noise'), t('stem.dataplot.il_out', 'outliers'), t('stem.dataplot.il_obs', 'sample r')].map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'text-left px-1' }, c); }))),
+              h('tbody', null, iq.log.slice(-5).map(function(e, i) { return h('tr', { key: i }, [e.tr, e.pop != null ? e.pop : '—', e.n, e.sd, e.out, e.obs].map(function (v, k) { return h('td', { key: k, className: 'px-1' }, String(v)); })); }))),
+            h('label', { htmlFor: 'dp-iq-hyp', className: 'block text-xs font-bold mb-1' }, t('stem.dataplot.your_hypothesis_which_single_change_mo', 'Your hypothesis (which single change most distorts the observed r?)')),
+            h('textarea', { id: 'dp-iq-hyp', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value.slice(0, 1000) }); }, rows: 2, placeholder: t('stem.dataplot.e_g_2_outliers_at_n_20_do_more_damage_', 'e.g., 2 outliers at n=20 do more damage than 10 outliers at n=200...'), className: 'w-full p-1.5 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-xs font-bold mb-2', style: Object.assign({ background: '#0a0a1a', color: sm.color, border: '1px solid #475569', cursor: 'pointer' }, chipStyle) }, t('stem.dataplot.i_m_stuck_show_open_questions', "🤔 I'm stuck - show open questions")),
+            iq.stuckRevealed && h('div', { className: 'p-2 rounded text-xs mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
               h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.dataplot.open_questions_no_answer_key', 'Open questions (no answer key)')),
-              h('ul', { className: 'pl-4 m-0' },
+              h('ul', { className: 'pl-4 m-0 list-disc' },
                 h('li', null, t('stem.dataplot.can_outliers_flip_the_sign_of_r_try_tr', 'Can outliers FLIP the sign of r? Try true r=+0.7 with 3 outliers.')),
                 h('li', null, t('stem.dataplot.how_does_increasing_n_reduce_the_noisy', 'How does increasing n reduce the noisy-estimate state?')),
-                h('li', null, t('stem.dataplot.when_does_noise_sd_swamp_the_true_sign', 'When does noise SD swamp the true signal entirely - what does r look like then?')),
-                h('li', null, t('stem.dataplot.why_is_r_alone_never_enough_to_publish', 'Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?'))
-              )
-            ),
-            h('label', { className: 'flex items-center gap-2 text-[0.625rem] font-bold cursor-pointer mb-1' },
+                h('li', null, t('stem.dataplot.noise_weakens_q', 'Set noise SD to 3. What happens to the population r, and why can no amount of data bring back the original strength?')),
+                h('li', null, t('stem.dataplot.why_is_r_alone_never_enough_to_publish', 'Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?')))),
+            h('label', { style: chipStyle, className: 'flex items-center gap-2 text-xs font-bold cursor-pointer mb-1' },
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, t('stem.dataplot.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, noise, and outliers produces this divergence.'))
-            ),
-            iq.understood && h('textarea', { 'aria-label': t('stem.dataplot.explanation_input', 'Outlier impact explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.dataplot.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[0.5625rem] italic opacity-60' }, t('stem.dataplot.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.'))
+              h('span', null, t('stem.dataplot.i_can_explain_why_this_combination_of_', 'I can explain why this combination of n, noise, and outliers produces this divergence.'))),
+            iq.understood && h('textarea', { 'aria-label': t('stem.dataplot.explanation_input', 'Outlier impact explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value.slice(0, 1000) }); }, rows: 2, placeholder: t('stem.dataplot.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-xs mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+            h('p', { className: 'm-0 text-xs italic' }, t('stem.dataplot.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.'))
           );
-        })()
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ── Teacher panel ──
+      // ══════════════════════════════════════════════════════════
+      var setTeacher = function (patch) { upd('teacher', Object.assign({}, teacherCfg, patch)); };
+      var missedSummary = (function () {
+        var map = {}, keys = [];
+        missedLog.forEach(function (m) { var k = (m.type || '') + '|' + (m.mis || ''); if (!map[k]) { map[k] = { type: m.type || '', mis: m.mis || '', count: 0, last: 0 }; keys.push(k); } map[k].count++; map[k].last = Math.max(map[k].last, m.at || 0); });
+        return keys.map(function (k) { return map[k]; }).sort(function (a, b) { return b.count - a.count; });
+      })();
+      var renderTeacherPanel = function () {
+        if (!isTeacher) return null;
+        var missType = function (ty) { return ty === 'cause' ? t('stem.dataplot.tab_cause', 'Cause?') : ty === 'fit' ? t('stem.dataplot.tab_fit', 'Best fit') : ty === 'resid' ? t('stem.dataplot.fit_mode_resid', 'Residual plot check') : ty === 'twoway' ? t('stem.dataplot.tab_twoway', 'Two-way tables') : ty === 'sampling' ? t('stem.dataplot.tab_samples', 'Sampling') : quizTypeName(ty); };
+        var rows = missedSummary.map(function (m) { return [missType(m.type), m.mis, m.count]; });
+        return h('details', { className: 'rounded-xl border border-indigo-400 bg-indigo-50 text-slate-900 p-3', 'data-dataplot-teacher': true },
+          h('summary', { className: 'text-sm font-bold text-indigo-900 cursor-pointer', style: chipStyle }, t('stem.dataplot.teacher_title', '🎓 Teacher controls')),
+          h('div', { className: 'space-y-2 mt-2 text-xs' },
+            h('label', { style: chipStyle, className: 'flex items-center gap-2 font-bold' }, t('stem.dataplot.teacher_lock', 'Lock the level'),
+              h('select', { value: lockedLevel, onChange: function (e) { setTeacher({ lockLevel: e.target.value }); }, className: 'px-2 py-1 border border-slate-500 rounded bg-white', style: chipStyle },
+                h('option', { value: '' }, t('stem.dataplot.teacher_lock_off', 'Not locked: students choose')),
+                h('option', { value: 'k5' }, t('stem.dataplot.level_k5', 'Grades K–5')),
+                h('option', { value: '68' }, t('stem.dataplot.level_68', 'Grades 6–8')),
+                h('option', { value: '912' }, t('stem.dataplot.level_912', 'Grades 9–12')))),
+            h('label', { style: chipStyle, className: 'flex items-center gap-2 font-bold' }, h('input', { type: 'checkbox', checked: requirePredict, onChange: function () { setTeacher({ requirePredict: !requirePredict }); } }), t('stem.dataplot.teacher_require_predict', 'Students predict shape, centre and spread before statistics appear')),
+            h('label', { style: chipStyle, className: 'flex items-center gap-2 font-bold' }, h('input', { type: 'checkbox', checked: allowReveal, onChange: function () { setTeacher({ allowReveal: !allowReveal }); } }), t('stem.dataplot.teacher_allow_reveal_v2', 'Students may reveal answers on every tab: the last quiz hint, and Show the answer after two tries (reveals earn no XP)')),
+            (function () {
+              var keys = Object.keys(skillsDone), cnt = function (re) { return keys.filter(function (k) { return re.test(k); }).length; };
+              return h('p', { 'data-dataplot-teacher-done': true }, fillT(t('stem.dataplot.teacher_done', 'Finished on this device: {fit} best-fit lines, {resid} residual checks, {tw} two-way tables, {sp} sampling experiments, data project {pj}.'),
+                { fit: cnt(/^fit:/), resid: cnt(/^resid:/), tw: cnt(/^twoway:/), sp: cnt(/^sampling:/), pj: skillsDone.project ? t('stem.dataplot.teacher_done_yes', 'finished') : t('stem.dataplot.teacher_done_no', 'not finished') }));
+            })(),
+            h('p', { 'data-dataplot-teacher-path': true }, fillT(t('stem.dataplot.teacher_path', 'Start-here path ({band}): {k} of {n} steps done.'), { band: levelName(pathLevel), k: pathDoneFlags.filter(Boolean).length, n: pathSteps.length })
+              + (pathDoneFlags.some(Boolean) ? ' ' + fillT(t('stem.dataplot.teacher_path_list', 'Done: {list}.'), { list: pathSteps.filter(function (s, i) { return pathDoneFlags[i]; }).map(function (s) { return pathText(s.id); }).join('; ') }) : '')),
+            // The 100-XP cap stays; the teacher sees when it was reached and that work went on after it.
+            h('p', { 'data-dataplot-teacher-xp': quizXpTotal >= QUIZ_XP_CAP ? 'capped' : 'open', className: quizXpTotal >= QUIZ_XP_CAP ? 'font-bold' : '' },
+              quizXpTotal >= QUIZ_XP_CAP ? fillT(t('stem.dataplot.teacher_xp_capped', 'XP cap reached: {xp} of {cap} XP earned here. Correct work since then (no XP): {k}.'), { xp: quizXpTotal, cap: QUIZ_XP_CAP, k: xpCapCorrect })
+                : fillT(t('stem.dataplot.teacher_xp_open', 'XP earned here: {xp} of {cap} (the cap).'), { xp: quizXpTotal, cap: QUIZ_XP_CAP })),
+            h('div', null,
+              h('p', { className: 'font-bold' }, fillT(t('stem.dataplot.teacher_missed', 'Missed items on this device ({n} attempts)'), { n: missedLog.length })),
+              rows.length ? h('table', { className: 'w-full border-collapse bg-white mt-1' },
+                h('thead', null, h('tr', null, [t('stem.dataplot.teacher_col_type', 'Question type'), t('stem.dataplot.teacher_col_mis', 'Misconception shown'), t('stem.dataplot.teacher_col_count', 'Times')].map(function (c, i) { return h('th', { key: i, scope: 'col', className: 'text-left px-2 py-1 border border-slate-300' }, c); }))),
+                h('tbody', null, rows.slice(0, 15).map(function (r, i) { return h('tr', { key: i }, r.map(function (c, k) { return h('td', { key: k, className: 'px-2 py-1 border border-slate-300' }, String(c)); })); })))
+              : h('p', null, t('stem.dataplot.teacher_none_missed', 'No missed items yet.'))),
+            h('div', { className: 'flex gap-2 flex-wrap' },
+              h('button', { type: 'button', style: chipStyle, disabled: !rows.length, onClick: function () { var ok = download('dataplot_missed_items.csv', csvOf([[t('stem.dataplot.teacher_col_type', 'Question type'), t('stem.dataplot.teacher_col_mis', 'Misconception shown'), t('stem.dataplot.teacher_col_count', 'Times')]].concat(rows)), 'text/csv'); say(ok ? t('stem.dataplot.sr_csv_done', 'CSV file downloaded.') : t('stem.dataplot.sr_csv_blocked', 'The download was blocked here. Use the data table to copy your data instead.')); }, className: 'px-3 py-1 rounded-lg font-bold border border-indigo-700 text-indigo-900 bg-white disabled:opacity-50' }, t('stem.dataplot.teacher_export', 'Export as CSV')),
+              h('button', { type: 'button', style: chipStyle, disabled: !rows.length, onClick: function () { var ok = GA && GA.printReport ? GA.printReport(t('stem.dataplot.teacher_print_title', 'Data Plot: missed items'), rows.map(function (r) { return [r[0] + ' (' + r[2] + ')', r[1]]; })) : false; if (!ok) say(t('stem.dataplot.sr_print_blocked', 'Printing opens a new window, and it was blocked here.')); }, className: 'px-3 py-1 rounded-lg font-bold border border-indigo-700 text-indigo-900 bg-white disabled:opacity-50' }, t('stem.dataplot.teacher_print', 'Print')),
+              h('button', { type: 'button', style: chipStyle, disabled: !missedLog.length, onClick: function () { upd('missedLog', []); say(t('stem.dataplot.sr_log_cleared', 'Missed-item log cleared.')); }, className: 'px-3 py-1 rounded-lg font-bold border border-red-700 text-red-900 bg-white disabled:opacity-50' }, t('stem.dataplot.teacher_clear', 'Clear the log')))));
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ── Start here: the band's learning path (stage C) ──
+      // ══════════════════════════════════════════════════════════
+      var pathSteps = LEARNING_PATHS[pathLevel];
+      var pathState = { skillsDone: skillsDone, quizXpItems: quizXpItems, compareDone: obj(cmp.done), causeAnswers: causeAnswers };
+      var pathDoneFlags = pathSteps.map(function (s) { return pathStepDone(s, pathState); });
+      var pathTabs = {}; pathSteps.forEach(function (s) { pathTabs[s.tab] = true; });
+      var pathText = function (id) {
+        switch (id) {
+          case 'pictograph': return t('stem.dataplot.path_pictograph', 'Read a pictograph');
+          case 'bar': return t('stem.dataplot.path_bar', 'Read a bar chart');
+          case 'dot': return t('stem.dataplot.path_dot', 'Read a dot plot');
+          case 'project': return t('stem.dataplot.path_project', 'Do your own data project');
+          case 'centre': return t('stem.dataplot.path_centre', 'Predict the centre and spread, then check');
+          case 'box': return t('stem.dataplot.path_box', 'Read box plots');
+          case 'compare': return t('stem.dataplot.path_compare', 'Compare two groups');
+          case 'sampling': return t('stem.dataplot.path_sampling', 'Take samples and watch the means vary');
+          case 'twoway': return t('stem.dataplot.path_twoway', 'Judge a two-way table by its percents');
+          case 'fiteye': return t('stem.dataplot.path_fiteye', 'Fit a line by eye');
+          case 'regression': return t('stem.dataplot.path_regression', 'Your line versus the least-squares regression line');
+          case 'residplot': return t('stem.dataplot.path_residplot', 'Judge a model by its residual plot');
+          default: return fillT(t('stem.dataplot.path_cause', 'Correlation or causation: get {k} cards right'), { k: CAUSE_PATH_NEED });
+        }
+      };
+      var openPathStep = function (step) {
+        var patch = { activeTab: step.tab };
+        if (step.quiz) {
+          patch.quizType = step.quiz;
+          var open = quizItemNow && !quizItemNow.answered && quizItemNow.type === step.quiz;
+          if (!open) { var item = genQuizItem(step.quiz, t, Math.random, {}); var used = Object.assign({}, quizTypesUsed); used[step.quiz] = true; patch.dpQuiz = item; patch.quizTypesUsed = used; }
+        }
+        if (step.mode) patch.fitLab = Object.assign({}, fitRaw, { mode: step.mode });
+        // Predicting needs at least 5 values: load an example data set when there are fewer.
+        if (step.id === 'centre' && points.length < 5) {
+          var ds = datasetLibrary.filter(function (x) { return x.id === 'study_grade'; })[0], ax = datasetAxis(ds);
+          Object.assign(patch, { points: ds.pts.map(function (p) { return { x: p.x, y: p.y }; }), undoStack: pushUndo(), xLabel: ax[0], yLabel: ax[1], stepMode: false, exploreIdx: -1, view: null, viewPrev: null, myLine: null });
+        }
+        updMulti(patch);
+        // The step's activity takes focus, so the student lands on it (not on the button above it).
+        pathFocusRef.current = step.tab;
+        say(fillT(t('stem.dataplot.sr_path_open', 'Opened {tab}: {step}.'), { tab: tabLabel(step.tab), step: pathText(step.id) }) + (patch.dpQuiz ? ' ' + patch.dpQuiz.text : ''));
+      };
+      var pathFocusRef = React.useRef(null);
+      React.useEffect(function () {
+        var tab = pathFocusRef.current;
+        if (!tab) return;
+        pathFocusRef.current = null;
+        var el = document.getElementById('data-plot-panel-' + tab);
+        if (el && typeof el.focus === 'function') { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
+        if (el && typeof el.scrollIntoView === 'function') { var still = false; try { still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e2) { still = false; } try { el.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }); } catch (e3) {} }
+      });
+      // The level picker now lives in the path disclosure (it sets which path you see).
+      var renderLevelGroup = function () {
+        return h('div', { role: 'group', 'aria-label': t('stem.dataplot.level_group', 'Level'), className: 'flex gap-1.5 flex-wrap items-center' },
+          h('span', { className: 'text-xs font-bold text-slate-800' }, t('stem.dataplot.level_label', 'Level:')),
+          LEVELS.map(function (lv) { return h('button', { key: lv, type: 'button', 'data-dataplot-level-btn': lv, 'aria-pressed': level === lv, disabled: !!lockedLevel && lv !== lockedLevel, style: chipStyle, onClick: function () { upd('level', lv); say(fillT(t('stem.dataplot.sr_level', 'Level set to {lv}.'), { lv: levelName(lv) })); }, className: btnCls(level === lv) + ' disabled:opacity-50' }, levelName(lv)); }),
+          lockedLevel && h('span', { className: 'text-xs text-slate-800' }, t('stem.dataplot.level_locked', 'Your teacher set this level.')));
+      };
+      // One line: the next step and a disclosure holding every step and the level (engagement build).
+      var renderStartHere = function () {
+        var doneCount = pathDoneFlags.filter(Boolean).length, nextIdx = pathDoneFlags.indexOf(false), open = d.pathOpen === true;
+        var nextStep = nextIdx >= 0 ? pathSteps[nextIdx] : null;
+        return h('section', { 'data-dataplot-path': pathLevel, 'aria-labelledby': 'dp-path-title', className: 'rounded-xl border border-cyan-300 bg-cyan-50 px-3 py-2 text-slate-900' },
+          h('div', { className: 'flex flex-wrap items-center gap-2' },
+            h('h3', { id: 'dp-path-title', className: 'text-sm font-black text-cyan-900' }, fillT(t('stem.dataplot.path_title', 'Start here: {band}'), { band: levelName(pathLevel) })),
+            h('span', { className: 'text-xs font-bold text-cyan-900', 'data-dataplot-path-progress': doneCount }, fillT(t('stem.dataplot.path_progress', '{n} of {total} done'), { n: doneCount, total: pathSteps.length })),
+            nextStep ? h('button', { type: 'button', style: chipStyle, 'data-dataplot-path-go': nextStep.id, onClick: function () { openPathStep(nextStep); }, className: 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-800 text-white hover:bg-cyan-900' },
+              fillT(t('stem.dataplot.path_try_step', 'Try step {k}: {step}'), { k: nextIdx + 1, step: pathText(nextStep.id) }))
+              : h('span', { className: 'text-xs font-bold text-emerald-900' }, t('stem.dataplot.path_all_done', 'Every step is done.')),
+            h('button', { type: 'button', style: chipStyle, 'aria-expanded': open, 'aria-controls': 'dp-path-more', 'data-dataplot-path-toggle': true, onClick: function () { upd('pathOpen', !open); }, className: 'ml-auto px-2.5 py-1 rounded-lg text-xs font-bold border border-cyan-700 bg-white text-cyan-900' },
+              open ? t('stem.dataplot.path_less', 'Hide steps and level') : t('stem.dataplot.path_more', 'All steps and level'))),
+          h('div', { id: 'dp-path-more', hidden: !open, className: 'mt-2 space-y-2' },
+          renderLevelGroup(),
+          h('ol', { id: 'dp-path-list', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' } },
+            pathSteps.map(function (step, i) {
+              var done = pathDoneFlags[i], isNext = i === nextIdx;
+              return h('li', { key: step.id },
+                h('button', { type: 'button', onClick: function () { openPathStep(step); }, 'data-dataplot-path-step': step.id, 'data-dataplot-path-done': done ? 'true' : 'false', 'aria-current': isNext ? 'step' : undefined, style: bigStyle,
+                  className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-bold ' + (done ? 'border-emerald-700 bg-emerald-50 text-emerald-900' : isNext ? 'border-cyan-700 bg-white text-cyan-900 shadow-sm' : 'border-slate-400 bg-white text-slate-800 hover:bg-slate-100') },
+                  h('span', { 'aria-hidden': 'true', className: 'mr-1 font-black' }, done ? '✓' : String(i + 1) + '.'),
+                  pathText(step.id),
+                  h('span', { className: 'block font-normal' }, done ? t('stem.dataplot.path_done', 'Done') : isNext ? fillT(t('stem.dataplot.path_now', 'Try this now, in {tab}'), { tab: tabLabel(step.tab) }) : fillT(t('stem.dataplot.path_in_tab', 'In {tab}'), { tab: tabLabel(step.tab) }))));
+            })),
+          h('p', { className: 'text-xs text-cyan-900', id: 'dp-path-note' }, t('stem.dataplot.path_note', 'A tick appears when you get one right yourself, not after a reveal. Tabs with a top bar belong to this path; every other activity is still in the tabs below.'))),
+          quizXpTotal >= QUIZ_XP_CAP && h('p', { className: 'mt-1 text-xs text-cyan-900', 'data-dataplot-xp-capped': true }, fillT(t('stem.dataplot.path_xp_capped', 'You have earned all {cap} XP on offer here. Ticks and practice still count.'), { cap: QUIZ_XP_CAP })));
+      };
+
+      // ══════════════════════════════════════════════════════════
+      // ── Tabs ──
+      // ══════════════════════════════════════════════════════════
+      var dataPlotPanelProps = function(id, props) { return Object.assign({ id: 'data-plot-panel-' + id, role: 'tabpanel', 'aria-labelledby': 'data-plot-tab-' + id, tabIndex: 0 }, props); };
+      var tabLabel = function (id) {
+        switch (id) {
+          case 'chart': return t('stem.dataplot.tab_chart', 'Chart');
+          case 'stats': return t('stem.dataplot.tab_statistics', 'Statistics');
+          case 'compare': return t('stem.dataplot.tab_compare', 'Compare groups');
+          case 'quiz': return t('stem.dataplot.tab_quiz', 'Quiz');
+          case 'cause': return t('stem.dataplot.tab_cause', 'Cause?');
+          case 'fit': return t('stem.dataplot.tab_fit', 'Best fit');
+          case 'twoway': return t('stem.dataplot.tab_twoway', 'Two-way tables');
+          case 'samples': return t('stem.dataplot.tab_samples', 'Sampling');
+          case 'project': return t('stem.dataplot.tab_project', 'My data project');
+          case 'tools': return t('stem.dataplot.tab_data_tools', 'Data tools');
+          default: return t('stem.dataplot.tab_sampling_effects', 'Sampling effects');
+        }
+      };
+      var TAB_ICON = { chart: '📊', stats: '📈', compare: '⚖️', quiz: '🎯', cause: '🔗', tools: '🛠️', inquiry: '🔬', fit: '📏', twoway: '🔢', samples: '🎲', project: '📝' };
+      var selectTab = function (id) {
+        upd('activeTab', id);
+        if (id === 'stats' && isHS && n >= 3 && predDone) checkBadges({ spearmanViewed: true });
+      };
+      var tabBtn = function(id) {
+        var active = activeTab === id;
+        var onPath = !!pathTabs[id];
+        return h('button', { key: id, type: 'button', id: 'data-plot-tab-' + id, 'aria-controls': 'data-plot-panel-' + id, tabIndex: active ? 0 : -1, 'data-dataplot-on-path': onPath ? 'true' : undefined,
+          'aria-describedby': onPath && d.pathOpen === true ? 'dp-path-note' : undefined,
+          style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', boxShadow: onPath && !active ? 'inset 0 4px 0 ' + (isContrast ? '#ffff00' : isDarkUI ? '#22d3ee' : '#0e7490') : undefined }, onKeyDown: function(e) {
+          var index = dataPlotTabOrder.indexOf(id), next = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % dataPlotTabOrder.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + dataPlotTabOrder.length - 1) % dataPlotTabOrder.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = dataPlotTabOrder.length - 1;
+          else return;
+          e.preventDefault(); e.stopPropagation();
+          var buttons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (buttons[next]) buttons[next].focus();
+          selectTab(dataPlotTabOrder[next]);
+        }, onClick: function() { selectTab(id); }, role: 'tab', 'aria-selected': active, className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-800 hover:bg-teal-50 border border-teal-600') },
+          h('span', { 'aria-hidden': 'true' }, TAB_ICON[id] + ' '), tabLabel(id));
+      };
+      var TAB_META = {
+        chart: { accent: '#0d9488', ink: '#115e59', soft: 'rgba(13,148,136,0.10)', title: t('stem.dataplot.chart_pick_the_right_visualization', 'Chart — pick the right visualization'),
+          hint: isK5 ? t('stem.dataplot.chart_hint_k5', 'Bar graphs and pictographs compare groups. A dot plot shows how many times each number comes up. Always read the labels and the key first.') : t('stem.dataplot.scatter_for_relationships_line_for_tim', 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.') },
+        stats: { accent: '#0ea5e9', ink: '#075985', soft: 'rgba(14,165,233,0.10)', title: t('stem.dataplot.statistics_center_spread_shape', 'Statistics — center, spread, shape'),
+          hint: isK5 ? t('stem.dataplot.stats_hint_k5', 'The middle value, the most common value, and how far apart the smallest and largest are: three ways to describe a set of numbers.') : t('stem.dataplot.mean_vs_median_median_wins_for_skewed_', 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).') },
+        compare: { accent: '#2563eb', ink: '#1e3a8a', soft: 'rgba(37,99,235,0.10)', title: t('stem.dataplot.compare_title', 'Compare two groups — shape, centre, spread'),
+          hint: t('stem.dataplot.compare_hint', 'Put both groups on one scale. Describe each shape, compare the centres and the spreads with numbers, then say what the data can and cannot show.') },
+        quiz: { accent: '#a855f7', ink: '#6b21a8', soft: 'rgba(168,85,247,0.10)', title: t('stem.dataplot.quiz_practice_apply', 'Quiz — practice + apply'),
+          hint: t('stem.dataplot.quiz_hint_v2', 'Fresh questions every time. You get a second try with a hint about what went wrong, and a hint ladder when you are stuck.') },
+        cause: { accent: '#db2777', ink: '#9d174d', soft: 'rgba(219,39,119,0.10)', title: t('stem.dataplot.cause_title', 'Correlation or causation?'),
+          hint: t('stem.dataplot.cause_hint', 'Lurking variables, reverse causation and chance all make things move together without one causing the other.') },
+        tools: { accent: '#f59e0b', ink: '#78350f', soft: 'rgba(245,158,11,0.10)', title: t('stem.dataplot.tools_load_clean_export', 'Tools — load + clean + export'),
+          hint: t('stem.dataplot.tools_hint_v2', 'Paste from Google Sheets or Excel, generate sample data, export as CSV or SVG. Real data analysis is mostly data CLEANING.') },
+        inquiry: { accent: '#8b5cf6', ink: '#5b21b6', soft: 'rgba(139,92,246,0.10)', title: t('stem.dataplot.inquiry_when_samples_mislead', 'Inquiry — when samples mislead'),
+          hint: t('stem.dataplot.set_a_true_population_r_then_watch_how', 'Set a true population r, then watch how sample size, noise, and outliers distort the observed r. No score, no reveal — form a hypothesis and explore.') },
+        fit: { accent: '#b45309', ink: '#78350f', soft: 'rgba(180,83,9,0.10)', title: t('stem.dataplot.fit_title', 'Best fit — your line versus least squares'),
+          hint: isHS ? t('stem.dataplot.fit_hint_hs', 'Place a line by eye and compare its squared residuals with the least-squares line. Then use residual plots to decide whether a line is the right model at all.') : t('stem.dataplot.fit_hint_68', 'Place a line by eye, then compare it with the least-squares line: the line whose squared misses add up to the smallest total.') },
+        twoway: { accent: '#0e7490', ink: '#155e75', soft: 'rgba(14,116,144,0.10)', title: t('stem.dataplot.twoway_title', 'Two-way tables — counts and percents'),
+          hint: t('stem.dataplot.twoway_hint', 'Count category data into a table, then compare the groups with row or column percents, not raw counts, to decide whether there is an association.') },
+        samples: { accent: '#4d7c0f', ink: '#3f6212', soft: 'rgba(77,124,15,0.10)', title: t('stem.dataplot.samples_title', 'Sampling — how much do sample means vary?'),
+          hint: t('stem.dataplot.samples_hint', 'Predict first, then draw many random samples. Watch how the sample means pile up around the population mean, and how their spread changes with sample size.') },
+        project: { accent: '#7c3aed', ink: '#5b21b6', soft: 'rgba(124,58,237,0.10)', title: t('stem.dataplot.project_title', 'My data project — question to conclusion'),
+          hint: t('stem.dataplot.project_hint', 'Ask a statistical question, plan, collect your own data, display it, and write a claim with evidence and reasoning.') }
+      };
+      var meta = TAB_META[activeTab] || TAB_META.chart;
+      var levelName = function (lv) { return lv === 'k5' ? t('stem.dataplot.level_k5', 'Grades K–5') : lv === '68' ? t('stem.dataplot.level_68', 'Grades 6–8') : t('stem.dataplot.level_912', 'Grades 9–12'); };
+      var hideHeaderR2 = isK5 || (activeTab === 'quiz' && quizOpen) || !regFit.ok || modelHidden;
+      var coachTip = n === 0 ? t('stem.dataplot.tip_empty', '📊 Click the chart to plot points, load a dataset, or paste data in Data tools.')
+        : n < 3 ? t('stem.dataplot.tip_few', '💡 Add more points. Two points always fit a line exactly, so a trend needs more.')
+        : stepMode ? t('stem.dataplot.tip_step', '👣 Step-through: press Next to reveal one point at a time and watch the statistics change.')
+        : isK5 ? t('stem.dataplot.tip_k5', '💡 Try the pictograph and the dot plot. Which value shows up most?')
+        : modelHidden ? t('stem.dataplot.tip_draw_line', '✏️ Draw the line you think fits first, then compare it with the best-fit line.')
+        : regFit.ok && regR2 > 0.9 ? t('stem.dataplot.tip_strong', '⭐ A very strong fit. Turn on the 95% CI band or the residual plot to see how certain it is.')
+        : regFit.ok && regR2 < 0.3 ? t('stem.dataplot.tip_weak', '🤔 A weak straight-line fit. Look at the residual plot: is there a curve the line is missing?')
+        : t('stem.dataplot.tip_default', '💡 Try the histogram with the normal curve, or the Statistics tab to predict the shape first.');
+
+      return h('div', { className: 'max-w-4xl mx-auto space-y-3', onKeyDown: handleKey, 'data-dataplot-level': level, 'data-dataplot-root': true, 'data-dp-theme': isDarkUI ? 'dark' : undefined,
+          style: isDarkUI ? { background: '#0f172a', color: '#e2e8f0', colorScheme: 'dark', borderRadius: 12, padding: 10 } : undefined },
+        isDarkUI && h('style', null, dataPlotDarkCss()),
+        // ── Header ──
+        h('div', { className: 'flex items-center gap-3 flex-wrap' },
+          !embedded && typeof setStemLabTool === 'function' && h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', style: { minHeight: 44, minWidth: 44 }, 'aria-label': t('stem.dataplot.back', 'Back') }, ArrowLeft ? h(ArrowLeft, { size: 18, className: 'text-slate-700' }) : '←'),
+          h('h3', { className: 'text-lg font-bold text-slate-800' + onHostInk }, embedded ? t('stem.dataplot.regression_mode', '📈 Regression & Residuals') : t('stem.dataplot.data_plotter', '📊 Data Plotter')),
+          h('span', { className: 'text-xs text-slate-700' + onHostInk }, fillT(stepMode ? t('stem.dataplot.n_points_step', '{n} points ({k} of {m} shown)') : t('stem.dataplot.n_points', '{n} points'), { n: n, k: stepIdx, m: points.length })),
+          n >= 2 && !hideHeaderR2 && h('span', { className: 'text-xs font-bold ' + (regR2 > 0.8 ? 'text-emerald-800' : regR2 > 0.5 ? 'text-amber-800' : 'text-red-800') + onHostInk, 'data-dataplot-header-r2': true }, 'R² = ' + fmtFixed(regR2, 3)),
+          h('div', { className: 'ml-auto flex gap-1.5 flex-wrap' },
+            h('button', { type: 'button', style: chipStyle, 'aria-expanded': showBadges, 'aria-label': fillT(t('stem.dataplot.badges_button', 'Badges: {k} of {n} earned'), { k: Object.keys(earnedBadges).length, n: badgeDefs.length }), onClick: function() { upd('showBadges', !showBadges); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showBadges ? 'bg-amber-100 border-amber-700 text-amber-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '🏅 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
+            h('button', { type: 'button', style: chipStyle, 'aria-expanded': showShortcuts, 'aria-label': showShortcuts ? t('stem.dataplot.hide_keyboard_shortcuts', 'Hide keyboard shortcuts') : t('stem.dataplot.show_keyboard_shortcuts', 'Show keyboard shortcuts'), onClick: function() { upd('showShortcuts', !showShortcuts); }, className: 'text-xs font-bold px-2 py-0.5 rounded-full border ' + (showShortcuts ? 'bg-sky-100 border-sky-700 text-sky-900' : 'bg-slate-100 border-slate-400 text-slate-800') }, '⌨️'),
+            h('button', { type: 'button', style: chipStyle, 'aria-pressed': soundEnabled, 'aria-label': t('stem.dataplot.sound_effects', 'Sound effects'), onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'text-sm px-2 rounded-full border border-slate-400 bg-slate-100' }, soundEnabled ? '🔊' : '🔇'),
+            typeof setToolSnapshots === 'function' && h('button', { type: 'button', style: chipStyle, 'aria-label': t('stem.dataplot.take_snapshot', 'Take a snapshot of this data'), onClick: function() { setToolSnapshots(function(prev) { return (prev || []).concat([{ id: 'dp-' + Date.now(), tool: 'dataPlot', label: r2Known ? fillT(t('stem.dataplot.snapshot_label', '{n} points, R² {r}'), { n: n, r: fmtFixed(regR2Shown, 2) }) : fillT(t('stem.dataplot.n_points', '{n} points'), { n: n }), data: { points: points.slice() }, timestamp: Date.now() }]); }); say(t('stem.dataplot.sr_snapshot', 'Snapshot saved.')); }, className: 'text-xs font-bold bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5' }, '📸'))
+        ),
+        renderTeacherPanel(),
+        // ── Keyboard help ──
+        showShortcuts && h('div', { className: 'bg-sky-50 rounded-xl p-3 border border-sky-300 text-sky-900' },
+          h('div', { className: 'text-xs font-bold uppercase mb-2' }, t('stem.dataplot.keyboard_shortcuts', '⌨️ Keyboard Shortcuts')),
+          h('ul', { className: 'text-xs space-y-1' },
+            h('li', null, h('kbd', { className: 'font-mono font-bold bg-white px-1.5 rounded border border-sky-300' }, 'Ctrl+Z'), ' ', t('stem.dataplot.undo', 'Undo')),
+            h('li', null, h('kbd', { className: 'font-mono font-bold bg-white px-1.5 rounded border border-sky-300' }, '← → ↑ ↓ Enter'), ' ', t('stem.dataplot.kb_cursor', 'On the chart: move the add-point cursor, then add a point')),
+            h('li', null, h('kbd', { className: 'font-mono font-bold bg-white px-1.5 rounded border border-sky-300' }, '← → Home End'), ' ', t('stem.dataplot.kb_explore', 'In the point explorer: move between points')),
+            h('li', null, h('kbd', { className: 'font-mono font-bold bg-white px-1.5 rounded border border-sky-300' }, 'Enter'), ' ', t('stem.dataplot.kb_table', 'In the data table: save a changed value')),
+            h('li', null, h('kbd', { className: 'font-mono font-bold bg-white px-1.5 rounded border border-sky-300' }, '← →'), ' ', t('stem.dataplot.kb_tabs', 'On the section tabs: switch sections')))),
+        // ── Badges drawer ──
+        showBadges && h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-300 text-slate-900' },
+          h('div', { className: 'text-xs font-bold text-amber-900 uppercase mb-2' }, t('stem.dataplot.badges', '🏅 Badges')),
+          h('ul', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2' },
+            badgeDefs.map(function(badge) {
+              var earned = !!earnedBadges[badge.id], bt = badgeText(badge.id);
+              return h('li', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-400' : 'bg-white border border-slate-300') },
+                h('span', { className: 'text-base', 'aria-hidden': 'true', style: earned ? {} : { filter: 'grayscale(1)', opacity: 0.6 } }, badge.icon),
+                h('div', null,
+                  h('div', { className: 'text-xs font-bold ' + (earned ? 'text-amber-900' : 'text-slate-800') }, bt[0] + (earned ? '' : ' ' + t('stem.dataplot.badge_locked', '(not yet)'))),
+                  h('div', { className: 'text-[0.6875rem] text-slate-800' }, bt[1])));
+            }))),
+        // ── Step-through banner ──
+        stepMode && h('div', { className: 'bg-violet-50 rounded-xl p-3 border border-violet-300 flex items-center gap-3 flex-wrap text-violet-900' },
+          h('span', { className: 'text-xs font-bold' }, fillT(t('stem.dataplot.step_banner', '👣 Step-through: {k} of {n}'), { k: stepIdx, n: points.length })),
+          h('button', { type: 'button', style: bigStyle, onClick: stepNext, className: 'px-3 py-1 bg-violet-700 text-white font-bold rounded-lg text-xs hover:bg-violet-800' }, stepIdx >= points.length ? t('stem.dataplot.step_done', '✅ Done') : t('stem.dataplot.step_next_btn', '➡ Next point')),
+          h('button', { type: 'button', style: bigStyle, onClick: stopStep, className: 'px-3 py-1 bg-white text-violet-900 font-bold rounded-lg text-xs border border-violet-700' }, t('stem.dataplot.stop_2', '✖ Stop')),
+          n >= 2 && regFit.ok && !isK5 && !modelHidden && h('span', { className: 'text-xs ml-auto' }, 'R² = ' + fmtFixed(regR2, 3) + ' · ' + fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(meanY, 2) }))),
+        // ── Start here (stage C) ──
+        renderStartHere(),
+        // ── Tab nav ──
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))' }, className: 'gap-2', role: 'tablist', 'aria-label': t('stem.dataplot.data_plot_sections', 'Data Plot sections') },
+          dataPlotTabOrder.map(tabBtn)),
+        activeTab === 'chart' && renderChartTab(),
+        activeTab === 'stats' && renderStatsTab(),
+        activeTab === 'compare' && renderCompareTab(),
+        activeTab === 'quiz' && renderQuizTab(),
+        activeTab === 'cause' && renderCauseTab(),
+        activeTab === 'fit' && renderFitTab(),
+        activeTab === 'twoway' && renderTwoWayTab(),
+        activeTab === 'samples' && renderSamplingTab(),
+        activeTab === 'project' && renderProjectTab(),
+        activeTab === 'tools' && renderToolsTab(),
+        activeTab === 'inquiry' && renderInquiryTab(),
+        // ── About this tab: the explainer, behind a disclosure (engagement build) ──
+        h('details', { 'data-dataplot-explainer': activeTab, style: { padding: '8px 12px', borderRadius: 12, background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)', border: '1px solid ' + meta.accent + '55', borderLeft: '4px solid ' + meta.accent } },
+          h('summary', { style: Object.assign({ color: isContrast ? '#ffffff' : isDarkUI ? '#f1f5f9' : meta.ink, fontSize: 13, fontWeight: 900, cursor: 'pointer', lineHeight: '36px' }, chipStyle) }, fillT(t('stem.dataplot.explainer_summary', 'About this tab: {title}'), { title: meta.title })),
+          h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : isDarkUI ? '#cbd5e1' : '#334155', fontSize: 12, lineHeight: 1.45 } }, meta.hint)),
+        // ── Coach tip ──
+        h('p', { className: 'bg-teal-50 rounded-lg p-3 border border-teal-200 text-xs text-teal-900 leading-relaxed' }, coachTip)
       );
-    }
-  });
+  }
 })();

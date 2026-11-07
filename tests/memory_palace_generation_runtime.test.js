@@ -9,7 +9,7 @@ const ast = parse(source, { sourceType: 'script', plugins: ['jsx'] });
 const component = ast.program.body.flatMap(n => n.declarations || []).find(n => n.id.name === 'MemoryPalaceView').init;
 const names = ['_getVrRecallChoices', '_pickVrRecall', '_sceneStartAt', '_recallSceneState', '_recallModeForPalace', '_recallResultLabel', 'recallContentKey', '_recallContentCurrent', '_invalidateChangedRecall', 'exitRecall', '_setRecallPace', '_scheduleRecallAdvance', '_recallSummary', 'retryRecall', '_recallStopsToStrengthen', '_inRecallScope', 'advanceRecall', 'finishRecall', 'submitRecallAnswer', 'revealCurrent', 'revealSelfCheck', 'markSelfCheck', 'totalItems', 'recallEligible', '_quickPreviewValid', 'handleQuickVariant', 'persistPalace', '_beginArtJob', '_endArtJob', '_artTarget', '_artTargetValid', '_artDiscarded', '_saveGeneratedImage', '_persistObject', '_quickSnapshot', 'handleDirectSubmit', 'handleDirectGenerate', 'handleQuickCreate', 'handleQuickUndo', 'handleAiRefine', 'handleFurnish', 'handleSculpt'];
 const declarations = [
-  ...ast.program.body.flatMap(n => n.declarations || []).filter(n => n.id.name === '_alloRuntimeAiAvailable'),
+  ...ast.program.body.flatMap(n => n.declarations || []).filter(n => n.id.name === '_alloAiUsableKind' || n.id.name === '_alloRuntimeAiAvailable'),
   ...component.body.body.flatMap(n => n.declarations || []).filter(n => names.includes(n.id.name)),
 ];
 const factory = new Function('env', 'with (env) {\n' + declarations.map(n => 'const ' + source.slice(n.start,n.end) + ';').join('\n') + '\nreturn {' + names.join(',') + '}; }');

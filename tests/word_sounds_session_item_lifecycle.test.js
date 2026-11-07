@@ -304,6 +304,52 @@ describe('authored Word Sounds item advancement',()=>{
     expect([...host.querySelectorAll('button')].some(button=>/Next Activity|session_next_activity/.test(button.textContent))).toBe(false);
   });
 
+  it('separates first-try answers from corrected ones on the results screen',async()=>{
+    const firstTryLine=()=>host.querySelector('[data-ws-first-try]')?.textContent;
+    await mount({activity:'counting',items:[pack('cat','cat')],isProbeMode:false,
+      sessionConfig:{fixedForm:false,sessionGoal:1,preparedActivities:['counting']},wordSoundsSessionGoal:1});
+    await clickNumber(3);await tick(2001);await tick(3001);
+    expect(host.querySelector('[aria-labelledby="word-sounds-session-complete-title"]')).toBeTruthy();
+    expect(firstTryLine()).toBe('First try: 1 of 1 items (100%). Different words: 1.');
+  });
+
+  it('shows a corrected answer as correct but not first-try',async()=>{
+    await mount({activity:'counting',items:[pack('cat','cat')],isProbeMode:false,
+      sessionConfig:{fixedForm:false,sessionGoal:1,preparedActivities:['counting']},wordSoundsSessionGoal:1});
+    await clickNumber(2);await tick(3001);
+    expect(host.querySelector('[aria-labelledby="word-sounds-session-complete-title"]')).toBeNull();
+    await clickNumber(3);await tick(2001);await tick(3001);
+    expect(state.score).toMatchObject({correct:1,total:1});
+    expect(host.querySelector('[data-ws-first-try]')?.textContent).toBe('First try: 0 of 1 items (0%). Different words: 1.');
+  });
+
+  const lessonPlan=count=>({lessonPlanConfig:{masteryMode:'consecutive',masteryThreshold:3,activities:[{id:'counting',count}],order:['counting'],totalItems:count,estimatedMinutes:1},
+    initialActivitySequence:Array(count).fill('counting'),activity:'counting',isProbeMode:false,
+    sessionConfig:{fixedForm:false,sessionGoal:30,preparedActivities:['counting']},wordSoundsSessionGoal:30});
+  const missItem=async()=>{await clickNumber(2);await tick(3001);await clickNumber(2);await tick(3001);};
+  const completeDialog=()=>host.querySelector('[aria-labelledby="word-sounds-session-complete-title"]');
+
+  it('ends a lesson at its limit for a learner who never reaches the streak, instead of at the session goal',async()=>{
+    await mount({...lessonPlan(1),items:[pack('cat','cat'),pack('hat','hat'),pack('mat','mat'),pack('bat','bat')]});
+    await missItem();await tick(2501);expect(completeDialog()).toBeNull();
+    await missItem();await tick(2501);expect(completeDialog()).toBeNull();
+    await missItem();await tick(2501);
+    expect(state.score.total).toBe(3);expect(state.score.correct).toBe(0);
+    expect(completeDialog()).toBeTruthy();
+  });
+
+  it('brings a missed word back and finishes without waiting, however fast the learner answers',async()=>{
+    await mount({...lessonPlan(3),items:[pack('cat','cat'),pack('hat','hat')]});
+    await missItem();                                                        // queued for review
+    for(let n=0;n<3;n++){await clickNumber(3);await tick(2001);}             // the streak meets the rule
+    expect(completeDialog()).toBeNull();
+    expect(state.feedback?.message).toBe('📝 Let\'s go back to the word you missed!');  // one word: no "1 words"
+    await tick(2501);                                                        // the missed word comes back
+    await clickNumber(3);await tick(2501);                                   // answered at once
+    expect(state.score.total).toBe(5);
+    expect(completeDialog()).toBeTruthy();
+  });
+
   it('keeps probe completion on the assessed activity despite a later sequence entry',async()=>{
     const completed=vi.fn();await mount({activity:'counting',items:[pack('cat','cat')],onProbeComplete:completed,
       initialActivitySequence:['counting','isolation']});

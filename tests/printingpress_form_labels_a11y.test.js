@@ -82,7 +82,7 @@ describe('Printing Press form-control accessibility', () => {
   it('keeps explicit names and value text on all seven repaired sliders', () => {
     const source = readFileSync(SOURCE, 'utf8');
     const expectedFragments = [
-      "'aria-label': label + ' percentage'",
+      "'{value1} percentage'), { value1: label })",
       'dry_rag_weight_slider_label',
       'target_page_count_slider_label',
       'x_height_slider_label',

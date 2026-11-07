@@ -13,8 +13,8 @@ const publishedHaven = {
 };
 // The legacy plugin pin used mixed newlines; bind it to the exact Git LF asset.
 const publishedPlugin = {
-  pin: 'a225e174ea',
-  canonicalSha256: '1c79d80cc3c7d40875311c8cfbb811aed0e33627fe2fff55604108d6a0c05e3f',
+  pin: 'f496800d5d',
+  canonicalSha256: 'f496800d5dc33c152629e74b813b046f038903b7630c6ae58de07cb1702cf7ab',
 };
 // Every deploy re-pins the CDN refs to its own commit (deploy.sh step 6). Pins verified against the
 // committed module bytes, so a shallow CI checkout that lacks the commit can still check them.

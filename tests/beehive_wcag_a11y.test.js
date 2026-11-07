@@ -22,7 +22,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   let originalMatchMedia;
   let originalClipboardDescriptor;
 
-  async function mount(state) {
+  async function mount(state, ctxExtra = {}) {
     const BH = window.__RR_TEST_EXPORTS__.beehive;
     const colony = { ...BH.bhCreateNewColonyState(state.simulationSeed, state.experimentRunSerial, 0), ...state };
     if (!Object.prototype.hasOwnProperty.call(state, 'broodCohorts')) {
@@ -31,7 +31,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const Component = () => {
       const [toolData, setToolData] = React.useState({ beehive: colony });
       latest = toolData;
-      return config.render(makeCtx({ toolData, setToolData }));
+      return config.render(makeCtx({ toolData, setToolData, ...ctxExtra }));
     };
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
   }
@@ -1637,7 +1637,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(leafContaining('Establish your colony').className).toContain('text-slate-600');
 
     await mount({ viewMode: 'beekeeper', day: 8, tutorialDone: true, motionPaused: true, actionPoints: 0, varroaLevel: 24,
-      journal: [{ day: 8, season: 1, text: 'Inspection logged.' }] });
+      journal: [{ day: 8, season: 1, text: 'Inspection logged.' }] }, { callGemini: () => Promise.resolve('') }); // The Explain card shows only when AI is available.
     expect(host.querySelector('[data-management-cost-badge="Hygiene"]').className).toContain('text-slate-600');
     expect(leafContaining('Click \u201CExplain\u201D').className).toContain('text-slate-600');
     expect(leafContaining('Real beekeepers keep hive journals').className).toContain('text-slate-700');

@@ -9033,7 +9033,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     { id: 'breathe_5',        icon: '\uD83E\uDDD8', name: 'Mindful Master',        desc: 'Complete 5 breathing exercises' },
     { id: 'grounding_done',   icon: '\u270B',       name: 'Grounded',              desc: 'Complete a 5-4-3-2-1 grounding exercise' },
     { id: 'toolbox_3',        icon: '\uD83E\uDDF0', name: 'Toolbox Builder',       desc: 'Save 3 strategies to your toolbox' },
-    { id: 'ai_advice',        icon: '\u2728',       name: 'Advice Seeker',          desc: 'Get AI-powered advice for the first time' },
+    { id: 'ai_advice',        icon: '\u2728',       name: 'Advice Seeker',          desc: 'Get AI-powered advice for the first time', aiOnly: true },
     { id: 'body_scan',        icon: '\uD83E\uDDD1', name: 'Body Aware',            desc: 'Complete a body scan' },
     { id: 'green_streak3',    icon: '\uD83D\uDE0A', name: 'Green Machine',         desc: 'Check in from the Green Zone 3 times' },
     { id: 'note_writer',      icon: '\uD83D\uDCDD', name: 'Reflective Writer',     desc: 'Write a note with 5 of your check-ins' }
@@ -33310,6 +33310,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _znAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       // `var t = ctx.t` removed 2026-09-21: it was declared and never called. ctx.t drops the English fallback, so the next person to wire this tool would have shipped raw keys. Use the __alloT wrapper instead.
       var band = ctx.gradeBand || 'elementary'; // 'elementary', 'middle', 'high'
@@ -33409,6 +33410,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
       // Badge state
       var earnedBadges    = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _znAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup  = d.showBadgePopup || null; // badge id to show popup for
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -33672,12 +33675,12 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           style: { marginLeft: 'auto', alignSelf: 'center', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', {
-          'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + BADGES.length + ')',
+          'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + shownBadges.length + ')',
           'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
       // Topic-accent hero band per tab
       var heroBand = (function() {
@@ -33880,10 +33883,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       if (showBadgesPanel) {
         badgesPanel = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _zoFg('#f1f5f9'), fontSize: 18 } },
-            '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'
+            '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-            BADGES.map(function(badge) {
+            shownBadges.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
               return h('div', {
                 key: badge.id,

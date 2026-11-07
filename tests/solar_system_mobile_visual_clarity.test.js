@@ -19,7 +19,7 @@ describe('Solar System mobile visual clarity', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.earth',
+        selectedPlanet: 'Earth',
         viewTab: 'descent',
       },
     });

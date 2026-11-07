@@ -548,6 +548,10 @@ const handleWizardComplete = (data, deps) => {
           }];
         });
       }
+    } else if (finalData.sourceMode === 'paste') {
+      // Quick Start's "Paste or type text": the teacher's own passage becomes the source.
+      if (typeof finalData.pastedText === 'string' && finalData.pastedText.trim()) putSourceText(finalData.pastedText);
+      setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
     } else if (finalData.sourceMode === 'file' || finalData.materialType === 'file') {
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
       setTimeout(() => {

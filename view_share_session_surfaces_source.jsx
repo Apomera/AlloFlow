@@ -249,12 +249,14 @@ function ClassMailboxSetupView(props) {
             {/* The connect self-test reports VERSION. Redeploying the current
                 script requires owner setup and preserves existing classroom
                 credentials at the same deployment URL. */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 28 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 29 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. {tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')}</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. {Number(mbConfig.v) < 28
+                  ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
+                  : tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')}</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
-                  <li>{tx('mailbox.owner_update_setup', 'Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.')} <button type="button" onClick={() => copyToClipboard(ownerManifest)} className="font-bold underline underline-offset-2">{tx('mailbox.copy_owner_manifest', 'copy manifest')}</button></li>
+                  {Number(mbConfig.v) < 28 && <li>{tx('mailbox.owner_update_setup','Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.')} <button type="button" onClick={() => copyToClipboard(ownerManifest)} className="font-bold underline underline-offset-2">{tx('mailbox.copy_owner_manifest', 'copy manifest')}</button></li>}
                   <li>{t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:'} <b>{t('mailbox.new_version') || 'New version'}</b> {t('mailbox.deploy') || '→ Deploy.'}</li>
                   <li>{t('mailbox.reconnect_after_update') || 'Press "Connect & self-test" here again after updating.'}</li>
                 </ol>
@@ -299,7 +301,7 @@ function ClassMailboxSetupView(props) {
                     </div>
                   </div>
                 )}
-<p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">{t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'}</p>
+<p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">{t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'} {tx('mailbox.inbox_pickup_v29', 'With mailbox script v29 or newer, skip the Drive download: in the Submission Inbox, choose Get submissions from Class Mailbox.')}</p>
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Teach live'}
                 </button>

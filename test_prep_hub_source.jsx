@@ -31,6 +31,14 @@ const TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS = 15000;
 // text-to-speech" is this: browser TTS has no synthesis wait at all.
 const TEST_PREP_HANDS_FREE_SYNTHESIS_MIN_TIMEOUT_MS = 3500;
 const TEST_PREP_HANDS_FREE_SYNTHESIS_MS_PER_CHAR = 45;
+// AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+function testPrepAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+
 function testPrepHandsFreeSynthesisTimeoutMs(text) {
   const length = String(text || '').length;
   return Math.max(
@@ -4023,13 +4031,16 @@ function TestPrepHub(props) {
     onClose = (() => {}),
     callTTS,
     callGemini,
-    callGeminiAudio,
+    callGeminiAudio: providedCallGeminiAudio,
     selectedVoice = 'Puck',
     addToast,
     internalQaMode = false,
     internalQaPackIds = [],
     assetFetchTimeoutMs = TEST_PREP_FETCH_TIMEOUT_MS,
   } = props || {};
+  // Unusable AI (null, blocked, policy off): no Ask AI panel; voice uses Web Speech.
+  const testPrepTextAiOk = testPrepAiUsable('text', callGemini);
+  const callGeminiAudio = testPrepAiUsable('audio', providedCallGeminiAudio) ? providedCallGeminiAudio : null;
   const SpeechRecognitionCtor = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
   const sharedVoiceService = typeof window !== 'undefined' ? window.AlloFlowVoice : null;
   const sharedHandsFreeAvailable = !!(sharedVoiceService
@@ -6144,7 +6155,7 @@ function TestPrepHub(props) {
       if (handsFreeEnabledRef.current) await speakTestPrepText(message);
       return;
     }
-    if (typeof callGemini !== 'function') {
+    if (!testPrepTextAiOk) {
       const message = 'AI clarification is unavailable right now. The source-reviewed explanation remains available after you check your answer.';
       setClarificationResponse(message);
       if (handsFreeEnabledRef.current) await speakTestPrepText(message);
@@ -6868,7 +6879,7 @@ function TestPrepHub(props) {
                     {!!handsFreeTranscript && <p className="mt-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm text-slate-800"><strong>Heard:</strong> {handsFreeTranscript}</p>}
                     {!!handsFreePendingChoice && <p className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-2 text-sm font-black text-amber-950" role="status" aria-live="assertive">Waiting for confirmation: option {String.fromCharCode(65 + handsFreePendingChoice.choiceIndex)}. Say yes to accept it, or no to try again.</p>}
                     {!!handsFreeError && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-sm font-bold text-amber-950" role="alert">{handsFreeError}</p>}
-                    {handsFreeEnabled && <div className="mt-3 border-t border-cyan-200 pt-3"><label htmlFor="test-prep-clarification" className="text-sm font-black text-slate-900">Ask for clarification</label><p className="mt-1 text-xs text-slate-700">Before checking, AI may only define or pronounce a specific neutral term and receives no item stem or choices. Up to three pre-answer turns and five total turns are allowed per question. After checking, it may discuss the sourced rationale. Only a delivered safe response marks the item assisted; narration alone does not.</p><p className="mt-1 text-xs font-bold text-violet-900">{clarificationHistory.length} of {checked ? 5 : 3} clarification turns used for this question</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input id="test-prep-clarification" value={clarificationDraft} onChange={(event) => setClarificationDraft(event.target.value)} disabled={practiceMode === 'simulation' || clarificationStatus === 'loading'} placeholder={practiceMode === 'simulation' ? 'Locked during timed simulation' : 'Example: What does this term mean?'} className="min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-cyan-700 disabled:bg-slate-100" /><button type="button" onClick={() => clarificationStatus === 'loading' ? cancelTestPrepClarification(true) : askTestPrepClarification()} disabled={clarificationStatus !== 'loading' && (!clarificationDraft.trim() || practiceMode === 'simulation')} className="rounded-lg bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600">{clarificationStatus === 'loading' ? 'Cancel AI' : 'Ask AI'}</button></div>{practiceMode === 'simulation' && <p className="mt-2 text-xs font-bold text-amber-900">Content coaching is locked during timed simulation; narration, answer selection, and navigation remain available.</p>}{!!clarificationResponse && <div className="mt-3 rounded-lg border border-violet-300 bg-white p-3 text-sm leading-relaxed text-slate-900" role="status" aria-live="polite"><p className="font-black text-violet-950">{currentItem && assistedItemIds.includes(currentItem.id) ? 'AI clarification - assisted item' : clarificationStatus === 'error' ? 'Clarification unavailable' : 'Clarification notice'}</p><p className="mt-1">{clarificationResponse}</p></div>}</div>}
+                    {handsFreeEnabled && testPrepTextAiOk && <div className="mt-3 border-t border-cyan-200 pt-3"><label htmlFor="test-prep-clarification" className="text-sm font-black text-slate-900">Ask for clarification</label><p className="mt-1 text-xs text-slate-700">Before checking, AI may only define or pronounce a specific neutral term and receives no item stem or choices. Up to three pre-answer turns and five total turns are allowed per question. After checking, it may discuss the sourced rationale. Only a delivered safe response marks the item assisted; narration alone does not.</p><p className="mt-1 text-xs font-bold text-violet-900">{clarificationHistory.length} of {checked ? 5 : 3} clarification turns used for this question</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input id="test-prep-clarification" value={clarificationDraft} onChange={(event) => setClarificationDraft(event.target.value)} disabled={practiceMode === 'simulation' || clarificationStatus === 'loading'} placeholder={practiceMode === 'simulation' ? 'Locked during timed simulation' : 'Example: What does this term mean?'} className="min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-cyan-700 disabled:bg-slate-100" /><button type="button" onClick={() => clarificationStatus === 'loading' ? cancelTestPrepClarification(true) : askTestPrepClarification()} disabled={clarificationStatus !== 'loading' && (!clarificationDraft.trim() || practiceMode === 'simulation')} className="rounded-lg bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600">{clarificationStatus === 'loading' ? 'Cancel AI' : 'Ask AI'}</button></div>{practiceMode === 'simulation' && <p className="mt-2 text-xs font-bold text-amber-900">Content coaching is locked during timed simulation; narration, answer selection, and navigation remain available.</p>}{!!clarificationResponse && <div className="mt-3 rounded-lg border border-violet-300 bg-white p-3 text-sm leading-relaxed text-slate-900" role="status" aria-live="polite"><p className="font-black text-violet-950">{currentItem && assistedItemIds.includes(currentItem.id) ? 'AI clarification - assisted item' : clarificationStatus === 'error' ? 'Clarification unavailable' : 'Clarification notice'}</p><p className="mt-1">{clarificationResponse}</p></div>}</div>}
                   </section>}
                   {currentItem.competencyTag && <p className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm leading-relaxed text-indigo-950"><strong>Unofficial integrated 2027 blueprint practice · {currentItem.competencyTag}</strong>{currentItem.competencyLabel ? ' - ' + currentItem.competencyLabel : ''}</p>}
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>

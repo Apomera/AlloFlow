@@ -86,9 +86,34 @@ describe('live student, class voting off', () => {
   });
 
   it('a solo student still has active choices and Start over', async () => {
+    window.__alloAiUsable = () => true;
+    try {
+      await renderView({});
+      expect(choiceButtons().every((b) => !b.disabled)).toBe(true);
+      expect(host.querySelector('[data-help-key="adventure_start_btn"]')).not.toBeNull();
+    } finally { delete window.__alloAiUsable; }
+  });
+});
+
+describe('student with AI unavailable', () => {
+  afterEach(() => { delete window.__alloAiUsable; });
+
+  it('solo: no Start over, and the setup screen shows a note instead of Start/Resume', async () => {
+    window.__alloAiUsable = () => false;
     await renderView({});
-    expect(choiceButtons().every((b) => !b.disabled)).toBe(true);
-    expect(host.querySelector('[data-help-key="adventure_start_btn"]')).not.toBeNull();
+    expect(host.querySelector('[data-help-key="adventure_start_btn"]')).toBeNull();
+    await act(async () => root.unmount()); host.remove();
+    await renderView({ adventureState: scene({ currentScene: null, history: [] }), hasSavedAdventure: true });
+    expect(host.querySelector('[data-adventure-solo-ai-off]')).not.toBeNull();
+    expect(host.querySelector('[data-help-key="adventure_resume_btn"]')).toBeNull();
+  });
+
+  it('live class voting still works: the teacher device generates', async () => {
+    window.__alloAiUsable = () => false;
+    await renderView({ activeSessionCode: 'ABCDE', sessionData: { democracy: { isActive: true, votes: {} } } });
+    expect(choiceButtons()).toHaveLength(2);
+    expect(choiceButtons().some((b) => b.disabled)).toBe(false);
+    expect(host.querySelector('[data-adventure-solo-ai-off]')).toBeNull();
   });
 });
 

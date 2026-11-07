@@ -11,9 +11,18 @@
  * Registered tool ID: "geometryWorld"
  * Registry: window.StemLab.registerTool()
  */
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function () {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-geometryworld-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-geometryworld-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geometryworld-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"geometryWorld\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"geometryWorld\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"geometryWorld\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -251,7 +260,7 @@
   var ENV_PRESETS = {
     // sun: light colour (sRGB floats). hemi: hemisphere light intensity, the
     // sky-from-above fill that keeps a voxel world from going flat at low sun.
-    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.0, ambientIntensity: 0.20, hemi: 0.32, sunEl: 48, sunAz: 45, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.12, ambientIntensity: 0.12, hemi: 0.40, sunEl: 48, sunAz: 33, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
     sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sun: [1.0, 0.72, 0.45], sunIntensity: 0.85, ambientIntensity: 0.34, hemi: 0.3, sunEl: 10, sunAz: 100, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
     sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sun: [1.0, 0.58, 0.32], sunIntensity: 0.8, ambientIntensity: 0.3, hemi: 0.26, sunEl: 9, sunAz: -105, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
     night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sun: [0.55, 0.65, 1.0], sunIntensity: 0.22, ambientIntensity: 0.1, hemi: 0.12, sunEl: 44, sunAz: -150, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
@@ -839,6 +848,8 @@
     ,'#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-ui-text-size="standard"] .gw-coordinate-speech-toggle{font-size:13px!important}@media(min-width:801px) and (min-height:521px){#geoworld-fs-workspace.gw-root.gw-root .gw-coordinate-hud[open]{bottom:250px;max-height:min(360px,calc(100% - var(--gw-toolbar-height,58px) - 270px))}}@media(min-width:801px) and (min-height:521px) and (max-height:650px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open])>.gw-learning-compass{visibility:hidden;pointer-events:none}}@media(max-width:800px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root[data-touch-active="true"]:not([data-preview-review="true"])>.gw-coordinate-hud{display:block!important}#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}'
   ].join('\n');
   var GW_COORDINATE_CAPACITY_CSS = '#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-ui-text-size="large"] :is(.gw-coordinate-summary,.gw-coordinate-label,.gw-coordinate-units,.gw-coordinate-axis,.gw-coordinate-facing,.gw-coordinate-speech-toggle){font-size:15px!important;line-height:1.5}@media(min-width:801px) and (min-height:521px) and (max-height:650px){#geoworld-fs-workspace.gw-root:has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"]>.gw-coordinate-hud[open]{max-height:calc(100% - 252px)}}';
+  // Narrow screens: the closed Position button sat under the Next discovery card on phones and on Undo in a narrow window. It moves to the top-right, under the fullscreen and touch buttons, and the card leaves room for it.
+  GW_CLARITY_CSS += '@media(max-width:800px){#geoworld-fs-workspace.gw-root.gw-root.gw-root.gw-root:has(>.gw-learning-compass)>.gw-coordinate-hud:not([open]){top:calc(var(--gw-toolbar-height,58px) + 66px)!important;bottom:auto!important;left:auto!important;right:8px!important}#geoworld-fs-workspace.gw-root.gw-root:has(>.gw-coordinate-hud:not([open])) .gw-learning-compass{width:min(270px,calc(100% - 112px))!important}}';
   GW_CLARITY_CSS += '\n' + GW_COORDINATE_CAPACITY_CSS + '@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="false"]>.gw-coordinate-hud[open]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 268px)}}';
   GW_CLARITY_CSS += '#geoworld-fs-workspace.gw-root:has(#gw-history-panel) .gwe-builder-dock[data-collapsed="true"]{visibility:hidden;pointer-events:none}';
   GW_CLARITY_CSS += '\n' + [
@@ -7270,6 +7281,70 @@
     return Math.atan2(dx * -basis.fz + dz * basis.fx, dx * basis.fx + dz * basis.fz);
   }
 
+  // A world-anchored sprite against a DOM strip above the canvas: the projected box, in page pixels.
+  function geometrySpriteCoversElement(sprite, camera, canvasEl, el) {
+    if (!sprite || !camera || !canvasEl || !el) return false;
+    var box = el.getBoundingClientRect();
+    if (!box.width || !box.height) return false;
+    var s = geometrySpriteScreenBox(sprite, camera, canvasEl);
+    return !!s && s.left < box.right && s.right > box.left && s.top < box.bottom && s.bottom > box.top;
+  }
+
+  // Lowest slide that clears every panel, in world units: the sprite is left there. -1 and back at its start if none does.
+  function geometrySpriteDropToClear(sprite, camera, canvasEl, els, maxDrop) {
+    var baseY = sprite.position.y;
+    for (var drop = 0; drop <= maxDrop + 1e-6; drop += 0.05) {
+      sprite.position.y = baseY - drop;
+      if (!els.some(function(el) { return geometrySpriteCoversElement(sprite, camera, canvasEl, el); })) return drop;
+    }
+    sprite.position.y = baseY;
+    return -1;
+  }
+
+  // The world box of a slid bubble sits where the question mark floats: stand the mark beside the bubble, on whichever side is free of the panels.
+  function geometryMarkerBesideBubble(marker, bubble, camera, canvasEl, els) {
+    var basis = geometryGuideCameraBasis(camera), reach = bubble.scale.x / 2 + marker.scale.x / 2 + 0.08;
+    var x = marker.position.x, z = marker.position.z, y = marker.position.y;
+    marker.position.y = bubble.position.y;
+    for (var side = 1; side >= -1; side -= 2) {
+      marker.position.x = x - basis.fz * reach * side;
+      marker.position.z = z + basis.fx * reach * side;
+      if (!els.some(function(el) { return geometrySpriteCoversElement(marker, camera, canvasEl, el); })) return true;
+    }
+    marker.position.set(x, y, z);
+    return false;
+  }
+
+  // A sprite's projected box in page pixels, or null when it is behind the camera.
+  function geometrySpriteScreenBox(sprite, camera, canvasEl) {
+    var view = sprite.position.clone().applyMatrix4(camera.matrixWorldInverse);
+    if (view.z >= 0) return null;
+    var ndc = sprite.position.clone().project(camera), frame = canvasEl.getBoundingClientRect();
+    var unit = frame.height / (2 * -view.z * Math.tan(camera.fov * Math.PI / 360));
+    var cx = frame.left + (ndc.x + 1) / 2 * frame.width, cy = frame.top + (1 - ndc.y) / 2 * frame.height;
+    var halfW = sprite.scale.x * unit / 2, halfH = sprite.scale.y * unit / 2;
+    return { left: cx - halfW, right: cx + halfW, top: cy - halfH, bottom: cy + halfH };
+  }
+
+  // A showing bubble draws over everything, so a farther guide's name card behind it reads as a clipped scrap. That guide stays on the compass.
+  function geometryHideLabelsBehindBubbles(npcs, camera, canvasEl) {
+    if (!canvasEl || !canvasEl.getBoundingClientRect) return;
+    var eyeDistance = function(sprite) { return camera.position.distanceTo(sprite.position); };
+    var bubbles = npcs.filter(function(n) { return n && n._speechBubble && n._speechBubble.material.opacity > 0.3; });
+    npcs.forEach(function(n) {
+      if (!n || !n.label) return;
+      var box = bubbles.length ? geometrySpriteScreenBox(n.label, camera, canvasEl) : null;
+      var covered = !!box && bubbles.some(function(b) {
+        if (b === n || eyeDistance(b._speechBubble) >= eyeDistance(n.label)) return false;
+        var over = geometrySpriteScreenBox(b._speechBubble, camera, canvasEl);
+        return !!over && over.left < box.right && over.right > box.left && over.top < box.bottom && over.bottom > box.top;
+      });
+      // Only a card hidden here is shown again here: another mode may have hidden it for its own reasons.
+      if (covered && n.label.visible) { n.label.visible = false; n._labelBehindBubble = true; }
+      else if (!covered && n._labelBehindBubble) { n.label.visible = true; n._labelBehindBubble = false; }
+    });
+  }
+
   function geometryPaintGuideCompass(ctx, w, h, engine, contrast) {
     var p = geometryGuidePalette(contrast), basis = geometryGuideCameraBasis(engine.camera), half = Math.PI / 2;
     ctx.clearRect(0, 0, w, h);
@@ -8609,7 +8684,7 @@
     render: function (ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Fills {value1}-style placeholders, so a translation can reorder them.
-      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+      var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
       var React = ctx.React;
       var el = React.createElement;
       var toolbarSizingRef = React.useRef(null);
@@ -9706,6 +9781,7 @@
             try { if(engine.composer.setPixelRatio)engine.composer.setPixelRatio(engine.renderer.getPixelRatio()); engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {}
           }
           if (previousTier !== profile.tier && engine.refreshLandscape && engine._currentLesson) engine.refreshLandscape(engine._currentLesson.ground);
+          if (previousTier !== profile.tier) engine._groundDecorDirty = true;
           return profile;
         };
         engine.applyRenderQuality(d.renderQuality || 'auto');
@@ -9761,7 +9837,14 @@
               var lowPower = renderProfile.tier !== 'detail';
               var res = lowPower ? 0.5 : 1;
               var cw = container.clientWidth, ch = container.clientHeight;
-              var c = new T.EffectComposer(engine.renderer);
+              // Multisampled where WebGL 2 allows: the plain target has no anti-aliasing, which showed a hairline of
+              // each ground block's side face between floor tiles as rows of dark dots.
+              var msTarget = null, pr = engine.renderer.getPixelRatio();
+              if (T.WebGLMultisampleRenderTarget && engine.renderer.capabilities && engine.renderer.capabilities.isWebGL2) {
+                msTarget = new T.WebGLMultisampleRenderTarget(Math.max(1, Math.round(cw * pr)), Math.max(1, Math.round(ch * pr)), { minFilter: T.LinearFilter, magFilter: T.LinearFilter, format: T.RGBAFormat });
+                msTarget.samples = 4;
+              }
+              var c = msTarget ? new T.EffectComposer(engine.renderer, msTarget) : new T.EffectComposer(engine.renderer);
               if(c.setPixelRatio)c.setPixelRatio(engine.renderer.getPixelRatio());
               c.setSize(cw, ch);
               c.addPass(new T.RenderPass(engine.scene, engine.camera));
@@ -9772,7 +9855,7 @@
               var outputPass = new T.ShaderPass({
                 uniforms:{tDiffuse:{value:null}},
                 vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-                fragmentShader:'uniform sampler2D tDiffuse; varying vec2 vUv; void main(){gl_FragColor=texture2D(tDiffuse,vUv);\n#include <encodings_fragment>\n}'
+                fragmentShader:'uniform sampler2D tDiffuse; varying vec2 vUv; void main(){gl_FragColor=texture2D(tDiffuse,vUv);\n#include <encodings_fragment>\nvec3 gwC=gl_FragColor.rgb; float gwL=dot(gwC,vec3(0.2126,0.7152,0.0722)); gwC=mix(vec3(gwL),gwC,1.06); gwC=(gwC-0.5)*1.05+0.5; gwC*=1.0-0.11*smoothstep(0.42,0.95,length(vUv-0.5)*1.2); gl_FragColor.rgb=clamp(gwC,0.0,1.0);}'
               });
               outputPass.material.toneMapped=false;c.addPass(outputPass);engine._outputPass=outputPass;
               engine.composer = c;
@@ -9781,14 +9864,16 @@
         })();
 
         // Lighting — warm, balanced, voxel-world style
-        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.20));
-        var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
+        // The sun stands off the 45-degree diagonal so a block's two lit sides differ, and the flat fill stays low so
+        // its shadowed sides and shadows read; the sky/ground fill carries the soft top-versus-side difference.
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.12));
+        var sun = new THREE.DirectionalLight(0xfff4e0, 1.12);
         // Where the sun stands is now a function of the time of day (engine._sunAngles,
         // driven by the preset cross-fade and applied every frame), so shadows rake at
         // sunrise and shorten at noon instead of pointing the same way all day.
-        engine._sunAngles = { el: 48, az: 45 };
+        engine._sunAngles = { el: 48, az: 33 };
         engine._sunDistance = 120;
-        var sun0 = geometryWorldSunVector(48, 45);
+        var sun0 = geometryWorldSunVector(48, 33);
         sun.position.set(sun0.x * 120, sun0.y * 120, sun0.z * 120);
         sun.castShadow = true;
         // The shadow volume rides with the player. It used to be a fixed 60x60 box
@@ -9809,7 +9894,7 @@
         sun.shadow.normalBias = 0.012;
         engine.sun = sun;
         engine.scene.add(sun);
-        var hemi = new THREE.HemisphereLight(0xb5d4ed, 0x485c48, 0.32);
+        var hemi = new THREE.HemisphereLight(0xb5d4ed, 0x485c48, 0.40);
         engine.scene.add(hemi);
         engine._hemi = hemi;
 
@@ -10296,22 +10381,42 @@
             var groundHz = '#' + groundC.clone().lerp(fogC, 0.5).getHexString();
             var faces = [];
             var environmentSun=geometryWorldSunVector(engine._sunAngles.el,engine._sunAngles.az);
+            // What water, glass and the metals reflect: the same deeper zenith as the sky dome, clouds, and a hazy
+            // hill line on the horizon. It was a 32-pixel gradient, so every reflection read as one smooth wash.
+            var zenithDeep = '#' + bgC.clone().multiplyScalar(0.66).getHexString();
+            var cloudC = 'rgba(' + fogC.clone().lerp(new T.Color(1, 1, 1), 0.8).toArray().map(function(v) { return Math.round(v * 255); }).join(',') + ',';
+            var hillC = '#' + new T.Color(0x3f6a3a).lerp(fogC, 0.45).getHexString();
+            var envSeed = 977; function envRandom() { envSeed = envSeed * 16807 % 2147483647; return (envSeed - 1) / 2147483646; }
+            var S = 128;
             for (var fi = 0; fi < 6; fi++) {
-              var fc = document.createElement('canvas'); fc.width = 32; fc.height = 32;
+              var fc = document.createElement('canvas'); fc.width = S; fc.height = S;
               var g2 = fc.getContext('2d');
-              if (fi === 2) { g2.fillStyle = zenith; g2.fillRect(0, 0, 32, 32); }
-              else if (fi === 3) { g2.fillStyle = ground; g2.fillRect(0, 0, 32, 32); }
+              if (fi === 2) {
+                g2.fillStyle = zenithDeep; g2.fillRect(0, 0, S, S);
+                for (var tc = 0; tc < 5; tc++) { var tx = envRandom() * S, ty = envRandom() * S, tr = 10 + envRandom() * 14, tg = g2.createRadialGradient(tx, ty, 0, tx, ty, tr); tg.addColorStop(0, cloudC + '0.45)'); tg.addColorStop(1, cloudC + '0)'); g2.fillStyle = tg; g2.fillRect(tx - tr, ty - tr, tr * 2, tr * 2); }
+              }
+              else if (fi === 3) { g2.fillStyle = ground; g2.fillRect(0, 0, S, S); }
               else {
-                var gr = g2.createLinearGradient(0, 0, 0, 32);
-                gr.addColorStop(0, zenith); gr.addColorStop(0.48, horizon); gr.addColorStop(0.53, groundHz); gr.addColorStop(1, ground);
-                g2.fillStyle = gr; g2.fillRect(0, 0, 32, 32);
+                var gr = g2.createLinearGradient(0, 0, 0, S);
+                gr.addColorStop(0, zenithDeep); gr.addColorStop(0.46, horizon); gr.addColorStop(0.53, groundHz); gr.addColorStop(1, ground);
+                g2.fillStyle = gr; g2.fillRect(0, 0, S, S);
+                // Cumulus in the upper half, flat-based like the ones in the sky.
+                for (var cl = 0; cl < 4; cl++) {
+                  var cx0 = envRandom() * S, cy0 = S * (0.2 + envRandom() * 0.2);
+                  for (var pf = 0; pf < 5; pf++) { var px0 = cx0 + (pf - 2) * 7 + (envRandom() - 0.5) * 4, pr0 = 5 + envRandom() * 6, pg0 = g2.createRadialGradient(px0, cy0 - pr0 * 0.4, 0, px0, cy0 - pr0 * 0.4, pr0); pg0.addColorStop(0, cloudC + '0.9)'); pg0.addColorStop(1, cloudC + '0)'); g2.fillStyle = pg0; g2.fillRect(px0 - pr0, cy0 - pr0 * 1.4, pr0 * 2, pr0 * 2); }
+                }
+                // A low, hazy hill line where the sky meets the ground.
+                g2.fillStyle = hillC; g2.beginPath(); g2.moveTo(0, S * 0.53);
+                for (var hx = 0; hx <= S; hx += 8) g2.lineTo(hx, S * (0.5 - 0.03 * Math.abs(Math.sin(hx * 0.07 + fi)) - 0.02 * envRandom()));
+                g2.lineTo(S, S * 0.53); g2.closePath(); g2.fill();
                 // A soft sun highlight follows the current environment bearing,
                 // so metals carry one bright lobe instead of a uniform sheen.
                 var faceFacing=fi===0 ? environmentSun.x : fi===1 ? -environmentSun.x : fi===4 ? environmentSun.z : -environmentSun.z;
                 if (faceFacing > 0.1) {
-                  var sg = g2.createRadialGradient(20, 9, 0, 20, 9, 12);
-                  sg.addColorStop(0, 'rgba(255,244,218,'+(Math.min(0.9,engine.sun.intensity*0.8)*faceFacing)+')'); sg.addColorStop(1, 'rgba(255,250,235,0)');
-                  g2.fillStyle = sg; g2.fillRect(0, 0, 32, 32);
+                  // Small and soft: a large bright lobe showed as a hard hexagonal glint on the diamond after filtering.
+                  var sg = g2.createRadialGradient(S * 0.62, S * 0.28, 0, S * 0.62, S * 0.28, S * 0.2);
+                  sg.addColorStop(0, 'rgba(255,244,218,'+(Math.min(0.6,engine.sun.intensity*0.55)*faceFacing)+')'); sg.addColorStop(1, 'rgba(255,250,235,0)');
+                  g2.fillStyle = sg; g2.fillRect(0, 0, S, S);
                 }
               }
               faces.push(fc);
@@ -10356,7 +10461,7 @@
               topColor: { value: new THREE.Color(0x4FA8FA) },
               bottomColor: { value: new THREE.Color(0x8CC9FA) },
               offset: { value: 14.0 },
-              exponent: { value: 0.55 },
+              exponent: { value: 0.46 },
               // Sun sits at camera + (40, 45, 40); the dome brightens toward it so the
               // sky has a light source, not just a gradient. Colour and strength follow
               // the fog colour and sun intensity each frame (animate loop).
@@ -10483,6 +10588,130 @@
           engine._cloudPlaneHigh = cloudPlaneHigh;
           engine._cloudTexHigh = cloudPlaneHigh.material.map;
           engine._cloudWhite = new THREE.Color(1, 1, 1);
+          // A ring of cumulus near the horizon. The two sheets above sit 40-62 units up at 8-16% strength, so by the
+          // time they reach a level view the fog has faded them to sky: the sky read as one plain colour. These hang
+          // 135-155 units out and 26-52 up, just clear of the hills, unfogged, shaded bright on top and grey at the base.
+          function seededRandom(seed) { var v = seed % 2147483647; if (v <= 0) v += 2147483646; return function() { v = v * 16807 % 2147483647; return (v - 1) / 2147483646; }; }
+          function makeCumulusTexture(seed) {
+            var rnd = seededRandom(seed), cnv = document.createElement('canvas'); cnv.width = 256; cnv.height = 128;
+            var g = cnv.getContext('2d'), base = 104, puffs = 7 + Math.floor(rnd() * 4);
+            g.clearRect(0, 0, 256, 128);
+            for (var p = 0; p < puffs; p++) {
+              var t = puffs > 1 ? p / (puffs - 1) : 0.5, middle = 1 - Math.abs(t - 0.5) * 2;
+              var r = (16 + rnd() * 10) + middle * (16 + rnd() * 10), x = 34 + t * 188 + (rnd() - 0.5) * 12, y = base - r * 0.62 - middle * 10 * rnd();
+              var lit = g.createRadialGradient(x - r * 0.3, y - r * 0.38, r * 0.1, x, y, r);
+              lit.addColorStop(0, 'rgba(255,255,255,1)');
+              lit.addColorStop(0.62, 'rgba(244,247,252,0.96)');
+              lit.addColorStop(0.86, 'rgba(205,214,230,0.62)');
+              lit.addColorStop(1, 'rgba(205,214,230,0)');
+              g.fillStyle = lit; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+            }
+            // A flat, softly fading base is what reads as cumulus rather than a blob.
+            g.globalCompositeOperation = 'destination-in';
+            var fade = g.createLinearGradient(0, base - 10, 0, base + 10);
+            fade.addColorStop(0, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+            g.fillStyle = fade; g.fillRect(0, 0, 256, 128);
+            g.globalCompositeOperation = 'source-over';
+            var tex = new THREE.CanvasTexture(cnv);
+            if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+            return tex;
+          }
+          (function initCumulusRing() {
+            var group = new THREE.Group(), materials = [], rnd = seededRandom(7331);
+            group.name = 'gw-cumulus-ring'; group.userData.gwSkyDecor = true;
+            for (var k = 0; k < 4; k++) materials.push(new THREE.MeshBasicMaterial({ map: makeCumulusTexture(101 + k * 977), transparent: true, opacity: 0.85, depthWrite: false, fog: false, side: THREE.DoubleSide }));
+            var plane = new THREE.PlaneGeometry(1, 1), count = 16;
+            for (var i = 0; i < count; i++) {
+              var angle = (i + rnd() * 0.6) / count * Math.PI * 2, radius = 135 + rnd() * 20, width = 42 + rnd() * 34;
+              var cloud = new THREE.Mesh(plane, materials[i % materials.length]);
+              cloud.scale.set(width, width / 2, 1);
+              cloud.position.set(Math.cos(angle) * radius, 26 + rnd() * 26, Math.sin(angle) * radius);
+              cloud.lookAt(0, cloud.position.y, 0);
+              cloud.raycast = function() {};
+              cloud.renderOrder = -0.5;
+              group.add(cloud);
+            }
+            engine.scene.add(group);
+            engine._cumulus = { group: group, materials: materials, geometry: plane };
+          })();
+          // Night sky: a still field of stars on the dome that fades in with the moon, so night has something above it.
+          // (The lesson-complete stars are a separate, animated field.)
+          (function initNightStars() {
+            var rnd = seededRandom(5521), pos = [], col = [], tint = [[1, 1, 1], [0.86, 0.9, 1], [1, 0.95, 0.84]];
+            for (var i = 0; i < 900; i++) {
+              var y = 0.1 + rnd() * 0.9, a = rnd() * Math.PI * 2, r = Math.sqrt(1 - y * y), d = 165;
+              pos.push(Math.cos(a) * r * d, y * d, Math.sin(a) * r * d);
+              var t = tint[Math.floor(rnd() * 3)], b = 0.55 + rnd() * 0.45; col.push(t[0] * b, t[1] * b, t[2] * b);
+            }
+            var geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+            var stars = new THREE.Points(geo, new THREE.PointsMaterial({ size: 1.7, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+            stars.name = 'gw-night-stars'; stars.userData.gwSkyDecor = true; stars.frustumCulled = false; stars.visible = false; stars.raycast = function() {};
+            // First among see-through things: it rides with the camera, so by distance it would sort last and draw over
+            // speech bubbles and labels. Clouds (renderOrder -0.5) then cover it, as they should.
+            stars.renderOrder = -1;
+            engine.scene.add(stars);
+            engine._nightStars = stars;
+          })();
+          // Fireflies: a few soft lights drifting near the ground at night. World-placed, so they stay put as the
+          // player walks; one that falls far behind reappears nearby. Only with motion allowed and not in Battery saver.
+          (function initFireflies() {
+            var count = 36, rnd = seededRandom(8807), base = new Float32Array(count * 3), pos = new Float32Array(count * 3), phase = new Float32Array(count);
+            for (var i = 0; i < count; i++) { phase[i] = rnd() * Math.PI * 2; }
+            var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            // A soft round glow; bare points draw as squares.
+            var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 32;
+            var glowCtx = glowCanvas.getContext('2d'), glowGrad = glowCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            glowGrad.addColorStop(0, 'rgba(255,255,230,1)'); glowGrad.addColorStop(0.3, 'rgba(236,250,160,0.75)'); glowGrad.addColorStop(1, 'rgba(200,240,120,0)');
+            glowCtx.fillStyle = glowGrad; glowCtx.fillRect(0, 0, 32, 32);
+            var flies = new THREE.Points(geo, new THREE.PointsMaterial({ map: new THREE.CanvasTexture(glowCanvas), color: 0xe9f59a, size: 0.22, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+            flies.name = 'gw-fireflies'; flies.userData.gwSkyDecor = true; flies.frustumCulled = false; flies.visible = false; flies.raycast = function() {};
+            flies.renderOrder = -0.8; // before speech bubbles and labels, which must stay on top
+            engine.scene.add(flies);
+            engine._fireflies = { points: flies, base: base, pos: pos, phase: phase, rnd: rnd, placed: false, time: 0 };
+          })();
+          // Birds: a few dark silhouettes wheeling far off, by day. Each is two wing triangles that flap from the body.
+          (function initBirds() {
+            var rnd = seededRandom(3911), group = new THREE.Group(), birds = [];
+            var wingGeo = new THREE.BufferGeometry();
+            wingGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.18, 0, 0, 0.22, 0.75, 0.04, 0.02], 3));
+            wingGeo.computeVertexNormals();
+            var wingMat = new THREE.MeshBasicMaterial({ color: 0x2b3440, side: THREE.DoubleSide });
+            for (var i = 0; i < 6; i++) {
+              var bird = new THREE.Group();
+              [-1, 1].forEach(function(side) { var w = new THREE.Mesh(wingGeo, wingMat); w.scale.x = side; w.raycast = function() {}; bird.add(w); });
+              bird.userData = { angle: rnd() * Math.PI * 2, radius: 38 + rnd() * 30, height: 22 + rnd() * 14, speed: (0.05 + rnd() * 0.05) * (rnd() < 0.5 ? -1 : 1), flap: rnd() * 6, scale: 1.9 + rnd() * 0.8 };
+              bird.scale.setScalar(bird.userData.scale);
+              group.add(bird); birds.push(bird);
+            }
+            group.name = 'gw-birds'; group.userData.gwSkyDecor = true; group.visible = false;
+            engine.scene.add(group);
+            engine._birds = { group: group, birds: birds, geometry: wingGeo, material: wingMat };
+          })();
+          // Butterflies: a handful flutter round the wildflowers in daylight. Two painted wings hinge on the body.
+          (function initButterflies() {
+            var rnd = seededRandom(6173), group = new THREE.Group(), flies = [], mats = [];
+            [['#f2a33a', '#7a3d12'], ['#f5f0d8', '#8a8a7a'], ['#f2d24c', '#6b5212'], ['#8fb8f0', '#2c4a78']].forEach(function(pair) {
+              var cv = document.createElement('canvas'); cv.width = cv.height = 32;
+              var g = cv.getContext('2d'); g.clearRect(0, 0, 32, 32);
+              g.fillStyle = pair[0]; g.beginPath(); g.ellipse(14, 11, 12, 9, -0.3, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(12, 24, 8, 6, 0.4, 0, Math.PI * 2); g.fill();
+              g.fillStyle = pair[1]; g.beginPath(); g.arc(17, 10, 2.4, 0, Math.PI * 2); g.fill(); g.fillRect(0, 0, 2, 32);
+              var tx = new THREE.CanvasTexture(cv); if (typeof THREE.sRGBEncoding !== 'undefined') tx.encoding = THREE.sRGBEncoding;
+              tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter;
+              mats.push(new THREE.MeshBasicMaterial({ map: tx, alphaTest: 0.5, side: THREE.DoubleSide }));
+            });
+            var wingGeo = new THREE.PlaneGeometry(0.13, 0.13); wingGeo.translate(0.065, 0, 0);
+            for (var i = 0; i < 7; i++) {
+              var fly = new THREE.Group(), mat = mats[i % mats.length];
+              [-1, 1].forEach(function(side) { var w = new THREE.Mesh(wingGeo, mat); w.scale.x = side; w.rotation.x = -Math.PI / 2; w.raycast = function() {}; fly.add(w); });
+              fly.userData = { phase: rnd() * Math.PI * 2, spot: i, speed: 0.6 + rnd() * 0.5 };
+              group.add(fly); flies.push(fly);
+            }
+            group.name = 'gw-butterflies'; group.userData.gwSkyDecor = true; group.visible = false;
+            engine.scene.add(group);
+            engine._butterflies = { group: group, flies: flies, geometry: wingGeo, materials: mats, time: 0 };
+          })();
         })();
 
         engine.raycaster = new THREE.Raycaster();
@@ -10635,13 +10864,14 @@
           }
           for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
             var broad = mineral(fields[0], x, y), grain = mineral(fields[1], x, y), fine = mineral(fields[2], x, y);
-            var fleck = random(), variation = broad * 3 + grain * 4 + fine * 2 + (random() - 0.5) * 3;
+            // Stronger broad mottling than before (it read as one pale sheet underfoot), still fine-grained and seamless.
+            var fleck = random(), variation = broad * 7 + grain * 6 + fine * 3 + (random() - 0.5) * 4;
             // Sparse pale quartz and darker mineral pinpoints, never large stains.
             variation += fleck > 0.987 ? 11 : fleck < 0.013 ? -9 : 0;
             var offset = (y * size + x) * 4;
-            pixels[offset] = Math.round(159 + variation + broad);
-            pixels[offset + 1] = Math.round(166 + variation);
-            pixels[offset + 2] = Math.round(164 + variation - broad);
+            pixels[offset] = Math.round(151 + variation + broad * 2);
+            pixels[offset + 1] = Math.round(157 + variation);
+            pixels[offset + 2] = Math.round(156 + variation - broad * 2);
             pixels[offset + 3] = 255;
           }
           ctx.putImageData(image, 0, 0);
@@ -10654,21 +10884,31 @@
         function makeGrassTexture() {
           var random = surfaceRandom(587);
           if (_procTexCache.grass) return _procTexCache.grass;
-          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          // Turf rather than felt: soft patches of lighter and darker green, then several hundred short blades in four
+          // tones, a few catching the light, and a rare clover fleck. Same average green as before (#63875b), so the
+          // swatch and the cube atlas fringe still match. Blades wrap at the edges, so tiles join without a seam.
+          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
           var ctx = c.getContext('2d');
-          ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64);
-          // Add noise dots for organic feel
-          for (var i = 0; i < 200; i++) {
-            var gx = random() * 64, gy = random() * 64;
-            var shade = random() > 0.5 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
-            ctx.fillStyle = shade;
-            ctx.fillRect(gx, gy, 1 + random() * 2, 1 + random() * 2);
+          ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 128, 128);
+          for (var i = 0; i < 26; i++) {
+            var gx = random() * 128, gy = random() * 128, gr = 10 + random() * 22;
+            var patch = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+            patch.addColorStop(0, random() > 0.5 ? 'rgba(126,160,92,0.20)' : 'rgba(58,92,52,0.20)'); patch.addColorStop(1, 'rgba(99,135,91,0)');
+            for (var ox = -128; ox <= 128; ox += 128) for (var oy = -128; oy <= 128; oy += 128) { ctx.save(); ctx.translate(ox, oy); ctx.fillStyle = patch; ctx.fillRect(gx - gr, gy - gr, gr * 2, gr * 2); ctx.restore(); }
           }
-          // Add a few darker "grass blade" strokes
-          ctx.strokeStyle = 'rgba(46,72,38,0.22)'; ctx.lineWidth = 1;
-          for (var j = 0; j < 15; j++) {
-            var sx = random() * 64, sy = random() * 64;
-            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (random() - 0.5) * 6, sy - 2 - random() * 4); ctx.stroke();
+          var bladeTones = ['rgba(46,72,38,0.32)', 'rgba(70,104,58,0.34)', 'rgba(128,160,96,0.30)', 'rgba(170,196,128,0.22)'];
+          ctx.lineCap = 'round';
+          for (var j = 0; j < 520; j++) {
+            var sx = random() * 128, sy = random() * 128, len = 2 + random() * 4, lean = (random() - 0.5) * 3;
+            ctx.strokeStyle = bladeTones[Math.floor(random() * bladeTones.length)]; ctx.lineWidth = 0.6 + random() * 0.8;
+            for (var wx = -128; wx <= 128; wx += 128) for (var wy = -128; wy <= 128; wy += 128) {
+              if (sx + wx < -6 || sx + wx > 134 || sy + wy < -6 || sy + wy > 134) continue;
+              ctx.beginPath(); ctx.moveTo(sx + wx, sy + wy); ctx.lineTo(sx + wx + lean, sy + wy - len); ctx.stroke();
+            }
+          }
+          for (var k = 0; k < 6; k++) {
+            ctx.fillStyle = random() > 0.5 ? 'rgba(235,240,214,0.55)' : 'rgba(232,214,120,0.5)';
+            ctx.beginPath(); ctx.arc(4 + random() * 120, 4 + random() * 120, 0.9 + random() * 0.6, 0, Math.PI * 2); ctx.fill();
           }
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -10686,7 +10926,7 @@
           if (_procTexCache.grassAtlas) return _procTexCache.grassAtlas;
           var c = document.createElement('canvas'); c.width = 64; c.height = 128;
           var ctx = c.getContext('2d');
-          try { ctx.drawImage(makeGrassTexture().image, 0, 0); } catch (e) { ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64); }
+          try { ctx.drawImage(makeGrassTexture().image, 0, 0, 64, 64); } catch (e) { ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64); }
           ctx.fillStyle = '#7a5537'; ctx.fillRect(0, 64, 64, 64);
           for (var i = 0; i < 160; i++) {
             ctx.fillStyle = random() > 0.5 ? 'rgba(40,24,12,0.16)' : 'rgba(180,140,100,0.12)';
@@ -10917,6 +11157,34 @@
           _procTexCache[key] = result; return result;
         }
 
+        // Surface grain for plain-colour blocks: near-white, so the colour stays the block's own, with soft mottling a
+        // face can catch the light on. Diamond adds faint diagonal facets. Tiles seamlessly; tagged sRGB like the rest.
+        function makePlainGrainTexture(kind) {
+          var key = kind === 'diamond' ? 'grainDiamond' : 'grainPlain';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var random = surfaceRandom(kind === 'diamond' ? 913 : 457), size = 128;
+          var c = document.createElement('canvas'); c.width = c.height = size;
+          var ctx = c.getContext('2d'), image = ctx.createImageData(size, size), px = image.data;
+          var coarse = new Float32Array(64); for (var n = 0; n < 64; n++) coarse[n] = random() * 2 - 1;
+          function field(x, y) {
+            var u = x * 8 / size, v = y * 8 / size, ix = Math.floor(u), iy = Math.floor(v), tx = u - ix, ty = v - iy;
+            tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+            var a = coarse[(iy % 8) * 8 + ix % 8], b = coarse[(iy % 8) * 8 + (ix + 1) % 8], d = coarse[((iy + 1) % 8) * 8 + ix % 8], e = coarse[((iy + 1) % 8) * 8 + (ix + 1) % 8];
+            return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty;
+          }
+          for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
+            var value = 243 + field(x, y) * 7 + (random() - 0.5) * 6;
+            if (kind === 'diamond') { var band = ((x + y) % 32) / 32, band2 = ((x - y + 256) % 44) / 44; value += (band < 0.1 ? 9 : 0) + (band2 < 0.07 ? 6 : 0) - 4; }
+            var o = (y * size + x) * 4, v8 = Math.max(0, Math.min(255, Math.round(value)));
+            px[o] = px[o + 1] = px[o + 2] = v8; px[o + 3] = 255;
+          }
+          ctx.putImageData(image, 0, 0);
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache[key] = tex;
+          return tex;
+        }
         // Block material cache — avoids creating duplicate materials per type
         engine._matCache = {};
         function getBlockMaterial(type) {
@@ -10926,7 +11194,7 @@
           if (type === 'glass') {
             mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.0, transmission: 0.8, thickness: 0.2, side: THREE.DoubleSide, envMapIntensity: 1.2 });
           } else if (type === 'diamond') {
-            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.14, metalness: 0.5, envMapIntensity: 1.2 });
+            mat = new THREE.MeshStandardMaterial({ color: color, map: makePlainGrainTexture('diamond'), roughness: 0.2, metalness: 0.18, envMapIntensity: 1.0 });
           } else if (type === 'gold') {
             mat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xffc04d), roughness: 0.23, metalness: 0.45, envMapIntensity: 0.75 });
           } else if (type === 'wood') {
@@ -10950,7 +11218,7 @@
           } else if (type === 'grass') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassTexture(), roughness: 0.8, metalness: 0.0 });
           } else {
-            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
+            mat = new THREE.MeshStandardMaterial({ color: color, map: makePlainGrainTexture('plain'), roughness: 0.7, metalness: 0.05 });
           }
           if (['stone','wood','brick','sand'].indexOf(type) >= 0 && mat.map) {
             var surfaceNormal = makeSurfaceNormalTexture(type, mat.map);
@@ -10977,7 +11245,8 @@
           var finish = {
             gwBlockHalfSize: {value:new THREE.Vector3(0.5, shape === 'halfB' ? 0.25:0.5, 0.5)},
             gwBlockBevelWidth: {value:0.018},
-            gwBlockBevelStrength: {value:engine._renderProfile && engine._renderProfile.tier === 'saver' ? 0:0.45}
+            gwBlockBevelStrength: {value:engine._renderProfile && engine._renderProfile.tier === 'saver' ? 0:0.45},
+            gwBlockEdgeShade: {value:0.13}
           };
           material._gwBlockFinish = finish;
           material.userData.gwBlockFinish = true;
@@ -10992,11 +11261,21 @@
               'uniform vec3 gwBlockHalfSize;',
               'uniform float gwBlockBevelWidth;',
               'uniform float gwBlockBevelStrength;',
+              'uniform float gwBlockEdgeShade;',
               '#ifndef OBJECTSPACE_NORMALMAP',
               'uniform mat3 normalMatrix;',
               '#endif',
               shader.fragmentShader
             ].join('\n');
+            shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+              '#include <color_fragment>',
+              'if(gwBlockEdgeShade > 0.0){',
+              '  vec3 gwEdgeGap=max(gwBlockHalfSize-abs(vGwBlockPosition),vec3(0.0));',
+              '  float gwEdge=max(min(gwEdgeGap.x,gwEdgeGap.y),min(max(gwEdgeGap.x,gwEdgeGap.y),gwEdgeGap.z));',
+              '  float gwSpan=max(length(dFdx(vGwBlockPosition)),length(dFdy(vGwBlockPosition)));',
+              '  diffuseColor.rgb*=1.0-gwBlockEdgeShade*(1.0-smoothstep(0.0,0.11,gwEdge))*(1.0-smoothstep(0.035,0.11,gwSpan));',
+              '}'
+            ].join('\n'));
             shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>', [
               '#include <normal_fragment_begin>',
               'if(gwBlockBevelStrength > 0.0){',
@@ -11009,7 +11288,7 @@
               '}'
             ].join('\n'));
           };
-          material.customProgramCacheKey = function(){return 'gw-block-finish-v1';};
+          material.customProgramCacheKey = function(){return 'gw-block-finish-v2';};
         };
 
         // Block edge wireframe overlay for visual crispness
@@ -11172,10 +11451,12 @@
             var m = engine.blocks[(x + dx) + ',' + (y + dy) + ',' + (z + dz)];
             if (m) engine.refreshBlockAO(m);
           }
+          if (engine.refreshGroundAO) engine.refreshGroundAO(x, y, z);
         };
         engine.refreshAllAO = function() {
           engine._aoDirty = false;
           Object.keys(engine.blocks).forEach(function(k) { engine.refreshBlockAO(engine.blocks[k]); });
+          if (engine.refreshAllGroundAO) engine.refreshAllGroundAO();
         };
 
         // Inject inside initEngine before the Block operations section. Ground cells keep
@@ -11186,6 +11467,138 @@
           var chunks = {}, geometries = {}, terrainCount = 0, countSource = null, buildCount = 0;
           var zero = new THREE.Matrix4().makeScale(0, 0, 0), matrix = new THREE.Matrix4();
           engine._groundChunks = [];
+          // Contact shading on the batched floor. Every other block darkens where it meets a neighbour (per-vertex AO),
+          // but ground instances share one geometry, so a block standing on the floor cast no darkening at its foot.
+          // A small texture per chunk, read by the floor's own shader on top faces only, carries it instead.
+          var AO_RES = 4, AO_SEE = { glass: 1, water: 1, ice: 1 };
+          function aoSolid(x, y, z) {
+            var m = engine.blocks[x + ',' + y + ',' + z], data = m && m.userData;
+            return !!(m && m.visible !== false && !(data && AO_SEE[data.blockType]));
+          }
+          function smoothNear(d) { var t = Math.max(0, 1 - d / 0.55); return t * t * (3 - 2 * t); }
+          function paintGroundAo(record) {
+            var tex = record.aoTexture; if (!tex) return;
+            var n = SIDE * AO_RES, px = tex.image.data, y = record.y + 1;
+            for (var cz = 0; cz < SIDE; cz++) for (var cx = 0; cx < SIDE; cx++) {
+              var gx = record.ox + cx, gz = record.oz + cz;
+              var covered = aoSolid(gx, y, gz), e = aoSolid(gx + 1, y, gz), w = aoSolid(gx - 1, y, gz), so = aoSolid(gx, y, gz + 1), no = aoSolid(gx, y, gz - 1);
+              var es = aoSolid(gx + 1, y, gz + 1), en = aoSolid(gx + 1, y, gz - 1), ws = aoSolid(gx - 1, y, gz + 1), wn = aoSolid(gx - 1, y, gz - 1);
+              for (var tz = 0; tz < AO_RES; tz++) for (var tx = 0; tx < AO_RES; tx++) {
+                var u = (tx + 0.5) / AO_RES, v = (tz + 0.5) / AO_RES, shade = 0.55;
+                if (!covered) {
+                  var sides = Math.max(e ? smoothNear(1 - u) : 0, w ? smoothNear(u) : 0) + Math.max(so ? smoothNear(1 - v) : 0, no ? smoothNear(v) : 0);
+                  var corner = Math.max(es ? smoothNear(Math.hypot(1 - u, 1 - v)) : 0, en ? smoothNear(Math.hypot(1 - u, v)) : 0, ws ? smoothNear(Math.hypot(u, 1 - v)) : 0, wn ? smoothNear(Math.hypot(u, v)) : 0);
+                  shade = 1 - 0.42 * Math.min(1, Math.max(sides, corner * 0.8));
+                }
+                var i = ((cz * AO_RES + tz) * n + cx * AO_RES + tx) * 4, value = Math.round(shade * 255);
+                px[i] = px[i + 1] = px[i + 2] = value; px[i + 3] = 255;
+              }
+            }
+            tex.needsUpdate = true;
+          }
+          function attachGroundAo(record) {
+            var n = SIDE * AO_RES, tex = new THREE.DataTexture(new Uint8Array(n * n * 4).fill(255), n, n, THREE.RGBAFormat);
+            tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false; tex.needsUpdate = true;
+            record.aoTexture = tex; record.mesh.userData.gwGroundAoTexture = tex;
+            var uniforms = { gwGroundAo: { value: tex }, gwGroundOrigin: { value: new THREE.Vector2(record.ox, record.oz) }, gwGroundSide: { value: SIDE } };
+            var material = record.mesh.material;
+            material.onBeforeCompile = function(shader) {
+              Object.keys(uniforms).forEach(function(k) { shader.uniforms[k] = uniforms[k]; });
+              shader.vertexShader = 'varying vec2 vGwGroundXZ;\nvarying float vGwGroundTop;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nvec4 gwGroundWorld = vec4(transformed, 1.0);\n#ifdef USE_INSTANCING\ngwGroundWorld = instanceMatrix * gwGroundWorld;\n#endif\ngwGroundWorld = modelMatrix * gwGroundWorld;\nvGwGroundXZ = gwGroundWorld.xz;\nvGwGroundTop = step(0.5, normal.y);');
+              shader.fragmentShader = 'uniform sampler2D gwGroundAo;\nuniform vec2 gwGroundOrigin;\nuniform float gwGroundSide;\nvarying vec2 vGwGroundXZ;\nvarying float vGwGroundTop;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= mix(1.0, texture2D(gwGroundAo, (vGwGroundXZ - gwGroundOrigin) / gwGroundSide).r, vGwGroundTop);');
+            };
+            material.customProgramCacheKey = function() { return 'gw-ground-ao-v1'; };
+            material.needsUpdate = true;
+          }
+          // Ground chunks whose floor lies just under (x, y, z) and its eight neighbours.
+          engine.refreshGroundAO = function(x, y, z) {
+            Object.keys(chunks).forEach(function(k) {
+              var r = chunks[k];
+              if (r.y === y - 1 && x + 1 >= r.ox && x - 1 < r.ox + SIDE && z + 1 >= r.oz && z - 1 < r.oz + SIDE) paintGroundAo(r);
+            });
+            engine._groundDecorDirty = true;
+          };
+          engine.refreshAllGroundAO = function() { Object.keys(chunks).forEach(function(k) { paintGroundAo(chunks[k]); }); engine._groundDecorDirty = true; };
+          // Grass tufts and a few flowers on open grass. Decorative only: never raycast, never on a cell within two of
+          // anything built (so they cannot sit in a structure or a counting area next to one), rebuilt when blocks change,
+          // and absent in Battery saver. They sway only when motion is allowed.
+          var decor = null;
+          function decorTexture(kind) {
+            var cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+            var g = cv.getContext('2d'), seed = kind === 'flower' ? 4441 : 2203;
+            function rnd() { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; }
+            g.clearRect(0, 0, 64, 64); g.lineCap = 'round';
+            var tones = ['#79aa60', '#89b96a', '#9dc777', '#b3d688'];
+            for (var b = 0; b < 15; b++) {
+              var bx = 12 + rnd() * 40, lean = (rnd() - 0.5) * 22, h = 30 + rnd() * 30;
+              g.strokeStyle = tones[Math.floor(rnd() * tones.length)]; g.lineWidth = 2 + rnd() * 2;
+              g.beginPath(); g.moveTo(bx, 64); g.quadraticCurveTo(bx + lean * 0.4, 64 - h * 0.6, bx + lean, 64 - h); g.stroke();
+            }
+            if (kind === 'flower') {
+              [['#f5f0d8', 20, 14], ['#f2cf4c', 42, 10], ['#e8a0c0', 32, 18]].forEach(function(fl) {
+                g.fillStyle = fl[0]; for (var p = 0; p < 5; p++) { var a = p / 5 * Math.PI * 2; g.beginPath(); g.arc(fl[1] + Math.cos(a) * 3.2, fl[2] + Math.sin(a) * 3.2, 2.6, 0, Math.PI * 2); g.fill(); }
+                g.fillStyle = '#d99a2b'; g.beginPath(); g.arc(fl[1], fl[2], 1.8, 0, Math.PI * 2); g.fill();
+              });
+            }
+            var tx = new THREE.CanvasTexture(cv);
+            if (typeof THREE.sRGBEncoding !== 'undefined') tx.encoding = THREE.sRGBEncoding;
+            // No mipmaps: smaller levels average the clear (black) pixels into the blades, so distant tufts read as dark specks.
+            tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter;
+            return tx;
+          }
+          function crossGeometry() {
+            var g = new THREE.BufferGeometry(), w = 0.2, h = 0.3, pos = [], uv = [], idx = [];
+            [0, Math.PI / 2].forEach(function(a, q) {
+              var cx = Math.cos(a) * w, cz = Math.sin(a) * w;
+              pos.push(-cx, 0, -cz, cx, 0, cz, cx, h, cz, -cx, h, -cz); uv.push(0, 0, 1, 0, 1, 1, 0, 1);
+              var o = q * 4; idx.push(o, o + 1, o + 2, o, o + 2, o + 3);
+            });
+            g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+            g.setAttribute('normal', new THREE.Float32BufferAttribute([0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,1,0, 0,1,0], 3));
+            g.setIndex(idx); return g;
+          }
+          function decorMesh(kind, capacity, sway) {
+            var material = new THREE.MeshLambertMaterial({ map: decorTexture(kind), alphaTest: 0.5, side: THREE.DoubleSide });
+            material.onBeforeCompile = function(shader) {
+              shader.uniforms.gwSway = sway;
+              shader.vertexShader = 'uniform float gwSway;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec3 gwTuftBase = instanceMatrix[3].xyz;\ntransformed.xz += vec2(sin(gwSway + gwTuftBase.x * 1.7), cos(gwSway * 0.8 + gwTuftBase.z * 1.3)) * 0.035 * position.y / 0.3;\n#endif');
+            };
+            material.customProgramCacheKey = function() { return 'gw-meadow-decor-v1'; };
+            var mesh = new THREE.InstancedMesh(crossGeometry(), material, capacity);
+            mesh.name = 'gw-meadow-' + kind; mesh.userData.gwDecorative = true; mesh.raycast = function() {};
+            mesh.castShadow = false; mesh.receiveShadow = true; mesh.frustumCulled = false; mesh.count = 0;
+            engine.scene.add(mesh); return mesh;
+          }
+          function cellHash(x, z, salt) { var h = (Math.imul(x | 0, 73856093) ^ Math.imul(z | 0, 19349663) ^ Math.imul(salt, 83492791)) >>> 0; h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0; return ((h ^ (h >>> 15)) >>> 0) % 10000 / 10000; }
+          engine.refreshGroundDecor = function() {
+            engine._groundDecorDirty = false;
+            var saver = engine._renderProfile && engine._renderProfile.tier === 'saver';
+            if (!decor && saver) return;
+            if (!decor) { var sway = { value: 0 }; decor = { sway: sway, tuft: decorMesh('tuft', 2400, sway), flower: decorMesh('flower', 400, sway) }; engine._groundDecor = decor; }
+            var m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), p = new THREE.Vector3(), sc = new THREE.Vector3();
+            var nT = 0, nF = 0; decor.flowerSpots = [];
+            if (!saver) Object.keys(chunks).forEach(function(k) {
+              var r = chunks[k]; if (r.type !== 'grass') return;
+              r.cells.forEach(function(cell) {
+                if (!cell || cell.visible === false) return;
+                var gp = cell.userData.gridPos, y = gp.y + 1, clear = true;
+                for (var dx = -2; dx <= 2 && clear; dx++) for (var dz = -2; dz <= 2 && clear; dz++) if (aoSolid(gp.x + dx, y, gp.z + dz)) clear = false;
+                if (!clear || cellHash(gp.x, gp.z, 1) > 0.18) return;
+                var n = 1 + Math.floor(cellHash(gp.x, gp.z, 2) * 3);
+                for (var t = 0; t < n; t++) {
+                  var flower = cellHash(gp.x, gp.z, 10 + t) < 0.12, target = flower ? decor.flower : decor.tuft;
+                  if (flower ? nF >= 400 : nT >= 2400) continue;
+                  p.set(gp.x + 0.18 + cellHash(gp.x, gp.z, 20 + t) * 0.64, y, gp.z + 0.18 + cellHash(gp.x, gp.z, 30 + t) * 0.64);
+                  q.setFromAxisAngle(up, cellHash(gp.x, gp.z, 40 + t) * Math.PI);
+                  var size = 0.75 + cellHash(gp.x, gp.z, 50 + t) * 0.55; sc.set(size, size, size);
+                  m.compose(p, q, sc); target.setMatrixAt(flower ? nF++ : nT++, m);
+                  if (flower) decor.flowerSpots.push(p.clone());
+                }
+              });
+            });
+            decor.tuft.count = nT; decor.flower.count = nF;
+            decor.tuft.instanceMatrix.needsUpdate = true; decor.flower.instanceMatrix.needsUpdate = true;
+          };
           engine._groundBlockLimit = MAX_GROUND;
           function isGround(mesh) { return !!(mesh && mesh.userData && mesh.userData._measurementLayer === 'ground'); }
           engine.getConstructionBlockCount = function() {
@@ -11268,6 +11681,7 @@
               }
             };
             var record = { mesh: chunk, cells: cells, ox: ox, oz: oz, y: y, type: type };
+            attachGroundAo(record);
             chunks[key] = record; engine._groundChunks.push(chunk); engine.scene.add(chunk); dirty(); return record;
           }
           engine.placeGroundBlock = function(x, y, z, type) {
@@ -11303,9 +11717,10 @@
           engine.disposeGround = function() {
             engine._groundChunks.forEach(function(chunk) {
               if (chunk.parent) chunk.parent.remove(chunk);
-              chunk.material.dispose(); if (typeof chunk.dispose === 'function') chunk.dispose();
+              chunk.material.dispose(); if (chunk.userData.gwGroundAoTexture) chunk.userData.gwGroundAoTexture.dispose(); if (typeof chunk.dispose === 'function') chunk.dispose();
             });
             Object.keys(geometries).forEach(function(key) { geometries[key].dispose(); });
+            if (decor) { [decor.tuft, decor.flower].forEach(function(mesh) { engine.scene.remove(mesh); if (mesh.material.map) mesh.material.map.dispose(); mesh.material.dispose(); mesh.geometry.dispose(); if (mesh.dispose) mesh.dispose(); }); decor = null; engine._groundDecor = null; }
             chunks = {}; geometries = {}; terrainCount = 0; engine._groundChunks = [];
             engine._groundRayTargets = []; engine._groundRaySource = null; dirty();
           };
@@ -11338,6 +11753,8 @@
           if (engine._measurementLayer === 'ground' && mat.color && ((x + z) & 1)) mat.color.multiplyScalar(0.92);
           if (type === 'grass' && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x, z));
           if (/^(stone|wood|brick|sand)$/.test(type) && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x + type.length * 31, z - y * 17));
+          // Plain-colour blocks vary by a hair too (0.97 to 1.03), so a wall of one colour reads as separate blocks, not one painted slab.
+          else if (mat.color && !/^(grass|glass|water|ice|lava|torch)$/.test(type) && engine._measurementLayer !== 'ground') mat.color.multiplyScalar(0.97 + (geometryWorldGroundTint(x * 3 + y * 11, z * 7 - y * 5) - 0.965) * 6 / 7);
           var mesh = new THREE.Mesh(geo, mat);
           // Position: cubes center at +0.5, half-slabs sit on the ground
           if (shapeId === 'halfB') {
@@ -11766,7 +12183,7 @@
             // hanging over every old character's spot, in the sandbox included.
             // Each sprite also owns a CanvasTexture; dispose it or the GPU copy
             // outlives the character on every lesson change.
-            [n.body, n.head, n.label, n.prompt, n.qMark, n._speechBubble, n._ring].forEach(function(obj) {
+            [n.body, n.head, n.label, n.prompt, n.qMark, n._speechBubble, n._ring, n._contactBlob].forEach(function(obj) {
               if (!obj) return;
               engine.scene.remove(obj);
               // Traverse, not just the object itself: eyes, mouth and arms are
@@ -11787,11 +12204,39 @@
           var npcColor = data.color || 0x7c3aed;
 
           // Body — slightly tapered cylinder for character feel
-          var bodyMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, npcColor), roughness: 0.5, metalness: 0.1 });
-          var body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.32, 1.2, 12), bodyMat);
+          var bodyMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, npcColor), roughness: 0.68, metalness: 0.0 });
+          // A robe rather than a tube: flared hem, gently narrowing waist and rounded shoulders, same 1.2 height.
+          var robeProfile = [[0, -0.6], [0.33, -0.6], [0.345, -0.55], [0.315, -0.25], [0.28, 0.1], [0.262, 0.36], [0.24, 0.48], [0.19, 0.56], [0.1, 0.6], [0, 0.6]].map(function(p) { return new THREE.Vector2(p[0], p[1]); });
+          var body = new THREE.Mesh(new THREE.LatheGeometry(robeProfile, 28), bodyMat);
           body.position.set(data.position[0] + 0.5, data.position[1] + 0.6, data.position[2] + 0.5);
           body.castShadow = true;
           engine.scene.add(body);
+          // A soft dark patch at the feet. With shadows off (Battery saver) a character floated over the floor; with them
+          // on, this is the contact darkening a shadow map is too coarse to draw. Decorative: never hit by a raycast.
+          var contactBlob = null;
+          try {
+            if (!engine._contactBlobTex) {
+              var blobCanvas = document.createElement('canvas'); blobCanvas.width = blobCanvas.height = 64;
+              var blobCtx = blobCanvas.getContext('2d'), blobGrad = blobCtx.createRadialGradient(32, 32, 2, 32, 32, 31);
+              blobGrad.addColorStop(0, 'rgba(0,0,0,0.62)'); blobGrad.addColorStop(0.55, 'rgba(0,0,0,0.3)'); blobGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              blobCtx.fillStyle = blobGrad; blobCtx.fillRect(0, 0, 64, 64);
+              engine._contactBlobTex = new THREE.CanvasTexture(blobCanvas);
+            }
+            contactBlob = new THREE.Mesh(new THREE.PlaneGeometry(0.95, 0.95), new THREE.MeshBasicMaterial({ map: engine._contactBlobTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+            contactBlob.rotation.x = -Math.PI / 2;
+            contactBlob.position.set(data.position[0] + 0.5, data.position[1] + 0.012, data.position[2] + 0.5);
+            contactBlob.raycast = function() {}; contactBlob.userData.gwDecorative = true;
+            engine.scene.add(contactBlob);
+          } catch (e) { contactBlob = null; }
+          // Collar and hem bands in a lighter shade of the robe, so the figure has edges the light can find.
+          var trimColor = geometryWorldSrgbColor(THREE, npcColor).lerp(new THREE.Color(1, 1, 1), 0.32);
+          var trimMat = new THREE.MeshStandardMaterial({ color: trimColor, roughness: 0.55, metalness: 0.0 });
+          [[0.236, 0.034, 0.47], [0.338, 0.03, -0.53]].forEach(function(band) {
+            var ring = new THREE.Mesh(new THREE.TorusGeometry(band[0], band[1], 8, 28), trimMat);
+            ring.rotation.x = Math.PI / 2; ring.position.y = band[2]; ring.castShadow = true;
+            body.add(ring);
+          });
+          var skinMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.55, metalness: 0.0 });
 
           // Arms. Each hangs from an Object3D pivot at the shoulder, so rotating it
           // swings the arm from the shoulder; rotating the mesh itself would pivot
@@ -11810,17 +12255,26 @@
             var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.46, 8), armMat);
             arm.position.y = -0.23;
             arm.castShadow = true;
+            var hand = new THREE.Mesh(new THREE.SphereGeometry(0.068, 12, 10), skinMat);
+            hand.position.y = -0.25; hand.castShadow = true;
+            arm.add(hand);
             pivot.add(arm);
             body.add(pivot);
             arms.push(pivot);
           });
 
           // Head — slightly larger with bevel feel
-          var headMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.6, metalness: 0.0 });
-          var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), headMat);
+          var headMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.55, metalness: 0.0 });
+          var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 28, 20), headMat);
           head.position.set(data.position[0] + 0.5, data.position[1] + 1.5, data.position[2] + 0.5);
           head.castShadow = true;
           engine.scene.add(head);
+          // Hair: a cap over the crown, tipped back so the face stays clear; each character gets its own shade.
+          var hairShades = [0x3b2a20, 0x6b4423, 0x2b2f3a, 0x8a5a2b, 0x4b3621, 0x5c3d2e];
+          var hair = new THREE.Mesh(new THREE.SphereGeometry(0.292, 28, 12, 0, Math.PI * 2, 0, Math.PI * 0.42),
+            new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, hairShades[engine.npcs.length % hairShades.length]), roughness: 0.85, metalness: 0.0 }));
+          hair.rotation.x = -0.38; hair.castShadow = true;
+          head.add(hair);
 
           // Eyes — classic white ring with a pupil in front of it.
           // Getting this right is pure arithmetic, and it was wrong twice. First the
@@ -11886,11 +12340,24 @@
           mouth.position.set(0, -0.1, 0.255);
           mouth.scale.set(1.5, 0.45, 0.5);
           head.add(mouth);
+          // Brows, a small nose and a touch of colour in the cheeks: enough for a face that reads warmly at a distance.
+          var browMat = new THREE.MeshBasicMaterial({ color: 0x3a2a24 });
+          [-1, 1].forEach(function(side) {
+            var brow = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.016, 0.02), browMat);
+            brow.position.set(side * 0.1, 0.125, 0.238); brow.rotation.z = side * -0.12;
+            head.add(brow);
+            var cheek = new THREE.Mesh(new THREE.CircleGeometry(0.042, 14), new THREE.MeshBasicMaterial({ color: 0xf08a8a, transparent: true, opacity: 0.32, depthWrite: false }));
+            cheek.position.set(side * 0.15, -0.05, 0.238); cheek.rotation.y = side * 0.57;
+            head.add(cheek);
+          });
+          var nose = new THREE.Mesh(new THREE.SphereGeometry(0.034, 12, 10), new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xf2c39b), roughness: 0.6, metalness: 0.0 }));
+          nose.position.set(0, -0.02, 0.272);
+          head.add(nose);
 
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
           engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR,
-            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, data: data });
+            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, _contactBlob: contactBlob, data: data });
           geometryRefreshGuideSprites(engine, engine.npcs[engine.npcs.length - 1], engine.npcs.length - 1, geometryGuideContrast(engine));
         };
 
@@ -14093,6 +14560,7 @@
               (npc._arms || []).forEach(function(arm) { arm.rotation.x = 0; arm.rotation.z = (arm.userData.armSide || 1) * 0.22; });
             }
             if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.45 + bobY; }
+            if (npc._contactBlob) { npc._contactBlob.position.x = npc.body.position.x; npc._contactBlob.position.z = npc.body.position.z; npc._contactBlob.visible = npc.body.visible; }
             if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
             if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }
             // Face toward player when within 6 blocks
@@ -14203,6 +14671,13 @@
                 var sbTarget = (dist2 > 3.5 && dist2 < 6 && Math.abs(previewBearing) < Math.PI / 7) ? 0.95 : 0;
                 npc._speechBubble.material.opacity += (sbTarget - npc._speechBubble.material.opacity) * (ambientMotion ? Math.min(1, dt * 5) : 1);
                 npc._speechBubble.position.y = npc.data.position[1] + 3.6 + (ambientMotion ? Math.sin(t * 1.5 + i * 0.8) * 0.025 : 0);
+                // It would sit behind the compass strip or the next-discovery panel and show as a clipped banner: slide it down as far as the name label, under the question mark's place, or leave it out until it clears.
+                if (sbTarget > 0 && engine.renderer && typeof document !== 'undefined') {
+                  var sbPanels = [document.querySelector('.gw-guide-compass'), document.querySelector('.gw-learning-compass')];
+                  var sbDrop = geometrySpriteDropToClear(npc._speechBubble, engine.camera, engine.renderer.domElement, sbPanels, 0.75);
+                  if (sbDrop < 0) npc._speechBubble.material.opacity = 0;
+                  else if (sbDrop > 0 && npc.qMark && npc.qMark.visible && !geometryMarkerBesideBubble(npc.qMark, npc._speechBubble, engine.camera, engine.renderer.domElement, sbPanels)) npc.qMark.material.opacity = 0;
+                }
               }
               // "Press E" prompt — fade in when close, bob above head
               if (npc.prompt) {
@@ -14214,6 +14689,7 @@
           });
 
           engine.npcs.forEach(function(npc, index) { geometryRefreshGuideSprites(engine, npc, index, guideContrast); });
+          if (engine.camera && engine.renderer && !engine._showcase) geometryHideLabelsBehindBubbles(engine.npcs, engine.camera, engine.renderer.domElement);
 
           // ── NPC proximity chime (soft ping when near unanswered NPC, every 3s) ──
           if (!engine._npcProxTimer) engine._npcProxTimer = 0;
@@ -14477,6 +14953,16 @@
               if (engine._cloudPlaneHigh) engine._cloudPlaneHigh.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.8);
             }
           }
+          if (engine._cumulus && engine.camera) {
+            var cum = engine._cumulus;
+            cum.group.position.x = engine.camera.position.x; cum.group.position.z = engine.camera.position.z;
+            if (engine._ambientMotionEnabled !== false) cum.group.rotation.y += dt * 0.004;
+            var cumOpacity = Math.min(0.92, (engine._cloudPlane ? engine._cloudPlane.material.opacity : 0.5) * 1.7);
+            cum.materials.forEach(function(m) {
+              if (engine.scene.fog && engine._cloudWhite) m.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.78);
+              m.opacity = cumOpacity;
+            });
+          }
           // The sky dome rides with the camera and takes its two colours from the
           // scene, so the time-of-day cross-fade in updateEnvTransition drives it.
           if (engine._popBlocks && engine._popBlocks.length) {
@@ -14488,6 +14974,8 @@
             }
           }
           if (engine._aoDirty && !engine._placingLessonBlocks && engine.refreshAllAO) engine.refreshAllAO();
+          if (engine._groundDecorDirty && !engine._placingLessonBlocks && engine.refreshGroundDecor) engine.refreshGroundDecor();
+          if (engine._groundDecor && engine._ambientMotionEnabled !== false) engine._groundDecor.sway.value += dt * 1.6;
           if (engine._horizon && engine.camera) { engine._horizon.position.x = engine.camera.position.x; engine._horizon.position.z = engine.camera.position.z; }
           if (engine._skyDome && engine.camera) {
             engine._skyDome.position.copy(engine.camera.position);
@@ -14495,7 +14983,7 @@
             // Zenith is a deeper shade of the background rather than the background
             // itself: loadLesson resets background and fog to one colour, so on a
             // fresh load the two would match and the dome would be flat again.
-            if (engine.scene.background && engine.scene.background.isColor) skyUniforms.topColor.value.copy(engine.scene.background).multiplyScalar(0.78);
+            if (engine.scene.background && engine.scene.background.isColor) skyUniforms.topColor.value.copy(engine.scene.background).multiplyScalar(0.66);
             if (engine.scene.fog) skyUniforms.bottomColor.value.copy(engine.scene.fog.color);
             if (skyUniforms.sunColor && engine._skyWhite) {
               skyUniforms.sunColor.value.copy(engine.scene.fog ? engine.scene.fog.color : skyUniforms.bottomColor.value).lerp(engine._skyWhite, 0.6);
@@ -14532,6 +15020,62 @@
               var mfl = Math.sqrt(Math.max(0, 1 - mel * mel)) / mlen;
               engine._moonSprite.position.set(engine.camera.position.x - sdir.x * mfl * 90, engine.camera.position.y + mel * 90, engine.camera.position.z - sdir.z * mfl * 90);
               engine._moonSprite.material.opacity = Math.max(0, Math.min(1, (0.45 - sunI) / 0.25));
+            }
+            if (engine._nightStars) {
+              var starOpacity = Math.max(0, Math.min(0.9, (0.42 - sunI) / 0.22));
+              engine._nightStars.position.copy(engine.camera.position);
+              engine._nightStars.material.opacity = starOpacity; engine._nightStars.visible = starOpacity > 0.01;
+            }
+            if (engine._fireflies) {
+              var ff = engine._fireflies, ffOn = engine._ambientMotionEnabled !== false && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+              var ffOpacity = ffOn ? Math.max(0, Math.min(0.85, (0.42 - sunI) / 0.22)) : 0;
+              ff.points.visible = ffOpacity > 0.01;
+              if (ff.points.visible) {
+                var cam = engine.camera.position; ff.time += dt;
+                for (var fi2 = 0; fi2 < ff.phase.length; fi2++) {
+                  var bx = ff.base[fi2 * 3], bz = ff.base[fi2 * 3 + 2];
+                  if (!ff.placed || (bx - cam.x) * (bx - cam.x) + (bz - cam.z) * (bz - cam.z) > 196) {
+                    var fa = ff.rnd() * Math.PI * 2, fr = 3 + ff.rnd() * 10;
+                    ff.base[fi2 * 3] = cam.x + Math.cos(fa) * fr; ff.base[fi2 * 3 + 1] = (engine._currentLesson && engine._currentLesson.ground ? engine._currentLesson.ground.y + 1 : 1) + 0.3 + ff.rnd() * 1.8; ff.base[fi2 * 3 + 2] = cam.z + Math.sin(fa) * fr;
+                  }
+                  var ph = ff.phase[fi2], tt = ff.time * 0.5 + ph;
+                  ff.pos[fi2 * 3] = ff.base[fi2 * 3] + Math.sin(tt * 0.9) * 0.6;
+                  ff.pos[fi2 * 3 + 1] = ff.base[fi2 * 3 + 1] + Math.sin(tt * 1.7) * 0.25;
+                  ff.pos[fi2 * 3 + 2] = ff.base[fi2 * 3 + 2] + Math.cos(tt * 0.7) * 0.6;
+                }
+                ff.placed = true;
+                ff.points.geometry.attributes.position.needsUpdate = true;
+                ff.points.material.opacity = ffOpacity * (0.75 + 0.25 * Math.sin(ff.time * 2.3));
+              }
+            }
+            var lifeOn = engine._ambientMotionEnabled !== false && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+            if (engine._birds) {
+              var bd = engine._birds; bd.group.visible = lifeOn && sunI > 0.45;
+              if (bd.group.visible) {
+                bd.group.position.set(engine.camera.position.x, 0, engine.camera.position.z);
+                bd.birds.forEach(function(b) {
+                  var u = b.userData; u.angle += u.speed * dt; u.flap += dt * 7;
+                  b.position.set(Math.cos(u.angle) * u.radius, u.height + Math.sin(u.angle * 3) * 1.5, Math.sin(u.angle) * u.radius);
+                  b.rotation.y = -u.angle + (u.speed > 0 ? Math.PI : 0);
+                  var beat = Math.sin(u.flap) * 0.55 + 0.15;
+                  b.children[0].rotation.z = -beat; b.children[1].rotation.z = beat;
+                });
+              }
+            }
+            if (engine._butterflies) {
+              var bf = engine._butterflies, spots = engine._groundDecor && engine._groundDecor.flowerSpots;
+              bf.group.visible = lifeOn && sunI > 0.45 && !!(spots && spots.length);
+              if (bf.group.visible) {
+                bf.time += dt;
+                var near = spots.slice().sort(function(a, b2) { return a.distanceToSquared(engine.camera.position) - b2.distanceToSquared(engine.camera.position); });
+                bf.flies.forEach(function(fl, k) {
+                  var home = near[k % Math.min(near.length, 4)], u = fl.userData, tt = bf.time * u.speed + u.phase;
+                  fl.position.set(home.x + Math.sin(tt * 0.8) * 0.9, home.y + 0.45 + Math.sin(tt * 1.9) * 0.22, home.z + Math.cos(tt * 0.6) * 0.9);
+                  fl.rotation.y = tt * 0.8;
+                  var open = 0.25 + Math.abs(Math.sin(tt * 9)) * 1.1;
+                  fl.children[0].rotation.y = open; fl.children[1].rotation.y = -open;
+                });
+              }
             }
           }
           // Water ripple: the shared normal map drifts, every water block shares it.
@@ -15108,6 +15652,11 @@
             if (sheet.geometry) sheet.geometry.dispose();
           });
           engine._cloudPlaneHigh = null; engine._cloudTexHigh = null;
+          if (engine._birds) { engine.scene.remove(engine._birds.group); engine._birds.geometry.dispose(); engine._birds.material.dispose(); engine._birds = null; }
+          if (engine._butterflies) { engine.scene.remove(engine._butterflies.group); engine._butterflies.geometry.dispose(); engine._butterflies.materials.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); }); engine._butterflies = null; }
+          if (engine._fireflies) { engine.scene.remove(engine._fireflies.points); engine._fireflies.points.geometry.dispose(); if (engine._fireflies.points.material.map) engine._fireflies.points.material.map.dispose(); engine._fireflies.points.material.dispose(); engine._fireflies = null; }
+          if (engine._nightStars) { engine.scene.remove(engine._nightStars); engine._nightStars.geometry.dispose(); engine._nightStars.material.dispose(); engine._nightStars = null; }
+          if (engine._cumulus) { engine.scene.remove(engine._cumulus.group); engine._cumulus.materials.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); }); engine._cumulus.geometry.dispose(); engine._cumulus = null; }
           // Shared block-edge materials live until the engine itself is destroyed.
           if (engine._edgeMatCache) {
             Object.values(engine._edgeMatCache).forEach(function(material) { if (material && material.dispose) material.dispose(); });

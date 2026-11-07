@@ -133,7 +133,7 @@ function SentenceFramesView(props) {
     bridging: 'bg-emerald-50 text-emerald-800 border-emerald-300'
   };
   const tierOf = item => item && typeof item.tier === 'string' && TIER_LABELS[item.tier] ? item.tier : null;
-  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 12);
+  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 40);
   const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return /*#__PURE__*/React.createElement("div", {

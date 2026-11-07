@@ -37,7 +37,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-spacecolony-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-spacecolony-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 158, 11)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button[data-spacecolony-launch]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 158, 11)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(2, 6, 23)\"],[style*=\"; color: rgb(2, 6, 23)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(113, 113, 122)\"],[style*=\"; color: rgb(113, 113, 122)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(83, 112, 131)\"],[style*=\"; color: rgb(83, 112, 131)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"],[style^=\"color: rgb(79, 70, 232)\"],[style*=\"; color: rgb(79, 70, 232)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 204, 135)\"],[style*=\"background-color: rgb(255, 204, 135)\"],[style*=\"background: rgb(255, 242, 189)\"],[style*=\"background-color: rgb(255, 242, 189)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(255, 247, 237)\"],[style*=\"background-color: rgb(255, 247, 237)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button[data-spacecolony-launch]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"spaceColony\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -620,7 +620,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable; every call site below checks it
+      // first and falls back to the static gateQ / local outcome, so play never blocks.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       // AI gate (default OFF). The turn-advance "planet event" game-master call
       // fired on EVERY turn with no consent/teacher gate — the largest unmetered
       // AI surface in STEAM Lab. Gate it: when off, the turn still advances and the
@@ -945,6 +951,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
           // Science Journal
           var scienceJournal = d.scienceJournal || [];
+          // Research / wonder science gates are not buildings: gate.building is
+          // '_research_<id>' / '_wonder_<id>', so settle them here before any
+          // buildingDefs lookup (MCQ and free-response). True when handled.
+          var settleSpecialGate = function (gate, ns) {
+            // Handle wonder progress
+            if (gate._wonderId) {
+              var newWonders = Object.assign({}, wonders);
+              var wProg = (newWonders[gate._wonderId + '_progress'] || 0) + 1;
+              newWonders[gate._wonderId + '_progress'] = wProg;
+              if (wProg >= gate._wonderChallenges) {
+                // Wonder complete!
+                newWonders[gate._wonderId] = true;
+                var nr13 = Object.assign({}, resources);
+                Object.keys(gate._wonderCost).forEach(function (k) { nr13[k] -= gate._wonderCost[k]; });
+                upd('colonyRes', nr13);
+                var nl23 = gameLog.slice(); nl23.push('\uD83C\uDFDB\uFE0F WONDER: ' + gate._wonderName + ' complete!'); upd('colonyLog', nl23);
+                if (addToast) addToast('\uD83C\uDFDB\uFE0F ' + gate._wonderName + ' COMPLETE! Permanent bonuses active!', 'success');
+                if (d.colonyTTS) colonySpeak('Wonder complete! The ' + gate._wonderName + ' is now operational. This is a monumental achievement for the colony.', 'narrator');
+                if (typeof addXP === 'function') addXP(75, 'Wonder: ' + gate._wonderName);
+              } else {
+                if (addToast) addToast('\u2705 Challenge ' + wProg + '/' + gate._wonderChallenges + ' passed!', 'success');
+              }
+              upd('colonyWonders', newWonders);
+              upd('colonyStats', ns);
+              upd('scienceGate', null);
+              return true;
+            }
+            // Handle research completion
+            if (gate._researchId) {
+              var rq2 = researchQueue.slice(); rq2.push(gate._researchId); upd('colonyResearch', rq2);
+              var nr8 = Object.assign({}, resources); nr8.science -= gate._researchCost; upd('colonyRes', nr8);
+              var rdef2 = researchDefs.find(function (rd3) { return rd3.id === gate._researchId; });
+              var nl17 = gameLog.slice(); nl17.push('\uD83E\uDDEC Research: ' + (rdef2 ? rdef2.name : gate._researchId) + ' complete!'); upd('colonyLog', nl17);
+              if (addToast) addToast('\uD83E\uDDEC ' + (rdef2 ? rdef2.name : '') + ' researched!', 'success');
+              if (d.colonyTTS) colonySpeak('Research complete. ' + (rdef2 ? rdef2.name + '. ' + rdef2.desc : ''), 'narrator');
+              upd('colonyStats', ns);
+              upd('scienceGate', null);
+              return true;
+            }
+            return false;
+          };
           var campaignClaims = d.colonyCampaignClaims || {};
           var fieldEvidence = d.colonyFieldEvidence || [];
           var workingHypothesis = d.colonyWorkingHypothesis || null;
@@ -2808,7 +2855,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       // Pick a random built building for maintenance
                       var maintBuild = buildings[Math.floor(Math.random() * buildings.length)];
                       var maintDef = buildingDefs.find(function (bd3) { return bd3.id === maintBuild; });
-                      if (maintDef) {
+                      // No AI: skip the generated check (no penalty, no stuck loader).
+                      if (maintDef && typeof callGemini === 'function') {
                         upd('maintChallengeLoading', true);
                         var modeStr = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<why correct, 2-3 sentences with real science>"}. Generate exactly 6 options. Shuffle correct answer randomly (position 0-5). correctIndex must match.' : 'Return ONLY valid JSON: {"question":"<science question about ' + maintDef.gate + '>","answer":"<correct answer, 1-3 words>","explanation":"<why correct, 2-3 sentences with real science>"}';
                         callGemini('Generate a ' + maintDef.gate + ' science question for maintaining the ' + maintDef.name + ' in a space colony on an alien planet. The question should test understanding of the science behind this building. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeStr, true).then(function (result) {
@@ -3685,7 +3733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         onClick: function () {
                           // In-flight guard: scienceGate shared with research / wonders.
                           if (d.scienceGateLoading || d.scienceGate) return;
-                          if ((d.colonyMode || 'mcq') === 'mcq') {
+                          if ((d.colonyMode || 'mcq') === 'mcq' && typeof callGemini === 'function') {
                             // Generate AI MCQ for the gate
                             upd('scienceGateLoading', true);
                             callGemini('Generate a ' + bd.gate + ' science question for building a ' + bd.name + ' in a space colony. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<real science explanation 2-3 sentences>"}. Generate exactly 6 answer options. Shuffle the correct answer randomly (position 0-5). Make sure correctIndex matches the position of the correct answer.', true).then(function (gateResult) {
@@ -3739,50 +3787,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       onClick: function () {
                         var correct3 = oi2 === scienceGate.correctIndex;
                         if (correct3) {
+                          var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++;
+                          if (settleSpecialGate(scienceGate, ns3)) return;
                           var bdef3 = buildingDefs.find(function (bd4) { return bd4.id === scienceGate.building; });
+                          if (!bdef3) { upd('colonyStats', ns3); upd('scienceGate', null); return; }
                           var nr7 = Object.assign({}, resources); Object.keys(bdef3.cost).forEach(function (k) { nr7[k] -= bdef3.cost[k]; }); upd('colonyRes', nr7);
                           var nb2 = buildings.slice(); nb2.push(scienceGate.building); upd('colonyBuildings', nb2);
                           var newEff3 = Object.assign({}, buildingEff); newEff3[scienceGate.building] = 100; upd('buildingEff', newEff3);
                           var nl8 = gameLog.slice(); nl8.push('Built ' + bdef3.icon + ' ' + bdef3.name + '!'); upd('colonyLog', nl8);
-                          var ns3 = Object.assign({}, stats); ns3.questionsAnswered++; ns3.correct++;
-                          // Handle wonder progress
-                          if (scienceGate._wonderId) {
-                            var newWonders = Object.assign({}, wonders);
-                            var wProg = (newWonders[scienceGate._wonderId + '_progress'] || 0) + 1;
-                            newWonders[scienceGate._wonderId + '_progress'] = wProg;
-                            if (wProg >= scienceGate._wonderChallenges) {
-                              // Wonder complete!
-                              newWonders[scienceGate._wonderId] = true;
-                              var nr13 = Object.assign({}, resources);
-                              Object.keys(scienceGate._wonderCost).forEach(function (k) { nr13[k] -= scienceGate._wonderCost[k]; });
-                              upd('colonyRes', nr13);
-                              var nl23 = gameLog.slice(); nl23.push('\uD83C\uDFDB\uFE0F WONDER: ' + scienceGate._wonderName + ' complete!'); upd('colonyLog', nl23);
-                              if (addToast) addToast('\uD83C\uDFDB\uFE0F ' + scienceGate._wonderName + ' COMPLETE! Permanent bonuses active!', 'success');
-                              if (d.colonyTTS) colonySpeak('Wonder complete! The ' + scienceGate._wonderName + ' is now operational. This is a monumental achievement for the colony.', 'narrator');
-                              if (typeof addXP === 'function') addXP(75, 'Wonder: ' + scienceGate._wonderName);
-                            } else {
-                              if (addToast) addToast('\u2705 Challenge ' + wProg + '/' + scienceGate._wonderChallenges + ' passed!', 'success');
-                            }
-                            upd('colonyWonders', newWonders);
-                            upd('colonyStats', ns3);
-                            upd('scienceGate', null);
-                            return;
-                          }
-                          // Handle research completion
-                          if (scienceGate._researchId) {
-                            var rq2 = researchQueue.slice(); rq2.push(scienceGate._researchId); upd('colonyResearch', rq2);
-                            var nr8 = Object.assign({}, resources); nr8.science -= scienceGate._researchCost; upd('colonyRes', nr8);
-                            var rdef2 = researchDefs.find(function (rd3) { return rd3.id === scienceGate._researchId; });
-                            var nl17 = gameLog.slice(); nl17.push('\uD83E\uDDEC Research: ' + (rdef2 ? rdef2.name : scienceGate._researchId) + ' complete!'); upd('colonyLog', nl17);
-                            if (addToast) addToast('\uD83E\uDDEC ' + (rdef2 ? rdef2.name : '') + ' researched!', 'success');
-                            if (d.colonyTTS) colonySpeak('Research complete. ' + (rdef2 ? rdef2.name + '. ' + rdef2.desc : ''), 'narrator');
-                            upd('colonyStats', ns3);
-                            upd('scienceGate', null);
-                            return;
-                          }
                           ns3.buildingsConstructed++; upd('colonyStats', ns3); upd('builtThisTurn', true);
                           if (addToast) addToast('\u2705 ' + bdef3.name + ' built! Science verified!', 'success');
-                          callGemini('You are narrating a space colony game. The colony just built a ' + bdef3.name + ' (' + bdef3.desc + '). Narrate the construction completion in 2 dramatic sentences. Include a real science fact. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (buildNarr) {
+                          if (typeof callGemini !== 'function') { if (d.colonyTTS) colonySpeak('Construction complete. ' + bdef3.name + ' is now operational.', 'narrator'); }
+                          else callGemini('You are narrating a space colony game. The colony just built a ' + bdef3.name + ' (' + bdef3.desc + '). Narrate the construction completion in 2 dramatic sentences. Include a real science fact. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (buildNarr) {
                             upd('buildNarration', buildNarr);
                             if (d.colonyTTS) colonySpeak(buildNarr, 'narrator');
                           }).catch(function () {
@@ -3829,7 +3845,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       var inp = (d.scienceGateInput || '').trim().toLowerCase();
                       var correct = Array.isArray(scienceGate.answer) ? scienceGate.answer.some(function (a) { return inp.indexOf(a.toLowerCase()) >= 0; }) : inp.indexOf(scienceGate.answer.toLowerCase()) >= 0;
                       if (correct) {
+                        var ns4 = Object.assign({}, stats); ns4.questionsAnswered++; ns4.correct++;
+                        if (settleSpecialGate(scienceGate, ns4)) return;
                         var bdef2 = buildingDefs.find(function (bd2) { return bd2.id === scienceGate.building; });
+                        if (!bdef2) { upd('scienceGate', null); return; }
                         var nr4 = Object.assign({}, resources); Object.keys(bdef2.cost).forEach(function (k) { nr4[k] -= bdef2.cost[k]; }); upd('colonyRes', nr4);
                         var nb = buildings.slice(); nb.push(scienceGate.building); upd('colonyBuildings', nb);
                         var newEff4 = Object.assign({}, buildingEff); newEff4[scienceGate.building] = 100; upd('buildingEff', newEff4);
@@ -3888,7 +3907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('div', { className: 'mt-1 grid grid-cols-2 gap-1 text-[0.6875rem]' },
                       React.createElement('div', null, React.createElement('span', { style: { color: st.morale > 60 ? '#4ade80' : '#fbbf24' } }, '\u2764 ' + st.morale), React.createElement('div', { className: 'w-full rounded-full h-1.5 mt-0.5', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-1.5 rounded-full transition-all', style: { width: st.morale + '%', background: st.morale > 60 ? 'linear-gradient(90deg, #22c55e, #4ade80)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)', animation: 'kp-barFill 1s ease-out' } }))),
                       React.createElement('div', null, React.createElement('span', { style: { color: st.health > 50 ? '#22d3ee' : '#ef4444' } }, '\u2695 ' + st.health), React.createElement('div', { className: 'w-full rounded-full h-1.5 mt-0.5', style: { background: '#1e293b' } }, React.createElement('div', { className: 'h-1.5 rounded-full transition-all', style: { width: st.health + '%', background: st.health > 50 ? 'linear-gradient(90deg, #06b6d4, #22d3ee)' : 'linear-gradient(90deg, #ef4444, #f87171)', animation: 'kp-barFill 1s ease-out' } }))),
-                      React.createElement('button', {
+                      typeof callGemini === 'function' && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: prevents double-click from issuing a second
                           // callGemini before the first resolves (would orphan tokens and
@@ -3986,7 +4005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('textarea', { id: 'kepler-charter-reasoning', rows: 4, maxLength: 900, value: d.colonyCharterReasoning || '', onChange: function (event) { upd('colonyCharterReasoning', event.target.value); }, placeholder: t('stem.spacecolony.name_who_benefits_who_bears_the_cost_what_ev','Name who benefits, who bears the cost, what evidence matters, and when the rule should be revised.'), className: 'mt-1 w-full rounded-lg border border-slate-500 bg-slate-900 px-3 py-2 text-xs text-white placeholder:text-slate-300' }),
                     React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
                       React.createElement('button', { type: 'button', onClick: function () { upd('colonyCharterProposal', charterPrototype); }, className: 'rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-[0.6875rem] font-bold text-slate-200 hover:border-cyan-500' }, 'Load no-AI compact'),
-                      React.createElement('button', { type: 'button', disabled: !aiHintsEnabled || !callGemini || d.charterForgeBusy || (d.colonyCharterClaim || '').trim().length < 15 || (d.colonyCharterReasoning || '').trim().length < 30, onClick: function () {
+                      callGemini && React.createElement('button', { type: 'button', disabled: !aiHintsEnabled || !callGemini || d.charterForgeBusy || (d.colonyCharterClaim || '').trim().length < 15 || (d.colonyCharterReasoning || '').trim().length < 30, onClick: function () {
                         var claim = (d.colonyCharterClaim || '').trim();
                         var reasoning = (d.colonyCharterReasoning || '').trim();
                         if (!aiHintsEnabled || !callGemini || claim.length < 15 || reasoning.length < 30) return;
@@ -4177,7 +4196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
                             upd('scienceJournal', nj7);
                             if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
-                            callGemini('The space colony on ' + colonyWorldName + ' has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
+                            if (typeof callGemini !== 'function') { if (d.colonyTTS) colonySpeak('Cultural tradition adopted. ' + td3.name + '. ' + td3.fact, 'narrator'); }
+                            else callGemini('The space colony on ' + colonyWorldName + ' has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
                               upd('tradNarration', tradNarr);
                               if (d.colonyTTS) colonySpeak(tradNarr, 'narrator');
                             }).catch(function () {
@@ -4278,11 +4298,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           eraReady && !prereqReady && React.createElement('div', { className: 'text-[0.6875rem] text-amber-300' }, '\u2192 First research: ' + (rd2.requires || []).join(' + '))
                         )
                       ),
-                      !isResearched && eraReady && React.createElement('button', {
+                      !isResearched && eraReady && typeof callGemini === 'function' && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: scienceGate is shared with wonders / building MCQ.
                           // A second click while one is loading would clobber scienceGate.
-                          if (d.scienceGateLoading || d.scienceGate) return;
+                          if (d.scienceGateLoading || d.scienceGate || typeof callGemini !== 'function') return;
                           if (resources.science >= rd2.cost) {
                             // Science challenge gate for research
                             upd('scienceGateLoading', true);
@@ -4322,7 +4342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('div', { className: 'text-[0.6875rem] text-cyan-400' }, t('stem.spacecolony.ai_simulation', '\uD83E\uDD16 AI Simulation')),
                       React.createElement('div', { className: 'text-[0.6875rem] text-yellow-400' }, '+' + gs4.amount + ' ' + gs4.bonus + '/turn'),
                       React.createElement('div', { className: 'text-[0.6875rem] text-slate-200 mt-1 italic' }, gs4.fact),
-                      React.createElement('button', {
+                      typeof callGemini === 'function' && React.createElement('button', {
                         onClick: function () {
                           // In-flight guard: avoid stacking mentor calls.
                           if (d.mentorChatLoading) return;
@@ -4538,7 +4558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('textarea', { id: 'kepler-forge-reasoning', rows: 4, maxLength: 800, value: d.colonyForgeReasoning || '', onChange: function (event) { upd('colonyForgeReasoning', event.target.value); }, placeholder: t('stem.spacecolony.use_current_evidence_and_resources_explain_w','Use current evidence and resources. Explain who benefits, what it should cost, and what observation would show the rule is working.'), className: 'w-full rounded-lg border border-slate-500 bg-slate-900 px-3 py-2 text-xs text-white placeholder:text-slate-300' }),
                     React.createElement('div', { className: 'mt-2 flex flex-wrap gap-2' },
                       React.createElement('button', { type: 'button', onClick: function () { upd('colonyForgeParentArtifactId', null); upd('colonyArtifactProposal', founderForgePrototype); }, className: 'rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-[0.6875rem] font-bold text-slate-200 hover:border-fuchsia-500' }, 'Load no-AI prototype'),
-                      React.createElement('button', { type: 'button', disabled: !aiHintsEnabled || !callGemini || d.artifactForgeBusy || (d.colonyForgeBrief || '').trim().length < 12 || (d.colonyForgeReasoning || '').trim().length < 25, onClick: function () {
+                      callGemini && React.createElement('button', { type: 'button', disabled: !aiHintsEnabled || !callGemini || d.artifactForgeBusy || (d.colonyForgeBrief || '').trim().length < 12 || (d.colonyForgeReasoning || '').trim().length < 25, onClick: function () {
                         var brief = (d.colonyForgeBrief || '').trim();
                         var reasoning = (d.colonyForgeReasoning || '').trim();
                         if (!aiHintsEnabled || !callGemini || brief.length < 12 || reasoning.length < 25) return;
@@ -4733,10 +4753,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           )
                         ),
                         isComplete ? React.createElement('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full', style: { background: '#f59e0b30', color: '#fbbf24', border: '1px solid #f59e0b' } }, t('stem.spacecolony.complete', '\u2728 COMPLETE')) :
-                        canAfford ? React.createElement('button', {
+                        (canAfford && typeof callGemini === 'function') ? React.createElement('button', {
                           onClick: function() {
                             // In-flight guard: scienceGate shared with research / building MCQ.
-                            if (d.scienceGateLoading || d.scienceGate) return;
+                            if (d.scienceGateLoading || d.scienceGate || typeof callGemini !== 'function') return;
                             upd('scienceGateLoading', true);
                             var modeW = (d.colonyMode || 'mcq') === 'mcq' ? 'Return ONLY valid JSON: {"question":"<question>","options":["<correct>","<wrong1>","<wrong2>","<wrong3>","<wrong4>","<wrong5>"],"correctIndex":0,"explanation":"<2-3 sentences>"}. 6 options, shuffle correct (0-5).' : 'Return ONLY valid JSON: {"question":"<question>","answer":"<1-3 words>","explanation":"<2-3 sentences>"}';
                             callGemini('Generate a challenging ' + wd.domain + ' science question about building a ' + wd.name + ' (' + wd.desc + ') in a space colony. Challenge ' + (progress + 1) + ' of ' + wd.challenges + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. ' + modeW, true).then(function(result) {

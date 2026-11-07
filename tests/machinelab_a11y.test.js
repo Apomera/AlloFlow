@@ -127,7 +127,8 @@ describe('Machine Lab a11y: results are announced, not just shown', () => {
   });
 
   it('marks AI errors as alerts', () => {
-    const html = renderTool('machineLab', state({ view: 'learn', aiError: 'Tutor offline.' }));
+    // The AI panel renders only with a usable provider (student AI-off sweep).
+    const html = renderTool('machineLab', state({ view: 'learn', aiError: 'Tutor offline.' }), { callGemini: () => new Promise(() => {}) });
     expect(html).toMatch(/role="alert"/);
   });
 

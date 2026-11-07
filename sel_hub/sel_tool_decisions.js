@@ -1315,7 +1315,7 @@ window.SelHub = window.SelHub || {
     { id: 'consequence_3', retired: true,     icon: '\uD83C\uDF10', name: 'Ripple Effect Master', desc: 'Complete 3 consequence maps' },
     { id: 'first_bias', retired: true,        icon: '\uD83D\uDD0D', name: 'Bias Spotter',         desc: 'Historical award for revealing an earlier bias card' },
     { id: 'bias_all', retired: true,          icon: '\uD83E\uDDD0', name: 'Clear Thinker',        desc: 'Historical award based on earlier card reveals; not evidence of bias-free thinking' },
-    { id: 'ai_advisor',        icon: '\u2728',        name: 'Wisdom Seeker',        desc: 'Use the AI decision advisor' },
+    { id: 'ai_advisor',        icon: '\u2728',        name: 'Wisdom Seeker',        desc: 'Use the AI decision advisor', aiOnly: true },
     { id: 'total_10',          icon: '\uD83C\uDFC6', name: 'Master Decider',       desc: 'Complete 10 activities across all tabs' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Decision Streak',      desc: 'Practice 3 days in a row' },
     { id: 'values_explorer',   icon: '\uD83D\uDC9C', name: 'Values Explorer',      desc: 'Consider 3+ different values in one decision' },
@@ -1369,6 +1369,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _dcAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand || 'elementary';
       var onSafetyFlag = ctx.onSafetyFlag || null;
 
@@ -1381,6 +1382,7 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab     = d.activeTab || 'consequence';
+      if (!_dcAiOn && activeTab === 'advisor') activeTab = 'consequence';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Decision Tree state
@@ -1445,7 +1447,7 @@ window.SelHub = window.SelHub || {
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
-      var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
+      var shownBadges = BADGES.filter(function(b) { return (!b.retired && (_dcAiOn || !b.aiOnly)) || earnedBadges[b.id]; }); // retired badges, and AI-only ones without usable AI, show only if earned
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
       var decisionBadgeDialogRef = React.useRef(null);
@@ -1569,7 +1571,7 @@ window.SelHub = window.SelHub || {
         { id: 'advisor',  label: '\u2728 AI Advisor' },
         { id: 'progress', label: '\uD83D\uDCCA Progress' },
         { id: 'print',    label: '\uD83D\uDDA8 Print' }
-      ];
+      ].filter(function (tb) { return _dcAiOn || tb.id !== 'advisor'; });
 
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -1841,10 +1843,10 @@ window.SelHub = window.SelHub || {
             }),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
               // Get AI analysis
-              h('button', { 'aria-label': 'Get AI analysis',
+              _dcAiOn && h('button', { 'aria-label': 'Get AI analysis',
                 onClick: function() {
                   if (!dtReflection.trim()) { addToast('Write a bit about why you chose this!', 'info'); return; }
-                  if (!callGemini) { addToast('AI advisor not available.', 'error'); return; }
+                  if (!_dcAiOn) return;
                   upd('dtAiLoad', true);
                   var prompt = 'You are a decision-making coach for ' + band + ' school students.\n\n' +
                     'SCENARIO: "' + curDt.title + '"\n' + curDt.situation + '\n' +
@@ -2006,10 +2008,10 @@ window.SelHub = window.SelHub || {
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
             // AI analysis
-            h('button', { 'aria-label': 'AI analysis',
+            _dcAiOn && h('button', { 'aria-label': 'AI analysis',
               onClick: function() {
                 if (!edVerdict.trim() && !edSideA.trim() && !edSideB.trim()) { addToast('Write your thoughts first!', 'info'); return; }
-                if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                if (!_dcAiOn) return;
                 upd('edAiLoad', true);
                 upd('edAiResp', null);
                 var prompt = 'You are an ethics discussion facilitator for ' + band + ' school students.\n\n' +
@@ -2393,10 +2395,10 @@ window.SelHub = window.SelHub || {
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
             // AI analysis
-            h('button', { 'aria-label': 'AI analysis',
+            _dcAiOn && h('button', { 'aria-label': 'AI analysis',
               onClick: function() {
                 if (!rwReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
-                if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                if (!_dcAiOn) return;
                 upd('rwAiLoad', true);
                 upd('rwAiResp', null);
                 var prompt = 'You are a thoughtful history and ethics teacher for ' + band + ' school students.\n\n' +
@@ -2562,7 +2564,7 @@ window.SelHub = window.SelHub || {
             h('button', {
               onClick: function() {
                 if (!advPrompt.trim()) { addToast('Describe your decision first!', 'info'); return; }
-                if (!callGemini) { addToast('AI advisor is not available right now.', 'error'); return; }
+                if (!_dcAiOn) return;
                 upd('advLoading', true);
                 upd('advResponse', null);
                 var systemPrompt = 'You are a wise, supportive decision-making advisor for ' + band + ' school students. ' +

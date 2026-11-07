@@ -408,6 +408,8 @@ const WebSearchProvider = {
         try {
             if (typeof window === 'undefined') return '';
             if (window.ALLOFLOW_DISABLE_DIRECT_SERPER) return '';
+            // The teacher's device key never serves a learner role (host fence).
+            if (typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive()) return '';
             const cfg = JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}');
             return String(cfg.serperApiKey || '').trim();
         } catch (_) { return ''; }

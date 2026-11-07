@@ -52,7 +52,7 @@ describe('explicit independent starts', () => {
     expect(f.deps.requestGenerationSourceChoice).not.toHaveBeenCalled();
     expect(f.deps.inputText).toBe('Unrelated passage stays exactly here.');
   });
-  it.each(['anchor-chart', 'concept-sort', 'persona'])('topic %s reaches its own prompt despite stale reading selection', async type => {
+  it.each(['anchor-chart', 'concept-sort', 'persona', 'timeline'])('topic %s reaches its own prompt despite stale reading selection', async type => {
     const f = fixture({ inputText: 'UNRELATED READING SECRET', selectedReadingSourceId: 'missing', requestGenerationSourceChoice: vi.fn() });
     try { await run(type, f, { kind: 'topic', text: 'water cycle' }); } catch (_) { /* empty synthetic model response */ }
     expect(f.prompts.length).toBeGreaterThan(0);
@@ -182,7 +182,8 @@ function installedMain(folder) {
     const html = readFileSync(resolve(folder, 'index.html'), 'utf8');
     const match = html.match(/<script[^>]+src="([^"]*static\/js\/main\.[^"]+\.js)"/);
     if (!match) throw new Error('Installed app main is missing: ' + folder);
-    return resolve(folder, match[1]);
+    // A root-relative src ("/static/...") must stay inside the build folder, not the drive root.
+    return resolve(folder, match[1].replace(/^\/+/, ''));
 }
 
 function requiredIndex(text, marker, from = 0) {

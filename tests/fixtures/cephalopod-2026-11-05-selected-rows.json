@@ -1,0 +1,22 @@
+[
+ {
+  "label": "aria-pressed on factsCat row",
+  "old": "onClick: function() { setCL({ factsCat: c }); }",
+  "new": "'aria-pressed': active,\n                onClick: function() { setCL({ factsCat: c }); }"
+ },
+ {
+  "label": "aria-pressed on vocabGrade row",
+  "old": "onClick: function() { setCL({ vocabGrade: g }); }",
+  "new": "'aria-pressed': active,\n                onClick: function() { setCL({ vocabGrade: g }); }"
+ },
+ {
+  "label": "aria-pressed on faqCat row",
+  "old": "onClick: function() { setCL({ faqCat: c }); }",
+  "new": "'aria-pressed': active, onClick: function() { setCL({ faqCat: c }); }"
+ },
+ {
+  "label": "aria-pressed on the camo challenge scene row",
+  "old": "return h('button', { key: k, type: 'button', onClick: function() { setCL({ camoScene: k }); }, 'aria-label': s.name + ': best '",
+  "new": "return h('button', { key: k, type: 'button', 'aria-pressed': scene === k, onClick: function() { setCL({ camoScene: k }); }, 'aria-label': s.name + ': best '"
+ }
+]

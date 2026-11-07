@@ -27,6 +27,9 @@ beforeEach(() => {
   window.__alloflowSelToolData = null; window.__alloflowSelProgress = null;
   window.__alloflowSelSnapshots = null; window.__alloflowStudentArtifacts = null; delete window.AlloFlowUX;
   new Function('React', 'window', readFileSync(process.env.ALLO_PHASE_K_CANDIDATE || 'phase_k_helpers_module.js', 'utf8'))(React, window);
+  // A student save refuses to run without the real student-boundary helpers.
+  globalThis.React = React;
+  ['firestore_sync_module.js', 'instructional_context_module.js', 'session_transport_module.js', 'live_aac_module.js'].forEach((file) => new Function(readFileSync(file, 'utf8'))());
   save = window.AlloModules.PhaseKHelpers.executeSaveFile;
   downloads = []; blobs = [];
   vi.stubGlobal('Blob', class { constructor(parts) { this.text = async () => parts.join(''); } });

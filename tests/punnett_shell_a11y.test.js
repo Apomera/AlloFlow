@@ -272,10 +272,10 @@ describe('Punnett Tutor duplicate, failure, remount and recovery regressions', (
   it('handles an unavailable provider without losing the draft or entering a stuck loading state', async () => {
     provider = null;
     await mount({ _showAI: true, _aiQuestion: 'Keep this question while offline.' });
-    await activate(ask());
+    // Student AI-off sweep: with no usable provider the Tutor toggle and panel are hidden, not dead controls.
+    expect(ask()).toBeNull(); expect(question()).toBeNull(); expect(query('#punnett-tutor-toggle')).toBeNull();
     expect(latest.punnett._aiLoading).toBe(false); expect(latest.punnett._aiRequestId).toBeFalsy();
-    expect(question().value).toBe('Keep this question while offline.');
-    expect(tutorStatus().textContent).toMatch(/not available|unavailable|cannot|could not|error|unable/i);
+    expect(latest.punnett._aiQuestion).toBe('Keep this question while offline.');
     expect(gemini).not.toHaveBeenCalled(); noTutorSideEffects(); preserved();
   });
 

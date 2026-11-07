@@ -168,7 +168,8 @@ describe('STEM prediction semantics', () => {
     expect(skate).toContain('errorPct');
     expect(skate).toContain('stats.withinTen');
     // The hypothesis prompt widened (08-31) from hang time to ramp depth, load and rotation.
-    expect(skate.includes("__alloT('stem.skatelab.hypothesis_input', 'Skate physics investigation hypothesis')"), 'hypothesis field is named as a hypothesis').toBe(true);
+    // Re-keyed _v2 on 2026-11-03: the registered English still read "hang-time".
+    expect(skate.includes("__alloT('stem.skatelab.hypothesis_input_v2', 'Skate physics investigation hypothesis')"),'hypothesis field is named as a hypothesis').toBe(true);
     expect(skate.includes('Your hypothesis: will ramp depth change air height, transition load, or both?'), 'halfpipe hypothesis prompt').toBe(true);
     expect(skate).not.toContain('callGemini');
 

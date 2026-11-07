@@ -7,11 +7,9 @@
 // creation, reject-path, and the tagged round-trip (summary.fields).
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const PIPELINE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
-const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
-const PDFJS_CDN = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
-const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
 let r: any = null;
 
@@ -19,12 +17,8 @@ test.describe('Fillable S2 — widgets on the original layout', () => {
   test.beforeAll(async ({ browser }) => {
     test.setTimeout(240000);
     const page = await browser.newPage();
-    await page.goto('about:blank');
-    await page.addScriptTag({ url: PDFLIB_CDN });
-    await page.waitForFunction(() => !!(window as any).PDFLib, null, { timeout: 30000 });
-    await page.addScriptTag({ url: PDFJS_CDN });
-    await page.waitForFunction(() => !!(window as any).pdfjsLib, null, { timeout: 30000 });
-    await page.evaluate((w) => { (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = w; }, PDFJS_WORKER);
+    // pdf-lib + pdf.js from the reviewed records, and the host's verified-runtime hooks for the worker
+    await bootDocumentRuntime(page, ['pdf-lib.min.js', 'pdfjs.min.js']);
     await page.addScriptTag({ path: PIPELINE_PATH });
 
     r = await page.evaluate(async () => {

@@ -39,6 +39,18 @@
     return cdnUrl;
   }
   var SIM_SHELF_URL = companionUrl('sim_shelf/sim_shelf.html?v=1', SIM_SHELF_CDN_URL);
+  // Bridge trust: only the pop-up this tool opened, at the companion's own origin,
+  // may drive the bridge. Opaque origins (file://) report "null", which postMessage
+  // rejects as a target, so those fall back to '*' and rely on the source check.
+  var SIM_SHELF_ORIGIN = (function () {
+    try { var o = new URL(SIM_SHELF_URL, (window.location && window.location.href) || undefined).origin; return (o && o !== 'null') ? o : '*'; } catch (_) { return '*'; }
+  })();
+  var _simshelfPopup = null; // module scope: a still-open pop-up keeps working after a remount
+  function _simshelfBridgeTrusted(ev, win) {
+    var src = ev && ev.source;
+    if (!src || (src !== win && src !== _simshelfPopup)) return false;
+    return SIM_SHELF_ORIGIN === '*' || ev.origin === SIM_SHELF_ORIGIN;
+  }
 
   function buildDebriefPrompt(sim, prediction, explanation) {
     return [
@@ -86,7 +98,7 @@
         var popup = _win.current;
         if (!popup || popup.closed) return;
         var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
-        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, SIM_SHELF_ORIGIN); } catch (_) {}
       }, [ctx.theme]);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
 
@@ -106,8 +118,9 @@
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
+          if (!_simshelfBridgeTrusted(ev, _win.current)) return;
           if (data.type === 'allosimshelf-hello') {
-            try { if (ev.source) ev.source.postMessage({ type: 'allosimshelf-ready', ai: aiOn }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'allosimshelf-ready', ai: aiOn }, SIM_SHELF_ORIGIN); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -116,7 +129,7 @@
           if (data.type !== 'allosimshelf-ai-request' || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allosimshelf-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allosimshelf-ai-response', id: data.id }, payload), SIM_SHELF_ORIGIN); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
           bumpSlice('debriefCount');
@@ -146,6 +159,7 @@
           return;
         }
         _win.current = w;
+        _simshelfPopup = w;
         setPopupState('opening');
         bumpSlice('openedCount');
         if (announceToSR) announceToSR(t('stem.simShelf.opened_sr', 'Opened the Sim Shelf in a new window.'));

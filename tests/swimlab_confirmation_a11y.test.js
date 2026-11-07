@@ -128,7 +128,8 @@ function mountSwimLab({ confirm, dialogAvailable = true } = {}) {
       celebrate: () => {},
       canvasNarrate: () => {},
       canvasA11yDesc: () => {},
-      callGemini: null,
+      // A usable provider: "Ask the Lifeguard" (and its history) renders only with one (student AI-off sweep).
+      callGemini: () => new Promise(() => {}),
       callTTS: null,
       callImagen: null,
       callGeminiVision: null,

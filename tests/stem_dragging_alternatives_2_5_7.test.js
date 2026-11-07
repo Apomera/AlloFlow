@@ -30,7 +30,7 @@ describe('Angle Explorer second ray: click-settable without dragging', () => {
     const tool = window.StemLab._registry.protractor;
     const view = { d: null };
     function App() {
-      const [toolData, setToolData] = HReact.useState({ protractor: { showSecondRay: true, secondAngle: 120 } });
+      const [toolData, setToolData] = HReact.useState({ protractor: { activeTab: 'explore', showSecondRay: true, secondAngle: 120 } });
       view.d = toolData.protractor;
       const ctx = makeCtx({
         toolData, setToolData,

@@ -291,6 +291,15 @@
     return fallback || key;
   }
 
+  // Student AI-off: true only when this AI kind can actually run (blocked fns
+  // and policy-off count as unusable). Falls back on older hosts.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
   function speak(text, language) {
     try {
       if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
@@ -1493,6 +1502,9 @@
     var pageSourceHref = pageSourceUrl && pageSourceUrl !== '#' ? pageSourceUrl : '';
     var usagePolicy = bookUsagePolicy(book);
     var allowsAi = bookAllowsAi(book);
+    // Define / Sounds / Translate: hidden for learners without usable AI
+    // (teacher behaviour unchanged in this pass).
+    var aiHelpOn = allowsAi && (props.isTeacherMode || _aiUsable('text', props.callGemini));
     var externalSourceText = allowsAi ? selectedSource.text : '';
     var linkOnly = usagePolicy.access === 'link-only';
     var isMirroredOpenStax = bookSourceId(book) === 'openstax' && !isCardContent(book);
@@ -1890,7 +1902,7 @@
       }
       var clean = String(word).replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
       if (!clean) return;
-      if (!props.callGemini) {
+      if (!props.callGemini || !aiHelpOn) {
         props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
         return;
       }
@@ -2098,7 +2110,7 @@
       var lang = String(target || '').trim();
       setTxMenuOpen(false);
       if (!lang) return;
-      if (!props.callGemini) {
+      if (!props.callGemini || !aiHelpOn) {
         props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
         return;
       }
@@ -2228,8 +2240,8 @@
           'aria-pressed': autoRead,
           title: tr('readinglib_read_aloud_hint', 'Read the book aloud and turn the pages automatically'),
         }, autoRead ? '⏸ ' + tr('readinglib_stop_reading', 'Stop') : '▶ ' + tr('readinglib_read_aloud', 'Read aloud')) : null,
-        allowsAi ? modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')) : null,
-        allowsAi ? modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')) : null,
+        aiHelpOn ? modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')) : null,
+        aiHelpOn ? modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')) : null,
         e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
           onClick: function (ev) { ev.currentTarget.focus(); closeMenus(); setWordsOpen(true); setPopup(null); },
@@ -2373,7 +2385,7 @@
           ) : null
         ) : null,
         // AI translation menu — fills languages StoryWeaver doesn't cover.
-        allowsAi ? e('div', { className: 'relative', 'data-rl-menu': 'tx' },
+        aiHelpOn ? e('div', { className: 'relative', 'data-rl-menu': 'tx' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
               (txReady ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),

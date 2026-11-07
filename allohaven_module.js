@@ -15,6 +15,14 @@
     }
     return fallback != null ? fallback : key;
   };
+  // Student AI-off (polish / insights): a null, host-blocked or policy-off fn
+  // is unusable, so those paths take their local fallback.
+  function _havenAiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
   (function ensureStudentArtifactStore() {
     if (typeof window === 'undefined') return;
     window.AlloModules = window.AlloModules || {};
@@ -301,6 +309,33 @@
     });
   }
 
+  // AI-off sweep: a mode that declares requiresAi ('text', ...) is hidden and
+  // never charged when that AI kind is unusable (null, blocked, or policy off).
+  // A mode with an honest no-AI path declares aiOffPath: 'self-check' instead.
+  function _arcadeAiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+  function _arcadeModeAiOk(mode, aiFns) {
+    if (!mode || !mode.requiresAi) return true;
+    var kind = mode.requiresAi === true ? 'text' : String(mode.requiresAi);
+    var fn = aiFns ? (kind === 'audio' ? aiFns.callGeminiAudio : kind === 'images' ? aiFns.callImagen : aiFns.callGemini) : null;
+    return _arcadeAiUsable(kind, fn);
+  }
+
+  // How a Realm zone or Atlas edge's result reads to a teacher. Self-rated work
+  // has no number and never reads as AI-graded or teacher-verified.
+  function _arcadeScoreText(item, wordScore) {
+    if (item && item.selfRated) {
+      return __alloT('arcade.self_check.packet_tag', 'self-rated, not scored')
+        + (item.selfCheckText ? ' (' + item.selfCheckText + ')' : '');
+    }
+    if (item && item.scoredBy === 'teacher') return __alloT('arcade.teacher_queue.packet_tag', 'teacher score') + ' ' + item.score + '/20';
+    return (wordScore ? 'score ' : '') + (item ? item.score : 0) + '/20';
+  }
+
   if (!window.AlloHavenArcade) {
     window.AlloHavenArcade = {
       _registry: {},
@@ -323,11 +358,17 @@
       renderMode: function(id, ctx) {
         var mode = this._registry[id];
         if (!mode || typeof mode.render !== 'function') return null;
-        try { return mode.render(ctx); }
-        catch (e) {
-          if (typeof console !== 'undefined') console.error('[AlloHavenArcade] Error rendering ' + id, e);
-          return null;
+        // Modes call hooks in render: each needs its own fiber, or a late-registering mode shifts the caller's hook order.
+        if (!this._ModeHost) {
+          this._ModeHost = function(p) {
+            try { return p.mode.render(p.ctx); }
+            catch (e) {
+              if (typeof console !== 'undefined') console.error('[AlloHavenArcade] Error rendering ' + p.mode.id, e);
+              return null;
+            }
+          };
         }
+        return window.React.createElement(this._ModeHost, { key: id, mode: mode, ctx: ctx });
       }
     };
   }
@@ -4762,7 +4803,7 @@
       var raw = (draft || '').trim();
       if (!raw) return;
       var callGemini = p.callGemini;
-      if (typeof callGemini !== 'function') {
+      if (!_havenAiUsable('text', callGemini)) {
         // No Gemini available — do a local-only minimal polish so the
         // button still feels responsive. Capitalize sentences after ./?/!
         // and Title-case the very first character.
@@ -8847,7 +8888,7 @@
                 h('span', { style: { fontWeight: 700 } }, z.realmName),
                 h('span', { style: { color: palette.textDim } },
                   ' · ' + z.verbLabel + (z.role === 'partner' ? ' (linked)' : '')
-                  + ' · ' + z.score + '/20')
+                  + ' · ' + _arcadeScoreText(z))
               )
             );
           })
@@ -8885,7 +8926,7 @@
                     h('span', { style: { color: palette.textDim } },
                       ' · ' + e.edgeLabel
                       + (e.partnerCardName ? ' ' + (e.role === 'from' ? '→ ' : '← ') + e.partnerCardName : '')
-                      + ' · ' + e.score + '/20')
+                      + ' · ' + _arcadeScoreText(e))
                   )
                 );
               })
@@ -11346,6 +11387,67 @@
     return destroy;
   }
 
+  // Breathing pacer voice. callTTS is (text, voiceName, speed) and resolves an
+  // audio URL, or null when no cloud voice may speak (student AI off, mute,
+  // speech off). Play the URL; with none, read with the device voice unless
+  // muted or speech is off (same rule as the Phase K reader's browser fallback).
+  function havenDeviceVoiceAllowed() {
+    if (typeof window === 'undefined') return false;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false; } catch (e) {}
+    var cfg = {};
+    try { cfg = JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}') || {}; } catch (e) {}
+    if (cfg.ttsProvider === 'off') return false;
+    return window.__alloStudentAiDisabled === true || cfg.ttsProvider === 'browser' || cfg.browserTtsFallback !== false;
+  }
+  function createBreathCueSpeaker(getOpts) {
+    var gen = 0, audio = null, deviceOn = false;
+    function stop() {
+      gen++;
+      var a = audio; audio = null;
+      if (a) { try { a.pause(); } catch (e) {} }
+      if (deviceOn) { deviceOn = false; try { window.speechSynthesis.cancel(); } catch (e) {} }
+    }
+    function speakDevice(text, rate) {
+      if (!havenDeviceVoiceAllowed()) return false;
+      var synth = window.speechSynthesis;
+      if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return false;
+      try {
+        var u = new SpeechSynthesisUtterance(text);
+        u.rate = Math.max(0.5, Math.min(2, rate * (Number(window.__alloPlaybackRate) || 1)));
+        if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+        synth.cancel();
+        synth.speak(u);
+        deviceOn = true;
+        return true;
+      } catch (e) { return false; }
+    }
+    function speak(text) {
+      stop();
+      var my = gen;
+      var o = (typeof getOpts === 'function' && getOpts()) || {};
+      var phrase = String(text == null ? '' : text).trim();
+      var rate = Number(o.rate) || 0.85;
+      if (!phrase) return Promise.resolve('silent');
+      var req;
+      try { req = typeof o.callTTS === 'function' ? o.callTTS(phrase, o.voice || undefined, rate) : null; } catch (e) { req = null; }
+      return Promise.resolve(req).catch(function() { return null; }).then(function(url) {
+        if (my !== gen) return 'stale';
+        if (url && typeof url === 'string') {
+          try {
+            var a = new Audio(url);
+            if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) a.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+            audio = a;
+            var p = a.play();
+            if (p && typeof p.catch === 'function') p.catch(function() { if (audio === a) audio = null; });
+            return 'audio';
+          } catch (e) { audio = null; }
+        }
+        return speakDevice(phrase, rate) ? 'device' : 'silent';
+      });
+    }
+    return { speak: speak, stop: stop };
+  }
+
   function AlloHaven(props) {
     var React = window.React;
     if (!React) {
@@ -11815,7 +11917,7 @@
         firstEntryDate: entries[entries.length - 1].date,
         lastEntryDate: entries[0].date
       };
-      if (typeof callGemini !== 'function') {
+      if (!_havenAiUsable('text', callGemini)) {
         // No AI — show local stats only, no narrative summary.
         setStateField('insightsState', {
           loading: false,
@@ -14941,6 +15043,8 @@
               role: z.cardId === cardId ? 'placed' : 'partner',
               verbLabel: z.verbLabel,
               score: z.score,
+              selfRated: !!z.selfRated,
+              scoredBy: z.scoredBy || null,
               resonant: !!z.resonant,
               addedAt: z.addedAt
             });
@@ -14961,6 +15065,8 @@
               edgeLabel: e.edgeLabel,
               partnerCardName: e.fromCardId === cardId ? e.toCardName : e.fromCardName,
               score: e.score,
+              selfRated: !!e.selfRated,
+              scoredBy: e.scoredBy || null,
               resonant: !!e.resonant,
               addedAt: e.addedAt
             });
@@ -15160,6 +15266,8 @@
     var breatheStartedAtTuple = useState(0);
     var breatheStartedAt = breatheStartedAtTuple[0];
     var setBreatheStartedAt = breatheStartedAtTuple[1];
+    var breatheTtsRef = useRef({ callTTS: null, voice: null });
+    breatheTtsRef.current = { callTTS: props.callTTS, voice: props.selectedVoice };
 
     // Phase L1 — Feed Story modal state.
     // Draft text is component-local (not persisted) so closing the modal
@@ -15236,28 +15344,21 @@
       setBreathePhase('inhale');
       setBreatheCycles(0);
       setBreatheStartedAt(Date.now());
-      // First voice cue
-      if (breatheVoiceOn && props.callTTS) {
-        try { props.callTTS('Breathe in', { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
-      }
+      var phases = ['inhale', 'hold-in', 'exhale', 'hold-out'];
+      var labels = ['Breathe in', 'Hold', 'Breathe out', 'Rest'];
+      var speaker = createBreathCueSpeaker(function() {
+        return { callTTS: breatheTtsRef.current.callTTS, voice: breatheTtsRef.current.voice, rate: 0.85 };
+      });
+      var step = 0;
+      // First voice cue; each later cue cancels the one before it.
+      if (breatheVoiceOn) speaker.speak(labels[0]);
       var iv = setInterval(function() {
-        setBreathePhase(function(prev) {
-          var idx = ['inhale', 'hold-in', 'exhale', 'hold-out'].indexOf(prev);
-          var next = ['inhale', 'hold-in', 'exhale', 'hold-out'][(idx + 1) % 4];
-          if (next === 'inhale') {
-            setBreatheCycles(function(c) { return c + 1; });
-          }
-          if (breatheVoiceOn && props.callTTS) {
-            var label = next === 'inhale' ? 'Breathe in'
-                       : next === 'hold-in' ? 'Hold'
-                       : next === 'exhale' ? 'Breathe out'
-                       : 'Rest';
-            try { props.callTTS(label, { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
-          }
-          return next;
-        });
+        step = (step + 1) % 4;
+        setBreathePhase(phases[step]);
+        if (step === 0) setBreatheCycles(function(c) { return c + 1; });
+        if (breatheVoiceOn) speaker.speak(labels[step]);
       }, 4000);
-      return function() { clearInterval(iv); };
+      return function() { clearInterval(iv); speaker.stop(); };
       // eslint-disable-next-line
     }, [state.activeModal, breatheVoiceOn]);
     var reactingTuple = useState(false);
@@ -20369,6 +20470,7 @@
         addToast('That game isn\'t registered.');
         return false;
       }
+      if (!_arcadeModeAiOk(mode, props)) return false;
       var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
       var minutesAsked = Math.max(1, Math.floor(minutes || mode.timeCost || mpt));
       var tokensNeeded = Math.ceil(minutesAsked / mpt);
@@ -20411,6 +20513,7 @@
         addToast('That class activity isn\'t registered.');
         return false;
       }
+      if (!_arcadeModeAiOk(mode, props)) return false;
       var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
       var minutesAsked = Math.max(1, Math.floor(minutes || mode.timeCost || mpt));
       var nowMs = Date.now();
@@ -20426,6 +20529,33 @@
         }
       }));
       addToast('🎓 ' + (mode.label || modeId) + ' · class session · no token cost');
+      return true;
+    }
+
+    function launchSelfCheckArcadeMode(modeId, minutes) {
+      // AI off: the work is self-rated and pays nothing, so the attempt costs
+      // nothing. Falls back to the charged launch whenever grading is available.
+      var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
+      if (!mode) {
+        addToast('That game isn\'t registered.');
+        return false;
+      }
+      if (mode.aiOffPath !== 'self-check' || _arcadeAiUsable('text', props.callGemini)) return launchArcadeMode(modeId, minutes);
+      var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
+      var minutesAsked = Math.max(1, Math.floor(minutes || mode.timeCost || mpt));
+      var nowMs = Date.now();
+      setStateField('arcade', Object.assign({}, state.arcade, {
+        session: {
+          modeId: modeId,
+          startedAt: new Date(nowMs).toISOString(),
+          minutes: minutesAsked,
+          endsAt: new Date(nowMs + minutesAsked * 60 * 1000).toISOString(),
+          timerPaused: false,
+          pausedRemainingMs: null,
+          selfCheck: true
+        }
+      }));
+      addToast((mode.label || modeId) + ' · ' + minutesAsked + ' min · ' + __alloT('arcade.self_check.no_tokens', 'no tokens'));
       return true;
     }
 
@@ -20604,6 +20734,9 @@
                   : [];
       var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
       var session = state.arcade && state.arcade.session;
+      modes = modes.filter(function(m) {
+        return (session && session.modeId === m.id) || _arcadeModeAiOk(m, props);
+      });
       // Ms remaining if a session is active
       var remainingMs = getArcadeRemainingMs(session);
       var remainingMin = Math.ceil(remainingMs / 60000);
@@ -20756,6 +20889,7 @@
                 session: session,
                 onLaunch: function(minutes) { return launchArcadeMode(mode.id, minutes); },
                 onLaunchHosted: function(minutes) { return launchHostedArcadeMode(mode.id, minutes); },
+                onLaunchSelfCheck: function(minutes) { return launchSelfCheckArcadeMode(mode.id, minutes); },
                 onClose: close,
                 onEndSession: function(reason) { return endArcadeSession(reason || 'forfeit'); },
                 // Phase 3b.history — plugin calls this with an encounter
@@ -28065,7 +28199,7 @@
               h('p', { style: { margin: '0 0 2px 0', fontSize: '12px', fontWeight: 700, color: '#000' } },
                 z.cardName + ' (' + z.verbLabel + ')'
                 + (z.partnerCardName ? ' ↔ ' + z.partnerCardName : '')
-                + ' · score ' + z.score + '/20'),
+                + ' · ' + _arcadeScoreText(z, true)),
               h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: '2px 0 0 0' }) },
                 '"' + (z.justification || '') + '"'),
               z.followUp ? h('p', { style: { margin: '4px 0 0 0', fontSize: '10px', color: '#666' } },
@@ -28084,7 +28218,7 @@
                 ' · ', z.verbLabel,
                 z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
                 h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
-                  'score ' + z.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                  _arcadeScoreText(z, true) + (addedStr ? ' · ' + addedStr : '')
                   + (z.score >= 18 ? ' · 🌟' : '')
                   + (z.transformed ? ' · canvas evolved' : '')),
                 z.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
@@ -28186,7 +28320,7 @@
           resonant.map(function (e, i) {
             return h('div', { key: 'pari-' + i, className: 'ah-print-section', style: { marginBottom: '8px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
               h('p', { style: { margin: '0 0 2px 0', fontSize: '12px', fontWeight: 700, color: '#000' } },
-                e.fromCardName + ' — ' + e.edgeLabel + ' → ' + e.toCardName + ' · score ' + e.score + '/20'),
+                e.fromCardName + ' — ' + e.edgeLabel + ' → ' + e.toCardName + ' · ' + _arcadeScoreText(e, true)),
               h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: '2px 0 0 0' }) },
                 '"' + (e.justification || '') + '"'),
               e.followUp ? h('p', { style: { margin: '4px 0 0 0', fontSize: '10px', color: '#666' } },
@@ -28205,7 +28339,7 @@
                 ' — ', e.edgeLabel, ' → ',
                 h('strong', null, e.toCardName),
                 h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
-                  'score ' + e.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                  _arcadeScoreText(e, true) + (addedStr ? ' · ' + addedStr : '')
                   + (e.score >= 18 ? ' · 🌟' : '')),
                 e.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
                   '"' + e.justification + '"') : null,
@@ -29034,7 +29168,7 @@
                 return h('p', { key: 'pres-' + i, style: Object.assign({}, bodyTextStyle, { margin: '2px 0 6px 0' }) },
                   h('strong', null, z.cardName + ' (' + z.verbLabel + ')'),
                   z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
-                  ' · score ' + z.score + '/20',
+                  ' · ' + _arcadeScoreText(z, true),
                   h('br'),
                   h('span', { style: { fontStyle: 'italic', color: '#444' } }, '"' + (z.justification || '') + '"')
                 );
@@ -29051,7 +29185,7 @@
                     ' · ', z.verbLabel,
                     z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
                     h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
-                      'score ' + z.score + '/20' + (addedStr ? ' · ' + addedStr : '')),
+                      _arcadeScoreText(z, true) + (addedStr ? ' · ' + addedStr : '')),
                     z.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
                       '"' + z.justification + '"') : null
                   );
@@ -29098,7 +29232,7 @@
               atlasResonant.map(function(e, i) {
                 return h('p', { key: 'paresb-' + i, style: Object.assign({}, bodyTextStyle, { margin: '2px 0 6px 0' }) },
                   h('strong', null, e.fromCardName + ' — ' + e.edgeLabel + ' → ' + e.toCardName),
-                  ' · score ' + e.score + '/20',
+                  ' · ' + _arcadeScoreText(e, true),
                   h('br'),
                   h('span', { style: { fontStyle: 'italic', color: '#444' } }, '"' + (e.justification || '') + '"')
                 );
@@ -29114,7 +29248,7 @@
                     ' — ', e.edgeLabel, ' → ',
                     h('strong', null, e.toCardName),
                     h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
-                      'score ' + e.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                      _arcadeScoreText(e, true) + (addedStr ? ' · ' + addedStr : '')
                       + (e.score >= 18 ? ' · 🌟' : '')),
                     e.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
                       '"' + e.justification + '"') : null
@@ -30058,6 +30192,7 @@
     waterIdeaSeed: waterIdeaSeed,
     getIdeaGrowthStage: getIdeaGrowthStage,
     getIdeaSeedStatus: getIdeaSeedStatus,
+    createBreathCueSpeaker: createBreathCueSpeaker,
     DECORATION_COST: DECORATION_COST
   };
   console.log('[CDN] AlloHaven loaded');

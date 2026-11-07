@@ -10,7 +10,10 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/anchored_slice.js';
 
 const ROOT = process.cwd();
-const strip = (s) => s.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+// The species encyclopedia entries (one JSON object per line in BIRD_ENC) are checked by
+// tests/species_encyclopedia.test.js. They legitimately mention places and former names
+// ("Pennsylvania", "Sharp-tailed Sparrow") that these claim scans guard against in the curated tables.
+const strip = (s) => s.split('\n').filter((l) => !/^\s*\/\//.test(l) && !/^ {4}\{"id":"[A-Za-z0-9]+","name":"/.test(l)).join('\n');
 // BIRDLAB_TOOL_FILE / BIRDLAB_MIRROR_FILE point a mutation run at scratch copies,
 // so the shared tree is never edited.
 const SRC = strip(fs.readFileSync(process.env.BIRDLAB_TOOL_FILE || path.join(ROOT, 'stem_lab/stem_tool_birdlab.js'), 'utf8'));

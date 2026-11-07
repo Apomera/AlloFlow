@@ -71,8 +71,72 @@ function llSanitize(obj, wanted) {
 function llPrompt(langName, list) {
   return ["Translate these user-interface labels for a teacher tool that imports and grades student worksheet submissions into natural, concise " + langName + " (buttons, headings, toasts \u2014 keep them short and professional).", "Keep any {tokens}, numbers, and any emoji EXACTLY as written. Do NOT translate the acronyms AI, JSON, or the file extension .alloflow. No commentary.", "Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its " + langName + " translation.", JSON.stringify(list)].join(String.fromCharCode(10));
 }
-function siWorkEvidence(payload) {
+async function siTakeHomeLib() {
+  if (window.AlloWordSoundsTakeHome) return window.AlloWordSoundsTakeHome;
+  if (typeof window.__alloLoadPlugin === "function") {
+    try {
+      await window.__alloLoadPlugin("word_sounds_take_home_loader.js");
+    } catch (_) {
+    }
+  }
+  return window.AlloWordSoundsTakeHome || null;
+}
+function siTakeHomeMark(item) {
+  return !item.done ? "\u2013" : item.firstTry ? "\u2713" : item.correct ? "\u21BB" : "\u2717";
+}
+function siTakeHomeResult(result) {
+  var h = React.createElement;
+  var s = result.summary;
+  var cell = { padding: "4px 8px", borderTop: "1px solid #e2e8f0", textAlign: "left", verticalAlign: "top" };
+  return h(
+    "section",
+    { "data-si-take-home": "true", "aria-label": tr("Word Sounds take-home results"), style: { margin: "0 0 12px", padding: 12, border: "1px solid #c7d2fe", borderRadius: 8, background: "#fff" } },
+    h("div", { style: { fontWeight: 700, color: "#312e81" } }, tr("Word Sounds take-home: {first} of {total} right on the first try", { first: s.firstTry, total: s.items })),
+    h(
+      "div",
+      { style: { fontSize: "0.8rem", color: "#475569", marginTop: 2 } },
+      tr("{retry} right after a retry, {missed} missed, {left} not done. The name is what the student typed.", { retry: s.afterRetry, missed: s.missed, left: s.items - s.done })
+    ),
+    h(
+      "table",
+      { style: { width: "100%", marginTop: 8, borderCollapse: "collapse", fontSize: "0.85rem" } },
+      h("thead", null, h(
+        "tr",
+        null,
+        h("th", { scope: "col", style: cell }, tr("Activity")),
+        h("th", { scope: "col", style: cell }, tr("First try")),
+        h("th", { scope: "col", style: cell }, tr("Words"))
+      )),
+      h("tbody", null, Object.keys(result.byActivity).map(function(id) {
+        var a = result.byActivity[id];
+        var words = result.items.filter(function(item) {
+          return item.activity === id;
+        });
+        return h(
+          "tr",
+          { key: id },
+          h("th", { scope: "row", style: cell }, result.activityTitles[id] || id),
+          h("td", { style: cell }, a.firstTry + " / " + a.items),
+          h("td", { style: cell }, words.map(function(item) {
+            var tries = item.responses.length > 1 ? " (" + item.responses.join(", ") + ")" : "";
+            return item.word + " " + siTakeHomeMark(item) + tries;
+          }).join("; "))
+        );
+      }))
+    ),
+    h(
+      "div",
+      { style: { fontSize: "0.75rem", color: "#475569", marginTop: 6 } },
+      tr("\u2713 right first time, \u21BB right after a retry, \u2717 missed, \u2013 not done. Practice results, not a test score.")
+    )
+  );
+}
+function siWorkEvidence(payload, teacherHistory) {
   var p = payload && typeof payload === "object" ? payload : {};
+  var roleSwaps = siRoleSwapItems(p, teacherHistory);
+  var roleSwapIndexes = roleSwaps.map(function(model) {
+    return model.contentIndex;
+  });
   var num = function(v) {
     return typeof v === "number" && isFinite(v) && v >= 0 ? Math.floor(v) : null;
   };
@@ -97,8 +161,8 @@ function siWorkEvidence(payload) {
   });
   var stats = p.stats && typeof p.stats === "object" && !Array.isArray(p.stats) ? p.stats : {};
   var notebook = stats.notebook && typeof stats.notebook === "object" && !Array.isArray(stats.notebook) ? stats.notebook : {};
-  var interviews = (Array.isArray(p.content) ? p.content : []).filter(function(item) {
-    return item && (item.type === "persona-reflection" || item.type === "persona-summary");
+  var interviews = (Array.isArray(p.content) ? p.content : []).filter(function(item, index) {
+    return item && (item.type === "persona-reflection" || item.type === "persona-summary") && roleSwapIndexes.indexOf(index) < 0;
   }).slice(0, 10).map(function(item) {
     var d = item.data;
     var body = typeof d === "string" ? d : d && typeof d === "object" ? [d.overview].concat((Array.isArray(d.keyInsights) ? d.keyInsights : []).map(function(k) {
@@ -114,6 +178,9 @@ function siWorkEvidence(payload) {
   var evidence = {
     activities,
     interviews,
+    roleSwaps,
+    stories: siStudentStoryItems(p),
+    reflections: siAdventureReflectionItems(p),
     games,
     totalXP: num(stats.totalXP),
     quizzesTaken: num(stats.quizzesTaken),
@@ -125,6 +192,171 @@ function siWorkEvidence(payload) {
   };
   evidence.isEmpty = activities.length === 0 && games.length === 0 && evidence.totalXP === null && evidence.quizzesTaken === null && evidence.notebookEntries === null;
   return evidence;
+}
+function siRoleSwapNorm(value) {
+  return String(value || "").toLocaleLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").trim().replace(/^["'….\s]+|["'….\s]+$/g, "");
+}
+function siRoleSwapTeacherExcerpt(resourceId, teacherHistory) {
+  var id = siResponseText(resourceId, 240);
+  if (!id || !Array.isArray(teacherHistory)) return null;
+  var matches = teacherHistory.filter(function(h) {
+    return h && h.type === "persona" && String(h.id) === id;
+  });
+  var src = matches.length === 1 && matches[0].config && typeof matches[0].config === "object" ? matches[0].config.personaSource : null;
+  return src && typeof src.excerpt === "string" && src.excerpt.trim() ? siRoleSwapNorm(src.excerpt) : null;
+}
+function siRoleSwapModel(item, teacherHistory) {
+  var cfg = item && typeof item === "object" && item.type === "persona-reflection" && item.config && typeof item.config === "object" && !Array.isArray(item.config) ? item.config : null;
+  var rs = cfg && cfg.kind === "role-swap" && cfg.roleSwap && typeof cfg.roleSwap === "object" ? cfg.roleSwap : null;
+  if (!rs || !Array.isArray(rs.entries)) return null;
+  var excerpt = siRoleSwapTeacherExcerpt(cfg.personaResourceId, teacherHistory);
+  var entries = rs.entries.slice(0, 14).map(function(e) {
+    if (!e || typeof e !== "object") return null;
+    var evidence = siResponseText(e.evidence, 1e3);
+    var evidenceKey = siRoleSwapNorm(evidence);
+    var found = excerpt !== null ? evidenceKey.length >= 12 && excerpt.indexOf(evidenceKey) >= 0 : e.evidenceInSource === true;
+    return { speaker: siResponseText(e.speaker, 160), question: siResponseText(e.question, 500), answer: siResponseText(e.answer, 4e3), evidence, evidenceInSource: !!evidence && found };
+  }).filter(function(e) {
+    return e && e.question && e.answer;
+  });
+  if (!entries.length) return null;
+  var sc = rs.selfCheck && typeof rs.selfCheck === "object" ? rs.selfCheck : {};
+  var participants = (Array.isArray(rs.participants) ? rs.participants : []).slice(0, 6).map(function(n) {
+    return siResponseText(n, 160);
+  }).filter(Boolean);
+  var text = entries.map(function(e) {
+    return e.question + "\n" + e.answer + (e.evidence ? "\nEvidence: " + e.evidence + (e.evidenceInSource ? " (found in source)" : "") : "");
+  }).join("\n\n");
+  return {
+    key: "role-swap:" + (siResponseText(cfg.roleSwapKey || item.id, 200) || "item"),
+    title: siResponseText(item.title, 120) || "Role Swap",
+    subject: participants.join(" & "),
+    entries,
+    selfCheck: { inCharacter: sc.inCharacter === true, usesEvidence: sc.usesEvidence === true, accurate: sc.accurate === true },
+    checkedAgainstTeacherCopy: excerpt !== null,
+    text: text.slice(0, 12e3)
+  };
+}
+function siRoleSwapItems(payload, teacherHistory) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  var out = [];
+  var seen = /* @__PURE__ */ Object.create(null);
+  (Array.isArray(p.content) ? p.content : []).forEach(function(item, index) {
+    if (out.length >= 10) return;
+    var model = siRoleSwapModel(item, teacherHistory);
+    if (!model) return;
+    var key = model.key;
+    for (var n = 2; seen[key]; n++) key = model.key + "#" + n;
+    seen[key] = true;
+    model.key = key;
+    model.contentIndex = index;
+    out.push(model);
+  });
+  return out;
+}
+function siResponsesWithRoleSwaps(payload, rowGrades, teacherHistory) {
+  var responses = payload && payload.responses;
+  var scored = siRoleSwapItems(payload, teacherHistory).concat(siStudentStoryItems(payload)).filter(function(rs) {
+    return rowGrades && rowGrades[rs.key];
+  });
+  if (!scored.length) return responses;
+  var out = Object.assign({}, responses && typeof responses === "object" && !Array.isArray(responses) ? responses : {});
+  scored.forEach(function(rs) {
+    out[rs.key] = rs.text;
+  });
+  return out;
+}
+var SI_STORY_CHECKS = [["clearProblem", "My story has a clear problem"], ["choicesMatter", "Every choice matters"], ["twoEndings", "It has at least two endings"]];
+function siStudentStoryModel(item) {
+  var d = item && typeof item === "object" && item.type === "adventure" && item.data && typeof item.data === "object" && !Array.isArray(item.data) ? item.data : null;
+  var raw = d && d.kind === "student-story" && d.studentStory && typeof d.studentStory === "object" && !Array.isArray(d.studentStory) ? d.studentStory : null;
+  if (!raw || !Array.isArray(raw.scenes)) return null;
+  var seen = /* @__PURE__ */ Object.create(null);
+  var scenes = raw.scenes.slice(0, 60).map(function(sc) {
+    if (!sc || typeof sc !== "object") return null;
+    var id = siResponseText(sc.id, 40);
+    if (!id || seen[id]) return null;
+    seen[id] = true;
+    var ending = sc.ending === true;
+    var choices = ending ? [] : (Array.isArray(sc.choices) ? sc.choices : []).slice(0, 4).map(function(c) {
+      return c && typeof c === "object" ? { label: siResponseText(c.label, 200), to: siResponseText(c.to, 40) } : null;
+    }).filter(Boolean);
+    return { id, text: siResponseText(sc.text, 2e3), ending, choices };
+  }).filter(Boolean);
+  if (!scenes.length) return null;
+  var number = /* @__PURE__ */ Object.create(null);
+  scenes.forEach(function(sc, i) {
+    number[sc.id] = i + 1;
+  });
+  var start = siResponseText(raw.start, 40);
+  if (!number[start]) start = scenes[0].id;
+  var sc0 = d.selfCheck && typeof d.selfCheck === "object" ? d.selfCheck : {};
+  var selfCheck = {};
+  SI_STORY_CHECKS.forEach(function(pair) {
+    selfCheck[pair[0]] = sc0[pair[0]] === true;
+  });
+  var title = siResponseText(raw.title || item.title, 120) || "Adventure";
+  var text = [title].concat(scenes.map(function(sc) {
+    return "Scene " + number[sc.id] + (sc.id === start ? " (start)" : "") + (sc.ending ? " (ending)" : "") + ": " + sc.text + sc.choices.map(function(c) {
+      return "\n  -> " + c.label + " (Scene " + (number[c.to] || "?") + ")";
+    }).join("");
+  })).join("\n\n");
+  return {
+    key: "student-story:" + (siResponseText(item.id, 200) || "item"),
+    title,
+    start,
+    scenes,
+    number,
+    endings: scenes.filter(function(sc) {
+      return sc.ending;
+    }).length,
+    selfCheck,
+    story: { version: 1, title, start, scenes },
+    text: text.slice(0, 12e3)
+  };
+}
+function siStudentStoryItems(payload) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  var out = [];
+  var seen = /* @__PURE__ */ Object.create(null);
+  (Array.isArray(p.content) ? p.content : []).forEach(function(item, index) {
+    if (out.length >= 10) return;
+    var model = siStudentStoryModel(item);
+    if (!model) return;
+    var key = model.key;
+    for (var n = 2; seen[key]; n++) key = model.key + "#" + n;
+    seen[key] = true;
+    model.key = key;
+    model.contentIndex = index;
+    out.push(model);
+  });
+  return out;
+}
+function siAdventureReflectionItems(payload) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  var out = [];
+  (Array.isArray(p.content) ? p.content : []).forEach(function(item) {
+    if (out.length >= 10) return;
+    var d = item && typeof item === "object" && item.type === "adventure" && item.data && typeof item.data === "object" && !Array.isArray(item.data) ? item.data : null;
+    if (!d || d.kind !== "offline-reflection" || !Array.isArray(d.reflections)) return;
+    var entries = d.reflections.slice(0, 60).map(function(e) {
+      return e && typeof e === "object" ? { ending: siResponseText(e.ending, 300), text: siResponseText(e.text, 1e3) } : null;
+    }).filter(function(e) {
+      return e && e.text;
+    });
+    if (entries.length) out.push({ title: siResponseText(d.storyTitle || item.title, 120) || "Adventure", entries });
+  });
+  return out;
+}
+function siStudentStoryPlayable(model) {
+  var api = typeof window !== "undefined" && window.AlloModules && window.AlloModules.AdventureOffline;
+  if (!api || typeof api.normalize !== "function" || typeof api.validate !== "function" || typeof api.Player !== "function") return null;
+  try {
+    var story = api.normalize(model.story);
+    return api.validate(story).ok ? story : null;
+  } catch (e) {
+    return null;
+  }
 }
 var SI_RESPONSE_MANIFEST_SCHEMA_VERSION = 1;
 var SI_RESPONSE_ENTRY_LIMIT = 500;
@@ -1264,6 +1496,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   if (_llCacheRef.current === null) _llCacheRef.current = llLoad();
   var _llAttemptedRef = React.useRef({});
   var _setLlTick = React.useState(0)[1];
+  const [playingStoryKey, setPlayingStoryKey] = React.useState(null);
   LL_CUR.lang = uiLang;
   LL_CUR.cache = _llCacheRef.current;
   React.useEffect(function() {
@@ -1675,84 +1908,161 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   };
   const handleSubmissionFiles = async (e) => {
     const files = Array.prototype.slice.call(e.target?.files || []);
+    if (e.target) e.target.value = "";
     if (files.length === 0) return;
+    await importSubmissionFiles(files, null);
+  };
+  const importSubmissionFiles = async (files, source) => {
     const newRows = [];
+    const okNames = [];
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
+      const rowsBefore = newRows.length;
       try {
-        const text = await f.text();
-        const looksJson = /\.json$/i.test(f.name || "") || text.trim().charAt(0) === "{";
-        if (looksJson) {
-          try {
-            const p = JSON.parse(text);
-            const declaresSubmission = p && p.kind === "alloflow-student-submission";
-            const looksResponseShaped = p && (p.responses && typeof p.responses === "object" || p.answers && typeof p.answers === "object");
-            if (p && (declaresSubmission || looksResponseShaped) && !p.ciphertext) {
-              const importedNickname = ["nickname", "studentName", "studentNickname"].map((key) => Object.prototype.hasOwnProperty.call(p, key) && typeof p[key] === "string" ? siStableIdentityValue(p[key]) : "").find(Boolean) || "?";
-              const normalizedPayload = p.responses ? { ...p, nickname: importedNickname } : {
-                ...p,
-                nickname: importedNickname,
-                timestamp: p.timestamp || p.submissionDate || null,
-                docTitle: p.docTitle || "AlloFlow assignment",
-                responses: p.answers || {}
-              };
-              newRows.push({
-                fileName: f.name,
-                nickname: normalizedPayload.nickname || "?",
-                docTitle: normalizedPayload.docTitle || "",
-                timestamp: normalizedPayload.timestamp || null,
-                encryptedBlob: null,
-                payload: normalizedPayload,
-                status: "decrypted",
-                error: null
-              });
-              continue;
+        try {
+          const text = await f.text();
+          const looksJson = /\.json$/i.test(f.name || "") || text.trim().charAt(0) === "{";
+          if (looksJson) {
+            try {
+              const p = JSON.parse(text);
+              if (p && (p.kind === "alloflow-take-home-result" || p.kind === "alloflow-take-home-submission")) {
+                const lib = await siTakeHomeLib();
+                const parsed = lib ? lib.parseResult(p) : { ok: false };
+                if (!parsed.ok) {
+                  newRows.push({ fileName: f.name, nickname: "?", status: "error", error: tr("This Word Sounds results file could not be read.") });
+                  continue;
+                }
+                const r = parsed.result;
+                const takeHomeKey = ["take-home", r.lessonId, r.learnerName, r.finishedAt].join("|");
+                const already = queue.concat(newRows).some((row) => row && row.payload && row.payload.takeHomeKey === takeHomeKey);
+                if (already) continue;
+                const nickname = siStableIdentityValue(r.learnerName || (typeof p.studentName === "string" ? p.studentName : "")) || "?";
+                newRows.push({
+                  fileName: f.name,
+                  nickname,
+                  docTitle: r.lessonTitle || "Word Sounds take-home",
+                  timestamp: r.finishedAt || null,
+                  encryptedBlob: null,
+                  payload: { kind: "alloflow-take-home", nickname, docTitle: r.lessonTitle || "Word Sounds take-home", timestamp: r.finishedAt || null, responses: {}, takeHome: r, takeHomeKey },
+                  status: "decrypted",
+                  error: null,
+                  mailboxReceipt: p.mailboxReceipt && typeof p.mailboxReceipt === "object" ? p.mailboxReceipt : null
+                });
+                continue;
+              }
+              const declaresSubmission = p && p.kind === "alloflow-student-submission";
+              const looksResponseShaped = p && (p.responses && typeof p.responses === "object" || p.answers && typeof p.answers === "object");
+              if (p && (declaresSubmission || looksResponseShaped) && !p.ciphertext) {
+                const importedNickname = ["nickname", "studentName", "studentNickname"].map((key) => Object.prototype.hasOwnProperty.call(p, key) && typeof p[key] === "string" ? siStableIdentityValue(p[key]) : "").find(Boolean) || "?";
+                const normalizedPayload = p.responses ? { ...p, nickname: importedNickname } : {
+                  ...p,
+                  nickname: importedNickname,
+                  timestamp: p.timestamp || p.submissionDate || null,
+                  docTitle: p.docTitle || "AlloFlow assignment",
+                  responses: p.answers || {}
+                };
+                newRows.push({
+                  fileName: f.name,
+                  nickname: normalizedPayload.nickname || "?",
+                  docTitle: normalizedPayload.docTitle || "",
+                  timestamp: normalizedPayload.timestamp || null,
+                  encryptedBlob: null,
+                  payload: normalizedPayload,
+                  status: "decrypted",
+                  error: null
+                });
+                continue;
+              }
+              if (p && p.kind === "encrypted-worksheet" && p.ciphertext && p.wrappedKey && p.iv) {
+                newRows.push({
+                  fileName: f.name,
+                  nickname: p.nickname || p.studentName || "?",
+                  docTitle: p.docTitle || "",
+                  timestamp: p.timestamp || null,
+                  encryptedBlob: p,
+                  payload: null,
+                  status: "pending",
+                  error: null,
+                  mailboxReceipt: p.mailboxReceipt && typeof p.mailboxReceipt === "object" ? p.mailboxReceipt : null
+                });
+                continue;
+              }
+            } catch (e) {
             }
-            if (p && p.kind === "encrypted-worksheet" && p.ciphertext && p.wrappedKey && p.iv) {
-              newRows.push({
-                fileName: f.name,
-                nickname: p.nickname || p.studentName || "?",
-                docTitle: p.docTitle || "",
-                timestamp: p.timestamp || null,
-                encryptedBlob: p,
-                payload: null,
-                status: "pending",
-                error: null,
-                mailboxReceipt: p.mailboxReceipt && typeof p.mailboxReceipt === "object" ? p.mailboxReceipt : null
-              });
-              continue;
-            }
-          } catch (e2) {
           }
-        }
-        const match = text.match(/<script type="application\/json" id="alloflow-submission">([\s\S]*?)<\/script>/);
-        if (!match) {
+          const match = text.match(/<script type="application\/json" id="alloflow-submission">([\s\S]*?)<\/script>/);
+          if (!match) {
+            newRows.push({
+              fileName: f.name,
+              nickname: "?",
+              status: "error",
+              error: tr("Not an AlloFlow submission file (no embedded blob).")
+            });
+            continue;
+          }
+          const json = match[1].replace(/\\u003c/g, "<");
+          const blob = JSON.parse(json);
           newRows.push({
             fileName: f.name,
-            nickname: "?",
-            status: "error",
-            error: tr("Not an AlloFlow submission file (no embedded blob).")
+            nickname: blob.nickname || "?",
+            docTitle: blob.docTitle || "",
+            timestamp: blob.timestamp || null,
+            encryptedBlob: blob,
+            payload: null,
+            status: "pending",
+            error: null
           });
-          continue;
+        } catch (err) {
+          newRows.push({ fileName: f.name, nickname: "?", status: "error", error: err.message });
         }
-        const json = match[1].replace(/\\u003c/g, "<");
-        const blob = JSON.parse(json);
-        newRows.push({
-          fileName: f.name,
-          nickname: blob.nickname || "?",
-          docTitle: blob.docTitle || "",
-          timestamp: blob.timestamp || null,
-          encryptedBlob: blob,
-          payload: null,
-          status: "pending",
-          error: null
-        });
-      } catch (err) {
-        newRows.push({ fileName: f.name, nickname: "?", status: "error", error: err.message });
+      } finally {
+        if (source === "mailbox") {
+          const added = newRows.slice(rowsBefore);
+          added.forEach((row) => {
+            row.mailboxFile = f.name;
+          });
+          if (!added.some((row) => row.status === "error")) okNames.push(f.name);
+        }
       }
     }
     setQueue((prev) => [...prev, ...newRows]);
-    if (e.target) e.target.value = "";
+    return { added: newRows.filter((row) => row.status !== "error").length, errors: newRows.filter((row) => row.status === "error").length, okNames };
+  };
+  const [mbPull, setMbPull] = useState({ busy: false, msg: "", needsUpdate: false, all: false });
+  const pullFromMailbox = async () => {
+    const api = typeof window !== "undefined" ? window.__alloMailboxSubmissions : null;
+    if (!api || !api.connected) {
+      if (api && api.openSetup) api.openSetup();
+      return;
+    }
+    if (mbPull.busy) return;
+    const all = mbPull.all;
+    setMbPull((s) => ({ ...s, busy: true, needsUpdate: false, msg: tr("Checking the Class Mailbox\u2026") }));
+    try {
+      const skip = queue.map((row) => row && row.mailboxFile).filter(Boolean);
+      const res = await api.pull({ all, rescan: all, skip, onProgress: (i, n) => setMbPull((s) => ({ ...s, msg: tr("Getting submission {n} of {total}\u2026", { n: i + 1, total: n }) })) });
+      if (!res.ok) {
+        const needsUpdate = res.e === "update-needed";
+        setMbPull((s) => ({ ...s, busy: false, needsUpdate, msg: needsUpdate ? tr("Your Class Mailbox script is version {v}. To collect submissions here, update it to version 29: open the Class Mailbox setup, copy the new script, and deploy a new version.", { v: res.v || "?" }) : tr("Could not reach the Class Mailbox.") }));
+        return;
+      }
+      const result = await importSubmissionFiles(res.files.map((file) => ({ name: file.name, text: async () => file.text })), "mailbox");
+      if (result.okNames.length) {
+        try {
+          await api.mark(result.okNames);
+        } catch (_) {
+        }
+      }
+      const parts = [];
+      parts.push(res.files.length === 0 ? tr("No new submissions in the Class Mailbox.") : tr("Added {n} submission(s) from the Class Mailbox.", { n: result.added }));
+      if (result.errors) parts.push(tr("{n} file(s) could not be read.", { n: result.errors }));
+      if (res.failed && res.failed.length) parts.push(tr("{n} file(s) did not download; try again.", { n: res.failed.length }));
+      if (res.more) parts.push(tr("{n} more are waiting; get submissions again.", { n: res.more }));
+      if (res.complete === false) parts.push(tr("The mailbox is still checking older files; get submissions again in a minute."));
+      setMbPull((s) => ({ ...s, busy: false, msg: parts.join(" ") }));
+    } catch (err) {
+      setMbPull((s) => ({ ...s, busy: false, msg: tr("Could not reach the Class Mailbox.") + " " + String(err && err.message || "") }));
+    }
   };
   const handleDecryptAll = async () => {
     if (!privateJwk) {
@@ -2129,7 +2439,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   };
   const rowGradeSummary = (idx) => {
     const row = queue[idx];
-    const entries = row && row.payload ? siResponseEntryModels(row.payload) : [];
+    const entries = row && row.payload ? siResponseEntryModels(row.payload).concat(siRoleSwapItems(row.payload, history).concat(siStudentStoryItems(row.payload)).map((rs) => ({ key: rs.key, requiresManualReview: true, expectedCountKnown: true }))) : [];
     const rowGrades = grades[idx] || {};
     const valid = entries.map((entry) => ({ entry, grade: rowGrades[entry.key] })).filter((item) => {
       const grade = item.grade;
@@ -2185,7 +2495,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       ...siAlloSheetDueDate(row.payload.dueDate) ? { dueDate: siAlloSheetDueDate(row.payload.dueDate) } : {},
       source: "offline-html",
       identity: savedIdentityForRow(idx, row),
-      responses: row.payload.responses,
+      responses: siResponsesWithRoleSwaps(row.payload, rowGrades, history),
       grades: savedGrades,
       review: {
         state: reviewCurrent ? "reviewed" : "pending",
@@ -2301,6 +2611,29 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     if (score >= 40) return { bg: "#fed7aa", color: "#9a3412" };
     return { bg: "#fee2e2", color: "#991b1b" };
   };
+  const renderRowGradeActions = (idx) => Object.keys(grades[idx] || {}).length === 0 ? [] : [
+    /* @__PURE__ */ React.createElement("button", {
+      key: "review",
+      type: "button",
+      "aria-pressed": isRowReviewCurrent(idx),
+      onClick: () => markRowReviewed(idx),
+      style: { padding: "8px 16px", background: isRowReviewCurrent(idx) ? "#065f46" : "#fff7ed", color: isRowReviewCurrent(idx) ? "white" : "#9a3412", border: "1px solid #fdba74", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+    }, isRowReviewCurrent(idx) ? tr("\u2713 Human reviewed") : tr("Mark human reviewed")),
+    /* @__PURE__ */ React.createElement("button", {
+      key: "save",
+      type: "button",
+      onClick: () => saveRowToGradebook(idx),
+      style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+    }, tr("\u{1F4BE} Save to gradebook")),
+    /* @__PURE__ */ React.createElement(
+      "span",
+      { key: "status", role: "status", "aria-live": "polite", style: { fontSize: "0.78rem", color: "#64748b" } },
+      (() => {
+        const summary = rowGradeSummary(idx);
+        return "Avg: " + (summary.average == null ? "\u2014" : summary.average + "/100") + " \xB7 " + summary.scored + " of " + summary.total + (summary.expectedCountKnown ? " expected" : " captured") + " responses scored";
+      })()
+    )
+  ];
   const alloSheetReviewOptions = React.useMemo(() => {
     if (!showAlloSheetReview || !alloSheetSourceSnapshot || !alloSheetAsOf) {
       return {
@@ -3194,7 +3527,49 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               onChange: handleSubmissionFiles,
               style: { display: "none" },
               "aria-label": tr("Submission files")
-            })
+            }),
+            /* @__PURE__ */ React.createElement(
+              "div",
+              { "data-si-mailbox-pull": "true", style: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 10, paddingTop: 10, borderTop: "1px dashed #bbf7d0" } },
+              typeof window !== "undefined" && window.__alloMailboxSubmissions && window.__alloMailboxSubmissions.connected ? /* @__PURE__ */ React.createElement(
+                React.Fragment,
+                null,
+                /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: pullFromMailbox,
+                  disabled: mbPull.busy,
+                  "aria-busy": mbPull.busy ? "true" : "false",
+                  style: { padding: "7px 14px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: mbPull.busy ? "wait" : "pointer", fontSize: "0.85rem" }
+                }, mbPull.busy ? tr("Getting submissions\u2026") : tr("\u{1F4EC} Get submissions from Class Mailbox")),
+                /* @__PURE__ */ React.createElement(
+                  "label",
+                  { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.8rem", color: "#475569" } },
+                  /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: mbPull.all, disabled: mbPull.busy, onChange: (ev) => {
+                    const checked = ev.target.checked;
+                    setMbPull((s) => ({ ...s, all: checked }));
+                  } }),
+                  tr("Include ones already collected")
+                ),
+                mbPull.needsUpdate && /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: () => {
+                    const api = window.__alloMailboxSubmissions;
+                    if (api && api.openSetup) api.openSetup();
+                  },
+                  style: { padding: "6px 12px", background: "#fef3c7", color: "#92400e", border: "1px solid #f59e0b", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
+                }, tr("Open Class Mailbox setup"))
+              ) : /* @__PURE__ */ React.createElement(
+                "span",
+                { style: { fontSize: "0.8rem", color: "#475569" } },
+                tr("Using a Class Mailbox? Connect it and submissions can be collected here without downloading them from Drive."),
+                typeof window !== "undefined" && window.__alloMailboxSubmissions && /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: () => window.__alloMailboxSubmissions.openSetup(),
+                  style: { marginLeft: 8, padding: "4px 10px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.78rem" }
+                }, tr("Connect Class Mailbox"))
+              ),
+              /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "data-si-mailbox-status": "true", style: { flexBasis: "100%", fontSize: "0.8rem", color: mbPull.needsUpdate ? "#92400e" : "#334155" } }, mbPull.msg)
+            )
           ),
           // Class rubric panel — shown whenever ≥1 row is decrypted. Optional
           // global rubric that fills in the per-row rubric when grading.
@@ -3877,6 +4252,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                           { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
                           "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
                         ),
+                        row.payload.takeHome && siTakeHomeResult(row.payload.takeHome),
                         /* Applied Challenge Studio export: the response keys carry
                            "<resourceId>:applied:<field>", so the host can rebuild a
                            real studio workspace from this student's typing. */
@@ -3973,7 +4349,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                         }),
                         // Work evidence — what the student actually did, beyond what they typed.
                         (function() {
-                          const ev = siWorkEvidence(row.payload);
+                          const ev = siWorkEvidence(row.payload, history);
                           if (ev.isEmpty) return null;
                           const shownActivities = ev.activities.slice(0, 12);
                           const moreActivities = ev.activities.length - shownActivities.length;
@@ -4010,16 +4386,178 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 moreActivities > 0 && /* @__PURE__ */ React.createElement("span", { key: "act-more", style: Object.assign({}, chip, { color: "#64748b" }) }, tr("+{n} more", { n: moreActivities }))
                               )
                             ),
-                            ev.interviews.length > 0 && /* @__PURE__ */ React.createElement(
+                            (ev.interviews.length > 0 || ev.roleSwaps.length > 0) && /* @__PURE__ */ React.createElement(
                               "div",
                               { style: { marginBottom: 8 } },
-                              /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Interview reflections ({n})", { n: ev.interviews.length })),
+                              /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Interview reflections ({n})", { n: ev.interviews.length + ev.roleSwaps.length })),
                               ev.interviews.map(function(entry, i) {
                                 return /* @__PURE__ */ React.createElement(
                                   "details",
                                   { key: "interview-" + i, style: { marginBottom: 4, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "4px 8px" } },
                                   /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#1e293b" } }, entry.title),
                                   /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, fontSize: "0.8rem", color: "#1e293b", whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 360, overflowY: "auto" } }, entry.body)
+                                );
+                              }),
+                              // Role Swap: readable answers + the same manual score form and grade row as responses.
+                              ev.roleSwaps.map(function(rs, i) {
+                                const g = (grades[idx] || {})[rs.key];
+                                const sc = g ? scoreColor(g.score) : null;
+                                const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
+                                return /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { key: "role-swap-" + i, "data-role-swap-key": rs.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                  /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", alignItems: "flex-start", gap: 8 } },
+                                    /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } }, rs.title),
+                                    /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: rs.key, rawText: rs.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" } }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
+                                  ),
+                                  rs.entries.map(function(e, j) {
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "rs-entry-" + j, "data-role-swap-entry": j, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                      /* @__PURE__ */ React.createElement("div", { style: small }, tr("Question")),
+                                      /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600 } }, e.question),
+                                      /* @__PURE__ */ React.createElement("div", { style: small }, tr("Answer as {name}", { name: e.speaker || rs.subject || "Role Swap" })),
+                                      /* @__PURE__ */ React.createElement("div", null, e.answer),
+                                      e.evidence && /* @__PURE__ */ React.createElement(
+                                        "div",
+                                        { style: small },
+                                        tr("Evidence from the source"),
+                                        e.evidenceInSource && /* @__PURE__ */ React.createElement("span", { "data-role-swap-evidence-found": "", style: { marginLeft: 6, padding: "1px 6px", borderRadius: 999, background: "#dcfce7", color: "#166534", border: "1px solid #86efac", fontSize: "0.66rem" } }, "\u2713 " + tr("Found in source"))
+                                      ),
+                                      e.evidence && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "2px 0 0 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#334155", fontStyle: "italic" } }, e.evidence)
+                                    );
+                                  }),
+                                  /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
+                                  /* @__PURE__ */ React.createElement(
+                                    "ul",
+                                    { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
+                                    [["inCharacter", tr("Stayed in character")], ["usesEvidence", tr("Used evidence from the source")], ["accurate", tr("Historically accurate to the source")]].map(function(pair) {
+                                      return /* @__PURE__ */ React.createElement(
+                                        "li",
+                                        { key: pair[0] },
+                                        /* @__PURE__ */ React.createElement(
+                                          "label",
+                                          { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
+                                          /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: rs.selfCheck[pair[0]], disabled: true, readOnly: true }),
+                                          pair[1]
+                                        )
+                                      );
+                                    })
+                                  ),
+                                  g && /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
+                                    /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
+                                    /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
+                                  )
+                                );
+                              })
+                            ),
+                            // Student-written adventures: outline, Play preview, self-check, manual score.
+                            ev.stories.length > 0 && /* @__PURE__ */ React.createElement(
+                              "div",
+                              { style: { marginBottom: 8 } },
+                              /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Student-written adventures ({n})", { n: ev.stories.length })),
+                              ev.stories.map(function(story, i) {
+                                const g = (grades[idx] || {})[story.key];
+                                const sc = g ? scoreColor(g.score) : null;
+                                const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
+                                const playKey = idx + "|" + story.key;
+                                const playable = siStudentStoryPlayable(story);
+                                const playing = playable && playingStoryKey === playKey;
+                                const Player = playable ? window.AlloModules.AdventureOffline.Player : null;
+                                const storyT = function(key, params) {
+                                  var v = null;
+                                  try {
+                                    v = typeof t === "function" ? t(key, params) : null;
+                                  } catch (e) {
+                                    v = null;
+                                  }
+                                  return typeof v === "string" ? v : key;
+                                };
+                                const pill = { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" };
+                                return /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { key: "student-story-" + i, "data-student-story-key": story.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                  /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" } },
+                                    /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } },
+                                      story.title,
+                                      /* @__PURE__ */ React.createElement("span", { style: { marginLeft: 6, fontWeight: 400, color: "#64748b", fontSize: "0.72rem" } }, tr("{scenes} scenes \xB7 {endings} endings", { scenes: story.scenes.length, endings: story.endings }))
+                                    ),
+                                    /* @__PURE__ */ React.createElement("button", { type: "button", "data-student-story-play": "", "aria-pressed": !!playing, disabled: !playable, onClick: () => setPlayingStoryKey(playing ? null : playKey), title: playable ? void 0 : tr("This story is unfinished, so it cannot be played yet."), style: Object.assign({}, pill, { background: playing ? "#312e81" : "#eef2ff", color: playing ? "white" : "#312e81", border: "1px solid #a5b4fc", opacity: playable ? 1 : 0.6, cursor: playable ? "pointer" : "not-allowed" }) }, playing ? tr("Close player") : tr("\u25B6 Play")),
+                                    /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: story.key, rawText: story.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: Object.assign({}, pill, { background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc" }) }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
+                                  ),
+                                  playing && Player && /* @__PURE__ */ React.createElement("div", { "data-student-story-player": "", style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement(Player, { story: playable, t: storyT, theme: "light" })),
+                                  /* @__PURE__ */ React.createElement(
+                                    "ol",
+                                    { "data-student-story-outline": "", style: { listStyle: "none", margin: "6px 0 0 0", padding: 0 } },
+                                    story.scenes.map(function(scene, j) {
+                                      return /* @__PURE__ */ React.createElement(
+                                        "li",
+                                        { key: "scene-" + j, "data-student-story-scene": scene.id, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                        /* @__PURE__ */ React.createElement("div", { style: small }, tr("Scene {n}", { n: j + 1 }) + (scene.id === story.start ? " \xB7 " + tr("Start") : "") + (scene.ending ? " \xB7 " + tr("Ending") : "")),
+                                        /* @__PURE__ */ React.createElement("div", null, scene.text || "\u2014"),
+                                        scene.choices.length > 0 && /* @__PURE__ */ React.createElement(
+                                          "ul",
+                                          { style: { margin: "2px 0 0 0", paddingLeft: 18 } },
+                                          scene.choices.map(function(c, k) {
+                                            return /* @__PURE__ */ React.createElement("li", { key: "choice-" + k }, (c.label || "\u2014") + " \u2192 " + tr("Scene {n}", { n: story.number[c.to] || "?" }));
+                                          })
+                                        )
+                                      );
+                                    })
+                                  ),
+                                  /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
+                                  /* @__PURE__ */ React.createElement(
+                                    "ul",
+                                    { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
+                                    SI_STORY_CHECKS.map(function(pair) {
+                                      return /* @__PURE__ */ React.createElement(
+                                        "li",
+                                        { key: pair[0] },
+                                        /* @__PURE__ */ React.createElement(
+                                          "label",
+                                          { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
+                                          /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: story.selfCheck[pair[0]], disabled: true, readOnly: true }),
+                                          tr(pair[1])
+                                        )
+                                      );
+                                    })
+                                  ),
+                                  g && /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
+                                    /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
+                                    /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
+                                  )
+                                );
+                              })
+                            ),
+                            ev.reflections.length > 0 && /* @__PURE__ */ React.createElement(
+                              "div",
+                              { "data-adventure-reflections": "", style: { marginBottom: 8 } },
+                              /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Adventure reflections ({n})", { n: ev.reflections.reduce(function(n, r) {
+                                return n + r.entries.length;
+                              }, 0) })),
+                              ev.reflections.map(function(r, i) {
+                                return /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { key: "adv-reflect-" + i, style: { marginBottom: 6, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                  /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#312e81" } }, r.title),
+                                  r.entries.map(function(e, j) {
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "entry-" + j, "data-adventure-reflection": "", style: { marginTop: 6, paddingTop: j ? 6 : 0, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                      e.ending && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "0 0 2px 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#475569", fontStyle: "italic" } }, tr("Ending") + ": " + e.ending),
+                                      /* @__PURE__ */ React.createElement("div", null, e.text)
+                                    );
+                                  })
                                 );
                               })
                             ),
@@ -4110,26 +4648,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                               disabled: gradingRow === idx,
                               style: { padding: "8px 16px", background: "#7c3aed", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: gradingRow === idx ? "wait" : "pointer", opacity: gradingRow === idx ? 0.6 : 1 }
                             }, gradingRow === idx ? "Grading\u2026" : tr("\u{1F3AF} Grade responses")),
-                            Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
-                              type: "button",
-                              "aria-pressed": isRowReviewCurrent(idx),
-                              onClick: () => markRowReviewed(idx),
-                              style: { padding: "8px 16px", background: isRowReviewCurrent(idx) ? "#065f46" : "#fff7ed", color: isRowReviewCurrent(idx) ? "white" : "#9a3412", border: "1px solid #fdba74", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
-                            }, isRowReviewCurrent(idx) ? tr("\u2713 Human reviewed") : tr("Mark human reviewed")),
-                            Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
-                              type: "button",
-                              onClick: () => saveRowToGradebook(idx),
-                              style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
-                            }, tr("\u{1F4BE} Save to gradebook")),
-                            Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
-                              "span",
-                              { role: "status", "aria-live": "polite", style: { fontSize: "0.78rem", color: "#64748b" } },
-                              (() => {
-                                const summary = rowGradeSummary(idx);
-                                return "Avg: " + (summary.average == null ? "\u2014" : summary.average + "/100") + " \xB7 " + summary.scored + " of " + summary.total + (summary.expectedCountKnown ? " expected" : " captured") + " responses scored";
-                              })()
-                            )
+                            ...renderRowGradeActions(idx)
                           )
+                        ),
+                        // A row with no typed responses (e.g. only a Role Swap) still needs review + save.
+                        Object.keys(row.payload.responses || {}).length === 0 && Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
+                          "div",
+                          { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
+                          ...renderRowGradeActions(idx)
                         )
                       )
                     )

@@ -1495,7 +1495,9 @@ function HistoryPanel(props) {
                         const itemSourceVersion = getSafeArtifactField(item, 'sourceVersion');
                         const sourceInUse = getSafeArtifactField(sourceRecord, 'inUse');
                         const sourceVersionNow = getSafeArtifactField(sourceInUse, 'version');
-                        const itemOlderSourceLabel = Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow
+                        // A recheck updates its report in place, so a report of the current wording is not older.
+                        const itemCheckedCurrentText = getSafeArtifactField(item, 'type') === 'analysis' && getSafeArtifactField(getSafeArtifactField(item, 'data'), 'originalText') === getSafeArtifactField(sourceInUse, 'text');
+                        const itemOlderSourceLabel = !itemCheckedCurrentText && Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow
                             ? (t('history.from_source_version') || 'From source version {version}').replace('{version}', String(itemSourceVersion))
                             : '';
                         const itemDate = getSafeRowDate(getSafeArtifactField(item, 'timestamp'));

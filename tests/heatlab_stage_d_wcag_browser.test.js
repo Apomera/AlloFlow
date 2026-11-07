@@ -36,10 +36,10 @@ const HOUSE = {
 };
 const STATES = [
   { name: 'teacher view, grades 6-8', overrides: { isTeacherMode: true, gradeBand: 'g68' },
-    data: { _heatLab: Object.assign({ teacher: { open: true, keyOpen: true, ngssOpen: true, hidden: ['spot'], locked: ['cooler'], preset: 'custom' }, misTally: { cold_flows: 2 } }, HOUSE) },
+    data: { _heatLab: Object.assign({ htAll: true, teacher: { open: true, keyOpen: true, ngssOpen: true, hidden: ['spot'], locked: ['cooler'], preset: 'custom' }, misTally: { cold_flows: 2 } }, HOUSE) },
     clicks: ['[data-ht-term="degreedays"]', '[data-ht-describe="house"]', '[data-ht-describe="mug"]', '[data-ht-maths="house"] button', '[data-ht-further-btn="entropy"]'] },
   { name: 'learner, grades 9-12 with a locked section', overrides: { gradeBand: 'g912' },
-    data: { _heatLab: Object.assign({ teacher: { hidden: ['spot'], locked: ['cooler'] } }, HOUSE) },
+    data: { _heatLab: Object.assign({ htAll: true, teacher: { hidden: ['spot'], locked: ['cooler'] } }, HOUSE) },
     clicks: ['[data-ht-term="latent"]', '[data-ht-describe="curve"]', '[data-ht-describe="equilibrium"]', '[data-ht-describe="race"]'] },
 ];
 const THEMES = [

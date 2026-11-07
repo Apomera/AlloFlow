@@ -73,18 +73,18 @@ function mount(toolId, toolData) {
 // Badge ids a tool defines, read from its BADGES list / BADGE_CATALOG / BADGES map.
 function badgeDefs(id) {
   const ast = acorn.parse(readFileSync(join(SEL, `sel_tool_${id}.js`), 'utf8'), { ecmaVersion: 'latest', sourceType: 'script', allowReturnOutsideFunction: true });
-  const defs = {}; const awards = [];
+  const defs = {}; const awards = []; const ai = {};
   const walk = (n) => {
     if (!n || typeof n.type !== 'string') return;
     if (n.type === 'VariableDeclarator' && n.id.type === 'Identifier' && /BADGE/.test(n.id.name) && n.init) {
-      if (n.init.type === 'ArrayExpression') n.init.elements.forEach((el) => { const p = el && el.properties && el.properties.find((q) => q.key && q.key.name === 'id'); if (p) defs[p.value.value] = el.properties.some((q) => q.key && q.key.name === 'retired'); });
-      if (n.init.type === 'ObjectExpression') n.init.properties.forEach((p) => { if (p.value && p.value.type === 'ObjectExpression') defs[p.key.name || p.key.value] = p.value.properties.some((q) => q.key && q.key.name === 'retired'); });
+      if (n.init.type === 'ArrayExpression') n.init.elements.forEach((el) => { const p = el && el.properties && el.properties.find((q) => q.key && q.key.name === 'id'); if (p) { defs[p.value.value] = el.properties.some((q) => q.key && q.key.name === 'retired'); if (el.properties.some((q) => q.key && q.key.name === 'aiOnly')) ai[p.value.value] = true; } });
+      if (n.init.type === 'ObjectExpression') n.init.properties.forEach((p) => { if (p.value && p.value.type === 'ObjectExpression') { defs[p.key.name || p.key.value] = p.value.properties.some((q) => q.key && q.key.name === 'retired'); if (p.value.properties.some((q) => q.key && q.key.name === 'aiOnly')) ai[p.key.name || p.key.value] = true; } });
     }
     if (n.type === 'CallExpression' && n.callee.type === 'Identifier' && /^(tryAwardBadge|awardBadge)$/.test(n.callee.name) && n.arguments[0] && n.arguments[0].type === 'Literal') awards.push(n.arguments[0].value);
     for (const k in n) { const v = n[k]; if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v.type === 'string') walk(v); }
   };
   walk(ast);
-  return { defs, awards };
+  return { defs, awards, ai };
 }
 
 describe('every badge a SEL tool awards is one it defines', () => {
@@ -106,11 +106,13 @@ describe.skipIf(!R)('retired badges are not shown as goals', () => {
   beforeAll(setup);
   const retiredCount = (id) => Object.values(badgeDefs(id).defs).filter(Boolean).length;
   const total = (id) => Object.keys(badgeDefs(id).defs).length;
+  // These mounts have no AI (callGemini: null), so AI-only badges are hidden too (2026-11-04 AI-off sweep).
+  const aiOnlyCount = (id) => { const b = badgeDefs(id); return Object.keys(b.ai).filter((k) => !b.defs[k]).length; };
 
   it.each([['decisions', 'consequence_3', 'Ripple Effect Master'], ['teamwork', 'scenario_pro', 'Scenario Pro'], ['conflict', 'apology_3', 'Repair Artist'], ['community', 'bridge_builder', 'Bridge Builder']])(
     '%s: the badge count leaves retired badges out, and an earned one comes back', (id, earnedId, name) => {
       expect(retiredCount(id)).toBeGreaterThan(0);
-      const shown = total(id) - retiredCount(id);
+      const shown = total(id) - retiredCount(id) - aiOnlyCount(id);
       const fresh = mount(id, { showBadgesPanel: true });
       try {
         const label = fresh.container.querySelector('[aria-label$="badges earned"]');
@@ -130,7 +132,7 @@ describe.skipIf(!R)('retired badges are not shown as goals', () => {
 
   // Teamwork and Community list their badges a second time, on a tab of their own.
   it.each([['teamwork', 'progress', 'Scenario Pro'], ['community', 'badges', 'Bridge Builder']])('%s: the %s tab leaves retired badges out too', (id, tab, name) => {
-    const shown = total(id) - retiredCount(id);
+    const shown = total(id) - retiredCount(id) - aiOnlyCount(id);
     const m = mount(id, { activeTab: tab });
     try {
       expect(m.container.textContent).toMatch(new RegExp(`(?<!\\d)0/${shown}(?!\\d)`));
@@ -148,7 +150,7 @@ describe.skipIf(!R)('retired badges are not shown as goals', () => {
   });
 
   it('Upstander: the badge gallery counts only badges that can still be earned', () => {
-    const shown = total('upstander') - 3;
+    const shown = total('upstander') - 3 - aiOnlyCount('upstander');
     const m = mount('upstander', { activeTab: 'pledge' });
     try {
       expect(m.container.textContent).toContain(`0 of ${shown} earned`);

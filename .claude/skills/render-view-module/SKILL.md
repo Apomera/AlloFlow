@@ -27,10 +27,9 @@ modules sit at the CDN **origin root**, which is why `loadModule()` uses absolut
 
 ### The e2e suite cannot simply be repointed
 
-`playwright.config.ts` defaults `baseURL` to `https://prismflow-911fe.web.app`,
-the old Firebase host. `AGENT_HANDOFF.md` records the 2026-07-09 "Prismflow
-production-path cleanup" that moved serving to the Cloudflare `/app/` shell, and
-Aaron confirms the old host is not operational.
+`playwright.config.ts` used to default `baseURL` to `https://prismflow-911fe.web.app`,
+the old Firebase host. Prismflow must stay offline (Aaron, 2026-11-05), so never
+target it, even if it still answers. Serving moved to the Cloudflare `/app/` shell.
 
 **Do not just set `PW_BASE_URL=https://alloflow-cdn.pages.dev/app/`.** The config
 carries its own warning about exactly that, and it is correct: 30 specs navigate

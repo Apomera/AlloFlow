@@ -50,6 +50,14 @@ window.StemLab = window.StemLab || {
   'use strict';
 
   // ── Reduced-motion CSS (WCAG 2.3.3) — shared across STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-playlab-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-playlab-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-playlab-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"playlab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"playlab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"playlab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');

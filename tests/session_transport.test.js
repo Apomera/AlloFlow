@@ -574,3 +574,35 @@ describe('student activity projection at real delivery boundaries', () => {
     }
   });
 });
+
+// Source check (2026-11-03): students read the passage and its translated versions;
+// the findings are teacher notes and never leave the teacher's copy.
+describe('student copy of a source check', () => {
+  const check = () => ({ id: 'check-1', type: 'analysis', title: 'Moon reading', instructionalText: { role: 'primary', form: 'original' }, data: {
+    originalText: 'The Moon orbits Earth.', rawEnglishText: 'The Moon orbits Earth.', sourceLanguage: 'English', reportLanguage: 'English',
+    sourceTranslations: { Spanish: 'La Luna orbita la Tierra.' }, concepts: ['orbit'], readingLevel: { range: '5th-7th Grade', explanation: 'x' },
+    localStats: { words: 4 }, analysisSourceVersion: 1,
+    accuracy: { rating: 'Low', discrepancies: ['The date is wrong.'] }, grammar: ['Spelling: orbts'], grammarUnreadable: 1,
+    learnerBarriers: { biasRepresentation: ['One-sided.'] }, depthOfKnowledge: { level: 2, ideas: ['Compare.'] },
+    reportTranslations: { Spanish: { grammar: ['Ortografía'] } }, displayReportLanguage: 'Spanish',
+    analysisCoverage: { sections: [{ report: { accuracy: { discrepancies: ['x'] } } }] }, analysisIdeaDrafts: { version: 1 },
+    passageVersionsToRefresh: ['Vietnamese'],
+  } });
+
+  it('keeps the passage, its versions and the reading data, and drops every finding', () => {
+    const original = check();
+    const before = JSON.stringify(original);
+    const [student] = ST.studentSafeResources([original], TEACHER_ONLY);
+    expect(Object.keys(student.data).sort()).toEqual(['analysisSourceVersion', 'concepts', 'localStats', 'originalText', 'rawEnglishText',
+      'readingLevel', 'reportLanguage', 'sourceLanguage', 'sourceTranslations']);
+    expect(student.data.sourceTranslations).toEqual({ Spanish: 'La Luna orbita la Tierra.' });
+    expect(student.id).toBe('check-1');
+    expect(student.instructionalText).toEqual(original.instructionalText);
+    expect(JSON.stringify(student)).not.toMatch(/date is wrong|orbts|One-sided|Compare\.|Ortografía/);
+    expect(JSON.stringify(original)).toBe(before);
+  });
+
+  it('still drops the whole check when a host lists analysis as teacher-only', () => {
+    expect(ST.studentSafeResources([check()], [...TEACHER_ONLY, 'analysis'])).toEqual([]);
+  });
+});

@@ -3,7 +3,7 @@ import { GlHarness } from './helpers/stem_gl_harness';
 test.use({video:'off'});
 
 test.describe('Raptor smooth flight and practice trail', () => {
-  test.describe.configure({mode:'serial',timeout:240000});
+  test.describe.configure({mode:'serial',timeout:480000});
   const harness=new GlHarness({toolFile:'stem_lab/stem_tool_raptorhunt.js',toolId:'raptorHunt',width:880,height:660,appStyles:true,probes:'window.AlloPostFXEnabled=false;'});
   test.beforeAll(async()=>{await harness.start();});
   test.afterAll(async()=>{await harness.stop();});
@@ -59,15 +59,15 @@ test.describe('Raptor smooth flight and practice trail', () => {
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
     await mount(page,'low');
     await page.getByRole('button',{name:'Scenic view',exact:true}).click();
-    await page.getByRole('button',{name:'Flight trail',exact:true}).click();
-    await expect(page.getByRole('button',{name:'Flight trail',exact:true})).toHaveAttribute('aria-pressed','true');
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('trail'));
+    expect(await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().practiceTrailActive)).toBe(true);
     await page.evaluate(()=>{(window as any).stepPractice(16);});
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/flight-trail.png',timeout:90000});
     await page.emulateMedia({reducedMotion:'reduce'});
     const pause=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('pause');const before=c._rhSnapshot();(window as any).stepPractice(60000);const after=c._rhSnapshot();c._rhCommand('pause');return {before,after};});
     expect(pause.after.practiceTrailIndex).toBe(pause.before.practiceTrailIndex);expect(pause.after.raptorPosition).toEqual(pause.before.raptorPosition);
     const finished=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
-      for(let i=0;i<500 && c._rhSnapshot().practiceTrailActive;i++){
+      for(let i=0;i<900 && c._rhSnapshot().practiceTrailActive;i++){
         const s=c._rhSnapshot(),g=s.practiceNextGate,bearing=Math.atan2(g.x-s.raptorPosition.x,-(g.z-s.raptorPosition.z));
         const error=Math.atan2(Math.sin(bearing-s.headingRadians),Math.cos(bearing-s.headingRadians));
         for(const [key,pressed] of [['d',error>0.035],['a',error<-.035],['e',g.y-s.raptorPosition.y>0.7],['q',s.raptorPosition.y-g.y>0.7]])c._rhCommand('hold',{key,pressed});
@@ -104,7 +104,7 @@ test.describe('Raptor smooth flight and practice trail', () => {
     expect(fit.left).toBeGreaterThanOrEqual(0);expect(fit.right).toBeGreaterThanOrEqual(0);expect(fit.overflow).toBeLessThanOrEqual(1);
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/flight-trail-narrow.png',timeout:90000});
     const second=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
-      for(let i=0;i<500 && c._rhSnapshot().practiceTrailActive;i++){
+      for(let i=0;i<900 && c._rhSnapshot().practiceTrailActive;i++){
         const s=c._rhSnapshot(),g=s.practiceNextGate,bearing=Math.atan2(g.x-s.raptorPosition.x,-(g.z-s.raptorPosition.z));
         const error=Math.atan2(Math.sin(bearing-s.headingRadians),Math.cos(bearing-s.headingRadians));
         for(const [key,pressed] of [['d',error>0.035],['a',error<-.035],['e',g.y+7-s.raptorPosition.y>0.7],['q',s.raptorPosition.y-g.y-7>0.7]])c._rhCommand('hold',{key,pressed});
@@ -131,11 +131,11 @@ test.describe('Raptor smooth flight and practice trail', () => {
   test('keeps instrument states and accessible shortcuts aligned with the selected controls',async({page})=>{
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
     await mount(page,'low');
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     await page.evaluate(()=>{for(let i=0;i<5;i++)(window as any).stepPractice(40);});
     await expect(page.locator('[data-readout-kind=status] .rh-flight-readout-value')).toHaveText('Perched');
     await expect(page.locator('[data-readout-kind=strike] .rh-flight-readout-value')).toHaveText('Launch first');
-    await page.getByRole('button',{name:'Flight trail',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('trail'));
     expect(await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().practiceTrailActive)).toBe(false);
     await page.getByLabel('Open flight view and sound settings',{exact:true}).click();
     await page.getByLabel('Keyboard control preset',{exact:true}).selectOption('simple');

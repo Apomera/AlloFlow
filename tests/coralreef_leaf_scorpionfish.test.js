@@ -6,7 +6,7 @@ const id = 'leaf_scorpionfish';
 let X, text, profile;
 beforeAll(() => {
   const w = { StemLab: { isRegistered: () => false, registerTool() {} }, __RR_TEST_EXPORTS__: {} };
-  vm.runInNewContext(readFileSync('stem_lab/stem_tool_coralreef.js', 'utf8'), { window: w, Math, Object, JSON, Array, Number, String, Date, URL });
+  vm.runInNewContext(readFileSync(process.env.CORALREEF_SOURCE || 'stem_lab/stem_tool_coralreef.js', 'utf8'), { window: w, Math, Object, JSON, Array, Number, String, Date, URL });
   X = w.__RR_TEST_EXPORTS__.coralReef;
   text = X.speciesText((key, fallback) => fallback)[id]; profile = X.marineProfiles((key, fallback) => fallback)[id];
 });
@@ -19,10 +19,10 @@ describe('leaf scorpionfish learning integration', () => {
     expect(text.marks.join(' ')).toMatch(/sail-like.*rounded tail/);
     expect(text.marks.join(' ')).toMatch(/mouth.*eyes/);
     expect(text.marks.join(' ')).toMatch(/fan-shaped/);
-    expect(text.fact).toMatch(/sheds.*skin.*colour can change/);
+    expect(text.fact).toMatch(/sheds.*skin.*colour alone is a poor guide/);
     expect(profile.behavior).toMatch(/rocks with water movement/);
     expect(profile.diet).toMatch(/fishes and crustaceans/);
-    expect(profile.observe).toMatch(/Colour varies widely/);
+    expect(profile.observe).toMatch(/other individuals may look very different in colour/);
     for (const field of ['habitat', 'diet', 'behavior', 'observe']) expect(profile[field].length).toBeGreaterThan(25);
     const sources = X.marineProfileSources();
     for (const key of profile.sources) expect(sources.find(s => s.id === key)?.url).toMatch(/^https:\/\//);

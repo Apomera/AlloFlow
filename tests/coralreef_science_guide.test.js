@@ -108,7 +108,9 @@ describe('teacher sequence', () => {
   it('starts with the dive and the guide, and names every model scenario', () => {
     const host = dom(renderTool('coralReef', { coralReef: { section: 'teacher' } }));
     const steps = [...host.querySelectorAll('ol.cr-teacher-flow > li')];
-    expect(steps.length).toBe(5);
+    // dive, methods, survey, compare, reef science, reef future
+    expect(steps.length).toBe(6);
+    expect(steps[4].textContent).toMatch(/^Reef science/);
     expect(steps[0].textContent).toMatch(/^Dive and identify/);
     expect(steps[0].textContent).toMatch(/species guide/);
     for (const site of ['healthy', 'heatwave', 'damaged', 'restoration']) expect(steps[0].textContent, site).toContain(site);
@@ -165,7 +167,9 @@ describe('species guide navigation', () => {
     await type(searchBox(t.host), 'bleekers');
     expect(shownCards(t.host)).toEqual(['parrotfish']);
     await type(searchBox(t.host), 'acropora');
-    expect(shownCards(t.host)).toEqual(['staghorn_coral', 'table_coral']);
+    const acropora = X.SPECIES_META.filter((m) => /\bacropora\b/i.test(m.scientific || '')).map((m) => m.id);
+    expect(acropora).toEqual(expect.arrayContaining(['staghorn_coral', 'table_coral']));
+    expect(shownCards(t.host)).toEqual(acropora);
     // Groups with nothing to show cannot be jumped to.
     expect(t.host.querySelector('button[data-jump="fish"]').disabled).toBe(true);
     expect(t.host.querySelector('button[data-jump="coral"]').disabled).toBe(false);
@@ -219,7 +223,7 @@ describe('species guide navigation', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
     expect(t.host.textContent).not.toContain('Did you know?');
     expect(t.host.textContent).not.toContain('Lives among the stinging tentacles');
-    expect(t.host.querySelectorAll('img')).toHaveLength(total);
+    expect(t.host.querySelectorAll('[data-species] img')).toHaveLength(total);
     expect(t.host.textContent.match(/Field marks/g).length).toBeGreaterThan(40);
     expect(t.host.textContent).toContain('Bright orange body with three white bands');
     expect(t.host.querySelectorAll('[data-lookalike]').length).toBeGreaterThan(20);

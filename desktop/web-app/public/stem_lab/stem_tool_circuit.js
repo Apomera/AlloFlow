@@ -6,6 +6,7 @@
 // Kirchhoff's Laws panel, grade-band content, sound effects & snapshots.
 // ═══════════════════════════════════════════
 
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
@@ -17,7 +18,7 @@ window.StemLab = window.StemLab || {
   'use strict';
   // Fills {value1}-style placeholders so a translation can reorder them. One copy
   // here, because the translator is declared per component in this file.
-  var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+  var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
 
   // Shared steady-DC model. LED approximation: typical forward drop + 10 ohm slope.
   function circuitNumber(value, fallback, min, max) {
@@ -499,6 +500,14 @@ window.StemLab = window.StemLab || {
   }
 
   // ── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-circuit-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-circuit-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-circuit-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"circuit\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -3900,7 +3909,7 @@ function CircuitActiveLessonLab(props) {
     var preview=rows.map(function(row){return h('div',{key:row[0],'data-starter-field':row[0]},h('dt',null,t('stem.circuit.starter_value_'+row[0],row[1])),h('dd',null,h('bdi',{dir:'ltr'},row[2])));});
     return h('section',{className:'circuit-active-starter','aria-label':t('stem.circuit.starter_settings','Experiment starter settings')},
       h('div',{className:'circuit-starter-toolbar'},
-        h('span',{className:'circuit-starter-status','data-custom':count>0,role:'status','aria-atomic':true},count===0?t('stem.circuit.starter_using','Using starter values'):count===1?t('stem.circuit.starter_one_changed','1 value changed from starter'):t('stem.circuit.starter_many_changed','{count} values changed from starter').replace('{count}',String(count))),
+        h('span',{className:'circuit-starter-status','data-custom':count>0,role:'status','aria-atomic':true},count===0?t('stem.circuit.starter_using','Using starter values'):count===1?t('stem.circuit.starter_one_changed','1 value changed from starter'):__alloOneWord(t('stem.circuit.starter_many_changed','{count} values changed from starter').replace('{count}',String(count)))),
         h('button',{type:'button',className:'circuit-starter-restore',disabled:count===0,'aria-describedby':uid+'-help',onClick:props.restore},t('stem.circuit.starter_restore','Restore starter values'))),
       h('p',{id:uid+'-help',className:'circuit-starter-help'},t('stem.circuit.starter_switch_help','Switching experiments loads that experiment’s starter values. Use Undo active edit to restore your previous settings.')),
       h('details',{className:'circuit-starter-preview'},h('summary',null,t('stem.circuit.starter_preview','View starter values')),
@@ -7086,7 +7095,7 @@ function CircuitActiveLessonLab(props) {
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Fills {value1}-style placeholders, so a translation can reorder them.
-      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+      var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
       var React = ctx.React;
       var h = React.createElement;
 
@@ -8453,8 +8462,8 @@ function CircuitActiveLessonLab(props) {
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
 
-              // AI toggle
-              h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'),
+              // AI toggle (hidden when ctx hands no usable callGemini)
+              typeof callGemini === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'),
                 onClick: function() { upd('showAI', !showAI); },
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
@@ -9064,7 +9073,7 @@ function CircuitActiveLessonLab(props) {
             // ══════════════════════════════════════
             // AI Tutor panel (collapsible)
             // ══════════════════════════════════════
-            showAI && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
+            showAI && typeof callGemini === 'function' && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
               h('p', { className: 'text-[0.6875rem] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
               h('div', { className: 'flex gap-2' },
                 h('input', {

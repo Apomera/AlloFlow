@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const scope = {};
-new Function('window', readFileSync('stem_lab/reef_3d_species.js', 'utf8'))(scope);
+new Function('window', readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_3d_species.js', 'utf8'))(scope);
 const Species = scope.Reef3DSpecies;
 const mantle = (h) => h.root.getObjectByName('giant_clam-mantle');
 function atUV(g, u, v) {
@@ -32,6 +32,9 @@ describe('giant clam inhalant recess', () => {
           const ia = g.index.getX(i), ib = g.index.getX(i + 1), ic = g.index.getX(i + 2);
           // The pre-existing shell endpoint samples collapse at u=0/1.
           if ([ia, ib, ic].some(j => g.attributes.uv.getX(j) === 0 || g.attributes.uv.getX(j) === 1)) continue;
+          // Pinhole-eye rims and pits share the mantle mesh at the reserved .999 UV patch; their
+          // recessed walls face out of the steep mantle edge, not up (coralreef_clam_idol_details checks them).
+          if ([ia, ib, ic].some(j => g.attributes.uv.getX(j) > .998 && g.attributes.uv.getY(j) > .998)) continue;
           a.fromBufferAttribute(p, ia); b.fromBufferAttribute(p, ib); c.fromBufferAttribute(p, ic);
           const cross = b.sub(a).cross(c.sub(a));
           expect(cross.length()).toBeGreaterThan(1e-10);
@@ -70,7 +73,9 @@ describe('giant clam inhalant recess', () => {
         let meshes = 0, triangles = 0;
         a.root.traverse(o => { if (o.isMesh) { meshes++; triangles += o.geometry.index.count / 3; } });
         expect(meshes).toBe(3);
-        expect(triangles).toBe(quality === 'high' ? 4836 : 870);
+        // Mantle eyes added triangles after this test was written; keep the detail floor and the animal budget.
+        expect(triangles).toBeGreaterThanOrEqual(quality === 'high' ? 4836 : 870);
+        expect(triangles).toBeLessThanOrEqual(quality === 'high' ? 6000 : 1500);
         const initial = mantle(still).geometry.attributes.position.array.slice();
         for (let time = 0; time < 3; time += .1) a.update(.1, time);
         a.update(.01, 3); b.update(3, 3); still.update(3, 3);

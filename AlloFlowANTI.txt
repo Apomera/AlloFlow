@@ -1893,10 +1893,16 @@ const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
     if (m) { mimeType = m[1] || mimeType; cleanData = m[2]; }
     const audioCapability = _alloResolveGeminiAudioCapability();
     const effectiveApiKey = _alloEffectiveGeminiApiKey();
-    if (!audioCapability.available || !effectiveApiKey) {
-        console.warn('[callGeminiAudio] No API key available');
-        throw new Error('Gemini audio transcription is not configured. Add a Gemini API key or choose another voice-input engine.');
+    if (!audioCapability.available || (!effectiveApiKey && audioCapability.reason !== 'canvas')) {
+        const reason = audioCapability.reason || 'missing-gemini-key';
+        console.warn('[callGeminiAudio] Not available:', reason);
+        const err = new Error('Gemini audio transcription is not configured. Add a Gemini API key or choose another voice-input engine.');
+        err.code = /^student-/.test(reason) ? 'allo-qr-ai-disabled' : 'allo-audio-unavailable';
+        err.reason = reason;
+        throw err;
     }
+    const o = opts || {};
+    const tokenCap = String(o.responseMimeType || '').toLowerCase() === 'application/json' ? callGeminiAudio._alloJsonMaxOutputTokens : 4096;
     const model = (typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.flash) || 'gemini-2.0-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const payload = {
@@ -1907,14 +1913,14 @@ const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
             ]
         }],
         generationConfig: {
-            maxOutputTokens: Math.max(64, Math.min(4096, Number(opts.maxOutputTokens) || 4096)),
-            ...(opts.responseMimeType ? { responseMimeType: String(opts.responseMimeType) } : {})
+            maxOutputTokens: Math.max(64, Math.min(tokenCap, Number(o.maxOutputTokens) || 4096)),
+            ...(o.responseMimeType ? { responseMimeType: String(o.responseMimeType) } : {})
         }
     };
     try {
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': effectiveApiKey },
+            headers: effectiveApiKey ? { 'Content-Type': 'application/json', 'x-goog-api-key': effectiveApiKey } : { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         if (!response.ok) {
@@ -1933,6 +1939,7 @@ const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
         throw err;
     }
 };
+callGeminiAudio._alloJsonMaxOutputTokens = 32768;
 if (typeof window !== 'undefined') {
     window.callGeminiAudio = callGeminiAudio;
 }
@@ -2285,9 +2292,9 @@ const _alloBrowserDeliveryManifest = (() => {
 })();
 // END ALLOFLOW_BROWSER_DELIVERY_POLICY
 
-const ALLO_MB_SCRIPT_VERSION = 28;
-const ALLO_MB_SCRIPT_SHA256 = '69aa7feb9be403f250fb206953cf6f14a6264b2bf0ece4ae209cfde1f5bc2d23';
-const ALLO_MB_SCRIPT_BYTES = 159439;
+const ALLO_MB_SCRIPT_VERSION = 29;
+const ALLO_MB_SCRIPT_SHA256 = '772445ad4b5e130e544e266a4046643d62eb50532b94f3c64d98aad80a1e0d7c';
+const ALLO_MB_SCRIPT_BYTES = 164389;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -3008,6 +3015,29 @@ function _alloHasAnyStudentEntry() {
         return false;
     }
 }
+// Learner roles never get this device's saved AI key.
+function _alloPastedAiKeyFenceActive() {
+    if (typeof window === 'undefined' || window.__alloLearnerRoleActive !== true) return false;
+    try { return !_isCanvasEnv && !_alloHasAnyStudentEntry(); } catch (_) { return true; }
+}
+const _ALLO_AI_SECRET_FIELD = /api_?key|app_?id|token|secret|password/i;
+const _ALLO_KEYLESS_AI_BACKENDS = ['alloflow-local', 'lmstudio', 'localai', 'ollama', 'onnx-npu'];
+function _alloStripAiSecrets(config) {
+    if (!config || typeof config !== 'object') return config;
+    const out = {};
+    let hadSecret = false;
+    Object.keys(config).forEach((field) => {
+        if (!_ALLO_AI_SECRET_FIELD.test(field)) out[field] = config[field];
+        else if (config[field]) hadSecret = true;
+    });
+    const backend = String(out.backend || 'gemini');
+    if (!_ALLO_KEYLESS_AI_BACKENDS.includes(backend) && (backend !== 'custom' || hadSecret)) {
+        out.backend = 'gemini';
+        delete out.baseUrl;
+    }
+    return out;
+}
+if (typeof window !== 'undefined') window.__alloPastedAiKeyFenceActive = _alloPastedAiKeyFenceActive;
 function _alloShouldSuppressLearnerDeviceStorage(isTeacher, showingStudentEntry, sessionCode) {
     return _alloHasAnyStudentEntry()
         || Boolean(showingStudentEntry)
@@ -3196,8 +3226,21 @@ function _makeQrStudentAiBlockedFn(label, message) {
     blocked._alloQrBlocked = true;
     return blocked;
 }
+function _reapplyHiddenStudentAiBlock() {
+    const message = typeof window !== 'undefined' ? window.__alloHiddenStudentAiMessage : null;
+    if (!message) return false;
+    callGemini = _makeQrStudentAiBlockedFn('text', message);
+    callGeminiSingleAttempt = callGemini;
+    callGeminiVision = _makeQrStudentAiBlockedFn('vision', message);
+    callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit', message);
+    window.__alloStudentAiDisabled = true;
+    window.callGemini = callGemini;
+    window.callGeminiVision = callGeminiVision;
+    window.callGeminiImageEdit = callGeminiImageEdit;
+    return true;
+}
 function _installQrStudentAiGuard() {
-    if (!_isQrStudentAiDisabled()) return false;
+    if (!_isQrStudentAiDisabled()) return _reapplyHiddenStudentAiBlock();
     const _qrBlockedText = _makeQrStudentAiBlockedFn('text');
     callGemini = _qrBlockedText;
     callGeminiSingleAttempt = _qrBlockedText;
@@ -3232,7 +3275,7 @@ function _installQrStudentAiCapabilityGuards() {
 function _syncQrStudentAiAccess() {
     if (typeof window === 'undefined') return false;
     const disabled = _isQrStudentAiDisabled();
-    window.__alloStudentAiDisabled = disabled;
+    window.__alloStudentAiDisabled = disabled || Boolean(window.__alloHiddenStudentAiMessage);
     if (window.__alloQrStudentMode) window.__alloQrStudentMode.aiDisabled = disabled;
     try {
         if (disabled) window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1');
@@ -3344,16 +3387,28 @@ async function _makeAlloQrSvg(value, title = 'AlloFlow QR') {
     return qr.createSvgTag({ cellSize: ALLO_QR_CELL_SIZE, margin: ALLO_QR_QUIET_ZONE, scalable: true, title });
 }
 if (typeof window !== 'undefined') window.__alloMakeQrSvg = _makeAlloQrSvg;
+function _alloStoredAiConfig() {
+    const stored = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
+    let unlocked = null;
+    try { unlocked = JSON.parse(window.sessionStorage?.getItem('alloflow_ai_secrets_session_v1') || 'null'); } catch (_) {}
+    if (!unlocked || typeof unlocked !== 'object') return stored;
+    const merged = { ...(stored || {}) };
+    ['apiKey', 'geminiApiKey'].forEach((field) => { if (unlocked[field]) merged[field] = unlocked[field]; });
+    return merged;
+}
+if (typeof window !== 'undefined') window.__alloReadStoredAiConfig = _alloStoredAiConfig;
 function _readAlloAiUserConfig() {
     if (typeof window === 'undefined') return null;
     try {
         if (_alloHasAnyStudentEntry()) return JSON.parse(window.sessionStorage?.getItem(ALLO_QR_STUDENT_AI_CONFIG_KEY) || 'null');
-        return JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
+        const stored = _alloStoredAiConfig();
+        return _alloPastedAiKeyFenceActive() ? _alloStripAiSecrets(stored) : stored;
     } catch (_) {
         return null;
     }
 }
 function _alloEffectiveGeminiApiKey() {
+    if (_alloPastedAiKeyFenceActive()) return '';
     const config = _readAlloAiUserConfig();
     if (_alloHasAnyStudentEntry()) {
         return config && String(config.backend || 'gemini') === 'gemini'
@@ -3370,14 +3425,18 @@ function _alloEffectiveGeminiApiKey() {
 }
 function _alloResolveGeminiAudioCapability() {
     try {
-        if (_isQrStudentAiDisabled()) return { available: false, reason: 'student-ai-disabled' };
+        const w = typeof window !== 'undefined' ? window : {};
+        if (_isQrStudentAiDisabled() || w.__alloStudentAiDisabled === true) return { available: false, reason: 'student-ai-disabled' };
+        if (w.ALLOFLOW_MANAGED_AI_POLICY != null) return { available: false, reason: 'managed-ai-blocked' };
         const config = _readAlloAiUserConfig();
-        if (_alloHasAnyStudentEntry()) {
+        const studentEntry = _alloHasAnyStudentEntry();
+        if (studentEntry) {
             const capabilities = _alloStudentAiCapabilities(config);
             if (!capabilities.audio) return { available: false, reason: 'student-audio-not-approved' };
         }
-        return _alloEffectiveGeminiApiKey()
-            ? { available: true, reason: 'gemini-key' }
+        if (_alloEffectiveGeminiApiKey()) return { available: true, reason: 'gemini-key' };
+        return _isCanvasEnv && !studentEntry
+            ? { available: true, reason: 'canvas' }
             : { available: false, reason: 'missing-gemini-key' };
     } catch (_) {
         return { available: false, reason: 'configuration-unavailable' };
@@ -3403,8 +3462,39 @@ function resolveAiCapability() {
     }
 }
 if (typeof window !== 'undefined') window.__alloResolveAiCapability = resolveAiCapability;
+function _alloAiUsable(kind, fn) {
+    try {
+        if (fn !== undefined && (typeof fn !== 'function' || fn._alloQrBlocked)) return false;
+        if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) return false;
+        const want = kind || 'text';
+        if (want === 'audio') return _alloResolveGeminiAudioCapability().available;
+        if (want === 'tts') return window.ALLOFLOW_MANAGED_AI_POLICY == null && resolveAiCapability().tts === 'full';
+        const cap = resolveAiCapability();
+        if (!(want === 'images' || want === 'imageEdit' ? cap.images : cap.text)) return false;
+        if (want === 'text' || !_alloHasAnyStudentEntry()) return true;
+        const caps = _alloStudentAiCapabilities(_readAlloAiUserConfig());
+        return Boolean(want === 'images' ? caps.image : caps[want]);
+    } catch (_) {
+        return false;
+    }
+}
+if (typeof window !== 'undefined') window.__alloAiUsable = _alloAiUsable;
 // Fired by every writer of alloflow_ai_config so capability-gated UI re-derives.
 const ALLO_AI_CONFIG_CHANGED_EVENT = 'alloflow:ai-config-changed';
+function _alloAiSetupDoorway(kind, t) {
+    const tr = (k, f) => { try { const v = typeof t === 'function' ? t(k) : ''; return v && v !== k ? v : f; } catch (_) { return f; } };
+    const ready = _alloAiUsable(kind || 'text');
+    return { disabled: !ready, title: ready ? '' : tr('sidebar.needs_ai_setup', 'Needs AI setup'), cta: tr('sidebar.needs_ai_setup_cta', 'Tap to connect an AI, or use AlloFlow inside Gemini Canvas'),
+        onDoorway: () => { try { if (typeof window.__alloOpenAiSetup === 'function') window.__alloOpenAiSetup(); } catch (_) {} } };
+}
+function AlloAiSetupNotice({ t, kind, className }) {
+    const [, bump] = useState(0);
+    useEffect(() => { const r = () => bump(n => n + 1), evs = [ALLO_AI_CONFIG_CHANGED_EVENT, ALLO_STUDENT_AI_CONFIG_EVENT, 'storage']; evs.forEach(e => window.addEventListener(e, r)); return () => evs.forEach(e => window.removeEventListener(e, r)); }, []);
+    const d = _alloAiSetupDoorway(kind, t);
+    if (!d.disabled || window.__alloStudentAiDisabled === true) return null;
+    return <button type="button" data-ai-setup-doorway onClick={d.onDoorway} className={className || 'inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500'}><span aria-hidden="true">{'✨'}</span><span>{d.title}{' · '}{d.cta}</span></button>;
+}
+if (typeof window !== 'undefined') { window.__alloAiSetupDoorway = _alloAiSetupDoorway; window.AlloAiSetupNotice = AlloAiSetupNotice; }
 function _installLocalTextBridge(aiInstance, aiConfig) {
     if (!_usesLocalTextBackend(aiConfig) || !aiInstance || typeof aiInstance.generateText !== 'function') return false;
     const backend = aiConfig.backend;
@@ -5330,7 +5420,7 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         try {
             const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
             const provider = String(config.ttsProvider || '').trim().toLowerCase();
-            return provider === 'browser' || (provider !== 'off' && config.browserTtsFallback !== false);
+            return provider === 'browser' || (provider !== 'off' && (config.browserTtsFallback !== false || window.__alloStudentAiDisabled === true));
         } catch (_) { return true; }
     };
     let _attemptCleanup = null;
@@ -6201,6 +6291,37 @@ if (typeof window !== 'undefined') {
     window._isIOSCanvasEnv = _isIOSCanvasEnv;
     window._isDesktopBundledApp = _isDesktopBundledApp;
     window.GEMINI_MODELS = GEMINI_MODELS;
+    if (!_isDesktopBundledApp) {
+        let localSpeechOnly = false;
+        try {
+            const requested = new URLSearchParams(window.location.search || '').get('allo_voice_local');
+            if (requested === '1' || requested === '0') localStorage.setItem('alloflow_voice_local_only', requested);
+            localSpeechOnly = localStorage.getItem('alloflow_voice_local_only') === '1';
+        } catch (_) {}
+        if (localSpeechOnly) {
+            const nativeSpeech = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+            const localChecks = (method) => (options) => (nativeSpeech && typeof nativeSpeech[method] === 'function' && options && options.processLocally === true
+                ? nativeSpeech[method](options)
+                : Promise.resolve(method === 'available' ? 'unavailable' : false));
+            class AlloLocalOnlySpeechRecognition {
+                constructor() {
+                    const voice = window.AlloFlowVoice;
+                    if (voice && typeof voice.createLocalSpeechRecognition === 'function') return voice.createLocalSpeechRecognition(nativeSpeech);
+                    this.start = () => setTimeout(() => {
+                        try { if (this.onerror) this.onerror({ error: 'service-not-allowed' }); } catch (_) {}
+                        try { if (this.onend) this.onend(); } catch (_) {}
+                    }, 0);
+                    this.stop = () => {};
+                    this.abort = () => {};
+                }
+                static available(options) { return localChecks('available')(options); }
+                static install(options) { return localChecks('install')(options); }
+            }
+            window.__alloLocalSpeechOnly = true;
+            window.SpeechRecognition = AlloLocalOnlySpeechRecognition;
+            window.webkitSpeechRecognition = AlloLocalOnlySpeechRecognition;
+        }
+    }
 }
 
 const _CANVAS_MODELS = {
@@ -6615,6 +6736,8 @@ const AiBackendSettingsView = _alloCreateFirstWaveCdnView('AiBackendSettingsView
 const LmsAuditBannerView = _alloCreateFirstWaveCdnView('LmsAuditBannerView', '__alloLazyColdPathSurfaces', '♿');
 const ReadThisPagePanelView = _alloCreateFirstWaveCdnView('ReadThisPagePanelView', '__alloLazyColdPathSurfaces', '🔊');
 
+const _ALLO_VIEW_MODULE_KEYS = { analysis: 'AnalysisView', glossary: 'GlossaryView', outline: 'OutlineView', quiz: 'QuizView', faq: 'FaqView', 'sentence-frames': 'SentenceFramesView', brainstorm: 'BrainstormView', adventure: 'AdventureView', 'memory-aid': 'MemoryAidView', 'applied-challenge': 'AppliedChallengeView', image: 'ImageView', timeline: 'TimelineView', 'concept-sort': 'ConceptSortView', math: 'MathView' };
+const _ALLO_WINDOWED_RESOURCE_TYPES = new Set(['storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'lingua-config', 'lingua-submission']);
 const LazySimplifiedView = React.memo((props) => {
     const Real = window.AlloModules && window.AlloModules.SimplifiedView;
     const registryEntry = window.__alloModuleRegistry && window.__alloModuleRegistry.ViewSimplifiedModule;
@@ -9199,6 +9322,7 @@ const _alloCreateDefaultStudentProjectSettings = () => ({
   workStoryEnabled: false,
   hideStudentAiFeatures: false,
   allowStudentByokAi: false,
+  studentByokAdultsConfirmed: false,
   allowDictation: true,
   allowSocraticTutor: true,
   socraticCustomInstructions: '',
@@ -9209,6 +9333,7 @@ const _alloCreateDefaultStudentProjectSettings = () => ({
   // Teachers whose lesson has no adventure can switch the whole panel off.
   // Defaults on, so existing saved projects keep the behaviour they had.
   adventureEnabled: true,
+  allowStudentStories: true,
   nickname: '',
   baseXP: 100,
   adventurePermissions: {
@@ -9273,6 +9398,7 @@ const _alloNormalizeStudentProjectSettings = (candidate) => {
     workStoryEnabled: source.workStoryEnabled === true,
     hideStudentAiFeatures: source.hideStudentAiFeatures === true,
     allowStudentByokAi: source.allowStudentByokAi === true,
+    studentByokAdultsConfirmed: source.studentByokAdultsConfirmed === true,
     allowDictation: source.allowDictation !== false,
     allowSocraticTutor: source.allowSocraticTutor !== false,
     socraticCustomInstructions: cleanText(source.socraticCustomInstructions, 4000),
@@ -9281,6 +9407,7 @@ const _alloNormalizeStudentProjectSettings = (candidate) => {
     adventureMinXP: nonNegative(source.adventureMinXP, defaults.adventureMinXP),
     adventureUnlockXP: nonNegative(source.adventureUnlockXP, defaults.adventureUnlockXP),
     adventureEnabled: source.adventureEnabled !== false,
+    allowStudentStories: source.allowStudentStories !== false,
     nickname: cleanText(source.nickname, 120),
     baseXP: Math.max(1, nonNegative(source.baseXP, defaults.baseXP)),
     adventurePermissions: {
@@ -12889,7 +13016,7 @@ const _alloCarrySavedSupports = (base, current, next) => {
   if (!base || !current || !next || typeof next !== 'object' || next.id !== base.id || current.id !== base.id
       || getArtifactInstanceId(current) !== getArtifactInstanceId(base)) return next;
   let carried = next;
-  for (const key of ['readingSupports', 'adaptedReadingSupports']) {
+  for (const key of ['readingSupports', 'adaptedReadingSupports', 'syllablePrep']) {
     if (!same(next[key], base[key]) || same(current[key], base[key])) continue;
     carried = carried === next ? { ...next } : carried;
     if (current[key] === undefined) delete carried[key]; else carried[key] = current[key];
@@ -13741,6 +13868,26 @@ const AlloFlowContent = () => {
       window.__alloSensitiveWorkspaceContext = context;
       return () => { if (window.__alloSensitiveWorkspaceContext === context) delete window.__alloSensitiveWorkspaceContext; };
   }, []);
+  window.__alloLearnerRoleActive = !isTeacherMode;
+  const pastedKeyRoleRef = useRef(isTeacherMode);
+  useEffect(() => {
+      if (pastedKeyRoleRef.current === isTeacherMode) return;
+      pastedKeyRoleRef.current = isTeacherMode;
+      if (!isTeacherMode) { try { window.AlloModules?.DeviceAccessCode?.lockAiKey?.(); } catch (_) {} }
+      if (_isCanvasEnv || _alloHasAnyStudentEntry()) return;
+      try { _upgradeGeminiAPI(); } catch (_) {}
+      try { _upgradeTTS(); } catch (_) {}
+      try { window.dispatchEvent(new CustomEvent(ALLO_AI_CONFIG_CHANGED_EVENT)); } catch (_) {}
+  }, [isTeacherMode]);
+  useEffect(() => {
+      const rebuild = () => {
+          if (_isCanvasEnv || _alloHasAnyStudentEntry()) return;
+          try { _upgradeGeminiAPI(); } catch (_) {}
+          try { _upgradeTTS(); } catch (_) {}
+      };
+      window.addEventListener('alloflow:ai-key-lock-changed', rebuild);
+      return () => window.removeEventListener('alloflow:ai-key-lock-changed', rebuild);
+  }, []);
   const setIsTeacherMode = useCallback(value => {
       const next = typeof value === 'function' ? value(teacherModeRef.current) : value;
       if (next === teacherModeRef.current) return;
@@ -13772,9 +13919,11 @@ const AlloFlowContent = () => {
       && _alloStudentAiConfigIsValidated(_readAlloAiUserConfig());
   window.__alloStudentAiSetupAllowed = studentAiSetupAllowed;
   window.__alloStudentAiConfigured = studentAiConfigured;
+  const learnerHasNoAiBackend = !isTeacherMode && !resolveAiCapability().text;
   const studentAiFeaturesHidden = !isTeacherMode && (
       studentProjectSettings.hideStudentAiFeatures === true
       || (qrStudentModeActive && !studentAiConfigured)
+      || learnerHasNoAiBackend
   );
   // Hidden student AI blocks text, vision and image-edit globals AND module-scope
   // bindings, then restores teacher access. Prop-only hiding misses lazy/global callers.
@@ -13782,7 +13931,10 @@ const AlloFlowContent = () => {
   const [, setStudentAiGuardTick] = useState(0);
   useEffect(() => {
       if (typeof window === 'undefined' || !studentAiFeaturesHidden) return undefined;
-      const message = 'AI features are turned off for students in this project.';
+      const message = learnerHasNoAiBackend && studentProjectSettings.hideStudentAiFeatures !== true
+          ? 'AI features need an AI connection on this device.'
+          : 'AI features are turned off for students in this project.';
+      window.__alloHiddenStudentAiMessage = message;
       const savedWindow = {};
       ['callGemini', 'callGeminiVision', 'callGeminiImageEdit'].forEach((name) => {
           const current = window[name];
@@ -13804,6 +13956,7 @@ const AlloFlowContent = () => {
       // one more render hands every mount site the blocked ones.
       setStudentAiGuardTick((tick) => tick + 1);
       return () => {
+          delete window.__alloHiddenStudentAiMessage;
           Object.keys(savedWindow).forEach((name) => {
               // Only undo our own swap; a re-initialised API may have replaced it.
               if (typeof window[name] === 'function' && window[name]._alloQrBlocked) window[name] = savedWindow[name];
@@ -13815,6 +13968,7 @@ const AlloFlowContent = () => {
               callGeminiImageEdit = savedLocal.callGeminiImageEdit;
           }
           window.__alloStudentAiDisabled = previousDisabled;
+          try { _upgradeGeminiAPI(); } catch (_) {}
           setStudentAiGuardTick((tick) => tick + 1);
       };
   }, [studentAiFeaturesHidden]);
@@ -15981,8 +16135,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=03bfb0a9');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=80e7df58');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=f43b47eb');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=bb84e0e7');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=7cf7eeb0');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16028,7 +16182,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
     window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=70f6313a83'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -16095,6 +16249,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
+    window.__alloSpeechSetupHost = true;
+    window.__alloLazySpeechSetup = () => loadModule('SpeechSetup', 'https://alloflow-cdn.pages.dev/speech_setup_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
@@ -16247,7 +16403,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
     loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=9db10860');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=e1dfc85a');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=b434abb0');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16343,7 +16499,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=4a612640');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=9c9dc599');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
     loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16433,7 +16589,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=76a47297');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=9efa966d');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16446,7 +16602,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=f1590903'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=064ed238'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16454,7 +16610,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=cd000449'); }; })();
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=e09fda9d'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
@@ -16483,7 +16639,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
     window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', 'https://alloflow-cdn.pages.dev/concept_quest_solo_module.js?v=7d9bda5674a6e3dfe847c89e067e1c9a4d23940f');
-    window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=2a8d292216');
+    window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=a916ec8d15');
     window.__alloLazyConnectedEscape();
     window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=cd4f892415');
     window.__alloLessonBoardConditionalUpdate = _alloLessonBoardConditionalUpdate;
@@ -16522,7 +16678,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // What a door's first clicks wait on (Load Project, Quick Start, Generate, the
       // sidebar). These go first, and only these trickle in behind the launch pad.
       var FIRST_ACTION_MODULES = ['MiscHandlersModule', 'PhaseOHandlersModule', 'PureHelpersModule',
-        'TextPipelineHelpersModule', 'TextUtilityHelpersModule', 'PhaseKHelpersModule', 'PhaseNHelpersModule',
+        'TextPipelineHelpersModule', 'TextUtilityHelpersModule', 'PhaseKHelpersModule', 'FirestoreSync', 'StudentSaveAdventurePanel', 'PhaseNHelpersModule',
         'PromptsLibraryModule', 'CmapHandlersModule', 'GenerationHelpersModule', 'GenDispatcherModule',
         'ContentEngineModule', 'QuickStartWizard', 'SidebarPanels', 'ViewRenderersModule', 'AudioHelpersModule',
         'GlossaryHelpersModule', 'MathHelpersModule'];
@@ -17069,7 +17225,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
           var s = document.createElement('script');
           var retrySuffix = attempt > 1 ? '&retry=' + Date.now() : '';
-          var modeVersion = mod === 'arcade_mode_concept_pictionary.js' ? 'a225e174ea' : pluginCdnVersion;
+          var modeVersion = mod === 'arcade_mode_concept_pictionary.js' ? 'f496800d5d' : pluginCdnVersion;
           if (pluginContentPins[mod]) modeVersion = pluginContentPins[mod];
           var requestedPluginUrl = pluginCdnBase + mod + '?v=' + modeVersion + retrySuffix;
           s.setAttribute('data-allo-plugin-module', mod);
@@ -17673,6 +17829,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       const refresh = () => { try { setAiCapability(resolveAiCapability()); } catch (_) {} };
       window.addEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh);
+      window.addEventListener(ALLO_STUDENT_AI_CONFIG_EVENT, refresh);
       window.addEventListener('storage', refresh);
       // X6 (2026-08-17): doorway bridge for capability-gated surfaces that live
       // in separately-mounted modules (the sidebar panels' AiSetupNotice). One
@@ -17681,7 +17838,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__alloOpenQuickStart = () => { try { safeRemoveItem('allo_wizard_completed'); setShowWizard(true); } catch (_) {} };
       window.__alloBlankStartTypes = ['quiz', 'glossary', 'timeline', 'concept-sort', 'anchor-chart'];
       window.__alloOpenSourceForRevision = (sourceId) => { try { const live = _resourceMutationStateRef.current || {}; const source = sourceId ? (live.history || []).find(item => item && item.id === sourceId && item.type === 'analysis') : null; if (source && typeof learningWebRestoreViewRef.current === 'function') { Promise.resolve(learningWebRestoreViewRef.current(source)).then(opened => { if (opened !== false) setIsEditingAnalysis(true); }); return 'analysis'; } setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']); window.setTimeout(() => { const panel = document.getElementById('tour-input-panel'); const field = panel && panel.querySelector('textarea'); try { if (panel) panel.scrollIntoView({ block: 'start' }); if (field) field.focus({ preventScroll: true }); } catch (_) {} }, 50); return 'input'; } catch (_) { return null; } };
-      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; delete window.__alloOpenQuickStart; delete window.__alloBlankStartTypes; delete window.__alloOpenSourceForRevision; } catch (_) {} };
+      return () => { window.removeEventListener(ALLO_AI_CONFIG_CHANGED_EVENT, refresh); window.removeEventListener(ALLO_STUDENT_AI_CONFIG_EVENT, refresh); window.removeEventListener('storage', refresh); try { delete window.__alloOpenAiSetup; delete window.__alloOpenQuickStart; delete window.__alloBlankStartTypes; delete window.__alloOpenSourceForRevision; } catch (_) {} };
   }, []);
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
@@ -20275,6 +20432,50 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useFocusTrap(sessionModalRef, showSessionModal && !!activeSessionCode, () => setShowSessionModal(false));
   const aiBackendModalRef = useRef(null);
   useFocusTrap(aiBackendModalRef, showAIBackendModal, () => setShowAIBackendModal(false));
+  const [speechSetupRequest, setSpeechSetupRequest] = useState(null);
+  const [, setSpeechSetupLoadTick] = useState(0);
+  const speechSetupRef = useRef(null);
+  const speechSetupClosedAtRef = useRef(0);
+  const closeSpeechSetup = () => {
+    speechSetupClosedAtRef.current = Date.now();
+    setSpeechSetupRequest(null);
+  };
+  useFocusTrap(speechSetupRef, !!speechSetupRequest && !!(window.AlloModules && window.AlloModules.SpeechSetup), closeSpeechSetup);
+  useEffect(() => {
+    let pending = false;
+    let loadTimer = null;
+    const request = (automatic, detail) => {
+      if (automatic && Date.now() - speechSetupClosedAtRef.current < 30000) return;
+      setSpeechSetupRequest({ automatic, lang: (detail && detail.lang) || '' });
+      if (window.AlloModules && window.AlloModules.SpeechSetup) return;
+      pending = true;
+      if (typeof window.__alloLazySpeechSetup === 'function') window.__alloLazySpeechSetup();
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(() => {
+        pending = false;
+        if (window.AlloModules && window.AlloModules.SpeechSetup) return;
+        setSpeechSetupRequest(null);
+        try { addToast(t('speech_setup.could_not_open') || 'Speech setup could not open. Try again.', 'error'); } catch (_) {}
+      }, 20000);
+    };
+    const onOpen = (event) => request(false, event && event.detail);
+    const onNeeded = (event) => request(true, event && event.detail);
+    const onModules = () => {
+      if (!pending || !(window.AlloModules && window.AlloModules.SpeechSetup)) return;
+      pending = false;
+      clearTimeout(loadTimer);
+      setSpeechSetupLoadTick((tick) => tick + 1);
+    };
+    window.addEventListener('alloflow:open-speech-setup', onOpen);
+    window.addEventListener('alloflow:speech-setup-needed', onNeeded);
+    window.addEventListener('alloflow:module-registry-changed', onModules);
+    return () => {
+      clearTimeout(loadTimer);
+      window.removeEventListener('alloflow:open-speech-setup', onOpen);
+      window.removeEventListener('alloflow:speech-setup-needed', onNeeded);
+      window.removeEventListener('alloflow:module-registry-changed', onModules);
+    };
+  }, []);
   React.useEffect(() => {
     if (!showAIBackendModal || _isCanvasEnv) return;
     if (window.AlloModules && window.AlloModules.AIBackendModal) {
@@ -20287,7 +20488,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && window.AlloModules.AIBackendModal) {
         clearInterval(poll);
         setAiBackendModuleTick(tick => tick + 1);
-      } else if (attempts >= 80) {
+      } else if (attempts >= 1800) {
         clearInterval(poll);
       }
     }, 100);
@@ -21226,8 +21427,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       if (mode === 'load') {
           setTimeout(() => {
-              if (projectFileInputRef.current) {
-                  projectFileInputRef.current.click();
+              if (projectFilePickerRef.current) {
+                  projectFilePickerRef.current.click();
               }
           }, 100);
       }
@@ -25371,6 +25572,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
     const onFirestoreSyncUpgraded = () => _setHistory(prev => {
         const hydrated = normalizeArtifactInstanceIds(_alloRehydrateShimHistory(prev));
+        if (Array.isArray(prev) && Array.isArray(hydrated) && hydrated.length === prev.length && hydrated.every((item, index) => item === prev[index])) return prev;
         if (hydrated !== prev) bootHistoryHydrationRef.current = { previous: prev, current: hydrated };
         return hydrated;
     });
@@ -25798,6 +26000,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
                 if (item.posData) serializedItem.posData = item.posData;
+      if (item.syllablePrep) serializedItem.syllablePrep = item.syllablePrep;
                 // Preserve the frozen instructional/standards context and complexity
                 // evidence that make restored reading artifacts auditable. These are
                 // small JSON envelopes, unlike the binary payloads stripped below.
@@ -26314,6 +26517,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [sourceReplacement, setSourceReplacement] = useState(null);
   const [sourceRecord, setSourceRecord] = useState(null);
   const [sourceViewOpen, setSourceViewOpen] = useState(false);
+  const [sourceCheckText, setSourceCheckText] = useState(null);
   const [sourceViewFocus, setSourceViewFocus] = useState(0);
   const sourceStampSeenRef = useRef(null);
   useEffect(() => { const api = window.AlloModules?.SidebarPanels?.SourceRecord; if (!isProcessing || !api || sourceStampSeenRef.seedRuns > 0) return; const box = document.activeElement; const typing = !!(box && box.matches && box.matches('textarea[data-allo-textundo="input"]')); setSourceRecord(record => api.autoUse(record, inputText, typing)); }, [isProcessing]);
@@ -26416,6 +26620,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, []);
   const studentAiPolicyForShare = studentProjectSettings.allowStudentByokAi === true
+      && studentProjectSettings.studentByokAdultsConfirmed === true
       && studentProjectSettings.hideStudentAiFeatures !== true
       ? 'student-byok'
       : 'off';
@@ -26985,6 +27190,59 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__alloMailboxLive = () => setMbPanelOpen(true);
       return () => { try { delete window.__alloMailboxLive; } catch (_) {} };
   }, []);
+  useEffect(() => {
+      const connection = mbConfig;
+      const ready = !!(connection && connection.url && connection.admin);
+      window.__alloMailboxTakeHome = {
+          connected: ready,
+          openSetup: () => setMbPanelOpen(true),
+          target: async ({ title, expiresAt }) => {
+              if (!ready) return null;
+              const id = 'PK-' + generateUUID();
+              const secret = _alloRandomToken(16);
+              const safeTitle = String(title || 'Word Sounds take-home').slice(0, 140);
+              await _alloMailboxCall(connection.url, { a: 'putpack', admin: connection.admin, id, k: secret, part: 1, of: 1, title: safeTitle, expiresAt,
+                  activities: [], data: JSON.stringify({ kind: 'alloflow-take-home-mailbox-target', title: safeTitle }) });
+              return { url: connection.url, packId: id, secret, expiresAt };
+          },
+      };
+      return () => { try { delete window.__alloMailboxTakeHome; } catch (_) {} };
+  }, [mbConfig]);
+  useEffect(() => {
+      const connection = mbConfig;
+      const ready = !!(connection && connection.url && connection.admin);
+      const call = payload => _alloMailboxCallWithRetry(connection.url, { ...payload, admin: connection.admin });
+      window.__alloMailboxSubmissions = {
+          connected: ready,
+          openSetup: () => setMbPanelOpen(true),
+          pull: async ({ all = false, rescan = false, skip = [], onProgress = null } = {}) => {
+              if (!ready) return { ok: false, e: 'not-connected' };
+              const hi = await _alloMailboxCallWithRetry(connection.url, { a: 'hello' });
+              if (Number(hi && hi.v || 0) < 29) return { ok: false, e: 'update-needed', v: Number(hi && hi.v || 0) };
+              const list = await call({ a: 'listsubmissions', all: !!all, rescan: !!rescan });
+              const skipSet = new Set(skip);
+              const todo = (list.items || []).filter(item => item && !skipSet.has(item.n));
+              const files = [];
+              const failed = [];
+              for (let i = 0; i < todo.length; i++) {
+                  if (onProgress) onProgress(i, todo.length);
+                  try {
+                      let text = '';
+                      let of = 1;
+                      for (let part = 1; part <= of; part++) {
+                          const r = await call({ a: 'getsubmission', n: todo[i].n, part });
+                          of = Math.max(1, Math.min(60, Number(r.of) || 1));
+                          text += String(r.data || '');
+                      }
+                      files.push({ name: todo[i].n, text, item: todo[i] });
+                  } catch (e) { failed.push(todo[i].n); }
+              }
+              return { ok: true, files, failed, more: Number(list.more) || 0, complete: list.complete !== false, skipped: (list.items || []).length - todo.length };
+          },
+          mark: async names => (names && names.length ? call({ a: 'marksubmissions', names: names.slice(0, 300) }) : { ok: true, marked: 0 }),
+      };
+      return () => { try { delete window.__alloMailboxSubmissions; } catch (_) {} };
+  }, [mbConfig]);
   const connectMailbox = useCallback(async (...__a) => _alloHostHandlers().connectMailbox(...__a), [mbUrlInput, mbAdminInput]);
   const rotateMailboxAdmin = useCallback(async (...__a) => _alloHostHandlers().rotateMailboxAdmin(...__a), [mbConfig]);
   const closeAllMailboxSessions = useCallback(async (...__a) => _alloHostHandlers().closeAllMailboxSessions(...__a), [mbConfig]);
@@ -29936,6 +30194,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isLargeFileProcessing, setIsLargeFileProcessing] = useState(false);
   const fileInputRef = useRef(null);
   const projectFileInputRef = useRef(null);
+  const projectFileFallbackInputRef = useRef(null);
+  const projectFilePickerRef = useMemo(() => ({ get current() { return projectFileInputRef.current || projectFileFallbackInputRef.current; } }), []);
   useEffect(() => () => {
     // The host is leaving; abort continuations without scheduling recovery
     // lifecycle state updates against an unmounting component.
@@ -30023,7 +30283,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // Language views must not advance the source revision on a stale device.
       const withoutLanguageViews = item => {
         const { analysisTranslationUpdatedAt, data, ...rest } = item;
-        const { reportLanguage, displayReportLanguage, reportTranslations, sourceTranslations, ...sourceData } = data || {};
+        const { reportLanguage, displayReportLanguage, reportTranslations, sourceTranslations, passageVersionsToRefresh, ...sourceData } = data || {};
         return { ...rest, data: sourceData };
       };
       const languageViewOnly = previous.type === 'analysis'
@@ -32906,6 +33166,71 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       else if (generatedContent.type === 'glossary') setIsEditingGlossary(true);
       else if (generatedContent.type === 'timeline') setIsEditingTimeline(true);
   }, [generatedContent?.id, isTeacherMode]);
+  const [seedFactCheckId, setSeedFactCheckId] = useState(null);
+  const seedDataSignature = (data) => {
+      const text = JSON.stringify(data == null ? null : data);
+      let hash = 5381;
+      for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+      return text.length + ':' + (hash >>> 0).toString(36);
+  };
+  const handleCheckSeedFacts = async () => {
+      const target = generatedContent;
+      const seed = target?.lessonPath?.seed;
+      if (!target || !seed || (seed.kind !== 'topic' && seed.kind !== 'word-list') || seedFactCheckId) return;
+      const signature = seedDataSignature(target.data);
+      setSeedFactCheckId(target.id);
+      try {
+          const prompt = 'List the most important factual claims (at most 15) in this classroom resource and judge each one against well-established knowledge. It was made from '
+              + (seed.kind === 'topic' ? 'the topic "' + seed.text + '"' : 'a word list') + ' for ' + gradeLevel + ' students, with no source passage to check against.\n'
+              + 'Verdicts: "supported" = well established; "uncertain" = you cannot confirm it, it depends on context, or reliable sources disagree; "incorrect" = it contradicts well-established knowledge. Never guess: when unsure, use "uncertain".\n'
+              + 'Write each claim and note in ' + (getSavedResourceLanguage(target) || leveledTextLanguage || 'English') + '. Each note is one short sentence saying why.\n'
+              + 'Return ONLY JSON: {"claims":[{"claim":"...","verdict":"supported|uncertain|incorrect","note":"..."}]}\n'
+              + 'Resource (' + target.type + '):\n' + JSON.stringify(target.data, (key, value) => (/image|icon|audio|svg|url$|src$/i.test(key) || (typeof value === 'string' && /^(data|blob):|^https?:\/\//.test(value)) ? undefined : value)).slice(0, 12000);
+          const parsed = safeJsonParse(cleanJson(await callGemini(prompt, true)));
+          const verdicts = ['supported', 'uncertain', 'incorrect'];
+          const claims = (Array.isArray(parsed?.claims) ? parsed.claims : [])
+              .filter(c => c && typeof c.claim === 'string' && c.claim.trim()).slice(0, 15)
+              .map(c => ({ claim: c.claim.trim().slice(0, 400), verdict: verdicts.includes(c.verdict) ? c.verdict : 'uncertain', note: typeof c.note === 'string' ? c.note.trim().slice(0, 300) : '' }));
+          if (!claims.length) throw new Error('no claims');
+          const apply = item => item && item.id === target.id && item.lessonPath ? { ...item, lessonPath: { ...item.lessonPath, factCheck: { at: Date.now(), signature, claims } } } : item;
+          setGeneratedContent(apply);
+          setHistory(prev => prev.map(apply));
+      } catch (_) {
+          addToast(t('common.seed_check_failed') || 'The fact check did not finish. Your resource is unchanged; try again.', 'error');
+      } finally {
+          setSeedFactCheckId(null);
+      }
+  };
+  const renderSeedFactCheck = (item) => {
+      const check = item?.lessonPath?.factCheck;
+      const busy = seedFactCheckId === item?.id;
+      const claims = Array.isArray(check?.claims) ? check.claims : [];
+      const groups = [['incorrect', t('common.seed_check_incorrect') || 'Likely wrong'], ['uncertain', t('common.seed_check_uncertain') || 'Can’t verify'], ['supported', t('common.seed_check_supported') || 'Supported']]
+          .map(([verdict, label]) => [verdict, label, claims.filter(c => c.verdict === verdict)]).filter(group => group[2].length);
+      return (
+          <div data-seed-check className="mt-2">
+              <button type="button" data-seed-check-run disabled={busy || !!seedFactCheckId || isProcessing} aria-busy={busy || undefined} onClick={handleCheckSeedFacts} className="min-h-11 rounded-lg border border-sky-700 bg-sky-700 px-3 py-2 text-xs font-bold text-white hover:bg-sky-800 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2">
+                  {busy ? (t('common.seed_check_running') || 'Checking the facts…') : claims.length ? (t('common.seed_check_again') || 'Check the facts again') : (t('common.seed_check_run') || 'Check the facts')}
+              </button>
+              <span role="status" aria-live="polite" className="sr-only">{busy ? (t('common.seed_check_running') || 'Checking the facts…') : ''}</span>
+              {claims.length > 0 && (
+                  <div data-seed-check-results className="mt-2 rounded-lg border border-sky-200 bg-white p-3 text-slate-900">
+                      {check.signature !== seedDataSignature(item.data) && <p data-seed-check-stale className="m-0 mb-2 text-xs font-semibold text-amber-900">{t('common.seed_check_stale') || 'This resource changed after the check. Check again to include your edits.'}</p>}
+                      {groups.map(([verdict, label, list]) => (
+                          <section key={verdict} data-seed-check-group={verdict} className="mb-2">
+                              <h4 className="m-0 text-xs font-bold">{label} ({list.length})</h4>
+                              {verdict === 'uncertain' && <p className="m-0 text-xs italic text-slate-700">{t('common.seed_check_insufficient') || 'There is as yet insufficient data for a meaningful answer.'}{' '}<span className="not-italic">{'— '}{t('common.seed_check_insufficient_by') || 'Isaac Asimov, “The Last Question”'}</span></p>}
+                              <ul className="m-0 mt-1 list-disc pl-5 text-xs">
+                                  {list.map((c, i) => <li key={i}><span className="font-semibold">{c.claim}</span>{c.note ? ' — ' + c.note : ''}</li>)}
+                              </ul>
+                          </section>
+                      ))}
+                      <p className="m-0 text-xs text-slate-700">{t('common.seed_check_caveat') || 'AI checked this against its own knowledge, not a source, and it can be wrong too. Use it as a starting point for your review.'}</p>
+                  </div>
+              )}
+          </div>
+      );
+  };
   const toFocusText = (text) => {
       if (!text) return null;
       return text.split(/(\s+)/).map((part, i) => {
@@ -38741,18 +39066,21 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     const request = ++projectSaveRequestRef.current;
     const isCurrent = () => request === projectSaveRequestRef.current && context === projectSaveContextRef.current && context.values[0];
     const cancelled = { ok: false, cancelled: true, reason: 'save-context-changed', narration: 'Save cancelled because the dialog or project changed. Save again to download the current project.' };
+    const stopped = (outcome) => { if (projectSaveContextRef.current?.values[0]) { try { addToast(outcome.narration, 'info'); } catch (_) {} } return outcome; };
     if (!context || !isCurrent()) return cancelled;
     projectSaveBusyRef.current = true;
     setIsProjectSaving(true);
     try {
       const modules = [['PhaseKHelpersModule', 'PhaseKHelpers']];
       if (context.values[3]) modules.push(['AlloCrypto', 'AlloCrypto']);
+      if (context.values[1] !== 'teacher') modules.push(['FirestoreSync', 'FirestoreSync'], ['SessionTransportModule', 'SessionTransport'], ['LiveAac', 'LiveAac'], ['InstructionalContext', 'InstructionalContext', true], ['ViewBrainstormModule', 'BrainstormView', true], ['ViewQuizModule', 'QuizView', true], ['GenDispatcherModule', 'GenDispatcher', true], ['ResourceReadAloudModule', 'ResourceReadAloud', true], ['MemoryAidModule', 'MemoryAid', true]);
       await _alloAwaitModules(modules, 'project save');
-      if (!isCurrent()) return cancelled;
+      if (!isCurrent()) return stopped(cancelled);
       const api = window.AlloModules && window.AlloModules.PhaseKHelpers;
       if (typeof api?.executeSaveFile !== 'function') throw new Error('Project save is unavailable');
       const result = await api.executeSaveFile({ ...context.getDeps(), isSaveRequestCurrent: isCurrent }, interactionOptions || {});
       if (result && result.ok === true) { try { window.dispatchEvent(new CustomEvent('alloflow-project-saved')); } catch (_) {} }
+      if (result && result.reason === 'save-context-changed') stopped(result);
       return result;
     } catch (error) {
       warnLog('Project save failed:', error);
@@ -39142,28 +39470,40 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // Resource-opening behavior belongs to MiscHandlers; the host supplies current React state.
   const pendingQrAssignmentOpenGenerationRef = useRef(0);
   const savedResourceOpenModules = [['MiscHandlersModule', 'MiscHandlers'], ['PureHelpersModule', 'PureHelpers'], ['PhaseNHelpersModule', 'PhaseNHelpers'], ['TextUtilityHelpersModule', 'TextUtilityHelpers']];
-  const recheckSourceAnalysis = async (report) => {
-    const text = report?.data?.originalText;
+  const recheckSourceAnalysis = async (report, options = {}) => {
+    // replace: refresh this report, for the same wording or an edit of it, instead of adding another.
+    const replacing = options.replace === true;
+    const startText = report?.data?.originalText;
+    const text = replacing && typeof options.text === 'string' ? options.text : startText;
     const retryable = item => item?.type === 'analysis' && (item.data?.analysisNeedsRecheck || item.data?.analysisIncomplete
       || window.AlloModules?.GenerationMatrix?.isIncompleteSourceAnalysis?.(item));
-    if (!isTeacherMode || isProcessing || !text?.trim() || !retryable(report)) return;
+    if (!isTeacherMode || isProcessing || !text?.trim() || !(replacing || retryable(report))) return;
+    let replaced = !replacing;
     const targets = report.data.analysisTargets || {};
     const coverageOf = item => window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(item);
     const save = (data, meta, studentSources) => {
       if (!_resourceMutationStateRef.current.isTeacherMode || data?.originalText !== text) return false;
       const nextCoverage = coverageOf({ data });
-      return onUpdateResource(report.id, current => {
-        if (!retryable(current) || current.data.originalText !== text) return current;
-        if (nextCoverage && (coverageOf(current)?.through || 0) >= nextCoverage.through) return current;
-        return { ...current, data, meta, config: { ...current.config, language: data.reportLanguage || current.config?.language },
+      const updated = onUpdateResource(report.id, current => {
+        if (!replaced && current.data?.originalText !== startText) return current;
+        if (replaced && (!retryable(current) || current.data.originalText !== text)) return current;
+        if (replaced && nextCoverage && (coverageOf(current)?.through || 0) >= nextCoverage.through) return current;
+        const base = current.data.originalText === text ? current : _alloHostHandlers().analysisForSourceText(current, text);
+        const made = Object.keys(data.sourceTranslations || {}).map(language => language.toLowerCase());
+        const pending = (base.data.passageVersionsToRefresh || []).filter(language => !made.includes(String(language).toLowerCase()));
+        const versions = { ...base.data.sourceTranslations, ...data.sourceTranslations };
+        return { ...base, data: { ...data, ...(Object.keys(versions).length ? { sourceTranslations: versions } : {}), ...(pending.length ? { passageVersionsToRefresh: pending } : {}) }, meta, config: { ...base.config, language: data.reportLanguage || base.config?.language },
           ...(studentSources ? { studentSources } : {}) };
       }, { instanceId: report._artifactInstanceId, returnUpdated: true });
+      if (updated) replaced = true;
+      return updated;
     };
     const fresh = await handleGenerate('analysis', null, false, text, {
-      stayOnView: true, selectedReadingSourceId: '__input__', sourceArtifactId: report.id,
+      stayOnView: true, selectedReadingSourceId: '__input__', sourceArtifactId: report.id, ...(options.inlineFailure ? { inlineFailure: true } : {}),
       grade: targets.grade || report.config?.grade || gradeLevel, sourceLanguage: report.data.sourceLanguage
-    }, false, { dokLevel: targets.dok ?? dokLevel, returnAnalysisDraft: true, resumeAnalysis: report,
+    }, false, { dokLevel: targets.dok ?? dokLevel, returnAnalysisDraft: true, ...(startText === text && retryable(report) ? { resumeAnalysis: report } : {}),
       onAnalysisSectionChecked: data => !!save(data, report.meta) });
+    if (fresh?.failureMessage) return fresh;
     if (fresh?.type !== 'analysis' || retryable(fresh)) return;
     return save(fresh.data, fresh.meta, fresh.studentSources);
   };
@@ -40170,6 +40510,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       handleGenerate('brainstorm');
   };
   const handleBotMicClick = useCallback(() => {
+      if (!isTeacherMode) { setShowSocraticChat(true); return; }
       if (!showUDLGuide) setShowUDLGuide(true);
       const newState = !isDictationMode;
       setIsDictationMode(newState);
@@ -40178,7 +40519,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               if (udlInputRef.current) udlInputRef.current.focus();
           }, 100);
       }
-  }, [showUDLGuide, isDictationMode]);
+  }, [showUDLGuide, isDictationMode, isTeacherMode]);
   const handleToggleMute = useCallback(() => {
       setBotVoiceEnabled(prev => {
           const newState = !prev;
@@ -40196,9 +40537,10 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   }, []);
   const handleBotFinishedSpeaking = useCallback((...__a) => _alloHostHandlers().handleBotFinishedSpeaking(...__a), []);
   const handleReadMore = useCallback(() => {
+      if (!isTeacherMode) { setShowSocraticChat(true); return; }
       setShowUDLGuide(true);
       setTimeout(() => udlInputRef.current?.focus(), 100);
-  }, []);
+  }, [isTeacherMode]);
   const handleVoiceSettingsClick = useCallback(() => {
     if (alloBotRef.current && typeof alloBotRef.current.dismissMessage === 'function') alloBotRef.current.dismissMessage();
     setShowSocraticChat(false);
@@ -41884,7 +42226,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     if (!factory) { console.warn('[EscapeRoom] Module not loaded'); return null; }
     _escapeRoomEngineRef.current = factory({
       callGemini, addToast, t, handleScoreUpdate, setGlobalPoints, playSound,
-      getState: () => ({ escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId, generatedContent, leveledTextLanguage, outputLanguagePreference, nativeLanguageDefaultsVersion: 1, appLanguage: currentUiLanguage, selectedLanguages, completedActivities }),
+      getState: () => ({ isTeacherMode, escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId, generatedContent, leveledTextLanguage, outputLanguagePreference, nativeLanguageDefaultsVersion: 1, appLanguage: currentUiLanguage, selectedLanguages, completedActivities }),
       setState: { setEscapeRoomState, setEscapeTimeLeft, setIsEscapeTimerRunning },
       // Host wiring so saveEscapeRoomConfig can embed the escape room
       // into the active exit ticket / quiz resource. Going-forward
@@ -42006,7 +42348,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
     if (_m && typeof _m.handleGenerate === "function") {
       const independentSeed = _m.isIndependentGenerationSeed?.(type, configOverride?.seed) === true;
-      if (independentSeed) sourceStampSeenRef.seedRuns = (sourceStampSeenRef.seedRuns || 0) + 1;
+      // A source check reads the draft; only Use or making a resource starts a new version.
+      const noAutoUse = independentSeed || (type === 'analysis' && configOverride?.stayOnView === true);
+      if (noAutoUse) sourceStampSeenRef.seedRuns = (sourceStampSeenRef.seedRuns || 0) + 1;
       try { return await _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
         selectedReadingSourceId: _alloReadingSourceChoice(), activeUnitId, sourceProvenance, requestGenerationSourceChoice,
         gradeLevel,
@@ -42235,7 +42579,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
         resetPersonaInterviewState,
         validateSequenceStructure,
       }, generationDepsOverride || {})); }
-      finally { if (independentSeed) sourceStampSeenRef.seedRuns = Math.max(0, (sourceStampSeenRef.seedRuns || 0) - 1); }
+      finally { if (noAutoUse) sourceStampSeenRef.seedRuns = Math.max(0, (sourceStampSeenRef.seedRuns || 0) - 1); }
     }
     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
   };
@@ -42561,7 +42905,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         addToast,
         handleConceptSpacePersist,
         organizerLearnerWork: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.organizerWork || null),
-        callImagen,
+        callImagen: studentAiFeaturesHidden ? null : callImagen,
       });
     if (!_m) { try { window.__alloPromoteModule?.('ViewRenderersModule'); } catch (_) {} return null; }
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
@@ -42964,8 +43308,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     // latest artifact when changing its reader layout instead of restoring a captured copy.
     setGeneratedContent(previous => previous?.id === item.id && previous?._artifactInstanceId === item._artifactInstanceId && previous?.type === item.type ? previous : item); setActiveView('simplified');
   };
-  const handleReadOriginal = (selected = null) => {
-    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleReadOriginal(selected));
+  const handleReadOriginal = (selected = null, options = null) => {
+    if (supportDraftSessionRef.current?.blocked()) return requestReadingSupportTransition(() => handleReadOriginal(selected, options));
     const api = window.AlloModules?.InstructionalContext;
     if (!api?.createSourceSnapshot || !api?.createSupportedReading || !api?.resolveReadingSource) { addToast('Reading tools are still loading. Try again in a moment.', 'info'); return; }
     let sourceItem = selected, resolved = null;
@@ -42991,6 +43335,19 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     const existing = history.find(item => api.isSupportedOriginal(item) && api.sameReadingFamily(item, family) && item.data === snapshot.text);
     const linkedSource = sourceItem && history.find(item => item.type === 'analysis' && api.getInstructionalText(item).form !== 'adapted' && api.sameReadingFamily(item, sourceItem));
     const sourceProfile = api.getSourceInstructionalText(linkedSource || sourceItem || { instructionalText: resolved?.instructionalText });
+    // A shown passage version opens as a supporting reading in its language, linked to this original.
+    const versionLanguage = sourceItem?.type === 'analysis' && typeof options?.language === 'string' ? options.language : '';
+    const versionText = versionLanguage ? sourceItem.data?.sourceTranslations?.[versionLanguage] : null;
+    if (typeof versionText === 'string' && versionText.trim()) {
+      const known = history.find(item => item?.type === 'simplified' && item.translationSourceId === sourceItem.id && item.config?.language === versionLanguage && item.data === versionText && api.getSourceSnapshot(item)?.text === snapshot.text);
+      if (known) return openReadingArtifact(known);
+      const base = api.createSupportedReading(snapshot, { id: 'version-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem.title || sourceTopic || 'Source text') + ' — ' + versionLanguage + ' with supports', config: { grade: sourceItem.config?.grade || gradeLevel }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
+      const versionProfile = { ...base.instructionalText, form: 'adapted', role: 'supplemental', designationSource: 'workflow-default', complexity: { ...base.instructionalText.complexity, language: versionLanguage, measuredGrade: null, method: '', status: 'stale' } };
+      const link = { translationOf: sourceItem.id, translationSourceId: sourceItem.id, translationSourceLanguage: snapshot.language };
+      const version = { ...base, ...link, data: versionText, instructionalText: versionProfile, config: { ...base.config, ...link, language: versionLanguage, instructionalText: versionProfile }, timestamp: new Date() };
+      setHistory(previous => [...previous, version]);
+      return openReadingArtifact(version);
+    }
     const item = existing || api.createSupportedReading(snapshot, { id: 'original-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8), title: (sourceItem?.title || sourceTopic || 'Source text') + ' — Original with supports', config: { grade: sourceItem?.config?.grade || gradeLevel, language: snapshot.language }, sourceInstructionalText: sourceProfile, sourceFamilyId: familyId, unitId });
     if (!existing) { item.timestamp = new Date(); setHistory(previous => [...previous, item]); }
     openReadingArtifact(item);
@@ -43572,8 +43929,12 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   // Adventure appears when the lesson can actually carry one: the teacher left it
   // on for this assignment, and there is either source content to build from or a
   // story already in progress for this lesson.
+  const _alloOfflineAdventure = window.AlloModules?.AdventureOffline?.find?.(history) || null;
+  const _alloStudentStoryOn = !isTeacherMode && !activeSessionCode && studentProjectSettings.allowStudentStories !== false;
+  const _alloStudentExploring = !isTeacherMode && !isIndependentMode && isStudentLinkMode && !activeSessionCode && !pendingJoinCode && !_alloHasAnyStudentEntry();
   const isAdventureAvailable = studentProjectSettings.adventureEnabled !== false
-      && (!!hasSourceOrAnalysis || hasSavedAdventureForLesson);
+      && (!!hasSourceOrAnalysis || hasSavedAdventureForLesson || !!_alloOfflineAdventure || _alloStudentStoryOn)
+      && (isTeacherMode || !!activeSessionCode || _alloAiUsable('text', callGemini) || !!_alloOfflineAdventure || _alloStudentStoryOn);
   const botAccessoryBase = useMemo(() => getBotAccessoryInternal(), [activeView, isInteractiveFlashcards, isReadingLibraryOpen, isTestPrepHubOpen, generatedContent?.type]);
   const isBlueprintMode = !!activeBlueprint;
   const botAccessory = useMemo(() => {
@@ -44312,7 +44673,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           warnLog
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
-        {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
+        {(showUDLGuide && isTeacherMode) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
           canReviseLesson: !!(isTeacherMode && !isStudentLinkMode && (history.length || generatedContent)), InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics, handleCopyBlueprintDiagnostics, handleOpenGenerationErrorLog, getSafeGenerationFailureReason: _alloDiagnosticReason, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
           aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
           handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
@@ -44718,7 +45079,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 onDefer: () => _alloRecordCheckpoint('deferred', '', 'text'),
                 onMisfit: () => _alloRecordCheckpoint('skipped', '', 'text')
             })}
-          {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} hasSaveableWork={Array.isArray(history) && history.length > 0} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventureForLesson} isAdventureAvailable={isAdventureAvailable} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
+          {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} hasSaveableWork={Array.isArray(history) && history.length > 0} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventureForLesson} isAdventureAvailable={isAdventureAvailable} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFilePickerRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} offlineAdventure={_alloOfflineAdventure} history={history} setHistory={setHistory} t={t} />}
           <div
             id={isTeacherMode ? 'sidebar-history-panel' : undefined}
             role={isTeacherMode && isWide ? 'tabpanel' : undefined}
@@ -44890,10 +45251,10 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 generatedContent?.type ? <><FileText className="text-slate-600" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}
                 </h2>
-                {generatedContent && typeof generatedContent.sourceVersion === 'number' && sourceRecord && sourceRecord.inUse && generatedContent.sourceVersion < sourceRecord.inUse.version && (
+                {generatedContent && typeof generatedContent.sourceVersion === 'number' && sourceRecord && sourceRecord.inUse && generatedContent.sourceVersion < sourceRecord.inUse.version && !(generatedContent.type === 'analysis' && generatedContent.data?.originalText === sourceRecord.inUse.text) && (
                   <span data-source-version-badge className="inline-flex shrink-0 flex-wrap items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 text-xs font-bold text-amber-900">
                     {(() => { const label = t('source_view.made_from_version', { version: generatedContent.sourceVersion }); return label && label !== 'source_view.made_from_version' ? label : 'Made from version ' + generatedContent.sourceVersion + ' of your source'; })()}
-                    <button type="button" data-source-remake disabled={isProcessing} onClick={() => handleGenerate(generatedContent.type)} className="min-h-11 underline disabled:opacity-60">{t('source_view.remake') || 'Remake from the current version'}</button>
+                    <button type="button" data-source-remake disabled={isProcessing || !aiCapability.text} title={_alloAiSetupDoorway('text', t).title || undefined} onClick={() => generatedContent.type === 'analysis' && window.AlloModules?.SidebarPanels?.SourceRecord?.sameSource?.(generatedContent.data?.originalText, sourceRecord.inUse.text) ? recheckSourceAnalysis(generatedContent, { replace: true, text: sourceRecord.inUse.text }) : handleGenerate(generatedContent.type)} className="min-h-11 underline disabled:opacity-60">{t('source_view.remake') || 'Remake from the current version'}</button>
                   </span>
                 )}
                 {isTeacherMode && generatedContent && (
@@ -45156,7 +45517,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               onChange={handleAnnotationImportFile}
               aria-hidden="true"
             />
-            {(isProcessing || isGeneratingSource) && (!generatedContent || !generatedContent?.data) ? (
+            {(isProcessing || isGeneratingSource) && !(sourceCheckText !== null && activeView === 'input') && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
                         <SkeletonLoader type={activeView} />
@@ -45258,7 +45619,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                   t, inputText, setInputText, sourceRecord, setSourceRecord, sourceReplacement, setSourceReplacement,
                   history, handleGenerate, isProcessing, isGeneratingSource, generationStep, isExtracting, setIsExtracting, setGenerationStep,
                   callGeminiVision, addToast, checkAccuracyWithSearch, setCheckAccuracyWithSearch, handleFormatText,
-                  refineSourceSuggestion, openAnalysis: (item) => handleRestoreView(item), onRecheckAnalysis: recheckSourceAnalysis,
+                  refineSourceSuggestion, openAnalysis: (item) => handleRestoreView(item), onRecheckAnalysis: isTeacherMode ? recheckSourceAnalysis : undefined, sourceCheckText, onSourceCheckChange: setSourceCheckText, activeUnitId,
                   aiTextAvailable: !!(window.__alloResolveAiCapability && window.__alloResolveAiCapability().text),
                   isDraftSaving, isCanvas, focusRequest: sourceViewFocus, onShowResources: showSourceResources, setSourceTopic, handleSpeak, isPlaying, playingContentId,
                 })}
@@ -45270,24 +45631,42 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 </div>
                 {/* Student empty states must explain the next available action: wait for a live teacher or request a fresh homework link. Authoring controls remain teacher-only. */}
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
-                  {!isTeacherMode && !isIndependentMode
+                  {_alloStudentExploring
+                    ? (t('input.empty_student_explore_eyebrow') || 'On your own')
+                    : !isTeacherMode && !isIndependentMode
                     ? (t('input.empty_student_eyebrow') || 'Connected')
                     : (t('common.ready') || 'Workspace ready')}
                 </p>
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{
-                  !isTeacherMode && !isIndependentMode
+                  _alloStudentExploring
+                    ? (t('input.empty_student_explore_heading') || 'Explore on your own')
+                    : !isTeacherMode && !isIndependentMode
                     ? (isStudentLinkMode
                         ? (t('input.empty_student_homework_heading') || 'Loading your homework')
                         : (t('input.empty_student_heading') || 'Waiting for your class'))
                     : (t('tools.source') || 'Source Material')
                 }</h2>
                 <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{
-                  !isTeacherMode && !isIndependentMode
+                  _alloStudentExploring
+                    ? (t('input.empty_desc_student_explore') || 'Pick a tool to read, practice, or play. If your teacher gave you a file, you can open it here.')
+                    : !isTeacherMode && !isIndependentMode
                     ? (isStudentLinkMode
                         ? (t('input.empty_desc_student_homework') || 'Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.')
                         : (t('input.empty_desc_student_live') || 'You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.'))
                     : (isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc'))
                 }</p>
+                {_alloStudentExploring && (
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    <button type="button" data-allo-explore-open onClick={() => setShowLearningHub(true)} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                      <Sparkles size={17} aria-hidden="true" />
+                      {t('input.empty_student_explore_open') || 'Open learning tools'}
+                    </button>
+                    <button type="button" data-allo-explore-load onClick={() => projectFilePickerRef.current?.click()} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                      <FolderOpen size={17} aria-hidden="true" />
+                      {t('student.load_file') || 'Load File'}
+                    </button>
+                  </div>
+                )}
                 {isTeacherMode && !guidedMode && (
                   <div className="mt-8 w-full max-w-2xl">
                     <button
@@ -45377,8 +45756,26 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 }, disabled: isProcessing
               })}
               <div id="screenshot-target" ref={contentRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-full">
+                {_ALLO_VIEW_MODULE_KEYS[activeView] && !(window.AlloModules && window.AlloModules[_ALLO_VIEW_MODULE_KEYS[activeView]]) && (
+                  <CDNModuleGate moduleKey={_ALLO_VIEW_MODULE_KEYS[activeView]} isOpen size="inline" icon="📄" hintVariant="short" displayName={(generatedContent && generatedContent.title) || t('output.this_activity') || 'this activity'} t={t}>{() => null}</CDNModuleGate>
+                )}
+                {generatedContent && _ALLO_WINDOWED_RESOURCE_TYPES.has(activeView) && (
+                  <div data-allo-windowed-resource className="mx-auto flex max-w-xl flex-col items-center px-5 py-14 text-center">
+                    <p className="text-sm leading-relaxed text-slate-600 sm:text-base">{t('output.windowed_resource_desc') || 'This activity opens in its own window.'}</p>
+                    <button type="button" data-allo-windowed-open onClick={() => {
+                      if (activeView.startsWith('storyforge')) setShowStoryForge(true);
+                      else if (activeView.startsWith('poettree')) setShowPoetTree(true);
+                      else if (activeView.startsWith('litlab')) setShowLitLab(true);
+                      else setIsLinguaPracticeOpen(true);
+                    }} className="mt-4 inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+                      {t('output.windowed_resource_open') || 'Open activity'}
+                    </button>
+                  </div>
+                )}
                 {activeView === 'analysis' && window.AlloModules && window.AlloModules.AnalysisView && React.createElement(window.AlloModules.AnalysisView, {
                     onUpdateResource, onCorrectAnalysisText, onReadOriginal: handleReadOriginal,
+                    currentUiLanguage, selectedLanguages, outputLanguage: leveledTextLanguage,
+                    onTranslatePassage: isTeacherMode ? (item, language) => translateResourceItem(item, language, { companionOnly: true }) : null,
                     onCheckSourceLevel: handleCheckLevel, isCheckingLevel, calculateReadability, currentAnalysisTargets: { grade: gradeLevel, dok: dokLevel },
                     onRecheckAnalysis: recheckSourceAnalysis,
                     onGenerateFromIdea: (type, instructions) => {
@@ -45397,7 +45794,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     toggleDiscrepancySelection, handleAutoCorrectSource,
                     toggleGrammarErrorSelection, handleToggleIsEditingAnalysis,
                     handleAiRefineSource, handleFormatText, handleAnalysisTextChange,
-                    callGemini,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini,
                     formatInlineText, renderFormattedText, splitReferencesFromBody,
                     addToast, warnLog,
                     handleDownloadAudio, downloadingContentId,
@@ -45587,6 +45984,78 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 {isTeacherMode && generatedContent && activeView === generatedContent.type && generatedContent.lessonPath?.seed?.kind === 'topic' && (
                     <div role="note" data-help-key="topic_seed_notice" className="mb-4 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
                         {t('common.topic_seed_notice', { topic: generatedContent.lessonPath.seed.text || '' }) || ('Made from the topic "' + (generatedContent.lessonPath.seed.text || '') + '", not from source material. Check the facts before sharing.')}
+                        <span data-path-less-traveled className="block mt-1 text-xs italic font-semibold">{t('sidebar.path_fork_badge') || 'The path less traveled · experimental'}</span>
+                        {renderSeedFactCheck(generatedContent)}
+                        {(() => {
+                            const seedPath = (Array.isArray(history) ? history : []).filter(item => item && ((item.lessonPath?.seed?.kind === 'topic' && item.lessonPath.seed.text === generatedContent.lessonPath.seed.text) || (item.lessonPath?.seed?.kind === 'word-list' && !!item.lessonPath.seed.topic && item.lessonPath.seed.topic === generatedContent.lessonPath.seed.text))).slice(-12);
+                            return seedPath.length > 1 && (
+                                <nav data-seed-path aria-label={t('common.seed_path_aria') || 'Resources made from this topic'} className="mt-2">
+                                    <span className="text-xs font-semibold">{t('common.seed_path_label') || 'On this path:'}</span>
+                                    <ul className="m-0 mt-1 flex list-none flex-wrap gap-2 p-0">
+                                        {seedPath.map(item => (
+                                            <li key={item.id}>
+                                                {item.id === generatedContent.id
+                                                    ? <span aria-current="true" className="inline-flex min-h-11 items-center rounded-full border border-sky-700 bg-sky-700 px-3 text-xs font-bold text-white">{item.title || item.type}{' · '}{t('common.seed_path_here') || 'here'}</span>
+                                                    : <button type="button" onClick={() => handleRestoreView(item)} className="min-h-11 rounded-full border border-sky-400 bg-white px-3 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{item.title || item.type}</button>}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+                            );
+                        })()}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                        {!aiCapability.text && <AlloAiSetupNotice t={t} />}
+                        <button type="button" data-seed-next="topic" onClick={() => { setSourceTopic(generatedContent.lessonPath.seed.text || ''); setActiveSidebarTab('create'); setWorkspacePane('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); addToast(t('common.seed_next_toast') || 'The Road goes ever on and on. Add any details, then write your passage.', 'info'); }} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{t('common.seed_next_passage_topic') || 'Write a passage on this topic'}</button>
+                        {typeof window.__alloRequestSourceStart === 'function' && <button type="button" data-seed-next="words" disabled={!aiCapability.text} title={_alloAiSetupDoorway('text', t).title || undefined} onClick={() => { setActiveSidebarTab('create'); setWorkspacePane('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); window.__alloRequestSourceStart('word-list', { topic: generatedContent.lessonPath.seed.text || '' }); }} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{t('common.seed_next_words_topic') || 'Pick key words for this topic'}</button>}
+                        {[['anchor-chart', t('common.seed_also_anchor_chart') || 'Also make an Anchor Chart'], ['concept-sort', t('common.seed_also_concept_sort') || 'Also make a Concept Sort'], ['persona', t('common.seed_also_persona') || 'Also find interview candidates'], ['timeline', t('common.seed_also_timeline') || 'Also make a Sequence Builder']].filter(([type]) => type !== generatedContent.type).map(([type, label]) => (
+                            <button key={type} type="button" data-seed-sibling={type} disabled={isProcessing || !aiCapability.text} title={_alloAiSetupDoorway('text', t).title || undefined} onClick={() => handleGenerate(type, null, false, null, { seed: { kind: 'topic', text: generatedContent.lessonPath.seed.text || '' } })} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{label}</button>
+                        ))}
+                        </div>
+                    </div>
+                )}
+                {isTeacherMode && generatedContent && activeView === generatedContent.type && generatedContent.lessonPath?.seed?.kind === 'word-list' && (
+                    <div role="note" data-help-key="word_list_seed_notice" className="mb-4 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+                        {generatedContent.type === 'sentence-frames' ? (t('common.word_list_scaffolds_notice') || 'Made from your word list, not from source material. Check the prompts before sharing.') : generatedContent.type === 'concept-sort' ? (t('common.word_list_sort_notice') || 'Made from your word list, not from source material. Check the categories before sharing.') : (t('common.word_list_seed_notice') || 'Made from your word list, not from source material. Check the definitions before sharing.')}
+                        {generatedContent.lessonPath.seed.topic && <span data-seed-topic className="block mt-1 text-xs">{t('common.word_list_topic', { topic: generatedContent.lessonPath.seed.topic }) || ('Words for the topic "' + generatedContent.lessonPath.seed.topic + '"')}</span>}
+                        <span data-path-less-traveled className="block mt-1 text-xs italic font-semibold">{t('sidebar.path_fork_badge') || 'The path less traveled · experimental'}</span>
+                        {renderSeedFactCheck(generatedContent)}
+                        {generatedContent.type === 'sentence-frames' && (() => {
+                            const frames = generatedContent.data || {};
+                            const written = (String(frames.text || '') + ' ' + (Array.isArray(frames.items) ? frames.items.map(item => (item && item.text) || '').join(' ') : '')).toLowerCase();
+                            const unused = (generatedContent.lessonPath.seed.terms || []).filter(term => !written.includes(String(term).toLowerCase()));
+                            return unused.length > 0 && <p data-seed-unused className="mb-0 mt-1 text-xs">{t('common.word_list_unused', { terms: unused.join(', ') }) || ('Not used in a prompt yet: ' + unused.join(', ') + '. These words are still in the word bank.')}</p>;
+                        })()}
+                        {(() => {
+                            const wordKey = JSON.stringify(generatedContent.lessonPath.seed.terms || []);
+                            const wordTopic = generatedContent.lessonPath.seed.topic || '';
+                            const seedPath = (Array.isArray(history) ? history : []).filter(item => {
+                                const seed = item && item.lessonPath?.seed;
+                                if (!seed) return false;
+                                if (seed.kind === 'word-list' && JSON.stringify(seed.terms || []) === wordKey) return true;
+                                return !!wordTopic && ((seed.kind === 'topic' && seed.text === wordTopic) || (seed.kind === 'word-list' && seed.topic === wordTopic));
+                            }).slice(-12);
+                            return seedPath.length > 1 && (
+                                <nav data-seed-path aria-label={wordTopic ? (t('common.seed_path_aria') || 'Resources made from this topic') : (t('common.seed_path_words_aria') || 'Resources made from this word list')} className="mt-2">
+                                    <span className="text-xs font-semibold">{t('common.seed_path_label') || 'On this path:'}</span>
+                                    <ul className="m-0 mt-1 flex list-none flex-wrap gap-2 p-0">
+                                        {seedPath.map(item => (
+                                            <li key={item.id}>
+                                                {item.id === generatedContent.id
+                                                    ? <span aria-current="true" className="inline-flex min-h-11 items-center rounded-full border border-sky-700 bg-sky-700 px-3 text-xs font-bold text-white">{item.title || item.type}{' · '}{t('common.seed_path_here') || 'here'}</span>
+                                                    : <button type="button" onClick={() => handleRestoreView(item)} className="min-h-11 rounded-full border border-sky-400 bg-white px-3 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{item.title || item.type}</button>}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+                            );
+                        })()}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                        {!aiCapability.text && <AlloAiSetupNotice t={t} />}
+                        <button type="button" data-seed-next="word-list" onClick={() => { setSourceVocabulary((generatedContent.lessonPath.seed.terms || []).join(', ')); if (generatedContent.lessonPath.seed.topic) setSourceTopic(generatedContent.lessonPath.seed.topic); setActiveSidebarTab('create'); setWorkspacePane('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); addToast(t('common.seed_next_toast') || 'The Road goes ever on and on. Add any details, then write your passage.', 'info'); }} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{t('common.seed_next_passage_words') || 'Write a passage that uses these words'}</button>
+                        {[['glossary', t('common.seed_also_glossary_words') || 'Also make a Glossary of these words'], ['concept-sort', t('common.seed_also_concept_sort_words') || 'Also make a Concept Sort with these words'], ['sentence-frames', t('common.seed_also_scaffolds_words') || 'Also make Writing Scaffolds with these words']].filter(([type]) => type !== generatedContent.type).map(([type, label]) => (
+                            <button key={type} type="button" data-seed-sibling={'words-' + type} disabled={isProcessing || !aiCapability.text} title={_alloAiSetupDoorway('text', t).title || undefined} onClick={() => handleGenerate(type, null, false, null, { seed: generatedContent.lessonPath.seed })} className="min-h-11 rounded-lg border border-sky-400 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700">{label}</button>
+                        ))}
+                        </div>
                     </div>
                 )}
                 {!isTeacherMode && studentWorkConflict && !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(activeView) && window.AlloModules?.StudioResponse?.WorkConflict && React.createElement(window.AlloModules.StudioResponse.WorkConflict, {
@@ -45657,7 +46126,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     closeInteractiveFlashcards, closeMemory, closeCrossword, closeMatching, closeBingo,
                     runGlossaryHealthCheck,
                     setScreenerSession, setRosterQueue,
-                    addToast, playSound, callTTS, callImagen, callGeminiImageEdit,
+                    addToast, playSound, callTTS,
+                    callImagen: studentAiFeaturesHidden ? null : callImagen,
+                    callGeminiImageEdit: studentAiFeaturesHidden ? null : callGeminiImageEdit,
                     copyToClipboard, safeDownloadBlob, isRtlLang, cleanJson, fisherYatesShuffle, getRows,
                     autoRemoveWords, visualStyle, glossaryImageStyle, universalImageStyle,
                     alloBotRef,
@@ -45874,7 +46345,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleCreateGroup, handleAssignStudent, handleSetGroupResource,
                     handleSetGroupLanguage, handleSetGroupProfile, handleDeleteGroup,
                     handleUpdateQuestionRoutingRules,
-                    callGemini, callTTS, callImagen, callGeminiImageEdit,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini, callTTS,
+                    callImagen: studentAiFeaturesHidden ? null : callImagen,
+                    callGeminiImageEdit: studentAiFeaturesHidden ? null : callGeminiImageEdit,
                     gradeLevel,
                     getRows, formatInlineText, renderFormattedText,
                     getReviewCategories, playSound, addToast,
@@ -46065,7 +46538,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     openAdventureActionVote,
                     renderFormattedText, formatInteractiveText, splitTextToSentences,
                     stopPlayback, executeStartAdventure, adventureEffects,
-                    saveAdventureFluencyResult, gradeLevel, sourceTopic,
+                    saveAdventureFluencyResult, gradeLevel, sourceTopic, history, setHistory, inputText,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini,
                     ErrorBoundary, AdventureAmbience, AdventureShop, AnimatedNumber,
                     ClimaxProgressBar, ConfettiExplosion, InventoryGrid
                 })}
@@ -46137,7 +46611,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     handleRestoreImage, handleRefineImage, handleDownloadImage,
                     handleAnimatePanel, handleRegeneratePanelFrame, handleDeletePanelFrame,
                     handleDuplicatePanelFrame, handleReorderPanelFrame, handleSetPanelFps,
-                    callGemini, addToast, VisualPanelGrid,
+                    callGemini: studentAiFeaturesHidden ? null : callGemini, addToast, VisualPanelGrid,
                     learnerAnnotations: isTeacherMode ? null : (studentResponses[generatedContent?.id]?.visualAnnotations || null),
                     onLearnerAnnotationsChange: (id, annotations) => { if (id != null) setStudentResponses(prev => ({ ...prev, [id]: { ...(prev[id] || {}), visualAnnotations: annotations } })); }
                 })}
@@ -46600,12 +47074,16 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               callTTS={callTTS}
               preloadedWords={wsPreloadedWords || []}
               preparedSessionConfig={generatedContent?.sessionConfig || generatedContent?.wordSoundsProbeConfig || wordSoundsSessionConfig || {}}
+              preparedLessonPlan={generatedContent?.type === 'word-sounds' ? generatedContent.lessonPlanConfig : null}
               onShowReview={(reviewedWords) => {
                   if (latestWordSoundsSetupReviewRef.current?.session !== wordSoundsSetupReviewSession) return;
                   if (Array.isArray(reviewedWords)) setWsPreloadedWords(reviewedWords, { preserveSetupReviews: true });
+                  const lessonSequence = wsActivitySequence?.length > 0 ? wsActivitySequence
+                      : (generatedContent?.type === 'word-sounds' && Array.isArray(generatedContent.lessonPlanSequence) ? generatedContent.lessonPlanSequence : []);
                   setIsWordSoundsMode(false);
+                  setWsActivitySequence(lessonSequence);
                   setTimeout(() => {
-                      const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                      const initialActivity = lessonSequence.length > 0 ? lessonSequence[0] : 'counting';
                       setWordSoundsActivity(initialActivity);
                       setWordSoundsAutoReview(true);
                       setIsWordSoundsMode(true);
@@ -46702,6 +47180,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               handlers={{...(_getEscapeRoomEngine() || {}), openEscapeRoomSettings, updateEscapeRoomSetting, launchEscapeRoomWithSettings, confirmEscapeRoomPreview, updateEscapeRoomPuzzle, updateEscapeRoomFinalDoor, saveEscapeRoomConfig, loadSavedEscapeRoom, hasSavedEscapeRoom}}
               t={t}
               hasSourceOrAnalysis={hasSourceOrAnalysis}
+              isTeacherMode={isTeacherMode}
           />
       )}
       {isTeacherMode && escapeRoomState.isPreview && window.AlloModules && window.AlloModules.EscapeRoomDialogs && (
@@ -47755,8 +48234,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       <StudentWelcomeModal
         isOpen={showStudentWelcome && hasSelectedRole && !isTeacherMode}
         onClose={handleCloseStudentWelcome}
-        onUpload={() => projectFileInputRef.current?.click()}
+        onUpload={() => projectFilePickerRef.current?.click()}
       />
+      <input aria-label={t('common.upload_file')} type="file" ref={projectFileFallbackInputRef} onChange={handleLoadProject} className="hidden" accept=".json" tabIndex={-1} />
       <ErrorBoundary fallbackMessage="The setup wizard encountered an error. Please close and try again.">
               <QuickStartWizard
         isOpen={showWizard && hasSelectedRole && isTeacherMode}
@@ -47809,6 +48289,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       )}
       {/* --- AI Backend: Config Modal (non-Canvas) --- */}
         {/* ── AI Backend Modal — extracted to view_misc_modals_module.js (CDN) ── */}
+        {showAIBackendModal && !_isCanvasEnv && !(window.AlloModules && window.AlloModules.AIBackendModal) && (
+          <CDNModuleGate moduleKey="AIBackendModal" isOpen onClose={() => setShowAIBackendModal(false)} icon="⚙️" displayName={t('sidebar.ai_setup_name') || 'AI setup'} hintVariant="short" accessibleModal modalZIndex={showStemLab ? 10600 : undefined} t={t}>{() => null}</CDNModuleGate>
+        )}
         {(aiBackendModuleTick >= 0 && showAIBackendModal && !_isCanvasEnv) && window.AlloModules && window.AlloModules.AIBackendModal && (
           <div ref={aiBackendModalRef}>{React.createElement(window.AlloModules.AIBackendModal, {
             _isCanvasEnv, ai, setShowAIBackendModal,
@@ -48067,6 +48550,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           }
           }) : null
       })}
+      {isAppReady && speechSetupRequest && window.AlloModules && window.AlloModules.SpeechSetup && (
+        <div ref={speechSetupRef}>{React.createElement(window.AlloModules.SpeechSetup.SpeechSetupPanel, { t, theme, lang: speechSetupRequest.lang, automatic: speechSetupRequest.automatic, onClose: closeSpeechSetup })}</div>
+      )}
       {/* Agentic AlloBot S0 (docs/allobot_agentic_design.md): the command
           palette — Ctrl/Cmd+K anywhere. ONE registry that the bot chat (S1)
           and voice loop (S2) will reuse; ctx is assembled from the SAME
@@ -48294,17 +48780,15 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                   t, toolSnapshots, areaChallenge, areaFeedback, areaAnswer,
                   fracChallenge, fracFeedback, fracAnswer, handleGenerateMath,
                   labToolData, setLabToolData, gradeLevel, sourceTopic,
-                  inputText, storageDB, ai, sourceProvenance,
+                  inputText, storageDB, ai: (aiCapability.text && !studentAiFeaturesHidden) ? ai : null, sourceProvenance,
                   readingSource: readingStudySource?.ownerScope === readingProfileScope ? readingStudySource : null, onReturnToReading: returnToReadingPassage,
-                  // W7: with no AI backend the STEM module gets nulls instead of
-                  // functions that would fail — its getHint/aiChat layer already
-                  // self-disables on a missing callGemini, and the header shows
-                  // the "AI extras: off" pill with onOpenAiSetup as its doorway.
+                  // W7: no backend or hidden student AI hands STEM nulls, not failing
+                  // functions; the header pill + onOpenAiSetup is the doorway.
                   callGemini: aiCapability.text ? callGemini : null,
-                  callGeminiVision: aiCapability.text ? callGeminiVision : null,
-                  callGeminiImageEdit: aiCapability.images ? callGeminiImageEdit : null,
+                  callGeminiVision: (aiCapability.text && !studentAiFeaturesHidden) ? callGeminiVision : null,
+                  callGeminiImageEdit: (aiCapability.images && !studentAiFeaturesHidden) ? callGeminiImageEdit : null,
                   onOpenAiSetup: () => { try { setShowAIBackendModal(true); } catch (_) {} },
-                  callTTS, callImagen,
+                  callTTS, callImagen: (aiCapability.images && !studentAiFeaturesHidden) ? callImagen : null,
                   activeStation, setActiveStation,
                   theme,
                   activeProfileId: selectedProfileId,
@@ -48335,7 +48819,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         <CDNModuleGate loaderName="__alloLazyReportWriter" moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
-                callGemini: callGemini,
+                callGemini: aiCapability.text ? callGemini : null,
                 addToast,
                 t,
                 studentNickname: studentNickname || '',
@@ -48353,7 +48837,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         <CDNModuleGate moduleKey="CinematicStudio" isOpen={showCinematicStudio} onClose={() => setShowCinematicStudio(false)} icon="🎬" displayName="Cinematic Studio" t={t}>
             {(CinematicStudio) => React.createElement(CinematicStudio, {
                 onClose: () => setShowCinematicStudio(false),
-                callGemini: (studentAiFeaturesHidden ? null : callGemini),
+                callGemini: (studentAiFeaturesHidden || !aiCapability.text ? null : callGemini),
                 addToast,
                 t,
                 sourceTopic: sourceTopic || '',
@@ -48559,7 +49043,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     callGemini: (studentAiFeaturesHidden ? null : callGemini),
                     callGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
                     callGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
-                    callGeminiAudio,
+                    callGeminiAudio: (studentAiFeaturesHidden ? null : callGeminiAudio),
                     callTTS,
                     selectedVoice,
                     addToast,
@@ -48959,8 +49443,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 isOpen: true,
                 onClose: () => setShowResearchHub(false),
                 t,
-                ai,
-                onCallGemini: callGemini,
+                ai: studentAiFeaturesHidden ? null : ai,
+                onCallGemini: studentAiFeaturesHidden ? null : callGemini,
                 onCallTTS: callTTS,
                 addToast,
                 studentCodename: studentNickname || '',
@@ -49027,6 +49511,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 onClose: () => setIsLinguaPracticeOpen(false),
                 callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 addToast,
+                t,
                 sourceText: inputText,
                 initialSource: pendingLinguaSource,
                 onInitialSourceConsumed: () => setPendingLinguaSource(null),
@@ -49108,7 +49593,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 onClose: () => setIsTestPrepHubOpen(false),
                 callTTS,
                 callGemini: (studentAiFeaturesHidden ? null : callGemini),
-                callGeminiAudio,
+                callGeminiAudio: (studentAiFeaturesHidden ? null : callGeminiAudio),
                 selectedVoice,
                 addToast,
                 t,
@@ -49126,6 +49611,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     selectedVoice,
                     gradeLevel,
                     addToast,
+                    t,
                     geminiVoices: GEMINI_VOICES,
                     kokoroVoices: KOKORO_VOICES,
                     studentNickname,
@@ -49229,8 +49715,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
-                    callGemini: !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor ? callGemini : null,
-                    callTTS, callImagen: (studentAiFeaturesHidden ? null : callImagen), callGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
+                    callGemini: !studentAiFeaturesHidden && (isTeacherMode || studentProjectSettings.allowSocraticTutor) ? callGemini : null,
+                    callTTS, callImagen: !studentAiFeaturesHidden && (isTeacherMode || studentProjectSettings.allowSocraticTutor) ? callImagen : null,
+                    callGeminiVision: !studentAiFeaturesHidden && (isTeacherMode || studentProjectSettings.allowSocraticTutor) ? callGeminiVision : null,
                     onSafetyFlag: handleAiSafetyFlag,
                     studentCodename: studentNickname || 'student',
                     selectedVoice,

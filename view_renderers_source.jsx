@@ -11,9 +11,16 @@
 // strand hints, Memory Palace sculptures, node mnemonics). A QR student and,
 // since 2026-09-14, an in-app student with AI hidden get window.callGemini
 // replaced by a BLOCKED function that only throws, so `typeof === 'function'`
-// alone kept offering buttons that could only fail. Check the marker too.
+// alone kept offering buttons that could only fail. Prefer the host's
+// window.__alloAiUsable (capability + policy); the marker check is the fallback.
+const _alloAiUsableKind = (kind, fn) => {
+  try {
+    if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  try { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+};
 const _alloRuntimeAiAvailable = () => {
-  try { return typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && window.__alloStudentAiDisabled !== true; } catch (_) { return false; }
+  try { return typeof window.callGemini === 'function' && _alloAiUsableKind('text', window.callGemini); } catch (_) { return false; }
 };
 
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
@@ -3316,7 +3323,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     //    the module fires onSelectNode, we render controls, it renders the art
     //    above the node. Persists to data.conceptArt (NOT conceptSpace, so it
     //    never touches the arrangement) via onPersist. ──
-    const canImagen = typeof callImagen === 'function';
+    const canImagen = typeof callImagen === 'function' && _alloAiUsableKind('images', callImagen);
     // ── Constellation mode (docs §4.5): student-weighted concept links rendered as
     //    line brightness. Weights persist under data.constellation (own store — never
     //    touches the arrangement); each entry { w, why, ai, aiWhy } keyed by the
@@ -4845,7 +4852,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         return id;
     };
     const persist = typeof onPersist === 'function' ? onPersist : null;
-    const canImagen = typeof callImagen === 'function';
+    const canImagen = typeof callImagen === 'function' && _alloAiUsableKind('images', callImagen);
     const images = data?.memoryPalace?.images || {};
     const depths = data?.memoryPalace?.depths || {};                 // depth maps for relief statues (P4a)
     const [reliefOn, setReliefOn] = React.useState(false);           // 🗿 also generate a depth map per locus → 3D bas-relief

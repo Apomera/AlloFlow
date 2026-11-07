@@ -63,8 +63,10 @@
 //   • punnett SHRANK (-1 length bucket): rendering the tool's own baseline source
 //     through today's harness produces byte-identical output to the current
 //     source, so that entry had been wrong since before it was committed.
-// THREE ENTRIES ARE DELIBERATELY LEFT RED: galaxy, rocks and waterCycle carry
+// THREE ENTRIES WERE DELIBERATELY LEFT RED: galaxy, rocks and waterCycle carried
 // another session's UNCOMMITTED work (rocks 240+/63-, waterCycle 2016+/91-).
+// 2026-11-07: that rocks work was committed, so rocks and rockCycle were re-pinned
+// (only those two entries changed). Rocks then gained only its own English fallbacks.
 // Re-baselining them would bake unpushed changes into the golden. Whoever lands
 // that work owns re-running `npx vitest run tests/stem_sim_tools_golden.test.js
 // --update` (path FIRST — the flag first rebaselines the whole repo).

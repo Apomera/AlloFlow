@@ -18,7 +18,8 @@ function lineModel(range, challenge) {
   const svgStart = html.indexOf('<svg', html.indexOf('allo-nl-bg-challenges'));
   const svg = html.slice(svgStart, html.indexOf('</svg>', svgStart));
   const labels = [...svg.matchAll(/<text x="([\d.]+)" y="102"[^>]*>([^<]+)<\/text>/g)].map((m) => Number(m[2].replace(/,/g, '')));
-  const minorValues = [...svg.matchAll(/<line x1="([\d.]+)" y1="(?:45|52)"[^>]*stroke="#60a5fa"/g)]
+  // Minor ticks are #3b82f6 since 2026-11-03 (#60a5fa was 2.5:1 on white, under the 3:1 graphics minimum).
+  const minorValues = [...svg.matchAll(/<line x1="([\d.]+)" y1="(?:45|52)"[^>]*stroke="#3b82f6"/g)]
     .map((m) => range.min + (Number(m[1]) - PAD) / (W - 2 * PAD) * (range.max - range.min));
   return { labels, minorValues };
 }
@@ -58,7 +59,8 @@ describe('integer challenges put every tick on a whole number', () => {
   }
 
   it('leaves the default 0..20 explore line exactly as before (one tick per unit)', () => {
-    const html = renderTool('numberline', {});
+    // Explicit tab: since 2026-11-04 a first visit opens on the band's path step, not Explore.
+    const html = renderTool('numberline', { _numberline: { tab: 'explore' } });
     const labels = [...html.matchAll(/<text x="([\d.]+)" y="102"[^>]*>([^<]+)<\/text>/g)].map((m) => Number(m[2]));
     expect(labels).toEqual(Array.from({ length: 21 }, (_, i) => i));
   });

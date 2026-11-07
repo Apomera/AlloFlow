@@ -708,6 +708,34 @@ RECOMMENDED STEM LAB TOOLS
     "example": "FINAL CHECK\n\u2713 Source and learning goal match.\n\u2713 Student directions name the task and success criteria.\n\u2713 Answer keys are teacher-only.\n\u2713 Accessibility preflight has been reviewed.\n\u2713 Student link opens and the first task is obvious.\n\u2713 A backup format is available for students who cannot use the primary route."
   }
 };
+function guidedStudentDeviceVoice(text, onEnd) {
+  if (typeof window === "undefined" || window.__alloStudentAiDisabled !== true) return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === "function" ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false;
+  } catch (_) {
+  }
+  try {
+    if (JSON.parse(window.localStorage.getItem("alloflow_ai_config") || "{}").ttsProvider === "off") return false;
+  } catch (_) {
+  }
+  const synth = window.speechSynthesis;
+  const phrase = String(text == null ? "" : text).trim();
+  if (!synth || typeof SpeechSynthesisUtterance === "undefined" || !phrase) return false;
+  try {
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
+    if (typeof window.__alloVoiceVolume === "number" && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+    if (typeof onEnd === "function") {
+      u.onend = onEnd;
+      u.onerror = onEnd;
+    }
+    synth.cancel();
+    synth.speak(u);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 function GuidedModeBanner({
   GUIDED_STEPS,
   allGuidedSteps,
@@ -1471,7 +1499,12 @@ function GuidedModeBanner({
     _ttsGenRef.current++;
     const a = _ttsAudioRef.current;
     _ttsAudioRef.current = null;
-    if (a) {
+    if (a === "device-voice") {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (_) {
+      }
+    } else if (a) {
       try {
         a.pause();
         a.src = "";
@@ -1518,6 +1551,13 @@ function GuidedModeBanner({
       return;
     }
     if (!url) {
+      if (guidedStudentDeviceVoice(plain, () => {
+        if (myGen === _ttsGenRef.current) _stopTts();
+      })) {
+        _ttsAudioRef.current = "device-voice";
+        setTtsState("playing");
+        return;
+      }
       setTtsState("idle");
       return;
     }

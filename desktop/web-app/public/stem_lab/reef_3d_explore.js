@@ -120,6 +120,7 @@
     soft_coral: ['invertebrate', 'sessile', 0.5, 1, 30], brain_coral: ['coral', 'sessile', 1.0, 1, 25],
     staghorn_coral: ['coral', 'sessile', 1.2, 1, 20], table_coral: ['coral', 'sessile', 1.6, 1, 15],
     acropora_humilis: ['coral','sessile',.65,2,15], acropora_millepora: ['coral','sessile',.88,2,15], acropora_clathrata: ['coral','sessile',1.15,5,40],
+    fire_coral: ['coral', 'sessile', 0.75, 1, 10], blue_coral: ['coral', 'sessile', 0.6, 0, 3], pipe_organ_coral: ['coral', 'sessile', 0.42, 3, 15], birdsnest_coral: ['coral', 'sessile', 0.35, 1, 20],
     mushroom_coral: ['coral', 'sessile', 0.22, 1, 25], boulder_coral: ['coral', 'sessile', 1.8, 1, 25],
     cauliflower_coral: ['coral', 'sessile', 0.45, 1, 20], foliose_coral: ['coral', 'sessile', 0.85, 2, 20],
     reef_star: ['structure', 'sessile', 1.0, 1, 20], reef_ball: ['structure', 'sessile', 1.2, 1, 30],
@@ -144,9 +145,15 @@
     broadclub_cuttlefish: ['invertebrate', 'hover', 0.30, 5, 30], blackspotted_puffer: ['fish', 'hover', 0.25, 3, 25],
     ocellated_eagle_ray: ['fish', 'solitary', 4.2, 0, 60], textile_cone: ['invertebrate', 'bottom', 0.09, 0, 50],
     orange_cup_coral: ['coral', 'sessile', 0.075, 1, 60], banded_sea_krait: ['reptile', 'solitary', 1.2, 0, 60],
+    bubble_coral: ['coral', 'sessile', 0.25, 0, 40], hammer_coral: ['coral', 'sessile', 0.3, 0, 40], flowerpot_coral: ['coral', 'sessile', 0.22, 2, 18],
     white_spotted_hermit_crab: ['invertebrate', 'bottom', 0.20, 0, 50], longfin_bannerfish: ['fish', 'pair', 0.15, 2, 75],
+    blackfin_barracuda: ['fish', 'school', 0.8, 1, 100, 8, 24], titan_triggerfish: ['fish', 'solitary', 0.6, 1, 50],
+    bluefin_trevally: ['fish', 'solitary', 0.6, 1, 190],
+    blacktip_reef_shark: ['fish', 'solitary', 1.3, 0, 75], dusky_farmerfish: ['fish', 'hover', 0.12, 1, 12],
     bigfin_reef_squid: ['invertebrate', 'hover', 0.40, 0, 100],
     goldmouth_sea_squirt: ['invertebrate', 'sessile', 0.12, 3, 20],
+    drupella_snail: ['invertebrate', 'bottom', 0.035, 0, 30], pincushion_sea_star: ['invertebrate', 'bottom', 0.25, 0, 30],
+    spanish_dancer: ['invertebrate', 'bottom', 0.30, 1, 50], banded_coral_shrimp: ['invertebrate', 'crevice', 0.06, 1, 60],
     feather_duster_worm: ['invertebrate', 'sessile', 0.16, 3, 16]
   };
   var SPECIAL = {
@@ -155,6 +162,16 @@
     // Living reef interactions: grazers bite the rock, clients visit the cleaning
     // stations, and a crown-of-thorns starfish sits on the coral it is eating.
     parrotfish: 'graze', bumphead_parrotfish: 'graze', peacock_grouper: 'client', crown_of_thorns: 'cots',
+    // A titan triggerfish keeps to a small patch over rubble (nests are guarded
+    // there); a bluefin trevally ranges widely along the reef as it hunts.
+    titan_triggerfish: 'hover', bluefin_trevally: 'roam',
+    // A pincushion sea star feeds on a colony as the crown-of-thorns does; banded
+    // coral shrimp keep a cleaning station as a pair; a Spanish dancer crawls and
+    // now and then swims a short loop over the reef.
+    pincushion_sea_star: 'cots', banded_coral_shrimp: 'cleaner', spanish_dancer: 'dancer',
+    // A blacktip reef shark keeps swimming along the shallow reef flat and gives the
+    // diver a wide berth; a dusky farmerfish holds its turf patch and darts at grazers.
+    blacktip_reef_shark: 'patrol', dusky_farmerfish: 'farm',
     ocellated_eagle_ray: 'eagle', bigfin_reef_squid: 'squid', broadclub_cuttlefish: 'cuttle', blackspotted_puffer: 'puffer', banded_sea_krait: 'krait'
   };
   // A client's poses at a cleaning station: [pitch, roll] (head up, head down, tilted).
@@ -163,18 +180,25 @@
   var INSPECT = [[0.28, 0.03, 1], [0.06, 0.08, 1], [-0.2, 0.05, 0.9], [0.1, -0.16, 0.5], [0.46, 0.0, 0.2], [0.3, 0.0, 1], [0.0, 0.2, 0.3], [-0.08, -0.1, 0.9]];
   // Corals a crown-of-thorns starfish is placed on, most preferred first (plate Acropora).
   var COTS_HOST = { table_coral: 0, foliose_coral: 0.5, boulder_coral: 0.8, brain_coral: 0.9 };
+  // Culcita prefers Pocillopora, then takes other corals (Glynn & Krupp 1986).
+  var CUSHION_HOST = { cauliflower_coral: 0, foliose_coral: 0.4, table_coral: 0.6, boulder_coral: 0.8 };
   var PUFF_LIFE = 5, PUFF_RIM = 8;
   var ZONE = {
     magnificent_anemone: 'anemone', giant_clam: 'flat', sea_fan: 'slope', barrel_sponge: 'slope', christmas_tree_worm: 'bommie', soft_coral: 'bommie',
     blue_sea_star: 'flat', sea_cucumber: 'sand', bluespotted_stingray: 'channel', long_spined_urchin: 'reef', crown_of_thorns: 'garden', nudibranch: 'reef',
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     acropora_humilis:'rockShoulder', acropora_millepora:'rockShoulder', acropora_clathrata:'rockShoulder',
+    fire_coral: 'crest', blue_coral: 'flat', pipe_organ_coral: 'slope', birdsnest_coral: 'bommie',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
     firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand',
     porcelain_anemone_crab: 'anemone', varicose_phyllidia: 'reef', broadclub_cuttlefish: 'rubbleEdge', blackspotted_puffer: 'garden',
     ocellated_eagle_ray: 'channel', textile_cone: 'rubbleEdge', orange_cup_coral: 'shadedRock', banded_sea_krait: 'bommieSide',
+    bubble_coral: 'garden', hammer_coral: 'slope', flowerpot_coral: 'garden',
     white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel',
+    blackfin_barracuda: 'channel', titan_triggerfish: 'rubbleEdge', bluefin_trevally: 'slope',
+    drupella_snail: 'garden', pincushion_sea_star: 'garden', spanish_dancer: 'reef', banded_coral_shrimp: 'bommieSide',
+    blacktip_reef_shark: 'flat', dusky_farmerfish: 'bommie',
     goldmouth_sea_squirt: 'shadedShoulder', feather_duster_worm: 'rockShoulder'
   };
   function speciesInfo(Species, id) {
@@ -1035,6 +1059,7 @@
       f = f.replace('#include <fog_fragment>', '');
       f = f.replace('#include <encodings_fragment>', VISION_GRADE + '\n#include <encodings_fragment>');
     }
+    if (parts.fOutput && parts.fOutput.length) f = inject(f, '#include <encodings_fragment>', parts.fOutput.join('\n'), where);
     shader.vertexShader = v; shader.fragmentShader = f;
   }
   var GLSL_NOISE = [
@@ -1110,6 +1135,36 @@
     '#endif',
     '}}'
   ].join('\n');
+  // Distance haze: the far reef melts into the very colour the water backdrop shows along the
+  // same ray. It runs after encoding because the backdrop writes output-space colour directly:
+  // the two then match exactly, so no pale edge of sand ends in a band against the open water.
+  // The light tier starts sooner because its colonies end sooner. Math only: it reuses the
+  // water column's distance and ray, with no texture and no extra pass.
+  var FAR_MELT_COMMON = 'uniform vec3 reefBackTop;uniform vec3 reefBackBottom;';
+  // Open water is not one flat colour: it lightens toward the surface and the sun's side and
+  // deepens below eye level. The backdrop and the far haze both run these same terms, so a
+  // melting reef still lands exactly on the colour behind it. Math only, no texture.
+  function waterDepthTerms(colour, ray, top, bottom) {
+    return [
+      'float reefSunSide=0.5+0.5*dot(' + ray + '.xz,vec2(0.814,0.581));',
+      colour + '*=mix(0.93,1.0,smoothstep(-0.62,-0.02,' + ray + '.y))*(0.95+0.05*reefSunSide);',
+      colour + '+=max(' + top + '-' + bottom + ',vec3(0.0))*smoothstep(-0.26,0.46,' + ray + '.y)*(0.05+0.30*reefSunSide*reefSunSide);'
+    ].join('');
+  }
+  function farMelt(high) {
+    return [
+      '#ifdef USE_FOG',
+      'vec3 reefFarWater=vec3(0.0);float reefFarMelt=smoothstep(' + (high ? '11.0,46.0' : '9.0,42.0') + ',reefOpticalDistance);',
+      // Nothing to work out until the haze begins, which is most of the reef on screen.
+      'if(reefFarMelt>0.0){',
+      'reefFarWater=reefBackBottom*mix(0.63,1.0,smoothstep(-0.85,-0.06,reefWaterRay.y));',
+      'reefFarWater=mix(reefFarWater,reefBackTop,smoothstep(-0.10,0.98,reefWaterRay.y)*0.70);',
+      waterDepthTerms('reefFarWater', 'reefWaterRay', 'reefBackTop', 'reefBackBottom'),
+      'gl_FragColor.rgb=mix(gl_FragColor.rgb,reefFarWater,reefFarMelt);',
+      '}',
+      '#endif'
+    ].join('\n');
+  }
   function surfaceRelief(height, limit) {
     return [
       '#ifdef REEF_DERIVATIVES',
@@ -1140,11 +1195,13 @@
     for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
       var u = (x + 0.5) / size, v = (y + 0.5) / size;
       var warp = tiled(u, v, 5, 101), wu = u + (warp - 0.5) * 0.055, wv = v + (tiled(u, v, 7, 337) - 0.5) * 0.055;
-      var body = tiled(wu, wv, 13, 193), fragments = tiled(wu, wv, 39, 761), grit = tiled(u, v, 113, 1811);
-      var pores = 1 - smooth(0.16, 0.36, tiled(wu, wv, 61, 1237));
+      // A second lattice at 45 degrees still tiles (u + v and u - v repeat with the map). Without
+      // it the thresholded fields below follow the grid and read as little square pits.
+      var body = tiled(wu, wv, 13, 193), fragments = 0.5 * (tiled(wu, wv, 39, 761) + tiled(wu + wv, wu - wv, 27, 5021)), grit = tiled(u, v, 113, 1811);
+      var pores = 1 - smooth(0.26, 0.41, 0.5 * (tiled(wu, wv, 61, 1237) + tiled(wu + wv, wu - wv, 43, 6173)));
       var crust = 0.54 * tiled(wu, wv, 11, 2347) + 0.31 * tiled(wu, wv, 29, 3313) + 0.15 * fragments;
-      var chip = smooth(0.69, 0.86, fragments) * (0.65 + 0.35 * grit), at = (y * size + x) * 4;
-      data[at] = Math.round(255 * clamp(0.5 + (body - 0.5) * 0.38 + (fragments - 0.5) * 0.24 + (grit - 0.5) * 0.12 - pores * 0.25, 0, 1));
+      var chip = smooth(0.60, 0.74, fragments) * (0.65 + 0.35 * grit), at = (y * size + x) * 4;
+      data[at] = Math.round(255 * clamp(0.5 + (body - 0.5) * 0.38 + (fragments - 0.5) * 0.34 + (grit - 0.5) * 0.12 - pores * 0.25, 0, 1));
       data[at + 1] = Math.round(255 * grit);
       data[at + 2] = Math.round(255 * smooth(0.49, 0.65, crust));
       data[at + 3] = Math.round(255 * chip);
@@ -1236,9 +1293,11 @@
     cleaner_shrimp: ['slug', 0xd83a2a, 0xffffff], christmas_tree_worm: ['worm', 0x3fb0ff, 0xf5f5f5], day_octopus: ['octopus', 0x9a6a4a, 0xd0a080],
     sea_cucumber: ['cucumber', 0x2a2a20, 0x5a5040], sea_fan: ['fan', 0xc84a6a, 0xe07a8a], barrel_sponge: ['barrel', 0x9a4a3a, 0xc07050],
     goldmouth_sea_squirt: ['tunicate', 0xd9d2df, 0xf0aa38], feather_duster_worm: ['featherworm', 0x805237, 0xebd8b4],
+    drupella_snail: ['slug', 0xb8a890, 0xf2efe6], pincushion_sea_star: ['star', 0xc2843f, 0x6a7235, 5], spanish_dancer: ['slug', 0xb3192c, 0xf6efe8], banded_coral_shrimp: ['slug', 0xc8202b, 0xf7f3ee],
     soft_coral: ['soft', 0xe07ab0, 0xf5c0d8], brain_coral: ['brain', 0xb8a050, 0x7a8a40], staghorn_coral: ['staghorn', 0xc8a070, 0xe8d0a0],
     table_coral: ['table', 0x8a9a5a, 0xb0c080], mushroom_coral: ['mushroom', 0xb8a080, 0xd8c8a0], boulder_coral: ['boulder', 0x8a7a50, 0xa89a60],
     acropora_humilis:['thickFingers',0xad8cb0,0xe5d5de], acropora_millepora:['cushion',0xb58c72,0xdfbe94], acropora_clathrata:['lattice',0x87956f,0xc4c5a3],
+    fire_coral: ['table', 0xc99d3c, 0xf4ecd2], blue_coral: ['thickFingers', 0x6e624f, 0x3d8fe0], pipe_organ_coral: ['boulder', 0xb3261e, 0x9fbf96], birdsnest_coral: ['staghorn', 0xc47887, 0xf3d3da],
     cauliflower_coral: ['staghorn', 0xb68180, 0xe4c5bd], foliose_coral: ['table', 0xb78675, 0xe8cbb5],
     reef_star: ['reefstar', 0x4a3a2a, 0xe08a6a], reef_ball: ['reefball', 0xb8b4a8, 0xe08a6a], coral_tree_nursery: ['nursery', 0xf2f2ea, 0xe8a070]
   };
@@ -1546,7 +1605,7 @@
     var site = normalizeSite(options.site), health = site.health, seed = site.seed, restoration = site.restoration;
     var growth = restoration ? clamp(restoration.yearsSince / 4, 0, 1) : 0;
     var vitality = clamp(0.55 * health.coralCover + 0.25 * (1 - health.bleaching) + 0.2 * (1 - health.algae), 0, 1);
-    var view = options.view === 'first' ? 'first' : 'third', vision = visionMode(options.vision), magnification = 1;
+    var view = options.view === 'first' ? 'first' : 'third', vision = visionMode(options.vision), magnification = 1, photoMode = false;
     var scene = new T.Scene(), camera = new T.PerspectiveCamera(60, 1, 0.05, 70), renderer = null;
     var disposed = false, contextLost = false, raf = 0, rafIsTimer = false, lastStamp = null, worldTime = 0, visualTime = 0, frames = 0, paused = false;
     var listeners = [], resizeObserver = null, notifyTimer = 0, lastNotify = -Infinity, lastCheck = -Infinity, lastKey = '', pendingNotify = false;
@@ -1721,8 +1780,9 @@
       parts.vCommon.push('varying vec3 vReefWorld;' + (local ? 'varying vec3 vReefLocal;' : ''));
       parts.vProject.push(WORLD_VERTEX + (local ? '\nvReefLocal=position;' : ''));
       parts.fLighting = [CAUSTIC_APPLY.replace('reefCausticStrength*', 'reefCausticStrength*getShadowMask()*'), TORCH_LIGHT];
+      parts.fCommon.push(FAR_MELT_COMMON); parts.fOutput = [farMelt(high)];
     }
-    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefWaterSunFalloff = U.sunFalloff; shader.uniforms.reefVision = U.vision; shader.uniforms.reefFluorescent = { value: 0 }; shader.uniforms.reefFluorSeed = { value: 0.37 }; bindTorch(shader); }
+    function bindCaustics(shader) { shader.uniforms.reefCausticMap = U.map; shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefCausticStrength = U.strength; shader.uniforms.reefWaterExtinction = U.extinction; shader.uniforms.reefWaterScatter = U.scatter; shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefWaterSunFalloff = U.sunFalloff; shader.uniforms.reefVision = U.vision; shader.uniforms.reefFluorescent = { value: 0 }; shader.uniforms.reefFluorSeed = { value: 0.37 }; shader.uniforms.reefBackTop = backdrop.material.uniforms.topColor; shader.uniforms.reefBackBottom = backdrop.material.uniforms.bottomColor; bindTorch(shader); }
     function bindTorch(shader) { shader.uniforms.reefTorchPos = U.torchPos; shader.uniforms.reefTorchDir = U.torchDir; shader.uniforms.reefTorch = U.torch; }
     function immerseOrganisms() {
       // The species guide also uses these models in neutral studio light.
@@ -1767,7 +1827,8 @@
       parts.vCommon.push('attribute vec2 reefGround;varying vec2 vReefGround;'); parts.vBegin.push('vReefGround=reefGround;');
       shader.uniforms.reefVitality = { value: vitality * vitality };
       shader.uniforms.reefSubstrateMap = U.substrate;
-      parts.fCommon.push('varying vec2 vReefGround;uniform float reefVitality;uniform sampler2D reefSubstrateMap;');
+      shader.uniforms.reefFloorAlgae = { value: health.algae };
+      parts.fCommon.push('varying vec2 vReefGround;uniform float reefVitality;uniform sampler2D reefSubstrateMap;uniform float reefFloorAlgae;');
       parts.fColor.push([
         'float reefX=vReefWorld.x,reefZ=vReefWorld.z;',
         // Current-aligned, gently turning ripples have broad lee faces and
@@ -1787,10 +1848,24 @@
         'float reefMottle=reefNoise(vec3(vReefWorld.xz*0.8,4.2));',
         'float reefRippleField=0.24+0.76*smoothstep(0.28,0.72,reefNoise(vec3(vReefWorld.xz*0.6,8.1)));',
         'float reefWave=(sin(reefRipple)+0.23*sin(reefRipple*2.0+0.62))*reefRippleAA*reefSandW*reefRippleField;',
+        // A second, longer sand wave carries the current's lines past the range where
+        // the fine ripples resolve to nothing. It shares their direction and field.
+        'float reefDune=reefSandFlow.y*3.15+sin(reefSandFlow.x*0.29)*1.7+sin(reefBend*0.9)*0.8;',
+        'float reefDuneAA=0.5;',
+        '#ifdef REEF_DERIVATIVES',
+        'reefDuneAA=1.0-smoothstep(0.5,1.9,fwidth(reefDune));',
+        '#endif',
+        'reefDune=sin(reefDune)*reefDuneAA*reefSandW*(0.35+0.65*reefRippleField);',
+        // One low-frequency look at the same grain map gives bare ground a scale between
+        // the mineral grain, which mipmaps to nothing at range, and the terrain mesh.
+        'vec4 reefMacro=texture2D(reefSubstrateMap,vec2(vReefWorld.x*0.083-vReefWorld.z*0.031,vReefWorld.x*0.031+vReefWorld.z*0.083)+vec2(0.61,0.17),2.0);',
+        // Close up the grain takes over; a mip this coarse would show its texels.
+        'reefMacro=mix(vec4(0.5),reefMacro,smoothstep(1.2,4.5,length(vViewPosition)));',
         'float reefFine=reefPavementDetail.r;',
         'float reefStoneW=(1.0-reefSandW)*(1.0-reefRubW*0.65);',
         'float reefPavement=reefPavementDetail.r;',
         'float reefCrevice=1.0-smoothstep(0.30,0.44,reefFine);',
+        'float reefMacroPit=1.0-smoothstep(0.32,0.50,reefMacro.r);',
         'float reefShell=reefSandDetail.a;',
         // Pale shell fragments and sparse darker mineral grains share the
         // same mipmapped map. Warm tones stay local to exposed sand.
@@ -1803,12 +1878,26 @@
         // Coralline grows as small muted crusts, with limestone showing through.
         'float reefSpot=reefPavementDetail.b*reefVitality*reefStoneW*(0.35+0.65*reefMottle);',
         'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.22,0.77,0.87),reefSpot*0.56);',
+        // Bare hard ground: broken light and dark at a metre's scale. Living reef wears
+        // coralline in those patches, and a degraded one wears turf; neither is added here
+        // without the health that earns it, so a damaged slope only gets rougher and greener.
+        'float reefMacroPatch=smoothstep(0.42,0.68,reefMacro.b)*reefStoneW;',
+        'diffuseColor.rgb*=1.0+(0.85*(reefMacro.r-0.5)-0.10*reefMacroPit)*reefStoneW;',
+        'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.16,0.80,0.90),reefMacroPatch*reefVitality*0.62);',
+        'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.70,0.80,0.48),(1.0-smoothstep(0.34,0.58,reefMacro.b))*reefStoneW*min(1.0,reefFloorAlgae*2.2)*0.72);',
+        // Bare sand drifts between cooler and warmer shell hash, and darkens a little with
+        // fine detritus where it meets the rock instead of ending at a clean edge.
+        'diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.93,0.965,1.0),vec3(1.05,1.0,0.925),reefMacro.b),reefSandW);',
+        'diffuseColor.rgb*=1.0+0.085*reefDune+(0.17*(reefMacro.r-0.5)-0.17*smoothstep(0.08,0.5,reefSandW)*(1.0-smoothstep(0.5,0.96,reefSandW)))*reefSandW;',
         ABSORB
       ].join('\n'));
       parts.fRough.push('roughnessFactor=clamp(roughnessFactor-0.055*reefSandW-0.035*reefShell*reefSandW+0.04*reefCrevice*reefStoneW,0.78,1.0);');
       // Millimetre grain is seen close up; broader sand undulations stay soft
       // as the texture mipmaps and ripple derivatives fade with distance.
-      parts.fNormal.push(surfaceRelief('0.011*reefWave+0.010*reefPavement*reefStoneW+0.002*reefChip*reefRubW+0.0010*reefGrain*reefGrainAA*reefSandW', '0.25'));
+      // Bright sand is what would end in a pale band at the drop-off, where the seabed falls away from view.
+      // It goes into the water sooner than rock does, so the seabed fades out instead of stopping.
+      parts.fOutput.push('#ifdef USE_FOG\nif(reefFarMelt>0.0)gl_FragColor.rgb=mix(gl_FragColor.rgb,reefFarWater,smoothstep(17.0,33.0,reefOpticalDistance)*reefSandW*0.82);\n#endif');
+      parts.fNormal.push(surfaceRelief('0.011*reefWave+0.048*reefDune+0.010*reefPavement*reefStoneW+0.002*reefChip*reefRubW+0.0010*reefGrain*reefGrainAA*reefSandW+0.05*reefMacro.r*reefStoneW', '0.25'));
       applyParts(shader, parts, 'floor');
     }
     function rockShader(shader) {
@@ -1829,18 +1918,31 @@
         'vec4 reefStoneDetail=texture2D(reefSubstrateMap,reefStoneQ.yz*0.63+vec2(0.17,0.31))*reefStoneBlend.x+texture2D(reefSubstrateMap,reefStoneQ.xz*0.63+vec2(0.23,0.41))*reefStoneBlend.y+texture2D(reefSubstrateMap,reefStoneQ.xy*0.63+vec2(0.43,0.13))*reefStoneBlend.z;',
         'float reefMineral=reefNoise(reefStoneQ*0.57+vec3(2.6,8.1,4.3)),reefCoarse=reefStoneDetail.r;',
         'float reefGrain=reefStoneDetail.g,reefPits=1.0-smoothstep(0.29,0.44,reefCoarse);',
+        // A metre-scale look at the same map. One skewed sample serves every facing of the
+        // rock, so large shoulders break up without three more texture reads.
+        'vec4 reefRockMacro=texture2D(reefSubstrateMap,vec2(reefStoneQ.x*0.083+reefStoneQ.y*0.058,reefStoneQ.z*0.083-reefStoneQ.y*0.044)+vec2(0.19,0.71),2.0);',
+        'reefRockMacro=mix(vec4(0.5),reefRockMacro,smoothstep(1.2,4.5,length(vViewPosition)));',
+        'float reefRockPit=1.0-smoothstep(0.32,0.50,reefRockMacro.r);',
         'float reefCrust=reefStoneDetail.b*(0.45+0.55*reefMineral)*(0.22+0.78*reefRockLife.x)*(1.0-reefRockLife.y*0.75);',
+        // Coralline at this scale belongs to living reef only: the weight reaches nothing at
+        // the damaged site's rock life. Turf clumps grow with the site's algae instead.
+        'reefCrust=max(reefCrust,smoothstep(0.46,0.70,reefRockMacro.b)*smoothstep(0.19,0.33,reefRockLife.x)*(1.0-reefRockLife.y*0.75)*0.80);',
         'float reefCrustRim=reefStoneDetail.b*(1.0-reefStoneDetail.b)*2.2;',
         'float reefTurf=smoothstep(0.48,0.72,reefMineral)*(0.07+0.68*reefRockLife.y)*(0.65+0.35*reefStoneDetail.b);',
+        'reefTurf=max(reefTurf,(1.0-smoothstep(0.34,0.58,reefRockMacro.b))*min(1.0,reefRockLife.y*2.2)*0.72);',
         'diffuseColor.rgb*=(0.96+0.12*(reefMineral-0.5)+0.53*(reefCoarse-0.5)+0.055*(reefGrain-0.5))*(1.0-0.11*reefPits);',
+        'diffuseColor.rgb*=1.0+0.85*(reefRockMacro.r-0.5)-0.10*reefRockPit;',
         'vec3 reefCrustTint=mix(vec3(1.28,0.67,0.81),vec3(0.89,0.68,1.07),smoothstep(0.28,0.73,reefMineral));',
         'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*reefCrustTint,reefCrust*0.74);',
         'diffuseColor.rgb*=1.0+0.045*reefCrustRim*reefRockLife.x+0.17*reefStoneDetail.a;',
         'diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(0.67,0.76,0.43),reefTurf);',
+        // Eroded joints: contour lines of the two values already read, so no new texture read.
+        'float reefJoint=(1.0-smoothstep(0.0,0.05,abs(fract(reefMineral*3.2+(reefCoarse-0.5)*0.22)-0.5)))*(1.0-smoothstep(13.0,24.0,length(vViewPosition)));',
+        'diffuseColor.rgb*=1.0-0.40*reefJoint;',
         ABSORB
       ].join('\n'));
       parts.fRough.push('roughnessFactor=clamp(roughnessFactor+0.05*reefPits-0.045*reefCrust,0.8,1.0);');
-      parts.fNormal.push(surfaceRelief('reefCoarse*0.020-reefPits*0.0015+reefCrust*0.0009+(reefGrain-0.5)*0.0008', '0.30'));
+      parts.fNormal.push(surfaceRelief('reefCoarse*0.020-reefPits*0.0015+reefCrust*0.0009+(reefGrain-0.5)*0.0008+reefRockMacro.r*0.05-reefJoint*0.014', '0.30'));
       applyParts(shader, parts, 'rock');
     }
     function coralShader(look) {
@@ -2027,6 +2129,8 @@
       var plate = { a: { value: new T.Vector4(0.2, 1, 0.075, 96) }, b: { value: new T.Vector4(0, 18, 2, 135) } };
       var sponge = { a: { value: new T.Vector4(0.35, 0, 0.0, 132) }, b: { value: new T.Vector4(0, 18, -1, 0) } };
       U.substrate = { value: own(createSubstrateTexture(T)) };
+      // The light tier pays for its metre-scale read by filtering this map less at grazing angles.
+      if (!high) U.substrate.value.anisotropy = 2;
       // Dive light: x = power (0 when off), y and z = cone edge cosines, w = reach in metres.
       U.torchPos = { value: new T.Vector3() }; U.torchDir = { value: new T.Vector3(0, -0.3, -1).normalize() }; U.torch = { value: new T.Vector4(0, TORCH_OUTER, TORCH_INNER, TORCH_REACH) };
       mats.floor = patch(std({ roughness: 0.95, metalness: 0 }), 'floor', floorShader);
@@ -2137,6 +2241,17 @@
         if (loose > rub) for (c = 0; c < 3; c++) rgb[c] = lerp(rgb[c], lerp(RUBC[c] * (0.85 + 0.25 * n2), CRUST.turf[c] * 1.4, 0.3 + 0.5 * benthos.damage * (0.6 + 0.4 * n1)), loose - rub);
         col[k * 3] = rgb[0]; col[k * 3 + 1] = rgb[1]; col[k * 3 + 2] = rgb[2]; gr[k * 2] = sand * (1 - loose); gr[k * 2 + 1] = Math.max(restoration ? rub : rub * 0.5, loose);
       }
+      // The ground darkens where a bommie meets it, so rock does not sit on the sand like a cut-out.
+      bommies.forEach(function (bm) {
+        var reach = bm.r * 1.3 + 1.6;
+        for (j = 0; j < nz; j++) { if (Math.abs(zs[j] - bm.z) > reach) continue; for (i = 0; i < nx; i++) {
+          if (Math.abs(xs[i] - bm.x) > reach) continue;
+          var dx = xs[i] - bm.x, dz = zs[j] - bm.z, lx = dx * bm.c + dz * bm.s, lz = -dx * bm.s + dz * bm.c, past = Math.hypot(lx, lz) - bm.edge(Math.atan2(lz, lx));
+          if (past > 1.5) continue;
+          var shade = lerp(0.6, 1, smooth(-0.2, 1.5, past)), v = (j * nx + i) * 3;
+          col[v] *= shade; col[v + 1] *= shade; col[v + 2] *= shade;
+        } }
+      });
       for (j = 0; j < nz - 1; j++) for (i = 0; i < nx - 1; i++) { var a = j * nx + i, cc = a + nx; idx.push(a, cc, a + 1, a + 1, cc, cc + 1); }
       var g = own(new T.BufferGeometry());
       g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('color', new T.BufferAttribute(col, 3)); g.setAttribute('reefGround', new T.BufferAttribute(gr, 2));
@@ -2169,6 +2284,8 @@
       });
       var g = own(b.build(T, true)), pos = g.attributes.position, nor = g.attributes.normal, col = g.attributes.color, rgb = [0, 0, 0];
       for (var i = 0; i < pos.count; i++) { crustColor(pos.getX(i), pos.getY(i), pos.getZ(i), smooth(0.2, 0.8, nor.getY(i)), rgb); col.setXYZ(i, rgb[0], rgb[1], rgb[2]); }
+      // The foot of the rock is in its own shade.
+      for (i = 0; i < pos.count; i++) { var footK = lerp(0.56, 1, smooth(0, 1.1, pos.getY(i) - terrain.floorY(pos.getX(i), pos.getZ(i)))); col.setXYZ(i, col.getX(i) * footK, col.getY(i) * footK, col.getZ(i) * footK); }
       col.needsUpdate = true;
       // Let light follow the same continuous limestone surface used by the
       // attached colonies. Area-averaged radial triangles otherwise leave
@@ -2342,6 +2459,7 @@
       if (beh === 'moray') { var mo = crevice.mouth; o.home = new T.Vector3(mo.x, mo.y, mo.z); o.ground = mo.y; o.yaw = bearingTo(mo.nx, mo.nz); o.viewDir = { x: mo.nx, z: mo.nz }; return; }
       if (beh === 'manta') { placeManta(o); return; }
       if (beh === 'cruise') { var hx = -18 + 36 * d[0]; o.ground = terrain.floorY(hx, 21); o.home = new T.Vector3(hx, o.ground + 1.6, 21); return; }
+      if (beh === 'patrol') { var bx = -5 + 10 * d[0], bz = -20.5 + 2 * d[1]; o.ground = terrain.floorY(bx, bz); o.home = new T.Vector3(bx, o.ground + 1.2, bz); return; }
       var best = null, bestScore = -Infinity, sessile = beh === 'fixed' || beh === 'den' || beh === 'ray' || beh === 'cleaner' && info.group !== 'fish';
       var partnerId = o.speciesId === 'acropora_humilis' ? 'acropora_millepora' : o.speciesId === 'acropora_millepora' ? 'acropora_humilis' : null;
       var partner = partnerId && sessiles.find(function(seat){return seat.speciesId === partnerId && seat.index === o.index;});
@@ -2362,6 +2480,8 @@
         if (zone === 'bommieAbove' && c.bommie) score += 0.6 * Math.min(1, c.bommie.r / 2);
         if (depth < info.depthM[0]) score -= (info.depthM[0] - depth) * 0.3;
         if (depth > info.depthM[1]) score -= (depth - info.depthM[1]) * 0.3;
+        // A crawling Spanish dancer starts on open rock, away from colonies.
+        if (beh === 'dancer') for (var q2 = 0; q2 < 7; q2++) { var qr = q2 ? 0.8 : 0, qx = c.x + Math.cos(q2 * 1.05) * qr, qz = c.z + Math.sin(q2 * 1.05) * qr; if (groundTop(qx, qz) > rockSurfaceAt(qx, qz) + 0.12) score -= 1; }
         if (sessile) {
           var mine = Math.max(0.2, L * 0.5);
           for (var s = 0; s < sessiles.length; s++) if (Math.hypot(sessiles[s].x - c.x, sessiles[s].z - c.z) < mine + sessiles[s].r + 0.35) score -= 2;
@@ -2382,6 +2502,8 @@
       else if (beh === 'cuttle') alt = 0.45 + 0.3 * d[29];
       else if (beh === 'puffer') alt = 0.6 + 0.55 * d[29];
       else if (beh === 'krait') alt = 0.45 + 0.2 * d[29];
+      // Blackfin barracuda schools hang in mid-water over open sand, well above the reef.
+      if (o.speciesId === 'blackfin_barracuda') alt = 2.4 + 1.2 * d[29];
       o.home = new T.Vector3(best.x, best.y + alt, best.z);
       if (sessile && best.bommie) {
         var h1 = best.bommie.heightAt(best.x + 0.15, best.z), h0 = best.bommie.heightAt(best.x - 0.15, best.z), h2 = best.bommie.heightAt(best.x, best.z + 0.15), h3 = best.bommie.heightAt(best.x, best.z - 0.15);
@@ -2402,6 +2524,88 @@
         var th = ph + dirSign * travel, lx = a * Math.cos(th) + wob * a * Math.cos(3 * th + ph), lz = b * Math.sin(th) + wob * b * Math.sin(2 * th + ph * 1.3);
         out.x = cx + lx * c - lz * si; out.z = cz + lx * si + lz * c; out.y = cy + bob * Math.sin(0.5 * th + ph); return out;
       };
+    }
+    // A blacktip reef shark patrols the shallow reef flat on a long rounded loop at an
+    // even cruising pace (Sharks of the World: an active, strong swimmer of reef flats).
+    // Closed form in time like every route; the diver flight distance keeps it clear.
+    function setupPatrol(o) {
+      var d = o.draws, h = o.home, c = 6.5 + 3 * d[28], r = 2.2 + d[30], v = (0.62 + 0.12 * d[29]) * (reducedMotion ? 0.7 : 1);
+      var P = 4 * c + TAU * r, ph = o.phase, dir = o.dir, s0 = d[2] * P, lift = 1.05 + 0.3 * d[3], cx = h.x, cz = h.z;
+      o.path = function (t, out) {
+        var s = s0 + dir * v * (t + 0.4 * (Math.sin(0.3 * t + ph) - Math.sin(ph))), a;
+        s = ((s % P) + P) % P;
+        if (s < 2 * c) { out.x = cx - c + s; out.z = cz - r; }
+        else if ((s -= 2 * c) < Math.PI * r) { a = -Math.PI / 2 + s / r; out.x = cx + c + r * Math.cos(a); out.z = cz + r * Math.sin(a); }
+        else if ((s -= Math.PI * r) < 2 * c) { out.x = cx + c - s; out.z = cz + r; }
+        else { a = Math.PI / 2 + (s - 2 * c) / r; out.x = cx - c + r * Math.cos(a); out.z = cz + r * Math.sin(a); }
+        out.y = terrain.floorY(out.x, out.z) + lift + 0.2 * Math.sin(0.21 * t + ph);
+        return out;
+      };
+      o.pathPeriod = P / v; o.clear = 0.8; o.bank = 0.2;
+    }
+    // A cruising shark does not stop or back away from a diver on its route: it swings
+    // out to the side early enough to pass at its flight distance, then drifts back.
+    // One fixed flight step (fleeTick): the side is kept for the whole pass.
+    function patrolSwerve(o, f, p, t, F) {
+      var q = o.swerveQ || (o.swerveQ = { x: 0, y: 0, z: 0 }); o.path(t + 0.4, q);
+      var hx = q.x - p.x, hz = q.z - p.z, hl = Math.hypot(hx, hz) || 1, fx = hx / hl, fz = hz / hl, nx = -fz, nz = fx;
+      var ex = diverPos.x - p.x, ez = diverPos.z - p.z, along = ex * fx + ez * fz, lat = ex * nx + ez * nz, dy = diverPos.y - p.y;
+      var R = Math.sqrt(Math.max(0, F * F * 1.21 - dy * dy)), win = R > 0 ? 1 - smooth(R, R + 3, Math.abs(along)) : 0;
+      if (!(win > 0)) { f.side = 0; return; }
+      if (!f.side) f.side = lat >= 0 ? -1 : 1;
+      var off = f.side * Math.max(0, R + f.side * lat) * win;
+      f.tx = nx * off; f.tz = nz * off; f.ty = 0;
+    }
+    // A dusky farmerfish holds a small turf territory beside a patch where a parrotfish
+    // comes to graze, and darts out at a grazer that comes near, then returns (Hata and
+    // Kato 2006; Gochfeld 2010). Grazer routes are read raw, never their flight wrappers.
+    function setupFarm(o) {
+      var d = o.draws, plan = ecoPlan(), spots = [], grazers = [], farms = plan.farms || (plan.farms = []), cx = o.home.x, cz = o.home.z, k, q;
+      plan.grazers.forEach(function (g) {
+        if (g.eco.school || !g.pathRaw) return; grazers.push(g);
+        g.eco.segs.forEach(function (sg) { if (sg.kind === 'feed') spots.push(sg.spot); });
+      });
+      if (spots.length) {
+        var spot = spots[(Math.floor(d[4] * spots.length) + o.index) % spots.length], best = Infinity;
+        for (k = 0; k < 20; k++) {
+          var a = TAU * (k / 10 + d[2]), rr = (k < 10 ? 1.15 : 1.45) + 0.2 * d[3], x = clamp(spot.x + Math.cos(a) * rr, -26, 26), z = clamp(spot.z + Math.sin(a) * rr, -26, 26);
+          // Open rock or dead coral for the turf: no colony standing over it.
+          var y = rockSurfaceAt(x, z), slope = Math.abs(rockSurfaceAt(x + 0.35, z) - rockSurfaceAt(x - 0.35, z)) + Math.abs(rockSurfaceAt(x, z + 0.35) - rockSurfaceAt(x, z - 0.35));
+          // Clear of a steep rock wall: the swimming clearance would lift it high.
+          for (q = 0; q < 8; q++) slope += 0.6 * Math.max(0, rockSurfaceAt(x + 0.8 * Math.cos(q * 0.785), z + 0.8 * Math.sin(q * 0.785)) - y - 0.25);
+          var score = Math.abs(y - spot.y) + 2 * slope + 3 * Math.max(0, obstacleTop(x, z) - y - 0.1) + (y > terrain.floorY(x, z) + 0.1 ? 0 : 0.5) + 0.4 * terrain.sandMask(x, z);
+          for (q = 0; q < farms.length; q++) if (Math.hypot(farms[q].x - x, farms[q].z - z) < 1.1) score += 2;
+          // Beside the grazing patches, not on one: the bites land on bare rock.
+          for (q = 0; q < spots.length; q++) if (Math.hypot(spots[q].x - x, spots[q].z - z) < 1.05) score += 2;
+          // Away from the cleaning stations, where clients hang still for long visits.
+          for (q = 0; q < plan.stations.length; q++) score += 2 * (1 - smooth(1.5, 3, Math.hypot(plan.stations[q].spot.x - x, plan.stations[q].spot.z - z)));
+          if (score < best) { best = score; cx = x; cz = z; }
+        }
+      }
+      var cy = rockSurfaceAt(cx, cz), F = o.farm = { x: cx, y: cy, z: cz, reach: reducedMotion ? 0.65 : 1.3, grazers: grazers }, ph = o.phase, g0 = { x: 0, y: 0, z: 0 };
+      farms.push(F); o.home.set(cx, cy + 0.22, cz); o.ground = cy;
+      // Keep the turf open: reef decor placed after the animals must not cover the farm.
+      block(cx, cz, 1.1);
+      o.path = function (t, out) {
+        // A slow, small round low over the turf.
+        var th = ph + 0.35 * t, hx = cx + 0.2 * Math.cos(th) + 0.05 * Math.sin(2.3 * th), hz = cz + 0.15 * Math.sin(th) + 0.04 * Math.cos(1.7 * th);
+        var hy = rockSurfaceAt(hx, hz) + 0.22 + 0.04 * Math.sin(1.7 * th + ph);
+        // Every grazer near the farm pulls the defender toward it, blended so it never jumps.
+        var w = 0, sw = 0, tx = 0, ty = 0, tz = 0;
+        for (var i = 0; i < grazers.length; i++) {
+          var g = grazers[i]; g.pathRaw(t, g0);
+          var dx = g0.x - cx, dz = g0.z - cz, dd = Math.hypot(dx, dz), kk = 1 - smooth(1.0, 2.3, dd);
+          if (!(kk > 0)) continue;
+          var reach = Math.min(F.reach, Math.max(0, dd - 0.25 - 0.4 * g.info.lengthM)) / Math.max(dd, 0.01);
+          tx += kk * (cx + dx * reach); tz += kk * (cz + dz * reach); ty += kk * Math.max(g0.y, cy + 0.15); sw += kk; if (kk > w) w = kk;
+        }
+        if (sw > 0) { tx /= sw; ty /= sw; tz /= sw; w = smooth(0, 1, w); }
+        out.x = hx + (tx - hx) * w; out.z = hz + (tz - hz) * w; var low = rockSurfaceAt(out.x, out.z); out.y = hy + (clamp(ty, low + 0.2, low + 0.55) - hy) * w;
+        return out;
+      };
+      // Its path keeps it just off the rock (rockSurfaceAt); the coarse obstacle grid
+      // around neighbouring colonies would otherwise hold it well above its turf.
+      o.clear = -0.9; o.bank = 0.03;
     }
     function setupMotion(o) {
       var d = o.draws, L = o.info.lengthM, h = o.home, beh = o.behavior, a, b, sp;
@@ -2453,6 +2657,19 @@
           return bearingTo(cAhead.x - cHere.x, cAhead.z - cHere.z) + 0.22 * Math.sin(t * 0.075 + cPhase);
         };
         o.clear = 0.22; o.bank = 0.015;
+      } else if (beh === 'dancer') {
+        // Hexabranchus crawls slowly over the rock; some 50 s windows hold one short
+        // swim: it rises, loops and settles where it began (closed form in time).
+        // Reduced motion keeps it crawling.
+        var dp = loopPath(h.x, 0, h.z, 0.3 + 0.2 * d[28], 0.2 + 0.12 * d[30], o.yaw, 0.03, o.phase, o.dir, 0, 0.05), dser = o.serial | 0;
+        o.path = function (t, out) {
+          dp(t, out);
+          var env = reducedMotion ? 0 : dancerSwim(dser, t, out), r0 = rockSurfaceAt(out.x, out.z);
+          out.y = r0 + 0.004 + env * Math.max(0.55, groundTop(out.x, out.z) - r0 + 0.2);
+          return out;
+        };
+        // Its own path follows the rock; the coarse obstacle grid must not lift it.
+        o.clear = -5; o.bank = 0.03;
       } else if (beh === 'puffer') {
         a = 1.2 + 0.7 * d[28]; b = 0.75 + 0.4 * d[30]; sp = 0.12 + 0.035 * d[29];
         o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.10, 0.055);
@@ -2477,6 +2694,14 @@
         o.sweep = intoCurrent(h.x, h.z, o.phase);
         o.clear = Math.max(o.clear, (o.radius || 0.5) * 0.7 + 0.3);
         o.shelterClear = 0.12 + 0.3 * (o.radius || 0.5);
+        partSchool(o);
+      } else if (beh === 'school' && o.speciesId === 'blackfin_barracuda') {
+        // Large, slow, semi-stationary daytime schools (FishBase, Fishes of Australia):
+        // one wide, nearly round circle at an easy pace, with little bob or wobble.
+        a = 3.2 + 1.6 * d[28]; b = a * (0.82 + 0.12 * d[30]); sp = (0.22 + 0.08 * d[30]) * (reducedMotion ? 0.6 : 1);
+        o.path = loopPath(h.x, h.y, h.z, a, b, o.yaw, sp / ((a + b) / 2), o.phase, o.dir, 0.12, 0.03);
+        o.pathPeriod = TAU * ((a + b) / 2) / sp; o.bank = 0.05;
+        o.clear = Math.max(o.clear, (o.radius || 0.5) * 0.7 + 0.3);
         partSchool(o);
       } else if (beh === 'school') {
         var small = L < 0.15; a = (small ? 1.2 : 3.5) + (small ? 1.5 : 5) * d[28]; b = a * (0.5 + 0.3 * d[30]);
@@ -2524,6 +2749,8 @@
         var sx = 18 + 3 * d[28], sz = 4.5 + 1.5 * d[30], sph = o.phase, sw = 0.85 / ((sx + sz) / 2), sdir = o.dir;
         o.path = function (t, out) { var th = sph + sdir * sw * t; out.x = sx * Math.cos(th); out.z = 21 + sz * Math.sin(th); out.y = terrain.floorY(out.x, out.z) + 1.4 + 0.5 * Math.sin(3 * th); return out; };
         o.clear = 0.8; o.bank = 0.2;
+      } else if (beh === 'patrol') { setupPatrol(o);
+      } else if (beh === 'farm') { setupFarm(o);
       } else o.path = null;
     }
     // ---- Living reef interactions ---------------------------------------------------
@@ -2537,6 +2764,17 @@
     var eco, ecoP, ecoQ, ecoR, ecoS, ecoW, ecoV, ecoRight, ecoUp, ecoHead;
     function eh(a, b, c) { return hash2(Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663) ^ Math.imul((c | 0) + 7, 83492791), seed ^ 0x2545F491); }
     function ease(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
+    // A Spanish dancer's swim in this 50 s window: 0 while crawling, rising to 1
+    // mid-swim; out is shifted round a 0.45 m loop that closes when it settles.
+    function dancerSwim(serial, t, out) {
+      var n = Math.floor(t / 50);
+      if (eh(131, serial, n) > 0.6) return 0;
+      var u = (t - n * 50 - (8 + 22 * eh(132, serial, n))) / 14;
+      if (u <= 0 || u >= 1) return 0;
+      var b = eh(133, serial, n) * TAU, a = b + TAU * ease(u), s = Math.sin(Math.PI * u);
+      out.x += 0.45 * (Math.cos(a) - Math.cos(b)); out.z += 0.45 * (Math.sin(a) - Math.sin(b));
+      return s * s;
+    }
     function ease5(x) { x = clamp(x, 0, 1); return x * x * x * (x * (6 * x - 15) + 10); }
     function countOf(id) { for (var i = 0; i < site.population.length; i++) if (site.population[i].id === id) return site.population[i].count; return 0; }
     // The rock or coral surface itself (the obstacle grid, and the touch sensor's
@@ -2994,7 +3232,7 @@
       parts.vCommon.push('attribute float reefContactWeight;varying float vReefContact;varying vec3 vReefContactWorld;');
       parts.vBegin.push('vReefContact=reefContactWeight;'); parts.vProject.push('vReefContactWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
       parts.fCommon.push('varying float vReefContact;varying vec3 vReefContactWorld;uniform vec3 reefWaterEye;');
-      parts.fColor.push('diffuseColor.a*=smoothstep(0.0,1.0,vReefContact)*(1.0-smoothstep(8.0,13.0,length(reefWaterEye-vReefContactWorld)));');
+      parts.fColor.push('diffuseColor.a*=smoothstep(0.0,1.0,vReefContact)*(1.0-smoothstep(11.0,19.0,length(reefWaterEye-vReefContactWorld)));');
       applyParts(shader, parts, 'contact');
     }
     function puffPool() {
@@ -3061,6 +3299,8 @@
     // rises to a manta circling overhead; the shrimp waits on the rock.
     function placeCleaner(o) {
       var plan = ecoPlan(), fish = o.info.group === 'fish', k = fish ? plan.cleanerFish++ : plan.cleanersPlaced++, st = plan.stations[k % plan.stations.length], tang = st.bearing + Math.PI / 2;
+      // A banded coral shrimp pair shares the last station, beside its other cleaners.
+      if (o.speciesId === 'banded_coral_shrimp') { plan.cleanersPlaced--; st = plan.stations[plan.stations.length - 1]; tang = st.bearing + Math.PI / 2; }
       if (fish) {
         var rank = st.cleaners.length, side = rank % 2 ? -1 : 1, hx = st.spot.x + st.out.x * 0.24 + fwdX(tang) * 0.2 * side * Math.min(1, rank), hz = st.spot.z + st.out.z * 0.24 + fwdZ(tang) * 0.2 * side * Math.min(1, rank);
         o.home = new T.Vector3(hx, Math.max(st.spot.y + 0.16, rockSurfaceAt(hx, hz) + 0.1), hz); o.ground = st.spot.y;
@@ -3266,10 +3506,11 @@
     }
     function placeCots(o) {
       var plan = ecoPlan(), sp = terrain.spawn, list = [], best = null, top = null, a, rho, cx, cz, cy, rs, sx, sz;
+      var HOST = o.speciesId === 'pincushion_sea_star' ? CUSHION_HOST : COTS_HOST;
       // The first starfish takes the preferred colony nearest the start; the others are spread by hash.
       organisms.forEach(function (h) {
-        if (COTS_HOST[h.speciesId] === undefined || h.restoration || plan.hosts.indexOf(h) >= 0 || !h.center || coralState(h) !== 'healthy' || h.radius < 0.3) return;
-        list.push([COTS_HOST[h.speciesId] + (plan.hosts.length ? eh(101, h.serial, o.index) : 0.04 * Math.hypot(h.center.x - sp.x, h.center.z - sp.z)), h.serial, h]);
+        if (HOST[h.speciesId] === undefined || h.restoration || plan.hosts.indexOf(h) >= 0 || !h.center || coralState(h) !== 'healthy' || h.radius < 0.3) return;
+        list.push([HOST[h.speciesId] + (plan.hosts.length ? eh(101, h.serial, o.index) : 0.04 * Math.hypot(h.center.x - sp.x, h.center.z - sp.z)), h.serial, h]);
       });
       list.sort(function (p, q) { return p[0] - q[0] || p[1] - q[1]; });
       for (var i = 0; i < list.length && !best && i < 6; i++) {
@@ -3495,9 +3736,11 @@
     function baseSeat(o) {
       // Their feet or mantle are millimetres above the model's base. Keep them
       // seated on the substrate rather than burying most of the living body.
+      if (o.speciesId === 'banded_coral_shrimp') return 0.0005;
+      if (o.speciesId === 'drupella_snail' || o.speciesId === 'pincushion_sea_star') return 0.004;
       if (o.speciesId === 'nudibranch' || o.speciesId === 'cleaner_shrimp' || o.speciesId === 'harlequin_shrimp') return 0.0005;
       // A two-centimetre burial hides most of these small real specimens.
-      return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' || o.speciesId === 'goldmouth_sea_squirt' || o.speciesId === 'feather_duster_worm' ? 0.002 : 0.02;
+      return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' || o.speciesId === 'bubble_coral' || o.speciesId === 'goldmouth_sea_squirt' || o.speciesId === 'feather_duster_worm' ? 0.002 : 0.02;
     }
     var substrateProbe;
     function exposedRockAt(x, z) {
@@ -3509,7 +3752,7 @@
       return rock && (!floor || rock.point.y > floor.point.y + 0.15) ? rock : null;
     }
     function matchSmallSubstrate(o) {
-      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm')) return;
+      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm' && o.speciesId !== 'banded_coral_shrimp' && o.speciesId !== 'drupella_snail')) return;
       // The rock's rendered triangles can lie centimetres above its smooth
       // analytic placement surface. Match these centimetre-sized animals to
       // the actual supporting face once, so their feet and bodies remain above
@@ -3932,6 +4175,8 @@
     function flightScratch() { return flightTmp || (flightTmp = { p: { x: 0, y: 0, z: 0 }, a: { x: 0, y: 0, z: 0 }, b: { x: 0, y: 0, z: 0 } }); }
     function flightBase(o) {
       var b = o.behavior;
+      // A blacktip reef shark is generally timid of divers (Sharks of the World).
+      if (b === 'patrol') return 4.6;
       if (b !== 'school' && b !== 'hover' && b !== 'pair' && b !== 'wander') return 0;
       return flightSize(o);
     }
@@ -4083,6 +4328,7 @@
         if (m > cap) { f.tx *= cap / m; f.ty *= cap / m; f.tz *= cap / m; }
       } else if (home >= F) { f.tx = 0; f.ty = 0; f.tz = 0; } // the way home is clear
       else { f.tx = f.x; f.ty = f.y; f.tz = f.z; } // hold until the diver moves on
+      if (o.behavior === 'patrol') patrolSwerve(o, f, p, t, F);
       var cur = f.x * f.x + f.y * f.y + f.z * f.z, goal = f.tx * f.tx + f.ty * f.ty + f.tz * f.tz;
       f.r = goal > cur ? (reducedMotion ? 2 : 2.6) : (reducedMotion ? 0.4 : 0.5);
       var a = 1 - Math.exp(-f.r / 60);
@@ -4093,6 +4339,7 @@
         f.s += (f.ts - f.s) * (1 - Math.exp(-f.rs / 60));
       }
       f.h = calmHabituate(f.h, dist + give, calmAlert(f, dist), !!f.shelter);
+      if (o.behavior === 'patrol') f.h = 0; // a timid shark keeps its distance however still the diver hangs
       calmVisitStep(o, f);
     }
     // Between steps (and for the look-ahead samples) the state keeps easing toward its goal.
@@ -4390,6 +4637,20 @@
     }
 
     // ---- Decorative reef (non-pickable; seeded, draw counts fixed per slot) -------
+    // A colony's foot sits in its own shade. Baked into the prototype's vertex colours, the same
+    // on every detail tier, so a colony reads as growing from the ground: no draw call, no shader.
+    function shadeFoot(g, kind) {
+      var dark = { finger: 0.8, antler: 0.8, corym: 0.76, table: 0.78, massive: 0.66, brain: 0.66, plate: 0.8, sponge: 0.72, deadstand: 0.8, rock: 0.58 }[kind], col = g.attributes.color, pos = g.attributes.position;
+      if (!dark || !col) return g;
+      if (!g.boundingBox) g.computeBoundingBox();
+      var lo = g.boundingBox.min.y, span = Math.max(0.001, g.boundingBox.max.y - lo) * 0.24;
+      for (var i = 0; i < pos.count; i++) {
+        var k = lerp(dark, 1, smooth(0, span, pos.getY(i) - lo));
+        col.setXYZ(i, col.getX(i) * k, col.getY(i) * k, col.getZ(i) * k);
+      }
+      col.needsUpdate = true;
+      return g;
+    }
     function buildDecor() {
       // Stream 203 keeps its first two draws, so the prevailing current (fan
       // orientation) is unchanged; every other decor roll is a hash.
@@ -4642,7 +4903,7 @@
       Object.keys(KINDS).forEach(function (kind) { loadStep(1, function () {
         var list = lists[kind];
         if (!list || !list.length) return;
-        var geometry = own(KINDS[kind][0]()), reach = geometry.boundingSphere.radius + geometry.boundingSphere.center.length(), n = list.length;
+        var geometry = own(shadeFoot(KINDS[kind][0](), kind)), reach = geometry.boundingSphere.radius + geometry.boundingSphere.center.length(), n = list.length;
         var dk = { kind: kind, n: n, m: new Float32Array(n * 16), c: new Float32Array(n * 3), s: new Float32Array(n), lod: new Uint8Array(n), p: new Float32Array(n * 4), maxD: DECOR_H[kind] < 0.3 ? smallFar : farDist };
         list.forEach(function (it, k) {
           nv.set(it[8], 1, it[9]).normalize(); qt.setFromUnitVectors(up, nv); qy.setFromAxisAngle(up, it[3]); qt.multiply(qy);
@@ -4655,39 +4916,39 @@
         dk.near = lodMesh(geometry, KINDS[kind][1], n, kind, 'near');
         // Every placed item stays readable (positions and colours) for the lab's checks.
         dk.near.userData.items = { matrices: dk.m, colors: dk.c, centres: dk.p, skeletons: dk.s };
-        dk.mid = MIDDLE[kind] ? lodMesh(own(MIDDLE[kind]()), KINDS[kind][1], n, kind, 'mid') : null;
-        dk.far = KINDS[kind][2] ? lodMesh(own(KINDS[kind][2]()), KINDS[kind][1], n, kind, 'far') : null;
+        dk.mid = MIDDLE[kind] ? lodMesh(own(shadeFoot(MIDDLE[kind](), kind)), KINDS[kind][1], n, kind, 'mid') : null;
+        dk.far = KINDS[kind][2] ? lodMesh(own(shadeFoot(KINDS[kind][2](), kind)), KINDS[kind][1], n, kind, 'far') : null;
         decorKinds.push(dk);
       }); });
       // A single soft contact layer anchors the foreground colonies, including
       // on the low tier where real-time shadow maps are deliberately disabled.
       // Elevated bommie colonies are skipped so no shade is projected through rock.
       loadStep(1, function () {
-        var contact = new Builder(), segments = 12;
+        var contact = new Builder(), segments = high ? 12 : 8;
         contact.useExtra('reefContactWeight');
         Object.keys(lists).forEach(function (kind) {
           if (DECOR_H[kind] < 0.3 || kind === 'fan' || kind === 'algae') return;
           lists[kind].forEach(function (it) {
             var x = it[0], z = it[2], baseY = terrain.floorY(x, z);
-            if (it[1] > baseY + 0.2 || Math.max(it[4], it[6]) < 0.8) return;
-            var radius = clamp(0.34 * Math.max(it[4], it[6]), 0.12, 0.85), first = contact.count();
-            contact.extra.value = 1; contact.vertex(x, baseY + 0.018, z, 0, 1, 0, 1, 1, 1);
+            var onRock = it[1] > baseY + 0.2; if (Math.max(it[4], it[6]) < 0.55) return; if (onRock) baseY = it[1];
+            var radius = clamp((kind === 'rock' ? 0.5 : 0.44) * Math.max(it[4], it[6]), 0.14, 1.25), first = contact.count(), lift = onRock ? 0.05 : 0.018;
+            contact.extra.value = onRock ? 0.6 : 1; contact.vertex(x, baseY + lift, z, 0, 1, 0, 1, 1, 1);
             contact.extra.value = 0;
             for (var j = 0; j < segments; j++) {
               var angle = j / segments * TAU, px = x + Math.cos(angle) * radius, pz = z + Math.sin(angle) * radius;
-              contact.vertex(px, terrain.floorY(px, pz) + 0.018, pz, 0, 1, 0, 1, 1, 1);
+              var rimY = onRock ? rockSurfaceAt(px, pz) : terrain.floorY(px, pz); contact.vertex(px, clamp(rimY, baseY - radius, baseY + radius) + lift, pz, 0, 1, 0, 1, 1, 1);
               contact.i.push(first, first + 1 + (j + 1) % segments, first + 1 + j);
             }
           });
         });
         if (!contact.count()) return;
-        var contactMat = patch(new T.MeshBasicMaterial({ color: lin(0x183c3a), transparent: true, opacity: high ? 0.24 : 0.3, depthWrite: false }), 'contact', function (shader) {
+        var contactMat = patch(new T.MeshBasicMaterial({ color: lin(0x2a2a1e), transparent: true, opacity: high ? 0.36 : 0.4, depthWrite: false }), 'contact', function (shader) {
           var parts = shaderParts();
           shader.uniforms.reefWaterEye = U.eye;
           parts.vCommon.push('attribute float reefContactWeight;varying float vReefContact;varying vec3 vReefContactWorld;');
           parts.vBegin.push('vReefContact=reefContactWeight;'); parts.vProject.push('vReefContactWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
           parts.fCommon.push('varying float vReefContact;varying vec3 vReefContactWorld;uniform vec3 reefWaterEye;');
-          parts.fColor.push('diffuseColor.a*=smoothstep(0.0,1.0,vReefContact)*(1.0-smoothstep(8.0,13.0,length(reefWaterEye-vReefContactWorld)));');
+          parts.fColor.push('diffuseColor.a*=smoothstep(0.0,1.0,vReefContact)*(1.0-smoothstep(11.0,19.0,length(reefWaterEye-vReefContactWorld)));');
           applyParts(shader, parts, 'contact');
         });
         var contactMesh = new T.Mesh(own(contact.build(T, false)), contactMat);
@@ -4746,29 +5007,38 @@
       fogNear.copy(new T.Color(0x096278)); fogFar.copy(new T.Color(0x062c4b)); topNear.copy(new T.Color(0x79c7d1)); topFar.copy(new T.Color(0x3a88a6));
       scene.fog = new T.FogExp2(fogNear.clone(), 0.05); scene.background = fogNear.clone();
       var sunDir = new T.Vector3(0.42, 1, 0.3).normalize();
+      // What is purely decorative runs on this clock, which stands still under reduced motion.
+      U.stillClock = { value: 4 };
       backdrop = new T.Mesh(own(new T.SphereGeometry(1, 24, 16)), own(new T.ShaderMaterial({
         side: T.BackSide, depthWrite: false, fog: false,
-        uniforms: { topColor: { value: topNear.clone() }, bottomColor: { value: fogNear.clone() }, sunDir: { value: sunDir }, reefCausticTime: U.time, reefVision: U.vision },
-        vertexShader: 'varying vec3 vReefDir;void main(){vReefDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-        fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;uniform vec2 reefVision;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
+        uniforms: { topColor: { value: topNear.clone() }, bottomColor: { value: fogNear.clone() }, sunDir: { value: sunDir }, reefCausticTime: U.time, reefVision: U.vision, reefDistantTint: { value: distantTint() }, reefStillClock: U.stillClock },
+        vertexShader: 'attribute vec3 reefDistant;uniform float reefStillClock;varying vec3 vReefDir;varying float vReefDistant;void main(){vReefDir=position;vReefDistant=0.0;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);' +
+          // The distant reef shares this program. Its fade is real haze: the farther from the eye, the fainter.
+          'if(reefDistant.x>0.0){vec4 w=modelMatrix*vec4(position,1.0);if(reefDistant.y>0.0){float a=reefStillClock*0.05+reefDistant.z;w.x+=sin(a)*reefDistant.y;w.z+=cos(a*0.8)*reefDistant.y;w.y+=sin(a*1.7)*0.1*reefDistant.y;}vReefDir=w.xyz-cameraPosition;vReefDistant=reefDistant.x*exp(-length(vReefDir)*0.013);gl_Position=projectionMatrix*viewMatrix*w;vec4 reefNearest=projectionMatrix*vec4(0.0,0.0,-38.0,1.0);gl_Position.z=min(gl_Position.z,gl_Position.w*reefNearest.z/reefNearest.w);}}',
+        fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;uniform vec2 reefVision;uniform vec3 reefDistantTint;varying vec3 vReefDir;varying float vReefDistant;void main(){vec3 d=normalize(vReefDir);' +
           'float sunward=max(0.0,dot(d,sunDir));float up=smoothstep(-0.10,0.98,d.y);' +
           'vec3 column=bottomColor*mix(0.63,1.0,smoothstep(-0.85,-0.06,d.y));column=mix(column,topColor,up*0.70);' +
+          waterDepthTerms('column', 'd', 'topColor', 'bottomColor') +
+          // The window and its lace reach nothing below d.y=0.382: 0.43 less the largest wave offset, 0.048.
+          // Most of the open water on screen, and all of the far reef, skips them.
+          'float window=0.0;if(d.y>0.37){' +
           'float swell=sin(d.x*15.0+d.z*8.0-reefCausticTime*0.16+sin(d.z*7.0)*0.55);' +
           'float ripple=sin(d.z*24.0-d.x*11.0+reefCausticTime*0.21+sin(d.x*9.0+d.z*5.0)*0.60);' +
-          'float window=smoothstep(0.43,0.89,d.y+swell*0.030+ripple*0.018);' +
+          'window=smoothstep(0.43,0.89,d.y+swell*0.030+ripple*0.018);' +
           'float lace=sin(d.x*48.0-d.z*31.0+sin(d.z*17.0+d.x*8.0)*1.1+reefCausticTime*0.24);' +
           'float waterfold=sin(d.z*37.0+d.x*19.0+sin(d.x*13.0-d.z*9.0)*0.8-reefCausticTime*0.19);' +
           'float silver=pow(max(0.0,swell*ripple*0.6+lace*waterfold*0.4),4.0);' +
           'column=mix(column,topColor,window*0.35);column*=1.0+(swell*ripple*0.042+lace*waterfold*0.027)*window;' +
-          'column+=topColor*silver*window*0.065;' +
+          'column+=topColor*silver*window*0.065;}' +
           'vec3 scatter=max(topColor-bottomColor,vec3(0.0))*(0.13*pow(sunward,4.0)+0.22*pow(sunward,25.0))*smoothstep(0.05,0.72,d.y);' +
           'float sunHalo=pow(sunward,92.0)*0.045;float sunDisc=pow(sunward,1350.0)*0.24;' +
           'vec3 sunlight=vec3(1.0,0.97,0.85)*(sunHalo+sunDisc)*window*mix(1.0,0.14,reefVision.y);' +
-          'gl_FragColor=vec4(min(column+scatter+sunlight,vec3(1.0)),1.0);}'
+          'gl_FragColor=vec4(min(column+scatter+sunlight,vec3(1.0))*mix(vec3(1.0),reefDistantTint,vReefDistant),1.0);}'
       })));
       backdrop.name = 'reef-explore-backdrop'; backdrop.renderOrder = -10; backdrop.frustumCulled = false;
       backdrop.onBeforeRender = function (r, s, cam) { this.position.setFromMatrixPosition(cam.matrixWorld); this.scale.setScalar(cam.far * 0.9); this.updateMatrixWorld(); };
       scene.add(backdrop);
+      buildDistantReef();
       var k = waterDepth(site.depthM);
       hemi = new T.HemisphereLight(new T.Color().setRGB(0.39, 0.69, 0.81).lerp(new T.Color().setRGB(0.17, 0.43, 0.65), k), new T.Color().setRGB(0.20, 0.26, 0.22).lerp(new T.Color().setRGB(0.07, 0.14, 0.18), k), 0.42 - 0.08 * k);
       hemi.name = 'reef-explore-ambient'; scene.add(hemi);
@@ -4785,7 +5055,7 @@
       var smat = own(new T.MeshBasicMaterial({ color: lin(0x8acbd2), transparent: true, opacity: 0.46, side: T.DoubleSide, depthWrite: false }));
       if (derivatives) smat.extensions = { derivatives: true };
       smat.onBeforeCompile = function (shader) {
-        var parts = shaderParts(); shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefWaterEye = U.eye;
+        var parts = shaderParts(); shader.uniforms.reefCausticTime = U.time; shader.uniforms.reefWaterEye = U.eye; shader.uniforms.reefStillClock = U.stillClock; parts.fCommon.push('uniform float reefStillClock;');
         shader.uniforms.reefVision = U.vision; parts.fCommon.push('uniform vec2 reefVision;');
         shader.uniforms.reefSurfaceTop = backdrop.material.uniforms.topColor; shader.uniforms.reefSurfaceDeep = backdrop.material.uniforms.bottomColor;
         if (derivatives) parts.fCommon.push('#define REEF_DERIVATIVES');
@@ -4828,7 +5098,25 @@
           'float reefSeaSun=max(0.0,dot(normalize(-reefSeaView+vec3(reefSeaNormal.x*0.28,0.0,reefSeaNormal.z*0.28)),normalize(vec3(0.42,1.0,0.3))));',
           'vec3 reefSeaWarm=vec3(1.0,0.91,0.72)*(pow(reefSeaSun,72.0)*0.040+pow(reefSeaSun,1150.0)*0.37)*reefWindow*mix(1.0,0.14,reefVision.y);',
           'diffuseColor.rgb=mix(reefSeaThrough,reefSeaReflected,reefSeaFresnel)+reefSeaWarm;',
-          'diffuseColor.a*=mix(0.47,0.96,reefSeaFresnel)*(0.98+reefSeaCross*0.045);'
+          // From below the surface is a bright, moving ceiling: a fine lace of light over the swells,
+          // and a broad glow around the sun. Both live only inside the window the water lets light through.
+          'float reefSeaBelow=step(reefWaterEye.y,vReefWorld.y)*reefWindow*smoothstep(0.62,0.90,reefSeaUp);',
+          'float reefSeaLace=0.0,reefSeaGlow=0.0,reefSeaLaceAA=1.0;',
+          '#ifdef REEF_DERIVATIVES',
+          'reefSeaLaceAA=1.0-smoothstep(0.6,2.2,fwidth(reefSea.x)*7.3+fwidth(reefSea.y)*8.7);',
+          '#endif',
+          'if(reefSeaBelow>0.0){',
+          'float reefLaceW=sin(dot(reefSea,vec2(0.39,0.18))-reefStillClock*0.31),reefLaceV=sin(dot(reefSea,vec2(-0.21,0.54))+reefStillClock*0.26+reefLaceW*0.64);',
+          'float reefSeaLaceA=sin(reefSea.x*7.3+reefSea.y*3.1+reefStillClock*0.9+sin(reefSea.y*5.1-reefStillClock*0.5)*1.6+reefLaceW*1.7);',
+          'float reefSeaLaceB=sin(reefSea.y*8.7-reefSea.x*4.1-reefStillClock*0.7+sin(reefSea.x*6.3+reefStillClock*0.4)*1.5-reefLaceV*1.9);',
+          'reefSeaLace=1.0-abs(reefSeaLaceA+reefSeaLaceB)*0.5;reefSeaLace*=reefSeaLace;reefSeaLace*=reefSeaLace;reefSeaLace*=reefSeaLaceAA;',
+          'reefSeaGlow=pow(reefSeaSun,7.0)*0.34+pow(reefSeaSun,28.0)*0.42;',
+          'reefSeaLace*=0.30+0.70*smoothstep(-0.55,0.65,reefLaceV+reefLaceW*0.6);',
+          'diffuseColor.rgb+=reefSeaBelow*mix(1.0,0.14,reefVision.y)*(reefSeaSky*reefSeaLace*(0.28+1.0*reefSeaGlow)+vec3(1.0,0.97,0.86)*reefSeaGlow);',
+          '}',
+          'diffuseColor.a*=mix(0.47,0.96,reefSeaFresnel)*(0.98+reefSeaCross*0.045);diffuseColor.a=mix(diffuseColor.a,1.0,min(1.0,reefSeaLace*0.45+reefSeaGlow)*reefSeaBelow);',
+          // The plane ends at the far plane; it melts away first, so no straight line crosses the water.
+          'diffuseColor.a*=1.0-smoothstep(44.0,67.0,length(reefWaterEye-vReefWorld));'
         ].join('\n'));
         applyParts(shader, parts, 'surface');
       };
@@ -4925,6 +5213,58 @@
       motes = new T.Points(g, pm); motes.frustumCulled = false; motes.name = 'reef-explore-motes'; motes.userData.decorative = true; motes.renderOrder = 4;
       motes.onBeforeRender = function (r, sc, cam) { U.eye.value.setFromMatrixPosition(cam.matrixWorld); snowU.center.value.copy(U.eye.value); };
       scene.add(motes);
+    }
+    // ---- Distant reef -------------------------------------------------------------
+    // Reef the diver can never reach, fading in layers into the water. One merged mesh drawn by
+    // the backdrop's own program: no new shader, one draw call, nothing to pick or count.
+    // It comes after the floor, so it only shades the pixels it actually shows, and it does not
+    // write depth. A site that has lost its coral has lost its relief, so its far reef is low.
+    function distantTint() {
+      var b = health.bleaching;
+      return new T.Vector3(lerp(0.73, 0.83, b), lerp(0.80, 0.88, b), lerp(0.84, 0.91, b));
+    }
+    function buildDistantReef() {
+      // [radius, strength, height, seed offset], far to near: this mesh writes no depth, so order is what layers it.
+      var layers = high ? [[88, 0.5, 1.0, 21.0], [70, 0.74, 0.85, 4.0], [55, 1.0, 0.7, 13.0]] : [[82, 0.56, 1.0, 21.0], [58, 1.0, 0.76, 13.0]];
+      var segs = high ? 360 : 200, relief = lerp(0.3, 1, smooth(0.1, 0.5, health.coralCover)), P = [], A = [], idx = [];
+      function rim(R, a) { var c = Math.cos(a), s = Math.sin(a), r = R / Math.pow(Math.pow(Math.abs(c), 4) + Math.pow(Math.abs(s), 4), 0.25); return { x: c * r, z: s * r }; }
+      function vert(x, y, z, v) { P.push(x, y, z); A.push(v, 0, 0); }
+      layers.forEach(function (L, li) {
+        for (var i = 0; i <= segs; i++) {
+          var a = i / segs * TAU, q = rim(L[0], a), ca = Math.cos(a) * 9 + L[3], sa = Math.sin(a) * 9 - L[3];
+          // Reef ridges and knolls, not domes: a broad mask leaves clear water between stretches of reef,
+          // a creased ridge line breaks each stretch, and smaller knolls and knuckles rough up its crest.
+          var broad = noise2(ca * 0.22, sa * 0.22), ridge = 1 - Math.abs(2 * noise2(ca * 0.55 + 3.1, sa * 0.55) - 1), knoll = noise2(ca * 1.4, sa * 1.4 + 7.7), knuckle = noise2(ca * 3.2 + 1.3, sa * 3.2);
+          var mass = smooth(0.34, 0.72, broad), H = relief * L[2] * mass * (8.5 * (0.26 + 0.74 * ridge * ridge) + 3.2 * smooth(0.38, 0.82, knoll) + 1.5 * relief * knuckle);
+          // Where the seabed is shallow there is little water above it. A crest pressed against that ceiling
+          // would run dead level across the view, so it keeps its height differences and fades out instead.
+          var y0 = terrain.floorY(q.x, q.z) - 0.8, room = Math.max(0.3, -1.4 - y0), top = y0 + Math.max(0.2, H) * room / (Math.max(0.2, H) + room), height = Math.max(0.2, top - y0), v = L[1] * smooth(0.6, 3.2, H) * smooth(2.0, 7.0, room);
+          vert(q.x, y0, q.z, 0.0001); vert(q.x, y0 + height * 0.55, q.z, Math.max(0.0001, v)); vert(q.x, y0 + height * 0.82, q.z, Math.max(0.0001, v * 0.7)); vert(q.x, top, q.z, 0.0001);
+          if (i < segs) { var b = li * (segs + 1) * 4 + i * 4; for (var r = 0; r < 3; r++) idx.push(b + r, b + r + 1, b + r + 4, b + r + 1, b + r + 5, b + r + 4); }
+        }
+      });
+      // Far schools: dark specks, no species, nothing to select or count. How many follows the
+      // schools this site really holds, so a reef that has lost its fish does not gain them here.
+      var rs = stream(seed, 917), schools = 0;
+      site.population.forEach(function (p) { if (speciesInfo(Species, p.id).habit === 'school') schools += p.count; });
+      schools = Math.min(8, Math.round(schools * 0.6));
+      for (var sc = 0; sc < schools; sc++) {
+        var sa0 = (sc + rs() * 0.8) / Math.max(1, schools) * TAU, sq = rim(50 + rs() * 22, sa0), sn = high ? 34 : 22, floorAt = terrain.floorY(sq.x, sq.z);
+        var sy = lerp(Math.max(floorAt + 3, -14), -3, 0.25 + 0.5 * rs()), yaw = rs() * TAU, sp0 = rs() * TAU, drift = 1.6;
+        for (var f = 0; f < sn; f++) {
+          var fx = sq.x + (rs() - 0.5) * 7, fy = sy + (rs() - 0.5) * 2.6, fz = sq.z + (rs() - 0.5) * 7, len = 0.26 + 0.14 * rs(), cy = Math.cos(yaw + (rs() - 0.5) * 0.5) * len, sy2 = Math.sin(yaw) * len, first = P.length / 3;
+          [[-1, 0], [0, 1], [1, 0], [0, -1]].forEach(function (c) { P.push(fx + c[0] * cy, fy + c[1] * len * 0.32, fz + c[0] * sy2); A.push(0.9, drift, sp0); });
+          idx.push(first, first + 1, first + 2, first, first + 2, first + 3, first, first + 2, first + 1, first, first + 3, first + 2);
+        }
+      }
+      var g = own(new T.BufferGeometry());
+      g.setAttribute('position', new T.Float32BufferAttribute(P, 3)); g.setAttribute('reefDistant', new T.Float32BufferAttribute(A, 3)); g.setIndex(idx);
+      g.boundingSphere = new T.Sphere(new T.Vector3(), 200);
+      // The sphere is the same program with the attribute at zero.
+      backdrop.geometry.setAttribute('reefDistant', new T.BufferAttribute(new Float32Array(backdrop.geometry.attributes.position.count * 3), 3));
+      var m = new T.Mesh(g, backdrop.material);
+      m.name = 'reef-explore-distant-reef'; m.renderOrder = 1; m.frustumCulled = false; m.userData.decorative = true; m.raycast = function () {};
+      scene.add(m);
     }
     function updateWater() {
       U.eye.value.setFromMatrixPosition(camera.matrixWorld); updateTorch();
@@ -5932,7 +6272,7 @@
         s.mesh.material.opacity = s.base * (reducedMotion ? 1 : 0.88 + 0.12 * Math.sin(visualTime * 0.17 + s.phase));
       });
       surface.position.set(camera.position.x, 0, camera.position.z);
-      U.time.value = reducedMotion ? 4 + visualTime * 0.2 : 4 + visualTime; snowU.time.value = reducedMotion ? visualTime * 0.3 : visualTime;
+      if (!reducedMotion) U.stillClock.value = 4 + visualTime; U.time.value = reducedMotion ? 4 + visualTime * 0.2 : 4 + visualTime; snowU.time.value = reducedMotion ? visualTime * 0.3 : visualTime;
       plantMotions.forEach(function (m) { var t = visualTime; m.value.x = t * 0.35; m.value.y = (t * (reducedMotion ? 0.4 : 1.15)) % TAU; m.value.w = m.amount * (reducedMotion ? 0.35 : 1); });
       if (sun) {
         var c = diverPos, dir = sun.userData.dir;
@@ -5943,7 +6283,8 @@
       focusRing.visible = !!f;
       if (f) {
         var r = observationRadius(f) * 1.15 + 0.12; focusRing.position.copy(observationCenter(f)); focusRing.scale.set(r, r, r); focusRing.quaternion.copy(camera.quaternion);
-        focusRing.material.uniforms.opacity.value = reducedMotion ? 0.85 : 0.72 + 0.2 * Math.sin(visualTime * 2.6);
+        // Through the camera a close ring would wash over the whole frame, so it stays faint.
+        focusRing.material.uniforms.opacity.value = (reducedMotion ? 0.85 : 0.72 + 0.2 * Math.sin(visualTime * 2.6)) * (photoMode ? 0.35 : 1);
       }
     }
 
@@ -6083,7 +6424,7 @@
     function snapshot() {
       var info = renderer && renderer.info && renderer.info.render, near = loaded ? nearbyList() : [], f = focusedUid && byUid[focusedUid], eye = cueFrom();
       return {
-        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn, vision: vision, magnification: magnification,
+        ready: !disposed && !contextLost && loaded, paused: paused, view: view, quality: quality, reducedMotion: reducedMotion, light: !!lightOn, vision: vision, magnification: magnification, photoMode: photoMode,
         diver: { x: r2(diverPos.x), y: r2(diverPos.y), z: r2(diverPos.z), depthM: r1(-diverPos.y), headingDeg: (Math.round(bearing * 180 / Math.PI) % 360 + 360) % 360 },
         // health ('healthy' | 'bleached' | 'dead') is fixed for the dive, so stateKey leaves it out.
         nearby: near.map(function (n) { return cue(n.o, eye, { uid: n.o.uid, speciesId: n.o.speciesId, distanceM: r1(n.d), inView: n.inView, health: coralState(n.o) }); }),
@@ -6259,7 +6600,7 @@
     function firstFrame() {
       // Pose everything as an unpaused mount does, even if pause was pressed while loading.
       var hold = paused; paused = false;
-      diver.visible = view === 'third'; mask.visible = view === 'first';
+      diver.visible = view === 'third'; mask.visible = view === 'first' && !photoMode;
       canvasW = canvasH = 0; // a resize while loading ran before the mask existed; size everything now
       resize(); updateLens(); animateDiver(0); updateCamera(0, true); updateWater(); refreshDecor(true); updateWorld(0);
       paused = hold;
@@ -6286,10 +6627,10 @@
     }
     function focus(uid) {
       if (disposed || !loaded || uid === null || uid === undefined || !byUid[uid]) return false;
-      if (focusedUid !== uid) { focusedUid = uid; observationAim = null; restoreWideLens(); notify(true); }
+      if (focusedUid !== uid) { focusedUid = uid; observationAim = null; if (!photoMode) restoreWideLens(); notify(true); }
       refresh(); return true;
     }
-    function clearFocus() { if (disposed) return; var wide = restoreWideLens(); if (focusedUid !== null || wide) { focusedUid = null; observationAim = null; notify(true); } refresh(); }
+    function clearFocus() { if (disposed) return; var wide = !photoMode && restoreWideLens(); if (focusedUid !== null || wide) { focusedUid = null; observationAim = null; notify(true); } refresh(); }
     function candidates() {
       var near = nearbyList(), front = near.filter(function (n) { return n.inView; }), list = front.length ? front : near;
       if (!list.length) list = nearbyList(20).slice(0, 6);
@@ -6319,7 +6660,7 @@
       if (v !== view) restoreWideLens();
       observationAim = null;
       if (!loaded) { view = v; notify(true); return; } // the first frame applies it
-      view = v; diver.visible = v === 'third'; mask.visible = v === 'first'; look.pitch = 0;
+      view = v; diver.visible = v === 'third'; mask.visible = v === 'first' && !photoMode; look.pitch = 0;
       updateLens(); animateDiver(0); updateCamera(0, true); notify(true); refresh();
     }
     function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; settle = 0; notify(true); refresh(); }
@@ -6411,13 +6752,80 @@
       try {
         var context = typeof renderer.getContext === 'function' ? renderer.getContext() : null;
         if (context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
+        // A photograph shows the reef, not the selection ring that helped aim it.
+        var ringShown = photoMode && focusRing && focusRing.visible;
+        if (ringShown) focusRing.visible = false;
         renderer.render(scene, camera);
+        if (ringShown) focusRing.visible = true;
         if (disposed || contextLost || context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
         var data = canvas.toDataURL('image/png'), prefixLength = 22;
         // Reject empty/unsupported canvas results and malformed PNG encodings.
         return typeof data === 'string' && data.length > prefixLength + 12 && (data.length - prefixLength) % 4 === 0 &&
           /^data:image\/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}$/.test(data) ? data : null;
       } catch (error) { return null; } // An export failure must not end a healthy dive.
+    }
+    // ---- Reef photographer -------------------------------------------------------------
+    // Photo mode hides the mask frame from the picture and keeps the chosen lens while
+    // the student aims. Swimming still returns to the wide view, as it always has.
+    function setPhotoMode(on) {
+      if (disposed) return false;
+      on = !!on;
+      if (on === photoMode) return true;
+      photoMode = on;
+      if (mask) mask.visible = view === 'first' && !photoMode;
+      if (!on && restoreWideLens() && loaded) refreshDecor(true);
+      notify(true); refresh(); return true;
+    }
+    // What the camera sees now, from the same numbers that draw the reef: the lens, the
+    // water's own red extinction and the dive light's beam. Zooming narrows the view but
+    // leaves the water in place, so a far subject can fill the frame and still look faded.
+    // Reads the scene only: it changes nothing and picks nothing for the student.
+    var PHOTO_GROUPS = ['fish', 'reptile', 'invertebrate', 'coral'];
+    var PHOTO_EDGE = 0.92, PHOTO_SEEN = 0.02, PHOTO_BIG = 0.1, PHOTO_RED = 0.8, PHOTO_STEP = 0.25, photoPoint = new T.Vector3();
+    function photoLineClear(c, r) {
+      var e = camera.position, dx = c.x - e.x, dy = c.y - e.y, dz = c.z - e.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz), end = d - r - 0.05;
+      // The rock itself: the obstacle grid also holds the corals, so it would call a coral in plain view hidden.
+      for (var s = 0.4; s < end; s += PHOTO_STEP) {
+        var f = s / d;
+        if (rockSurfaceAt(e.x + dx * f, e.z + dz * f) > e.y + dy * f + 0.03) return false;
+      }
+      return true;
+    }
+    function checkFrame(preferUid) {
+      if (disposed || contextLost || !loaded) return null;
+      camera.updateMatrixWorld();
+      var tanHalf = Math.tan(camera.fov * Math.PI / 360), seen = [];
+      organisms.forEach(function (o) {
+        if (!o.center || o.restoration || !o.info || PHOTO_GROUPS.indexOf(o.info.group) < 0) return;
+        var c = observationCenter(o), r = observationRadius(o), dist = c.distanceTo(camera.position);
+        if (!(dist > 0.01)) return;
+        photoPoint.copy(c).project(camera);
+        var off = Math.max(Math.abs(photoPoint.x), Math.abs(photoPoint.y));
+        if (photoPoint.z >= 1 || off > PHOTO_EDGE) return;
+        var fill = r / (dist * tanHalf);
+        if (fill < PHOTO_SEEN) return;
+        seen.push({ o: o, c: c, r: r, dist: dist, fill: fill, off: off, score: (o.uid === preferUid ? 100 : 0) + fill * (1.25 - off) });
+      });
+      seen.sort(function (a, b) { return b.score - a.score || a.o.serial - b.o.serial; });
+      var pick = null, hidden = false;
+      for (var i = 0; i < seen.length && i < 8 && !pick; i++) {
+        if (photoLineClear(seen[i].c, seen[i].r)) pick = seen[i];
+        else if (i === 0) hidden = true;
+      }
+      var out = { subject: null, hidden: !pick && hidden, count: seen.length, light: !!lightOn, magnification: magnification, vision: vision, checks: { framed: false, big: false, colour: false }, stars: 0, redLeft: null, lit: false };
+      if (!pick) return out;
+      var surface = Math.max(0, pick.dist - pick.r), lit = false;
+      if (lightOn && surface <= TORCH_REACH * 0.8) {
+        updateTorch();
+        photoPoint.copy(pick.c).sub(torchAt).normalize();
+        lit = photoPoint.dot(torchFwd) >= TORCH_OUTER;
+      }
+      var red = Math.exp(-(U && U.extinction ? U.extinction.value.x : 0.065) * surface);
+      out.subject = { uid: pick.o.uid, speciesId: pick.o.speciesId, distanceM: r1(surface), fill: r2(pick.fill), offCentre: r2(pick.off) };
+      out.redLeft = r2(red); out.lit = lit;
+      out.checks = { framed: true, big: pick.fill >= PHOTO_BIG, colour: red >= PHOTO_RED || lit };
+      out.stars = 1 + (out.checks.big ? 1 : 0) + (out.checks.colour ? 1 : 0);
+      return out;
     }
     function resize() {
       if (disposed || !renderer) return;
@@ -6430,7 +6838,7 @@
       refresh();
     }
     controller = {
-      lookCamera: lookCamera, lookAtFocused: lookAtFocused, zoomCamera: zoomCamera, setMagnification: setMagnification, resetCamera: resetCamera, captureImage: captureImage,
+      lookCamera: lookCamera, lookAtFocused: lookAtFocused, zoomCamera: zoomCamera, setMagnification: setMagnification, resetCamera: resetCamera, captureImage: captureImage, setPhotoMode: setPhotoMode, checkFrame: checkFrame,
       setView: setView, setPaused: setPaused, setReducedMotion: setReducedMotion, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
       focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, cancelSwim: cancelSwim, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
     };
@@ -6483,7 +6891,7 @@
     listen(canvas, 'blur', function () { clearKeys(); pointers.clear(); pinch = 0; press = null; dragging = false; });
     function pid(event) { return event.pointerId !== undefined && event.pointerId !== null ? event.pointerId : 1; }
     function lookBy(dx, dy) {
-      if ((dx || dy) && restoreWideLens()) notify(true);
+      if ((dx || dy) && !photoMode && restoreWideLens()) notify(true);
       observationAim = null;
       look.yaw += dx * 0.005; look.pitch = clamp(look.pitch + (view === 'third' ? dy : -dy) * 0.004, view === 'third' ? -0.6 : -1.0, view === 'third' ? 0.9 : 1.0);
       if (loaded && (view === 'first' || reducedMotion)) updateCamera(0, true);

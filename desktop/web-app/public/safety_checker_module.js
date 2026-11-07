@@ -25,6 +25,14 @@
     return;
   }
 
+  // Blocked host fns are truthy; ask the host (old-host fallback).
+  function _safetyAiUsable(fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', fn);
+    } catch (_) {}
+    return !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && !(fn && fn._alloQrBlocked);
+  }
+
   var SafetyContentChecker = {
     patterns: {
         self_harm: /\b(hurt myself|kill myself|suicide|want to die|end it all|self.?harm|cutting myself|don't want to live)\b/i,
@@ -97,6 +105,8 @@
         var GEMINI_MODELS = (typeof window !== 'undefined' && window.GEMINI_MODELS) || {};
         var safetyModel = GEMINI_MODELS.safety || 'gemini-2.5-flash-lite';
         if (!text || text.length < 5 || (!apiKey && !_isCanvasEnv)) return;
+        // Student AI-off / teacher policy: never send student text to Gemini (regex layer still runs).
+        if (!_safetyAiUsable(typeof window !== 'undefined' ? window.callGemini : undefined)) return;
         var regexFlags = this.check(text);
         if (regexFlags.some(function (f) { return f.severity === 'critical'; })) return;
         try {

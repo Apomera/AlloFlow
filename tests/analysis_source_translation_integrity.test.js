@@ -111,6 +111,37 @@ describe('translated analysis keeps the selected source canonical downstream', (
     expect(item.data.originalText).toBe(sourceText);
   });
 
+  it('opens a chosen passage version as a supporting reading in its language, linked to the original', () => {
+    const item = analysis(), openReadingArtifact = vi.fn();
+    let history = [item];
+    const run = () => new Function('supportDraftSessionRef', 'requestReadingSupportTransition', 'history', 'selectedReadingSourceId', 'inputText', 'activeUnitId',
+      'leveledTextLanguage', 'sourceTopic', 'gradeLevel', 'addToast', 'setHistory', 'openReadingArtifact', readOriginalSource + '\nreturn handleReadOriginal;')(
+      { current: null }, vi.fn(), history, item.id, '', 'lesson', 'English', 'Source', '5th Grade', vi.fn(), updater => { history = updater(history); }, openReadingArtifact);
+    run()(item, { language: 'Spanish' });
+    const version = openReadingArtifact.mock.calls[0][0];
+    expect(version.data).toBe(translatedText);
+    expect(version.config.language).toBe('Spanish');
+    expect(version.title).toBe('Source — Spanish with supports');
+    expect(contract.getSourceSnapshot(version).text).toBe(sourceText);
+    expect(contract.isSupportedOriginal(version)).toBe(false);
+    expect(contract.getInstructionalText(version)).toMatchObject({ form: 'adapted', role: 'supplemental' });
+    expect(contract.getInstructionalText(version).complexity.language).toBe('Spanish');
+    expect(version).toMatchObject({ translationSourceId: item.id, translationOf: item.id, translationSourceLanguage: 'English', sourceFamilyId: 'analyzed-source', unitId: 'lesson' });
+    expect(contract.sameReadingFamily(version, item)).toBe(true);
+    expect(history).toHaveLength(2);
+    // Opening it again reuses the saved reading; the original still opens the original.
+    run()(item, { language: 'Spanish' });
+    expect(openReadingArtifact.mock.calls[1][0]).toBe(version);
+    expect(history).toHaveLength(2);
+    run()(item);
+    expect(openReadingArtifact.mock.calls[2][0].data).toBe(sourceText);
+    expect(contract.isSupportedOriginal(openReadingArtifact.mock.calls[2][0])).toBe(true);
+    // A language with no saved version falls back to the original.
+    run()(item, { language: 'Vietnamese' });
+    expect(openReadingArtifact.mock.calls[3][0].data).toBe(sourceText);
+    expect(history).toHaveLength(3);
+  });
+
   it('preserves canonical source and language companions through saved-history round trips', () => {
     const item = analysis();
     const [loaded] = window.hydrateHistory(window.sanitizeHistoryForCloud([item]));

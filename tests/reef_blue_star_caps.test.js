@@ -11,13 +11,17 @@ describe('blue sea star blunt arm tips', () => {
     it(`rounds each terminal profile without a wider bulb or an open cap at ${quality}`, () => {
       const h = create({ quality }), g = h.root.getObjectByName('blue_sea_star-body').geometry;
       try {
-        const high = quality === 'high', sides = high ? 8 : 5, segments = high ? 10 : 4;
+        const high = quality === 'high', sides = high ? 12 : 7, segments = high ? 12 : 5;
         const discVertices = high ? 385 : 81, armVertices = (segments + 1) * sides + 1, originalCount = discVertices + 5 * armVertices;
         const pos = g.attributes.position, point = i => new T.Vector3().fromBufferAttribute(pos, i);
         const meanRing = first => { const c = new T.Vector3(); for (let j = 0; j < sides; j++) c.add(point(first + j)); return c.divideScalar(sides); };
-        expect(pos.count).toBe(originalCount + 5 * sides);
+        // Ventral tube feet, a disc dome and arm-tip eyes follow the five cap rings.
+        expect(pos.count).toBeGreaterThan(originalCount + 5 * sides);
         expect(g.index.count / 3).toBeLessThan(high ? 6000 : 1500);
-        expect(new Set(g.index.array).size).toBe(pos.count);
+        // Every disc, arm and cap vertex is drawn. The appended feet/eyes are SphereGeometry blobs, whose
+        // unused duplicate pole vertices (one per pole row, as in every blob-built model) are not cap faults.
+        const used = new Set(g.index.array);
+        for (let i = 0; i < originalCount + 5 * sides; i++) expect(used.has(i), 'vertex ' + i + ' is drawn').toBe(true);
         for (let arm = 0; arm < 5; arm++) {
           const last = discVertices + arm * armVertices + segments * sides, tip = last + sides, ring = originalCount + arm * sides;
           const end = meanRing(last), rounded = meanRing(ring), axis = point(tip).sub(end), reach = axis.length(); axis.normalize();
@@ -35,7 +39,7 @@ describe('blue sea star blunt arm tips', () => {
           expect(tipFaces).toBe(sides);
         }
         for (const attr of Object.values(g.attributes)) expect(Array.from(attr.array).every(Number.isFinite)).toBe(true);
-        for (let i = 0; i < pos.count; i++) expect(new T.Vector3().fromBufferAttribute(g.attributes.normal, i).length()).toBeCloseTo(1, 5);
+        for (const i of used) expect(new T.Vector3().fromBufferAttribute(g.attributes.normal, i).length()).toBeCloseTo(1, 5);
       } finally { h.dispose(); }
     });
 

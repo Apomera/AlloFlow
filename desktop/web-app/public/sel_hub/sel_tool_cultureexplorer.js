@@ -16,6 +16,21 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // Translation for strings added with the research card: render() stores ctx in
+  // _ctx; ctx.t drops the English fallback, so wrap it.
+  var _ctx = null;
+  var __alloT = function (key, fallback) {
+    var fn = (_ctx && typeof _ctx.t === 'function') ? _ctx.t : ((window.SelHub && typeof window.SelHub.t === 'function') ? window.SelHub.t : null);
+    var v = null;
+    if (fn) { try { v = fn(key); } catch (e) { v = null; } }
+    return (typeof v === 'string' && v && v !== key) ? v : fallback;
+  };
+  // Usable AI per the host (a blocked fn is truthy); works on older hosts too.
+  function _aiUsable(kind, fn) {
+    try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+  }
+
   // ── Accessibility scaffolding (WCAG 2.1 AA) ──
   // Live region for SR announcements + reduced-motion CSS guard.
   (function() {
@@ -232,16 +247,85 @@ window.SelHub = window.SelHub || {
     { id: 'language', prompt: 'A word or phrase from another language that I love...', emoji: '\uD83D\uDCAC' }
   ];
 
+  // \u2500\u2500 Research card (student-authored; content comes from people and sources, not AI) \u2500\u2500
+  var RESEARCH_PROMPTS = [
+    { id: 'traditions', key: 'sel.cultureExplorer.research.p_traditions', text: 'Traditions and celebrations' },
+    { id: 'foods', key: 'sel.cultureExplorer.research.p_foods', text: 'Foods and who makes them' },
+    { id: 'languages', key: 'sel.cultureExplorer.research.p_languages', text: 'Languages, words or sayings' },
+    { id: 'values', key: 'sel.cultureExplorer.research.p_values', text: 'What matters to people (in their own words if you can)' },
+    { id: 'story', key: 'sel.cultureExplorer.research.p_story', text: 'A story, saying or memory someone shared' },
+    { id: 'learned', key: 'sel.cultureExplorer.research.p_learned', text: 'What I learned or what surprised me' }
+  ];
+  var INTERVIEW_QUESTIONS = [
+    { id: 'q1', key: 'sel.cultureExplorer.research.q1', text: 'What traditions or celebrations matter most to you or your family?' },
+    { id: 'q2', key: 'sel.cultureExplorer.research.q2', text: 'What foods remind you of home or of special days? Who taught you to make them?' },
+    { id: 'q3', key: 'sel.cultureExplorer.research.q3', text: 'What languages do you or your family speak? Is there a word or saying you love?' },
+    { id: 'q4', key: 'sel.cultureExplorer.research.q4', text: 'What is a story or piece of advice that was passed down to you?' },
+    { id: 'q5', key: 'sel.cultureExplorer.research.q5', text: 'How have things changed between your generation and the ones before?' },
+    { id: 'q6', key: 'sel.cultureExplorer.research.q6', text: 'What do you want other people to understand about your culture or community?' }
+  ];
+  var RESEARCH_CHECKS = [
+    { id: 'source', key: 'sel.cultureExplorer.research.check_source', text: 'I used a real source or asked a real person.' },
+    { id: 'noGeneralize', key: 'sel.cultureExplorer.research.check_generalize', text: 'I avoided saying everyone in a culture is the same.' },
+    { id: 'ownWords', key: 'sel.cultureExplorer.research.check_own_words', text: 'I included people\u2019s own words, or named where they came from.' }
+  ];
+
+  // \u2500\u2500 Teacher cards (2026-11-04): the station's toolConfig.cultureExplorer = { version: 1, cards: [...] } \u2500\u2500
+  // Same fields as the student card; students see them read-only. Normalized on every read.
+  var TEACHER_CARD_MAX = 20;
+  var TEACHER_CHECKS = [
+    { id: 'source', key: 'sel.cultureExplorer.teacher.check_source', text: 'I checked the facts against a real source or a person from this community.' },
+    { id: 'noGeneralize', key: 'sel.cultureExplorer.teacher.check_generalize', text: 'It shows variety within the community and avoids saying everyone is the same.' },
+    { id: 'ownWords', key: 'sel.cultureExplorer.teacher.check_own_words', text: 'It uses the names people use for themselves and credits their words.' }
+  ];
+  function _ceTxt(v, max) { return (typeof v === 'string' || typeof v === 'number') ? String(v).slice(0, max) : ''; }
+  function normalizeTeacherCard(raw, index) {
+    var src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+    var f = src.fields && typeof src.fields === 'object' ? src.fields : {};
+    var iv = src.interview && typeof src.interview === 'object' ? src.interview : {};
+    var ia = iv.answers && typeof iv.answers === 'object' ? iv.answers : {};
+    var ch = src.checks && typeof src.checks === 'object' ? src.checks : {};
+    var card = { id: _ceTxt(src.id, 60) || ('tc_' + (index || 0)), subject: _ceTxt(src.subject, 120).trim(), relation: src.relation === 'own' ? 'own' : 'researched',
+      fields: {}, interview: { person: _ceTxt(iv.person, 80), answers: {} }, sources: _ceTxt(src.sources, 1000), note: _ceTxt(src.note, 600), checks: {}, aiDrafted: src.aiDrafted === true, updatedAt: _ceTxt(src.updatedAt, 40) };
+    RESEARCH_PROMPTS.forEach(function(p) { var v = _ceTxt(f[p.id], 2000); if (v.trim()) card.fields[p.id] = v; });
+    INTERVIEW_QUESTIONS.forEach(function(q) { var v = _ceTxt(ia[q.id], 2000); if (v.trim()) card.interview.answers[q.id] = v; });
+    TEACHER_CHECKS.forEach(function(c) { card.checks[c.id] = ch[c.id] === true; });
+    return card;
+  }
+  function teacherCardReady(card) {
+    return !!(card && card.subject && (Object.keys(card.fields).length || Object.keys(card.interview.answers).length));
+  }
+  // Cards a student may see: well-formed, with a subject and at least one answer.
+  function teacherCardsFrom(cfg) {
+    var list = cfg && typeof cfg === 'object' && Array.isArray(cfg.cards) ? cfg.cards : [];
+    var seen = {};
+    return list.slice(0, TEACHER_CARD_MAX).map(normalizeTeacherCard).filter(function(c) {
+      if (!teacherCardReady(c) || seen[c.id]) return false;
+      seen[c.id] = true; return true;
+    });
+  }
+  function buildTeacherCardPrompt(subject, gradeLevel) {
+    return 'A teacher is writing a short culture card about "' + String(subject).slice(0, 120) + '" for ' + (gradeLevel || '5th grade') + ' students. Draft it for the teacher to check and edit before students see it.\n\n' +
+      'GUIDELINES:\n- Show diversity within the community; say when practices vary by family, region or person\n- Use the names people use for themselves\n- Separate past and present practices\n- No stereotypes, no generalizations about everyone, no jokes about the culture\n- Plain words, 2-4 sentences per field\n- Do not invent quotes; suggest where real voices can be found instead\n\n' +
+      'Return ONLY JSON: {"traditions":"...","foods":"...","languages":"...","values":"...","story":"...","learned":"...","sources":"Real books, museums or community organizations the teacher can check, by name"}';
+  }
+  function parseTeacherCardDraft(resp) {
+    var text = typeof resp === 'string' ? resp : (resp && typeof resp.text === 'string' ? resp.text : '');
+    var a = text.indexOf('{'), b = text.lastIndexOf('}');
+    if (a < 0 || b <= a) return null;
+    try { var o = JSON.parse(text.slice(a, b + 1)); return o && typeof o === 'object' && !Array.isArray(o) ? o : null; } catch (e) { return null; }
+  }
+
   // ── Badges ──
   var BADGES = [
     { id: 'world_traveler', label: 'World Traveler', emoji: '\u2708\uFE0F', desc: 'Explore all 6 world map regions', check: function(d) { return (d.mapRegionsVisited || []).length >= 6; } },
     { id: 'language_learner', label: 'Language Learner', emoji: '\uD83D\uDDE3\uFE0F', desc: 'Practice greetings in 8+ languages', check: function(d) { return (d.langPracticed || []).length >= 8; } },
-    { id: 'culture_connector', label: 'Culture Connector', emoji: '\uD83E\uDD1D', desc: 'Complete 3 cultural comparisons', check: function(d) { return (d.comparisonsCompleted || 0) >= 3; } },
-    { id: 'comparison_expert', label: 'Comparison Expert', emoji: '\uD83D\uDD0D', desc: 'Complete 6 cultural comparisons', check: function(d) { return (d.comparisonsCompleted || 0) >= 6; } },
-    { id: 'global_citizen', label: 'Global Citizen', emoji: '\uD83C\uDF0D', desc: 'Explore 10+ cultures with AI deep dives', check: function(d) { return ((Array.isArray(d.explored) ? d.explored : [])).length >= 10; } },
+    { id: 'culture_connector', label: 'Culture Connector', emoji: '\uD83E\uDD1D', desc: 'Complete 3 cultural comparisons', aiOnly: true, check: function(d) { return (d.comparisonsCompleted || 0) >= 3; } },
+    { id: 'comparison_expert', label: 'Comparison Expert', emoji: '\uD83D\uDD0D', desc: 'Complete 6 cultural comparisons', aiOnly: true, check: function(d) { return (d.comparisonsCompleted || 0) >= 6; } },
+    { id: 'global_citizen', label: 'Global Citizen', emoji: '\uD83C\uDF0D', desc: 'Explore 10+ cultures with AI deep dives', aiOnly: true, check: function(d) { return ((Array.isArray(d.explored) ? d.explored : [])).length >= 10; } },
     { id: 'quiz_master', label: 'Quiz Master', emoji: '\uD83C\uDFC6', desc: 'Score 80%+ on the Culture Quiz', check: function(d) { return d.quizBestScore >= 8; } },
     { id: 'journal_writer', label: 'Journal Writer', emoji: '\uD83D\uDCD3', desc: 'Complete 3 journal reflections', check: function(d) { return (d.journalCount || 0) >= 3; } },
-    { id: 'deep_diver', label: 'Deep Diver', emoji: '\uD83E\uDD3F', desc: 'Ask 10+ follow-up questions about cultures', check: function(d) { return (d.questionsAsked || 0) >= 10; } },
+    { id: 'deep_diver', label: 'Deep Diver', emoji: '\uD83E\uDD3F', desc: 'Ask 10+ follow-up questions about cultures', aiOnly: true, check: function(d) { return (d.questionsAsked || 0) >= 10; } },
     { id: 'polyglot_starter', label: 'Polyglot Starter', emoji: '\uD83C\uDDFA\uD83C\uDDF3', desc: 'Win the language matching game', check: function(d) { return d.langMatchWon; } },
     { id: 'appreciation_pro', label: 'Appreciation Pro', emoji: '\uD83C\uDF1F', desc: 'Complete all 6 journal prompts', check: function(d) { return (d.journalPromptsCompleted || []).length >= 6; } },
     { id: 'foodie_explorer', label: 'Foodie Explorer', emoji: '\uD83C\uDF7D\uFE0F', desc: 'Mark 4+ recipes as "want to try"', check: function(d) { return (d.recipesWantToTry || []).length >= 4; } },
@@ -249,7 +333,10 @@ window.SelHub = window.SelHub || {
     { id: 'story_listener', label: 'Story Listener', emoji: '\uD83D\uDCDA', desc: 'Read 4+ cultural stories', check: function(d) { return (d.storiesRead || []).length >= 4; } },
     { id: 'calendar_scholar', label: 'Calendar Scholar', emoji: '\uD83D\uDCC5', desc: 'Explore 6+ months on the cultural calendar', check: function(d) { return (d.calendarMonthsViewed || []).length >= 6; } },
     { id: 'cultural_ambassador', label: 'Cultural Ambassador', emoji: '\uD83C\uDF0E', desc: 'Earn 10 total badges', check: function(d) { return (d.badgesEarned || []).length >= 10; } },
-    { id: 'rhythm_explorer', label: 'Rhythm Explorer', emoji: '\uD83E\uDD41', desc: 'Try 3+ beat patterns in the Rhythm Explorer', check: function(d) { return (d.rhythmsTried || []).length >= 3; } }
+    { id: 'rhythm_explorer', label: 'Rhythm Explorer', emoji: '\uD83E\uDD41', desc: 'Try 3+ beat patterns in the Rhythm Explorer', check: function(d) { return (d.rhythmsTried || []).length >= 3; } },
+    // Research-card badges (no AI). tKey: label/desc go through __alloT at render.
+    { id: 'culture_researcher', tKey: 'sel.cultureExplorer.badge.culture_researcher', label: 'Culture Researcher', emoji: '\uD83D\uDDC2\uFE0F', desc: 'Save a culture card with all three self-checks done', check: function(d) { return (Array.isArray(d.researchCards) ? d.researchCards : []).some(function(c) { return c && c.checks && c.checks.source && c.checks.noGeneralize && c.checks.ownWords; }); } },
+    { id: 'story_keeper', tKey: 'sel.cultureExplorer.badge.story_keeper', label: 'Story Keeper', emoji: '\uD83C\uDF99\uFE0F', desc: 'Save a culture card with an interview in the person\u2019s own words', check: function(d) { return (Array.isArray(d.researchCards) ? d.researchCards : []).some(function(c) { return c && c.interview && Object.keys(c.interview.answers || {}).some(function(k) { return String(c.interview.answers[k] || '').trim().length > 0; }); }); } }
   ];
 
   // ── Cultural Recipes Data ──
@@ -532,6 +619,8 @@ window.SelHub = window.SelHub || {
     desc: 'Take AI-powered deep dives into world cultures. Discover traditions, art, values, and stories with illustrations and audio.',
     color: 'cyan',
     category: 'social-awareness',
+    // Teacher content contract (ctx.toolConfig.cultureExplorer), exposed for tests and other hosts.
+    teacherConfig: { normalizeCard: normalizeTeacherCard, cardsFrom: teacherCardsFrom, buildPrompt: buildTeacherCardPrompt, parseDraft: parseTeacherCardDraft },
 
     render: function(ctx) {
       var React = ctx.React;
@@ -544,13 +633,24 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
+      _ctx = ctx;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
+      // Without usable AI the AI tabs (Cultures, Compare, Explore) are hidden and no AI fn is called.
+      var _ceAiOn = ctx.aiAvailable !== false && _aiUsable('text', callGemini);
+      if (!_ceAiOn) { callGemini = null; callImagen = null; }
+      var AI_TABS = { choose: true, compare: true, explore: true };
 
-      var tab = d.tab || 'choose';
+      // Teacher cards from the active station; shown first, read-only, with no AI.
+      var _tcCfg = (ctx.toolConfig && typeof ctx.toolConfig === 'object') ? ctx.toolConfig.cultureExplorer : null;
+      var teacherCards = teacherCardsFrom(_tcCfg);
+      var tcAllCards = (_tcCfg && Array.isArray(_tcCfg.cards) ? _tcCfg.cards : []).slice(0, TEACHER_CARD_MAX).map(normalizeTeacherCard);
+      var tcCanAuthor = typeof ctx.setToolConfig === 'function';
+      var tab = d.tab || ((teacherCards.length || tcCanAuthor) ? 'research' : (_ceAiOn ? 'choose' : 'research'));
+      if (!_ceAiOn && AI_TABS[tab]) tab = 'research';
       var selectedCulture = d.culture || null;
       var selectedAspect = d.aspect || null;
       var cultureData = d.cultureData || null;
@@ -615,13 +715,119 @@ window.SelHub = window.SelHub || {
       var calendarMonth = d.calendarMonth || null;
       var calendarEventExpanded = d.calendarEventExpanded || null;
 
+      // Research card state (student-authored, no AI)
+      var researchCards = (Array.isArray(d.researchCards) ? d.researchCards : []).filter(function(c) { return c && typeof c === 'object'; });
+      var _str = function(v) { return (typeof v === 'string' || typeof v === 'number') ? String(v) : ''; };
+      var rDraft = (d.researchDraft && typeof d.researchDraft === 'object') ? d.researchDraft : {};
+      var rFields = (rDraft.fields && typeof rDraft.fields === 'object') ? rDraft.fields : {};
+      var rInterview = (rDraft.interview && typeof rDraft.interview === 'object') ? rDraft.interview : {};
+      var rInterviewAnswers = (rInterview.answers && typeof rInterview.answers === 'object') ? rInterview.answers : {};
+      var rChecks = (rDraft.checks && typeof rDraft.checks === 'object') ? rDraft.checks : {};
+      var setDraft = function(patch) { upd('researchDraft', Object.assign({}, rDraft, patch)); };
+      var rFilled = RESEARCH_PROMPTS.filter(function(p) { return _str(rFields[p.id]).trim(); }).length +
+        INTERVIEW_QUESTIONS.filter(function(q) { return _str(rInterviewAnswers[q.id]).trim(); }).length;
+      var rCanSave = _str(rDraft.subject).trim().length > 0 && rFilled > 0;
+      var rHasDraft = rFilled > 0 || _str(rDraft.subject).trim().length > 0 || _str(rDraft.sources).trim().length > 0 || _str(rInterview.person).trim().length > 0;
+      var saveResearchCard = function() {
+        if (!rCanSave) return;
+        var card = {
+          id: 'rc_' + Date.now(),
+          savedAt: new Date().toISOString(),
+          subject: _str(rDraft.subject).trim(),
+          relation: rDraft.relation === 'researched' ? 'researched' : 'own',
+          fields: Object.assign({}, rFields),
+          sources: _str(rDraft.sources),
+          interview: { person: _str(rInterview.person), answers: Object.assign({}, rInterviewAnswers) },
+          checks: { source: !!rChecks.source, noGeneralize: !!rChecks.noGeneralize, ownWords: !!rChecks.ownWords }
+        };
+        var newCards = researchCards.concat([card]);
+        updMulti({ researchCards: newCards, researchDraft: {}, researchInterviewOpen: false });
+        ctx.awardXP(10);
+        var savedMsg = __alloT('sel.cultureExplorer.research.saved', 'Culture card saved.');
+        addToast(savedMsg, 'success');
+        if (announceToSR) announceToSR(savedMsg);
+        checkBadges({ researchCards: newCards });
+      };
+      var editResearchCard = function(card) {
+        if (rHasDraft) return; // never overwrite a card being written
+        updMulti({
+          researchCards: researchCards.filter(function(c) { return c !== card; }),
+          researchDraft: { subject: _str(card.subject), relation: card.relation, fields: Object.assign({}, (card.fields && typeof card.fields === 'object') ? card.fields : {}), sources: _str(card.sources), interview: { person: _str(card.interview && card.interview.person), answers: Object.assign({}, (card.interview && card.interview.answers) || {}) }, checks: Object.assign({}, card.checks || {}) },
+          researchInterviewOpen: !!(card.interview && Object.keys(card.interview.answers || {}).length)
+        });
+      };
+      var printInterview = function() {
+        var esc = function(s) { return String(s).replace(/[&<>"]/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+        var w = null;
+        try { w = window.open('', '_blank'); } catch (e) { w = null; }
+        if (!w || !w.document) {
+          addToast(__alloT('sel.cultureExplorer.research.print_blocked', 'Printing is blocked here. The questions are on screen to copy.'), 'info');
+          return;
+        }
+        var title = __alloT('sel.cultureExplorer.research.interview_title', 'Family or community interview');
+        w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title></head><body style="font-family:sans-serif;max-width:40em;margin:2em auto;line-height:1.5">' +
+          '<h1>' + esc(title) + '</h1><p>' + esc(__alloT('sel.cultureExplorer.research.interview_consent', 'Ask first if the person is happy to talk and if you may share their answers. They can skip any question. Write their words as they say them.')) + '</p><ol>' +
+          INTERVIEW_QUESTIONS.map(function(q) { return '<li style="margin-bottom:5em">' + esc(__alloT(q.key, q.text)) + '</li>'; }).join('') +
+          '</ol></body></html>');
+        w.document.close();
+        try { w.focus(); w.print(); } catch (e) {}
+      };
+
+      // ── Teacher card authoring (teacher view of an active station only) ──
+      var tcDraft = (d.tcDraft && typeof d.tcDraft === 'object') ? d.tcDraft : null;
+      var tcD = tcDraft ? normalizeTeacherCard(tcDraft) : null;
+      var tcChecksDone = !!tcD && TEACHER_CHECKS.every(function(c) { return tcD.checks[c.id]; });
+      var tcCanSave = !!tcD && teacherCardReady(tcD) && tcChecksDone;
+      var tcAiDoor = null;
+      if (tcCanAuthor && !_ceAiOn) { try { tcAiDoor = typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', ctx.t) : null; } catch (e) { tcAiDoor = null; } }
+      var setTcDraft = function(patch) { upd('tcDraft', Object.assign({}, tcDraft || {}, patch)); };
+      var tcSay = function(msg) { upd('tcNotice', msg); if (announceToSR) announceToSR(msg); };
+      var tcStartNew = function() { updMulti({ tcDraft: { relation: 'researched', fields: {}, interview: { person: '', answers: {} }, checks: {} }, tcNotice: '', tcConfirmRemove: null }); };
+      var tcEdit = function(card) { if (tcDraft) return; updMulti({ tcDraft: JSON.parse(JSON.stringify(card)), tcNotice: '', tcConfirmRemove: null }); };
+      var tcWrite = function(cards, msg) {
+        var ok = ctx.setToolConfig('cultureExplorer', cards.length ? { version: 1, cards: cards } : null);
+        tcSay(ok !== false ? msg : __alloT('sel.cultureExplorer.teacher.save_failed', 'The cards could not be saved. Try a shorter card.'));
+        return ok !== false;
+      };
+      var tcSave = function() {
+        if (!tcCanSave || !tcCanAuthor) return;
+        var card = Object.assign({}, tcD, { id: tcD.id && tcDraft.id ? tcD.id : 'tc_' + Date.now().toString(36), updatedAt: new Date().toISOString() });
+        var exists = tcAllCards.some(function(c) { return c.id === card.id; });
+        var next = exists ? tcAllCards.map(function(c) { return c.id === card.id ? card : c; }) : tcAllCards.concat([card]).slice(-TEACHER_CARD_MAX);
+        if (tcWrite(next, __alloT('sel.cultureExplorer.teacher.saved', 'Card saved. Students in this station see it now.'))) upd('tcDraft', null);
+      };
+      var tcRemove = function(card) {
+        if (d.tcConfirmRemove !== card.id) { updMulti({ tcConfirmRemove: card.id }); return; }
+        if (tcWrite(tcAllCards.filter(function(c) { return c.id !== card.id; }), __alloT('sel.cultureExplorer.teacher.removed', 'Card removed.'))) upd('tcConfirmRemove', null);
+      };
+      var tcAiDraft = function() {
+        if (!tcD || !tcD.subject || d.tcBusy || !_ceAiOn || !callGemini) return;
+        upd('tcBusy', true);
+        var base = tcDraft;
+        callGemini(buildTeacherCardPrompt(tcD.subject, gradeLevel), true).then(function(resp) {
+          var o = parseTeacherCardDraft(resp);
+          if (!o) { updMulti({ tcBusy: false }); tcSay(__alloT('sel.cultureExplorer.teacher.ai_failed', 'The AI draft could not be used. Write the card yourself or try again.')); return; }
+          var fields = Object.assign({}, (base && base.fields) || {});
+          var filled = 0;
+          RESEARCH_PROMPTS.forEach(function(p) { var v = _ceTxt(o[p.id], 2000).trim(); if (v && !_str(fields[p.id]).trim()) { fields[p.id] = v; filled++; } });
+          var sources = _str(base && base.sources).trim() ? base.sources : _ceTxt(o.sources, 1000);
+          updMulti({ tcBusy: false, tcDraft: Object.assign({}, base, { fields: fields, sources: sources, aiDrafted: true, checks: {} }) });
+          tcSay(filled ? __alloT('sel.cultureExplorer.teacher.ai_done', 'AI draft added to the empty boxes. Check every fact and add people’s own words before you save.') : __alloT('sel.cultureExplorer.teacher.ai_nothing', 'Every box already has your words, so nothing was changed.'));
+        }).catch(function() {
+          updMulti({ tcBusy: false });
+          tcSay(__alloT('sel.cultureExplorer.teacher.ai_failed', 'The AI draft could not be used. Write the card yourself or try again.'));
+        });
+      };
+
       // ── Badge checker ──
+      var _badgeLabel = function(b) { return b.tKey ? __alloT(b.tKey + '.label', b.label) : b.label; };
+      var _badgeDesc = function(b) { return b.tKey ? __alloT(b.tKey + '.desc', b.desc) : b.desc; };
       var checkBadges = function(newData) {
         var merged = {};
         var k;
         for (k in d) { if (d.hasOwnProperty(k)) merged[k] = d[k]; }
         for (k in newData) { if (newData.hasOwnProperty(k)) merged[k] = newData[k]; }
-        var earned = d.badgesEarned || [];
+        var earned = Array.isArray(d.badgesEarned) ? d.badgesEarned : [];
         var newBadges = [];
         BADGES.forEach(function(badge) {
           if (earned.indexOf(badge.id) < 0 && badge.check(merged)) {
@@ -634,7 +840,7 @@ window.SelHub = window.SelHub || {
           newBadges.forEach(function(bid) {
             var b = BADGES.find(function(x) { return x.id === bid; });
             if (b) {
-              addToast('Badge earned: ' + b.emoji + ' ' + b.label + '!', 'success');
+              addToast('Badge earned: ' + b.emoji + ' ' + _badgeLabel(b) + '!', 'success');
               ctx.awardXP(15);
               if (ctx.celebrate) ctx.celebrate();
             }
@@ -939,7 +1145,121 @@ window.SelHub = window.SelHub || {
       };
 
       // ═══ RENDER ═══
-      var badgesEarned = d.badgesEarned || [];
+      var badgesEarned = Array.isArray(d.badgesEarned) ? d.badgesEarned : [];
+      // AI-only badges show without AI only once earned, so the visible set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _ceAiOn || !b.aiOnly || badgesEarned.indexOf(b.id) >= 0; });
+      var shownEarnedCount = shownBadges.filter(function(b) { return badgesEarned.indexOf(b.id) >= 0; }).length;
+
+      // ── Teacher cards: student read-only view + teacher editor ──
+      var tcFromLabel = __alloT('sel.cultureExplorer.teacher.from', 'From your teacher');
+      var renderTeacherCardBody = function(card) {
+        var ans = card.interview.answers;
+        return [
+          card.note && h('p', { key: 'note', className: 'text-xs text-slate-700 italic whitespace-pre-line' }, card.note),
+          RESEARCH_PROMPTS.filter(function(p) { return card.fields[p.id]; }).map(function(p) {
+            return h('p', { key: p.id, className: 'text-xs text-slate-700 whitespace-pre-line' }, h('strong', null, __alloT(p.key, p.text) + ': '), card.fields[p.id]);
+          }),
+          Object.keys(ans).length > 0 && h('div', { key: 'iv', className: 'bg-amber-50 rounded-lg p-2 space-y-1' },
+            h('p', { className: 'text-xs font-bold text-amber-800' }, '🎙️ ' + (card.interview.person || __alloT('sel.cultureExplorer.research.interview_title', 'Family or community interview'))),
+            INTERVIEW_QUESTIONS.filter(function(q) { return ans[q.id]; }).map(function(q) {
+              return h('p', { key: q.id, className: 'text-xs text-slate-700 whitespace-pre-line' }, h('strong', null, __alloT(q.key, q.text) + ' '), '“' + ans[q.id] + '”');
+            })
+          ),
+          card.sources && h('p', { key: 'src', className: 'text-xs text-slate-600 whitespace-pre-line' }, h('strong', null, __alloT('sel.cultureExplorer.teacher.sources_label', 'Sources') + ': '), card.sources)
+        ];
+      };
+      var renderTeacherCards = function() {
+        if (!teacherCards.length) return null;
+        return h('section', { 'data-ce-teacher-cards': 'true', 'aria-labelledby': 'ce-teacher-cards-title', className: 'space-y-3' },
+          h('h3', { id: 'ce-teacher-cards-title', className: 'text-lg font-black text-slate-800 text-center' }, '📌 ' + tcFromLabel),
+          teacherCards.map(function(card) {
+            return h('article', { key: card.id, 'data-ce-teacher-card': card.id, 'aria-label': tcFromLabel + ': ' + card.subject, className: 'bg-white rounded-xl border-2 border-cyan-700 p-4 space-y-2' },
+              h('div', { className: 'flex items-start gap-2' },
+                h('h4', { className: 'flex-1 text-sm font-black text-slate-800' }, card.subject),
+                h('span', { className: 'bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full text-[11px] font-bold' }, tcFromLabel)
+              ),
+              renderTeacherCardBody(card)
+            );
+          })
+        );
+      };
+      var renderTeacherEditor = function() {
+        if (!tcCanAuthor) {
+          if (ctx.isTeacherView !== true) return null;
+          return h('p', { 'data-ce-teacher-hint': 'true', className: 'text-xs text-slate-800 bg-slate-800/40 rounded-lg p-2' },
+            __alloT('sel.cultureExplorer.teacher.station_hint', 'To give students culture cards that work without AI, start an SEL Station that includes Culture Explorer, then open it here.'));
+        }
+        var Notice = (!_ceAiOn && typeof window.AlloAiSetupNotice === 'function') ? window.AlloAiSetupNotice : null;
+        var field = 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300 bg-white text-slate-800';
+        var stName = (ctx.toolConfigStation && ctx.toolConfigStation.name) || '';
+        return h('section', { 'data-ce-teacher-editor': 'true', 'aria-labelledby': 'ce-teacher-editor-title', className: 'bg-cyan-50 rounded-xl border border-cyan-300 p-4 space-y-3' },
+          h('h3', { id: 'ce-teacher-editor-title', className: 'text-sm font-black text-cyan-900' }, '🧑‍🏫 ' + __alloT('sel.cultureExplorer.teacher.editor_title', 'Teacher: culture cards for this station') + (stName ? ' · ' + stName : '')),
+          h('p', { className: 'text-xs text-cyan-900 leading-relaxed' }, __alloT('sel.cultureExplorer.teacher.guidance', 'Students see these cards first, read-only, and no AI is needed. Write about a community the way its members would recognize: show variety within it, use the names people use for themselves, credit people’s own words, and name your sources. Avoid costumes, “exotic” framing and jokes. Never put students’ or families’ private details on a card.')),
+          d.tcNotice ? h('p', { role: 'status', className: 'text-xs font-bold text-cyan-900' }, d.tcNotice) : null,
+          tcAllCards.length > 0 && h('ul', { className: 'space-y-1' }, tcAllCards.map(function(card) {
+            return h('li', { key: card.id, className: 'flex flex-wrap items-center gap-2 text-sm text-slate-800 bg-white rounded-lg px-2 py-1' },
+              h('span', { className: 'flex-1 font-bold' }, card.subject || '—'),
+              !teacherCardReady(card) && h('span', { className: 'text-xs text-amber-800' }, __alloT('sel.cultureExplorer.teacher.not_ready', 'Not shown yet: add an answer')),
+              h('button', { type: 'button', 'data-ce-teacher-edit': card.id, disabled: !!tcDraft, onClick: function() { tcEdit(card); }, className: 'px-2 py-1 rounded border border-cyan-700 text-cyan-800 text-xs font-bold disabled:opacity-40' }, __alloT('sel.cultureExplorer.research.edit', 'Edit')),
+              h('button', { type: 'button', 'data-ce-teacher-remove': card.id, onClick: function() { tcRemove(card); }, className: 'px-2 py-1 rounded border border-rose-700 text-rose-800 text-xs font-bold' },
+                d.tcConfirmRemove === card.id ? __alloT('sel.cultureExplorer.teacher.remove_confirm', 'Remove for everyone?') : __alloT('sel.cultureExplorer.teacher.remove', 'Remove'))
+            );
+          })),
+          !tcDraft && h('button', { type: 'button', 'data-ce-teacher-new': 'true', disabled: tcAllCards.length >= TEACHER_CARD_MAX, onClick: tcStartNew, className: 'px-3 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, '+ ' + __alloT('sel.cultureExplorer.teacher.new', 'New culture card')),
+          tcDraft && h('div', { 'data-ce-teacher-draft': 'true', className: 'bg-white rounded-xl border border-cyan-300 p-3 space-y-3' },
+            h('label', { htmlFor: 'ce-tc-subject', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.teacher.subject_label', 'Community or culture this card is about')),
+            h('input', { id: 'ce-tc-subject', type: 'text', value: _str(tcDraft.subject), maxLength: 120, onChange: function(e) { setTcDraft({ subject: e.target.value }); }, className: field }),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('button', { type: 'button', 'data-ce-teacher-ai': 'true', disabled: !_ceAiOn || !tcD.subject || !!d.tcBusy, 'aria-busy': d.tcBusy ? 'true' : undefined, title: tcAiDoor && tcAiDoor.disabled ? tcAiDoor.title : undefined, onClick: tcAiDraft, className: 'px-3 py-1.5 bg-indigo-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' },
+                '✨ ' + (d.tcBusy ? __alloT('sel.cultureExplorer.teacher.ai_busy', 'Drafting…') : __alloT('sel.cultureExplorer.teacher.ai_draft', 'Draft with AI, then edit'))),
+              Notice ? h('div', { 'data-ce-teacher-ai-setup': 'true' }, h(Notice, { t: ctx.t })) : null
+            ),
+            tcDraft.aiDrafted && h('p', { className: 'text-xs text-amber-900 bg-amber-50 rounded p-2' }, __alloT('sel.cultureExplorer.teacher.ai_review', 'Parts of this card were drafted by AI. Check each fact, replace general statements with people’s own words, and tick the checks again.')),
+            RESEARCH_PROMPTS.map(function(p) {
+              var fields = (tcDraft.fields && typeof tcDraft.fields === 'object') ? tcDraft.fields : {};
+              return h('div', { key: p.id },
+                h('label', { htmlFor: 'ce-tc-' + p.id, className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT(p.key, p.text)),
+                h('textarea', { id: 'ce-tc-' + p.id, value: _str(fields[p.id]), maxLength: 2000, onChange: function(e) { var nf = Object.assign({}, fields); nf[p.id] = e.target.value; setTcDraft({ fields: nf }); }, className: field + ' resize-y h-16' })
+              );
+            }),
+            h('details', { className: 'rounded-lg border border-amber-200 p-2' },
+              h('summary', { className: 'text-xs font-bold text-amber-800 cursor-pointer' }, '🎙️ ' + __alloT('sel.cultureExplorer.teacher.interview_toggle', 'Add words from a community member (with their permission)')),
+              (function() {
+                var iv = (tcDraft.interview && typeof tcDraft.interview === 'object') ? tcDraft.interview : {};
+                var ia = (iv.answers && typeof iv.answers === 'object') ? iv.answers : {};
+                return h('div', { className: 'space-y-2 mt-2' },
+                  h('label', { htmlFor: 'ce-tc-person', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.teacher.person_label', 'Who shared these words (a first name or a role)')),
+                  h('input', { id: 'ce-tc-person', type: 'text', value: _str(iv.person), maxLength: 80, onChange: function(e) { setTcDraft({ interview: Object.assign({}, iv, { person: e.target.value }) }); }, className: field }),
+                  INTERVIEW_QUESTIONS.map(function(q) {
+                    return h('div', { key: q.id },
+                      h('label', { htmlFor: 'ce-tc-' + q.id, className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT(q.key, q.text)),
+                      h('textarea', { id: 'ce-tc-' + q.id, value: _str(ia[q.id]), maxLength: 2000, onChange: function(e) { var na = Object.assign({}, ia); na[q.id] = e.target.value; setTcDraft({ interview: Object.assign({}, iv, { answers: na }) }); }, className: field + ' resize-y h-14' })
+                    );
+                  })
+                );
+              })()
+            ),
+            h('label', { htmlFor: 'ce-tc-sources', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.teacher.sources_label', 'Sources')),
+            h('textarea', { id: 'ce-tc-sources', value: _str(tcDraft.sources), maxLength: 1000, onChange: function(e) { setTcDraft({ sources: e.target.value }); }, className: field + ' resize-y h-14' }),
+            h('label', { htmlFor: 'ce-tc-note', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.teacher.note_label', 'Note to students (optional)')),
+            h('textarea', { id: 'ce-tc-note', value: _str(tcDraft.note), maxLength: 600, onChange: function(e) { setTcDraft({ note: e.target.value }); }, className: field + ' resize-y h-12' }),
+            h('fieldset', { className: 'space-y-1.5' },
+              h('legend', { className: 'text-xs font-bold text-cyan-900 mb-1' }, __alloT('sel.cultureExplorer.teacher.check_legend', 'Before students see it')),
+              TEACHER_CHECKS.map(function(c) {
+                var checks = (tcDraft.checks && typeof tcDraft.checks === 'object') ? tcDraft.checks : {};
+                return h('label', { key: c.id, className: 'flex items-start gap-2 text-sm text-slate-700' },
+                  h('input', { type: 'checkbox', 'data-ce-teacher-check': c.id, className: 'mt-1', checked: checks[c.id] === true, onChange: function(e) { var nc = Object.assign({}, checks); nc[c.id] = e.target.checked; setTcDraft({ checks: nc }); } }),
+                  h('span', null, __alloT(c.key, c.text)));
+              })
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              h('button', { type: 'button', 'data-ce-teacher-save': 'true', disabled: !tcCanSave, 'aria-describedby': tcCanSave ? undefined : 'ce-tc-save-hint', onClick: tcSave, className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-sm font-bold disabled:opacity-40' }, '💾 ' + __alloT('sel.cultureExplorer.teacher.save', 'Save for students')),
+              h('button', { type: 'button', onClick: function() { updMulti({ tcDraft: null, tcNotice: '' }); }, className: 'px-4 py-2 border border-slate-400 rounded-lg text-sm font-bold text-slate-700' }, __alloT('sel.cultureExplorer.teacher.cancel', 'Cancel'))
+            ),
+            !tcCanSave && h('p', { id: 'ce-tc-save-hint', className: 'text-xs text-slate-600' }, __alloT('sel.cultureExplorer.teacher.save_hint', 'Add the community, at least one answer, and tick all three checks to save.'))
+          )
+        );
+      };
 
       return h('div', { className: 'selh-cultureexplorer space-y-4 animate-in fade-in duration-200' },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
@@ -950,8 +1270,8 @@ window.SelHub = window.SelHub || {
         h('div', { className: 'flex items-center gap-3' },
           h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-cyan-100 text-cyan-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
           h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-100' }, '\uD83C\uDF0D Culture Explorer'),
-            h('p', { className: 'text-xs text-slate-300' }, 'Every culture holds wisdom. What will you discover?')
+            h('h2', { className: 'text-xl font-black text-slate-800' }, '\uD83C\uDF0D Culture Explorer'),
+            h('p', { className: 'text-xs text-slate-600' }, 'Every culture holds wisdom. What will you discover?')
           ),
           exploredCultures.length > 0 && h('span', { className: 'bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold' }, exploredCultures.length + ' explored')
         ),
@@ -961,6 +1281,7 @@ window.SelHub = window.SelHub || {
         h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
           [
             { id: 'choose', label: '\uD83D\uDDFA\uFE0F Cultures' },
+            { id: 'research', label: '\uD83D\uDDC2\uFE0F ' + __alloT('sel.cultureExplorer.research.tab', 'Culture Card') },
             { id: 'worldmap', label: '\uD83C\uDF0E World Map' },
             { id: 'recipes', label: '\uD83C\uDF72 Recipes' },
             { id: 'music', label: '\uD83C\uDFB5 Music' },
@@ -972,12 +1293,17 @@ window.SelHub = window.SelHub || {
             { id: 'quiz', label: '\uD83C\uDFC6 Quiz' },
             { id: 'journal', label: '\uD83D\uDCD3 Journal' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
-          ].map(function(t) {
+          ].filter(function(t) { return _ceAiOn || !AI_TABS[t.id]; }).map(function(t) {
             return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
               className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-700 hover:text-cyan-700')
             }, t.label);
           })
         ),
+
+        // Teacher cards live on the Culture Card tab; point there from any other tab.
+        teacherCards.length > 0 && tab !== 'research' && h('button', { type: 'button', 'data-ce-teacher-jump': 'true', onClick: function() { upd('tab', 'research'); },
+          className: 'w-full text-left px-3 py-2 rounded-lg border-2 border-cyan-700 bg-white text-cyan-800 text-sm font-bold focus:ring-2 focus:ring-cyan-500'
+        }, '📌 ' + tcFromLabel + ' (' + teacherCards.length + ')'),
 
         // ── Topic-accent hero band per tab ──
         (function() {
@@ -1026,6 +1352,7 @@ window.SelHub = window.SelHub || {
             explore:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2C', title: 'Explore \u2014 your guided deep-dive',                    hint: 'Pick a culture, follow the through-line: history \u2192 daily life \u2192 art \u2192 modern moment. Reading 30 minutes about a place beats 5 minutes each on six. Curiosity rewards depth.' },
             quiz:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFC6', title: 'Quiz \u2014 retrieval-practice on what you\u2019ve met',  hint: 'Roediger + Karpicke 2006: testing IS learning, not just measuring. Pulling the answer out of memory strengthens it more than re-reading. Misses are diagnostic, not failure \u2014 they show what to revisit.' },
             journal:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCD3', title: 'Journal \u2014 your reflections',                       hint: 'Pennebaker 1986: writing about what you\u2019re learning embeds it. \u201CWhat surprised me?\u201D + \u201CWhat will I read next?\u201D + \u201CWho can I ask about this?\u201D \u2014 simple prompts, surprising depth.' },
+            research: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDDC2', title: __alloT('sel.cultureExplorer.research.meta_title', 'Culture Card \u2014 learn from people and sources'), hint: __alloT('sel.cultureExplorer.research.meta_hint', 'Cultures are diverse and keep changing. One person or family does not speak for everyone, and people get to describe themselves. Write what you found or heard, and say where it came from.') },
             badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones across cultures explored',     hint: 'Acknowledges sustained curiosity \u2014 not encyclopedic mastery. The badges are the side effect; the conversations + foods + music + people you\u2019ve actually met are the point. Show the streak; the streak shows the practice.' }
           };
           var meta = TAB_META[tab] || TAB_META.choose;
@@ -1097,11 +1424,125 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        // \u2550\u2550\u2550 CULTURE CARD (student research + family/community interview; no AI) \u2550\u2550\u2550
+        tab === 'research' && h('div', { role: 'region', 'aria-labelledby': 'culture-research-title', className: 'space-y-4' },
+          renderTeacherEditor(),
+          renderTeacherCards(),
+          h('h3', { id: 'culture-research-title', className: 'text-lg font-black text-slate-800 text-center' }, '\uD83D\uDDC2\uFE0F ' + __alloT('sel.cultureExplorer.research.title', 'My Culture Card')),
+
+          h('div', { className: 'bg-white rounded-xl border border-teal-200 p-4 space-y-3' },
+            h('label', { htmlFor: 'ce-research-subject', className: 'text-xs font-bold text-teal-800 block' }, __alloT('sel.cultureExplorer.research.subject_label', 'Who is this card about?')),
+            h('input', { id: 'ce-research-subject', type: 'text', value: _str(rDraft.subject), maxLength: 120,
+              onChange: function(e) { setDraft({ subject: e.target.value }); },
+              placeholder: __alloT('sel.cultureExplorer.research.subject_placeholder', 'e.g., my family, my neighborhood, a community I am learning about (no full names or addresses)'),
+              className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
+            }),
+            h('fieldset', { className: 'flex flex-wrap gap-3' },
+              h('legend', { className: 'text-xs font-bold text-teal-800 mb-1' }, __alloT('sel.cultureExplorer.research.relation_legend', 'This card is about')),
+              [['own', __alloT('sel.cultureExplorer.research.relation_own', 'My own family or community')], ['researched', __alloT('sel.cultureExplorer.research.relation_researched', 'A culture or community I am researching')]].map(function(opt) {
+                return h('label', { key: opt[0], className: 'flex items-center gap-1.5 text-sm text-slate-700' },
+                  h('input', { type: 'radio', name: 'ce-research-relation', value: opt[0], checked: (rDraft.relation || 'own') === opt[0], onChange: function() { setDraft({ relation: opt[0] }); } }),
+                  opt[1]);
+              })
+            ),
+            RESEARCH_PROMPTS.map(function(p) {
+              return h('div', { key: p.id },
+                h('label', { htmlFor: 'ce-rp-' + p.id, className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT(p.key, p.text)),
+                h('textarea', { id: 'ce-rp-' + p.id, value: _str(rFields[p.id]), maxLength: 2000,
+                  onChange: function(e) { var nf = Object.assign({}, rFields); nf[p.id] = e.target.value; setDraft({ fields: nf }); },
+                  className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-y h-16 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
+                })
+              );
+            })
+          ),
+
+          // Family / community interview
+          h('div', { className: 'bg-white rounded-xl border border-amber-200 p-4 space-y-3' },
+            h('button', { type: 'button', 'aria-expanded': !!d.researchInterviewOpen, 'aria-controls': 'ce-research-interview',
+              onClick: function() { upd('researchInterviewOpen', !d.researchInterviewOpen); },
+              className: 'w-full text-left text-sm font-bold text-amber-800 focus:ring-2 focus:ring-amber-400 rounded'
+            }, (d.researchInterviewOpen ? '\u25BE ' : '\u25B8 ') + '\uD83C\uDF99\uFE0F ' + __alloT('sel.cultureExplorer.research.interview_toggle', 'Add a family or community interview')),
+            d.researchInterviewOpen && h('div', { id: 'ce-research-interview', className: 'space-y-3' },
+              h('p', { className: 'text-xs text-amber-800 leading-relaxed' }, __alloT('sel.cultureExplorer.research.interview_consent', 'Ask first if the person is happy to talk and if you may share their answers. They can skip any question. Write their words as they say them.')),
+              h('button', { type: 'button', onClick: printInterview, className: 'px-3 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors' }, '\uD83D\uDDA8\uFE0F ' + __alloT('sel.cultureExplorer.research.print', 'Print the questions')),
+              h('label', { htmlFor: 'ce-research-person', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.research.person_label', 'Who I talked with (a first name or a relationship, like "my grandmother")')),
+              h('input', { id: 'ce-research-person', type: 'text', value: _str(rInterview.person), maxLength: 80,
+                onChange: function(e) { setDraft({ interview: Object.assign({}, rInterview, { person: e.target.value }) }); },
+                className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
+              }),
+              INTERVIEW_QUESTIONS.map(function(q, qi) {
+                return h('div', { key: q.id },
+                  h('label', { htmlFor: 'ce-iq-' + q.id, className: 'text-xs font-bold text-slate-700 block mb-1' }, (qi + 1) + '. ' + __alloT(q.key, q.text)),
+                  h('textarea', { id: 'ce-iq-' + q.id, value: _str(rInterviewAnswers[q.id]), maxLength: 2000,
+                    onChange: function(e) { var na = Object.assign({}, rInterviewAnswers); na[q.id] = e.target.value; setDraft({ interview: Object.assign({}, rInterview, { answers: na }) }); },
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-y h-16 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
+                  })
+                );
+              })
+            )
+          ),
+
+          // Sources + self-check + save
+          h('div', { className: 'bg-white rounded-xl border border-teal-200 p-4 space-y-3' },
+            h('label', { htmlFor: 'ce-research-sources', className: 'text-xs font-bold text-slate-700 block' }, __alloT('sel.cultureExplorer.research.sources_label', 'My sources: who I asked, or what I read, watched or visited')),
+            h('textarea', { id: 'ce-research-sources', value: _str(rDraft.sources), maxLength: 1000,
+              onChange: function(e) { setDraft({ sources: e.target.value }); },
+              className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-y h-14 outline-none focus:ring-2 focus:ring-teal-300 bg-white text-slate-800'
+            }),
+            h('fieldset', { className: 'space-y-1.5' },
+              h('legend', { className: 'text-xs font-bold text-teal-800 mb-1' }, __alloT('sel.cultureExplorer.research.check_legend', 'Self-check before you save')),
+              RESEARCH_CHECKS.map(function(c) {
+                return h('label', { key: c.id, className: 'flex items-start gap-2 text-sm text-slate-700' },
+                  h('input', { type: 'checkbox', className: 'mt-1', checked: !!rChecks[c.id], onChange: function(e) { var nc = Object.assign({}, rChecks); nc[c.id] = e.target.checked; setDraft({ checks: nc }); } }),
+                  h('span', null, __alloT(c.key, c.text)));
+              })
+            ),
+            h('button', { type: 'button', onClick: saveResearchCard, disabled: !rCanSave, 'aria-describedby': rCanSave ? undefined : 'ce-research-save-hint',
+              className: 'w-full px-4 py-3 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-800 disabled:opacity-40 transition-colors'
+            }, '\uD83D\uDCBE ' + __alloT('sel.cultureExplorer.research.save', 'Save culture card')),
+            !rCanSave && h('p', { id: 'ce-research-save-hint', className: 'text-xs text-slate-600 text-center' }, __alloT('sel.cultureExplorer.research.save_hint', 'Add who the card is about and at least one answer to save.'))
+          ),
+
+          // Saved cards
+          researchCards.length > 0 && h('div', { className: 'space-y-3' },
+            h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('sel.cultureExplorer.research.saved_heading', 'My saved cards') + ' (' + researchCards.length + ')'),
+            rHasDraft && h('p', { id: 'ce-research-edit-hint', className: 'text-xs text-slate-600' }, __alloT('sel.cultureExplorer.research.edit_blocked', 'To edit a saved card, first save the card you are writing.')),
+            researchCards.slice().reverse().map(function(card, ci) {
+              var ans = (card.interview && typeof card.interview.answers === 'object' && card.interview.answers) || {};
+              var hasInterview = INTERVIEW_QUESTIONS.some(function(q) { return _str(ans[q.id]).trim(); });
+              return h('div', { key: _str(card.id) || ('rc' + ci), className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-2' },
+                h('div', { className: 'flex items-start gap-2' },
+                  h('div', { className: 'flex-1' },
+                    h('h5', { className: 'text-sm font-black text-slate-800' }, _str(card.subject)),
+                    h('p', { className: 'text-xs text-slate-600' }, (card.relation === 'researched' ? __alloT('sel.cultureExplorer.research.relation_researched', 'A culture or community I am researching') : __alloT('sel.cultureExplorer.research.relation_own', 'My own family or community')) + (card.savedAt ? ' \u00B7 ' + new Date(card.savedAt).toLocaleDateString() : ''))
+                  ),
+                  h('button', { type: 'button', onClick: function() { editResearchCard(card); }, disabled: rHasDraft, 'aria-describedby': rHasDraft ? 'ce-research-edit-hint' : undefined, className: 'px-3 py-1 rounded-lg border border-teal-600 text-teal-800 text-xs font-bold hover:bg-teal-50 disabled:opacity-40' }, __alloT('sel.cultureExplorer.research.edit', 'Edit'))
+                ),
+                RESEARCH_PROMPTS.filter(function(p) { return _str((card.fields || {})[p.id]).trim(); }).map(function(p) {
+                  return h('p', { key: p.id, className: 'text-xs text-slate-700 whitespace-pre-line' }, h('strong', null, __alloT(p.key, p.text) + ': '), _str(card.fields[p.id]));
+                }),
+                hasInterview && h('div', { className: 'bg-amber-50 rounded-lg p-2 space-y-1' },
+                  h('p', { className: 'text-xs font-bold text-amber-800' }, '\uD83C\uDF99\uFE0F ' + (_str(card.interview.person) || __alloT('sel.cultureExplorer.research.interview_title', 'Family or community interview'))),
+                  INTERVIEW_QUESTIONS.filter(function(q) { return _str(ans[q.id]).trim(); }).map(function(q) {
+                    return h('p', { key: q.id, className: 'text-xs text-slate-700 whitespace-pre-line' }, h('strong', null, __alloT(q.key, q.text) + ' '), '\u201C' + _str(ans[q.id]) + '\u201D');
+                  })
+                ),
+                _str(card.sources).trim() && h('p', { className: 'text-xs text-slate-600 whitespace-pre-line' }, h('strong', null, __alloT('sel.cultureExplorer.research.sources_label', 'My sources: who I asked, or what I read, watched or visited') + ': '), _str(card.sources)),
+                h('ul', { className: 'text-xs text-slate-600' },
+                  RESEARCH_CHECKS.map(function(c) {
+                    return h('li', { key: c.id }, ((card.checks || {})[c.id] ? '\u2713 ' : '\u25CB ') + __alloT(c.key, c.text));
+                  })
+                )
+              );
+            })
+          )
+        ),
+
         // ═══ WORLD MAP EXPLORER ═══
         tab === 'worldmap' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF0E World Map Explorer'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Select a region to discover cultural highlights from around the world')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF0E World Map Explorer'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Select a region to discover cultural highlights from around the world')
           ),
 
           // Region selector grid
@@ -1130,7 +1571,7 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'All Regions', onClick: function() { upd('mapRegion', null); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Regions'),
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-4 text-center' },
               h('div', { className: 'text-3xl mb-1' }, WORLD_MAP_DATA[mapRegion].emoji),
-              h('h3', { className: 'text-lg font-black text-slate-100' }, WORLD_MAP_DATA[mapRegion].label),
+              h('h3', { className: 'text-lg font-black text-slate-800' }, WORLD_MAP_DATA[mapRegion].label),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, WORLD_MAP_DATA[mapRegion].highlights.length + ' cultural highlights to explore')
             ),
 
@@ -1193,8 +1634,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL RECIPES EXPLORER ═══
         tab === 'recipes' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF72 Cultural Recipes Explorer'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Food is a universal cultural connector. Discover dishes from around the world!')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF72 Cultural Recipes Explorer'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Food is a universal cultural connector. Discover dishes from around the world!')
           ),
 
           // Want-to-try tracker
@@ -1217,7 +1658,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-xs text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
                 ),
                 wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
-                h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1254,8 +1695,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL MUSIC & DANCE ═══
         tab === 'music' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFB5 Music & Dance Traditions'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Every culture has rhythm. Explore artistic traditions from around the world.')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFB5 Music & Dance Traditions'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Every culture has rhythm. Explore artistic traditions from around the world.')
           ),
 
           // Progress
@@ -1281,7 +1722,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-xs text-slate-600' }, trad.origin)
                 ),
                 explored && h('span', { className: 'text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
-                h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1337,8 +1778,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL STORYTELLING ═══
         tab === 'stories' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCDA Cultural Storytelling'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Traditional stories carry the wisdom of cultures across generations')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDA Cultural Storytelling'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Traditional stories carry the wisdom of cultures across generations')
           ),
 
           // Progress
@@ -1370,7 +1811,7 @@ window.SelHub = window.SelHub || {
                     h('div', {  className: 'text-xs text-slate-600' }, story.origin)
                   ),
                   isRead && h('span', {  className: 'text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
-                  h('span', {  className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                  h('span', {  className: 'text-slate-600 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
                 ),
 
                 // Expanded content
@@ -1432,8 +1873,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL CALENDAR ═══
         tab === 'calendar' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCC5 Cultural Calendar'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Major celebrations from around the world, month by month')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 Cultural Calendar'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Major celebrations from around the world, month by month')
           ),
 
           // Progress
@@ -1470,7 +1911,7 @@ window.SelHub = window.SelHub || {
               className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Months'),
 
             h('div', {  className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
-              h('h4', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
+              h('h4', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
               h('p', { className: 'text-xs text-slate-600' }, CULTURAL_CALENDAR[calendarMonth].celebrations.length + ' celebrations from around the world')
             ),
 
@@ -1485,7 +1926,7 @@ window.SelHub = window.SelHub || {
                     h('div', {  className: 'text-sm font-bold text-slate-800' }, event.name),
                     h('div', {  className: 'text-xs text-slate-600' }, event.origin)
                   ),
-                  h('span', {  className: 'text-slate-300 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
+                  h('span', {  className: 'text-slate-600 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
                 ),
                 isEventExpanded && h('div', {  className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
@@ -1501,8 +1942,8 @@ window.SelHub = window.SelHub || {
         // ═══ LANGUAGE CORNER ═══
         tab === 'language' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDDE3\uFE0F Language Corner'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Learn basic greetings in ' + LANGUAGE_DATA.length + ' languages')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDDE3\uFE0F Language Corner'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Learn basic greetings in ' + LANGUAGE_DATA.length + ' languages')
           ),
 
           // Greeting cards grid
@@ -1587,8 +2028,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL COMPARISON ═══
         tab === 'compare' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDD0D Cultural Comparison'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Compare two cultures side by side to discover similarities and differences')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDD0D Cultural Comparison'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Compare two cultures side by side to discover similarities and differences')
           ),
 
           // Culture inputs
@@ -1706,7 +2147,7 @@ window.SelHub = window.SelHub || {
           // Culture header + back
           h('div', {  className: 'flex items-center gap-2' },
             h('button', { 'aria-label': 'All Cultures', onClick: function() { upd('tab', 'choose'); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Cultures'),
-            h('h3', { id: 'culture-explore-title', className: 'text-lg font-black text-slate-100' }, selectedCulture || 'Select a culture')
+            h('h3', { id: 'culture-explore-title', className: 'text-lg font-black text-slate-800' }, selectedCulture || 'Select a culture')
           ),
 
           // Aspect selector
@@ -1732,7 +2173,7 @@ window.SelHub = window.SelHub || {
             // Greeting
             greeting && h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
               h('div', {  className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
-              h('p', { className: 'text-lg font-black text-slate-100' }, greeting),
+              h('p', { className: 'text-lg font-black text-slate-800' }, greeting),
               callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
             ),
 
@@ -1820,8 +2261,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURE QUIZ ═══
         tab === 'quiz' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC6 Culture Quiz'),
-            h('p', { className: 'text-sm text-slate-300' }, '10 questions about cultures around the world (' + gradeBand + ' level)')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC6 Culture Quiz'),
+            h('p', { className: 'text-sm text-slate-600' }, '10 questions about cultures around the world (' + gradeBand + ' level)')
           ),
 
           // Quiz not started
@@ -1841,7 +2282,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'progressbar', 'aria-label': 'Culture quiz progress', 'aria-valuemin': 1, 'aria-valuemax': quizQuestions.length, 'aria-valuenow': quizIndex + 1, 'aria-valuetext': 'Question ' + (quizIndex + 1) + ' of ' + quizQuestions.length, className: 'flex-1 bg-slate-200 rounded-full h-2' },
                 h('div', { className: 'bg-cyan-600 h-2 rounded-full transition-all', style: { width: ((quizIndex + 1) / quizQuestions.length * 100) + '%' } })
               ),
-              h('span', { className: 'text-xs font-bold text-slate-300' }, (quizIndex + 1) + '/' + quizQuestions.length)
+              h('span', { className: 'text-xs font-bold text-slate-600' }, (quizIndex + 1) + '/' + quizQuestions.length)
             ),
 
             // Score
@@ -1891,9 +2332,9 @@ window.SelHub = window.SelHub || {
           // Quiz done
           quizActive && quizDone && h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Culture quiz results', className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
             h('div', {  className: 'text-5xl' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\u2B50' : '\uD83D\uDCDA'),
-            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Quiz Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
             h('p', { className: 'text-3xl font-black ' + (quizScore >= 8 ? 'text-green-600' : quizScore >= 5 ? 'text-amber-600' : 'text-slate-600') }, quizScore + '/10'),
-            h('p', { className: 'text-sm text-slate-300' },
+            h('p', { className: 'text-sm text-slate-600' },
               quizScore >= 9 ? 'Amazing! You are a true culture expert!' :
               quizScore >= 7 ? 'Great job! You know a lot about world cultures!' :
               quizScore >= 5 ? 'Good effort! Keep exploring to learn more!' :
@@ -1903,7 +2344,7 @@ window.SelHub = window.SelHub || {
               h('button', { onClick: startQuiz,
                 className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, '\uD83D\uDD04 Try Again'),
-              h('button', { onClick: function() { upd('tab', 'choose'); },
+              h('button', { onClick: function() { upd('tab', _ceAiOn ? 'choose' : 'research'); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors'
               }, '\uD83C\uDF0D Explore More Cultures')
             )
@@ -1913,8 +2354,8 @@ window.SelHub = window.SelHub || {
         // ═══ JOURNAL (enhanced with guided prompts) ═══
         tab === 'journal' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCD3 Culture Journal'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Record what you have learned and what it means to you')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCD3 Culture Journal'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Record what you have learned and what it means to you')
           ),
 
           // Stats
@@ -1977,7 +2418,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Explored cultures list
-          exploredCultures.length > 0 && h('div', {  className: 'bg-white rounded-xl border border-slate-400 p-4' },
+          _ceAiOn && exploredCultures.length > 0 && h('div', {  className: 'bg-white rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, 'Cultures You\'ve Explored:'),
             h('div', {  className: 'flex flex-wrap gap-2' },
               exploredCultures.map(function(c) {
@@ -2022,25 +2463,25 @@ window.SelHub = window.SelHub || {
         // ═══ BADGES ═══
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Badges'),
-            h('p', { className: 'text-sm text-slate-300' }, 'Earn badges by exploring cultures, learning languages, and reflecting')
+            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC5 Badges'),
+            h('p', { className: 'text-sm text-slate-600' }, 'Earn badges by exploring cultures, learning languages, and reflecting')
           ),
 
           h('div', { className: 'text-center mb-3' },
-            h('span', { className: 'text-2xl font-black text-cyan-600' }, badgesEarned.length),
-            h('span', { className: 'text-sm text-slate-300 ml-1' }, '/ ' + BADGES.length + ' badges earned')
+            h('span', { className: 'text-2xl font-black text-cyan-600' }, shownEarnedCount),
+            h('span', { className: 'text-sm text-slate-600 ml-1' }, '/ ' + shownBadges.length + ' badges earned')
           ),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
-            BADGES.map(function(badge) {
+            shownBadges.map(function(badge) {
               var earned = badgesEarned.indexOf(badge.id) >= 0;
               return h('div', { key: badge.id, className: 'bg-white rounded-xl border-2 p-4 flex items-center gap-3 transition-all ' +
                   (earned ? 'border-amber-300 bg-amber-50' : 'border-dashed border-slate-400')
                 },
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-600') }, badge.label),
-                  h('div', { className: 'text-xs ' + (earned ? 'text-amber-700' : 'text-slate-600') }, badge.desc)
+                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-600') }, _badgeLabel(badge)),
+                  h('div', { className: 'text-xs ' + (earned ? 'text-amber-700' : 'text-slate-600') }, _badgeDesc(badge))
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );
@@ -2048,15 +2489,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Motivational message
-          badgesEarned.length < BADGES.length && h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4 text-center' },
+          shownEarnedCount < shownBadges.length && h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4 text-center' },
             h('p', { className: 'text-xs text-cyan-700' },
-              badgesEarned.length === 0 ? 'Start exploring to earn your first badge!' :
-              badgesEarned.length < 5 ? 'Great progress! Keep exploring to earn more badges.' :
+              shownEarnedCount === 0 ? 'Start exploring to earn your first badge!' :
+              shownEarnedCount < 5 ? 'Great progress! Keep exploring to earn more badges.' :
               'Almost there! Just a few more badges to collect!'
             )
           ),
 
-          badgesEarned.length >= BADGES.length && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 text-center' },
+          shownEarnedCount >= shownBadges.length && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 text-center' },
             h('div', { className: 'text-4xl mb-2' }, '\uD83C\uDF1F'),
             h('h4', { className: 'text-lg font-black text-amber-700' }, 'All Badges Earned!'),
             h('p', { className: 'text-sm text-amber-700' }, 'You are a true global explorer and cultural ambassador!')

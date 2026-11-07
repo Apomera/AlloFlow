@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {GlHarness} from './helpers/stem_gl_harness';
 test.use({video:'off'});
-const probes=`window.AlloPostFXEnabled=false;(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const renderer=new Original({...options,preserveDrawingBuffer:true}),render=renderer.render.bind(renderer);window.huntRenderCount=0;renderer.render=function(scene,camera){window.huntScene=scene;window.huntRenderCount++;return render(scene,camera);};return renderer;};})();`;
+const probes=`window.AlloPostFXEnabled=false;(()=>{const Original=THREE.WebGLRenderer;THREE.WebGLRenderer=function(options){const renderer=new Original({...options,preserveDrawingBuffer:true}),render=renderer.render.bind(renderer);window.huntRenderCount=0;renderer.render=function(scene,camera){window.huntScene=scene;window.huntRenderCount++;if(!window.skipFlightRender)return render(scene,camera);};return renderer;};})();`;
 test.describe('Raptor evasion mission',()=>{
   test.describe.configure({mode:'serial',timeout:240000});
   const harness=new GlHarness({toolFile:'stem_lab/stem_tool_raptorhunt.js',toolId:'raptorHunt',width:880,height:620,appStyles:true,probes});
@@ -31,6 +31,22 @@ test.describe('Raptor evasion mission',()=>{
 
 
 
+  const chase=(c:any,w:any,evade:boolean,seconds:number)=>{let min=999,rested=false,caught=false;
+      for(let i=0;i<seconds*25;i++){const s=c._rhSnapshot();min=Math.min(min,s.hunterDistance);rested=rested||s.hunterResting;if(s.missionOutcome==='failed'){caught=true;break;}
+        c._rhCommand('hold',{key:'d',pressed:evade&&s.hunterLunging});w.stepHunt(40);}
+      c._rhCommand('hold',{key:'d',pressed:false});return {min,rested,caught};};
+  test('flying straight gets you caught',async({page})=>{
+    const result=await page.locator('[data-raptor-canvas]').evaluate((c:any,src:string)=>{const w=window as any;w.skipFlightRender=true;const out=(0,eval)('('+src+')')(c,w,false,120);w.skipFlightRender=false;w.stepHunt(25);return out;},chase.toString());
+    expect(result.caught).toBe(true);
+    await expect(page.getByRole('dialog',{name:'Mission ended',exact:true})).toContainText('caught you');
+  });
+  test('turning hard keeps the goshawk off, it breaks off, and the cue says so',async({page})=>{
+    const result=await page.locator('[data-raptor-canvas]').evaluate((c:any,src:string)=>{const w=window as any;w.skipFlightRender=true;const out=(0,eval)('('+src+')')(c,w,true,70);w.skipFlightRender=false;w.stepHunt(25);return out;},chase.toString());
+    expect(result.caught).toBe(false);expect(result.min).toBeGreaterThan(6);expect(result.rested).toBe(true);
+    await expect(page.locator('.rh-hunter-cue')).toBeVisible();
+    expect(await page.evaluate(()=>{const scene=(window as any).huntScene;return !!scene.getObjectByName('mission-pursuing-goshawk');})).toBe(true);
+    expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+  });
   test('keeps the survival objective active after two catches and preserves its countdown while paused',async({page})=>{
     const panel=page.locator('[data-raptor-mission-progress]'),route=panel.locator('[data-raptor-mission-route]');
     for(let i=0;i<2;i++){
@@ -46,8 +62,8 @@ test.describe('Raptor evasion mission',()=>{
     await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:HTMLCanvasElement)=>c.width)).toBeLessThan(420);await page.evaluate(()=>{(window as any).stepHunt(25);});
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/evasion-survival-countdown.png',timeout:90000});
     await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any,p=c._rhSnapshot().raptorPosition;w.huntScene.getObjectByName('mission-pursuing-goshawk').position.set(p.x+60,p.y,p.z);w.advanceHunt(150);});
-    await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','evade');await expect(panel).toContainText('change altitude now');
-    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any,p=c._rhSnapshot().raptorPosition;w.huntScene.getObjectByName('mission-pursuing-goshawk').position.set(p.x+20,p.y,p.z);w.advanceHunt(150);});
+    await expect(route.locator('[aria-current="step"]')).toHaveAttribute('data-route-key','evade');await expect(panel).toContainText('turn hard');
+    await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any,p=c._rhSnapshot().raptorPosition;w.huntScene.getObjectByName('mission-pursuing-goshawk').position.set(p.x+3,p.y,p.z);w.advanceHunt(50);});
     await expect(page.getByRole('dialog',{name:'Mission ended',exact:true})).toBeVisible();await expect(route).toHaveAttribute('data-route-outcome','failed');
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });

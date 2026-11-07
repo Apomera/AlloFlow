@@ -93,7 +93,12 @@ window.StemLab = window.StemLab || {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so "Explain at my level" hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -1675,7 +1680,7 @@ const d = labToolData.wave;
 
             } catch (e) {
 
-              addToast(t('stem.wave.u26a0_audio_not_supported_in'), 'error');
+              addToast(t('stem.wave.u26a0_audio_not_supported_in', '⚠ Audio not supported in this browser'), 'error');
 
             }
 
@@ -2143,7 +2148,7 @@ const d = labToolData.wave;
 
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
 
-                React.createElement("button", { key: wt, onClick: () => { upd('waveType', wt); syncOsc({ type: wt }); },
+                React.createElement("button", { key: wt, 'aria-pressed': (d.waveType || 'sine') === wt, onClick: () => { upd('waveType', wt); syncOsc({ type: wt }); },
 
                   className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]')
 
@@ -2161,7 +2166,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
+                return React.createElement("button", { key: h, 'aria-pressed': (d.harmonic || 1) === h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'transition-colors bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 active:scale-[0.97]') }, h);
 
               }),
 
@@ -2640,7 +2645,7 @@ const d = labToolData.wave;
 
                   upd('matchXpClaimed', false);
 
-                  addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed'), 'info');
+                  addToast(t('stem.wave.ud83cudfaf_match_the_yellow_dashed', '🎯 Match the yellow dashed wave!'), 'info');
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.matchTarget && !d.matchTarget.isEquation ? 'bg-amber-100 text-amber-700' : 'bg-amber-700 text-white') + " transition-all"
 
@@ -2763,6 +2768,7 @@ const d = labToolData.wave;
 
             // ── AI Wave Tutor (reading-level aware) ──
             (function () {
+              if (typeof callGemini !== 'function') return null;
               var aiLevel = d.aiLevel || 'grade5';
               var aiText = typeof d.aiExplain === 'string' ? d.aiExplain : '';
               var aiLoading = !!d.aiLoading;
@@ -3040,6 +3046,7 @@ const d = labToolData.wave;
           var active = expSection === s.id;
           return React.createElement('button', {
             key: s.id,
+            'aria-pressed': active,
             onClick: function() { setExp({ expSection: active ? null : s.id }); },
             className: 'px-2 py-1.5 rounded-md text-[0.6875rem] font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
           }, s.icon + ' ' + s.label);

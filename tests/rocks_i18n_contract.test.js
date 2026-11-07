@@ -44,8 +44,10 @@ function bareKeys() {
 }
 
 describe('rocks i18n call-style contract', () => {
-  it('finds bare t() calls at all — otherwise the check below is vacuous', () => {
-    expect(bareKeys().size).toBeGreaterThan(20);
+  // Since 2026-11-07 every rocks call carries its English, so there are no bare calls left to resolve.
+  // The synthetic case below still proves the check would catch one.
+  it('has no bare t() calls left', () => {
+    expect([...bareKeys()]).toEqual([]);
   });
 
   it('every bare t() key resolves in ui_strings.js, so none can render "undefined"', () => {

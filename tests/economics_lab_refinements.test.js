@@ -12,9 +12,9 @@ function loadEconomicsLab() {
   return loadTool(FILE, TOOL_ID);
 }
 
-function renderEconomicsLab(state) {
+function renderEconomicsLab(state, overrides) {
   loadEconomicsLab();
-  return renderTool(TOOL_ID, state || {});
+  return renderTool(TOOL_ID, state || {}, overrides);
 }
 
 afterEach(() => {
@@ -256,10 +256,10 @@ describe('Economics Lab refinements', () => {
   });
 
   it('offers tab-aware tutor suggestions', () => {
-    const macroHtml = renderEconomicsLab({ econTab: 'macro', showAdvisor: true });
+    const macroHtml = renderEconomicsLab({ econTab: 'macro', showAdvisor: true }, { callGemini: () => Promise.resolve('') });
     expect(macroHtml).toContain('dual mandate');
 
-    const sdHtml = renderEconomicsLab({ econTab: 'supplyDemand', showAdvisor: true });
+    const sdHtml = renderEconomicsLab({ econTab: 'supplyDemand', showAdvisor: true }, { callGemini: () => Promise.resolve('') });
     expect(sdHtml).toContain('What is deadweight loss?');
     expect(sdHtml).not.toContain('dual mandate');
   });

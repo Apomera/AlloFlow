@@ -239,6 +239,30 @@
     return Object.assign({}, value, { characters: characters, lines: lines, title: typeof value.title === 'string' ? value.title : '', setting: typeof value.setting === 'string' ? value.setting : '', theme: typeof value.theme === 'string' ? value.theme : '', literaryElements: Array.isArray(value.literaryElements) ? value.literaryElements.filter(function (item) { return typeof item === 'string'; }) : [] });
   }
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
+  // Script a teacher ships inside litlab-config so learners with no AI can perform it.
+  // Plain fields only; large portraits are dropped to keep the resource small.
+  function shippableLitLabScript(value) {
+    if (!value) return null;
+    try {
+      var safe = normalizeLitLabScript(value);
+      return {
+        title: safe.title, setting: safe.setting, theme: safe.theme, literaryElements: safe.literaryElements.slice(0, 20),
+        characters: safe.characters.slice(0, 40).map(function (c) {
+          return { id: c.id, name: c.name, description: c.description, color: c.color, voice: c.voice, portrait: typeof c.portrait === 'string' && c.portrait.length <= 300000 ? c.portrait : null };
+        }),
+        lines: safe.lines.slice(0, 2000).map(function (l) { return { id: l.id, speaker: l.speaker, text: l.text, type: l.type }; })
+      };
+    } catch (_) { return null; }
+  }
+
   function normalizeLitLabFeedback(value) {
     if (!value || ['developing', 'proficient', 'exemplary'].indexOf(value.overallRating) === -1) throw new Error('Incomplete feedback');
     var out = { overallRating: value.overallRating };
@@ -323,6 +347,11 @@
     // Resource-history integration (teacher-scaffold path; mirrors StoryForge / PoetTree)
     var initialConfig = props.initialConfig || null;
     var onSaveConfig = props.onSaveConfig || null;        // non-null => teacher mode
+    // Learner with no usable text AI (null or blocked fn): hide script creation. Teacher view unchanged.
+    var llStudentAiOff = !onSaveConfig && !_aiUsable('text', onCallGemini);
+    // Teacher with no usable AI: script/story creation shows the AI setup doorway instead.
+    var llTeacherAiOff = !!onSaveConfig && !_aiUsable('text', onCallGemini);
+    var llAiDoor = function () { return typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' ? e(window.AlloAiSetupNotice, { t: props.t, kind: 'text' }) : null; };
     var onSaveSubmission = props.onSaveSubmission || null; // non-null => save to portfolio enabled
 
     var e = React.createElement;
@@ -496,6 +525,8 @@
     // Teacher-scaffold field (saved into the resource-history config payload).
     // teacherPrompt: a focus-note / performance instructions the teacher writes for the assignment.
     var _teacherPrompt = useState(''); var teacherPrompt = _teacherPrompt[0]; var setTeacherPrompt = _teacherPrompt[1];
+    // Script shipped in the assignment config (teacher made it once with AI).
+    var _configScript = useState(null); var configScript = _configScript[0]; var setConfigScript = _configScript[1];
 
     // Hydrate from a saved teacher assignment (initialConfig) the first time it shows up.
     var _hydratedFromConfig = useRef(false);
@@ -514,6 +545,11 @@
         if (initialConfig.genLength) setGenLength(initialConfig.genLength);
         if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
         if (initialConfig.inputMode) setInputMode(initialConfig.inputMode);
+        var shipped = shippableLitLabScript(initialConfig.script);
+        if (shipped) {
+          setConfigScript(shipped);
+          loadScript({ script: shipped, title: initialConfig.storyTitle || shipped.title, sourceText: typeof initialConfig.sourceText === 'string' ? initialConfig.sourceText : '', storyLanguage: initialConfig.storyLanguage });
+        }
         if (addToast) addToast(tr('Assignment loaded!'), 'success');
       } catch (err) { console.warn('[LitLab] initialConfig hydration failed:', err && err.message); }
     }, [initialConfig]);
@@ -1163,6 +1199,8 @@
         genGenre: genGenre,
         genLength: genLength,
         genGradeLevel: genGradeLevel,
+        script: shippableLitLabScript(script),
+        storyLanguage: storyLanguage,
         savedAt: new Date().toISOString()
       };
       try {
@@ -1171,7 +1209,7 @@
         reportSave(tr('LitLab assignment saved!'), false);
       } catch (_) { reportSave(tr('The assignment could not be saved. Your setup is still here; try again.'), true); }
       finally { saveInFlightRef.current = false; setSaving(false); }
-    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, genPrompt, genCharCount, customWordCount, addToast]);
+    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, genPrompt, genCharCount, customWordCount, script, storyLanguage, addToast]);
 
     // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
     // 'litlab-submission' resource for portfolio review.
@@ -1907,15 +1945,15 @@
             onSaveSubmission && e('button', { type: 'button', onClick: saveSubmissionToPortfolio, disabled: saving, 'aria-busy': saving, style: S.btn('#fff', '#5b21b6', saving) }, saving ? tr('Saving…') : tr('Save to Portfolio'))
           ),
 
-          script && phase !== 'input' && e('section', { 'aria-label': tr('Saved narration'), style: { padding: '12px 14px', border: '1px solid #ddd6fe', borderRadius: '12px', marginBottom: '16px' } },
+          script && phase !== 'input' && !(llStudentAiOff && !narrationSummary.ready) && e('section', { 'aria-label': tr('Saved narration'), style: { padding: '12px 14px', border: '1px solid #ddd6fe', borderRadius: '12px', marginBottom: '16px' } },
             e('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px' } },
               e('strong', { style: { flex: '1 1 190px', fontSize: '13px' } }, tr('{ready} of {total} narration lines ready', { ready: narrationSummary.ready, total: narrationSummary.total })),
               e('label', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '12px' } }, tr('Story language'),
                 e('input', { 'aria-label': tr('Story language'), value: storyLanguage, maxLength: 80, disabled: preparing || isPlaying, onChange: function (event) { cancelSpeech(); setStoryLanguage(event.target.value); }, style: { width: '140px', maxWidth: '100%', border: '1px solid #c4b5fd', borderRadius: '8px', padding: '6px 8px' } })),
-              e('button', { type: 'button', disabled: preparing || isPlaying, onClick: prepareNarration, style: S.btn(PURPLE, '#fff', preparing || isPlaying) }, tr('Prepare narration')),
+              !llStudentAiOff && e('button', { type: 'button', disabled: preparing || isPlaying, onClick: prepareNarration, style: S.btn(PURPLE, '#fff', preparing || isPlaying) }, tr('Prepare narration')),
               preparing && e('button', { type: 'button', onClick: function () { cancelPreparation(); setNarrationNotice(tr('Preparation cancelled. Save progress to keep completed clips.')); }, style: S.btn('#fff', '#5b21b6', false) }, tr('Cancel preparation'))
             ),
-            e('p', { style: { fontSize: '12px', color: '#475569', margin: '8px 0 0', lineHeight: 1.5 } }, narrationDirty ? tr('Narration has unsaved changes. Save progress to keep them after closing.') : tr('Prepare narration saves missing or outdated lines with this script. Microphone recordings are downloaded separately.')),
+            !llStudentAiOff && e('p', { style: { fontSize: '12px', color: '#475569', margin: '8px 0 0', lineHeight: 1.5 } }, narrationDirty ? tr('Narration has unsaved changes. Save progress to keep them after closing.') : tr('Prepare narration saves missing or outdated lines with this script. Microphone recordings are downloaded separately.')),
             narrationSummary.stale > 0 && e('p', { style: { fontSize: '12px', color: '#9a3412' } }, tr('{count} lines need updated narration for the current voice or language.', { count: narrationSummary.stale })),
             narrationNotice && e('p', { role: 'status', style: { fontSize: '12px', lineHeight: 1.5, marginBottom: 0 } }, narrationNotice)
           ),
@@ -1971,18 +2009,21 @@
                 rows: 3,
                 style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
               }),
+              e('p', { 'data-litlab-config-script': script ? 'ready' : 'none', style: { fontSize: '12px', color: '#1e3a8a', margin: '10px 0 0', lineHeight: 1.5 } },
+                script ? tr('Script included: {c} characters, {l} lines. Students can perform it without AI.', { c: script.characters.length, l: script.lines.length })
+                  : tr('No script yet. Create the script first so it is saved with the assignment; students without AI cannot make one.')),
               e('button', {
                 onClick: saveAsAssignment,
-                disabled: saving || (!sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim()),
+                disabled: saving || (!sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() && !script),
                 'aria-busy': saving,
                 'aria-label': tr('Save this LitLab setup as an assignment in My Resources'),
-                style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
+                style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() && !script ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() && !script ? 'not-allowed' : 'pointer' }
               }, saving ? tr('Saving…') : tr('💾 Save as Assignment'))
             ),
 
             // Mode selector
             e('div', { className: 'litlab-mode-picker', role: 'group', 'aria-label': tr('Story source'), style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
-              [['paste', tr('📋 Paste Text')], ['generate', tr('✨ AI Generate')]].map(function (pair) {
+              (llStudentAiOff ? [['paste', tr('📋 Paste Text')]] : [['paste', tr('📋 Paste Text')], ['generate', tr('✨ AI Generate')]]).map(function (pair) {
                 return e('button', { key: pair[0], 'aria-pressed': inputMode === pair[0], disabled: isLoading, onClick: function () { setInputMode(pair[0]); },
                   style: Object.assign({}, S.btn(inputMode === pair[0] ? PURPLE : '#f1f5f9', inputMode === pair[0] ? '#fff' : '#374151', false), { padding: '10px 20px' })
                 }, pair[1]);
@@ -1994,7 +2035,7 @@
               e('input', { id: 'litlab-story-title', value: storyTitle, onChange: function (ev) { setStoryTitle(ev.target.value); }, placeholder: tr('Give your performance a title'), style: S.input })
             ),
             // Paste mode
-            inputMode === 'paste' && e('div', { style: S.card },
+            (inputMode === 'paste' || llStudentAiOff) && e('div', { style: S.card },
               generationDraft && sourceText === generationDraft && e('p', { role: 'note', style: { fontSize: '13px', color: '#92400e', background: '#fffbeb', padding: '10px', borderRadius: '8px', lineHeight: 1.5 } }, tr('This is a partial draft. Review it and add any missing scenes or an ending before creating your script.')),
               e('label', { htmlFor: 'litlab-story-text', style: { display: 'block', fontSize: '14px', fontWeight: 750, marginBottom: '10px' } }, tr('Your story or excerpt')),
               e('textarea', { id: 'litlab-story-text', 'aria-describedby': 'litlab-source-help', value: sourceText, onChange: function (ev) { setSourceText(ev.target.value); },
@@ -2032,7 +2073,10 @@
               ),
               sourceText.length > 12000 && e('p', { role: 'note', style: { fontSize: '12px', lineHeight: 1.5, color: '#92400e', background: '#fffbeb', padding: '10px', borderRadius: '8px' } }, tr('Only the first 12,000 characters will be used to create the script. Shorten your excerpt to include the ending.')),
               e('div', { style: { display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' } },
-                e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
+                configScript && !onSaveConfig && e('button', { type: 'button', 'data-litlab-open-config-script': 'true', disabled: isLoading, onClick: function () { loadScript({ script: configScript, title: storyTitle || configScript.title, sourceText: sourceText, storyLanguage: storyLanguage }); }, style: S.btn(PURPLE, '#fff', isLoading) }, tr('🎭 Open the script from your teacher')),
+                llTeacherAiOff && llAiDoor(),
+                llStudentAiOff && !configScript && savedScripts.length === 0 && e('p', { role: 'note', 'data-litlab-ai-off': 'true', style: { flexBasis: '100%', fontSize: '13px', lineHeight: 1.5, color: '#374151', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', margin: 0 } }, tr('Making a script needs AI, which is not available here. Your teacher can prepare the script for you.')),
+                !llStudentAiOff && !llTeacherAiOff && e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
                   'aria-busy': isLoading ? 'true' : 'false',
                   'aria-label': isLoading ? tr('Creating script, please wait') : tr('Create Script from text'),
@@ -2073,7 +2117,7 @@
             ),
 
             // Generate mode
-            inputMode === 'generate' && e('div', { style: S.card },
+            inputMode === 'generate' && !llStudentAiOff && e('div', { style: S.card },
               e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'block' } }, tr('Genre')),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', marginBottom: '12px' } },
                 GENRES.map(function (g) {
@@ -2130,7 +2174,7 @@
                   'aria-label': tr('Custom word count'), 'aria-invalid': !customWordCountValid, 'aria-describedby': 'litlab-word-count-help' }),
                 e('span', { id: 'litlab-word-count-help', style: { fontSize: '12px', color: customWordCountValid ? '#64748b' : '#b91c1c' } }, tr('Enter a whole number from 50 to 5000 words.'))
               ),
-              e('button', { onClick: generateStory, disabled: isLoading || (genLength === 'custom' && !customWordCountValid),
+              llTeacherAiOff ? llAiDoor() : e('button', { onClick: generateStory, disabled: isLoading || (genLength === 'custom' && !customWordCountValid),
                 'aria-busy': isLoading ? 'true' : 'false',
                 'aria-label': isLoading ? tr('Generating story, please wait') : tr('Generate Story with AI'),
                 style: S.btn(PURPLE, '#fff', isLoading || (genLength === 'custom' && !customWordCountValid)) }, isLoading ? '⏳ ' + loadingMsg : tr('✨ Generate Story')),

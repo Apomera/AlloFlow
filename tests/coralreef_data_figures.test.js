@@ -75,7 +75,10 @@ describe('belt map', () => {
 });
 
 describe('results figures', () => {
-  const s = () => survey('reserve', { wrongEvery: 7, blank: [12, 30] });
+  // A finished survey with a wrong record every few points (the key is shown).
+  const s = () => survey('reserve', { wrongEvery: 7 });
+  // Two points left blank: the key stays hidden until all 40 are recorded.
+  const partial = () => survey('reserve', { wrongEvery: 7, blank: [12, 30] });
   const render = (st, theme) => parse(renderTool('coralReef', { coralReef: { section: 'survey', surveySiteId: 'reserve', surveySeed: st.L.seed, records: st.records, fishCounts: st.fishCounts, surveyStage: 'results' } }, { theme }));
 
   it('draws the tape strip: 40 cells a row with the right codes, and one mark per mismatch in the list', () => {
@@ -117,9 +120,17 @@ describe('results figures', () => {
       expect(total).toBeCloseTo(100, 1);
       expect(segs.filter((g) => g.getAttribute('data-cat') !== 'missing').map((g) => g.getAttribute('data-cat'))).toEqual(X.CATEGORY_IDS.filter((id) => cover[id] > 0));
     });
-    expect(bars[0].querySelector('[data-cat="missing"]'), 'two blank points show as not recorded').toBeTruthy();
     // The table stays as the accessible data.
     expect(doc.querySelectorAll('table')[0].querySelectorAll('tbody tr').length).toBe(7);
+  });
+
+  it('an unfinished survey draws only its own bar, with the blanks as not recorded, and no key', () => {
+    const st = partial(), doc = render(st, 'light');
+    const bars = [...doc.querySelectorAll('.crb-bar[data-bar]')];
+    expect(bars.map((b) => b.getAttribute('data-bar'))).toEqual(['yours']);
+    expect(bars[0].querySelector('[data-cat="missing"]')).toBeTruthy();
+    expect(doc.querySelectorAll('[data-transect-strip] [data-strip="key"]')).toHaveLength(0);
+    expect([...doc.querySelectorAll('[data-transect-strip] button')].map((b) => +b.getAttribute('data-point'))).toEqual([12, 30]);
   });
 
   it('a strip mismatch opens that point', async () => {

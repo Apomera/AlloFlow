@@ -28,7 +28,7 @@ const makeHost = path => {
       const [wsPreloadedWords, setWords] = React.useState(initialWords);
       const generatedContent = {id:resourceId}, isWordSoundsMode = true, wsActivitySequence = ['syllable_counting'];
       const wsDispatch = action => setWords(action.value);
-      const setIsWordSoundsMode = () => {}, setWordSoundsActivity = () => {}, setWordSoundsAutoReview = () => {}, setActiveView = () => {};
+      const setIsWordSoundsMode = () => {}, setWsActivitySequence = () => {}, setWordSoundsActivity = () => {}, setWordSoundsAutoReview = () => {}, setActiveView = () => {};
       ${source.slice(start, end)}
       const onShowReview = ${callback};
       const runtimeUpdate = ${runtimeSetter[1]};

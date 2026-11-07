@@ -10,7 +10,7 @@
 // - A reply with no analysis in it (for example []) replaced the saved analysis with an empty card.
 // - A dismissed alert never came back.
 // - The hub's recent sessions divided by the planned intervals and showed 0 for a multi-counter count.
-import { beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -51,7 +51,7 @@ beforeEach(() => {
   localStorage.clear(); sessionStorage.clear(); delete window.__alloFirebase; toasts = []; replies = [];
   localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'ai-a', name: 'Student A' }]));
 });
-afterEach(unmount);
+afterEach(async () => { vi.useRealTimers(); await unmount(); });
 const toolCard = id => host.querySelector('article[aria-labelledby="bl-tool-' + id + '-title"]');
 
 describe('an analysis of data that has changed since', () => {
@@ -128,6 +128,8 @@ describe('the hub analysis card', () => {
 describe('alerts', () => {
   const consult = () => [...host.querySelectorAll('button[aria-label="Close"]')].find(el => el.parentElement.textContent.includes('Consider consulting'));
   it('a dismissal covers the alert as it was, and it returns with a new severe incident', async () => {
+    // The alert only counts recent incidents; without a fixed date the fixture aged out and the alert never showed.
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date(Date.UTC(2026, 8, 23, 12)) });
     seed({ dismissedAlerts: ['consult_bcba|e2'] });                          // e2: the newest severe entry
     await mount(); await click('All tools');
     expect(consult()).toBeFalsy();

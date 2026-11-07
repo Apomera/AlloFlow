@@ -33,6 +33,13 @@
   var DA_MOUNTED_WORKSPACES = new WeakMap();
   var DA_REVIEWED_PROVIDERS = new WeakSet();
   var DA_GUARDED_EXPORT_CALLBACKS = new WeakSet();
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
   function daRequireWorkspace(session) {
     var api = window.AlloModules && window.AlloModules.SensitiveWorkspace;
     if (!api || typeof api.isSession !== "function" || !api.isSession(session, "dynamic-assessment")) {
@@ -4311,8 +4318,8 @@
       "Tool selection (toolId):",
       "  - \"numberline\" — for whole-number arithmetic, counting, comparison, skip counting, integer ordering. Preset: { range: {min, max}, markers: [{value, color, label}], tab: 'explore'|'skipCount'|'fracDec' }",
       "      Example for 'what is 17 - 8?': { range: {min: 0, max: 20}, markers: [{value: 17, color: '#3b82f6', label: 'start'}, {value: 8, color: '#ef4444', label: 'subtract'}], tab: 'explore' }",
-      "  - \"fractions\" — for fractional reasoning, part-whole, equivalents, comparison. Preset: { numerator: int, denominator: int, tab?: 'practice'|'compare'|'wall' }",
-      "      Example for 'is 3/4 greater than 5/8?': { numerator: 3, denominator: 4, tab: 'compare' }",
+      "  - \"fractions\" — for fractional reasoning, part-whole, equivalents, comparison. Preset: { numerator: int, denominator: int, tab?: 'practice'|'compare'|'wall', num2?: int, den2?: int } (num2 and den2 are the second fraction, for tab 'compare' only)",
+      "      Example for 'is 3/4 greater than 5/8?': { numerator: 3, denominator: 4, num2: 5, den2: 8, tab: 'compare' }",
       "  - \"areamodel\" — for multiplication, area, array reasoning, distributive property. Preset: { rows: int, cols: int, highlight?: {row, col} }",
       "      Example for '4 × 7': { rows: 4, cols: 7 }",
       "Anchor rung guidance for manipulatives:",
@@ -4322,7 +4329,7 @@
       "  - L4: show the answer concretely on the tool while explaining.",
       "Bounds (the host will reject preset values outside these):",
       "  - numberline: range min/max integers in [-1000, 1000]; max-min ≤ 200; markers ≤ 6 entries.",
-      "  - fractions: numerator ∈ [0, 24], denominator ∈ [2, 24].",
+      "  - fractions: numerator ∈ [0, 20], denominator ∈ [2, 20].",
       "  - areamodel: rows ∈ [1, 20], cols ∈ [1, 20].",
       "Manipulative fields:",
       "  - toolId: ONE of \"numberline\", \"fractions\", \"areamodel\" — do not invent other tool names.",
@@ -4707,12 +4714,15 @@
       if (!isFinite(num)) num = 1;
       if (!isFinite(den)) den = 2;
       if (num < 0) num = 0;
-      if (num > 24) num = 24;
+      if (num > 20) num = 20;
       if (den < 2) den = 2;
-      if (den > 24) den = 24;
+      if (den > 20) den = 20;
       var fTab = raw.tab;
       var F_TABS = { practice: 1, compare: 1, wall: 1, operations: 1, equivalents: 1, converter: 1 };
       if (typeof fTab !== "string" || !F_TABS[fTab]) fTab = "practice";
+      // A compare item names both fractions, or the student would compare against whatever was left on screen.
+      var num2 = parseInt(raw.num2, 10), den2 = parseInt(raw.den2, 10);
+      if (fTab === "compare" && isFinite(num2) && isFinite(den2) && num2 >= 0 && den2 >= 2) return { numerator: num, denominator: den, num2: Math.min(num2, 20), den2: Math.min(den2, 20), tab: fTab };
       return { numerator: num, denominator: den, tab: fTab };
     }
     if (toolId === "areamodel") {
@@ -4746,7 +4756,7 @@
       return "Number Line: " + (r ? r.min + "–" + r.max : "0–20");
     }
     if (toolId === "fractions") {
-      return "Fraction Bar: " + (preset ? preset.numerator + "/" + preset.denominator : "1/2");
+      return "Fraction Bar: " + (preset ? preset.numerator + "/" + preset.denominator + (preset.den2 ? " vs " + preset.num2 + "/" + preset.den2 : "") : "1/2");
     }
     if (toolId === "areamodel") {
       return "Area Model: " + (preset ? preset.rows + " × " + preset.cols : "3 × 4");
@@ -7501,11 +7511,13 @@
     var accessSimplifiedDraftTuple = useState(false);
     var accessSimplifiedDraft = accessSimplifiedDraftTuple[0];
     var setAccessSimplifiedDraft = accessSimplifiedDraftTuple[1];
+    // Simpler-language and home-language versions are AI-made: hidden when AI is unusable.
+    var daTextAiOk = _aiUsable("text", props.callGemini);
     // Construct-constant simplification. The KEY validity guard lives in this
     // prompt: simplify ONLY the language, never the problem/numbers/answer/hints.
     function generateSimplifiedItem(itemPrompt) {
       var callGeminiFn = props.callGemini; // module convention: each generator declares its own
-      if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot simplify."); return; }
+      if (!_aiUsable("text", callGeminiFn)) { addToast("AI not available — cannot simplify."); return; }
       var p = String(itemPrompt || "").trim();
       if (!p) return;
       setSimplifiedBusy(true);
@@ -7558,7 +7570,7 @@
     // in the lens + reports) — an AI translation is not guaranteed equivalent.
     function generateL1Item(itemPrompt, lang) {
       var callGeminiFn = props.callGemini; // module convention: each generator declares its own
-      if (typeof callGeminiFn !== "function") { addToast("AI not available — cannot translate."); return; }
+      if (!_aiUsable("text", callGeminiFn)) { addToast("AI not available — cannot translate."); return; }
       var p = String(itemPrompt || "").trim();
       var L = String(lang || "").trim();
       if (!p || !L) return;
@@ -12984,9 +12996,9 @@
         "You are picking ONE math manipulative tool + preset state to support a Dynamic Assessment item.",
         "Allowed tools:",
         "  numberline → { range: {min, max}, markers: [{value, color, label}], tab: 'explore'|'skipCount'|'fracDec' }",
-        "  fractions  → { numerator, denominator, tab: 'practice'|'compare'|'wall' }",
+        "  fractions  → { numerator, denominator, tab: 'practice'|'compare'|'wall', num2?, den2? } (num2 and den2: the second fraction, for 'compare' only)",
         "  areamodel  → { rows, cols, highlight?: {row, col} }",
-        "Bounds: numberline max-min ≤ 200 and ∈ [-1000,1000], fractions denominator ∈ [2,24], areamodel rows/cols ∈ [1,20].",
+        "Bounds: numberline max-min ≤ 200 and ∈ [-1000,1000], fractions numerator ∈ [0,20], denominator ∈ [2,20], areamodel rows/cols ∈ [1,20].",
         "",
         "Item prompt: " + promptText,
         "Correct answer: " + correctAns,
@@ -13562,7 +13574,15 @@
                 h("option", { value: "compare" }, "compare"),
                 h("option", { value: "wall" }, "wall")
               )
-            )
+            ),
+            preset.tab === "compare" ? h("div", null,
+              h("label", { style: labelStyle }, "Second numerator"),
+              h("input", { type: "number", min: 0, max: 20, value: isFinite(preset.num2) ? preset.num2 : "", "aria-label": "Fractions second numerator", onChange: function (e) { ed({ preset: Object.assign({}, preset, { num2: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            ) : null,
+            preset.tab === "compare" ? h("div", null,
+              h("label", { style: labelStyle }, "Second denominator"),
+              h("input", { type: "number", min: 2, max: 20, value: isFinite(preset.den2) ? preset.den2 : "", "aria-label": "Fractions second denominator", onChange: function (e) { ed({ preset: Object.assign({}, preset, { den2: parseInt(e.target.value, 10) }) }); }, style: inputStyle })
+            ) : null
           );
         } else if (sr.toolId === "areamodel") {
           toolForm = h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } },
@@ -14134,7 +14154,7 @@
           daSpeechStatus ? h("p", { role: "status", "aria-live": "polite", style: { margin: "6px 0 0", fontSize: 12, color: "var(--da-ink-3)" } }, daSpeechStatus) : null,
           // Access contrast (linguistic load): on-demand simpler-language version.
           h("div", { style: { marginTop: 8 } },
-            !simplifiedTextDraft ? h("button", {
+            !simplifiedTextDraft && daTextAiOk ? h("button", {
               type: "button",
               disabled: simplifiedBusy,
               onClick: function () { generateSimplifiedItem(item.prompt); },
@@ -14159,7 +14179,7 @@
           // Access contrast (home language / L1): translate the SAME item into the
           // student's home language. Needs a home language entered (session-stable).
           h("div", { style: { marginTop: 8 } },
-            h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
+            daTextAiOk ? h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
               h("input", {
                 type: "text", value: homeLangDraft,
                 onChange: function (e) { setHomeLangDraft(e.target.value); },
@@ -14175,7 +14195,7 @@
                 "aria-label": "Show this item in the student's home language",
                 style: { padding: "3px 10px", borderRadius: 6, border: "1px solid var(--da-violet-border)", background: (l1Busy || !homeLangDraft.trim()) ? "var(--da-violet-tint-2)" : "var(--da-violet-tint)", color: "var(--da-violet-text)", fontSize: 11, fontWeight: 700, cursor: (l1Busy || !homeLangDraft.trim()) ? "not-allowed" : "pointer", fontFamily: "inherit" }
               }, l1Busy ? "🌐 Translating…" : ("🌐 Show in " + (homeLangDraft.trim() || "home language"))) : null
-            ),
+            ) : null,
             l1TextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "var(--da-violet-tint)", border: "1px dashed var(--da-violet-border)" } },
               h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 } },
                 h("span", { style: { fontSize: 10, fontWeight: 800, color: "var(--da-violet-text)", textTransform: "uppercase", letterSpacing: "0.06em" } }, (homeLangDraft.trim() || "Home-language") + " version (same problem)"),

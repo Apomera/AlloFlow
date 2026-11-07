@@ -173,7 +173,7 @@ describe('direction cues', () => {
     await startDive(t);
     const rows = [...t.host.querySelectorAll('li.crf-row')];
     expect(rows).toHaveLength(NEAR.length);
-    const GN = ['Fish', 'Sea turtles', 'Invertebrates and sponges', 'Corals', 'Restoration structures'];
+    const GN = ['Fish', 'Sea turtles and sea snakes', 'Invertebrates and sponges', 'Corals', 'Restoration structures'];
     for (const [i, li] of rows.entries()) {
       const n = NEAR[i], where = li.querySelector('[data-cue]');
       expect(where, n.uid).toBeTruthy();

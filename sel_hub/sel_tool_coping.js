@@ -26017,7 +26017,7 @@ window.SelHub = window.SelHub || {
     { id: 'practice_5',        icon: '\u2B50',       name: 'Dedicated Practicer',    desc: 'Log 5 strategy practices' },
     { id: 'practice_15',       icon: '\uD83D\uDD25', name: 'Coping Champion',        desc: 'Log 15 strategy practices' },
     { id: 'rate_3',            icon: '\uD83D\uDCCA', name: 'Self-Evaluator',         desc: 'Rate the effectiveness of 3 strategies' },
-    { id: 'ai_match',          icon: '\u2728',       name: 'Smart Matcher',          desc: 'Use the AI Strategy Matcher' },
+    { id: 'ai_match',          icon: '\u2728',       name: 'Smart Matcher',          desc: 'Use the AI Strategy Matcher', aiOnly: true },
     { id: 'counting_complete', icon: '\uD83D\uDD22', name: 'Countdown Pro',          desc: 'Complete a calm counting exercise' },
     { id: 'explore_all',       icon: '\uD83D\uDD0D', name: 'Strategy Scholar',       desc: 'Read through all strategies in the library' },
     { id: 'breathing_3',       icon: '\uD83C\uDF2C\uFE0F', name: 'Deep Breather',    desc: 'Complete 3 guided breathing sessions' },
@@ -26025,7 +26025,8 @@ window.SelHub = window.SelHub || {
     { id: 'fav_3',             icon: '\u2764\uFE0F', name: 'Strategy Fan',           desc: 'Mark 3 favorite strategies' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: '3-Day Streak',           desc: 'Practice 3 days in a row' },
     { id: 'streak_7',          icon: '\u26A1',       name: 'Week Warrior',           desc: 'Practice 7 days in a row' },
-    { id: 'checkin_done',      icon: '\uD83C\uDF24\uFE0F', name: 'Self-Aware',       desc: 'Complete a daily coping check-in' }
+    { id: 'checkin_done',      icon: '\uD83C\uDF24\uFE0F', name: 'Self-Aware',       desc: 'Complete a daily coping check-in' },
+    { id: 'scripted_rehearse', icon: '\uD83C\uDFAD', name: 'Calm Rehearser',         desc: 'Finish 3 different scripted rehearsals' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -26152,7 +26153,271 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Register Tool ──
   // ══════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════
+  // ── Scripted practice (no AI, 2026-11-04 AI-off sweep wave 5) ──
+  // Branching scripts in the shared AdventureOffline story format, played with
+  // AlloModules.AdventureOffline.Player (built-in fallback for older hosts).
+  // Braided (branches rejoin); every ending closes with a short "What worked:"
+  // debrief. English, like the rest of this tool's content. Zero AI calls.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an
+  // ending (its text may be an array of lines).
+  // ══════════════════════════════════════════════════════════════
+  function _cpSpScript(title, rows) {
+    var text = function(v) { return Array.isArray(v) ? v.join('\n') : v; };
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: text(r[1]), ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: text(r[1]), ending: true, choices: [] };
+    }) };
+  }
+
+  var CP_SCRIPTS = {
+    anxious_voice: _cpSpScript('The Voice Before the Presentation', [
+      ['start', "You're next to present your project. Your hands are sweaty and your heart is pounding. A voice in your head starts up: 'You're going to mess this up. Everyone will see you panic.'", [
+        ["Argue with it: 'No I won't! Stop it! I'm totally fine!'", 'louder'],
+        ["Name it: 'That's my worry voice. It's trying to protect me.'", 'named'],
+        ['Try to push the feeling away and think about anything else.', 'pushdown']]],
+      ['louder', "Arguing makes the voice louder: 'You're NOT fine. Look, your hands are shaking.' Your breathing gets quick and shallow. Fighting a worried thought often gives it more attention.", [
+        ["Notice it instead: 'I'm having the thought that I'll mess up.'", 'named'],
+        ['Focus on your body: press your feet into the floor.', 'grounded']]],
+      ['pushdown', "You try hard not to think about it. But trying NOT to think about something tends to bring it right back. 'What if you freeze?' the voice whispers. Your stomach flips.", [
+        ['Let the thought be there, and take one slow breath.', 'breath'],
+        ['Ask your teacher if you can go last.', 'avoid']]],
+      ['named', "Naming it gives you a little distance. The voice is still there, but quieter: 'Okay, but what if you forget your words?' You notice it's a 'what if', not a fact.", [
+        ['Try box breathing: in for 4, hold for 4, out for 4, hold for 4.', 'breath'],
+        ['Look around and notice three things you can see.', 'grounded']]],
+      ['breath', "In for four... hold... out for four... hold. After three rounds, your shoulders drop a little. Slow breaths, especially long out-breaths, tell your body it is safe enough right now.", [
+        ["Remind yourself: 'I prepared. I can look at my notes if I need to.'", 'selftalk'],
+        ['Keep checking whether you are still nervous.', 'checking']]],
+      ['grounded', "Your feet press into the floor. You notice the poster on the wall, the hum of the projector, a classmate's blue backpack. The room comes back into focus, and the voice fades into the background.", [
+        ['Add one slow breath before you stand up.', 'breath'],
+        ["Say something kind and true to yourself: 'Nervous is normal. I can do hard things.'", 'selftalk']]],
+      ['avoid', "Your teacher says you can go last. Relief, for a minute. But now you sit through every other presentation, and the worry has more time to grow. Avoiding something can make the next time feel even bigger.", [
+        ['Use the wait: breathe slowly while you listen to the others.', 'breath'],
+        ['Spend the whole time imagining everything that could go wrong.', 'checking'],
+        ['Ask your teacher if you can present tomorrow instead.', 'end_later']]],
+      ['checking', "You keep scanning yourself: 'Am I still nervous? Is it working?' Checking over and over keeps your attention on the fear. Coping does not mean the nervous feeling disappears. It means you can act with it there.", [
+        ['Shift your focus outward: feel your feet and find three things you can see.', 'grounded'],
+        ["Tell yourself: 'Nervous is okay. I can do this nervous.'", 'selftalk']]],
+      ['selftalk', "Your name is called. You walk up. Your voice shakes for the first sentence, then steadies. Halfway through you lose your place, glance at your notes, and keep going.", [
+        ['Keep going, and breathe out slowly between slides.', 'end_steady'],
+        ['Rush through the rest to get it over with.', 'end_rushed']]],
+      ['end_steady', ["You finish. A few people clap, and your teacher smiles. Your heart is still beating fast, and that's okay. You did it with the nerves there.", '', 'What worked:', "• Naming the worry voice ('That's my worry voice') put a little distance between you and the thought.", '• Slow breathing and grounding (feet on the floor, things you can see) calmed your body.', '• Kind, true self-talk let you act WITH the nervous feeling instead of waiting for it to go away.', '• Glancing at your notes when you lost your place is a coping skill too.']],
+      ['end_rushed', ["You speed through the last part and sit down fast. You did it, and that counts. Rushing made it harder for people to follow, and it didn't give your body a chance to settle.", '', 'What worked:', '• You stayed and presented with the nerves there. That takes courage.', '• Next time, try one slow out-breath between slides. A pause feels much longer to you than it looks to others.', "• Naming the thought ('I'm having the thought that I'll mess up') can help before you even stand up."]],
+      ['end_later', ["Your teacher agrees to tomorrow. The relief is real, and so is the worry that is now waiting for tomorrow. That's okay. You can build a plan for it.", '', 'What worked:', '• Asking an adult for what you need is a real skill.', '• Avoiding gives quick relief, but worry often grows while it waits. A smaller step can help: practice once with a friend, or present to just the teacher first.', '• Tonight, try box breathing and one kind, true sentence to yourself before bed.']]
+    ]),
+    parent_escalating: _cpSpScript('When the Argument Gets Loud', [
+      ['start', "After dinner, your parent finds out you haven't started a project that's due tomorrow. 'You were on your phone all evening! Do you even care about school?' Their voice is getting louder.", [
+        ["Yell back: 'You ALWAYS do this! You never listen!'", 'escalate'],
+        ['Take one slow breath before you answer.', 'pause'],
+        ['Roll your eyes and look back at your phone.', 'stonewall']]],
+      ['escalate', "'Don't you raise your voice at me!' Now you're both louder. Your face feels hot and your fists are tight. When two people match each other's volume, it usually keeps climbing.", [
+        ['Notice your body: unclench your hands and breathe out slowly.', 'pause'],
+        ["'I need a minute to calm down. Can we talk in five minutes?'", 'breakaway']]],
+      ['stonewall', "'Look at me when I'm talking to you!' Your parent sounds more frustrated, not less. Shutting down can feel safer, but to the other person it can look like you don't care.", [
+        ['Put the phone down and take a slow breath.', 'pause'],
+        ["Mutter 'whatever' and keep scrolling.", 'escalate']]],
+      ['pause', "You breathe in slowly and let it out even more slowly. The frustration is still there, but now you have a second to choose your words. Your parent is waiting for an answer.", [
+        ["Name their worry: 'I can tell you're worried about my grades.'", 'validate'],
+        ['Explain all the reasons it is not your fault.', 'defend']]],
+      ['defend', "'It's not my fault, the teacher never explained it, and everyone else...' Your parent cuts in: 'Excuses again.' Explaining too fast can sound like arguing, even when your reasons are real.", [
+        ["Slow down and name their worry first: 'You're worried I'm not taking school seriously.'", 'validate'],
+        ["'I need a minute to calm down. Can we talk in five minutes?'", 'breakaway']]],
+      ['breakaway', "Your parent pauses. 'Fine. Five minutes.' In your room you take ten slow breaths and splash water on your face. A break is different from storming off when you say when you'll come back.", [
+        ['Go back when you said you would.', 'validate'],
+        ["Stay in your room and don't go back.", 'end_cold']]],
+      ['validate', "Your parent's shoulders drop a little. 'Yes. I am worried.' Their voice is quieter now. Naming someone's worry does not mean you agree with everything. It shows you heard them.", [
+        ["Share your side with an I-statement: 'I feel overwhelmed by this project, and I didn't know where to start.'", 'istatement'],
+        ["Just agree so it ends: 'Fine, you're right, I'm terrible at everything.'", 'fold']]],
+      ['fold', "'I didn't say you were terrible,' your parent says, surprised. The argument stops, but you feel worse, and your parent still doesn't know what's really going on. Giving in is not the same as calming down.", [
+        ["Try again: 'Actually, I feel overwhelmed and didn't know where to start.'", 'istatement'],
+        ['Go quiet and wait for it to be over.', 'end_cold']]],
+      ['istatement', "Your parent sits down across from you. 'Overwhelmed? Why didn't you tell me?' For the first time tonight, it feels like a conversation instead of an argument.", [
+        ["Ask for help with a plan: 'Can you help me break it into steps for tonight?'", 'end_plan'],
+        ['Promise you will never use your phone again.', 'end_partial']]],
+      ['end_plan', ["Together you make a plan: phone in the kitchen for an hour, outline first, ask the teacher one question tomorrow. It isn't fun, but the shouting has stopped and you're on the same side.", '', 'What worked:', '• A slow breath before answering kept you from matching their volume.', "• Naming their worry ('I can tell you're worried') calmed things without giving up your side.", "• An I-statement ('I feel overwhelmed...') shared what was really going on.", '• Asking for help with a plan turned an argument into teamwork.']],
+      ['end_partial', ["Your parent half-smiles. 'Never? Let's be realistic.' Things are calmer, but a promise that big is hard to keep, and the project still needs a plan.", '', 'What worked:', '• You stayed calm and shared how you really felt. That changed the whole conversation.', "• Next time, try a small, specific ask ('Can you help me plan tonight?') instead of a giant promise.", '• Realistic plans are easier to keep than perfect ones.']],
+      ['end_cold', ["The argument stops, but nothing is solved, and later you both feel bad. That's okay. Family arguments can be picked back up when everyone is calmer.", '', 'What worked:', '• Stepping away stopped things from getting louder.', "• Next time, say when you'll come back ('Can we talk in five minutes?'), and then come back. That makes a break feel safe for both people.", "• Starting with their worry ('I know you're worried') can help restart the talk."]]
+    ]),
+    friend_bailing: _cpSpScript('The Last-Minute Cancel', [
+      ['start', "It's Friday afternoon. You and your close friend Sam have planned to hang out tonight all week. A text pops up: 'hey so I can't come anymore.' Your stomach drops, and your brain starts racing: 'They don't want to be my friend.'", [
+        ["Text back right away: 'wow ok. thanks for nothing.'", 'lashout'],
+        ['Put the phone down and take a slow breath before you answer.', 'pause'],
+        ["Scroll through Sam's posts looking for clues.", 'spiral']]],
+      ['lashout', "Sam replies 'ok sorry' and then goes quiet. Now you feel worse. A fast reply from a hurt feeling can push someone away.", [
+        ["Send a repair: 'sorry, that came out harsh. i was just disappointed. are you ok?'", 'ask'],
+        ['Wait for Sam to apologize first.', 'end_silent']]],
+      ['spiral', "You find a photo of Sam with other friends from last week. Your mind jumps: 'They're hanging out without me.' Your chest feels tight. When we look for proof of a worry, we usually find something that seems like proof, even when it isn't.", [
+        ["Notice the spiral: 'I'm jumping to conclusions. I don't know why they cancelled.'", 'pause'],
+        ["Text: 'have fun with your OTHER friends.'", 'lashout']]],
+      ['pause', "You breathe. The disappointment is real, and it's okay to feel it. You remind yourself: one cancelled plan is not the whole friendship.", [
+        ["Ask a kind, direct question: 'aw, that's a bummer. everything ok?'", 'ask'],
+        ["Reply 'k.' and stew about it.", 'stew']]],
+      ['stew', "Sam sees 'k.' and can't tell if you're upset. You spend the next hour replaying it in your head. Bottling up a hurt feeling doesn't make it go away.", [
+        ["Try again: 'sorry for the short reply. i was disappointed. are you ok?'", 'ask'],
+        ['Do something that helps you feel better first, like music or a walk.', 'selfcare']]],
+      ['selfcare', "You put on music and take a short walk. By the time you're back, the sting has faded a little. Doing something soothing can help you answer with a clearer head.", [
+        ["Text Sam: 'hope you're ok. want to reschedule?'", 'ask'],
+        ['Decide to leave it until tomorrow.', 'end_silent']]],
+      ['ask', "Sam takes a while to type. 'honestly not really. my mom and i had a big fight and i don't feel like going out.' It wasn't about you at all.", [
+        ["'that sounds really hard. want to talk, or just do a video call later?'", 'opens'],
+        ["'oh. well you could have told me sooner.'", 'pressure']]],
+      ['pressure', "'idk. it's complicated.' Sam sounds even further away. Pushing for answers can make someone close up.", [
+        ["Back off kindly: 'no pressure. i'm here if you want to talk.'", 'opens'],
+        ['Send three more question marks.', 'end_silent']]],
+      ['opens', "'thanks. a video call later sounds nice actually.' Later you talk for a while. Sam says they're glad you didn't get mad.", [
+        ["'want to try again next weekend?'", 'end_close'],
+        ["Joke 'you owe me big time' and change the subject.", 'end_later']]],
+      ['end_close', ["You make a plan for next weekend, and Sam thanks you for checking on them. The disappointment from earlier has turned into feeling closer.", '', 'What worked:', '• Pausing before replying kept the worry spiral from writing your text for you.', "• Catching the thought ('I'm jumping to conclusions') helped you see other explanations.", "• A kind, direct question ('everything ok?') made it safe for Sam to share.", "• Disappointment is okay to feel. You didn't have to act on it."]],
+      ['end_later', ["Sam laughs, and the call ends on a good note. The friendship feels fine, even though you never got around to a new plan.", '', 'What worked:', '• Staying calm and kind when plans fell through.', "• Asking how Sam was doing, not just why they cancelled.", "• Next time, a clear invitation ('want to try next weekend?') helps the plan actually happen."]],
+      ['end_silent', ["The conversation stops for tonight. You feel stuck, and that's a normal feeling after a cancelled plan. Nothing is broken. You can reach out tomorrow.", '', 'What worked:', '• Next time, try a pause and a slow breath before replying.', "• 'I'm disappointed' is easier to hear than a sarcastic text.", "• A kind question ('are you ok?') often gets you the real answer."]]
+    ]),
+    sensory_overload: _cpSpScript('Too Loud at the Assembly', [
+      ['start', "The whole school is packed into the gym for an assembly. The band starts, the bleachers shake, and the lights flash. The noise feels like it's inside your chest.", [
+        ['Try to ignore it and tough it out.', 'tough'],
+        ["Notice what your body is telling you: 'My heart is racing. This is too much right now.'", 'notice'],
+        ['Cover your ears and squeeze your eyes shut.', 'shutdown']]],
+      ['tough', "You grit your teeth. The cheering gets louder, someone bumps your shoulder, and your hands start to tingle. Ignoring overload usually lets it build.", [
+        ["Stop and notice: 'This is too much. I need to do something.'", 'notice'],
+        ['Hold your breath until it is over.', 'shutdown']]],
+      ['shutdown', "It helps a tiny bit, but your breathing is fast and you feel frozen in place. Blocking everything out can help for a moment, and you also need a next step.", [
+        ['Breathe out slowly, longer than you breathe in.', 'breathe'],
+        ['Look for a quieter spot you could get to.', 'exit']]],
+      ['notice', "Naming it helps. You're not weird; your senses are overloaded, and that happens to lots of people. Now you can choose a tool.", [
+        ['Put in the earplugs from your bag.', 'tools'],
+        ['Breathe out slowly, longer than you breathe in.', 'breathe'],
+        ['Look for a quieter spot you could get to.', 'exit']]],
+      ['tools', "The roar drops to a dull rumble. You can still see everything, but your body has a little more room.", [
+        ['Ground yourself: press your feet down and name five things you can see.', 'ground'],
+        ['Stay until the end now that it is quieter.', 'end_stay']]],
+      ['breathe', "In through your nose, out slowly through your mouth. Your heartbeat starts to slow down. It's still loud, but you feel steadier.", [
+        ['Ground yourself: press your feet down and name five things you can see.', 'ground'],
+        ['Look for a quieter spot you could get to.', 'exit']]],
+      ['ground', "Five things: the red banner, the scoreboard, your shoes, the exit sign, a teacher by the door. Your attention comes back to right here, right now.", [
+        ['Stay, keep breathing, and check in with your body every few minutes.', 'end_stay'],
+        ['Ask the teacher by the door if you can take a break in the hallway.', 'ask']]],
+      ['exit', "You spot the exit sign and a teacher standing near it. Leaving without telling anyone might worry them.", [
+        ['Walk over and ask the teacher for a break.', 'ask'],
+        ['Slip out without telling anyone.', 'end_slip']]],
+      ['ask', "You say, 'It's too loud for me. Can I take a break in the hallway?' The teacher nods. 'Of course. Come back when you're ready.'", [
+        ['Take your break, breathe, and come back when you feel steady.', 'end_break'],
+        ['Ask if you can sit by the door for the rest, where it is quieter.', 'end_stay']]],
+      ['end_break', ["In the hallway the noise is muffled. You breathe, stretch your hands, and after a few minutes you feel ready to go back in.", '', 'What worked:', "• Noticing your body's signals early (racing heart, tingling hands).", '• Using tools: slow out-breaths and five-things grounding.', "• Asking for what you need ('Can I take a break?') is a coping skill, not a weakness.", '• Telling an adult where you were going kept you safe.']],
+      ['end_stay', ["You make it to the end of the assembly. It's still not your favorite place, but you stayed in charge of how you felt.", '', 'What worked:', '• Earplugs, slow breathing, and grounding gave your body more room.', '• Checking in with your body every few minutes, before it builds up again.', '• A seat by the door, with an adult who knows, is a smart plan for loud events.']],
+      ['end_slip', ["You make it to a quiet hallway, and your body starts to calm down. Then a teacher finds you, looking worried. They didn't know where you were.", '', 'What worked:', '• Getting to a quieter space was a good instinct.', "• Next time, tell an adult first ('It's too loud, can I step out?') so they know you're safe.", '• A plan before big events (earplugs, a seat near the exit) can help a lot.']]
+    ])
+  };
+
+  // Scenario keys with at least one ending reached (scripted practice).
+  function _cpSpFinished(done) {
+    var seen = {};
+    Object.keys(done || {}).forEach(function(k) { if (k.indexOf('teacher:') !== 0) seen[k.split(':')[0]] = true; });
+    return Object.keys(seen);
+  }
+
+  // Scripted-practice panel. State lives in this tool's toolData: spId, spRun,
+  // spPath, spEnding, spDone, spDraft, spSaved, spCrisis, spReflections.
+  // o: { h, d, set(patch), id, t, theme, toolId, band, onSafetyFlag, announce,
+  //      onFirst(doneMap) (XP + badges, once per scenario), onBack, reflectPrompt,
+  //      c: { fg, muted, card, line, accent, accentFg, field } }
+  function _cpSpPanel(o) {
+    var h = o.h, d = o.d, c = o.c, id = o.id, story = o.story || CP_SCRIPTS[id];
+    if (!story) return null;
+    var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+    var done = (d.spDone && typeof d.spDone === 'object') ? d.spDone : {};
+    var sceneOf = function(sid) { for (var i = 0; i < story.scenes.length; i++) { if (story.scenes[i].id === sid) return story.scenes[i]; } return null; };
+    var say = function(msg) { if (typeof o.announce === 'function') { try { o.announce(msg); } catch (_) {} } };
+    function reach(endId) {
+      var next = Object.assign({}, done);
+      var first = !Object.keys(next).some(function(k) { return k.indexOf(id + ':') === 0; });
+      next[id + ':' + endId] = true;
+      o.set({ spEnding: endId, spDone: next, spSaved: false });
+      if (first && typeof o.onFirst === 'function') o.onFirst(next);
+      say('Ending reached. Read what worked, then reflect.');
+    }
+    // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+    function onPlayerClick(e) {
+      var el = e && e.target && e.target.closest ? e.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+      if (!el) return;
+      var to = el.getAttribute('data-offline-choice');
+      var target = to ? sceneOf(to) : null;
+      if (target && target.ending) reach(to);
+      else if (d.spEnding) o.set({ spEnding: null });
+    }
+    var btn = { minHeight: 44, padding: '8px 14px', borderRadius: 10, border: '1px solid ' + c.line, background: 'transparent', color: c.fg, fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+    var btnPrimary = Object.assign({}, btn, { border: '1px solid ' + (c.accentLine || c.accent), background: c.accent, color: c.accentFg });
+    // Built-in player for an older host without AdventureOffline.
+    function fallbackPlayer() {
+      var path = (Array.isArray(d.spPath) ? d.spPath : []).filter(function(s) { return !!sceneOf(s); });
+      if (!path.length) path = [story.start];
+      var cur = sceneOf(path[path.length - 1]);
+      var go = function(to) { o.set({ spPath: path.concat([to]) }); var sc = sceneOf(to); if (sc && sc.ending) reach(to); };
+      return h('section', { 'data-sp-fallback-player': 'true', 'aria-label': story.title, style: { padding: 16, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('h4', { style: { margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: c.fg } }, cur.ending ? 'The end' : 'Step ' + path.length),
+        h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: c.fg } }, cur.text),
+        !cur.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 12 } },
+          cur.choices.map(function(ch, i) {
+            return h('button', { key: i, type: 'button', 'data-sp-choice': ch.to, onClick: function() { go(ch.to); }, style: Object.assign({}, btn, { textAlign: 'left', fontWeight: 600 }) }, ch.label);
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: path.slice(0, -1), spEnding: null }); }, style: btn }, '← Back'),
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: [story.start], spEnding: null }); }, style: cur.ending ? btnPrimary : btn }, cur.ending ? '↺ Play again' : '↺ Start over')
+        )
+      );
+    }
+    var endCount = story.scenes.filter(function(s) { return s.ending; }).length;
+    var found = Object.keys(done).filter(function(k) { return k.indexOf(id + ':') === 0; }).length;
+    var th = o.theme || {};
+    var player = (AO && typeof AO.Player === 'function')
+      ? h(AO.Player, { key: id + ':' + (d.spRun || 0), story: story, t: o.t, theme: th.isContrast ? 'contrast' : (th.isDark ? 'dark' : 'light') })
+      : fallbackPlayer();
+    var fieldId = 'sp-reflect-' + o.toolId;
+    function saveReflection() {
+      var txt = String(d.spDraft || '').trim();
+      if (!txt) return;
+      // Local safety check only (no AI): a critical match shows crisis resources.
+      var crisis = false;
+      try {
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var r = window.SelHub.safeRehearseCheck(txt, { toolId: o.toolId, onSafetyFlag: o.onSafetyFlag || null });
+          crisis = !!(r && r.action === 'block');
+        }
+      } catch (_) {}
+      var list = (Array.isArray(d.spReflections) ? d.spReflections : []).concat([{ scenarioId: id, ending: d.spEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+      o.set({ spReflections: list, spDraft: '', spSaved: true, spCrisis: crisis || !!d.spCrisis });
+      say(crisis ? 'Reflection saved. Support resources are on this screen.' : 'Reflection saved.');
+    }
+    return h('div', { 'data-sp-panel': id, style: { display: 'grid', gap: 12 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+        h('div', null,
+          h('div', { style: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: c.muted } }, o.kicker || 'Scripted practice · no AI'),
+          h('div', { style: { fontSize: 16, fontWeight: 800, color: c.fg } }, story.title || o.kicker)
+        ),
+        h('button', { type: 'button', 'data-sp-back': 'true', onClick: o.onBack, style: Object.assign({}, btn, { minHeight: 36, fontSize: 12 }) }, '← Choose another')
+      ),
+      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5, color: c.muted } }, 'Choose what you would do. Each choice shows what happens next. There is more than one ending; play again to find the others.'),
+      o.introEl || null,
+      (d.spCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, o.band) : null,
+      h('div', { 'data-sp-player': id, onClick: onPlayerClick }, player),
+      h('p', { style: { margin: 0, fontSize: 12, textAlign: 'center', color: c.muted } }, 'Endings found: ' + found + ' of ' + endCount),
+      d.spEnding ? h('div', { 'data-sp-reflect': id, style: { padding: 14, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 13, fontWeight: 800, color: c.fg, marginBottom: 4 } }, 'Reflect'),
+        h('p', { style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, color: c.muted } }, o.reflectPrompt),
+        h('textarea', { id: fieldId, rows: 3, maxLength: 2000, value: d.spDraft || '',
+          onChange: function(e) { o.set({ spDraft: e.target.value, spSaved: false }); },
+          style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid ' + c.line, background: c.field, color: c.fg, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+          h('button', { type: 'button', 'data-sp-reflect-save': 'true', disabled: !String(d.spDraft || '').trim(), onClick: saveReflection, style: btnPrimary }, 'Save reflection'),
+          d.spSaved ? h('span', { role: 'status', style: { fontSize: 12, color: c.muted } }, 'Saved to your work.') : null
+        )
+      ) : null,
+      (window.SelHub && typeof window.SelHub.renderResourceFooter === 'function') ? window.SelHub.renderResourceFooter(h, o.band) : null
+    );
+  }
+
   window.SelHub.registerTool('coping', {
+    offlineScripts: CP_SCRIPTS,
     icon: '\uD83E\uDDE8',
     label: 'Coping Toolkit',
     desc: 'Explore and practice coping strategies \u2014 breathing, grounding, movement, and more.',
@@ -26162,8 +26427,8 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _copT = (ctx && ctx.theme) || {};
       var _copHC = !!_copT.isContrast, _copL = !_copHC && !_copT.isDark;
-      var _cop_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#78350f':'#fef3c7'}, _cop_BGH = {'#334155':'#000000','#1e293b':'#000000','#14b8a6':'#000000','#15803d':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#ec4899':'#000000','#f97316':'#000000','#eab308':'#000000','#042f2e':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000','#78350f':'#000000'};
-      var _cop_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#5eead4':'#0f766e','#f1f5f9':'#0f172a','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#86efac':'#166534','#fdba74':'#9a3412','#fcd34d':'#78350f','#fbbf24':'#854d0e','#fde68a':'#92400e'}, _cop_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#5eead4':'#ffff00','#f1f5f9':'#ffff00','#14b8a6':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#f97316':'#ffff00','#ec4899':'#ffff00','#86efac':'#ffff00','#fdba74':'#ffff00','#fcd34d':'#ffff00','#eab308':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00'};
+      var _cop_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#78350f':'#fef3c7','#14b8a6':'#0f766e'}, _cop_BGH = {'#334155':'#000000','#1e293b':'#000000','#14b8a6':'#000000','#15803d':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#ec4899':'#000000','#f97316':'#000000','#eab308':'#000000','#042f2e':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000','#78350f':'#000000'};
+      var _cop_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#5eead4':'#0f766e','#f1f5f9':'#0f172a','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#86efac':'#166534','#fdba74':'#9a3412','#fcd34d':'#78350f','#fbbf24':'#854d0e','#fde68a':'#92400e','#fed7aa':'#9a3412','#22c55e':'#166534','#14b8a6':'#0f766e','#ef4444':'#b91c1c','#a855f7':'#7e22ce','#f97316':'#c2410c','#eab308':'#854d0e','#3b82f6':'#1d4ed8','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#10b981':'#047857','#0ea5e9':'#0369a1','#d97706':'#b45309','#0d9488':'#0f766e','#7c3aed':'#6d28d9','#dc2626':'#b91c1c'}, _cop_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#5eead4':'#ffff00','#f1f5f9':'#ffff00','#14b8a6':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#f97316':'#ffff00','#ec4899':'#ffff00','#86efac':'#ffff00','#fdba74':'#ffff00','#fcd34d':'#ffff00','#eab308':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00'};
       var _cop_BGD = {'#14b8a6':'#0f766e'}, _cop_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cop_BDH = {'#334155':'#ffff00','#14b8a6':'#ffff00','#ef4444':'#ffff00','#f97316':'#ffff00','#475569':'#ffff00','#fbbf24':'#ffff00','#f59e0b':'#ffff00','#ea580c':'#ffff00'};
       var _copBg = function(h){ return _copHC ? (_cop_BGH[h]||h) : (_copL ? (_cop_BGL[h]||h) : (_cop_BGD[h]||h)); };
       var _copFg = function(h){ return _copHC ? (_cop_FGH[h]||h) : (_copL ? (_cop_FGL[h]||h) : h); };
@@ -26180,6 +26445,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _copAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var onSafetyFlag = ctx.onSafetyFlag || null;
       // `var t = ctx.t` removed 2026-09-21: it was declared and never called. ctx.t drops the English fallback, so the next person to wire this tool would have shipped raw keys. Use the __alloT wrapper instead.
@@ -26194,6 +26460,7 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab     = d.activeTab || 'library';
+      if (!_copAiOn && activeTab === 'matcher') activeTab = 'library'; // Rehearse stays: without AI it plays scripted scenes
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Rehearse-mode state — AI plays a TRIGGER (anxious voice, escalating
@@ -26257,6 +26524,8 @@ window.SelHub = window.SelHub || {
 
       // Badge state
       var earnedBadges    = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _copAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup  = d.showBadgePopup || null;
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -26416,7 +26685,13 @@ window.SelHub = window.SelHub || {
         { id: 'learn',    label: '\uD83C\uDF93 Learn' },
         { id: 'scenarios',label: '\uD83C\uDFAD Scenarios' },
         { id: 'crisis',   label: '\uD83D\uDEA8 Crisis' }
-      ];
+      ].filter(function (tb) { return _copAiOn || tb.id !== 'matcher'; });
+
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _cpTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var cpTs = (_cpTsApi && typeof _cpTsApi.bind === 'function') ? _cpTsApi.bind({ ctx: ctx, h: h, toolId: 'coping', d: d, set: upd, announce: announceToSR,
+        aiTopic: 'a realistic everyday stressful moment where a student practises a coping skill',
+        aiExtra: 'Choices are things the student could do, think or say in the moment; scenes show how the moment changes.' }) : null;
 
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -26442,10 +26717,10 @@ window.SelHub = window.SelHub || {
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#14b8a633' : 'transparent', color: _copFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
       // ══════════════════════════════════════════════════════════
@@ -26455,7 +26730,7 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           library:  { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 the coping toolkit',                hint: 'Cognitive (reframe, name it to tame it), behavioral (move, breathe, ground), social (call a friend, share). Multiple strategies in your back pocket beats one silver bullet \u2014 different stress states need different tools.' },
           practice: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAF', title: 'Practice \u2014 box breathing, 5-4-3-2-1, body scan',  hint: 'Box breathing (4-4-4-4) is what Navy SEALs use to manage acute stress. 5-4-3-2-1 grounding pulls anxious attention back into the present via the senses. Both work because they change physiology, not thoughts.' },
-          rehearse: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAD', title: 'Rehearse \u2014 apply a coping skill in a hard moment', hint: 'Mental rehearsal (Driskell et al., 1994) builds the same neural pathways as practiced response. The AI plays the trigger (anxious voice, escalating parent, distant friend, overwhelming environment); you practice what you would do in your body and your mind.' },
+          rehearse: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAD', title: 'Rehearse \u2014 apply a coping skill in a hard moment', hint: 'Mental rehearsal (Driskell et al., 1994) builds the same neural pathways as practiced response. ' + (_copAiOn ? 'The AI plays the trigger' : 'Each scene plays the trigger') + ' (anxious voice, escalating parent, distant friend, overwhelming environment); you practice what you would do in your body and your mind.' },
           plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 doubles follow-through compared to vague intentions to cope.' },
           matcher:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2728',         title: 'Matcher \u2014 right tool for the right zone',         hint: 'Yellow-zone overwhelm needs different strategies than red-zone shutdown. Zones of Regulation (Kuypers) gives a shared language; this matcher gives the strategy. Self-knowledge IS regulation.' },
           log:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Practice Log \u2014 what worked and when',             hint: 'Tracking turns coping from reactive to deliberate. Patterns emerge over weeks: which strategy works for which trigger. The log itself becomes a self-knowledge artifact you can show a counselor or trusted adult.' },
@@ -26469,7 +26744,7 @@ window.SelHub = window.SelHub || {
             margin: '8px 12px 12px',
             padding: '12px 14px',
             borderRadius: 12,
-            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), ' + _copBg('#0f172a'),
             border: '1px solid ' + meta.accent + '55',
             borderLeft: '4px solid ' + meta.accent,
             display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
@@ -26477,7 +26752,7 @@ window.SelHub = window.SelHub || {
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('h3', { style: { color: _copFg(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
             h('p', { style: { margin: '3px 0 0', color: _copFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
@@ -26564,7 +26839,7 @@ window.SelHub = window.SelHub || {
             copingLaunchMetric('Best rated', best ? best.avg + '/5' : 'None yet', best ? 'Most effective so far.' : 'Ratings will show here.', _copFg('#fbbf24'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
-            copingLaunchCard('Match the moment', 'Filter strategies by feeling and body state instead of browsing everything.', 'Open matcher', { activeTab: 'matcher' }, _copFg('#0ea5e9')),
+            _copAiOn && copingLaunchCard('Match the moment', 'Filter strategies by feeling and body state instead of browsing everything.', 'Open matcher', { activeTab: 'matcher' }, _copFg('#0ea5e9')),
             copingLaunchCard('Practice one skill', 'Use a guided practice so the skill is easier to remember later.', 'Open practice', { activeTab: 'practice' }, _copFg('#a855f7')),
             copingLaunchCard('Build my calm plan', 'Collect steps, warning signs, and support people in one place.', 'Open plan', { activeTab: 'plan' }, _copFg('#22c55e')),
             copingLaunchCard('Need extra support', 'See stabilization protocols and crisis resources when coping is not enough.', 'Open crisis', { activeTab: 'crisis' }, _copFg('#ef4444'))
@@ -26637,9 +26912,9 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _copFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _copFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-              BADGES.map(function(badge) {
+              shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? _copBg('#042f2e') : _copBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#14b8a6' : _copBg('#334155')) }
@@ -27307,7 +27582,7 @@ window.SelHub = window.SelHub || {
                 placeholder: band === 'elementary' ? 'Type a mean thought here... Don\'t share personal info (like your full name).' : 'Enter a negative thought... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: _copBg('#0f172a'), color: _copFg('#f1f5f9'), fontSize: 13, boxSizing: 'border-box', marginBottom: 8 }
               }),
-              callGemini && tfCustomThought.trim() && h('button', {
+              _copAiOn && tfCustomThought.trim() && h('button', {
                 onClick: function() {
                   // Safety pre-check on the student's typed thought before
                   // sending to the AI. Critical content (self-harm, harm-to-
@@ -27597,7 +27872,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Generate button
-            callGemini && stInput.trim() && h('button', {
+            _copAiOn && stInput.trim() && h('button', {
               onClick: function() {
                 // Safety pre-check on student's typed inner-critic statement.
                 // If it contains critical-tier content, surface crisis
@@ -27714,18 +27989,44 @@ window.SelHub = window.SelHub || {
           }
         };
         var TRIG_ORDER = ['anxious_voice', 'parent_escalating', 'friend_bailing', 'sensory_overload'];
+        // Without AI the picker starts scripted scenes; a saved AI rehearsal is not resumed.
+        if (!_copAiOn) cpRpScenarioId = '';
         var trigCfg = cpRpScenarioId && COPING_TRIGGERS[cpRpScenarioId];
+        function cpStartTeacher(s) {
+          upd({ spId: s.key, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false, cpRpScenarioId: '' });
+          if (announceToSR) announceToSR('Scripted rehearsal started: ' + (s.title || cpTs.from));
+        }
+        var cpTsScene = cpTs ? cpTs.byKey(d.spId) : null;
+        function cpStartScript(sid) {
+          if (!CP_SCRIPTS[sid]) return;
+          upd({ spId: sid, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false, cpRpScenarioId: '' });
+          if (announceToSR) announceToSR('Scripted rehearsal started: ' + CP_SCRIPTS[sid].title);
+        }
+        var cpSpView = (d.spId && (CP_SCRIPTS[d.spId] || cpTsScene)) ? h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
+          _cpSpPanel({
+            h: h, d: d, set: upd, id: d.spId, t: typeof ctx.t === 'function' ? ctx.t : null, theme: _copT, toolId: 'coping', band: band,
+            story: cpTsScene ? cpTsScene.story : null, kicker: cpTsScene ? cpTs.from : null, introEl: cpTsScene ? cpTs.renderIntro(cpTsScene) : null,
+            onSafetyFlag: onSafetyFlag, announce: announceToSR,
+            onBack: function() { upd({ spId: '', spEnding: null }); },
+            reflectPrompt: 'Which coping move changed how the moment felt? When could you use it in real life?',
+            c: { fg: _copFg('#f1f5f9'), muted: _copFg('#cbd5e1'), card: _copBg('#1e293b'), line: _copBd('#475569'), accent: _copBg(_copSolid('#f97316')), accentLine: _copBd('#f97316'), accentFg: _copFg('#fff'), field: _copBg('#0f172a') },
+            onFirst: function(done) {
+              if (typeof awardXP === 'function') awardXP(10);
+              if (!cpTsScene && _cpSpFinished(done).length >= 3) tryAwardBadge('scripted_rehearse');
+            }
+          })
+        ) : null;
 
         var bandLabel = band === 'elementary' ? 'upper elementary (3-5)' : (band === 'middle' ? 'middle school (6-8)' : 'high school (9-12)');
 
         function cpStartRolePlay(trigId) {
           var cfg = COPING_TRIGGERS[trigId];
           if (!cfg) return;
-          if (!callGemini) {
+          if (!_copAiOn) {
             upd({ cpRpScenarioId: trigId, cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: false });
             return;
           }
-          upd({ cpRpScenarioId: trigId, cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: true });
+          upd({ cpRpScenarioId: trigId, cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: true, spId: '' });
           var prompt =
             'You are setting up a brief in-vivo coping-skill rehearsal for an SEL tool. Build a fresh, realistic mini-scene + opening trigger line. ' +
             'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
@@ -27760,7 +28061,7 @@ window.SelHub = window.SelHub || {
         }
 
         function cpSendTurn() {
-          if (!callGemini || !cpRpInput.trim() || !trigCfg) return;
+          if (!_copAiOn || !cpRpInput.trim() || !trigCfg) return;
           var studentTurn = cpRpInput.trim();
           // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
           // Coping is the highest-content-risk Rehearse — students simulate
@@ -27817,7 +28118,7 @@ window.SelHub = window.SelHub || {
         }
 
         function cpCoachBreak() {
-          if (!callGemini || cpRpHistory.length === 0 || !trigCfg) return;
+          if (!_copAiOn || cpRpHistory.length === 0 || !trigCfg) return;
           upd('cpRpLoading', true);
           var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
           var historyText = cpRpHistory.map(function(t) {
@@ -27835,7 +28136,7 @@ window.SelHub = window.SelHub || {
             'SCENE: ' + scene + '\n' +
             'CONVERSATION:\n' + historyText;
           callGemini(prompt, false).then(function(r) {
-            var coachText = (r || 'Take a real breath. What\'s one thing you notice in your body right now? Name it out loud or in your head before you do anything else.').trim();
+            var coachText = String(r || '').trim(); if (!coachText) throw new Error('empty reply');
             upd({ cpRpHistory: cpRpHistory.concat([{ speaker: 'coach', text: coachText }]), cpRpLoading: false });
           }).catch(function() {
             upd('cpRpLoading', false);
@@ -27845,7 +28146,7 @@ window.SelHub = window.SelHub || {
         }
 
         function cpEndReflect() {
-          if (!callGemini || !trigCfg) return;
+          if (!_copAiOn || !trigCfg) return;
           upd('cpRpLoading', true);
           var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
           var historyText = cpRpHistory.map(function(t) {
@@ -27866,7 +28167,7 @@ window.SelHub = window.SelHub || {
             var reflectText = (r || 'You stayed in the moment instead of bailing. That\'s the rep that matters. Next time, try naming the feeling out loud in one short sentence ("I notice I\'m anxious") before doing anything else.').trim();
             upd({ cpRpEnded: true, cpRpReflection: reflectText, cpRpLoading: false });
             // Reward the rep — small XP bump for completing a rehearsal.
-            if (ctx.awardXP) ctx.awardXP('coping', 5);
+            if (ctx.awardXP) ctx.awardXP(5); // the hub's awardXP takes only an amount
           }).catch(function() {
             upd({ cpRpEnded: true, cpRpReflection: 'Rehearsal complete. The act of staying in the moment IS the coping skill. Next time, try naming the feeling out loud in one short sentence before reacting.', cpRpLoading: false });
           });
@@ -27877,37 +28178,50 @@ window.SelHub = window.SelHub || {
         }
 
         var sceneLine = cpRpHistory[0] && cpRpHistory[0].scene;
-        rehearseContent = h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
-          // Picker
+        rehearseContent = (cpTs && cpTs.editing) ? cpTs.renderEditor() : cpSpView || h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
+          // Picker (without AI each card starts a scripted scene)
           !cpRpScenarioId && h('div', null,
             h('h3', { style: { textAlign: 'center', marginBottom: 8, color: _copFg('#f1f5f9'), fontSize: 18 } }, 'Rehearse coping in a hard moment'),
             h('p', { style: { textAlign: 'center', marginBottom: 20, color: _copFg('#94a3b8'), fontSize: 13, lineHeight: 1.5 } },
-              'Pick a trigger. The AI plays it. You practice what you would actually do — say, think, or shift in your body. The trigger eases if your coping lands. This is rehearsal, not performance.'),
+              _copAiOn
+                ? 'Pick a trigger. The AI plays it. You practice what you would actually do — say, think, or shift in your body. The trigger eases if your coping lands. This is rehearsal, not performance.'
+                : 'Pick a trigger. At each step, choose what you would do — say, think, or shift in your body — and see how the moment changes. This is rehearsal, not performance.'),
+            cpTs ? cpTs.renderSection({ onPlay: cpStartTeacher }) : null,
             h('div', { style: { display: 'grid', gap: 10 } },
               TRIG_ORDER.map(function(tid) {
                 var cfg = COPING_TRIGGERS[tid];
                 return h('button', {
                   key: tid,
-                  onClick: function() { cpStartRolePlay(tid); if (soundEnabled) sfxClick(); },
-                  disabled: !callGemini || cpRpStarting,
+                  'data-sp-start': _copAiOn ? undefined : tid,
+                  onClick: function() { if (_copAiOn) cpStartRolePlay(tid); else cpStartScript(tid); if (soundEnabled) sfxClick(); },
+                  disabled: _copAiOn && cpRpStarting,
                   style: {
                     padding: '12px 14px', textAlign: 'left',
                     background: 'rgba(249,115,22,0.08)', border: '2px solid rgba(249,115,22,0.35)',
-                    borderRadius: 10, color: _copFg('#f1f5f9'), cursor: (callGemini && !cpRpStarting) ? 'pointer' : 'not-allowed',
+                    borderRadius: 10, color: _copFg('#f1f5f9'), cursor: (_copAiOn && cpRpStarting) ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'flex-start', gap: 12,
-                    opacity: cpRpStarting ? 0.6 : 1, fontSize: 14
+                    opacity: (_copAiOn && cpRpStarting) ? 0.6 : 1, fontSize: 14
                   }
                 },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 26, marginTop: 2 } }, cfg.icon),
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { fontWeight: 700, marginBottom: 6, color: _copFg('#fed7aa') } }, cfg.label),
-                    h('div', { style: { fontSize: 12, color: _copFg('#cbd5e1'), lineHeight: 1.5 } }, cfg.blurb)
+                    h('div', { style: { fontSize: 12, color: _copFg('#cbd5e1'), lineHeight: 1.5 } }, _copAiOn ? cfg.blurb : 'Scripted scene: ' + CP_SCRIPTS[tid].title)
                   )
                 );
               })
             ),
-            cpRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: _copFg('#fdba74'), fontStyle: 'italic' } }, 'Setting the scene…'),
-            !callGemini && h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: _copFg('#fdba74'), fontStyle: 'italic' } }, 'AI features need a connection. Try the Practice tab while offline.')
+            _copAiOn && cpRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: _copFg('#fdba74'), fontStyle: 'italic' } }, 'Setting the scene…'),
+            // With AI on, the same triggers are also offered as scripted scenes (no AI).
+            _copAiOn && h('div', { 'data-sp-offer': 'true', role: 'group', 'aria-label': 'Scripted versions (no AI)', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14 } },
+              h('span', { style: { fontSize: 12, color: _copFg('#94a3b8') } }, 'Prefer no AI? Scripted versions:'),
+              TRIG_ORDER.map(function(tid) {
+                return h('button', { key: tid, type: 'button', 'data-sp-start': tid, 'aria-label': 'Play scripted version: ' + CP_SCRIPTS[tid].title, title: CP_SCRIPTS[tid].title,
+                  onClick: function() { cpStartScript(tid); if (soundEnabled) sfxClick(); },
+                  style: { minWidth: 44, minHeight: 44, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + _copBd('#475569'), background: 'transparent', color: _copFg('#f1f5f9'), fontSize: 18, cursor: 'pointer' } },
+                  h('span', { 'aria-hidden': 'true' }, COPING_TRIGGERS[tid].icon));
+              })
+            )
           ),
           // Conversation
           cpRpScenarioId && trigCfg && h('div', null,
@@ -27966,25 +28280,25 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', {
                   onClick: cpSendTurn,
-                  disabled: cpRpLoading || !cpRpInput.trim() || !callGemini,
+                  disabled: cpRpLoading || !cpRpInput.trim() || !_copAiOn,
                   'aria-busy': cpRpLoading ? 'true' : 'false',
                   style: {
                     padding: '10px 16px',
-                    background: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'rgba(148,163,184,0.3)' : '#f97316',
+                    background: (cpRpLoading || !cpRpInput.trim() || !_copAiOn) ? 'rgba(148,163,184,0.3)' : '#f97316',
                     color: _copFg('#fff'), border: 'none', borderRadius: 8, fontWeight: 700,
-                    cursor: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                    cursor: (cpRpLoading || !cpRpInput.trim() || !_copAiOn) ? 'not-allowed' : 'pointer',
                     fontSize: 13
                   }
                 }, cpRpLoading ? 'Thinking…' : 'Send →'),
                 h('button', {
                   onClick: cpCoachBreak,
-                  disabled: cpRpLoading || !callGemini || cpRpHistory.length === 0,
-                  style: { padding: '10px 14px', background: 'rgba(245,158,11,0.15)', color: _copFg('#fcd34d'), border: '1px solid rgba(252,211,77,0.5)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini || cpRpHistory.length === 0) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                  disabled: cpRpLoading || !_copAiOn || cpRpHistory.length === 0,
+                  style: { padding: '10px 14px', background: 'rgba(245,158,11,0.15)', color: _copFg('#fcd34d'), border: '1px solid rgba(252,211,77,0.5)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !_copAiOn || cpRpHistory.length === 0) ? 'not-allowed' : 'pointer', fontSize: 13 }
                 }, '🪶 Pause — coach me'),
                 cpRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
                   onClick: cpEndReflect,
-                  disabled: cpRpLoading || !callGemini,
-                  style: { padding: '10px 14px', background: 'rgba(15,23,42,0.6)', color: _copFg('#cbd5e1'), border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                  disabled: cpRpLoading || !_copAiOn,
+                  style: { padding: '10px 14px', background: 'rgba(15,23,42,0.6)', color: _copFg('#cbd5e1'), border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !_copAiOn) ? 'not-allowed' : 'pointer', fontSize: 13 }
                 }, 'End & reflect')
               )
             ),
@@ -28165,7 +28479,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // ── AI Calm Plan Suggestions ──
-          callGemini && h('div', { style: { marginTop: 20, padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, #14b8a612 0%, #8b5cf612 100%)', border: '1px solid #14b8a633' } },
+          _copAiOn && h('div', { style: { marginTop: 20, padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, #14b8a612 0%, #8b5cf612 100%)', border: '1px solid #14b8a633' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
               Sparkles ? h(Sparkles, { size: 14 }) : h('span', null, '\u2728'),
               h('span', { style: { fontWeight: 700, color: _copFg('#f1f5f9'), fontSize: 13 } },
@@ -28274,7 +28588,7 @@ window.SelHub = window.SelHub || {
             style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _copBg('#1e293b'), color: _copFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
           }),
 
-          callGemini && matcherFeeling.trim() && h('button', { 'aria-label': 'Match coping strategies',
+          _copAiOn && matcherFeeling.trim() && h('button', { 'aria-label': 'Match coping strategies',
             onClick: function() {
               upd({ matcherLoading: true, matcherResult: null });
               tryAwardBadge('ai_match');
@@ -28523,7 +28837,7 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxCheckin();
                   addToast(mood.emoji + ' Got it! ' + (mood.zone === 'green' ? 'Glad you\'re in a good place!' : 'Let\'s find something to help.'), 'info');
                   // Auto-recommend based on zone
-                  if (mood.zone !== 'green' && callGemini) {
+                  if (mood.zone !== 'green' && _copAiOn) {
                     upd('dailyRecLoading', true);
                     var stratNames = STRATEGIES.filter(function(s) { return s.bestFor.indexOf(mood.zone) !== -1; }).map(function(s) { return s.name[band]; }).join(', ');
                     callGemini('A ' + band + ' school student is feeling ' + mood.label.toLowerCase() + ' today (' + mood.zone + ' zone). ' +
@@ -28987,6 +29301,7 @@ window.SelHub = window.SelHub || {
       return h('div', { style: { minHeight: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h, ctx) : null),
         tabBar,
+        (cpTs && activeTab !== 'rehearse') ? cpTs.renderJump({ onOpen: function() { upd({ activeTab: 'rehearse', spId: '', cpRpScenarioId: '' }); } }) : null,
         heroBand,
         copingCommandPanel(),
         dailyCheckin,

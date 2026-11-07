@@ -14,7 +14,7 @@ describe('browser-voice fallback default', () => {
   it('is on unless explicitly disabled, in both the checkbox and the reader', () => {
     expect(header).toContain('browserTtsFallback !== false; } catch { return true; }');
     expect(header).not.toContain('browserTtsFallback === true');
-    expect(phaseK).toContain('browserFallback: config.browserTtsFallback !== false,');
+    expect(phaseK).toContain("browserFallback: config.browserTtsFallback !== false || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true),");
     expect(phaseK).toContain("return { provider: '', browserFallback: true };");
     expect(phaseK).not.toContain('browserTtsFallback === true');
   });

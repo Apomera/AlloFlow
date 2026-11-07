@@ -6,7 +6,9 @@ describe('Area Model mode tabs accessibility', () => {
     const source = readFileSync('stem_lab/stem_tool_areamodel.js', 'utf8');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_areamodel.js', 'utf8')).toBe(source);
     expect(source).toContain("role: 'tablist'");
-    expect(source).toContain("].map(function(m, tabIndex)");
+    // Stage B (2026-11-03) builds the tab list from the MODES array instead of an inline literal;
+    // stage C orders it for the grade level (tabOrder: the level's core tabs first, then MODES).
+    expect(source).toContain("tabOrder.map(function(id) { return { id: id }; }).map(function(m, tabIndex)");
     expect(source).toContain("role: 'tab'");
     expect(source).toContain("'aria-controls': 'stem-areamodel-panel-' + m.id");
     expect(source).not.toContain("'aria-controls': 'stem-areamodel-panel-' + viewMode");

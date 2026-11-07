@@ -17,13 +17,21 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 const DIR = process.env.VPAT_KEYS_SRC_DIR || 'stem_lab';
 const WINDOW_HANDLERS = ['_areaModelKbHandler', '_coordGridKeyHandler', '_fracKbHandler', '_volumeKeyHandler', '_multTableKbHandler'];
 
+// stem_tool_areamodel.js left this list on 2026-11-03: its single-letter
+// shortcuts were removed outright (they fired from focused buttons, and "c"
+// swapped an open distributive challenge). tests/areamodel_deep_regressions.test.js
+// asserts that bare c/n/w/b on a focused control change nothing.
 const CASES = [
-  { file: 'stem_tool_areamodel.js', id: 'areamodel', key: 'w' },
   { file: 'stem_tool_coordgrid.js', id: 'coordinate', key: '?' },
   { file: 'stem_tool_fractions.js', id: 'fractions', key: 'b' },
   { file: 'stem_tool_volume.js', id: 'volume', key: 'b' },
-  { file: 'stem_tool_multtable.js', id: 'multtable', key: 'b' },
-  { file: 'stem_tool_numberline.js', id: 'numberline', key: '?' },
+  // multtable (2026-11-03): its bare-key shortcuts no longer fire from a
+  // focused button at all, only from the practice panel itself, so case 3
+  // below does not apply. tests/multtable_deep_a11y.test.js checks all three
+  // cases for it (outside, Ctrl, on a button) plus the panel.
+  // numberline (2026-11-03): same change as multtable; its shortcuts fire only
+  // from the tool area (e.g. the tabpanel), never from a focused button.
+  // tests/numberline_deep_ui.test.js checks outside, on a button, and the panel.
   { file: 'stem_tool_inequality.js', id: 'inequality', key: 'b' },
 ];
 

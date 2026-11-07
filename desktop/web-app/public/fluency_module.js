@@ -403,6 +403,69 @@
     };
   }
 
+  // Partner-scored running record (no AI, no audio). A partner or teacher taps
+  // the words the reader misread or skipped and marks the last word read.
+  // Words are the same scorable tokens the AI path counts.
+  function tokenizeFluencyPassage(text) {
+    return _tokenizeReference(text).map(function (t) { return t.raw; });
+  }
+
+  // WCPM = (words attempted - errors) / minutes; accuracy = correct / attempted.
+  // Builds a word list and runs it through calculateLocalFluencyMetrics so the
+  // numbers match the AI path and a later teacher review recomputes the same way.
+  function buildPartnerFluencyResult(options) {
+    options = options || {};
+    var words = Array.isArray(options.words) ? options.words : tokenizeFluencyPassage(options.passageText);
+    var last = Math.floor(Number(options.lastWordIndex));
+    if (!isFinite(last)) last = words.length - 1;
+    last = Math.min(words.length - 1, last);
+    var errorSet = {};
+    (Array.isArray(options.errorIndexes) ? options.errorIndexes : []).forEach(function (i) {
+      i = Math.floor(Number(i));
+      if (isFinite(i) && i >= 0 && i <= last) errorSet[i] = true;
+    });
+    var wordData = [];
+    for (var i = 0; i <= last; i++) {
+      wordData.push({ word: String(words[i]), status: errorSet[i] ? 'mispronounced' : 'correct' });
+    }
+    var attempted = wordData.length;
+    var errorCount = Object.keys(errorSet).length;
+    var limit = Number(options.timeLimitSeconds) > 0 ? Number(options.timeLimitSeconds) : 0;
+    var durationSeconds = Math.max(0, Number(options.durationSeconds) || 0);
+    if (limit > 0) durationSeconds = Math.min(durationSeconds, limit);
+    durationSeconds = Math.max(1, Math.round(durationSeconds * 10) / 10);
+    var m = attempted > 0
+      ? calculateLocalFluencyMetrics(wordData, durationSeconds, attempted, [])
+      : { accuracy: 0, wcpm: 0, correctWords: 0 };
+    var recordId = options.recordId || ('partner-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+    var passageMetadata = options.passageMetadata ||
+      createFluencyPassageMetadata(options.passageText || words.join(' '), options.passage || {});
+    return {
+      recordId: recordId,
+      timestamp: options.timestamp || new Date().toISOString(),
+      scoringMethod: 'partner',
+      audioCaptured: false,
+      wordData: wordData,
+      insertions: [],
+      feedback: '',
+      durationSeconds: durationSeconds,
+      timeLimitSeconds: limit,
+      totalReferenceWordCount: attempted,
+      passageWordCount: words.length,
+      wordsAttempted: attempted,
+      errorCount: errorCount,
+      accuracy: m.accuracy,
+      wcpm: m.wcpm,
+      correctWords: m.correctWords,
+      metrics: {
+        accuracy: m.accuracy, wcpm: m.wcpm, correctWords: m.correctWords,
+        durationSeconds: durationSeconds, totalWords: attempted, wordsAttempted: attempted, errors: errorCount
+      },
+      passageMetadata: Object.assign({}, passageMetadata, { calibrated: false }),
+      review: { status: 'unreviewed' }
+    };
+  }
+
   function getBenchmarkComparison(wcpm, grade, season, customNorms) {
       if (grade === 'custom' && customNorms) {
           var seasonKey = (season || 'winter').toLowerCase();
@@ -432,7 +495,35 @@
       return { level: level2, target: target2 };
   }
 
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+  // Hosts whose callGeminiAudio advertises _alloJsonMaxOutputTokens handle keyless
+  // Canvas and long JSON output, so the voice goes through the host transport and
+  // its policy (student AI off, audio not approved, managed deployments).
+  function _hostAudioTransport() {
+    var fn = typeof window !== 'undefined' ? window.callGeminiAudio : null;
+    return typeof fn === 'function' && !fn._alloQrBlocked && Number(fn._alloJsonMaxOutputTokens) > 0 ? fn : null;
+  }
+  // OLD-HOST FALLBACK ONLY. The raw fetch below bypasses the host transport, so
+  // apply host audio policy here. Allowed: host audio is usable, or the ONLY reason
+  // it is not is a missing key (keyless Canvas) and text AI is usable. A policy
+  // "no" (student AI off, audio not approved for students) never falls through.
+  function _fluencyCloudAllowed() {
+    if (typeof window === 'undefined' || window.__alloStudentAiDisabled === true) return false;
+    if (_aiUsable('audio', window.callGeminiAudio)) return true;
+    var cap = null;
+    try { if (typeof window.__alloResolveGeminiAudioCapability === 'function') cap = window.__alloResolveGeminiAudioCapability(); } catch (_) { return false; }
+    if (cap && cap.reason !== 'missing-gemini-key') return false;
+    return _aiUsable('text', window.callGemini);
+  }
+
   async function analyzeFluencyWithGemini(audioBase64, mimeType, referenceText) {
+      var hostAudio = _hostAudioTransport();
+      if (hostAudio ? !_aiUsable('audio', hostAudio) : !_fluencyCloudAllowed()) return null;
       // Pull config from window at call time. apiKey + GEMINI_MODELS are set
       // by AlloFlowANTI.txt at file-parse time (lines ~790-792); warnLog is set
       // at line ~2128. By the time anyone triggers a fluency analysis (user
@@ -443,6 +534,15 @@
       var warnLog = ((typeof window !== 'undefined') && window.warnLog) || function () { console.warn.apply(console, arguments); };
 
       var PROMPT = '\n    You are an expert reading tutor AND a critical self-assessor of AI speech recognition accuracy.\n    REFERENCE TEXT:\n    "' + referenceText.substring(0, 5000) + '",\n    INSTRUCTIONS:\n    1. Listen to the student\'s audio recording.\n    2. Compare it strictly word-for-word against the Reference Text.\n    3. Return a JSON object describing the status of every word.\n    STATUS TYPES:\n    - "correct": Pronounced correctly.\n    - "missed": Skipped completely (omission).\n    - "stumbled": Hesitated noticeably but eventually got it right without saying a different word.\n    - "self_corrected": Said a wrong word first, then corrected themselves to the right word.\n    - "mispronounced": Said the wrong word or pronounced it incorrectly and did NOT self-correct.\n    - "insertion": (Optional) If they added a word not in the text.\n    For "mispronounced" and "self_corrected" words, include a "said" field with what the student actually said.\n    For ANY word where you are less than 80% certain of your classification, add "lowConfidence": true.\n    KNOWN BIAS LIMITATIONS — YOU MUST ACCOUNT FOR THESE:\n    - AI speech recognition has documented higher error rates for speakers of African American English (Koenecke et al., 2020, PNAS)\n    - Child speech recognition error rates are 2-5x higher than adult rates (Wu et al., 2020)\n    - Regional accents and L2 English speakers experience higher misrecognition (Tatman, 2017)\n    - Dialectal pronunciations (e.g., "ax" for "ask" in AAE, "gonna" for "going to") are linguistically valid — do NOT mark these as mispronounced\n    - If you detect accent or dialect patterns, err on the side of "correct" rather than "mispronounced"\n    4. CONFIDENCE SELF-ASSESSMENT — After word analysis, evaluate your own accuracy:\n    - Audio quality: noise, clipping, echo, microphone distance\n    - Speaker characteristics: young child, accented speech, dialectal variation\n    - Consistency: did the same word get different classifications in different positions?\n    RETURN JSON ONLY:\n    {\n      "wordData": [\n        { "word": "The", "status": "correct" },\n        { "word": "cat", "status": "missed" },\n        { "word": "horse", "status": "mispronounced", "said": "house" },\n        { "word": "barn", "status": "self_corrected", "said": "band", "lowConfidence": true },\n        { "word": "sat", "status": "correct" }\n      ],\n      "insertions": ["um", "like"],\n      "feedback": "1-2 sentences of encouraging feedback focusing on specific phonics or pacing improvements.",\n      "prosody": {\n        "pacing": 3,\n        "expression": 4,\n        "phrasing": 3,\n        "note": "Brief note on prosody"\n      },\n      "confidence": {\n        "overall": 8,\n        "audioQuality": 9,\n        "speakerClarity": 7,\n        "accentDetected": false,\n        "youngVoiceDetected": false,\n        "dialectalPatternsDetected": false,\n        "lowConfidenceWordCount": 1,\n        "note": "Brief explanation of confidence factors affecting this specific analysis",\n        "limitationsApplied": "Which known limitations from the research literature were relevant, or \'none detected\'"\n      }\n    }\n    PROSODY RATING GUIDE (1-5):\n    - pacing: 1=very slow/labored, 2=slow with many pauses, 3=uneven pace, 4=mostly smooth, 5=natural conversational pace\n    - expression: 1=monotone, 2=little variation, 3=some expression, 4=good variation, 5=expressive and natural\n    - phrasing: 1=word-by-word, 2=two-word groups, 3=some phrase groups, 4=mostly meaningful phrases, 5=smooth phrase reading\n    CONFIDENCE RATING GUIDE (1-10):\n    - 1-3: Low — results should be verified by a human listener\n    - 4-6: Moderate — some words may be inaccurate, especially if accent/dialect/young voice detected\n    - 7-8: Good — minor uncertainty on a few words\n    - 9-10: High — clear audio, standard pronunciation, high consistency\n  ';
+      if (hostAudio) {
+          try {
+              var hostText = await hostAudio(PROMPT, audioBase64, { mimeType: mimeType, responseMimeType: 'application/json', maxOutputTokens: Number(hostAudio._alloJsonMaxOutputTokens) });
+              return hostText ? JSON.parse(hostText) : null;
+          } catch (hostError) {
+              warnLog('Gemini Audio Analysis Failed:', hostError);
+              return null;
+          }
+      }
       var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + defaultModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');
       var payload = {
           contents: [{
@@ -1081,6 +1181,8 @@
   window.applyFluencyReview = applyFluencyReview;
   window.summarizeFluencyEvidence = summarizeFluencyEvidence;
   window.buildFluencyAlloSheetEnvelope = buildFluencyAlloSheetEnvelope;
+  window.tokenizeFluencyPassage = tokenizeFluencyPassage;
+  window.buildPartnerFluencyResult = buildPartnerFluencyResult;
 
   // Trigger the monolith's upgrade callback if it exists.
   if (typeof window._upgradeFluency === 'function') {
@@ -1103,7 +1205,9 @@
       createFluencyPassageMetadata: createFluencyPassageMetadata,
       applyFluencyReview: applyFluencyReview,
       summarizeFluencyEvidence: summarizeFluencyEvidence,
-      buildFluencyAlloSheetEnvelope: buildFluencyAlloSheetEnvelope
+      buildFluencyAlloSheetEnvelope: buildFluencyAlloSheetEnvelope,
+      tokenizeFluencyPassage: tokenizeFluencyPassage,
+      buildPartnerFluencyResult: buildPartnerFluencyResult
   };
   console.log('[CDN] Fluency loaded');
 })();

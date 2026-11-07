@@ -6,7 +6,7 @@ const additions = ['yellow_longnose_butterflyfish', 'pajama_cardinalfish'];
 let X, text, profiles;
 beforeAll(() => {
   const w = { StemLab: { isRegistered: () => false, registerTool() {} }, __RR_TEST_EXPORTS__: {} };
-  vm.runInNewContext(readFileSync('stem_lab/stem_tool_coralreef.js', 'utf8'), { window: w, Math, Object, JSON, Array, Number, String, Date, URL });
+  vm.runInNewContext(readFileSync(process.env.CORALREEF_SOURCE || 'stem_lab/stem_tool_coralreef.js', 'utf8'), { window: w, Math, Object, JSON, Array, Number, String, Date, URL });
   X = w.__RR_TEST_EXPORTS__.coralReef; text = X.speciesText((k, v) => v); profiles = X.marineProfiles((k, v) => v);
 });
 
@@ -26,7 +26,7 @@ describe('longnose butterflyfish and pajama cardinalfish learning integration', 
       expect(portrait.equals(readFileSync('desktop/web-app/public/stem_lab/assets/coralreef/species/' + id + '.webp'))).toBe(true);
     });
     expect(text[additions[0]].marks.join(' ')).toMatch(/snout.*head.*anal fin/);
-    expect(text[additions[1]].marks.join(' ')).toMatch(/eye.*bar.*spots.*dorsal fins/);
+    expect(text[additions[1]].marks.join(' ')).toMatch(/(eye|iris).*bar.*spots.*dorsal fins/);
     expect(X.SPECIES_META.find(m => m.id === additions[0]).lookalikes).toEqual(['copperband_butterflyfish']);
   });
 

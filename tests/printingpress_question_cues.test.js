@@ -23,7 +23,9 @@ import { describe, expect, it } from 'vitest';
 // trip them by design - calibration has to degrade the bank at scale, and doing
 // that to the real file risks leaving it broken.
 const SRC = process.env.PP_SRC || 'stem_lab/stem_tool_printingpress.js';
-const src = readFileSync(SRC, 'utf8');
+// Options are wrapped for translation; this measures the English behind them.
+const ppEnglishSource = (s) => s.replace(/__alloT\('stem\.printingpress\.[A-Za-z0-9_]+',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\)/g, '$1');
+const src = ppEnglishSource(readFileSync(SRC, 'utf8'));
 
 function splitOptions(raw) {
   const out = [];

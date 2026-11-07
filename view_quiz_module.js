@@ -48,6 +48,30 @@ function QuizTranslationText(props) {
   });
 }
 
+// Learner AI check: a null prop, a host-blocked fn (_alloQrBlocked) or student
+// AI off all mean "no AI", so AI controls hide and graders use teacher review.
+function _quizAiOn(fn, kind) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind || 'text', fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+// Teacher AI-only controls: host doorway (disabled + reason + setup link); null on old hosts.
+function _quizAiDoor(t, kind) {
+  try {
+    var d = typeof window !== 'undefined' && window.__alloAiSetupDoorway;
+    return typeof d === 'function' ? d(kind || 'text', t) : null;
+  } catch (_) {
+    return null;
+  }
+}
+function QuizAiSetupNotice(p) {
+  var N = typeof window !== 'undefined' && window.AlloAiSetupNotice;
+  return typeof N === 'function' ? /*#__PURE__*/React.createElement(N, {
+    t: p.t
+  }) : null;
+}
+
 // Light markdown for AI-written assessment text: **bold**, __bold__, *italic*, _italic_, `code`,
 // line breaks, and (blocks) lists. No math, links, or HTML, so "$5 and $2", "2 * 3" and "___" stay as written.
 var _QUIZ_MD_RULES = [{
@@ -2797,10 +2821,10 @@ function SequenceSenseCard(p) {
   var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2 ? q.principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-  // The mode may ask for an explainer, but the host hands callGemini as null
-  // when student AI is off; offering a button that can only say "Explainer
+  // The mode may ask for an explainer, but with no usable AI (null prop, host-blocked
+  // fn or student AI off) a button that can only say "Explainer
   // unavailable." is a leak, so the affordance needs both.
-  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && _quizAiOn(p.callGemini);
   var explainerState = React.useState({
     open: false,
     loading: false,
@@ -2810,7 +2834,7 @@ function SequenceSenseCard(p) {
   var explainer = explainerState[0];
   var setExplainer = explainerState[1];
   function requestExplainer() {
-    if (typeof p.callGemini !== 'function') {
+    if (!_quizAiOn(p.callGemini)) {
       setExplainer({
         open: true,
         loading: false,
@@ -3394,10 +3418,10 @@ function RelationMismatchCard(p) {
   var setGrade = gradeState[1];
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
-  // The mode may ask for an explainer, but the host hands callGemini as null
-  // when student AI is off; offering a button that can only say "Explainer
+  // The mode may ask for an explainer, but with no usable AI (null prop, host-blocked
+  // fn or student AI off) a button that can only say "Explainer
   // unavailable." is a leak, so the affordance needs both.
-  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && _quizAiOn(p.callGemini);
   var explainerState = React.useState({
     open: false,
     loading: false,
@@ -3407,7 +3431,7 @@ function RelationMismatchCard(p) {
   var explainer = explainerState[0];
   var setExplainer = explainerState[1];
   function requestExplainer() {
-    if (typeof p.callGemini !== 'function') {
+    if (!_quizAiOn(p.callGemini)) {
       setExplainer({
         open: true,
         loading: false,
@@ -3780,10 +3804,10 @@ function McqEnhancements(p) {
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
   var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-  // The mode may ask for an explainer, but the host hands callGemini as null
-  // when student AI is off; offering a button that can only say "Explainer
+  // The mode may ask for an explainer, but with no usable AI (null prop, host-blocked
+  // fn or student AI off) a button that can only say "Explainer
   // unavailable." is a leak, so the affordance needs both.
-  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && _quizAiOn(p.callGemini);
   if (!allowIDK && !allowConfidence && !aiExplainerEnabled) return null;
   var explainerState = React.useState({
     open: false,
@@ -3817,7 +3841,7 @@ function McqEnhancements(p) {
   var confidence = hasParentConfidence ? p.currentConfidence : localConfidenceState[0];
   var setConfidence = hasParentConfidence ? p.onSetConfidence : localConfidenceState[1];
   function requestExplainer() {
-    if (typeof p.callGemini !== 'function') {
+    if (!_quizAiOn(p.callGemini)) {
       setExplainer({
         open: true,
         loading: false,
@@ -4500,6 +4524,7 @@ function LiveResultsDashboard(p) {
     Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
       var txt = typeof raw === 'object' && raw && raw.text ? raw.text : String(raw || '');
       txt = txt.replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+      if (!txt) throw new Error('The AI did not return an explainer.');
       setExplainerModal(function (prev) {
         return Object.assign({}, prev, {
           loading: false,
@@ -5064,10 +5089,11 @@ function LiveResultsDashboard(p) {
         onClick: function () {
           openExplainer(card.questionIdx, card.conceptText);
         },
-        className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none",
+        disabled: !!_quizAiDoor(t)?.disabled,
+        className: "ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50",
         "aria-label": t("a11y.explain_to_class"),
         "data-help-key": "quiz_explain_to_class_btn",
-        title: t("tooltips.generate_concept_explainer")
+        title: _quizAiDoor(t)?.title || t("tooltips.generate_concept_explainer")
       }, /*#__PURE__*/React.createElement("span", {
         "aria-hidden": "true"
       }, "🎓 "), t("ui_common.explain_to_class"))));
@@ -8041,6 +8067,9 @@ function AssessmentItemActions(p) {
       value: entry[0]
     }, _quizAuthorTypeLabel(entry[0]));
   });
+  var aiDoor = _quizAiDoor(t),
+    aiOff = !!(aiDoor && aiDoor.disabled),
+    aiTitle = aiOff ? aiDoor.title : undefined;
   return /*#__PURE__*/React.createElement("div", {
     "data-assess-item-actions": true,
     role: "group",
@@ -8075,7 +8104,9 @@ function AssessmentItemActions(p) {
   }, t('common.duplicate')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
-    disabled: disabled || p.regenerating,
+    "data-assess-regenerate": true,
+    disabled: disabled || p.regenerating || aiOff,
+    title: aiTitle,
     onClick: function () {
       if (typeof p.onRegenerate === 'function') p.onRegenerate(p.questionIdx, q);
     },
@@ -8138,7 +8169,8 @@ function AssessmentItemActions(p) {
       triggerRefs.current.convert = node;
     },
     "data-assess-convert": true,
-    disabled: structureDisabled || p.regenerating || targetType === currentType || typeof p.onChangeType !== 'function',
+    disabled: structureDisabled || p.regenerating || aiOff || targetType === currentType || typeof p.onChangeType !== 'function',
+    title: aiTitle,
     onClick: function () {
       convertConfirmState[1](true);
     },
@@ -8218,7 +8250,8 @@ function AssessmentItemActions(p) {
     type: "button",
     style: controlSize,
     "data-assess-add-ai": true,
-    disabled: !!p.adding,
+    disabled: !!p.adding || aiOff,
+    title: aiTitle,
     onClick: function () {
       p.onAddItem(p.questionIdx, addTypeState[0], 'ai');
     },
@@ -8241,7 +8274,9 @@ function AssessmentItemActions(p) {
     className: smallButton
   }, t('common.cancel'))), /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600"
-  }, t('quiz.authoring.add_help'))), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
+  }, t('quiz.authoring.add_help')), aiOff && /*#__PURE__*/React.createElement(QuizAiSetupNotice, {
+    t: t
+  })), q.type === 'mcq' && Array.isArray(q.options) && /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "text-[11px] font-semibold text-slate-700"
@@ -8803,10 +8838,13 @@ function AssessmentQualityPanel(p) {
     }, /*#__PURE__*/React.createElement("strong", null, issue.questionIdx === null ? 'Recipe' : 'Q' + (issue.questionIdx + 1), ":"), " ", ' ' + issue.message);
   })) : /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-emerald-800"
-  }, "All answer keys, required fields, counts, and structural checks passed."), audit.issues.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, "All answer keys, required fields, counts, and structural checks passed."), audit.issues.length > 0 && _quizAiDoor(t)?.disabled && /*#__PURE__*/React.createElement(QuizAiSetupNotice, {
+    t: t
+  }), audit.issues.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: p.onRepairAll,
-    disabled: p.repairing || typeof p.onRepairAll !== 'function',
+    disabled: p.repairing || typeof p.onRepairAll !== 'function' || !!_quizAiDoor(t)?.disabled,
+    title: _quizAiDoor(t)?.title || undefined,
     className: "px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50"
   }, p.repairing ? 'Repairing assessment…' : 'Fix flagged and missing items'), /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] text-slate-600"
@@ -8951,10 +8989,10 @@ function FreeformItemCard(p) {
   var modeStrat = p.modeStrategy || null;
   var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
   var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
-  // The mode may ask for an explainer, but the host hands callGemini as null
-  // when student AI is off; offering a button that can only say "Explainer
+  // The mode may ask for an explainer, but with no usable AI (null prop, host-blocked
+  // fn or student AI off) a button that can only say "Explainer
   // unavailable." is a leak, so the affordance needs both.
-  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && typeof p.callGemini === 'function';
+  var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail) && _quizAiOn(p.callGemini);
   var scoringPolicy = p.scoringPolicy || {
     partialCredit: true,
     writtenResponseMode: 'ai-provisional'
@@ -9052,7 +9090,7 @@ function FreeformItemCard(p) {
       });
       return;
     }
-    if (typeof p.callGemini !== 'function' && !isFill) {
+    if (!_quizAiOn(p.callGemini) && !isFill) {
       setGrade({
         status: 'submitted',
         feedback: 'Saved for teacher review. Use the success criteria to review and improve your response.',
@@ -9074,7 +9112,7 @@ function FreeformItemCard(p) {
       loading: true
     });
     var graderArgs = {
-      callGemini: p.callGemini,
+      callGemini: _quizAiOn(p.callGemini) ? p.callGemini : null,
       gradeLevel: p.gradeLevel,
       studentCriteria: q.studentCriteria || []
     };
@@ -9137,7 +9175,7 @@ function FreeformItemCard(p) {
     if (aiExplainerEnabled) requestExplainer();
   }
   function requestExplainer() {
-    if (typeof p.callGemini !== 'function') {
+    if (!_quizAiOn(p.callGemini)) {
       setExplainer({
         open: true,
         loading: false,
@@ -11126,7 +11164,7 @@ function QuizViewContent(props) {
       var raw = await props.callGemini(prompt, true);
       var parsed = _quizExtractJson(raw);
       var item = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
-      if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('The AI did not return a valid item.');
+      if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.question !== 'string' || !item.question.trim()) throw new Error('The AI did not return a valid item.');
       var currentProps = authoringRequests.currentProps(request);
       if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') {
         if (typeof props.addToast === 'function') props.addToast(t('quiz.authoring.toast_add_stale'), 'info');
@@ -11173,7 +11211,7 @@ function QuizViewContent(props) {
       var raw = await props.callGemini(prompt, true);
       var parsed = _quizExtractJson(raw);
       var replacement = parsed && parsed.question && typeof parsed.question === 'object' ? parsed.question : parsed;
-      if (!replacement || typeof replacement !== 'object') throw new Error('The AI did not return a valid question.');
+      if (!replacement || typeof replacement !== 'object' || Array.isArray(replacement) || typeof replacement.question !== 'string' || !replacement.question.trim()) throw new Error('The AI did not return a valid question.');
       var currentProps = authoringRequests.currentProps(request);
       if (!currentProps || typeof currentProps.handleQuizQuestionAction !== 'function') return;
       replacement.type = type;
@@ -11986,6 +12024,7 @@ function QuizViewContent(props) {
       var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity).' + styleClause + ' Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
       var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
       if (!authoringRequests.current(request)) return;
+      if (!refinedUrl) throw new Error(t('visuals.actions.refinement_failed') || 'Refine failed — try again.');
       if (typeof handleQuizImageRefine === 'function') {
         handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
       }
@@ -12161,9 +12200,9 @@ function QuizViewContent(props) {
         e.stopPropagation();
         toggleRefinePanel(key);
       },
-      disabled: isLoading,
+      disabled: isLoading || !!_quizAiDoor(t, 'imageEdit')?.disabled,
       className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50',
-      title: isLoading ? 'Refining…' : 'Refine this image',
+      title: isLoading ? 'Refining…' : _quizAiDoor(t, 'imageEdit')?.title || 'Refine this image',
       "aria-label": t("a11y.refine_image"),
       "data-help-key": "quiz_image_refine_btn"
     }, isLoading ? '⋯' : '✏️'), isOpen && /*#__PURE__*/React.createElement("div", {
@@ -12531,7 +12570,7 @@ function QuizViewContent(props) {
   var _quizMode = generatedContent && generatedContent.data && generatedContent.data.mode || 'exit-ticket';
   var _qmStrategiesMod = window.AlloModules && window.AlloModules.QuizModeStrategies || null;
   var _modeStrat = _qmStrategiesMod ? _qmStrategiesMod.getStrategy(_quizMode) : null;
-  var _aiExplainerEnabled = !deferFeedback && !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail) && typeof props.callGemini === 'function';
+  var _aiExplainerEnabled = !deferFeedback && !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail) && _quizAiOn(props.callGemini);
   var _showModeBanner = _quizMode !== 'exit-ticket' && !!_modeStrat;
   var _explainerState = React.useState({
     topic: '',
@@ -12546,7 +12585,7 @@ function QuizViewContent(props) {
   var setExplainerInput = _explainerInput[1];
   function explainConcept(topic) {
     if (!topic || !topic.trim()) return;
-    if (typeof props.callGemini !== 'function') {
+    if (!_quizAiOn(props.callGemini)) {
       setExplainerData({
         topic: topic,
         loading: false,
@@ -12665,7 +12704,8 @@ function QuizViewContent(props) {
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: bulkImproveDistractors,
-      disabled: isBulkImproving,
+      disabled: isBulkImproving || !!_quizAiDoor(t)?.disabled,
+      title: _quizAiDoor(t)?.title || undefined,
       className: "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors motion-reduce:transition-none",
       "aria-label": isBulkImproving ? 'Rewriting ' + weakCount + ' weak distractors' : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
       "data-help-key": "quiz_bulk_improve_btn",
@@ -14030,7 +14070,7 @@ function QuizViewContent(props) {
     return soloQuestSetup.ready && window.AlloModules?.ConceptQuestSolo ? /*#__PURE__*/React.createElement(window.AlloModules.ConceptQuestSolo, {
       generatedContent: generatedContent,
       inputText: inputText,
-      callGemini: props.callGemini,
+      callGemini: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null,
       user: props.user,
       appId: appId,
       t: t,
@@ -14053,7 +14093,9 @@ function QuizViewContent(props) {
   }
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, !isEditingQuiz && Array.isArray(assessmentData.questions) && assessmentData.questions.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, isTeacherMode && !isParentMode && /*#__PURE__*/React.createElement(QuizAiSetupNotice, {
+    t: t
+  }), !isEditingQuiz && Array.isArray(assessmentData.questions) && assessmentData.questions.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assessment-skip": true,
     onClick: function () {
@@ -14066,7 +14108,7 @@ function QuizViewContent(props) {
   }, quizCopy('quiz.skip_to_questions', 'Skip to the questions')), boardSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (boardSetup.ready && window.AlloModules?.LessonBoardSetup ? /*#__PURE__*/React.createElement(window.AlloModules.LessonBoardSetup, {
     history: props.history,
     callImagen: props.callImagen,
-    callGemini: props.callGemini,
+    callGemini: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null,
     inputText: props.inputText,
     generatedContent: generatedContent,
     language: leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English',
@@ -14102,7 +14144,7 @@ function QuizViewContent(props) {
     type: "button",
     onClick: () => setBoardSetupOpen(false)
   }, t('common.close')))), connectedSetupOpen && canPlayAssessmentGames && (isTeacherMode || !activeSessionCode) && (connectedSetup.ready && window.AlloModules?.ConnectedEscapeRoomSetup ? /*#__PURE__*/React.createElement(window.AlloModules.ConnectedEscapeRoomSetup, {
-    callGemini: props.callGemini,
+    callGemini: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null,
     inputText: props.inputText,
     generatedContent: generatedContent,
     language: leveledTextLanguage === 'All selected languages' ? props.selectedLanguages?.[0] || 'English' : leveledTextLanguage || 'English',
@@ -15115,9 +15157,9 @@ function QuizViewContent(props) {
     type: "button",
     "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
     onClick: () => handleFactCheck(i),
-    disabled: isFactChecking[i],
+    disabled: isFactChecking[i] || !!_quizAiDoor(t)?.disabled,
     className: `flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors motion-reduce:transition-none ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`,
-    title: t('quiz.verify_tooltip')
+    title: _quizAiDoor(t)?.title || t('quiz.verify_tooltip')
   }, isFactChecking[i] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin " + quizreducedMotionClass
@@ -15214,7 +15256,7 @@ function QuizViewContent(props) {
         e.stopPropagation();
         improveDistractor(i, optIdx, opt, dq.reason || '');
       },
-      disabled: !!isImprovingDistractor[i + ':' + optIdx],
+      disabled: !!isImprovingDistractor[i + ':' + optIdx] || !!_quizAiDoor(t)?.disabled,
       className: "text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
       "aria-label": isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception',
       title: t("tooltips.rewrite_distractor")
@@ -15257,7 +15299,7 @@ function QuizViewContent(props) {
       type: "button",
       "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
       onClick: () => handleFactCheck(i),
-      disabled: isFactChecking[i],
+      disabled: isFactChecking[i] || !!_quizAiDoor(t)?.disabled,
       className: "absolute bottom-2 right-2 p-1.5 text-yellow-800 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none",
       title: t('quiz.regenerate_check')
     }, /*#__PURE__*/React.createElement(RefreshCw, {

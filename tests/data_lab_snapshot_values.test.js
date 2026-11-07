@@ -94,6 +94,8 @@ describe('Data Lab snapshot value layers', () => {
 
   it('tells the reader what the tutor can now see', () => {
     expect(companion).toMatch(/summary statistics/i);
-    expect(companion).toMatch(/sample of rows/i);
+    expect(companion).toMatch(/up to 20 rows from each table/i);
+    // The number on screen must stay the real cap in the plugin.
+    expect(fs.readFileSync('data_lab/tutor_plugin.html', 'utf8')).toMatch(/var MAX_SAMPLE_ROWS = 20;/);
   });
 });

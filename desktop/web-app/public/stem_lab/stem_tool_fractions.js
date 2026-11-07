@@ -90,6 +90,7 @@
 //   See FRACTIONS_DEEP_AUDIT.md (planned) for the research-base citations.
 // ═══════════════════════════════════════════════════════════════════════
 
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
@@ -327,10 +328,23 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-fractions-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-fractions-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-control-card,.fraction-lab-value-chip,.fraction-lab-summary-tile,.fraction-lab-strip-grid,.fraction-lab-strip-segment.is-empty,.fraction-lab-mode-toggle,.fraction-lab-presets button,.fraction-lab-presets button:hover):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(254, 205, 211)\"],[style*=\"background-color: rgb(254, 205, 211)\"],[style*=\"background: rgb(240, 228, 66)\"],[style*=\"background-color: rgb(240, 228, 66)\"],[style*=\"background: rgb(253, 231, 37)\"],[style*=\"background-color: rgb(253, 231, 37)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-panel,.fraction-lab-model-stage,.fraction-lab-equivalence-card):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-kicker,.fraction-lab-value-chip,.fraction-lab-summary-tile b,.fraction-lab-summary-tile span,.fraction-lab-mode-toggle button,.fraction-lab-presets button){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(124, 45, 18)\"],[style*=\"; color: rgb(124, 45, 18)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"],[style^=\"color: rgb(28, 25, 23)\"],[style*=\"; color: rgb(28, 25, 23)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(159, 18, 57)\"],[style*=\"; color: rgb(159, 18, 57)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(0, 114, 178)\"],[style*=\"; color: rgb(0, 114, 178)\"],[style^=\"color: rgb(68, 68, 68)\"],[style*=\"; color: rgb(68, 68, 68)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(124, 45, 18)\"],[style*=\"; color: rgb(124, 45, 18)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"],[style^=\"color: rgb(28, 25, 23)\"],[style*=\"; color: rgb(28, 25, 23)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(159, 18, 57)\"],[style*=\"; color: rgb(159, 18, 57)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(0, 114, 178)\"],[style*=\"; color: rgb(0, 114, 178)\"],[style^=\"color: rgb(68, 68, 68)\"],[style*=\"; color: rgb(68, 68, 68)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(254, 205, 211)\"],[style*=\"background-color: rgb(254, 205, 211)\"],[style*=\"background: rgb(240, 228, 66)\"],[style*=\"background-color: rgb(240, 228, 66)\"],[style*=\"background: rgb(253, 231, 37)\"],[style*=\"background-color: rgb(253, 231, 37)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(244, 63, 94)\"],[style*=\"background-color: rgb(244, 63, 94)\"],[style*=\"background: rgb(234, 88, 12)\"],[style*=\"background-color: rgb(234, 88, 12)\"],[style*=\"background: rgb(22, 163, 74)\"],[style*=\"background-color: rgb(22, 163, 74)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(20, 184, 166)\"],[style*=\"background-color: rgb(20, 184, 166)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-control-card,.fraction-lab-value-chip,.fraction-lab-summary-tile,.fraction-lab-strip-grid,.fraction-lab-strip-segment.is-empty,.fraction-lab-mode-toggle,.fraction-lab-presets button,.fraction-lab-presets button:hover):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(254, 205, 211)\"],[style*=\"background-color: rgb(254, 205, 211)\"],[style*=\"background: rgb(240, 228, 66)\"],[style*=\"background-color: rgb(240, 228, 66)\"],[style*=\"background: rgb(253, 231, 37)\"],[style*=\"background-color: rgb(253, 231, 37)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-panel,.fraction-lab-model-stage,.fraction-lab-equivalence-card):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] :is(.fraction-lab-kicker,.fraction-lab-value-chip,.fraction-lab-summary-tile b,.fraction-lab-summary-tile span,.fraction-lab-mode-toggle button,.fraction-lab-presets button){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(124, 45, 18)\"],[style*=\"; color: rgb(124, 45, 18)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"],[style^=\"color: rgb(28, 25, 23)\"],[style*=\"; color: rgb(28, 25, 23)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(159, 18, 57)\"],[style*=\"; color: rgb(159, 18, 57)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(0, 114, 178)\"],[style*=\"; color: rgb(0, 114, 178)\"],[style^=\"color: rgb(68, 68, 68)\"],[style*=\"; color: rgb(68, 68, 68)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(29, 78, 216)\"],[style*=\"; color: rgb(29, 78, 216)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(124, 45, 18)\"],[style*=\"; color: rgb(124, 45, 18)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"],[style^=\"color: rgb(28, 25, 23)\"],[style*=\"; color: rgb(28, 25, 23)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(159, 18, 57)\"],[style*=\"; color: rgb(159, 18, 57)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(225, 29, 72)\"],[style*=\"; color: rgb(225, 29, 72)\"],[style^=\"color: rgb(0, 114, 178)\"],[style*=\"; color: rgb(0, 114, 178)\"],[style^=\"color: rgb(68, 68, 68)\"],[style*=\"; color: rgb(68, 68, 68)\"],[style^=\"color: rgb(15, 118, 110)\"],[style*=\"; color: rgb(15, 118, 110)\"],[style^=\"color: rgb(51, 65, 85)\"],[style*=\"; color: rgb(51, 65, 85)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(254, 205, 211)\"],[style*=\"background-color: rgb(254, 205, 211)\"],[style*=\"background: rgb(240, 228, 66)\"],[style*=\"background-color: rgb(240, 228, 66)\"],[style*=\"background: rgb(253, 231, 37)\"],[style*=\"background-color: rgb(253, 231, 37)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(244, 63, 94)\"],[style*=\"background-color: rgb(244, 63, 94)\"],[style*=\"background: rgb(234, 88, 12)\"],[style*=\"background-color: rgb(234, 88, 12)\"],[style*=\"background: rgb(22, 163, 74)\"],[style*=\"background-color: rgb(22, 163, 74)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(20, 184, 166)\"],[style*=\"background-color: rgb(20, 184, 166)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"fractionViz\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  // Tool-owned contrast rules (not generated). The generated rules name the hub id fractionViz, but Dynamic
+  // Assessment opens this tool as "fractions", so the same rules are repeated for that shell. The rest keep what
+  // colour alone said (filled parts, the selected tab) once the host paints every button black.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-fractions-hc-extra-css')) return;
+    var gen = document.getElementById('allo-fractions-hc-css');
+    var st = document.createElement('style');
+    st.id = 'allo-fractions-hc-extra-css';
+    st.textContent = ".theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg[data-compare-line]{background:#fff!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg text:is([style*=\"fill: white\"],[fill=\"#fff\"],[fill=\"white\"]){paint-order:stroke;stroke:#000;stroke-width:3px;stroke-linejoin:round}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) :is(b,pre,code,em,small)[class*=\"text-\"]:not(button *){color:#ffff00!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) [class*=\"bg-gradient-to-\"]:not(button):not(:empty){background-image:none!important;background-color:#000!important;border-color:#ffff00!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-filled,.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-filled:hover{background-color:#ffff00!important;color:#000!important;border-color:#ffff00!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-filled *,.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-filled:hover *{color:#000!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-empty,.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-empty:hover{background-color:#000!important;color:#fff!important;border-color:#fff!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-empty *,.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment.is-empty:hover *{color:#fff!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) .fraction-lab-strip-segment:hover{outline:3px solid #fff!important;outline-offset:1px!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) :is(.fraction-lab-navigation button[aria-selected=\"true\"],.fraction-lab-mode-toggle button[aria-pressed=\"true\"]),.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) :is(.fraction-lab-navigation button[aria-selected=\"true\"],.fraction-lab-mode-toggle button[aria-pressed=\"true\"]) *{background-color:#ffff00!important;color:#000!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg :is(path,rect)[fill=\"#fecdd3\"]{fill:#000!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg text:is([fill=\"#0f172a\"],[fill=\"#64748b\"]):not(svg[data-compare-line] *,section[aria-labelledby=\"signed-number-line-title\"] *){fill:#ffff00!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg line[stroke=\"#0f172a\"]:not(svg[data-compare-line] *,section[aria-labelledby=\"signed-number-line-title\"] *){stroke:#fff!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) section[aria-labelledby=\"signed-number-line-title\"] svg{background:#fff!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) section[aria-labelledby=\"signed-number-line-title\"] svg text[fill=\"#475569\"]{fill:#000!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) section[aria-labelledby=\"signed-number-line-title\"] svg line[stroke=\"#94a3b8\"]{stroke:#000!important}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) svg[data-fraction-model] line[stroke=\"#fff\"]{stroke-opacity:1}.theme-contrast :is([data-stem-tool-shell=\"fractionViz\"],[data-stem-tool-shell=\"fractions\"]) [style*=\"background-color: rgb(226, 232, 240)\"]:empty{background-color:#000!important;box-shadow:inset 0 0 0 1px #ffff00}";
+    if (gen) st.textContent = gen.textContent.split('[data-stem-tool-shell="fractionViz"]').join('[data-stem-tool-shell="fractions"]') + st.textContent;
+    document.head.appendChild(st);
+  })();
+  // end tool-owned contrast rules
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -1850,6 +1864,55 @@ window.StemLab = window.StemLab || {
     return (approximate ? '≈ ' : relation ? '= ' : '') + String(rounded);
   }
 
+  // Dynamic Assessment writes { numerator, denominator, tab } straight into _fractions
+  // (misc_handlers_module.js). This turns that into the tool's own state, plus the two
+  // undefineds that mark it as consumed. No usable fraction: saved work is left alone.
+  function fractionPresetInt(value) {
+    if (typeof value === 'string' ? !value.trim() : typeof value !== 'number') return NaN;
+    var n = Number(value);
+    return Number.isFinite(n) ? Math.round(n) : NaN;
+  }
+  function fractionPresetPatch(f) {
+    var patch = { numerator: undefined, denominator: undefined };
+    var n = fractionPresetInt(f.numerator), d = fractionPresetInt(f.denominator);
+    if (!(n >= 0) || !(d >= 1)) return patch;
+    // The tool's own limits: denominators 2-20, numerators to 20. An improper fraction
+    // stays improper; this tool can show it, and capping it would change its value.
+    n = Math.min(n, 20);
+    d = Math.max(2, Math.min(d, 20));
+    patch.pieces = { numerator: n, denominator: d };
+    // An open challenge was asked about the old pieces, so its answer no longer fits.
+    patch.challenge = null; patch.answer = ''; patch.feedback = null;
+    if (f.tab === 'compare' || f.tab === 'operations' || f.tab === 'equivalents') {
+      patch.num1 = n; patch.den1 = d; patch.quiz = null;
+      patch.opInputDraft = null; patch.signPrediction = null; patch.signFeedback = null; patch.signChallengeIndex = -1;
+      patch.opMagnitudeChoice = null; patch.opMagnitudeChecked = null; patch.opGrouping = null;
+    } else if (f.tab === 'converter') {
+      patch.convNum = n; patch.convDen = d; patch.convDirection = 'fracToDec';
+    } else if (f.tab === 'wall') {
+      patch.wallHighlight = n <= d ? { n: n, d: d } : null;
+      patch.wallCompareA = null; patch.wallCompareB = null;
+    }
+    return patch;
+  }
+
+  // Digit ink for a pie slice. The contrast of black and of white on any one colour multiply to 21, so the better
+  // of the two always reaches at least 4.58:1, whatever colour a caller passes.
+  function fractionSliceDigitInk(color) {
+    var rgb = null, m;
+    if ((m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color))) {
+      rgb = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+    } else if ((m = /^hsl\((-?[\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)$/.exec(color))) {
+      var hue = ((Number(m[1]) % 360) + 360) % 360, sat = Number(m[2]) / 100, lit = Math.min(1, Number(m[3]) / 100);
+      var amp = sat * Math.min(lit, 1 - lit);
+      rgb = [0, 8, 4].map(function(n) { var k = (n + hue / 30) % 12; return 255 * (lit - amp * Math.max(-1, Math.min(k - 3, 9 - k, 1))); });
+    }
+    if (!rgb) return '#000000';
+    var lin = rgb.map(function(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    var lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+    return (lum + 0.05) / 0.05 >= 1.05 / (lum + 0.05) ? '#000000' : 'white';
+  }
+
   function renderFractionLab(ctx) {
     var React = ctx.React;
     var h = React.createElement;
@@ -1865,6 +1928,9 @@ window.StemLab = window.StemLab || {
     // dark, pure BLACK in the contrast theme, where they ran 2.6-2.8:1.
     var isContrast = !!ctx.isContrast;
     var onHostInk = isContrast ? ' text-white' : '';
+    // Teacher tools hold answer keys and planning notes. Same rule as the other STEM tools: only an explicit true
+    // from the host opens them. The host starts at true and sets false for students, so an unknown role gets the student view.
+    var teacherView = ctx.isTeacherMode === true;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
     // ── State via labToolData._fractions ──
@@ -1878,6 +1944,38 @@ window.StemLab = window.StemLab || {
         });
       }
     };
+    // Show a preset on this render and fold it into state on commit. Consuming the fields
+    // means the next assessment item still opens on ITS fraction over saved pieces, and
+    // the student's changes are not overwritten afterwards.
+    var presetNumerator = _f.numerator, presetDenominator = _f.denominator;
+    var presetPatch = (presetNumerator != null || presetDenominator != null) ? fractionPresetPatch(_f) : null;
+    if (presetPatch) _f = Object.assign({}, _f, presetPatch);
+    React.useEffect(function() {
+      if (presetPatch) upd(presetPatch);
+    }, [presetNumerator, presetDenominator]);
+    // Fraction Race clock. Runs from an end time, so a race reopened after its time has passed is simply over.
+    var raceGame = _f.frGame || null;
+    var raceEndsAt = (raceGame && !raceGame.gameOver && raceGame.endsAt) || null;
+    React.useEffect(function() {
+      if (!raceEndsAt || typeof ctx.setToolData !== 'function') return undefined;
+      var said10 = false;
+      var tick = function() {
+        var left = Math.max(0, Math.ceil((raceEndsAt - Date.now()) / 1000));
+        if (left <= 10 && left > 0 && !said10) {
+          said10 = true;
+          if (ctx.announceToSR) ctx.announceToSR(__alloT('stem.fractions.race_ten_seconds', '10 seconds left'));
+        }
+        ctx.setToolData(function(prev) {
+          var cur = prev && prev._fractions && prev._fractions.frGame;
+          if (!cur || cur.endsAt !== raceEndsAt || cur.gameOver) return prev;
+          return Object.assign({}, prev, { _fractions: Object.assign({}, prev._fractions, { frGame: Object.assign({}, cur, { timeLeft: left, gameOver: left <= 0 }) }) });
+        });
+        if (left <= 0 && ctx.announceToSR) ctx.announceToSR(__alloT('stem.fractions.race_time_up', 'Time!'));
+      };
+      tick();
+      var id = setInterval(tick, 1000);
+      return function() { clearInterval(id); };
+    }, [raceEndsAt]);
 
     // ═══ SOUND EFFECTS ENGINE ═══
     var _audioCtx = null;
@@ -1955,7 +2053,8 @@ window.StemLab = window.StemLab || {
     var wallCompareA = _f.wallCompareA || null;
     var wallCompareB = _f.wallCompareB || null;
 
-    // AI Tutor state
+    // AI Tutor state (renders only when the host says text AI is usable)
+    var _aiOn = !!(ctx.aiAvailable !== false && typeof ctx.callGemini === 'function');
     var showAITutor = _f.showAITutor || false;
     var aiResponse = _f.aiResponse || '';
     var aiLoading = _f.aiLoading || false;
@@ -2125,7 +2224,9 @@ window.StemLab = window.StemLab || {
     };
 
     // ═══ DRAWING HELPERS ═══
-    var drawPie = function(num, den, size, color) {
+    // opts.unlabeled: for "what fraction is this?" questions. No badge, no slice numbers, and edges that show on any fill.
+    var drawPie = function(num, den, size, color, opts) {
+      var unlabeled = !!(opts && opts.unlabeled);
       if (den <= 0) den = 1;
       var slices = [];
       var sliceLabels = [];
@@ -2139,29 +2240,34 @@ window.StemLab = window.StemLab || {
         var y2 = (size / 2) + radius * Math.sin(endAngle);
         var largeArc = (endAngle - startAngle) > Math.PI ? 1 : 0;
         var filled = i < num;
+        var sliceFill = filled ? (color || 'hsl(' + (340 + i * 8) + ', 70%, ' + (60 + i * 2) + '%)') : '#fecdd3';
+        var sliceHasDigit = !unlabeled && filled && den <= 16 && size >= 60;
         slices.push(h('path', {
           key: i,
           d: 'M ' + (size / 2) + ' ' + (size / 2) + ' L ' + x1 + ' ' + y1 + ' A ' + radius + ' ' + radius + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
-          fill: filled ? (color || 'hsl(' + (340 + i * 8) + ', 70%, ' + (60 + i * 2) + '%)') : '#fecdd3',
-          stroke: '#e11d48', strokeWidth: 1.5,
-          className: 'cursor-pointer hover:opacity-80', style: { transition: 'fill 0.3s ease, opacity 0.15s ease' }
+          fill: sliceFill,
+          stroke: unlabeled ? '#0f172a' : '#e11d48', strokeWidth: unlabeled ? 2 : 1.5,
+          // A slice is not a control; dimming one under the pointer would drop its digit below 4.5:1.
+          className: sliceHasDigit ? 'cursor-pointer' : 'cursor-pointer hover:opacity-80', style: { transition: 'fill 0.3s ease, opacity 0.15s ease' }
         }));
         // Slice number — only when the slice is large enough to fit a digit
-        if (filled && den <= 16 && size >= 60) {
+        if (sliceHasDigit) {
           var midAngle = (startAngle + endAngle) / 2;
           var labelR = radius * 0.62;
           var lx = (size / 2) + labelR * Math.cos(midAngle);
           var ly = (size / 2) + labelR * Math.sin(midAngle);
+          // The contrast theme keeps white: its own rule haloes "fill: white" in black.
+          var digitInk = isContrast ? 'white' : fractionSliceDigitInk(sliceFill);
           sliceLabels.push(h('text', {
             key: 'sl' + i,
             x: lx, y: ly + 3,
             textAnchor: 'middle',
-            style: { fontSize: Math.max(8, size / 12) + 'px', fontWeight: 800, fill: 'white', pointerEvents: 'none', textShadow: '0 0 3px rgba(0,0,0,0.4)' }
+            style: { fontSize: Math.max(8, size / 12) + 'px', fontWeight: 800, fill: digitInk, pointerEvents: 'none', textShadow: digitInk === 'white' ? '0 0 3px rgba(0,0,0,0.4)' : undefined }
           }, i + 1));
         }
       }
       // Center "n/d" badge — anchors the visual to the symbolic fraction
-      var centerBadge = (den >= 2 && size >= 56) ? h('g', { key: 'centerBadge', pointerEvents: 'none' },
+      var centerBadge = (!unlabeled && den >= 2 && size >= 56) ? h('g', { key: 'centerBadge', pointerEvents: 'none' },
         h('circle', { cx: size / 2, cy: size / 2, r: Math.max(10, size * 0.16), fill: 'white', stroke: '#e11d48', strokeWidth: 1.5 }),
         h('text', {
           x: size / 2, y: size / 2 + Math.max(3, size * 0.05),
@@ -2169,10 +2275,10 @@ window.StemLab = window.StemLab || {
           style: { fontSize: Math.max(9, size / 8) + 'px', fontWeight: 800, fill: '#e11d48' }
         }, num + '/' + den)
       ) : null;
-      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, 'aria-label': num + ' out of ' + den + ' parts shaded' },
+      return h('svg', { viewBox: '0 0 ' + size + ' ' + size, width: size, height: size, role: unlabeled ? 'img' : undefined, 'aria-label': num + ' out of ' + den + ' parts shaded' },
         slices,
         sliceLabels,
-        centerBadge || h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: '#e11d48' })
+        centerBadge || h('circle', { cx: size / 2, cy: size / 2, r: 3, fill: unlabeled ? '#0f172a' : '#e11d48' })
       );
     };
 
@@ -2184,7 +2290,8 @@ window.StemLab = window.StemLab || {
       for (var i = 0; i < den; i++) {
         segs.push(h('div', {
           key: i,
-          style: { flex: '1 1 0%', minWidth: 0, backgroundColor: i < num ? (color || '#f43f5e') : '#e2e8f0', transition: 'background-color 0.3s' },
+          // partLines: two tones, so a part can be counted on the shaded side and on the pale side.
+          style: { flex: '1 1 0%', minWidth: 0, backgroundColor: i < num ? (color || '#f43f5e') : '#e2e8f0', transition: 'background-color 0.3s', boxShadow: (options.partLines && i < den - 1) ? 'inset -1px 0 0 #ffffff, inset -3px 0 0 #0f172a' : undefined },
           className: 'border-r border-white/50'
         }));
       }
@@ -2437,19 +2544,25 @@ window.StemLab = window.StemLab || {
       // Tick marks at each equal-length segment boundary.
       for (var ti = 1; ti < den; ti++) {
         var x = (ti / den) * length;
+        if (options.unlabeled) elements.push(h('line', { key: 'td-' + ti, x1: x, y1: 0, x2: x, y2: height, stroke: '#0f172a', strokeWidth: 3, 'data-fraction-part-line': 'true' }));
         elements.push(h('line', { key: 't-' + ti, x1: x, y1: 0, x2: x, y2: height,
-          stroke: '#fff', strokeWidth: 1.5, strokeOpacity: 0.8 }));
+          stroke: '#fff', strokeWidth: options.unlabeled ? 1 : 1.5, strokeOpacity: options.unlabeled ? 1 : 0.8 }));
       }
-      // Fraction label stays centered on the whole length.
-      elements.push(h('text', { key: 'lbl', x: length / 2, y: height / 2 + 5,
+      // Fraction label stays centered on the whole length. It can sit on the fill, the pale strip or both, in any
+      // palette, so it brings its own plate: white ink on the pale strip read about 1.4:1.
+      var lengthLabel = num + '/' + den;
+      var lengthPlateW = lengthLabel.length * 8.5 + 10, lengthPlateH = Math.min(20, height - 2);
+      if (!options.unlabeled) elements.push(h('rect', { key: 'lbl-plate', x: length / 2 - lengthPlateW / 2, y: height / 2 - lengthPlateH / 2, width: lengthPlateW, height: lengthPlateH, rx: 5,
+        fill: isContrast ? '#000' : '#fff', stroke: isContrast ? '#fff' : '#0f172a', strokeWidth: 1, 'data-fraction-label-plate': 'true' }));
+      if (!options.unlabeled) elements.push(h('text', { key: 'lbl', x: length / 2, y: height / 2 + 5,
         textAnchor: 'middle', fontSize: 14, fontWeight: 'bold',
-        fill: '#fff', style: { textShadow: '0 0 4px rgba(0,0,0,0.4)' } }, num + '/' + den));
+        fill: isContrast ? '#ffff00' : '#0f172a' }, lengthLabel));
       return h('svg', {
         viewBox: '0 0 ' + length + ' ' + height,
         width: '100%',
         height: height,
         role: 'img',
-        'aria-label': 'Horizontal length model (fraction strip): ' + num + ' over ' + den,
+        'aria-label': options.unlabeled ? 'Fraction strip with ' + den + ' equal parts, ' + num + ' shaded' : 'Horizontal length model (fraction strip): ' + num + ' over ' + den,
         'data-fraction-model': 'length',
         style: { maxWidth: length + 'px' }
       }, elements);
@@ -2936,7 +3049,7 @@ window.StemLab = window.StemLab || {
 
     // ═══ AI TUTOR ═══
     var askAITutor = function() {
-      if (!aiQuestion.trim()) return;
+      if (!_aiOn || !aiQuestion.trim()) return;
       upd({ aiLoading: true, aiResponse: '' });
       var prompt = 'You are a friendly math tutor helping a student learn about fractions. ' +
         'The student is currently on the "' + tab + '" tab of the Fraction Lab. ' +
@@ -2977,7 +3090,7 @@ window.StemLab = window.StemLab || {
       else if (key === 'n' || key === 'N') { if (tab === 'practice') generateChallenge(); }
       else if (key === 'b' || key === 'B') { upd({ showBenchmarks: !showBenchmarks }); }
       else if (key === 'p' || key === 'P') { upd({ mode: mode === 'pie' ? 'bar' : 'pie' }); }
-      else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
+      else if ((key === '?' || key === '/') && _aiOn) { upd({ showAITutor: !showAITutor }); }
     };
     window.addEventListener('keydown', window._fracKbHandler);
 
@@ -3079,7 +3192,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'fraction-lab-slider-row' },
                 h('input', {
                   id: numId,
-                  type: 'range', min: '0', max: String(pd), value: pn,
+                  type: 'range', min: '0', max: String(Math.max(pd, pn)), value: pn,
                   'aria-describedby': numId + '-hint',
                   onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pd, numerator: parseInt(e.target.value, 10) } }); }
                 }),
@@ -3734,10 +3847,12 @@ window.StemLab = window.StemLab || {
         // Direction toggle
         h('div', { className: 'flex gap-2 justify-center' },
           h('button', { 'aria-label': __alloT('stem.fractions.fraction_to_decimal', 'Fraction to Decimal'),
+            'aria-pressed': convDirection === 'fracToDec',
             onClick: function() { sfxClick(); upd({ convDirection: 'fracToDec' }); },
             className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'fracToDec' ? 'bg-teal-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-teal-50')
           }, __alloT('stem.fractions.fraction_to_decimal_2', '\uD83C\uDF55 \u2192 Fraction to Decimal')),
           h('button', { 'aria-label': __alloT('stem.fractions.0_5_decimal_to_fraction', '0.5 Decimal to Fraction'),
+            'aria-pressed': convDirection === 'decToFrac',
             onClick: function() { sfxClick(); upd({ convDirection: 'decToFrac' }); },
             className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'decToFrac' ? 'bg-teal-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-teal-50')
           }, __alloT('stem.fractions.0_5_decimal_to_fraction_2', '0.5 \u2192 Decimal to Fraction'))
@@ -4027,7 +4142,7 @@ window.StemLab = window.StemLab || {
 
     // ═══ AI TUTOR PANEL ═══
     var renderAITutor = function() {
-      if (!showAITutor) return null;
+      if (!showAITutor || !_aiOn) return null;
       return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
         h('div', { className: 'flex items-center justify-between' },
           h('h4', { className: 'text-sm font-bold text-sky-800' }, __alloT('stem.fractions.ai_fraction_tutor', '\uD83E\uDD16 AI Fraction Tutor')),
@@ -4119,7 +4234,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator', 'Numerator')),
             h('input', { 'aria-label': __alloT('stem.fractions.numerator', 'Numerator'),
-              type: 'range', min: '0', max: String(pieces.denominator), value: pieces.numerator,
+              type: 'range', min: '0', max: String(Math.max(pieces.denominator, pieces.numerator)), value: pieces.numerator,
               onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pieces.denominator, numerator: parseInt(e.target.value) } }); },
               className: 'w-full accent-rose-600'
             }),
@@ -4463,6 +4578,7 @@ window.StemLab = window.StemLab || {
               var active = stdGrade === g;
               return h('button', {
                 key: 'g-' + g,
+                'aria-pressed': active,
                 onClick: function() { upd({ stdGrade: g }); },
                 className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                   (active ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
@@ -4513,6 +4629,7 @@ window.StemLab = window.StemLab || {
               var active = miscSeverity === s;
               return h('button', {
                 key: 'ms-' + s,
+                'aria-pressed': active,
                 onClick: function() { upd({ miscSeverity: s }); },
                 className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all capitalize ' +
                   (active ? 'bg-rose-700 text-white' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-100')
@@ -4709,25 +4826,32 @@ window.StemLab = window.StemLab || {
         var n = randInt(1, d - 1);
         return { n: n, d: d, model: pick(['pie', 'bar', 'length']) };
       };
-      var startFractionRace = function() {
-        upd({ frGame: { round: newRound(), score: 0, timeLeft: 30, gameOver: false, mistakes: 0, answer: '' }});
+      var startFractionRace = function(noClock) {
+        upd({ frGame: { round: newRound(), score: 0, timeLeft: 30, gameOver: false, mistakes: 0, answer: '', note: '', noClock: !!noClock, endsAt: noClock ? null : Date.now() + 30000 }});
         sfxNewChallenge();
-        announceToSR(__alloT('stem.fractions.sr_fraction_race_type_the_fraction_you_see_you_have', 'Fraction Race! Type the fraction you see. You have 30 seconds.'));
+        announceToSR(noClock
+          ? __alloT('stem.fractions.sr_race_no_clock', 'Fraction Race without a clock. Type the fraction you see.')
+          : __alloT('stem.fractions.sr_fraction_race_type_the_fraction_you_see_you_have', 'Fraction Race! Type the fraction you see. You have 30 seconds.'));
       };
       var submitRace = function(ans) {
         var match = String(ans || '').trim().match(/^(\d+)\/(\d+)$/);
-        if (!match) return;
+        if (!match) {
+          var formatHint = __alloT('stem.fractions.race_format_hint', 'Type it with a slash, like 3/4.');
+          upd({ frGame: Object.assign({}, fr, { note: formatHint }) });
+          announceToSR(formatHint);
+          return;
+        }
         var rn = parseInt(match[1]);
         var rd = parseInt(match[2]);
         var r = fr.round;
         var ok = rn * r.d === r.n * rd; // equivalent fractions also accepted
         if (ok) {
           sfxCorrect();
-          upd({ frGame: Object.assign({}, fr, { round: newRound(), score: fr.score + 1, answer: '' }) });
+          upd({ frGame: Object.assign({}, fr, { round: newRound(), score: fr.score + 1, answer: '', note: '' }) });
           announceToSR('Correct! Score ' + (fr.score + 1));
         } else {
           sfxWrong();
-          upd({ frGame: Object.assign({}, fr, { mistakes: fr.mistakes + 1, answer: '' }) });
+          upd({ frGame: Object.assign({}, fr, { mistakes: fr.mistakes + 1, answer: '', note: __alloT('stem.fractions.sr_wrong_try_again', 'Wrong, try again') }) });
           announceToSR(__alloT('stem.fractions.sr_wrong_try_again', 'Wrong, try again'));
         }
       };
@@ -4739,10 +4863,41 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-blue-700 max-w-md mx-auto' },
             __alloT('stem.fractions.see_a_visual_fraction_type_it_as_fast_', 'See a visual fraction. Type it as fast as you can. Score as many as possible in 30 seconds!')
           ),
-          h('button', {
-            onClick: startFractionRace,
-            className: 'px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-bold rounded-xl text-base hover:from-blue-600 hover:to-cyan-700 shadow-md'
-          }, __alloT('stem.fractions.start_race', '🏁 Start race'))
+          h('div', { className: 'flex flex-wrap gap-2 justify-center' },
+            h('button', {
+              onClick: function() { startFractionRace(false); },
+              className: 'px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-bold rounded-xl text-base hover:from-blue-600 hover:to-cyan-700 shadow-md'
+            }, __alloT('stem.fractions.start_race', '🏁 Start race')),
+            h('button', {
+              onClick: function() { startFractionRace(true); },
+              className: 'transition-colors px-6 py-3 bg-white text-blue-800 font-bold rounded-xl text-base border-2 border-blue-600 hover:bg-blue-50'
+            }, __alloT('stem.fractions.race_no_clock', 'Practice without a clock'))
+          )
+        );
+      }
+
+      // Time is up. Focus lands on the result, not a button, so an Enter meant for the last answer cannot restart.
+      if (fr.gameOver) {
+        return h('div', { className: 'bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 text-center space-y-3' },
+          h('div', {
+            tabIndex: -1,
+            ref: function(el) { if (el && !el.getAttribute('data-race-focused')) { el.setAttribute('data-race-focused', 'true'); el.focus(); } },
+            className: 'space-y-1'
+          },
+            h('h4', { className: 'text-xl font-black text-blue-800' }, __alloT('stem.fractions.race_time_up', 'Time!')),
+            h('p', { className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_score_label', 'Score: ') + fr.score),
+            h('p', { className: 'text-sm text-blue-800' }, __alloT('stem.fractions.race_mistakes_label', 'Mistakes: ') + fr.mistakes)
+          ),
+          h('div', { className: 'flex flex-wrap gap-2 justify-center' },
+            h('button', {
+              onClick: function() { startFractionRace(false); },
+              className: 'transition-colors px-6 py-3 bg-blue-700 text-white font-bold rounded-xl text-base hover:bg-blue-800'
+            }, __alloT('stem.fractions.race_again', 'Race again')),
+            h('button', {
+              onClick: function() { startFractionRace(true); },
+              className: 'transition-colors px-6 py-3 bg-white text-blue-800 font-bold rounded-xl text-base border-2 border-blue-600 hover:bg-blue-50'
+            }, __alloT('stem.fractions.race_no_clock', 'Practice without a clock'))
+          )
         );
       }
 
@@ -4750,32 +4905,34 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'flex items-center gap-3 bg-blue-50 rounded-xl p-3 border border-blue-200' },
           h('span', { className: 'text-2xl' }, '🏁'),
-          h('span', { className: 'font-bold text-blue-800' }, 'Score: ' + fr.score),
+          h('span', { className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_score_label', 'Score: ') + fr.score),
           h('span', { className: 'text-blue-600' }, '·'),
-          h('span', { className: 'text-sm text-blue-800' }, 'Mistakes: ' + fr.mistakes),
+          h('span', { className: 'text-sm text-blue-800' }, __alloT('stem.fractions.race_mistakes_label', 'Mistakes: ') + fr.mistakes),
+          !fr.noClock && fr.endsAt && h('span', { role: 'timer', className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_time_left', 'Time left: ') + (fr.timeLeft != null ? fr.timeLeft : 30)),
           h('button', {
-            onClick: startFractionRace,
+            onClick: function() { startFractionRace(!!fr.noClock); },
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-blue-200 text-blue-800 hover:bg-blue-300'
           }, __alloT('stem.fractions.restart_2', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 space-y-3' },
           h('div', { className: 'flex justify-center' },
             fr.round.model === 'pie'
-              ? drawPie(fr.round.n, fr.round.d, 220, '#2563eb')
+              ? drawPie(fr.round.n, fr.round.d, 220, '#2563eb', { unlabeled: true })
               : fr.round.model === 'bar'
-                ? drawBar(fr.round.n, fr.round.d, '#2563eb')
-                : drawLengthModel(fr.round.n, fr.round.d, {})
+                ? drawBar(fr.round.n, fr.round.d, '#2563eb', { partLines: true })
+                : drawLengthModel(fr.round.n, fr.round.d, { unlabeled: true })
           ),
           h('p', { className: 'text-center text-sm font-bold text-blue-800' }, __alloT('stem.fractions.what_fraction_is_this', 'What fraction is this?')),
           h('input', {
             type: 'text', value: fr.answer || '',
-            onChange: function(e) { upd({ frGame: Object.assign({}, fr, { answer: e.target.value }) }); },
+            onChange: function(e) { upd({ frGame: Object.assign({}, fr, { answer: e.target.value, note: '' }) }); },
             onKeyDown: function(e) { if (e.key === 'Enter') submitRace(fr.answer); },
             placeholder: __alloT('stem.fractions.e_g_3_4', 'e.g., 3/4'),
             'aria-label': __alloT('stem.fractions.race_answer', 'Race answer'),
             autoFocus: true,
             className: 'w-full px-4 py-3 border-2 border-blue-600 rounded-xl text-center text-2xl font-mono font-bold'
           }),
+          fr.note ? h('p', { className: 'text-center text-sm font-bold text-blue-800' }, fr.note) : null,
           h('button', {
             onClick: function() { submitRace(fr.answer); },
             className: 'transition-colors w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700'
@@ -6069,6 +6226,8 @@ window.StemLab = window.StemLab || {
     // ── WORKSHEET GENERATOR TAB ──
     var renderWorksheetTab = function() {
       var ws = _f.worksheetOpts || { topic: 'identify', grade: 4, count: 10, includeAnswers: true };
+      // The box says max 50, but typing goes past a max attribute, and 99999 froze the tab.
+      if (ws.count > 50) ws = Object.assign({}, ws, { count: 50 });
       var generated = _f.generatedWorksheet || null;
 
       var generateWorksheet = function() {
@@ -6200,7 +6359,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'block text-xs font-bold text-emerald-700 mb-1' }, __alloT('stem.fractions.number_of_problems', 'Number of problems')),
             h('input', {
               type: 'number', min: '5', max: '50', value: ws.count,
-              onChange: function(e) { upd({ worksheetOpts: Object.assign({}, ws, { count: parseInt(e.target.value) || 10 }) }); },
+              onChange: function(e) { upd({ worksheetOpts: Object.assign({}, ws, { count: Math.min(50, parseInt(e.target.value) || 10) }) }); },
               'aria-label': __alloT('stem.fractions.problem_count', 'Problem count'),
               className: 'w-full px-2 py-1 rounded border border-emerald-300 text-xs'
             })
@@ -6541,6 +6700,7 @@ window.StemLab = window.StemLab || {
             var active = iepGrade === g;
             return h('button', {
               key: 'ig-' + g,
+              'aria-pressed': active,
               onClick: function() { upd({ iepGrade: g }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
@@ -6747,27 +6907,27 @@ window.StemLab = window.StemLab || {
     // Shows the version history of Fraction Lab so users can see what's new.
     var FRACTION_CHANGELOG = [
       { version: 'v3.0', date: '2026-05', changes: [
-        'Major expansion: 70+ tabs across 4 modes (Learn, Practice, Apply, Teacher).',
+        { teacher: true, text: 'Major expansion: 70+ tabs across 4 modes (Learn, Practice, Apply, Teacher).' },
         'Added: 9 mini-games (Pizza Shop, Race, Match, Fish, Bingo, Tug of War, Hide & Seek, Build the Whole, Pattern Builder, Connect-Four Fractions).',
         'Added: 7 visual models (pie, bar, number line, area, set, length, volume).',
         'Added: CRA progression tab with 3-stage walkthrough.',
         'Added: 80+ word problems with progressive hints.',
-        'Added: IES Practice Guide-aligned RTI probe generator.',
-        'Added: 9 IEP goal templates with accommodations.',
-        'Added: 4 lesson plan templates.',
-        'Added: 12 misconception library with research-based remediation strategies.',
+        { teacher: true, text: 'Added: IES Practice Guide-aligned RTI probe generator.' },
+        { teacher: true, text: 'Added: 9 IEP goal templates with accommodations.' },
+        { teacher: true, text: 'Added: 4 lesson plan templates.' },
+        { teacher: true, text: 'Added: 12 misconception library with research-based remediation strategies.' },
         'Added: Step-by-step visualizers for LCM, GCD simplification, mixed-improper conversion, long division.',
         'Added: Multilingual vocabulary in 12 languages.',
-        'Added: 8 hands-on activity recipes.',
+        { teacher: true, text: 'Added: 8 hands-on activity recipes.' },
         'Added: Real-world tools tab (rulers, measuring cups, etc.) with practice questions.',
         'Added: Story mode (5-chapter bakery narrative).',
         'Added: Brain teasers, magic tricks, history timeline.',
         'Added: Color-blind safe palettes (4 options).',
         'Added: Audio narration via Web Speech API.',
-        'Added: Worksheet generator, exit ticket generator, daily routine templates.',
+        { teacher: true, text: 'Added: Worksheet generator, exit ticket generator, daily routine templates.' },
         'Added: Mastery dashboard, achievement levels (8 tiers), goal setter.',
         'Added: Save/load named sessions.',
-        'Added: UDL alignment map, parent guide, research citations.',
+        { teacher: true, text: 'Added: UDL alignment map, parent guide, research citations.' },
         'Architecture: Mode → Tab two-level navigation to reduce overwhelm.'
       ]},
       { version: 'v2.0', date: '2025-12', changes: [
@@ -6799,7 +6959,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-[0.625rem] text-stone-600 font-mono' }, v.date)
             ),
             h('ul', { className: 'text-xs list-disc pl-5 text-slate-700 space-y-0.5' },
-              v.changes.map(function(c, i) { return h('li', { key: 'ch-' + v.version + '-' + i }, c); })
+              v.changes.filter(function(c) { return teacherView || !c.teacher; }).map(function(c, i) { return h('li', { key: 'ch-' + v.version + '-' + i }, c.text || c); })
             )
           );
         })
@@ -6874,6 +7034,42 @@ window.StemLab = window.StemLab || {
       );
     };
 
+    // Links name a tool by its old flat id. Most of those now live inside a super-tab, and a bare id snaps to the
+    // first tool of the mode, so each id here says where the tool is today.
+    var TOOL_LINKS = {
+      practice: { to: { tab: 'practice' }, label: __alloT('stem.fractions.build_a_fraction', 'Build a fraction') },
+      cra: { to: { tab: 'cra' }, label: __alloT('stem.fractions.nav_build_draw_write', 'Build, draw & write') },
+      operations: { to: { tab: 'operations' }, label: __alloT('stem.fractions.operations_3', 'Operations') },
+      wordproblems: { to: { tab: 'wordproblems' }, label: __alloT('stem.fractions.word_problems_3', 'Word problems') },
+      games: { to: { tab: 'games' }, label: __alloT('stem.fractions.games_2', 'Games') },
+      brain: { to: { tab: 'brain' }, label: __alloT('stem.fractions.brain_teasers_3', 'Brain teasers') },
+      rwt: { to: { tab: 'rwt' }, label: __alloT('stem.fractions.real_world_tools_2', 'Real-world tools') },
+      examples: { to: { tab: 'reference', refSub: 'examples' }, label: __alloT('stem.fractions.worked_examples_2', 'Worked examples') },
+      cheatsheet: { to: { tab: 'reference', refSub: 'cheatsheet' }, label: __alloT('stem.fractions.cheat_sheet_2', 'Cheat sheet') },
+      drill: { to: { tab: 'drill' }, label: __alloT('stem.fractions.nav_practice_quizzes', 'Practice & quizzes') },
+      pbank: { to: { tab: 'drill', drillSub: 'pbank' }, label: __alloT('stem.fractions.practice_bank_2', 'Practice bank') },
+      estimation: { to: { tab: 'drill', drillSub: 'estimation' }, label: __alloT('stem.fractions.estimation_2', 'Estimation') },
+      // No Benchmarks tool survives; the Estimation trainer is where a student finds the closest benchmark.
+      benchmarks: { to: { tab: 'drill', drillSub: 'estimation' }, label: __alloT('stem.fractions.estimation_2', 'Estimation') },
+      mastery: { to: { tab: 'myAccount', maSub: 'mastery' }, label: __alloT('stem.fractions.mastery_3', 'Mastery') },
+      worksheets: { to: { tab: 'printAssess', paSub: 'worksheets' }, label: __alloT('stem.fractions.worksheets_2', 'Worksheets') },
+      reports: { to: { tab: 'printAssess', paSub: 'reports' }, label: __alloT('stem.fractions.reports_2', 'Reports') },
+      rtiprobe: { to: { tab: 'printAssess', paSub: 'rtiprobe' }, label: __alloT('stem.fractions.rti_probes_2', 'RTI Probes') },
+      refcard: { to: { tab: 'printAssess', paSub: 'refcard' }, label: __alloT('stem.fractions.reference_card_2', 'Reference card') },
+      exitticket: { to: { tab: 'printAssess', paSub: 'exitticket' }, label: __alloT('stem.fractions.exit_ticket', 'Exit ticket') },
+      mathtalks: { to: { tab: 'pedagogy', pedSub: 'mathtalks' }, label: __alloT('stem.fractions.math_talks_2', 'Math talks') },
+      activities: { to: { tab: 'pedagogy', pedSub: 'activities' }, label: __alloT('stem.fractions.hands_on_activities', 'Hands-on activities') }
+    };
+    var goToTool = function(id) {
+      if (!TOOL_LINKS[id]) return;
+      upd(TOOL_LINKS[id].to);
+      // The link itself is gone after the jump, so focus goes to what it opened.
+      setTimeout(function() { var panel = document.getElementById('fraction-section-panel'); if (panel) panel.focus(); }, 0);
+    };
+    var goToToolLabel = function(id) {
+      return __alloT('stem.fractions.go_to_tool', '→ Go to {tool}').replace('{tool}', TOOL_LINKS[id].label);
+    };
+
     // ── DAILY ROUTINE TEMPLATE ──
     var DAILY_ROUTINES = [
       {
@@ -6937,6 +7133,7 @@ window.StemLab = window.StemLab || {
             var active = routId === r.id;
             return h('button', {
               key: 'dr-' + r.id,
+              'aria-pressed': active,
               onClick: function() { upd({ routId: r.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
@@ -6949,8 +7146,8 @@ window.StemLab = window.StemLab || {
             return h('div', { key: 'rs-' + i, className: 'border-l-4 border-emerald-300 pl-3 py-2 bg-emerald-50 rounded-r' },
               h('p', { className: 'text-xs font-bold text-emerald-800' }, s.time + ' · ' + s.activity),
               h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, s.description),
-              h('button', { onClick: function() { upd({ tab: s.tab }); },
-                className: 'mt-1 text-[0.625rem] font-bold text-emerald-700 hover:underline' }, '→ Go to ' + s.tab + ' tab')
+              h('button', { onClick: function() { goToTool(s.tab); }, 'data-fraction-tool-link': s.tab,
+                className: 'mt-1 text-[0.625rem] font-bold text-emerald-700 hover:underline' }, goToToolLabel(s.tab))
             );
           })
         )
@@ -7112,6 +7309,7 @@ window.StemLab = window.StemLab || {
             var active = checkGrade === g;
             return h('button', {
               key: 'cg-' + g,
+              'aria-pressed': active,
               onClick: function() { upd({ checkGrade: g }); },
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold transition-all capitalize ' +
                 (active ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
@@ -7189,7 +7387,7 @@ window.StemLab = window.StemLab || {
         subtitle: __alloT('stem.fractions.the_why_of_learning_recruiting_interes', 'The "WHY" of learning — recruiting interest, sustaining effort, self-regulation'),
         items: [
           { feature: 'Games (9 mini-games)', maps: 'Recruiting Interest — choice and novelty' },
-          { feature: 'Daily practice with streak tracking', maps: 'Sustaining effort — goal-setting and persistence' },
+          { feature: 'A practice log the student keeps', maps: 'Sustaining effort — goal-setting and persistence' },
           { feature: 'Achievement levels and badges', maps: 'Recruiting interest — feedback' },
           { feature: 'Story Mode', maps: 'Recruiting interest — relevance and authenticity' },
           { feature: 'Real-world contexts (cooking, money, sports)', maps: 'Recruiting interest — authenticity' },
@@ -7376,7 +7574,7 @@ window.StemLab = window.StemLab || {
           { id: 'vocabquiz', title: __alloT('stem.fractions.vocab_quiz', 'Vocab Quiz'), purpose: 'Multiple-choice vocab.', when: 'Pre/post unit assessment.', tip: __alloT('stem.fractions.use_for_warm_up_routine', 'Use for warm-up routine.') },
           { id: 'mastery', title: __alloT('stem.fractions.mastery', 'Mastery'), purpose: 'Per-skill progress tracking.', when: 'Reflection. Goal-setting.', tip: __alloT('stem.fractions.review_weekly', 'Review weekly.') },
           { id: 'examprep', title: __alloT('stem.fractions.exam_prep', 'Exam Prep'), purpose: 'Multiple-choice practice tests.', when: 'Before standardized tests.', tip: __alloT('stem.fractions.take_untimed_first_then_under_time_pre', 'Take untimed first, then under time pressure.') },
-          { id: 'daily', title: __alloT('stem.fractions.daily', 'Daily'), purpose: 'Practice streak tracking.', when: 'Building habit.', tip: __alloT('stem.fractions.set_a_low_daily_target_5_problems_for_', 'Set a low daily target (5 problems) for sustainability.') },
+          { id: 'daily', title: __alloT('stem.fractions.daily', 'Daily'), purpose: 'A practice log the student keeps.', when: 'Building habit.', tip: __alloT('stem.fractions.set_a_low_daily_target_5_problems_for_', 'Set a low daily target (5 problems) for sustainability.') },
           { id: 'goals', title: __alloT('stem.fractions.goal_setter', 'Goal Setter'), purpose: 'Set personal daily/weekly targets.', when: 'Beginning of unit. Conferences.', tip: __alloT('stem.fractions.realistic_ambitious', 'Realistic > ambitious.') }
         ]
       },
@@ -7550,6 +7748,7 @@ window.StemLab = window.StemLab || {
             var active = profId === p.id;
             return h('button', {
               key: 'df-' + p.id,
+              'aria-pressed': active,
               onClick: function() { upd({ profId: p.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100')
@@ -7749,6 +7948,7 @@ window.StemLab = window.StemLab || {
             var active = dataId === d.id;
             return h('button', {
               key: 'da-' + d.id,
+              'aria-pressed': active,
               onClick: function() { upd({ dataId: d.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
@@ -7914,7 +8114,7 @@ window.StemLab = window.StemLab || {
           printItems.map(function(p) {
             return h('button', {
               key: 'pl-' + p.id,
-              onClick: function() { upd({ tab: p.goTo }); },
+              onClick: function() { goToTool(p.goTo); }, 'data-fraction-tool-link': p.goTo,
               className: 'text-left p-4 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-400 hover:shadow-md transition-all'
             },
               h('div', { className: 'flex items-center gap-3' },
@@ -7963,7 +8163,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] text-slate-700' },
             __alloT('stem.fractions.ccss_k_8', 'CCSS K-8: '), h('span', { className: 'font-mono' }, __alloT('stem.fractions.1_g_a_3_2_g_a_3_3_nf_a_1_3_nf_a_2_3_nf', '1.G.A.3, 2.G.A.3, 3.NF.A.1, 3.NF.A.2, 3.NF.A.3, 4.NF.A.1-2, 4.NF.B.3-4, 4.NF.C.5-7, 5.NF.A.1-2, 5.NF.B.3-7, 6.NS.A.1, 6.RP.A.1,3, 7.NS.A.2, 8.NS.A.1.'))
           ),
-          h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, __alloT('stem.fractions.visit_the_standards_tab_for_the_comple', 'Visit the Standards tab for the complete cross-reference.'))
+          teacherView && h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, __alloT('stem.fractions.visit_the_standards_tab_for_the_comple', 'Visit the Standards tab for the complete cross-reference.'))
         ),
         h('div', { className: 'bg-white rounded-xl p-3 border border-rose-200' },
           h('h5', { className: 'text-sm font-black text-rose-800 mb-2' }, __alloT('stem.fractions.features_summary', '✨ Features summary')),
@@ -7972,12 +8172,12 @@ window.StemLab = window.StemLab || {
             h('div', null, __alloT('stem.fractions.9_mini_games', '🎮 9 mini-games')),
             h('div', null, __alloT('stem.fractions.80_word_problems', '📚 80+ word problems')),
             h('div', null, __alloT('stem.fractions.8_worked_examples', '🎓 8 worked examples')),
-            h('div', null, __alloT('stem.fractions.37_ccss_standards_mapped', '📋 37 CCSS standards mapped')),
-            h('div', null, __alloT('stem.fractions.12_misconceptions_library', '⚠ 12 misconceptions library')),
-            h('div', null, __alloT('stem.fractions.9_iep_goal_templates', '🎯 9 IEP goal templates')),
-            h('div', null, __alloT('stem.fractions.4_lesson_plan_templates', '📅 4 lesson plan templates')),
-            h('div', null, __alloT('stem.fractions.8_hands_on_activity_recipes', '✂ 8 hands-on activity recipes')),
-            h('div', null, __alloT('stem.fractions.5_math_talk_strings', '🗣 5 math talk strings')),
+            teacherView && h('div', null, __alloT('stem.fractions.37_ccss_standards_mapped', '📋 37 CCSS standards mapped')),
+            teacherView && h('div', null, __alloT('stem.fractions.12_misconceptions_library', '⚠ 12 misconceptions library')),
+            teacherView && h('div', null, __alloT('stem.fractions.9_iep_goal_templates', '🎯 9 IEP goal templates')),
+            teacherView && h('div', null, __alloT('stem.fractions.4_lesson_plan_templates', '📅 4 lesson plan templates')),
+            teacherView && h('div', null, __alloT('stem.fractions.8_hands_on_activity_recipes', '✂ 8 hands-on activity recipes')),
+            teacherView && h('div', null, __alloT('stem.fractions.5_math_talk_strings', '🗣 5 math talk strings')),
             h('div', null, __alloT('stem.fractions.40_vocabulary_terms', '📔 40+ vocabulary terms')),
             h('div', null, __alloT('stem.fractions.12_languages', '🌍 12 languages'))
           )
@@ -8239,6 +8439,7 @@ window.StemLab = window.StemLab || {
             var diffColor = b.difficulty === 'easy' ? 'green' : b.difficulty === 'medium' ? 'amber' : 'rose';
             return h('button', {
               key: 'bt-' + b.id,
+              'aria-pressed': active,
               onClick: function() { upd({ btId: b.id, btShowSolution: false, btHintLevel: 0 }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-yellow-700 text-white' : 'bg-white text-yellow-700 border border-yellow-300 hover:bg-yellow-100')
@@ -8281,7 +8482,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl p-3 border border-slate-200' },
           h('h5', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.fractions.navigation', '🗺 Navigation')),
           h('ul', { className: 'text-xs list-disc pl-5 text-slate-700 space-y-1' },
-            h('li', null, h('b', null, __alloT('stem.fractions.mode_tabs', 'Mode tabs ')), __alloT('stem.fractions.learn_practice_apply_teacher_group_rel', '(Learn, Practice, Apply, Teacher) group related work.')),
+            h('li', null, h('b', null, __alloT('stem.fractions.mode_tabs', 'Mode tabs ')), teacherView ? __alloT('stem.fractions.learn_practice_apply_teacher_group_rel', '(Learn, Practice, Apply, Teacher) group related work.') : __alloT('stem.fractions.learn_practice_apply_group_related', '(Learn, Practice, Apply) group related work.')),
             h('li', null, h('b', null, __alloT('stem.fractions.tab_strip', 'Tab strip ')), __alloT('stem.fractions.within_each_mode_lets_you_pick_specifi', 'within each mode lets you pick specific tools.')),
             h('li', null, h('b', null, __alloT('stem.fractions.header', 'Header ')), __alloT('stem.fractions.shows_your_score_and_streak_across_all', 'shows your score and streak across all tabs.')),
             h('li', null, h('b', null, __alloT('stem.fractions.ai_tutor', 'AI tutor ')), __alloT('stem.fractions.is_always_available_for_asking_questio', 'is always available for asking questions about what you\'re doing.'))
@@ -8312,7 +8513,7 @@ window.StemLab = window.StemLab || {
               h('b', { className: 'text-amber-700' }, __alloT('stem.fractions.apply', '📖 Apply ')),
               __alloT('stem.fractions.real_world_contexts_word_problems_reci', 'Real-world contexts. Word problems, recipe scaling, games (Pizza Shop, Race, Match, Fish, and more), story mode, brain teasers.')
             ),
-            h('div', null,
+            teacherView && h('div', null,
               h('b', { className: 'text-slate-700' + onHostInk }, __alloT('stem.fractions.teacher', '🏫 Teacher ')),
               __alloT('stem.fractions.instructor_tools_worksheet_generator_p', 'Instructor tools: worksheet generator, progress reports, IEP goal bank, lesson plans, CCSS standards alignment, misconceptions library, scope & sequence, hands-on activities, RTI probes.')
             )
@@ -8323,7 +8524,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-xs text-slate-700' },
             __alloT('stem.fractions.ask_the_ai_tutor_any_question_about_fr', 'Ask the AI tutor any question about fractions or about how to use a particular tab. '),
             __alloT('stem.fractions.the_vocabulary_and_glossary_tabs_cover', 'The Vocabulary and Glossary tabs cover every term in K-8 fraction instruction. '),
-            __alloT('stem.fractions.for_teachers_the_misconceptions_and_fa', 'For teachers: the Misconceptions and FAQ tabs answer common student confusions.')
+            teacherView && __alloT('stem.fractions.for_teachers_the_misconceptions_and_fa', 'For teachers: the Misconceptions and FAQ tabs answer common student confusions.')
           )
         ),
         h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
@@ -8378,6 +8579,7 @@ window.StemLab = window.StemLab || {
             var active = tableType === t;
             return h('button', {
               key: 'tt-' + t,
+              'aria-pressed': active,
               onClick: function() { upd({ tableType: t }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
@@ -8519,6 +8721,7 @@ window.StemLab = window.StemLab || {
             var active = mtId === m.id;
             return h('button', {
               key: 'mt-' + m.id,
+              'aria-pressed': active,
               onClick: function() { upd({ mtId: m.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-purple-700 text-white' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')
@@ -8806,6 +9009,7 @@ window.StemLab = window.StemLab || {
             var active = actId === a.id;
             return h('button', {
               key: 'a-' + a.id,
+              'aria-pressed': active,
               onClick: function() { upd({ actId: a.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-100')
@@ -8902,6 +9106,7 @@ window.StemLab = window.StemLab || {
             var active = ssGrade === g;
             return h('button', {
               key: 'ssg-' + g,
+              'aria-pressed': active,
               onClick: function() { upd({ ssGrade: g }); },
               className: 'px-3 py-1.5 rounded text-xs font-bold transition-all ' +
                 (active ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
@@ -9060,6 +9265,7 @@ window.StemLab = window.StemLab || {
             var active = storyCh === c.chapter;
             return h('button', {
               key: 'sch-' + c.chapter,
+              'aria-pressed': active,
               onClick: function() { upd({ storyCh: c.chapter, storyAnswer: '', storyFeedback: null }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-orange-700 text-white' : 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100')
@@ -9227,6 +9433,7 @@ window.StemLab = window.StemLab || {
                   var wrong = examFinished && picked && c !== q.answer;
                   return h('button', {
                     key: 'ec-' + i + '-' + ci,
+                    'aria-pressed': picked,
                     onClick: function() {
                       if (examFinished) return;
                       var na = Object.assign({}, examAnswers); na[i] = c;
@@ -9258,38 +9465,33 @@ window.StemLab = window.StemLab || {
 
     // ── DAILY PRACTICE TAB ──
     var renderDailyPracticeTab = function() {
-      var dpDays = _f.dpDays || [];
+      // Fraction Lab keeps running totals (score, per-type counts) but no date on any answer, so it cannot tell whether
+      // a student practiced today. This is a self-kept log and says so: no streak, no celebration, no XP. Saved days stay.
+      var dpDays = Array.isArray(_f.dpDays) ? _f.dpDays : [];
       var today = new Date().toLocaleDateString();
       var dpTodayDone = dpDays.indexOf(today) >= 0;
-      var startDP = function() {
-        // Generate 5 mixed problems
-        var probs = [];
-        for (var i = 0; i < 5; i++) {
-          var d = pick([2, 3, 4, 5, 6, 8]);
-          var n = randInt(1, d - 1);
-          probs.push({ q: 'Simplify ' + (n * 2) + '/' + (d * 2), answer: n + '/' + d });
-        }
-        upd({ dpProbs: probs, dpAnswer: '', dpStep: 0, dpScore: 0 });
-      };
       var markComplete = function() {
         upd({ dpDays: (dpDays.indexOf(today) < 0 ? dpDays.concat([today]) : dpDays) });
-        sfxComplete();
-        addToast('✓ Day complete! ' + (dpDays.length + 1) + ' day streak.', 'success');
+        sfxClick();
+        addToast(__alloT('stem.fractions.daily_log_added', 'Added today to your practice log.'), 'info');
       };
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
-          h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.daily_practice', '📅 Daily practice')),
+          h('h4', { className: 'text-sm font-bold text-emerald-800 mb-1' }, __alloT('stem.fractions.daily_log_title', '📅 Practice log')),
           h('p', { className: 'text-[0.6875rem] text-emerald-700' },
-            __alloT('stem.fractions.a_short_daily_ritual_5_problems_per_da', 'A short daily ritual: 5 problems per day. Build a streak. Practice schedules beat practice intensity for retention.')
+            __alloT('stem.fractions.daily_log_intro', 'Keep your own record of the days you practiced fractions. A little practice on many days helps you remember more than one long session. Fraction Lab does not check this log, and it earns no XP or badges.')
           )
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 text-center space-y-2' },
           h('p', { className: 'text-sm text-emerald-700' }, 'Today: ', h('b', null, today)),
-          h('p', { className: 'text-3xl font-black text-emerald-800' }, dpDays.length + ' 🔥 day' + (dpDays.length === 1 ? '' : 's')),
-          h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.practice_streak', 'Practice streak')),
+          h('p', { className: 'text-3xl font-black text-emerald-800' }, dpDays.length === 1 ? __alloT('stem.fractions.daily_log_days_one', '1 day logged') : __alloOneWord(__alloT('stem.fractions.daily_log_days_other', '{n} days logged').replace('{n}', dpDays.length))),
+          h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.daily_log_caption', 'Your own log, not a score')),
           !dpTodayDone && h('button', { onClick: markComplete,
-            className: 'transition-colors px-6 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.mark_today_complete', '✓ Mark today complete')),
-          dpTodayDone && h('p', { className: 'text-base font-bold text-emerald-900' }, __alloT('stem.fractions.today_done_come_back_tomorrow', '✓ Today done! Come back tomorrow.'))
+            className: 'transition-colors px-6 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.daily_log_button', 'I practiced today: add it to my log')),
+          !dpTodayDone && h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.daily_log_not_yet', 'Not yet? Answer some questions in Practice & quizzes, then come back and add today.')),
+          !dpTodayDone && h('button', { onClick: function() { goToTool('drill'); }, 'data-fraction-tool-link': 'drill',
+            className: 'text-xs font-bold text-emerald-700 hover:underline' }, goToToolLabel('drill')),
+          dpTodayDone && h('p', { className: 'text-base font-bold text-emerald-900' }, __alloT('stem.fractions.daily_log_done', '✓ Added today. See you next time.'))
         ),
         // Last 14 days
         h('div', { className: 'bg-white rounded-xl border border-emerald-200 p-3' },
@@ -9365,6 +9567,7 @@ window.StemLab = window.StemLab || {
             var active = trick === m.id;
             return h('button', {
               key: 'mt-' + m.id,
+              'aria-pressed': active,
               onClick: function() { upd({ magicTrick: m.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-purple-700 text-white' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')
@@ -9466,6 +9669,7 @@ window.StemLab = window.StemLab || {
             var active = rwt === t2.id;
             return h('button', {
               key: 'rwt-' + t2.id,
+              'aria-pressed': active,
               onClick: function() { upd({ rwt: t2.id }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
                 (active ? 'bg-stone-700 text-white' : 'bg-white text-stone-700 border border-stone-300 hover:bg-stone-100')
@@ -9496,7 +9700,7 @@ window.StemLab = window.StemLab || {
     // Output is a 2-min timed probe matching common RTI fluency frameworks.
     var renderRTIProbeTab = function() {
       var probeType = _f.probeType || 'fluency-identify';
-      var probeCount = _f.probeCount || 30;
+      var probeCount = Math.min(50, _f.probeCount || 30);
       var generatedProbe = _f.generatedProbe || null;
 
       var probeTypes = [
@@ -9595,7 +9799,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'block text-xs font-bold text-teal-700 mb-1' }, __alloT('stem.fractions.number_of_items', 'Number of items')),
             h('input', {
               type: 'number', min: 10, max: 50, value: probeCount,
-              onChange: function(e) { upd({ probeCount: parseInt(e.target.value) || 30 }); },
+              onChange: function(e) { upd({ probeCount: Math.min(50, parseInt(e.target.value) || 30) }); },
               'aria-label': __alloT('stem.fractions.probe_count', 'Probe count'),
               className: 'w-full px-2 py-1.5 rounded border border-teal-300 text-xs'
             })
@@ -10334,6 +10538,7 @@ window.StemLab = window.StemLab || {
             var active = mlLang === lang;
             return h('button', {
               key: 'ml-' + lang,
+              'aria-pressed': active,
               onClick: function() { upd({ mlLang: lang }); },
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all capitalize ' +
                 (active ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
@@ -10367,6 +10572,19 @@ window.StemLab = window.StemLab || {
       var pbIdx = _f.pbIdx || 0;
       var items = PRACTICE_BANK[pbSkill] || PRACTICE_BANK.identify;
       var item = items[pbIdx % items.length];
+      var pbShown = !!_f.pbShown;
+      // The button stays in place when pressed, so keyboard focus is not lost and the student can hide it again.
+      var pbAnswer = function(content) {
+        return h('div', { className: 'text-center mt-2' },
+          h('button', {
+            type: 'button',
+            'aria-expanded': pbShown,
+            onClick: function() { upd({ pbShown: !pbShown }); },
+            className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-800 border border-rose-700 hover:bg-rose-100'
+          }, pbShown ? __alloT('stem.fractions.pb_hide_answer', 'Hide answer') : __alloT('stem.fractions.pb_show_answer', 'Show answer')),
+          pbShown && h('p', { className: 'text-center text-base font-bold text-rose-900 mt-2' }, __alloT('stem.fractions.pb_answer_label', 'Answer: '), h('span', { className: 'font-mono' }, content))
+        );
+      };
       return h('div', { className: 'space-y-3' },
         h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
           h('h4', { className: 'text-sm font-bold text-rose-800 mb-1' }, __alloT('stem.fractions.curated_practice_bank', '📚 Curated practice bank')),
@@ -10379,7 +10597,8 @@ window.StemLab = window.StemLab || {
             var active = pbSkill === skill;
             return h('button', {
               key: 'pb-' + skill,
-              onClick: function() { upd({ pbSkill: skill, pbIdx: 0 }); },
+              'aria-pressed': active,
+              onClick: function() { upd({ pbSkill: skill, pbIdx: 0, pbShown: false }); },
               className: 'px-3 py-1.5 rounded text-xs font-bold transition-all capitalize ' +
                 (active ? 'bg-rose-700 text-white' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-100')
             }, skill + ' (' + PRACTICE_BANK[skill].length + ')');
@@ -10391,25 +10610,25 @@ window.StemLab = window.StemLab || {
           pbSkill === 'identify' && h('div', null,
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.what_fraction_is_shown', 'What fraction is shown?')),
             h('div', { className: 'flex justify-center' },
-              item.model === 'pie' ? drawPie(item.n, item.d, 160, palMain) :
-              item.model === 'bar' ? drawBar(item.n, item.d, palMain) :
+              item.model === 'pie' ? drawPie(item.n, item.d, 160, palMain, { unlabeled: true }) :
+              item.model === 'bar' ? drawBar(item.n, item.d, palMain, { partLines: true }) :
               drawSetModel(item.n, item.d, {})
             ),
-            h('p', { className: 'text-center text-base font-bold text-rose-900 mt-2' }, 'Answer: ', h('span', { className: 'font-mono' }, item.answer))
+            pbAnswer(item.answer)
           ),
           pbSkill === 'equivalent' && h('div', null,
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.find_the_equivalent', 'Find the equivalent:')),
             h('p', { className: 'text-center text-2xl font-mono font-bold text-rose-900' },
-              item.from.n + '/' + item.from.d + ' = ' + h('span', { style: { color: '#9f1239' } }, '?') + '/' + item.to.d
+              item.from.n + '/' + item.from.d + ' = ?/' + item.to.d
             ),
-            h('p', { className: 'text-center text-sm text-rose-700 mt-2' }, 'Answer: ', h('span', { className: 'font-mono font-bold' }, item.answer))
+            pbAnswer(item.answer + '/' + item.to.d)
           ),
           pbSkill === 'simplify' && h('div', null,
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, 'Simplify:'),
             h('p', { className: 'text-center text-2xl font-mono font-bold text-rose-900' },
               item.from.n + '/' + item.from.d + ' = ?'
             ),
-            h('p', { className: 'text-center text-sm text-rose-700 mt-2' }, 'Answer: ', h('span', { className: 'font-mono font-bold' }, item.to.n + '/' + item.to.d))
+            pbAnswer(item.to.n + '/' + item.to.d)
           ),
           pbSkill === 'compare' && h('div', null,
             h('p', { className: 'text-sm font-bold text-rose-800 mb-2' }, __alloT('stem.fractions.which_is_larger', 'Which is larger?')),
@@ -10418,21 +10637,19 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-3xl text-rose-700' }, '?'),
               h('div', { className: 'text-2xl font-mono font-bold text-rose-900' }, item.b.n + '/' + item.b.d)
             ),
-            h('p', { className: 'text-center text-sm text-rose-700 mt-2' }, 'Answer: ',
-              h('span', { className: 'font-mono font-bold' },
-                item.larger === 'a' ? item.a.n + '/' + item.a.d + ' > ' + item.b.n + '/' + item.b.d :
-                item.larger === 'b' ? item.b.n + '/' + item.b.d + ' > ' + item.a.n + '/' + item.a.d :
-                item.a.n + '/' + item.a.d + ' = ' + item.b.n + '/' + item.b.d
-              )
+            pbAnswer(
+              item.larger === 'a' ? item.a.n + '/' + item.a.d + ' > ' + item.b.n + '/' + item.b.d :
+              item.larger === 'b' ? item.b.n + '/' + item.b.d + ' > ' + item.a.n + '/' + item.a.d :
+              item.a.n + '/' + item.a.d + ' = ' + item.b.n + '/' + item.b.d
             )
           ),
           h('div', { className: 'flex gap-2 mt-3' },
             h('button', {
-              onClick: function() { upd({ pbIdx: (pbIdx - 1 + items.length) % items.length }); },
+              onClick: function() { upd({ pbIdx: (pbIdx - 1 + items.length) % items.length, pbShown: false }); },
               className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200'
             }, __alloT('stem.fractions.previous', '← Previous')),
             h('button', {
-              onClick: function() { upd({ pbIdx: (pbIdx + 1) % items.length }); },
+              onClick: function() { upd({ pbIdx: (pbIdx + 1) % items.length, pbShown: false }); },
               className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-700 text-white hover:bg-rose-800'
             }, __alloT('stem.fractions.next_2', 'Next →'))
           )
@@ -10979,6 +11196,11 @@ window.StemLab = window.StemLab || {
         { id: 'tables', icon: '📊', label: __alloT('stem.fractions.conv_tables', 'Conv. tables') },
         { id: 'tabguide', icon: '📚', label: __alloT('stem.fractions.tab_guide', 'Tab guide') }
       ];
+      // The tab guide is teacher training: it describes the teacher tools and how to manage students.
+      if (!teacherView) {
+        items = items.filter(function(s) { return s.id !== 'tabguide'; });
+        if (sub === 'tabguide') sub = 'vocab';
+      }
       return h('div', null,
         h('p', { className: 'text-[0.6875rem] text-rose-700 mb-2 italic' }, __alloT('stem.fractions.look_up_materials_definitions_and_refe', 'Look-up materials, definitions, and reference guides.')),
         renderSubTabStrip(items, sub, function(id) { upd({ refSub: id }); }, 'rose'),
@@ -11143,7 +11365,7 @@ window.StemLab = window.StemLab || {
       var sub = _f.maSub || 'goals';
       var items = [
         { id: 'goals', icon: '🎯', label: __alloT('stem.fractions.goal_setter_3', 'Goal setter') },
-        { id: 'daily', icon: '📅', label: __alloT('stem.fractions.daily_streak', 'Daily streak') },
+        { id: 'daily', icon: '📅', label: __alloT('stem.fractions.daily_log_tab', 'Practice log') },
         { id: 'mastery', icon: '⭐', label: __alloT('stem.fractions.mastery_3', 'Mastery') },
         { id: 'levels', icon: '🏆', label: __alloT('stem.fractions.levels_xp', 'Levels & XP') }
       ];
@@ -11389,10 +11611,17 @@ window.StemLab = window.StemLab || {
       { id: 'standardsPlanning', icon: '\uD83D\uDCCB', label: __alloT('stem.fractions.standards_planning', 'Standards & Planning'), group: 'teacher' },
       { id: 'printAssess',    icon: '\uD83D\uDDA8', label: __alloT('stem.fractions.print_assess', 'Print & Assess'), group: 'teacher' },
       { id: 'pedagogy',       icon: '\uD83E\uDDE0', label: __alloT("stem.fractions.nav_teaching_guides", "Teaching guides"),       group: 'teacher' },
-      { id: 'myAccount',      icon: '\u2699',       label: __alloT("stem.fractions.nav_goals_progress", "Goals & progress"),     group: 'teacher' },
-      { id: 'ml',             icon: '\uD83C\uDF0D', label: __alloT('stem.fractions.multilingual_2', 'Multilingual'),   group: 'teacher' },
+      { id: 'myAccount',      icon: '\u2699',       label: __alloT("stem.fractions.nav_goals_progress", "Goals & progress"),     group: 'teacher', studentGroup: 'practice' },
+      { id: 'ml',             icon: '\uD83C\uDF0D', label: __alloT('stem.fractions.multilingual_2', 'Multilingual'),   group: 'teacher', studentGroup: 'learn' },
       { id: 'sliderMixer',    icon: '\uD83C\uDF9A', label: __alloT('stem.fractions.slider_mixer', 'Slider Mixer'),   group: 'learn' }
     ];
+    // Students get no Teacher mode. This list is the one gate: `tab` below always snaps to an entry of it, so a saved
+    // tab, a preset or a link naming a teacher tool lands on a student screen. Their own two items move to a student mode.
+    if (!teacherView) {
+      tabs = tabs.filter(function(t2) { return t2.group !== 'teacher' || t2.studentGroup; }).map(function(t2) {
+        return t2.group === 'teacher' ? Object.assign({}, t2, { group: t2.studentGroup }) : t2;
+      });
+    }
     // v3.1: original flat list kept commented for reference (in case of rollback).
     var _legacyTabsForReference = [
       { id: 'practice',       icon: '\uD83C\uDF55', label: __alloT('stem.fractions.practice_4', 'Practice'),       group: 'learn' },
@@ -11481,7 +11710,11 @@ window.StemLab = window.StemLab || {
       apply: { icon: '\uD83D\uDCD6', label: __alloT('stem.fractions.apply_2', 'Apply'), desc: __alloT("stem.fractions.nav_apply_hint", "Use fractions in stories, everyday problems, and games.") },
       teacher: { icon: '\uD83C\uDFEB', label: __alloT('stem.fractions.teacher_2', 'Teacher'), desc: __alloT("stem.fractions.nav_teacher_hint", "Find planning, assessment, and teaching resources.") }
     };
-    if (!MODE_LABELS[navMode]) navMode = 'learn';
+    if (!teacherView) delete MODE_LABELS.teacher;
+    if (!Object.prototype.hasOwnProperty.call(MODE_LABELS, navMode)) navMode = 'learn';
+    // A preset writes `tab` without `navMode`, so a real tab decides its own mode.
+    var savedTabEntry = tabs.find(function(t2) { return t2.id === _f.tab; });
+    if (savedTabEntry) navMode = savedTabEntry.group;
     var groupTabs = tabs.filter(function(t2) { return t2.group === navMode; });
     if (!groupTabs.find(function(t2) { return t2.id === tab; })) tab = groupTabs[0].id;
     var primaryActivities = {
@@ -11720,6 +11953,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-0.5 ml-2' },
               ['easy', 'medium', 'hard'].map(function(d) {
                 return h('button', { key: d,
+                  'aria-pressed': difficulty === d,
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
                   className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
                     (difficulty === d
@@ -11780,7 +12014,7 @@ window.StemLab = window.StemLab || {
 
       // AI Tutor toggle + panel
       h('div', { className: 'flex gap-2' },
-        !showAITutor && h('button', { 'aria-label': __alloT('stem.fractions.ai_tutor_2', 'AI Tutor'),
+        _aiOn && !showAITutor && h('button', { 'aria-label': __alloT('stem.fractions.ai_tutor_2', 'AI Tutor'),
           onClick: function() { sfxClick(); upd({ showAITutor: true }); },
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
         }, __alloT('stem.fractions.ai_tutor_3', '\uD83E\uDD16 AI Tutor')),

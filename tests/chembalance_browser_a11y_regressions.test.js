@@ -10,11 +10,11 @@ const SOURCE = 'stem_lab/stem_tool_chembalance.js';
 const DEPLOY = 'desktop/web-app/public/stem_lab/stem_tool_chembalance.js';
 const sourceText = readFileSync(SOURCE, 'utf8');
 
-function renderSubtool(subtool, data = {}) {
+function renderSubtool(subtool, data = {}, overrides) {
   const container = document.createElement('div');
   container.innerHTML = renderTool('chemBalance', {
     chemBalance: { subtool, _everPicked: true, ...data },
-  });
+  }, overrides);
   return container;
 }
 
@@ -81,7 +81,7 @@ describe('Chemistry Lab browser-like accessibility regressions', () => {
   });
 
   it('exposes AI loading and verification semantics', () => {
-    const ai = renderSubtool('balance', { _showAI: true, _chemAIResp: 'Use atom conservation.' });
+    const ai = renderSubtool('balance', { _showAI: true, _chemAIResp: 'Use atom conservation.' }, { callGemini: () => Promise.resolve('') });
     const panel = ai.querySelector('#chem-ai-panel');
     const response = panel?.querySelector('div[role="status"][aria-live="polite"]');
 

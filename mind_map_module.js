@@ -32,6 +32,13 @@
  */
 (function () {
   'use strict';
+  // Blocked host fns are truthy; ask the host (old-host fallback).
+  function _mmAiUsable(fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
   if (window.AlloModules && window.AlloModules.Throughline) {
     console.log('[Throughline] Already loaded, skipping');
     return;
@@ -1859,7 +1866,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     // re-render the 3D scene from those — so position carries real meaning.
     function arrange3DByMeaning() {
       var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
-      if (!E || typeof window.callGemini !== 'function' || !graph3d) {
+      if (!E || !_mmAiUsable(window.callGemini) || !graph3d) {
         addToast(t('throughline.ai_unavailable') || 'AI arrange is not available here.', 'info'); return;
       }
       setAiBusy(true);
@@ -3030,7 +3037,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             graph3dIsAlignment
               ? (t('throughline.alignment_graph_3d_controls') || 'Drag to orbit · scroll to zoom · choose a node for details. The same reading order remains available without WebGL.')
               : (t('throughline.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand. A reading-order outline stays available to screen readers.'))),
-        (!graph3dIsAlignment && typeof window.callGemini === 'function') && h('button', {
+        (!graph3dIsAlignment && _mmAiUsable(window.callGemini)) && h('button', {
           onClick: arrange3DByMeaning, disabled: aiBusy || cg3dState !== 'ready',
           title: t('throughline.ai_arrange_title') || 'Use AI to position lessons by meaning: left→right = sequence, up = cognitive depth, depth = strand',
           style: { fontSize: 12, fontWeight: 800, minHeight: 44, padding: '8px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',

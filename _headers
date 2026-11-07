@@ -26,3 +26,18 @@
 /dompurify/*
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
+# Lets the device speed check test threads. Applies to this one page only.
+/speech_device_test
+  Document-Isolation-Policy: isolate-and-credentialless
+/speech_device_test.html
+  Document-Isolation-Policy: isolate-and-credentialless
+# Practice-song library (scripts/build-song-packs.cjs in the Rachel Pomeranz site repo): Gemini Canvas fetches it
+# cross-origin. Packs and data files carry their content hash in the name; songs.json must stay revalidated.
+/song_library/*
+  Access-Control-Allow-Origin: *
+/song_library/pack-*
+  Cache-Control: public, max-age=31536000, immutable
+/song_library/lyrics-*
+  Cache-Control: public, max-age=31536000, immutable
+/song_library/melodies-*
+  Cache-Control: public, max-age=31536000, immutable

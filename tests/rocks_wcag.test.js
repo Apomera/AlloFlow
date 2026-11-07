@@ -58,7 +58,7 @@ describe('WCAG 1.4.3 — text contrast on the surfaces it is actually drawn on',
     // actually sits on gave 4.48:1. Same class as the two data-driven-colour
     // rounds before it: verified on one surface, used on another.
     const s = src();
-    const rows = [...s.matchAll(/(\w+): \{ label: t\('stem\.rocks\.\w+'\), icon: '[^']*', color: '(#[0-9a-f]{6})', ink: '(#[0-9a-f]{6})'/g)];
+    const rows = [...s.matchAll(/(\w+): \{ label: t\('stem\.rocks\.\w+', '[^']*'\), icon: '[^']*', color: '(#[0-9a-f]{6})', ink: '(#[0-9a-f]{6})'/g)];
     expect(rows.length).toBe(3);
     rows.forEach((m) => {
       const chip = over(m[2], 0x20 / 255, '#ffffff');
@@ -268,7 +268,8 @@ describe('i18n — a missing key must not render as nothing', () => {
     const ui = readFileSync('ui_strings.js', 'utf8');
 
     const bare = new Set();
-    const re = /(^|[^A-Za-z_$.])t\(\s*'([^']+)'\s*\)/g;
+    // Bare or with its English: either way the key must resolve.
+    const re = /(^|[^A-Za-z_$.])t\(\s*'([^']+)'\s*[,)]/g;
     let m;
     while ((m = re.exec(src))) bare.add(m[2]);
     // Guard against the extraction silently matching nothing.

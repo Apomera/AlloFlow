@@ -59,6 +59,15 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Contrast theme fixes owned by this tool (allo-machinelab-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-machinelab-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-machinelab-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"machineLab\"] [style*=\"background: rgb(255, 255, 0)\"]:not(button),.theme-contrast [data-stem-tool-shell=\"machineLab\"] [style*=\"background: rgb(255, 255, 0)\"]:not(button) *{color:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"]{background-color:#ff0!important;background-image:none!important;border-color:#ff0!important;color:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"] *:not(svg *),.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"] *:not(svg *){color:#000!important;background-color:transparent!important;border-color:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"]:hover:not(:focus-visible),.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"]:hover:not(:focus-visible){box-shadow:inset 0 0 0 3px #000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"] svg [stroke=\"#ffff00\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"] svg [stroke=\"#ffffff\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"] svg [stroke=\"#ffff00\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"] svg [stroke=\"#ffffff\" i]{stroke:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"] svg [fill=\"#ffff00\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-selected=\"true\"] svg [fill=\"#ffffff\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"] svg [fill=\"#ffff00\" i],.theme-contrast [data-stem-tool-shell=\"machineLab\"] button[aria-pressed=\"true\"] svg [fill=\"#ffffff\" i]{fill:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"machineLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+  // end contrast theme fixes
   // ═══════════════════════════════════════════════════════════════════
   // PURE MATH — no DOM, no React, no state. Everything the student is
   // graded on comes from here, which is what makes it testable.
@@ -16644,6 +16653,10 @@ window.StemLab = window.StemLab || {
       //    stem_tool_physics.js. Defaults its level to the current band rather
       //    than always Grade 5.
       function aiPanel() {
+        // Student AI-off: the panel renders only when text AI is usable.
+        var _aiFn = ctx.callGemini, _aiOk = false;
+        try { _aiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _aiFn) : !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); } catch (_) {}
+        if (!(ctx.aiAvailable !== false && typeof _aiFn === 'function' && !_aiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiOk))) return null;
         var LEVELS = [
           { id: 'grade2', band: 'k2', label: __alloT('stem.machinelab.lv_g2', 'Grade 2') },
           { id: 'grade5', band: 'g35', label: __alloT('stem.machinelab.lv_g5', 'Grade 5') },

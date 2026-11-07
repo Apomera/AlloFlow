@@ -36,7 +36,7 @@ function originalAction(options = {}) {
     setHistory: vi.fn(update => { const next = typeof update === 'function' ? update(history) : update; history.splice(0, history.length, ...next); }),
   };
   const host = readFileSync(process.env.ALLO_ANTI_CANDIDATE || resolve('AlloFlowANTI.txt'), 'utf8');
-  const start = host.indexOf('  const handleReadOriginal = (selected = null) => {');
+  const start = host.indexOf('  const handleReadOriginal = (selected = null');
   const end = host.indexOf('  const handleCreateAdaptedCompanion =', start);
   if (start < 0 || end <= start) throw new Error('Original-reading host action boundaries changed');
   // Based on's effective choice comes from the host rule (Automatic = the source in use outside a unit).

@@ -48,8 +48,13 @@ function learnerPanelAnnotations(teacher, learner) {
   return { ...base, userLabels, drawings: own.drawings || {} };
 }
 
+// Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function _imageViewAiDoor(kind, t) {
+  try { return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null; } catch (_) { return null; }
+}
 function ImageView(props) {
   var t = props.t;
+  var imageEditDoor = _imageViewAiDoor('imageEdit', t);
   const imageText = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; };
   const altFieldId = 'visual-alt-' + React.useId();
   const descriptionId = altFieldId + '-notice';
@@ -384,20 +389,21 @@ function ImageView(props) {
                                     onKeyDown={(e) => {
                                       if (e.key !== 'Enter' || imageRefinementComposingRef.current || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
                                       e.preventDefault();
-                                      if (!e.repeat && !isProcessing && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
+                                      if (!e.repeat && !isProcessing && !imageEditDoor?.disabled && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
                                     }}
                                 />
                                 <button type="button"
                                     onClick={handleRefineImage}
-                                    disabled={!imageRefinementInput.trim() || isProcessing} aria-busy={isProcessing}
+                                    disabled={!imageRefinementInput.trim() || isProcessing || !!imageEditDoor?.disabled} aria-busy={isProcessing}
                                     className="min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    title={t('common.apply_nano_edit')}
+                                    title={imageEditDoor?.title || t('common.apply_nano_edit')}
                                     aria-label={t('common.apply_nano_edit')}
                                 >
                                     {isProcessing ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Send size={16}/>}
                                 </button>
                              </div>
                              <span className="text-[11px] text-slate-600 italic mt-0.5 block">{t('visuals.nano_active_status')}</span>
+                             {imageEditDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && <div className="mt-2"><window.AlloAiSetupNotice t={t} kind="imageEdit" /></div>}
                         </div>
                         )}
                         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg text-sm text-red-800 mb-6">

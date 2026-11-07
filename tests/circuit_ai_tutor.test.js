@@ -202,10 +202,10 @@ describe('Circuit AI tutor request lifecycle', () => {
     await request(); expect(response()).toBe('Recovered.');
   });
 
-  it('handles an unavailable provider and restores a saved busy state', async () => {
+  it('hides the tutor when no provider is usable, even from a saved busy state', async () => {
+    // 2026-11-03 student AI-off sweep: an unusable provider hides the tutor instead of erroring on Ask.
     seed._circuit._aiLoading = true; provider = null;
-    await render(); expect(ask().disabled).toBe(false);
-    await request(); expect(response()).toContain('unavailable here'); expect(latest._aiLoading).toBe(false);
+    await render(); expect(host.querySelector('#circuit-ai-question')).toBeNull();
   });
 
   it('ignores duplicate clicks and empty questions', async () => {

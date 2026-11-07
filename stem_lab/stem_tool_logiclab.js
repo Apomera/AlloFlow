@@ -154,6 +154,8 @@ window.StemLab = window.StemLab || {
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
       var callGemini = ctx.callGemini;
+      // AI generate/explain controls render only when the host says text AI is usable.
+      var _aiOn = !!(ctx.aiAvailable !== false && typeof callGemini === 'function');
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -258,6 +260,7 @@ window.StemLab = window.StemLab || {
 
           var aiGenerate = function(prompt, field) {
 
+            if (!_aiOn) return;
             upd({ aiLoading: true });
 
             callGemini(prompt, true).then(function(result) {
@@ -304,6 +307,7 @@ window.StemLab = window.StemLab || {
 
           var aiExplainCall = function(prompt) {
 
+            if (!_aiOn) return;
             upd({ aiLoading: true });
 
             callGemini(prompt, true).then(function(result) {
@@ -511,6 +515,9 @@ window.StemLab = window.StemLab || {
 
               var vars = uniqueVars(getVars(parsed.node));
 
+              // Rows double with every letter: 16 letters froze the tab for 18 s. 8 letters is 256 rows.
+              if (vars.length > 8) return null;
+
               var rows = [];
 
               var n = Math.pow(2, vars.length);
@@ -536,6 +543,26 @@ window.StemLab = window.StemLab || {
               return { vars: vars, rows: rows, type: allTrue ? 'tautology' : allFalse ? 'contradiction' : 'contingency' };
 
             } catch(e) { return null; }
+
+          };
+
+
+
+          // Letters in a formula, for saying why a table was refused.
+
+          var tableLetterCount = function(exprStr) {
+
+            try {
+
+              var tokens = tokenize(exprStr);
+
+              if (tokens.length === 0) return 0;
+
+              var parsed = parseExpr(tokens, 0);
+
+              return parsed.pos === tokens.length ? uniqueVars(getVars(parsed.node)).length : 0;
+
+            } catch(e) { return 0; }
 
           };
 
@@ -1343,7 +1370,8 @@ window.StemLab = window.StemLab || {
 
                 // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
                 // empty state stays readable in light, dark and high-contrast.
-                if (!table) return React.createElement("div", { className: "p-8 text-center text-sm", style: { color: 'var(--allo-stem-text-soft, #475569)' } }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
+                if (!table && tableLetterCount(expr) > 8) return React.createElement("div", { role: "status", "data-logic-too-many": "true", className: "p-8 text-center text-sm", style: { color: 'var(--allo-stem-text-soft, #475569)' } }, t('stem.logiclab.too_many_letters', 'This formula uses {n} different letters. A truth table doubles with each letter, so this lab stops at 8 letters, or 256 rows. Try a formula with fewer letters.').replace('{n}', tableLetterCount(expr)));
+            if (!table) return React.createElement("div", { className: "p-8 text-center text-sm", style: { color: 'var(--allo-stem-text-soft, #475569)' } }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
 
                 var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: t('stem.logiclab.tautology_always_true', '\u2705 Tautology (always true)'), glow: '0 0 20px rgba(16,185,129,0.3)' }
 
@@ -1363,7 +1391,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.ai_explain_truth_table_expression', "AI explain truth table expression"),
+                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_explain_truth_table_expression', "AI explain truth table expression"),
 
                       onClick: function() {
 
@@ -1525,7 +1553,7 @@ window.StemLab = window.StemLab || {
 
                 React.createElement("div", { className: "mt-3 flex items-center gap-2" },
 
-                  React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate_proof_challenge', "AI-Generate Proof Challenge"),
+                  _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate_proof_challenge', "AI-Generate Proof Challenge"),
 
                     onClick: function() {
 
@@ -1997,7 +2025,7 @@ window.StemLab = window.StemLab || {
 
                       }, t('stem.logiclab.next_2', "Next \u2192")),
 
-                      React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate', "AI Generate"),
+                      _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate', "AI Generate"),
 
                         onClick: function() {
 
@@ -2081,7 +2109,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, af.explain),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.generate_another', "Generate Another"),
+                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.generate_another', "Generate Another"),
 
                       onClick: function() {
 
@@ -2294,7 +2322,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, t('stem.logiclab.next_3', "Next \u2192")),
 
-                      React.createElement("button", { "aria-label": t('stem.logiclab.ai_mystery', "AI Mystery"),
+                      _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_mystery', "AI Mystery"),
 
                         onClick: function() {
 
@@ -2362,7 +2390,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, ad.explain),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.generate_another_3', "Generate Another"),
+                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.generate_another_3', "Generate Another"),
 
                       onClick: function() {
 

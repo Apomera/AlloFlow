@@ -1313,6 +1313,9 @@
       section.remove();
     });
     studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner').forEach((node) => node.remove());
+    // The pack profile lists every resource, teacher-only ones included, with
+    // its adapted grade level. Nothing in the student page reads it.
+    studentDoc.querySelectorAll('#alloflow-interactive-object-profile').forEach((node) => node.remove());
     if (studentDoc.title) studentDoc.title = studentDoc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
 
     const teacherDoc = parse();
@@ -1621,9 +1624,10 @@
         // Read-aloud attached separate audio files — keep the zip as the
         // container, since that's too many loose files to download one by one.
         if (addToast) addToast((t && t('export_status.bundling_zip')) || 'Bundling export...', 'info');
+        // The project backup holds every answer key, so it is never zipped
+        // beside the lesson students get; the teacher saves it separately.
         const zip = new window.JSZip();
         zip.file(_htmlName + '.html', htmlContent);
-        zip.file(_htmlName + '-project.json', JSON.stringify(history, null, 2));
         for (let _aa = 0; _aa < _audioAssets.length; _aa++) {
           const _asset = _audioAssets[_aa];
           if (_asset && _asset.path && _asset.blob) zip.file(_asset.path, _asset.blob);
@@ -1635,7 +1639,8 @@
         link.download = _htmlName + '-' + new Date().toISOString().split('T')[0] + '.zip';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
-        if (addToast) addToast('Export downloaded!', 'success');
+        _alloOfferProjectBackupDownload({ name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) });
+        if (addToast) addToast('Export downloaded. Project backup is ready from the on-screen button.', 'success');
       } else if (!_wantSingleFile) {
         // Auto-download the lesson once, then require a real user gesture for
         // its editable project backup so browsers cannot silently block it.

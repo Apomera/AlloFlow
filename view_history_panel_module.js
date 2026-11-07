@@ -1361,7 +1361,8 @@ function HistoryPanel(props) {
       const itemSourceVersion = getSafeArtifactField(item, "sourceVersion");
       const sourceInUse = getSafeArtifactField(sourceRecord, "inUse");
       const sourceVersionNow = getSafeArtifactField(sourceInUse, "version");
-      const itemOlderSourceLabel = Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow ? (t("history.from_source_version") || "From source version {version}").replace("{version}", String(itemSourceVersion)) : "";
+      const itemCheckedCurrentText = getSafeArtifactField(item, "type") === "analysis" && getSafeArtifactField(getSafeArtifactField(item, "data"), "originalText") === getSafeArtifactField(sourceInUse, "text");
+      const itemOlderSourceLabel = !itemCheckedCurrentText && Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow ? (t("history.from_source_version") || "From source version {version}").replace("{version}", String(itemSourceVersion)) : "";
       const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
       const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
       const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;

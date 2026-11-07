@@ -91,6 +91,18 @@
     });
     return changed ? Object.assign({}, item, { data: Object.assign({}, data, { branches: branches }) }) : item;
   }
+  // Students see only the passage of a source check (and its translated versions);
+  // the findings (accuracy, grammar, barriers, DoK ideas, report views, per-section
+  // reports, idea drafts) are teacher notes and stay on the teacher's copy.
+  var SOURCE_CHECK_TEACHER_FIELDS = ['accuracy', 'grammar', 'grammarUnreadable', 'learnerBarriers', 'depthOfKnowledge',
+    'reportTranslations', 'displayReportLanguage', 'analysisCoverage', 'analysisIdeaDrafts', 'passageVersionsToRefresh'];
+  function projectStudentSourceCheck(item) {
+    var data = item && item.data;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return item;
+    var kept = {};
+    Object.keys(data).forEach(function (key) { if (SOURCE_CHECK_TEACHER_FIELDS.indexOf(key) === -1) kept[key] = data[key]; });
+    return Object.assign({}, item, { data: kept });
+  }
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
     var blocked = Array.isArray(teacherOnlyTypes) ? teacherOnlyTypes : [];
     var reading = window.AlloModules && window.AlloModules.InstructionalContext;
@@ -104,6 +116,7 @@
         return projected && projected.id === item.id && projected.type === 'brainstorm' && projected.studentProjection === true ? projected : null;
       }
       if (item.type === 'lesson-plan') return projectStudentGuide(item);
+      if (item.type === 'analysis' && blocked.indexOf('analysis') === -1) return projectStudentSourceCheck(item);
       return blocked.indexOf(item.type) === -1 ? withoutTeacherExamples(item) : null;
     }).filter(Boolean);
   }

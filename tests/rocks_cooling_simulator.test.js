@@ -61,7 +61,7 @@ describe('magma cooling model — visual scale and context', () => {
     expect(markup).toContain('Change only the cooling rate');
     expect(markup).toContain('Current specimen:');
     // The texture reads as a name, not the renderer's id slug.
-    expect(markup).toContain('stem.rocks.granite (Coarse-grained)');
+    expect(markup).toContain('Granite (Coarse-grained)');
     expect(markup).toContain('Chemistry, dissolved gas, and eruption style');
     expect(markup).toContain('How to use this model');
     expect(markup).toContain('Choose a cooling history.');

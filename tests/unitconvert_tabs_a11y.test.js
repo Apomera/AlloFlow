@@ -5,7 +5,7 @@ describe('Unit Convert section tabs accessibility', () => {
   it('keeps mirrored source aligned and exposes keyboard-operable tabs', () => {
     const source = readFileSync('stem_lab/stem_tool_unitconvert.js', 'utf8');
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_tool_unitconvert.js', 'utf8')).toBe(source);
-    expect(source).toContain("var UNIT_CONVERT_TAB_ORDER = ['convert', 'table', 'quiz', 'wordproblem', 'magHunt'];");
+    expect(source).toContain("var UNIT_CONVERT_TAB_ORDER = ['convert', 'table', 'quiz', 'wordproblem', 'magHunt', 'chain', 'estimate', 'ladder', 'everyday', 'chem'];");
     expect(source).toContain("role: 'tablist'");
     expect(source).toContain("id: 'stem-unitconvert-tab-' + item[0]");
     expect(source).toContain("'aria-controls': 'stem-unitconvert-panel-' + item[0]");

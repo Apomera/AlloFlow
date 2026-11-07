@@ -468,6 +468,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     return out;
   }
 
+  // Contrast theme fixes owned by this tool (allo-ecosystem-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-ecosystem-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ecosystem-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"ecosystem\"] :is([style*=\"rgba(254, 226, 226, 0.86)\"],[style*=\"rgba(254, 243, 199, 0.9)\"],[style*=\"rgba(209, 250, 229, 0.88)\"],[style*=\"rgba(238, 242, 255, 0.9)\"],[style*=\"rgba(204, 251, 241, 0.88)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 241, 242)\"]){background:#000!important}.theme-contrast [data-stem-tool-shell=\"ecosystem\"] svg text[fill=\"#64748b\"]{fill:#fff!important}.theme-contrast [data-stem-tool-shell=\"ecosystem\"] svg text[fill=\"#dc2626\"]{fill:#ff8a72!important}.theme-contrast [data-stem-tool-shell=\"ecosystem\"] svg text[fill=\"#b45309\"]{fill:#fbbf24!important}.theme-contrast [data-stem-tool-shell=\"ecosystem\"] svg text[fill=\"#2563eb\"]{fill:#93c5fd!important}.theme-contrast [data-stem-tool-shell=\"ecosystem\"] svg text[fill=\"#7c3aed\"]{fill:#c4b5fd!important}";
+    document.head.appendChild(st);
+  })();
+  // end contrast theme fixes
   if (!document.getElementById('eco-css-anims')) {
     var ecoStyle = document.createElement('style');
     ecoStyle.id = 'eco-css-anims';
@@ -8519,7 +8528,8 @@ function EcoPairMeasurement(props) {
       var a11yClick = ctx.a11yClick;
       var canvasNarrate = ctx.canvasNarrate;
       var setToolSnapshots = ctx.setToolSnapshots;
-      var callGemini = ctx.callGemini || window.callGemini;
+      // Host-handed fn only (a window fallback re-armed AI the host withheld); null hides every AI extra below.
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
       var callTTS = ctx.callTTS || window.callTTS;
 
       // ── State via toolData ──
@@ -9650,7 +9660,7 @@ function EcoPairMeasurement(props) {
             h('line', { x1: cursorX, y1: sp, x2: cursorX, y2: sh - sp, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3,3' }),
             h('circle', { cx: cursorX, cy: sy(selectedPoint.prey), r: 4.5, fill: '#16a34a', stroke: '#fff', strokeWidth: 1.5 }),
             h('rect', { x: cursorX - 4.5, y: sy(selectedPoint.pred) - 4.5, width: 9, height: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 1.5 }),
-            h('text', { x: sp, y: 18, fill: '#16a34a', fontSize: 10, fontWeight: 'bold' }, record.scenario.prey.label + ' \u2014 prey solid'),
+            h('text', { x: sp, y: 18, fill: isContrast ? '#16a34a' : '#15803d', fontSize: 10, fontWeight: 'bold' }, record.scenario.prey.label + ' \u2014 prey solid'),
             h('text', { x: sw - sp, y: 18, textAnchor: 'end', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, record.scenario.predator.label + ' \u2014 predators dashed'),
             h('text', { x: sw / 2, y: sh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, 'Modeled time'),
             h('text', { x: 9, y: sh / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 9, transform: 'rotate(-90, 9, ' + (sh / 2) + ')' }, 'Population index')
@@ -12643,7 +12653,7 @@ function EcoPairMeasurement(props) {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: 'var(--eco-copy)', fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: isContrast ? 'var(--allo-stem-text-soft, #475569)' : 'var(--eco-copy)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -13311,12 +13321,18 @@ function EcoPairMeasurement(props) {
             data && data.length > 1 && h('textarea', { id: 'eco-run-reflection', value: experimentReflection, onChange: function(e) { upd('experimentReflection', e.target.value); }, rows: 2, maxLength: 3200, placeholder: __alloT('stem.ecosystem.what_did_the_curves_show_why_might_the_outco','What did the curves show? Why might the outcome align with or differ from your committed prediction?'), className: 'w-full rounded border border-slate-500 bg-white p-2 text-[0.6875rem] text-slate-800' }),
             predictionFeedback && h('div', { role: 'status', 'aria-live': 'polite', 'data-ecosystem-prediction-comparison': 'descriptive-ungraded', className: 'rounded border border-cyan-300 bg-white/80 p-2 text-[0.6875rem] text-slate-700' }, predictionFeedback),
             h('div', { className: 'flex gap-2 flex-wrap' },
-              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: setBaselineRun, className: 'px-2 py-1 rounded border border-cyan-600 text-cyan-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.set_baseline', 'Set current run as baseline')),
-              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveExperimentEvidence, className: 'px-2 py-1 rounded bg-cyan-700 text-white text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.save_evidence', 'Save evidence')),
-              h('button', { type: 'button', disabled: !data || data.length < 2 || !String(experimentReflection || '').trim(), onClick: markExplanationComplete, className: 'px-2 py-1 rounded border border-indigo-600 text-indigo-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Complete explanation'),
-              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveBranchRun, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, 'Save named branch'),
+              h('button', { type: 'button', disabled: !data || data.length < 2, 'aria-describedby': (!data || data.length < 2) ? 'eco-notebook-actions-hint' : undefined, onClick: setBaselineRun, className: 'px-2 py-1 rounded border border-cyan-600 text-cyan-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.set_baseline', 'Set current run as baseline')),
+              h('button', { type: 'button', disabled: !data || data.length < 2, 'aria-describedby': (!data || data.length < 2) ? 'eco-notebook-actions-hint' : undefined, onClick: saveExperimentEvidence, className: 'px-2 py-1 rounded bg-cyan-700 text-white text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.save_evidence', 'Save evidence')),
+              h('button', { type: 'button', disabled: !data || data.length < 2 || !String(experimentReflection || '').trim(), 'aria-describedby': (!data || data.length < 2 || !String(experimentReflection || '').trim()) ? 'eco-notebook-actions-hint' : undefined, onClick: markExplanationComplete, className: 'px-2 py-1 rounded border border-indigo-600 text-indigo-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.complete_explanation_button', 'Complete explanation')),
+              h('button', { type: 'button', disabled: !data || data.length < 2, 'aria-describedby': (!data || data.length < 2) ? 'eco-notebook-actions-hint' : undefined, onClick: saveBranchRun, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 text-[0.6875rem] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.save_named_branch', 'Save named branch')),
               baselineRun && h('button', { type: 'button', onClick: clearBaselineRun, className: 'px-2 py-1 rounded border border-slate-400 text-slate-700 text-[0.6875rem] font-semibold' }, __alloT('stem.ecosystem.clear_baseline', 'Clear baseline'))
             ),
+            // Disabled controls are exempt from the contrast rule, but a student still has to learn what turns them on.
+            (!data || data.length < 2)
+              ? h('p', { id: 'eco-notebook-actions-hint', 'data-ecosystem-notebook-hint': 'run', className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.ecosystem.notebook_actions_need_run', 'These buttons turn on after you run the graph.'))
+              : (!String(experimentReflection || '').trim()
+                ? h('p', { id: 'eco-notebook-actions-hint', 'data-ecosystem-notebook-hint': 'explanation', className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.ecosystem.complete_explanation_needs_text', 'Write your evidence explanation above to turn on Complete explanation.'))
+                : null),
             baselineRun && data && data.length > 1 && (function() {
               var base = baselineRun.summary || classifyRun(baselineRun.data || []);
               var current = classifyRun(data);
@@ -14032,6 +14048,13 @@ function EcoPairMeasurement(props) {
           var conserve = d.conserve || defaultConserveState();
           function setConserve(patch) { upd('conserve', Object.assign({}, conserve, patch)); }
           var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+          // This tab's tinted panels are translucent and its accent inks were written for a dark page, but it sits on the
+          // white tool card: pale ink on pale tint in BOTH themes (1.02-1.9:1, a whole coaching tip unreadable). consTint
+          // puts the theme's own canvas under a tint; consInk keeps a pale ink on dark and walks it dark on light; consHue
+          // is for mid-tone hues that need moving in both. The contrast theme keeps what it had.
+          var consInk = function(hex) { return (isContrast || ctx.isDark) ? hex : ecoAccentOnLight(hex); };
+          var consHue = function(hex) { return isContrast ? hex : (ctx.isDark ? ecoAccentOnDark(hex) : ecoAccentOnLight(hex)); };
+          var consTint = function(bg) { if (isContrast) return bg; return (/gradient/.test(bg) ? bg : 'linear-gradient(' + bg + ',' + bg + ')') + ', var(--allo-stem-canvas, #0f172a)'; };
 
           function startConserve(opts) {
             opts = opts || {};
@@ -14226,18 +14249,18 @@ function EcoPairMeasurement(props) {
           function renderConservAIPanel() {
             if (conserve.aiReadLoading) {
               return h('div', { role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: consTint('rgba(56,189,248,0.10)'), borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: consInk('#bae6fd'), fontSize: 13 } },
                 '⏳ ' + __alloT('stem.ecosystem.ai_reading_status', 'AI conservation biologist is reading your ecosystem...'));
             }
             if (!conserve.aiReadResponse) return null;
             return h('div', { role: 'region', 'aria-label': __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading'),
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: consTint('linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0.04) 100%)'), borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading')),
+                h('strong', { style: { color: consInk('#38bdf8'), fontSize: 14 } }, __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                   h('button', { onClick: readEcosystem, 'aria-label': __alloT('stem.ecosystem.read_again', 'Read again'),
-                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.re_read', 'Re-read')),
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: consInk('#38bdf8'), borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.re_read', 'Re-read')),
                   h('button', { onClick: dismissConservAIRead, 'aria-label': __alloT('stem.ecosystem.dismiss_reading', 'Dismiss reading'),
                     style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
                 )
@@ -14285,13 +14308,18 @@ function EcoPairMeasurement(props) {
               var cy = midY + ny * (curve || 0);
               return 'M ' + from.x + ' ' + from.y + ' Q ' + cx + ' ' + cy + ' ' + to.x + ' ' + to.y;
             }
+            // The diagram keeps its own night-dark ground in every theme. A dormant rule is dashed and thin; it still has
+            // to read at 3:1 on that ground (#475569 was 2.4:1), and every label carries a halo of the ground so a line
+            // running behind it cannot cut through the letters.
+            var DIM_ARROW = '#94a3b8', WEB_GROUND = '#020617';
+            var webLabelHalo = { stroke: WEB_GROUND, strokeWidth: 3, strokeLinejoin: 'round', style: { paintOrder: 'stroke' } };
             function nodeFill(s, def) {
               // intensity ~ population
               var alpha = Math.max(0.35, Math.min(1, s.pop / 100));
               return { color: def.color, alpha: alpha };
             }
             // 376, not 360: node positions are absolute, and the bottom row
-            // sits at y=305 with its "pop N" caption at y+62 = 367, so the
+            // sits at y=305 with its "pop N" caption at y+64 = 369, so the
             // population readouts for salmon and brook trout were cut off by
             // the canvas edge.
             var w = 600, hgt = 376;
@@ -14300,50 +14328,50 @@ function EcoPairMeasurement(props) {
                 h('span', null, __alloT('stem.ecosystem.foodweb_cascade_caption', 'Food web: cascade rules active in real time')),
                 h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.click_species_deepdive', 'Click any species for deep-dive →'))
               ),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, role: 'group', 'aria-label': __alloT('stem.ecosystem.aria_foodweb_diagram', 'Food-web diagram of the 6 Maine species') },
-                h('rect', { x: 0, y: 0, width: w, height: hgt, fill: '#020617', rx: 6 }),
+              h('div', { 'data-ecosystem-foodweb-scroll': 'true', style: { overflowX: 'auto' } }, h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', minWidth: 480, height: 'auto', display: 'block', borderRadius: 8 }, role: 'group', 'aria-label': __alloT('stem.ecosystem.aria_foodweb_diagram', 'Food-web diagram of the 6 Maine species') },
+                h('rect', { x: 0, y: 0, width: w, height: hgt, fill: WEB_GROUND, rx: 6 }),
                 // Cascade arrows. Each one is rendered dim by default and
                 // brightened + colored when its rule fires this year.
                 // Wolf -> Deer (top-down suppression)
                 (function() {
                   var p = arrowPath(pos.grayWolf, pos.deer, -10);
-                  var color = firing.wolfDeer ? '#ef4444' : '#475569';
+                  var color = firing.wolfDeer ? '#ef4444' : DIM_ARROW;
                   var width = firing.wolfDeer ? 3 : 1.5;
                   return h('g', null,
                     h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.wolfDeer ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.wolfDeer ? 'red' : 'gray') + ')' }),
-                    firing.wolfDeer ? h('text', { x: 220, y: 75, fontSize: 9, fill: '#fca5a5', fontWeight: 700 }, __alloT('stem.ecosystem.label_suppresses', 'suppresses')) : null
+                    firing.wolfDeer ? h('text', Object.assign({ x: 238, y: 72, fontSize: 9, fill: '#fca5a5', fontWeight: 700, textAnchor: 'end' }, webLabelHalo), __alloT('stem.ecosystem.label_suppresses', 'suppresses')) : null
                   );
                 })(),
                 // Deer -> all (overbrowsing, drawn down to center)
                 (function() {
-                  var color = firing.deerHabitat ? '#f59e0b' : '#475569';
-                  var width = firing.deerHabitat ? 3 : 1;
+                  var color = firing.deerHabitat ? '#f59e0b' : DIM_ARROW;
+                  var width = firing.deerHabitat ? 3 : 1.5;
                   return h('g', null,
                     h('path', { d: 'M 200 145 Q 130 200 200 290', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
                     h('path', { d: 'M 200 145 Q 250 220 380 305', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
-                    firing.deerHabitat ? h('text', { x: 135, y: 215, fontSize: 9, fill: '#fbbf24', fontWeight: 700 }, __alloT('stem.ecosystem.label_overbrowsing', 'overbrowsing')) : null
+                    firing.deerHabitat ? h('text', Object.assign({ x: 158, y: 215, fontSize: 9, fill: '#fbbf24', fontWeight: 700, textAnchor: 'end' }, webLabelHalo), __alloT('stem.ecosystem.label_overbrowsing', 'overbrowsing')) : null
                   );
                 })(),
                 // Beaver -> Salmon
                 (function() {
                   var p1 = arrowPath(pos.beaver, pos.salmon, 10);
                   var p2 = arrowPath(pos.beaver, pos.brookTrout, -10);
-                  var color = firing.beaverFish ? '#38bdf8' : '#475569';
+                  var color = firing.beaverFish ? '#38bdf8' : DIM_ARROW;
                   var width = firing.beaverFish ? 3 : 1.5;
                   return h('g', null,
                     h('path', { d: p1, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
                     h('path', { d: p2, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
-                    firing.beaverFish ? h('text', { x: 300, y: 275, fontSize: 9, fill: '#bae6fd', fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.ecosystem.label_engineers_habitat', 'engineers habitat')) : null
+                    firing.beaverFish ? h('text', Object.assign({ x: 300, y: 298, fontSize: 9, fill: '#bae6fd', fontWeight: 700, textAnchor: 'middle' }, webLabelHalo), __alloT('stem.ecosystem.label_engineers_habitat', 'engineers habitat')) : null
                   );
                 })(),
                 // Salmon -> Brook Trout (marine nutrients)
                 (function() {
                   var p = arrowPath(pos.salmon, pos.brookTrout, 8);
-                  var color = firing.salmonTrout ? '#06b6d4' : '#475569';
-                  var width = firing.salmonTrout ? 3 : 1.2;
+                  var color = firing.salmonTrout ? '#06b6d4' : DIM_ARROW;
+                  var width = firing.salmonTrout ? 3 : 1.5;
                   return h('g', null,
                     h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.salmonTrout ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.salmonTrout ? 'cyan' : 'gray') + ')' }),
-                    firing.salmonTrout ? h('text', { x: 300, y: 325, fontSize: 9, fill: '#a5f3fc', fontWeight: 700, textAnchor: 'middle' }, __alloT('stem.ecosystem.label_marine_nutrients', 'marine nutrients')) : null
+                    firing.salmonTrout ? h('text', Object.assign({ x: 300, y: 325, fontSize: 9, fill: '#a5f3fc', fontWeight: 700, textAnchor: 'middle' }, webLabelHalo), __alloT('stem.ecosystem.label_marine_nutrients', 'marine nutrients')) : null
                   );
                 })(),
                 // Arrow marker defs
@@ -14351,7 +14379,7 @@ function EcoPairMeasurement(props) {
                   h('marker', { id: 'arrow-red', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#ef4444' })),
                   h('marker', { id: 'arrow-blue', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#38bdf8' })),
                   h('marker', { id: 'arrow-cyan', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#06b6d4' })),
-                  h('marker', { id: 'arrow-gray', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#475569' }))
+                  h('marker', { id: 'arrow-gray', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: DIM_ARROW }))
                 ),
                 // Species nodes
                 species.map(function(s) {
@@ -14377,13 +14405,13 @@ function EcoPairMeasurement(props) {
                     'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + def.name
                   },
                     h('circle', { cx: p.x, cy: p.y, r: 32, fill: def.color, opacity: fill.alpha }),
-                    h('circle', { cx: p.x, cy: p.y, r: 32, fill: 'none', stroke: def.color, strokeWidth: 1.5 }),
+                    h('circle', { cx: p.x, cy: p.y, r: 32, fill: 'none', stroke: ecoAccentOnDark(def.color), strokeWidth: 2, 'data-ecosystem-web-ring': s.id }),
                     h('text', { x: p.x, y: p.y + 4, fontSize: 22, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
-                    h('text', { x: p.x, y: p.y + 50, fontSize: 11, textAnchor: 'middle', fontWeight: 700, fill: '#fff' }, def.name),
-                    h('text', { x: p.x, y: p.y + 62, fontSize: 9, textAnchor: 'middle', fill: '#94a3b8' }, __alloT('stem.ecosystem.pop_prefix', 'pop ') + Math.round(s.pop))
+                    h('text', Object.assign({ x: p.x, y: p.y + 50, fontSize: 11, textAnchor: 'middle', fontWeight: 700, fill: '#fff' }, webLabelHalo), def.name),
+                    h('text', Object.assign({ x: p.x, y: p.y + 64, fontSize: 9, textAnchor: 'middle', fill: '#94a3b8' }, webLabelHalo), __alloT('stem.ecosystem.pop_prefix', 'pop ') + Math.round(s.pop))
                   );
                 })
-              )
+              ))
             );
           }
 
@@ -14403,7 +14431,7 @@ function EcoPairMeasurement(props) {
             return h('div', {
               role: 'region', 'aria-labelledby': 'ecosystem-deep-dive-title-' + def.id, tabIndex: 0,
               style: {
-                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                background: isContrast ? 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)' : consTint('linear-gradient(135deg, ' + def.color + '20 0%, ' + def.color + '08 60%)'),
                 border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
                 borderRadius: 14, padding: 18, marginBottom: 16
               }
@@ -14411,32 +14439,32 @@ function EcoPairMeasurement(props) {
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent-fixed' }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
-                  h('h3', { id: 'ecosystem-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
-                  h('div', { style: { fontSize: 13, marginTop: 4, fontStyle: 'italic', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent-fixed' }, def.role)
+                  h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
+                  h('h3', { id: 'ecosystem-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: isContrast ? '#fff' : 'var(--allo-stem-text, #fff)', fontSize: 20 } }, def.name),
+                  h('div', { style: { fontSize: 13, marginTop: 4, fontStyle: 'italic', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' }, def.role)
                 ),
                 h('button', { onClick: closeConservDeepDive,
-                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ ' + __alloT('stem.ecosystem.close', 'Close'))
+                  style: { background: isContrast ? 'rgba(15,23,42,0.6)' : 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ ' + __alloT('stem.ecosystem.close', 'Close'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 ' + __alloT('stem.ecosystem.ecology', 'Ecology')),
+                h('div', { style: { background: isContrast ? 'rgba(15,23,42,0.7)' : 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: consInk('#86efac'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 ' + __alloT('stem.ecosystem.ecology', 'Ecology')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 ' + __alloT('stem.ecosystem.case_work', 'Case work')),
+                h('div', { style: { background: isContrast ? 'rgba(15,23,42,0.7)' : 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: consInk('#fbbf24'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 ' + __alloT('stem.ecosystem.case_work', 'Case work')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 ' + __alloT('stem.ecosystem.modern_context', 'Modern context')),
+                h('div', { style: { background: isContrast ? 'rgba(15,23,42,0.7)' : 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: consInk('#38bdf8'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 ' + __alloT('stem.ecosystem.modern_context', 'Modern context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
-              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 ' + __alloT('stem.ecosystem.what_you_can_do', 'What you can do for this species in the sim')),
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: consTint('rgba(21,128,61,0.10)'), borderTop: '1px solid rgba(21,128,61,0.4)', borderRight: '1px solid rgba(21,128,61,0.4)', borderBottom: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: consInk('#86efac'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 ' + __alloT('stem.ecosystem.what_you_can_do', 'What you can do for this species in the sim')),
                 applicable.map(function(t, i) {
-                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
-                    h('strong', { style: { color: '#bbf7d0' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: consInk('#d1fae5'), lineHeight: 1.5 } },
+                    h('strong', { style: { color: consInk('#bbf7d0') } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
                   );
                 })
               ) : null
@@ -14446,10 +14474,13 @@ function EcoPairMeasurement(props) {
           // Multi-line year-by-year trend chart
           function renderConservTrendChart(yearLog) {
             if (!yearLog || yearLog.length === 0) return null;
-            var w = 600, hgt = 220, padL = 36, padR = 90, padT = 12, padB = 24;
+            var w = 600, hgt = 220, padL = 36, padR = 14, padT = 12, padB = 24;
             var ix = w - padL - padR;
             var iy = hgt - padT - padB;
-            var species = MAINE_SPECIES;
+            // Three of the six are browns, so each line has its own dash pattern too. On the contrast theme's black the
+            // raw browns are under 3:1, so that theme takes the same lightened accent as dark.
+            var TREND_DASH = { grayWolf: '', beaver: '12 4', moose: '12 4 2 4', deer: '2 4', salmon: '6 4', brookTrout: '2 4 2 4 8 4' };
+            var species = MAINE_SPECIES.map(function(sp) { return Object.assign({}, sp, { color: isContrast ? ecoAccentOnDark(sp.color) : consHue(sp.color), dash: TREND_DASH[sp.id] || '' }); });
             function ptsFor(spId) {
               return yearLog.map(function(snap, i) {
                 var post = (snap.post || []).find(function(p) { return p.id === spId; });
@@ -14464,36 +14495,44 @@ function EcoPairMeasurement(props) {
             }
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 ' + __alloT('stem.ecosystem.pop_trends_campaign', 'Population trends across the campaign')),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_trend_chart', 'Population-index trend chart by species year-by-year') },
+              h('div', { 'data-ecosystem-trend-scroll': 'true', role: 'region', tabIndex: 0, 'aria-label': __alloT('stem.ecosystem.aria_trend_scroll', 'Scrollable population trend chart'), style: { overflowX: 'auto' } }, h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', minWidth: 480, height: 'auto', display: 'block' }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_trend_chart', 'Population-index trend chart by species year-by-year'), 'aria-describedby': 'eco-trend-values' },
                 // gridlines
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
                   return h('g', { key: 'g' + gi },
-                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
-                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: isContrast ? '#1e293b' : '#64748b', strokeOpacity: isContrast ? 1 : 0.45, strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: isContrast ? '#ffffff' : consHue('#64748b'), textAnchor: 'end' }, g)
                   );
                 }),
                 // x labels
                 yearLog.map(function(snap, i) {
                   var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
-                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + snap.year);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: isContrast ? '#ffffff' : consHue('#64748b'), textAnchor: 'middle' }, 'Y' + snap.year);
                 }),
                 // species lines
                 species.map(function(sp) {
                   var pts = ptsFor(sp.id);
                   return h('g', { key: sp.id },
-                    h('path', { d: pathStr(pts), stroke: sp.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' }),
+                    h('path', { d: pathStr(pts), stroke: sp.color, strokeWidth: 2.5, fill: 'none', strokeLinejoin: 'round', strokeDasharray: sp.dash || undefined, 'data-ecosystem-trend-line': sp.id }),
                     pts.map(function(p, i) {
                       return h('circle', { key: i, cx: p.x, cy: p.y, r: 2, fill: sp.color });
                     })
                   );
                 }),
-                // legend (right side)
-                species.map(function(sp, si) {
-                  return h('g', { key: 'leg' + sp.id },
-                    h('line', { x1: w - padR + 6, y1: padT + 8 + si * 16, x2: w - padR + 20, y2: padT + 8 + si * 16, stroke: sp.color, strokeWidth: 2.5 }),
-                    h('text', { x: w - padR + 24, y: padT + 12 + si * 16, fontSize: 10, fill: '#cbd5e1' }, sp.icon + ' ' + sp.name.split(' ')[0])
-                  );
+              )),
+              // The key is ordinary text under the chart, so it wraps instead of clipping at any width.
+              h('ul', { 'data-ecosystem-trend-key': 'true', 'aria-label': __alloT('stem.ecosystem.trend_key_label', 'Line key'), style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px', listStyle: 'none', margin: '8px 0 0', padding: 0 } },
+                species.map(function(sp) {
+                  return h('li', { key: 'leg' + sp.id, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                    h('svg', { width: 40, height: 8, viewBox: '0 0 40 8', 'aria-hidden': 'true', style: { flex: '0 0 auto' } },
+                      h('line', { x1: 0, y1: 4, x2: 40, y2: 4, stroke: sp.color, strokeWidth: 2.5, strokeDasharray: sp.dash || undefined, 'data-ecosystem-trend-sample': sp.id })),
+                    h('span', null, sp.icon + ' ' + sp.name));
+                })
+              ),
+              // The numbers each line draws, for anyone the picture does not reach.
+              h('ul', { id: 'eco-trend-values', className: 'sr-only' },
+                species.map(function(sp) {
+                  return h('li', { key: 'val' + sp.id }, sp.name + ': ' + ptsFor(sp.id).map(function(p, i) { return 'Y' + yearLog[i].year + ' ' + Math.round(p.v); }).join(', ') + '.');
                 })
               )
             );
@@ -14606,11 +14645,11 @@ function EcoPairMeasurement(props) {
           if (conserve.phase === 'setup') {
             return h('div', { className: 'space-y-4' },
               conservDeepDive,
-              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
+              h('div', { style: { padding: 18, borderRadius: 14, background: consTint('linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)'), border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🌲'),
                   h('div', null,
-                    h('h3', { style: { margin: 0, color: isContrast ? T_GREEN_HI : '#166534', fontSize: 22 } }, __alloT('stem.ecosystem.cons_manager_maine', 'Conservation Manager: Maine')),
+                    h('h3', { style: { margin: 0, color: (isContrast || ctx.isDark) ? T_GREEN_HI : '#166534', fontSize: 22 } }, __alloT('stem.ecosystem.cons_manager_maine', 'Conservation Manager: Maine')),
                     h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, __alloT('stem.ecosystem.steward_intro', 'Steward six species across 10 years of fieldwork.'))
                   )
                 ),
@@ -14679,9 +14718,9 @@ function EcoPairMeasurement(props) {
             return h('div', { className: 'space-y-3' },
               conservDeepDive,
               renderFoodWeb(),
-              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+              h('div', { style: { padding: 18, borderRadius: 14, background: consTint('linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)'), border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
-                h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                h('h3', { style: { margin: 0, color: consHue(o.color), fontSize: 22 } }, o.label),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
               ),
               // Year-by-year trend chart
@@ -14713,19 +14752,19 @@ function EcoPairMeasurement(props) {
                 })
               ),
               h('div', { style: { padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                h('strong', { style: { color: '#86efac' } }, __alloT('stem.ecosystem.targets_met_label', 'Targets met: ')), conserve.targetsMet + ' / 6'
+                h('strong', { style: { color: consInk('#86efac') } }, __alloT('stem.ecosystem.targets_met_label', 'Targets met: ')), conserve.targetsMet + ' / 6'
               ),
 
               // Do-nothing baseline comparison
-              h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
-                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ ' + __alloT('stem.ecosystem.what_if_nothing', 'What if you had done nothing for 10 years?')),
+              h('div', { style: { padding: 12, borderRadius: 12, background: isContrast ? 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)' : consTint('linear-gradient(135deg, rgba(127,29,29,0.04) 0%, rgba(127,29,29,0.18) 100%)'), border: '1px solid rgba(248,113,113,0.4)' } },
+                h('strong', { style: { color: (isContrast || ctx.isDark) ? '#fecaca' : '#7f1d1d', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ ' + __alloT('stem.ecosystem.what_if_nothing', 'What if you had done nothing for 10 years?')),
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                   h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, __alloT('stem.ecosystem.your_campaign', 'Your campaign')),
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: consHue(o.color), marginBottom: 4 } }, __alloT('stem.ecosystem.your_campaign', 'Your campaign')),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, __alloT('stem.ecosystem.avg_pop_prefix', 'Avg pop ') + actualAvgPop + __alloT('stem.ecosystem.targets_met_mid', ' · Targets met ') + conserve.targetsMet + '/6')
                   ),
                   h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, __alloT('stem.ecosystem.pure_neglect', 'Pure neglect')),
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: consInk('#fca5a5'), marginBottom: 4 } }, __alloT('stem.ecosystem.pure_neglect', 'Pure neglect')),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13 } }, __alloT('stem.ecosystem.avg_pop_prefix', 'Avg pop ') + baselineAvgPop + __alloT('stem.ecosystem.deer_hit_mid', ' · Deer hit ') + Math.round(getSp(baseline, 'deer').pop) + __alloT('stem.ecosystem.wolves_mid', ' · Wolves ') + Math.round(getSp(baseline, 'grayWolf').pop))
                   )
                 ),
@@ -14740,7 +14779,7 @@ function EcoPairMeasurement(props) {
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { onClick: resetConserve, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.new_campaign', 'New campaign')),
                 h('button', { onClick: function() { startConserve({ seed: conserve.seed, difficulty: conserve.difficulty }); },
-                  style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 ' + __alloT('stem.ecosystem.replay_same', 'Replay same conditions'))
+                  style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: consTint('rgba(56,189,248,0.15)'), color: consInk('#bae6fd'), fontWeight: 700 } }, '🔁 ' + __alloT('stem.ecosystem.replay_same', 'Replay same conditions'))
               ),
               h('div', { style: { marginTop: 8, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
                 h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.campaign_seed', 'Campaign seed: ')),
@@ -14758,13 +14797,13 @@ function EcoPairMeasurement(props) {
               renderFoodWeb(),
               h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev2.icon || '🌿'),
-                h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, __alloT('stem.ecosystem.year_prefix', 'Year ') + conserve.year + __alloT('stem.ecosystem.event_mid', ' event: ') + (ev2.name || __alloT('stem.ecosystem.quiet_fallback', 'quiet'))),
+                h('strong', { style: { color: consInk('#fbbf24'), fontSize: 16 } }, __alloT('stem.ecosystem.year_prefix', 'Year ') + conserve.year + __alloT('stem.ecosystem.event_mid', ' event: ') + (ev2.name || __alloT('stem.ecosystem.quiet_fallback', 'quiet'))),
                 h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, ev2.desc || '')
               ),
 
               // Cascade rules that fired
-              (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
-                h('strong', { style: { color: '#38bdf8' } }, '🔄 ' + __alloT('stem.ecosystem.trophic_cascade_year', 'Trophic cascade this year')),
+              (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: consTint('rgba(56,189,248,0.10)'), borderLeft: '3px solid #38bdf8', fontSize: 13, color: consInk('#bae6fd') } },
+                h('strong', { style: { color: consInk('#38bdf8') } }, '🔄 ' + __alloT('stem.ecosystem.trophic_cascade_year', 'Trophic cascade this year')),
                 lastSnap.cascades.map(function(c, ci) {
                   return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg);
                 })
@@ -14778,10 +14817,10 @@ function EcoPairMeasurement(props) {
                   var def = getSpeciesDef(preS.id);
                   function delta(label, before, after, goodIfDown) {
                     var dlt = Math.round(after - before);
-                    var color = '#64748b'; var arrow = '·';
+                    var color = consHue('#64748b'); var arrow = '·';
                     if (Math.abs(dlt) >= 1) {
-                      if ((dlt > 0 && !goodIfDown) || (dlt < 0 && goodIfDown)) color = '#86efac';
-                      else color = '#fca5a5';
+                      if ((dlt > 0 && !goodIfDown) || (dlt < 0 && goodIfDown)) color = consInk('#86efac');
+                      else color = consInk('#fca5a5');
                       arrow = dlt > 0 ? '▲' : '▼';
                     }
                     return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
@@ -14808,35 +14847,35 @@ function EcoPairMeasurement(props) {
           var coachingTip = (conserve.year === 1 && !conserve.firstTipDismissed && conserve.yearActions.length === 0) ? conserveCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
             conservDeepDive,
-            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: consTint('linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)'), borderTop: '1px solid rgba(168,85,247,0.6)', borderRight: '1px solid rgba(168,85,247,0.6)', borderBottom: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: consInk('#e9d5ff'), fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
               h('div', { style: { flex: 1 } },
-                h('strong', { style: { color: '#a855f7' } }, __alloT('stem.ecosystem.year1_priority_label', 'Year 1 priority: ')),
-                h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
-                h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                h('strong', { style: { color: isContrast ? '#a855f7' : consInk('#c084fc') } }, __alloT('stem.ecosystem.year1_priority_label', 'Year 1 priority: ')),
+                h('span', { style: { color: consInk('#fde68a') } }, coachingTip.priority),
+                h('div', { style: { marginTop: 4, color: consInk('#e9d5ff') } }, coachingTip.text)
               ),
               h('button', { onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': __alloT('stem.ecosystem.dismiss_tip', 'Dismiss tip'),
-                style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+                style: { background: 'transparent', border: 'none', color: consHue('#a855f7'), cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
             ) : null,
             // HUD
-            h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+            h('div', { style: { padding: '10px 14px', borderRadius: 12, background: consTint('linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)'), border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
               h('div', null,
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.year_label', 'Year')),
-                h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, conserve.year + ' / ' + conserve.maxYears)
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: consInk(T_GREEN_HI) } }, conserve.year + ' / ' + conserve.maxYears)
               ),
               h('div', null,
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.field_hours', 'Field hours')),
-                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, conserve.hoursLeft + ' / ' + conserve.hoursPerYear)
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: consInk('#fbbf24') } }, conserve.hoursLeft + ' / ' + conserve.hoursPerYear)
               ),
               h('div', null,
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.difficulty', 'Difficulty')),
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#38bdf8' } }, diff2 ? diff2.label : __alloT('stem.ecosystem.manager', 'Manager'))
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: consInk('#38bdf8') } }, diff2 ? diff2.label : __alloT('stem.ecosystem.manager', 'Manager'))
               ),
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                 callGemini ? h('button', { onClick: readEcosystem, disabled: conserve.aiReadLoading,
                   'aria-label': __alloT('stem.ecosystem.aria_ask_ai_read', 'Ask AI conservation biologist to read your ecosystem state'),
                   title: __alloT('stem.ecosystem.title_ai_reads_state', 'AI conservation educator reads your current state'),
-                  style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: conserve.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: conserve.aiReadLoading ? 0.6 : 1 }
+                  style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: conserve.aiReadLoading ? 'wait' : 'pointer', background: consTint('rgba(56,189,248,0.10)'), color: consInk('#38bdf8'), fontWeight: 700, fontSize: 12, opacity: conserve.aiReadLoading ? 0.6 : 1 }
                 }, conserve.aiReadLoading ? '⏳ ' + __alloT('stem.ecosystem.reading_status', 'Reading...') : '🔍 ' + __alloT('stem.ecosystem.read_ecosystem_ai', 'Read the ecosystem (AI)')) : null,
                 h('button', { onClick: endConserveYear, 'aria-label': __alloT('stem.ecosystem.aria_end_year', 'End this year'),
                   style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, __alloT('stem.ecosystem.end_year', 'End Year →'))
@@ -14876,7 +14915,7 @@ function EcoPairMeasurement(props) {
                     ].map(function(st, si) {
                       return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
                         h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
-                        h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: (ctx.isDark && !isContrast && st[2] === '#ef4444') ? '#f87171' : consHue(st[2]) } }, st[1]),
                         h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.goal_prefix', 'goal ') + st[3])
                       );
                     })
@@ -14905,7 +14944,7 @@ function EcoPairMeasurement(props) {
               conserve.yearActions.map(function(a, ai) {
                 return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.species + ' (' + a.hours + 'h)');
               })
-            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.no_actions_yet', 'No actions yet this year. Pick a species, pick a technique.'))
+            ) : h('div', { style: { fontSize: 12, color: isContrast ? 'var(--allo-stem-text-soft, #94a3b8)' : '#475569', fontStyle: 'italic' } }, __alloT('stem.ecosystem.no_actions_yet', 'No actions yet this year. Pick a species, pick a technique.'))
           );
         })(),
 

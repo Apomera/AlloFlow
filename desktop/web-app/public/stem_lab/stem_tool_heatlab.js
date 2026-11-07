@@ -23,6 +23,7 @@
 // arrow keys, animation respects prefers-reduced-motion, and the quest hooks
 // measure what the learner DID, never what they merely opened.
 // ═══════════════════════════════════════════════════════════════════════
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function () {
   'use strict';
   // Fallback-aware translator reachable from every call site in this tool.
@@ -54,7 +55,8 @@
   var SUBSTANCES = [
     { id: 'water',   name: 'Water',        c: 4186, colour: '#38bdf8' },
     { id: 'oil',     name: 'Olive oil',    c: 1970, colour: '#a3a635' },
-    { id: 'ethanol', name: 'Ethanol',      c: 2440, colour: '#c4b5fd' },
+    // maxC: ethanol boils at 78.4 C, so a liquid sample cannot start hotter.
+    { id: 'ethanol', name: 'Ethanol',      c: 2440, colour: '#c4b5fd', maxC: 78 },
     { id: 'sand',    name: 'Dry sand',     c: 830,  colour: '#d6b370' },
     { id: 'alum',    name: 'Aluminium',    c: 897,  colour: '#94a3b8' },
     { id: 'iron',    name: 'Iron',         c: 449,  colour: '#71717a' },
@@ -75,7 +77,9 @@
   // as naming it correctly; the learner must choose before `mech` is shown.
   var EVERYDAY = [
     { name: 'Vacuum flask',      accept: ['all'],                       mech: 'All three, blocked',   desc:'The vacuum stops conduction and convection because there is no matter to carry heat. The silvered wall reflects radiation back. The only real leak is the stopper and the thin glass neck.', icon: '🥤' },
-    { name: 'Double glazing',    accept: ['convection'],                mech: 'Convection, slowed',   desc: 'The gap is too narrow for a convection current to get going, and it is often filled with argon, which conducts worse than air.', icon: '🪟' },
+    // The sealed gap is a layer of still gas (argon conducts worse than air):
+    // it beats conduction as much as convection, so both count.
+    { name: 'Double glazing',    accept: ['convection', 'conduction'],  mech: 'Convection, slowed',   desc: 'The gap is too narrow for a convection current to get going, and it is often filled with argon, which conducts worse than air.', icon: '🪟' },
     { name: 'Car radiator',      accept: ['convection'],                mech: 'Convection, forced',   desc: 'Fins add surface area and the fan forces air across them. Forced convection moves far more heat than letting air drift past.', icon: '🚗' },
     { name: 'Penguin huddle',    accept: ['conduction', 'convection'],  mech: 'Conduction + wind',    desc: 'Huddling cuts the exposed surface area per bird and blocks wind chill. Penguins rotate so nobody stays on the cold edge.', icon: '🐧' },
     { name: 'Wetsuit',           accept: ['conduction'],                mech: 'Conduction, trapped',  desc: 'Neoprene traps a thin layer of water your body warms. Water conducts heat about 25 times better than air, so without the suit you lose heat fast.', icon: '🌊' },
@@ -430,6 +434,25 @@
       slowerName: slower.name
     };
   }
+  // Auto race speed: the slower bar's finish time (the analytic series above)
+  // spread over about 18 s of wall time, rounded UP to two significant
+  // figures, so the slower middle always crosses inside ~20 s on screen.
+  var HEAT_AUTO_WALL_S = 18;
+  function heatAutoTimeScale(slowestS, wallS) {
+    var w = wallS > 0 ? wallS : HEAT_AUTO_WALL_S;
+    if (!(slowestS > 0) || !isFinite(slowestS)) return HEAT_TIME_SCALES[0];
+    var raw = slowestS / w;
+    if (raw <= 1) return 1;
+    var p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10) - 1);
+    return Math.round(Math.ceil(raw / p - 1e-9) * p * 1e6) / 1e6;
+  }
+  // Finish times repeat across renders (4 a second during a race); cache them.
+  var heatReachCache = {};
+  function heatMidReachCached(material, hot) {
+    var key = material.k + '|' + material.rho + '|' + material.c + '|' + hot;
+    if (!(key in heatReachCache)) heatReachCache[key] = heatMidReachTime(material, hot);
+    return heatReachCache[key];
+  }
   function heatMixTemperature(sub1, m1, t1, sub2, m2, t2) {
     return (m1 * sub1.c * t1 + m2 * sub2.c * t2) / (m1 * sub1.c + m2 * sub2.c);
   }
@@ -444,8 +467,8 @@
     }
     var steadier = capacity1 > capacity2 ? sub1 : sub2;
     var other = capacity1 > capacity2 ? sub2 : sub1;
-    return __alloT('stem.heatlab.mix_expl_larger', '{a} has the larger total heat capacity (mass × specific heat), so its temperature changes less while the {b} changes more.')
-      .replace('{a}', function () { return steadier.name; }).replace('{b}', function () { return other.name.toLowerCase(); });
+    return __alloOneWord(__alloT('stem.heatlab.mix_expl_larger', '{a} has the larger total heat capacity (mass × specific heat), so its temperature changes less while the {b} changes more.')
+      .replace('{a}', function () { return steadier.name; }).replace('{b}', function () { return other.name.toLowerCase(); }));
   }
   // One set of water constants feeds the model, the chart's plateau bands and
   // the "Show the numbers" table, so the table can no longer drift from the
@@ -1296,6 +1319,7 @@
     { id: 'tight', ach: 0.3, cost: 2500, co2: 300 },
     { id: 'passive', ach: 0.1, cost: 5000, co2: 600 }
   ];
+  var HEAT_WALL_MAX_LAYERS = 20;
   function heatHouseWallR(layers) {
     var r = WALL_SURFACE_R;
     (layers || []).forEach(function (id) { var L = heatPick(WALL_LAYERS, id); if (L && L.id === id) r += L.r; });
@@ -1304,7 +1328,9 @@
   function heatHouseDesign(o) {
     var d = o || {};
     var win = function (v, def) { var n = Number(v); return clamp(Math.round(isFinite(n) ? n : def), 0, 30); };
-    var mine = Array.isArray(d.mine) ? d.mine.filter(function (id) { return !!HEAT_HOUSE_LAYER_COST[id]; }).slice(0, 12) : null;
+    // Same cap as the section-3 wall builder, so "My wall" is the wall the
+    // learner built (it used to keep only 12 layers of a 16-layer CER wall).
+    var mine = Array.isArray(d.mine) ? d.mine.filter(function (id) { return !!HEAT_HOUSE_LAYER_COST[id]; }).slice(0, HEAT_WALL_MAX_LAYERS) : null;
     var known = HEAT_HOUSE_WALLS.some(function (w) { return w.id === d.wall; });
     var wall = d.wall === 'mine' && mine && mine.length ? 'mine' : known ? d.wall : 'cavity';
     var roof = HEAT_HOUSE_ROOF_MM.indexOf(Number(d.roofMm)) !== -1 ? Number(d.roofMm) : 100;
@@ -1742,7 +1768,7 @@
   var HEAT_CER_RUBRIC = ['claim', 'rows', 'fair', 'idea', 'limit'];
   function heatInvestigations(t) {
     return [
-      { id: 'massmaterial', icon: '⚖️', kinds: ['mixing'], ivCols: ['m1_kg', 'm2_kg', 'sub1', 'sub2'],
+      { id: 'massmaterial', icon: '⚖️', kinds: ['mixing'], ivCols: ['m1_kg', 'm2_kg', 'sub1', 'sub2'], cvCols: ['T1_C', 'T2_C'],
         cols: { mixing: ['sub1', 'm1_kg', 'sub2', 'm2_kg', 'Tf_C', 'dT1_K'] },
         ideas: /heat capacity|specific heat|m\s*[×x*·]\s*c|\bmc\b|Q\s*=/i,
         go: [{ section: 'mixing', setup: { sub1: 'water', m1: 0.5, t1: 20, sub2: 'iron', m2: 0.5, t2: 90, mixEstimateResult: null, mixEstimateRevision: '', mixEstimateReflection: '', mixEstimateReflectionComplete: false } }],
@@ -1806,6 +1832,7 @@
         },
         idea: t('stem.heatlab.cer_layers_idea', 'Layer resistances in series simply add, so the total R decides; many thin layers win only if each one, or the still air between them, adds real resistance.') },
       { id: 'coldtohot', icon: '🔄', kinds: ['equilibrium', 'heat-pump'], needAll: true, ivCols: ['t_s', 'outdoor_C'],
+        cvCols: ['mat1', 'm1_kg', 'T1start_C', 'mat2', 'm2_kg', 'T2start_C', 'G_WK', 'leak', 'indoor_C'],
         cols: { equilibrium: ['t_s', 'T1_C', 'T2_C', 'q12_J', 'dS_total_JK'], 'heat-pump': ['outdoor_C', 'indoor_C', 'teachingCOP'] },
         ideas: /entropy|second law|\bwork|electric|spontaneous|by itself|energy input/i,
         go: [{ section: 'equilibrium', setup: { eqLeak: false, eqCursor: 30 } }, { section: 'heatpumps', setup: { hpOut: 2, hpIn: 21 } }],
@@ -2454,6 +2481,8 @@
     midpointAnalytic: heatMidpointAnalytic,
     midReachTime: heatMidReachTime,
     racePrediction: heatRacePrediction,
+    autoTimeScale: heatAutoTimeScale,
+    autoWallS: HEAT_AUTO_WALL_S,
     effusivity: heatEffusivity,
     contactTemperature: heatContactTemperature,
     twoBodyEquilibrium: heatTwoBodyEquilibrium,
@@ -2544,6 +2573,14 @@
   };
   try { window.StemLab._heat = HEAT_MODELS; } catch (e) {}
 
+  // Contrast theme: hovered buttons, owned by this tool (allo-heatlab-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-heatlab-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-heatlab-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   window.StemLab.registerTool('heatLab', {
     icon: '🌡️',
     label: 'Heat & Thermodynamics Lab',
@@ -2615,7 +2652,7 @@
       // id (engines, everyday cases) keep `key`, the English name that saved
       // answers are keyed by.
       var htFmt = function (s, args) {
-        return String(s).replace(/\{(\d+)\}/g, function (m, n) { var v = args[Number(n)]; return v == null ? '' : String(v); });
+        return __alloOneWord(String(s).replace(/\{(\d+)\}/g, function (m, n) { var v = args[Number(n)]; return v == null ? '' : String(v); }));
       };
       function htLocalise(list, text, byName) {
         return list.map(function (row) {
@@ -2814,6 +2851,19 @@
       var announceRef = React.useRef({ at: 0, keys: {} });
       var phaseSeenRef = React.useRef({});
       var keyCacheRef = React.useRef(null);
+      // Engagement pass (2026-11-04): the topic menu / settings popover
+      // ('' | 'topics' | 'settings'), their toggle buttons, the section to
+      // focus after a topic switch renders, the "drag me" hint on P1 (until a
+      // thermometer is moved this session) and the canvas focus hint.
+      var stHtMenu = React.useState('');
+      var htMenu = stHtMenu[0], setHtMenu = stHtMenu[1];
+      var topicsBtnRef = React.useRef(null);
+      var settingsBtnRef = React.useRef(null);
+      var pendingFocusRef = React.useRef(null);
+      var stProbeHint = React.useState(true);
+      var probeHintOn = stProbeHint[0], setProbeHintOn = stProbeHint[1];
+      var stCanvasFocus = React.useState(false);
+      var canvasFocus = stCanvasFocus[0], setCanvasFocus = stCanvasFocus[1];
 
       var d = initialHeatLabState;
 
@@ -2874,7 +2924,12 @@
       // Older saves could hold a hot end down to 30 C, where the race can never
       // finish; clamp them into the reachable range.
       var hotEnd = clamp(typeof d.hotEnd === 'number' && isFinite(d.hotEnd) ? d.hotEnd : 200, HEAT_HOT_MIN, HEAT_HOT_MAX);
-      var timeScale = HEAT_TIME_SCALES.indexOf(d.timeScale) !== -1 ? d.timeScale : HEAT_TIME_SCALES[0];
+      // 'auto' fits the slower bar's finish (analytic series) into ~18 s of
+      // wall time; any other unknown value falls back to 10x as before.
+      var timeScaleAuto = d.timeScale === 'auto';
+      var timeScale = timeScaleAuto
+        ? heatAutoTimeScale(Math.max(heatMidReachCached(material, hotEnd), raceOn ? heatMidReachCached(materialB, hotEnd) : 0))
+        : (HEAT_TIME_SCALES.indexOf(d.timeScale) !== -1 ? d.timeScale : HEAT_TIME_SCALES[0]);
       // Thermometers: up to three, each { cm: 1..19 along the bar, bar: 'a'|'b' }.
       var probes = (Array.isArray(d.probes) ? d.probes : [{ cm: 5, bar: 'a' }, { cm: 10, bar: 'a' }, { cm: 15, bar: 'a' }])
         .filter(function (p) { return p && typeof p.cm === 'number' && isFinite(p.cm); })
@@ -3001,6 +3056,8 @@
         function reset() {
           sim.a = heatRaceState(N);
           sim.b = heatRaceState(N);
+          sim.runHot = null;
+          sim.hotMixed = false;
           freshHistory();
           last = 0;
           setRaceStatus(htFmt(t('stem.heatlab.bars_reset_to_20_c_the', 'Bars reset to 20 °C. The finish line is {0} °C at the midpoint.'), [HEAT_FINISH_C]));
@@ -3010,6 +3067,8 @@
 
         function step(dt) {
           var hot = hotEndNowRaw();
+          if (sim.runHot == null) sim.runHot = hot;
+          else if (sim.runHot !== hot) sim.hotMixed = true;
           var racing = racingNow();
           var mA = matOf(el.dataset.material, MATERIALS[0]);
           var mB = matOf(el.dataset.materialB, MATERIALS[5]);
@@ -3065,7 +3124,7 @@
             return { matId: m.id, inW: f.inW, outW: f.outW, inJ: st.inJ, outJ: st.outJ, storedJ: heatBarStoredJ(st.T, m), mid: st.T[MID], reach: st.reach };
           }
           return {
-            clock: sim.a.clock, racing: racing, hot: hot,
+            clock: sim.a.clock, racing: racing, hot: hot, hotMixed: !!sim.hotMixed,
             a: barInfo(sim.a, mA), b: racing ? barInfo(sim.b, mB) : null,
             cross: irMode() ? probeTemp(sim.a.T, crossCm()) : null,
             probes: readProbes().map(function (p) {
@@ -3139,7 +3198,7 @@
           if (isContrast) return { bg: '#000000', bg2: '#000000', ink: '#ffffff', dim: '#ffffff', rule: '#ffffff', glass: 'rgba(255,255,255,0.6)', win: '#00ff66' };
           return isDark
             ? { bg: '#0b1120', bg2: '#131f38', ink: 'rgba(226,232,240,0.94)', dim: 'rgba(148,163,184,0.88)', rule: 'rgba(226,232,240,0.55)', glass: 'rgba(148,163,184,0.16)', win: '#4ade80' }
-            : { bg: '#f6f8fc', bg2: '#e4ecfb', ink: 'rgba(15,23,42,0.94)', dim: 'rgba(51,65,85,0.86)', rule: 'rgba(15,23,42,0.45)', glass: 'rgba(71,85,105,0.13)', win: '#15803d' };
+            : { bg: '#f6f8fc', bg2: '#e4ecfb', ink: 'rgba(15,23,42,0.94)', dim: 'rgba(51,65,85,0.86)', rule: 'rgba(15,23,42,0.45)', glass: 'rgba(71,85,105,0.13)', win: '#166534' };
         }
         function backdrop() {
           var s = skin();
@@ -3230,11 +3289,15 @@
           c.lineWidth = Math.max(1, dpr);
           c.strokeRect(pad, top, W - pad * 2, barH);
           // midpoint marker, the line the race is timed to
-          c.strokeStyle = s.rule;
+          // Same halo as the profile line: it has to read on every ramp colour.
           c.setLineDash([u(3), u(3)]);
-          c.beginPath();
-          c.moveTo(W / 2, top - u(2)); c.lineTo(W / 2, top + barH + u(2));
-          c.stroke();
+          [['rgba(2,6,23,0.75)', u(3)], ['rgba(255,255,255,0.96)', u(1.5)]].forEach(function (mark) {
+            c.strokeStyle = mark[0];
+            c.lineWidth = mark[1];
+            c.beginPath();
+            c.moveTo(W / 2, top - u(2)); c.lineTo(W / 2, top + barH + u(2));
+            c.stroke();
+          });
           c.setLineDash([]);
 
           // A swatch in the material's own colour, so the bar and the pill the
@@ -3256,7 +3319,9 @@
             ? (reachable
               ? htFmt(t('stem.heatlab.c_at_the_middle_still_climbing', '{0}°C at the middle, still climbing'), [fmt(T[MID], 0)])
               : t('stem.heatlab.canvas_never_reaches', '{t}°C at the middle; it can never reach the finish at this hot end').replace('{t}', fmt(T[MID], 0)))
-            : htFmt(t('stem.heatlab.middle_hit_c_in_s', 'middle hit {0}°C in {1} s'), [HEAT_FINISH_C, secs(reached)]), W - pad, top - u(6));
+            : htFmt(t('stem.heatlab.middle_hit_c_in_s', 'middle hit {0}°C in {1} s'), [HEAT_FINISH_C, secs(reached)]),
+            // The top race bar's label row runs under the 34 px fullscreen button.
+            top - u(6) < u(46) ? W - u(48) : W - pad, top - u(6));
 
           // Which end is heated was never stated anywhere on the canvas.
           if (showEnds) {
@@ -3310,6 +3375,29 @@
             c.textAlign = 'center';
             c.textBaseline = 'middle';
             c.fillText(tag, x, ty + u(6.5));
+            // "Drag me": arrowheads either side of P1's tag and a word under
+            // it, until a thermometer has been moved this session.
+            if (i === 0 && el.dataset.dragHint === 'on') {
+              var ay = ty + u(6.5), gap = tw / 2 + u(3);
+              c.fillStyle = '#ffffff';
+              c.strokeStyle = 'rgba(2,6,23,0.85)';
+              c.lineWidth = Math.max(1, dpr);
+              [-1, 1].forEach(function (sgn) {
+                c.beginPath();
+                c.moveTo(x + sgn * (gap + u(7)), ay);
+                c.lineTo(x + sgn * gap, ay - u(5));
+                c.lineTo(x + sgn * gap, ay + u(5));
+                c.closePath();
+                c.fill(); c.stroke();
+              });
+              var word = t('stem.heatlab.canvas_drag_me', 'drag');
+              c.font = '800 ' + u(9) + 'px system-ui, sans-serif';
+              var ww = c.measureText(word).width + u(8);
+              c.fillStyle = 'rgba(2,6,23,0.88)';
+              c.fillRect(x - ww / 2, ty + u(16), ww, u(13));
+              c.fillStyle = '#ffffff';
+              c.fillText(word, x, ty + u(22.5));
+            }
           });
         }
 
@@ -3645,6 +3733,7 @@
         }
         var visible = true;
         var io = null;
+        var reduceSeen = reduce;
         function requestNext() {
           if (!visible || animRef.current) return;
           animRef.current = requestAnimationFrame(frame);
@@ -3656,7 +3745,8 @@
           if (!el.isConnected) return;
           // Reduced motion is re-read every frame, so switching it on mid-race
           // freezes the bar at once instead of after the next remount.
-          reduce = heatPrefersReducedMotion();
+          var wasReduce = reduceSeen;
+          reduce = reduceSeen = heatPrefersReducedMotion();
           var m = el.dataset.mode || 'conduction';
           var paused = el.dataset.paused === 'on';
           try {
@@ -3664,7 +3754,7 @@
               var dt = last ? Math.min(0.25, (ts - last) / 1000) : 0.016;
               if (!reduce && !paused) step(dt * scaleNow());
               if (c) drawBar(ts);
-              pushLive(false);
+              pushLive(reduce && !wasReduce);
               paintChart(false);
             } else if (c && m === 'convection') { drawConvection(ts); }
             else if (c) { drawRadiation(ts); }
@@ -3726,11 +3816,28 @@
           }, { rootMargin: '120px' });
           io.observe(el);
         }
+        var motionMq = null;
+        function onMotionChange() {
+          reduceSeen = heatPrefersReducedMotion();
+          pushLive(true);
+          if (!reduceSeen) { last = 0; requestNext(); }
+        }
+        try {
+          motionMq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+          if (motionMq && motionMq.addEventListener) motionMq.addEventListener('change', onMotionChange);
+          else if (motionMq && motionMq.addListener) motionMq.addListener(onMotionChange);
+        } catch (mqErr) { motionMq = null; }
         requestNext();
         pushLive(true);
         return function () {
           cancelAnimationFrame(animRef.current);
           animRef.current = 0;
+          if (motionMq) {
+            try {
+              if (motionMq.removeEventListener) motionMq.removeEventListener('change', onMotionChange);
+              else if (motionMq.removeListener) motionMq.removeListener(onMotionChange);
+            } catch (mqErr2) {}
+          }
           if (io) io.disconnect();
           if (roRef.current) { roRef.current.disconnect(); roRef.current = null; }
           el._heatReset = null;
@@ -3765,9 +3872,10 @@
         // Stage C: the radiation mode draws the section 11 model.
         el.dataset.radT = String(canvasRadT);
         el.dataset.radEps = String(canvasRadEps);
+        el.dataset.dragHint = probeHintOn && probes.length ? 'on' : 'off';
         if (el._heatDraw) el._heatDraw();
         if (el._heatKick) el._heatKick();
-      }, [mode, matId, matBId, raceOn, hotEnd, timeScale, probesKey, racePaused, irOn, irPalette, irCrossCm, canvasRadT, canvasRadEps]);
+      }, [mode, matId, matBId, raceOn, hotEnd, timeScale, probesKey, racePaused, irOn, irPalette, irCrossCm, canvasRadT, canvasRadEps, probeHintOn]);
 
       // The T(t) chart only exists in conduction mode, so it is watched here
       // rather than by the mount-once observer that serves the static charts.
@@ -4041,8 +4149,11 @@
       var sub2 = SUBSTANCES.filter(function (s) { return s.id === (d.sub2 || 'iron'); })[0] || SUBSTANCES[5];
       var m1 = typeof d.m1 === 'number' ? d.m1 : 0.5;
       var m2 = typeof d.m2 === 'number' ? d.m2 : 0.5;
-      var t1 = typeof d.t1 === 'number' ? d.t1 : 20;
-      var t2 = typeof d.t2 === 'number' ? d.t2 : 90;
+      // Each sample stays liquid or solid at its start temperature (ethanol
+      // would be vapour above 78 C, and c = 2,440 J/kgK is the liquid's value).
+      var mixMaxC = function (sub) { return typeof sub.maxC === 'number' ? sub.maxC : 100; };
+      var t1 = Math.min(typeof d.t1 === 'number' ? d.t1 : 20, mixMaxC(sub1));
+      var t2 = Math.min(typeof d.t2 === 'number' ? d.t2 : 90, mixMaxC(sub2));
       var finalT = heatMixTemperature(sub1, m1, t1, sub2, m2, t2);
       var mixExplanation = heatMixExplanation(sub1, m1, t1, sub2, m2, t2);
       var mixEstimateResult = d.mixEstimateResult && typeof d.mixEstimateResult.estimated === 'number' ? d.mixEstimateResult : null;
@@ -4056,8 +4167,18 @@
       var mixSig = heatMixSignature(sub1.id, m1, t1, sub2.id, m2, t2);
       var mixRevealedSigs = Array.isArray(d.mixRevealedSigs) ? d.mixRevealedSigs : [];
       var mixReflectedSigs = Array.isArray(d.mixReflectedSigs) ? d.mixReflectedSigs : [];
-      var mixAlreadyRevealed = mixRevealedSigs.indexOf(mixSig) !== -1;
+      // The particle lens states Tf ("heading for … °C") and converges on it,
+      // and a recorded mixing trial writes Tf_C to the notebook, so either one
+      // shows the answer for this mix; it is marked revealed in the effect below.
+      var mixLensShowsTf = !!(d.lens && typeof d.lens === 'object' && d.lens.mix);
+      var mixAlreadyRevealed = mixRevealedSigs.indexOf(mixSig) !== -1 || mixLensShowsTf;
       var mixAlreadyReflected = mixReflectedSigs.indexOf(mixSig) !== -1;
+      function markMixRevealed() {
+        if (mixRevealedSigs.indexOf(mixSig) === -1) upd({ mixRevealedSigs: heatLogAppend(mixRevealedSigs, mixSig, 100) });
+      }
+      React.useEffect(function () {
+        if (mixLensShowsTf) markMixRevealed();
+      }, [mixLensShowsTf, mixSig]);
 
       // ── Module 4: heating curve ──────────────────────────────────────
       var energyIn = typeof d.energyIn === 'number' ? d.energyIn : 0;   // kJ per kg
@@ -4211,7 +4332,10 @@
       }, [pick3d, isDark, isContrast, ctx.theme, cv.regime, cvFrom, cvRate, cvFluid, prefersReducedMotion]);
 
       // ── Composite wall: resistances in series ────────────────────────
-      var wallStack = d.wallStack || ['brick', 'cavity', 'block', 'plaster'];
+      // A saved stack that is not a list (hostile or corrupt save) used to crash
+      // the whole tool at wallStack.forEach.
+      var wallStack = Array.isArray(d.wallStack) ? d.wallStack.filter(function (id) { return typeof id === 'string'; }).slice(0, HEAT_WALL_MAX_LAYERS) : ['brick', 'cavity', 'block', 'plaster'];
+      var wallFull = wallStack.length >= HEAT_WALL_MAX_LAYERS;
       var wallTotalR = WALL_SURFACE_R;
       wallStack.forEach(function (id) {
         var L = WALL_LAYERS.filter(function (x) { return x.id === id; })[0];
@@ -4381,12 +4505,18 @@
             '🔒 ' + t('stem.heatlab.locked_note', 'Your teacher has locked this section for now.')),
             h.apply(null, ['div', { inert: '', 'data-ht-locked': id, style: { opacity: 0.55 } }].concat(body))];
         }
+        // One topic at a time: the rest stay in the DOM, hidden.
+        var shownHere = htSecShown(id);
+        var pager = shownHere ? htPager(id) : null;
+        if (pager) body = body.concat([pager]);
         var node = card.apply(null, [accent, head].concat(pre, body));
         return React.cloneElement(node, {
           id: 'htsec-' + id,
           'data-ht-sec': id,
           tabIndex: -1,
-          style: Object.assign({}, node.props.style, { scrollMarginTop: '188px' })
+          hidden: shownHere ? undefined : true,
+          'data-ht-current': id === htCurrent && !htAll ? 'true' : undefined,
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '72px' })
         });
       };
       var heading = function (accent, text) {
@@ -4502,6 +4632,7 @@
       }
       function setProbes(next) { upd({ probes: next.slice(0, HEAT_PROBE_MAX) }); }
       function setProbe(i, patch) {
+        if (patch && typeof patch.cm === 'number' && probeHintOn) setProbeHintOn(false);
         setProbes(probes.map(function (p, j) { return j === i ? Object.assign({}, p, patch) : p; }));
       }
       var probeSummary = probes.map(function (p, i) {
@@ -4524,9 +4655,161 @@
           row['p' + (i + 1) + '_C'] = snap.probes && typeof snap.probes[i] === 'number' ? snap.probes[i] : null;
         });
         var n = recordTrial(row);
-        if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.sr_trial_recorded', 'Trial recorded. {n} rows in your log.').replace('{n}', String(n)));
+        if (typeof announceToSR === 'function') announceToSR(__alloOneWord(t('stem.heatlab.sr_trial_recorded', 'Trial recorded. {n} rows in your log.').replace('{n}', String(n))));
       }
       var logCount = Array.isArray(d.log) ? d.log.length : 0;
+
+      // ── First minute: guess, then race two different bars ────────────
+      // toolData._heatLab.firstRace = { a, b, pick: 'a'|'b'|'tie', stage:
+      // 'predict'|'racing'|'done', winner, correct, reachA, reachB, round }.
+      // The guess is locked by the same press that starts the race, the speed
+      // is the auto scale (both finish inside ~20 s), and the verdict is read
+      // off the race itself once both middles have crossed 50 °C.
+      var FR_PAIRS = [['copper', 'wood'], ['aluminium', 'steel'], ['water', 'wood'], ['glass', 'aerogel'], ['steel', 'glass']];
+      var fr = d.firstRace && typeof d.firstRace === 'object' ? d.firstRace : {};
+      function matById(id, fallback) { return MATERIALS.filter(function (m) { return m.id === id; })[0] || fallback; }
+      var frA = matById(fr.a, matById('copper', MATERIALS[0]));
+      var frB = matById(fr.b, matById('wood', MATERIALS[5]));
+      var frPick = fr.pick === 'a' || fr.pick === 'b' || fr.pick === 'tie' ? fr.pick : null;
+      // A saved stage past "predict" with no guess in it never happened.
+      var frStage = frPick && (fr.stage === 'racing' || fr.stage === 'done') ? fr.stage : 'predict';
+      function frGuessName(p) { return p === 'a' ? frA.name : p === 'b' ? frB.name : t('stem.heatlab.fr_tie', 'A tie'); }
+      var frOnTrack = raceOn && matId === frA.id && matBId === frB.id;
+      var frPairRacing = raceOn && (frOnTrack || (matId === frB.id && matBId === frA.id));
+      var frHotMoved = frStage === 'racing' && !!live.hotMixed;
+      // The pressed button leaves the DOM with its stage: focus goes to the card.
+      var frFocusRef = React.useRef(false);
+      React.useEffect(function () {
+        if (!frFocusRef.current) return;
+        frFocusRef.current = false;
+        var cardEl = typeof document !== 'undefined' && document.querySelector('[data-ht-first-race]');
+        if (cardEl) { try { cardEl.focus({ preventScroll: true }); } catch (e) {} }
+      });
+      function frSet(patch) { upd({ firstRace: Object.assign({}, fr, { a: frA.id, b: frB.id }, patch) }); }
+      function frStart() {
+        if (!frPick) return;
+        upd({
+          firstRace: Object.assign({}, fr, { a: frA.id, b: frB.id, pick: frPick, stage: 'racing', winner: null, correct: null, reachA: null, reachB: null }),
+          mode: 'conduction', raceOn: true, matId: frA.id, matBId: frB.id, timeScale: 'auto'
+        });
+        pushAll('materialsTried', [frA.id, frB.id]);
+        setRacePaused(false);
+        frFocusRef.current = true;
+        var el = canvasRef.current;
+        if (el && el._heatReset) el._heatReset();
+        if (typeof announceToSR === 'function') {
+          announceToSR(t('stem.heatlab.sr_fr_locked', 'Guess locked: {g}. The race is on.').replace('{g}', function () { return frGuessName(frPick); }));
+        }
+      }
+      function frNext() {
+        var i = -1;
+        FR_PAIRS.forEach(function (p, k) { if (p[0] === frA.id && p[1] === frB.id) i = k; });
+        var nx = FR_PAIRS[(i + 1) % FR_PAIRS.length];
+        frFocusRef.current = true;
+        upd({ firstRace: { a: nx[0], b: nx[1], stage: 'predict', pick: null, round: (Number(fr.round) || 1) + 1 }, raceOn: false });
+        var el = canvasRef.current;
+        if (el && el._heatReset) el._heatReset();
+      }
+      // The verdict comes from the live race, never from a precomputed answer.
+      var frLiveA = live.a && live.a.reach, frLiveB = live.b && live.b.reach;
+      React.useEffect(function () {
+        if (frStage !== 'racing' || !frOnTrack || !live.racing || !live.b) return;
+        if (live.a.matId !== frA.id || live.b.matId !== frB.id || live.hotMixed) return;
+        var ra = live.a.reach, rb = live.b.reach;
+        if (ra === null || rb === null || ra === undefined || rb === undefined) return;
+        var winner = Math.abs(ra - rb) <= 0.02 * Math.max(ra, rb) ? 'tie' : (ra < rb ? 'a' : 'b');
+        var correct = frPick === winner;
+        frSet({ stage: 'done', reachA: ra, reachB: rb, winner: winner, correct: correct });
+        if (typeof announceToSR === 'function') {
+          announceToSR(t('stem.heatlab.fr_done', 'Middle reached 50 °C: {a} after {ta}, {b} after {tb}.')
+            .replace('{a}', function () { return frA.name; }).replace('{ta}', heatTimeLabel(ra))
+            .replace('{b}', function () { return frB.name; }).replace('{tb}', heatTimeLabel(rb)) + ' ' +
+            (correct ? t('stem.heatlab.fr_right', 'You guessed {g}: right!') : t('stem.heatlab.fr_wrong', 'You guessed {g}: not this time.'))
+              .replace('{g}', function () { return frGuessName(frPick); }));
+        }
+      }, [frStage, frOnTrack, frLiveA, frLiveB]);
+      function firstRaceCard() {
+        if (mode !== 'conduction') return null;
+        var accent = '#fb923c';
+        var qId = 'ht-fr-q';
+        var opts = [['a', frA.name], ['b', frB.name], ['tie', t('stem.heatlab.fr_tie', 'A tie')]];
+        var body = [];
+        if (frStage === 'predict') {
+          body.push(h('fieldset', { key: 'fs', className: 'mt-1.5' },
+            h('legend', { className: 'sr-only' }, t('stem.heatlab.fr_legend', 'Your guess')),
+            h('div', { className: 'flex flex-wrap gap-1.5' }, opts.map(function (o) {
+              var on = frPick === o[0];
+              return h('label', {
+                key: o[0], 'data-ht-fr-opt': o[0],
+                className: 'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-[0.6875rem] font-bold min-h-11',
+                style: {
+                  color: bodyInk,
+                  borderColor: on ? (isContrast ? '#fbbf24' : ink(accent)) : (isContrast ? '#ffffff' : 'rgba(251,146,60,0.45)'),
+                  background: on ? (isContrast ? '#000000' : isDark ? 'rgba(251,146,60,0.18)' : 'rgba(251,146,60,0.12)') : 'transparent',
+                  borderWidth: on ? 2 : 1
+                }
+              },
+                h('input', { type: 'radio', name: 'ht-fr-guess', value: o[0], checked: on,
+                  onChange: function () { frSet({ pick: o[0], stage: 'predict' }); },
+                  className: 'h-4 w-4 flex-shrink-0 accent-orange-600' }),
+                h('span', null, o[1]));
+            }))),
+            h('button', {
+              key: 'go', type: 'button', disabled: !frPick, 'aria-disabled': frPick ? 'false' : 'true', 'data-ht-fr-start': 'true',
+              onClick: frStart,
+              className: 'mt-2 min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black disabled:cursor-not-allowed disabled:opacity-50',
+              style: isContrast ? { background: '#fbbf24', color: '#000000', border: '2px solid #fbbf24' } : { background: '#c2410c', color: '#ffffff', border: '1px solid #c2410c' }
+            }, '🏁 ' + t('stem.heatlab.fr_lock', 'Lock my guess and race')));
+        } else {
+          body.push(h('p', { key: 'g', className: 'text-[0.6875rem] mt-1 font-bold', 'data-ht-fr-guess': frPick || '', style: { color: bodyInk } },
+            '🔒 ' + t('stem.heatlab.fr_locked', 'Your guess: {g} (locked).').replace('{g}', function () { return frGuessName(frPick); })));
+        }
+        if (frStage === 'racing') {
+          body.push(frOnTrack && !frHotMoved
+            ? h('p', { key: 'r', className: 'text-[0.6875rem] mt-1 leading-relaxed', 'data-ht-fr-speed': String(timeScale), style: { color: softInk } },
+              prefersReducedMotion
+                ? t('stem.heatlab.fr_racing_rm', 'Press “Advance” under the bars to step the race. Each press is {t} of real time.').replace('{t}', heatTimeLabel(timeScale))
+                : (timeScaleAuto
+                  ? t('stem.heatlab.fr_racing', 'The race is on. 1 s here = {t} of real time, so the slower bar finishes in about 20 s.')
+                  : t('stem.heatlab.fr_racing_manual', 'The race is on. 1 s here = {t} of real time. Auto speed finishes it in about 20 s.')).replace('{t}', heatTimeLabel(timeScale)))
+            : h('div', { key: 'r', className: 'mt-1' },
+              h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: softInk } },
+                (frOnTrack
+                  ? t('stem.heatlab.fr_changed_hot', 'You changed the hot end during the race. Race {a} against {b} again to check your guess.')
+                  : t('stem.heatlab.fr_changed', 'You changed the bars. Race {a} against {b} again to check your guess.'))
+                  .replace('{a}', function () { return frA.name; }).replace('{b}', function () { return frB.name; })),
+              h('button', { type: 'button', onClick: frStart, 'data-ht-fr-again': 'true',
+                className: 'mt-1 min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
+                '↺ ' + t('stem.heatlab.fr_again', 'Race them again'))));
+        }
+        if (frStage === 'done') {
+          var ra = Number(fr.reachA), rb = Number(fr.reachB);
+          var pred = heatRacePrediction(frA, frB);
+          var ratio = pred.ratio >= 10 ? Math.round(pred.ratio).toLocaleString() : pred.ratio.toFixed(1);
+          body.push(h('div', { key: 'v', role: 'status', className: 'mt-1.5 rounded-lg border p-2', 'data-ht-fr-result': fr.correct ? 'right' : 'wrong', style: panelStyle(fr.correct ? '#16a34a' : '#f59e0b') },
+            h('p', { className: 'text-[0.6875rem] font-black', style: { color: isContrast ? '#ffffff' : fr.correct ? ink('#16a34a') : (isDark ? '#fcd34d' : '#92400e') } },
+              (fr.correct ? '✅ ' + t('stem.heatlab.fr_right', 'You guessed {g}: right!') : '🔁 ' + t('stem.heatlab.fr_wrong', 'You guessed {g}: not this time.'))
+                .replace('{g}', function () { return frGuessName(frPick); })),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: bodyInk } },
+              t('stem.heatlab.fr_done', 'Middle reached 50 °C: {a} after {ta}, {b} after {tb}.')
+                .replace('{a}', function () { return frA.name; }).replace('{ta}', heatTimeLabel(ra))
+                .replace('{b}', function () { return frB.name; }).replace('{tb}', heatTimeLabel(rb))),
+            h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: bodyInk } },
+              fr.winner === 'tie'
+                ? t('stem.heatlab.fr_why_tie', 'Same diffusivity, same race: a dead heat.')
+                : t('stem.heatlab.fr_why', '{f} spreads a temperature change {r}× faster than {s}, so its middle warms first. Scientists call this diffusivity.')
+                  .replace('{f}', function () { return pred.fasterName; }).replace('{r}', ratio).replace('{s}', function () { return pred.slowerName; }))),
+            h('button', { key: 'n', type: 'button', onClick: frNext, 'data-ht-fr-next': 'true',
+              className: 'mt-2 min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
+              '🎲 ' + t('stem.heatlab.fr_new', 'New race, new guess')));
+        }
+        return h('div', { 'data-ht-first-race': frStage, role: 'group', 'aria-labelledby': qId, tabIndex: -1,
+          className: 'mb-2 rounded-lg border p-2.5', style: panelStyle(accent) },
+          h('p', { id: qId, className: 'text-[0.75rem] font-black leading-snug', style: { color: isContrast ? '#fbbf24' : ink(accent) } },
+            '🏁 ' + t('stem.heatlab.fr_q', '{a} or {b}: whose middle reaches 50 °C first?')
+              .replace('{a}', function () { return frA.name; }).replace('{b}', function () { return frB.name; })),
+          body);
+      }
 
       // ── Predict-observe-explain cards ─────────────────────────────────
       var MISCONCEPTIONS = heatMisconceptions(t);
@@ -4694,7 +4977,7 @@
         return h('button', {
           type: 'button',
           onClick: function () { goToSection('notebook'); },
-          'aria-label': t('stem.heatlab.nb_open_aria', 'Open the lab notebook: {n} rows recorded').replace('{n}', String(logCount)),
+          'aria-label': __alloOneWord(t('stem.heatlab.nb_open_aria', 'Open the lab notebook: {n} rows recorded').replace('{n}', String(logCount))),
           className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false)
         }, '📓 ' + t('stem.heatlab.log_count', '{n} in your log').replace('{n}', String(logCount)));
       }
@@ -4710,7 +4993,7 @@
               var row = buildRow();
               if (!row) return;
               var n = recordTrial(Object.assign({ kind: kind }, row));
-              if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.sr_trial_recorded', 'Trial recorded. {n} rows in your log.').replace('{n}', String(n)));
+              if (typeof announceToSR === 'function') announceToSR(__alloOneWord(t('stem.heatlab.sr_trial_recorded', 'Trial recorded. {n} rows in your log.').replace('{n}', String(n))));
             },
             className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold disabled:cursor-not-allowed disabled:opacity-50',
             style: neutralBtnStyle(false)
@@ -4905,8 +5188,8 @@
         upd({ touchSide: side, touchTried: touchedIds.indexOf(m.id) === -1 ? touchedIds.concat([m.id]) : touchedIds });
         var r = heatTouchTest(m);
         if (typeof announceToSR === 'function') {
-          announceToSR(t('stem.heatlab.sr_touch', 'You touch the {mat} block. Your skin surface drops to {tc} degrees and loses {w} watts through a fingertip in the first second.')
-            .replace('{mat}', m.name.toLowerCase()).replace('{tc}', fmt(r.contactC, 1)).replace('{w}', r.fingertipW.toFixed(2)));
+          announceToSR(__alloOneWord(t('stem.heatlab.sr_touch', 'You touch the {mat} block. Your skin surface drops to {tc} degrees and loses {w} watts through a fingertip in the first second.')
+            .replace('{mat}', m.name.toLowerCase()).replace('{tc}', fmt(r.contactC, 1)).replace('{w}', r.fingertipW.toFixed(2))));
         }
       }
       React.useEffect(function () {
@@ -5162,7 +5445,7 @@
         var csv = nbCsv();
         var api = window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : null;
         var done = function (ok) {
-          var msg = ok ? t('stem.heatlab.nb_copied', 'Copied {n} rows as CSV. Paste them into a spreadsheet.').replace('{n}', String(nbRows.length))
+          var msg = ok ? __alloOneWord(t('stem.heatlab.nb_copied', 'Copied {n} rows as CSV. Paste them into a spreadsheet.').replace('{n}', String(nbRows.length)))
             : t('stem.heatlab.nb_copy_failed', 'Copy is not available here. Use Download CSV instead.');
           setNbMsg(msg);
           if (typeof announceToSR === 'function') announceToSR(msg);
@@ -5190,23 +5473,84 @@
       function nbSnapshot() {
         if (typeof ctx.saveSnapshot !== 'function') return;
         var rows = nbRows.map(function (r) { return Object.assign({}, r); });
-        ctx.saveSnapshot('heatLab', t('stem.heatlab.nb_snapshot_label', 'Heat Lab notebook: {n} rows').replace('{n}', String(rows.length)), { kind: nbKind, rows: rows, csv: nbCsv() });
+        ctx.saveSnapshot('heatLab', __alloOneWord(t('stem.heatlab.nb_snapshot_label', 'Heat Lab notebook: {n} rows').replace('{n}', String(rows.length))), { kind: nbKind, rows: rows, csv: nbCsv() });
         var msg = t('stem.heatlab.nb_snapshot_saved', 'Saved a snapshot of these rows.');
         setNbMsg(msg);
         if (typeof announceToSR === 'function') announceToSR(msg);
+      }
+      // Hand notebook rows to Data Plot (Charts & Graphs, Regression mode) or to CODAP through
+      // Data Lab. Both hooks live in lazily loaded modules: fall back to their inboxes and open the tool.
+      function nbSay(msg) { setNbMsg(msg); if (typeof announceToSR === 'function') announceToSR(msg); }
+      function nbOpenTool(id) {
+        try { if (typeof window.__alloEnsureStemPluginLoaded === 'function') window.__alloEnsureStemPluginLoaded(id); } catch (e) {}
+        if (typeof setStemLabTool === 'function') setStemLabTool(id);
+      }
+      function nbTitle() {
+        return nbKind === 'all' ? t('stem.heatlab.nb_send_title_all', 'Heat Lab notebook')
+          : t('stem.heatlab.nb_send_title', 'Heat Lab notebook: {kind}').replace('{kind}', function () { return KIND_LABELS[nbKind] || nbKind; });
+      }
+      function nbSendPlot() {
+        if (!nbPts.length) { nbSay(t('stem.heatlab.nb_send_none', 'No rows have both of these values yet. Pick other columns or record more rows.')); return; }
+        var payload = { title: nbTitle(), xLabel: nbX, yLabel: nbY, source: 'Heat Lab', points: nbPts.map(function (p) { return { x: p[0], y: p[1] }; }) };
+        var SL = window.StemLab || {};
+        if (typeof SL.dataPlotImport === 'function') {
+          var res = SL.dataPlotImport(payload, ctx);
+          if (!res || !res.ok) { nbSay(t('stem.heatlab.nb_send_failed', 'Those rows could not be sent. Try Copy CSV instead.')); return; }
+        } else {
+          SL._dataPlotInbox = payload;
+          if (typeof ctx.setToolData === 'function') {
+            ctx.setToolData(function (prev) {
+              var ds = Object.assign({}, prev && prev._dataStudio && typeof prev._dataStudio === 'object' ? prev._dataStudio : {}, { studioMode: 'regression' });
+              return Object.assign({}, prev, { _dataStudio: ds });
+            });
+          }
+          nbOpenTool('dataStudio');
+        }
+        nbSay(__alloOneWord(t('stem.heatlab.nb_send_plot_done', 'Sent {n} rows to Data Plot.').replace('{n}', function () { return String(nbPts.length); })));
+      }
+      function nbSendCodap() {
+        var cols = heatLogColumns(nbRows);
+        var attributes = [{ name: 'kind', type: 'categorical' }].concat(cols.map(function (k) { return { name: k }; }));
+        var rows = nbRows.map(function (r) {
+          return [r.kind || ''].concat(cols.map(function (k) {
+            var v = r[k];
+            return typeof v === 'number' ? (isFinite(v) ? v : '') : (v == null ? '' : String(v));
+          }));
+        });
+        var dataset = { title: nbTitle(), attributes: attributes, rows: rows, source: 'Heat Lab' };
+        var SL = window.StemLab || {};
+        if (typeof SL.openInDataLab === 'function') {
+          var res = SL.openInDataLab(dataset);
+          if (res && res.error === 'desktop-app') {
+            // The desktop app opens CODAP in the web browser; Data Lab's inbox offers the rows as a copyable table.
+            if (!Array.isArray(window.__alloDataLabInbox)) window.__alloDataLabInbox = [];
+            window.__alloDataLabInbox.push(dataset);
+            nbOpenTool('dataLab');
+            nbSay(t('stem.heatlab.nb_send_codap_desktop', 'In the desktop app, CODAP opens in your web browser. Data Lab is open now: copy your rows as a table there and paste them into CODAP.'));
+            return;
+          }
+          nbSay(res && res.ok ? __alloOneWord(t('stem.heatlab.nb_send_codap_done', 'Sent {n} rows to CODAP in a new window.').replace('{n}', function () { return String(rows.length); }))
+            : res && res.error === 'popup-blocked' ? t('stem.heatlab.nb_send_codap_blocked', 'The browser blocked the CODAP window. Allow pop-ups for this site, then try again.')
+            : t('stem.heatlab.nb_send_failed', 'Those rows could not be sent. Try Copy CSV instead.'));
+          return;
+        }
+        if (!Array.isArray(window.__alloDataLabInbox)) window.__alloDataLabInbox = [];
+        window.__alloDataLabInbox.push(dataset);
+        nbOpenTool('dataLab');
+        nbSay(t('stem.heatlab.nb_send_codap_inbox', 'Opening Data Lab. Press "Open it in CODAP" there to see your rows.'));
       }
       function nbDelete(logIndex) {
         var next = nbLog.slice();
         next.splice(logIndex, 1);
         upd({ log: next });
         setNbConfirm(null);
-        if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.nb_row_deleted', 'Row deleted. {n} rows left.').replace('{n}', String(next.length)));
+        if (typeof announceToSR === 'function') announceToSR(__alloOneWord(t('stem.heatlab.nb_row_deleted', 'Row deleted. {n} rows left.').replace('{n}', String(next.length))));
       }
       function nbClear() {
         var keep = nbKind === 'all' ? [] : nbLog.filter(function (r) { return !(r && r.kind === nbKind); });
         upd({ log: keep });
         setNbConfirm(null);
-        if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.nb_cleared', 'Notebook rows cleared. {n} rows left.').replace('{n}', String(keep.length)));
+        if (typeof announceToSR === 'function') announceToSR(__alloOneWord(t('stem.heatlab.nb_cleared', 'Notebook rows cleared. {n} rows left.').replace('{n}', String(keep.length))));
       }
       // Stage B canvases outside the mount-time observer: repaint on resize.
       React.useEffect(function () {
@@ -5461,9 +5805,9 @@
           if (typeof awardXP === 'function') awardXP('heatlab_cooler', 20, t('stem.heatlab.xp_cooler', 'Designed a cooler that meets the keep-it-frozen brief'));
         }
         if (typeof announceToSR === 'function') {
-          announceToSR(t('stem.heatlab.sr_cl_tested', 'Tested. The ice lasts {h} hours; cost {cost}; outside {cm} cm. {verdict}')
+          announceToSR(__alloOneWord(t('stem.heatlab.sr_cl_tested', 'Tested. The ice lasts {h} hours; cost {cost}; outside {cm} cm. {verdict}')
             .replace('{h}', fmt(m.meltH, 1)).replace('{cost}', function () { return clMoney(m.cost); }).replace('{cm}', fmt(m.outerCm, 1))
-            .replace('{verdict}', m.meets ? t('stem.heatlab.cl_meets', 'It meets the brief.') : t('stem.heatlab.cl_fails', 'It does not meet the brief yet.')));
+            .replace('{verdict}', m.meets ? t('stem.heatlab.cl_meets', 'It meets the brief.') : t('stem.heatlab.cl_fails', 'It does not meet the brief yet.'))));
         }
       }
       function clSave() {
@@ -5565,7 +5909,12 @@
               if (rows[i][c] == null && rows[j][c] == null) return;
               if (rows[i][c] !== rows[j][c]) diff++;
             });
-            if (diff === 1) return true;
+            // ...and agree on every controlled input: two mixes that also start
+            // at different temperatures are not a fair test of mass.
+            var uncontrolled = (cerInv.cvCols || []).some(function (c) {
+              return rows[i][c] != null && rows[j][c] != null && rows[i][c] !== rows[j][c];
+            });
+            if (diff === 1 && !uncontrolled) return true;
           }
         }
         return false;
@@ -5821,11 +6170,11 @@
         if (!handle) { htSay(t('stem.heatlab.sound_unavailable', 'Sound is not available in this browser. Use “Describe this graph” instead.')); return; }
         playRef.current = handle;
         setHearing(id);
-        htSay(t('stem.heatlab.sound_playing', 'Playing {s} seconds: higher pitch means hotter. {n}')
+        htSay(__alloOneWord(t('stem.heatlab.sound_playing', 'Playing {s} seconds: higher pitch means hotter. {n}')
           .replace('{s}', fmt(plan.duration, 0))
           .replace('{n}', plan.plateaus.length
             ? t('stem.heatlab.sound_plateaus', 'A chime marks each of the {k} flat stretches, which play as a steady tone.').replace('{k}', String(plan.plateaus.length))
-            : ''));
+            : '')));
       }
       function htSpeak(text) {
         if (!text) return;
@@ -5911,9 +6260,9 @@
         var best = MATERIALS[MATERIALS.length - 1], worst = MATERIALS[0];
         return t('stem.heatlab.desc_mug', 'Tea wrapped in {mm} mm of {mat}, in a 20 °C room: it starts at {a} °C and is at {b} °C after 60 minutes. The line falls fastest at the start and flattens as the tea nears room temperature.')
             .replace('{mm}', fmt(thickness, 0)).replace('{mat}', insMat.name.toLowerCase()).replace('{a}', fmt(s.y0, 0)).replace('{b}', fmt(s.y1, 1)) + ' ' +
-          (s.halfX != null ? t('stem.heatlab.desc_mug_half', 'Half of the gap to room temperature has gone after {m} minutes.').replace('{m}', fmt(s.halfX, 1))
+          (s.halfX != null ? __alloOneWord(t('stem.heatlab.desc_mug_half', 'Half of the gap to room temperature has gone after {m} minutes.').replace('{m}', fmt(s.halfX, 1)))
             : t('stem.heatlab.desc_mug_nohalf', 'Less than half of the gap to room temperature closes within the hour.')) + ' ' +
-          (below != null ? t('stem.heatlab.desc_mug_below', 'It drops below the 65 °C line after {m} minutes.').replace('{m}', fmt(below, 1))
+          (below != null ? __alloOneWord(t('stem.heatlab.desc_mug_below', 'It drops below the 65 °C line after {m} minutes.').replace('{m}', fmt(below, 1)))
             : t('stem.heatlab.desc_mug_above', 'It stays above the 65 °C line for the whole hour.')) + ' ' +
           t('stem.heatlab.desc_mug_compare', 'With the same thickness, {worst} ends at {w} °C and {best} at {g} °C.')
             .replace('{worst}', worst.name.toLowerCase()).replace('{w}', fmt(heatCoolingTemperature(worst, thickness, 60), 1))
@@ -5955,8 +6304,8 @@
             .replace('{cost}', function () { return clMoney(x.cost); }).replace('{h}', fmt(x.meltH, 1)).replace('{ok}', x.meets ? ', ' + t('stem.heatlab.cl_meets_short', 'meets the brief') : '');
         });
         if (clTested && !clStale) rows.push(t('stem.heatlab.desc_trade_now', 'Latest test: {cost}, ice lasts {h} h.').replace('{cost}', function () { return clMoney(clTested.cost); }).replace('{h}', fmt(clTested.meltH, 1)));
-        return t('stem.heatlab.desc_trade_intro', 'Cost across, hours the ice lasts up. The target line is {h} hours and the budget line ${b}; a design that meets the brief sits above the target and left of the budget.')
-          .replace('{h}', String(HEAT_COOLER.targetH)).replace('{b}', String(HEAT_COOLER.budget)) + ' ' + rows.join(' ');
+        return __alloOneWord(t('stem.heatlab.desc_trade_intro', 'Cost across, hours the ice lasts up. The target line is {h} hours and the budget line ${b}; a design that meets the brief sits above the target and left of the budget.')
+          .replace('{h}', String(HEAT_COOLER.targetH)).replace('{b}', String(HEAT_COOLER.budget))) + ' ' + rows.join(' ');
       }
       var WATER_PHASE_NAMES = {
         'Ice': t('stem.heatlab.wphase_ice', 'Ice'), 'Ice melting': t('stem.heatlab.wphase_melting', 'Ice melting'),
@@ -6062,8 +6411,8 @@
       var houseBriefText = t('stem.heatlab.hs_brief', 'Design a one-storey, 100 m² house for the cold climate (Portland, Maine). It may need no more than {k} kWh of heating per square metre a year. The parts you choose may cost no more than {b} and embody no more than {c} kg CO₂e. The inside of the glass must stay at {g} °C or warmer in the coldest month, and the house needs at least {a} fresh-air changes an hour.')
         .replace('{k}', String(HS.brief.kwhM2)).replace('{b}', function () { return hsMoney(HS.brief.budget); }).replace('{c}', fmt(HS.brief.co2, 0))
         .replace('{g}', String(HS.comfortC)).replace('{a}', String(HS.freshAch));
-      var coolerBriefText = t('stem.heatlab.cl_brief', 'A 200 g ice pack straight from a −18 °C freezer must stay frozen for at least {h} hours in a car at {car} °C. The inside of the box is a 10 cm cube. Your budget is ${b} and the box must fit a {cm} cm space.')
-        .replace('{h}', String(HEAT_COOLER.targetH)).replace('{car}', String(HEAT_COOLER.carC)).replace('{b}', String(HEAT_COOLER.budget)).replace('{cm}', String(HEAT_COOLER.maxOuterCm));
+      var coolerBriefText = __alloOneWord(t('stem.heatlab.cl_brief', 'A 200 g ice pack straight from a −18 °C freezer must stay frozen for at least {h} hours in a car at {car} °C. The inside of the box is a 10 cm cube. Your budget is ${b} and the box must fit a {cm} cm space.')
+        .replace('{h}', String(HEAT_COOLER.targetH)).replace('{car}', String(HEAT_COOLER.carC)).replace('{b}', String(HEAT_COOLER.budget)).replace('{cm}', String(HEAT_COOLER.maxOuterCm)));
       function hsSet(patch) { upd(Object.assign({ hsTouched: true }, patch)); }
       function hsDescribe(dz) {
         var z = heatHouseDesign(dz);
@@ -6195,75 +6544,184 @@
         return (s.id + ' ' + s.label + ' ' + s.kw).toLowerCase().indexOf(htQuery) !== -1;
       }
       var htVisible = HT_SECTIONS.filter(htMatches);
+      // One topic at a time (engagement pass 2026-11-04). Every section stays
+      // in the DOM in its registry order; all but the current one carry the
+      // hidden attribute. toolData._heatLab.htTopic = section id,
+      // htAll = true shows every topic on one long page (the old layout).
+      var htNavList = HT_SECTIONS.filter(function (s) { return isTeacher || htHidden.indexOf(s.id) === -1; });
+      if (!htNavList.length) htNavList = HT_SECTIONS.slice(0, 1);
+      var htAll = d.htAll === true;
+      var htCurrentSec = htNavList.filter(function (s) { return s.id === d.htTopic; })[0] || htNavList[0];
+      var htCurrent = htCurrentSec.id;
+      function htSecShown(id) { return htAll || id === 'next' || id === htCurrent; }
+      var htSoundTopicRef = React.useRef(htCurrent);
+      React.useEffect(function () {
+        var left = !htAll && htSoundTopicRef.current !== htCurrent;
+        htSoundTopicRef.current = htCurrent;
+        if (left && playRef.current) stopSound();
+        if (tickOn && (mode !== 'conduction' || (!htAll && htCurrent !== 'conduction'))) {
+          setTickOn(false);
+          if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.tick_off', 'Ticking thermometer off.'));
+        }
+      }, [htAll, htCurrent, mode, tickOn]);
+      function htFocusSection(id) {
+        var target = typeof document !== 'undefined' && document.getElementById('htsec-' + id);
+        if (!target) return;
+        var rm = heatPrefersReducedMotion();
+        if (typeof target.scrollIntoView === 'function') {
+          try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
+          catch (e) { try { target.scrollIntoView(); } catch (e2) {} }
+        }
+        try { target.focus({ preventScroll: true }); }
+        catch (focusErr) { try { target.focus(); } catch (f2) {} }
+      }
       function htGoTo(s) {
-        var target = typeof document !== 'undefined' && document.getElementById('htsec-' + s.id);
-        if (target) {
-          var rm = heatPrefersReducedMotion();
-          if (typeof target.scrollIntoView === 'function') {
-            try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
-            catch (e) { try { target.scrollIntoView(); } catch (e2) {} }
-          }
-          try { target.focus({ preventScroll: true }); }
-          catch (focusErr) { try { target.focus(); } catch (f2) {} }
+        setHtMenu('');
+        if (htNavList.indexOf(s) === -1) {
+          if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.jump_hidden', 'Your teacher has hidden that topic for now.'));
+          return;
+        }
+        if (htAll || s.id === htCurrent) htFocusSection(s.id);
+        else {
+          // Focus after the switch has rendered (see the effect below).
+          pendingFocusRef.current = s.id;
+          upd({ htTopic: s.id });
         }
         if (typeof announceToSR === 'function') announceToSR(htFmt(t('stem.heatlab.jumped_to', 'Jumped to {0}.'), [s.label]));
       }
+      function htToggleMenu(which) {
+        setHtMenu(htMenu === which ? '' : which);
+      }
+      function htCloseMenu(focusBack) {
+        var which = htMenu;
+        setHtMenu('');
+        var btn = which === 'settings' ? settingsBtnRef.current : which === 'topics' ? topicsBtnRef.current : null;
+        if (focusBack && btn && typeof btn.focus === 'function') { try { btn.focus(); } catch (e) {} }
+      }
+      // Previous / next topic, at the foot of the topic on show.
+      function htPager(id) {
+        if (htAll || id === 'next') return null;
+        var idx = -1;
+        htNavList.forEach(function (s, k) { if (s.id === id) idx = k; });
+        if (idx === -1) return null;
+        var prev = htNavList[idx - 1], next = htNavList[idx + 1];
+        var num = function (s) { return HT_SECTIONS.indexOf(s) + 1; };
+        return h('div', { key: 'ht-pager', 'data-ht-pager': id, className: 'mt-3 flex flex-wrap justify-between gap-2' },
+          prev ? h('button', {
+            type: 'button', onClick: function () { htGoTo(prev); }, 'data-ht-pager-prev': prev.id,
+            'aria-label': t('stem.heatlab.pager_prev_aria', 'Previous topic: {n}. {label}').replace('{n}', String(num(prev))).replace('{label}', function () { return prev.label; }),
+            className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold text-left', style: neutralBtnStyle(false)
+          }, '← ' + num(prev) + '. ' + prev.label) : h('span', null),
+          next ? h('button', {
+            type: 'button', onClick: function () { htGoTo(next); }, 'data-ht-pager-next': next.id,
+            'aria-label': t('stem.heatlab.pager_next_aria', 'Next topic: {n}. {label}').replace('{n}', String(num(next))).replace('{label}', function () { return next.label; }),
+            className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black text-right', style: neutralBtnStyle(false)
+          }, t('stem.heatlab.pager_next', 'Next: {n}. {label}').replace('{n}', String(num(next))).replace('{label}', function () { return next.label; }) + ' →') : null);
+      }
+      React.useEffect(function () {
+        var id = pendingFocusRef.current;
+        if (!id || id !== htCurrent) return;
+        pendingFocusRef.current = null;
+        htFocusSection(id);
+      });
+      // Topic bar (engagement pass 2026-11-04): a "Topics" menu button and a
+      // detail-level popover replace the 400 px always-open index. Both panels
+      // stay in the DOM (hidden when closed), so every jump button and level
+      // button exists for search, tests and assistive tech once opened. The
+      // bar is sticky only on wide, tall screens (see the style rule below).
+      var htTopicNum = HT_SECTIONS.indexOf(htCurrentSec) + 1;
+      var htMenuBtnStyle = function (on) { return Object.assign({}, neutralBtnStyle(on), { whiteSpace: 'nowrap' }); };
       var htIndex = h('nav', {
         'aria-label': t('stem.heatlab.heat_lab_topics','Heat lab topics'),
-        className: 'rounded-xl border px-2.5 py-2 mt-1',
+        'data-ht-topicbar': 'true',
+        className: 'rounded-xl border px-2.5 py-1.5 mt-1',
+        onKeyDown: function (e) {
+          if (e.key === 'Escape' && htMenu) { e.preventDefault(); htCloseMenu(true); }
+        },
         style: {
-          position: 'sticky', top: 0, zIndex: 30,
+          zIndex: 30,
           borderColor: 'rgba(251,146,60,0.4)',
-          background: isDark ? 'rgba(15,23,42,0.97)' : 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(6px)'
+          background: isDark ? 'rgba(15,23,42,0.97)' : 'rgba(255,255,255,0.97)'
         }
       },
         h('div', { className: 'flex flex-wrap items-center gap-2' },
-          h('span', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#fdba74' : '#c2410c' } },
-            htFmt(t('stem.heatlab.topics', '🧭 {0} topics'), [HT_SECTIONS.length])),
-          h('label', { htmlFor: 'ht-topic-search', className: 'sr-only' }, t('stem.heatlab.search_topics', 'Search topics')),
-          h('input', {
-            id: 'ht-topic-search', type: 'search', value: d.htQuery || '',
-            placeholder: t('stem.heatlab.search_topics_2', 'Search topics…'),
-            'aria-label': htFmt(t('stem.heatlab.search_the_topics_by_name_or', 'Search the {0} topics by name or keyword'), [HT_SECTIONS.length]),
-            onChange: function (e) { upd({ htQuery: e.target.value }); },
-            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[0.6875rem]',
-            style: {
-              background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
-              color: isDark ? '#e2e8f0' : '#1e293b',
-              border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
-            }
-          }),
-          h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } },
-            htVisible.length === HT_SECTIONS.length ? t('stem.heatlab.showing_all', 'showing all') : htFmt(t('stem.heatlab.showing', 'showing {0}'), [htVisible.length]))
+          h('button', {
+            type: 'button', ref: topicsBtnRef, 'data-ht-topics-btn': 'true',
+            'aria-expanded': htMenu === 'topics' ? 'true' : 'false', 'aria-controls': 'ht-topic-menu',
+            onClick: function () { htToggleMenu('topics'); },
+            className: 'min-h-11 px-3 py-1.5 rounded-lg text-[0.6875rem] font-black', style: htMenuBtnStyle(htMenu === 'topics')
+          }, '🧭 ' + t('stem.heatlab.topics_btn', 'Topics ({n})').replace('{n}', String(htNavList.length)) + (htMenu === 'topics' ? ' ▴' : ' ▾')),
+          h('span', { className: 'flex-1 min-w-0 text-[0.6875rem] font-bold truncate', 'data-ht-topic-now': htAll ? 'all' : htCurrent, style: { color: isDark ? '#fdba74' : '#9a3412' } },
+            htAll ? t('stem.heatlab.topics_all_on', 'All topics on one page')
+              : htCurrentSec.icon + ' ' + htTopicNum + '. ' + htCurrentSec.label),
+          h('button', {
+            type: 'button', ref: settingsBtnRef, 'data-ht-settings-btn': 'true',
+            'aria-expanded': htMenu === 'settings' ? 'true' : 'false', 'aria-controls': 'ht-settings',
+            'aria-label': t('stem.heatlab.settings_btn_aria', 'Detail level: {level}. Change it').replace('{level}', function () { return HT_LEVEL_NAMES[htLevel]; }),
+            onClick: function () { htToggleMenu('settings'); },
+            className: 'min-h-11 px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold', style: htMenuBtnStyle(htMenu === 'settings')
+          }, '🎚️ ' + HT_LEVEL_NAMES[htLevel] + (htMenu === 'settings' ? ' ▴' : ' ▾'))
         ),
-        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
-          HT_GROUPS.map(function (g) {
-            var n = g.id === 'all' ? HT_SECTIONS.length : HT_SECTIONS.filter(function (s) { return s.grp === g.id; }).length;
-            return pill(htGroup === g.id, '#fb923c', g.label + ' (' + n + ')', function () {
-              upd({ htGroup: g.id });
-            }, htFmt(t('stem.heatlab.show_topics', 'Show {0}, {1} topics'), [g.label, n]));
-          })
-        ),
-        // Cap the list height: 13 pills wrap to several rows, and an uncapped
-        // sticky bar would sit on a third of a phone screen permanently.
-        h('div', { className: 'flex flex-wrap gap-1 mt-1.5', style: { maxHeight: '92px', overflowY: 'auto' } },
-          htVisible.length === 0
-            ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-                htFmt(t('stem.heatlab.no_topic_matches', 'No topic matches “{0}”.'), [(d.htQuery || '')]))
-            : htVisible.map(function (s) {
-                return h('button', {
-                  key: s.id, type: 'button',
-                  onClick: function () { htGoTo(s); },
-                  'aria-label': htFmt(t('stem.heatlab.jump_to', 'Jump to {0}'), [s.label]),
-                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors',
-                  style: {
-                    background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(251,146,60,0.09)',
-                    color: isDark ? '#e2e8f0' : '#334155',
-                    border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(251,146,60,0.35)')
-                  }
-                }, s.icon + ' ' + (HT_SECTIONS.indexOf(s) + 1) + '. ' + s.label);
-              })
+        // Detail level, in a popover.
+        h('div', { id: 'ht-settings', hidden: htMenu === 'settings' ? undefined : true, 'data-ht-settings': 'true' }, levelBar()),
+        // The topic menu: search, groups, one button per topic.
+        h('div', { id: 'ht-topic-menu', hidden: htMenu === 'topics' ? undefined : true, 'data-ht-topic-menu': 'true',
+          className: 'mt-1.5', style: { maxHeight: '60vh', overflowY: 'auto' } },
+          h('div', { className: 'flex flex-wrap items-center gap-2' },
+            h('label', { htmlFor: 'ht-topic-search', className: 'sr-only' }, t('stem.heatlab.search_topics', 'Search topics')),
+            h('input', {
+              id: 'ht-topic-search', type: 'search', value: d.htQuery || '',
+              placeholder: t('stem.heatlab.search_topics_2', 'Search topics…'),
+              'aria-label': htFmt(t('stem.heatlab.search_the_topics_by_name_or', 'Search the {0} topics by name or keyword'), [htNavList.length]),
+              onChange: function (e) { upd({ htQuery: e.target.value }); },
+              className: 'flex-1 min-w-[8rem] min-h-11 rounded-lg px-2 py-1 text-[0.6875rem]',
+              style: {
+                background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
+                color: isDark ? '#e2e8f0' : '#1e293b',
+                border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
+              }
+            }),
+            h('span', { className: 'text-[0.625rem] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              htVisible.length === HT_SECTIONS.length ? t('stem.heatlab.showing_all', 'showing all') : htFmt(t('stem.heatlab.showing', 'showing {0}'), [htVisible.length]))
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+            HT_GROUPS.map(function (g) {
+              var n = g.id === 'all' ? htNavList.length : htNavList.filter(function (s) { return s.grp === g.id; }).length;
+              return pill(htGroup === g.id, '#fb923c', g.label + ' (' + n + ')', function () {
+                upd({ htGroup: g.id });
+              }, htFmt(t('stem.heatlab.show_topics', 'Show {0}, {1} topics'), [g.label, n]));
+            })
+          ),
+          h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+            htVisible.length === 0
+              ? h('span', { className: 'text-[0.6875rem]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+                  htFmt(t('stem.heatlab.no_topic_matches', 'No topic matches “{0}”.'), [(d.htQuery || '')]))
+              : htVisible.map(function (s) {
+                  var here = !htAll && s.id === htCurrent;
+                  return h('button', {
+                    key: s.id, type: 'button',
+                    onClick: function () { htGoTo(s); },
+                    'aria-label': htFmt(t('stem.heatlab.jump_to', 'Jump to {0}'), [s.label]),
+                    'aria-current': here ? 'true' : undefined,
+                    className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-colors',
+                    style: here ? neutralBtnStyle(true) : {
+                      background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(251,146,60,0.09)',
+                      color: isDark ? '#e2e8f0' : '#334155',
+                      border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(251,146,60,0.35)')
+                    }
+                  }, s.icon + ' ' + (HT_SECTIONS.indexOf(s) + 1) + '. ' + s.label);
+                })
+          ),
+          h('button', {
+            type: 'button', 'aria-pressed': htAll ? 'true' : 'false', 'data-ht-all-topics': 'true',
+            onClick: function () {
+              upd({ htAll: !htAll });
+              // This button goes away with the menu: focus returns to Topics.
+              htCloseMenu(true);
+              if (typeof announceToSR === 'function') announceToSR(htAll ? t('stem.heatlab.sr_topics_one', 'Showing one topic at a time.') : t('stem.heatlab.sr_topics_all', 'Showing every topic on one page.'));
+            },
+            className: 'mt-1.5 min-h-11 px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(htAll)
+          }, '📜 ' + t('stem.heatlab.topics_all_btn', 'Show every topic on one page'))
         )
       );
 
@@ -6502,7 +6960,9 @@
         // High contrast gets a pure black stage plus the scoped [data-ht-hc]
         // rules below: white ink, yellow borders, pressed = yellow on black.
         style: isContrast ? { background: '#000000', color: '#ffffff', borderRadius: 12, padding: 10 } : isDark ? { background: '#0b1120', borderRadius: 12, padding: 10 } : null },
-        h('style', null, '@media (max-height:500px){[data-heat-lab] nav[aria-label="Heat lab topics"]{position:static!important}}' +
+        // The topic bar sticks only where it costs little: wide AND tall
+        // screens. Phones and short landscape windows get a static bar.
+        h('style', null, '[data-heat-lab] [data-ht-topicbar]{position:static}@media (min-width:640px) and (min-height:501px){[data-heat-lab] [data-ht-topicbar]{position:sticky;top:0}[data-heat-lab] :is(a,button,input,select,textarea,canvas,summary,[tabindex]){scroll-margin-top:72px}}' +
           '[data-ht-hc] section[data-ht-sec],[data-ht-hc] nav{background:#000!important;border:2px solid #fbbf24!important}' +
           '[data-ht-hc] :is(p,span,label,dt,dd,td,th,caption,legend,output,b,div):not([data-ht-keep]){color:#fff!important}[data-ht-hc] h4{color:#fbbf24!important}' +
           '[data-ht-hc] button{background:#000!important;color:#fff!important;border:2px solid #fbbf24!important}' +
@@ -6528,7 +6988,6 @@
         ),
 
         teacherPanel(),
-        levelBar(),
         htIndex,
 
         // ── 1. heat transfer ──
@@ -6558,6 +7017,9 @@
               t('stem.heatlab.ir_cross_bar_read', 'Crosshair {cm} cm along the top bar reads {t} °C. Tap the bar to aim it.')
                 .replace('{cm}', fmt(irCrossCm, 1)).replace('{t}', fmt(typeof live.cross === 'number' && isFinite(live.cross) ? live.cross : HEAT_COLD_C, 1)))
           ) : null,
+
+          // First minute: guess, then race (engagement pass 2026-11-04).
+          firstRaceCard(),
 
           // 220px left the single bar floating in a third of a black field. The
           // extra height goes to the colour key, the end labels and the two-cell
@@ -6612,9 +7074,16 @@
                 try { el.setPointerCapture(e.pointerId); } catch (err) {}
                 e.preventDefault();
               },
+              onFocus: function () { setCanvasFocus(true); },
+              onBlur: function () { setCanvasFocus(false); },
               onPointerMove: function (e) {
                 var dr = probeDragRef.current;
                 var el = canvasRef.current;
+                // A grab cursor over a thermometer says "this moves".
+                if (!dr && el && mode === 'conduction' && typeof el._heatProbeHit === 'function') {
+                  var over = el._heatProbeHit(e.clientX, e.clientY) >= 0 ? 'grab' : '';
+                  if (el.style.cursor !== over) el.style.cursor = over;
+                }
                 if (!dr || !el || typeof el._heatProbeCmAt !== 'function') return;
                 var cm = el._heatProbeCmAt(e.clientX);
                 if (probes[dr.idx] && probes[dr.idx].cm !== cm) setProbe(dr.idx, { cm: cm });
@@ -6624,8 +7093,8 @@
                 if (!dr) return;
                 probeDragRef.current = null;
                 if (probes[dr.idx] && typeof announceToSR === 'function') {
-                  announceToSR(t('stem.heatlab.sr_probe_moved', 'Thermometer P{n} at {cm} centimetres from the hot end.')
-                    .replace('{n}', String(dr.idx + 1)).replace('{cm}', String(probes[dr.idx].cm)));
+                  announceToSR(__alloOneWord(t('stem.heatlab.sr_probe_moved', 'Thermometer P{n} at {cm} centimetres from the hot end.')
+                    .replace('{n}', String(dr.idx + 1)).replace('{cm}', String(probes[dr.idx].cm))));
                 }
               },
               onPointerCancel: function () { probeDragRef.current = null; },
@@ -6634,6 +7103,10 @@
                 : { width: '100%', height: '100%', display: 'block', touchAction: 'pan-y' }
             })
           ),
+          // Keyboard hint, shown while the bar has focus (the aria-label says
+          // the same to a screen reader).
+          mode === 'conduction' && canvasFocus ? h('p', { 'data-ht-key-hint': 'true', className: 'text-[0.6875rem] mt-1.5 font-bold', style: { color: bodyInk } },
+            '⌨️ ' + t('stem.heatlab.canvas_key_hint', 'Arrow keys change the hot end. Move the thermometers with their sliders below.')) : null,
           mode === 'conduction' ? h('p', {
             id: 'heat-race-status', role: 'status', 'aria-live': 'polite',
             className: 'text-[0.6875rem] mt-1.5', style: { color: isDark ? '#cbd5e1' : '#475569' }
@@ -6686,14 +7159,14 @@
                 type: 'button',
                 'aria-label': timeScale === 10
                   ? t('stem.heatlab.advance_the_conduction_model_by_10_simulated', 'Advance the conduction model by 10 simulated seconds')
-                  : t('stem.heatlab.advance_conduction_by_n', 'Advance the conduction model by {n} simulated seconds').replace('{n}', fmt(timeScale, 0)),
+                  : t('stem.heatlab.advance_conduction_by_n', 'Advance the conduction model by {n} simulated seconds').replace('{n}', fmt(timeScale, timeScale % 1 ? 1 : 0)),
                 onClick: function () {
                   var el = canvasRef.current;
                   if (el && el._heatStep) el._heatStep();
                 },
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
                 style: neutralBtnStyle(false)
-              }, t('stem.heatlab.advance_n_s', 'Advance {n} s').replace('{n}', fmt(timeScale, 0))) : null,
+              }, t('stem.heatlab.advance_n_s', 'Advance {n} s').replace('{n}', fmt(timeScale, timeScale % 1 ? 1 : 0))) : null,
               h('button', {
                 type: 'button',
                 'aria-label': t('stem.heatlab.record_trial_aria', 'Record this trial in your lab log'),
@@ -6705,22 +7178,24 @@
             ),
             h('div', { role: 'group', 'aria-label': t('stem.heatlab.sim_speed_group', 'Simulation speed'), className: 'flex flex-wrap items-center gap-1.5 mb-2' },
               h('span', { className: 'text-[0.6875rem] font-bold', style: { color: softInk } }, t('stem.heatlab.sim_speed', 'Speed')),
+              // Auto: the slower bar finishes in about 20 s of wall time.
+              pill(timeScaleAuto, '#fb923c', t('stem.heatlab.sim_speed_auto', 'Auto'), function () {
+                upd({ timeScale: 'auto' });
+                if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.sr_speed_auto', 'Auto speed: the slower bar finishes in about 20 seconds.'));
+              }, t('stem.heatlab.sim_speed_auto_aria', 'Auto speed: the slower bar finishes in about 20 seconds')),
               HEAT_TIME_SCALES.map(function (s) {
-                return pill(timeScale === s, '#fb923c', fmt(s, 0) + '×', function () {
+                return pill(!timeScaleAuto && timeScale === s, '#fb923c', fmt(s, 0) + '×', function () {
                   upd({ timeScale: s });
                   if (typeof announceToSR === 'function') announceToSR(t('stem.heatlab.sr_speed', 'Running at {n} times real time.').replace('{n}', fmt(s, 0)));
                 }, t('stem.heatlab.sim_speed_aria', 'Run at {n} times real time').replace('{n}', fmt(s, 0)));
               }),
-              h('span', { className: 'text-[0.625rem]', style: { color: softInk } },
-                t('stem.heatlab.sim_speed_hint', 'Insulators take hours of simulated time; 1000× brings them into a lesson.'))
+              h('span', { className: 'text-[0.625rem]', 'data-ht-speed-note': String(timeScale), style: { color: softInk } },
+                t('stem.heatlab.sim_speed_note', '1 s here = {t} of real time').replace('{t}', heatTimeLabel(timeScale)))
             ),
-            raceOn ? h('p', { className: 'text-[0.6875rem] mb-1', style: { color: softInk } },
+            raceOn && !(frStage === 'predict' && frPairRacing) ? h('p', { className: 'text-[0.6875rem] mb-1', style: { color: softInk } },
               material.id === materialB.id
                 ? t('stem.heatlab.prediction_identical_materials_should_tie', 'Prediction: identical materials should tie.')
                 : htFmt(t('stem.heatlab.prediction_should_reach_the_midpoint_about', 'Prediction: {0} should reach the midpoint about {1}× sooner than {2}. Does the clock agree?'), [racePrediction.fasterName, raceRatioText, racePrediction.slowerName])) : null,
-            // Bug 11: the race ranks diffusivity, so say so where the ranking is.
-            h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', 'data-ht-diffusivity-note': 'true', style: { color: softInk } },
-              t('stem.heatlab.race_measures_diffusivity', 'The race times how fast the middle of the bar warms up. That depends on diffusivity (k ÷ ρc), not on conductivity k alone, so a very light insulator can win the race while still letting very little heat through.')),
             h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, raceOn ? t('stem.heatlab.top_bar_2', 'Top bar') : t('stem.heatlab.bar_material', 'Bar material')),
             h('div', { className: 'flex flex-wrap gap-1' },
               MATERIALS.map(function (m) {
@@ -6749,12 +7224,18 @@
             ) : null,
             h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               h('b', null, material.name + ': '), material.note),
-            h('p', { className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#fdba74' : '#c2410c' } },
-              htFmt(t('stem.heatlab.k_w_m_k_c_j', 'k = {0} W/m·K   c = {1} J/kg·K   diffusivity = {2} mm²/s'), [material.k, material.c, (material.k / (material.rho * material.c) * 1e6).toFixed(2)])),
+            // Simple band: the numbers (k, c, diffusivity) and the diffusivity
+            // note wait behind "Show the maths"; Standard and up show them.
+            maths('race-props',
+              h('p', { key: 'props', className: 'text-[0.6875rem] mt-1 font-mono', style: { color: isDark ? '#fdba74' : '#c2410c' } },
+                htFmt(t('stem.heatlab.k_w_m_k_c_j', 'k = {0} W/m·K   c = {1} J/kg·K   diffusivity = {2} mm²/s'), [material.k, material.c, (material.k / (material.rho * material.c) * 1e6).toFixed(2)])),
+              // Bug 11: the race ranks diffusivity, so say so where the ranking is.
+              h('p', { key: 'diff', className: 'text-[0.6875rem] mt-1 leading-relaxed', 'data-ht-diffusivity-note': 'true', style: { color: softInk } },
+                t('stem.heatlab.race_measures_diffusivity', 'The race times how fast the middle of the bar warms up. That depends on diffusivity (k ÷ ρc), not on conductivity k alone, so a very light insulator can win the race while still letting very little heat through.'))),
             slider('heat-hot-end', t('stem.heatlab.hot_end', 'Hot end'), HEAT_HOT_MIN, HEAT_HOT_MAX, 5, hotEnd,
               function (e) { upd({ hotEnd: parseFloat(e.target.value) }); }, hotEnd + ' °C'),
-            h('p', { className: 'text-[0.625rem] mt-1', style: { color: softInk } },
-              t('stem.heatlab.hot_end_floor', 'The hot end starts at 90 °C: the middle of the bar settles halfway between its two ends, so below about 80 °C it could never reach the 50 °C finish line.')),
+            h('p', { className: 'text-[0.625rem] mt-1', 'data-ht-hot-floor': 'true', style: { color: softInk } },
+              t('stem.heatlab.hot_end_floor_v3', 'The lowest hot end is 90 °C. The middle of the bar settles halfway between its two ends, so below 80 °C it could never reach the 50 °C finish line.')),
 
             // ── Thermometers and the temperature-time graph ──
             h('div', { className: 'mt-3 rounded-lg border p-2.5', 'data-ht-probes': 'true', style: panelStyle('#fb923c') },
@@ -6993,8 +7474,8 @@
             h('div', { className: 'rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(251,191,36,0.35)', height: '170px' } },
               h('canvas', {
                 ref: mugIrRef, role: 'img', 'aria-describedby': 'ht-mug-ir-read',
-                'aria-label': t('stem.heatlab.ir_mug_aria', 'Thermal camera view of the mug after {min} minutes: tea {tea} °C, outer surface of the wrap {surf} °C, room 20 °C.')
-                  .replace('{min}', String(mugMin)).replace('{tea}', fmt(mugTeaC, 1)).replace('{surf}', fmt(mugSurfC, 1)),
+                'aria-label': __alloOneWord(t('stem.heatlab.ir_mug_aria', 'Thermal camera view of the mug after {min} minutes: tea {tea} °C, outer surface of the wrap {surf} °C, room 20 °C.')
+                  .replace('{min}', String(mugMin)).replace('{tea}', fmt(mugTeaC, 1)).replace('{surf}', fmt(mugSurfC, 1))),
                 style: { width: '100%', height: '100%', display: 'block' }
               })),
             slider('heat-mug-cross', t('stem.heatlab.ir_crosshair', 'Camera crosshair'), 0, 100, 1, mugCross,
@@ -7023,18 +7504,21 @@
             WALL_LAYERS.map(function (L) {
               var count = wallStack.filter(function (x) { return x === L.id; }).length;
               return h('button', {
-                key: L.id, type: 'button',
+                key: L.id, type: 'button', disabled: wallFull, 'aria-disabled': wallFull ? 'true' : 'false',
                 'aria-label': htFmt(t('stem.heatlab.add_a_layer_of_r_value', 'Add a layer of {0}, R-value {1}{2}'), [L.name, L.r, (count ? htFmt(t('stem.heatlab.currently_in_the_wall', '. Currently {0} in the wall'), [count]) : '')]),
                 onClick: function () {
+                  if (wallFull) return;
                   upd({ wallStack: wallStack.concat([L.id]) });
                   pushOnce('wallTried', L.id);
                   if (typeof beep === 'function') beep();
                 },
-                className: 'min-h-11 px-2.5 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors',
+                className: 'min-h-11 px-2.5 py-2 rounded-lg text-[0.6875rem] font-bold transition-colors disabled:cursor-not-allowed',
                 style: { background: count ? 'rgba(132,204,22,0.18)' : (isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)'), color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (count ? '#84cc16' : (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')) }
               }, '+ ' + L.name + (count > 1 ? ' ×' + count : ''));
             })
           ),
+          wallFull ? h('p', { className: 'text-[0.6875rem] mb-2 font-bold', 'data-ht-wall-full': 'true', style: { color: bodyInk } },
+            __alloOneWord(t('stem.heatlab.wall_full', 'The wall holds at most {n} layers. Remove one to add another.').replace('{n}', String(HEAT_WALL_MAX_LAYERS)))) : null,
           // The wall in section, each band as wide as the resistance it adds.
           // A list of equal-height rows gave a 0.06 sheet of plasterboard the
           // same visual weight as a 2.50 batt of mineral wool, which argues
@@ -7154,8 +7638,8 @@
               t('stem.heatlab.ir_wall_read', 'Crosshair in {zone}: {t} °C. Drawn at true depth, each layer takes a share of the 19-degree drop equal to its share of the resistance.')
                 .replace('{zone}', wallCrossRead.zone.name).replace('{t}', fmt(wallCrossRead.T, 1)) +
               (wallBiggestDrop ? ' ' + t('stem.heatlab.ir_wall_biggest', '{name} carries {dT} of those degrees.').replace('{name}', wallBiggestDrop.name).replace('{dT}', fmt(wallBiggestDrop.dT, 1)) : '') + ' ' +
-              t('stem.heatlab.ir_wall_outside_read', 'From the street, a camera sees the outside surface at {so} °C, {d} degrees above the air: that glow is heat escaping.')
-                .replace('{so}', fmt(wallProf.outsideSurfaceC, 1)).replace('{d}', fmt(wallProf.outsideSurfaceC - WALL_OUT_C, 1)))
+              __alloOneWord(t('stem.heatlab.ir_wall_outside_read', 'From the street, a camera sees the outside surface at {so} °C, {d} degrees above the air: that glow is heat escaping.')
+                .replace('{so}', fmt(wallProf.outsideSurfaceC, 1)).replace('{d}', fmt(wallProf.outsideSurfaceC - WALL_OUT_C, 1))))
           ) : null
         ),
 
@@ -7325,7 +7809,7 @@
                 ),
                 slider('heat-mass-' + n, t('stem.heatlab.eq_mass', 'Mass'), 0.1, 2, 0.1, row[2],
                   function (e) { var p = {}; p[row[5]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[2].toFixed(1) + ' kg'),
-                slider('heat-temp-' + n, t('stem.heatlab.eq_start', 'Start temp'), 0, 100, 1, row[3],
+                slider('heat-temp-' + n, t('stem.heatlab.eq_start', 'Start temp'), 0, mixMaxC(sub), 1, row[3],
                   function (e) { var p = {}; p[row[6]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[3] + ' °C'),
                 h('p', { className: 'text-[0.625rem] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'c = ' + sub.c + ' J/kg·K'));
             })
@@ -7426,6 +7910,7 @@
             )
           ) : null,
           recordButton('mixing', function () {
+            markMixRevealed();   // the row carries Tf_C, so this mix is no longer a blind estimate
             return {
               sub1: sub1.id, m1_kg: m1, T1_C: t1, c1_JkgK: sub1.c, sub2: sub2.id, m2_kg: m2, T2_C: t2, c2_JkgK: sub2.c,
               Tf_C: finalT, dT1_K: finalT - t1, dT2_K: finalT - t2,
@@ -7800,8 +8285,11 @@
                   h('span', { className: 'block h-full rounded-full', style: { width: Math.max(1, en.real) + '%', background: '#fbbf24' } }),
                   h('span', { className: 'block absolute top-0', style: { left: 'calc(' + clamp(carnot, 0, 100) + '% - 1px)', width: '2px', height: '100%', background: '#34d399' } })
                 ),
+                // The note gives the judgement away (muscle: "Not a heat engine
+                // at all"), so it waits until this engine has been judged.
                 on ? h('span', { className: 'block text-[0.6875rem] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-                  htFmt(t('stem.heatlab.hot_side_k_cold_side_k', 'Hot side {0} K, cold side {1} K. {2}'), [en.hot, en.cold, en.note])) : null
+                  htFmt(t('stem.heatlab.hot_side_k_cold_side_k', 'Hot side {0} K, cold side {1} K. {2}'),
+                    [en.hot, en.cold, d.enginesJudged && typeof d.enginesJudged === 'object' && d.enginesJudged[en.key || en.name] ? en.note : '']).trim()) : null
               );
             })
           ),
@@ -8441,15 +8929,15 @@
             : h('div', { 'data-ht-notebook': 'true' },
               h('div', { role: 'group', 'aria-label': t('stem.heatlab.nb_filter', 'Show trials from'), className: 'flex flex-wrap gap-1' },
                 [pill(nbKind === 'all', '#a78bfa', t('stem.heatlab.nb_all', 'All') + ' (' + nbTotal + ')', function () { upd({ nbKind: 'all' }); setNbConfirm(null); },
-                  t('stem.heatlab.nb_all_aria', 'Show all {n} trials').replace('{n}', String(nbTotal)))].concat(nbKinds.map(function (k) {
+                  __alloOneWord(t('stem.heatlab.nb_all_aria', 'Show all {n} trials').replace('{n}', String(nbTotal))))].concat(nbKinds.map(function (k) {
                   return pill(nbKind === k.kind, '#a78bfa', kindLabel(k.kind) + ' (' + k.count + ')', function () { upd({ nbKind: k.kind }); setNbConfirm(null); },
-                    t('stem.heatlab.nb_kind_aria', 'Show only {kind} trials, {n} rows').replace('{kind}', kindLabel(k.kind)).replace('{n}', String(k.count)));
+                    __alloOneWord(t('stem.heatlab.nb_kind_aria', 'Show only {kind} trials, {n} rows').replace('{kind}', kindLabel(k.kind)).replace('{n}', String(k.count))));
                 }))),
               h('div', { className: 'mt-2 overflow-x-auto rounded-lg border', role: 'region', tabIndex: 0,
                 'aria-label': t('stem.heatlab.nb_table_region', 'Notebook table, scrolls sideways'),
                 style: { borderColor: isContrast ? '#ffffff' : 'rgba(167,139,250,0.35)' } },
                 h('table', { className: 'text-[0.6875rem]', style: { borderCollapse: 'collapse', minWidth: '100%' } },
-                  h('caption', { className: 'sr-only' }, nbKind === 'all' ? t('stem.heatlab.nb_caption_all', 'All recorded trials') : t('stem.heatlab.nb_caption_kind', '{kind} trials').replace('{kind}', kindLabel(nbKind))),
+                  h('caption', { className: 'sr-only' }, nbKind === 'all' ? t('stem.heatlab.nb_caption_all', 'All recorded trials') : __alloOneWord(t('stem.heatlab.nb_caption_kind', '{kind} trials').replace('{kind}', kindLabel(nbKind)))),
                   h('thead', null, h('tr', null,
                     (nbKind === 'all'
                       ? [['#', null], [t('stem.heatlab.nb_col_kind', 'Experiment'), null], [t('stem.heatlab.nb_col_time', 'Time'), 'at'], [t('stem.heatlab.nb_col_summary', 'Summary'), null]]
@@ -8515,10 +9003,10 @@
                   nbPts.length ? h('div', { className: 'mt-1.5 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(167,139,250,0.35)', height: '200px' } },
                     h('canvas', {
                       ref: nbPlotRef, role: 'img',
-                      'aria-label': t('stem.heatlab.nb_plot_aria', '{y} against {x} for {n} trials. {x} runs from {x0} to {x1}; {y} from {y0} to {y1}.')
+                      'aria-label': __alloOneWord(t('stem.heatlab.nb_plot_aria', '{y} against {x} for {n} trials. {x} runs from {x0} to {x1}; {y} from {y0} to {y1}.')
                         .replace(/\{x\}/g, nbX).replace(/\{y\}/g, nbY).replace('{n}', String(nbPts.length))
                         .replace('{x0}', nbCell(Math.min.apply(null, nbPts.map(function (p) { return p[0]; })))).replace('{x1}', nbCell(Math.max.apply(null, nbPts.map(function (p) { return p[0]; }))))
-                        .replace('{y0}', nbCell(Math.min.apply(null, nbPts.map(function (p) { return p[1]; })))).replace('{y1}', nbCell(Math.max.apply(null, nbPts.map(function (p) { return p[1]; })))),
+                        .replace('{y0}', nbCell(Math.min.apply(null, nbPts.map(function (p) { return p[1]; })))).replace('{y1}', nbCell(Math.max.apply(null, nbPts.map(function (p) { return p[1]; }))))),
                       style: { width: '100%', height: '100%', display: 'block' }
                     })) : null),
               // export and clear
@@ -8527,12 +9015,16 @@
                   '📋 ' + t('stem.heatlab.nb_copy', 'Copy CSV')),
                 h('button', { type: 'button', onClick: nbDownload, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
                   '⬇ ' + t('stem.heatlab.nb_download', 'Download CSV')),
+                nbPts.length > 0 && h('button', { type: 'button', onClick: nbSendPlot, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
+                  t('stem.heatlab.nb_send_plot', 'Graph these columns in Data Plot')),
+                nbRows.length > 0 && h('button', { type: 'button', onClick: nbSendCodap, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
+                  t('stem.heatlab.nb_send_codap', 'Explore these rows in CODAP')),
                 typeof ctx.saveSnapshot === 'function' ? h('button', { type: 'button', onClick: nbSnapshot, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
                   '📸 ' + t('stem.heatlab.nb_snapshot', 'Save snapshot')) : null,
                 nbConfirm && nbConfirm.type === 'clear'
-                  ? h('span', { className: 'flex flex-wrap items-center gap-1', role: 'group', 'aria-label': t('stem.heatlab.nb_confirm_clear', 'Delete these {n} rows? This cannot be undone.').replace('{n}', String(nbRows.length)) },
+                  ? h('span', { className: 'flex flex-wrap items-center gap-1', role: 'group', 'aria-label': __alloOneWord(t('stem.heatlab.nb_confirm_clear', 'Delete these {n} rows? This cannot be undone.').replace('{n}', String(nbRows.length))) },
                     h('span', { className: 'text-[0.6875rem] font-bold', style: { color: bodyInk } },
-                      t('stem.heatlab.nb_confirm_clear', 'Delete these {n} rows? This cannot be undone.').replace('{n}', String(nbRows.length))),
+                      __alloOneWord(t('stem.heatlab.nb_confirm_clear', 'Delete these {n} rows? This cannot be undone.').replace('{n}', String(nbRows.length)))),
                     h('button', { type: 'button', onClick: nbClear, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black', style: neutralBtnStyle(true) },
                       t('stem.heatlab.nb_yes_clear', 'Yes, clear them')),
                     h('button', { type: 'button', onClick: function () { setNbConfirm(null); }, className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(false) },
@@ -8587,10 +9079,10 @@
               stepHead('3', t('stem.heatlab.cer_step_evidence', 'Pick your evidence')),
               shown.length === 0
                 ? h('p', { className: 'text-[0.6875rem] mt-1 italic', 'data-ht-cer-norows': 'true', style: { color: softInk } },
-                  t('stem.heatlab.cer_no_rows', 'No {kinds} rows in your notebook yet. Follow the plan and press Record trial in that section.').replace('{kinds}', KIND_LIST))
+                  __alloOneWord(t('stem.heatlab.cer_no_rows', 'No {kinds} rows in your notebook yet. Follow the plan and press Record trial in that section.').replace('{kinds}', KIND_LIST)))
                 : h('fieldset', { className: 'mt-1' },
                   h('legend', { className: 'text-[0.6875rem]', style: { color: softInk } },
-                    t('stem.heatlab.cer_pick_legend', 'Tick two to six {kinds} rows that answer the question. {n} picked.').replace('{kinds}', KIND_LIST).replace('{n}', String(cerPicks.length))),
+                    __alloOneWord(t('stem.heatlab.cer_pick_legend', 'Tick two to six {kinds} rows that answer the question. {n} picked.').replace('{kinds}', KIND_LIST).replace('{n}', String(cerPicks.length)))),
                   h('div', { className: 'mt-1 grid gap-1', style: { maxHeight: '260px', overflowY: 'auto' }, role: 'region', tabIndex: 0, 'aria-label': t('stem.heatlab.cer_rows_region', 'Notebook rows you can pick') },
                     shown.map(function (item) {
                       var r = item.row, on = cerIsPicked(r);
@@ -8673,8 +9165,8 @@
           h('div', { className: 'rounded-lg border p-2.5', 'data-ht-cooler-brief': 'true', style: panelStyle('#38bdf8') },
             h('p', { className: 'text-[0.6875rem] font-black', style: { color: isContrast ? '#fbbf24' : ink('#38bdf8') } }, '📋 ' + t('stem.heatlab.cl_brief_title', 'The brief')),
             h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: bodyInk } },
-              t('stem.heatlab.cl_brief', 'A 200 g ice pack straight from a −18 °C freezer must stay frozen for at least {h} hours in a car at {car} °C. The inside of the box is a 10 cm cube. Your budget is ${b} and the box must fit a {cm} cm space.')
-                .replace('{h}', String(HEAT_COOLER.targetH)).replace('{car}', String(HEAT_COOLER.carC)).replace('{b}', String(HEAT_COOLER.budget)).replace('{cm}', String(HEAT_COOLER.maxOuterCm))),
+              __alloOneWord(t('stem.heatlab.cl_brief', 'A 200 g ice pack straight from a −18 °C freezer must stay frozen for at least {h} hours in a car at {car} °C. The inside of the box is a 10 cm cube. Your budget is ${b} and the box must fit a {cm} cm space.')
+                .replace('{h}', String(HEAT_COOLER.targetH)).replace('{car}', String(HEAT_COOLER.carC)).replace('{b}', String(HEAT_COOLER.budget)).replace('{cm}', String(HEAT_COOLER.maxOuterCm)))),
             h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5', 'data-ht-cooler-live': 'true' },
               [[t('stem.heatlab.cl_chip_cost', 'Cost {v} of ${b}').replace('{v}', function () { return clMoney(clLive.cost); }).replace('{b}', String(HEAT_COOLER.budget)), clLive.meetsBudget],
                [t('stem.heatlab.cl_chip_size', 'Outside {v} cm of {m}').replace('{v}', fmt(clLive.outerCm, 1)).replace('{m}', String(HEAT_COOLER.maxOuterCm)), clLive.meetsSize]].map(function (c, i) {
@@ -8716,9 +9208,9 @@
             t('stem.heatlab.cl_untested', 'Choose your materials, then press Test. Each test is also recorded in your lab notebook.')) : null,
           clTested ? h('div', { className: 'mt-2 rounded-lg border p-2.5', 'data-ht-cooler-result': clTested.meets ? 'pass' : 'fail', style: panelStyle(clTested.meets ? '#16a34a' : '#f59e0b') },
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[0.6875rem] font-black leading-relaxed', style: { color: bodyInk } },
-              t('stem.heatlab.cl_result', '{design}: the ice lasts {h} hours ({warm} warming to 0 °C, then {melt} melting). Cost {cost}; outside {cm} cm.')
+              __alloOneWord(t('stem.heatlab.cl_result', '{design}: the ice lasts {h} hours ({warm} warming to 0 °C, then {melt} melting). Cost {cost}; outside {cm} cm.')
                 .replace('{design}', clDescribe(clTested.design)).replace('{h}', fmt(clTested.meltH, 1)).replace('{warm}', heatTimeLabel(clTested.warmS))
-                .replace('{melt}', heatTimeLabel(clTested.meltS - clTested.warmS)).replace('{cost}', function () { return clMoney(clTested.cost); }).replace('{cm}', fmt(clTested.outerCm, 1)) + ' ' +
+                .replace('{melt}', heatTimeLabel(clTested.meltS - clTested.warmS)).replace('{cost}', function () { return clMoney(clTested.cost); }).replace('{cm}', fmt(clTested.outerCm, 1))) + ' ' +
               (clTested.meets ? t('stem.heatlab.cl_meets', 'It meets the brief.') : t('stem.heatlab.cl_fails', 'It does not meet the brief yet.'))),
             h('ul', { className: 'mt-1 flex flex-wrap gap-1.5 text-[0.625rem] font-bold' },
               [[t('stem.heatlab.cl_need_time', '4 hours or more'), clTested.meetsTime], [t('stem.heatlab.cl_need_budget', 'within budget'), clTested.meetsBudget], [t('stem.heatlab.cl_need_size', 'fits the space'), clTested.meetsSize]].map(function (c, i) {
@@ -8731,8 +9223,8 @@
             h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(56,189,248,0.35)', height: '190px' } },
               h('canvas', {
                 ref: coolerRef, role: 'img',
-                'aria-label': t('stem.heatlab.cl_chart_aria', 'Ice pack temperature against time in the car: it warms from −18 °C to 0 °C in {warm}, holds at 0 °C while it melts until {h} hours, then the meltwater warms towards 30 °C.')
-                  .replace('{warm}', heatTimeLabel(clTested.warmS)).replace('{h}', fmt(clTested.meltH, 1)),
+                'aria-label': __alloOneWord(t('stem.heatlab.cl_chart_aria', 'Ice pack temperature against time in the car: it warms from −18 °C to 0 °C in {warm}, holds at 0 °C while it melts until {h} hours, then the meltwater warms towards 30 °C.')
+                  .replace('{warm}', heatTimeLabel(clTested.warmS)).replace('{h}', fmt(clTested.meltH, 1))),
                 style: { width: '100%', height: '100%', display: 'block' }
               })),
             (function () {
@@ -8779,8 +9271,8 @@
             h('div', { className: 'mt-1 rounded-lg overflow-hidden border', style: { borderColor: isContrast ? '#ffffff' : 'rgba(56,189,248,0.35)', height: '190px' } },
               h('canvas', {
                 ref: tradeRef, role: 'img',
-                'aria-label': t('stem.heatlab.cl_trade_aria', 'Cost against hours the ice lasts for {n} designs; the target is 4 hours and the budget ${b}.')
-                  .replace('{n}', String(clSaved.length + (clTested && !clStale ? 1 : 0))).replace('{b}', String(HEAT_COOLER.budget)),
+                'aria-label': __alloOneWord(t('stem.heatlab.cl_trade_aria', 'Cost against hours the ice lasts for {n} designs; the target is 4 hours and the budget ${b}.')
+                  .replace('{n}', String(clSaved.length + (clTested && !clStale ? 1 : 0))).replace('{b}', String(HEAT_COOLER.budget))),
                 style: { width: '100%', height: '100%', display: 'block' }
               })),
             accessRow('trade', { describe: describeTrade }),
@@ -8859,7 +9351,7 @@
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold', style: neutralBtnStyle(hsDesign.mvhr)
             }, '🌀 ' + t('stem.heatlab.hs_mvhr', 'Heat-recovery ventilation (80%)') + ' · ' + hsMoney(HS.mvhrCost))),
           h('p', { className: 'text-[0.625rem] mt-0.5 leading-relaxed', style: { color: softInk } },
-            t('stem.heatlab.hs_air_note', 'Fresh air you breathe is air you heat. Without heat recovery, a house tighter than {a} changes an hour must be aired through windows, losing all that heat; with it, a fan supplies {a} changes an hour through an exchanger that keeps 80% of the warmth.').replace(/\{a\}/g, String(HS.freshAch))),
+            __alloOneWord(t('stem.heatlab.hs_air_note', 'Fresh air you breathe is air you heat. Without heat recovery, a house tighter than {a} changes an hour must be aired through windows, losing all that heat; with it, a fan supplies {a} changes an hour through an exchanger that keeps 80% of the warmth.').replace(/\{a\}/g, String(HS.freshAch)))),
           h('p', { className: 'text-[0.6875rem] font-bold mt-2', style: { color: softInk } }, t('stem.heatlab.hs_climate', 'Climate to view')),
           hsPills(t('stem.heatlab.hs_climate', 'Climate to view'), HEAT_CLIMATES.map(function (c) { return c.id; }), hsClimate, HS_CLIMATE_NAMES, function (id) { upd({ hsClimate: id }); }),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', 'data-ht-house-result': 'true', style: panelStyle('#84cc16') },
@@ -8889,7 +9381,7 @@
                     h('td', { className: 'py-1 pr-2 font-mono font-black' }, fmt(hsLive.Htot, 1)), h('td', { className: 'py-1 font-mono' }, '100%'))])))),
             maths('house',
               h('p', { className: 'text-[0.625rem] mt-1.5 font-mono break-words', style: { color: softInk } },
-                t('stem.heatlab.hs_maths', 'loss = {H} W/K × {hdd} K·days × 24 h = {loss} kWh; usable sun {sun} kWh; need = {need} kWh')
+                t('stem.heatlab.hs_maths_v2', 'loss = {H} W/K × {hdd} K·days × 24 h ÷ 1000 = {loss} kWh; usable sun {sun} kWh; need = {need} kWh')
                   .replace('{H}', fmt(hsLive.Htot, 1)).replace('{hdd}', fmt(hsLive.hdd, 0)).replace('{loss}', fmt(hsLive.lossKWh, 0))
                   .replace('{sun}', fmt(hsLive.usableKWh, 0)).replace('{need}', fmt(hsLive.demandKWh, 0)))),
             h('div', { className: 'mt-2 overflow-x-auto', role: 'region', tabIndex: 0, 'aria-label': t('stem.heatlab.hs_month_region', 'Monthly heating table') },
@@ -8917,9 +9409,9 @@
               h('li', null, t('stem.heatlab.hs_hp', 'Heat pump (section 15 model): seasonal COP {cop}, so {e} kWh of electricity a year, about {bill} at {p}/kWh. Plain electric heaters would cost {res}.')
                 .replace('{cop}', hsLive.scop ? fmt(hsLive.scop, 2) : '—').replace('{e}', fmt(hsLive.elecKWh, 0)).replace('{bill}', function () { return hsMoney(hsLive.billHP); })
                 .replace('{p}', '$' + HS.priceKWh.toFixed(2)).replace('{res}', function () { return hsMoney(hsLive.billResist); })),
-              h('li', null, t('stem.heatlab.hs_comfort', 'Coldest-month glass surface: {g} °C ({ok}). Fresh air: {a} changes an hour.')
+              h('li', null, __alloOneWord(t('stem.heatlab.hs_comfort', 'Coldest-month glass surface: {g} °C ({ok}). Fresh air: {a} changes an hour.')
                 .replace('{g}', fmt(hsLive.glassC, 1)).replace('{ok}', hsLive.comfortOk ? t('stem.heatlab.hs_comfort_ok', 'comfortable, no cold downdraught') : t('stem.heatlab.hs_comfort_bad', 'cold: draughts and condensation near the windows'))
-                .replace('{a}', fmt(hsLive.freshAch, 2))),
+                .replace('{a}', fmt(hsLive.freshAch, 2)))),
               h('li', null, t('stem.heatlab.hs_costs', 'Cost {cost} and embodied carbon {co2} kg CO₂e for the parts you chose.').replace('{cost}', function () { return hsMoney(hsLive.costSum); }).replace('{co2}', fmt(hsLive.co2Sum, 0))))),
           h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
             h('button', {

@@ -2268,7 +2268,7 @@
         makeOrbitViewer: function (cfg) {
           cfg = cfg || {};
           var S = null, status = 'idle', pending = null, node = null, sig = '';
-          var notify = null, restoreAttempts = 0, attachGeneration = 0;
+          var notify = null, restoreAttempts = 0, attachGeneration = 0, catchingUp = false;
           var self = this;
 
           function setStatus(next) {
@@ -2641,13 +2641,11 @@
             /** Stable ref callback target. Host div, or null on unmount. */
             attach: function (host) {
               if (!host) {
-                var detachedGeneration = ++attachGeneration;
+                // Keep the subscriber: a tool may detach (3D -> 2D) and re-attach
+                // without re-subscribing. Detached, nothing can notify; only
+                // dispose() or onStatusChange(null) releases it.
+                ++attachGeneration;
                 teardown(true);
-                // Callback refs may detach/re-attach within one commit. Preserve
-                // the subscriber through that cycle, but release it after a real unmount.
-                Promise.resolve().then(function() {
-                  if (!node && attachGeneration === detachedGeneration) notify = null;
-                });
                 return;
               }
               if (node === host) return;
@@ -2673,7 +2671,14 @@
               if (S) { S.dirty = true; ensureFrame(); }
             },
             /** Wire back into React, or a dead overlay sits on a live canvas. */
-            onStatusChange: function (fn) { notify = fn; },
+            onStatusChange: function (fn) {
+              var fresh = !notify;
+              notify = typeof fn === 'function' ? fn : null;
+              // A late subscriber hears the current state once; render-body callers re-subscribe every render.
+              if (!fresh || !notify || status === 'idle' || catchingUp) return;
+              catchingUp = true;
+              try { notify(status); } catch (e) {} finally { catchingUp = false; }
+            },
             status: function () { return status; },
             debug: debug,
             dispose: function () {
@@ -3519,32 +3524,72 @@
     var _MP_SCORE = { correct: 'count', total: 'count' };
     var _MATH_PROGRESS_SAVED = {
       _fractions: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', tabsVisited: 'flags', tabScores: 'counts', equivSolved: 'count', simplifySolved: 'count', convertCount: 'count', convertSeen: 'flags', wallPairsFound: 'count', wallPairsSeen: 'flags', opsSolved: 'count', aiAsked: 'count', stripEquivFound: 'count', stripPairsSeen: 'flags', signChecks: 'flags', signCorrectCount: 'count', signAttemptCount: 'count', signBestStreak: 'count', plateGame: { totalServed: 'count', bestCombo: 'count' } },
-      _numberline: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', roundingSolved: 'count', fractionSolved: 'count', negativeSolved: 'count', placeSolved: 'count', aiAsked: 'count', independentCorrect: 'count', supportedCorrect: 'count' },
+      _numberline: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', roundingSolved: 'count', fractionSolved: 'count', negativeSolved: 'count', placeSolved: 'count', aiAsked: 'count', independentCorrect: 'count', supportedCorrect: 'count', fdLandmarksFound: 'flags', ppSolvedByType: 'counts', nlbSolved: 'counts', cerDone: 'flag', skipPredDone: 'flags' },
       _manipulatives: { earnedBadges: 'flags', score: _MP_SCORE, modesVisited: 'flags', regroupCount: 'count', blocksSolved: 'count', abacusSolved: 'count', slideSolved: 'count', quizSolved: 'count', counterSolved: 'count', nbSolved: 'count', hubSolved: 'count', speedBest: 'count' },
       _moneyMath: { moneyAwardSeen: 'flags', moneyAnswerShown: 'flags', moneyRoundIds: 'counts', crBest: 'count' },
-      _areamodel: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', basicSolved: 'count', distSolved: 'count', multiSolved: 'count', wordSolved: 'count', aiAsked: 'count', usedCommutative: 'flag' },
-      _multExt: { badges: 'flags', totalCorrect: 'count', hiddenCorrect: 'count', trickySolved: 'count', squaresAnswered: 'flags', rowsAnswered: 'flags', patternsExplored: 'flags', visualExplored: 'flags', factScores: 'tallies' },
+      _areamodel: { badges: 'flags', score: _MP_SCORE, bestStreak: 'count', challengeTypesUsed: 'flags', basicSolved: 'count', distSolved: 'count', multiSolved: 'count', wordSolved: 'count', aiAsked: 'count', usedCommutative: 'flag', fractionSidesSolved: 'count', algebraSolved: 'count', algorithmSolved: 'count', hintsUsed: 'count', revealsUsed: 'count', divisionSolved: 'count', longDivSolved: 'count', factorSolved: 'count', grid100Solved: 'count', remainderSolved: 'count', decimalSolved: 'count', factorSignedSolved: 'count', creditKeys: 'ids', percentSolved: 'count', decFracStorySolved: 'count' },
+      _multExt: { badges: 'flags', totalCorrect: 'count', hiddenCorrect: 'count', trickySolved: 'count', squaresAnswered: 'flags', rowsAnswered: 'flags', patternsExplored: 'flags', visualExplored: 'flags', factScores: 'tallies', primeCorrect: 'count', wordSolved: 'count', familyCorrect: 'count', sieveDone: 'count', fluencyRounds: 'count', fluencyBest: 'count', modeCorrect: 'counts' },
       algebraCAS: { _badgesEarned: 'ids', _solveCount: 'count', _factorCount: 'count', _scaleSolves: 'count', _maxStreak: 'count', _aiQuestions: 'count', practiceScore: 'count', _modesUsed: 'flags', _builderUsed: 'flag', _triedAdvanced: 'flag' },
       funcGrapher: { familiesTried: 'flags', fgScore: 'count', fgMythsDone: 'count', overlaysUsed: 'flags' },
       graphCalc: { badges: 'ids', _graphsDrawn: 'count', _multiGraphCount: 'count', _challengesCompleted: 'count', _challengesDone: 'ids', aiQuestions: 'count', _analyzed: 'flag', _foundZero: 'flag', _foundIntersection: 'flag', _usedTrig: 'flag', _usedTable: 'flag', _usedSliders: 'flag', _usedDeriv: 'flag' },
-      _coordGrid: { badges: 'flags', bestStreak: 'count', plotsSolved: 'count', slopesSolved: 'count', distanceSolved: 'count', linesMade: 'count', chessSolved: 'count', worldSolved: 'count', bsBest: 'count', aiAsked: 'count', revealedItems: 'flags' },
+      _coordGrid: { badges: 'flags', bestStreak: 'count', plotsSolved: 'count', slopesSolved: 'count', distanceSolved: 'count', linesMade: 'count', chessSolved: 'count', worldSolved: 'count', bsBest: 'count', aiAsked: 'count', revealedItems: 'flags', namesSolved: 'count', reflectsSolved: 'count', translatesSolved: 'count', polygonsSolved: 'count', creditedItems: 'flags', sequencesSolved: 'count', judgesSolved: 'count', rotationsSolved: 'count', dilationsSolved: 'count', scalesSolved: 'count', patternsSolved: 'count', tablesSolved: 'count', treasuresFound: 'count' },
       inequality: { badges: 'flags', modesUsed: 'flags', tiersUsed: 'flags', tiersSolved: 'flags', quizCorrectTotal: 'count', solverCount: 'count', testCount: 'count' },
       logicLab: { score: 'count', bestStreak: 'count', solvedProofs: ['flags', /^L\d+$/], xpCredited: ['flags', /^(?:(?:fallacy|quickfire|detective):\d+|learn|preset:.{1,80})$/] },
-      _ratioLab: { modesVisited: 'flags', solvedChallenges: 'flags', challengeAttempts: 'count' },
+      _ratioLab: { modesVisited: 'flags', solvedChallenges: 'flags', challengeAttempts: 'count', solvedPractice: ['flags', /^gen-[A-Za-z]+-g(45|6|7|8)-\d+$/], kindStats: 'tallies', xpCredited: ['flags', /^mastery:[A-Za-z]+$/], revealedItems: 'flags', missionsDone: ['flags', /^(scale|mixture|recipe|detective):\d+$/], missionXp: ['flags', /^(scale|mixture|recipe|detective)$/], triesById: 'counts' },
       _volume: { badges: 'flags', score: _MP_SCORE, totalPlaced: 'count', wpSolved: 'count', wpExplored: 'flags', wpSolvedKeys: 'flags', dispSolved: 'count', layerUsed: 'flag', revealedItems: 'flags' },
-      protractor: { earnedBadges: 'flags', bestStreak: 'count', estimateCount: 'count', polygonsExplored: 'flags', typesSeen: 'counts' },
+      protractor: { earnedBadges: 'flags', bestStreak: 'count', estimateCount: 'count', polygonsExplored: 'flags', typesSeen: 'counts', credited: 'flags', pzSolved: 'counts', mSolved: 'count', pgSolved: 'counts', ciSolved: 'counts', ucSolved: 'counts', cxSolved: 'counts', conSolved: 'counts', pgInv: 'flags' },
       statsLab: { testsRun: 'count', compareMeansRun: 'flag', correlationRun: 'flag', regressionRun: 'flag', significantResult: 'flag', largeEffectFound: 'flag', powerRun: 'flag', apaCopied: 'count', aiGradeOpens: 'count', quizCompletedCount: 'count', quizCorrect: 'count', quizMastery: 'flags' },
       probability: { totalTrials: 'count', experimentsUsed: 'flags', _awardedTrialMilestones: 'ids', _completedChallenges: 'ids', _bestStreak: 'count' },
-      unitConvert: { badges: 'flags', score: 'count', bestStreak: 'count', catsUsed: 'flags', tempUnitsUsed: 'flags', quizTotal: 'count', historySaveCount: 'count' },
+      unitConvert: { badges: 'flags', score: 'count', bestStreak: 'count', catsUsed: 'flags', tempUnitsUsed: 'flags', quizTotal: 'count', historySaveCount: 'count', xpCredited: 'flags', fadeByKind: 'counts', estimateCorrect: 'count', guessCount: 'count', guessFirst: 'flag' },
       _timeSchedule: { score: _MP_SCORE, bestStreak: 'count', clockAdjustments: 'count', modesUsed: 'flags', solvedChallenges: 'flags', scheduleSolvedKeys: 'flags', challengeAttempts: 'counts', challengeTypesUsed: 'flags', elapsedModelSignatures: ['flags', /^\d+\|\d+\|-?1$/] },
-      dataPlot: { earnedBadges: 'flags', dpScore: 'count', chartsViewed: 'flags', quizTypesUsed: 'flags' },
-      _areaPerimeter: { score: { correct: 'count', attempts: 'count' }, bestStreak: 'count', revealedBest: 'count', modeVisits: 'flags', solvedChallenges: 'flags', targetsExplored: 'flags', compositeMethods: 'flags' },
-      calculus: { calcScore: 'count', methodsUsed: 'flags', nExplored: 'flag', missionXP: 'flags' }
+      dataPlot: { earnedBadges: 'flags', dpScore: 'count', chartsViewed: 'flags', chartsOwn: 'flags', quizTypesUsed: 'flags', quizXpItems: 'flags', quizXpTotal: 'count', skillsDone: 'flags', xpCapCorrect: 'count' },
+      _areaPerimeter: { score: { correct: 'count', attempts: 'count' }, bestStreak: 'count', revealedBest: 'count', modeVisits: 'flags', solvedChallenges: 'flags', targetsExplored: 'flags', compositeMethods: 'flags', revealedSigs: 'flags', fenceAwarded: 'flags', drillSolved: 'flags', drillRevealed: 'flags', circleAwarded: 'flags', blobSolved: 'flags', missionSolved: 'flags', missionRevealed: 'flags', blobRevealed: 'flags', circleRatioRevealed: 'flags' },
+      calculus: { calcScore: 'count', methodsUsed: 'flags', nExplored: 'flag', missionXP: 'flags', calcSolved: 'counts' },
+      _arithmeticStudio: { practiceSolved: 'flags', genSolved: 'flags', errorSolvedCases: 'flags', ntSolved: 'flags', ntRevealed: 'flags', efSolved: 'flags', efRevealed: 'flags', barSolved: 'flags', barRevealed: 'flags', decSolved: 'flags', decRevealed: 'flags', practiceRevealedIds: 'flags', errorRevealed: 'flags', wordRevealed: 'flags', errorRuledOut: 'flags', efRuledOut: 'flags' },
+      _cellularLab: { xp: 'flags', challengesDone: 'flags', notice: 'flags', glider: { guesses: 'count', guessRight: 'count', played: 'count', solved: 'count', revealed: 'count', done: 'flag' }, ant: { locked: 'flag', checked: 'flag', correct: 'flag', explained: 'flag', attempts: 'count', solved: 'count', revealed: 'count' }, worlds: { predicted: 'count', predictedRight: 'count' }, lifePredict: { made: 'count', right: 'count' } },
+      _cityLab: { xpAwarded: 'flags', memoSubmitted: 'flags', hearingSubmitted: 'flags', missionsDone: ['flags', /^(riverbend|mesahollow|harborlight):m_(park|bond|runoff|town|heat)$/], missionsRevealed: ['flags', /^(riverbend|mesahollow|harborlight):m_(park|bond|runoff|town|heat)$/], exampleRead: 'flags', hearingRevealed: 'flags', hearingChecks: 'counts', briefPassed: ['flags', /^(riverbend|mesahollow|harborlight)$/], briefFx: ['flags', /^(riverbend|mesahollow|harborlight)$/] },
+      _dataLab: { opened: 'flag', openedCount: 'count', askedCount: 'count', completedInvestigations: 'ids', datasetsLoaded: 'ids', graphsMade: 'ids' }
     };
     // These seed their defaults only while their bucket is missing (a
     // progress-only bucket left Function Grapher plotting NaN), so a missing
     // bucket's progress waits in _stemProgressPending until the tool makes it.
     var _MATH_PROGRESS_DEFER = ['statsLab', 'funcGrapher'];
+    // Coral Reef keeps surveys, counts, predictions and lab runs, which hold only
+    // ids, numbers and flags. Never what a student typed, which the next student
+    // on a shared device could read. A string with a space is dropped at any depth,
+    // so a text box added later cannot reach storage through these fields.
+    var _CORAL_REEF_SAVED = ['section', 'w2MethodsPart', 'practice', 'autoAdvance', 'surveySiteId', 'surveySeed', 'surveyTransect', 'surveyStage', 'surveyView', 'pointIndex', 'records', 'surveySaved', 'fishCounts', 'srvFishDone', 'fishView', 'invCounts', 'srvInvDone', 'invView', 'surveyLog', 'modelSite', 'modelSurveyYear', 'srvClaim', 'srvSpreadMetric', 'srvEffortMetric', 'speciesLog', 'lastDive', 'diveMoments', 'momentLog', 'diveSiteId', 'diveModelSite', 'diveYears', 'diveQuality', 'diveLight', 'diveLightTipSeen', 'diveView', 'reefSound', 'reefSoundVolume', 'photoLog', 'photoListMode', 'photoListRound', 'speciesPractice', 'speciesBookmarks', 'guideCompact', 'sciTopic', 'sciBleach', 'sciBudget', 'sciSeaweed', 'sciWeb', 'model', 'modelSeed', 'modelPredictions', 'modelRevealed', 'modelRevealedFor', 'mdlView', 'mdlCompare', 'mdlSpread', 'mdlStartKey', 'mdlRescue'];
+    var _CORAL_REEF_TYPED = ['own', 'reasoning', 'reason', 'questions', 'notes', 'note', 'text', 'name', 'date'];
+    function _crValue(v, depth) {
+      if (v === null || typeof v === 'boolean') return v;
+      if (typeof v === 'number') return isFinite(v) ? v : undefined;
+      if (typeof v === 'string') return v.length <= 1200 && !/\s/.test(v) ? v : undefined;
+      if (depth > 8) return undefined;
+      if (Array.isArray(v)) {
+        var list = [];
+        v.slice(0, 500).forEach(function (x) { var c = _crValue(x, depth + 1); if (c !== undefined) list.push(c); });
+        return list;
+      }
+      if (!_mpPlain(v)) return undefined;
+      var out = {}, n = 0;
+      Object.keys(v).forEach(function (k) {
+        if (n >= 2000 || !k || k.length > 1200 || /\s/.test(k) || k === '__proto__' || k === 'constructor' || k === 'prototype' || _CORAL_REEF_TYPED.indexOf(k) !== -1) return;
+        var c = _crValue(v[k], depth + 1);
+        if (c !== undefined) { out[k] = c; n++; }
+      });
+      return out;
+    }
+    // Checked on save AND restore, so text in an older or damaged save stays out.
+    function _crSaved(bucket) {
+      if (!_mpPlain(bucket)) return null;
+      var out = {}, any = false;
+      _CORAL_REEF_SAVED.forEach(function (f) {
+        if (!Object.prototype.hasOwnProperty.call(bucket, f)) return;
+        var c = _crValue(bucket[f], 0);
+        if (c !== undefined) { out[f] = c; any = true; }
+      });
+      return any ? out : null;
+    }
     function _mpPlain(v) { return !!v && typeof v === 'object' && Object.prototype.toString.call(v) === '[object Object]'; }
     function _mpCount(v) { return typeof v === 'number' && isFinite(v) && v >= 0 && v <= 1e9; }
     function _mpMap(v, re, each) {
@@ -3620,6 +3665,8 @@
     function _stemHydrateLabToolData(prev, parsed) {
       var _parsedForHydration = Object.assign({}, parsed);
       Object.keys(_MATH_PROGRESS_SAVED).concat('_stemProgressPending').forEach(function (k) { delete _parsedForHydration[k]; });
+      var _coral = _crSaved(_parsedForHydration.coralReef);
+      if (_coral) _parsedForHydration.coralReef = _coral; else delete _parsedForHydration.coralReef;
       return _stemRestoreMathProgress(Object.assign({}, prev, _parsedForHydration, { _persisted: true }), parsed);
     }
     function _stemApplyPendingProgress(prev) {
@@ -3666,6 +3713,8 @@
             });
             _toSave.kitchenLab = _klSave;
           }
+          var _coralSave = _crSaved(labToolData.coralReef);
+          if (_coralSave) _toSave.coralReef = _coralSave;
           // Progress still waiting for its bucket counts as that tool's state.
           var _pend = _mpPlain(labToolData._stemProgressPending) ? labToolData._stemProgressPending : {};
           Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
@@ -3679,7 +3728,7 @@
     }
     function _createStemAutosave() {
       var key = 'alloflow_stemlab_v2';
-      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', 'coralReef', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
       var previousRefs = null, pending = null, timer = null, disposed = false;
       var lastSaved = null;
       try { lastSaved = localStorage.getItem(key); } catch (_) {}
@@ -4059,7 +4108,7 @@
           '.stem-tool-card { min-height: 148px; border-radius: 14px !important; background-color: var(--stem-card-surface) !important; border-color: var(--stem-card-border) !important; border-top: 4px solid var(--stem-card-accent) !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
           '.stem-tool-card:hover { background-color: var(--stem-card-hover) !important; border-color: var(--stem-card-accent) !important; transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
           '.stem-tool-card:focus-visible { outline: 3px solid var(--stem-card-focus) !important; outline-offset: 3px !important; }',
-          '.stem-tool-card-icon { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background-color: var(--stem-card-icon-bg); }',
+          '.stem-tool-card-icon { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background-color: var(--stem-card-icon-bg); }', '.theme-contrast .stem-tool-card-icon { color: #000000 !important; }',
           '.stem-tool-card h4 { color: var(--stem-card-title) !important; line-height: 1.25; }',
           '.stem-tool-card p { color: var(--stem-card-desc) !important; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
           '.stem-active-toolbar { position: sticky; top: 0; z-index: 100; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
@@ -4353,6 +4402,18 @@
       })();
 
       // ── AI Helper Functions (powered by main app's callGemini) ──
+      // One availability answer per kind (2026-11-03 AI-off sweep). A blocked
+      // student fn is truthy, so typeof alone reports AI that cannot run.
+      function _stemAiUsable(kind, fn) {
+        try {
+          if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
+        } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      }
+      var _stemAiText = _stemAiUsable('text', callGemini);
+      var _stemAiImages = _stemAiUsable('images', callImagen);
+      var _stemAiVision = _stemAiUsable('vision', callGeminiVision);
+      var _stemAiImageEdit = _stemAiUsable('imageEdit', callGeminiImageEdit);
       var _aiPending = {};
       var _stemGrade = gradeLevel || '5th Grade';
 
@@ -4371,7 +4432,7 @@
       // labeled "AI may be imperfect" string. No PII is sent (question + answers only).
       function getHint(tool, question, wrongAnswer, correctAnswer, attemptCount, displayFn) {
         if (!_aiHintsOn) return;                 // gate OFF → zero LLM traffic
-        if (!callGemini) return;                 // no AI surface available
+        if (!_stemAiText) return;                // no usable AI (null, blocked, or student policy off)
         if ((attemptCount || 0) < 2) {           // try-again-before-hint (productive struggle)
           if (addToast) addToast('Give it another try first — a hint unlocks after a couple of attempts.', 'info');
           return;
@@ -5400,6 +5461,19 @@
         try { if (localStorage.getItem('alloflow_canvas_narrate') === 'on') return true; } catch(e) {}
         return false;
       }
+      // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+      function _stemStudentDeviceVoice(text, rate) {
+        if (window.__alloStudentAiDisabled !== true || window._alloGlobalMute) return false;
+        var synth = window.speechSynthesis;
+        if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !String(text || '').trim()) return false;
+        try {
+          var u = new SpeechSynthesisUtterance(String(text));
+          if (typeof rate === 'number' && rate > 0) u.rate = Math.max(0.5, Math.min(2, rate));
+          synth.cancel();
+          synth.speak(u);
+          return true;
+        } catch (e) { return false; }
+      }
 
       /**
        * canvasNarrate — Dual-channel narration for canvas simulations
@@ -5454,7 +5528,7 @@
         // Channel 2: AlloFlow TTS (only if Smart Detection says yes)
         var speakAloud = options.speak != null ? options.speak : _canvasNarrateTTSEnabled();
         if (speakAloud && callTTS) {
-          try { callTTS(msg).then(function(url) { if (url) { var a = new Audio(url); a.play().catch(function() {}); } }).catch(function() {}); } catch(e) {}
+          try { callTTS(msg).then(function(url) { if (url) { var a = new Audio(url); a.play().catch(function() {}); } else _stemStudentDeviceVoice(msg); }).catch(function() {}); } catch(e) {}
         }
       }
 
@@ -6546,7 +6620,7 @@
         })
       ),
         React.createElement("div", {
-          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white/70",
+          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white", style: { background: 'rgba(0, 0, 0, 0.25)' },
           title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
         }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
@@ -8238,7 +8312,7 @@
                 _setStemToolSuggestError(local.length ? '' : (message || 'No close matches yet. Try a more specific topic.'));
                 if (typeof announceToSR === 'function') announceToSR(local.length ? 'Suggested ' + local.length + ' STEM tools.' : 'No STEM tool suggestions found.');
               };
-              if (typeof callGemini !== 'function') {
+              if (!_stemAiText) {
                 fallback('AI suggestions are unavailable right now; showing closest catalog matches.');
                 return;
               }
@@ -9857,10 +9931,11 @@
             // A blocked callGemini (QR student, or in-app student with AI hidden,
             // 2026-09-14) is a function that only throws; hand tools null so their
             // AI affordances hide instead of failing on click, and withhold the raw
-            // client with it.
-            callGemini: typeof callGemini === 'function' && !callGemini._alloQrBlocked ? callGemini : null,
-            ai: (typeof callGemini === 'function' && callGemini._alloQrBlocked) ? null : (ai || null),
-            generateText: (typeof callGemini === 'function' && callGemini._alloQrBlocked)
+            // client with it. _stemAiText also covers a null callGemini (no text
+            // capability) and student policy off, so `ai` cannot leak past it.
+            callGemini: _stemAiText ? callGemini : null,
+            ai: _stemAiText ? (ai || null) : null,
+            generateText: !_stemAiText
               ? null
               : (ai && typeof ai.generateText === 'function')
                 ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
@@ -9876,11 +9951,15 @@
             // W7: true only when the host handed us a live AI backend. Tools can
             // gate their own AI-extra buttons on this instead of rendering a
             // control that silently no-ops (getHint/aiChat already fail safe).
-            aiAvailable: typeof callGemini === 'function',
+            aiAvailable: _stemAiText,
+            // Per-kind usability for image/vision extras (same rule as aiAvailable).
+            aiImagesAvailable: _stemAiImages,
+            aiVisionAvailable: _stemAiText && _stemAiVision,
+            aiImageEditAvailable: _stemAiImageEdit,
             // Callback-style AI helper. cyberdefense's AI coach was written to a
             // callback API before the host standardized on promise-based callGemini.
             // Adapter keeps both surfaces working.
-            aiChat: typeof callGemini === 'function' ? function(prompt, cb) {
+            aiChat: _stemAiText ? function(prompt, cb) {
               try {
                 callGemini(prompt).then(function(resp) { try { cb && cb(resp); } catch(_) {} })
                   .catch(function() { try { cb && cb(null); } catch(_) {} });
@@ -9953,12 +10032,13 @@
               if (!opts.force && !_canvasNarrateTTSEnabled()) return Promise.resolve(null);
               return callTTS(text, voice, speed, opts).then(function(url) {
                 if (url) { var a = new Audio(url); a.play().catch(function() {}); }
+                else _stemStudentDeviceVoice(text, speed);
                 return url;
               }).catch(function(e) { console.warn('[STEM TTS]', e && e.message); return null; });
             } : null,
-            callImagen: typeof callImagen === 'function' ? callImagen : null,
-            callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
-            callGeminiImageEdit: typeof callGeminiImageEdit === 'function' ? callGeminiImageEdit : null,
+            callImagen: _stemAiImages ? callImagen : null,
+            callGeminiVision: _stemAiVision ? callGeminiVision : null,
+            callGeminiImageEdit: _stemAiImageEdit ? callGeminiImageEdit : null,
             gradeLevel: gradeLevel || '5th Grade',
             srOnly: function(text) { return React.createElement('span', { className: 'sr-only' }, text); },
             a11yClick: function(handler) { return { onClick: handler, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(e); } }, role: 'button', tabIndex: 0 }; },

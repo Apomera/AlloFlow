@@ -78,14 +78,14 @@ describe('legacy resource response integration',()=>{
   act(()=>root.render(React.createElement(api.Boundary,{...p,activeProfileId:'two'})));
   act(()=>late('studentAnswers',{s1:{b1:'Wrong profile'}}));expect(save).not.toHaveBeenCalled();
  });
- it('disables Notes feedback when runtime AI is restricted',()=>{
+ it('hides learner Notes feedback when runtime AI is restricted',()=>{
   const callGemini=vi.fn();harness(notes(),{callGemini,allowRuntimeAi:false});
-  expect(host.querySelector('[data-help-key="notes_feedback_button"]').disabled).toBe(true);expect(callGemini).not.toHaveBeenCalled();
+  expect(host.querySelector('[data-help-key="notes_feedback_button"]')).toBeNull();expect(callGemini).not.toHaveBeenCalled();
  });
  it('never revives explicitly null Anchor providers from globals or synthesizes on a restricted mount',()=>{
   window.callGemini=vi.fn();window.callGeminiImageEdit=vi.fn();const callImagen=vi.fn();const r=chart();r.data.sections[0].iconPrompt='Draw idea';
   harness(r,{callGemini:null,callGeminiImageEdit:null,callImagen,allowRuntimeAi:false});
-  expect([...host.querySelectorAll('button')].find(b=>b.textContent.includes('Submit for AI feedback')).disabled).toBe(true);
+  expect([...host.querySelectorAll('button')].some(b=>b.textContent.includes('Submit for AI feedback'))).toBe(false);
   expect(host.querySelector('[data-help-key="anchor_chart_edit_toggle"]')).toBeNull();expect(callImagen).not.toHaveBeenCalled();expect(window.callGemini).not.toHaveBeenCalled();
  });
  it('merges a delayed icon into its originating section without reverting newer label edits or changing the active chart',async()=>{

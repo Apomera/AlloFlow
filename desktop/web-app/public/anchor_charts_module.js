@@ -57,6 +57,14 @@ const t = function() {
   }
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
+const _AC_COMPLETION_XP = 30;
+function _ac_aiUsable(kind, fn) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+}
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 const _ac_withIcon = (section, iconUrl) => {
   if (section.iconUrl === iconUrl) return { ...section, iconUrl };
@@ -441,12 +449,12 @@ const AnchorChartView = React.memo((props) => {
   const [isGeneratingRubric, setIsGeneratingRubric] = React.useState(false);
   const rubricRequestRef = React.useRef(0);
   const handleSuggestRubric = async () => {
-    if (!allowRuntimeAi || !isTeacherMode || props.callGemini === null || !props.callGemini && !window.callGemini) {
+    if (!allowRuntimeAi || !isTeacherMode || !_ac_aiUsable("text", callGeminiProp)) {
       addToastProp("AI generation needs an active connection. Please try again.");
       return;
     }
     if (isGeneratingRubric) return;
-    const callGeminiFn = props.callGemini || window.callGemini;
+    const callGeminiFn = callGeminiProp;
     const request = { serial: ++rubricRequestRef.current, context: currentChart.current.rubricContext };
     const requestIsCurrent = () => mounted.current && request.serial === rubricRequestRef.current && currentChart.current.isTeacherMode && currentChart.current.rubricAllowed && currentChart.current.rubricContext === request.context;
     setIsGeneratingRubric(true);
@@ -529,7 +537,9 @@ ${bulletText}`;
   const gradingIsEarlier = _ac_feedbackIsEarlier(gradingResult, studentAnswers);
   const awardedXp = Number(data.prevFeedbackScore) || 0;
   const [gradingState, setGradingState] = React.useState("idle");
+  const finishAwardRef = React.useRef(null);
   const callGeminiProp = allowRuntimeAi ? props.callGemini === void 0 ? typeof window !== "undefined" && window.callGemini : props.callGemini : null;
+  const studentGradingOn = _ac_aiUsable("text", callGeminiProp);
   const addXpProp = !props.previewMode && typeof props.addXp === "function" ? props.addXp : null;
   const addToastProp = typeof props.addToast === "function" ? props.addToast : () => {
   };
@@ -742,7 +752,7 @@ ${bulletText}`;
   };
   const handleSubmitForGrading = async () => {
     if (gradingState === "submitting") return;
-    if (!callGeminiProp) {
+    if (!studentGradingOn) {
       addToastProp("AI grading needs an active connection. Please try again.");
       return;
     }
@@ -811,6 +821,20 @@ ${bulletText}`;
     } finally {
       if (mounted.current && currentChart.current.id === requestId) setGradingState(outcome);
     }
+  };
+  const handleFinishChart = () => {
+    if (studentGradingOn || isTeacherMode) return;
+    const prompts = sections.flatMap((s) => s && Array.isArray(s.bulletIds) ? s.bulletIds.map((id) => String(studentAnswers[s.id]?.[id] || "").trim()) : []);
+    if (!prompts.length || prompts.some((text) => !text)) {
+      addToastProp(tx("anchor_chart.finish_incomplete", "Fill in every answer to finish your chart."));
+      return;
+    }
+    const delta = Math.max(0, _AC_COMPLETION_XP - awardedXp);
+    if (!delta || !addXpProp || finishAwardRef.current === generatedContent.id) return;
+    finishAwardRef.current = generatedContent.id;
+    handleNoteUpdate("prevFeedbackScore", Math.max(awardedXp, _AC_COMPLETION_XP));
+    addXpProp(delta);
+    addToastProp("\u2728 " + tx("anchor_chart.xp_earned", "+{amount} XP earned").replace("{amount}", () => String(delta)));
   };
   if (!generatedContent || generatedContent.type !== "anchor-chart") return null;
   return /* @__PURE__ */ React.createElement("div", { className: "ac-root max-w-5xl mx-auto px-4 py-6", "data-help-key": "anchor_chart_view_panel" }, /* @__PURE__ */ React.createElement("style", null, `
@@ -1101,17 +1125,27 @@ ${bulletText}`;
     },
     "+ ",
     tx("anchor_chart.add_section", "Add section")
-  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, tx("anchor_chart.reorder_tip", "Tip: use the arrow buttons or drag the handle on any section to reorder.")) : null) : null, interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} ", tx("anchor_chart.interactive_title", "Interactive Anchor Chart")), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, tx("anchor_chart.workspace_hint", "Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher."))), /* @__PURE__ */ React.createElement(
+  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, tx("anchor_chart.reorder_tip", "Tip: use the arrow buttons or drag the handle on any section to reorder.")) : null) : null, interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} ", tx("anchor_chart.interactive_title", "Interactive Anchor Chart")), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, tx("anchor_chart.workspace_hint", "Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher."))), studentGradingOn && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: handleSubmitForGrading,
-      disabled: gradingState === "submitting" || !callGeminiProp,
+      disabled: gradingState === "submitting",
       className: "px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60",
       "aria-busy": gradingState === "submitting"
     },
     gradingState === "submitting" ? "\u23F3 " + tx("anchor_chart.grading", "Grading\u2026") : "\u2728 " + tx("anchor_chart.submit_for_feedback", "Submit for AI feedback")
-  )), gradingResult && gradingIsEarlier ? /* @__PURE__ */ React.createElement("p", { role: "status", "data-anchor-feedback-earlier-draft": "true", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950" }, tx("anchor_chart.feedback_earlier_draft", "Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.")) : null, gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, tx("notes_feedback.strength_label", "What you did well")), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, tx("anchor_chart.growth_label", "One thing to try next")), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, tx("anchor_chart.xp_earned", "+{amount} XP earned").replace("{amount}", () => String(gradingResult.xpAwarded)))) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, tx("anchor_chart.prior_xp", "You've already earned XP here \u2014 improve your answers to earn more.")) : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700", role: "alert" }, tx("anchor_chart.grading_error", "Couldn't get AI feedback. Your answers are still here. Try again in a moment.")) : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
+  ), !studentGradingOn && (awardedXp >= _AC_COMPLETION_XP ? /* @__PURE__ */ React.createElement("span", { role: "status", "data-anchor-finish-done": "true", className: "px-3 py-1 text-sm font-bold rounded-full bg-amber-100 border border-amber-300 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728 "), tx("anchor_chart.xp_earned", "+{amount} XP earned").replace("{amount}", () => String(awardedXp))) : /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: handleFinishChart,
+      "data-anchor-finish": "true",
+      className: "px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2705 "),
+    tx("anchor_chart.finish_chart", "Finish my chart")
+  ))), gradingResult && gradingIsEarlier ? /* @__PURE__ */ React.createElement("p", { role: "status", "data-anchor-feedback-earlier-draft": "true", className: "mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950" }, tx("anchor_chart.feedback_earlier_draft", "Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.")) : null, gradingResult ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-white border border-fuchsia-200 space-y-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, gradingResult.strength ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-l-4 border-emerald-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-emerald-800 mb-0.5" }, tx("notes_feedback.strength_label", "What you did well")), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.strength)) : null, gradingResult.growthNudge ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-l-4 border-amber-400 rounded-r-md p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-900 mb-0.5" }, tx("anchor_chart.growth_label", "One thing to try next")), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-800 leading-relaxed" }, gradingResult.growthNudge)) : null, gradingResult.xpAwarded > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-sm font-bold text-amber-900 bg-amber-100 border border-amber-300 rounded-full px-3 py-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("span", null, tx("anchor_chart.xp_earned", "+{amount} XP earned").replace("{amount}", () => String(gradingResult.xpAwarded)))) : gradingResult.hadPriorXp ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] italic text-slate-500" }, tx("anchor_chart.prior_xp", "You've already earned XP here \u2014 improve your answers to earn more.")) : null) : null, gradingState === "error" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[12px] text-red-700", role: "alert" }, tx("anchor_chart.grading_error", "Couldn't get AI feedback. Your answers are still here. Try again in a moment.")) : null) : null), showInteractiveDialog ? /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4",

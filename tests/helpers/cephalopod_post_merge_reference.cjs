@@ -3,12 +3,15 @@
 // simulation, geometry and accessibility tests still load the current source.
 // The 2026-10-26 rounds (Hunter Sim visuals, soundscape, camouflage skin, Biology
 // diagrams) came after main 1499a80, so their exact inverse is applied first.
-// The 2026-10-28 WCAG contrast inks (four text colours) came last and are undone before those.
+// The 2026-10-28 WCAG contrast inks (four text colours) are undone before those.
+// The 2026-11-05 aria-pressed rows came last and are undone first.
 const edits = require('../fixtures/cephalopod-post-merge-visual-fixes.json');
 const laterRounds = require('../fixtures/cephalopod-2026-10-26-rounds.json');
 const contrastRound = require('../fixtures/cephalopod-2026-10-28-contrast.json');
+const selectedRowsRound = require('../fixtures/cephalopod-2026-11-05-selected-rows.json');
 const LATER_ROUNDS_MARKER = 'The squid as the predator below sees it.';
 const CONTRAST_ROUND_MARKER = "color: on ? '#f1f5f9' : '#94a3b8',";
+const SELECTED_ROWS_MARKER = "'aria-pressed': active,\n                onClick: function() { setCL({ factsCat: c }); }";
 function reverseEdits(text, list, name) {
   for (const edit of [...list].reverse()) {
     const at = text.indexOf(edit.new);
@@ -20,6 +23,7 @@ function reverseEdits(text, list, name) {
 function restorePostMergeVisualSource(source) {
   const crlf = source.includes('\r\n');
   let restored = source.replace(/\r\n/g, '\n');
+  if (restored.includes(SELECTED_ROWS_MARKER)) restored = reverseEdits(restored, selectedRowsRound, 'Selected-rows');
   if (restored.includes(CONTRAST_ROUND_MARKER)) restored = reverseEdits(restored, contrastRound, 'Contrast-round');
   if (restored.includes(LATER_ROUNDS_MARKER)) restored = reverseEdits(restored, laterRounds, 'Later-round');
   if (!restored.includes('function sunlightFractionAt(realM)')) return source;

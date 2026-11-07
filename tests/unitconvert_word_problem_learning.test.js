@@ -33,7 +33,7 @@ describe('Unit Converter word-problem core', () => {
       ],
       answer: 5000,
       unit: 'm',
-      explanation: '5 km × 1000 = 5000 m.',
+      explanation: '5 km × 1,000 = 5,000 m.',
     });
   });
 
@@ -114,8 +114,9 @@ describe('Unit Converter word-problem core', () => {
 
   it('formats significant figures without changing the underlying value', () => {
     const format = window.__UnitConvertCore.formatUnitNumber;
-    expect(format(1234.567, 'auto')).toBe('1234.567');
-    expect(format(1234.567, '3')).toBe('1.23e+3');
+    // 2026-11-03: plain numbers with thousands separators, never e-notation.
+    expect(format(1234.567, 'auto')).toBe('1,234.567');
+    expect(format(1234.567, '3')).toBe('1,230');
     expect(format(12, '4')).toBe('12.00');
     expect(format(Number.NaN, '3')).toBe('—');
   });
@@ -149,10 +150,17 @@ describe('Unit Converter word-problem learning flow', () => {
     expect(html).toContain('✓ Math verified locally');
     expect(html).toContain('The app independently calculated the answer, hints, and explanation.');
     expect(html).toContain('Check attempt');
-    expect(html).toContain('Show Hint 1');
-    expect(html).toContain('Reveal Answer');
+    // Stage C (2026-11-03): the same hint button as every activity, and
+    // Reveal Answer only after two tries.
+    expect(html).toContain('Hint 1 of 2');
+    expect(html).not.toContain('Reveal Answer');
     expect(html).not.toContain('321.987 ft');
     expect(html).not.toContain(problem.explanation);
+    const afterTwo = renderTool('unitConvert', {
+      unitConvert: { tab: 'wordproblem', category: 'length', wordProblem: problem, wordProblemTries: 2, wordProblemFeedback: 'Not yet.' },
+    });
+    expect(afterTwo).toContain('Reveal Answer');
+    expect(afterTwo).not.toContain('321.987 ft');
   });
 
   it('reveals hints progressively and shows the worked answer deliberately', () => {
@@ -195,7 +203,7 @@ describe('Unit Converter word-problem learning flow', () => {
 
     expect(html).toContain('aria-label="Significant figures"');
     expect(html).toContain('3 sig figs');
-    expect(html).toContain('Converted result: 1.23e+3 m');
+    expect(html).toContain('Converted result: 1,230 m');
   });
 
   it('ignores stale AI responses and invalidates pending work on category changes', () => {

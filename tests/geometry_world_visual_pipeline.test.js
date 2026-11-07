@@ -123,12 +123,17 @@ describe('geometryWorldSunVector', () => {
     expect(east.z).toBeCloseTo(0, 12);
   });
 
-  it('keeps the day preset on the same bearing as the sun this world always had', () => {
-    // The old fixed light sat at (20, 40, 20): due south-east, x === z.
-    const day = sunVec(58, 45);
-    expect(day.x).toBeCloseTo(day.z, 12);
+  it('puts the day sun off the 45-degree diagonal, so a block shows two different lit sides', () => {
+    // The old light sat at x === z (azimuth 45): a block's +x and +z faces got identical light and its corner
+    // vanished. 2026-11-07 moved the day preset to azimuth 33, still from the south-east quarter.
+    const src = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
+    const line = src.split('\n').find((l) => l.trim().startsWith('day:'));
+    const el = Number(line.match(/sunEl: ([\d.]+)/)[1]), az = Number(line.match(/sunAz: (-?[\d.]+)/)[1]);
+    const day = sunVec(el, az);
+    expect(Math.abs(day.x - day.z)).toBeGreaterThan(0.08);
     expect(day.x).toBeGreaterThan(0);
-    expect(day.y).toBeGreaterThan(0.8); // high sun, short shadows
+    expect(day.z).toBeGreaterThan(0);
+    expect(day.y).toBeGreaterThan(0.7); // high sun, short shadows
   });
 
   it('drops the sun toward the horizon for the raking presets', () => {
@@ -277,8 +282,8 @@ describe('colour pipeline source contract', () => {
 
   it('tags every painted block texture as sRGB', () => {
     // one finishBlockTexture per painted generator: grass, grass atlas, brick,
-    // wood, sand, stone. Normal maps are linear data and must NOT be tagged.
-    expect(src.split('finishBlockTexture(tex);').length - 1).toBe(6);
+    // wood, sand, stone, and (2026-11-07) the plain-colour grain. Normal maps are linear data and must NOT be tagged.
+    expect(src.split('finishBlockTexture(tex);').length - 1).toBe(7);
     expect(src).toContain("_procTexCache[key] = tex;");
     expect(src).not.toMatch(/makeBumpNormalTexture[\s\S]{0,2400}finishBlockTexture\(tex\);[\s\S]{0,200}_procTexCache\[key\]/);
     expect(src).toContain('tex.encoding = THREE.sRGBEncoding');

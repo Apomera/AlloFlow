@@ -88,12 +88,14 @@ describe('Printing Press table semantics', () => {
     expect(table.querySelectorAll('th:not([scope])')).toHaveLength(0);
   });
 
-  it('keeps both Printing Press tables fully scoped in source', () => {
+  // Added 2026-11-03: the Cookbooks recipe scaler (3 column headers, 2 row-header
+  // declarations) and the Gardening planting plan (1 mapped column, 1 row header).
+  it('keeps every Printing Press table fully scoped in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
-    expect(source.match(/h\('table'/g)).toHaveLength(2);
-    expect(source.match(/h\('caption'/g)).toHaveLength(2);
-    expect(source.match(/scope: 'col'/g)).toHaveLength(7);
-    expect(source.match(/scope: 'row'/g)).toHaveLength(2);
+    expect(source.match(/h\('table'/g)).toHaveLength(4);
+    expect(source.match(/h\('caption'/g)).toHaveLength(4);
+    expect(source.match(/scope: 'col'/g)).toHaveLength(11);
+    expect(source.match(/scope: 'row'/g)).toHaveLength(5);
   });
 
   it('renders the screw comparison with scoped measurements and setup headers', async () => {

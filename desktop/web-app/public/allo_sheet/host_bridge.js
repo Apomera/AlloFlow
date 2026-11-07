@@ -328,8 +328,13 @@
     return normalized;
   }
 
+  // Student AI-off: the host's blocked callGemini is truthy; ask the host (old-host fallback).
   function isAiAvailable() {
-    return typeof window.callGemini === 'function';
+    var fn = window.callGemini;
+    try {
+      if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true;
   }
 
   function reply(source, requestId, payload) {

@@ -11,9 +11,12 @@
   'use strict';
   var TAU = Math.PI * 2;
   var FAMILIES = ['parrotfish', 'surgeonfish', 'butterflyfish', 'grouper', 'snapper'];
-  // The diver hangs about 1.3 m above the reef, looking along the tape and down at the point,
-  // with the reef running on into blue water beyond it.
-  var DIVER = { yaw: -Math.PI / 2 + 0.42, pitch: 0.6, dist: 2.1 };
+  // The diver hangs about 1.2 m above the reef, looking along the tape and down at the point,
+  // with the reef running on into blue water beyond it. Lane hb13: a wider angle off the tape
+  // (was 0.42) keeps the colony at the point before from standing in front of it, and a
+  // little closer (was 2.1 m). Lane sv14: closer and steeper, as a surveyor looks down
+  // at the point (was 1.9 m at pitch 0.6), so the bottom under the line is large enough to judge.
+  var DIVER = { yaw: -Math.PI / 2 + 0.82, pitch: 0.85, dist: 1.35 };
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function damp(rate, dt) { return 1 - Math.exp(-rate * dt); }
   function num(v, fallback) { if (v === null || v === undefined || v === '') return fallback; v = Number(v); return isFinite(v) ? v : fallback; }

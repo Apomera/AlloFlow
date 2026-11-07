@@ -38,7 +38,7 @@ function throwFixture(options = {}) {
   const log = { caught: [], missed: [], queued: [], feedback: [] };
   const api = Function('raptor', 'preyMeshes', 'log', 'options', `
     var activePerch = null, attendedPrey = null, mission = { id: 'open' }, lockConeDot = 0.1, flightForward = {}, lastTargetCorrection = null;
-    var simPaused = false, strikeReady = true, strikeRecoveryUntil = 0, motionNow = 0, RAPTOR_TALON_THROW_MS = ${THROW_MS};
+    var simPaused = false, strikeReady = true, strikeRecoveryUntil = 0, motionNow = 0, RAPTOR_TALON_THROW_MS = ${THROW_MS}, carriedPrey = null;
     var talonThrow = { active: false, until: 0, preferred: null, closest: null };
     var runCatches = 0, missionCatches = 0, missionGroundContact = false, runStart = 0;
     var terrainCellSize = 10, terrainHalfSize = 50, practicePerch = null, perchLaunchUntil = Infinity;

@@ -172,8 +172,24 @@ describe('the Adventure section only appears when the lesson carries one', () =>
   });
 
   it('offers Resume only when there is a save for this lesson', () => {
-    expect(render({ isAdventureAvailable: true, hasSavedAdventure: true })).toContain('adventure.resume');
-    expect(render({ isAdventureAvailable: true, hasSavedAdventure: false })).not.toContain('adventure.resume');
+    window.__alloAiUsable = () => true;
+    try {
+      expect(render({ isAdventureAvailable: true, hasSavedAdventure: true })).toContain('adventure.resume');
+      expect(render({ isAdventureAvailable: true, hasSavedAdventure: false })).not.toContain('adventure.resume');
+    } finally { delete window.__alloAiUsable; }
+  });
+
+  it('with AI unavailable, solo play shows a note instead of Start/Resume; a live session is unchanged', () => {
+    window.__alloAiUsable = () => false;
+    try {
+      const solo = render({ isAdventureAvailable: true, hasSavedAdventure: true });
+      expect(solo).toContain('data-adventure-solo-ai-off');
+      expect(solo).not.toContain('adventure_resume_btn');
+      expect(solo).not.toContain('adventure_start_btn');
+      const live = render({ isAdventureAvailable: true, activeSessionCode: 'ABCDE', sessionData: { democracy: { isActive: true } } });
+      expect(live).toContain('session.vote_prompt');
+      expect(live).not.toContain('data-adventure-solo-ai-off');
+    } finally { delete window.__alloAiUsable; }
   });
 
   it('reads icons from AlloIcons first, so DOM globals like window.History cannot leak in', () => {

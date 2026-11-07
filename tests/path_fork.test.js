@@ -119,6 +119,18 @@ describe('the fork in "Other ways to start"', () => {
     expect(window.__alloAddToast).not.toHaveBeenCalled();
   });
 
+  it('renders inside the app theme wrapper, so dark and high-contrast themes reach it', () => {
+    const themed = document.createElement('div'); themed.className = 'theme-dark'; document.body.appendChild(themed);
+    window.ReactDOM = require(resolve('desktop/web-app/node_modules/react-dom'));
+    try {
+      const el = mount(freshWays(), { onStartBlank: vi.fn() });
+      click(toggle(el));
+      expect(el.contains(dialog()), 'portaled out of the sidebar').toBe(false);
+      expect(dialog().closest('.theme-dark')).toBe(themed);
+      act(() => dialog().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    } finally { themed.remove(); delete window.ReactDOM; }
+  });
+
   it('keeps Tab inside the dialog', () => {
     const el = mount(freshWays(), { onStartBlank: vi.fn() });
     click(toggle(el));
@@ -189,17 +201,59 @@ describe('the fork in the Source panel chooser (shipped module)', () => {
     mounts.push({ root, el });
     act(() => root.render(React.createElement(api.SourceInputShellView, props)));
     const chooser = el.querySelector('[data-source-start-chooser]');
-    click(byText(chooser, 'Topic'));
+    click(byText(chooser, 'From a topic'));
     expect(dialog()).toBeTruthy();
     expect(chooser.querySelector('form'), 'no form before the choice').toBeNull();
     click(byText(dialog(), LESS));
     expect(chooser.querySelector('form')).toBeTruthy();
     expect(chooser.querySelector('[data-path-less-traveled]')).toBeTruthy();
+    expect(document.activeElement, 'focus lands in the topic field, not back on the button').toBe(chooser.querySelector('form input[type="text"]'));
     click(byText(chooser, 'Cancel'));
-    click(byText(chooser, 'Word list'));
+    click(byText(chooser, 'From a word list'));
     expect(dialog(), 'answered once per page session').toBeNull();
     expect(chooser.querySelector('form')).toBeTruthy();
+    expect(document.activeElement, 'language is prefilled, so the terms box gets focus').toBe(chooser.querySelector('form textarea'));
     expect(handleGenerate).not.toHaveBeenCalled();
     delete window.__alloBlankStartTypes;
+  });
+});
+
+describe('the glossary tool opens the Source panel on "From a word list"', () => {
+  // One evaluation, so the tool link, the request channel and the chooser share state as in the module.
+  const build = () => {
+    expectAnchorCount(MODULE, 'const sourceStartRequests = ', 1, { file: FILE });
+    const region = sliceBetween(MODULE, 'function useAiTextAvailable(', 'function SourceNeededNotice(', { file: FILE });
+    return new Function('React', region + '\nreturn { OtherWaysToStart, SourceStartingPointChooser, sourceStartRequests };')(React);
+  };
+  const chooserProps = { t: () => '', handleGenerate: vi.fn(), busy: false };
+
+  it('fills the chooser with the word-list form and focuses it, without asking the fork twice', () => {
+    const { OtherWaysToStart, SourceStartingPointChooser, sourceStartRequests } = build();
+    const chooserHost = mount(SourceStartingPointChooser, chooserProps);
+    const el = mount(OtherWaysToStart, { onStartFromWordList: () => sourceStartRequests.request('word-list') });
+    click(toggle(el));
+    click(byText(dialog(), LESS));
+    click(el.querySelector('[data-help-key="sidebar_start_word_list"]'));
+    expect(dialog(), 'the fork was answered in the tool').toBeNull();
+    expect(chooserHost.querySelector('[data-source-word-language]')).toBeTruthy();
+    expect(document.activeElement).toBe(chooserHost.querySelector('form textarea'));
+  });
+
+  it('waits for a chooser that has not mounted yet (the Source panel was collapsed)', () => {
+    const { SourceStartingPointChooser, sourceStartRequests } = build();
+    sourceStartRequests.request('word-list');
+    const chooserHost = mount(SourceStartingPointChooser, chooserProps);
+    expect(chooserHost.querySelector('[data-source-word-language]')).toBeTruthy();
+    expect(sourceStartRequests.take(), 'consumed once').toBeNull();
+  });
+
+  it('is offered only with AI and only where the host wires it (the glossary tool, teacher mode)', () => {
+    const { OtherWaysToStart } = build();
+    window.__alloResolveAiCapability = () => ({ text: false });
+    const off = mount(OtherWaysToStart, { onStartFromWordList: vi.fn(), onStartBlank: vi.fn() });
+    expect(off.querySelector('[data-help-key="sidebar_start_word_list"]')).toBeNull();
+    const wiring = sliceBetween(MODULE, 'const openWordListStart = () => {', 'return /* @__PURE__ */', { file: FILE });
+    expect(MODULE).toContain('onStartFromWordList: isTeacherMode ? openWordListStart : void 0');
+    expect(wiring).toContain('sourceStartRequests.request("word-list")');
   });
 });

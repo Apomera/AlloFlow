@@ -119,8 +119,18 @@ function learnerPanelAnnotations(teacher, learner) {
     drawings: own.drawings || {}
   };
 }
+
+// Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function _imageViewAiDoor(kind, t) {
+  try {
+    return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+  } catch (_) {
+    return null;
+  }
+}
 function ImageView(props) {
   var t = props.t;
+  var imageEditDoor = _imageViewAiDoor('imageEdit', t);
   const imageText = (key, fallback) => {
     const value = typeof t === 'function' ? t(key) : '';
     return value && value !== key ? value : fallback;
@@ -595,15 +605,15 @@ function ImageView(props) {
     onKeyDown: e => {
       if (e.key !== 'Enter' || imageRefinementComposingRef.current || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
       e.preventDefault();
-      if (!e.repeat && !isProcessing && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
+      if (!e.repeat && !isProcessing && !imageEditDoor?.disabled && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
     }
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleRefineImage,
-    disabled: !imageRefinementInput.trim() || isProcessing,
+    disabled: !imageRefinementInput.trim() || isProcessing || !!imageEditDoor?.disabled,
     "aria-busy": isProcessing,
     className: "min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
-    title: t('common.apply_nano_edit'),
+    title: imageEditDoor?.title || t('common.apply_nano_edit'),
     "aria-label": t('common.apply_nano_edit')
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
@@ -612,7 +622,12 @@ function ImageView(props) {
     size: 16
   }))), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-slate-600 italic mt-0.5 block"
-  }, t('visuals.nano_active_status'))), /*#__PURE__*/React.createElement("div", {
+  }, t('visuals.nano_active_status')), imageEditDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
+    t: t,
+    kind: "imageEdit"
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg text-sm text-red-800 mb-6"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "font-bold mb-1"

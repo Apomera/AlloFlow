@@ -179,7 +179,7 @@ describe('clicking it produces the script', () => {
     expect(text).toContain('Sound Counting');
     expect(text).toContain('Sound Mapping');
     expect(text.indexOf('Sound Counting')).toBeLessThan(text.indexOf('Sound Mapping'));
-    expect(text).toContain('3 consecutive correct');
+    expect(text).toContain('3 in a row');
   });
 
   it('prints the word list with sounds', () => {

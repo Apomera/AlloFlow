@@ -24,6 +24,8 @@ describe('Protractor text accessibility', () => {
     const html = renderTool('protractor', { protractor: {} });
     expect(html).not.toMatch(/text-\[(?:[0-9])px\]/);
     expect(html).not.toMatch(/font-size="(?:[0-9](?:\.[0-9]+)?)"/);
-    expect(html).toContain('text-[0.625rem]');
+    // 2026-11-04: the compact hero dropped its 0.625rem studio tag and metric labels
+    // (the metrics show on Explore only); small text is still rem-based.
+    expect(html).toMatch(/text-\[0\.6\d*rem\]/);
   });
 });

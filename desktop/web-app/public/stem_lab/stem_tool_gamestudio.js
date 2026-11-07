@@ -28,6 +28,14 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-gamestudio-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-gamestudio-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gamestudio-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"gameStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"gameStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"gameStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"gameStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -486,8 +494,9 @@ window.StemLab = window.StemLab || {
       var stemLabTab = ctx.stemLabTab || 'explore';
       var addToast = ctx.addToast;
       var awardStemXP = ctx.awardXP;
-      var callGemini = ctx.callGemini;
-      var callImagen = ctx.callImagen;
+      // Null unless the host says the kind is usable (blocked student fns are truthy); every AI control gates on these.
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
+      var callImagen = (ctx.aiImagesAvailable !== false && typeof ctx.callImagen === 'function') ? ctx.callImagen : null;
       var gradeLevel = ctx.gradeLevel;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
@@ -830,6 +839,7 @@ window.StemLab = window.StemLab || {
             TABS.map(function(tab) {
               var isActive = gsTab === tab.id;
               return h('button', { key: tab.id,
+                'aria-pressed': isActive,
                 onClick: function() { upd({ tab: tab.id, playMessage: null }); },
                 className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
                   (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-600' : 'text-rose-700 hover:text-rose-900 hover:bg-rose-100')
@@ -914,11 +924,13 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.tiles', 'Tiles')),
                 h('div', { className: 'flex gap-1 ml-auto' },
-                  [{ id: 'brush', icon: '\u270F\uFE0F' }, { id: 'fill', icon: '\uD83E\uDEA3' }, { id: 'eraser', icon: '\uD83E\uDDF9' }, { id: 'eyedropper', icon: '\uD83D\uDCA7' }].map(function(bt) {
+                  [{ id: 'brush', icon: '\u270F\uFE0F', label: __alloT('stem.gamestudio.map_tool_brush', 'Map tool: Brush') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.gamestudio.map_tool_fill', 'Map tool: Fill') }, { id: 'eraser', icon: '\uD83E\uDDF9', label: __alloT('stem.gamestudio.map_tool_eraser', 'Map tool: Eraser') }, { id: 'eyedropper', icon: '\uD83D\uDCA7', label: __alloT('stem.gamestudio.map_tool_eyedropper', 'Map tool: Pick a tile from the map') }].map(function(bt) {
                     return h('button', { key: bt.id,
+                      'aria-pressed': brushTool === bt.id,
                       onClick: function() { upd({ brushTool: bt.id }); },
                       className: 'px-2 py-1 rounded text-sm transition-all ' + (brushTool === bt.id ? 'bg-rose-200 shadow-inner' : 'hover:bg-rose-50'),
-                      title: bt.id
+                      'aria-label': bt.label,
+                      title: bt.label
                     }, bt.icon);
                   })
                 )
@@ -926,6 +938,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1' },
                 TILE_PALETTE.map(function(t) {
                   return h('button', { key: t.id,
+                    'aria-pressed': selectedTile === t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
                     className: 'w-8 h-8 rounded border-2 flex items-center justify-center text-sm transition-all ' +
                       (selectedTile === t.id ? 'border-rose-500 shadow-md scale-110' : 'border-gray-200 hover:border-rose-600'),
@@ -1011,12 +1024,13 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-2' },
                 SPRITE_PRESETS.map(function(sp) {
                   return h('button', { key: sp.id,
+                    'aria-pressed': activeSprite === sp.id,
                     onClick: function() { upd({ activeSprite: sp.id, spritePixels: Object.assign({}, sp.pixels), spriteColor: sp.color }); },
                     className: 'px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all ' +
                       (activeSprite === sp.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-gray-200 hover:border-rose-600')
                   }, '\uD83C\uDFA8 ' + sp.name);
                 }),
-                h('button', { 'aria-label': 'New',
+                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_new_sprite', 'New sprite'),
                   onClick: function() { upd({ activeSprite: 'custom_' + Date.now(), spritePixels: {}, spriteColor: '#e74c3c' }); },
                   className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all'
                 }, __alloT('stem.gamestudio.new', '\u2795 New'))
@@ -1070,8 +1084,9 @@ window.StemLab = window.StemLab || {
                   h('input', { 'aria-label': __alloT('stem.gamestudio.color', 'Color'), type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer' }),
                   h('div', { className: 'flex gap-1 mt-2 flex-wrap' },
                     ['#e74c3c','#f39c12','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#ecf0f1','#34495e','#000000','#ffffff','#e67e22'].map(function(c) {
-                      return h('button', { 'aria-label': __alloT('stem.gamestudio.mirror', 'Mirror'),
+                      return h('button', { 'aria-label': __alloT('stem.gamestudio.aria_sprite_color', 'Sprite color: {name}').split('{name}').join(({ '#e74c3c': __alloT('stem.gamestudio.swatch_red', 'Red'), '#f39c12': __alloT('stem.gamestudio.swatch_orange', 'Orange'), '#f1c40f': __alloT('stem.gamestudio.swatch_yellow', 'Yellow'), '#2ecc71': __alloT('stem.gamestudio.swatch_green', 'Green'), '#3498db': __alloT('stem.gamestudio.swatch_blue', 'Blue'), '#9b59b6': __alloT('stem.gamestudio.swatch_purple', 'Purple'), '#1abc9c': __alloT('stem.gamestudio.swatch_teal', 'Teal'), '#ecf0f1': __alloT('stem.gamestudio.swatch_light_gray', 'Light gray'), '#34495e': __alloT('stem.gamestudio.swatch_dark_slate', 'Dark slate'), '#000000': __alloT('stem.gamestudio.swatch_black', 'Black'), '#ffffff': __alloT('stem.gamestudio.swatch_white', 'White'), '#e67e22': __alloT('stem.gamestudio.swatch_dark_orange', 'Dark orange') })[c] || c),
                         key: c,
+                        'aria-pressed': spriteColor === c,
                         onClick: function() { upd({ spriteColor: c }); },
                         className: 'w-6 h-6 rounded border-2 transition-all ' + (spriteColor === c ? 'border-rose-500 scale-110' : 'border-gray-300'),
                         style: { background: c }
@@ -1084,8 +1099,9 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.tools', 'Tools')),
                   h('div', { className: 'flex gap-1' },
                     [{ id: 'draw', icon: '\u270F\uFE0F' }, { id: 'erase', icon: '\uD83E\uDDF9' }, { id: 'fill', icon: '\uD83E\uDEA3' }].map(function(t) {
-                      return h('button', { 'aria-label': __alloT('stem.gamestudio.mirror_2', 'Mirror \u2194\uFE0F'),
+                      return h('button', { 'aria-label': t.id === 'erase' ? __alloT('stem.gamestudio.aria_sprite_tool_erase', 'Sprite tool: Erase') : t.id === 'fill' ? __alloT('stem.gamestudio.aria_sprite_tool_fill', 'Sprite tool: Fill') : __alloT('stem.gamestudio.aria_sprite_tool_draw', 'Sprite tool: Draw'),
                         key: t.id,
+                        'aria-pressed': spriteTool === t.id,
                         onClick: function() { upd({ spriteTool: t.id }); },
                         className: 'flex-1 py-1.5 rounded text-sm transition-all ' + (spriteTool === t.id ? 'bg-rose-200 shadow-inner font-bold' : 'hover:bg-rose-50')
                       }, t.icon);
@@ -1166,6 +1182,7 @@ window.StemLab = window.StemLab || {
                 var sprEvents = events[sid] || [];
                 var icons = { player: '\uD83E\uDDD1', enemy: '\uD83D\uDC7E', npc: '\uD83E\uDDD9', treasure: '\uD83D\uDC8E' };
                 return h('button', { key: sid,
+                  'aria-pressed': activeSprite === sid,
                   onClick: function() { upd({ activeSprite: sid }); },
                   className: 'px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ' +
                     (activeSprite === sid ? 'border-rose-400 bg-rose-100 shadow-md' : 'border-gray-200 hover:border-rose-600')
@@ -1257,7 +1274,7 @@ window.StemLab = window.StemLab || {
                           className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), act.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
-                      h('button', { 'aria-label': __alloT('stem.gamestudio.remove_item', 'Remove item'),
+                      h('button', { 'aria-label': __alloT('stem.gamestudio.aria_remove_rule', 'Remove rule {n}').split('{n}').join(String(ri + 1)),
                         onClick: function() {
                           var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
                           arr.splice(ri, 1); ne[activeSprite] = arr; upd({ events: ne });
@@ -1268,7 +1285,7 @@ window.StemLab = window.StemLab || {
                     advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[0.6875rem] font-mono overflow-x-auto' }, genCode(rule))
                   );
                 }),
-                sprEvents.length < 8 && h('button', { 'aria-label': __alloT('stem.gamestudio.add_rule', 'Add Rule ('),
+                sprEvents.length < 8 && h('button', { 'aria-label': __alloT('stem.gamestudio.aria_add_rule', 'Add Rule ({n} of 8 used)').split('{n}').join(String(sprEvents.length)),
                   onClick: function() {
                     var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
                     arr.push({ trigger: 'onKey', param: 'ArrowUp', action: 'move', actionParam: 'up' });
@@ -1345,13 +1362,13 @@ window.StemLab = window.StemLab || {
             isPlaying && !playWon && !playDead && h('div', { className: 'flex justify-center' },
               h('div', { className: 'grid grid-cols-3 gap-1', style: { width: '140px' } },
                 h('div', null),
-                h('button', { onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
+                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_up', 'Move up'), onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
                 h('div', null),
-                h('button', { onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
+                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_left', 'Move left'), onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
                 h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-300 font-bold' }, '\u2022'),
-                h('button', { onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
+                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_right', 'Move right'), onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
                 h('div', null),
-                h('button', { 'aria-label': __alloT('stem.gamestudio.process_move', 'Process Move'), onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
+                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_down', 'Move down'), onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
                 h('div', null)
               )
             ),
@@ -1495,6 +1512,7 @@ window.StemLab = window.StemLab || {
                       else if (isSelected) btnClass += 'border-indigo-400 bg-indigo-100 text-indigo-800';
                       else btnClass += 'border-gray-200 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-700';
                       return h('button', { key: oi,
+                        'aria-pressed': isSelected,
                         onClick: function() {
                           if (learnShowResult) return;
                           upd({ learnAnswer: oi });
@@ -1533,7 +1551,7 @@ window.StemLab = window.StemLab || {
                 learnShowResult && (function() {
                   var idx = LESSONS.findIndex(function(l) { return l.id === activeLesson; });
                   if (idx < LESSONS.length - 1) {
-                    return h('button', { 'aria-label': __alloT('stem.gamestudio.next_lesson', 'Next Lesson:'),
+                    return h('button', { 'aria-label': __alloT('stem.gamestudio.aria_next_lesson', 'Next Lesson: {title}').split('{title}').join(LESSONS[idx + 1].title),
                       onClick: function() { upd({ activeLesson: LESSONS[idx + 1].id, learnAnswer: null, learnShowResult: false }); },
                       className: 'w-full py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-600 transition-all'
                     }, 'Next Lesson: ' + LESSONS[idx + 1].icon + ' ' + LESSONS[idx + 1].title + ' \u2192');
@@ -1636,7 +1654,7 @@ window.StemLab = window.StemLab || {
                 ),
 
                 // Complete button
-                !isComplete && allPassed && h('button', { 'aria-label': __alloT('stem.gamestudio.claim', 'Claim'),
+                !isComplete && allPassed && h('button', { 'aria-label': __alloT('stem.gamestudio.aria_claim_xp', 'Claim {n} XP').split('{n}').join(String(ch.xp)),
                   onClick: function() {
                     var cc = Object.assign({}, challengeCompleted);
                     cc[ch.id] = true;

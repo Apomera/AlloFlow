@@ -542,7 +542,8 @@ describe('P3-2 experiment log', () => {
     })).reverse();
     await mount(seed({ experiments, logView: { x: 'dropHeight', y: 'startPE', group: 'none', sort: 'id', dir: 'desc' } }));
     const fits = container.querySelector('.sk-scatter-fits').textContent;
-    expect(fits).toContain('best fit y = 2.0400·x + −0.050, r² = 0.9980 (4 runs)');
+    // Stage D: a negative intercept reads "− 0.050", not "+ −0.050".
+    expect(fits).toContain('best fit y = 2.0400·x − 0.050, r² = 0.9980 (4 runs)');
     expect(container.querySelectorAll('.sk-scatter .sk-scatter-point')).toHaveLength(4);
     await act(async () => { setControlValue(container.querySelector('#sk-log-sort'), 'startPE'); });
     await click(buttonByText('Descending ↓'));

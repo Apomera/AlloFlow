@@ -12,7 +12,7 @@ test.describe('Raptor attention continuity',()=>{
     const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
     await harness.mount(page,{raptorHunt:{activeSection:'hunt',selectedSpecies:species,activeMission:'open',flightSession:{speciesId:species,missionId:'open'},huntTutorialDismissed:true,graphicsQuality:species==='redTail'?'high':'low'}},"document.querySelector('[data-raptor-canvas]')?._rhSnapshot");
     if(species==='greatHorned')await page.addStyleTag({content:'#wrap{width:420px}'});
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     const tracking=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{
       const w=window as any,step=w.stepAttention;c._rhCommand('environment',{windSpeed:0,dayPhase:0.4,cloudCover:0.18});step(25);
       const scene=w.attentionScene,prey=scene.children.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-')));

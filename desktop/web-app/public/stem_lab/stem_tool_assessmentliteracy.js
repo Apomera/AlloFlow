@@ -8563,7 +8563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       var data = ctx.toolData || {};
       var setToolData = ctx.setToolData;
       var addToast = ctx.addToast || function() {};
-      var callGemini = ctx.callGemini;
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null; // null = AI controls hidden
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       var s = Object.assign({}, defaultState(), data.assessmentLiteracy || {});
@@ -8848,7 +8848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             })
           ),
           h('div', { className: 'flex items-center gap-3 pt-2' },
-            h('button', {
+            callGemini && h('button', {
               onClick: runCritique,
               disabled: loading || battery.length < 2,
               className: 'px-5 py-2 rounded-xl font-bold text-sm ' + (loading || battery.length < 2 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
@@ -10745,7 +10745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
 
-        h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30' },
+        callGemini && h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-emerald-500/30' },
           h('h3', { className: 'text-sm font-black text-emerald-300 mb-2' }, 'Explore occupations'),
           h('p', { className: 'text-xs text-slate-300 mb-2' }, 'Ask the AI for occupation matches to your code. Optionally narrow with a focus (e.g., "in healthcare", "that don\'t require a 4-year degree", "accessible to someone with a hearing impairment").'),
           h('input', {
@@ -12262,7 +12262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         // Run + response
         h('div', { className: 'flex flex-wrap gap-2' },
-          h('button', {
+          callGemini && h('button', {
             onClick: runCoach,
             disabled: loading,
             className: 'flex-1 py-3 rounded-xl text-sm font-black ' + (loading ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-400 focus:outline-none')
@@ -17122,7 +17122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       h('h2', { className: 'text-2xl font-black text-emerald-200 mb-4' }, '\uD83C\uDFAF Career Interest Literacy'),
       h('p', { className: 'text-xs text-slate-300 mb-4 leading-relaxed' }, 'The Holland RIASEC model is the foundation of modern career interest assessment — used by O*NET, the Strong Interest Inventory, and most school/college counseling offices. Take the short form, get your code, then see why most popular "career quizzes" fall short.'),
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-        subs.map(function(x) {
+        subs.filter(function(x) { return callGemini || x.id !== 'coach'; }).map(function(x) {
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id }); },
@@ -17241,7 +17241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, test.strategy)
         ),
 
-        h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30' },
+        callGemini && h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30' },
           h('h3', { className: 'text-sm font-black text-amber-200 mb-2' }, '\uD83C\uDFAE Practice mode'),
           h('p', { className: 'text-xs text-slate-300 mb-3' }, 'Generate AI-written items in the style of this test. Not real items (proprietary) — but items that probe the same dimensions the real test probes. Use them to get familiar with the format and check your consistency before test day.'),
           h('button', {
@@ -17419,7 +17419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
 
-        h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30' },
+        callGemini && h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30' },
           h('h3', { className: 'text-sm font-black text-amber-200 mb-3' }, 'Practice mode — AI interview coach'),
           h('div', { className: 'space-y-3' },
             h('div', null,
@@ -18655,7 +18655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               })
             )
           ),
-          h('button', {
+          callGemini && h('button', {
             onClick: genHandout,
             disabled: hLoading || !hStudent || !hFindings,
             className: 'w-full py-2 rounded-xl font-bold text-sm no-print ' + (hLoading || !hStudent || !hFindings ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-700 text-white hover:bg-sky-800')
@@ -19284,7 +19284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             })
           ),
           h('div', { className: 'flex items-center gap-3 mt-3 no-print' },
-            h('button', {
+            callGemini && h('button', {
               onClick: runCritique,
               disabled: loading || domains.length === 0,
               className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (loading || domains.length === 0 ? 'bg-slate-700 text-slate-300' : 'transition-colors bg-sky-700 text-white hover:bg-sky-800')
@@ -19789,7 +19789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('strong', null, 'For whom: '), 'Parents navigating the special ed process, teachers preparing to participate in eligibility meetings, school psych grad students, advocates, and anyone who wants to understand what a "team meeting" is actually deciding and on what evidence.'
       ),
       h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-        subs.map(function(x) {
+        subs.filter(function(x) { return callGemini || x.id !== 'handout'; }).map(function(x) {
           return h('button', {
             key: x.id,
             onClick: function() { upd({ sub: x.id, ideaCategoryFocus: null }); },

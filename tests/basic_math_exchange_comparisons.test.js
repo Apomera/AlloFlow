@@ -6,6 +6,8 @@ afterEach(async()=>{if(root)await React.act(()=>root.unmount());root=null;});
 async function mount(file,id,initial){const tool=loadTool('stem_lab/stem_tool_'+file+'.js',id);let latest,setter;function App(){const[state,setState]=React.useState(initial);latest=state;setter=setState;return tool.render(makeCtx({toolData:state,labToolData:state,setToolData:setState,setLabToolData:setState}));}root=ReactDOMClient.createRoot(document.getElementById('root'));await React.act(()=>root.render(React.createElement(App)));return{state:()=>latest,patch:async fn=>React.act(()=>setter(fn))};}
 function button(label){const el=[...document.querySelectorAll('button')].find(e=>e.textContent.trim()===label||e.getAttribute('aria-label')===label);expect(el,label).toBeTruthy();return el;}
 async function click(label){await React.act(()=>button(label).click());}
+// 2026-11-04: the Arithmetic walk's "Next step" is now the student's own move ("Trade 10 ones for 1 ten").
+async function walkNext(){const el=document.querySelector('[data-walk-next]');expect(el,'walk move').toBeTruthy();await React.act(()=>el.click());}
 const blocks=data=>({_manipulatives:{mode:'blocks',soundEnabled:false,b10:{ones:14,tens:0,hundreds:0,thousands:0},...data}});
 describe('base-ten trade comparisons',()=>{
   it('shows actual representations before and after a trade and reverses it without losing other state',async()=>{
@@ -62,32 +64,33 @@ describe('base-ten trade comparisons',()=>{
 });
 describe('arithmetic exchange comparisons',()=>{
   it('distinguishes equal-value exchanges across zero from taking away',async()=>{
-    await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'subtract',a:102,b:38}});
-    await click('Next step');
+    // Stage E (2026-11-04): Learn hides the final total until the prediction; opened here via the exact-result reveal.
+    await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'subtract',a:102,b:38,learnRevealSig:'subtract:102:38'}});
+    await walkNext();
     expect(document.querySelector('[data-place="10"]').dataset.placeDelta).toBe('10');
     expect(document.querySelector('[data-place="100"]').dataset.placeDelta).toBe('-1');
     expect(document.querySelector('[data-value-change]').textContent).toContain('both representations have value 102');
-    await click('Next step');expect(document.querySelector('[data-place="1"]').dataset.placeDelta).toBe('10');
+    await walkNext();expect(document.querySelector('[data-place="1"]').dataset.placeDelta).toBe('10');
     // Since f238731dd (2026-09-05) each place is regrouped and then settled before moving left, so
     // the 38 is taken away as 8 ones and then 3 tens, each its own value-changing step.
-    await click('Next step');expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
+    await walkNext();expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
     expect(document.querySelector('[data-value-change]').textContent).toContain('102 − 8 = 94');
-    await click('Next step');expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
+    await walkNext();expect(document.querySelector('[data-step-comparison]').dataset.stepComparison).toBe('remove');
     expect(document.querySelector('[data-value-change]').textContent).toContain('94 − 30 = 64');
-    await click('Next step');expect(document.querySelector('[data-value-change]').textContent).toContain('Value: 64.');
+    await walkNext();expect(document.querySelector('[data-value-change]').textContent).toContain('Value: 64.');
     await click('Previous step');await click('Previous step');expect(document.querySelector('[data-value-change]').textContent).toContain('102 − 8 = 94');
     await click('Previous step');expect(document.querySelector('[data-value-change]').textContent).toContain('both representations have value 102');
   });
   it('shows carry changes in the correct places while conserving the sum',async()=>{
-    await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'add',a:58,b:67}});
-    await click('Next step');expect(document.querySelector('[data-place="1"]').dataset.placeDelta).toBe('-10');
+    await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'add',a:58,b:67,learnRevealSig:'add:58:67'}});
+    await walkNext();expect(document.querySelector('[data-place="1"]').dataset.placeDelta).toBe('-10');
     expect(document.querySelector('[data-place="10"]').dataset.placeDelta).toBe('1');
     expect(document.querySelector('[data-value-change]').textContent).toContain('value 125');
-    await click('Next step');expect(document.querySelector('[data-place="100"]').dataset.placeDelta).toBe('1');
+    await walkNext();expect(document.querySelector('[data-place="100"]').dataset.placeDelta).toBe('1');
     expect(document.querySelector('[data-value-change]').textContent).toContain('value 125');
   });
   it('clears the comparison when changed operands restart the model',async()=>{
-    const app=await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'add',a:58,b:67}});await click('Next step');
+    const app=await mount('arithmetic','arithmeticStudio',{_arithmeticStudio:{operation:'add',a:58,b:67}});await walkNext();
     await app.patch(s=>({_arithmeticStudio:{...s._arithmeticStudio,a:23,b:14}}));
     expect(document.querySelector('[data-step-comparison]')).toBeNull();
     expect([...document.querySelectorAll('[data-place-delta]')].every(e=>e.dataset.placeDelta==='0')).toBe(true);

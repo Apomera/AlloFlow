@@ -43,7 +43,7 @@ test.describe('Raptor flight results accuracy',()=>{
       return {first,crashed:crashed.crashed,catchesAfterCrash:crashed.missionCatches,landed:c._rhSnapshot().landed};
     });expect(recovery).toEqual({first:1,crashed:true,catchesAfterCrash:1,landed:false});
     for(let i=0;i<12;i++){
-      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
+      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);const n=w.huntScene.getObjectByName('raptor-nest');if(n){const s=c._rhSnapshot();n.position.set(s.raptorPosition.x+2,s.raptorPosition.y-(s.nest.y-n.position.y),s.raptorPosition.z);w.stepHunt(25);}if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
     }
     const dialog=page.getByRole('dialog',{name:'Mission complete',exact:true});await expect(dialog).toBeVisible();
     const catches=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().missionCatches);expect(catches).toBeGreaterThan(1);
@@ -54,16 +54,16 @@ test.describe('Raptor flight results accuracy',()=>{
   });
   test('previews the actual next mission and species before launching it',async({page})=>{
     for(let i=0;i<12;i++){
-      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
+      const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);const n=w.huntScene.getObjectByName('raptor-nest');if(n){const s=c._rhSnapshot();n.position.set(s.raptorPosition.x+2,s.raptorPosition.y-(s.nest.y-n.position.y),s.raptorPosition.z);w.stepHunt(25);}if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
     }
     const dialog=page.getByRole('dialog',{name:'Mission complete',exact:true}),next=dialog.getByRole('button',{name:'Next mission',exact:true});
-    await expect(next).toHaveAccessibleDescription(/Cross the Desert.*Red-tailed Hawk.*6 min/);
+    await expect(next).toHaveAccessibleDescription(/Wind Hover.*American Kestrel.*3 min/);
     await page.setViewportSize({width:360,height:1000});await page.addStyleTag({content:'#wrap{width:320px}[data-raptor-flight-stage]{height:460px!important;min-height:0!important}'});
     await expect(dialog.locator('[data-raptor-next-mission]')).toBeVisible();
     await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/next-mission-preview-320.png',timeout:90000});
     await next.click();await expect(dialog).toHaveCount(0);
-    expect(await page.evaluate(()=>(window as any).__toolData.raptorHunt.flightSession)).toEqual({speciesId:'redTail',missionId:'crossDesert'});
-    await expect(page.locator('[data-raptor-mission-progress]')).toHaveAttribute('data-raptor-mission-progress','crossDesert');
+    expect(await page.evaluate(()=>(window as any).__toolData.raptorHunt.flightSession)).toEqual({speciesId:'kestrel',missionId:'windHover'});
+    await expect(page.locator('[data-raptor-mission-progress]')).toHaveAttribute('data-raptor-mission-progress','windHover');
     await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot?.().missionCatches)).toBe(0);
     const start=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().motionTimeMs);await page.evaluate(()=>{(window as any).advanceHunt(150);});expect(await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().motionTimeMs)).toBeGreaterThan(start);
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);

@@ -1,0 +1,940 @@
+{
+  "_doc": "Allowlist for dev-tools/check_student_ai_gating.cjs. findings: keyed by file + rule + normalized snippet (substring of the whitespace-collapsed line), NEVER line numbers; max = how many identical findings one entry absorbs (default 1). class: fine (acceptable as written) | gap (known remaining student AI-off gap, fix then delete the entry) | review. skipFiles: host-loaded modules students cannot reach (reason required). sanctionedTransport: files allowed to talk to generativelanguage directly. trustedContexts: receivers whose provider nulls unusable AI fns; trust holds only while every proof.mustContain string is in proof.file. Regenerate a draft with --write-allowlist-draft (stdout only).",
+  "version": 1,
+  "skipFiles": [
+    {
+      "file": "teacher_module.js",
+      "reason": "Teacher dashboard module (TeacherModule); not mounted for learners."
+    },
+    {
+      "file": "concept_quest_teacher_module.js",
+      "reason": "Concept Quest teacher authoring/console."
+    },
+    {
+      "file": "behavior_lens_module.js",
+      "reason": "BehaviorLens: educator FBA/BIP workspace opened from the Educator Hub."
+    },
+    {
+      "file": "meeting_docs_module.js",
+      "reason": "Educator Hub 'meetings' tool (ANTI toolId === 'meetings')."
+    },
+    {
+      "file": "family_announcements_module.js",
+      "reason": "Educator Hub 'announcements' tool."
+    },
+    {
+      "file": "communications_studio_module.js",
+      "reason": "Educator Hub 'communicationsStudio' tool."
+    },
+    {
+      "file": "view_submission_inbox_module.js",
+      "reason": "Teacher submission inbox opened from the roster key panel."
+    },
+    {
+      "file": "view_pdf_audit_module.js",
+      "reason": "PDF accessibility audit/remediation: teacher document workflow."
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "reason": "Document remediation pipeline behind the PDF audit (teacher)."
+    }
+  ],
+  "sanctionedTransport": [
+    {
+      "file": "gemini_api_module.js",
+      "reason": "Host Gemini transport behind callGemini/Vision/ImageEdit; the host swaps these for blocked fns for AI-off students."
+    },
+    {
+      "file": "ai_backend_module.js",
+      "reason": "Host AI backend router (managed connection + policy guards)."
+    }
+  ],
+  "trustedContexts": [
+    {
+      "files": [
+        "stem_lab/stem_tool_*.js"
+      ],
+      "receivers": [
+        "ctx"
+      ],
+      "trustLocalBindings": true,
+      "fns": [
+        "callGemini",
+        "callImagen",
+        "callGeminiVision",
+        "callGeminiImageEdit"
+      ],
+      "proof": {
+        "file": "stem_lab/stem_lab_module.js",
+        "mustContain": [
+          "callGemini: _stemAiText ? callGemini : null",
+          "callImagen: _stemAiImages ? callImagen : null",
+          "callGeminiVision: _stemAiVision ? callGeminiVision : null",
+          "callGeminiImageEdit: _stemAiImageEdit ? callGeminiImageEdit : null"
+        ]
+      },
+      "reason": "STEM host ctx passes null for any AI fn __alloAiUsable rejects (2026-11-03 sweep), so typeof ctx.<fn> is a correct availability check in STEM tools."
+    }
+  ],
+  "findings": [
+    {
+      "file": "allo_commands_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!ctx || typeof ctx.callGemini !== \"function\") return null;",
+      "class": "fine",
+      "reason": "Planner call-guard behind opts.allowAi / ctx built by the host; returns null (deterministic commands still work). [2026-11-04 line 4261]"
+    },
+    {
+      "file": "allo_commands_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!opts.allowAi || typeof ctx.callGemini !== \"function\") return null;",
+      "class": "fine",
+      "reason": "Planner call-guard behind opts.allowAi / ctx built by the host; returns null (deterministic commands still work). [2026-11-04 line 3879]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "entries.length >= 3 && typeof callGemini === 'function' ? h('button', {",
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 24554]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== 'function') {",
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 11945]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiFn !== 'function') {",
+      "max": 8,
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 12695, 13560, 13700, 13837, 14186, 14294, 29479, 29729]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagenFn !== 'function') {",
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 14228]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagenFn !== 'function') { if (onDone) onDone(null); return; }",
+      "max": 2,
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 14017, 14065]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callImagen !== 'function') return;",
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 13782]"
+    },
+    {
+      "file": "allohaven_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callImagen === 'function') {",
+      "max": 2,
+      "class": "fine",
+      "reason": "Prop fn from the AlloHaven host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 12637, 12811]"
+    },
+    {
+      "file": "alt_text_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "\"function\" ? opts.callGeminiVision : typeof window !== \"undefined\" && typeof window.callGeminiVision === \"function\" ? window.callGeminiVision : null;",
+      "max": 2,
+      "class": "fine",
+      "reason": "Alt-text service; invoked from teacher alt-text editors (visual panel / image view are isTeacherMode). [2026-11-04 line 428, 500]"
+    },
+    {
+      "file": "alt_text_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const vision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : null;",
+      "class": "fine",
+      "reason": "Alt-text service; invoked from teacher alt-text editors (visual panel / image view are isTeacherMode). [2026-11-04 line 157]"
+    },
+    {
+      "file": "alt_text_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const vision = typeof opts.callGeminiVision === \"function\" ? opts.callGeminiVision : typeof window !== \"undefined\" && typeof win",
+      "max": 2,
+      "class": "fine",
+      "reason": "Alt-text service; invoked from teacher alt-text editors (visual panel / image view are isTeacherMode). [2026-11-04 line 428, 500]"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "\" }, tx(\"applied_challenge.help.example\", \"See a parallel example\")), typeof callGemini === \"function\" && /* @__PURE__ */ React.createElement(\"button\", { type: \"button\", on",
+      "class": "fine",
+      "reason": "Prop fn from the AppliedChallengeView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2706]"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== \"function\") {",
+      "max": 3,
+      "class": "fine",
+      "reason": "Prop fn from the AppliedChallengeView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2428, 2469, 2510]"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "lanation you wrote here. It cannot inspect the work at your link.\")), typeof callGemini === \"function\" && details(tx(\"applied_challenge.check.ai\", \"Ask AI to challenge my r",
+      "class": "fine",
+      "reason": "Prop fn from the AppliedChallengeView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2712]"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "requestAllowedRef.current = resourceActive && typeof callGemini === \"function\";",
+      "class": "fine",
+      "reason": "Prop fn from the AppliedChallengeView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2113]"
+    },
+    {
+      "file": "applied_challenge_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "ton\", onClick: requestStressTest, disabled: !!busy || isProcessing || typeof callGemini !== \"function\", className: \"applied-challenge-no-print min-h-11 rounded-xl border bo",
+      "class": "fine",
+      "reason": "Prop fn from the AppliedChallengeView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2650]"
+    },
+    {
+      "file": "arcade_mode_boss_encounter.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof ctx.callImagen !== 'function') {",
+      "class": "fine",
+      "reason": "AlloHaven arcade ctx: AlloHaven mount passes callImagen null under studentAiFeaturesHidden; degrades to no image. [2026-11-04 line 912]"
+    },
+    {
+      "file": "arcade_mode_modelun.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof ctx.callImagen === 'function') {",
+      "class": "fine",
+      "reason": "Fire-and-forget news image via AlloHaven arcade ctx (host nulls callImagen); no control. [2026-11-04 line 5736]"
+    },
+    {
+      "file": "concept_graph_engine_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== 'function') return Promise.reject(new Error('callGemini not available'));",
+      "class": "fine",
+      "reason": "Library call-guard (rejects). [2026-11-04 line 1630]"
+    },
+    {
+      "file": "concept_pictionary_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const visionFeedbackAvailable = props.visionFeedbackAvailable === true && typeof callGeminiVision === \"function\";",
+      "class": "fine",
+      "reason": "Also requires props.visionFeedbackAvailable === true from the host. [2026-11-04 line 1684]"
+    },
+    {
+      "file": "concept_quest_solo_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "}, typeof callGemini === 'function' ? tr('solo_ai_setup_help', 'The AI narrates the adventure and respond",
+      "class": "fine",
+      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "concept_quest_solo_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const [setupAi, setSetupAi] = React.useState(typeof callGemini === 'function');",
+      "class": "fine",
+      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "concept_quest_solo_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const hasProvider = typeof callGemini === 'function';",
+      "class": "fine",
+      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "concept_quest_solo_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "disabled: typeof callGemini !== 'function'",
+      "class": "fine",
+      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "content_engine_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var _currentCallGemini = function() { return (typeof window !== 'undefined' && typeof window.callGemini === 'function') ? window.callGemini : _depsCallGemini; };",
+      "class": "fine",
+      "reason": "Resolves the CURRENT window.callGemini (which the host swaps to the blocked fn for students) and rejects when absent; not an availability gate. [2026-11-04 line 423]"
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiFn !== \"function\") {",
+      "max": 13,
+      "class": "fine",
+      "reason": "Prop fn from the DynamicAssessmentHostAdapter host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 8350, 8555, 8637, 8705, 8835, 8929, 9031, 9163, 9632, 12983, 13238, 13329, 13413]"
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiFn !== \"function\") { setAccomError(\"AI generation requires callGemini.\"); return; }",
+      "class": "fine",
+      "reason": "Prop fn from the DynamicAssessmentHostAdapter host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 8876]"
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiFn !== \"function\") { setIepError(\"AI generation requires callGemini.\"); return; }",
+      "class": "fine",
+      "reason": "Prop fn from the DynamicAssessmentHostAdapter host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 8747]"
+    },
+    {
+      "file": "dynamic_assessment_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var hasGemini = typeof props.callGemini === \"function\";",
+      "max": 2,
+      "class": "fine",
+      "reason": "Prop fn from the DynamicAssessmentHostAdapter host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 9797, 12610]"
+    },
+    {
+      "file": "fluency_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + defaultModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');",
+      "class": "fine",
+      "reason": "OLD-HOST FALLBACK ONLY: hosts whose callGeminiAudio advertises _alloJsonMaxOutputTokens route through it (keyless Canvas + JSON clamp, host policy). On older hosts this raw fetch runs only when _fluencyCloudAllowed() (host audio usable, or only a missing key with text AI usable). [2026-11-04 GAPS lane; w3 AUDIO-HOST]"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiVision === 'function' && typeof memoryAidRules.visualCheckPrompt === 'function' && typeof memoryAidRules.parseVisualCheck === 'function') {",
+      "class": "fine",
+      "reason": "Teacher generation pipeline (resource generation is a teacher action). [2026-11-04 line 9871]"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (window.AlloImageGeneration?.isEnabled() !== false && (_wantQuestionImages || _wantOptionImages) && Array.isArray(content.questions) && typeof callImagen === 'function') {",
+      "class": "fine",
+      "reason": "Teacher generation pipeline (resource generation is a teacher action). [2026-11-04 line 6593]"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "indow.AlloImageGeneration?.isEnabled() !== false && includeVisuals && typeof callImagen === 'function' && memoryAidRules && typeof memoryAidRules.visualPrompt === 'function",
+      "class": "fine",
+      "reason": "Teacher generation pipeline (resource generation is a teacher action). [2026-11-04 line 9840]"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "results = await svc.draftAlts(images, { language, callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null, signal: generationSignal || null });",
+      "class": "fine",
+      "reason": "Teacher generation pipeline (resource generation is a teacher action). [2026-11-04 line 3628]"
+    },
+    {
+      "file": "generate_dispatcher_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "tudent' : structured ? 'structured' : !includeVisuals ? 'on-demand' : typeof callImagen === 'function' && memoryAidRules ? 'queued' : 'unavailable';",
+      "class": "fine",
+      "reason": "Teacher generation pipeline (resource generation is a teacher action). [2026-11-04 line 9798]"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "('');}}};const csRegenerateItemImage=async item=>{if(!item||!item.id||typeof __d.callImagen!=='function')return;const run=__d.csBeginAsyncRun();if(!run)return;__d.setCsBusyId",
+      "class": "fine",
+      "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "ask=String(__d.pollAsk||'').trim();if(!ask||__d.pollAiBusy)return;if(typeof window.callGemini!=='function'){__d.addToast('The assistant is not available right now. You can stil",
+      "class": "fine",
+      "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if(imageUrl&&__d.conceptSortAutoRemoveWords&&typeof __d.callGeminiImageEdit==='function'){try{const rawB64=String(imageUrl).split(',')[1];if(rawB64){const str",
+      "class": "fine",
+      "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "illCurrent())return null;if(imageUrl&&__d.conceptSortAutoRemoveWords&&typeof __d.callGeminiImageEdit==='function'){try{const rawB64=String(imageUrl).split(',')[1];if(rawB64){const str",
+      "class": "fine",
+      "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "sRefineItemImage=async(itemId,instructionOverride=null)=>{if(!itemId||typeof __d.callGeminiImageEdit!=='function')return;const items=__d.generatedContent&&__d.generatedContent.data&&_",
+      "class": "fine",
+      "reason": "Teacher-only call sites: concept-sort image regenerate/refine/auto-strip live in the editor branch (view_concept_sort: !isTeacherMode || isIndependentMode shows the learner start screen); poll suggestion is the organizer header path with a toast fallback. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "lesson_board_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== \"function\") throw Error(tr(t, \"provider_needed\", \"Connect an AI provider to create a new board. You can still open saved boards or board files.\"));",
+      "class": "fine",
+      "reason": "Board authoring call-guards that throw a provider-needed error (teacher board creation/images). [2026-11-04 line 9044]"
+    },
+    {
+      "file": "lesson_board_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen !== \"function\") throw Error(\"board-image-provider\");",
+      "class": "fine",
+      "reason": "Board authoring call-guards that throw a provider-needed error (teacher board creation/images). [2026-11-04 line 2987]"
+    },
+    {
+      "file": "lesson_board_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen !== \"function\") throw Error(tr(t, \"image_provider_needed\", \"Connect an image provider to generate artwork. Existing glossary pictures can still be reused.\"));",
+      "class": "fine",
+      "reason": "Board authoring call-guards that throw a provider-needed error (teacher board creation/images). [2026-11-04 line 3604]"
+    },
+    {
+      "file": "lesson_board_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof options.callImagen !== \"function\") {",
+      "class": "fine",
+      "reason": "Board authoring call-guards that throw a provider-needed error (teacher board creation/images). [2026-11-04 line 3798]"
+    },
+    {
+      "file": "lingua_practice_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if(!studioDraft||typeof props.callGemini!=='function')return;",
+      "class": "fine",
+      "reason": "Prop fn from the LinguaPractice host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 4107]"
+    },
+    {
+      "file": "lingua_practice_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "typeof props.callGemini==='function'?e('button',{type:'button',disabled:!!studioBusy,onClick:function(){re",
+      "class": "fine",
+      "reason": "Prop fn from the LinguaPractice host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 4122]"
+    },
+    {
+      "file": "lingua_practice_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var textAiCallable=typeof props.callGemini==='function'&&!learnerNoText;",
+      "class": "fine",
+      "reason": "Prop fn from the LinguaPractice host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2876]"
+    },
+    {
+      "file": "live_polling_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return;",
+      "class": "fine",
+      "reason": "Background UI translation (uiLang !== 'English'); a blocked fn rejects and English stays. No visible control. [2026-11-04 line 3278]"
+    },
+    {
+      "file": "math_fluency_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return;",
+      "class": "fine",
+      "reason": "Background UI translation guard; fails closed, no visible control. [2026-11-04 line 1214]"
+    },
+    {
+      "file": "math_helpers_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== 'function') throw new Error('Math AI service is unavailable');",
+      "class": "fine",
+      "reason": "Library call-guard (throws); callers own the visibility gate. [2026-11-04 line 736]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "}, \"aria-disabled\": !!busy || isProcessing || typeof callGemini !== \"function\" || card.essentialFacts.length === 0, disabled: typeof callGemini !==",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3500]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const aiFeedbackAvailable = typeof callGemini === \"function\";",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3448]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== \"function\") {",
+      "max": 3,
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 2627, 3093, 3114]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiImageEdit !== \"function\") {",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3165]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiVision !== \"function\") {",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3199]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen !== \"function\") {",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3132]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "lGemini !== \"function\" || card.essentialFacts.length === 0, disabled: typeof callGemini !== \"function\" || card.essentialFacts.length === 0, \"aria-busy\": busy === \"fact-chec",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3500]"
+    },
+    {
+      "file": "memory_aid_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "onClick: () => requestHint(card), disabled: !!busy || isProcessing || typeof callGemini !== \"function\", className: \"memory-aid-no-print mt-3 min-h-11 rounded-xl border bord",
+      "class": "fine",
+      "reason": "Prop fn from the MemoryAidView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3503]"
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "}), /* @__PURE__ */ React.createElement(\"div\", { className: \"ml-auto flex items-center gap-2\" }, typeof callGemini === \"function\" && /* @__PURE__ */ React.createElement(",
+      "class": "fine",
+      "reason": "Prop fn from the NoteTakingHostView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 1526]"
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "disabled: insightsLoading || noteEntries.length < 2 || typeof callGemini !== \"function\",",
+      "class": "fine",
+      "reason": "Prop fn from the NoteTakingHostView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 1531]"
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === \"function\", hideRequest: !props.isTeacherMode && typeof callGemini !== \"function",
+      "class": "fine",
+      "reason": "Prop fn from the NoteTakingHostView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 472]"
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== \"function\") {",
+      "max": 2,
+      "class": "fine",
+      "reason": "Prop fn from the NoteTakingHostView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 405, 1404]"
+    },
+    {
+      "file": "note_taking_templates_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "ypeof callGemini === \"function\", hideRequest: !props.isTeacherMode && typeof callGemini !== \"function\", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.dr",
+      "class": "fine",
+      "reason": "Prop fn from the NoteTakingHostView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 472]"
+    },
+    {
+      "file": "poet_tree_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof onCallGemini !== 'function' || !list.length || !cloudFeaturesEnabledRef.current) return;",
+      "class": "fine",
+      "reason": "Background UI translation; host passes onCallGemini null under studentAiFeaturesHidden and the call fails closed. [2026-11-04 line 933]"
+    },
+    {
+      "file": "poet_tree_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (uiLang === 'English' || typeof onCallGemini !== 'function' || !cloudFeaturesEnabled) return;",
+      "class": "fine",
+      "reason": "Background UI translation; host passes onCallGemini null under studentAiFeaturesHidden and the call fails closed. [2026-11-04 line 951]"
+    },
+    {
+      "file": "quiz_ai_helpers.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!args || typeof args.callGemini !== 'function') {",
+      "max": 2,
+      "class": "fine",
+      "reason": "Grader library call-guard returning an error status; QuizView mount passes null under studentAiFeaturesHidden. [2026-11-04 line 82, 216]"
+    },
+    {
+      "file": "quiz_ai_helpers.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof args.callGemini !== 'function') return { status: 'incorrect', feedback: 'Your response does not matc",
+      "class": "fine",
+      "reason": "Grader library call-guard returning an error status; QuizView mount passes null under studentAiFeaturesHidden. [2026-11-04 line 167]"
+    },
+    {
+      "file": "research_hub_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!aiText && typeof onCallGemini !== \"function\") {",
+      "class": "fine",
+      "reason": "Prop fn from the ResearchHub host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 3379]"
+    },
+    {
+      "file": "safety_checker_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');",
+      "class": "fine",
+      "reason": "aiCheck returns before the raw fetch unless __alloAiUsable(\"text\", window.callGemini) (old-host fallback: blocked tag + __alloStudentAiDisabled); regex layer still runs. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "seating_chart_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (uiLang === \"English\" || typeof window === \"undefined\" || typeof window.callGemini !== \"function\") return void 0;",
+      "class": "fine",
+      "reason": "Background UI translation guard in a teacher tool; fails closed. [2026-11-04 line 747]"
+    },
+    {
+      "file": "stem_lab/stem_lab_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": ": (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),",
+      "class": "fine",
+      "reason": "generateText fallback inside the `!_stemAiText ? null : ...` ternary (gated on the line above). [2026-11-04 line 9884]"
+    },
+    {
+      "file": "stem_lab/stem_lumen_study.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (ctx && typeof ctx.callGemini === 'function') return normalizeProviderResult(await ctx.callGemini(prompt, true));",
+      "class": "fine",
+      "reason": "Preceded by ctx.aiAvailable === false and ctx.callGemini._alloQrBlocked early returns; STEM ctx nulls unusable fns. [2026-11-04 line 116]"
+    },
+    {
+      "file": "stem_lab/stem_lumen_study.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var fn = typeof ctx.callGemini === 'function' ? ctx.callGemini",
+      "class": "fine",
+      "reason": "Preceded by ctx.aiAvailable === false and ctx.callGemini._alloQrBlocked early returns; STEM ctx nulls unusable fns. [2026-11-04 line 86]"
+    },
+    {
+      "file": "stem_lab/stem_tool_datalab.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "return !!(c.aiHintsEnabled && typeof c.callGemini === 'function');",
+      "class": "fine",
+      "reason": "`c` is the STEM ctx (nulls unusable fns); also requires aiHintsEnabled. [2026-11-04 line 1434]"
+    },
+    {
+      "file": "story_stage_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof onCallGemini !== 'function' || !list.length) return;",
+      "class": "fine",
+      "reason": "Background UI translation guard; LitLab mount passes onCallGemini null under studentAiFeaturesHidden. [2026-11-04 line 352]"
+    },
+    {
+      "file": "story_stage_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (uiLang === 'English' || typeof onCallGemini !== 'function') return;",
+      "class": "fine",
+      "reason": "Background UI translation guard; LitLab mount passes onCallGemini null under studentAiFeaturesHidden. [2026-11-04 line 370]"
+    },
+    {
+      "file": "timeline_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var aiOn = props.aiHintsEnabled !== false && typeof callGemini === 'function';",
+      "class": "fine",
+      "reason": "Prop fn from the TimelineStudio host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 514]"
+    },
+    {
+      "file": "tts_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;",
+      "class": "fine",
+      "reason": "Student-reachable read-aloud transport (Gemini TTS) with local/browser fallbacks. TTS is not an __alloAiUsable kind; whether student AI-off should also stop cloud TTS is a policy decision for the lead (not changed). [2026-11-04 GAPS lane] Decided 2026-11-04 (W4 TTS lane): cloud TTS is off for these students; _assertCloudTtsAllowed refuses this transport when window.__alloStudentAiDisabled is true (code BROWSER_TTS_REQUIRED), and callTTS/callTTSDirect return no URL before any engine, so callers read with the device voice."
+    },
+    {
+      "file": "tts_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;",
+      "class": "fine",
+      "reason": "Student-reachable read-aloud transport (Gemini TTS) with local/browser fallbacks. TTS is not an __alloAiUsable kind; whether student AI-off should also stop cloud TTS is a policy decision for the lead (not changed). [2026-11-04 GAPS lane] Decided 2026-11-04 (W4 TTS lane): cloud TTS is off for these students; _assertCloudTtsAllowed refuses this transport when window.__alloStudentAiDisabled is true (code BROWSER_TTS_REQUIRED), and callTTS/callTTSDirect return no URL before any engine, so callers read with the device voice."
+    },
+    {
+      "file": "udl_chat_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const rawUrl = backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : descriptor.backend === backend ? descriptor.baseUrl : config.backe",
+      "class": "fine",
+      "reason": "Backend-settings URL label for credential destination; not a fetch. [2026-11-04 line 2130]"
+    },
+    {
+      "file": "udl_chat_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof deps.callGemini !== 'function') return fallback;",
+      "class": "fine",
+      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 2604]"
+    },
+    {
+      "file": "udl_chat_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof options.callGemini !== 'function') return fail('An approved AI connection is needed to discuss the proposal.');",
+      "class": "fine",
+      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 2020]"
+    },
+    {
+      "file": "udl_chat_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof options.callGemini !== 'function') return fail('An approved AI connection is needed to prepare a revision.');",
+      "class": "fine",
+      "reason": "Library call-guard returning a failure/fallback; host decides who gets options.callGemini/deps.callGemini. [2026-11-04 line 1926]"
+    },
+    {
+      "file": "utils_pure_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;",
+      "class": "fine",
+      "reason": "fetchAndCleanUrl computes cloudAiOk via __alloAiUsable(\"text\", geminiCaller); URL Context and YouTube transcript are skipped when false (standard import still runs). [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "utils_pure_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;",
+      "class": "fine",
+      "reason": "fetchAndCleanUrl computes cloudAiOk via __alloAiUsable(\"text\", geminiCaller); URL Context and YouTube transcript are skipped when false (standard import still runs). [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "} else if (typeof propsRef.current.callGemini === 'function') {",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 4199]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { chatRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 4127]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { dsRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 3463]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { iRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 4263]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { locRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 4218]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 3882]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { sgRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 3960]"
+    },
+    {
+      "file": "video_studio_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof propsRef.current.callGemini !== 'function') { slRespond({ error: 'ai-unavailable' }); return; }",
+      "class": "fine",
+      "reason": "Video Studio iframe bridge handlers (teacher studio); respond ai-unavailable. [2026-11-04 line 3919]"
+    },
+    {
+      "file": "view_dbq_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const aiAvailable = typeof callGemini === 'function';",
+      "class": "fine",
+      "reason": "Prop fn from the DbqView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 856]"
+    },
+    {
+      "file": "view_dbq_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const feedbackScope = JSON.stringify([resId, props.feedbackScopeKey || '', typeof callGemini === 'function']);",
+      "class": "fine",
+      "reason": "Prop fn from the DbqView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 459]"
+    },
+    {
+      "file": "view_dbq_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGemini !== 'function' || feedbackPending(key)) return null;",
+      "class": "fine",
+      "reason": "Prop fn from the DbqView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 487]"
+    },
+    {
+      "file": "view_guided_mode_banner_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "}, t(\"guided.phase_checkpoint_review\") || \"Review latest resource\"), typeof callGemini === \"function\" && /* @__PURE__ */ React.createElement(\"button\", { type: \"button\", di",
+      "class": "fine",
+      "reason": "Guided-mode quick guide (teacher planning banner). [2026-11-04 line 2702]"
+    },
+    {
+      "file": "view_image_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;",
+      "class": "fine",
+      "reason": "Inside the isTeacherMode alt-text editor block (teacher-only). [2026-11-04 line 434]"
+    },
+    {
+      "file": "view_image_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "onRegenerate: A && typeof window.callGeminiVision === 'function' ? regenerate : undefined",
+      "class": "fine",
+      "reason": "Inside the isTeacherMode alt-text editor block (teacher-only). [2026-11-04 line 516]"
+    },
+    {
+      "file": "view_misc_modals_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const geminiCredentialDestination = \"gemini|https://generativelanguage.googleapis.com\";",
+      "class": "fine",
+      "reason": "AI backend settings modal: credential destination / base-URL strings, not a student fetch. [2026-11-04 line 2033]"
+    },
+    {
+      "file": "view_misc_modals_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const rawUrl = backend === \"gemini\" ? \"https://generativelanguage.googleapis.com\" : descriptor.backend === backend ? descriptor.baseUrl : config.backe",
+      "class": "fine",
+      "reason": "AI backend settings modal: credential destination / base-URL strings, not a student fetch. [2026-11-04 line 66]"
+    },
+    {
+      "file": "view_misc_modals_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "const url = new URL(config.baseUrl || aiBackendDefaults[backend] || (backend === \"gemini\" ? \"https://generativelanguage.googleapis.com\" : \"\"));",
+      "class": "fine",
+      "reason": "AI backend settings modal: credential destination / base-URL strings, not a student fetch. [2026-11-04 line 2026]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (teacherReviewOnly || !aiHelpers || typeof aiHelpers.gradeFreeformAnswer !== 'function' || typeof p.callGemini !== 'function') return;",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 4348]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiImageEdit !== 'function') {",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 11979]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof p.callGemini !== 'function') {",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 4498]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callGemini !== 'function' || typeof handleQuizBulkOptionChange !== 'function') {",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 12066]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callGemini !== 'function' || typeof handleQuizChange !== 'function') return;",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 12029]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function' || !question) return;",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 11166]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callGemini !== 'function' || typeof props.handleQuizQuestionAction !== 'function') return;",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 11230]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof props.callGemini !== 'function') return;",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 11118]"
+    },
+    {
+      "file": "view_quiz_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "var showExplainBtn = !card.unscored && card.totalPossible > 0 && card.scorePercent < 80 && typeof p.callGemini === 'function';",
+      "class": "fine",
+      "reason": "Prop fn from the QuizView host mount, which passes null under studentAiFeaturesHidden (S3 bare /app/ student card is a host gap, not this file). [2026-11-04 line 5046]"
+    },
+    {
+      "file": "view_sidebar_panels_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!items || typeof callGeminiVision !== \"function\") return;",
+      "class": "fine",
+      "reason": "Source-panel image paste OCR (teacher source intake); returns silently. [2026-11-04 line 2777]"
+    },
+    {
+      "file": "visual_panel_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const vision = typeof window.callGeminiVision === \"function\" ? window.callGeminiVision : null;",
+      "class": "fine",
+      "reason": "Inside an isTeacherMode alt-text editor. [2026-11-04 line 426]"
+    },
+    {
+      "file": "voice_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callGeminiAudio !== 'function') {",
+      "max": 2,
+      "class": "fine",
+      "reason": "Call-site guards inside the Gemini engine/grader: a blocked fn passes typeof and rejects (handled). Engine selection checks _alloQrBlocked + host audio capability. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "word_sounds_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (!runtimeAiAllowed || typeof callGemini !== \"function\") return null;",
+      "class": "fine",
+      "reason": "Gated on runtimeAiAllowed (host allowRuntimeAi = !studentAiFeaturesHidden). [2026-11-04 line 14290]"
+    },
+    {
+      "file": "word_sounds_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen !== 'function') {",
+      "class": "fine",
+      "reason": "Local callImagen is nulled unless runtimeAiAllowed && wsAiUsable(\"images\", providedCallImagen), so these typeof checks are truthful. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "word_sounds_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen !== \"function\") return Promise.resolve();",
+      "class": "fine",
+      "reason": "Local callImagen is nulled unless runtimeAiAllowed && wsAiUsable(\"images\", providedCallImagen), so these typeof checks are truthful. [2026-11-04 GAPS lane]"
+    },
+    {
+      "file": "word_sounds_setup_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "const aiAvailable = typeof window !== \"undefined\" && typeof window.callGeminiAudio === \"function\";",
+      "class": "fine",
+      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 2278]"
+    },
+    {
+      "file": "word_sounds_setup_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (includeAacImages && typeof callImagen === \"function\") {",
+      "class": "fine",
+      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 5973]"
+    },
+    {
+      "file": "word_sounds_setup_module.js",
+      "rule": "typeof-ai-gate",
+      "snippet": "if (typeof callImagen === \"function\") {",
+      "class": "fine",
+      "reason": "Word Sounds setup/pack builder (teacher). [2026-11-04 line 5905]"
+    }
+  ]
+}

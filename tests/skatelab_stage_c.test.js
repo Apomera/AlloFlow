@@ -262,7 +262,9 @@ describe('P4-1 missions are checked from the model', () => {
 
   it('hints come one at a time, and the Moon guess only counts before that setup is revealed', async () => {
     const awardXP = vi.fn();
-    const state = await mount(seed({ gravity: 1.62, activeMission: 'moon_hang' }), { awardXP });
+    // Stage D: the guess must be typed while predict-first hides the hang time.
+    const state = await mount(seed({ gravity: 1.62, activeMission: 'moon_hang', estimateChallenge: true }), { awardXP });
+    const predict = () => click(container.querySelector('[data-skatelab-predict] input'));
     const card = () => container.querySelector('[data-skatelab-mission="moon_hang"]');
     await click(card().querySelector('[aria-label="Show hint 1 of 2 for Moon hang time"]'));
     expect(card().querySelectorAll('.sk-mission-hints li')).toHaveLength(1);
@@ -270,6 +272,7 @@ describe('P4-1 missions are checked from the model', () => {
     expect(card().querySelectorAll('.sk-mission-hints li')).toHaveLength(2);
 
     // Run first without a guess: the setup is now revealed.
+    await predict();
     await launch();
     expect(state.latest.skatelab.missions.moon_hang.reason).toBe('no_guess');
     const moon = physics.simHalfpipe({ pumps: 3, rotationTarget: 180, spinRate: 210, gravity: 1.62 });
@@ -282,6 +285,7 @@ describe('P4-1 missions are checked from the model', () => {
     await act(async () => { setControlValue(container.querySelector('#sk-pumps'), 4); });
     const fresh = physics.simHalfpipe({ pumps: 4, rotationTarget: 180, spinRate: 210, gravity: 1.62 });
     await act(async () => { setControlValue(container.querySelector('#sk-mission-guess-banner'), (fresh.airTime * 0.95).toFixed(2)); });
+    await predict();
     await launch();
     expect(state.latest.skatelab.missions.moon_hang.done).toBe(true);
     expect(missionCalls(awardXP)).toHaveLength(1);

@@ -37,7 +37,7 @@ function harness(overrides) {
     'difficulty', 'range', 'challenge', 'answer',
     'streak', 'bestStreak', 'score',
     'roundingSolved', 'fractionSolved', 'negativeSolved', 'placeSolved',
-    'challengeTypesUsed', '_n',
+    'challengeTypesUsed', '_n', 'young',
     src.slice(start, end) + '\nreturn { genChallenge: genChallenge, checkAnswer: checkAnswer };'
   )(
     (patch) => patches.push(patch), (k, fb) => fb, pickFn, randInt,
@@ -45,7 +45,7 @@ function harness(overrides) {
     env.difficulty, env.range, env.challenge, env.answer,
     env.streak, env.bestStreak, env.score,
     env.roundingSolved, env.fractionSolved, env.negativeSolved, env.placeSolved,
-    env.challengeTypesUsed, env._n
+    env.challengeTypesUsed, env._n, !!env.young
   );
   return { engine: built, patches };
 }
@@ -90,7 +90,14 @@ describe('declarative grading (serialization-safe regression pins)', () => {
     expect(grade({ type: 'identify', answer: 7, question: '' }, 8).feedback.correct).toBe(false);
     expect(grade({ type: 'estimate', answer: 10, question: '' }, 11, { min: 0, max: 20 }).feedback.correct).toBe(true);
     expect(grade({ type: 'estimate', answer: 10, question: '' }, 13, { min: 0, max: 20 }).feedback.correct).toBe(false);
-    expect(grade({ type: 'place', answer: 10, question: '' }, 11, { min: 0, max: 20 }).feedback.correct).toBe(true);
+    // Legacy "place" questions are graded from the MARKER position (2026-11-03): a typed
+    // number with no marker grades nothing; a marker within tolerance is correct.
+    const placeRun = harness({ challenge: { type: 'place', answer: 10, question: '' }, answer: '11', range: { min: 0, max: 20 } });
+    placeRun.engine.checkAnswer();
+    expect(placeRun.patches).toEqual([]);
+    const placed = harness({ challenge: { type: 'place', answer: 10, question: '' }, answer: '', range: { min: 0, max: 20 }, _n: { markers: [{ value: 11 }] } });
+    placed.engine.checkAnswer();
+    expect(gradeOf(placed.patches).feedback.correct).toBe(true);
     expect(grade({ type: 'rounding', answer: 40, question: '' }, 40).feedback.correct).toBe(true);
     expect(grade({ type: 'rounding', answer: 40, question: '' }, 30).feedback.correct).toBe(false);
   });
@@ -140,14 +147,24 @@ describe('generated challenges are self-consistent', () => {
 });
 
 describe('UI contracts (source pins)', () => {
-  it('all five tabs have number-key shortcuts and the hint says 1-5', () => {
-    expect(src).toContain("key === '5') { sfxClick(); upd({ tab: 'magCompare' });");
-    expect(src).toContain('1-5: tabs');
+  it('all nine tabs have number-key shortcuts and the hint says 1-9', () => {
+    // Stage B (2026-11-03 pm) added Decimal zoom, Order numbers, Ruler & line plot and
+    // Integers in context as tabs 6-9; the hint moved to a new key (kbd_hint_v2).
+    // Stage C (2026-11-03 evening): 1-9 follow the tabs AS SHOWN, which are ordered by
+    // grade band (core activities first); numberline_deep_c_ui tests the live mapping.
+    expect(src).toContain("var ti = '123456789'.indexOf(key);");
+    expect(src).toContain("upd({ tab: tabs[ti].id })");
+    expect(src).toContain('1-9: tabs');
+    expect(src).not.toContain('1-5: tabs');
     expect(src).not.toContain('1-4: tabs');
   });
 
   it('the slider aria-valuetext only claims a fraction when the value is exact', () => {
-    expect(src).toContain("(isExactFrac ? ', which is ' + simpNum + ' over ' + simpDen : ', near '");
+    // Whole translatable sentences since 2026-11-03 (no glued fragments); same exact/near rule.
+    expect(src).toContain("var valueText = isExactFrac");
+    expect(src).toContain("t('stem.numberline.fd_valuetext_exact', '{dec}, which is {n} over {d}')");
+    expect(src).toContain("t('stem.numberline.fd_valuetext_near', '{dec}, near {n} over {d}')");
+    expect(src).toContain("'aria-valuetext': valueText");
   });
 
   it('the research claim is stated without embellishment', () => {

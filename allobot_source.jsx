@@ -3303,8 +3303,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         introTimerRef.current = scheduleOwnedTimeout(() => {
             introTimerRef.current = null;
             introClaimedRef.current = false;
-            const welcomeMsg = t('sidebar.ai_guide_welcome');
-            if (welcomeMsg && welcomeMsg !== 'sidebar.ai_guide_welcome') {
+            const noAi = typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text');
+            const welcomeKey = noAi ? 'sidebar.allobot_welcome_no_ai' : 'sidebar.ai_guide_welcome';
+            const welcomeMsg = t(welcomeKey);
+            if (welcomeMsg && welcomeMsg !== welcomeKey) {
                 speak(welcomeMsg);
             }
             if (!motionDisabled) {

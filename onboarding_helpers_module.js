@@ -771,7 +771,12 @@
     } catch (_) { return 'gemini'; }
   }
   function isCoachAvailable() {
-    if (typeof window.callGemini !== 'function') return false;
+    // Blocked host fns are truthy: ask the host (old-host fallback).
+    var fn = window.callGemini;
+    try {
+      if (typeof window.__alloAiUsable === 'function') { if (!window.__alloAiUsable('text', fn)) return false; }
+      else if (typeof fn !== 'function' || fn._alloQrBlocked || window.__alloStudentAiDisabled === true) return false;
+    } catch (_) { return false; }
     var backend = getActiveBackend();
     if (backend && backend !== 'gemini') return false;
     return true;

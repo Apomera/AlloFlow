@@ -35,7 +35,7 @@ describe('Galaxy alternatives to dragging', () => {
 
   it('offers four labelled click targets that match arrow-key orbiting without changing selected object or zoom', async () => {
     const canvas = await mount();
-    await act(() => { canvas._galaxyFocusNebula('stem.galaxy.helix_nebula'); canvas._galaxyInspectSelection(); }); await step();
+    await act(() => { canvas._galaxyFocusNebula('Helix Nebula'); canvas._galaxyInspectSelection(); }); await step();
     const controls = [...host.querySelectorAll('[data-galaxy-orbit-step]')];
     expect(controls.map(node => node.getAttribute('data-galaxy-orbit-step'))).toEqual(['left', 'right', 'up', 'down']);
     const inspection = canvas._galaxyGetInspectionState(), radius = canvas._galaxyOrbit.r;

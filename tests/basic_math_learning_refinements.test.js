@@ -23,36 +23,45 @@ async function click(label) {
   await React.act(() => button.click());
 }
 
+// 2026-11-04: the Arithmetic walk's "Next step" is now the student's own move ("Trade 10 ones for 1 ten").
+async function walkNext() {
+  const el = document.querySelector('[data-walk-next]');
+  expect(el, 'walk move').toBeTruthy();
+  await React.act(() => el.click());
+}
+
 describe('basic math learning refinements', () => {
   it('conserves value while borrowing across zero and removes one place at a time', async () => {
-    await mount('arithmetic', 'arithmeticStudio', { _arithmeticStudio: { operation: 'subtract', a: 102, b: 38 } });
+    // Stage E (2026-11-04): Learn hides the final total until the prediction; opened via the exact-result reveal.
+    await mount('arithmetic', 'arithmeticStudio', { _arithmeticStudio: { operation: 'subtract', a: 102, b: 38, learnRevealSig: 'subtract:102:38' } });
     const total = () => Number(document.querySelector('[data-model-total]').dataset.modelTotal);
     expect(total()).toBe(102);
-    await click('Next step');
+    await walkNext();
     expect(total()).toBe(102);
     expect(document.querySelector('[data-place="10"]').dataset.count).toBe('10');
-    await click('Next step');
+    await walkNext();
     expect(total()).toBe(102);
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('12');
-    await click('Next step');
+    await walkNext();
     expect(total()).toBe(94);
     expect(document.querySelector('[data-place="10"]').dataset.count).toBe('9');
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('4');
     expect(document.querySelector('[data-value-change]').textContent).toContain('102 \u2212 8 = 94');
-    await click('Next step');
+    await walkNext();
     expect(total()).toBe(64);
     expect(document.querySelector('[data-place="10"]').dataset.count).toBe('6');
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('4');
     expect(document.querySelector('[data-value-change]').textContent).toContain('94 \u2212 30 = 64');
-    await click('Next step');
+    await walkNext();
     expect(total()).toBe(64);
   });
 
   it('carries into a new place while preserving the sum', async () => {
-    await mount('arithmetic', 'arithmeticStudio', { _arithmeticStudio: { operation: 'add', a: 58, b: 67 } });
-    await click('Next step');
+    // Hunt 2026-11-04: data-model-total holds "?" until the total is open, so this opens it first.
+    await mount('arithmetic', 'arithmeticStudio', { _arithmeticStudio: { operation: 'add', a: 58, b: 67, learnRevealSig: 'add:58:67' } });
+    await walkNext();
     expect(document.querySelector('[data-model-total]').dataset.modelTotal).toBe('125');
-    await click('Next step');
+    await walkNext();
     expect(document.querySelector('[data-place="100"]').dataset.count).toBe('1');
     expect(document.querySelector('[data-place="10"]').dataset.count).toBe('2');
     expect(document.querySelector('[data-place="1"]').dataset.count).toBe('5');
@@ -103,27 +112,38 @@ describe('basic math learning refinements', () => {
   });
 
   it('lets learners predict measurements, reveal them, and trace one edge at a time', async () => {
-    const state = await mount('areaperimeter', 'areaPerimeter', { _areaPerimeter: { width: 4, height: 3 } });
+    // 2026-11-04: a first visit opens the band's path step (Challenges at grade 5), so name the Tile Explorer.
+    const state = await mount('areaperimeter', 'areaPerimeter', { _areaPerimeter: { mode: 'explore', width: 4, height: 3 } });
     await click('Predict first');
     expect(state()._areaPerimeter.predictMeasurements).toBe(true);
     expect(document.querySelector('#ap-explore-desc').textContent).not.toContain('perimeter is');
     await click('Trace the next edge');
     expect(state()._areaPerimeter.boundaryStep).toBe(1);
-    await click('Reveal measurements');
+    // 2026-11-03: the learner now commits numeric predictions before the check.
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    for (const [id, value] of [['ap-predict-area', '12'], ['ap-predict-perimeter', '14']]) {
+      const input = document.getElementById(id);
+      await React.act(() => { setter.call(input, value); input.dispatchEvent(new Event('input', { bubbles: true })); });
+    }
+    await click('Check my prediction');
     expect(state()._areaPerimeter.measurementsShown).toBe(true);
     expect(document.querySelector('#ap-explore-desc').textContent).toContain('perimeter is');
   });
 
   it('connects a fresh ratio model to the next problem without filling the unknown', async () => {
-    await mount('ratios', 'ratioLab', {});
+    // 2026-11-04: grades 4-5 open on times-as-many, so the lesson set is chosen here;
+    // the model opens by default and the student builds the paint table (the unknown stays "?").
+    await mount('ratios', 'ratioLab', { _ratioLab: { sourceByMode: { ratioTable: 'fixed' } } });
     let model = document.querySelector('[data-ratio-problem-model]');
     expect(model.dataset.ratioProblemModel).toBe('ratio-paint');
-    expect(model.querySelector('tbody').textContent).toBe('35?20');
-    model.open = true;
+    expect(model.open).toBe(true);
+    expect([...model.querySelectorAll('[data-model-cell]')].map((cell) => cell.value)).toEqual(['', '']);
+    expect(model.querySelector('[data-model-unknown]').textContent).toContain('?');
+    model.open = false;
     await click('Next challenge');
     model = document.querySelector('[data-ratio-problem-model]');
     expect(model.dataset.ratioProblemModel).toBe('ratio-simplify');
-    expect(model.open).toBe(false);
+    expect(model.open).toBe(true);
     expect(model.querySelector('tbody').textContent).toBe('1824??');
   });
 
@@ -138,7 +158,10 @@ describe('basic math learning refinements', () => {
   it('opens the chosen multiplication fact and keeps teacher simulation separate', async () => {
     const state = await mount('multtable', 'multtable', { _multExt: { visualA: 6, visualB: 7 } });
     expect(document.querySelector('[data-full-fact-table]').open).toBe(false);
-    expect(document.querySelector('[data-teacher-mastery-demo]').open).toBe(false);
+    // 2026-11-03: the simulated mastery-threshold activity is teacher-only now
+    // (review item H); learners never see it. tests/multtable_deep_*.test.js
+    // checks that it renders, closed, under isTeacherMode.
+    expect(document.querySelector('[data-teacher-mastery-demo]')).toBeNull();
     await click('Build this fact');
     expect(state()._multExt.mtTab).toBe('visual');
     expect(state()._multExt.visualA).toBe(6);

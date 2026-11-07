@@ -827,7 +827,7 @@ window.SelHub = window.SelHub || {
   var BADGES = [
     { id: 'first_convo',    icon: '\uD83D\uDDE3\uFE0F', name: 'Ice Breaker',         desc: 'Practice your first conversation starter' },
     { id: 'convo_5',        icon: '\uD83D\uDCAC',       name: 'Smooth Talker',        desc: 'Practice 5 conversation scenarios' },
-    { id: 'ai_chat',        icon: '\u2728',             name: 'AI Partner',           desc: 'Practice a conversation with the AI partner' },
+    { id: 'ai_chat',        icon: '\u2728',             name: 'AI Partner',           desc: 'Practice a conversation with the AI partner', aiOnly: true },
     { id: 'listen_1',       icon: '\uD83D\uDC42',       name: 'Good Listener',        desc: 'Complete your first listening challenge' },
     { id: 'listen_5',       icon: '\uD83C\uDFA7',       name: 'Listening Pro',        desc: 'Complete 5 listening challenges' },
     { id: 'body_lang_3',    icon: '\uD83D\uDC40',       name: 'Body Reader',          desc: 'Learn 3 body language types' },
@@ -882,6 +882,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _socAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var band = ctx.gradeBand || 'elementary';
 
@@ -969,6 +970,8 @@ window.SelHub = window.SelHub || {
 
       // Badge state
       var earnedBadges   = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _socAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup = d.showBadgePopup || null;
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -1084,10 +1087,10 @@ window.SelHub = window.SelHub || {
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _socFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#0ea5e933' : 'transparent', color: _socFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
       // ── Badge Popup ──
@@ -1142,9 +1145,9 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _socFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _socFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-              BADGES.map(function(badge) {
+              shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _socBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#0ea5e9' : _socBg('#334155')) }

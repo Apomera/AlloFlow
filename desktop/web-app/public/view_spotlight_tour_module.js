@@ -31,6 +31,34 @@
   [data-spotlight-glow-ring="true"] { animation: none !important; }
 }
 `;
+
+// Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+function spotlightStudentDeviceVoice(text, onEnd) {
+  if (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false;
+  } catch (e) {}
+  try {
+    if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false;
+  } catch (e) {}
+  var synth = window.speechSynthesis;
+  var phrase = String(text == null ? '' : text).trim();
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+  try {
+    var u = new SpeechSynthesisUtterance(phrase);
+    u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
+    if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+    if (typeof onEnd === 'function') {
+      u.onend = onEnd;
+      u.onerror = onEnd;
+    }
+    synth.cancel();
+    synth.speak(u);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function SpotlightTourView(props) {
   var t = props.t;
   var debugLog = props.debugLog;
@@ -82,7 +110,11 @@ function SpotlightTourView(props) {
     _clearReadingHighlight();
     var a = _ttsAudioRef.current;
     _ttsAudioRef.current = null;
-    if (a) {
+    if (a === 'device-voice') {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    } else if (a) {
       try {
         a.pause();
         a.src = '';
@@ -161,6 +193,14 @@ function SpotlightTourView(props) {
         return;
       } // superseded
       if (!url) {
+        if (spotlightStudentDeviceVoice(plain, function () {
+          if (myGen === _ttsGenRef.current) _stopTts();
+        })) {
+          _ttsAudioRef.current = 'device-voice';
+          setTtsState('playing');
+          _startReadingHighlight(myGen);
+          return;
+        }
         setTtsState('idle');
         return;
       }

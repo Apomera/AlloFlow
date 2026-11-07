@@ -30,7 +30,7 @@ describe('Zones of Regulation navigation accessibility', () => {
     // so it reports aria-expanded rather than pressed.
     expect(text).toContain("'aria-label': 'Sound effects'");
     expect(text).toContain("'aria-pressed': !!soundEnabled");
-    expect(text).toContain("'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + BADGES.length + ')'");
+    expect(text).toContain("'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + shownBadges.length + ')'");
     expect(text).toContain("'aria-expanded': !!showBadgesPanel");
     expect(text).toContain("announceToSR(nextSound ? 'Sounds enabled' : 'Sounds muted')");
   });

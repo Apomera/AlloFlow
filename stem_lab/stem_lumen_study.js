@@ -78,10 +78,24 @@
   var SESSION_SEARCH_LIMIT = 12;
   var SESSION_SEARCH_COOLDOWN_MS = 1000;
 
+  // Student AI-off: ctx.generateText/ctx.ai can outlive a withheld callGemini, so
+  // usability honours ctx.aiAvailable, a blocked callGemini and host policy for learners.
+  function textAiUsable(ctx) {
+    if (!ctx || ctx.aiAvailable === false) return false;
+    if (ctx.callGemini && ctx.callGemini._alloQrBlocked) return false;
+    var fn = typeof ctx.callGemini === 'function' ? ctx.callGemini
+      : typeof ctx.generateText === 'function' ? ctx.generateText
+      : (ctx.ai && typeof ctx.ai.generateText === 'function') ? ctx.ai.generateText : null;
+    if (!fn || fn._alloQrBlocked) return false;
+    if (ctx.isTeacherMode) return true;
+    try { if (root && typeof root.__alloAiUsable === 'function') return !!root.__alloAiUsable('text', fn); } catch (_) {}
+    return !(root && root.__alloStudentAiDisabled === true);
+  }
+
   function hasProvider(ctx) {
-    return !!(ctx && (typeof ctx.generateText === 'function'
+    return textAiUsable(ctx) && !!(typeof ctx.generateText === 'function'
       || (ctx.ai && typeof ctx.ai.generateText === 'function')
-      || typeof ctx.callGemini === 'function'));
+      || typeof ctx.callGemini === 'function');
   }
 
   function checkSessionAllowance(state, now) {
@@ -96,6 +110,7 @@
   }
 
   async function callProvider(ctx, prompt) {
+    if (!textAiUsable(ctx)) throw new Error('No text AI is configured. You can still inspect the retrieved evidence passages.');
     if (ctx && typeof ctx.generateText === 'function') return normalizeProviderResult(await ctx.generateText(prompt, { jsonMode: true, task: 'lumen-grounded-study' }));
     if (ctx && ctx.ai && typeof ctx.ai.generateText === 'function') return normalizeProviderResult(await ctx.ai.generateText(prompt, { jsonMode: true }));
     if (ctx && typeof ctx.callGemini === 'function') return normalizeProviderResult(await ctx.callGemini(prompt, true));
@@ -105,7 +120,7 @@
   function hasWebSearch(ctx) {
     return !!((ctx && typeof ctx.searchWeb === 'function')
       || (root && root.WebSearchProvider && typeof root.WebSearchProvider.search === 'function')
-      || (ctx && typeof ctx.callGemini === 'function'));
+      || textAiUsable(ctx));
   }
 
   function checkSearchAllowance(state, now) {
@@ -128,7 +143,7 @@
     if (ctx && typeof ctx.searchWeb === 'function') raw = await ctx.searchWeb(q, { limit: E.MAX_DISCOVERY_RESULTS, task: 'lumen-source-discovery' });
     else if (root && root.WebSearchProvider && typeof root.WebSearchProvider.search === 'function') raw = await root.WebSearchProvider.search(q, E.MAX_DISCOVERY_RESULTS, q);
     var candidates = E.normalizeDiscoveryResults(raw, q);
-    if (!candidates.length && ctx && typeof ctx.callGemini === 'function') {
+    if (!candidates.length && textAiUsable(ctx)) {
       var prompt = 'Find high-quality, text-based sources about this research topic. Return grounded web results only. Topic: "' + q + '"';
       raw = await ctx.callGemini(prompt, false, true, 0.2);
       candidates = E.normalizeDiscoveryResults(raw, q);

@@ -1,0 +1,2296 @@
+{
+  "date": "2026-11-06",
+  "scope": "Image presence and nonempty alt-text fields, not visual accuracy or full accessibility certification. Draft validator compatibility is diagnostic, not an app import gate.",
+  "files": 67,
+  "embeddedImagePlacements": 2530,
+  "missingAlt": 103,
+  "unknownImageFields": 146,
+  "rows": [
+    {
+      "file": "allopacks/current/academic_discourse_more_practice_grade6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 25,
+      "uniqueImages": 20,
+      "missingAlt": [
+        "history[10].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [],
+      "coverage": {
+        "glossary": {
+          "slots": 0,
+          "withImage": 0
+        },
+        "anchor-chart": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/academic_discourse_reading_space_grade6.allopack.json",
+      "resources": 9,
+      "embeddedImagePlacements": 18,
+      "uniqueImages": 14,
+      "missingAlt": [],
+      "unknownImageFields": [],
+      "coverage": {
+        "glossary": {
+          "slots": 9,
+          "withImage": 9
+        },
+        "anchor-chart": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "concept-sort": {
+          "slots": 0,
+          "withImage": 0
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/american_revolution_causes_grade5.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 46,
+      "uniqueImages": 30,
+      "missingAlt": [
+        "history[7].data.items[0].imageAlt",
+        "history[7].data.items[1].imageAlt",
+        "history[7].data.items[2].imageAlt",
+        "history[7].data.items[3].imageAlt",
+        "history[7].data.items[4].imageAlt",
+        "history[7].data.items[5].imageAlt",
+        "history[7].data.items[6].imageAlt",
+        "history[7].data.items[7].imageAlt",
+        "history[7].data.items[8].imageAlt",
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[5].data.cards[0].visualImage",
+        "history[5].data.cards[1].visualImage",
+        "history[5].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/ancient_egypt_grade6.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 33,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/area_perimeter_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 39,
+      "uniqueImages": 33,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/argument_evidence_grade6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 19,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/body_systems_grade6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 42,
+      "uniqueImages": 20,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage",
+        "history[8].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/cell_structure_grade7.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 43,
+      "uniqueImages": 17,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage",
+        "history[8].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/central_idea_grade7.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 42,
+      "uniqueImages": 23,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/chemical_reactions_grade8.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 40,
+      "uniqueImages": 22,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/constitution_grade8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 46,
+      "uniqueImages": 29,
+      "missingAlt": [
+        "history[8].data.items[0].imageAlt",
+        "history[8].data.items[1].imageAlt",
+        "history[8].data.items[2].imageAlt",
+        "history[8].data.items[3].imageAlt",
+        "history[8].data.items[4].imageAlt",
+        "history[8].data.items[5].imageAlt",
+        "history[8].data.items[6].imageAlt",
+        "history[8].data.items[7].imageAlt",
+        "history[8].data.items[8].imageAlt",
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[6].data.cards[0].visualImage",
+        "history[6].data.cards[1].visualImage",
+        "history[6].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/context_clues_grade3.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 37,
+      "uniqueImages": 24,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_ask_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 16,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_attention_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 16,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_feedback_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 17,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_halfway_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 19,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_norms_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 34,
+      "uniqueImages": 13,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 11,
+          "withImage": 11
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_perspective_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 19,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_repair_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 15,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_story_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 18,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_system_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 17,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_teamwork_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 18,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_upstander_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 16,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/crew_zones_grade6_8.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 10,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[11].data.cards[0].visualImage",
+        "history[11].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/data_and_typical_grade6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 39,
+      "uniqueImages": 23,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 11,
+          "withImage": 11
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "item-too-large",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/day_night_sky_grade1.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 36,
+      "uniqueImages": 24,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/decimal_place_value_grade5.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 32,
+      "uniqueImages": 27,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[10].data.cards[0].visualImage",
+        "history[10].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 9,
+          "withImage": 9
+        },
+        "anchor-chart": {
+          "slots": 3,
+          "withImage": 3
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/ecosystems_food_webs_grade5.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 43,
+      "uniqueImages": 28,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage",
+        "history[8].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/energy_transfer_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 41,
+      "uniqueImages": 24,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 12,
+          "withImage": 12
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "item-too-large",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/equal_groups_grade3.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 31,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/figurative_language_grade5.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 43,
+      "uniqueImages": 26,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage",
+        "history[8].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 12,
+          "withImage": 12
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/forces_motion_grade3.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 44,
+      "uniqueImages": 41,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/fractions_number_line_grade4.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 40,
+      "uniqueImages": 22,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/habitats_diversity_grade2.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 31,
+      "uniqueImages": 28,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[10].data.cards[0].visualImage",
+        "history[10].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 8,
+          "withImage": 8
+        },
+        "anchor-chart": {
+          "slots": 3,
+          "withImage": 3
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/linear_equations_grade8.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 41,
+      "uniqueImages": 18,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/local_government_grade4.allopack.json",
+      "resources": 14,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 30,
+      "missingAlt": [
+        "history[12].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/magnetism_grade6.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 42,
+      "uniqueImages": 25,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 11,
+          "withImage": 11
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/main_idea_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 21,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/making_ten_grade1.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 37,
+      "uniqueImages": 23,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/map_skills_grade3.allopack.json",
+      "resources": 18,
+      "embeddedImagePlacements": 35,
+      "uniqueImages": 26,
+      "missingAlt": [
+        "history[16].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[9].data.cards[0].visualImage",
+        "history[9].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/materials_grade2.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 43,
+      "uniqueImages": 37,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/moon_phases_grade6.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 41,
+      "uniqueImages": 20,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/natural_selection_grade8.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 42,
+      "uniqueImages": 19,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 12,
+          "withImage": 12
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/paper_bridge_fair_test_grade5_6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 23,
+      "uniqueImages": 12,
+      "missingAlt": [],
+      "unknownImageFields": [],
+      "coverage": {
+        "glossary": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/photosynthesis_grade7.allopack.json",
+      "resources": 18,
+      "embeddedImagePlacements": 47,
+      "uniqueImages": 24,
+      "missingAlt": [
+        "history[9].data.items[0].imageAlt",
+        "history[9].data.items[1].imageAlt",
+        "history[9].data.items[2].imageAlt",
+        "history[9].data.items[3].imageAlt",
+        "history[9].data.items[4].imageAlt",
+        "history[9].data.items[5].imageAlt",
+        "history[9].data.items[6].imageAlt",
+        "history[16].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/place_value_grade2.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 37,
+      "uniqueImages": 17,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/plant_needs_grade3.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 45,
+      "uniqueImages": 40,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/plate_tectonics_grade6.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 50,
+      "uniqueImages": 22,
+      "missingAlt": [
+        "history[9].data.items[0].imageAlt",
+        "history[9].data.items[1].imageAlt",
+        "history[9].data.items[2].imageAlt",
+        "history[9].data.items[3].imageAlt",
+        "history[9].data.items[4].imageAlt",
+        "history[9].data.items[5].imageAlt",
+        "history[9].data.items[6].imageAlt",
+        "history[9].data.items[7].imageAlt",
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/point_of_view_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 40,
+      "uniqueImages": 26,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/probability_models_grade7.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 31,
+      "uniqueImages": 27,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[10].data.cards[0].visualImage",
+        "history[10].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 8,
+          "withImage": 8
+        },
+        "anchor-chart": {
+          "slots": 3,
+          "withImage": 3
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/proportional_relationships_grade7.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 41,
+      "uniqueImages": 12,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/ratios_real_life_grade6.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 21,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/reading_decisions_grade6.allopack.json",
+      "resources": 11,
+      "embeddedImagePlacements": 18,
+      "uniqueImages": 17,
+      "missingAlt": [],
+      "unknownImageFields": [],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "concept-sort": {
+          "slots": 0,
+          "withImage": 0
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/rules_and_fairness_grade1.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 34,
+      "uniqueImages": 21,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/scarcity_choice_grade7.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 20,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/simple_machines_grade5.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 44,
+      "uniqueImages": 28,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage",
+        "history[8].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 6,
+          "withImage": 6
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/sound_vibration_grade1.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 31,
+      "uniqueImages": 27,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[10].data.cards[0].visualImage",
+        "history[10].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 8,
+          "withImage": 8
+        },
+        "anchor-chart": {
+          "slots": 3,
+          "withImage": 3
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/source_media_literacy_grade7_8.allopack.json",
+      "resources": 19,
+      "embeddedImagePlacements": 37,
+      "uniqueImages": 18,
+      "missingAlt": [],
+      "unknownImageFields": [],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/states_of_matter_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 46,
+      "uniqueImages": 41,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage",
+        "history[7].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 11,
+          "withImage": 11
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/story_retell_grade2.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 36,
+      "uniqueImages": 22,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/theme_development_grade8.allopack.json",
+      "resources": 18,
+      "embeddedImagePlacements": 42,
+      "uniqueImages": 22,
+      "missingAlt": [
+        "history[16].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[8].data.cards[0].visualImage",
+        "history[8].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 12,
+          "withImage": 12
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 12,
+          "withImage": 12
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/then_and_now_grade2.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 39,
+      "uniqueImages": 35,
+      "missingAlt": [
+        "history[4].data.items[0].imageAlt",
+        "history[4].data.items[1].imageAlt",
+        "history[4].data.items[2].imageAlt",
+        "history[4].data.items[3].imageAlt",
+        "history[4].data.items[4].imageAlt",
+        "history[4].data.items[5].imageAlt",
+        "history[4].data.items[6].imageAlt",
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[6].data.cards[0].visualImage",
+        "history[6].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 8,
+          "withImage": 8
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/volume_grade5.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 38,
+      "uniqueImages": 25,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/water_cycle_grade6.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 47,
+      "uniqueImages": 39,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[12].data.cards[0].visualImage",
+        "history[12].data.cards[1].visualImage",
+        "history[12].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 5,
+          "withImage": 5
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/weather_vs_climate_grade5.allopack.json",
+      "resources": 17,
+      "embeddedImagePlacements": 46,
+      "uniqueImages": 39,
+      "missingAlt": [
+        "history[15].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[6].data.cards[0].visualImage",
+        "history[6].data.cards[1].visualImage",
+        "history[6].data.cards[2].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 10,
+          "withImage": 10
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/weathering_erosion_grade4.allopack.json",
+      "resources": 16,
+      "embeddedImagePlacements": 31,
+      "uniqueImages": 28,
+      "missingAlt": [
+        "history[14].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[10].data.cards[0].visualImage",
+        "history[10].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 8,
+          "withImage": 8
+        },
+        "anchor-chart": {
+          "slots": 3,
+          "withImage": 3
+        },
+        "concept-sort": {
+          "slots": 6,
+          "withImage": 6
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "pack-too-large"
+        ]
+      }
+    },
+    {
+      "file": "allopacks/current/word_families_grade1.allopack.json",
+      "resources": 15,
+      "embeddedImagePlacements": 37,
+      "uniqueImages": 25,
+      "missingAlt": [
+        "history[13].data.visual.imageAlt"
+      ],
+      "unknownImageFields": [
+        "history[7].data.cards[0].visualImage",
+        "history[7].data.cards[1].visualImage"
+      ],
+      "coverage": {
+        "glossary": {
+          "slots": 10,
+          "withImage": 10
+        },
+        "anchor-chart": {
+          "slots": 4,
+          "withImage": 4
+        },
+        "concept-sort": {
+          "slots": 9,
+          "withImage": 9
+        }
+      },
+      "draftValidator": {
+        "ok": false,
+        "errorCodes": [
+          "unregistered-type",
+          "invalid-meta",
+          "embedded-image-payload"
+        ]
+      }
+    }
+  ]
+}

@@ -1299,28 +1299,32 @@
     low: [[-0.22, 0.025], [-0.13, -0.052], [0.0, -0.06], [0.14, -0.025], [0.2, 0.0]] };
   var PARROT = { t: hex(0x24b39f), g: hex(0x168a74), b: hex(0x8fe0c8), p: hex(0xf0849a), o: hex(0xf09a62), beak: hex(0xd9efe6), cheek: hex(0xe8efcf), frame: hex(0x1e8a5c),
     fb: hex(0x4e3c30), fd: hex(0x352820), fl: hex(0x8a7a6a), fp: hex(0xcfc4b0), fr: hex(0x8a4a3e) };
-  var BUMP = { g: hex(0x6d8b7c), d: hex(0x4b6458), l: hex(0x98ad9e), head: hex(0xc9d2c2), pink: hex(0xd8aeb0), line: hex(0x3e5248) };
+  // md14: a little darker, still a dull grey-green.
+  var BUMP = { g: hex(0x4f6e66), d: hex(0x334a45), l: hex(0x86a092), head: hex(0xc9d2c2), pink: hex(0xd8aeb0), line: hex(0x3e5248) };
   var IDOL = { w: hex(0xf6f3e6), y: hex(0xffd23a), k: hex(0x101012), o: hex(0xf0862a) };
   var AURIGA = { w: hex(0xf7f6f0), y: hex(0xffc81e), line: hex(0x3d342d), k: hex(0x0e0e10) };
   var EMP = { b: hex(0x1f40c8), d: hex(0x142c92), y: hex(0xffd41e), k: hex(0x0a0c18), e: hex(0x7fb2ff), face: hex(0x5b78d6), t: hex(0xffbe1a) };
   var ANTH = { base: hex(0xf8904a), v: hex(0xb05ad6), y: hex(0xffd36a) };
-  var CHROMIS = { b: hex(0x8ae6dc), d: hex(0x58bfc2), l: hex(0xc8f6ee) };
+  var CHROMIS = { b: hex(0x86e0c6), d: hex(0x3f9db6), l: hex(0xc4f2d6), fin: hex(0x5fbcc0), edge: hex(0x2f7f9a) };
   var LION = { m: hex(0x7b1c1c), r: hex(0xa9352a), w: hex(0xf4e7dc), pale: hex(0xf6ece4) };
   var ARGUS = { b: hex(0x3a281d), d: hex(0x24180f), s: hex(0x45b0ff), bar: hex(0x8c735a), chest: hex(0xa48c74) };
   var NAPO = { g: hex(0x2d8f86), l: hex(0x4cb0a2), d: hex(0x1b5a51), head: hex(0x4f8fb0), wave: hex(0xc2c46a), lip: hex(0xa8c48a) };
   var CLEANER = { k: hex(0x0b0b14), b: hex(0x2c68f0), pale: hex(0xdde8f2), w: hex(0xf3f6f8) };
 
   var FIRE = { w: hex(0xf7eee7), pink: hex(0xf5b5b7), yellow: hex(0xf5ce6b), orange: hex(0xef6632), red: hex(0xbc302e), dark: hex(0x39202d), violet: hex(0x9b4c92) };
-  var COPPER = { w: hex(0xf3f2df), silver: hex(0xd5e3df), orange: hex(0xf2a136), deep: hex(0xb96a24), ink: hex(0x303333), blue: hex(0x8bb7c9) };
+  var COPPER = { w: hex(0xf3f2df), silver: hex(0xd5e3df), orange: hex(0xe8801e), deep: hex(0xa8521a), ink: hex(0x1c1d1f), blue: hex(0x8bb7c9) };
 
-  var FORCEPS = { yellow: hex(0xffd619), gold: hex(0xe6b820), white: hex(0xf1f3e8), ink: hex(0x141e20), clear: hex(0xe4eacb) };
+  // md14: a deeper, warmer yellow; the old lemon read pale after tone mapping.
+  var FORCEPS = { yellow: hex(0xffbc00), gold: hex(0xe39400), white: hex(0xf1f3e8), ink: hex(0x141e20), clear: hex(0xe4eacb) };
   var PAJAMA = { head: hex(0xc4ce70), pearl: hex(0xf1e6df), silver: hex(0xd4dfd4), ink: hex(0x292a27), spot: hex(0xa6504c), clear: hex(0xdce6dc) };
 
   var BANGGAI = { silver: hex(0xc9c8c0), pearl: hex(0xe7e7df), white: hex(0xf8f7ef), ink: hex(0x202427), clear: hex(0xd4ddd8) };
 
-  var REGAL = { gold: hex(0xf7c525), orange: hex(0xe9a62a), white: hex(0xe4efe8), blue: hex(0x3078bd), ink: hex(0x1c3142), dorsal: hex(0x28699e), face: hex(0x89aaa7), clear: hex(0xc9d9c4), bars: [0.335, 0.255, 0.175, 0.095, 0.015, -0.065, -0.145, -0.225] };
+  // md14: a yellow-orange body (was lemon), and narrower pale bars (below).
+  var REGAL = { gold: hex(0xf6ae22), orange: hex(0xe8902a), white: hex(0xe4efe8), blue: hex(0x3078bd), ink: hex(0x1c3142), dorsal: hex(0x28699e), face: hex(0x89aaa7), clear: hex(0xc9d9c4), bars: [0.335, 0.255, 0.175, 0.095, 0.015, -0.065, -0.145, -0.225] };
 
-  var MANDARIN = { orange: hex(0xb87534), amber: hex(0xc99143), olive: hex(0x496e48), blue: hex(0x176f9d), turquoise: hex(0x43b9c0), ink: hex(0x1e4b4c), clear: hex(0x728c87), lip: hex(0x75b6a9) };
+  // md14: blue-green skin between the bands (was olive) and a brighter orange.
+  var MANDARIN = { orange: hex(0xd27628), amber: hex(0xc99143), olive: hex(0x496e48), ground: hex(0x1f8578), blue: hex(0x176f9d), turquoise: hex(0x43b9c0), ink: hex(0x1e4b4c), clear: hex(0x728c87), lip: hex(0x75b6a9) };
 
   var FISH = {
     // Illustrative adult male Synchiropus splendidus: scaleless skin, raised
@@ -1334,7 +1338,7 @@
       anal: [{ from: 0.025, to: -0.225, h: 0.098, shape: 'arch', rake: 0.4, nv: 4 }],
       pelvic: { x: 0.245, len: 0.095 }, pectoral: { x: 0.265, y: -0.025, len: 0.255, width: 0.105, arc: 0.98, spread: 0.98, droop: 0.05, nv: 4, shape: function (u) { return 0.64 + 0.36 * Math.sin(PI * u); } },
       paint: function (P, out) {
-        mixc(MANDARIN.olive, MANDARIN.amber, 0.3 + 0.2 * Math.sin(P.x * 16 - P.y * 22), out);
+        mixc(MANDARIN.ground, MANDARIN.olive, 0.25 + 0.15 * Math.sin(P.x * 16 - P.y * 22), out);
         mixc(out, MANDARIN.orange, smooth(0.03, -0.07, P.y) * 0.35, out);
         // Warped contour ribbons wrap the actual smooth skin on both flanks.
         var flow = Math.sin(P.x * 29 + P.y * 57) + 0.62 * Math.sin(P.x * 47 - P.y * 43) + 0.25 * Math.cos(P.x * 61 + P.y * 87);
@@ -1384,8 +1388,8 @@
         mixc(REGAL.gold, REGAL.orange, 0.24 * smooth(0.2, 0.95, P.up), out);
         // About eight slanted pale bars, edged first in ink then in blue.
         for (var i = 0; i < REGAL.bars.length; i++) {
-          var centre = REGAL.bars[i] + (0.11 + i * 0.012) * P.y + 0.022 * P.y * P.y, d = P.x - centre, w = i === 0 ? 0.015 : 0.019;
-          mixc(out, REGAL.ink, band(d, w + 0.008, P.aa), out); mixc(out, REGAL.blue, band(d, w + 0.0045, P.aa), out); mixc(out, REGAL.white, band(d, w, P.aa), out);
+          var centre = REGAL.bars[i] + (0.11 + i * 0.012) * P.y + 0.022 * P.y * P.y, d = P.x - centre, w = i === 0 ? 0.009 : 0.011;
+          mixc(out, REGAL.ink, band(d, w + 0.0068, P.aa), out); mixc(out, REGAL.blue, band(d, w + 0.0038, P.aa), out); mixc(out, REGAL.white, band(d, w, P.aa), out);
         }
         var face = smooth(0.27, 0.34, P.x) * smooth(0.015, -0.035, P.y);
         mixc(out, REGAL.face, face * 0.97, out);
@@ -1402,7 +1406,7 @@
         }
         var x = lerp(0.29, -0.27, u), rear = smooth(-0.065, -0.15, x);
         setc(out, REGAL.gold);
-        for (var i = 0; i < REGAL.bars.length; i++) { var d = x - (REGAL.bars[i] + (0.11 + i * 0.012) * (0.2 + v * 0.08)); mixc(out, REGAL.ink, band(d, 0.027, 0.01), out); mixc(out, REGAL.blue, band(d, 0.023, 0.01), out); mixc(out, REGAL.white, band(d, 0.019, 0.01), out); }
+        for (var i = 0; i < REGAL.bars.length; i++) { var d = x - (REGAL.bars[i] + (0.11 + i * 0.012) * (0.2 + v * 0.08)); mixc(out, REGAL.ink, band(d, 0.019, 0.008), out); mixc(out, REGAL.blue, band(d, 0.016, 0.008), out); mixc(out, REGAL.white, band(d, 0.012, 0.008), out); }
         mixc(out, REGAL.dorsal, rear, out);
         var scribble = band(fract(u * 11 + 0.26 * Math.sin(v * TAU * 1.7 + u * 14)) - 0.5, 0.13, 0.07);
         mixc(out, REGAL.ink, scribble * rear * 0.83, out); mixc(out, REGAL.blue, band(v - 0.91, 0.027, 0.025) * 0.9, out);
@@ -1468,7 +1472,7 @@
       dorsal: [{ from: 0.15, to: -0.298, h: 0.14, shape: 'rear', rake: 0.12 }], anal: [{ from: 0.025, to: -0.295, h: 0.126, shape: 'rear', rake: 0.12 }],
       pelvic: { x: 0.035, len: 0.105 }, pectoral: { x: -0.02, y: -0.025, len: 0.16, width: 0.057, spread: 0.4, droop: 0.06, shape: pointed },
       paint: function (P, out) {
-        mixc(FORCEPS.yellow, FORCEPS.gold, smooth(0.15, 0.95, P.up) * 0.14, out);
+        mixc(FORCEPS.yellow, FORCEPS.gold, smooth(0.15, 0.95, P.up) * 0.3, out);
         var head = smooth(0.13, 0.145, P.x - 0.17 * P.y);
         mixc(out, FORCEPS.white, head, out);
         mixc(out, FORCEPS.ink, head * smooth(0.018, 0.026, P.y + P.x * 0.018), out);
@@ -1552,7 +1556,7 @@
         var bands = [[0.278 - 0.035 * P.y, 0.026], [0.117 - 0.05 * P.y, 0.032], [-0.075 - 0.11 * P.y, 0.038], [-0.227 - 0.03 * P.y, 0.034]];
         for (var i = 0; i < bands.length; i++) {
           var d = P.x - bands[i][0], w = bands[i][1];
-          mixc(out, i === 3 ? COPPER.blue : COPPER.ink, band(d, w + 0.006, P.aa) * (i === 3 ? 0.8 : 0.72), out);
+          mixc(out, i === 3 ? COPPER.blue : COPPER.ink, band(d, w + 0.0065, P.aa) * (i === 3 ? 0.8 : 0.9), out);
           mixc(out, COPPER.orange, band(d, w, P.aa), out);
           mixc(out, COPPER.deep, band(d - w * 0.55, w * 0.18, P.aa) * 0.26, out);
         }
@@ -1565,10 +1569,12 @@
         var from = kind === 'dorsal0' ? 0.21 : 0.12, to = kind === 'dorsal0' ? -0.277 : -0.267, x = lerp(from, to, u);
         for (var i = 0; i < 3; i++) {
           var center = [0.108, -0.108, -0.23][i], width = [0.035, 0.047, 0.038][i];
-          mixc(out, COPPER.ink, band(x - center, width + 0.005, 0.012) * 0.62, out);
+          mixc(out, COPPER.ink, band(x - center, width + 0.005, 0.012) * 0.8, out);
           mixc(out, COPPER.orange, band(x - center, width, 0.012), out);
         }
-        mixc(out, COPPER.orange, smooth(0.85, 0.98, v) * 0.6, out); mixc(out, COPPER.blue, band(v - 0.96, 0.016, 0.016) * 0.6, out);
+        // md13: a thin dark line and pale blue margin edge the soft fins; the
+        // old orange rim read as a yellow ring around a white disc.
+        mixc(out, COPPER.ink, band(v - 0.9, 0.018, 0.016) * 0.55, out); mixc(out, COPPER.blue, band(v - 0.965, 0.018, 0.016) * 0.6, out);
       },
       extra: function (c) {
         // The soft dorsal's false eye is a pale ring around a dark centre.
@@ -1677,7 +1683,7 @@
     bumphead_parrotfish: {
       scaleSize: 0.046,
       lengthM: 0.9, tex: [128, 64], eye: [0.37, 0.07, 0.022], iris: hex(0xc8b860), beat: 0.7, pecBeat: 0.5, pecRate: 1.0, wiggle: 0.6, spacing: 1.4,
-      rows: [[0.5, 0.03, -0.07, 0.03], [0.487, 0.13, -0.095, 0.055], [0.46, 0.215, -0.12, 0.078], [0.42, 0.27, -0.14, 0.097], [0.36, 0.285, -0.16, 0.112], [0.26, 0.27, -0.175, 0.122], [0.14, 0.255, -0.18, 0.126], [0.02, 0.235, -0.175, 0.12], [-0.1, 0.19, -0.15, 0.1], [-0.19, 0.13, -0.105, 0.075], [-0.26, 0.085, -0.068, 0.05], [-0.3, 0.066, -0.055, 0.042]],
+      rows: [[0.5, 0.03, -0.07, 0.03], [0.487, 0.13, -0.095, 0.055], [0.46, 0.215, -0.12, 0.078], [0.42, 0.295, -0.14, 0.097], [0.36, 0.31, -0.16, 0.112], [0.26, 0.285, -0.175, 0.122], [0.14, 0.255, -0.18, 0.126], [0.02, 0.235, -0.175, 0.12], [-0.1, 0.19, -0.15, 0.1], [-0.19, 0.13, -0.105, 0.075], [-0.26, 0.085, -0.068, 0.05], [-0.3, 0.066, -0.055, 0.042]],
       tail: { type: 'lunate', span: 0.16, len: 0.17 },
       dorsal: [{ from: 0.26, to: -0.26, h: 0.05, shape: 'plateau', rake: 0.3 }], anal: [{ from: 0.0, to: -0.25, h: 0.045, shape: 'plateau', rake: 0.3 }],
       pelvic: { x: 0.2, len: 0.07 }, pectoral: { x: 0.27, y: -0.01, len: 0.11, width: 0.06, spread: 0.28, shape: pointed },
@@ -1686,15 +1692,19 @@
         var x = P.x, y = P.y, gy = y / 0.045, row = Math.floor(gy), gx = x / 0.05 + (row & 1) * 0.5, fx = fract(gx) - 0.5, fy = fract(gy) - 0.5;
         mulc(out, 1 - 0.1 * smooth(0.42, 0.5, Math.sqrt(fx * fx + fy * fy * 1.3)) * smooth(0.36, 0.26, x));
         var bump = smooth(0.36, 0.44, x) * smooth(0.0, 0.1, y);
-        mixc(out, BUMP.head, bump * 0.8, out); mixc(out, BUMP.pink, bump * smooth(0.18, 0.26, y) * 0.35, out);
+        mixc(out, BUMP.head, bump * 0.6, out); mixc(out, BUMP.pink, bump * smooth(0.18, 0.26, y) * 0.35, out);
       },
       fin: function (kind, u, v, out) { setc(out, BUMP.d); mixc(out, BUMP.g, 0.4 * smooth(0.6, 1, v), out); },
       extra: function (c) {
         // School members keep only the exposed teeth, coarsely.
         var tooth = lin(hex(0xeef0e6)), lip = lin(hex(0x8ea596)), ws = c.school ? 4 : 10, hs = c.school ? 3 : 6;
+        // md14: mark 2, a rounded bump that bulges forward on the forehead over
+        // a slight dip above the beak, instead of one flat wall of a face.
+        c.body.map(0, function (p) { var f = smooth(0.38, 0.47, p[0]); p[0] += f * (0.04 * Math.exp(-Math.pow((p[1] - 0.17) / 0.07, 2)) - 0.012 * Math.exp(-Math.pow((p[1] - 0.05) / 0.03, 2))); });
         if (!c.school) blob(c.T, c.detail, 0.497, 0.0, 0, 0.02, 0.026, 0.05, lip, 10, 6);
-        blob(c.T, c.detail, 0.505, -0.012, 0, 0.012, 0.016, 0.042, tooth, ws, hs);
-        blob(c.T, c.detail, 0.5, -0.048, 0, 0.012, 0.014, 0.04, tooth, ws, hs);
+        // md14: mark 4, larger exposed beak plates.
+        blob(c.T, c.detail, 0.512, -0.01, 0, 0.018, 0.021, 0.05, tooth, ws, hs);
+        blob(c.T, c.detail, 0.502, -0.05, 0, 0.017, 0.018, 0.047, tooth, ws, hs);
       }
     },
     moorish_idol: {
@@ -1822,22 +1832,30 @@
       }
     },
     blue_green_chromis: {
-      lengthM: 0.08, tex: [64, 32], eye: [0.38, 0.04, 0.045], iris: hex(0x40a0a0), sheen: [0x40e0d0, 0x60a0ff, 0.45], beat: 1.5, spacing: 1.7,
-      rows: [[0.5, 0.0, -0.02, 0.008], [0.47, 0.05, -0.055, 0.022], [0.42, 0.1, -0.095, 0.036], [0.33, 0.15, -0.13, 0.046], [0.2, 0.17, -0.145, 0.05], [0.06, 0.165, -0.14, 0.049], [-0.08, 0.135, -0.115, 0.041], [-0.18, 0.09, -0.075, 0.03], [-0.25, 0.058, -0.046, 0.02], [-0.28, 0.048, -0.038, 0.017]],
-      tail: { type: 'forked', span: 0.15, len: 0.22 },
-      dorsal: [{ from: 0.28, to: -0.22, h: 0.075, shape: 'plateau', rake: 0.35 }], anal: [{ from: 0.02, to: -0.2, h: 0.07, shape: 'arch', rake: 0.35 }],
+      // md13: smaller eye, deeply forked tail with pointed lobes, blue-green
+      // back over an apple-green flank, and tinted (not white) fins.
+      lengthM: 0.08, tex: [64, 32], eye: [0.385, 0.036, 0.036], iris: hex(0x40a0a0), sheen: [0x40e0d0, 0x60a0ff, 0.45], beat: 1.5, spacing: 1.7,
+      rows: [[0.5, 0.0, -0.018, 0.008], [0.47, 0.048, -0.05, 0.022], [0.42, 0.098, -0.09, 0.036], [0.33, 0.148, -0.125, 0.046], [0.2, 0.168, -0.14, 0.05], [0.06, 0.162, -0.135, 0.049], [-0.08, 0.13, -0.11, 0.041], [-0.18, 0.085, -0.07, 0.029], [-0.25, 0.052, -0.042, 0.019], [-0.28, 0.042, -0.034, 0.016]],
+      tail: { type: 'forked', span: 0.17, len: 0.27 },
+      dorsal: [{ from: 0.28, to: -0.22, h: 0.075, shape: 'spiny', rake: 0.35 }], anal: [{ from: 0.02, to: -0.2, h: 0.07, shape: 'arch', rake: 0.35 }],
       pelvic: { x: 0.24, len: 0.08 }, pectoral: { x: 0.27, y: -0.02, len: 0.1, width: 0.05, spread: 0.3 },
       paint: function (P, out) {
         setc(out, CHROMIS.b);
         // Hold more turquoise in the upper flank so the light-facing scales
         // remain blue-green after the silver grazing sheen is applied.
-        mixc(out, CHROMIS.d, 0.22 + 0.5 * smooth(-0.15, 0.95, P.up), out);
+        mixc(out, CHROMIS.d, 0.18 + 0.62 * smooth(-0.1, 0.9, P.up), out);
         mulc(out, 0.9 + 0.075 * smooth(0.18, 0.92, -P.up));
-        mixc(out, CHROMIS.l, 0.3 * smooth(0.25, 1, -P.up), out);
+        mixc(out, CHROMIS.l, 0.35 * smooth(0.25, 1, -P.up), out);
         var shoulder = Math.exp(-Math.pow((P.x - 0.29) / 0.13, 2)) * (1 - smooth(0.18, 0.82, Math.abs(P.yn)));
-        mixc(out, CHROMIS.d, shoulder * 0.1, out);
+        mixc(out, CHROMIS.d, shoulder * 0.12, out);
+        // Scale rows catch the light in faint diagonal glints.
+        mixc(out, CHROMIS.l, 0.14 * band(Math.sin((P.x * 1.4 + P.y) * 95), 0.35, 0.3) * smooth(0.38, 0.2, P.x), out);
       },
-      fin: function (kind, u, v, out) { mixc(CHROMIS.b, CHROMIS.l, 0.5 + 0.3 * v, out); },
+      fin: function (kind, u, v, out) {
+        if (kind === 'pectoral') { mixc(CHROMIS.fin, CHROMIS.l, 0.3 * (1 - v), out); return; }
+        mixc(CHROMIS.fin, CHROMIS.edge, 0.15 + 0.5 * smooth(0.6, 1, v), out);
+        if (kind === 'tail') mixc(out, CHROMIS.l, 0.3 * (1 - smooth(0, 0.4, v)), out);
+      },
       schoolTint: function (r, color) { color.setRGB(0.92 + 0.16 * r, 0.96 + 0.08 * r, 1.0); }
     },
     lionfish: {
@@ -2087,13 +2105,17 @@
   };
   FISH.yellow_boxfish = {
     smoothSkin: true, facetedPaint: true,
-    lengthM: 0.12, tex: [256, 192], square: 4.5, eye: [0.38, 0.06, 0.04], iris: hex(0x3a3618), beat: 0.6, wiggle: 0.04, tailBeat: 0.7, pecBeat: 0.6, pecRate: 3.2,
-    rows: [[0.5, 0.02, -0.035, 0.018], [0.47, 0.08, -0.09, 0.075], [0.42, 0.13, -0.13, 0.12], [0.33, 0.155, -0.155, 0.14], [0.2, 0.165, -0.165, 0.145], [0.05, 0.16, -0.16, 0.14], [-0.08, 0.14, -0.14, 0.12], [-0.16, 0.1, -0.1, 0.085], [-0.21, 0.06, -0.05, 0.045], [-0.25, 0.045, -0.038, 0.032]],
+    // md14: mark 1, a box. The shell keeps nearly the same square section from
+    // the blunt front face back past the middle, then narrows quickly to the
+    // tail stalk (it was an egg that tapered all the way from the middle).
+    lengthM: 0.12, tex: [256, 256], square: 4.5, eye: [0.38, 0.075, 0.04], iris: hex(0x3a3618), beat: 0.6, wiggle: 0.04, tailBeat: 0.7, pecBeat: 0.6, pecRate: 3.2,
+    rows: [[0.5, 0.02, -0.035, 0.018], [0.49, 0.09, -0.105, 0.08], [0.465, 0.145, -0.155, 0.13], [0.42, 0.172, -0.178, 0.153], [0.33, 0.183, -0.187, 0.163], [0.2, 0.186, -0.188, 0.166], [0.06, 0.182, -0.184, 0.163], [-0.05, 0.168, -0.17, 0.15], [-0.12, 0.13, -0.13, 0.112], [-0.17, 0.08, -0.075, 0.066], [-0.21, 0.052, -0.044, 0.04], [-0.25, 0.045, -0.038, 0.032]],
     tail: { type: 'round', span: 0.12, len: 0.24 },
     dorsal: [{ from: -0.12, to: -0.2, h: 0.07, shape: 'arch', rake: 0.3 }], anal: [{ from: -0.12, to: -0.2, h: 0.065, shape: 'arch', rake: 0.3 }],
     pectoral: { x: 0.24, y: 0.0, len: 0.08, width: 0.07, spread: 0.5 },
     paint: function (P, out) {
-      var aa = Math.max(P.aa, P.aay) / 0.055;
+      // md14: wider edge blend; texels stretch over the flatter shell sides.
+      var aa = 1.6 * Math.max(P.aa, P.aay) / 0.055;
       // Young boxfish: bright yellow with black spots (adults turn dull mustard to bluish).
       setc(out, BOX.y); mixc(out, BOX.d, 0.35 * smooth(0.5, 1, P.up), out);
       // Isotropic spots sample the actual 3D surface. A flank projection would
@@ -2177,26 +2199,42 @@
     },
     rest: function (a) { a.parts.jaw.rotation.z = -0.27; }
   };
+  var WTIP_BROWN = hex(0x6e675e), WTIP_FIN = hex(0x4b4f53), WTIP_TAIL = { type: 'hetero', span: 0.18, len: 0.27 };
   FISH.whitetip_reef_shark = {
     smoothSkin: true,
     lengthM: 1.5, tex: [256, 64], eye: [0.42, 0.022, 0.011], iris: hex(0x9aa070), eyeBulge: 0.7, beat: 0.75, wiggle: 1.5, tailBeat: 1.2, pecBeat: 0.05, pecRate: 0.5,
-    rows: [[0.5, 0.004, -0.012, 0.016], [0.475, 0.024, -0.03, 0.04], [0.43, 0.045, -0.05, 0.06], [0.35, 0.062, -0.062, 0.07], [0.24, 0.072, -0.068, 0.075], [0.12, 0.072, -0.064, 0.072], [0.0, 0.063, -0.054, 0.062], [-0.1, 0.048, -0.04, 0.047], [-0.18, 0.033, -0.026, 0.032], [-0.24, 0.022, -0.017, 0.021], [-0.27, 0.019, -0.015, 0.018]],
-    tail: { type: 'hetero', span: 0.17, len: 0.25 },
-    dorsal: [{ from: 0.13, to: -0.03, h: 0.13, shape: 'front', rake: 0.55 }, { from: -0.16, to: -0.21, h: 0.045, shape: 'front', rake: 0.45 }],
-    anal: [{ from: -0.15, to: -0.2, h: 0.038, shape: 'front', rake: 0.5 }],
+    // md13: a short, broad, blunt snout (wider than it is deep), the first back
+    // fin set well behind the side fins, and a larger second back fin and anal fin.
+    rows: [[0.5, 0.011, -0.011, 0.03], [0.489, 0.023, -0.024, 0.048], [0.46, 0.035, -0.039, 0.061], [0.4, 0.05, -0.055, 0.068], [0.3, 0.064, -0.065, 0.074], [0.18, 0.07, -0.066, 0.073], [0.06, 0.066, -0.058, 0.066], [-0.06, 0.053, -0.045, 0.052], [-0.16, 0.036, -0.029, 0.035], [-0.23, 0.023, -0.018, 0.022], [-0.27, 0.018, -0.014, 0.017]],
+    tail: WTIP_TAIL,
+    dorsal: [{ from: 0.1, to: -0.06, h: 0.125, shape: 'front', rake: 0.5, nv: 9 }, { from: -0.145, to: -0.205, h: 0.058, shape: 'front', rake: 0.45 }],
+    anal: [{ from: -0.14, to: -0.2, h: 0.05, shape: 'front', rake: 0.5 }],
     pelvic: { x: -0.04, len: 0.06 },
     pectoral: { x: 0.27, y: -0.05, len: 0.17, width: 0.08, arc: 0.3, spread: 1.15, droop: 0.32, shape: pointed },
     paint: function (P, out) {
       var x = P.x, aa = P.aa;
-      mixc(SHARK.d, SHARK.g, smooth(1, 0.2, P.up), out);
-      mixc(out, SHARK.w, smooth(-0.15, -0.45, P.yn), out);
+      // md14: the back as dark as the fins, mid grey on the flank.
+      mixc(WTIP_FIN, SHARK.g, smooth(0.95, 0.05, P.up), out);
+      // md13: a faint grey-brown cast on the back and a white belly that
+      // reaches a little higher up the flank.
+      mixc(out, WTIP_BROWN, 0.22 * smooth(-0.1, 0.6, P.up), out);
+      mixc(out, SHARK.w, smooth(-0.05, -0.35, P.yn), out);
       if (noise2(x * 40, P.y * 40) > 0.8) mixc(out, SHARK.d, 0.5 * smooth(-0.2, 0.3, P.yn), out);
       for (var g = 0; g < 5; g++) mixc(out, SHARK.d, band(x - (0.31 - g * 0.016), 0.0028, aa) * smooth(-0.55, -0.35, P.yn) * smooth(0.35, 0.15, P.yn) * 0.8, out);
     },
     fin: function (kind, u, v, out) {
-      setc(out, SHARK.d);
-      if (kind === 'dorsal0') mixc(out, SHARK.tip, smooth(0.6, 0.68, v) * smooth(0.0, 0.12, u), out);
-      if (kind === 'tail') mixc(out, SHARK.tip, smooth(0.7, 0.78, u) * smooth(0.5, 0.6, v), out);
+      // md14: darker grey-brown fins, so the white tips stand out under bright light.
+      setc(out, WTIP_FIN);
+      // md14: white only at the very tip: the top fifth of the first back fin
+      // (by height, so the low rear of the fin stays grey) and the end of the
+      // upper tail lobe (by distance from its point), not the outer half of both.
+      // (The 'front' outline peaks at 0.747 of the fin height, near u = 0.3.)
+      if (kind === 'dorsal0') mixc(out, SHARK.tip, smooth(0.74, 0.82, v * FIN_SHAPES.front(u) / 0.747), out);
+      if (kind === 'tail' && u > 0.5) {
+        var vv = u * 2 - 1, te = tailEdge(WTIP_TAIL, vv), tip = tailEdge(WTIP_TAIL, 1);
+        var dx = 0.02 + (te[0] - 0.02) * v - tip[0], dy = vv * 0.0136 * (1 - v) + te[1] * v - tip[1];
+        mixc(out, SHARK.tip, smooth(0.085, 0.055, Math.sqrt(dx * dx + dy * dy)), out);
+      }
       if (kind === 'pectoral' || kind === 'pelvic') mixc(out, SHARK.w, 0.25, out);
     }
   };
@@ -2242,6 +2280,218 @@
         }});
       }
       spots(c.fins,1);spots(c.fins,-1);spots(c.tailSurface,0);
+    }
+  };
+  // ---- Reef predators (lane fish, 2026-11-04) ------------------------------------
+  // Sphyraena qenie (Fishes of Australia / FishBase): dull blue back, silver sides,
+  // many dark bars oblique above the lateral line and almost vertical below it,
+  // a forked and largely blackish caudal fin, two widely separated dorsal fins.
+  var QENIE = { back: hex(0x2f4d66), steel: hex(0x6f8798), silver: hex(0xc3ced4), belly: hex(0xf0f3f2), bar: hex(0x243442), fin: hex(0x5c6c78), tail: hex(0x1a2026), jaw: hex(0xb7c2c8) };
+  FISH.blackfin_barracuda = {
+    lengthM: 0.8, tex: [256, 64], scaleSize: 0.012, eye: [0.372, 0.022, 0.019], iris: hex(0xa39a72), sheen: [0xb4d0e6, 0xf6f8ff, 0.24],
+    rough: 0.44, metal: 0.12, beat: 0.62, wiggle: 0.7, tailBeat: 0.9, pecBeat: 0.18, pecRate: 0.9, spacing: 1.3,
+    rows: [[0.5, -0.006, -0.02, 0.006], [0.475, 0.008, -0.031, 0.015], [0.43, 0.027, -0.044, 0.026], [0.36, 0.047, -0.055, 0.038], [0.26, 0.06, -0.063, 0.046], [0.13, 0.066, -0.066, 0.049], [0.0, 0.064, -0.063, 0.047], [-0.12, 0.056, -0.055, 0.041], [-0.22, 0.044, -0.043, 0.032], [-0.3, 0.031, -0.03, 0.022], [-0.35, 0.023, -0.022, 0.016], [-0.375, 0.021, -0.02, 0.014]],
+    tail: { type: 'forked', span: 0.12, len: 0.15 },
+    dorsal: [{ from: 0.075, to: 0.005, h: 0.05, shape: 'front', rake: 0.55, n: 6 }, { from: -0.2, to: -0.255, h: 0.042, shape: 'front', rake: 0.6, n: 5 }],
+    anal: [{ from: -0.205, to: -0.26, h: 0.036, shape: 'front', rake: 0.6, n: 5 }],
+    pelvic: { x: 0.09, len: 0.04 }, pectoral: { x: 0.315, y: -0.018, len: 0.07, width: 0.022, spread: 0.2, droop: 0.12, shape: pointed },
+    paint: function (P, out) {
+      var x = P.x, aa = Math.max(P.aa, P.aay);
+      // Dull blue back, silvery sides and a white underside.
+      mixc(QENIE.silver, QENIE.steel, smooth(0.0, 0.5, P.up), out); mixc(out, QENIE.back, smooth(0.35, 0.85, P.up), out);
+      mixc(out, QENIE.belly, smooth(-0.25, -0.7, P.yn), out);
+      // Chevron bars: the apex sits on the lateral line; the upper arm slants back,
+      // the lower arm is almost vertical. They fade out over the white belly.
+      var ll = P.yc + P.hh * 0.18, s = x + 0.9 * Math.max(0, P.y - ll) + 0.12 * Math.max(0, ll - P.y);
+      var on = smooth(0.3, 0.27, x) * smooth(-0.37, -0.33, x) * smooth(-0.62, -0.32, P.yn) * (1 - 0.3 * smooth(0.7, 0.98, P.up));
+      mixc(out, QENIE.bar, 0.78 * on * band(fract((s - 0.29) / 0.03) - 0.5, 0.18, Math.min(0.2, aa / 0.03 + 0.04)), out);
+      // A fine pale lateral line and a pale, scaleless-looking snout and jaw.
+      mixc(out, QENIE.silver, 0.45 * band(P.y - ll, 0.0012, Math.max(0.001, aa)) * smooth(0.3, 0.25, x), out);
+      mixc(out, QENIE.jaw, 0.45 * smooth(0.4, 0.47, x) * smooth(0.2, -0.4, P.up), out);
+    },
+    fin: function (kind, u, v, out) {
+      if (kind === 'tail') { mixc(QENIE.fin, QENIE.tail, 0.55 + 0.45 * smooth(0.0, 0.4, v), out); return; }
+      if (kind === 'pectoral' || kind === 'pelvic') { mixc(QENIE.silver, QENIE.fin, 0.35 + 0.3 * v, out); return; }
+      mixc(QENIE.fin, QENIE.tail, smooth(0.3, 1, v) * 0.75, out);
+    },
+    extra: function (c) {
+      // The long gape reaches back to just below the front of the eye, and the
+      // lower jaw juts slightly past the upper jaw (Fishes of Australia).
+      var ink = lin(hex(0x2b3238)), jaw = lin(QENIE.jaw);
+      [-1, 1].forEach(function (side) {
+        var pts = [], n = c.high ? 7 : 4;
+        for (var j = 0; j < n; j++) { var u = j / (n - 1), x = lerp(0.358, 0.499, u), y = lerp(-0.019, -0.009, u) - 0.004 * Math.sin(PI * u); pts.push([x, y, side * (c.surfZ(Math.min(0.5, x), y) + 0.0006)]); }
+        c.detail.tube(pts, 0.0012, 3, function () { return ink; });
+      });
+      blob(c.T, c.detail, 0.497, -0.017, 0, 0.012, 0.0055, 0.0065, jaw, c.high ? 10 : 6, c.high ? 5 : 4);
+    },
+    schoolTint: function (r, color) { color.setRGB(0.94 + 0.1 * r, 0.96 + 0.08 * r, 0.97 + 0.06 * r); }
+  };
+  // Balistoides viridescens (Australian Museum, FishBase): dark-centred scales on a
+  // pale background, a black region with yellow spots over the eyes reaching the
+  // pectoral bases, a deep groove before the eye, a dark "moustache" above the
+  // pale naked lips, and black margins on the soft dorsal and anal fins.
+  var TITAN = { pale: hex(0xbcae66), cream: hex(0xe2d8ae), scale: hex(0x313828), mask: hex(0x1d2a2c), spot: hex(0xf0cf4a), snout: hex(0xd6ac4a), lip: hex(0xeee6cf), ink: hex(0x111312), fin: hex(0xc7b35a), teal: hex(0x5e7a6a) };
+  FISH.titan_triggerfish = {
+    lengthM: 0.6, tex: [224, 128], eye: [0.215, 0.115, 0.026], iris: hex(0xc6a43a), beat: 0.66, wiggle: 0.25, pecBeat: 0.6, pecRate: 2.1,
+    rows: [[0.5, 0.025, -0.022, 0.012], [0.465, 0.07, -0.062, 0.026], [0.39, 0.155, -0.13, 0.048], [0.29, 0.235, -0.188, 0.064], [0.16, 0.282, -0.222, 0.073], [0.03, 0.275, -0.226, 0.071], [-0.09, 0.218, -0.183, 0.059], [-0.18, 0.14, -0.115, 0.044], [-0.245, 0.08, -0.068, 0.031], [-0.285, 0.066, -0.056, 0.026]],
+    tail: { type: 'truncate', span: 0.15, len: 0.17 },
+    dorsal: [{ from: 0.175, to: 0.095, h: 0.05, shape: 'front', rake: 0.9 }, { from: -0.005, to: -0.215, h: 0.12, shape: 'front', rake: 0.42, nv: 5 }],
+    anal: [{ from: -0.01, to: -0.215, h: 0.108, shape: 'front', rake: 0.42, nv: 5 }],
+    pectoral: { x: 0.165, y: 0.0, len: 0.07, width: 0.05, spread: 0.4 },
+    paint: function (P, out) {
+      var x = P.x, y = P.y, aa = Math.max(P.aa, P.aay), up = P.up;
+      mixc(TITAN.pale, TITAN.cream, smooth(-0.2, -0.75, P.yn), out); mixc(out, TITAN.teal, 0.3 * smooth(0.45, 1, up), out);
+      // Large plate-like scales in diagonal rows, each with a dark centre whose
+      // size varies over the body: broad on the back and flank, small low down.
+      var gu = (x * 0.8 + y) / 0.034, gv = (x * 0.8 - y) / 0.034, fu = fract(gu) - 0.5, fv = fract(gv) - 0.5, rr = Math.max(Math.abs(fu), Math.abs(fv));
+      var size = 0.24 + 0.16 * smooth(-0.8, 0.3, P.yn) + 0.04 * hash2(Math.floor(gu), Math.floor(gv)), saa = Math.min(0.2, aa / 0.034 + 0.03);
+      var body = smooth(0.2, 0.16, x + 0.12 * (y - 0.1)) * smooth(-0.26, -0.22, x);
+      mixc(out, TITAN.scale, (0.86 - 0.36 * smooth(0.12, 0.3, aa / 0.034)) * body * (1 - smooth(size - saa, size + saa, rr)), out);
+      // Snout yellow-olive, the lips pale and bare.
+      var head = smooth(0.17, 0.22, x + 0.12 * (y - 0.1));
+      mixc(out, TITAN.snout, head * 0.85, out);
+      // The black mask over the eyes slants down to the pectoral-fin base.
+      var maskC = 0.215 + 0.32 * (y - 0.115), mask = band(x - maskC + 0.04 * Math.pow((y - 0.13) / 0.16, 2), 0.048, Math.max(aa, 0.01)) * smooth(-0.075, 0.005, y) * smooth(0.33, 0.28, y);
+      mixc(out, TITAN.mask, mask, out);
+      var cc = P.cc || (P.cc = [0, 0, 0, 0, 0]); cells(x / 0.016, y / 0.016, 9, cc);
+      mixc(out, TITAN.spot, mask * (1 - smooth(0.2 - aa / 0.016, 0.2 + aa / 0.016, cc[0])) * 0.9, out);
+      // A deep groove runs forward from each eye.
+      mixc(out, TITAN.ink, 0.38 * (1 - smooth(0.0028 - aa, 0.0028 + aa, polyDist(x, y, [[0.243, 0.108], [0.29, 0.1], [0.33, 0.096]]))), out);
+      // The dark "moustache" above the upper lip, edged in pale skin.
+      var mo = polyDist(x, y, [[0.485, 0.016], [0.445, 0.02], [0.395, 0.016], [0.355, 0.006]]);
+      mixc(out, TITAN.lip, (1 - smooth(0.016 - aa, 0.016 + aa, mo)) * smooth(0.33, 0.36, x), out);
+      mixc(out, TITAN.ink, (1 - smooth(0.0085 - aa, 0.0085 + aa, mo)) * smooth(0.33, 0.36, x), out);
+      mixc(out, TITAN.lip, smooth(0.465, 0.485, x) * smooth(0.03, 0.015, y), out);
+    },
+    fin: function (kind, u, v, out) {
+      setc(out, TITAN.fin);
+      if (kind === 'dorsal0') { mixc(out, TITAN.mask, 0.75, out); return; }
+      if (kind === 'dorsal1' || kind === 'anal0') { mixc(out, TITAN.teal, 0.3 * (1 - v), out); mixc(out, TITAN.ink, smooth(0.62, 0.79, v), out); return; }
+      if (kind === 'tail') { mixc(out, TITAN.teal, 0.35 * smooth(0.2, 0, v), out); mixc(out, TITAN.ink, smooth(0.52, 0.66, v), out); return; }
+      if (kind === 'pectoral') mixc(out, TITAN.cream, 0.3, out);
+    },
+    extra: function (c) {
+      // Three dorsal spines: one stout, lockable first spine and two shorter ones.
+      var root = lin(hex(0x2d3029)), tip = lin(hex(0x8a8466));
+      [[0.172, 0.13, 0.007], [0.13, 0.075, 0.0038], [0.1, 0.03, 0.0028]].forEach(function (spec) {
+        var x = spec[0], y = c.prof(x)[0] - 0.004, h = spec[1];
+        c.detail.tube([[x, y, 0], [x - 0.012, y + h * 0.55, 0.0015], [x - 0.032, y + h, 0.002]], function (t) { return spec[2] * (1 - t) + 0.0008; }, c.high ? 6 : 4, function (t) { return mixc(root, tip, t * 0.7, [0, 0, 0]); });
+      });
+      // Pale, thick lips around the small terminal mouth.
+      var lip = lin(TITAN.lip);
+      blob(c.T, c.detail, 0.497, 0.009, 0, 0.012, 0.009, 0.012, lip, c.high ? 10 : 6, c.high ? 5 : 4);
+      blob(c.T, c.detail, 0.494, -0.011, 0, 0.011, 0.008, 0.011, lip, c.high ? 10 : 6, c.high ? 5 : 4);
+    }
+  };
+  // Caranx melampygus (Fishes of Australia, FishBase): brassy head and upper body
+  // tinted blue, small blue-black spots, electric blue second dorsal, anal and tail
+  // fins, an arched then straight lateral line ending in strong scutes.
+  var MELAMP = { brass: hex(0x9c8a52), blue: hex(0x3f6a8c), silver: hex(0xb9c3c2), belly: hex(0xe8ecea), spot: hex(0x18243a), fin: hex(0x2a86f0), deep: hex(0x1450b8), scute: hex(0x3a4a5a), pale: hex(0xd8dfd8) };
+  FISH.bluefin_trevally = {
+    lengthM: 0.6, tex: [192, 96], scaleSize: 0.012, eye: [0.402, 0.045, 0.027], iris: hex(0xa8955a), sheen: [0x9ec2ec, 0xfff1cc, 0.22],
+    rough: 0.48, metal: 0.08, beat: 0.95, wiggle: 0.85, tailBeat: 1.05, pecBeat: 0.15, pecRate: 0.9,
+    rows: [[0.5, 0.004, -0.02, 0.008], [0.47, 0.045, -0.046, 0.022], [0.41, 0.108, -0.086, 0.037], [0.32, 0.164, -0.124, 0.048], [0.2, 0.19, -0.145, 0.054], [0.08, 0.188, -0.142, 0.053], [-0.04, 0.162, -0.122, 0.046], [-0.14, 0.117, -0.088, 0.035], [-0.22, 0.064, -0.048, 0.022], [-0.28, 0.03, -0.024, 0.014], [-0.31, 0.024, -0.02, 0.012]],
+    tail: { type: 'lunate', span: 0.21, len: 0.2 },
+    dorsal: [{ from: 0.175, to: 0.075, h: 0.06, shape: 'arch', rake: 0.45 }, { from: 0.04, to: -0.245, h: 0.115, shape: 'front', rake: 0.6 }],
+    anal: [{ from: -0.025, to: -0.24, h: 0.098, shape: 'front', rake: 0.6 }],
+    pelvic: { x: 0.25, len: 0.05 }, pectoral: { x: 0.31, y: -0.03, len: 0.2, width: 0.038, arc: 0.25, spread: 0.22, droop: 0.12, shape: pointed },
+    paint: function (P, out) {
+      var x = P.x, y = P.y, aa = Math.max(P.aa, P.aay);
+      mixc(MELAMP.silver, MELAMP.brass, smooth(-0.45, 0.15, P.yn), out); mixc(out, MELAMP.blue, smooth(0.3, 0.9, P.up) * 0.75, out);
+      mixc(out, MELAMP.belly, smooth(-0.35, -0.75, P.yn), out);
+      // Small blue-black spots scattered over the upper flank and back.
+      var cc = P.cc || (P.cc = [0, 0, 0, 0, 0]); cells(x / 0.026, y / 0.026, 17, cc);
+      var r = 0.13 + 0.06 * cc[2], on = smooth(-0.15, 0.25, P.yn) * smooth(0.36, 0.31, x) * smooth(-0.2, -0.12, x);
+      mixc(out, MELAMP.spot, 0.85 * on * (1 - smooth(r - aa / 0.026, r + aa / 0.026, cc[0])), out);
+      // The lateral line arches over the pectoral fin, then runs straight to the
+      // tail; the straight part is armoured with a row of strong scutes.
+      var arch = P.yc + P.hh * 0.18 + 0.05 * smooth(-0.1, 0.12, x) * smooth(0.36, 0.2, x), d = y - arch;
+      mixc(out, MELAMP.scute, 0.5 * band(d, 0.0016, Math.max(aa, 0.001)) * smooth(0.36, 0.33, x) * smooth(-0.1, -0.06, x), out);
+      var sc = smooth(-0.1, -0.13, x), seg = band(fract(x / 0.011) - 0.5, 0.36, 0.1);
+      mixc(out, MELAMP.scute, sc * band(d, 0.0075, Math.max(aa, 0.0015)) * (0.55 + 0.35 * seg), out);
+      // A dark spot on the gill cover edge, softened.
+      mixc(out, MELAMP.spot, 0.45 * disc((x - 0.335) * 1.2, y - (P.yc + P.hh * 0.42), 0.012, Math.max(aa, 0.003)), out);
+    },
+    fin: function (kind, u, v, out) {
+      if (kind === 'dorsal1' || kind === 'anal0' || kind === 'tail') { mixc(MELAMP.fin, MELAMP.deep, kind === 'tail' ? 0.15 + 0.6 * smooth(0.55, 1, v) : 0.25 + 0.55 * smooth(0.5, 1, v), out); return; }
+      if (kind === 'dorsal0') { mixc(MELAMP.blue, MELAMP.deep, 0.4 * v, out); return; }
+      mixc(MELAMP.pale, MELAMP.brass, kind === 'pectoral' ? 0.5 + 0.3 * v : 0.15, out);
+    },
+    schoolTint: function (r, color) { color.setRGB(0.95 + 0.1 * r, 0.95 + 0.08 * r, 0.95 + 0.06 * r); }
+  };
+  // ---- Reef shapers (lane fish2, 2026-11-04) -------------------------------------
+  // Carcharhinus melanopterus (Fishes of Australia, FishBase, Sharks of the World):
+  // a fairly stocky grey shark with a short, bluntly rounded snout, brownish grey
+  // above and white below with a pale flank band; a black tip on every fin, boldest
+  // on the first dorsal (highlighted below with white) and the lower caudal lobe.
+  // The first dorsal begins over the free tips of the pectoral fins.
+  var BTIP = { back: hex(0x878174), top: hex(0x6a655c), belly: hex(0xf1f0ea), pale: hex(0xe8e6de), stripe: hex(0x625d55), fin: hex(0x6c675f), ink: hex(0x111214), white: hex(0xf7f6f1) };
+  FISH.blacktip_reef_shark = {
+    smoothSkin: true,
+    lengthM: 1.3, tex: [256, 64], eye: [0.418, 0.026, 0.0115], iris: hex(0x8c9068), eyeBulge: 0.7, beat: 0.8, wiggle: 1.4, tailBeat: 1.2, pecBeat: 0.05, pecRate: 0.5,
+    rows: [[0.5, 0.004, -0.02, 0.022], [0.483, 0.03, -0.04, 0.05], [0.45, 0.054, -0.058, 0.07], [0.37, 0.075, -0.071, 0.082], [0.26, 0.086, -0.077, 0.087], [0.14, 0.087, -0.073, 0.084], [0.02, 0.077, -0.062, 0.073], [-0.09, 0.058, -0.046, 0.055], [-0.17, 0.039, -0.031, 0.038], [-0.23, 0.026, -0.02, 0.025], [-0.265, 0.021, -0.016, 0.02]],
+    tail: { type: 'hetero', span: 0.18, len: 0.26 },
+    dorsal: [{ from: 0.13, to: -0.03, h: 0.15, shape: 'front', rake: 0.5, nv: 9 }, { from: -0.145, to: -0.195, h: 0.05, shape: 'front', rake: 0.45 }],
+    anal: [{ from: -0.14, to: -0.19, h: 0.045, shape: 'front', rake: 0.5 }],
+    pelvic: { x: -0.03, len: 0.065 },
+    pectoral: { x: 0.27, y: -0.058, len: 0.185, width: 0.085, arc: 0.3, spread: 1.15, droop: 0.32, shape: pointed, nv: 5 },
+    paint: function (P, out) {
+      var x = P.x, yn = P.yn, aa = P.aa;
+      mixc(BTIP.top, BTIP.back, smooth(1, 0.25, P.up), out);
+      // A white belly whose pale flank band reaches up the side between the pectoral
+      // and pelvic fins, under the dark stripe from below the first dorsal fin.
+      var tongue = Math.exp(-Math.pow((x - 0.04) / 0.11, 2)), edge = -0.16 + 0.2 * tongue;
+      mixc(out, BTIP.belly, smooth(edge + 0.03, edge - 0.09, yn), out);
+      mixc(out, BTIP.stripe, 0.6 * tongue * band(yn - edge - 0.07, 0.035, 0.03), out);
+      if (noise2(x * 38, P.y * 38) > 0.82) mixc(out, BTIP.top, 0.35 * smooth(-0.1, 0.3, yn), out);
+      for (var g = 0; g < 5; g++) mixc(out, BTIP.stripe, band(x - (0.315 - g * 0.016), 0.0028, aa) * smooth(-0.55, -0.35, yn) * smooth(0.35, 0.15, yn) * 0.75, out);
+    },
+    fin: function (kind, u, v, out) {
+      setc(out, BTIP.fin);
+      if (kind === 'dorsal0') {
+        // The black apical blotch, brilliantly highlighted below with white.
+        mixc(out, BTIP.white, 0.6 * smooth(0.38, 0.44, v) * (1 - smooth(0.47, 0.51, v)), out);
+        mixc(out, BTIP.ink, smooth(0.5, 0.56, v), out);
+      } else if (kind === 'tail') {
+        mixc(out, BTIP.ink, smooth(0.36, 0.26, u) * smooth(0.5, 0.62, v), out);
+        mixc(out, BTIP.ink, 0.85 * smooth(0.84, 0.94, v), out);
+        mixc(out, BTIP.ink, smooth(0.86, 0.94, u) * smooth(0.6, 0.7, v), out);
+      } else if (kind === 'pectoral') {
+        mixc(out, BTIP.ink, smooth(0.62, 0.74, v) * smooth(0.35, 0.6, u), out);
+      } else mixc(out, BTIP.ink, smooth(0.52, 0.66, v), out);
+    }
+  };
+  // Stegastes nigricans (Fishes of Australia, FishBase): a brown damselfish, the top
+  // of the head and nape darker, grading to tan on the lower head and breast, with a
+  // darker patch on the body at the rear of the dorsal fin. Long continuous dorsal
+  // fin of 12 spines, soft rear dorsal and anal fins, a shallowly forked tail.
+  var STEG = { brown: hex(0x5c4836), dark: hex(0x2c221a), tan: hex(0xa48a66), belly: hex(0x7e6a50), patch: hex(0x2c241d), fin: hex(0x3e3127), edge: hex(0x221b16), pec: hex(0x45382a) };
+  FISH.dusky_farmerfish = {
+    lengthM: 0.12, tex: [128, 64], eye: [0.37, 0.07, 0.037], iris: hex(0x8c6c36), beat: 1.3, pecBeat: 0.7, pecRate: 2.0, spacing: 1.7,
+    rows: [[0.5, 0.012, -0.03, 0.012], [0.475, 0.07, -0.07, 0.03], [0.42, 0.135, -0.115, 0.05], [0.33, 0.19, -0.155, 0.064], [0.2, 0.214, -0.172, 0.07], [0.06, 0.208, -0.166, 0.067], [-0.07, 0.172, -0.138, 0.056], [-0.17, 0.115, -0.09, 0.04], [-0.24, 0.07, -0.054, 0.026], [-0.28, 0.056, -0.044, 0.021]],
+    tail: { type: 'forked', span: 0.15, len: 0.2 },
+    dorsal: [{ from: 0.3, to: -0.25, h: 0.085, shape: 'spiny', rake: 0.45, n: 14 }],
+    anal: [{ from: -0.02, to: -0.24, h: 0.085, shape: 'rear', rake: 0.5 }],
+    pelvic: { x: 0.24, len: 0.09 }, pectoral: { x: 0.27, y: -0.02, len: 0.11, width: 0.05, spread: 0.3 },
+    paint: function (P, out) {
+      var x = P.x, yn = P.yn, aa = Math.max(P.aa, P.aay);
+      setc(out, STEG.brown);
+      // Darker crown and nape, tan lower head and breast.
+      mixc(out, STEG.dark, 0.9 * smooth(-0.1, 0.45, yn) * smooth(0.14, 0.3, x), out);
+      mixc(out, STEG.dark, 0.35 * smooth(0.3, 1, P.up), out);
+      mixc(out, STEG.tan, 0.8 * smooth(0.0, -0.55, yn) * smooth(0.22, 0.4, x), out);
+      mixc(out, STEG.belly, 0.5 * smooth(-0.35, -0.8, yn) * smooth(0.36, 0.1, x), out);
+      // The dark patch on the upper body under the rear of the dorsal fin.
+      mixc(out, STEG.patch, 0.85 * smooth(-0.08, -0.14, x) * smooth(-0.255, -0.2, x) * smooth(0.15, 0.5, yn), out);
+      // Each scale carries a slightly darker rim.
+      var cc = P.cc || (P.cc = [0, 0, 0, 0, 0]); cells(x / 0.022, P.y / 0.02, 9, cc);
+      mulc(out, 1 - 0.1 * smooth(0.1, 0.02, cc[1] - cc[0]) * smooth(0.36, 0.28, x));
+    },
+    fin: function (kind, u, v, out) {
+      if (kind === 'pectoral') { mixc(STEG.pec, STEG.fin, 0.3 * v, out); return; }
+      mixc(STEG.fin, STEG.edge, 0.55 * smooth(0.55, 1, v), out);
+      if (kind === 'tail') mixc(out, STEG.edge, 0.3 * smooth(0.5, 1, v), out);
     }
   };
   KAS.k = K.black;
@@ -3262,7 +3512,7 @@
     var coneY=cy+R*.68,coneHeight=R*.23;
     test.absorb(T,new T.CylinderGeometry(R*.13,R*.2,coneHeight,high?14:8,1,true),
       new T.Matrix4().setPosition(0,coneY+coneHeight*.5,0),black);
-    test.absorb(T, new T.TorusGeometry(R * 0.145, R * 0.035, 5, high ? 16 : 8), new T.Matrix4().makeRotationX(PI / 2).setPosition(0, coneY+coneHeight, 0), orange);
+    test.absorb(T, new T.TorusGeometry(R * 0.15, R * 0.055, 5, high ? 16 : 8), new T.Matrix4().makeRotationX(PI / 2).setPosition(0, coneY+coneHeight, 0), orange);
     // The ring surrounds a recessed opening, rather than a flat cylinder cap.
     var analFirst=test.count(),analSides=high?14:8,analTop=coneY+coneHeight;
     var analRings=[[R*.13,analTop],[R*.11,analTop],[R*.075,analTop-R*.10]];
@@ -3280,7 +3530,7 @@
     },false,true,true);
     var testGeo=kit.geo(test,1);testGeo.userData.urchin={analOpening:{first:analFirst,count:test.count()-analFirst,top:analTop,radius:R*.11,floor:analTop-R*.105}};
     kit.mesh(testGeo, kit.std({ vertexColors: true, roughness: 0.58,bumpMap:testSkin,bumpScale:.00018*k,roughnessMap:kit.flat('rough') }, { sheen: sheenOf(T, 0x2040ff, 0x40c0ff, 0.12) }), 'test', c.root);
-    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x2a2a30)), spineMotion = [],spineSides=high?6:3,spineVertices=spineSides*2+1;
+    var sp2 = new Geo(), n = high ? 240 : 90, tipc = lin(hex(0x343c4c)), spineMotion = [],spineSides=high?6:3,spineVertices=spineSides*2+1;
     for (i = 0; i < n; i++) {
       var f = (i + 0.5) / n, yy = 1 - f * 1.75, rr = Math.sqrt(Math.max(0, 1 - yy * yy)), aa = i * 2.39996;
       // The anal cone and its orange ring stay visible among the spines.
@@ -3291,13 +3541,13 @@
       var bx = d[0] * R * 0.9, by = cy + d[1] * R * 0.6, bz = d[2] * R * 0.9;
       // Narrow closed shafts keep their round silhouette from every viewpoint.
       sp2.tube([[bx,by,bz],[bx+d[0]*len,by+d[1]*len,bz+d[2]*len]],
-        function(t){return k*(.00115*(1-t)+.000035*t);},spineSides,function(t,s){
+        function(t){return k*(.0019*(1-t)+.00013*t);},spineSides,function(t,s){
           var c1=[0,0,0];mixc(black,tipc,.2+.55*t+.1*Math.cos(s*TAU),c1);return c1;
         });
       spineMotion.push(bx, by, bz, aa, 0.42 + 0.17 * f, 0.31 + 0.13 * (1 - f));
     }
     var g = kit.geo(sp2, 1);
-    kit.mesh(g, kit.std({ vertexColors: true, roughness: 0.3 }), 'spines', c.root);
+    kit.mesh(g, kit.std({ vertexColors: true, roughness: 0.3 }, { sheen: sheenOf(T, 0x1c3f90, 0x4a90d0, 0.07) }), 'spines', c.root);
     // Each rigid spine turns about its attachment to the test. A quiet shared
     // drift sits under independent, slower probing; the skin never stretches.
     var spineRig = new Float32Array(spineMotion), base = new Float32Array(g.attributes.position.array), normal = new Float32Array(g.attributes.normal.array);
@@ -3320,7 +3570,8 @@
   }
   function buildNudibranch(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(59), L = 0.05 * (0.9 + 0.2 * rng()), g = new Geo(), white = [1, 1, 1];
-    g.loft([[0.5, 0.05, -0.05, 0.1], [0.42, 0.11, -0.07, 0.19], [0.25, 0.14, -0.08, 0.24], [0.0, 0.145, -0.08, 0.25], [-0.25, 0.13, -0.08, 0.23], [-0.42, 0.085, -0.06, 0.16], [-0.5, 0.03, -0.04, 0.07]], high ? 20 : 10, high ? 24 : 12, function () { setc(arguments[5], white); }, 3);
+    // md13: a long, low, narrow mantle (about a third as wide as long), not a pillow.
+    g.loft([[0.5, 0.03, -0.035, 0.05], [0.45, 0.075, -0.05, 0.115], [0.32, 0.105, -0.055, 0.16], [0.05, 0.118, -0.056, 0.172], [-0.22, 0.11, -0.055, 0.162], [-0.4, 0.075, -0.047, 0.118], [-0.5, 0.022, -0.03, 0.045]], high ? 20 : 10, high ? 24 : 12, function () { setc(arguments[5], white); }, 3);
     // Anna's chromodoris (seaslug.world): blue mantle with black lengthwise lines
     // and tiny dark specks, a white band and an orange-yellow border.
     var blue = hex(0x3d7cf0), pale = hex(0x7fb0ff), ink = hex(0x101420), speck = hex(0x26324a), wht = hex(0xf4f6ff), orng = hex(0xffb21a), foot = hex(0xd6def4);
@@ -3332,7 +3583,10 @@
       // Tiny dark specks scattered over the blue (the key clue).
       cells(u * 70, v * 42, 19, cc);
       if (up > 0.34 && cc[2] > 0.45) mixc(out, speck, 0.85 * (1 - smooth(0.16, 0.24, cc[0])), out);
-      mixc(out, ink, band(up - 0.6, 0.045, 0.03), out);
+      // md13: on the low mantle the black lines run along the back, one each
+      // side of a paler blue midline, with a thinner one lower on the flank.
+      mixc(out, pale, 0.45 * smooth(0.93, 0.985, up), out);
+      mixc(out, ink, Math.min(1, band(up - 0.88, 0.03, 0.02) + band(up - 0.6, 0.035, 0.025)), out);
       mixc(out, wht, smooth(0.36, 0.3, up), out);
       mixc(out, orng, smooth(0.17, 0.1, up), out);
     }, false, true);
@@ -3346,13 +3600,16 @@
       var ends = smooth(0.06, 0.22, mu) * (1 - smooth(0.78, 0.94, mu));
       var fold = 1.3 * (noise2(mu * 4.7 + mantlePhase, side * 0.8 + 4.1) - 0.5) + 0.7 * (noise2(mu * 9.3 - mantlePhase, side * 1.3 + 7.4) - 0.5);
       g.p[mv * 3 + 1] += 0.008 * margin * ends * fold;
+      // md13: the mantle edge flares out a little as a skirt over the foot,
+      // so the white and orange-yellow border shows from above.
+      g.p[mv * 3 + 2] *= 1 + 0.16 * smooth(-0.4, -0.05, mup) * (1 - smooth(0.12, 0.5, mup)) * smooth(0, 0.12, mu) * (1 - smooth(0.88, 1, mu));
     }
     scaleGeo(g, L); g.map(0, function (p) { p[1] += 0.005 * L / 0.05; });
     var skin=kit.baked('nudibranch|skin-relief',high?128:64,high?64:32,function(u,v,out){var a=-PI/2+v*TAU,grain=noise3(u*87,Math.cos(a)*17,Math.sin(a)*17);out[0]=out[2]=.5+(grain-.5)*.045;out[1]=.88+(grain-.5)*.1;},false,true,true);
     kit.mesh(kit.geo(g, 1), kit.std({map:tex,bumpMap:skin,bumpScale:L*.0007,roughnessMap:skin,roughness:.42}, { sheen: sheenOf(T, 0x6090ff, 0xffffff, 0.2) }), 'body', c.root);
     var org = lin(orng), wh = lin(wht), rh = new Geo(), gills = new Geo(),pedal=new Geo();
     // The smaller muscular foot sits beneath the overhanging mantle; its tail projects.
-    pedal.loft([[.47,.016,-.014,.07],[.35,.026,-.016,.15],[.1,.027,-.016,.17],[-.2,.025,-.014,.15],[-.43,.022,-.01,.09],[-.57,.007,-.004,.015]],high?16:8,high?10:8,function(t,a,x,y,z,o){mixc(foot,wht,.45,o);mixc(o,orng,smooth(.83,.98,Math.abs(Math.cos(a)))*.85,o);},3);
+    pedal.loft([[.47,.016,-.014,.045],[.35,.026,-.016,.095],[.1,.027,-.016,.11],[-.2,.025,-.014,.1],[-.43,.022,-.01,.06],[-.57,.007,-.004,.012]],high?16:8,high?10:8,function(t,a,x,y,z,o){mixc(foot,wht,.45,o);mixc(o,orng,smooth(.83,.98,Math.abs(Math.cos(a)))*.85,o);},3);
     scaleGeo(pedal,L);pedal.map(0,function(p){p[1]+=.016*L;});
     [-1, 1].forEach(function (s) {
       // The sensory clubs have stacked lamellae around a narrow stalk, with a
@@ -3504,9 +3761,9 @@
     geo.absorb(T, g, null, colFn);
   }
   function buildTreeWorms(c) {
-    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(71), k = 0.9 + 0.2 * rng(), R = 0.12 * k, H = 0.11 * k, head = new Geo();
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(71), k = 0.9 + 0.2 * rng(), R = 0.098 * k, H = 0.076 * k, head = new Geo();
     // The host coral grows around the secreted tube, leaving its opening exposed.
-    var cream = hex(0xae9862), mauve = hex(0x86704e), col = [0, 0, 0], h = c.health, bl = [0, 0, 0];
+    var cream = hex(0x7d6840), mauve = hex(0x564430), col = [0, 0, 0], h = c.health, bl = [0, 0, 0];
     // Porites has algae partners and bleaches in a heatwave; the worms have none
     // and keep their own colours, so a bleached head shows them off.
     lumpDome(T, head, R, H, high ? 32 : 14, high ? 16 : 7, rng() * 9, function (x, y, z) {
@@ -3526,7 +3783,7 @@
     }
     // One spiral plume, instanced twice per worm (they live in pairs of crowns).
     // Radioles spiral up a cone like a Christmas tree; the frilly band slopes down and out.
-    var plume = new Geo(), turns = high ? 5 : 4, segs = Math.round(turns * (high ? 12 : 6.5)), ph = 0.032 * k, pr = 0.0025 * k, pw = 0.01 * k, rim = [1.3, 1.3, 1.3], core = [0.7, 0.7, 0.7], dim = [0.95, 0.95, 0.95], first = plume.count(), i;
+    var plume = new Geo(), turns = high ? 5 : 4, segs = Math.round(turns * (high ? 12 : 6.5)), ph = 0.046 * k, pr = 0.003 * k, pw = 0.0145 * k, rim = [1.05, 1.05, 1.05], core = [0.5, 0.5, 0.5], dim = [0.72, 0.72, 0.72], first = plume.count(), i;
     for (i = 0; i <= segs; i++) {
       var t = i / segs, a = t * turns * TAU, w = pw * (1 - 0.75 * t), r = pr * (1 - 0.6 * t), y = ph * t, cx = Math.cos(a), cz = Math.sin(a);
       plume.v(cx * r, y, cz * r, core, t, 0);
@@ -3568,8 +3825,9 @@
       head.absorb(T,cap.build(T,1),capMatrix,capColor);
       plugs.push({first:capFirst,count:capLocal.length/3,local:capLocal,site:site,normal:nrm.clone(),basis:basis,tangent:tangent,period:period,phase:phase});
       for (var j = 0; j < 2; j++) {
-        var side = j ? 1 : -1, off = new T.Vector3(-Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(side * 0.0045 * k);
-        worms.push({ pos:site.clone().add(off), q: new T.Quaternion().setFromUnitVectors(up, nrm), spin: rng() * TAU, period: period, phase: phase });
+        // The two crowns of one worm splay apart from their shared tube, so both read.
+        var side = j ? 1 : -1, off = new T.Vector3(-Math.sin(ang), 0, Math.cos(ang)).multiplyScalar(side * 0.0058 * k), splay = nrm.clone().addScaledVector(tangent, side * 0.34).normalize();
+        worms.push({ pos:site.clone().add(off), q: new T.Quaternion().setFromUnitVectors(up, splay), spin: rng() * TAU, period: period, phase: phase });
         mesh.setColorAt(i * 2 + j, tint);
       }
     }
@@ -3652,7 +3910,7 @@
         var u = j / segs, reach = Larm * u, wav = (0.05 + 0.07 * u) * u * Math.sin(u * 5 + a.ph + t * a.w) * a.amp;
         var dir = a.ang + wav * 2.2, curl = smooth(0.6, 1, u) * (1.0 + 0.55 * Math.sin(t * a.w * 0.7 + a.ph)) * a.amp2;
         var rx = Math.cos(dir), rz = Math.sin(dir), cr = reach - 0.06 * k * curl * (u - 0.7) / 0.3;
-        var y = 0.035 * k * (1 - smooth(0, 0.18, u)) + rbase * (1 - u) + 0.05 * k * curl * Math.sin((u - 0.7) / 0.3 * PI * 0.9);
+        var y = 0.035 * k * (1 - smooth(0, 0.18, u)) + rbase * (1 - u) + 0.065 * k * curl * Math.sin((u - 0.7) / 0.3 * PI * 0.9);
         var p = pts[j] || (pts[j] = [0, 0, 0]); p[0] = 0.035 * k + rx * cr; p[1] = y; p[2] = rz * cr;
       }
       return pts;
@@ -3687,10 +3945,10 @@
     }
     var na = armGeo.count();
     // Two colour states per vertex: mottled camouflage and a pale display with dark patches.
-    var brown = hex(0x6a4428), olive = hex(0x7e6c3a), dark = hex(0x2a180c), pale = hex(0xe0c8a8), rust = hex(0xa04a2a), ring = hex(0x1a120c);
+    var brown = hex(0x7c3f25), olive = hex(0xb79a68), dark = hex(0x2c130a), pale = hex(0xe0c8a8), rust = hex(0xa04a2a), ring = hex(0x1a120c);
     function paint(p, i, out) {
-      var x = p[0] / k, y = p[1] / k, z = p[2] / k, m = noise3(x * 20, y * 20, z * 20), m2 = noise3(x * 25 + 3, y * 25, z * 25);
-      var A = mixc(brown, olive, m, [0, 0, 0]); mixc(A, dark, smooth(0.58, 0.8, m2) * 0.48, A);
+      var x = p[0] / k, y = p[1] / k, z = p[2] / k, m = noise3(x * 34, y * 34, z * 34), m2 = noise3(x * 42 + 3, y * 42, z * 42);
+      var A = mixc(brown, olive, smooth(0.42, 0.68, m), [0, 0, 0]); mixc(A, dark, smooth(0.52, 0.7, m2) * 0.72, A);
       var B = mixc(pale, rust, smooth(0.45, 0.65, noise3(x * 25 + 7, y * 25, z * 25)), [0, 0, 0]);
       var eyeSpot = Math.abs(Math.sqrt(Math.pow(x - 0.02, 2) + Math.pow(Math.abs(z) - 0.06, 2)) - 0.012);
       if (y < 0.05) mixc(A, ring, (1 - smooth(0.003, 0.006, eyeSpot)) * 0.85, A);
@@ -3727,14 +3985,14 @@
     var armV0 = skinBatch.table[1].first, armI0 = skinBatch.table[1].start;
     // Paired rows of recessed suction cups follow the underside of every arm.
     // Each cup uses a single concave fan, keeping the full animal within budget.
-    var cups = new Geo(), cupsPerRow = high ? 10 : 4, cupSides = high ? 6 : 4, cupRim = lin(hex(0xc9a98b)), cupWell = lin(hex(0x684b3c));
+    var cups = new Geo(), cupsPerRow = high ? 10 : 4, cupSides = high ? 6 : 4, cupRim = lin(hex(0xe8d2bb)), cupWell = lin(hex(0x8a6450));
     var ct = new T.Vector3(), cs = new T.Vector3(), cd = new T.Vector3(), cn = new T.Vector3(), cb = new T.Vector3(), cp = new T.Vector3();
     function placeCups(out) {
       var q = 0;
       for (var ai = 0; ai < 8; ai++) for (var ci = 0; ci < cupsPerRow; ci++) {
         var u = 0.16 + 0.74 * ci / Math.max(1, cupsPerRow - 1), f = u * segs, a0 = Math.floor(f), a1 = Math.min(segs, a0 + 1), A = arms[ai].pts[a0], B = arms[ai].pts[a1];
         ct.set(B[0] - A[0], B[1] - A[1], B[2] - A[2]).normalize(); cs.set(-ct.z, 0, ct.x).normalize(); cd.crossVectors(ct, cs).normalize();
-        var rr = armRadius(u), cr = rr * 0.36;
+        var rr = armRadius(u), cr = rr * 0.42;
         for (var side = -1; side <= 1; side += 2) {
           cn.copy(cd).addScaledVector(cs, side * 0.48).normalize(); cb.crossVectors(cn, ct).normalize();
           cp.set(lerp(A[0], B[0], f - a0), lerp(A[1], B[1], f - a0), lerp(A[2], B[2], f - a0)).addScaledVector(cd, rr * 0.89).addScaledVector(cs, side * rr * 0.48);
@@ -3786,33 +4044,41 @@
   function buildCucumber(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(75), L = 0.24 * (0.88 + 0.24 * rng()), g = new Geo();
     var black = hex(0x1c1012), dusk = hex(0x4a1c24), pink = hex(0xe8869a), rose = hex(0xc8566e), mouth = hex(0x8a8a86), ph0 = rng() * 9;
-    g.loft([[0.5, 0.025, -0.025, 0.028], [0.46, 0.068, -0.062, 0.07], [0.36, 0.096, -0.082, 0.094], [0.12, 0.104, -0.088, 0.1], [-0.18, 0.102, -0.087, 0.099], [-0.38, 0.09, -0.078, 0.088], [-0.47, 0.06, -0.054, 0.058], [-0.5, 0.02, -0.02, 0.02]], high ? 32 : 14, high ? 24 : 12,
+    // Soft, uneven section along the body: a slack animal, not a rigid capsule.
+    var bodyRows = [[0.5, 0.025, -0.025, 0.028], [0.46, 0.066, -0.062, 0.068], [0.36, 0.09, -0.08, 0.09], [0.2, 0.104, -0.088, 0.104], [0.03, 0.094, -0.086, 0.092], [-0.16, 0.106, -0.088, 0.106], [-0.34, 0.096, -0.08, 0.096], [-0.46, 0.06, -0.054, 0.058], [-0.5, 0.02, -0.02, 0.02]], bodyAt = profile(bodyRows);
+    g.loft(bodyRows, high ? 32 : 14, high ? 24 : 12,
       function (t, a, x, y, z, o) {
         // Dark back fades through dusky red flanks to a pink underside.
         var up = Math.sin(a), m = noise2(x * 30 + ph0, z * 30 + y * 20);
         mixc(black, dusk, 0.25 + 0.35 * m, o);
-        mixc(o, rose, smooth(0.15, -0.25, up), o); mixc(o, pink, smooth(-0.2, -0.65, up), o);
+        var edgeUp = up + 0.3 * (noise2(x * 16 + ph0, a * 2.3) - 0.5);
+        mixc(o, rose, smooth(0.22, -0.16, edgeUp), o); mixc(o, pink, smooth(-0.08, -0.5, edgeUp), o);
         if (t < 0.03) mixc(o, mouth, 0.6, o);
       });
-    var bend = (rng() - 0.5) * 0.16;
-    scaleGeo(g, L); g.map(0, function (p) { var t = p[0] / L; p[2] += bend * L * (0.25 - t * t) * 2; p[1] += 0.087 * L; });
-    // Sparse, low papillae soften the upper surface without making a spiny animal.
-    for(var pap=0;pap<(high?16:5);pap++) {
-      var pu=-.29+.58*(pap+.5)/(high?16:5),pa=.7*Math.sin(pap*2.4+ph0);
-      blob(T,g,pu*L,(.087+.101*Math.cos(pa))*L,.098*Math.sin(pa)*L+bend*L*(.25-pu*pu)*2,
-        .0045*L,.0035*L,.0045*L,lin(dusk),high?5:4,3);
+    // The body lies in a loose curve with a slight S; every part below follows the same centre line.
+    var bend = (rng() < 0.5 ? -1 : 1) * (0.08 + 0.06 * rng()), wiggle = 0.006 + 0.006 * rng();
+    function midZ(t) { return (bend * ((0.25 - t * t) * 2 - 0.25) + wiggle * Math.sin(t * TAU)) * L; }
+    scaleGeo(g, L); g.map(0, function (p) { var t = p[0] / L, ring = high ? 1 + 0.022 * Math.sin(t * 58 + 2.2 * noise2(t * 9 + ph0, 3)) * smooth(0.47, 0.34, Math.abs(t)) : 1; p[1] *= ring; p[2] = p[2] * ring + midZ(t); p[1] += 0.087 * L; });
+    // Small, low papillae scattered over the back and flanks: visible bumps, never spines.
+    var papillae=[],papN=high?54:14,papS=[0,0,0],papDark=lin(hex(0x34181e)),papPale=lin(hex(0x4e242c));
+    for(var pap=0;pap<papN;pap++) {
+      var pu=-.41+.82*fract(pap*.618034+ph0),pa=(fract(pap*.754878+ph0*.37)-.5)*2.5;
+      bodyAt(pu,papS);
+      var pc=(papS[0]+papS[1])/2,ph2=(papS[0]-papS[1])/2,pr=(pap%3===0?.0105:.0082)*L;
+      papillae.push({x:pu*L,y:(.087+pc+ph2*Math.cos(pa))*L,z:papS[2]*Math.sin(pa)*L+midZ(pu),radius:pr});
+      blob(T,g,pu*L,(.087+pc+ph2*Math.cos(pa))*L,papS[2]*Math.sin(pa)*L+midZ(pu),pr,pr*.72,pr,pap%3===0?papPale:papDark,high?5:4,high?3:2);
     }
     // Small tube feet line the underside. Keeping these in the skin mesh means
     // they follow the existing slow body deformation and add no draw call.
     var footColor=lin(hex(0xba7787)), tentacleColor=lin(hex(0xb4a69e));
     var feetPerRow=high?12:6;
     for(var row=-1;row<=1;row++) for(var foot=0;foot<feetPerRow;foot++) {
-      var along=-.33+.66*(foot+.5)/feetPerRow, x=along*L, z=row*.041*L+bend*L*(.25-along*along)*2;
+      var along=-.33+.66*(foot+.5)/feetPerRow, x=along*L, z=row*.041*L+midZ(along);
       blob(T,g,x,.012*L,z,.0048*L,.012*L,.0048*L,footColor,4,3);
     }
     // The specimen shows the short oral tentacles extended around the front mouth.
     // A peltate tentacle ends in a small, lobed feeding pad.
-    var mouthX=.44*L, mouthY=.028*L, mouthZ=bend*L*(.25-.44*.44)*2, tentacles=20;
+    var mouthX=.44*L, mouthY=.028*L, mouthZ=midZ(.44), tentacles=20;
     blob(T,g,mouthX,.032*L,mouthZ,.024*L,.007*L,.024*L,lin(rose),high?8:5,3);
     blob(T,g,mouthX,.025*L,mouthZ,.01*L,.003*L,.01*L,lin(black),high?8:5,3);
     var feedingPads=[];
@@ -3829,7 +4095,7 @@
       feedingPads.push({first:padFirst,count:g.count()-padFirst,center:[tipX,tipY,tipZ],sides:padSides});
     }
     var geo = kit.geo(g, 1);
-    geo.userData.cucumber={feedingPads:feedingPads,scale:L};
+    geo.userData.cucumber={feedingPads:feedingPads,scale:L,papillae:papillae};
     // Smooth, pliable skin has a fine surface grain, not raised spines. Pack
     // tiny relief and roughness into one linear map; the dark/pink pigment
     // stays in the original vertex colours. Circular sampling closes the seam.
@@ -3841,7 +4107,7 @@
       out[1] = 0.91 + edge * ((tissue - 0.5) * 0.17 + (grain - 0.5) * 0.06);
       out[2] = 0.5;
     }, false, true, true);
-    kit.mesh(geo, kit.std({ vertexColors: true, bumpMap: skin, bumpScale: L * 0.0014, roughnessMap: skin, roughness: 0.66 }), 'body', c.root);
+    kit.mesh(geo, kit.std({ vertexColors: true, bumpMap: skin, bumpScale: L * 0.0014, roughnessMap: skin, roughness: 0.8 }), 'body', c.root);
     var ph = rng() * TAU;
     deform(c, geo, function (base, out, t) {
       for (var q = 0; q < base.length; q += 3) {
@@ -4000,14 +4266,14 @@
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(81), k = 0.85 + 0.3 * rng(), stalk = new Geo(), polyps = new Geo(), i;
     // Pink, red, orange, purple or cream polyp clusters on a pale, see-through-looking
     // trunk freckled with sclerites (the coral's tiny skeletal spicules).
-    var pals = [[0xd0487a, 0xf2a6c4], [0xc8382e, 0xf08a6a], [0xe07428, 0xf8b860], [0x8a4ab0, 0xc89ae0], [0xd8a020, 0xf8e070]], pal = pals[Math.floor(rng() * pals.length)];
-    var stalkC = mixc(hex(0xe2d6d2), hex(pal[0]), 0.3, [0, 0, 0]), spicule = hex(pal[0]), pc = lin(hex(pal[0])), pt = lin(hex(pal[1]));
+    var pals = [[0xd8a020, 0xf8e070], [0xc8382e, 0xf08a6a], [0xe07428, 0xf8b860], [0x8a4ab0, 0xc89ae0], [0xb8325f, 0xf7bcd2]], pal = pals[Math.floor(rng() * pals.length)];
+    var stalkC = mixc(hex(0xe8dcdc), hex(pal[0]), 0.26, [0, 0, 0]), spicule = hex(pal[0]), pc = lin(hex(pal[0])), pt = lin(hex(pal[1]));
     function scol(t, s) {
-      var n = noise2(t * 30 + s * 7, s * 13), c2 = mixc(stalkC, spicule, 0.06 + smooth(0.6, 0.78, n) * 0.5 + 0.25 * t * t, [0, 0, 0]);
+      var n = noise2(t * 30 + s * 7, s * 13), c2 = mixc(stalkC, spicule, 0.08 + smooth(0.52, 0.7, n) * 0.62 + 0.3 * t * t, [0, 0, 0]);
       return lin(mulc(c2, 0.86 + 0.14 * t + 0.06 * n));
     }
-    stalk.tube([[0, -0.01, 0], [0, 0.04 * k, 0], [0.005, 0.09 * k, 0], [0, 0.13 * k, 0]], function (t) { return (0.035 - 0.012 * t) * k; }, high ? 10 : 6, scol);
-    var tips = [], sides = high ? 6 : 4;
+    stalk.tube([[0, -0.01, 0], [0, 0.025 * k, 0], [0.004, 0.055 * k, 0], [0, 0.085 * k, 0]], function (t) { return (0.03 + 0.016 * Math.pow(1 - t, 3) - 0.008 * t) * k; }, high ? 10 : 6, scol);
+    var tips = [], sides = high ? 6 : 3;
     function grow(p, dir, len, r, depth) {
       var end = [p[0] + dir[0] * len, p[1] + dir[1] * len, p[2] + dir[2] * len], mid = [(p[0] + end[0]) / 2 + dir[2] * len * 0.08, (p[1] + end[1]) / 2, (p[2] + end[2]) / 2 - dir[0] * len * 0.08];
       // Bury each narrow branch collar inside its parent, then swell gently
@@ -4023,12 +4289,15 @@
     }
     var lobes = high ? 5 : 4;
     for (i = 0; i < lobes; i++) {
-      var la = i / lobes * TAU + 0.4, spread = 0.54 + 0.23 * hash2(i, c.seed + 21), ld = [Math.cos(la) * spread, 1, Math.sin(la) * spread], ll = Math.sqrt(ld[0] * ld[0] + 1 + ld[2] * ld[2]);
-      grow([0, (0.106 + 0.018 * hash2(i + 11, 32)) * k, 0], [ld[0] / ll, ld[1] / ll, ld[2] / ll], (0.059 + 0.016 * hash2(i + 3, 24)) * k, 0.021 * k, 2);
+      var la = i / lobes * TAU + 0.4, spread = 0.72 + 0.26 * hash2(i, c.seed + 21), ld = [Math.cos(la) * spread, 1, Math.sin(la) * spread], ll = Math.sqrt(ld[0] * ld[0] + 1 + ld[2] * ld[2]);
+      grow([0, (0.066 + 0.016 * hash2(i + 11, 32)) * k, 0], [ld[0] / ll, ld[1] / ll, ld[2] / ll], (0.076 + 0.016 * hash2(i + 3, 24)) * k, 0.0175 * k, 2);
     }
     // Each twig ends in a rounded cluster of eight-armed polyps facing outward,
     // like a carnation head (the octocoral crown).
-    var per = 3, arms = 8, cr = 0.011 * k;
+    var per = 3, arms = 8, cr = 0.0115 * k;
+    // Dendronephthya polyps crowd each twig end: a coloured knot under them
+    // makes the cluster read as one tuft at guide-picture size.
+    for (i = 0; i < tips.length; i++) blob(T, polyps, tips[i][0], tips[i][1], tips[i][2], cr * 1.04, cr * 0.84, cr * 1.04, pc, high ? 6 : 4, high ? 3 : 2);
     for (i = 0; i < tips.length; i++) for (var j = 0; j < per; j++) {
       var p = tips[i], f = (j + 0.5) / per, el = Math.acos(1 - 1.4 * f), az = j * 2.399963 + i;
       var nx = Math.sin(el) * Math.cos(az), ny = Math.cos(el), nz = Math.sin(el) * Math.sin(az);
@@ -4037,17 +4306,17 @@
       var bx = ny * tz, by = nz * tx - nx * tz, bz = -ny * tx;
       if(high)polyps.tube([p,[px,py,pz]],function(t){return k*(.0015-.0003*t);},3,function(){return pc;});
       else {var stem=polyps.count(),w=.0012*k;polyps.v(p[0]-tx*w,p[1],p[2]-tz*w,pc,0,0);polyps.v(p[0]+tx*w,p[1],p[2]+tz*w,pc,0,0);polyps.v(px-tx*w,py,pz-tz*w,pc,0,0);polyps.v(px+tx*w,py,pz+tz*w,pc,0,0);polyps.i.push(stem,stem+1,stem+2,stem+1,stem+3,stem+2);}
-      var core = polyps.v(px, py, pz, pc, 0.5, 0.5), rimFirst = polyps.count(), reach = 0.0075 * k, lift = 0.0055 * k;
+      var core = polyps.v(px, py, pz, pc, 0.5, 0.5), rimFirst = polyps.count(), reach = 0.0135 * k, lift = 0.0045 * k;
       for (var arm = 0; arm < arms; arm++) {
         var pa2 = arm / arms * TAU + az, ca = Math.cos(pa2), sa = Math.sin(pa2);
-        polyps.v(px + (tx * ca + bx * sa) * reach * 0.35, py + by * sa * reach * 0.35, pz + (tz * ca + bz * sa) * reach * 0.35, pc, 0, 0);
+        polyps.v(px + (tx * ca + bx * sa) * reach * 0.42, py + by * sa * reach * 0.42, pz + (tz * ca + bz * sa) * reach * 0.42, pt, 0, 0);
         polyps.v(px + (tx * ca + bx * sa) * reach + nx * lift, py + by * sa * reach + ny * lift, pz + (tz * ca + bz * sa) * reach + nz * lift, pt, 1, 0);
       }
       for (arm = 0; arm < arms; arm++) {
         var r0 = rimFirst + arm * 2, r1 = rimFirst + ((arm + 1) % arms) * 2;
         polyps.i.push(core, r1, r0);
         polyps.i.push(r0, r1, r0 + 1);
-        if(high){
+        if(high&&j<2){
           var pa3=arm/arms*TAU+az,rx=tx*Math.cos(pa3)+bx*Math.sin(pa3),ry=by*Math.sin(pa3),rz=tz*Math.cos(pa3)+bz*Math.sin(pa3);
           var sx=-tx*Math.sin(pa3)+bx*Math.cos(pa3),sy=by*Math.cos(pa3),sz=-tz*Math.sin(pa3)+bz*Math.cos(pa3);
           // Paired side branches make each tentacle pinnate.
@@ -4282,11 +4551,11 @@
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(93), gr = c.growth, s = lerp(0.12, 1, Math.pow(gr, 0.75)) * (0.9 + 0.2 * rng());
     var R = 0.75 * s, H = R * lerp(0.3, 0.7, gr), ph = rng() * 9, h = c.health;
     // Massive Porites: cream, yellow-brown, green or blue-grey tissue, paler on sunlit tops.
-    var pals = [[0xae9862, 0x806b40], [0x9e7f4e, 0x6f5634], [0x7e8250, 0x5a603a], [0x8290a0, 0x5c6878]];
+    var pals = [[0xa88f56, 0x75603a], [0x9a7548, 0x694c2e], [0x74884a, 0x4e6236], [0x7a90aa, 0x526880]];
     var pal = pals[Math.floor(rng() * pals.length)], a1 = hex(pal[0]), a2 = hex(pal[1]), live = [0, 0, 0], tmp = [0, 0, 0], lobes = lerp(0.06, 0.2, gr);
     // Rounded hummocks rise over the dome: Porites lobata grows lumpy, knobbly tops.
-    var knobs = [], nk = Math.round(lerp(1, 13, gr));
-    for (var k = 0; k < nk; k++) { var kr = 0.85 * Math.sqrt(rng()), ka = rng() * TAU; knobs.push([Math.cos(ka) * kr, Math.sin(ka) * kr, 0.11 + 0.12 * rng(), (0.05 + 0.08 * rng()) * Math.min(1, gr * 1.4)]); }
+    var knobs = [], nk = Math.round(lerp(1, 21, gr));
+    for (var k = 0; k < nk; k++) { var kr = 0.88 * Math.sqrt((k + 0.5) / nk), ka = k * 2.399963 + rng() * 0.7; knobs.push([Math.cos(ka) * kr, Math.sin(ka) * kr, 0.09 + 0.08 * rng(), (0.075 + 0.075 * rng()) * Math.min(1, gr * 1.4)]); }
     function bump(x, z) {
       var m = 0;
       for (var q = 0; q < knobs.length; q++) { var kb = knobs[q], dx = x - kb[0], dz = z - kb[1]; m += kb[3] * Math.exp(-(dx * dx + dz * dz) / (kb[2] * kb[2])); }
@@ -4296,27 +4565,27 @@
     var d = dome(c, R, H, high ? 40 : 20, high ? 120 : 60, function (r, a) { return shape(Math.cos(a) * r, Math.sin(a) * r) + 0.04 * r * Math.sin(a * 3 - ph); }, function (x, y, z, col) {
       // Hollows between hummocks and the low flanks hold shadow (and, on a dead colony, turf first).
       var px = x / R, pz = z / R, e = 0.06, m0 = shape(px, pz), lap = (shape(px + e, pz) + shape(px - e, pz) + shape(px, pz + e) + shape(px, pz - e) - 4 * m0) / (e * e);
-      var cav = clamp(0.5 * smooth(0, 9, lap) + 0.55 * (1 - smooth(0, H * 0.7, y)), 0, 1);
+      var cav = clamp(0.85 * smooth(0, 7, lap) + 0.5 * (1 - smooth(0, H * 0.7, y)), 0, 1);
       var patch = noise3(x * 6 + ph, y * 6, z * 6), fine = noise3(x * 34, y * 34, z * 34 + ph);
-      mixc(a1, a2, smooth(0.3, 0.75, patch) * 0.8 + 0.3 * cav, live); mulc(live, 0.86 + 0.16 * smooth(0, H, y) + 0.1 * fine - 0.18 * cav);
+      mixc(a1, a2, smooth(0.3, 0.75, patch) * 0.8 + 0.3 * cav, live); mulc(live, 0.88 + 0.16 * smooth(0, H, y) + 0.1 * fine - 0.34 * cav);
       setc(col, lin(health(h, live, x, y, z, tmp, cav)));
     });
     // A compact rosette of septa around each recessed corallite, rather than
     // uniform stippling. Pigment and relief share the same cell field.
-    var cc = [0, 0, 0, 0, 0], repeats = Math.max(3, Math.round(R * 14)), tw = high ? 256 : 128;
+    var cc = [0, 0, 0, 0, 0], repeats = Math.max(3, Math.round(R * 15)), tw = high ? 256 : 128;
     function surface(u, v) {
       cellsP(u * 16, v * 16, 16, 31, cc);
-      var a = Math.atan2(cc[4], cc[3]), ribs = 0.5 + 0.5 * Math.cos(a * 12 + cc[2] * 4), ring = band(cc[0] - 0.27, 0.075, 0.055), cup = 1 - smooth(0.07, 0.2, cc[0]);
+      var a = Math.atan2(cc[4], cc[3]), ribs = 0.5 + 0.5 * Math.cos(a * 12 + cc[2] * 4), ring = band(cc[0] - 0.31, 0.08, 0.06), cup = 1 - smooth(0.09, 0.25, cc[0]);
       return [ring, cup, ribs, cc[2], 1 - smooth(0, 0.09, cc[1] - cc[0])];
     }
     var field = lazyField(tw, tw, 5, surface), tex, nmap;
     if (h === 'dead') { tex = deadGrain(kit, tw, 16, repeats); nmap = deadNormal(kit, tw, 16, repeats); }
     else {
       tex = kit.baked('boulder|pores', tw, tw, function (u, v, out, i, j) {
-        var o = field.at(i, j), p = field.data, shade = 0.88 + 0.08 * p[o] - 0.24 * p[o + 1] + 0.05 * p[o + 2] * p[o] - 0.04 * p[o + 4] + 0.03 * (p[o + 3] - 0.5);
+        var o = field.at(i, j), p = field.data, shade = 0.9 + 0.08 * p[o] - 0.36 * p[o + 1] + 0.05 * p[o + 2] * p[o] - 0.04 * p[o + 4] + 0.03 * (p[o + 3] - 0.5);
         out[0] = out[1] = out[2] = shade;
       }, true, true, false, repeats);
-      nmap = kit.bakedNormal('boulder|pores', tw, tw, function (u, v, i, j) { var o = field.at(i, j), p = field.data; return 0.64 * p[o] - 0.38 * p[o + 1] + 0.13 * p[o + 2] * p[o] - 0.08 * p[o + 4]; }, high ? 2.0 : 1.5, true, repeats);
+      nmap = kit.bakedNormal('boulder|pores', tw, tw, function (u, v, i, j) { var o = field.at(i, j), p = field.data; return 0.64 * p[o] - 0.5 * p[o + 1] + 0.13 * p[o + 2] * p[o] - 0.08 * p[o + 4]; }, high ? 2.2 : 1.6, true, repeats);
     }
     var mat = kit.std({ map: tex, normalMap: nmap, vertexColors: true, roughness: Math.min(0.98, coralRough(h) + 0.08) }, coralSheen(c, null));
     kit.mesh(kit.geo(d.geo, 1), mat, 'colony', c.root);
@@ -4378,26 +4647,28 @@
     var s = lerp(0.1, 1, Math.pow(gr, 0.8)) * (0.92 + 0.16 * rng()), ph = rng() * TAU;
     var pals = [[0x7c5a48, 0xd8c2a8], [0x6c5e42, 0xd6cca6], [0x76546a, 0xdcc2ce], [0x626040, 0xd0cc9c]], pal = pals[Math.floor(rng() * pals.length)];
     var base = hex(pal[0]), rim = hex(pal[1]), g = new Geo(), live = [0, 0, 0], tmp = [0, 0, 0];
-    var nr = high ? 8 : 4, na = high ? 30 : 12, plates = Math.max(1, Math.round(lerp(1, 9, gr))), top = 0.03 * s;
+    var nr = high ? 10 : 4, na = high ? 36 : 12, plates = Math.max(1, Math.round(lerp(1, 9, gr))), top = 0.03 * s;
     // A low lumpy core that every plate grows from.
-    blob(T, g, 0, 0.03 * s, 0, 0.075 * s, 0.05 * s, 0.07 * s, function (x, y, z) { return lin(health(h, mulc(setc(live, base), 0.7), x, y, z, tmp, 0.8)); }, high ? 12 : 8, high ? 6 : 4);
+    blob(T, g, 0, gr > 0.6 ? 0.09 * s : 0.03 * s, 0, 0.1 * s, gr > 0.6 ? 0.1 * s : 0.05 * s, 0.1 * s, function (x, y, z) { return lin(health(h, mulc(setc(live, base), 0.42), x, y, z, tmp, 1)); }, high ? 12 : 8, high ? 6 : 4);
     for (var p = 0; p < plates; p++) {
-      var f = plates > 1 ? p / (plates - 1) : 0, az = p * 2.399963 + ph, Rp = s * (0.42 - 0.18 * f) * (0.88 + 0.24 * rng()), y0 = s * (0.035 + 0.17 * f), span = PI * (0.85 + 0.45 * rng());
-      var tilt = 0.08 + 0.2 * rng() + 0.1 * f, curl = 0.06 + 0.12 * rng(), cx = Math.cos(az) * 0.05 * s * f, cz = Math.sin(az) * 0.05 * s * f, wph = rng() * TAU, first = g.count(), i, j;
+      // Three plates to a tier, stepping round in a whorl; each tier smaller and steeper than the one below.
+      var tier = Math.floor(p / 3), f = plates > 1 ? p / (plates - 1) : 0, az = p * 2.25 + ph, Rt = 0.44 - 0.095 * tier, Rp = s * Rt * (0.92 + 0.16 * rng()), y0 = s * (0.035 + 0.072 * tier + 0.014 * (p % 3)), span = PI * (tier === 2 ? 1.25 : 0.95 + 0.2 * rng());
+      var hide = tier < 2 && plates > (tier + 1) * 3 ? (Rt - 0.095) * s : 0;
+      var tilt = 0.08 + 0.07 * rng() + 0.05 * tier, curl = 0.07 + 0.07 * rng(), cx = Math.cos(az) * 0.05 * s * f, cz = Math.sin(az) * 0.05 * s * f, wph = rng() * TAU, first = g.count(), i, j;
       top = Math.max(top, y0);
       for (i = 0; i <= nr; i++) for (j = 0; j <= na; j++) {
-        var rr = 0.12 + 0.88 * i / nr, ja = j / na, ang = az + (ja - 0.5) * span;
+        var rr = 0.04 + 0.96 * i / nr, ja = j / na, ang = az + (ja - 0.5) * span;
         // The leaf narrows toward the ends of its arc; its margin undulates.
         var e = Rp * (0.9 + 0.07 * Math.sin(ang * 3 + wph) + 0.04 * Math.sin(ang * 7 - wph)) * (0.5 + 0.5 * Math.pow(Math.sin(PI * ja), 0.6)), d = e * rr;
         var x = cx + Math.cos(ang) * d, z = cz + Math.sin(ang) * d, y = y0 + d * tilt + curl * d * d / Math.max(0.05, Rp) + 0.03 * s * Math.sin(ang * 5 + wph) * rr * rr;
-        var margin = Math.max(smooth(0.86, 1, rr), smooth(0.9, 1, Math.abs(ja - 0.5) * 2));
-        mixc(base, rim, 0.02 + 0.85 * margin, live); mulc(live, 0.78 + 0.18 * f + 0.1 * noise3(x * 18 + ph, p * 2, z * 18));
-        g.v(x, y, z, lin(health(h, live, x, y, z, tmp, 0.55 * (1 - rr) * (1 - f))), 0.5 + Math.cos(ang) * rr * 0.48, 0.5 + Math.sin(ang) * rr * 0.48);
+        var margin = Math.max(smooth(0.74, 1, rr), smooth(0.84, 1, Math.abs(ja - 0.5) * 2)), under = hide ? 1 - smooth(hide * 0.72, hide * 1.12, d) : 0;
+        mixc(base, rim, 0.14 + 0.2 * rr + 0.62 * margin, live); mulc(live, (0.84 + 0.14 * f + 0.1 * noise3(x * 18 + ph, p * 2, z * 18)) * (1 - 0.3 * under));
+        g.v(x, y, z, lin(health(h, live, x, y, z, tmp, Math.max(0.55 * (1 - rr) * (1 - f), 0.7 * under))), 0.5 + Math.cos(ang) * rr * 0.48, 0.5 + Math.sin(ang) * rr * 0.48);
       }
       for (i = 0; i < nr; i++) for (j = 0; j < na; j++) { var a0 = first + i * (na + 1) + j, b0 = a0 + na + 1; g.i.push(a0, b0, a0 + 1, a0 + 1, b0, b0 + 1); }
       // A short fold joins each raised plate to the core.
-      if (p && y0 > 0.07 * s) g.tube([[cx * 0.3, 0.03 * s, cz * 0.3], [cx + Math.cos(az) * Rp * 0.06, y0 * 0.6, cz + Math.sin(az) * Rp * 0.06], [cx + Math.cos(az) * Rp * 0.12, y0 + Rp * 0.12 * tilt, cz + Math.sin(az) * Rp * 0.12]], function (t) { return (0.03 - 0.012 * t) * s; }, high ? 6 : 4,
-        function (t) { return lin(health(h, mulc(setc(live, base), 0.72), cx, y0 * t, cz, tmp, 0.7)); });
+      if (p && y0 > 0.07 * s) g.tube([[cx * 0.3, 0.03 * s, cz * 0.3], [cx + Math.cos(az) * Rp * 0.06, y0 * 0.6, cz + Math.sin(az) * Rp * 0.06], [cx + Math.cos(az) * Rp * 0.12, y0 + Rp * 0.12 * tilt, cz + Math.sin(az) * Rp * 0.12]], function (t) { return (0.02 - 0.008 * t) * s; }, high ? 6 : 4,
+        function (t) { return lin(health(h, mulc(setc(live, base), 0.5), cx, y0 * t, cz, tmp, 0.9)); });
     }
     var cc = [0, 0, 0, 0, 0], tw = high ? 256 : 128;
     function relief(u, v) {
@@ -4408,7 +4679,7 @@
       return [ridges, cup, lip];
     }
     var field = lazyField(tw, tw, 3, relief);
-    var tex = kit.baked('foliose|relief', tw, tw, function (u, v, out, i, j) { var o = field.at(i, j), p = field.data; out[0] = out[1] = out[2] = 0.88 + 0.065 * p[o] + 0.035 * p[o + 2] - 0.14 * p[o + 1]; });
+    var tex = kit.baked('foliose|relief', tw, tw, function (u, v, out, i, j) { var o = field.at(i, j), p = field.data; out[0] = out[1] = out[2] = 0.86 + 0.11 * p[o] + 0.035 * p[o + 2] - 0.15 * p[o + 1]; });
     var normal = kit.bakedNormal('foliose|relief', tw, tw, function (u, v, i, j) { var o = field.at(i, j), p = field.data; return 0.6 * p[o] - 0.28 * p[o + 1] + 0.12 * p[o + 2]; }, h === 'dead' ? 2.2 : 1.7);
     var mat = kit.std({ map: tex, normalMap: normal, vertexColors: true, roughness: coralRough(h), side: T.DoubleSide }, coralSheen(c, pal[1]));
     kit.mesh(kit.geo(g, 1), mat, 'colony', c.root);
@@ -4467,7 +4738,7 @@
     var tip = hex(lattice ? 0xc4c5a3 : fingers ? 0xe5d5de : 0xdfbe94);
     var pigment = [0,0,0], shifted = [0,0,0];
     function color(t, around) {
-      mixc(base, tip, .12 + .55 * t, pigment);
+      mixc(base, tip, lattice ? .03 + .72 * t * t * t : .12 + .55 * t, pigment);
       return lin(health(c.health,pigment,around,t,phase,shifted));
     }
     // Each tapered tube gets cylindrical UVs, so the corallite texture wraps the skeleton.
@@ -4479,24 +4750,40 @@
       }
     }
     if (lattice) {
-      // Side attachment and gently rising interconnected spokes form an open horizontal shelf.
-      var rays = [], rayCount = c.high ? 17 : 11, stations = 6;
-      for (var i = 0; i < rayCount; i++) {
-        var az = -1.45 + 2.9*i/(rayCount-1), reach = .65+.38*Math.cos(az)+.06*rng(), path = [];
-        for (var j = 0; j <= stations; j++) {
-          var u = j/stations, angle = phase+az+.095*Math.sin(4*u+az*4)*u;
-          path.push([Math.cos(angle)*reach*u,.045+.19*u+.04*u*Math.sin(az*3+u*4),Math.sin(angle)*reach*u]);
+      // Side attachment, then an uneven net: branches run outward, fork, and fuse
+      // with their neighbours, densest near the attachment and open toward the rim.
+      // All draws come before any tier choice, so both tiers grow the same colony.
+      var net = [[[0,.05,0,0]]], rings = 7, ringAt, nodeAt, list, count;
+      for (ringAt = 1; ringAt <= rings; ringAt++) {
+        list = []; count = Math.round(4 + 16*ringAt/rings);
+        for (nodeAt = 0; nodeAt < count; nodeAt++) {
+          var az = -1.42 + 2.84*(nodeAt+.15+.7*rng())/count, ur = (ringAt+(rng()-.5)*.62)/rings, reach = .65+.38*Math.cos(az), angle = phase+az;
+          list.push([Math.cos(angle)*reach*ur,.045+.18*ur+.03*Math.sin(az*3+ur*4)+.014*(rng()-.5),Math.sin(angle)*reach*ur,ur]);
         }
-        branch(path,function(t){return .048-.033*t;},c.high?8:5);
-        if (i) for (j=2; j<=stations; j++) {
-          if ((i+j)%4===0) continue;
-            var start = path[j], end = rays[i-1][j-((i+j)%2)];
-            branch([start,[(start[0]*2+end[0])/3-.009,(start[1]*2+end[1])/3-.008,(start[2]*2+end[2])/3],
-              [(start[0]+end[0]*2)/3-.007,(start[1]+end[1]*2)/3-.006,(start[2]+end[2]*2)/3],end],.020,c.high?6:4);
-        }
-        rays.push(path);
+        net.push(list);
       }
-      blob(c.T,g,0,.045,0,.12,.045,.12,function(){return color(0,0);},10,5);
+      function netRadius(u) { return .052-.03*u; }
+      function link(a, b) {
+        var bow = (rng()-.5)*.03, ex = b[0]-a[0], ez = b[2]-a[2], len = Math.sqrt(ex*ex+ez*ez)||1, at = g.count();
+        var mid = [(a[0]+b[0])/2-ez/len*bow,(a[1]+b[1])/2-.004,(a[2]+b[2])/2+ex/len*bow];
+        branch(c.high?[a,mid,b]:[a,b],function(t){return netRadius(lerp(a[3],b[3],t));},c.high?6:4,function(t){return color(lerp(a[3],b[3],t),t);});
+        // Corallite texture keeps one scale on short and long links alike.
+        for (var v = at; v < g.count(); v++) g.t[2*v+1] *= Math.sqrt(ex*ex+ez*ez)/.24;
+      }
+      function nearest(p, ring, skip) {
+        var best = null, bestD = 1e9;
+        for (var q = 0; q < ring.length; q++) { if (ring[q]===skip) continue; var dx = ring[q][0]-p[0], dz = ring[q][2]-p[2], dd = dx*dx+dz*dz; if (dd<bestD) { bestD = dd; best = ring[q]; } }
+        return best;
+      }
+      for (ringAt = 1; ringAt <= rings; ringAt++) for (nodeAt = 0; nodeAt < net[ringAt].length; nodeAt++) {
+        var node = net[ringAt][nodeAt], parent = nearest(node,net[ringAt-1],null);
+        link(parent,node);
+        if (ringAt > 1 && rng() < .34) link(nearest(node,net[ringAt-1],parent),node);
+        var along = net[ringAt][nodeAt+1];
+        if (along && rng() < lerp(.92,.42,ringAt/rings)) link(node,along);
+        if (c.high) { var nr = netRadius(node[3]); blob(c.T,g,node[0],node[1],node[2],nr*1.2,nr*.95,nr*1.2,color(node[3],0),6,3); }
+      }
+      blob(c.T,g,0,.05,0,.13,.055,.13,function(){return color(0,0);},10,5);
     } else {
       // Basal crust joins the branches. The finer species has an even crown of short branchlets.
       var spread = fingers ? .235 : .325, count = fingers ? 14 : 32;
@@ -4540,6 +4827,395 @@
     var mat = c.kit.std({map:maps[0],normalMap:maps[1],vertexColors:true,roughness:coralRough(c.health)},coralSheen(c,0xccb8a3));
     mat.normalScale.set(.5,.5);
     c.kit.mesh(c.kit.geo(g,1),mat,'colony',c.root);
+  }
+  // ---- Reef builders that are not all stony corals ----------------------------------
+  // Millepora platyphylla (fire coral, a hydrozoan), Heliopora coerulea (blue coral)
+  // and Tubipora musica (organ pipe coral), both octocorals, and Seriatopora hystrix
+  // (birdsnest coral, a stony coral). Each is one static colony mesh in the shared
+  // coral material family. All four farm algae and can bleach; the blue skeleton
+  // bleaches bluish (Anto et al. 2026) and the red pipes stay red.
+  // Health colour over a colony's own skeleton: bone/boneDark replace the white
+  // stony skeleton that health() shows, and tint (0..1) keeps that colour when bleached.
+  function builderHealth(h, live, bone, boneDark, tint, x, y, z, out, cav) {
+    var hollow = cav === undefined ? 0.35 : cav;
+    if (h === 'bleached') {
+      mixc(BLEACH, bone, tint, out); mixc(out, tint > 0.5 ? boneDark : BLEACH_SH, 0.6 * hollow, out);
+      out[0] += (live[0] - out[0]) * 0.06; out[1] += (live[1] - out[1]) * 0.06; out[2] += (live[2] - out[2]) * 0.06; return out;
+    }
+    if (h === 'dead') {
+      var n = noise3(x * 11 + 5, y * 11, z * 11), f = noise3(x * 70, y * 70 + 3, z * 70);
+      mixc(bone, boneDark, 0.3 * noise3(x * 30, y * 30, z * 30 + 7) + 0.45 * hollow, out);
+      mulc(out, 0.86);
+      mixc(out, mixc(TURF, TURF2, f, HEALTH_MIX), smooth(0.5, 0.7, 0.6 * n + 0.18 * f + 0.4 * hollow) * 0.72, out);
+      return mulc(out, 0.86 + 0.26 * noise3(x * 160, y * 160, z * 160));
+    }
+    return setc(out, live);
+  }
+  // Closed cross-sections lofted along a path. Ring vertex s at station i sits at
+  // centre + N rx cos + B ry sin, with N the side vector made normal to the path
+  // and B = T x N (the winding of Geo.tube). sq < 1 squares the section.
+  function loftSection(g, pts, side, rx, ry, sides, sq, col) {
+    var n = pts.length, first = g.count(), c3 = [0, 0, 0], i, s;
+    for (i = 0; i < n; i++) {
+      var a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], tx = b[0] - a[0], ty = b[1] - a[1], tz = b[2] - a[2], tl = Math.sqrt(tx * tx + ty * ty + tz * tz) || 1;
+      tx /= tl; ty /= tl; tz /= tl;
+      var t = n > 1 ? i / (n - 1) : 0, sv = typeof side === 'function' ? side(t, i) : side, d = sv[0] * tx + sv[1] * ty + sv[2] * tz;
+      var Nx = sv[0] - tx * d, Ny = sv[1] - ty * d, Nz = sv[2] - tz * d, nl = Math.sqrt(Nx * Nx + Ny * Ny + Nz * Nz) || 1;
+      Nx /= nl; Ny /= nl; Nz /= nl;
+      var Bx = ty * Nz - tz * Ny, By = tz * Nx - tx * Nz, Bz = tx * Ny - ty * Nx;
+      for (s = 0; s < sides; s++) {
+        var ang = s / sides * TAU, ca = sp(Math.cos(ang), sq), sa = sp(Math.sin(ang), sq), R = rx(t, ca, i), Q = ry(t, ca, i);
+        var x = pts[i][0] + Nx * ca * R + Bx * sa * Q, y = pts[i][1] + Ny * ca * R + By * sa * Q, z = pts[i][2] + Nz * ca * R + Bz * sa * Q;
+        col(t, s / sides, x, y, z, c3, ca, i);
+        g.v(x, y, z, c3, s / sides, t);
+      }
+    }
+    for (i = 0; i < n - 1; i++) for (s = 0; s < sides; s++) {
+      var p0 = first + i * sides + s, p1 = first + i * sides + (s + 1) % sides;
+      g.i.push(p0, p1, p1 + sides, p0, p1 + sides, p0 + sides);
+    }
+    return first;
+  }
+  // A fan over one ring (end: the last ring of a loft, else its first).
+  function capRing(g, ring, sides, centre, c3, end, u, v) {
+    var mid = g.v(centre[0], centre[1], centre[2], c3, u || 0.5, v || 0.5);
+    for (var s = 0; s < sides; s++) { var a = ring + s, b = ring + (s + 1) % sides; if (end) g.i.push(a, b, mid); else g.i.push(b, a, mid); }
+    return mid;
+  }
+  // Texture coordinates in metres over a vertex range, so pores keep one size.
+  function metreUV(g, from, to, scale, fn) {
+    for (var q = from; q < to; q++) { var uv = fn(g.p[q * 3], g.p[q * 3 + 1], g.p[q * 3 + 2], q); g.t[q * 2] = uv[0] / scale; g.t[q * 2 + 1] = uv[1] / scale; }
+  }
+  // Flattens anything below the substrate so the colony sits on it.
+  function floorClamp(g) { for (var k = 1; k < g.p.length; k += 3) if (g.p[k] < -0.006) g.p[k] = -0.006; }
+  function builderMaterial(c, g, pore, glow, side) {
+    var maps = coralMaps(c.kit, c.health, c.high ? 128 : 64, pore, 1), params = { map: maps[0], normalMap: maps[1], vertexColors: true, roughness: coralRough(c.health) };
+    if (side) params.side = c.T.DoubleSide;
+    var mat = c.kit.std(params, coralSheen(c, glow));
+    mat.normalScale.set(0.6, 0.6);
+    c.kit.mesh(c.kit.geo(g, 1), mat, 'colony', c.root);
+  }
+
+  // Millepora platyphylla: upright plates fused into a box-like, honeycomb
+  // colony on an encrusting base. Mustard to light-brown walls with pale growing
+  // margins, pinhole pores (SeaLifeBase; Hooper Museum). The plates stand
+  // vertical with thin, rounded top edges.
+  function buildFireCoral(c) {
+    var g = new Geo(), rng = c.rng(463), h = c.health, high = c.high, ph = rng() * TAU;
+    var root = hex(0x7a5a22), wall = hex(0xc99d3c), rim = hex(0xf4ecd2), live = [0, 0, 0], tmp = [0, 0, 0];
+    function colour(x, y, z, top, out) {
+      mixc(root, wall, smooth(0.0, 0.2, y), live);
+      mulc(live, 0.9 + 0.14 * noise3(x * 19 + ph, y * 19, z * 19));
+      mixc(live, rim, top, live);
+      return setc(out, lin(health(h, live, x, y, z, tmp, 0.6 * (1 - smooth(0, 0.16, y)))));
+    }
+    // The wall plan: three long, wavy plates joined by cross plates into
+    // open cells, all under one rounded
+    // crown, so the colony reads as fused plates rather than a fan.
+    // md13: five thinner, wavier plates and staggered cross plates make many
+    // smaller box-like cells (a honeycomb), not three thick slabs.
+    var walls = [], rows = [-0.2, -0.1, 0, 0.1, 0.2], i, k, halves = [];
+    function crown(x, z) { return 0.3 * Math.max(0.3, 1 - 0.42 * (x * x / 0.144 + z * z / 0.09)); }
+    var longs = [];
+    for (i = 0; i < rows.length; i++) {
+      var z0 = rows[i] + 0.016 * (rng() - 0.5), half = 0.37 * Math.sqrt(1 - Math.pow(z0 / 0.3, 2)) * (0.88 + 0.12 * rng()), wv = rng() * TAU, path = [];
+      for (k = 0; k <= 8; k++) { var u = k / 8, x = lerp(-half, half, u); path.push([x, z0 + 0.018 * Math.sin(u * 5 + wv) + 0.01 * Math.sin(u * 11 + wv * 2)]); }
+      longs.push(path); halves.push(half); walls.push({ path: path, t: 0.0052, n: high ? 28 : 12, ends: true });
+    }
+    function zAt(path, x) { for (var q = 0; q < path.length - 1; q++) if (x <= path[q + 1][0] || q === path.length - 2) { var f = clamp((x - path[q][0]) / (path[q + 1][0] - path[q][0]), 0, 1); return lerp(path[q][1], path[q + 1][1], f); } return path[0][1]; }
+    for (i = 0; i < rows.length - 1; i++) {
+      var span = Math.min(halves[i], halves[i + 1]) - 0.035, cells = Math.max(2, Math.round(span * 2 / 0.115)), step = span * 2 / cells;
+      for (k = 0; k <= cells; k++) {
+        var kx = k + (i % 2 ? 0.5 : 0);
+        if (kx > cells) continue;
+        var cx = -span + kx * step + 0.025 * (rng() - 0.5), bend = (rng() - 0.5) * 0.05, za = zAt(longs[i], cx), zb = zAt(longs[i + 1], cx + bend);
+        walls.push({ path: [[cx, za], [cx + bend * 0.5 + 0.01 * (rng() - 0.5), (za + zb) / 2], [cx + bend, zb]], t: 0.005, n: high ? 8 : 4, ends: false, cross: true });
+      }
+    }
+    for (i = 0; i < 2; i++) {
+      // Free spurs on the outer plates, each ending in a rounded vertical edge.
+      if (i < 2) { rng(); rng(); rng(); continue; }
+      var front = i % 2 ? 1 : -1, sxp = (i < 2 ? -0.12 : 0.13) + 0.05 * (rng() - 0.5), from = longs[front > 0 ? 2 : 0], zs = zAt(from, sxp) - front * 0.006, ln = 0.055 + 0.04 * rng(), sb = (rng() - 0.5) * 0.06;
+      walls.push({ path: [[sxp, zs], [sxp + sb * 0.5, zs + front * ln * 0.55], [sxp + sb, zs + front * ln]], t: 0.0065, n: high ? 8 : 4, ends: true, spur: true });
+    }
+    function sample(path, u) {
+      var f = u * (path.length - 1), j = Math.min(path.length - 2, Math.floor(f)), r = f - j, a = path[Math.max(0, j - 1)], b = path[j], cc = path[j + 1], d = path[Math.min(path.length - 1, j + 2)];
+      return [catmull(a[0], b[0], cc[0], d[0], r), catmull(a[1], b[1], cc[1], d[1], r)];
+    }
+    var sides = high ? 12 : 6;
+    walls.forEach(function (wl, wi) {
+      var wave = rng() * TAU, wave2 = rng() * TAU, centres = [], heights = [], arc = [0], stations = wl.n;
+      for (var s = 0; s < stations; s++) {
+        var u = s / (stations - 1), p = sample(wl.path, u);
+        // Long plates and spurs drop to a rounded vertical edge at a free end.
+        var end = wl.spur ? 1 - 0.25 * smooth(0.5, 1, u) : wl.ends ? 0.62 + 0.38 * smooth(0, 0.14, u) * smooth(1, 0.86, u) : 1;
+        var hh = crown(p[0], p[1]) * (wl.spur ? 0.82 : wl.cross ? 0.95 : 1) * end * (wl.cross ? 1 + 0.04 * Math.sin(u * PI) : 1 + 0.09 * Math.sin(u * 8 + wave) + 0.05 * Math.sin(u * 21 + wave2));
+        heights.push(hh); centres.push([p[0], 0, p[1]]);
+        if (s) arc.push(arc[s - 1] + Math.hypot(p[0] - centres[s - 1][0], p[1] - centres[s - 1][2]));
+      }
+      var first = loftSection(g, centres, [0, 1, 0], function (t, ca, si) { return heights[si] * 0.5 + 0.012; }, function (t, ca) {
+        // Thick at the base, thinning toward the blade edge.
+        return wl.t * (1 - 0.5 * smooth(-0.2, 1, ca));
+      }, sides, 0.6, function (t, s, x, y, z, out, ca, si) { var yy = y + heights[si] * 0.5 - 0.012; return colour(x, yy, z, smooth(heights[si] - 0.045, heights[si] - 0.006, yy), out); });
+      // Lofted along the ground so every section stands vertical, then lifted.
+      for (var q = first; q < g.count(); q++) g.p[q * 3 + 1] += heights[Math.floor((q - first) / sides)] * 0.5 - 0.012;
+      for (s = 0; s < stations; s++) centres[s][1] = heights[s] * 0.5 - 0.012;
+      var last = first + (stations - 1) * sides;
+      capRing(g, first, sides, [centres[0][0], centres[0][1], centres[0][2]], colour(centres[0][0], centres[0][1], centres[0][2], 0.4, [0, 0, 0]), false);
+      capRing(g, last, sides, centres[stations - 1], colour(centres[stations - 1][0], centres[stations - 1][1], centres[stations - 1][2], 0.4, [0, 0, 0]), true);
+      metreUV(g, first, g.count(), 0.22, function (x, y, z, q) { var si = Math.min(stations - 1, Math.floor((q - first) / sides)); return [arc[si] || 0, y + 0.37 * wi]; });
+    });
+    // The encrusting base the plates rise from.
+    var b0 = g.count(), cb = [0, 0, 0];
+    blob(c.T, g, 0, 0.004, 0, 0.36, 0.03, 0.2, function (x, y, z) { return colour(x, Math.max(0, y) * 0.5, z, 0, cb); }, high ? 24 : 12, high ? 8 : 5);
+    metreUV(g, b0, g.count(), 0.22, function (x, y, z) { return [x, z]; });
+    floorClamp(g);
+    scaleGeo(g, lerp(0.14, 1, c.growth));
+    builderMaterial(c, g, 26, 0xf4ecd2);
+  }
+
+  // Heliopora coerulea: thick, flattened upright lobes from one base. Living
+  // tissue is grey-brown with pale tips; where a lobe top has broken off, the
+  // sky-blue skeleton shows (SeaLifeBase; Living Oceans Foundation).
+  function buildBlueCoral(c) {
+    var g = new Geo(), rng = c.rng(467), h = c.health, high = c.high, ph = rng() * TAU;
+    var dark = hex(0x453d33), brown = hex(0x6d6353), tip = hex(0xcfcab9), sky = hex(0x135cc4), skyHi = hex(0x3d8fe0), bone = hex(0x86b7e2), boneDark = hex(0x5d86ad);
+    var live = [0, 0, 0], tmp = [0, 0, 0], blueOut = [0, 0, 0];
+    function tissue(x, y, z, top, out) {
+      mixc(dark, brown, smooth(0, 0.16, y), live);
+      mulc(live, 0.9 + 0.14 * noise3(x * 15 + ph, y * 15, z * 15));
+      mixc(live, tip, smooth(0.8, 1, top), live);
+      return setc(out, lin(builderHealth(h, live, bone, boneDark, 0.55, x, y, z, tmp, 0.55 * (1 - smooth(0, 0.2, y)))));
+    }
+    var polyp = hex(0xe9e5d6), pcol = [0, 0, 0];
+    function polypCol(x, y, z, f) { mixc(brown, polyp, f, pcol); return lin(builderHealth(h, pcol, bone, boneDark, 0.55, x, y, z, tmp, 0.1)); }
+    function blue(x, y, z, out) {
+      // Exposed skeleton: blue in every health state; dead faces gather turf.
+      mixc(sky, skyHi, 0.5 + 0.5 * noise3(x * 90, y * 90, z * 90), live);
+      if (h === 'dead') { mixc(live, TURF, 0.35, live); mulc(live, 0.85); }
+      return setc(out, lin(live));
+    }
+    // Heliopora grows as a broad clump of upright, flattened lobes (plates)
+    // mixed with rounder columns, tallest near the middle and fused into one
+    // base (Corals of the World; AIMS). Positions are dart-thrown over the
+    // base so no ring or vase forms; the layout is the same on both tiers.
+    var lobes = [], i, tries = 0, RX = 0.25, RZ = 0.21;
+    while (lobes.length < 30 && tries < 4000) {
+      tries++;
+      var u0 = rng(), v0 = rng(), rr0 = Math.sqrt(u0) * 0.96, a0 = v0 * TAU, x0 = Math.cos(a0) * rr0 * RX, z0 = Math.sin(a0) * rr0 * RZ, col = rng() < 0.28, ok = true;
+      var w0 = col ? 0.024 + 0.008 * rng() : 0.045 + 0.04 * rng(), q0 = col ? w0 * (0.8 + 0.15 * rng()) : 0.015 + 0.006 * rng();
+      for (i = 0; i < lobes.length && ok; i++) { var o = lobes[i]; if (Math.hypot(o.x - x0, o.z - z0) < (o.w + w0) * 0.55 + 0.01) ok = false; }
+      if (!ok) continue;
+      var core = 1 - rr0, tall = (0.11 + 0.2 * Math.pow(core, 0.8)) * (0.78 + 0.44 * rng());
+      // Plates run roughly along the colony's radius, like ridges, with a wide spread.
+      var face = Math.atan2(z0, x0) + PI * 0.5 + (rng() - 0.5) * 1.6;
+      lobes.push({ x: x0, z: z0, a: face, lean: 0.03 + 0.14 * rr0, tall: tall, w: w0, q: q0, twist: (rng() - 0.5) * 0.9, broken: false, fork: !col && rng() < 0.3, column: col });
+    }
+    // Three broken tops, chosen on the side the Guide camera faces.
+    var order = lobes.slice().sort(function (p, q) { return (q.x * 0.45 + q.z) - (p.x * 0.45 + p.z); });
+    // Their plates turn broadside to that camera so each blue face shows.
+    var tallest = order.slice(0, 16).sort(function (p, q) { return q.tall - p.tall; })[0];
+    tallest.broken = true; tallest.a = Math.atan2(2.6, 1.2);
+    [0, 2, 5].forEach(function (j) { order[j].broken = true; order[j].a = Math.atan2(2.6, 1.2) + (rng() - 0.5) * 0.4; });
+    var stations = high ? 8 : 5, sides = high ? 12 : 7, capRows = high ? 3 : 2;
+    function lobe(L, x0, y0, z0, tall, w, q, lean, a, twist, broken) {
+      var out0 = Math.atan2(z0, x0), pts = [], dir = [Math.cos(out0) * lean, 1, Math.sin(out0) * lean], top = broken ? 0.82 : 1, k;
+      for (k = 0; k < stations; k++) {
+        var t = k / (stations - 1) * top, bendT = t * t;
+        pts.push([x0 + dir[0] * tall * bendT * 0.7 + 0.012 * Math.sin(t * 5 + a), y0 + tall * t, z0 + dir[2] * tall * bendT * 0.7 + 0.012 * Math.cos(t * 4 + a)]);
+      }
+      // Rounded crowns for intact lobes: rings shrink over the last few stations.
+      var crown = [];
+      if (!broken) for (k = 1; k <= capRows; k++) { var e = k / (capRows + 1), lp = pts[pts.length - 1], pr = pts[pts.length - 2]; crown.push([lp[0] + (lp[0] - pr[0]) * e * 0.8, lp[1] + (lp[1] - pr[1]) * e * 0.8 + q * 0.6 * Math.sin(e * PI * 0.5), lp[2] + (lp[2] - pr[2]) * e * 0.8]); }
+      var all = pts.concat(crown), n = all.length, nBody = pts.length;
+      function shrink(si) { return si < nBody ? 1 : Math.cos((si - nBody + 1) / (capRows + 1) * PI * 0.5); }
+      var first = loftSection(g, all, function (t, si) { var ang = a + twist * (si / n); return [Math.cos(ang + PI * 0.5), 0, Math.sin(ang + PI * 0.5)]; },
+        function (t, ca, si) { var tt = Math.min(1, si / Math.max(1, stations - 1)); return w * (1 + 0.22 * tt) * shrink(si); },
+        function (t, ca, si) { var tt = Math.min(1, si / Math.max(1, stations - 1)); return q * (1 - 0.15 * tt) * (0.55 + 0.45 * shrink(si)); },
+        sides, 0.9, function (t, s, x, y, z, out, ca, si) {
+          // A snapped lobe: the fracture exposes blue skeleton below a jagged
+          // tissue line, not only on the flat end face.
+          if (broken && si >= nBody - 1 - (high ? 1.2 + 1.6 * hash2(Math.round(s * sides) + Math.round(x0 * 900), 91) : 0.6 + hash2(Math.round(s * sides) + Math.round(x0 * 900), 91))) return blue(x, y, z, out);
+          return tissue(x, y, z, broken ? 0 : Math.min(1, si / (n - 1)) * (si >= nBody - 1 ? 1 : 0.85), out);
+        });
+      var last = first + (n - 1) * sides, end = all[n - 1];
+      if (broken) {
+        // A rough break: the last ring is uneven, so the rim is not a clean cut.
+        for (k = 0; k < sides; k++) g.p[(last + k) * 3 + 1] += 0.03 * (hash2(k * 7 + Math.round(z0 * 900), 37) - 0.5);
+        // The broken face: a fan over the last ring, drawn in exposed skeleton.
+        var faceFirst = g.count(), c3 = [0, 0, 0];
+        for (k = 0; k < sides; k++) { var p = last + k; g.v(g.p[p * 3] + (end[0] - g.p[p * 3]) * 0.06, g.p[p * 3 + 1] + 0.0015, g.p[p * 3 + 2] + (end[2] - g.p[p * 3 + 2]) * 0.06, blue(g.p[p * 3], g.p[p * 3 + 1], g.p[p * 3 + 2], c3), 0, 0); }
+        for (k = 0; k < sides; k++) { var r0 = last + k, r1 = last + (k + 1) % sides, f0 = faceFirst + k, f1 = faceFirst + (k + 1) % sides; g.i.push(r0, r1, f1, r0, f1, f0); }
+        capRing(g, faceFirst, sides, [end[0], end[1] + 0.003, end[2]], blue(end[0], end[1], end[2], c3), true);
+      } else capRing(g, last, sides, [end[0], end[1] + q * 0.25, end[2]], tissue(end[0], end[1], end[2], 1, [0, 0, 0]), true);
+      metreUV(g, first, g.count(), 0.12, function (x, y, z) { return [Math.atan2(z - z0, x - x0) * (w + q) * 0.5, y]; });
+      // Fine tier: tiny whitish polyps poke out of pores on the upper part of
+      // each living lobe. A hash, not the colony rng, places them, so both
+      // tiers keep one layout. Dead colonies have no polyps.
+      if (high && !broken && h !== 'dead') for (k = 0; k < 14; k++) {
+        var hs = fract(Math.sin(x0 * 917.3 + z0 * 311.7 + k * 78.233) * 43758.5453), hs2 = fract(hs * 97.13 + k * 0.618);
+        var si = Math.min(nBody - 1, Math.floor(nBody * (0.4 + 0.6 * hs))), vi = first + si * sides + Math.floor(hs2 * sides), ax = all[si];
+        var vx = g.p[vi * 3], vy = g.p[vi * 3 + 1], vz = g.p[vi * 3 + 2], dx = vx - ax[0], dy = vy - ax[1], dz = vz - ax[2], dl = Math.hypot(dx, dy, dz) || 1;
+        g.spike([vx, vy, vz], [dx / dl, dy / dl, dz / dl], 0.0048, 0.0034, polypCol(vx, vy, vz, 0.7), polypCol(vx, vy, vz, 1));
+      }
+      return pts[Math.round((stations - 1) * 0.55)];
+    }
+    lobes.forEach(function (L, li) {
+      var mid = lobe(L, L.x, 0.005, L.z, L.tall, L.w, L.q, L.lean, L.a, L.twist, L.broken);
+      // A fused fork: a second, shorter lobe rises from the middle of this one.
+      var fa = L.a + (rng() > 0.5 ? 0.55 : -0.55), ft = L.tall * (0.38 + 0.12 * rng());
+      if (L.fork && !L.broken) lobe(L, mid[0], mid[1] - 0.02, mid[2], ft, L.w * 0.8, L.q * 0.9, L.lean + 0.16, fa, -L.twist, false);
+    });
+    var b0 = g.count(), cb = [0, 0, 0];
+    blob(c.T, g, 0, -0.05, 0, RX * 1.04, 0.095, RZ * 1.06, function (x, y, z) { return tissue(x, Math.max(0, y) * 0.3, z, 0, cb); }, high ? 22 : 12, high ? 8 : 5);
+    metreUV(g, b0, g.count(), 0.12, function (x, y, z) { return [x, z]; });
+    floorClamp(g);
+    scaleGeo(g, lerp(0.14, 1, c.growth));
+    builderMaterial(c, g, 30, 0xd9d0bd);
+  }
+
+  // Tubipora musica: a cushion of parallel red skeletal tubes joined by
+  // horizontal platforms, with eight-tentacled, cream-to-green feathery polyps
+  // over the top (SeaLifeBase; Naturalis; Living Oceans Foundation). The side
+  // keeps the red pipes in view. Tubes are drawn about ten times their real
+  // 2 mm width so they read at Guide size.
+  function buildPipeOrganCoral(c) {
+    var g = new Geo(), rng = c.rng(479), h = c.health, high = c.high, ph = rng() * TAU, dead = h === 'dead';
+    var red = hex(0xb3261e), redHi = hex(0xd8473a), redDark = hex(0x5c1410), green = hex(0x8fb28a), cream = hex(0xe3e6cf), disc = hex(0x5f8360);
+    var live = [0, 0, 0], tmp = [0, 0, 0], c3 = [0, 0, 0];
+    var R = 0.2, H = 0.16, d = 0.032, rt = d * 0.37;
+    // An irregular, rounded clump: the outline wanders with angle and the
+    // top falls away smoothly to short tubes at the edge.
+    var wob = [rng() * TAU, rng() * TAU, 0.07 + 0.05 * rng()];
+    function edgeR(a) { return R * (1 + wob[2] * Math.sin(2 * a + wob[0]) + 0.05 * Math.sin(3 * a + wob[1])); }
+    var TOP0 = 0.026;
+    function dome(rn) { return TOP0 + (H - TOP0) * Math.sqrt(Math.max(0, 1 - Math.pow(Math.min(1, rn), 2))); }
+    function domeInv(y) { return Math.sqrt(Math.max(0, 1 - Math.pow(clamp((y - TOP0) / (H - TOP0), 0, 1), 2))); }
+    function pipe(x, y, z, cav, out) {
+      // Skeleton red stays red; bleaching spares it, death dulls it under turf.
+      mixc(red, redHi, 0.5 + 0.5 * noise3(x * 40 + ph, y * 90, z * 40), live);
+      mixc(live, redDark, cav, live);
+      if (h === 'dead') return setc(out, lin(builderHealth('dead', live, live, mulc(setc([0, 0, 0], live), 0.7), 1, x, y, z, tmp, cav)));
+      if (h === 'bleached') mulc(live, 1.04);
+      return setc(out, lin(live));
+    }
+    function polypCol(u, out) {
+      mixc(disc, green, smooth(0, 0.4, u), live); mixc(live, cream, smooth(0.55, 1, u), live);
+      if (h === 'bleached') { mixc(BLEACH, cream, 0.25, live); mixc(live, BLEACH_SH, 0.25 * (1 - u), live); }
+      return setc(out, lin(live));
+    }
+    // Tubes packed on a jittered hexagonal grid inside the outline, so they
+    // stand parallel but never in perfect rings. The outermost tubes stand bare.
+    var tubes = [], k, j, rowH = d * Math.sqrt(3) / 2, nRow = Math.ceil(R * 1.25 / rowH);
+    for (k = -nRow; k <= nRow; k++) for (j = -nRow - 1; j <= nRow + 1; j++) {
+      var gx = (j + (k & 1) * 0.5) * d + (rng() - 0.5) * d * 0.16, gz = k * rowH + (rng() - 0.5) * d * 0.16, polyp = rng(), lift = (rng() - 0.5) * 0.008, ta = rng() * TAU;
+      var ga = Math.atan2(gz, gx), rn = Math.hypot(gx, gz) / edgeR(ga);
+      if (rn > 1) continue;
+      tubes.push({ x: gx, z: gz, r: Math.hypot(gx, gz), rn: rn, edge: rn > 0.84, top: dome(rn) + lift, polyp: polyp, a: ta });
+    }
+    var tsides = high ? 7 : 4;
+    tubes.forEach(function (tb) {
+      // Every pipe runs down into the mound: a two-ring tube costs the same at any length.
+      var bottom = -0.004;
+      var pts = [[tb.x, bottom, tb.z], [tb.x, tb.top, tb.z]];
+      var first = loftSection(g, pts, [1, 0, 0], function () { return rt; }, function () { return rt; }, tsides, 1, function (t, s, x, y, z, out) { return pipe(x, y, z, 0.3 * (1 - t), out); });
+      metreUV(g, first, g.count(), 0.1, function (x, y, z) { return [Math.atan2(z - tb.z, x - tb.x) * rt * 3, y]; });
+      // Open pipes show a dark interior; on the fine tier the rim turns inward.
+      // A pipe under an open polyp is hidden by it and keeps a plain cap.
+      var hidden = !dead && !tb.edge && tb.polyp <= 0.77;
+      if (high && !hidden) {
+        var inner = g.count();
+        for (j = 0; j < tsides; j++) { var ang = j / tsides * TAU; g.v(tb.x + Math.cos(ang) * rt * 0.58, tb.top - 0.004, tb.z + Math.sin(ang) * rt * 0.58, pipe(tb.x, tb.top, tb.z, 0.55, c3), 0.5, 0.5); }
+        var top = first + tsides;
+        for (j = 0; j < tsides; j++) { var a0 = top + j, a1 = top + (j + 1) % tsides, b0 = inner + j, b1 = inner + (j + 1) % tsides; g.i.push(a0, a1, b1, a0, b1, b0); }
+        capRing(g, inner, tsides, [tb.x, tb.top - 0.011, tb.z], lin(setc([0, 0, 0], redDark)), true);
+      } else capRing(g, first + tsides, tsides, [tb.x, tb.top - 0.001, tb.z], pipe(tb.x, tb.top, tb.z, 0.2, c3), true);
+      // Extended polyps cover most of the top; the side ring stays bare.
+      if (!hidden) return;
+      var stalkTop = tb.top + (high ? 0.009 : 0.004);
+      if (high) {
+        var sf = loftSection(g, [[tb.x, tb.top - 0.004, tb.z], [tb.x, stalkTop, tb.z]], [1, 0, 0], function () { return rt * 0.5; }, function () { return rt * 0.5; }, 5, 1, function (t, s, x, y, z, out) { return polypCol(0.12 + 0.2 * t, out); });
+        capRing(g, sf + 5, 5, [tb.x, stalkTop + 0.0012, tb.z], polypCol(0, c3), true);
+      }
+      // Eight tentacles, each a feathery leaf with side pinnules.
+      var L = rt * (high ? 2.1 : 1.9), widths = high ? [0.2, 0.44, 0.3, 0.36, 0] : [0.35, 0];
+      for (j = 0; j < 8; j++) {
+        var ta = tb.a + j / 8 * TAU, ux = Math.cos(ta), uz = Math.sin(ta), vx = -uz, vz = ux, segs = widths.length - 1, base = g.count();
+        for (var s2 = 0; s2 <= segs; s2++) {
+          var t2 = s2 / segs, rad = rt * 0.35 + L * t2, y2 = stalkTop + L * (0.42 * t2 - 0.26 * t2 * t2), wv = widths[s2] * L * 0.5;
+          var cx = tb.x + ux * rad, cz = tb.z + uz * rad, col = polypCol(0.2 + 0.8 * t2, c3);
+          g.v(cx - vx * wv, y2, cz - vz * wv, col, 0.5, 0.5); g.v(cx + vx * wv, y2 + 0.0008, cz + vz * wv, col, 0.5, 0.5);
+        }
+        for (s2 = 0; s2 < segs; s2++) { var e0 = base + s2 * 2; g.i.push(e0, e0 + 1, e0 + 3, e0, e0 + 3, e0 + 2); }
+      }
+    });
+    // Transverse platforms: flat shelves every few centimetres that tie the
+    // tubes together. Each follows the clump's side at its own height and
+    // breaks into arcs, as on a real colony.
+    var levels = [0.022, 0.054, 0.088], ns = high ? 36 : 20, psides = high ? 5 : 4;
+    levels.forEach(function (lv, li) {
+      var rn = domeInv(lv + 0.006), gap0 = rng() * TAU, path = [], step = 0;
+      function flush() { if (path.length > 2) { var pf = loftSection(g, path, function (t, i) { var q = path[i]; return [q[3], 0, q[4]]; }, function () { return d * 0.42 + rt * 0.4; }, function () { return 0.0032; }, psides, 0.7, function (t, s, x, y, z, out) { return pipe(x, y, z, 0.12, out); }); metreUV(g, pf, g.count(), 0.1, function (x, y, z) { return [x, z + li]; }); } path = []; }
+      for (k = 0; k <= ns; k++) {
+        var aa = k / ns * TAU, open = Math.sin(aa * 3 + gap0 + li * 1.7) > 0.45;
+        if (open) { flush(); step = 0.007 * Math.sin(aa * 5 + li * 2.3 + gap0); continue; }
+        var er = edgeR(aa) * rn - d * 0.6;
+        if (er < d) continue;
+        path.push([Math.cos(aa) * er, lv + step + 0.002 * Math.sin(aa * 3 + gap0), Math.sin(aa) * er, Math.cos(aa), Math.sin(aa)]);
+      }
+      flush();
+    });
+    // A dark core fills the gaps between pipes.
+    var b0 = g.count();
+    blob(c.T, g, 0, 0, 0, R * 0.78, H * 0.78, R * 0.78, function (x, y, z) { return pipe(x, y, z, 0.85, c3); }, high ? 18 : 10, high ? 8 : 5);
+    metreUV(g, b0, g.count(), 0.1, function (x, y, z) { return [x, z]; });
+    floorClamp(g);
+    scaleGeo(g, lerp(0.14, 1, c.growth));
+    builderMaterial(c, g, 12, 0xe3e6cf, true);
+  }
+
+  // Seriatopora hystrix: a dense, bushy nest of thin, often forking branches
+  // that taper to sharp points. Pink, less often cream (Corals of the World;
+  // SeaLifeBase). Branch draws are tier independent.
+  function buildBirdsnestCoral(c) {
+    var g = new Geo(), rng = c.rng(487), h = c.health, high = c.high, ph = rng() * TAU;
+    var pals = [[0xb76b7e, 0xf3d3da], [0xc47887, 0xf7dde2], [0xa98f6a, 0xf1e6cf], [0xbd7287, 0xf0cbd4]], pal = pals[Math.floor(rng() * pals.length)];
+    var base = hex(pal[0]), tipC = hex(pal[1]), live = [0, 0, 0], tmp = [0, 0, 0], sides = high ? 6 : 4, segs = high ? 2 : 1, made = 0, MAX = 300, top = 0.18;
+    function unit(v) { var l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+    function colour(x, y, z, tip) {
+      mixc(base, tipC, tip, live); mulc(live, 0.78 + 0.22 * smooth(0, top, y) + 0.08 * noise3(x * 31 + ph, y * 31, z * 31));
+      return lin(health(h, live, x, y, z, tmp, 0.7 * (1 - smooth(0, top * 0.7, y))));
+    }
+    function branch(p, dir, len, r, level, budget) {
+      made++;
+      var b1 = rng(), b2 = rng(), b3 = rng(), b4 = rng(), side = unit([dir[2] + 0.001, 0, -dir[0]]), last = level <= 0 || budget <= 1 || made >= MAX;
+      var e = [p[0] + (dir[0] + side[0] * (b1 - 0.5) * 0.3) * len, p[1] + (dir[1] + 0.22) * len, p[2] + (dir[2] + side[2] * (b1 - 0.5) * 0.3) * len], m = [p[0] + dir[0] * len * 0.5, p[1] + dir[1] * len * 0.5, p[2] + dir[2] * len * 0.5], pts = [];
+      for (var k = 0; k <= segs; k++) { var t = k / segs, u = 1 - t; pts.push([u * u * p[0] + 2 * u * t * m[0] + t * t * e[0], u * u * p[1] + 2 * u * t * m[1] + t * t * e[1], u * u * p[2] + 2 * u * t * m[2] + t * t * e[2]]); }
+      // Needle tips: the last branch of a line narrows to a point.
+      var first = g.tube(pts, function (t) { return r * (last ? 1 - 0.8 * Math.pow(t, 1.3) : 1 - 0.12 * t); }, sides, function (t) {
+        var pp = pts[Math.round(t * segs)]; return colour(pp[0], pp[1], pp[2], last ? smooth(0.35, 1, t) : 0.05 * t);
+      });
+      if (last) { var tipV = g.count() - 1, ep = pts[segs], dl = unit([e[0] - m[0], e[1] - m[1], e[2] - m[2]]); g.p[tipV * 3] = ep[0] + dl[0] * r * 2.2; g.p[tipV * 3 + 1] = ep[1] + dl[1] * r * 2.2; g.p[tipV * 3 + 2] = ep[2] + dl[2] * r * 2.2; }
+      for (var vi = first; vi < g.count(); vi++) { g.t[vi * 2] = (vi - first) % sides / sides * r * TAU / 0.03; g.t[vi * 2 + 1] = Math.min(segs, Math.floor((vi - first) / sides)) / segs * len / 0.03; }
+      if (last) return;
+      var nd = unit([e[0] - m[0], e[1] - m[1], e[2] - m[2]]), forks = b3 < 0.84 ? 2 : 1;
+      for (var f = 0; f < forks; f++) {
+        var sa = (forks === 1 ? (b4 - 0.5) * 0.3 : (f ? 1 : -1) * (0.36 + 0.22 * b2)), ca = Math.cos(sa), sn = Math.sin(sa);
+        var tw = b4 * TAU, ox = side[0] * Math.cos(tw), oz = side[2] * Math.cos(tw), oy = Math.sin(tw) * 0.5;
+        branch(e, unit([nd[0] * ca + ox * sn, nd[1] * ca + oy * sn + 0.25, nd[2] * ca + oz * sn]), len * (0.8 + 0.14 * (f ? b1 : b2)), r * 0.9, level - 1, Math.floor((budget - 1) / forks) + (f ? 0 : (budget - 1) % forks));
+      }
+    }
+    var prim = 22, per = Math.floor(MAX / prim);
+    for (var i = 0; i < prim; i++) {
+      var a = ph + i * 2.399963 + 0.3 * rng(), rho = Math.sqrt((i + 0.5) / prim), el = 1.45 - 1.1 * rho + 0.12 * (rng() - 0.5);
+      branch([Math.cos(a) * 0.045 * rho, 0, Math.sin(a) * 0.045 * rho], [Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)], 0.036 + 0.008 * rng(), 0.0042, 6, per);
+    }
+    var b0 = g.count(), cb = [0, 0, 0];
+    blob(c.T, g, 0, 0.004, 0, 0.045, 0.018, 0.045, function (x, y, z) { setc(cb, colour(x, Math.max(0, y), z, 0)); return cb; }, high ? 10 : 6, high ? 5 : 4);
+    metreUV(g, b0, g.count(), 0.03, function (x, y, z) { return [x, z]; });
+    floorClamp(g);
+    scaleGeo(g, lerp(0.14, 1, c.growth));
+    builderMaterial(c, g, 9, pal[1]);
   }
   function buildStaghorn(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(95), gr = c.growth, g = new Geo(), h = c.health;
@@ -4594,13 +5270,15 @@
   // with pale tips; the thin margin ends in a fringe of outward finger tips.
   function buildTable(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(97), gr = c.growth, s = lerp(0.07, 1, Math.pow(gr, 0.85)) * (0.9 + 0.2 * rng());
-    var R = 0.75 * s, top = lerp(0.04, 0.26, gr) * (0.9 + 0.2 * rng()), thick = 0.009 + 0.023 * s, ph = rng() * 9, h = c.health;
+    // md13: the table stands higher on its stalk, so a side view shows the
+    // stalk and the shaded underside as well as the brush on top.
+    var R = 0.75 * s, top = lerp(0.04, 0.33, gr) * (0.9 + 0.2 * rng()), thick = 0.009 + 0.023 * s, ph = rng() * 9, h = c.health;
     // Brown, olive or tan tissue; branchlet tips pale lilac, blue or pink.
     var pals = [[0x6c6444, 0xcfc4ec], [0x786448, 0xbcd6f0], [0x5e6648, 0xd0e6f0], [0x80704c, 0xeccce0]], palIndex = Math.floor(rng() * pals.length), pal = pals[palIndex], baseC = hex(pal[0]), rimC = hex(pal[1]);
     var g = new Geo(), live = [0, 0, 0], tmp = [0, 0, 0], nr = high ? 8 : 6, ns = high ? 96 : 48, white = [1, 1, 1], under = [0.5, 0.5, 0.5];
     function shoot(x, y, z, t) { mixc(baseC, rimC, t, live); return lin(health(h, live, x, y, z, tmp, 0.3 * (1 - t))); }
     // The stalk, darker in the table's shade.
-    var st = g.tube([[0, -0.02, 0], [R * 0.035, top * 0.38, 0], [R * 0.025, top * 0.75, R * 0.018], [0, top - thick, 0]], function (t) { return (0.04 + 0.065 * s) * (1 - 0.28 * t); }, high ? 12 : 6, function (t) { return lin(health(h, mixc(baseC, [0.3, 0.26, 0.2], 0.35, tmp), t, t, 0, live, 0.8)); });
+    var st = g.tube([[0, -0.02, 0], [R * 0.02, top * 0.12, 0], [R * 0.035, top * 0.38, 0], [R * 0.025, top * 0.7, R * 0.018], [0, top - thick - 0.105 * s, 0]], function (t) { return (0.04 + 0.065 * s) * (1 - 0.28 * t) * (1 + 0.5 * (1 - smooth(0, 0.3, t)) + 0.55 * smooth(0.7, 1, t)); }, high ? 12 : 6, function (t) { return lin(health(h, mulc(mixc(baseC, [0.3, 0.26, 0.2], 0.45, tmp), 0.78 + 0.22 * t), t, t, 0, live, 0.8)); });
     for (var q = st; q < g.count(); q++) { g.t[q * 2] = 0.012; g.t[q * 2 + 1] = 0.012; }
     function edge(a) { return R * (0.86 + 0.085 * Math.sin(3 * a + ph) + 0.055 * Math.sin(7 * a + 2 * ph) + 0.028 * Math.sin(25 * a + ph) + 0.01 * Math.sin(53 * a)); }
     function surf(r, a) {
@@ -4639,7 +5317,8 @@
     var shoots = Math.max(6, Math.round((high ? 220 : 64) * (0.2 + 0.8 * gr))), fringe = Math.max(8, Math.round((high ? 120 : 52) * (0.3 + 0.7 * gr))), stalkSides = high ? 5 : 4;
     for (i = 0; i < shoots; i++) {
       var a = i * 2.399963 + ph + 0.025 * Math.sin(i * 7.1), rad = Math.sqrt((i + 0.5) / shoots) * 0.93, e = edge(a) * rad, x = Math.cos(a) * e, z = Math.sin(a) * e, y = surf(rad, a);
-      var variation = noise2(i * 0.47 + ph, 2.3), sh = s * (0.035 + 0.05 * variation) * (1 - 0.4 * smooth(0.7, 1, rad)), lean = sh * (0.2 + 0.35 * variation) * rad, width = s * (0.009 + 0.004 * variation);
+      // md13: short, even branchlets (a brush), not long scattered whiskers.
+      var variation = noise2(i * 0.47 + ph, 2.3), sh = s * (0.019 + 0.022 * variation) * (1 - 0.35 * smooth(0.7, 1, rad)), lean = sh * (0.25 + 0.35 * variation) * rad, width = s * (0.0085 + 0.0035 * variation);
       g.tube([[x, y - 0.006 * s, z], [x + Math.cos(a) * lean * 0.3, y + sh * 0.55, z + Math.sin(a) * lean * 0.3], [x + Math.cos(a) * lean, y + sh, z + Math.sin(a) * lean]], function (t) { return width * (1 - 0.4 * t); }, stalkSides, function (t) { return shoot(x, y + sh * t, z, 0.08 + 0.8 * smooth(0.55, 1, t)); });
     }
     for (i = 0; i < fringe; i++) {
@@ -4789,22 +5468,22 @@
   }
   function buildNursery(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(105), gr = c.growth, i, j, sides = high ? 8 : 5;
-    var tree = kit.node('tree', c.root), pole = new Geo(), white = lin(hex(0xe8e8e2)), foul = lin(hex(0x8a8a5a)), base0 = 0.45, top = 2.45;
+    var tree = kit.node('tree', c.root), pole = new Geo(), white = lin(hex(0xe8e8e2)), foul = lin(hex(0x8a8a5a)), base0 = 0.3, top = 2.0;
     function pipe(t) { return lin(mixc(hex(0xeaeae4), hex(0x7a8050), gr * 0.6 * noise2(t * 20, 3), [0, 0, 0])); }
-    pole.tube([[0, base0, 0], [0, (base0 + top) / 2, 0], [0, top, 0]], 0.021, sides, function (t) { return pipe(t); });
+    pole.tube([[0, base0, 0], [0, (base0 + top) / 2, 0], [0, top, 0]], 0.027, sides, function (t) { return pipe(t); });
     pole.tube([[0, 0.0, 0], [0, base0 * 0.5, 0], [0, base0, 0]], 0.004, 3, function () { return lin(hex(0xd8d0b0)); });
     blob(T, pole, 0, top + 0.13, 0, 0.14, 0.15, 0.14, lin(hex(0xf2c21a)), high ? 16 : 10, high ? 12 : 6);
     blob(T, pole, 0, 0.02, 0, 0.06, 0.03, 0.06, lin(hex(0x5a5a5a)), 8, 4);
     var levels = 3, arms = 4, per = 2, frag = new Geo(), pivots = [], depth = Math.round(lerp(0, 2, gr));
     for (i = 0; i < levels; i++) {
-      var y = base0 + 0.45 + i * 0.5, rot = i * PI / 4;
+      var y = base0 + 0.42 + i * 0.5, rot = i * PI / 4;
       for (j = 0; j < arms; j++) {
-        var a = rot + j / arms * TAU, ex = Math.cos(a) * 0.5, ez = Math.sin(a) * 0.5;
-        pole.tube([[0, y, 0], [ex * 0.5, y, ez * 0.5], [ex, y, ez]], 0.011, sides - 1, function (t) { return pipe(t + 1); });
+        var a = rot + j / arms * TAU, reachM = 0.78 - 0.1 * i, ex = Math.cos(a) * reachM, ez = Math.sin(a) * reachM;
+        pole.tube([[0, y, 0], [ex * 0.5, y, ez * 0.5], [ex, y, ez]], 0.016, sides - 1, function (t) { return pipe(t + 1); });
         for (var q = 0; q < per; q++) {
-          var f = 0.45 + 0.45 * q, hx = ex * f, hz = ez * f, line = 0.12 + 0.05 * rng(), first = frag.count(), fy = y - line;
-          frag.tube([[hx, y, hz], [hx, y - line * 0.5, hz], [hx, fy, hz]], 0.0012, 3, function () { return white; });
-          acropora(frag, rng, { base: [hx, fy, hz], primaries: 1, depth: depth, len: lerp(0.05, 0.14, gr), rad: lerp(0.006, 0.013, gr), elev: 0.25, up: 0.1, fork: 0.9, max: 7, sides: high ? 6 : 3, segs: high ? 3 : 2, col: fragmentColors(rng) });
+          var f = 0.5 + 0.44 * q, hx = ex * f, hz = ez * f, line = 0.11 + 0.05 * rng(), first = frag.count(), fy = y - line;
+          frag.tube([[hx, y, hz], [hx, y - line * 0.5, hz], [hx, fy, hz]], 0.0022, 3, function () { return white; });
+          acropora(frag, rng, { base: [hx, fy, hz], primaries: gr > 0.6 ? 2 : 1, depth: depth, len: lerp(0.05, 0.17, gr), rad: lerp(0.006, 0.0175, gr), elev: 0.25, up: 0.1, fork: 0.9, max: gr > 0.6 ? (high ? 11 : 6) : 7, sides: high ? 5 : 3, segs: high ? 3 : 2, col: fragmentColors(rng) });
           pivots.push({ first: first, end: frag.count(), x: hx, y: y, z: hz, ph: rng() * TAU });
         }
       }
@@ -5081,13 +5760,15 @@
     var spireFirst = shell.count(), spireU = high ? 48 : 28, spireV = high ? 24 : 8;
     ranges.spire = { first: spireFirst, rows: spireU + 1, columns: spireV + 1 };
     for (var si = 0; si <= spireU; si++) for (var sj = 0; sj <= spireV; sj++) {
-      var su = si / spireU, sa = sj / spireV * TAU, helix = fract(su * 5.2 - sa / TAU), seam = Math.exp(-Math.pow((helix - 0.5) / 0.11, 2));
-      var sr = (0.0004 + 0.028 * Math.pow(su, 1.16)) * (1 - 0.16 * seam + 0.016 * Math.cos(sa * 4));
-      shell.v((-0.19 + 0.145 * su) * k, (0.17 - 0.025 * su + sr * Math.cos(sa)) * k, sr * Math.sin(sa) * k, white, 0.4 + su * 0.18, sj / spireV * 0.8);
+      var su = si / spireU, sa = sj / spireV * TAU, helix = fract(su * 6 - sa / TAU);
+      // md13: a straight-sided spire that widens to meet the body
+      // whorl, each whorl bulging between sutures: a tall stepped cone, not a thin horn.
+      var sr = (0.0006 + 0.05 * su) * (0.76 + 0.24 * Math.pow(Math.sin(PI * helix), 0.6) + 0.016 * Math.cos(sa * 4));
+      shell.v((-0.196 + 0.151 * su) * k, (0.171 - 0.026 * su + sr * Math.cos(sa)) * k, sr * Math.sin(sa) * k, white, 0.4 + su * 0.18, sj / spireV * 0.8);
     }
     for (si = 0; si < spireU; si++) for (sj = 0; sj < spireV; sj++) { var sp0 = spireFirst + si * (spireV + 1) + sj, sp1 = sp0 + spireV + 1; shell.i.push(sp0, sp1, sp0 + 1, sp0 + 1, sp1, sp1 + 1); }
     for (si = 0; si <= spireU; si++) shell.seams.push([spireFirst + si * (spireV + 1), spireFirst + si * (spireV + 1) + spireV]);
-    var tip = shell.v(-0.191 * k, 0.17 * k, 0, lin(cream), 0.5, 0.94);
+    var tip = shell.v(-0.1972 * k, 0.171 * k, 0, lin(cream), 0.5, 0.94);
     for (var j = 0; j < spireV; j++) shell.i.push(tip, spireFirst + j + 1, spireFirst + j);
     var spireBase = shell.v(-0.045 * k, 0.145 * k, 0, lin(cream), 0.5, 0.94), spireLast = spireFirst + spireU * (spireV + 1);
     for (j = 0; j < spireV; j++) shell.i.push(spireBase, spireLast + j, spireLast + j + 1);
@@ -5312,7 +5993,7 @@
   // convention is posed leg/claw span, excluding the long slender antennae.
   function buildPorcelainAnemoneCrab(c) {
     var T=c.T,kit=c.kit,high=c.high,rng=c.rng(347),L=.04*(.98+.04*rng()),phase=rng()*TAU;
-    var body=new Geo(),fans=new Geo(),ranges={},legs=[],fanParts=[],antennae=[],eyeSurfaces=[],white=[1,1,1],cream=hex(0xe8dfca),shade=hex(0xbab49c),wine=hex(0x843b38),ink=linHex(0x252e2b);
+    var body=new Geo(),fans=new Geo(),ranges={},legs=[],fanParts=[],antennae=[],eyeSurfaces=[],white=[1,1,1],cream=hex(0xe8dfca),shade=hex(0xbab49c),wine=hex(0x9a3136),ink=linHex(0x252e2b);
     function mark(name,first){ranges[name]={first:first,count:body.count()-first};}
     function neutral(g,first){for(var i=first;i<g.count();i++){g.t[i*2]=.5;g.t[i*2+1]=.5;}}
     // A low convex shield, slightly longer than broad; the three shallow
@@ -5338,7 +6019,7 @@
       body.tube([[.055,.090,side*.095],[.075,.108,side*.235],[.08,.095,side*.335]],function(u){return .036-.010*u;},high?8:4,function(){return lin(cream);});neutral(body,start);
       var at=body.count(),radial=high?4:2,around=high?48:24;
       function edge(a){var q=a/TAU*outline.length,k=Math.floor(q)%outline.length,t=q-Math.floor(q),A=outline[(k+outline.length-1)%outline.length],B=outline[k],C=outline[(k+1)%outline.length],D=outline[(k+2)%outline.length];return[catmull(A[0],B[0],C[0],D[0],t),catmull(A[1],B[1],C[1],D[1],t)];}
-      [-1,1].forEach(function(face){body.polar(radial,around,function(r,a,out){var e=edge(a),x=lerp(.145,e[0],r),z=lerp(0,e[1],r),y=.095+.015*x+face*(.006+.026*Math.pow(Math.max(0,1-r*r),.62)),wx=cx+x*Math.cos(yaw)-z*Math.sin(yaw),wz=cz+x*Math.sin(yaw)+side*z*Math.cos(yaw);setc(out,face>0?white:lin(cream));return[wx,y,wz,face>0?.52+.46*x/.37:.5,face>0?.02+.46*(z+.09)/.18:.5];},face<0);});
+      [-1,1].forEach(function(face){body.polar(radial,around,function(r,a,out){var e=edge(a),x=lerp(.145,e[0],r),z=lerp(0,e[1]*1.25,r),y=.095+.015*x+face*(.006+.026*Math.pow(Math.max(0,1-r*r),.62)),wx=cx+x*Math.cos(yaw)-z*Math.sin(yaw),wz=cz+x*Math.sin(yaw)+side*z*Math.cos(yaw);setc(out,face>0?white:lin(cream));return[wx,y,wz,face>0?.52+.46*x/.37:.5,face>0?.02+.46*(z/1.25+.09)/.18:.5];},face<0);});
       var fn=1+radial*around;body.t[(at+fn)*2]=.52+.46*.145/.37;body.t[(at+fn)*2+1]=.25;for(j=0;j<around;j++){var lo=at+1+(radial-1)*around+j,ln=at+1+(radial-1)*around+(j+1)%around,up=lo+fn,un=ln+fn;body.i.push(lo,ln,up,ln,un,up);}clawStations.push({side:side,first:start,count:body.count()-start,openCleft:true,cleftProbe:[cx+.31*Math.cos(yaw),.10,cz+.31*Math.sin(yaw)],palmProbe:[cx+.14*Math.cos(yaw),.10,cz+.14*Math.sin(yaw)]});
     });ranges['flattened-chelae']={first:clawStations[0].first,count:body.count()-clawStations[0].first};
     // Folded abdominal plates and a compact retained tail fan belong below
@@ -5356,8 +6037,8 @@
     [-1,1].forEach(function(side){var root=[.153,.089,side*.027],at=fans.count(),stalk=[root.slice(),[.192,.135,side*.055],[.22,.205,side*.092],[.222,.239,side*.103]];
       fans.tube(stalk,function(u){return .007*(1-.65*u);},high?6:3,function(){return lin(cream);});
       var bristleCount=high?32:14;
-      for(var b=0;b<bristleCount;b++){var u=(b+.5)/bristleCount,a=lerp(-1.18,1.28,u),length=.095+.044*Math.sin(PI*u),base=[.218,.208+u*.026,side*(.089+u*.015)],tip=[.222+Math.sin(a)*.025,.218+Math.cos(a)*length,side*(.100+Math.sin(a)*length)],mid=[lerp(base[0],tip[0],.55)+.008,lerp(base[1],tip[1],.55),lerp(base[2],tip[2],.55)],q=fans.count(),w=high?.0014:.0018,col=lin(mixc(shade,cream,.68,[0,0,0]));
-        var wy=-Math.sin(a)*w,wz=side*Math.cos(a)*w;fans.v(base[0],base[1]-wy,base[2]-wz,col,.5,.5);fans.v(base[0],base[1]+wy,base[2]+wz,col,.5,.5);fans.v(mid[0],mid[1]-wy*.6,mid[2]-wz*.6,lin(cream),.5,.5);fans.v(mid[0],mid[1]+wy*.6,mid[2]+wz*.6,lin(cream),.5,.5);fans.v(tip[0],tip[1],tip[2],lin(cream),.5,.5);fans.i.push(q,q+1,q+2,q+1,q+3,q+2,q+2,q+3,q+4);
+      for(var b=0;b<bristleCount;b++){var u=(b+.5)/bristleCount,a=lerp(-1.18,1.28,u),length=.125+.062*Math.sin(PI*u),base=[.218,.208+u*.026,side*(.089+u*.015)],tip=[.222+Math.sin(a)*.025+Math.cos(a)*length*1.1,.218+Math.cos(a)*length*.55,side*(.100+Math.sin(a)*length)],mid=[lerp(base[0],tip[0],.55)+.008,lerp(base[1],tip[1],.55),lerp(base[2],tip[2],.55)],q=fans.count(),w=high?.0026:.0034,col=lin(mixc(wine,cream,.42,[0,0,0]));
+        var wy=-Math.sin(a)*w,wz=side*Math.cos(a)*w;fans.v(base[0],base[1]-wy,base[2]-wz,col,.5,.5);fans.v(base[0],base[1]+wy,base[2]+wz,col,.5,.5);fans.v(mid[0],mid[1]-wy*.6,mid[2]-wz*.6,lin(mixc(wine,cream,.72,[0,0,0])),.5,.5);fans.v(mid[0],mid[1]+wy*.6,mid[2]+wz*.6,lin(mixc(wine,cream,.72,[0,0,0])),.5,.5);fans.v(tip[0],tip[1],tip[2],lin(cream),.5,.5);fans.i.push(q,q+1,q+2,q+1,q+3,q+2,q+2,q+3,q+4);
         // Fine side setules suggest the filtering mesh without an opaque fan.
         if(high&&b%2===0){var q=fans.count(),p=[lerp(mid[0],tip[0],.4),lerp(mid[1],tip[1],.4),lerp(mid[2],tip[2],.4)];fans.v(p[0],p[1],p[2],col,.5,.5);fans.v(p[0]+.0006,p[1]+.0007,p[2],col,.5,.5);fans.v(p[0]+.002,p[1]+.006,p[2]+side*.004,col,.5,.5);fans.i.push(q,q+1,q+2);}
       }
@@ -5367,7 +6048,7 @@
     // their distal ends flex; the seated bases and all walking contacts stay put.
     [-1,1].forEach(function(side){var at=fans.count(),pts=[],n=high?12:5;for(var q=0;q<=n;q++){var u=q/n;pts.push([.12+.51*u,.116+.040*Math.sin(PI*u)-.035*u,side*(.09+.40*u+.025*Math.sin(PI*u))]);}fans.tube(pts,function(u){return .0032*Math.pow(1-u,.8)+.00025;},3,function(u){return lin(mixc(cream,wine,.25+.12*u,[0,0,0]));});neutral(fans,at);antennae.push({side:side,first:at,count:fans.count()-at,root:pts[0],segments:n});});
     function dots(u,v,out,kind){var cells=kind==='carapace'?13:kind==='claw'?12:10,x=u*cells,y=v*cells,ix=Math.floor(x),iy=Math.floor(y),d=9,radius=.2;
-      for(var i=-1;i<=1;i++)for(var j=-1;j<=1;j++){var xx=ix+i,yy=iy+j,r=noise2(xx*3.17+phase,yy*5.63),dx=x-xx-(.18+.64*noise2(xx*7.2+phase,yy*3.9)),dy=y-yy-(.18+.64*noise2(xx*4.3,yy*8.1+phase)),dd=Math.hypot(dx,dy)/(.13+.15*r);if(dd<d){d=dd;radius=r;}}
+      for(var i=-1;i<=1;i++)for(var j=-1;j<=1;j++){var xx=ix+i,yy=iy+j,r=noise2(xx*3.17+phase,yy*5.63),dx=x-xx-(.18+.64*noise2(xx*7.2+phase,yy*3.9)),dy=y-yy-(.18+.64*noise2(xx*4.3,yy*8.1+phase)),dd=Math.hypot(dx,dy)/(.17+.17*r);if(dd<d){d=dd;radius=r;}}
       var coverage=kind==='carapace'?1-smooth(.71,1,Math.hypot((u-.5)/.45,(v-.5)/.45)):kind==='claw'?(1-smooth(.65,.83,u))*smooth(.02,.16,v)*(1-smooth(.86,.98,v)):(1-smooth(.28,.60,u))*smooth(.02,.15,u);
       mixc(cream,hex(0xc6ac89),coverage*(1-smooth(1.1,2.5,d))*.24,out);mixc(out,wine,coverage*(1-smooth(.85,1.05,d))*.96,out);mixc(out,hex(0x5b2930),coverage*(1-smooth(.25,.68,d))*(.40+.15*radius),out);
     }
@@ -5382,7 +6063,7 @@
     var material=kit.std({vertexColors:true,map:map,bumpMap:bump,roughnessMap:bump,bumpScale:.00045*L,roughness:.46,side:T.DoubleSide});
     kit.mesh(bg,material,'fixed-shell-chelae-legs',c.root);kit.mesh(fg,material,'feeding-fans-antennae',c.root);
     var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(.050*L);fg.boundingSphere.radius+=.050*L;
-    c.anim(function(t){var out=fg.attributes.position.array;fanParts.forEach(function(f){var angle=.16*Math.sin(t*.73+phase+f.side*.8),ca=Math.cos(angle),sa=Math.sin(angle),rx=f.root[0]*L,ry=f.root[1]*L,rz=f.root[2]*L;for(var j=high?6:3;j<f.count;j++){var k=(f.first+j)*3,x=rest[k]-rx,y=rest[k+1]-ry,z=rest[k+2]-rz;out[k]=rx+x*ca+y*sa;out[k+1]=ry+y*ca-x*sa;out[k+2]=rz+z;}});antennae.forEach(function(a){for(var j=3;j<a.count;j++){var k=(a.first+j)*3,weight=Math.pow(clamp((rest[k]/L-a.root[0])/.51,0,1),2);out[k]=rest[k];out[k+1]=rest[k+1]+.008*L*weight*Math.sin(t*.55+phase+a.side);out[k+2]=rest[k+2]+a.side*.007*L*weight*Math.sin(t*.43+phase);}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+    c.anim(function(t){var out=fg.attributes.position.array;fanParts.forEach(function(f){var angle=.12*Math.sin(t*.73+phase+f.side*.8),ca=Math.cos(angle),sa=Math.sin(angle),rx=f.root[0]*L,ry=f.root[1]*L,rz=f.root[2]*L;for(var j=high?6:3;j<f.count;j++){var k=(f.first+j)*3,x=rest[k]-rx,y=rest[k+1]-ry,z=rest[k+2]-rz;out[k]=rx+x*ca+y*sa;out[k+1]=ry+y*ca-x*sa;out[k+2]=rz+z;}});antennae.forEach(function(a){for(var j=3;j<a.count;j++){var k=(a.first+j)*3,weight=Math.pow(clamp((rest[k]/L-a.root[0])/.51,0,1),2);out[k]=rest[k];out[k+1]=rest[k+1]+.008*L*weight*Math.sin(t*.55+phase+a.side);out[k+2]=rest[k+2]+a.side*.007*L*weight*Math.sin(t*.43+phase);}});fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
   }
 
 
@@ -5887,6 +6568,8 @@
 
   // Unsexed Pacific Hymenocera picta, following the 2017 Mexican field
   // records: cream, blue-edged wine blotches and expanded second pereopods.
+  // md14: abdomen arc (axis angles in radians, up positive) and tail fan angle.
+  var MD14_HARLEQUIN_ARC = { up: 0.15, down: -1.05, len: 0.5, fan: -0.5 };
   function buildHarlequinShrimp(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(239), L = 0.045 * (0.94 + 0.12 * rng()), phase = rng() * TAU;
     var cream = hex(0xd9cdb9), shade = hex(0xb7a79f), blue = hex(0x455e9f), pink = hex(0xb36b90), wine = hex(0x783356), ink = lin(hex(0x242329));
@@ -5907,7 +6590,14 @@
     body.loft(carapaceRows, high ? 20 : 8, high ? 18 : 10, function (u, a, x, y, z, out) { setc(out, [1, 1, 1]); }); markRange('carapace-rostrum', start);
     start = body.count();
     body.loft(abdomenRows, high ? 30 : 18, high ? 16 : 8, function (u, a, x, y, z, out) { setc(out, [1, 1, 1]); });
-    body.map(start, function (p) { var f = fract((p[0] + 0.47) / (0.425 / 6)), edge = Math.min(f, 1 - f), seam = Math.exp(-Math.pow(edge / 0.12, 2)); p[1] -= 0.019 * seam * smooth(0.1, 0.22, p[1]); p[2] *= 1 - 0.13 * seam; }); markRange('segmented-abdomen', start);
+    body.map(start, function (p) { var f = fract((p[0] + 0.47) / (0.425 / 6)), edge = Math.min(f, 1 - f), seam = Math.exp(-Math.pow(edge / 0.12, 2)); p[1] -= 0.019 * seam * smooth(0.1, 0.22, p[1]); p[2] *= 1 - 0.13 * seam; });
+    // md14: mark 4, a curved abdomen. The straight lofted abdomen is laid along
+    // an arc that rises a little behind the carapace (the humped back) and then
+    // bends down toward the tail fan, keeping each point's offset from the axis.
+    var md14Prof = profile(abdomenRows), md14Arc = MD14_HARLEQUIN_ARC;
+    function md14Along(s) { var a0 = md14Arc.up, d = md14Arc.down - a0, f = a0 + d * s; return [-0.045 - md14Arc.len / d * (Math.sin(f) - Math.sin(a0)), 0.28 - md14Arc.len / d * (Math.cos(f) - Math.cos(a0)), f]; }
+    body.map(start, function (p) { var pr = md14Prof(p[0]), off = p[1] - (pr[0] + pr[1]) / 2, a = md14Along(clamp((-0.045 - p[0]) / 0.425, 0, 1)); p[0] = a[0] + off * Math.sin(a[2]); p[1] = a[1] + off * Math.cos(a[2]); });
+    markRange('segmented-abdomen', start);
     start = body.count();
     for (var j = 0; j < 3; j++) [-1, 1].forEach(function (side) {
       var x = 0.10 - j * 0.10, z = side * (0.23 + j * 0.025);
@@ -5924,7 +6614,11 @@
       var theta = f * 0.27, roots = [], edges = [], n = high ? 7 : 4;
       for (var j = 0; j <= n; j++) { var u = j / n, a = theta + (u - 0.5) * 0.27; roots.push([-0.45, 0.11, f * 0.01]); edges.push([-0.45 - Math.cos(a) * (0.14 + 0.022 * Math.sin(PI * u)), 0.075 + 0.009 * Math.sin(PI * u), Math.sin(a) * 0.15]); }
       body.membrane(roots, edges, 2, function (u, v, out) { mixc(cream, pink, band(v - 0.64, 0.19, 0.08), out); mixc(out, blue, smooth(0.88, 1, v) * 0.8, out); });
-    } markRange('tail-fan', start);
+    }
+    // md14: the tail fan rides on the end of the curved abdomen, tilted down.
+    var md14End = md14Along(1), md14Tilt = -(md14Arc.fan + 0.36), md14C = Math.cos(md14Tilt), md14S = Math.sin(md14Tilt);
+    body.map(start, function (p) { var vx = p[0] + 0.47, vy = p[1] - 0.12; p[0] = md14End[0] + vx * md14C - vy * md14S; p[1] = md14End[1] + vx * md14S + vy * md14C; });
+    markRange('tail-fan', start);
     // Closed, softly convex plates. The claw outline includes a real finger
     // cleft; its upper and lower faces meet around the full rounded perimeter.
     function plate(g, outline, nr, ns, convert) {
@@ -6033,15 +6727,16 @@
   // only fine spinules, never the long erected spines of a porcupinefish.
   function buildBlackspottedPuffer(c) {
     var T=c.T,kit=c.kit,high=c.high,rng=c.rng(419),L=.25*(.98+.04*rng()),phase=rng()*TAU;
-    var body=new Geo(),detail=new Geo(),fins=new Geo(),finParts=[],ranges={},white=[1,1,1],ivory=hex(0xdedbc6),grey=hex(0x918d78),dark=hex(0x272c28),finColor=hex(0xc1b894);
+    var body=new Geo(),detail=new Geo(),fins=new Geo(),finParts=[],ranges={},white=[1,1,1],ivory=hex(0xdedbc6),grey=hex(0x857e70),dark=hex(0x272c28),finColor=hex(0xc1b894);
     var rows=[[.485,.015,-.055,.035],[.43,.085,-.09,.100],[.32,.16,-.13,.175],[.18,.205,-.185,.215],[.00,.20,-.215,.220],[-.15,.14,-.17,.165],[-.26,.063,-.075,.084],[-.35,.028,-.030,.030]],prof=profile(rows);
     body.loft(rows,high?40:20,high?32:18,function(u,a,x,y,z,out){setc(out,white);},2.15);
     // A small stable set of irregular marks is sampled identically by both
     // tiers; angle distance wraps so the belly seam cannot split a spot.
-    var spots=[];for(var i=0;i<48;i++)spots.push([-.29+.73*rng(),rng()*TAU,.018+.021*rng(),.075+.07*rng(),rng()*TAU]);
+    // md14: more spots of more varied size, scattered over the back too (mark 2).
+    var spots=[];for(var i=0;i<110;i++)spots.push([-.29+.73*rng(),rng()*TAU,.011+.022*rng(),.05+.07*rng(),rng()*TAU]);
     var pigment=kit.baked(c.key('dogface-pigment'),high?512:256,high?256:128,function(u,v,out){
       var x=lerp(.485,-.35,u),a=-PI/2+TAU*v,up=Math.sin(a),side=Math.abs(Math.cos(a)),mask=0;
-      mixc(grey,ivory,1-smooth(-.32,.38,up),out);mulc(out,.93+.09*noise2(x*17+phase,Math.cos(a)*9));
+      mixc(grey,ivory,1-smooth(-.7,.1,up),out);mulc(out,.93+.09*noise2(x*17+phase,Math.cos(a)*9));
       for(var k=0;k<spots.length;k++){var s=spots[k],da=Math.atan2(Math.sin(a-s[1]),Math.cos(a-s[1])),dx=(x-s[0])/s[2],dy=da/s[3],r=Math.sqrt(dx*dx+dy*dy),edge=1+.16*Math.sin(Math.atan2(dy,dx)*3+s[4]);mask=Math.max(mask,1-smooth(edge-.16,edge+.16,r));}
       // Eye patch and snout patch separated by a pale transverse nose bar.
       var eye=Math.exp(-Math.pow((x-.317)/.09,4))*smooth(.35,.82,side)*smooth(-.1,.4,up);
@@ -6065,7 +6760,7 @@
     detail.tube([[.494,-.025,-.027],[.498,-.022,0],[.494,-.025,.027]],.0025,high?5:3,function(){return lin(dark);});
     var dg=kit.geo(detail,L);kit.mesh(dg,kit.std({vertexColors:true,roughness:.33,side:T.DoubleSide},{eye:1}), 'eyes-nostrils-mouth-gills',c.root);
     function fin(name,roots,edges,mode,side){var first=fins.count(),columns=roots.length,across=high?4:2;fins.membrane(roots,edges,across,function(u,v,out){mixc(finColor,ivory,.22+.35*v,out);mulc(out,.82+.18*Math.pow(.5+.5*Math.cos(u*TAU*10),4));});finParts.push({name:name,first:first,count:fins.count()-first,columns:columns,across:across,mode:mode,side:side||0});}
-    [-1,1].forEach(function(side){var rs=[],es=[],n=high?12:7;for(var j=0;j<=n;j++){var u=j/n;rs.push([.177-.020*u,.008-.046*u,side*.202]);es.push([.10-.16*u,.025-.105*u,side*(.215+.14*Math.pow(Math.sin(PI*u),.5))]);}fin(side<0?'pectoral-left':'pectoral-right',rs,es,'pectoral',side);});
+    [-1,1].forEach(function(side){var rs=[],es=[],n=high?12:7;for(var j=0;j<=n;j++){var u=j/n;rs.push([.177-.020*u,.008-.046*u,side*.202]);es.push([.125-.05*u-.03*Math.sin(PI*u),.03-.095*u,side*(.212+.06*Math.pow(Math.sin(PI*u),.5))]);}fin(side<0?'pectoral-left':'pectoral-right',rs,es,'pectoral',side);});
     [-1,1].forEach(function(side){var rs=[],es=[],n=high?12:7;for(var j=0;j<=n;j++){var u=j/n,x=lerp(-.205,-.315,u),s=prof(x),y=side>0?s[0]:s[1];rs.push([x,y,0]);es.push([x-.065*Math.sin(PI*u),y+side*.09*Math.pow(Math.sin(PI*u),.65),0]);}fin(side>0?'dorsal':'anal',rs,es,'median',side);});
     var rs=[],es=[],n=high?14:8;for(var j=0;j<=n;j++){var v=j/n,yy=(v-.5)*2;rs.push([-.35,yy*.026,0]);es.push([-.50+.020*yy*yy,yy*.093,0]);}fin('rounded-tail',rs,es,'tail');
     var fg=kit.geo(fins,L);fg.userData.blackspottedPuffer={fins:finParts,maximumDisplacementM:.037*L,locomotion:'alternating-pectoral-synchronous-median',rootMotion:false};
@@ -6080,7 +6775,7 @@
   // distinguish an eagle ray from both the manta and round-disc stingray.
   function buildOcellatedEagleRay(c) {
     var T=c.T,kit=c.kit,high=c.high,rng=c.rng(421),W=1.5*(.98+.04*rng()),phase=rng()*TAU;
-    var discGeo=new Geo(),detail=new Geo(),tail=new Geo(),white=[1,1,1],top=hex(0x52665f),shade=hex(0x344943),cream=hex(0xe2e3d4),ink=hex(0x162824),NZ=high?48:24,NC=high?16:8;
+    var discGeo=new Geo(),detail=new Geo(),tail=new Geo(),white=[1,1,1],top=hex(0x384d4c),shade=hex(0x253839),cream=hex(0xeeeee2),ink=hex(0x162824),NZ=high?48:24,NC=high?16:8;
     function lead(f){return .18-.25*Math.pow(f,1.35);}
     function trail(f){return -.29+.22*Math.pow(f,.65);}
     function thick(f,u){return (.066*Math.exp(-Math.pow(f/.23,2))+.012*Math.pow(1-f,1.3))*Math.pow(Math.max(0,Math.sin(PI*u)),.55);}
@@ -6091,7 +6786,7 @@
     }
     var cell=[0,0,0,0,0],spotRecords=[];
     var pigment=kit.baked(c.key('eagle-ray-dorsal-ventral'),high?512:256,high?512:256,function(u,v,out){var x=u*.50-.30,below=v>.5,z=((v-(below?.52:.01))/.46)-.5;if(below){setc(out,cream);var gills=0;for(var g=0;g<5;g++){var center=.116-.035*g,az=Math.abs(z),curve=center+.075*Math.pow(az-.065,2);gills=Math.max(gills,band(x-curve,.0025,.0018)*smooth(.044,.055,az)*(1-smooth(.105,.12,az)));}mixc(out,hex(0x616e63),gills*.85,out);mulc(out,.96+.04*noise2(x*29,z*31));return;}
-      mixc(top,shade,.22+.32*noise2(x*11+phase,z*13),out);cells(x*22+phase,z*23,43,cell);var rr=.18+.10*cell[2],edge=1-smooth(rr-.035,rr+.035,cell[0]),center=cell[2]>.78?smooth(.055,.12,cell[0]):1;mixc(out,cream,edge*center*.94,out);mulc(out,.94+.06*noise2(x*117,z*127));
+      mixc(top,shade,.22+.32*noise2(x*11+phase,z*13),out);cells(x*22+phase,z*23,43,cell);var rr=.23+.10*cell[2],edge=1-smooth(rr-.035,rr+.035,cell[0]),center=cell[2]>.78?smooth(.055,.12,cell[0]):1;mixc(out,cream,edge*center*.94,out);mulc(out,.94+.06*noise2(x*117,z*127));
     },false,false);
     var skin=kit.baked(c.key('eagle-ray-denticles'),high?256:128,high?256:128,function(u,v,out){out[0]=out[1]=out[2]=.4+.20*noise2(u*149+phase,v*157);},false,false,true);
     var dg=kit.geo(discGeo,W);dg.userData.ocellatedEagleRay={nominalDiscWidthM:1.5,nominalTotalLengthM:4.2,scaleM:W,spanRows:NZ,chordColumns:NC,gillSlitsPerSide:5,cephalicLobes:0,maximumDisplacementM:.181*W};
@@ -6114,7 +6809,7 @@
     detail.membrane([[-.25,.01,0],[-.30,.006,0]],[[-.27,.070,0],[-.33,.012,0]],high?3:1,function(u,v,out){setc(out,shade);});
     var detailG=kit.geo(detail,W);detailG.userData.ocellatedEagleRay={duckbillSnout:true,lateralEyePair:true,spiraclePair:true,ventralMouth:true,pelvicFinPair:true};
     kit.mesh(detailG,kit.std({vertexColors:true,roughness:.47,side:T.DoubleSide},{eye:1}), 'duckbill-head-pelvic-fins',c.root);
-    var pts=[],n=high?40:22;for(var i=0;i<=n;i++){var u=i/n;pts.push([-.265-2.235*u,.004+.010*Math.sin(PI*u),.035*Math.sin(PI*u)*Math.sin(u*PI+phase)]);}
+    var pts=[],n=high?40:22;for(var i=0;i<=n;i++){var u=i/n;pts.push([-.265-2.235*u,.004+.010*Math.sin(PI*u)-.52*u*u,.035*Math.sin(PI*u)*Math.sin(u*PI+phase)+.14*u*u]);}
     tail.tube(pts,function(u){return .011*Math.pow(1-u,1.9)+.0007;},high?7:4,function(u,s){return lin(mixc(shade,ink,.25+.6*u,[0,0,0]));});
     // Two short barbs at the proximal tail; the distal tail remains a thin
     // uninterrupted whip, without a caudal fin or a manta's short tail.
@@ -6284,6 +6979,303 @@
     tg.boundingBox.expandByScalar(0.0026 * k); tg.boundingSphere.radius += 0.004 * k;
     kit.mesh(tg, kit.std({ vertexColors: true, roughness: 0.43, side: T.DoubleSide }), 'feeding-tentacles', c.root);
     c.anim(function (t, dt, motion) { currentAt(c.root, motion, t, phase, flow); var p = tg.attributes.position.array; strands.forEach(function (s) { for (var j = 3; j < s.count; j++) { var at = (s.first + j) * 3, u = clamp(Math.floor(j / 3) / s.segments, 0, 1), w = u * u, flutter = 0.00035 * Math.sin(t * 0.57 + s.phase); p[at] = rest[at] + k * w * (0.0016 * flow.x * flow.pulse + flutter); p[at + 2] = rest[at + 2] + k * w * (0.0016 * flow.z * flow.pulse + 0.00030 * Math.sin(t * 0.43 + s.phase)); } }); tg.computeVertexNormals(); tg.attributes.position.needsUpdate = true; });
+  }
+
+  // ---- Fleshy-polyp corals (bubble, hammer, flowerpot) ----------------------------------
+  // Shared pieces: an analytic lobed mound (so polyps sit on its surface), parallel
+  // meandering valley lines (flabello-meandroid colonies) and a per-vertex sway weight.
+  // Every station is drawn before any tier-specific detail, so both tiers share it.
+  function fleshyMound(R, H, ph, l1, l2) {
+    function edge(a) { return R * (1 + l1 * Math.sin(a * 2 + ph) + l2 * Math.sin(a * 3 - ph * 1.7) + 0.035 * Math.sin(a * 5 + ph * 0.6)); }
+    function y(x, z) { var r = Math.sqrt(x * x + z * z) / edge(Math.atan2(z, x)); return r >= 1 ? 0 : H * Math.pow(1 - r * r, 0.6) * (1 + 0.06 * Math.sin(x * 37 + ph) * Math.sin(z * 31 - ph)); }
+    function normal(x, z, out) { var e = 0.002, nx = (y(x - e, z) - y(x + e, z)) / (2 * e), nz = (y(x, z - e) - y(x, z + e)) / (2 * e), l = Math.sqrt(nx * nx + 1 + nz * nz); out[0] = nx / l; out[1] = 1 / l; out[2] = nz / l; return out; }
+    return { R: R, H: H, edge: edge, y: y, normal: normal };
+  }
+  // The mound as a polar cap with a short skirt tucked under its rim.
+  function fleshyMoundGeo(g, m, nr, ns, col) {
+    var c0 = [0, 0, 0], first = g.count();
+    g.polar(nr, ns, function (r, a, out) { var rr = Math.pow(r, 0.85), e = m.edge(a), x = Math.cos(a) * e * rr, z = Math.sin(a) * e * rr, y = m.y(x, z); col(x, y, z, out); return [x, y, z, 0.5 + 0.5 * Math.cos(a) * rr, 0.5 + 0.5 * Math.sin(a) * rr]; });
+    var rim = g.count() - ns, skirt = g.count();
+    for (var i = 0; i < ns; i++) { var p = rim + i; col(g.p[p * 3], -0.01, g.p[p * 3 + 2], c0); g.v(g.p[p * 3] * 0.96, -0.012, g.p[p * 3 + 2] * 0.96, c0, g.t[p * 2], g.t[p * 2 + 1]); }
+    for (i = 0; i < ns; i++) { var r0 = rim + i, r1 = rim + (i + 1) % ns, s0 = skirt + i, s1 = skirt + (i + 1) % ns; g.i.push(r0, r1, s0, r1, s1, s0); }
+    return first;
+  }
+  // Valley axes of a meandroid colony: near-parallel meanders across the mound.
+  function fleshyValleys(rng, m, S, amp) {
+    var th = rng() * PI, cs = Math.cos(th), sn = Math.sin(th), n = Math.ceil(m.R * 1.25 / S), lines = [];
+    for (var i = -n; i <= n; i++) {
+      var f1 = 9 + 6 * rng(), f2 = 21 + 9 * rng(), p1 = rng() * TAU, p2 = rng() * TAU, run = [];
+      for (var u = -1.3 * m.R; u <= 1.3 * m.R; u += 0.004) {
+        var v = i * S + amp * Math.sin(u * f1 + p1) + 0.35 * amp * Math.sin(u * f2 + p2), x = cs * u - sn * v, z = sn * u + cs * v;
+        if (Math.sqrt(x * x + z * z) < 0.96 * m.edge(Math.atan2(z, x))) run.push([x, z, i]);
+        else if (run.length) { if (run.length > 3) lines.push(run); run = []; }
+      }
+      if (run.length > 3) lines.push(run);
+    }
+    return lines;
+  }
+  // Orthonormal pair across a direction.
+  function fleshyBasis(d, a, b) {
+    var ux = Math.abs(d[1]) < 0.9 ? 0 : 1, uy = Math.abs(d[1]) < 0.9 ? 1 : 0;
+    a[0] = uy * d[2]; a[1] = -ux * d[2]; a[2] = ux * d[1] - uy * d[0];
+    var l = Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]) || 1; a[0] /= l; a[1] /= l; a[2] /= l;
+    b[0] = d[1] * a[2] - d[2] * a[1]; b[1] = d[2] * a[0] - d[0] * a[2]; b[2] = d[0] * a[1] - d[1] * a[0];
+  }
+  // Coral health colours for these small colonies: the turf pattern is drawn at
+  // a finer scale so a dead 25 cm colony shows patches, not one flat tone.
+  function fleshyHealth(h, live, x, y, z, out, cav) {
+    if (h !== 'dead') return health(h, live, x * 6, y * 6, z * 6, out, cav);
+    return mulc(health(h, live, x * 6, y * 6, z * 6, out, Math.min(1, (cav === undefined ? 0.35 : cav) + 0.3)), 0.8);
+  }
+  function fleshyNorm(v) { var l = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) || 1; v[0] /= l; v[1] /= l; v[2] /= l; return v; }
+  // A soft tissue mesh that bends in the local current. W holds each vertex's
+  // bend weight (0 rooted .. 1 free tip) and PH its phase. Positions stay a
+  // pure function of time; reduced motion never calls the animation.
+  function fleshySway(c, geo, W, PH, k, amp, flutter, rate, phase) {
+    var pos = geo.attributes.position, rest = new Float32Array(pos.array), flow = { x: 0, z: 0, pulse: 0 };
+    geo.boundingBox.expandByScalar((amp + flutter) * 1.2 * k); geo.boundingSphere.radius += (amp + flutter) * 1.5 * k;
+    geo.userData.fleshySway = { weights: W, amplitudeM: amp * k };
+    c.anim(function (t, dt, motion) {
+      currentAt(c.root, motion, t, phase, flow);
+      var p = pos.array, fx = amp * flow.x * flow.pulse, fz = amp * flow.z * flow.pulse;
+      for (var v = 0; v < W.length; v++) {
+        var w = W[v]; if (!w) continue;
+        var at = v * 3, ph = PH[v], wk = w * k;
+        p[at] = rest[at] + wk * (fx + flutter * Math.sin(t * rate + ph));
+        p[at + 2] = rest[at + 2] + wk * (fz + flutter * Math.sin(t * rate * 0.73 + ph * 1.3));
+        p[at + 1] = rest[at + 1] - wk * w * 0.25 * (Math.abs(fx) + Math.abs(fz));
+      }
+      pos.needsUpdate = true;
+    });
+  }
+
+  // Plerogyra sinuosa: grape-sized, water-filled vesicles packed over a low
+  // meandroid colony. They are inflated by day, larger where shaded, and hold
+  // dense algal partners (Fricke and Vareschi 1982). The model shows the day
+  // form; the vesicles swell and settle a little, never retracting fully.
+  function buildBubbleCoral(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(461), h = c.health, dead = h === 'dead', bleached = h === 'bleached';
+    var k = lerp(0.2, 1, Math.pow(c.growth, 0.8)) * (0.94 + 0.12 * rng()), phase = rng() * TAU;
+    var m = fleshyMound(0.105, 0.052, rng() * TAU, 0.06 + 0.05 * rng(), 0.05 * rng());
+    var pals = [[0xbfc697, 0x6e7c4e], [0xa9bcbf, 0x5f747c], [0xcbc196, 0x7c704c], [0xb2c290, 0x5e7846]], pal = pals[Math.floor(rng() * pals.length)];
+    var top = hex(pal[0]), low = hex(pal[1]), gap = hex(0x34342a), tmp = [0, 0, 0], live = [0, 0, 0];
+    // Vesicle stations: dart throwing on the mound. Flank vesicles sit in more
+    // shade and are drawn a little larger, as on a real colony.
+    var ves = [], nrm = [0, 0, 0], tries = 0;
+    while (ves.length < 150 && tries < 9000) {
+      tries++;
+      var a = rng() * TAU, rr = Math.pow(rng(), 0.45) * 1.01, e = m.edge(a), x = Math.cos(a) * e * rr, z = Math.sin(a) * e * rr, y = m.y(x, z), r = (0.0085 + 0.004 * rng()) * (1 + 0.18 * rr * rr), ok = true;
+      m.normal(x, z, nrm);
+      var cx = x + nrm[0] * r * 0.3, cy = y + nrm[1] * r * 0.3, cz = z + nrm[2] * r * 0.3;
+      for (var q = 0; q < ves.length && ok; q++) { var o = ves[q], dx = o.x - cx, dy = o.y - cy, dz = o.z - cz; if (dx * dx + dy * dy + dz * dz < Math.pow((o.r + r) * 0.68, 2)) ok = false; }
+      // Neighbours press into each other, so each grape is a little narrowed on one side.
+      if (ok) ves.push({ x: cx, y: cy, z: cz, r: r, n: [nrm[0], nrm[1], nrm[2]], elong: 1.05 + 0.25 * rng(), tint: rng(), phase: rng() * TAU, tilt: [rng() - 0.5, rng() - 0.5], squash: 0.8 + 0.2 * rng() });
+    }
+    // The colony base: dark tissue between the vesicles; on a dead colony the bare
+    // skeleton with its tall, smooth, widely spaced septa along the valleys.
+    var base = new Geo();
+    fleshyMoundGeo(base, m, high ? 6 : 4, high ? 36 : 20, function (x, y, z, out) {
+      var cav = 0.5 + 0.4 * (1 - smooth(0, m.H, y));
+      if (dead) setc(out, lin(fleshyHealth(h, mixc(top, low, 0.5, live), x, y, z, tmp, cav)));
+      else { mixc(gap, low, 0.25 * noise2(x * 60 + phase, z * 60), live); setc(out, lin(fleshyHealth(h, live, x, y, z, tmp, 0.9))); if (!bleached) mulc(out, 0.85 + 0.3 * smooth(-0.01, m.H, y)); else mulc(out, 0.8 + 0.2 * smooth(-0.01, m.H, y)); }
+    });
+    var septa = [];
+    if (dead) {
+      var lines = fleshyValleys(rng, m, 0.026, 0.006), wall = hex(0xd8d4c8);
+      lines.forEach(function (run) {
+        for (var s = 1; s < run.length - 1; s += 2) {
+          var p0 = run[s - 1], p1 = run[s + 1], tx = p1[0] - p0[0], tz = p1[1] - p0[1], tl = Math.sqrt(tx * tx + tz * tz) || 1, px = -tz / tl, pz = tx / tl, mx = run[s][0], mz = run[s][1], ht = 0.0065 + 0.003 * noise2(mx * 80, mz * 80), half = 0.0095, first = base.count(), segs = high ? 6 : 3;
+          septa.push([mx, mz]);
+          for (var j = 0; j <= segs; j++) {
+            var u = j / segs * 2 - 1, bx = mx + px * u * half, bz = mz + pz * u * half, by = m.y(bx, bz) - 0.002, arch = ht * Math.sqrt(Math.max(0, 1 - u * u)) * (0.9 + 0.1 * Math.cos(u * 3));
+            base.v(bx, by, bz, lin(fleshyHealth(h, wall, bx, by, bz, tmp, 0.7)), 0, 0);
+            base.v(bx, by + arch, bz, lin(fleshyHealth(h, wall, bx, by + arch, bz, tmp, 0.1)), 0, 1);
+          }
+          for (j = 0; j < segs; j++) { var a0 = first + j * 2; base.i.push(a0, a0 + 2, a0 + 1, a0 + 1, a0 + 2, a0 + 3); }
+        }
+      });
+    }
+    var relief = kit.baked('bubble-coral|septal-grain', 128, 128, function (u, v, out) { var g = noise2(u * 48, v * 48), ridge = Math.pow(0.5 + 0.5 * Math.cos(u * TAU * 18 + 2 * noise2(u * 6, v * 6)), 4); out[0] = out[1] = out[2] = 0.42 + 0.2 * ridge + 0.12 * g; }, true, true, true);
+    var bg = kit.geo(base, k); bg.userData.bubbleCoral = { vesicles: ves.map(function (o) { return { x: o.x, y: o.y, z: o.z, radius: o.r }; }), nominalColonyWidthM: 0.25, photosynthetic: true, exposedSepta: septa.length };
+    kit.mesh(bg, kit.std({ vertexColors: true, roughness: dead ? 0.92 : 0.7, bumpMap: relief, bumpScale: 0.0005 * k, side: T.DoubleSide }, dead ? null : coralSheen(c, null)), dead ? 'skeleton' : 'colony-base', c.root);
+    if (dead) return;
+    // Vesicles: egg-shaped caps along each station's surface normal, open where
+    // they meet the colony. Pearly tops shade down into the gaps.
+    var cw = [0, 0, 0], vg = new Geo(), ws = high ? 12 : 7, hs = high ? 3 : 2, thMax = PI * 0.74, a1 = [0, 0, 0], b1 = [0, 0, 0], W = [], PH = [];
+    ves.forEach(function (o) {
+      var d = fleshyNorm([o.n[0] + o.tilt[0] * 0.5, o.n[1] + 0.25, o.n[2] + o.tilt[1] * 0.5]), first = vg.count(), i, j;
+      fleshyBasis(d, a1, b1);
+      mixc(top, low, 0.35 * o.tint, live); if (o.tint > 0.8) mixc(live, hex(0xdfe2c8), 0.45, live); else if (o.tint < 0.15) mixc(live, hex(0x9fb59a), 0.4, live); else if (o.tint < 0.32) mixc(live, hex(0xb9c6c9), 0.45, live);
+      for (i = 0; i <= hs; i++) {
+        var th = i === 0 ? 0 : thMax * Math.pow(i / hs, 0.85), st = Math.sin(th), ct = Math.cos(th), shade = 0.5 + 0.58 * smooth(-0.6, 1, ct);
+        for (j = 0; j < (i === 0 ? 1 : ws); j++) {
+          var ph = j / ws * TAU + o.phase, cp = Math.cos(ph) * st * o.r * o.squash, sp = Math.sin(ph) * st * o.r, along = ct * o.r * o.elong;
+          var px = o.x + a1[0] * cp + b1[0] * sp + d[0] * along, py = o.y + a1[1] * cp + b1[1] * sp + d[1] * along, pz = o.z + a1[2] * cp + b1[2] * sp + d[2] * along;
+          mixc(live, low, 0.55 * smooth(0.6, -0.5, ct), cw); fleshyHealth(h, cw, px, py, pz, tmp, 0.25 * (1 - ct)); mulc(tmp, shade);
+          vg.v(px, py, pz, lin(tmp), j / ws, i / hs);
+          // Swelling about the vesicle centre: no motion at its rooted rim.
+          W.push(0.35 + 0.65 * smooth(-0.6, 1, ct)); PH.push(o.phase + 0.3 * j);
+        }
+      }
+      for (j = 0; j < ws; j++) vg.i.push(first, first + 1 + j, first + 1 + (j + 1) % ws);
+      for (i = 1; i < hs; i++) for (j = 0; j < ws; j++) { var r0 = first + 1 + (i - 1) * ws + j, r1 = first + 1 + (i - 1) * ws + (j + 1) % ws; vg.i.push(r0, r0 + ws, r1, r1, r0 + ws, r1 + ws); }
+    });
+    var tg = kit.geo(vg, k);
+    tg.userData.bubbleCoral = { vesicleCount: ves.length, sidesPerVesicle: ws, inflated: true };
+    kit.mesh(tg, kit.std({ vertexColors: true, roughness: bleached ? 0.5 : 0.34, side: T.DoubleSide }, bleached ? coralSheen(c, null) : { sheen: sheenOf(T, 0xeaf6ee, 0xffffff, 0.09) }), 'vesicles', c.root);
+    fleshySway(c, tg, new Float32Array(W), new Float32Array(PH), k, 0.0007, 0.00045, 0.41, phase);
+  }
+
+  // Fimbriaphyllia ancora (formerly Euphyllia ancora): rows of fleshy tube
+  // tentacles with T-shaped, anchor-like tips along the valleys of a meandroid
+  // colony, extended by day and night (Corals of the World; Oregon Coast Aquarium).
+  function buildHammerCoral(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(467), h = c.health, dead = h === 'dead', bleached = h === 'bleached';
+    var k = lerp(0.2, 1, Math.pow(c.growth, 0.8)) * (0.94 + 0.12 * rng()), phase = rng() * TAU;
+    var m = fleshyMound(0.11, 0.05, rng() * TAU, 0.07 + 0.05 * rng(), 0.05 * rng()), S = 0.03, lines = fleshyValleys(rng, m, S, 0.007);
+    // Blue-grey to orange tentacles with pale cream or green tip borders.
+    var pals = [[0x2f6a5a, 0x5fa07e, 0xd0f08c], [0x7a5030, 0xc07a3c, 0xf2d898], [0x4a6680, 0x7fa2b4, 0xd2ecb4], [0x4e6a2e, 0x8cb04c, 0xe0f28e]], pal = pals[Math.floor(rng() * pals.length)];
+    var stalkC = hex(pal[0]), tipC = hex(pal[1]), rimC = hex(pal[2]), tmp = [0, 0, 0], live = [0, 0, 0], nrm = [0, 0, 0];
+    // Tentacle stations: dart throwing over the mound, each T turned along the
+    // nearest valley so the tips line up in the colony's meandering rows.
+    var stations = [], tries = 0;
+    while (stations.length < 140 && tries < 8000) {
+      tries++;
+      var a = rng() * TAU, rr = Math.pow(rng(), 0.4) * 1.0, e = m.edge(a), x = Math.cos(a) * e * rr, z = Math.sin(a) * e * rr, ok = true;
+      for (var q = 0; q < stations.length && ok; q++) { var o = stations[q], dx = o.x - x, dz = o.z - z; if (dx * dx + dz * dz < 0.0142 * 0.0142) ok = false; }
+      var tw = rng(), ln = rng(), l0 = rng(), l1 = rng(), sp = rng(), dr = rng(), ph = rng(), ti = rng();
+      if (!ok) continue;
+      var best = 1, tx = 1, tz = 0;
+      lines.forEach(function (run) { for (var s = 1; s < run.length - 1; s += 2) { var ddx = run[s][0] - x, ddz = run[s][1] - z, dd = ddx * ddx + ddz * ddz; if (dd < best) { best = dd; tx = run[s + 1][0] - run[s - 1][0]; tz = run[s + 1][1] - run[s - 1][1]; } } });
+      var tl = Math.sqrt(tx * tx + tz * tz) || 1;
+      stations.push({ x: x, z: z, tx: tx / tl, tz: tz / tl, len: 0.024 + 0.016 * ln, lean: [l0 - 0.5, l1 - 0.5], twist: (tw - 0.5) * 0.9, span: 0.0105 + 0.004 * sp, droop: 0.25 + 0.35 * dr, phase: ph * TAU, tint: ti });
+    }
+    var base = new Geo();
+    fleshyMoundGeo(base, m, high ? 6 : 4, high ? 36 : 20, function (x, y, z, out) {
+      if (dead) setc(out, lin(fleshyHealth(h, hex(0xb0ad9e), x, y, z, tmp, 0.6)));
+      else { mixc(hex(0x2a3430), stalkC, 0.3, live); setc(out, lin(fleshyHealth(h, live, x, y, z, tmp, 0.9))); mulc(out, 0.8 + 0.25 * smooth(-0.01, m.H, y)); }
+    });
+    var walls = 0;
+    if (dead) {
+      // Bare skeleton: thin, sharp-edged walls between the valleys.
+      var wl = fleshyValleys(c.rng(468), m, S, 0.007), bone = hex(0xd6d2c4);
+      wl.forEach(function (run) {
+        var first = base.count(), n = run.length, step = high ? 1 : 2, cnt = 0;
+        for (var s = 0; s < n; s += step) {
+          var x = run[s][0], z = run[s][1], y = m.y(x, z) - 0.002, u = s / (n - 1), ht = (0.012 + 0.006 * noise2(x * 50, z * 50)) * Math.min(1, Math.sin(PI * u) * 4);
+          base.v(x, y, z, lin(fleshyHealth(h, bone, x, y, z, tmp, 0.75)), u, 0); base.v(x, y + ht, z, lin(fleshyHealth(h, bone, x, y + ht, z, tmp, 0.05)), u, 1); cnt++;
+        }
+        for (var j = 0; j < cnt - 1; j++) { var a0 = first + j * 2; base.i.push(a0, a0 + 2, a0 + 1, a0 + 1, a0 + 2, a0 + 3); }
+        walls++;
+      });
+    }
+    var relief = kit.baked('hammer-coral|septa', 128, 128, function (u, v, out) { var g = noise2(u * 40, v * 40), rib = Math.pow(0.5 + 0.5 * Math.cos(u * TAU * 40), 3); out[0] = out[1] = out[2] = 0.4 + 0.22 * rib + 0.12 * g; }, true, true, true);
+    var bg = kit.geo(base, k); bg.userData.hammerCoral = { tentacles: stations.length, valleys: lines.length, walls: walls, nominalColonyWidthM: 0.3, photosynthetic: true };
+    kit.mesh(bg, kit.std({ vertexColors: true, roughness: dead ? 0.92 : 0.72, bumpMap: relief, bumpScale: 0.0005 * k, side: T.DoubleSide }, dead ? null : coralSheen(c, null)), dead ? 'skeleton' : 'colony-base', c.root);
+    if (dead) return;
+    var tg = new Geo(), sides = high ? 4 : 3, armSides = high ? 6 : 3, W = [], PH = [], d = [0, 0, 0], a1 = [0, 0, 0], b1 = [0, 0, 0], strands = [];
+    stations.forEach(function (st) {
+      var y0 = m.y(st.x, st.z) - 0.003; m.normal(st.x, st.z, nrm);
+      d[0] = nrm[0] * 0.9 + st.lean[0] * 0.35; d[1] = 1; d[2] = nrm[2] * 0.9 + st.lean[1] * 0.35; fleshyNorm(d);
+      var L = st.len, segs = high ? 2 : 1, pts = [], i, first = tg.count(), sc = mixc(stalkC, tipC, 0.2 * st.tint, [0, 0, 0]);
+      for (i = 0; i <= segs; i++) { var u = i / segs; pts.push([st.x + d[0] * L * u + 0.002 * Math.sin(u * 3 + st.phase) * u, y0 + d[1] * L * u, st.z + d[2] * L * u + 0.002 * Math.cos(u * 3 + st.phase) * u]); }
+      tg.tube(pts, function (u) { return 0.0047 * (1 - 0.14 * u) * (1 + 0.08 * Math.sin(u * PI)); }, sides, function (u) { var col = mixc(sc, tipC, smooth(0.5, 1, u) * 0.6, [0, 0, 0]); mulc(col, 0.72 + 0.32 * u); return lin(fleshyHealth(h, col, 0, u, 0, tmp, 0.3 * (1 - u))); });
+      var tipP = pts[pts.length - 1];
+      // Two arched arms from the tentacle tip make the T, curving back
+      // toward the colony like the flukes of an anchor.
+      var ax = Math.cos(st.twist) * st.tx - Math.sin(st.twist) * st.tz, az = Math.sin(st.twist) * st.tx + Math.cos(st.twist) * st.tz;
+      (high ? [-1, 1] : [0]).forEach(function (sgn) {
+        // The low tier draws the T as one bar from fluke to fluke.
+        var arm = [], n = 2;
+        for (var j = 0; j <= n; j++) { var u = j / n, reach = sgn ? sgn * st.span * (u * 1.12 - 0.12) : st.span * (u * 2 - 1), q2 = reach * reach / (st.span * st.span), back = 0.0032 * q2; arm.push([tipP[0] + ax * reach - d[0] * 0.0008 - az * back, tipP[1] + 0.0012 - st.droop * 0.006 * q2, tipP[2] + az * reach - d[2] * 0.0008 + ax * back]); }
+        tg.tube(arm, function (u) { return sgn ? 0.0056 * (1 + 0.08 * u) : 0.0056 * (1 + 0.08 * Math.abs(2 * u - 1)); }, armSides, function (u, s) { var e = sgn ? u : Math.abs(2 * u - 1), col = mixc(tipC, rimC, smooth(0.45, 0.95, e) * 0.85, [0, 0, 0]); mulc(col, 0.9 + 0.12 * e); return lin(fleshyHealth(h, col, 0, 1, 0, tmp, 0.1)); });
+      });
+      strands.push({ first: first, count: tg.count() - first, length: L });
+      for (var v = first; v < tg.count(); v++) { var wy = (tg.p[v * 3 + 1] - y0) / (L + 0.002); W.push(clamp(wy, 0, 1.15) * clamp(wy, 0, 1.15)); PH.push(st.phase); }
+    });
+    var gg = kit.geo(tg, k); gg.userData.hammerCoral = { strands: strands, sides: sides, tTips: true };
+    kit.mesh(gg, kit.std({ vertexColors: true, roughness: bleached ? 0.55 : 0.42 }, bleached ? coralSheen(c, null) : { sheen: sheenOf(T, pal[2], 0xffffff, 0.07) }), 'tentacles', c.root);
+    fleshySway(c, gg, new Float32Array(W), new Float32Array(PH), k, 0.006, 0.0018, 0.52, phase);
+  }
+
+  // Goniopora columna: short columns, oval in section, covered by long
+  // flower-like polyps. Each crown keeps 24 tentacles on both tiers (12 would
+  // be Alveopora), round a white oral cone (Corals of the World; Naturalis).
+  function buildFlowerpotCoral(c) {
+    var T = c.T, kit = c.kit, high = c.high, rng = c.rng(473), h = c.health, dead = h === 'dead', bleached = h === 'bleached';
+    var k = lerp(0.2, 1, Math.pow(c.growth, 0.8)) * (0.94 + 0.12 * rng()), phase = rng() * TAU;
+    var pals = [[0x3e301c, 0x6e542e, 0x8a6a38], [0x2c4220, 0x507430, 0x6c9440], [0x4a4618, 0x787232, 0x928e3e], [0x343e1c, 0x5c6a2c, 0x7a8a40]], pal = pals[Math.floor(rng() * pals.length)];
+    var tissue = hex(pal[0]), stalkC = hex(pal[1]), crownC = hex(pal[2]), cone = hex(0xeeeee0), tmp = [0, 0, 0], live = [0, 0, 0];
+    // Columns: a clump of short, oval-sectioned columns of different heights.
+    var cols = [], nc = 4 + Math.floor(rng() * 2);
+    for (var i = 0; i < nc; i++) {
+      var a = i === 0 ? 0 : (i - 1) / (nc - 1) * TAU + rng() * 0.6, rad = i === 0 ? 0.008 * rng() : 0.045 + 0.012 * rng();
+      cols.push({ x: Math.cos(a) * rad, z: Math.sin(a) * rad, ax: 0.03 + 0.008 * rng(), az: 0.023 + 0.006 * rng(), rot: rng() * PI, ht: (i === 0 ? 0.05 : 0.026) + 0.02 * rng(), lean: [Math.cos(a) * 0.22 * (i ? 1 : 0), Math.sin(a) * 0.22 * (i ? 1 : 0)] });
+    }
+    // Surface point of a column: s 0 base .. 0.7 top of wall .. 1 crown of the cap.
+    function colPoint(cl, s, ang, out, n) {
+      var cs = Math.cos(cl.rot), sn = Math.sin(cl.rot), ca = Math.cos(ang), sa = Math.sin(ang), y, rs, ny;
+      if (s < 0.7) { y = s / 0.7 * cl.ht; rs = 1 + 0.06 * Math.sin(s * 4); ny = 0; }
+      else { var f = (s - 0.7) / 0.3 * PI / 2; y = cl.ht + 0.6 * cl.az * Math.sin(f); rs = Math.cos(f); ny = Math.sin(f); }
+      var lx = ca * cl.ax * rs, lz = sa * cl.az * rs, lean = y;
+      out[0] = cl.x + cs * lx - sn * lz + cl.lean[0] * lean; out[1] = y - 0.006; out[2] = cl.z + sn * lx + cs * lz + cl.lean[1] * lean;
+      if (n) { var nx = ca / cl.ax, nz = sa / cl.az, l = Math.sqrt(nx * nx + nz * nz) || 1, hz = Math.sqrt(1 - ny * ny); n[0] = (cs * nx - sn * nz) / l * hz; n[1] = ny; n[2] = (sn * nx + cs * nz) / l * hz; }
+      return out;
+    }
+    // Polyp stations, densest on the tops and upper walls of the columns.
+    var polyps = [], p = [0, 0, 0], n = [0, 0, 0];
+    for (i = 0; i < 88; i++) {
+      var cl = cols[Math.floor(rng() * cols.length)], s = 0.45 + 0.55 * Math.sqrt(rng()), ang = rng() * TAU;
+      colPoint(cl, s, ang, p, n);
+      polyps.push({ p: [p[0], p[1], p[2]], n: [n[0], n[1], n[2]], len: 0.018 + 0.016 * rng(), bend: [rng() - 0.5, rng() - 0.5], spin: rng() * TAU, tl: 0.0105 + 0.003 * rng(), phase: rng() * TAU, tint: rng() });
+    }
+    var colGeo = new Geo(), rows = high ? 6 : 4, ns = high ? 14 : 9;
+    cols.forEach(function (cl) {
+      var first = colGeo.count(), q = [0, 0, 0], r, j;
+      for (r = 0; r <= rows; r++) for (j = 0; j <= ns; j++) {
+        var s = r / rows, ang = j / ns * TAU; colPoint(cl, s, ang, q, null);
+        var cav = 0.55 * (1 - smooth(0.1, 0.6, s));
+        if (dead) fleshyHealth(h, hex(0xc2bcab), q[0], q[1], q[2], tmp, cav); else { mixc(tissue, stalkC, 0.25 * noise2(q[0] * 90, q[1] * 90 + q[2] * 40), live); fleshyHealth(h, live, q[0], q[1], q[2], tmp, cav); mulc(tmp, 0.72 + 0.32 * s); }
+        colGeo.v(q[0], q[1], q[2], lin(tmp), j / ns * 3, q[1] / 0.03);
+      }
+      for (r = 0; r < rows; r++) for (j = 0; j < ns; j++) { var a0 = first + r * (ns + 1) + j, a1 = a0 + ns + 1; colGeo.i.push(a0, a0 + 1, a1, a0 + 1, a1 + 1, a1); }
+    });
+    var cc = [0, 0, 0, 0, 0], pores = kit.baked('flowerpot-coral|calices', 128, 128, function (u, v, out) { cellsP(u * 12, v * 12, 12, 17, cc); var cup = 1 - smooth(0.05, 0.3, cc[0]), wall = 1 - smooth(0.02, 0.1, cc[1] - cc[0]); out[0] = out[1] = out[2] = 0.55 + 0.3 * wall - 0.4 * cup + 0.06 * noise2(u * 90, v * 90); }, true, true, true);
+    var cg = kit.geo(colGeo, k); cg.userData.flowerpotCoral = { columns: cols.length, polyps: polyps.length, tentaclesPerPolyp: 24, nominalColonyWidthM: 0.22, photosynthetic: true };
+    kit.mesh(cg, kit.std({ vertexColors: true, roughness: dead ? 0.93 : 0.78, bumpMap: pores, bumpScale: (dead ? 0.0009 : 0.0004) * k, side: T.DoubleSide }, dead ? null : coralSheen(c, null)), dead ? 'skeleton' : 'columns', c.root);
+    if (dead) return;
+    // Polyps: a long stalk ending in a white oral cone and a flat ring of 24
+    // tapering tentacles (one or three triangles each, drawn double sided).
+    var pg = new Geo(), sides = high ? 4 : 3, segs = high ? 2 : 1, W = [], PH = [], d = [0, 0, 0], a1 = [0, 0, 0], b1 = [0, 0, 0], crowns = [];
+    polyps.forEach(function (o) {
+      // The stalk leaves the column along its surface, then turns toward the light.
+      var d0 = fleshyNorm([o.n[0] * 0.8 + o.bend[0] * 0.4, o.n[1] + 0.5, o.n[2] * 0.8 + o.bend[1] * 0.4]), d1 = fleshyNorm([o.n[0] * 0.25 + o.bend[0] * 0.5, 1, o.n[2] * 0.25 + o.bend[1] * 0.5]);
+      d[0] = (d0[0] + d1[0]) * 0.5; d[1] = (d0[1] + d1[1]) * 0.5; d[2] = (d0[2] + d1[2]) * 0.5;
+      var L = o.len, pts = [], first = pg.count(), sc = mixc(stalkC, crownC, 0.3 * o.tint, [0, 0, 0]), i, j;
+      for (i = 0; i <= segs; i++) { var u = i / segs, f0 = L * (u - 0.5 * u * u), f1 = L * 0.5 * u * u; pts.push([o.p[0] + d0[0] * f0 + d1[0] * f1, o.p[1] + d0[1] * f0 + d1[1] * f1, o.p[2] + d0[2] * f0 + d1[2] * f1]); }
+      var tip = pts[segs], pre = pts[segs - 1], ex = [tip[0] - pre[0], tip[1] - pre[1], tip[2] - pre[2]]; fleshyNorm(ex);
+      var ext = [tip[0] + ex[0] * 0.0032, tip[1] + ex[1] * 0.0032, tip[2] + ex[2] * 0.0032]; pts.push(ext);
+      pg.tube(pts, function (u) { return u > 0.8 ? 0.0024 * (1 - 0.5 * smooth(0.8, 1, u)) : 0.0021 * (1 + 0.15 * u); }, sides, function (u) { var col = u > 0.8 ? mixc(sc, cone, smooth(0.8, 0.9, u), [0, 0, 0]) : mulc(setc([0, 0, 0], sc), 0.7 + 0.35 * u); return lin(fleshyHealth(h, col, 0, u, 0, tmp, 0.2 * (1 - u))); });
+      fleshyBasis(ex, a1, b1);
+      var ring = 0.0022, tl = o.tl, crownFirst = pg.count();
+      for (j = 0; j < 24; j++) {
+        var an = j / 24 * TAU + o.spin, ca = Math.cos(an), sa = Math.sin(an), rx = a1[0] * ca + b1[0] * sa, ry = a1[1] * ca + b1[1] * sa, rz = a1[2] * ca + b1[2] * sa, qx = -a1[0] * sa + b1[0] * ca, qy = -a1[1] * sa + b1[1] * ca, qz = -a1[2] * sa + b1[2] * ca;
+        var lift = 0.42 + 0.14 * Math.sin(j * 2.3 + o.phase), steps = high ? [0, 0.55] : [0], w0 = 0.00115, at = pg.count(), tc = mixc(crownC, sc, 0.25 * ((j % 2) ? 1 : 0), [0, 0, 0]);
+        for (var q = 0; q < steps.length; q++) {
+          var u2 = steps[q], rr = ring + tl * u2, yy = tl * (lift * u2 - 0.28 * u2 * u2), cx = tip[0] + rx * rr + ex[0] * yy, cy = tip[1] + ry * rr + ex[1] * yy, cz = tip[2] + rz * rr + ex[2] * yy, w = w0 * (1 - 0.35 * u2), col = lin(fleshyHealth(h, mulc(setc([0, 0, 0], tc), 0.85 + 0.25 * u2), 0, 1, 0, tmp, 0.1));
+          pg.v(cx - qx * w, cy - qy * w, cz - qz * w, col, 0, u2); pg.v(cx + qx * w, cy + qy * w, cz + qz * w, col, 1, u2);
+        }
+        var yt = tl * (lift - 0.28), tipCol = lin(fleshyHealth(h, mixc(tc, hex(0xe8ecc8), 0.3, [0, 0, 0]), 0, 1, 0, tmp, 0)), ox = tip[0] + rx * (ring + tl) + ex[0] * yt, oy = tip[1] + ry * (ring + tl) + ex[1] * yt, oz = tip[2] + rz * (ring + tl) + ex[2] * yt, wt = w0 * 0.9;
+        // High tier: a blunt, slightly clubbed tip. Low tier: one tapering triangle.
+        if (high) { pg.v(ox - qx * wt, oy - qy * wt, oz - qz * wt, tipCol, 0, 1); pg.v(ox + qx * wt, oy + qy * wt, oz + qz * wt, tipCol, 1, 1); pg.i.push(at, at + 2, at + 1, at + 1, at + 2, at + 3, at + 2, at + 4, at + 3, at + 3, at + 4, at + 5); }
+        else { pg.v(ox, oy, oz, tipCol, 0.5, 1); pg.i.push(at, at + 2, at + 1); }
+      }
+      crowns.push({ first: crownFirst, tentacles: 24, stalkFirst: first });
+      for (var v = first; v < pg.count(); v++) { var dx = pg.p[v * 3] - o.p[0], dy = pg.p[v * 3 + 1] - o.p[1], dz = pg.p[v * 3 + 2] - o.p[2], along = clamp((dx * d[0] + dy * d[1] + dz * d[2]) / (L + 0.006), 0, 1.2); W.push(along * along); PH.push(o.phase + (v >= crownFirst ? 0.4 : 0)); }
+    });
+    var gg = kit.geo(pg, k); gg.userData.flowerpotCoral = { crowns: crowns, tentaclesPerPolyp: 24, extendedByDay: true };
+    kit.mesh(gg, kit.std({ vertexColors: true, roughness: bleached ? 0.55 : 0.5, side: T.DoubleSide }, bleached ? coralSheen(c, null) : { sheen: sheenOf(T, pal[2], 0xffffff, 0.06) }), 'polyps', c.root);
+    fleshySway(c, gg, new Float32Array(W), new Float32Array(PH), k, 0.0045, 0.0014, 0.63, phase);
   }
 
   // Laticauda colubrina: a representative 1.2 m animal. The tail is flattened
@@ -6559,11 +7551,14 @@
   // University of Hawaii's Exploring Our Fluid Earth (Phylum Chordata).
   function buildGoldmouthSeaSquirt(c) {
     var T = c.T, kit = c.kit, high = c.high, rng = c.rng(433), scale = .96 + .08 * rng(), phase = rng() * TAU;
-    var body = new Geo(), mouths = new Geo(), cream = hex(0xf0e3ce), purple = hex(0x69367b), lavender = hex(0xa17bba), orange = hex(0xf29a20), ink = hex(0x392315);
-    var rows = [[0,.014],[.008,.025],[.025,.034],[.049,.038],[.071,.034],[.090,.025],[.100,.017]], n = high ? 48 : 18, stacks=high?36:12;
+    var body = new Geo(), mouths = new Geo(), cream = hex(0xf0e3ce), purple = hex(0x69367b), lavender = hex(0xa17bba), orange = hex(0xf2a81c), ink = hex(0x392315);
+    var rows = [[0,.015],[.007,.027],[.026,.036],[.052,.040],[.078,.037],[.095,.027],[.104,.016]], n = high ? 48 : 18, stacks=high?36:12;
     function pigment(x,y,z) {
       var cloud = noise3(x*84+phase,y*78,z*91), fine = noise3(x*237,y*201+phase,z*249), color = mixc(cream,lavender,smooth(.44,.66,cloud)*.46,[0,0,0]);
-      mixc(color,purple,smooth(.55,.70,cloud)*.91,color); mixc(color,orange,smooth(.65,.82,fine)*.44,color);
+      mixc(color,purple,smooth(.63,.73,cloud)*.88,color); mixc(color,orange,smooth(.65,.74,noise3(x*70+9,y*76+phase,z*70))*.72,color); mixc(color,orange,smooth(.70,.82,fine)*.3,color);
+      // Thin wandering purple lines over the pale tunic (the reported pattern: white with purple and orange patches and purple lines).
+      var around=Math.atan2(z/.81,x+.004),warp=noise3(x*55+phase,y*38,z*55),line=Math.abs(Math.sin(around*9+warp*5.5+y*14));
+      mixc(color,purple,(1-smooth(.06,.17,line))*smooth(.24,.40,noise3(x*44,y*36+phase,z*44))*.96,color);
       mulc(color,.89+.14*noise3(x*905,y*901,z*891)); return color;
     }
     function section(t){var at=t*(rows.length-1),i=Math.min(rows.length-2,Math.floor(at)),f=at-i,lo=rows[Math.max(0,i-1)],b=rows[i],d=rows[i+1],hi=rows[Math.min(rows.length-1,i+2)];return[catmull(lo[0],b[0],d[0],hi[0],f),catmull(lo[1],b[1],d[1],hi[1],f)];}
@@ -6588,7 +7583,7 @@
         var a=s/segments*TAU,ri=rings[k][1]*radius*(1+.070*Math.cos(a*4+phase)+.020*Math.sin(a*9+phase)),axial=rings[k][0];
         axial+=.0013*Math.sin(a*4+.4+phase)*smooth(0,height,axial);
         var inside=k>=(high?7:4),deep=k>=(high?8:5),outer=smooth(0,height,axial),skinColor=pigment(center[0]+u.x*ri*Math.cos(a),center[1]+up.y*axial,center[2]+e.z*ri*Math.sin(a));
-        var color=lin(mixc(skinColor,orange,inside?1:.1+.9*outer,[0,0,0]));
+        var color=lin(mixc(skinColor,orange,inside?1:smooth(.35,.95,outer),[0,0,0]));
         if(inside)color=lin(mixc(orange,ink,deep?.80:.25,[0,0,0]));
         mouths.v((center[0]+up.x*axial+u.x*Math.cos(a)*ri+e.x*Math.sin(a)*ri)*scale,(center[1]+up.y*axial+u.y*Math.cos(a)*ri+e.y*Math.sin(a)*ri)*scale,(center[2]+up.z*axial+u.z*Math.cos(a)*ri+e.z*Math.sin(a)*ri)*scale,color,s/segments,k/6);
         if(k&&s){var p=start+(k-1)*(segments+1)+s-1,q=p+segments+1;mouths.i.push(p,q,p+1,p+1,q,q+1);}
@@ -6596,8 +7591,8 @@
       for(var k=0;k<rings.length;k++)mouths.seams.push([start+k*(segments+1),start+k*(segments+1)+segments]);
       openings.push({name:name,first:start,count:mouths.count()-start,center:center.map(function(v){return v*scale;}),axis:up.toArray(),lipHeight:(height+.001)*scale,throatDepth:.017*scale,openingRadius:radius*.72*scale});
     }
-    siphon('oral',[-.008,.096,0],[.04,.995,-.08],.016,.020);
-    siphon('atrial',[.021,.074,.007],[.81,.53,.24],.013,.023);
+    siphon('oral',[-.008,.100,0],[.04,.995,-.08],.0135,.018);
+    siphon('atrial',[.024,.080,.008],[.81,.53,.24],.0105,.019);
     var mouthGeo=kit.geo(mouths,1); mouthGeo.userData.goldmouthSeaSquirt={siphons:openings,nominalHeightM:.12,appearance:'white-purple-orange-example',solitary:true};
     kit.mesh(mouthGeo,kit.std({vertexColors:true,bumpMap:relief,bumpScale:.00030*scale,roughness:.74,side:T.DoubleSide}),'siphons',c.root);
     mouthGeo.computeBoundingSphere();mouthGeo.boundingSphere.radius+=.001;
@@ -6721,6 +7716,254 @@
     return {retract:function(on){forced=!!on;pose(c.rm?0:lastT,null);}};
   }
 
+
+  // Hexabranchus sanguineus: an illustrative mottled crimson animal with a
+  // white mantle rim, shown with its wide mantle spread. Six separate,
+  // branched gills stand on the rear of the back; they cannot pull back into
+  // a gill pocket (Sea Slug Forum). Two ridged rhinophores at the front.
+  // The .30 m convention is the body length, not the spread mantle width.
+  function buildSpanishDancer(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(401),L=.30*(.96+.08*rng()),phase=rng()*TAU;
+    var body=new Geo(),skirt=new Geo(),ranges={},gills=[],rhinophores=[],white=[1,1,1],rows=[];
+    var crimson=hex(0xb3192c),deep=hex(0x6c0d1d),scarlet=hex(0xdc4338),rim=hex(0xf6efe8),blush=hex(0xf2c9c0),gillRed=hex(0xd0555f),gillPale=hex(0xf6b6ae),sole=hex(0xc46470);
+    var BX=.47,BZ=.17,HB=.105,MX=.57,MZ=.38,EDGE=.80;
+    function mark(g,name,first){ranges[name]={mesh:g===body?'body':'skirt',first:first,count:g.count()-first};}
+    function planar(x,z){return[.02+.46*clamp((x+.6)/1.2,0,1),.02+.46*clamp((z+.42)/.84,0,1)];}
+    function hump(x,z){var u=clamp(Math.sqrt(Math.pow(x/BX,2)+Math.pow(z/BZ,2)),0,1);return .045+HB*Math.pow(Math.max(0,1-u*u),1.15)*(1-.10*smooth(.1,.5,-x/BX));}
+    function ripple(x,s,a,amp,t){return amp*Math.pow(s,1.3)*Math.sin(9.5*x-t+phase)+.03*Math.pow(s,2.2)*Math.sin(a*(high?9:7)+phase*2);}
+    var nr=high?7:3,ns=high?84:40,first=body.count();
+    body.polar(nr,ns,function(r,a,out){var x=BX*r*Math.cos(a),z=BZ*r*Math.sin(a),q=planar(x,z);setc(out,white);return[x,hump(x,z),z,q[0],q[1]];});var q0=planar(0,0);body.t[first*2]=q0[0];body.t[first*2+1]=q0[1];mark(body,'mottled-dorsum',first);
+    first=body.count();body.polar(high?3:1,ns,function(r,a,out){setc(out,lin(sole));return[BX*r*Math.cos(a),.045*Math.pow(r,4),BZ*r*Math.sin(a),.75,.75];},true);mark(body,'creeping-foot',first);
+    for(var j=0;j<ns;j++)body.seams.push([1+(nr-1)*ns+j,first+1+((high?3:1)-1)*ns+j]);
+    // Two ridged rhinophores near the front. Their sheaths and real lamella
+    // count are not resolved at this size.
+    first=body.count();[-1,1].forEach(function(side){var x=.365,z=side*.058,y=hump(x,z)-.004,pts=[],n=high?7:3;for(var k=0;k<=n;k++){var u=k/n;pts.push([x+.016*u,y+.095*u,z+side*.016*u]);}
+      var at=body.count();body.tube(pts,function(u){return(.0075+.0075*Math.sin(PI*Math.min(1,u*1.1)))*(1+.22*Math.abs(Math.sin(u*PI*(high?9:3))));},high?8:4,function(u){return lin(mixc(mixc(deep,crimson,.5+.5*u,[0,0,0]),scarlet,smooth(.6,1,u)*.6,[0,0,0]));});
+      for(var v=at;v<body.count();v++){body.t[v*2]=.75;body.t[v*2+1]=.75;}rhinophores.push({side:side,first:at,count:body.count()-at,root:[x,y,z],heightM:.095});});mark(body,'paired-rhinophores',first);
+    // Six separate branched gills in a ring around the anus on the rear back.
+    first=body.count();var gx=-.30;for(var g=0;g<6;g++){var ga=g/6*TAU+.26,cx=gx+.082*Math.cos(ga),cz=.082*Math.sin(ga),cy=hump(cx,cz)-.003,ox=Math.cos(ga),oz=Math.sin(ga),at=body.count(),top=[cx+ox*.016,cy+.072,cz+oz*.016],sides=high?5:3;
+      body.tube([[cx,cy,cz],[cx+ox*.006,cy+.022,cz+oz*.006],top],function(u){return .011-.003*u;},sides,function(u){return lin(mixc(crimson,gillRed,u,[0,0,0]));});
+      var branches=high?5:3;for(var b=0;b<branches;b++){var ba=ga+(b/(branches-1)-.5)*1.9,bx=Math.cos(ba),bz=Math.sin(ba),mid=[top[0]+bx*.032,top[1]+.024,top[2]+bz*.032],tip=[top[0]+bx*.060,top[1]+.040+.010*(b%2),top[2]+bz*.060];
+        body.tube([top,mid,tip],function(u){return .0082-.0045*u;},sides,function(u){return lin(mixc(gillRed,gillPale,u,[0,0,0]));});
+        if(high)[-1,1].forEach(function(f){var tw=[mid[0]-bz*f*.022+bx*.012,mid[1]+.022,mid[2]+bx*f*.022+bz*.012];body.tube([mid,tw],function(u){return .0050-.0026*u;},3,function(){return lin(gillPale);});});}
+      for(var v=at;v<body.count();v++){body.t[v*2]=.75;body.t[v*2+1]=.75;}gills.push({index:g,first:at,count:body.count()-at,root:[cx,cy,cz],separate:true,branched:true});}
+    mark(body,'six-separate-gills',first);
+    // The spread mantle skirt: red inside, then a white outer rim. The rim is
+    // its own strip so the white margin never samples the red mottling.
+    function skirtStrip(s0,s1,n,inner){var start=skirt.count();for(var i=0;i<=n;i++){var s=lerp(s0,s1,i/n);for(var k=0;k<ns;k++){var a=k/ns*TAU,ca=Math.cos(a),sa=Math.sin(a),x=lerp(BX*ca,MX*ca,s),z=lerp(BZ*sa,MZ*sa,s),base=.045+.018*s+.055*s*s,y=base+ripple(x,s,a,.064,0),col=inner?[.42+.58*smooth(.02,.34,s),.42+.58*smooth(.02,.34,s),.42+.58*smooth(.02,.34,s)]:lin(mixc(blush,rim,smooth(EDGE,EDGE+.05,s),[0,0,0])),q=inner?planar(x,z):[.75,.75];skirt.v(x,y,z,col,q[0],q[1]);rows.push({a:a,s:s,x:x,base:base});}}
+      for(i=0;i<n;i++)for(k=0;k<ns;k++){var p=start+i*ns+k,p1=start+i*ns+(k+1)%ns;skirt.i.push(p,p1,p+ns,p1,p1+ns,p+ns);}return start;}
+    var inner=skirtStrip(0,EDGE,high?6:3,true),outer=skirtStrip(EDGE,1,high?2:1,false);
+    for(j=0;j<ns;j++)skirt.seams.push([inner+(high?6:3)*ns+j,outer+j]);ranges['spread-mantle']={mesh:'skirt',first:inner,count:outer-inner};ranges['white-mantle-rim']={mesh:'skirt',first:outer,count:skirt.count()-outer};
+    var map=kit.baked(c.key('dancer-mottle'),high?256:128,high?256:128,function(u,v,out){setc(out,white);if(u<.02||u>.48||v<.02||v>.48)return;var x=(u-.02)/.46,z=(v-.02)/.46,n=fbm2(x*7+phase,z*7,3),m=noise2(x*23+phase*3,z*21);
+      setc(out,mixc(crimson,scarlet,smooth(.45,.78,n)*.75,[0,0,0]));mixc(out,deep,smooth(.56,.82,1-n)*.55,out);var sp=cells(x*46,z*46,5,[0,0,0,0,0]);if(sp[2]>.72)mixc(out,blush,(1-smooth(.10,.20,sp[0]))*.9,out);mulc(out,.94+.08*m);},false,false);
+    var bump=kit.baked(c.key('dancer-skin'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.5+.06*(noise2(u*90+phase,v*90)-.5)+.03*(noise2(u*31,v*29)-.5);},false,false,true);
+    scaleGeo(body,L);scaleGeo(skirt,L);var bg=kit.geo(body,1),sg=kit.geo(skirt,1),lift=.105*L;
+    bg.userData.spanishDancer={ranges:ranges,nominalBodyLengthM:.30,scaleM:L,gills:gills,gillCount:6,gillsRetract:false,rhinophores:rhinophores,appearance:'mottled-crimson-white-rim-example'};
+    sg.userData.spanishDancer={ranges:ranges,rows:ns,spreadWidthM:2*MZ*L,maximumRippleM:lift,restRippleM:.064*L};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0008*L,roughness:.46,side:T.DoubleSide});
+    kit.mesh(bg,mat,'body-rhinophores-gills',c.root);kit.mesh(sg,mat,'undulating-mantle-skirt',c.root);
+    sg.boundingBox.expandByScalar(lift);sg.boundingSphere.radius+=lift;
+    // Waves run from head to tail along both sides together. Swimming (a
+    // faster animal) deepens and speeds them; crawling keeps a slow ripple.
+    c.anim(function(t,dt,motion){var e=clamp(effort(motion,L),0,1),out=sg.attributes.position.array;var amp=.064*(1+.8*e),w=.9+2.4*e;
+      for(var i=0;i<rows.length;i++){var r=rows[i];out[i*3+1]=Math.max(.004,r.base+ripple(r.x,r.s,r.a,amp,w*t))*L;}
+      sg.attributes.position.needsUpdate=true;sg.computeVertexNormals();});
+  }
+
+
+  // Stenopus hispidus: an unsexed red-and-white banded example standing on
+  // its walking legs. The enlarged third legs carry the long banded claws;
+  // the long white antennae sweep up and back. The .06 m convention is the
+  // body length, excluding claws and antennae (Animal Diversity Web).
+  function buildBandedCoralShrimp(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(409),L=.06*(.95+.10*rng()),phase=rng()*TAU;
+    var body=new Geo(),reach=new Geo(),ranges={},parts=[],spines=[],white=[1,1,1];
+    var red=hex(0xc8202b),dark=hex(0x8f1420),snow=hex(0xf7f3ee),cream=hex(0xeee4d8),glass=hex(0xe9e2dc),ink=lin(hex(0x15161c));
+    function mark(g,name,first){ranges[name]={mesh:g===body?'body':'reach',first:first,count:g.count()-first};}
+    // Red bands across a white body: middle of the carapace, the third
+    // abdominal segment and the base of the tail. Positions are illustrative.
+    var BANDS=[[.02,.17],[-.255,-.135],[-.445,-.355]];
+    function banded(x,out){var k=0;for(var i=0;i<BANDS.length;i++)k=Math.max(k,smooth(BANDS[i][0]-.012,BANDS[i][0]+.012,x)*(1-smooth(BANDS[i][1]-.012,BANDS[i][1]+.012,x)));return mixc(snow,mixc(red,dark,.18,[0,0,0]),k,out||[0,0,0]);}
+    var carapace=[[.31,.215,.175,.014],[.25,.245,.128,.050],[.15,.258,.110,.068],[.03,.252,.104,.072],[-.06,.240,.110,.066]],
+      abdomen=[[-.05,.246,.112,.063],[-.13,.262,.118,.061],[-.21,.270,.120,.057],[-.28,.252,.116,.049],[-.35,.222,.110,.039],[-.41,.196,.104,.029],[-.455,.180,.100,.021]];
+    var first=body.count();body.loft(carapace,high?18:7,high?16:8,function(u,a,x,y,z,out){banded(x,out);});mark(body,'spiny-carapace',first);
+    first=body.count();body.loft(abdomen,high?24:9,high?16:8,function(u,a,x,y,z,out){banded(x,out);});
+    body.map(first,function(p){var f=fract((p[0]+.455)/(.405/6)),e=Math.min(f,1-f),seam=Math.exp(-Math.pow(e/.13,2));p[1]-=.012*seam*smooth(.15,.24,p[1]);p[2]*=1-.10*seam;p[1]-=.55*Math.pow(Math.max(0,-p[0]-.30),2);});mark(body,'banded-abdomen',first);
+    // Rostrum and the dorsal and side spines that give the species its name.
+    first=body.count();body.tube([[.30,.205,0],[.38,.212,0],[.45,.222,0]],function(u){return .010*(1-u);},high?5:3,function(){return lin(snow);});
+    var spineRows=[[.24,.25,0],[.18,.262,0],[.11,.262,0],[.04,.258,0],[-.03,.248,0],[.20,.20,.058],[.11,.19,.072],[.02,.19,.072],[.20,.20,-.058],[.11,.19,-.072],[.02,.19,-.072],[-.13,.266,0],[-.21,.272,0],[-.10,.20,.062],[-.18,.205,.060],[-.10,.20,-.062],[-.18,.205,-.060]];
+    spineRows.forEach(function(s,i){var d=[.55,s[2]?.35:.83,s[2]?(s[2]>0?1:-1)*.72:0],l=Math.hypot(d[0],d[1],d[2]);d=[d[0]/l,d[1]/l,d[2]/l];var at=body.count();body.spike(s,d,.030,.0065,lin(banded(s[0])),lin(snow));spines.push({first:at,base:s});});mark(body,'rostrum-and-spines',first);
+    first=body.count();[-1,1].forEach(function(side){body.tube([[.27,.215,side*.030],[.31,.235,side*.052]],.010,high?5:3,function(){return lin(cream);});blob(T,body,.318,.240,side*.058,.019,.017,.017,ink,high?10:6,high?6:4);
+      var sc=[],se=[];for(var k=0;k<=3;k++){var u=k/3;sc.push([.29+.02*u,.205,side*(.035+.01*u)]);se.push([.33+.09*u,.208+.012*Math.sin(PI*u),side*(.055+.05*Math.sin(PI*u*.8))]);}body.membrane(sc,se,1,function(u,v,out){setc(out,snow);});});mark(body,'eyes-antennal-scales',first);
+    // Two small pincer legs folded forward, then two walking pairs standing
+    // on fine white tips. Walking contacts all rest on the base plane.
+    first=body.count();[-1,1].forEach(function(side){for(var k=0;k<2;k++){var x=.20-k*.05;body.tube([[x,.115,side*.035],[x+.06,.075,side*(.09+.02*k)],[x+.13,.035,side*(.08+.02*k)]],function(u){return .0065-.0035*u;},high?4:3,function(){return lin(glass);});}
+      for(k=0;k<2;k++){var x=-.02-k*.07,z=side*(.25+.03*k);body.tube([[x,.118,side*.045],[x-.02,.185,side*.15],[x-.035,.10,side*.22],[x-.04,0,z]],function(u){return u>.98?0:.0075-.004*u;},high?4:3,function(u){return lin(mixc(glass,snow,u,[0,0,0]));});}});mark(body,'folded-pincers-walking-legs',first);
+    first=body.count();for(var f=-2;f<=2;f++){var th=f*.30,roots=[],edges=[],n=high?6:3;for(var k=0;k<=n;k++){var u=k/n,a=th+(u-.5)*.30;roots.push([-.45,.178,f*.008]);edges.push([-.45-Math.cos(a)*(.17+.025*Math.sin(PI*u)),.150+.008*Math.sin(PI*u)-.035,Math.sin(a)*.17]);}
+      body.membrane(roots,edges,high?3:2,function(u,v,out){mixc(snow,red,band(v-.48,.26,.06),out);});}mark(body,'banded-tail-fan',first);
+    var baseY=Infinity;for(var y=1;y<body.p.length;y+=3)baseY=Math.min(baseY,body.p[y]);body.map(0,function(p){p[1]-=baseY;});
+    // Reach parts: the two long banded claws and the four white flagella.
+    // Their roots stay seated on the body while the distal ends move.
+    function part(kind,side,pts,radius,sides,col,root){var at=reach.count();root=root||pts[0];reach.tube(pts.map(function(p){return[p[0],p[1]-baseY,p[2]];}),radius,sides,col);parts.push({kind:kind,side:side,first:at,count:reach.count()-at,root:[root[0],root[1]-baseY,root[2]],sides:sides});}
+    function clawBand(u,out){var k=band(u-.17,.07,.02)+band(u-.43,.09,.02)+smooth(.66,.70,u)*(1-smooth(.90,.93,u));return lin(mixc(snow,red,clamp(k,0,1),out||[0,0,0]));}
+    [-1,1].forEach(function(side){var n=high?14:6,pts=[];for(var k=0;k<=n;k++){var u=k/n;pts.push([.12+.66*u,.125+.10*Math.sin(PI*u*.85)-.02*u,side*(.055+.25*Math.sin(PI*Math.min(1,u*1.25)*.5)-.03*u)]);}
+      part('claw',side,pts,function(u){return u>.97?0:u<.55?.016-.004*u:u<.86?.022*(1-.4*Math.pow((u-.55)/.31,2)):.012*(1-(u-.86)/.14);},high?7:4,function(u){return clawBand(u);});
+      // The movable finger closes against the fixed one with a narrow gap.
+      var e=pts[Math.round(n*.84)],tip=pts[n],fin=[[e[0],e[1]+.012,e[2]],[lerp(e[0],tip[0],.5),lerp(e[1],tip[1],.5)+.022,lerp(e[2],tip[2],.5)],[tip[0]-.01,tip[1]+.012,tip[2]]];part('claw',side,fin,function(u){return .010*(1-.8*u);},high?5:3,function(u){return clawBand(.86+.14*u);},pts[0]);});
+    mark(reach,'banded-third-leg-claws',0);var fl=reach.count();
+    [-1,1].forEach(function(side){var n=high?16:6,pts=[];for(var k=0;k<=n;k++){var u=k/n,a=u*2.5;pts.push([.33+.36*Math.sin(a)-.88*u,.24+.30*Math.sin(Math.min(a,PI/2))*(1-.25*u)+.16*u,side*(.04+.72*u)]);}
+      part('antenna',side,pts,function(u){return .0068*(1-u)+.0010;},high?4:3,function(){return lin(snow);});
+      var m=high?8:4,q=[];for(k=0;k<=m;k++){u=k/m;q.push([.35+.20*u,.235+.12*u,side*(.022+.07*u)]);}part('antennule',side,q,function(u){return .0045*(1-u)+.0008;},3,function(){return lin(snow);});});
+    mark(reach,'long-white-antennae',fl);
+    var map=kit.baked(c.key('stenopus-shell'),64,64,function(u,v,out){var n=.93+.07*noise2(u*41+phase,v*37);out[0]=out[1]=out[2]=n;},true,true);
+    var bump=kit.baked(c.key('stenopus-relief'),high?128:64,high?128:64,function(u,v,out){out[0]=out[1]=out[2]=.5+.08*(noise2(u*110+phase,v*95)-.5);},true,true,true);
+    function wrapUV(g){for(var k=0;k<g.count();k++){g.t[k*2]=g.p[k*3]*3+.5;g.t[k*2+1]=Math.atan2(g.p[k*3+2],g.p[k*3+1]-.18)/TAU*2+.5;}}
+    wrapUV(body);wrapUV(reach);scaleGeo(body,L);scaleGeo(reach,L);var bg=kit.geo(body,1),rg=kit.geo(reach,1),wave=.05*L;
+    bg.userData.bandedCoralShrimp={ranges:ranges,nominalBodyLengthM:.06,scaleM:L,appearance:'red-white-banded-unsexed',redBands:BANDS.length,spines:spines.length,walkingPairs:2,foldedPincerPairs:2};
+    rg.userData.bandedCoralShrimp={parts:parts,claws:2,antennae:2,antennules:2,maximumDisplacementM:wave};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0005*L,roughness:.44,side:T.DoubleSide});
+    kit.mesh(bg,mat,'banded-body-legs-tail',c.root);kit.mesh(rg,mat,'banded-claws-white-antennae',c.root);
+    rg.boundingBox.expandByScalar(wave);rg.boundingSphere.radius+=wave;var rest=rg.attributes.position.array.slice();
+    // The antennae wave slowly, as at a cleaning station; the claws sway a
+    // little about their seated roots. Nothing else moves.
+    c.anim(function(t){var out=rg.attributes.position.array;parts.forEach(function(p){var claw=p.kind==='claw',rx=p.root[0]*L,ry=p.root[1]*L,rz=p.root[2]*L,len=claw?.66*L:p.kind==='antenna'?.9*L:.25*L,ph=phase+p.side*1.3+(claw?0:p.kind==='antenna'?2:4);
+      var yaw=claw?.06*Math.sin(t*.45+ph):0,cy=Math.cos(yaw),sy=Math.sin(yaw);
+      for(var j=0;j<p.count;j++){var k=(p.first+j)*3,x=rest[k]-rx,y=rest[k+1]-ry,z=rest[k+2]-rz;if(j<p.sides&&!claw){out[k]=rest[k];out[k+1]=rest[k+1];out[k+2]=rest[k+2];continue;}
+        if(claw){out[k]=rx+x*cy-z*sy;out[k+1]=rest[k+1]+.006*L*Math.sin(t*.6+ph)*Math.min(1,Math.hypot(x,z)/len);out[k+2]=rz+x*sy+z*cy;continue;}
+        var w=Math.pow(Math.min(1,Math.hypot(x,y,z)/len),1.6);out[k]=rest[k]+.012*L*w*Math.sin(t*1.3+ph);out[k+1]=rest[k+1]+.035*L*w*Math.sin(t*.9+ph+w*2);out[k+2]=rest[k+2]+p.side*.030*L*w*Math.sin(t*.7+ph+w*2.5);}});
+      rg.attributes.position.needsUpdate=true;rg.computeVertexNormals();});
+  }
+
+
+  // Culcita novaeguineae: an illustrative tan adult with olive and
+  // red-brown patches (WA Museum: colour variable). The inflated body is
+  // almost pentagonal and its arms barely show; the underside is flat, with
+  // five grooves of tube feet. Juveniles are flatter and more star-shaped.
+  function buildPincushionSeaStar(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(419),L=.25*(.96+.08*rng()),phase=rng()*TAU,angle=rng()*TAU/5;
+    var body=new Geo(),feet=new Geo(),ranges={},footStations=[],white=[1,1,1];
+    var tan=hex(0xc2843f),olive=hex(0x6a7235),rust=hex(0x8e3622),cream=hex(0xecd6aa),pore=hex(0x553522),under=hex(0xe2c9a0),groove=hex(0xa07c5c),foot=hex(0xd9b48c);
+    var H=.30,RIM=.036;
+    function mark(name,first){ranges[name]={first:first,count:body.count()-first};}
+    function outline(a){return .5*(.835+.165*Math.pow(.5+.5*Math.cos((a-angle)*5),1.25));}
+    function topY(r,a){var u=clamp(r/outline(a),0,1),arm=.030*Math.pow(.5+.5*Math.cos((a-angle)*5),2)*Math.sin(PI*Math.pow(u,.8));return RIM+H*Math.pow(Math.max(0,1-Math.pow(u,2.3)),.47)+arm+.006*(noise2(Math.cos(a)*r*9+phase,Math.sin(a)*r*9)-.5)*u;}
+    function channel(r,a){var d=Math.atan2(Math.sin((a-angle)*5),Math.cos((a-angle)*5))/5,side=Math.abs(Math.sin(d)*r);return(1-smooth(.010,.026,side))*smooth(.03,.08,r)*(1-smooth(.44,.49,r));}
+    function bottomY(r,a){var u=clamp(r/outline(a),0,1);return RIM*Math.pow(u,3.2)+.010*channel(r,a)*(1-u);}
+    function planar(x,z){return[.02+.88*clamp((x+.8)/1.6,0,1),.02+.88*clamp((z+.8)/1.6,0,1)];}
+    // Surface distance from the centre, so the pattern keeps its scale down the steep sides.
+    function arcAt(r,a){var d=0,py=topY(0,a),n=10;for(var k=1;k<=n;k++){var rr=r*k/n,y=topY(rr,a);d+=Math.hypot(r/n,y-py);py=y;}return d;}
+    var nr=high?12:6,ns=high?100:50,first=body.count();
+    body.polar(nr,ns,function(u,a,out){var r=outline(a)*u,x=Math.cos(a)*r,z=Math.sin(a)*r,d=arcAt(r,a),q=planar(Math.cos(a)*d,Math.sin(a)*d);setc(out,white);return[x,topY(r,a),z,q[0],q[1]];});var q0=planar(0,0);body.t[0]=q0[0];body.t[1]=q0[1];mark('inflated-aboral-cushion',first);
+    first=body.count();body.polar(high?5:3,ns,function(u,a,out){var r=outline(a)*u,x=Math.cos(a)*r,z=Math.sin(a)*r;setc(out,lin(mixc(under,groove,.8*channel(r,a),[0,0,0])));return[x,bottomY(r,a),z,.95,.95];},true);mark('flat-oral-side-five-grooves',first);
+    for(var i=0;i<ns;i++)body.seams.push([1+(nr-1)*ns+i,first+1+((high?5:3)-1)*ns+i]);
+    first=body.count();body.polar(high?2:1,high?20:10,function(u,a,out){var r=.022*u*(1+.12*Math.cos((a-angle)*5));setc(out,lin(mixc(hex(0x6b4a36),groove,smooth(.4,1,u),[0,0,0])));return[Math.cos(a)*r,.0015,Math.sin(a)*r,.95,.95];},true);mark('central-mouth',first);
+    // Paired tube feet in the five grooves; the low tier keeps alternate stations.
+    var pairs=high?10:5,sides=high?4:3;
+    for(i=0;i<5;i++){var a=angle+i*TAU/5,ca=Math.cos(a),sa=Math.sin(a);for(var j=0;j<pairs;j++){var station=high?j:j*2,r=.07+.36*station/9;[-1,1].forEach(function(side){var across=.010*(1-.3*station/9),x=ca*r-sa*across*side,z=sa*r+ca*across*side,ry=bottomY(Math.hypot(x,z),Math.atan2(z,x))+.001,start=feet.count(),levels=high?[[ry,.0026],[ry*.45,.0024],[.001,.0042]]:[[ry,.0026],[.001,.0042]];
+      for(var row=0;row<levels.length;row++)for(var k=0;k<sides;k++){var b=k/sides*TAU;feet.v(x+Math.cos(b)*levels[row][1],levels[row][0],z+Math.sin(b)*levels[row][1],lin(mixc(foot,cream,row/(levels.length-1)*.5,[0,0,0])),.95,.95);}
+      for(row=0;row<levels.length-1;row++)for(k=0;k<sides;k++){var v=start+row*sides+k,n=start+row*sides+(k+1)%sides;feet.i.push(v,n,v+sides,n,n+sides,v+sides);}var sole=feet.v(x,0,z,lin(foot),.95,.95),last=start+(levels.length-1)*sides;for(k=0;k<sides;k++)feet.i.push(last+k,sole,last+(k+1)%sides);
+      footStations.push({arm:i,station:station,side:side,first:start,count:feet.count()-start,root:[x,ry,z],contact:[x,0,z],probing:station%3===1});});}}
+    // Irregular coloured patches over fine pale granules, with darker
+    // pore fields between them. Patch layout is one example animal.
+    var cellOut=[0,0,0,0,0];
+    function pigment(x,z,out){var n1=fbm2(x*4.6+phase,z*4.6,3),n2=fbm2(x*5.2+11+phase,z*5.2+5,3);
+      // A mosaic of granule-covered plates, each one colour, set in a dark net of pore fields.
+      cells(x*25+phase+.5*noise2(x*5,z*5),z*25+.5*noise2(z*5+3,x*5),3,cellOut);var id=cellOut[2],edge=cellOut[1]-cellOut[0],q0=n1+.10*(id-.5),q1=n2+.10*(id-.5);
+      setc(out,tan);mixc(out,cream,smooth(.50,.70,id)*.55,out);mixc(out,olive,smooth(.50,.56,q0)*.92,out);mixc(out,rust,smooth(.51,.57,q1)*(1-smooth(.50,.56,q0))*.92,out);
+      mixc(out,pore,(1-smooth(.01,.10,edge))*.62,out);mixc(out,cream,(1-smooth(.10,.30,cellOut[0]))*.40,out);mixc(out,cream,smooth(.72,.90,noise2(x*105+phase,z*105))*.30,out);mulc(out,.93+.09*noise2(x*31,z*29));return out;}
+    var map=kit.baked(c.key('culcita-patches'),high?512:256,high?512:256,function(u,v,out){setc(out,white);if(u<.02||u>.90||v<.02||v>.90)return;pigment((u-.02)/.88*1.6-.8,(v-.02)/.88*1.6-.8,out);},false,false);
+    var bump=kit.baked(c.key('culcita-granules'),high?256:128,high?256:128,function(u,v,out){var h=.5;if(u>=.02&&u<=.90&&v>=.02&&v<=.90){var x=(u-.02)/.88*1.6-.8,z=(v-.02)/.88*1.6-.8;cells(x*25+phase+.5*noise2(x*5,z*5),z*25+.5*noise2(z*5+3,x*5),3,cellOut);h=.5+.14*(noise2(x*105+phase,z*105)-.5)-.26*(1-smooth(.01,.10,cellOut[1]-cellOut[0]))+.28*(1-smooth(.04,.36,cellOut[0]));}out[0]=out[1]=out[2]=h;},false,false,true);
+    scaleGeo(body,L);scaleGeo(feet,L);var bg=kit.geo(body,1),fg=kit.geo(feet,1),probe=.003*L;
+    bg.userData.pincushionStar={ranges:ranges,nominalDiameterM:.25,scaleM:L,outline:'rounded-pentagon',heightToWidth:(RIM+H)/1,armsVisible:'barely',oralGrooves:5,appearance:'tan-olive-red-patched-example',armAngle:angle};
+    fg.userData.pincushionStar={feet:footStations,pairsPerGroove:pairs,maximumProbeDisplacementM:probe};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0030*L,roughness:.72,side:T.DoubleSide});
+    kit.mesh(bg,mat,'inflated-cushion-body',c.root);kit.mesh(fg,mat,'oral-tube-feet',c.root);
+    var rest=fg.attributes.position.array.slice();fg.boundingBox.expandByScalar(probe);fg.boundingSphere.radius+=probe;
+    // Quiet probing by a third of the feet; body and root never move.
+    c.anim(function(t){var out=fg.attributes.position.array;footStations.forEach(function(f){if(!f.probing)return;var ph=phase+f.arm*1.7+f.station*.8+f.side*.5,wave=Math.sin(t*.7+ph),up=.0014*(1+Math.sin(t*.55+ph)),ca=Math.cos(angle+f.arm*TAU/5),sa=Math.sin(angle+f.arm*TAU/5);
+      for(var j=0;j<f.count;j++){var at=(f.first+j)*3,w=Math.pow(clamp(1-rest[at+1]/(f.root[1]*L),0,1),2);out[at]=rest[at]+ca*.0012*L*wave*w;out[at+1]=rest[at+1]+up*L*w;out[at+2]=rest[at+2]+sa*.0012*L*wave*w;}});
+      fg.computeVertexNormals();fg.attributes.position.needsUpdate=true;});
+  }
+
+  // Drupella cornus: four illustrative snails clustered on the bare white
+  // feeding scar of a short branching Acropora tip, at the edge of the
+  // living tissue they are eating. Knobbly shells carry spiral rows of
+  // nodules. The .035 m convention is one shell's length.
+  function buildDrupellaSnails(c) {
+    var T=c.T,kit=c.kit,high=c.high,rng=c.rng(431),L=.035*(.96+.08*rng()),phase=rng()*TAU;
+    var g=new Geo(),soft=new Geo(),ranges={},snails=[],white=[1,1,1];
+    var corPale=hex(0xe6d6bc),live=hex(0xa47b55),tipLilac=hex(0xc8b3d6),scar=hex(0xf4f2ea),turf=hex(0x7d7550),shell=hex(0x94856f),shellDark=hex(0x46382c),knobCol=hex(0xe0d5c0),coralline=hex(0xc98c9c),footCol=hex(0xd8cfbf),siphon=hex(0xb5a792);
+    function mark(geo,name,first){ranges[name]={mesh:geo===g?'fixed':'soft',first:first,count:geo.count()-first};}
+    function knob(geo,b,d,len,r,sides,cb,ct){var ax=Math.abs(d[1])<.9?[0,1,0]:[1,0,0],n1=[d[1]*ax[2]-d[2]*ax[1],d[2]*ax[0]-d[0]*ax[2],d[0]*ax[1]-d[1]*ax[0]],l=Math.hypot(n1[0],n1[1],n1[2])||1;n1=[n1[0]/l,n1[1]/l,n1[2]/l];var n2=[d[1]*n1[2]-d[2]*n1[1],d[2]*n1[0]-d[0]*n1[2],d[0]*n1[1]-d[1]*n1[0]],at=geo.count();
+      [[0,1],[.55,.62]].forEach(function(ring){for(var k=0;k<sides;k++){var a=k/sides*TAU,ca=Math.cos(a)*r*ring[1],sa=Math.sin(a)*r*ring[1],h=len*ring[0];geo.v(b[0]+d[0]*h+n1[0]*ca+n2[0]*sa,b[1]+d[1]*h+n1[1]*ca+n2[1]*sa,b[2]+d[2]*h+n1[2]*ca+n2[2]*sa,ring[0]?ct:cb,.75,.75);}});
+      var tip=geo.v(b[0]+d[0]*len,b[1]+d[1]*len,b[2]+d[2]*len,ct,.75,.75);for(var k=0;k<sides;k++){var q=at+k,q1=at+(k+1)%sides;geo.i.push(q,q1,q+sides,q1,q1+sides,q+sides,q+sides,q1+sides,tip);}}
+    // A rounded nodule: a low dome whose sides bulge before closing, so it
+    // reads as a smooth knob on the shell instead of a cut gem.
+    function dome(geo,b,d,len,r,sides,cb,ct){var ax=Math.abs(d[1])<.9?[0,1,0]:[1,0,0],n1=[d[1]*ax[2]-d[2]*ax[1],d[2]*ax[0]-d[0]*ax[2],d[0]*ax[1]-d[1]*ax[0]],l=Math.hypot(n1[0],n1[1],n1[2])||1;n1=[n1[0]/l,n1[1]/l,n1[2]/l];var n2=[d[1]*n1[2]-d[2]*n1[1],d[2]*n1[0]-d[0]*n1[2],d[0]*n1[1]-d[1]*n1[0]],at=geo.count(),rings=[[0,1],[.55,.84],[.88,.44]],cm=[0,0,0];
+      rings.forEach(function(ring,ri){mixc(cb,ct,ri/2,cm);var cc=[cm[0],cm[1],cm[2]];for(var k=0;k<sides;k++){var a=(k+.5*ri)/sides*TAU,ca=Math.cos(a)*r*ring[1],sa=Math.sin(a)*r*ring[1],h=len*ring[0];geo.v(b[0]+d[0]*h+n1[0]*ca+n2[0]*sa,b[1]+d[1]*h+n1[1]*ca+n2[1]*sa,b[2]+d[2]*h+n1[2]*ca+n2[2]*sa,cc,.75,.75);}});
+      var tip=geo.v(b[0]+d[0]*len,b[1]+d[1]*len,b[2]+d[2]*len,ct,.75,.75);for(var ri=0;ri<2;ri++)for(var k=0;k<sides;k++){var q=at+ri*sides+k,q1=at+ri*sides+(k+1)%sides;geo.i.push(q,q1,q+sides,q1,q1+sides,q+sides);}
+      for(k=0;k<sides;k++){var q=at+2*sides+k,q1=at+2*sides+(k+1)%sides;geo.i.push(q,q1,tip);}}
+    // A rising Acropora branch seen side on: at the far end it still has living
+    // brown tissue and side branchlets, nearer the base the snails have grazed it
+    // to a white skeleton (with one bare stub), and the oldest part carries an algal film.
+    var branches=[[[-1.12,.12,0],[-.2,.38,0],[.72,.70,.02]],[[.02,.50,.08],[.15,.78,.18],[.22,1.12,.26]],[[.34,.58,-.06],[.50,.86,-.1],[.55,1.14,-.2]],[[.66,.68,.02],[.84,.78,.05],[1.0,.84,.08]],[[.30,.57,.12],[.48,.74,.28],[.72,.90,.40]],[[-.66,.24,-.04],[-.76,.5,-.08],[-.72,.82,-.14]]],radii=[.25,.125,.12,.13,.11,.12];
+    function along(x,y){return x*.85+y*.52;}
+    function tipFade(x,y,z){var f=0;for(var q=1;q<5;q++){var e=branches[q][2];f=Math.max(f,1-smooth(.06,.34,Math.hypot(x-e[0],y-e[1],z-e[2])));}return f;}
+    function liveEdge(x,z){return .40+.05*Math.sin(z*9+phase)+.04*Math.sin(x*11+z*7);}
+    function tint(x,y,z,out){var e=liveEdge(x,z),al=along(x,y);if(al>e){mixc(live,tipLilac,tipFade(x,y,z),out);mixc(out,hex(0x8d6748),.25*noise2(x*31+phase,y*29),out);return out;}setc(out,scar);if(al<-.62)mixc(out,turf,smooth(-.62,-.92,al)*.85,out);mixc(out,hex(0xd9d6cc),.25*noise2(x*40,y*44+phase),out);return out;}
+    var first=g.count();branches.forEach(function(b,i){var pts=[],n=high?8:4;if(!i)n=high?11:6;if(i===5)n=high?10:5;for(var k=0;k<=n;k++){var u=k/n,A=b[0],B=b[1],C=b[2];pts.push([A[0]+(2*B[0]-2*A[0])*u+(A[0]-2*B[0]+C[0])*u*u,A[1]+(2*B[1]-2*A[1])*u+(A[1]-2*B[1]+C[1])*u*u,A[2]+(2*B[2]-2*A[2])*u+(A[2]-2*B[2]+C[2])*u*u]);}
+      // Living tips end in a rounded dome (two cap rings), not a pencil point.
+      var rEnd=radii[i]*.70,lp=pts[n],pp=pts[n-1],tl=Math.hypot(lp[0]-pp[0],lp[1]-pp[1],lp[2]-pp[2])||1,td=[(lp[0]-pp[0])/tl,(lp[1]-pp[1])/tl,(lp[2]-pp[2])/tl],capA=[.55,1.0,1.32];
+      capA.forEach(function(ca){var e=Math.sin(ca)*rEnd*.8;pts.push([lp[0]+td[0]*e,lp[1]+td[1]*e,lp[2]+td[2]*e]);});
+      g.tube(pts,function(u,ring){if(ring>n)return rEnd*Math.cos(capA[ring-n-1]);var uu=ring/n;return radii[i]*(1-(i?.42:.30)*uu)*(i?1+.3*Math.pow(1-uu,4):1+.3*Math.pow(1-smooth(0,.16,uu),2));},high?10:5,function(){return white;});});
+    // Radial corallites stand out of the living tips only.
+    var cor=high?38:8;for(var k=0;k<cor;k++){var b=branches[k%5],u=.25+.70*((k*.618)%1),A=b[0],B=b[1],C=b[2],p=[A[0]+(2*B[0]-2*A[0])*u+(A[0]-2*B[0]+C[0])*u*u,A[1]+(2*B[1]-2*A[1])*u+(A[1]-2*B[1]+C[1])*u*u,A[2]+(2*B[2]-2*A[2])*u+(A[2]-2*B[2]+C[2])*u*u],ang=k*2.4+phase,r=radii[k%5]*(1-(k%5?.42:.30)*u)*.92;
+      if(along(p[0],p[1])<liveEdge(p[0],p[2])+.05)continue;var d=[Math.cos(ang)*.72,.69,Math.sin(ang)*.72];knob(g,[p[0]+Math.cos(ang)*r*.9,p[1],p[2]+Math.sin(ang)*r*.9],d,.085,.036,high?5:3,white,white);}
+    for(var v=first;v<g.count();v++){var col=tint(g.p[v*3],g.p[v*3+1],g.p[v*3+2],[0,0,0]);if(g.t[v*2]===.75&&col[0]<.9)mixc(col,corPale,.4,col);g.c[v*3]=toLin(col[0]);g.c[v*3+1]=toLin(col[1]);g.c[v*3+2]=toLin(col[2]);}
+    mark(g,'branch-tip-live-tissue-and-scar',first);
+    // Shells: a lathe around each shell's own axis, apex up the axis, with
+    // the aperture and foot pressed to the coral. Nodule rows are cones.
+    var prof=[[0,.05],[.08,.18],[.20,.265],[.34,.285],[.50,.25],[.66,.185],[.84,.09],[1,0]],ROWS=[.20,.33,.46,.59];
+    function shellR(s){for(var i=0;i<prof.length-1;i++)if(s<=prof[i+1][0]){var f=(s-prof[i][0])/(prof[i+1][0]-prof[i][0]);return lerp(prof[i][1],prof[i+1][1],f*f*(3-2*f));}return 0;}
+    // Pink coralline algae crusts part of each shell, thickest up the spire.
+    function crust(a,s,si){return .72*smooth(.56,.66,noise2(Math.cos(a)*2.2+si*5.3,Math.sin(a)*2.2+s*4+phase))*smooth(.1,.3,s);}
+    // Pressed together at the scar's edge on the side the portrait faces. Each entry:
+    // host, place along it, side, sideways slant, lift of the spire, spire direction.
+    var seats=[[0,.30,1.57,.12,.12,-1,.75],[0,.47,1.57,-.1,.12,-1,.32],[0,.59,1.57,.14,.14,-1,.95],[0,.42,-1.57,-.1,.14,-1,1.05]];
+    first=g.count();seats.forEach(function(st,si){var b=branches[st[0]],u=st[1],A=b[0],B=b[1],C=b[2],P=[A[0]+(2*B[0]-2*A[0])*u+(A[0]-2*B[0]+C[0])*u*u,A[1]+(2*B[1]-2*A[1])*u+(A[1]-2*B[1]+C[1])*u*u,A[2]+(2*B[2]-2*A[2])*u+(A[2]-2*B[2]+C[2])*u*u],
+      tx=2*(B[0]-A[0])+2*(A[0]-2*B[0]+C[0])*u,ty=2*(B[1]-A[1])+2*(A[1]-2*B[1]+C[1])*u,tz=2*(B[2]-A[2])+2*(A[2]-2*B[2]+C[2])*u,tl=Math.hypot(tx,ty,tz);tx/=tl;ty/=tl;tz/=tl;
+      var N=[Math.cos(st[2]),st[6],Math.sin(st[2])],dn=N[0]*tx+N[1]*ty+N[2]*tz;N=[N[0]-tx*dn,N[1]-ty*dn,N[2]-tz*dn];var nl=Math.hypot(N[0],N[1],N[2]);N=[N[0]/nl,N[1]/nl,N[2]/nl];
+      var Lt=[ty*N[2]-tz*N[1],tz*N[0]-tx*N[2],tx*N[1]-ty*N[0]],Y=[tx*st[5]+N[0]*st[4]+Lt[0]*st[3],ty*st[5]+N[1]*st[4]+Lt[1]*st[3],tz*st[5]+N[2]*st[4]+Lt[2]*st[3]],yl=Math.hypot(Y[0],Y[1],Y[2]);Y=[Y[0]/yl,Y[1]/yl,Y[2]/yl];var X=[Y[1]*N[2]-Y[2]*N[1],Y[2]*N[0]-Y[0]*N[2],Y[0]*N[1]-Y[1]*N[0]];
+      var rad=radii[st[0]]*(1-.30*u),size=.64+.07*rng(),O=[P[0]+N[0]*(rad+.24*size),P[1]+N[1]*(rad+.24*size),P[2]+N[2]*(rad+.24*size)],spin=rng()*TAU;
+      function W(lx,ly,lz){lx*=size;ly*=size;lz*=size;return[O[0]+X[0]*lx+Y[0]*(ly-.45*size)+N[0]*lz,O[1]+X[1]*lx+Y[1]*(ly-.45*size)+N[1]*lz,O[2]+X[2]*lx+Y[2]*(ly-.45*size)+N[2]*lz];}
+      var na=high?14:8,nl2=high?14:8,at=g.count(),c3=[0,0,0];for(var r=0;r<=nl2;r++){var s=r/nl2,R=shellR(s);for(var k=0;k<na;k++){var a=k/na*TAU,su=fract(s*3.4+a/TAU*.35+spin),dip=1-.20*Math.exp(-Math.pow((su-.5)/.08,2))*smooth(.46,.60,s),flat=1-.30*smooth(.35,1,-Math.sin(a))*smooth(.06,.2,s)*(1-smooth(.5,.7,s)),q=W(Math.cos(a)*R*dip,s,Math.sin(a)*R*dip*flat);
+        var groove=Math.pow(Math.abs(Math.sin(PI*(s-.20)/.13)),2)*smooth(.12,.2,s)*(1-smooth(.62,.7,s));mixc(shell,shellDark,.55*groove+.35*smooth(.6,.85,noise2(a*2+si*7,s*9+phase))+1.6*(1-dip),c3);mixc(c3,coralline,crust(a,s,si),c3);g.v(q[0],q[1],q[2],lin(c3),.75,.75);}}
+      for(r=0;r<nl2;r++)for(k=0;k<na;k++){var p0=at+r*na+k,p1=at+r*na+(k+1)%na;g.i.push(p0,p0+na,p1,p1,p0+na,p1+na);}
+      var apex=W(0,1.005,0),ai=g.v(apex[0],apex[1],apex[2],lin(shellDark),.75,.75),la=at+nl2*na;for(k=0;k<na;k++)g.i.push(la+k,ai,la+(k+1)%na);
+      var nod=[];ROWS.forEach(function(s,row){var count=6;for(var k=0;k<count;k++){var a=(k+row*.5)/count*TAU+spin*.2;if(-Math.sin(a)>.30)continue;var R=shellR(s),base=W(Math.cos(a)*R*.96,s,Math.sin(a)*R*.96),tip=W(Math.cos(a)*(R+(high?.03:.05)),s+.006,Math.sin(a)*(R+(high?.03:.05))),d=[tip[0]-base[0],tip[1]-base[1],tip[2]-base[2]],dl=Math.hypot(d[0],d[1],d[2]);var kc=mixc(shell,knobCol,.48,[0,0,0]);mixc(kc,coralline,crust(a,s,si)*.7,kc);if(high)dome(g,base,[d[0]/dl,d[1]/dl,d[2]/dl],dl,.064,5,lin(mixc(shell,shellDark,.5,[0,0,0])),lin(kc));else g.spike(base,[d[0]/dl,d[1]/dl,d[2]/dl],dl,.05,lin(shell),lin(kc));nod.push(row);}});
+      var fb=W(0,.32,-.16);blob(T,g,fb[0],fb[1],fb[2],.16*size,.09*size,.20*size,lin(footCol),high?8:5,high?5:3);
+      var canal=W(0,-.03,-.02),sb=W(0,.02,-.05),sTip=W(0,-.22,-.12),tL=W(-.09,.10,-.20),tR=W(.09,.10,-.20),tLe=W(-.16,.04,-.30),tRe=W(.16,.04,-.30);
+      var softParts=[];function softTube(kind,pts,radius,sides,col){var at=soft.count();soft.tube(pts,radius,sides,col);softParts.push({kind:kind,first:at,count:soft.count()-at,root:pts[0],sides:sides,length:Math.hypot(pts[pts.length-1][0]-pts[0][0],pts[pts.length-1][1]-pts[0][1],pts[pts.length-1][2]-pts[0][2])});}
+      softTube('siphon',[sb,W(0,-.10,-.09),sTip],function(q){return .040-.018*q;},high?6:3,function(){return lin(siphon);});softTube('tentacle',[tL,tLe],.012,3,function(){return lin(footCol);});softTube('tentacle',[tR,tRe],.012,3,function(){return lin(footCol);});
+      snails.push({index:si,origin:O,axis:Y,normal:N,nodules:nod.length,nodeRows:4,soft:softParts});});
+    mark(g,'four-knobbly-shells',first);ranges['siphons-tentacles']={mesh:'soft',first:0,count:soft.count()};
+    function wrapUV(geo,from){for(var k=from;k<geo.count();k++){if(geo.t[k*2]===.75&&geo.t[k*2+1]===.75)continue;geo.t[k*2]=Math.atan2(geo.p[k*3+2],geo.p[k*3])/TAU*3+.5;geo.t[k*2+1]=geo.p[k*3+1]*2;}}wrapUV(g,0);
+    var map=kit.baked(c.key('drupella-grain'),64,64,function(u,v,out){var n=.90+.10*noise2(u*29+phase,v*31);out[0]=out[1]=out[2]=n;},true,true);
+    var bump=kit.baked(c.key('drupella-relief'),high?128:64,high?128:64,function(u,v,out){var cc=cells(u*18,v*18,6,[0,0,0,0,0]);out[0]=out[1]=out[2]=.5-.12*(1-smooth(.08,.22,cc[0]))+.05*(noise2(u*80,v*80)-.5);},true,true,true);
+    var minY=Infinity;for(k=1;k<g.p.length;k+=3)minY=Math.min(minY,g.p[k]);for(k=1;k<soft.p.length;k+=3)minY=Math.min(minY,soft.p[k]);g.map(0,function(p){p[1]-=minY;});soft.map(0,function(p){p[1]-=minY;});
+    scaleGeo(g,L);scaleGeo(soft,L);var fg=kit.geo(g,1),sg=kit.geo(soft,1),sway=.12*L;
+    fg.userData.drupellaCluster={ranges:ranges,snails:snails.map(function(s){return{index:s.index,nodules:s.nodules,nodeRows:s.nodeRows};}),snailCount:4,nominalShellLengthM:.035,scaleM:L,hostFragment:'branching-acropora-tip',feedingScar:true,appearance:'grey-cream-knobbly-example'};
+    sg.userData.drupellaCluster={snails:snails,maximumDisplacementM:sway};
+    var mat=kit.std({vertexColors:true,map:map,bumpMap:bump,bumpScale:.0012*L,roughness:.62,side:T.DoubleSide});
+    kit.mesh(fg,mat,'coral-tip-and-shells',c.root);kit.mesh(sg,mat,'siphons-tentacles',c.root);
+    var rest=sg.attributes.position.array.slice();sg.boundingBox.expandByScalar(sway);sg.boundingSphere.radius+=sway;
+    // Each snail's siphon sweeps slowly to sample the water; its seated
+    // base and the shells, branch and placement never move.
+    c.anim(function(t){var out=sg.attributes.position.array;snails.forEach(function(s,i){s.soft.forEach(function(part,pi){var ph=phase+i*1.9+pi*.8,rx=part.root[0]*L,ry=(part.root[1]-minY)*L,rz=part.root[2]*L,len=part.length*L,amp=(part.kind==='siphon'?.11:.07)*L;
+      for(var j=part.sides;j<part.count;j++){var k=(part.first+j)*3,w=Math.min(1,Math.hypot(rest[k]-rx,rest[k+1]-ry,rest[k+2]-rz)/len);w*=w;out[k]=rest[k]+amp*w*Math.sin(t*.8+ph);out[k+1]=rest[k+1]+.4*amp*w*Math.sin(t*.6+ph*1.3);out[k+2]=rest[k+2]+amp*w*Math.cos(t*.7+ph);}});});
+      sg.attributes.position.needsUpdate=true;sg.computeVertexNormals();});
+  }
+
   // ---- Registry -----------------------------------------------------------------------------
   function I(group, habit, lengthM, depth, school, origin) { return { group: group, habit: habit, lengthM: lengthM, depthM: depth, schoolSize: school, origin: origin }; }
   var INFO = {
@@ -6797,26 +8040,47 @@
     ,ocellated_eagle_ray: I('fish', 'solitary', 4.2, [0, 60], null, 'centre')
     ,textile_cone: I('invertebrate', 'bottom', 0.09, [0, 50], null, 'base')
     ,orange_cup_coral: I('coral', 'sessile', 0.075, [1, 60], null, 'base')
+    ,bubble_coral: I('coral', 'sessile', 0.25, [0, 40], null, 'base')
+    ,hammer_coral: I('coral', 'sessile', 0.3, [0, 40], null, 'base')
+    ,flowerpot_coral: I('coral', 'sessile', 0.22, [2, 18], null, 'base')
     ,banded_sea_krait: I('reptile', 'solitary', 1.2, [0, 60], null, 'centre')
     ,white_spotted_hermit_crab: I('invertebrate', 'bottom', 0.20, [0, 50], null, 'base')
     ,longfin_bannerfish: I('fish', 'pair', 0.15, [2, 75], null, 'centre')
+    ,blackfin_barracuda: I('fish', 'school', 0.8, [1, 100], [8, 24], 'centre')
+    ,titan_triggerfish: I('fish', 'solitary', 0.6, [1, 50], null, 'centre')
+    ,bluefin_trevally: I('fish', 'solitary', 0.6, [1, 190], null, 'centre')
+    ,blacktip_reef_shark: I('fish', 'solitary', 1.3, [0, 75], null, 'centre')
+    ,dusky_farmerfish: I('fish', 'hover', 0.12, [1, 12], null, 'centre')
     ,bigfin_reef_squid: I('invertebrate', 'hover', 0.40, [0, 100], null, 'centre')
     ,acropora_clathrata: I('coral', 'sessile', 1.15, [5, 40], null, 'base')
     ,acropora_humilis: I('coral', 'sessile', 0.65, [2, 15], null, 'base')
     ,acropora_millepora: I('coral', 'sessile', 0.88, [2, 15], null, 'base')
+    ,fire_coral: I('coral', 'sessile', 0.75, [1, 10], null, 'base')
+    ,blue_coral: I('coral', 'sessile', 0.6, [0, 3], null, 'base')
+    ,pipe_organ_coral: I('coral', 'sessile', 0.42, [3, 15], null, 'base')
+    ,birdsnest_coral: I('coral', 'sessile', 0.35, [1, 20], null, 'base')
     ,goldmouth_sea_squirt: I('invertebrate', 'sessile', 0.12, [3, 20], null, 'base')
     ,feather_duster_worm: I('invertebrate', 'sessile', 0.16, [3, 16], null, 'base')
+    ,drupella_snail: I('invertebrate', 'bottom', 0.035, [0, 30], null, 'base')
+    ,pincushion_sea_star: I('invertebrate', 'bottom', 0.25, [0, 30], null, 'base')
+    ,spanish_dancer: I('invertebrate', 'bottom', 0.30, [1, 50], null, 'base')
+    ,banded_coral_shrimp: I('invertebrate', 'crevice', 0.06, [1, 60], null, 'base')
   };
   var BUILDERS = {
     acropora_clathrata:buildFieldPlateAcropora, acropora_humilis:buildFieldPlateAcropora, acropora_millepora:buildFieldPlateAcropora,
+    fire_coral: buildFireCoral, blue_coral: buildBlueCoral, pipe_organ_coral: buildPipeOrganCoral, birdsnest_coral: buildBirdsnestCoral,
     goldmouth_sea_squirt: buildGoldmouthSeaSquirt,
     feather_duster_worm: buildFeatherDusterWorm,
+    drupella_snail: buildDrupellaSnails, pincushion_sea_star: buildPincushionSeaStar, spanish_dancer: buildSpanishDancer, banded_coral_shrimp: buildBandedCoralShrimp,
     longfin_bannerfish: buildLongfinBannerfish,
     bigfin_reef_squid: buildBigfinReefSquid,
     banded_sea_krait: buildBandedSeaKrait,
     white_spotted_hermit_crab: buildWhiteSpottedHermitCrab,
     textile_cone: buildTextileCone,
     orange_cup_coral: buildOrangeCupCoral,
+    bubble_coral: buildBubbleCoral,
+    hammer_coral: buildHammerCoral,
+    flowerpot_coral: buildFlowerpotCoral,
     blackspotted_puffer: buildBlackspottedPuffer,
     ocellated_eagle_ray: buildOcellatedEagleRay,
     broadclub_cuttlefish: buildBroadclubCuttlefish,
@@ -6878,19 +8142,29 @@
   function V(x, y, z, lookY) { return { dir: [x, y, z], lookY: lookY }; }
   var PORTRAIT = {
     acropora_clathrata:V(1.35,2.2,2.6,.25), acropora_humilis:V(1.3,.95,2.6,.45), acropora_millepora:V(1.3,1.2,2.6,.45),
+    fire_coral: V(1.0, 2.1, 2.5, 0.35), blue_coral: V(1.2, 1.7, 2.6, 0.45), pipe_organ_coral: V(1.1, 1.25, 2.7, 0.3), birdsnest_coral: V(1.25, 1.0, 2.6, 0.4),
     goldmouth_sea_squirt: V(2.0, 1.4, 2.7, 0.65),
     feather_duster_worm: V(0.65, 1.4, 2.7, 0.65),
+    drupella_snail: V(0.45, 0.85, 2.9, 0.5), pincushion_sea_star: V(0.7, 2.3, 2.1, 0.3), spanish_dancer: V(-1.35, 1.45, 2.4, 0.2), banded_coral_shrimp: V(1.5, 0.9, 2.7, 0.3),
     longfin_bannerfish: V(0.25, 0.30, 2.7, 0.24),
+    blackfin_barracuda: V(0.2, 0.28, 2.7, 0),
+    titan_triggerfish: V(0.22, 0.2, 2.7, 0),
+    bluefin_trevally: V(0.2, 0.22, 2.7, 0),
+    blacktip_reef_shark: V(0.3, 0.45, 2.5, 0),
+    dusky_farmerfish: V(0.22, 0.2, 2.7, 0),
     bigfin_reef_squid: V(1.2, 1.4, 2.7, 0),
     banded_sea_krait: V(0.45, 0.8, 2.7, 0),
     white_spotted_hermit_crab: V(1.8, 1.5, -2.7, 0.20),
     textile_cone: V(0.8, 1.1, 2.7, 0.24),
     orange_cup_coral: V(1.3, 1.8, 2.7, 0.36),
+    bubble_coral: V(1.3, 1.4, 2.7, 0.35),
+    hammer_coral: V(1.3, 1.15, 2.7, 0.35),
+    flowerpot_coral: V(1.2, 1.5, 2.7, 0.45),
     blackspotted_puffer: V(1.0, 0.45, 2.7, 0),
-    ocellated_eagle_ray: V(5.5, 1.6, 1.0, 0),
+    ocellated_eagle_ray: V(3.5, 1.75, .55, 0),
     broadclub_cuttlefish: V(2.1, 1.4, 2.7, 0.02),
     varicose_phyllidia: V(0.9, 2.0, 2.7, 0.06),
-    porcelain_anemone_crab: V(2.7, 2.1, 2.2, 0.04),
+    porcelain_anemone_crab: V(2.8, 2.3, .15, 0.04),
     chocolate_chip_sea_star: V(0.7, 2.4, 2.7, 0.28),
     longnose_hawkfish: V(0.8, 0.35, 2.7, 0.12),
     leaf_scorpionfish: V(0.8, 0.35, 2.7, 0.10),
@@ -6905,6 +8179,7 @@
     banggai_cardinalfish: V(0.14, 0.18, 2.7, 0.12),
     giant_triton: V(1.1, 1.0, 2.7, 0.4),
     yellow_longnose_butterflyfish: V(0.12, 0.18, 2.7, 0),
+    bumphead_parrotfish: V(0.5, 0.3, 2.7, 0),
     pajama_cardinalfish: V(0.15, 0.18, 2.7, 0.08),
     banded_pipefish: V(0.12, 0.24, 2.7, 0),
     spotted_garden_eel: V(0.65, 0.12, 2.7, 0.45),
@@ -6913,10 +8188,10 @@
     bluespotted_stingray: V(0.95, 1.65, 1.05, 0), reef_manta: V(2.25, 2.0, 0.85, 0),
     green_turtle: V(1.35, 1.2, 2.45, 0), hawksbill_turtle: V(1.35, 1.2, 2.45, 0),
     giant_clam: V(1.3, 2.0, 2.2, 0.25), crown_of_thorns: V(0.65, 3.0, 1.7, 0), blue_sea_star: V(0.5, 3.1, 1.75, 0),
-    long_spined_urchin: V(0.55, 1.35, 1.05, 0.15), nudibranch: V(0.85, 1.25, 2.25, 0.3), cleaner_shrimp: V(0.7, 0.95, 2.2, 0.35),
-    day_octopus: V(1.2, 1.8, 2.5, 0.05), sea_cucumber: V(0.7, 1.35, 2.45, 0.15), sea_fan: V(2.75, 0.75, 0.35, 0.5),
-    soft_coral: V(1.2, 0.9, 2.4, 0.5), mushroom_coral: V(1.0, 2.3, 2.2, 0.1), table_coral: V(1.4, 1.75, 2.5, 0.25),
-    reef_star: V(1.2, 2.0, 2.6, 0.1), coral_tree_nursery: V(0.75, 0.55, 1.6, 0.5)
+    long_spined_urchin: V(0.7, 1.45, 1.75, 0.15), nudibranch: V(0.85, 1.85, 2.25, 0.3), cleaner_shrimp: V(0.7, 0.95, 2.2, 0.35),
+    day_octopus: V(1.2, 1.5, 2.5, 0.05), christmas_tree_worm: V(-1.6, 1.4, -3.2, 0.05), sea_cucumber: V(0.75, 0.8, 2.75, 0.15), sea_fan: V(2.75, 0.75, 0.35, 0.5),
+    soft_coral: V(1.2, 0.75, 2.6, 0.5), mushroom_coral: V(1.0, 2.3, 2.2, 0.1), table_coral: V(1.5, 0.95, 2.55, 0.25),
+    reef_star: V(1.2, 2.0, 2.6, 0.1), coral_tree_nursery: V(0.8, 0.85, 1.6, 0.5)
   };
   function info(id) {
     var d = INFO[id];

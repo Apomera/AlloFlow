@@ -328,7 +328,12 @@
       }
       var profile = typeof mc.resolveWhisperProfile === 'function' ? mc.resolveWhisperProfile(selectedVoiceLanguageTag()) : null;
       var whisperSupported = !profile || profile.supported !== false;
-      var whisperCheck = typeof mc.hasWhisper === 'function' && whisperSupported ? Promise.resolve(mc.hasWhisper(profile || selectedVoiceLanguageTag())).catch(function () {
+      var voiceForStatus = window.AlloFlowVoice;
+      var anySizeReady = false;
+      try {
+        anySizeReady = !!(voiceForStatus && typeof voiceForStatus.preparedWhisperTier === 'function' && whisperSupported && voiceForStatus.preparedWhisperTier(null, selectedVoiceLanguageTag()));
+      } catch (_) {}
+      var whisperCheck = anySizeReady ? Promise.resolve(true) : typeof mc.hasWhisper === 'function' && whisperSupported ? Promise.resolve(mc.hasWhisper(profile || selectedVoiceLanguageTag())).catch(function () {
         return false;
       }) : Promise.resolve(false);
       var kokoroCheck = typeof mc.hasKokoro === 'function' ? Promise.resolve(mc.hasKokoro()).catch(function () {
@@ -342,11 +347,23 @@
       refreshCachedStatus();
     }
     window.addEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
+    // Speech setup can finish a download while this screen stays open behind it.
+    var stopWatchingModels = function () {};
+    try {
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.subscribeToVoiceProgress === 'function') {
+        stopWatchingModels = window.AlloFlowVoice.subscribeToVoiceProgress(function (progress) {
+          if (progress && progress.phase === 'model-loaded') refreshCachedStatus();
+        });
+      }
+    } catch (_) {}
     refreshCachedStatus();
     return function () {
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
       window.removeEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
+      try {
+        stopWatchingModels();
+      } catch (_) {}
     };
   }, [currentUiLanguage]);
   function updateVoiceSetup(engine, patch, message) {
@@ -1715,7 +1732,16 @@
       lineHeight: 1.5,
       margin: '10px 0 0'
     }
-  }, voiceSetup.message)))), /*#__PURE__*/React.createElement("div", {
+  }, voiceSetup.message), window.__alloSpeechSetupHost === true && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "lp-download-button",
+    style: {
+      marginTop: '8px'
+    },
+    onClick: function () {
+      window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup'));
+    }
+  }, copy('speech_setup.open_launch', 'More speech options and microphone test'))))), /*#__PURE__*/React.createElement("div", {
     className: "lp-launch-footer"
   }, /*#__PURE__*/React.createElement("p", {
     style: {

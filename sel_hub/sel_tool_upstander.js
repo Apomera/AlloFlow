@@ -1082,9 +1082,10 @@ window.SelHub = window.SelHub || {
     self_care:          { id: 'self_care',          label: 'Took Care of Yourself',   icon: '🛟', color: '#2563eb', desc: 'Completed the Right-After sequence' },
     trusted_circle:     { id: 'trusted_circle',     label: 'Built Your Circle',       icon: '👥', color: '#059669', desc: 'Listed 3+ trusted adults' },
     witness_logged:     { id: 'witness_logged',     label: 'Witness Logged',          icon: '📓', color: '#1e3a8a', desc: 'Saved a Witness Log entry' },
-    rehearsed:          { id: 'rehearsed',          label: 'Rehearsed With AI',       icon: '🎤', color: '#7c3aed', desc: 'Got AI feedback on a rehearsal' },
+    rehearsed:          { id: 'rehearsed',          label: 'Rehearsed With AI',       icon: '🎤', color: '#7c3aed', desc: 'Got AI feedback on a rehearsal', aiOnly: true },
     packet_made:        { id: 'packet_made',        label: 'Bridge Builder',          icon: '🖨️', color: '#0e7490', desc: 'Generated a counselor handoff packet' },
-    healed_witness:     { id: 'healed_witness',     label: 'Faced What I Did Not Do', icon: '✨', color: '#9333ea', desc: 'Walked the witness-shame healing path' }
+    healed_witness:     { id: 'healed_witness',     label: 'Faced What I Did Not Do', icon: '✨', color: '#9333ea', desc: 'Walked the witness-shame healing path' },
+    scripted_moves:     { id: 'scripted_moves',     label: 'Practiced the Moves',     icon: '🎬', color: '#6b21a8', desc: 'Finished 3 different scripted practice scenes' }
   };
 
   // ══════════════════════════════════════════════════════════════
@@ -7561,7 +7562,265 @@ var EXTENDED_REFLECTION_PROMPTS = [
     { id: 'erp40', prompt: 'What will you do this lifetime?', depth: 'longview' }
   ];
 
+  // ══════════════════════════════════════════════════════════════
+  // ── Scripted practice (no AI, 2026-11-04 AI-off sweep wave 5) ──
+  // Branching scripts in the shared AdventureOffline story format, played with
+  // AlloModules.AdventureOffline.Player (built-in fallback for older hosts).
+  // Braided (branches rejoin); every ending closes with a short "What worked:"
+  // debrief. English, like the rest of this tool's content. Zero AI calls.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an
+  // ending (its text may be an array of lines).
+  // ══════════════════════════════════════════════════════════════
+  function _upSpScript(title, rows) {
+    var text = function(v) { return Array.isArray(v) ? v.join('\n') : v; };
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: text(r[1]), ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: text(r[1]), ending: true, choices: [] };
+    }) };
+  }
+
+  var UP_SCRIPTS = {
+    bully: _upSpScript('Lunch Table Jokes', [
+      ['start', "At lunch, Tyler leans over and points at Ana, who is sitting alone two tables away. 'Look, she's alone again. Who would even want to sit with her?' A couple of kids laugh, and then they look at you.", [
+        ['Laugh along so you fit in.', 'laugh'],
+        ["Distract: 'Hey, did anyone finish the science homework? I'm stuck on number 4.'", 'distract'],
+        ["Direct, short and calm: 'That's not funny. Leave her alone.'", 'direct']]],
+      ['laugh', "Tyler grins and keeps going. 'Watch, I'll go ask her if she has any friends.' Laughing along can tell someone it's okay to keep going.", [
+        ["Change the subject: 'Wait, Tyler, how did your game go last night?'", 'distract'],
+        ["Say it calmly: 'Nah. Leave her alone.'", 'direct']]],
+      ['distract', "Tyler gets pulled into talking about homework, and the moment passes, at least for now. A distraction can stop things without making anyone the center of attention.", [
+        ["Later, check in with Ana: 'Want company, or would you rather have some space?'", 'checkin'],
+        ['Forget about it. It stopped.', 'later']]],
+      ['direct', "Tyler rolls his eyes. 'Relax, it's a joke.' A couple of kids go quiet. A short, calm 'not okay' is enough. You don't have to argue or win.", [
+        ["Keep it short: 'Still not funny.' Then change the subject.", 'distract'],
+        ["Get into it: 'You're so mean, Tyler! What's wrong with you?'", 'argue']]],
+      ['argue', "Tyler stands up. 'What's your problem?' Now everyone is watching the two of you, and things are heating up. Insults can turn a moment into a bigger fight.", [
+        ["Step back: 'Forget it.' Then go tell the lunch supervisor what's happening.", 'adult'],
+        ['Walk away and go sit near Ana.', 'checkin']]],
+      ['later', "The next day, Tyler's group starts in on Ana again. It didn't stop. It only paused.", [
+        ["Delegate: tell the lunch supervisor what you've seen two days in a row.", 'adult'],
+        ['Ask Ana if she wants company.', 'checkin']]],
+      ['adult', "You tell Mr. Diaz, the lunch supervisor: 'Tyler's group keeps making fun of Ana for sitting alone. It happened yesterday too.' He thanks you and walks over to the table.", [
+        ['Check in with Ana afterward.', 'checkin'],
+        ['Document: write down what you saw and when, in case it keeps happening.', 'document']]],
+      ['document', "You jot it in your notes: what was said, when, and who was there. If it keeps happening, notes help adults see the pattern.", [
+        ['Check in with Ana.', 'checkin'],
+        ['Leave it there for now.', 'end_adult']]],
+      ['checkin', "You walk over. 'Hey, want company, or would you rather have some space?' Ana looks surprised. 'You can sit, I guess.'", [
+        ['Sit down and talk about something normal, like a show you both like.', 'end_ally'],
+        ["'Don't worry about Tyler. You should just stand up for yourself.'", 'end_partial']]],
+      ['end_ally', ["Ana relaxes, and you find out you like the same show. Tomorrow you sit together again.", '', 'What worked:', '• Distract: changing the subject stopped the moment without a showdown.', "• Direct, kept short and calm: 'Not funny. Leave her alone.'", '• Delegate: telling an adult who can do more, with details.', '• Delay: checking in afterward, and asking before you sat down (company with consent).']],
+      ['end_partial', ["Ana shrugs. 'It's fine.' She seems a little more uncomfortable than before.", '', 'What worked:', '• Checking in mattered, and asking before you sat down was respectful.', "• Next time, skip advice like 'stand up for yourself'. It can make the target feel that stopping it is their job. Offer company or help instead.", '• It is never the target\'s fault.']],
+      ['end_adult', ["Mr. Diaz keeps an eye on the lunch table all week, and the comments stop.", '', 'What worked:', '• Delegate: you told an adult, with specifics.', '• Document: notes about when and what show a pattern.', '• Next time, also consider Delay: check in with Ana and ask if she wants company or help.']]
+    ]),
+    target: _upSpScript('After It Happened', [
+      ['start', "Right after lunch, a group made fun of Malik's shoes in front of everyone. Now he's sitting near you in the hallway, eyes down. 'I'm fine. It's whatever. I don't even care.'", [
+        ["'Ha, yeah, that was kind of funny though.'", 'hurt'],
+        ["'What they did wasn't okay. Want company, or some space?'", 'consent'],
+        ["'You should go tell on them right now!'", 'push']]],
+      ['hurt', "Malik's face falls, and he turns away. Even a small joke right after can feel like one more person piling on.", [
+        ["'Sorry, that was a bad joke. What they did wasn't okay.'", 'consent'],
+        ['Shrug and look at your phone.', 'end_missed']]],
+      ['push', "Malik shakes his head. 'No way. That'll make it worse.' Telling someone what to do can feel like more pressure, even when you mean well.", [
+        ["'Okay. You get to decide. Want company for a bit?'", 'consent'],
+        ["'Well, if you don't tell, it's kind of your fault if it keeps happening.'", 'blame']]],
+      ['blame', "Malik goes quiet and stares at the floor. Blaming the target, even by accident, adds to the hurt. It is never their fault.", [
+        ["'Wait, that came out wrong. It's not your fault at all.'", 'consent'],
+        ['Leave it there and walk off.', 'end_missed']]],
+      ['consent', "Malik shrugs. 'You can sit, I guess.' You sit down, not too close.", [
+        ['Just be there. Talk about something normal for a bit.', 'presence'],
+        ["'Tell me everything they said. Who was it?'", 'interrogate']]],
+      ['interrogate', "Malik's shoulders tense. 'I don't want to go over it again.' Asking for every detail can make someone relive it.", [
+        ["'That's fine. We don't have to talk about it.'", 'presence'],
+        ["'Come on, I'm just trying to help.'", 'end_missed']]],
+      ['presence', "After a while, Malik says quietly, 'It's not the first time. They do it almost every day in gym.'", [
+        ["'That sounds really hard. Would you want help telling an adult? I could come with you.'", 'offer'],
+        ["'Just ignore them. They'll get bored.'", 'minimize']]],
+      ['minimize', "Malik sighs. 'I've been ignoring them for weeks.' 'Just ignore it' can make someone feel like they are handling it wrong.", [
+        ["'You're right, sorry. Would you want help telling an adult? I could come with you.'", 'offer'],
+        ["'Well, I don't know what else to tell you.'", 'end_missed']]],
+      ['offer', "Malik thinks. 'Maybe. Could you come with me to Coach Reyes? I don't want to go alone.'", [
+        ['Go with him, and help describe what you saw.', 'end_support'],
+        ["'Want to think about it tonight? I'll check in with you tomorrow.'", 'end_later']]],
+      ['end_support', ["Coach Reyes listens to you both and says she will deal with what's happening in gym. On the way out, Malik says, 'Thanks for not making it weird.'", '', 'What worked:', "• Saying clearly that what happened wasn't okay, and never blaming him.", "• Asking 'company or space?' and respecting his answer.", '• Just being there, without making him retell everything.', '• Delegate: offering to go with him to an adult, while letting him choose.']],
+      ['end_later', ["Malik nods. 'Yeah. Tomorrow.' The next morning you check in, like you said you would.", '', 'What worked:', '• Offering choices instead of pushing.', '• Delay: a check-in later shows someone noticed and cares.', "• If it's happening every day, an adult needs to know. You can also tell a trusted adult yourself what you saw."]],
+      ['end_missed', ["The moment passes, and Malik is still alone with it. That's a common mistake, and support can still happen later.", '', 'What worked:', "• Next time, try: 'That wasn't okay. Want company, or some space?'", '• Never blame the target.', '• You can still check in tomorrow, or tell a trusted adult what you saw.']]
+    ]),
+    bystander: _upSpScript('When a Friend Laughs Along', [
+      ['start', "In the hallway, a group just walked off after teasing Jordan about his voice. Your friend Kayla turns to you, still laughing. 'Oh my gosh, did you SEE that? Why aren't you laughing?'", [
+        ["Force a laugh so it isn't awkward.", 'fakelaugh'],
+        ["'Honestly, that didn't seem funny to me. Jordan looked upset.'", 'name'],
+        ["'You're a terrible person for laughing.'", 'attack']]],
+      ['fakelaugh', "Kayla keeps going. 'I'm going to post a video of him talking.' Your stomach twists. Going along can make the next step feel okay to her.", [
+        ["'Wait, please don't post that. It would really hurt him.'", 'name'],
+        ['Stay quiet and let her post it.', 'posted']]],
+      ['attack', "Kayla's smile drops. 'Wow. So now I'm the bad guy?' She's defensive now. Calling a friend names makes them protect themselves instead of think.", [
+        ["'Sorry, that came out harsh. I just didn't think it was funny. Jordan looked upset.'", 'name'],
+        ["'Yeah, kind of.'", 'defensive']]],
+      ['name', "Kayla shrugs. 'It was just a joke. Everyone laughed.'", [
+        ["'I get it, it's easy to laugh along. But he looked really embarrassed.'", 'calm'],
+        ["'Everyone laughing doesn't make it okay!'", 'defensive']]],
+      ['defensive', "'Why are you making this a thing?' Kayla crosses her arms, annoyed at you now. It's normal for friends to get defensive at first.", [
+        ["Stay calm and specific: 'I'm not mad at you. I just saw Jordan's face, and he looked hurt.'", 'calm'],
+        ["Drop it: 'Fine, whatever.'", 'end_dropped']]],
+      ['posted', "Kayla posts the clip. By lunch it has a lot of laughing comments, and Jordan isn't in the cafeteria. You can still help, even now.", [
+        ["Ask Kayla to take it down: 'Can you delete it? I think it's really hurting him.'", 'calm'],
+        ['Document and delegate: screenshot it, report the post, and tell a trusted adult.', 'report']]],
+      ['calm', "Kayla is quiet for a second. 'I guess he did look kind of upset.' She doesn't look annoyed anymore, just a little uncomfortable.", [
+        ["'Want to check on him with me?'", 'checkin'],
+        ["'So you admit you were being mean.'", 'defensive']]],
+      ['report', "You report the post and show your counselor what happened. The post comes down by the end of the day.", [
+        ['Talk to Kayla, calmly, about why you did it.', 'calm'],
+        ['Check in with Jordan.', 'checkin']]],
+      ['checkin', "You find Jordan by his locker. 'Hey, that wasn't okay earlier. You doing alright?' He shrugs, but he looks relieved that someone noticed.", [
+        ["'Want to sit with us at lunch?'", 'end_repair'],
+        ["'If it keeps happening, I'll go with you to talk to someone.'", 'end_repair']]],
+      ['end_repair', ["Jordan nods. 'Yeah. Thanks.' It doesn't undo what happened, but he knows someone noticed and cared.", '', 'What worked:', "• Direct, but kind: naming what you saw ('he looked upset') instead of attacking your friend.", '• Staying calm and specific when your friend got defensive. Friendships can handle honest moments.', '• Delay: checking on Jordan afterward.', '• If a post spreads harm: ask for it to come down, document and report it, and tell a trusted adult (delegate).']],
+      ['end_dropped', ["The conversation ends. Kayla seems annoyed, and Jordan is still hurt. That's okay. You can come back to it.", '', 'What worked:', '• You noticed it wasn\'t funny, and you said so.', "• Next time, try calm and specific: 'I'm not mad at you. He looked hurt.'", '• You can still check on Jordan, even later.']]
+    ]),
+    exclusion: _upSpScript('The Silent Treatment Plan', [
+      ['start', "In your group chat, your friends agree to ignore Lily starting tomorrow. Someone writes: 'she'll get the hint lol.' Three people react with laughing emojis.", [
+        ['React with a laughing emoji too.', 'goalong'],
+        ["Text the chat: 'idk, that seems kind of harsh. what happened?'", 'question'],
+        ['Leave the chat without saying anything.', 'leave']]],
+      ['goalong', "The next day, everyone turns away when Lily sits down. She looks confused, then eats alone. Going along online can turn into real hurt offline.", [
+        ['Say hi to Lily and ask if she wants company.', 'company'],
+        ["Message one friend privately: 'this feels wrong, right?'", 'ally']]],
+      ['leave', "Leaving keeps you out of it, but the plan still happens, and Lily ends up alone at lunch. Stepping away is okay, and there is still more you can do.", [
+        ['Say hi to Lily and ask if she wants company.', 'company'],
+        ["Message one friend privately: 'this feels wrong, right?'", 'ally']]],
+      ['question', "Someone replies, 'she's just annoying.' Another: 'don't be so serious.' Nobody explains what happened.", [
+        ["Message one friend privately: 'this feels wrong, right?'", 'ally'],
+        ["'You're all being bullies.'", 'blowup']]],
+      ['blowup', "The chat explodes. People get defensive: 'wow ok, then leave.' Now it's about you instead of Lily.", [
+        ['Take a breath, and message one friend privately instead.', 'ally'],
+        ['Document and delegate: take screenshots and show a trusted adult.', 'adult']]],
+      ['ally', "Your friend Dev replies: 'yeah... I didn't want to say anything.' Two people are braver than one.", [
+        ["'Want to sit with Lily tomorrow, together?'", 'company'],
+        ["'Should we tell a counselor? It's turning into a whole plan.'", 'adult']]],
+      ['adult', "You show your counselor the messages. She thanks you and says she will handle it carefully, so it doesn't come back on you.", [
+        ['Also check in with Lily.', 'company'],
+        ['Leave it with the counselor for now.', 'end_adult']]],
+      ['company', "You ask Lily, 'Want company?' She looks relieved. 'Yeah, actually. Everyone's being weird and I don't know why.'", [
+        ["'That sounds really confusing. I'm here. If it keeps up, want help talking to someone?'", 'end_ally'],
+        ['Show her everything the chat said about her.', 'end_partial']]],
+      ['end_ally', ["Lily nods. 'Thanks. Really.' The next day, you and Dev sit with her, and the group plan starts to fall apart.", '', 'What worked:', '• Questioning the plan instead of joining in.', '• Finding an ally privately. Two people are braver than one.', '• Company with consent: asking Lily before sitting down.', '• Document and delegate: screenshots plus a trusted adult can stop a group plan.']],
+      ['end_partial', ["Lily's face falls as she reads. Now she knows why, and the details hurt even more.", '', 'What worked:', '• Being with her mattered.', '• Next time, think about whether details will help her or hurt her. A trusted adult can help with the messages instead.']],
+      ['end_adult', ["The counselor talks with the group, and the plan stops.", '', 'What worked:', '• Document: screenshots of the messages.', '• Delegate: a counselor can address a group plan in ways one student cannot.', "• Next time, also consider checking in with Lily. She may not know why everyone is acting weird."]]
+    ])
+  };
+
+  // Scenario keys with at least one ending reached (scripted practice).
+  function _upSpFinished(done) {
+    var seen = {};
+    Object.keys(done || {}).forEach(function(k) { if (k.indexOf('teacher:') !== 0) seen[k.split(':')[0]] = true; });
+    return Object.keys(seen);
+  }
+
+  // Scripted-practice panel. State lives in this tool's toolData: spId, spRun,
+  // spPath, spEnding, spDone, spDraft, spSaved, spCrisis, spReflections.
+  // o: { h, d, set(patch), id, t, theme, toolId, band, onSafetyFlag, announce,
+  //      onFirst(doneMap) (XP + badges, once per scenario), onBack, reflectPrompt,
+  //      c: { fg, muted, card, line, accent, accentFg, field } }
+  function _upSpPanel(o) {
+    var h = o.h, d = o.d, c = o.c, id = o.id, story = o.story || UP_SCRIPTS[id];
+    if (!story) return null;
+    var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+    var done = (d.spDone && typeof d.spDone === 'object') ? d.spDone : {};
+    var sceneOf = function(sid) { for (var i = 0; i < story.scenes.length; i++) { if (story.scenes[i].id === sid) return story.scenes[i]; } return null; };
+    var say = function(msg) { if (typeof o.announce === 'function') { try { o.announce(msg); } catch (_) {} } };
+    function reach(endId) {
+      var next = Object.assign({}, done);
+      var first = !Object.keys(next).some(function(k) { return k.indexOf(id + ':') === 0; });
+      next[id + ':' + endId] = true;
+      o.set({ spEnding: endId, spDone: next, spSaved: false });
+      if (first && typeof o.onFirst === 'function') o.onFirst(next);
+      say('Ending reached. Read what worked, then reflect.');
+    }
+    // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+    function onPlayerClick(e) {
+      var el = e && e.target && e.target.closest ? e.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+      if (!el) return;
+      var to = el.getAttribute('data-offline-choice');
+      var target = to ? sceneOf(to) : null;
+      if (target && target.ending) reach(to);
+      else if (d.spEnding) o.set({ spEnding: null });
+    }
+    var btn = { minHeight: 44, padding: '8px 14px', borderRadius: 10, border: '1px solid ' + c.line, background: 'transparent', color: c.fg, fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+    var btnPrimary = Object.assign({}, btn, { border: '1px solid ' + (c.accentLine || c.accent), background: c.accent, color: c.accentFg });
+    // Built-in player for an older host without AdventureOffline.
+    function fallbackPlayer() {
+      var path = (Array.isArray(d.spPath) ? d.spPath : []).filter(function(s) { return !!sceneOf(s); });
+      if (!path.length) path = [story.start];
+      var cur = sceneOf(path[path.length - 1]);
+      var go = function(to) { o.set({ spPath: path.concat([to]) }); var sc = sceneOf(to); if (sc && sc.ending) reach(to); };
+      return h('section', { 'data-sp-fallback-player': 'true', 'aria-label': story.title, style: { padding: 16, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('h4', { style: { margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: c.fg } }, cur.ending ? 'The end' : 'Step ' + path.length),
+        h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: c.fg } }, cur.text),
+        !cur.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 12 } },
+          cur.choices.map(function(ch, i) {
+            return h('button', { key: i, type: 'button', 'data-sp-choice': ch.to, onClick: function() { go(ch.to); }, style: Object.assign({}, btn, { textAlign: 'left', fontWeight: 600 }) }, ch.label);
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: path.slice(0, -1), spEnding: null }); }, style: btn }, '← Back'),
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: [story.start], spEnding: null }); }, style: cur.ending ? btnPrimary : btn }, cur.ending ? '↺ Play again' : '↺ Start over')
+        )
+      );
+    }
+    var endCount = story.scenes.filter(function(s) { return s.ending; }).length;
+    var found = Object.keys(done).filter(function(k) { return k.indexOf(id + ':') === 0; }).length;
+    var th = o.theme || {};
+    var player = (AO && typeof AO.Player === 'function')
+      ? h(AO.Player, { key: id + ':' + (d.spRun || 0), story: story, t: o.t, theme: th.isContrast ? 'contrast' : (th.isDark ? 'dark' : 'light') })
+      : fallbackPlayer();
+    var fieldId = 'sp-reflect-' + o.toolId;
+    function saveReflection() {
+      var txt = String(d.spDraft || '').trim();
+      if (!txt) return;
+      // Local safety check only (no AI): a critical match shows crisis resources.
+      var crisis = false;
+      try {
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var r = window.SelHub.safeRehearseCheck(txt, { toolId: o.toolId, onSafetyFlag: o.onSafetyFlag || null });
+          crisis = !!(r && r.action === 'block');
+        }
+      } catch (_) {}
+      var list = (Array.isArray(d.spReflections) ? d.spReflections : []).concat([{ scenarioId: id, ending: d.spEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+      o.set({ spReflections: list, spDraft: '', spSaved: true, spCrisis: crisis || !!d.spCrisis });
+      say(crisis ? 'Reflection saved. Support resources are on this screen.' : 'Reflection saved.');
+    }
+    return h('div', { 'data-sp-panel': id, style: { display: 'grid', gap: 12 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+        h('div', null,
+          h('div', { style: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: c.muted } }, o.kicker || 'Scripted practice · no AI'),
+          h('div', { style: { fontSize: 16, fontWeight: 800, color: c.fg } }, story.title || o.kicker)
+        ),
+        h('button', { type: 'button', 'data-sp-back': 'true', onClick: o.onBack, style: Object.assign({}, btn, { minHeight: 36, fontSize: 12 }) }, '← Choose another')
+      ),
+      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5, color: c.muted } }, 'Choose what you would do. Each choice shows what happens next. There is more than one ending; play again to find the others.'),
+      o.introEl || null,
+      (d.spCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, o.band) : null,
+      h('div', { 'data-sp-player': id, onClick: onPlayerClick }, player),
+      h('p', { style: { margin: 0, fontSize: 12, textAlign: 'center', color: c.muted } }, 'Endings found: ' + found + ' of ' + endCount),
+      d.spEnding ? h('div', { 'data-sp-reflect': id, style: { padding: 14, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 13, fontWeight: 800, color: c.fg, marginBottom: 4 } }, 'Reflect'),
+        h('p', { style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, color: c.muted } }, o.reflectPrompt),
+        h('textarea', { id: fieldId, rows: 3, maxLength: 2000, value: d.spDraft || '',
+          onChange: function(e) { o.set({ spDraft: e.target.value, spSaved: false }); },
+          style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid ' + c.line, background: c.field, color: c.fg, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+          h('button', { type: 'button', 'data-sp-reflect-save': 'true', disabled: !String(d.spDraft || '').trim(), onClick: saveReflection, style: btnPrimary }, 'Save reflection'),
+          d.spSaved ? h('span', { role: 'status', style: { fontSize: 12, color: c.muted } }, 'Saved to your work.') : null
+        )
+      ) : null,
+      (window.SelHub && typeof window.SelHub.renderResourceFooter === 'function') ? window.SelHub.renderResourceFooter(h, o.band) : null
+    );
+  }
+
   window.SelHub.registerTool('upstander', {
+    offlineScripts: UP_SCRIPTS,
     icon: '\uD83E\uDDF1',
     label: 'Upstander Workshop',
     desc: 'Understand bullying from every angle \u2014 target, bystander, and the one doing the hurting \u2014 and find the courage to break the cycle.',
@@ -7581,6 +7840,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var callGemini = ctx.callGemini;
+      var _upAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
@@ -7591,6 +7851,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       };
 
       var activeTab   = d.activeTab || 'roles';
+      if (!_upAiOn && activeTab === 'coach') activeTab = 'roles';
       var soundOn     = d.soundOn != null ? d.soundOn : true;
       var roleIdx     = d.roleIdx || 0;
       var moveIdx     = d.moveIdx || 0;
@@ -7718,11 +7979,17 @@ var EXTENDED_REFLECTION_PROMPTS = [
         { id: 'pledge',   icon: '\u270D\uFE0F', label: 'My Pledge' },
         { id: 'coach',    icon: '\uD83E\uDD16',  label: 'Talk it through' },
         { id: 'reference',icon: '\uD83D\uDCDA',  label: 'Reference' },
-      ];
+      ].filter(function (t) { return _upAiOn || t.id !== 'coach'; });
 
       var exploredTabs = d.exploredTabs || {};
       if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
       var exploredCount = Object.keys(exploredTabs).length;
+
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _upTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var upTs = (_upTsApi && typeof _upTsApi.bind === 'function') ? _upTsApi.bind({ ctx: ctx, h: h, toolId: 'upstander', d: d, set: upd, announce: announceToSR,
+        aiTopic: 'a realistic moment where a student sees someone being treated badly and chooses how to help',
+        aiExtra: 'Choices use upstander moves (distract, delegate, document, delay, direct); scenes show what happens next. If anyone is in danger, getting a trusted adult is always a good choice.' }) : null;
 
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #bfdbfe', background: _upCHC ? '#000000' : (_upCDark ? '#0e1f3a' : 'linear-gradient(180deg, #eff6ff, #dbeafe)'), flexShrink: 0 }
@@ -8020,7 +8287,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           ),
 
           // ── AI Rehearsal — practice what you would actually say ──
-          h('div', { style: { marginTop: 24 } },
+          _upAiOn && h('div', { style: { marginTop: 24 } },
             h('button', {
               onClick: function() { upd('rhShown', !rhShown); if (soundOn) sfxClick(); },
               'aria-expanded': rhShown ? 'true' : 'false',
@@ -8068,10 +8335,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
               }),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', {
-                  disabled: rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini,
+                  disabled: rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn,
                   'aria-busy': rhLoading ? 'true' : 'false',
                   onClick: function() {
-                    if (!rhSituation.trim() || !rhAttempt.trim() || !callGemini) return;
+                    if (!rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) return;
                     // Safety pre-check on combined situation + draft. If
                     // critical-tier content appears, swap the AI feedback
                     // for a coach-style break-character message + surface
@@ -8106,18 +8373,18 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   },
                   style: {
                     padding: '10px 16px',
-                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini) ? _upC('#cbd5e1') : '#7c3aed',
+                    background: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? _upC('#cbd5e1') : '#7c3aed',
                     color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                    cursor: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                    cursor: (rhLoading || !rhSituation.trim() || !rhAttempt.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                     fontSize: 13
                   }
-                }, rhLoading ? 'Thinking…' : (callGemini ? 'Get coach feedback' : 'AI not available')),
+                }, rhLoading ? 'Thinking…' : (_upAiOn ? 'Get coach feedback' : 'AI not available')),
                 rhFeedback && h('button', {
                   onClick: function() { upd({ rhSituation: '', rhAttempt: '', rhFeedback: '' }); },
                   style: { padding: '10px 16px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                 }, 'Try another')
               ),
-              !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
+              !_upAiOn && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                 'AI features need a connection. While offline, try reading your draft out loud.'),
               // Surface 988 / Crisis Text Line block on tier-3 (set by the
               // safety pre-check above the callGemini call in this section).
@@ -8431,7 +8698,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   } }, 'Close repair guide')
                 ),
                 // ── AI Apology Coach (sub-feature inside Repair) ──
-                h('div', { style: { marginTop: 16 } },
+                _upAiOn && h('div', { style: { marginTop: 16 } },
                   h('button', {
                     onClick: function() { upd('apOpen', !apOpen); if (soundOn) sfxClick(); },
                     'aria-expanded': apOpen ? 'true' : 'false',
@@ -8474,10 +8741,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     }),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', {
-                        disabled: apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini,
+                        disabled: apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn,
                         'aria-busy': apLoading ? 'true' : 'false',
                         onClick: function() {
-                          if (!apHurt.trim() || !apDraft.trim() || !callGemini) return;
+                          if (!apHurt.trim() || !apDraft.trim() || !_upAiOn) return;
                           // Safety pre-check. The Apology Coach is high-risk
                           // because students describe harm they caused —
                           // sometimes that opens into something a kid in
@@ -8512,18 +8779,18 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         },
                         style: {
                           padding: '8px 14px',
-                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini) ? _upC('#cbd5e1') : _upC('#dc2626'),
+                          background: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? _upC('#cbd5e1') : _upC('#dc2626'),
                           color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                          cursor: (apLoading || !apHurt.trim() || !apDraft.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                          cursor: (apLoading || !apHurt.trim() || !apDraft.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
-                      }, apLoading ? 'Thinking…' : (callGemini ? 'Get coach feedback' : 'AI not available')),
+                      }, apLoading ? 'Thinking…' : (_upAiOn ? 'Get coach feedback' : 'AI not available')),
                       apFeedback && h('button', {
                         onClick: function() { upd({ apHurt: '', apDraft: '', apFeedback: '' }); },
                         style: { padding: '8px 14px', background: _upC('#fff'), color: _upC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                       }, 'Try another')
                     ),
-                    !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#991b1b') } },
+                    !_upAiOn && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#991b1b') } },
                       'AI features need a connection. While offline: read your draft out loud and listen for any \"but.\"'),
                     // Surface 988 / Crisis Text Line block on tier-3.
                     (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
@@ -9323,7 +9590,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // ── Badge Gallery ──
           (function() {
             var earnedIds = Object.keys(earnedBadges);
-            var allBadgeIds = Object.keys(BADGE_CATALOG).filter(function(id) { return !BADGE_CATALOG[id].retired || earnedBadges[id]; }); // retired badges show only to students who earned them
+            var allBadgeIds = Object.keys(BADGE_CATALOG).filter(function(id) { return (!BADGE_CATALOG[id].retired && (_upAiOn || !BADGE_CATALOG[id].aiOnly)) || earnedBadges[id]; }); // retired badges, and AI-only ones without usable AI, show only if earned
             var earnedCount = earnedIds.length;
             var totalCount = allBadgeIds.length;
             return h('div', { style: { marginTop: 24 } },
@@ -9480,15 +9747,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
             ),
             h('div', { style: { display: 'flex', gap: '8px' } },
               h('input', { type: 'text', 'aria-label': 'Share your experience', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
-                onKeyDown: function(ev) { if (ev.key === 'Enter' && coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
-                disabled: coachLoad || !callGemini,
+                onKeyDown: function(ev) { if (ev.key === 'Enter' && coachInput.trim() && !coachLoad && _upAiOn) sendSafeMessage(coachInput.trim()); },
+                disabled: coachLoad || !_upAiOn,
                 placeholder: coachLoad ? 'Listening...' : 'Share what happened or how you feel...',
                 style: { background: _upC('#fff'), color: _upC('#0f172a'), flex: 1, border: '2px solid #bfdbfe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
                 'aria-label': coachLoad ? 'Upstander coach is responding' : 'Send message to upstander coach',
-                onClick: function() { if (coachInput.trim() && !coachLoad && callGemini) sendSafeMessage(coachInput.trim()); },
-                disabled: coachLoad || !coachInput.trim() || !callGemini,
+                onClick: function() { if (coachInput.trim() && !coachLoad && _upAiOn) sendSafeMessage(coachInput.trim()); },
+                disabled: coachLoad || !coachInput.trim() || !_upAiOn,
                 style: { padding: '10px 16px', background: coachInput.trim() && !coachLoad ? BLUE : _upC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoad ? 'pointer' : 'not-allowed', fontSize: '13px' }
               }, coachLoad ? '\u23F3' : '\uD83E\uDDF1')
             ),
@@ -9616,7 +9883,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // ── Generative Scenarios — AI builds a 4-choice scenario from the
           // student's chosen setting + relationship + harm. Renders in the
           // same 4-choice rated/feedback shape as the hand-crafted ones.
-          h('div', { style: { marginTop: 24 } },
+          _upAiOn && h('div', { style: { marginTop: 24 } },
             h('button', {
               onClick: function() { upd('genShown', !genShown); if (soundOn) sfxClick(); },
               'aria-expanded': genShown ? 'true' : 'false',
@@ -9713,10 +9980,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                 }),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
-                    disabled: genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim()),
+                    disabled: genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim()),
                     'aria-busy': genLoading ? 'true' : 'false',
                     onClick: function() {
-                      if (!callGemini) return;
+                      if (!_upAiOn) return;
                       if (!genSetting && !genRelation && !genHarmType && !genFocus.trim()) return;
                       upd({ genLoading: true, genError: '', genScenario: null, genChoice: null });
                       var bandLabel = band === 'k2' ? 'K-2 (early elementary)' : band === 'g35' ? '3-5 (upper elementary)' : band === 'g68' ? '6-8 (middle school)' : band === 'g912' ? '9-12 (high school)' : 'middle school';
@@ -9771,14 +10038,14 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     },
                     style: {
                       padding: '10px 16px',
-                      background: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upC('#cbd5e1') : '#7c3aed',
+                      background: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? _upC('#cbd5e1') : '#7c3aed',
                       color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                      cursor: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? 'not-allowed' : 'pointer',
+                      cursor: (genLoading || !_upAiOn || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? 'not-allowed' : 'pointer',
                       fontSize: 13
                     }
-                  }, genLoading ? 'Writing scenario…' : (callGemini ? 'Generate scenario' : 'AI not available'))
+                  }, genLoading ? 'Writing scenario…' : (_upAiOn ? 'Generate scenario' : 'AI not available'))
                 ),
-                !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
+                !_upAiOn && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                   'AI features need a connection. Try the 9 hand-written scenarios above while offline.'),
                 genError && h('div', { 'aria-live': 'polite', style: {
                   marginTop: 10, padding: 10, background: _upC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: _upC('#991b1b')
@@ -9846,7 +10113,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   // Carry the setup over as the scene so the AI peer stays in
                   // the same context the student just read. Student still
                   // picks which role to practice.
-                  callGemini && h('button', {
+                  _upAiOn && h('button', {
                     onClick: function() {
                       upd({
                         rpShown: true,
@@ -9877,7 +10144,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
           // ── Generative Role Play — AI plays a peer character in a short
           // multi-turn exchange. Student practices what they would actually say.
           // Strict character guardrails: no slurs, no explicit violence, max ~5 turns.
-          (function renderRolePlay() {
+          _upAiOn && (function renderRolePlay() {
             var rpRoles = {
               bully: {
                 label: 'AI plays someone being cruel (you intervene)',
@@ -9910,7 +10177,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
             function startRolePlay(roleKey) {
               var cfg = rpRoles[roleKey];
               if (!cfg) return;
-              if (!callGemini) {
+              if (!_upAiOn) {
                 upd({ rpRole: roleKey, rpScene: rpScene || cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false });
                 return;
               }
@@ -10024,11 +10291,11 @@ var EXTENDED_REFLECTION_PROMPTS = [
                       return h('button', {
                         key: roleKey,
                         onClick: function() { if (soundOn) sfxClick(); startRolePlay(roleKey); },
-                        disabled: !callGemini || rpStarting,
+                        disabled: !_upAiOn || rpStarting,
                         style: {
                           padding: '12px 14px', textAlign: 'left',
                           background: _upC('#fff'), border: '2px solid #cbd5e1', borderRadius: 10,
-                          fontSize: 14, color: _upC('#0f172a'), cursor: (callGemini && !rpStarting) ? 'pointer' : 'not-allowed',
+                          fontSize: 14, color: _upC('#0f172a'), cursor: (_upAiOn && !rpStarting) ? 'pointer' : 'not-allowed',
                           display: 'flex', alignItems: 'flex-start', gap: 10,
                           opacity: rpStarting ? 0.6 : 1
                         }
@@ -10043,7 +10310,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   ),
                   rpStarting && h('p', { 'aria-live': 'polite', style: { margin: '10px 0 0', fontSize: 12, color: _upC('#6b21a8'), fontStyle: 'italic' } },
                     'Generating a fresh scene…'),
-                  !callGemini && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
+                  !_upAiOn && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: _upC('#6b21a8') } },
                     'AI features need a connection. Try the hand-written scenarios above while offline.')
                 ),
                 // STEP 2: conversation in progress
@@ -10111,10 +10378,10 @@ var EXTENDED_REFLECTION_PROMPTS = [
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       // Send turn → AI responds in character
                       h('button', {
-                        disabled: rpLoading || !rpInput.trim() || !callGemini,
+                        disabled: rpLoading || !rpInput.trim() || !_upAiOn,
                         'aria-busy': rpLoading ? 'true' : 'false',
                         onClick: function() {
-                          if (!callGemini || !rpInput.trim()) return;
+                          if (!_upAiOn || !rpInput.trim()) return;
                           var studentTurn = rpInput.trim();
                           // ── Safety pre-check ──
                           // Critical content (self-harm, harm to others) halts the
@@ -10171,17 +10438,17 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         },
                         style: {
                           padding: '10px 16px',
-                          background: (rpLoading || !rpInput.trim() || !callGemini) ? _upC('#cbd5e1') : '#7c3aed',
+                          background: (rpLoading || !rpInput.trim() || !_upAiOn) ? _upC('#cbd5e1') : '#7c3aed',
                           color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
-                          cursor: (rpLoading || !rpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                          cursor: (rpLoading || !rpInput.trim() || !_upAiOn) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
                       }, rpLoading ? 'Thinking…' : 'Send →'),
                       // Break character → coach
                       h('button', {
-                        disabled: rpLoading || !callGemini || rpHistory.length === 0,
+                        disabled: rpLoading || !_upAiOn || rpHistory.length === 0,
                         onClick: function() {
-                          if (!callGemini) return;
+                          if (!_upAiOn) return;
                           upd({ rpLoading: true });
                           var historyText = rpHistory.map(function(t) {
                             if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
@@ -10198,7 +10465,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                             (rpScene ? 'SCENE: ' + rpScene + '\n' : '') +
                             'CONVERSATION:\n' + historyText;
                           callGemini(prompt, false).then(function(r) {
-                            var coachText = (r || 'Take a breath and notice what just happened. What would you say if it were lower-stakes?').trim();
+                            var coachText = String(r || '').trim(); if (!coachText) throw new Error('empty reply');
                             upd({ rpHistory: rpHistory.concat([{ speaker: 'coach', text: coachText }]), rpLoading: false });
                             if (announceToSR) announceToSR('Coach feedback ready');
                           }).catch(function() {
@@ -10210,15 +10477,15 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         style: {
                           padding: '10px 14px',
                           background: _upC('#fff'), color: _upC('#92400e'), border: '1px solid #fcd34d', borderRadius: 8, fontWeight: 600,
-                          cursor: (rpLoading || !callGemini || rpHistory.length === 0) ? 'not-allowed' : 'pointer',
+                          cursor: (rpLoading || !_upAiOn || rpHistory.length === 0) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
                       }, '🪶 Break character — coach me'),
                       // End and reflect
                       rpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
-                        disabled: rpLoading || !callGemini,
+                        disabled: rpLoading || !_upAiOn,
                         onClick: function() {
-                          if (!callGemini) return;
+                          if (!_upAiOn) return;
                           upd({ rpLoading: true });
                           var historyText = rpHistory.map(function(t) {
                             if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
@@ -10247,7 +10514,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
                         style: {
                           padding: '10px 14px',
                           background: _upC('#fff'), color: _upC('#475569'), border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
-                          cursor: (rpLoading || !callGemini) ? 'not-allowed' : 'pointer',
+                          cursor: (rpLoading || !_upAiOn) ? 'not-allowed' : 'pointer',
                           fontSize: 13
                         }
                       }, 'End & reflect')
@@ -10278,6 +10545,60 @@ var EXTENDED_REFLECTION_PROMPTS = [
                   // the real safety net is a trusted adult, not the AI.
                   rpRole && window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
                 )
+              )
+            );
+          })(),
+
+          // ── Scripted practice (no AI): replaces the hidden AI role-play when AI
+          // is off; a collapsed extra option below it when AI is on.
+          (function renderScriptedPractice() {
+            var spOrder = ['bully', 'target', 'bystander', 'exclusion'];
+            var spOpen = d.spShown != null ? !!d.spShown : (!_upAiOn || !!d.spId);
+            var spActive = d.spId && UP_SCRIPTS[d.spId] ? d.spId : '';
+            function startScript(sid) {
+              upd({ spId: sid, spShown: true, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false });
+              if (announceToSR) announceToSR('Scripted practice started: ' + UP_SCRIPTS[sid].title);
+            }
+            return h('div', { 'data-sp-section': 'true', style: { marginTop: 16 } },
+              h('button', {
+                type: 'button', 'data-sp-toggle': 'true',
+                onClick: function() { upd('spShown', !spOpen); if (soundOn) sfxClick(); },
+                'aria-expanded': spOpen ? 'true' : 'false',
+                style: {
+                  width: '100%', padding: '14px 16px', textAlign: 'left',
+                  border: '2px solid ' + (spOpen ? '#a855f7' : '#d8b4fe'), background: spOpen ? _upC('#faf5ff') : _upC('#fdf4ff'),
+                  borderRadius: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, font: 'inherit', color: 'inherit'
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🎬'),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: _upC('#6b21a8'), marginBottom: 2 } }, _upAiOn ? 'Scripted practice (no AI)' : 'Practice the conversation (scripted)'),
+                  h('div', { style: { fontSize: 12, color: _upC('#475569'), lineHeight: 1.4 } }, 'Choose what you would do at each step and see what happens next. Try the upstander moves: distract, delegate, document, delay, and direct.')
+                ),
+                h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, spOpen ? '▾' : '▸')
+              ),
+              spOpen && h('div', { style: { marginTop: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
+                spActive
+                  ? _upSpPanel({
+                      h: h, d: d, set: upd, id: spActive, t: typeof ctx.t === 'function' ? ctx.t : null, theme: _upCTheme, toolId: 'upstander', band: band,
+                      onSafetyFlag: onSafetyFlag, announce: announceToSR,
+                      onBack: function() { upd({ spId: '', spEnding: null }); },
+                      reflectPrompt: 'Which move changed what happened? Which one could you really use at your school?',
+                      c: { fg: _upC('#0f172a'), muted: _upC('#475569'), card: _upC('#fafafa'), line: _upC('#cbd5e1'), accent: _upCHC ? '#000000' : '#6b21a8', accentLine: _upCHC ? '#ffff00' : '#6b21a8', accentFg: _upCHC ? '#ffff00' : '#ffffff', field: _upC('#fff') },
+                      onFirst: function(done) {
+                        if (typeof awardXP === 'function') awardXP(10, 'Finished a scripted practice scene');
+                        if (_upSpFinished(done).length >= 3) tryAwardBadge('scripted_moves', 15);
+                      }
+                    })
+                  : h('div', { role: 'group', 'aria-label': 'Scripted practice scenes', style: { display: 'grid', gap: 8 } },
+                      spOrder.map(function(sid) {
+                        return h('button', {
+                          key: sid, type: 'button', 'data-sp-start': sid,
+                          onClick: function() { if (soundOn) sfxClick(); startScript(sid); },
+                          style: { padding: '12px 14px', textAlign: 'left', background: _upC('#fff'), border: '2px solid ' + _upC('#cbd5e1'), borderRadius: 10, fontSize: 14, fontWeight: 700, color: _upC('#0f172a'), cursor: 'pointer' }
+                        }, UP_SCRIPTS[sid].title);
+                      })
+                    )
               )
             );
           })()
@@ -10457,8 +10778,32 @@ var EXTENDED_REFLECTION_PROMPTS = [
             h('div', null, _upW_library([].concat(FAMILY_GUIDES_DEEP, FAMILY_INVOLVEMENT_GUIDES), ['audience', 'topic'], 12), _upW_h4('For educators'), _upW_library([].concat(TEACHING_GUIDES_FOR_EDUCATORS, EDUCATOR_TOOLKIT), ['audience', 'role'], 10), _upW_h4('Trauma-informed responses'), _upW_library([].concat(TRAUMA_INFORMED_BULLYING_RESPONSE, TRAUMA_INFORMED_UPSTANDER), ['principle'], 12)), '#22c55e'));
       }
 
+      // Teacher scenes come first on the Practice tab; a scene or the editor takes over the tab.
+      if (activeTab === 'practice' && upTs) {
+        var upTsScene = upTs.byKey(d.spId);
+        if (upTs.editing) pracContent = upTs.renderEditor();
+        else if (upTsScene) pracContent = h('div', { style: { margin: 12, padding: 18, background: _upC('#fff'), border: '1px solid #d8b4fe', borderRadius: 14 } },
+          _upSpPanel({
+            h: h, d: d, set: upd, id: d.spId, t: typeof ctx.t === 'function' ? ctx.t : null, theme: _upCTheme, toolId: 'upstander', band: band,
+            story: upTsScene.story, kicker: upTs.from, introEl: upTs.renderIntro(upTsScene),
+            onSafetyFlag: onSafetyFlag, announce: announceToSR,
+            onBack: function() { upd({ spId: '', spEnding: null }); },
+            reflectPrompt: 'Which move changed what happened? Which one could you really use at your school?',
+            c: { fg: _upC('#0f172a'), muted: _upC('#475569'), card: _upC('#fafafa'), line: _upC('#cbd5e1'), accent: _upCHC ? '#000000' : '#6b21a8', accentLine: _upCHC ? '#ffff00' : '#6b21a8', accentFg: _upCHC ? '#ffff00' : '#ffffff', field: _upC('#fff') },
+            onFirst: function() { if (typeof awardXP === 'function') awardXP(10); }
+          })
+        );
+        else {
+          var upTsSection = upTs.renderSection({ onPlay: function(s) {
+            upd({ spId: s.key, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false });
+            if (soundOn) sfxClick();
+            if (announceToSR) announceToSR('Scripted practice started: ' + (s.title || upTs.from));
+          } });
+          if (upTsSection) pracContent = h('div', null, h('div', { style: { padding: '12px 12px 0' } }, upTsSection), pracContent);
+        }
+      }
       var content = rolesContent || movesContent || pracContent || cycleContent || pledgeContent || coachContent || refContent;
-      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('upstander', h, ctx) : null), tabBar, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
+      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('upstander', h, ctx) : null), tabBar, (upTs && activeTab !== 'practice') ? upTs.renderJump({ onOpen: function() { upd({ activeTab: 'practice', spId: '' }); } }) : null, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
     }
   });
 })();

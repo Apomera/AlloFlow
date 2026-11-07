@@ -3,6 +3,7 @@
 // Computer Algebra System: solver, equation builder, balance scale, AI tutor
 // =============================================
 
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
@@ -1067,6 +1068,8 @@ onSpeak: function(formats) {
         // is assigned further down and `var` hoists the declaration, not the value.
         var TAB_IDS = ['builder', 'practice', 'scale', 'solve', 'tutor'];
         var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'solve';
+        // No usable AI (ctx hands callGemini as null): the tutor tab is hidden, so a saved 'tutor' falls back.
+        if (tab === 'tutor' && !callGemini) tab = 'solve';
         // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
         var expression = typeof d.expression === 'string' ? d.expression : '';
         // All four MODES ids: allow-listing only two made Simplify/Expand dead buttons
@@ -1600,7 +1603,7 @@ onSpeak: function(formats) {
           { id: 'builder', label: t('stem.algebraCAS.tab_equation_builder', 'Equation builder') },
           { id: 'scale', label: t('stem.algebraCAS.tab_balance_equations', 'Balance equations') },
           { id: 'tutor', label: t('stem.algebraCAS.tab_ai_tutor', 'AI tutor') }
-        ];
+        ].filter(function(tb) { return tb.id !== 'tutor' || !!callGemini; });
 
         var tabBar = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '4px', marginBottom: '12px' }, role: 'tablist', 'aria-label': t('stem.algebraCAS.algebra_cas_sections', 'Algebra CAS sections') },
           TABS.map(function(t, tabIndex) {
@@ -1705,13 +1708,13 @@ onSpeak: function(formats) {
             h('div', { style: { marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.problem_type_2', 'Problem Type')),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                PROBLEM_TYPES.map(function(pt) {
-                  // Offline these chips used to do nothing: types with no local items are disabled and explained.
+                PROBLEM_TYPES.filter(function(pt) { return !!callGemini || pt.id === 'random' || !!LOCAL_TYPE_LEVEL[pt.id]; }).map(function(pt) {
+                  // Without usable AI, types with no local items are hidden (filter above).
                   var needsAI = !callGemini && pt.id !== 'random' && !LOCAL_TYPE_LEVEL[pt.id];
                   return h('button', { type: 'button', key: pt.id, disabled: needsAI, 'aria-describedby': needsAI ? 'cas-practice-type-note' : undefined, onClick: function() { updMulti({ practiceType: pt.id, practiceQ: null, practiceFeedback: null }); }, 'aria-pressed': practiceType === pt.id, style: Object.assign({}, btnStyle(practiceType === pt.id), needsAI ? { opacity: 0.55, cursor: 'not-allowed' } : {}) }, pt.label);
                 })
               ),
-              callGemini ? null : h('p', { id: 'cas-practice-type-note', style: { fontSize: 12, color: TEXT, margin: '6px 0 0' } },
+              (callGemini || !ctx.isTeacherMode) ? null : h('p', { id: 'cas-practice-type-note', style: { fontSize: 12, color: TEXT, margin: '6px 0 0' } },
                 t('stem.algebraCAS.practice_types_offline', 'Without an AI provider: Linear, Multi-Step and Fractions use exact local problems (Random uses the difficulty above). Quadratic, Word Problem and Systems need the AI provider.'))
             ),
             !practiceQ ? h('div', { style: { textAlign: 'center', padding: '24px', borderRadius: '12px', background: CARD, border: '1px solid ' + BORDER } },
@@ -2067,7 +2070,7 @@ onSpeak: function(formats) {
               if (small(last.added.x)) added.push((last.added.x > 0 ? t('stem.algebraCAS.tile_added_x', '{n} x-tiles') : t('stem.algebraCAS.tile_added_x_neg', '{n} negative x-tiles')).replace('{n}', String(small(last.added.x))));
               if (small(last.added.one)) added.push((last.added.one > 0 ? t('stem.algebraCAS.tile_added_one', '{n} one-tiles') : t('stem.algebraCAS.tile_added_one_neg', '{n} negative one-tiles')).replace('{n}', String(small(last.added.one))));
               var pl = pairsOn('left').x + pairsOn('left').one, pr = pairsOn('right').x + pairsOn('right').one;
-              opLine = added.length ? t('stem.algebraCAS.tile_addsub_readout', 'Last step: each pan received {added}. A positive and a negative tile of the same kind make a zero pair, worth 0: {left} zero pairs came off the left pan and {right} off the right pan.').replace('{added}', added.join(', ')).replace('{left}', String(pl)).replace('{right}', String(pr)) :
+              opLine = added.length ? __alloOneWord(t('stem.algebraCAS.tile_addsub_readout', 'Last step: each pan received {added}. A positive and a negative tile of the same kind make a zero pair, worth 0: {left} zero pairs came off the left pan and {right} off the right pan.').replace('{added}', added.join(', ')).replace('{left}', String(pl)).replace('{right}', String(pr))) :
                 t('stem.algebraCAS.tile_nothing_added', 'Last step: nothing was added, so the pans did not change.');
             } else if (last && last.kind === 'divide') {
               opLine = (last.whole ? t('stem.algebraCAS.tile_divide_groups', 'Last step: each pan was split into {n} equal groups, and one group was kept.') : t('stem.algebraCAS.tile_divide_any', 'Last step: every tile count on both pans was divided by {n}.')).replace('{n}', String(last.value));

@@ -127,7 +127,7 @@ describe('Art Studio color wheel accessibility', () => {
     await press(canvas, { key: 'End' });
     expect(latest.artStudio.hue).toBe(359);
 
-    expect(announce).toHaveBeenCalledWith('Hue 1 degrees.');
+    expect(announce).toHaveBeenCalledWith('Hue 1 degree.');
     expect(announce).toHaveBeenCalledWith('Hue 11 degrees.');
     expect(canvas.getAttribute('aria-label')).toContain('Hue 359 degrees');
   });

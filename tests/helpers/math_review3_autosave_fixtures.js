@@ -371,11 +371,16 @@ export const MATH_TOOLS = [
     progress: {
       earnedBadges: { firstPoint: true }, dpScore: 4, chartsViewed: { scatter: true, bar: true }, quizTypesUsed: { correlation: true },
     },
-    work: () => ({
-      points: Array.from({ length: 10 }, () => ({ x: P(), y: P() })), xLabel: S('dp-x'), yLabel: S('dp-y'), zScoreInput: S('dp-z'),
+    work: () => {
+      const points = Array.from({ length: 10 }, () => ({ x: P(), y: P() }));
+      const ownPts = {};
+      points.forEach((p) => { ownPts[p.x + ',' + p.y] = 1; });
+      return {
+      points, ownPts, xLabel: S('dp-x'), yLabel: S('dp-y'), zScoreInput: S('dp-z'),
       kernelSQL: S('dp-sql'), dpQuiz: { answer: S('dp-quiz') }, corrInquiry: { hypothesis: S('dp-hyp') }, undoStack: [S('dp-undo')], predX: P(),
       showResiduals: true, dpStreak: P(),
-    }),
+      };
+    },
     // Its quests read the student's own data points and a view toggle.
     questTrue: [], questReset: ['plot_5_points', 'plot_10_points', 'view_residuals'],
   },

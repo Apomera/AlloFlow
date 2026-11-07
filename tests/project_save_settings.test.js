@@ -86,6 +86,8 @@ beforeAll(() => {
   window.React = React;
   window.AlloIcons = new Proxy({}, { get: () => () => null });
   loadAlloModule('phase_k_helpers_module.js');
+  // A student save refuses to run without the real student-boundary helpers.
+  ['firestore_sync_module.js', 'instructional_context_module.js', 'session_transport_module.js', 'live_aac_module.js'].forEach(loadAlloModule);
   loadAlloModule('view_project_settings_module.js');
   PhaseKHelpers = window.AlloModules.PhaseKHelpers;
   ProjectSettingsView = window.AlloModules.ProjectSettingsView;
@@ -161,7 +163,8 @@ describe('project JSON saves', () => {
     const saved = await lastSavedJson();
     expect(saved.mode).toBe('student');
     expect(saved.settings.researchMode).toBe(false);
-    expect(saved.history.map((item) => item.type)).toEqual(['lesson-plan', 'quiz']);
+    // A lesson plan with no recorded learner audience stays teacher-only.
+    expect(saved.history.map((item) => item.type)).toEqual(['quiz']);
     expect(saved.studentProgressSummary.academic.quizAverage).toBe(100);
     expect(saved.studentProgressSummary.overview.completedActivities).toBe(1);
     expect(saved.completedActivities).toEqual([['lesson-1', 100]]);

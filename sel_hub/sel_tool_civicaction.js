@@ -801,6 +801,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
+      var _civAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
@@ -922,7 +923,7 @@ window.SelHub = window.SelHub || {
 
       // ── AI counselor ──
       var askCounselor = function(question) {
-        if (!callGemini) return;
+        if (!_civAiOn) return;
         upd('aiLoading', true);
         var feeling = FEELINGS_MAP.find(function(f) { return f.id === selectedFeeling; });
         var prompt = 'You are a compassionate school counselor helping a ' + (gradeLevel || '5th grade') + ' student. ' +
@@ -941,7 +942,7 @@ window.SelHub = window.SelHub || {
 
       // ── Generate personalized action plan ──
       var generateActionPlan = function() {
-        if (!callGemini) return;
+        if (!_civAiOn) return;
         upd('aiLoading', true);
         var feeling = FEELINGS_MAP.find(function(f) { return f.id === selectedFeeling; });
         var issue = d.issueText || '';
@@ -1149,7 +1150,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // AI counselor
-          d.freeWrite && d.freeWrite.length > 20 && h('button', { 'aria-label': 'Why Does This Matter to Me?',
+          _civAiOn && d.freeWrite && d.freeWrite.length > 20 && h('button', { 'aria-label': 'Why Does This Matter to Me?',
             onClick: function() { askCounselor(d.freeWrite); },
             disabled: aiLoading,
             className: 'w-full px-4 py-2 bg-teal-50 border border-teal-600 rounded-lg text-xs font-bold text-teal-600 hover:bg-teal-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
@@ -1326,10 +1327,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Personalized action plan
-          h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
-            h('h4', { className: 'text-sm font-bold text-teal-700 mb-2 flex items-center gap-2' }, h(Sparkles, { size: 14 }), 'Get a Personalized Action Plan'),
-            d.issueText && h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Based on your concern about: "' + d.issueText + '"'),
-            h('button', { 'aria-label': aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan',
+          (_civAiOn || (actionPlan && actionPlan.steps)) && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-200 p-5' },
+            _civAiOn && h('h4', { className: 'text-sm font-bold text-teal-700 mb-2 flex items-center gap-2' }, h(Sparkles, { size: 14 }), 'Get a Personalized Action Plan'),
+            _civAiOn && d.issueText && h('p', { className: 'text-xs text-slate-600 mb-3' }, 'Based on your concern about: "' + d.issueText + '"'),
+            _civAiOn && h('button', { 'aria-label': aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan',
               onClick: generateActionPlan,
               disabled: aiLoading,
               className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-2'
@@ -2131,7 +2132,7 @@ window.SelHub = window.SelHub || {
                   placeholder: 'Write your response here.',
                   className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
                 }),
-                rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
+                rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && _civAiOn && h('button',{
                   'aria-label': 'Get feedback on your response',
                   onClick: function() {
                     upd('aiLoading', true);
@@ -2231,7 +2232,7 @@ window.SelHub = window.SelHub || {
                       placeholder: 'Write your response here. Think about rights and responsibilities...',
                       className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300 bg-white text-slate-800'
                     }),
-                    rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Get feedback on your response',
+                    rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && _civAiOn && h('button',{ 'aria-label': 'Get feedback on your response',
                       onClick: function() {
                         upd('aiLoading', true);
                         var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';

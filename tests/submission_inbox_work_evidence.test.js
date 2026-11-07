@@ -122,7 +122,7 @@ describe('inbox wiring', () => {
   });
 
   it('renders the evidence inside the expanded row, above the AI rubric section', () => {
-    const evidenceAt = source.indexOf('siWorkEvidence(row.payload)');
+    const evidenceAt = source.indexOf('siWorkEvidence(row.payload');
     const rubricAt = source.indexOf('// Rubric / Grade-with-AI section');
     expect(evidenceAt).toBeGreaterThan(-1);
     expect(rubricAt).toBeGreaterThan(evidenceAt);

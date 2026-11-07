@@ -570,7 +570,7 @@ window.SelHub = window.SelHub || {
     { id: 'collab_expert',     icon: '\uD83C\uDF1F', name: 'Collaboration Expert', desc: 'Complete 3 collaborative challenges' },
     { id: 'all_roles',         icon: '\uD83C\uDFAD', name: 'All Roles Explored',   desc: 'Explore every role in your grade band' },
     { id: 'scenario_pro', retired: true,      icon: '\uD83C\uDFAF', name: 'Scenario Pro',         desc: 'Earlier quiz: answered the teamwork scenarios' },
-    { id: 'ai_coach',          icon: '\u2728',        name: 'AI Team Coach',        desc: 'Get advice from the AI team coach' },
+    { id: 'ai_coach',          icon: '\u2728',        name: 'AI Team Coach',        desc: 'Get advice from the AI team coach', aiOnly: true },
     { id: 'reflective_leader', icon: '\uD83D\uDCDD', name: 'Reflective Leader',    desc: 'Write a team role reflection' },
     { id: 'full_explorer',     icon: '\uD83D\uDE80', name: 'Full Explorer',        desc: 'Visit all 4 tabs' },
     { id: 'teamwork_champion', icon: '\uD83C\uDFC6', name: 'Teamwork Champion',    desc: 'Earn 7 or more badges' },
@@ -1132,6 +1132,7 @@ window.SelHub = window.SelHub || {
         var a11yClick = ctx.a11yClick;
         var celebrate = ctx.celebrate;
         var callGemini = ctx.callGemini;
+        var _teaAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
         var band = ctx.gradeBand || 'elementary';
 
         // ── Tool-scoped state ──
@@ -1200,7 +1201,7 @@ window.SelHub = window.SelHub || {
         // Practice log & badges
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
-        var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
+        var shownBadges = BADGES.filter(function(b) { return (!b.retired && (_teaAiOn || !b.aiOnly)) || earnedBadges[b.id]; }); // retired badges, and AI-only ones without usable AI, show only if earned
         var showBadgePopup = d.showBadgePopup || null;
         // Hand focus back where it came from when the badge dialog closes. Without
         // this the dialog just unmounts and focus falls to the body, dropping a
@@ -1645,10 +1646,10 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: roleReflectionSaved ? _teaBg('#334155') : ACCENT, color: roleReflectionSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                 }, roleReflectionSaved ? '\u2713 Saved' : 'Save Reflection'),
                 // AI Coach button
-                h('button', { 'aria-label': coachLoading ? 'Team coach is responding' : 'Ask team role coach',
+                _teaAiOn && h('button', { 'aria-label': coachLoading ? 'Team coach is responding' : 'Ask team role coach',
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
-                    if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                    if (!_teaAiOn) return;
                     upd('coachLoading', true);
                     upd('coachResponse', null);
                     var selNames = selectedRoles.map(function(rid) {
@@ -1888,7 +1889,7 @@ window.SelHub = window.SelHub || {
                 h('p', null, 'These choices came from the earlier scored quiz. They are historical records, not recommended responses or a measure of teamwork skill. They have not been copied into the new practice.'),
                 earlierTeamChoices.map(function(item) { return h('p', { key: item.id }, h('strong', null, (TEAMWORK_PRACTICE.find(function(current) { return current.id === item.id; }) || item).title + ': '), item.choices[oldScenarioResponses[item.id]].label); }))
             ),
-            h('details', { style: { margin: '16px auto', padding: 16, maxWidth: 760, background: scenarioSurface, color: scenarioInk, border: '1px solid ' + scenarioEdge, borderRadius: 12 } },
+            _teaAiOn && h('details', { style: { margin: '16px auto', padding: 16, maxWidth: 760, background: scenarioSurface, color: scenarioInk, border: '1px solid ' + scenarioEdge, borderRadius: 12 } },
               h('summary', { style: scenarioSummary }, 'Optional AI teamwork coach'),
               h('p', null, 'Use a fictional or non-identifying example if you choose to ask the coach. Select Ask Coach to request a response. Your rehearsal notes are not added to the coach prompt.'),
 // AI Team Coach section
@@ -1906,7 +1907,7 @@ window.SelHub = window.SelHub || {
               h('button', { 'aria-label': coachLoading ? 'Thinking...' : '\u2728 Ask Coach',
                 onClick: function() {
                   if (!coachPrompt.trim()) { addToast('Describe your teamwork challenge first!', 'info'); return; }
-                  if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  if (!_teaAiOn) return;
                   // Safety pre-check on the teamwork-challenge free-text.
                   var cpSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                     ? window.SelHub.safeRehearseCheck(coachPrompt, { toolId: 'teamwork_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })

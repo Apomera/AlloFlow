@@ -688,17 +688,19 @@ export class GlHarness {
     const expectCanvas = opts.expectCanvas !== false;
     await page.goto(`${this.base}/__harness`);
     await page.waitForFunction(
-      (id) => !!(window as any).StemLab?._registry?.[id], this.opts.toolId, { timeout: 30000 });
+      (id) => !!(window as any).StemLab?._registry?.[id], this.opts.toolId, { timeout: 30000, polling: 100 });
     await page.evaluate((d) => (window as any).__mount(d), toolData);
     if (!expectCanvas) { await page.waitForTimeout(900); return; }
     try {
       // ANY visible canvas. waitForSelector('#wrap canvas') judged only the FIRST
       // match, so a tool whose first canvas is a hidden 0x0 helper timed out beside
       // a visible 1275x570 scene (solarSystem rover view, 2026-09-22).
+      // Timer polling: the default polls on requestAnimationFrame, which stepped-clock specs
+      // replace, so a canvas not ready at the first check timed out while plainly on screen.
       await page.waitForFunction(() => [...document.querySelectorAll('#wrap canvas')].some((c) => {
         const b = c.getBoundingClientRect();
         return b.width > 0 && b.height > 0 && getComputedStyle(c).visibility !== 'hidden';
-      }), null, { timeout: 30000 });
+      }), null, { timeout: 30000, polling: 100 });
     } catch (err) {
       // "Timeout exceeded" alone sent the last triage down the wrong path: the
       // canvases existed, they were 0px wide, and the wait is for a VISIBLE one.
@@ -715,9 +717,9 @@ export class GlHarness {
     await page.waitForFunction(() => {
       const h = (window as any).__glCanvas();
       return !!h && !h.gl.isContextLost();
-    }, null, { timeout: 30000 }).catch(() => { /* leave it to the assertions */ });
+    }, null, { timeout: 30000, polling: 100 }).catch(() => { /* leave it to the assertions */ });
     if (readyExpr) {
-      await page.waitForFunction(`(function(){ return !!(${readyExpr}); })()`, null, { timeout: 30000 });
+      await page.waitForFunction(`(function(){ return !!(${readyExpr}); })()`, null, { timeout: 30000, polling: 100 });
     }
     await page.waitForTimeout(700); // let three.js settle a few frames
   }

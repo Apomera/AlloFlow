@@ -107,6 +107,12 @@ describe('multiplication feedback pacing', () => {
     else {
       expect(advanced).not.toHaveBeenCalled();
       expect(app.state().challenge).toMatchObject({ a: 7, b: 8 });
+      // 2026-11-05: a paused Speed Run brings up no new question until Resume.
+      if (pauseAfter) {
+        expect(document.querySelector('[data-mt-next]').disabled).toBe(true);
+        await app.patch(s => ({ ...s, _multTimer: { ...s._multTimer, paused: false } }));
+        expect(advanced).not.toHaveBeenCalled();
+      }
       await click('Next question');
       expect(advanced).toHaveBeenCalledOnce();
     }
@@ -116,7 +122,8 @@ describe('multiplication feedback pacing', () => {
 describe('aligned ratio scaffolds', () => {
   it('aligns known and unknown values without showing the ticket-price answer', () => {
     loadTool('stem_lab/stem_tool_ratios.js', 'ratioLab');
-    document.body.innerHTML = renderTool('ratioLab', { _ratioLab: { mode: 'numberLine' } });
+    // 2026-11-04: the student builds the table the line is drawn from; seed what they typed.
+    document.body.innerHTML = renderTool('ratioLab', { _ratioLab: { mode: 'numberLine', modelBuild: { 'line-tickets': { rows: [['5', '15']], find: '8' } } } });
     const line = document.querySelector('[data-linked-ratio-line="line-tickets"]');
     expect(line).toBeTruthy();
     expect(line.textContent).not.toContain('24');

@@ -14,7 +14,7 @@ const args = Object.fromEntries(process.argv.slice(2).map(a => {
   return [k, v === undefined ? true : v];
 }));
 
-const TARGET_URL = args.url || 'https://prismflow-911fe.web.app';
+const TARGET_URL = args.url || 'https://alloflow-cdn.pages.dev/app/';
 const HEADED = Boolean(args.headed);
 const AXE_CDN = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
 const OUT_JSON = path.resolve('axe_audit_report.json');

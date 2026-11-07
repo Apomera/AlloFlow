@@ -171,7 +171,7 @@ describe('coral reef exploration workflow', () => {
     const t = await mountTool({ section: 'guide' });
     const X = window.__RR_TEST_EXPORTS__.coralReef;
     const total = X.SPECIES_META.length;
-    const pictures = [...t.host.querySelectorAll('img')];
+    const pictures = [...t.host.querySelectorAll('[data-species] img')];
     expect(total).toBeGreaterThan(0);
     expect(pictures).toHaveLength(total);
     expect(pictures.map(picture => picture.closest('[data-species]').getAttribute('data-species')).sort()).toEqual(X.SPECIES_META.map(species => species.id).sort());
@@ -193,13 +193,13 @@ describe('coral reef exploration workflow', () => {
     expect(brokenCard.querySelector('img')).toBeNull();
     expect(brokenCard.querySelector('svg')).toBeTruthy();
     expect(brokenCard.textContent).toContain('Field marks');
-    expect(t.host.querySelectorAll('img')).toHaveLength(total - 1);
+    expect(t.host.querySelectorAll('[data-species] img')).toHaveLength(total - 1);
     expect(renderer).not.toHaveBeenCalled();
     await click(button(t.host, 'Show 3D pictures'));
     expect(renderer).toHaveBeenCalledTimes(1);
     expect(t.host.textContent).not.toContain('Drawing the picture...');
     expect(t.host.textContent.match(/No picture on this device\./g)).toHaveLength(total);
-    expect(t.host.querySelector('img')).toBeNull();
+    expect(t.host.querySelector('[data-species] img')).toBeNull();
   });
 
   it('refreshes a reopened guide when the existing picture job finishes', async () => {
@@ -217,13 +217,13 @@ describe('coral reef exploration workflow', () => {
     };
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,iVBORw0KGgo=');
     const t = await mountTool({ section: 'guide', guidePictures: true });
-    expect(t.host.querySelectorAll('img')).toHaveLength(1);
+    expect(t.host.querySelectorAll('[data-species] img')).toHaveLength(1);
     expect(t.host.textContent).toContain('Drawing the picture...');
     await click(button(t.host, 'Dive and explore'));
     await click(button(t.host, 'Species guide'));
     await act(async () => vi.runAllTimersAsync());
     const total = window.__RR_TEST_EXPORTS__.coralReef.SPECIES_META.length;
-    expect(t.host.querySelectorAll('img')).toHaveLength(total);
+    expect(t.host.querySelectorAll('[data-species] img')).toHaveLength(total);
     expect(t.host.textContent).not.toContain('Drawing the picture...');
     expect(new Set(created).size).toBe(total);
     expect(created).toHaveLength(total);

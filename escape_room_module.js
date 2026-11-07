@@ -564,6 +564,19 @@
     return 'escape-room-' + (hash >>> 0).toString(16);
   };
 
+  // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+  // Learners without usable AI cannot generate a room; saved/embedded rooms still play.
+  function _learnerWithoutAi(isTeacherMode, fn) {
+    var learner = isTeacherMode === false || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+    return learner && !_aiUsable('text', fn);
+  }
+
   function createEscapeRoomEngine(deps) {
     var callGemini = deps.callGemini;
     var addToast = deps.addToast;
@@ -607,6 +620,7 @@
     // ── generateEscapeRoom ──
     var generateEscapeRoom = async function() {
       var state = getState();
+      if (_learnerWithoutAi(state.isTeacherMode, callGemini)) return;
       var inputText = state.inputText;
       var escapeRoomState = state.escapeRoomState;
       if (!inputText || !inputText.trim()) {
@@ -2991,7 +3005,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); },
               className: 'flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors'
             }, t('common.cancel')),
-            h('button', {
+            _learnerWithoutAi(props.isTeacherMode) ? null : h('button', {
               'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,

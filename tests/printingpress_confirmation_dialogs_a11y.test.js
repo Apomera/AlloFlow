@@ -62,6 +62,8 @@ describe('Printing Press confirmation-dialog accessibility', () => {
         },
       });
       const ctx = makeCtx({
+        // Ask the Printer is an AI view: it opens only when the host hands a usable callGemini.
+        callGemini: async () => '',
         toolData,
         update(toolId, key, value) {
           setToolData((previous) => ({

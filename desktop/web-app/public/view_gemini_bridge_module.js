@@ -100,6 +100,53 @@ function _bridgeLangAttrs(language) {
   if (!code) return "";
   return ' lang="' + code + '"' + (/^(ar|he|fa|ps|ur)(-|$)/.test(code) ? ' dir="rtl"' : "");
 }
+function _bridgeStudentDeviceVoice(text, rate, language) {
+  return new Promise(function(resolve) {
+    if (typeof window === "undefined" || window.__alloStudentAiDisabled !== true) {
+      resolve(false);
+      return;
+    }
+    try {
+      if (typeof window.__alloIsGlobalMuted === "function" ? window.__alloIsGlobalMuted() : window._alloGlobalMute) {
+        resolve(false);
+        return;
+      }
+    } catch (e) {
+    }
+    try {
+      if (JSON.parse(window.localStorage.getItem("alloflow_ai_config") || "{}").ttsProvider === "off") {
+        resolve(false);
+        return;
+      }
+    } catch (e) {
+    }
+    var synth = window.speechSynthesis;
+    var phrase = String(text == null ? "" : text).trim();
+    if (!synth || typeof SpeechSynthesisUtterance === "undefined" || !phrase) {
+      resolve(false);
+      return;
+    }
+    try {
+      var u = new SpeechSynthesisUtterance(phrase);
+      u.rate = Math.max(0.5, Math.min(2, Number(rate) > 0 ? Number(rate) : Number(window.__alloPlaybackRate) || 1));
+      if (typeof window.__alloVoiceVolume === "number" && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+      if (BRIDGE_LANG_CODES[language]) u.lang = BRIDGE_LANG_CODES[language];
+      u.onend = function() {
+        resolve(true);
+      };
+      u.onerror = function() {
+        resolve(false);
+      };
+      setTimeout(function() {
+        resolve(false);
+      }, 15e3);
+      synth.cancel();
+      synth.speak(u);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
 var _bridgeActiveRec = null;
 function _bridgeStopListening() {
   if (_bridgeActiveRec) {
@@ -1870,7 +1917,7 @@ function BridgeMessageModal(props) {
                     resolve();
                   });
                 });
-              } else {
+              } else if (!await _bridgeStudentDeviceVoice(cleanText, typeof ttsSpeed !== "undefined" ? ttsSpeed : 1, "English")) {
                 warnLog("Bridge EN: Gemini TTS returned null \u2014 skipping audio (no browser TTS)");
               }
             } catch (e) {
@@ -1933,7 +1980,7 @@ function BridgeMessageModal(props) {
                     resolve();
                   });
                 });
-              } else {
+              } else if (!await _bridgeStudentDeviceVoice(cleanText, typeof ttsSpeed !== "undefined" ? ttsSpeed : 1, bridgeMessage.languageName || bridgeMessage.language)) {
                 warnLog("Bridge Translated: Gemini TTS returned null \u2014 skipping audio (no browser TTS)");
               }
             } catch (e) {

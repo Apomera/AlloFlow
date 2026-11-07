@@ -60,6 +60,14 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-volume-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-volume-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-volume-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"volume\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"volume\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"volume\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"volume\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -909,6 +917,8 @@ window.StemLab = window.StemLab || {
       // `var t = ctx.t` removed 2026-09-21: it was declared and never called. ctx.t drops the English fallback, so the next person to wire this tool would have shipped raw keys. Use the __alloT wrapper instead.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var callGemini = ctx.callGemini;
+      // AI tutor/hints render only when the host says text AI is usable (blocked student fns arrive null).
+      var _aiOn = !!(ctx.aiAvailable !== false && typeof callGemini === 'function');
       var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // ── State via toolData ──
@@ -1970,7 +1980,7 @@ window.StemLab = window.StemLab || {
 
       // ── AI Tutor ──
       function askAI() {
-        if (aiLoading) return;
+        if (aiLoading || !_aiOn) return;
         upd({ showAI: true, aiLoading: true, aiResponse: '' });
         var prompt = 'You are a friendly STEM tutor helping a student understand volume. ';
         if (isDisplacement) {
@@ -3112,7 +3122,7 @@ window.StemLab = window.StemLab || {
               className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
               title: __alloT('stem.volume.view_badges_b', 'View badges (B)')
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', { onClick: askAI,
+            _aiOn && h('button', { onClick: askAI,
               className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
               title: __alloT('stem.volume.ai_tutor', 'AI Tutor (?)')
             }, __alloT('stem.volume.ai', '\uD83E\uDDE0 AI'))
@@ -3197,6 +3207,7 @@ window.StemLab = window.StemLab || {
           }, __alloT('stem.volume.reset_2', '\u21BA Reset')),
           // Paint toggle
           !isDisplacement && h('button', { 'aria-label': __alloT('stem.volume.toggle_paint_p', 'Toggle paint (P)'),
+            'aria-pressed': !!paintSurfaceArea,
             onClick: function() {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
@@ -3235,7 +3246,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── AI Tutor panel ──
-        showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
+        _aiOn && showAI && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-sm font-bold text-purple-800' }, __alloT('stem.volume.ai_volume_tutor', '\uD83E\uDDE0 AI Volume Tutor')),
             h('button', { onClick: function() { upd({ showAI: false }); }, className: 'text-xs text-slate-600 hover:text-slate-600' }, '\u2715')
@@ -4129,7 +4140,7 @@ window.StemLab = window.StemLab || {
               onClick: checkChallenge, disabled: !answer || sliderLocked,
               className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, __alloT('stem.volume.check_3', 'Check')),
-            h('button', { onClick: askAI,
+            _aiOn && h('button', { onClick: askAI,
               className: 'px-3 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: __alloT('stem.volume.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
@@ -4160,7 +4171,7 @@ window.StemLab = window.StemLab || {
                   placeholder: __alloT('stem.volume.v_2', 'V = ?'), className: 'w-28 px-3 py-1.5 border border-indigo-600 rounded-lg text-sm font-mono'
                 })
               : h('span', { className: 'text-xs text-indigo-600' }, __alloT('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
-            h('button', { 'aria-label': __alloT('stem.volume.hint', 'Hint'),
+            _aiOn && h('button', { 'aria-label': __alloT('stem.volume.hint', 'Hint'),
               onClick: askAI,
               className: 'px-3 py-1.5 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: __alloT('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')

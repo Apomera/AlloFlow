@@ -1292,14 +1292,14 @@ window.SelHub = window.SelHub || {
     { id: 'empathy_map_3',    icon: '\uD83E\uDDE0', name: 'Deep Empath',             desc: 'Complete 3 empathy maps' },
     { id: 'hidden_3',         icon: '\uD83D\uDD0D', name: 'Feelings Detective',      desc: 'Correctly identify 3 hidden feelings' },
     { id: 'hidden_perfect',   icon: '\uD83C\uDFAF', name: 'Master Detective',        desc: 'Get 5 hidden feelings right in a row' },
-    { id: 'ai_coach',         icon: '\u2728',        name: 'Perspective Seeker',      desc: 'Use the AI perspective coach' },
+    { id: 'ai_coach',         icon: '\u2728',        name: 'Perspective Seeker',      desc: 'Use the AI perspective coach', aiOnly: true },
     { id: 'total_10',         icon: '\uD83C\uDFC6', name: 'Theory of Mind',           desc: 'Complete 10 activities across all tabs' },
     { id: 'streak_3',         icon: '\uD83D\uDD25', name: 'Practice Streak',          desc: 'Practice 3 days in a row' },
     { id: 'journal_1',        icon: '\uD83D\uDCD4', name: 'Reflective Writer',       desc: 'Complete your first journal reflection' },
     { id: 'journal_3',        icon: '\u270D\uFE0F',  name: 'Deep Thinker',            desc: 'Complete 3 journal reflections' },
-    { id: 'respond_1',        icon: '\u2705',        name: 'Action Taker',            desc: 'Complete your first "What Would You Do?"' },
-    { id: 'respond_5',        icon: '\uD83E\uDDD7', name: 'Moral Compass',           desc: 'Complete 5 "What Would You Do?" responses' },
-    { id: 'respond_empathy',  icon: '\uD83D\uDC9C', name: 'Empathy in Action',       desc: 'Score high empathy on a response' },
+    { id: 'respond_1',        icon: '\u2705',        name: 'Action Taker',            desc: 'Complete your first "What Would You Do?"', aiOnly: true },
+    { id: 'respond_5',        icon: '\uD83E\uDDD7', name: 'Moral Compass',           desc: 'Complete 5 "What Would You Do?" responses', aiOnly: true },
+    { id: 'respond_empathy',  icon: '\uD83D\uDC9C', name: 'Empathy in Action',       desc: 'Score high empathy on a response', aiOnly: true },
     { id: 'story_explorer',   icon: '\uD83D\uDCD6', name: 'Story Explorer',          desc: 'Read 3 empathy stories from multiple perspectives' },
     { id: 'empathy_builder',  icon: '\uD83E\uDDF1', name: 'Empathy Builder',         desc: 'Complete 3 perspective-taking exercises' },
     { id: 'bias_spotter',     icon: '\uD83D\uDCA1', name: 'Bias Spotter',            desc: 'Explore 5 cognitive biases' },
@@ -1342,6 +1342,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _psAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand || 'elementary';
 
       // ── Tool-scoped state ──
@@ -1353,6 +1354,8 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab     = d.activeTab || 'cases';
+      // Without usable AI the AI-scored tabs are not offered.
+      if (!_psAiOn && (activeTab === 'coach' || activeTab === 'respond')) activeTab = 'cases';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Scenario state
@@ -1438,6 +1441,8 @@ window.SelHub = window.SelHub || {
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _psAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup = d.showBadgePopup || null;
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -1526,7 +1531,7 @@ window.SelHub = window.SelHub || {
         { id: 'respond',   label: '\u270D\uFE0F What Would You Do?' },
         { id: 'coach',     label: '\u2728 AI Coach' },
         { id: 'progress',  label: '\uD83D\uDCCA Progress' }
-      ];
+      ].filter(function (tb) { return _psAiOn || (tb.id !== 'coach' && tb.id !== 'respond'); });
 
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -1551,10 +1556,10 @@ window.SelHub = window.SelHub || {
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _pspFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? ACCENT_DIM : 'transparent', color: _pspFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
       // ── Topic-accent hero band per tab ──
@@ -1646,9 +1651,9 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-              BADGES.map(function(badge) {
+              shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _pspBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? ACCENT : _pspBg('#334155')) }
@@ -2150,7 +2155,7 @@ window.SelHub = window.SelHub || {
             h('button', { 
               onClick: function() {
                 if (!aiPrompt.trim()) { addToast('Describe a situation first!', 'info'); return; }
-                if (!callGemini) { addToast('AI coach is not available right now.', 'error'); return; }
+                if (!_psAiOn) return;
                 // Safety pre-check: student free-text describing a "social situation."
                 var pSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                   ? window.SelHub.safeRehearseCheck(aiPrompt, { toolId: 'perspective', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
@@ -2252,11 +2257,11 @@ window.SelHub = window.SelHub || {
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
             // Get AI feedback
-            h('button', { 'aria-label': 'Get AI feedback',
+            _psAiOn && h('button', { 'aria-label': 'Get AI feedback',
               onClick: function() {
                 var text = journalText.trim();
                 if (text.split(/\s+/).length < 10) { addToast('Write a bit more first — at least a few sentences!', 'info'); return; }
-                if (!callGemini) { addToast('AI feedback is not available right now.', 'error'); return; }
+                if (!_psAiOn) return;
                 // Safety pre-check on the reflective journal free-write.
                 var jSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                   ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
@@ -2390,7 +2395,7 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 var text = respondText.trim();
                 if (text.split(/\s+/).length < 8) { addToast('Write a bit more about what you\'d do and why!', 'info'); return; }
-                if (!callGemini) { addToast('AI evaluation is not available right now.', 'error'); return; }
+                if (!_psAiOn) return;
                 // Safety pre-check on response free-text.
                 var rSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
                   ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_respond', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })

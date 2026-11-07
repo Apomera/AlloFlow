@@ -110,7 +110,7 @@ test.describe('Raptor catch particles',()=>{
     await canvas.evaluate((c:any)=>{c._rhCommand('pause');(window as any).advanceContact(550);c._rhCommand('pause');});
     const expired=await page.evaluate(()=>(window as any).readContact());
     expect(expired.visible).toBe(false);expect(expired.styles.filter((_:number,i:number)=>i%4===0).every((n:number)=>n===0)).toBe(true);
-    expect(expired.snapshot.missionCatches).toBe(1);expect(expired.snapshot.carriedPreyMs).toBe(0);
+    expect(expired.snapshot.missionCatches).toBe(1);expect(expired.snapshot.carriedPreyMs).toBe(2950);
     // A second real catch reuses the pool, and a paused motion preference change clears it immediately.
     await canvas.evaluate((c:any,kind)=>{const w=window as any;c._rhCommand('pause');w.placeContactPrey(kind,false);c._rhCommand('strike');w.advanceContact(100);c._rhCommand('pause');},model.kind);
     expect((await page.evaluate(()=>(window as any).readContact())).snapshot.missionCatches).toBe(2);

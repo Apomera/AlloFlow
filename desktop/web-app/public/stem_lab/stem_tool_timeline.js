@@ -41,6 +41,18 @@
     return cdnUrl;
   }
   var TIMELINE_STUDIO_URL = companionUrl('timeline_studio/timeline_studio.html?v=1', TIMELINE_STUDIO_CDN_URL);
+  // Bridge trust: only the pop-up this tool opened, at the companion's own origin,
+  // may drive the bridge. Opaque origins (file://) report "null", which postMessage
+  // rejects as a target, so those fall back to '*' and rely on the source check.
+  var TIMELINE_STUDIO_ORIGIN = (function () {
+    try { var o = new URL(TIMELINE_STUDIO_URL, (window.location && window.location.href) || undefined).origin; return (o && o !== 'null') ? o : '*'; } catch (_) { return '*'; }
+  })();
+  var _timelinePopup = null; // module scope: a still-open pop-up keeps working after a remount
+  function _timelineBridgeTrusted(ev, win) {
+    var src = ev && ev.source;
+    if (!src || (src !== win && src !== _timelinePopup)) return false;
+    return TIMELINE_STUDIO_ORIGIN === '*' || ev.origin === TIMELINE_STUDIO_ORIGIN;
+  }
 
   function buildTimelinePrompt(sourceText, grade) {
     return [
@@ -120,7 +132,7 @@
         var popup = _win.current;
         if (!popup || popup.closed) return;
         var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
-        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, TIMELINE_STUDIO_ORIGIN); } catch (_) {}
       }, [ctx.theme]);
       var _data = React.useRef(null);   // current TimelineJS object held for the popup
       var _srcState = React.useState('');
@@ -144,7 +156,7 @@
       function sendData() {
         var w = _win.current;
         if (w && !w.closed && _data.current) {
-          try { w.postMessage({ type: 'allotimeline-data', timeline: _data.current }, '*'); } catch (_) {}
+          try { w.postMessage({ type: 'allotimeline-data', timeline: _data.current }, TIMELINE_STUDIO_ORIGIN); } catch (_) {}
         }
       }
 
@@ -153,9 +165,10 @@
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
+          if (!_timelineBridgeTrusted(ev, _win.current)) return;
           if (data.type === 'allotimeline-hello') {
             var replyTo = ev.source || _win.current;
-            try { if (replyTo && _data.current) replyTo.postMessage({ type: 'allotimeline-data', timeline: _data.current }, '*'); } catch (_) {}
+            try { if (replyTo && _data.current) replyTo.postMessage({ type: 'allotimeline-data', timeline: _data.current }, TIMELINE_STUDIO_ORIGIN); } catch (_) {}
             setStatus('open');
             return;
           }
@@ -177,6 +190,7 @@
           return null;
         }
         _win.current = w;
+        _timelinePopup = w;
         bumpSlice('openedCount');
         if (announceToSR) announceToSR(t('stem.timeline.opened_sr', 'Opened Timeline Studio in a new window.'));
         return w;

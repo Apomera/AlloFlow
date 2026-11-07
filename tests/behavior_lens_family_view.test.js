@@ -11,7 +11,7 @@
 // - The Overview kept its staff buttons (edit, supports, reports), showed observer names
 //   and staff notes, and opened in the staff's saved document layout with their review notes.
 // - Family tools sent the AI the staff notes, known triggers and accommodations.
-import { beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -65,7 +65,7 @@ beforeEach(() => {
   localStorage.clear(); sessionStorage.clear(); delete window.__alloFirebase; prompts = []; toasts = [];
   localStorage.setItem('bl_student_roster', JSON.stringify([{ id: 'fv-a', name: 'Student A' }, { id: 'fv-b', name: 'Student B' }, { id: 'fv-c', name: 'Student C' }]));
 });
-afterEach(unmount);
+afterEach(async () => { vi.useRealTimers(); await unmount(); });
 
 describe('the role belongs to the person at the device', () => {
   it('switching student keeps the view it was in', async () => {
@@ -118,6 +118,8 @@ describe('Family view shows one student', () => {
 
 describe('All tools in Family view', () => {
   it('leaves out the staff profile, AI output, staff alerts and staff links', async () => {
+    // The staff alert only fires for recent entries. Without this date the test stopped before its Family view check once the fixture aged out.
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 8, 23, 12) });
     seed('fv-a', 'Student A', RICH);
     await mount(); await click('All tools');
     const staffOnly = () => [

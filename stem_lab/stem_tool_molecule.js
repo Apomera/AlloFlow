@@ -1202,7 +1202,12 @@ window.StemLab = window.StemLab || {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so the Chemistry Tutor hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -1899,127 +1904,127 @@ window.StemLab = window.StemLab || {
 
           const ELEMENTS = [
 
-            { n: 1, s: 'H', name: t('stem.periodic.hydrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: t('stem.periodic.helium'), cat: 'noble', c: '#c084fc' },
+            { n: 1, s: 'H', name: t('stem.periodic.hydrogen', 'Hydrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: t('stem.periodic.helium', 'Helium'), cat: 'noble', c: '#c084fc' },
 
-            { n: 3, s: 'Li', name: t('stem.periodic.lithium'), cat: 'alkali', c: '#f87171' }, { n: 4, s: 'Be', name: t('stem.periodic.beryllium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 3, s: 'Li', name: t('stem.periodic.lithium', 'Lithium'), cat: 'alkali', c: '#f87171' }, { n: 4, s: 'Be', name: t('stem.periodic.beryllium', 'Beryllium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 5, s: 'B', name: t('stem.periodic.boron'), cat: 'metalloid', c: '#34d399' }, { n: 6, s: 'C', name: t('stem.periodic.carbon'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 5, s: 'B', name: t('stem.periodic.boron', 'Boron'), cat: 'metalloid', c: '#34d399' }, { n: 6, s: 'C', name: t('stem.periodic.carbon', 'Carbon'), cat: 'nonmetal', c: '#60a5fa' },
 
-            { n: 7, s: 'N', name: t('stem.periodic.nitrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 8, s: 'O', name: t('stem.periodic.oxygen'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 7, s: 'N', name: t('stem.periodic.nitrogen', 'Nitrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 8, s: 'O', name: t('stem.periodic.oxygen', 'Oxygen'), cat: 'nonmetal', c: '#60a5fa' },
 
-            { n: 9, s: 'F', name: t('stem.periodic.fluorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 10, s: 'Ne', name: t('stem.periodic.neon'), cat: 'noble', c: '#c084fc' },
+            { n: 9, s: 'F', name: t('stem.periodic.fluorine', 'Fluorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 10, s: 'Ne', name: t('stem.periodic.neon', 'Neon'), cat: 'noble', c: '#c084fc' },
 
-            { n: 11, s: 'Na', name: t('stem.periodic.sodium'), cat: 'alkali', c: '#f87171' }, { n: 12, s: 'Mg', name: t('stem.periodic.magnesium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 11, s: 'Na', name: t('stem.periodic.sodium', 'Sodium'), cat: 'alkali', c: '#f87171' }, { n: 12, s: 'Mg', name: t('stem.periodic.magnesium', 'Magnesium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 13, s: 'Al', name: t('stem.periodic.aluminum'), cat: 'metal', c: '#94a3b8' }, { n: 14, s: 'Si', name: t('stem.periodic.silicon'), cat: 'metalloid', c: '#34d399' },
+            { n: 13, s: 'Al', name: t('stem.periodic.aluminum', 'Aluminum'), cat: 'metal', c: '#94a3b8' }, { n: 14, s: 'Si', name: t('stem.periodic.silicon', 'Silicon'), cat: 'metalloid', c: '#34d399' },
 
-            { n: 15, s: 'P', name: t('stem.periodic.phosphorus'), cat: 'nonmetal', c: '#60a5fa' }, { n: 16, s: 'S', name: t('stem.periodic.sulfur'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 15, s: 'P', name: t('stem.periodic.phosphorus', 'Phosphorus'), cat: 'nonmetal', c: '#60a5fa' }, { n: 16, s: 'S', name: t('stem.periodic.sulfur', 'Sulfur'), cat: 'nonmetal', c: '#60a5fa' },
 
-            { n: 17, s: 'Cl', name: t('stem.periodic.chlorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 18, s: 'Ar', name: t('stem.periodic.argon'), cat: 'noble', c: '#c084fc' },
+            { n: 17, s: 'Cl', name: t('stem.periodic.chlorine', 'Chlorine'), cat: 'halogen', c: '#2dd4bf' }, { n: 18, s: 'Ar', name: t('stem.periodic.argon', 'Argon'), cat: 'noble', c: '#c084fc' },
 
-            { n: 19, s: 'K', name: t('stem.periodic.potassium'), cat: 'alkali', c: '#f87171' }, { n: 20, s: 'Ca', name: t('stem.periodic.calcium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 19, s: 'K', name: t('stem.periodic.potassium', 'Potassium'), cat: 'alkali', c: '#f87171' }, { n: 20, s: 'Ca', name: t('stem.periodic.calcium', 'Calcium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 21, s: 'Sc', name: t('stem.periodic.scandium'), cat: 'transition', c: '#fb923c' }, { n: 22, s: 'Ti', name: t('stem.periodic.titanium'), cat: 'transition', c: '#fb923c' },
+            { n: 21, s: 'Sc', name: t('stem.periodic.scandium', 'Scandium'), cat: 'transition', c: '#fb923c' }, { n: 22, s: 'Ti', name: t('stem.periodic.titanium', 'Titanium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 23, s: 'V', name: t('stem.periodic.vanadium'), cat: 'transition', c: '#fb923c' }, { n: 24, s: 'Cr', name: t('stem.periodic.chromium'), cat: 'transition', c: '#fb923c' },
+            { n: 23, s: 'V', name: t('stem.periodic.vanadium', 'Vanadium'), cat: 'transition', c: '#fb923c' }, { n: 24, s: 'Cr', name: t('stem.periodic.chromium', 'Chromium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 25, s: 'Mn', name: t('stem.periodic.manganese'), cat: 'transition', c: '#fb923c' }, { n: 26, s: 'Fe', name: t('stem.periodic.iron'), cat: 'transition', c: '#fb923c' },
+            { n: 25, s: 'Mn', name: t('stem.periodic.manganese', 'Manganese'), cat: 'transition', c: '#fb923c' }, { n: 26, s: 'Fe', name: t('stem.periodic.iron', 'Iron'), cat: 'transition', c: '#fb923c' },
 
-            { n: 27, s: 'Co', name: t('stem.periodic.cobalt'), cat: 'transition', c: '#fb923c' }, { n: 28, s: 'Ni', name: t('stem.periodic.nickel'), cat: 'transition', c: '#fb923c' },
+            { n: 27, s: 'Co', name: t('stem.periodic.cobalt', 'Cobalt'), cat: 'transition', c: '#fb923c' }, { n: 28, s: 'Ni', name: t('stem.periodic.nickel', 'Nickel'), cat: 'transition', c: '#fb923c' },
 
-            { n: 29, s: 'Cu', name: t('stem.periodic.copper'), cat: 'transition', c: '#fb923c' }, { n: 30, s: 'Zn', name: t('stem.periodic.zinc'), cat: 'transition', c: '#fb923c' },
+            { n: 29, s: 'Cu', name: t('stem.periodic.copper', 'Copper'), cat: 'transition', c: '#fb923c' }, { n: 30, s: 'Zn', name: t('stem.periodic.zinc', 'Zinc'), cat: 'transition', c: '#fb923c' },
 
-            { n: 31, s: 'Ga', name: t('stem.periodic.gallium'), cat: 'metal', c: '#94a3b8' }, { n: 32, s: 'Ge', name: t('stem.periodic.germanium'), cat: 'metalloid', c: '#34d399' },
+            { n: 31, s: 'Ga', name: t('stem.periodic.gallium', 'Gallium'), cat: 'metal', c: '#94a3b8' }, { n: 32, s: 'Ge', name: t('stem.periodic.germanium', 'Germanium'), cat: 'metalloid', c: '#34d399' },
 
-            { n: 33, s: 'As', name: t('stem.periodic.arsenic'), cat: 'metalloid', c: '#34d399' }, { n: 34, s: 'Se', name: t('stem.periodic.selenium'), cat: 'nonmetal', c: '#60a5fa' },
+            { n: 33, s: 'As', name: t('stem.periodic.arsenic', 'Arsenic'), cat: 'metalloid', c: '#34d399' }, { n: 34, s: 'Se', name: t('stem.periodic.selenium', 'Selenium'), cat: 'nonmetal', c: '#60a5fa' },
 
-            { n: 35, s: 'Br', name: t('stem.periodic.bromine'), cat: 'halogen', c: '#2dd4bf' }, { n: 36, s: 'Kr', name: t('stem.periodic.krypton'), cat: 'noble', c: '#c084fc' },
+            { n: 35, s: 'Br', name: t('stem.periodic.bromine', 'Bromine'), cat: 'halogen', c: '#2dd4bf' }, { n: 36, s: 'Kr', name: t('stem.periodic.krypton', 'Krypton'), cat: 'noble', c: '#c084fc' },
 
-            { n: 37, s: 'Rb', name: t('stem.periodic.rubidium'), cat: 'alkali', c: '#f87171' }, { n: 38, s: 'Sr', name: t('stem.periodic.strontium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 37, s: 'Rb', name: t('stem.periodic.rubidium', 'Rubidium'), cat: 'alkali', c: '#f87171' }, { n: 38, s: 'Sr', name: t('stem.periodic.strontium', 'Strontium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 39, s: 'Y', name: t('stem.periodic.yttrium'), cat: 'transition', c: '#fb923c' }, { n: 40, s: 'Zr', name: t('stem.periodic.zirconium'), cat: 'transition', c: '#fb923c' },
+            { n: 39, s: 'Y', name: t('stem.periodic.yttrium', 'Yttrium'), cat: 'transition', c: '#fb923c' }, { n: 40, s: 'Zr', name: t('stem.periodic.zirconium', 'Zirconium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 41, s: 'Nb', name: t('stem.periodic.niobium'), cat: 'transition', c: '#fb923c' }, { n: 42, s: 'Mo', name: t('stem.periodic.molybdenum'), cat: 'transition', c: '#fb923c' },
+            { n: 41, s: 'Nb', name: t('stem.periodic.niobium', 'Niobium'), cat: 'transition', c: '#fb923c' }, { n: 42, s: 'Mo', name: t('stem.periodic.molybdenum', 'Molybdenum'), cat: 'transition', c: '#fb923c' },
 
-            { n: 43, s: 'Tc', name: t('stem.periodic.technetium'), cat: 'transition', c: '#fb923c' }, { n: 44, s: 'Ru', name: t('stem.periodic.ruthenium'), cat: 'transition', c: '#fb923c' },
+            { n: 43, s: 'Tc', name: t('stem.periodic.technetium', 'Technetium'), cat: 'transition', c: '#fb923c' }, { n: 44, s: 'Ru', name: t('stem.periodic.ruthenium', 'Ruthenium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 45, s: 'Rh', name: t('stem.periodic.rhodium'), cat: 'transition', c: '#fb923c' }, { n: 46, s: 'Pd', name: t('stem.periodic.palladium'), cat: 'transition', c: '#fb923c' },
+            { n: 45, s: 'Rh', name: t('stem.periodic.rhodium', 'Rhodium'), cat: 'transition', c: '#fb923c' }, { n: 46, s: 'Pd', name: t('stem.periodic.palladium', 'Palladium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 47, s: 'Ag', name: t('stem.periodic.silver'), cat: 'transition', c: '#fb923c' }, { n: 48, s: 'Cd', name: t('stem.periodic.cadmium'), cat: 'transition', c: '#fb923c' },
+            { n: 47, s: 'Ag', name: t('stem.periodic.silver', 'Silver'), cat: 'transition', c: '#fb923c' }, { n: 48, s: 'Cd', name: t('stem.periodic.cadmium', 'Cadmium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 49, s: 'In', name: t('stem.periodic.indium'), cat: 'metal', c: '#94a3b8' }, { n: 50, s: 'Sn', name: 'Tin', cat: 'metal', c: '#94a3b8' },
+            { n: 49, s: 'In', name: t('stem.periodic.indium', 'Indium'), cat: 'metal', c: '#94a3b8' }, { n: 50, s: 'Sn', name: 'Tin', cat: 'metal', c: '#94a3b8' },
 
-            { n: 51, s: 'Sb', name: t('stem.periodic.antimony'), cat: 'metalloid', c: '#34d399' }, { n: 52, s: 'Te', name: t('stem.periodic.tellurium'), cat: 'metalloid', c: '#34d399' },
+            { n: 51, s: 'Sb', name: t('stem.periodic.antimony', 'Antimony'), cat: 'metalloid', c: '#34d399' }, { n: 52, s: 'Te', name: t('stem.periodic.tellurium', 'Tellurium'), cat: 'metalloid', c: '#34d399' },
 
-            { n: 53, s: 'I', name: t('stem.periodic.iodine'), cat: 'halogen', c: '#2dd4bf' }, { n: 54, s: 'Xe', name: t('stem.periodic.xenon'), cat: 'noble', c: '#c084fc' },
+            { n: 53, s: 'I', name: t('stem.periodic.iodine', 'Iodine'), cat: 'halogen', c: '#2dd4bf' }, { n: 54, s: 'Xe', name: t('stem.periodic.xenon', 'Xenon'), cat: 'noble', c: '#c084fc' },
 
-            { n: 55, s: 'Cs', name: t('stem.periodic.cesium'), cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: t('stem.periodic.barium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 55, s: 'Cs', name: t('stem.periodic.cesium', 'Cesium'), cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: t('stem.periodic.barium', 'Barium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 57, s: 'La', name: t('stem.periodic.lanthanum'), cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: t('stem.periodic.cerium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 57, s: 'La', name: t('stem.periodic.lanthanum', 'Lanthanum'), cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: t('stem.periodic.cerium', 'Cerium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 59, s: 'Pr', name: t('stem.periodic.praseodymium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: t('stem.periodic.neodymium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 59, s: 'Pr', name: t('stem.periodic.praseodymium', 'Praseodymium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: t('stem.periodic.neodymium', 'Neodymium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 61, s: 'Pm', name: t('stem.periodic.promethium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 62, s: 'Sm', name: t('stem.periodic.samarium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 61, s: 'Pm', name: t('stem.periodic.promethium', 'Promethium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 62, s: 'Sm', name: t('stem.periodic.samarium', 'Samarium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 63, s: 'Eu', name: t('stem.periodic.europium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 64, s: 'Gd', name: t('stem.periodic.gadolinium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 63, s: 'Eu', name: t('stem.periodic.europium', 'Europium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 64, s: 'Gd', name: t('stem.periodic.gadolinium', 'Gadolinium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 65, s: 'Tb', name: t('stem.periodic.terbium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 66, s: 'Dy', name: t('stem.periodic.dysprosium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 65, s: 'Tb', name: t('stem.periodic.terbium', 'Terbium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 66, s: 'Dy', name: t('stem.periodic.dysprosium', 'Dysprosium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 67, s: 'Ho', name: t('stem.periodic.holmium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 68, s: 'Er', name: t('stem.periodic.erbium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 67, s: 'Ho', name: t('stem.periodic.holmium', 'Holmium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 68, s: 'Er', name: t('stem.periodic.erbium', 'Erbium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 69, s: 'Tm', name: t('stem.periodic.thulium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 70, s: 'Yb', name: t('stem.periodic.ytterbium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 69, s: 'Tm', name: t('stem.periodic.thulium', 'Thulium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 70, s: 'Yb', name: t('stem.periodic.ytterbium', 'Ytterbium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 71, s: 'Lu', name: t('stem.periodic.lutetium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 71, s: 'Lu', name: t('stem.periodic.lutetium', 'Lutetium'), cat: 'lanthanide', c: '#a78bfa' },
 
-            { n: 72, s: 'Hf', name: t('stem.periodic.hafnium'), cat: 'transition', c: '#fb923c' }, { n: 73, s: 'Ta', name: t('stem.periodic.tantalum'), cat: 'transition', c: '#fb923c' },
+            { n: 72, s: 'Hf', name: t('stem.periodic.hafnium', 'Hafnium'), cat: 'transition', c: '#fb923c' }, { n: 73, s: 'Ta', name: t('stem.periodic.tantalum', 'Tantalum'), cat: 'transition', c: '#fb923c' },
 
-            { n: 74, s: 'W', name: t('stem.periodic.tungsten'), cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: t('stem.periodic.rhenium'), cat: 'transition', c: '#fb923c' },
+            { n: 74, s: 'W', name: t('stem.periodic.tungsten', 'Tungsten'), cat: 'transition', c: '#fb923c' }, { n: 75, s: 'Re', name: t('stem.periodic.rhenium', 'Rhenium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 76, s: 'Os', name: t('stem.periodic.osmium'), cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: t('stem.periodic.iridium'), cat: 'transition', c: '#fb923c' },
+            { n: 76, s: 'Os', name: t('stem.periodic.osmium', 'Osmium'), cat: 'transition', c: '#fb923c' }, { n: 77, s: 'Ir', name: t('stem.periodic.iridium', 'Iridium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 78, s: 'Pt', name: t('stem.periodic.platinum'), cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: t('stem.periodic.gold'), cat: 'transition', c: '#fb923c' },
+            { n: 78, s: 'Pt', name: t('stem.periodic.platinum', 'Platinum'), cat: 'transition', c: '#fb923c' }, { n: 79, s: 'Au', name: t('stem.periodic.gold', 'Gold'), cat: 'transition', c: '#fb923c' },
 
-            { n: 80, s: 'Hg', name: t('stem.periodic.mercury'), cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: t('stem.periodic.thallium'), cat: 'metal', c: '#94a3b8' },
+            { n: 80, s: 'Hg', name: t('stem.periodic.mercury', 'Mercury'), cat: 'transition', c: '#fb923c' }, { n: 81, s: 'Tl', name: t('stem.periodic.thallium', 'Thallium'), cat: 'metal', c: '#94a3b8' },
 
-            { n: 82, s: 'Pb', name: t('stem.periodic.lead'), cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: t('stem.periodic.bismuth'), cat: 'metal', c: '#94a3b8' },
+            { n: 82, s: 'Pb', name: t('stem.periodic.lead', 'Lead'), cat: 'metal', c: '#94a3b8' }, { n: 83, s: 'Bi', name: t('stem.periodic.bismuth', 'Bismuth'), cat: 'metal', c: '#94a3b8' },
 
-            { n: 84, s: 'Po', name: t('stem.periodic.polonium'), cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: t('stem.periodic.astatine'), cat: 'halogen', c: '#2dd4bf' },
+            { n: 84, s: 'Po', name: t('stem.periodic.polonium', 'Polonium'), cat: 'metalloid', c: '#34d399' }, { n: 85, s: 'At', name: t('stem.periodic.astatine', 'Astatine'), cat: 'halogen', c: '#2dd4bf' },
 
-            { n: 86, s: 'Rn', name: t('stem.periodic.radon'), cat: 'noble', c: '#c084fc' },
+            { n: 86, s: 'Rn', name: t('stem.periodic.radon', 'Radon'), cat: 'noble', c: '#c084fc' },
 
-            { n: 87, s: 'Fr', name: t('stem.periodic.francium'), cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: t('stem.periodic.radium'), cat: 'alkaline', c: '#fbbf24' },
+            { n: 87, s: 'Fr', name: t('stem.periodic.francium', 'Francium'), cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: t('stem.periodic.radium', 'Radium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 89, s: 'Ac', name: t('stem.periodic.actinium'), cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: t('stem.periodic.thorium'), cat: 'actinide', c: '#f472b6' },
+            { n: 89, s: 'Ac', name: t('stem.periodic.actinium', 'Actinium'), cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: t('stem.periodic.thorium', 'Thorium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 91, s: 'Pa', name: t('stem.periodic.protactinium'), cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: t('stem.periodic.uranium'), cat: 'actinide', c: '#f472b6' },
+            { n: 91, s: 'Pa', name: t('stem.periodic.protactinium', 'Protactinium'), cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: t('stem.periodic.uranium', 'Uranium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 93, s: 'Np', name: t('stem.periodic.neptunium'), cat: 'actinide', c: '#f472b6' }, { n: 94, s: 'Pu', name: t('stem.periodic.plutonium'), cat: 'actinide', c: '#f472b6' },
+            { n: 93, s: 'Np', name: t('stem.periodic.neptunium', 'Neptunium'), cat: 'actinide', c: '#f472b6' }, { n: 94, s: 'Pu', name: t('stem.periodic.plutonium', 'Plutonium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 95, s: 'Am', name: t('stem.periodic.americium'), cat: 'actinide', c: '#f472b6' }, { n: 96, s: 'Cm', name: t('stem.periodic.curium'), cat: 'actinide', c: '#f472b6' },
+            { n: 95, s: 'Am', name: t('stem.periodic.americium', 'Americium'), cat: 'actinide', c: '#f472b6' }, { n: 96, s: 'Cm', name: t('stem.periodic.curium', 'Curium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 97, s: 'Bk', name: t('stem.periodic.berkelium'), cat: 'actinide', c: '#f472b6' }, { n: 98, s: 'Cf', name: t('stem.periodic.californium'), cat: 'actinide', c: '#f472b6' },
+            { n: 97, s: 'Bk', name: t('stem.periodic.berkelium', 'Berkelium'), cat: 'actinide', c: '#f472b6' }, { n: 98, s: 'Cf', name: t('stem.periodic.californium', 'Californium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 99, s: 'Es', name: t('stem.periodic.einsteinium'), cat: 'actinide', c: '#f472b6' }, { n: 100, s: 'Fm', name: t('stem.periodic.fermium'), cat: 'actinide', c: '#f472b6' },
+            { n: 99, s: 'Es', name: t('stem.periodic.einsteinium', 'Einsteinium'), cat: 'actinide', c: '#f472b6' }, { n: 100, s: 'Fm', name: t('stem.periodic.fermium', 'Fermium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 101, s: 'Md', name: t('stem.periodic.mendelevium'), cat: 'actinide', c: '#f472b6' }, { n: 102, s: 'No', name: t('stem.periodic.nobelium'), cat: 'actinide', c: '#f472b6' },
+            { n: 101, s: 'Md', name: t('stem.periodic.mendelevium', 'Mendelevium'), cat: 'actinide', c: '#f472b6' }, { n: 102, s: 'No', name: t('stem.periodic.nobelium', 'Nobelium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 103, s: 'Lr', name: t('stem.periodic.lawrencium'), cat: 'actinide', c: '#f472b6' },
+            { n: 103, s: 'Lr', name: t('stem.periodic.lawrencium', 'Lawrencium'), cat: 'actinide', c: '#f472b6' },
 
-            { n: 104, s: 'Rf', name: t('stem.periodic.rutherfordium'), cat: 'transition', c: '#fb923c' }, { n: 105, s: 'Db', name: t('stem.periodic.dubnium'), cat: 'transition', c: '#fb923c' },
+            { n: 104, s: 'Rf', name: t('stem.periodic.rutherfordium', 'Rutherfordium'), cat: 'transition', c: '#fb923c' }, { n: 105, s: 'Db', name: t('stem.periodic.dubnium', 'Dubnium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 106, s: 'Sg', name: t('stem.periodic.seaborgium'), cat: 'transition', c: '#fb923c' }, { n: 107, s: 'Bh', name: t('stem.periodic.bohrium'), cat: 'transition', c: '#fb923c' },
+            { n: 106, s: 'Sg', name: t('stem.periodic.seaborgium', 'Seaborgium'), cat: 'transition', c: '#fb923c' }, { n: 107, s: 'Bh', name: t('stem.periodic.bohrium', 'Bohrium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 108, s: 'Hs', name: t('stem.periodic.hassium'), cat: 'transition', c: '#fb923c' }, { n: 109, s: 'Mt', name: t('stem.periodic.meitnerium'), cat: 'transition', c: '#fb923c' },
+            { n: 108, s: 'Hs', name: t('stem.periodic.hassium', 'Hassium'), cat: 'transition', c: '#fb923c' }, { n: 109, s: 'Mt', name: t('stem.periodic.meitnerium', 'Meitnerium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 110, s: 'Ds', name: t('stem.periodic.darmstadtium'), cat: 'transition', c: '#fb923c' }, { n: 111, s: 'Rg', name: t('stem.periodic.roentgenium'), cat: 'transition', c: '#fb923c' },
+            { n: 110, s: 'Ds', name: t('stem.periodic.darmstadtium', 'Darmstadtium'), cat: 'transition', c: '#fb923c' }, { n: 111, s: 'Rg', name: t('stem.periodic.roentgenium', 'Roentgenium'), cat: 'transition', c: '#fb923c' },
 
-            { n: 112, s: 'Cn', name: t('stem.periodic.copernicium'), cat: 'transition', c: '#fb923c' }, { n: 113, s: 'Nh', name: t('stem.periodic.nihonium'), cat: 'metal', c: '#94a3b8' },
+            { n: 112, s: 'Cn', name: t('stem.periodic.copernicium', 'Copernicium'), cat: 'transition', c: '#fb923c' }, { n: 113, s: 'Nh', name: t('stem.periodic.nihonium', 'Nihonium'), cat: 'metal', c: '#94a3b8' },
 
-            { n: 114, s: 'Fl', name: t('stem.periodic.flerovium'), cat: 'metal', c: '#94a3b8' }, { n: 115, s: 'Mc', name: t('stem.periodic.moscovium'), cat: 'metal', c: '#94a3b8' },
+            { n: 114, s: 'Fl', name: t('stem.periodic.flerovium', 'Flerovium'), cat: 'metal', c: '#94a3b8' }, { n: 115, s: 'Mc', name: t('stem.periodic.moscovium', 'Moscovium'), cat: 'metal', c: '#94a3b8' },
 
-            { n: 116, s: 'Lv', name: t('stem.periodic.livermorium'), cat: 'metal', c: '#94a3b8' }, { n: 117, s: 'Ts', name: t('stem.periodic.tennessine'), cat: 'halogen', c: '#2dd4bf' },
+            { n: 116, s: 'Lv', name: t('stem.periodic.livermorium', 'Livermorium'), cat: 'metal', c: '#94a3b8' }, { n: 117, s: 'Ts', name: t('stem.periodic.tennessine', 'Tennessine'), cat: 'halogen', c: '#2dd4bf' },
 
-            { n: 118, s: 'Og', name: t('stem.periodic.oganesson'), cat: 'noble', c: '#c084fc' }
+            { n: 118, s: 'Og', name: t('stem.periodic.oganesson', 'Oganesson'), cat: 'noble', c: '#c084fc' }
 
           ];
 
@@ -2034,79 +2039,79 @@ window.StemLab = window.StemLab || {
 
           const ELEMENT_DETAILS = {
 
-            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
+            H: { desc: t('stem.periodic.lightest_element_fuels_stars_via', 'Lightest element; fuels stars via fusion'), uses: ['Fuel cells', 'Rocket propellant', 'Ammonia production'], compounds: ['H₂O (Water)', 'HCl (Hydrochloric Acid)', 'NH₃ (Ammonia)', 'CH₄ (Methane)'] },
 
-            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
+            He: { desc: t('stem.periodic.inert_noble_gas_2nd_most', 'Inert noble gas; 2nd most abundant in universe'), uses: ['Balloons & blimps', 'MRI coolant', 'Deep-sea diving gas'], compounds: ['None (noble gas — does not form compounds)'] },
 
-            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
+            Li: { desc: t('stem.periodic.lightest_metal_soft_enough_to', 'Lightest metal; soft enough to cut with a knife'), uses: ['Rechargeable batteries', 'Mood-stabilizing medication', 'Ceramics & glass'], compounds: ['LiOH (Lithium Hydroxide)', 'Li₂CO₃ (Lithium Carbonate)'] },
 
-            Be: { desc: t('stem.periodic.rare_toxic_metal_that_is'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
+            Be: { desc: t('stem.periodic.rare_toxic_metal_that_is', 'Rare, toxic metal that is very stiff and light'), uses: ['Aerospace alloys', 'X-ray windows', 'Satellite components'], compounds: ['BeO (Beryllium Oxide)'] },
 
-            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
+            B: { desc: t('stem.periodic.metalloid_essential_for_plant_growth', 'Metalloid essential for plant growth'), uses: ['Borosilicate glass (Pyrex)', 'Cleaning products (borax)', 'Semiconductors'], compounds: ['B₂O₃ (Boron Trioxide)', 'H₃BO₃ (Boric Acid)'] },
 
-            C: { desc: t('stem.periodic.basis_of_all_known_life'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
+            C: { desc: t('stem.periodic.basis_of_all_known_life', 'Basis of all known life; forms diamond & graphite'), uses: ['Steel production', 'Graphite pencils', 'Carbon fiber composites'], compounds: ['CO₂ (Carbon Dioxide)', 'CH₄ (Methane)', 'C₆H₁₂O₆ (Glucose)', 'CaCO₃ (Limestone)'] },
 
-            N: { desc: t('stem.periodic.makes_up_78_of_earth') + "'s atmosphere", uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
+            N: { desc: t('stem.periodic.makes_up_78_of_earth', "Makes up 78% of Earth's atmosphere"), uses: ['Fertilizers', 'Explosives(TNT)', 'Food preservation'], compounds: ['NH₃ (Ammonia)', 'NO₂ (Nitrogen Dioxide)', 'N₂O(Laughing Gas)', 'HNO₃ (Nitric Acid)'] },
 
-            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant') + "'s crust", uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
+            O: { desc: t('stem.periodic.essential_for_respiration_most_abundant', "Essential for respiration; most abundant element in Earth's crust"), uses: ['Medical oxygen', 'Welding & cutting', 'Water purification'], compounds: ['H₂O(Water)', 'CO₂ (Carbon Dioxide)', 'Fe₂O₃(Rust)', 'O₃(Ozone)'] },
 
-            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
+            F: { desc: t('stem.periodic.most_reactive_and_electronegative_element', 'Most reactive and electronegative element'), uses: ['Toothpaste (fluoride)', 'Teflon coatings', 'Refrigerants'], compounds: ['HF (Hydrofluoric Acid)', 'NaF (Sodium Fluoride)', 'CF₄ (Carbon Tetrafluoride)'] },
 
-            Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
+            Ne: { desc: t('stem.periodic.produces_iconic_reddishorange_glow_in', 'Produces iconic reddish-orange glow in signs'), uses: ['Neon signs', 'High-voltage indicators', 'Laser technology'], compounds: ['None (noble gas)'] },
 
-            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
+            Na: { desc: t('stem.periodic.soft_silvery_metal_that_reacts', 'Soft, silvery metal that reacts explosively with water'), uses: ['Table salt (NaCl)', 'Street lighting', 'Baking soda'], compounds: ['NaCl (Table Salt)', 'NaOH (Lye)', 'NaHCO₃ (Baking Soda)', 'Na₂CO₃ (Washing Soda)'] },
 
-            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
+            Mg: { desc: t('stem.periodic.lightweight_metal_that_burns_with', 'Lightweight metal that burns with brilliant white flame'), uses: ['Alloy wheels', 'Fireworks & flares', 'Antacid tablets'], compounds: ['MgO (Magnesium Oxide)', 'MgSO₄ (Epsom Salt)', 'Mg(OH)₂ (Milk of Magnesia)'] },
 
-            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth') + "'s crust", uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
+            Al: { desc: t('stem.periodic.most_abundant_metal_in_earth', "Most abundant metal in Earth's crust"), uses: ['Cans & foil', 'Aircraft frames', 'Window frames'], compounds: ['Al₂O₃ (Alumina)', 'AlCl₃(Aluminum Chloride)'] },
 
-            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
+            Si: { desc: t('stem.periodic.semiconductor_that_powers_the_digital', 'Semiconductor that powers the digital age'), uses: ['Computer chips', 'Solar panels', 'Glass & concrete'], compounds: ['SiO₂ (Sand/Quartz)', 'SiC (Silicon Carbide)'] },
 
-            P: { desc: t('stem.periodic.essential_for_dna_and_bones'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
+            P: { desc: t('stem.periodic.essential_for_dna_and_bones', 'Essential for DNA and bones; glows in the dark'), uses: ['Fertilizers', 'Matches', 'Detergents'], compounds: ['H₃PO₄ (Phosphoric Acid)', 'Ca₃(PO₄)₂ (Bone mineral)'] },
 
-            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
+            S: { desc: t('stem.periodic.yellow_element_with_distinctive_rottenegg', 'Yellow element with distinctive rotten-egg smell'), uses: ['Vulcanizing rubber', 'Sulfuric acid production', 'Gunpowder'], compounds: ['H₂SO₄ (Sulfuric Acid)', 'SO₂ (Sulfur Dioxide)', 'H₂S (Hydrogen Sulfide)'] },
 
-            Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
+            Cl: { desc: t('stem.periodic.greenishyellow_gas_used_to_purify', 'Greenish-yellow gas used to purify water'), uses: ['Water treatment', 'PVC plastic', 'Bleach & disinfectants'], compounds: ['NaCl (Table Salt)', 'HCl (Hydrochloric Acid)', 'NaOCl (Bleach)'] },
 
-            Ar: { desc: t('stem.periodic.third_most_abundant_gas_in'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
+            Ar: { desc: t('stem.periodic.third_most_abundant_gas_in', 'Third most abundant gas in atmosphere'), uses: ['Welding shield gas', 'Light bulb filling', 'Window insulation'], compounds: ['None (noble gas)'] },
 
-            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
+            K: { desc: t('stem.periodic.essential_nutrient_found_in_bananas', 'Essential nutrient found in bananas'), uses: ['Fertilizers (potash)', 'Soap making', 'Food preservation'], compounds: ['KCl (Potassium Chloride)', 'KOH (Potassium Hydroxide)', 'KNO₃ (Saltpeter)'] },
 
-            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
+            Ca: { desc: t('stem.periodic.builds_bones_and_teeth_5th', 'Builds bones and teeth; 5th most abundant element'), uses: ['Cement & concrete', 'Chalk & plaster', 'Dietary supplement'], compounds: ['CaCO₃ (Limestone/Chalk)', 'CaO (Quicklime)', 'Ca(OH)₂ (Slaked Lime)', 'CaSO₄ (Gypsum)'] },
 
-            Fe: { desc: t('stem.periodic.most_used_metal_core_of'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
+            Fe: { desc: t('stem.periodic.most_used_metal_core_of', 'Most used metal; core of Earth is mostly iron'), uses: ['Steel construction', 'Cast iron cookware', 'Magnetic devices'], compounds: ['Fe₂O₃ (Rust)', 'FeSO₄ (Iron Supplement)', 'Fe₃O₄ (Magnetite)'] },
 
-            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
+            Cu: { desc: t('stem.periodic.reddish_metal_used_since_the', 'Reddish metal used since the Bronze Age'), uses: ['Electrical wiring', 'Plumbing pipes', 'Coins'], compounds: ['CuSO₄ (Blue Vitriol)', 'CuO (Copper Oxide)', 'Cu₂O (Cuprous Oxide)'] },
 
-            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
+            Zn: { desc: t('stem.periodic.bluishwhite_metal_that_prevents_rust', 'Bluish-white metal that prevents rust'), uses: ['Galvanizing steel', 'Batteries', 'Sunscreen (zinc oxide)'], compounds: ['ZnO (Zinc Oxide)', 'ZnS (Zinc Sulfide)', 'ZnCl₂ (Zinc Chloride)'] },
 
-            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
+            Ag: { desc: t('stem.periodic.best_conductor_of_electricity_among', 'Best conductor of electricity among all metals'), uses: ['Jewelry & silverware', 'Photography', 'Electronics'], compounds: ['AgNO₃ (Silver Nitrate)', 'AgCl (Silver Chloride)', 'Ag₂O (Silver Oxide)'] },
 
-            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
+            Au: { desc: t('stem.periodic.dense_soft_shiny_precious_metal', 'Dense, soft, shiny precious metal — never rusts'), uses: ['Jewelry', 'Electronics (connectors)', 'Currency reserves'], compounds: ['AuCl₃ (Gold Chloride) — gold rarely forms compounds'] },
 
-            Ti: { desc: t('stem.periodic.strong_as_steel_but_45'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
+            Ti: { desc: t('stem.periodic.strong_as_steel_but_45', 'Strong as steel but 45% lighter'), uses: ['Aircraft & spacecraft', 'Joint replacements', 'Titanium white paint'], compounds: ['TiO₂ (Titanium Dioxide)', 'TiCl₄ (Titanium Tetrachloride)'] },
 
-            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
+            Cr: { desc: t('stem.periodic.shiny_metal_that_gives_rubies', 'Shiny metal that gives rubies their red color'), uses: ['Chrome plating', 'Stainless steel', 'Leather tanning'], compounds: ['Cr₂O₃ (Chromium Oxide)', 'K₂Cr₂O₇ (Potassium Dichromate)'] },
 
-            Mn: { desc: t('stem.periodic.essential_for_steel_production_and'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
+            Mn: { desc: t('stem.periodic.essential_for_steel_production_and', 'Essential for steel production and bone health'), uses: ['Steel alloys', 'Alkaline batteries', 'Glass decolorizer'], compounds: ['MnO₂ (Manganese Dioxide)', 'KMnO₄ (Potassium Permanganate)'] },
 
-            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
+            Ni: { desc: t('stem.periodic.corrosionresistant_metal_used_in_coins', 'Corrosion-resistant metal used in coins worldwide'), uses: ['Stainless steel', 'Rechargeable batteries', 'Coins'], compounds: ['NiO (Nickel Oxide)', 'NiSO₄ (Nickel Sulfate)'] },
 
-            Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
+            Br: { desc: t('stem.periodic.only_nonmetal_liquid_at_room', 'Only non-metal liquid at room temperature'), uses: ['Flame retardants', 'Photography', 'Water purification'], compounds: ['NaBr (Sodium Bromide)', 'HBr (Hydrobromic Acid)'] },
 
-            I: { desc: t('stem.periodic.essential_trace_element_for_thyroid'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
+            I: { desc: t('stem.periodic.essential_trace_element_for_thyroid', 'Essential trace element for thyroid function'), uses: ['Antiseptic (tincture)', 'Iodized salt', 'Medical imaging'], compounds: ['KI (Potassium Iodide)', 'HI (Hydroiodic Acid)'] },
 
-            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
+            Pt: { desc: t('stem.periodic.precious_metal_rarer_than_gold', 'Precious metal rarer than gold'), uses: ['Catalytic converters', 'Jewelry', 'Anti-cancer drugs'], compounds: ['PtCl₂ (Platinum Chloride)', 'H₂PtCl₆ (Chloroplatinic Acid)'] },
 
-            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
+            U: { desc: t('stem.periodic.dense_radioactive_metal_that_powers', 'Dense radioactive metal that powers nuclear plants'), uses: ['Nuclear power', 'Nuclear weapons', 'Radiation shielding'], compounds: ['UO₂ (Uranium Dioxide)', 'UF₆ (Uranium Hexafluoride)'] },
 
-            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
+            Hg: { desc: t('stem.periodic.only_metal_liquid_at_room', 'Only metal liquid at room temperature'), uses: ['Thermometers (historic)', 'Fluorescent lights', 'Dental amalgams'], compounds: ['HgCl₂ (Mercury Chloride)', 'HgO (Mercury Oxide)'] },
 
-            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
+            Pb: { desc: t('stem.periodic.dense_soft_metal_once_used', 'Dense, soft metal once used in pipes & paint'), uses: ['Car batteries', 'Radiation shielding', 'Solder (lead-free now)'], compounds: ['PbO (Lead Oxide)', 'PbSO₄ (Lead Sulfate)'] },
 
-            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
+            Sn: { desc: t('stem.periodic.soft_silvery_metal_used_since', 'Soft, silvery metal used since the Bronze Age'), uses: ['Tin cans (coating)', 'Solder', 'Bronze alloy'], compounds: ['SnO₂ (Tin Oxide)', 'SnCl₂ (Tin Chloride)'] },
 
-            W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
+            W: { desc: t('stem.periodic.has_the_highest_melting_point', 'Has the highest melting point of all metals'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
 
           };
 
@@ -2916,7 +2921,7 @@ window.StemLab = window.StemLab || {
 
           // ═══ AI Chemistry Tutor ═══
           const askChemTutor = (question) => {
-            if (!question || aiLoading) return;
+            if (!question || aiLoading || typeof callGemini !== 'function') return;
             updMulti({ aiLoading: true, aiAnswer: '' });
             const gradeDesc = gradeLevel === 'K-2' ? 'a kindergarten to 2nd grade student' :
               gradeLevel === '3-5' ? 'a 3rd to 5th grade student' :
@@ -5619,7 +5624,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             });
                             if (correct) checkMoleculeChallenges();
 
-                            if (correct) addToast(t('stem.periodic.correct'), 'success'); else addToast(t('stem.periodic.answer') + elQuiz.answer, 'error');
+                            if (correct) addToast(t('stem.periodic.correct', '✅ Correct!'), 'success'); else addToast(t('stem.periodic.answer', '❌ Answer: ') + elQuiz.answer, 'error');
 
                           }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 transition-all active:scale-[0.97]"
 
@@ -5835,7 +5840,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             
             // ═══ AI Chemistry Tutor ═══
-            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3 rounded-lg px-2 pb-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
+            typeof callGemini === 'function' && React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3 rounded-lg px-2 pb-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", null,
                 React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: { color: 'var(--allo-stem-text-soft, #475569)' } },
                   __alloT('stem.molecule.ask_the_chemistry_tutor', "🧑‍🔬 Ask the Chemistry Tutor")

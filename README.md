@@ -422,6 +422,8 @@ Contributions are welcome — especially new STEM/SEL tools, accessibility impro
 
 © 2026 Aaron Pomeranz, PsyD
 
+*AlloFlow is dedicated to my father, Dr. Robert Pomeranz: a teacher of English and biology, an OB/GYN who helped bring new lives into the world, and a lifelong sci-fi nerd who dreamed of repairing the world, and did, in his own way. The lines from Frost and Tolkien you may meet along the way are for him.*
+
 <p align="center">
   <strong>Built by a school psychologist, for educators.</strong><br>
   <em>"Differentiation should be the default, not the exception."</em>

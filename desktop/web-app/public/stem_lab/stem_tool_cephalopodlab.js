@@ -21846,7 +21846,7 @@ function createCLHuntFish(T,index){
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 } },
                 Object.keys(SCENES).map(function(k) {
                   var s = SCENES[k]; var b = camoBest[k] || 0; var ok = b >= 85;
-                  return h('button', { key: k, type: 'button', onClick: function() { setCL({ camoScene: k }); }, 'aria-label': s.name + ': best ' + b + ' percent' + (ok ? ', invisible' : ''),
+                  return h('button', { key: k, type: 'button', 'aria-pressed': scene === k, onClick: function() { setCL({ camoScene: k }); }, 'aria-label': s.name + ': best ' + b + ' percent' + (ok ? ', invisible' : ''),
                     style: { textAlign: 'left', padding: '8px 10px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', background: ok ? 'rgba(16,185,129,0.12)' : 'rgba(2,6,23,0.4)', border: '1px solid ' + (ok ? 'rgba(52,211,153,0.6)' : 'rgba(148,163,184,0.25)'), color: '#e2e8f0' } },
                     h('div', { style: { fontSize: 11, fontWeight: 800, display: 'flex', justifyContent: 'space-between' } }, h('span', null, h('span', { 'aria-hidden': 'true' }, s.emoji + ' '), s.name), h('span', { 'aria-hidden': 'true', style: { color: ok ? '#6ee7b7' : '#94a3b8' } }, ok ? '✓' : '')),
                     h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, b ? __alloT('stem.cephalopodlab.camo_best', 'best ') + b + '%' : __alloT('stem.cephalopodlab.camo_not_tried', 'not tried yet')));
@@ -25981,6 +25981,7 @@ function createCLHuntFish(T,index){
             categories.map(function(c) {
               var active = filterCat === c;
               return h('button', { key: c,
+                'aria-pressed': active,
                 onClick: function() { setCL({ factsCat: c }); },
                 style: { padding: '4px 10px', fontSize: 11, borderRadius: 9999, border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.25)'), background: active ? 'rgba(167,139,250,0.18)' : 'transparent', color: active ? '#c7d2fe' : '#94a3b8', cursor: 'pointer', fontWeight: 700 },
               }, c);
@@ -27314,6 +27315,7 @@ function createCLHuntFish(T,index){
             ['All'].concat(grades).map(function(g) {
               var active = filterGrade === g;
               return h('button', { key: g,
+                'aria-pressed': active,
                 onClick: function() { setCL({ vocabGrade: g }); },
                 style: { padding: '4px 10px', fontSize: 11, borderRadius: 9999, border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.25)'), background: active ? 'rgba(167,139,250,0.18)' : 'transparent', color: active ? '#c7d2fe' : '#94a3b8', cursor: 'pointer', fontWeight: 700 },
               }, g);
@@ -27503,7 +27505,7 @@ function createCLHuntFish(T,index){
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, 'Category:'),
             ['All'].concat(cats).map(function(c) {
               var active = filter === c;
-              return h('button', { key: c, onClick: function() { setCL({ faqCat: c }); },
+              return h('button', { key: c, 'aria-pressed': active, onClick: function() { setCL({ faqCat: c }); },
                 style: { padding: '4px 10px', fontSize: 11, borderRadius: 9999, border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.25)'), background: active ? 'rgba(167,139,250,0.18)' : 'transparent', color: active ? '#c7d2fe' : '#94a3b8', cursor: 'pointer', fontWeight: 700 },
               }, c);
             })

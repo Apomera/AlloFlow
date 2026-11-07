@@ -68,7 +68,7 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-statslab-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-statslab-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"statsLab\"] :is(.statslab-tool-shell,[data-stem-theme=\"contrast\"] .statslab-tool-shell [role=\"tab\"][aria-selected=\"true\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] :is(.statslab-tool-shell,.statslab-tool-shell [aria-label=\"Back to STEM tools\"],[data-stem-theme=\"contrast\"] .statslab-tool-shell [role=\"tab\"][aria-selected=\"true\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"statsLab\"] :is(.statslab-tool-shell,[data-stem-theme=\"contrast\"] .statslab-tool-shell [role=\"tab\"][aria-selected=\"true\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] :is(.statslab-tool-shell,.statslab-tool-shell [aria-label=\"Back to STEM tools\"],[data-stem-theme=\"contrast\"] .statslab-tool-shell [role=\"tab\"][aria-selected=\"true\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(99, 102, 241)\"],[style*=\"; color: rgb(99, 102, 241)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"statsLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -1683,7 +1683,12 @@ window.StemLab = window.StemLab || {
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable, so the AI interpretation grader hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var setStemLabTool = ctx.setStemLabTool; // host nav setter — used by the Back button (was undeclared → render crash)
 
       // ── State init ──
@@ -2191,7 +2196,7 @@ window.StemLab = window.StemLab || {
         d.mode === 'wizard' && _renderWizard(d, upd, h),
         d.mode === 'data' && _renderData(d, upd, h, addToast),
         d.mode === 'test' && _renderTest(d, upd, runTest, h, addToast),
-        d.mode === 'results' && _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb, __alloT),
+        d.mode === 'results' && _renderResults(d, upd, h, addToast, callGemini ? gradeInterpretation : null, awardXP, setSlCeleb, __alloT),
         d.mode === 'power' && _renderPower(d, upd, h, addToast),
         d.mode === 'mastery' && _renderStatsMasteryPanel(d, upd, h),
         d.mode === 'inquiry' && (function() {
@@ -4419,8 +4424,8 @@ window.StemLab = window.StemLab || {
           })()
         )
       ),
-      // AI Interpretation Grader
-      h('div', {
+      // AI Interpretation Grader (null grader = no usable AI)
+      typeof gradeInterpretation === 'function' && h('div', {
         style: {
           background: 'rgba(168,85,247,0.10)',
           border: '1px solid rgba(168,85,247,0.45)',

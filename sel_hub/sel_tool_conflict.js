@@ -943,6 +943,170 @@ window.SelHub = window.SelHub || {
   };
 
   // ══════════════════════════════════════════════════════════════
+  // ── Scripted role-play scenes (no AI, 2026-11-04) ──
+  // One branching script per chosen ROLEPLAY_SCENARIOS / MEDIATION_SCENARIOS id,
+  // in the shared AdventureOffline story format, played with
+  // AlloModules.AdventureOffline.Player (built-in fallback for older hosts).
+  // Braided: branches rejoin. Endings close with a "What worked" debrief.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an ending.
+  // ══════════════════════════════════════════════════════════════
+  function _cflScript(title, rows) {
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: r[1], ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: r[1], ending: true, choices: [] };
+    }) };
+  }
+  var CFL_RP_SCRIPTS = {
+    rp1: _cflScript('The Playground Swing', [
+      ['start', "You've been waiting a long time for the swing. Just as it's your turn, Jordan jumps on. 'I got here first! You were too slow. It's MY turn now.'", [
+        ["'Get off! It's my turn and you know it!'", 'yell'],
+        ["'Hey, I was waiting in line. I feel upset because it was my turn next.'", 'istate'],
+        ['Walk away without saying anything.', 'walk']]],
+      ['yell', "Jordan grips the chains tighter. 'No way! You can't make me!' Other kids stop to look. Your face feels hot.", [
+        ['Take a slow breath and count to three.', 'calm'],
+        ["'You're such a cheater!'", 'stuck']]],
+      ['walk', "You sit on the bench. You feel mad and sad at the same time. Jordan swings higher. Recess isn't over yet.", [
+        ["Go back and try talking: 'Jordan, can I tell you something?'", 'istate'],
+        ['Stay on the bench for the rest of recess.', 'end_walk']]],
+      ['calm', "You breathe in slowly and out slowly. Your hands relax. Jordan is still on the swing, but he's watching you now, waiting to see what you'll do.", [
+        ["'Sorry I yelled. I was waiting, and I felt upset when you jumped on.'", 'istate'],
+        ["'Fine, keep it. I don't care.'", 'end_walk']]],
+      ['stuck', "Jordan shouts back, 'I am NOT!' A recess aide looks over. Now you are both upset, and nobody is taking turns.", [
+        ["Breathe, then say: 'Okay. I don't want to fight.'", 'calm'],
+        ['Go tell the recess aide.', 'end_aide']]],
+      ['istate', "Jordan slows the swing down. 'Oh. I didn't see you waiting,' he mumbles. 'But I really wanted a turn too.'", [
+        ["'How about we take turns? You go for twenty swings, then it's me.'", 'end_fair'],
+        ["'Well, too bad. Get off.'", 'stuck']]],
+      ['end_fair', "Jordan thinks about it. 'Okay... twenty swings. You count?' You count together, then Jordan hops off. 'Your turn,' he says. Later, he even gives you a push so you go higher.\n\nWhat worked:\n• You calmed down (or stayed calm) before you talked.\n• An I-statement ('I felt upset because...') told Jordan how you felt without calling him names.\n• You suggested a fair plan where both of you get a turn.\n• Jordan was fair underneath. Kindness gave him a way to show it."],
+      ['end_walk', "You stay on the bench. Jordan swings until the bell rings. You feel left out, and Jordan never knew why you were upset.\n\nWhat worked:\n• Walking away is better than fighting.\n• You can come back when you're calm and try: 'I feel ___ because ___.'\n• Most kids will share once they understand how you feel."],
+      ['end_aide', "The aide sets a timer so you each get a turn. It's fair now, but you and Jordan are both still grumpy.\n\nWhat worked:\n• Getting a grown-up is a good choice when things are getting out of hand or someone could get hurt.\n• Calling names made Jordan dig in. Calming down first helps.\n• Next time, try an I-statement and a fair idea, like taking turns."]
+    ]),
+    rp6: _cflScript('The Group Exclusion', [
+      ['start', "You saw the photos: your whole friend group at the movies on Saturday. Nobody invited you. At your locker, Morgan says, 'Look, I didn't plan it. Someone just texted and we all went. It wasn't like we were trying to leave you out...'", [
+        ["'Sure. You all just forgot I exist.'", 'sarcastic'],
+        ["'I felt hurt when I saw the photos. I'd like to understand what happened.'", 'istate'],
+        ["'Whatever, it's fine.'", 'fine']]],
+      ['sarcastic', "Morgan's face goes red. 'Wow. I said I didn't plan it. Why are you mad at ME?' Morgan grabs a stack of books.", [
+        ["'You're right, that was harsh. I'm hurt. I'm not trying to blame you.'", 'istate'],
+        ["'Because you went! That's why.'", 'stuck']]],
+      ['fine', "Morgan looks relieved. 'Cool. Okay.' But it isn't fine. You feel a knot in your stomach all through first period.", [
+        ["At lunch, find Morgan: 'Actually, it's not fine. Can we talk?'", 'istate'],
+        ['Keep it to yourself.', 'end_silent']]],
+      ['stuck', "Morgan shakes their head. 'I can't talk to you when you're like this.' Morgan walks off to class. Your chest feels tight.", [
+        ["Later, text: 'Sorry I snapped. I was hurt. Can we talk at lunch?'", 'istate'],
+        ["Decide you don't need any of them.", 'end_silent']]],
+      ['istate', "Morgan's shoulders drop. 'Yeah... I'd be hurt too.' A pause. 'Honestly, I noticed you weren't there, and I didn't say anything. I felt bad all night.'", [
+        ["'Why didn't you say anything?'", 'why'],
+        ["'So you DID know. Great friend.'", 'stuck']]],
+      ['why', "'I didn't want to be the one to make it weird,' Morgan says. 'I guess I made it weirder.' Morgan looks at you. 'I really do want to stay friends.'", [
+        ["'I want that too. Next time, could you text me, or ask someone to add me?'", 'end_repair'],
+        ["'Okay. Let's just forget it.'", 'end_partial']]],
+      ['end_repair', "Morgan adds you to the group chat and promises to speak up next time. On Friday, you're invited. It doesn't erase Saturday, but your friendship feels stronger for talking about it.\n\nWhat worked:\n• An I-statement ('I felt hurt when...') let Morgan hear you without getting defensive.\n• You asked a curious question instead of accusing.\n• You made a specific request for next time.\n• Repair is about what happens next, not only about the past."],
+      ['end_partial', "You both say it's fine. Things feel okay on the surface, but nothing has changed, and it could happen again.\n\nWhat worked:\n• You shared your feelings and listened to Morgan's side.\n• Ending with a request helps: 'Next time, could you ___?'\n• You can still bring it up again."],
+      ['end_silent', "You keep it to yourself. The hurt stays, and you start pulling away from the group. Morgan doesn't know what went wrong.\n\nWhat worked:\n• Taking time to cool down is okay.\n• Feelings that aren't shared often grow. A calm I-statement is a way to start: 'I felt ___ when ___.'\n• Snapping happens. A quick repair ('Sorry I snapped') can reopen the door."]
+    ]),
+    rp8: _cflScript('The Credit Dispute', [
+      ['start', "In today's presentation, Cameron presented your research as their own idea. After class, Cameron says, 'Okay, I used your research, but I built the whole presentation. We're a TEAM. I didn't steal anything.'", [
+        ["'You stole my work, and you know it.'", 'accuse'],
+        ["'I know you worked hard on the slides. I felt erased when my research was presented as your idea.'", 'istate'],
+        ["'Forget it. It's just one presentation.'", 'drop']]],
+      ['accuse', "Cameron's voice gets louder. 'Stole? Seriously? I spent all weekend on those slides!' A few students turn around.", [
+        ["Lower your voice: 'Okay, \"stole\" was the wrong word. Can I explain what bothered me?'", 'istate'],
+        ["'Then put your own name on your own ideas.'", 'stuck']]],
+      ['drop', "Cameron shrugs. 'Cool.' But you keep replaying the moment the teacher said, 'Great idea, Cameron.' The final report is due next week, and it could happen again.", [
+        ["Text Cameron: 'Can we talk tomorrow about how we credit the research?'", 'istate'],
+        ['Let it go.', 'end_silent']]],
+      ['istate', "Cameron is quiet for a second. 'I didn't think of it as your idea versus mine. I was stressed, and I just talked.' Cameron crosses their arms, still a bit defensive. 'What do you want me to do, though?'", [
+        ["'Nothing. I just wanted you to feel bad.'", 'stuck'],
+        ["'Can we tell the teacher who did what, and split the final report so each part is credited?'", 'interests']]],
+      ['stuck', "Cameron throws up their hands. 'Fine. Go complain to the teacher, then.' Cameron walks off.", [
+        ['Wait a day, then try again calmly.', 'istate'],
+        ['Go to the teacher on your own.', 'end_teacher']]],
+      ['interests', "Cameron sighs. 'Honestly, I'm scared about my grade. I thought if I sounded confident, it would help us both.' Cameron looks at you. 'I didn't mean to make you invisible.'", [
+        ["'I get that. I care about the grade too. Let's make a plan we both like.'", 'end_repair'],
+        ["'Your grade isn't my problem.'", 'stuck']]],
+      ['end_repair', "You and Cameron write a short note to the teacher: Cameron built the slides, and you did the research. For the final report, you each present your own part. Cameron apologizes, and means it.\n\nWhat worked:\n• You started by naming what Cameron did well, so they could hear the rest.\n• An I-statement ('I felt erased') described the impact instead of accusing.\n• You asked for something specific: credit now and a plan for next time.\n• Seeing Cameron's real worry (grades) made a shared solution possible."],
+      ['end_teacher', "The teacher talks with you both and asks you to divide credit on the next assignment. It's fair, but you and Cameron barely speak for the rest of the project.\n\nWhat worked:\n• Going to a teacher is a reasonable step when a talk isn't working.\n• Calmly naming the impact first might have kept the partnership.\n• Asking what the other person is worried about often opens up a shared solution."],
+      ['end_silent', "You let it go. At the final report, Cameron presents your research again, and you're frustrated that you never spoke up.\n\nWhat worked:\n• Choosing your battles can be wise, but this one was going to keep happening.\n• A calm, specific request is not an attack: 'Can we credit the research on the slides?'\n• Raising it early is easier than after resentment builds."]
+    ])
+  };
+  var CFL_MED_SCRIPTS = {
+    med1: _cflScript('The Art Table War', [
+      ['start', "At the art table, Mia and Leo are both pulling on the marker box. Mia says, 'I was using the markers first! He keeps grabbing them without asking!' Leo says, 'There's no rule that says she gets ALL the markers.' Your teacher asks you to help them work it out.", [
+        ["'Mia had them first, so Leo, give them back.'", 'side'],
+        ["'Let's put the markers down for a second. Can each of you tell me what happened, one at a time?'", 'rules'],
+        ["'Just share! It's not a big deal.'", 'brush']]],
+      ['side', "Leo lets go and folds his arms. 'Nobody ever listens to me,' he mutters. Mia smiles, but Leo won't look at either of you.", [
+        ["'Wait, Leo, I didn't hear your side. Can you tell me?'", 'rules'],
+        ["'Okay, problem solved.'", 'end_unfair']]],
+      ['brush', "Both of them start talking at once. 'But she—' 'He always—' The marker box tips over.", [
+        ["'Let's take turns talking. Mia first, then Leo. No interrupting.'", 'rules'],
+        ['Pick up the markers and split them yourself.', 'split']]],
+      ['split', "You dump the markers into two piles. Mia's pile has no purple. Leo's pile has no blue. Now both of them are upset with you.", [
+        ["'Sorry. Let me try again. Can each of you tell me what you need?'", 'rules'],
+        ["'That's the best I can do.'", 'end_unfair']]],
+      ['rules', "They put the box down. Mia goes first: 'I'm making a rainbow, and I need all the colors.' Then Leo: 'I only need green and blue for my ocean, and she has them all.'", [
+        ["'So Mia needs lots of colors for the rainbow, and Leo needs green and blue for the ocean. Did I get that right?'", 'heard'],
+        ["'Leo, you can wait until she's done.'", 'side']]],
+      ['heard', "Both of them nod. Leo says, 'Yeah.' Mia says, 'I didn't know he only needed two.'", [
+        ["'What could you try so you both get what you need?'", 'end_agree'],
+        ["'Mia, just give him the blue and green.'", 'end_partial']]],
+      ['end_agree', "Mia says, 'I can do my red and yellow stripes first while Leo uses blue and green.' Leo says, 'And I'll pass them back when I'm done.' They shake on it. Later, Leo borrows Mia's purple and says thank you.\n\nWhat worked:\n• You helped everyone slow down and take turns talking.\n• You didn't pick a side before hearing both stories.\n• You said back what each person needed.\n• You let them make the plan, so they both want it to work."],
+      ['end_partial', "Mia hands over the blue and green, but she grumbles. The problem is fixed for today, but they didn't make the plan themselves.\n\nWhat worked:\n• You listened to both sides and said back what they needed. That's great mediating!\n• Asking 'What could you both try?' lets them solve it. Plans people make themselves last longer."],
+      ['end_unfair', "The markers are split, but Leo feels unheard, and Mia isn't happy either. They sit far apart for the rest of art.\n\nWhat worked:\n• Trying to help is kind.\n• A mediator listens to both sides before deciding anything.\n• Next time, start with: 'Can each of you tell me what happened, one at a time?'"]
+    ]),
+    med4: _cflScript('The Friend Triangle', [
+      ['start', "Jade and Priya agreed to talk, with you as the go-between. Jade: 'We were best friends for THREE years, and now she barely talks to me.' Priya: 'I'm not replacing her! She wants to control who I hang out with, and it's suffocating.'", [
+        ["'Before we start, can we agree to let each person finish, and to talk about feelings instead of insults?'", 'rules'],
+        ["'Jade, you need to let Priya have other friends.'", 'side'],
+        ["'You two have been friends forever. Just make up.'", 'rush']]],
+      ['rush', "Neither of them moves. Jade says, 'It's not that easy.' Priya stares at her phone.", [
+        ["'You're right, that was too quick. Can we start over, with each of you getting a turn?'", 'rules'],
+        ["'Well, I tried.' Leave them to it.", 'end_stalled']]],
+      ['side', "Jade's eyes fill up. 'So you're on her side too.' She stands up like she's about to leave.", [
+        ["'I'm not on anyone's side. I want to hear you both. Will you stay?'", 'rules'],
+        ["'I'm just saying what everyone thinks.'", 'end_stalled']]],
+      ['rules', "They both agree. Jade goes first: 'I feel left behind, like I'm not enough anymore.' Then Priya: 'I miss her too. But when she gets mad at me for sitting with other people, I feel trapped.'", [
+        ["'Jade, it sounds like you're scared of losing the friendship. Priya, it sounds like you want the friendship and some freedom too.'", 'needs'],
+        ["'Priya, why are you making her feel that way?'", 'side']]],
+      ['needs', "The room gets quieter. Priya says, 'I didn't know she felt not enough.' Jade says, 'I didn't mean to make you feel trapped.' They're looking at each other now.", [
+        ["'What could help you both feel okay? Let's list some ideas.'", 'ideas'],
+        ["'Great, so you're good now.'", 'end_partial']]],
+      ['ideas', "Priya suggests a Saturday that's just the two of them, every couple of weeks. Jade says she'll try to say 'I feel left out' instead of getting angry. Priya says she'll invite Jade along sometimes too.", [
+        ["'Those sound good. Can we check in next week to see how it's going?'", 'end_agree'],
+        ["'Perfect. Done!'", 'end_partial']]],
+      ['end_agree', "Jade and Priya write the plan in their phones: a regular Saturday together, invitations sometimes, and 'I feel left out' instead of anger. A week later, they tell you it's mostly working, and they fix the part that isn't.\n\nWhat worked:\n• Ground rules (one at a time, feelings not insults) made it safe to talk.\n• You stayed neutral, even when it was tempting to pick a side.\n• You named what each person needed underneath the complaint.\n• They made their own plan, and you set a time to follow up."],
+      ['end_partial', "They hug and say they're good. It's a nice moment, but there's no plan for the next time Priya sits with other friends, and the old feelings come back fast.\n\nWhat worked:\n• You helped each of them hear the other's real feelings. That's the hardest step.\n• Asking 'What could help you both?' turns understanding into a plan.\n• A check-in date helps a plan stick."],
+      ['end_stalled', "The talk ends without either of them feeling heard. Jade and Priya walk off in different directions.\n\nWhat worked:\n• Offering to help two friends is caring.\n• Mediators stay neutral and set ground rules first.\n• Rushing to 'just make up' skips the part where people feel heard."]
+    ]),
+    med7: _cflScript('The Academic Integrity Clash', [
+      ['start', "Ethan and Aisha ran a lab experiment together. Ethan: 'We can't share our lab write-ups, period. If they find similar wording, we BOTH get zeros.' Aisha: 'Collaboration is how learning works! We did the experiment TOGETHER.' They ask you to help sort it out before it's due.", [
+        ["'Can each of you explain your concern while the other just listens? Then we'll look at options.'", 'rules'],
+        ["'Aisha's right. Working together isn't cheating.'", 'side'],
+        ["'Just do whatever. The teacher won't notice.'", 'dismiss']]],
+      ['dismiss', "Ethan looks alarmed. 'That's exactly what I'm worried about.' Aisha rolls her eyes. Now Ethan doesn't trust you either.", [
+        ["'Fair. That wasn't helpful. Let's hear each of you out.'", 'rules'],
+        ["'Okay, you two figure it out.'", 'end_stalled']]],
+      ['side', "Ethan's jaw tightens. 'Great. So I'm the paranoid one.' He starts packing up his notebook.", [
+        ["'Sorry, I jumped in. Ethan, I want to hear your side too.'", 'rules'],
+        ["'Ethan, you're overthinking this.'", 'end_stalled']]],
+      ['rules', "Ethan goes first: 'My scholarship depends on my GPA. I can't risk an integrity violation.' Aisha listens, then says: 'I'm not asking to copy. I just don't want to pretend we didn't work together. That feels dishonest too.'", [
+        ["'So Ethan needs to be safe from an integrity problem, and Aisha needs to be honest about the teamwork. Is that right?'", 'needs'],
+        ["'Aisha, can't you just write it alone?'", 'side']]],
+      ['needs', "They both nod. Aisha says, 'I didn't know about the scholarship.' Ethan says, 'I don't think you're trying to cheat.'", [
+        ["'What options could meet both needs?'", 'options'],
+        ["'So, Aisha, just write it alone.'", 'end_partial']]],
+      ['options', "Aisha: 'We could share the data but write the analysis separately.' Ethan: 'And we could ask the teacher what's allowed, so we know for sure.'", [
+        ["'Who will ask the teacher, and when?'", 'end_agree'],
+        ["'Good ideas. You'll figure out the rest.'", 'end_partial']]],
+      ['end_agree', "Ethan emails the teacher that night, and Aisha adds that they collected the data together. The teacher replies: shared data is fine, the analysis must be in your own words, and list your partner. Both of them are relieved.\n\nWhat worked:\n• You let each person speak while the other listened.\n• You named the need under each position: safety for Ethan, honesty for Aisha.\n• Asking 'What options meet both needs?' moved them from arguing to solving.\n• A clear next step (who asks, and when) turns an idea into action."],
+      ['end_partial', "They agree in principle, but nobody owns the next step. The night before it's due, they're arguing again.\n\nWhat worked:\n• You helped them understand each other's real concerns.\n• Plans need owners: 'Who will do what, and by when?'\n• Mediators help people find their own solution instead of handing one out."],
+      ['end_stalled', "They leave without a plan. Ethan writes his alone, and Aisha feels judged. The tension follows them to the next lab.\n\nWhat worked:\n• Stepping in to help was a good instinct.\n• Picking a side, or brushing off a worry, makes the other person stop trusting the mediator.\n• Start with turns to talk, then say back what each person needs."]
+    ])
+  };
+
+  // ══════════════════════════════════════════════════════════════
   // ── Badges ──
   // ══════════════════════════════════════════════════════════════
   var BADGES = [
@@ -955,7 +1119,7 @@ window.SelHub = window.SelHub || {
     { id: 'deescalate_all',   icon: '\u2744\uFE0F',  name: 'De-Escalation Expert',  desc: 'Study all techniques in your grade band' },
     { id: 'first_repair',     icon: '\uD83D\uDC9A', name: 'Bridge Builder',        desc: 'Complete your first repair scenario' },
     { id: 'repair_3',         icon: '\u2764\uFE0F\u200D\uD83E\uDE79', name: 'Healer', desc: 'Complete 3 repair scenarios' },
-    { id: 'ai_mediator',      icon: '\u2728',        name: 'Mediation Seeker',      desc: 'Use the AI mediator' },
+    { id: 'ai_mediator',      icon: '\u2728',        name: 'Mediation Seeker',      desc: 'Use the AI mediator', aiOnly: true },
     { id: 'style_quiz',       icon: '\uD83E\uDDE9', name: 'Self-Aware',            desc: 'Complete the conflict styles quiz' },
     { id: 'style_collab',     icon: '\uD83C\uDF1F', name: 'Collaborator',          desc: 'Score highest in Collaborating style' },
     { id: 'first_apology', retired: true,    icon: '\uD83D\uDC8C', name: 'Brave Apologizer',      desc: 'Complete your first structured apology' },
@@ -966,13 +1130,14 @@ window.SelHub = window.SelHub || {
     { id: 'total_10',         icon: '\uD83C\uDFC6', name: 'Resolution Master',     desc: 'Complete 10 activities across all tabs' },
     { id: 'total_20',         icon: '\uD83D\uDC8E', name: 'Conflict Sage',         desc: 'Complete 20 activities across all tabs' },
     { id: 'streak_3',         icon: '\uD83D\uDD25', name: 'Practice Streak',       desc: 'Practice 3 days in a row' },
-    { id: 'first_roleplay',   icon: '\uD83C\uDFAD', name: 'Role-Player',           desc: 'Complete your first role-play conversation' },
-    { id: 'roleplay_5',       icon: '\uD83C\uDF1F', name: 'Conversation Pro',      desc: 'Complete 5 role-play conversations' },
-    { id: 'roleplay_resolved',icon: '\uD83C\uDF89', name: 'Peace Maker',           desc: 'Reach resolution in a role-play' },
-    { id: 'first_mediation2', icon: '\u2696\uFE0F', name: 'First Mediator',        desc: 'Complete your first AI mediation session' },
-    { id: 'mediation_harmony',icon: '\uD83D\uDD4A\uFE0F', name: 'Harmony Builder', desc: 'Reach harmony > 80 in mediation' },
-    { id: 'mediation_5',      icon: '\uD83E\uDD1D', name: 'Master Mediator',       desc: 'Complete 5 mediation sessions' },
-    { id: 'roleplay_streak',  icon: '\u26A1',        name: 'Resolution Streak',     desc: 'Resolve 3 scenarios in a row' }
+    { id: 'first_roleplay',   icon: '\uD83C\uDFAD', name: 'Role-Player',           desc: 'Complete your first role-play conversation', aiOnly: true },
+    { id: 'roleplay_5',       icon: '\uD83C\uDF1F', name: 'Conversation Pro',      desc: 'Complete 5 role-play conversations', aiOnly: true },
+    { id: 'roleplay_resolved',icon: '\uD83C\uDF89', name: 'Peace Maker',           desc: 'Reach resolution in a role-play', aiOnly: true },
+    { id: 'first_mediation2', icon: '\u2696\uFE0F', name: 'First Mediator',        desc: 'Complete your first AI mediation session', aiOnly: true },
+    { id: 'mediation_harmony',icon: '\uD83D\uDD4A\uFE0F', name: 'Harmony Builder', desc: 'Reach harmony > 80 in mediation', aiOnly: true },
+    { id: 'mediation_5',      icon: '\uD83E\uDD1D', name: 'Master Mediator',       desc: 'Complete 5 mediation sessions', aiOnly: true },
+    { id: 'roleplay_streak',  icon: '\u26A1',        name: 'Resolution Streak',     desc: 'Resolve 3 scenarios in a row', aiOnly: true },
+    { id: 'scripted_scene',   icon: '🎬', name: 'Scene Rehearser',       desc: 'Finish a scripted role-play scene' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -998,6 +1163,8 @@ window.SelHub = window.SelHub || {
     desc: 'Practice resolving conflicts with branching scenarios, I-statements, de-escalation techniques, and repair strategies.',
     color: 'emerald',
     category: 'relationship-skills',
+    // Role-Play tab plays scripted scenes without AI.
+    offlineScripts: { practice: CFL_RP_SCRIPTS, mediation: CFL_MED_SCRIPTS },
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _cflT = (ctx && ctx.theme) || {};
@@ -1023,6 +1190,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _cflAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand || 'elementary';
       var onSafetyFlag = ctx.onSafetyFlag || null;
 
@@ -1035,6 +1203,8 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab     = d.activeTab || 'apology';
+      // Without AI the Role-Play tab plays scripted scenes; only the free-text mediator is hidden.
+      if (!_cflAiOn && activeTab === 'mediator') activeTab = 'apology';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Conflict Theater state
@@ -1117,7 +1287,7 @@ window.SelHub = window.SelHub || {
       // Practice log & badges
       var practiceLog    = d.practiceLog || [];
       var earnedBadges   = d.earnedBadges || {};
-      var shownBadges = BADGES.filter(function(b) { return !b.retired || earnedBadges[b.id]; }); // retired badges show only to students who earned them
+      var shownBadges = BADGES.filter(function(b) { return (!b.retired && (_cflAiOn || !b.aiOnly)) || earnedBadges[b.id]; }); // retired badges, and AI-only ones without usable AI, show only if earned
       var showBadgePopup = d.showBadgePopup || null;
       var showBadgesPanel = d.showBadgesPanel || false;
       var badgeDialogRef = React.useRef(null);
@@ -1241,7 +1411,19 @@ window.SelHub = window.SelHub || {
         { id: 'mediator', label: '\u2728 AI Mediator' },
         { id: 'roleplay', label: '\uD83C\uDFAD Role-Play' },
         { id: 'progress', label: '\uD83D\uDCCA Progress' }
-      ];
+      ].filter(function(t) { return _cflAiOn || t.id !== 'mediator'; });
+
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _cflTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var cflTs = (_cflTsApi && typeof _cflTsApi.bind === 'function') ? _cflTsApi.bind({ ctx: ctx, h: h, toolId: 'conflict', d: d, set: upd, announce: announceToSR,
+        aiTopic: 'a realistic everyday conflict between students that the player helps repair',
+        aiExtra: 'Choices are things the player could say; scenes show how the other person reacts.',
+        ideaPrefix: "Teacher's idea for the conflict: " }) : null;
+      var cflStartTeacher = function(s) {
+        upd({ rpModeRP: 'scripted', rpScriptKey: s.key, rpScriptRun: (d.rpScriptRun || 0) + 1, rpScriptPath: null, rpScriptEnding: null, rpScriptReflectDraft: '', rpScriptReflectSaved: false });
+        if (soundEnabled) sfxClick();
+        if (announceToSR) announceToSR('Scripted scene started: ' + (s.title || cflTs.from) + '.');
+      };
 
       var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -1377,7 +1559,7 @@ window.SelHub = window.SelHub || {
           conflictRouteCard('Build the words', 'Turn blame into an I-statement.', 'istate', '#3b82f6'),
           conflictRouteCard('Lower the heat', 'Use a reset before solving anything.', 'cooldown', '#0ea5e9'),
           conflictRouteCard('Repair after harm', 'Name impact and make a concrete next step.', 'repair', '#a855f7'),
-          conflictRouteCard('Rehearse live', 'Practice a hard talk in role-play mode.', 'roleplay', '#f59e0b')
+          _cflAiOn && conflictRouteCard('Rehearse live', 'Practice a hard talk in role-play mode.', 'roleplay', '#f59e0b')
         )
       );
 
@@ -2172,7 +2354,7 @@ window.SelHub = window.SelHub || {
             h('button', {
               onClick: function() {
                 if (!medPrompt.trim()) { addToast('Describe the conflict first!', 'info'); return; }
-                if (!callGemini) { addToast('AI mediator not available.', 'error'); return; }
+                if (!_cflAiOn) return;
                 upd('medLoading', true); upd('medResponse', null);
                 var sysPrompt = 'You are a compassionate conflict resolution mediator for ' + band + ' school students.\n\n' +
                   'A student has described a conflict they\'re experiencing.\n\n' +
@@ -2229,7 +2411,7 @@ window.SelHub = window.SelHub || {
       // ── TAB: Role-Play (AI-powered practice & mediation) ──
       // ══════════════════════════════════════════════════════════
       var roleplayContent = null;
-      if (activeTab === 'roleplay') {
+      if (activeTab === 'roleplay' && _cflAiOn && rpModeRP !== 'scripted') {
         var rpScenarios = ROLEPLAY_SCENARIOS[band] || ROLEPLAY_SCENARIOS.elementary;
         var medScenarios2 = MEDIATION_SCENARIOS[band] || MEDIATION_SCENARIOS.elementary;
 
@@ -2263,6 +2445,7 @@ window.SelHub = window.SelHub || {
           roleplayContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _cflFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFAD Role-Play Lab'),
             h('p', { style: { textAlign: 'center', color: _cflFg('#94a3b8'), fontSize: 12, marginBottom: 20 } }, 'Practice conflict resolution with AI-powered conversations.'),
+            cflTs ? cflTs.renderSection({ onPlay: cflStartTeacher }) : null,
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
               h('button', { 'aria-label': 'Practice Mode',
                 onClick: function() { upd('rpModeRP', 'practice'); if (soundEnabled) sfxClick(); },
@@ -2284,6 +2467,16 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 16, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 4 } }, 'Mediation Mode'),
                   h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8'), lineHeight: 1.5 } }, 'Mediate a conflict between two AI characters. Guide them toward resolution and build harmony.'),
                   medMediationCompleted > 0 && h('div', { style: { fontSize: 11, color: _cflFg('#8b5cf6'), marginTop: 4 } }, medMediationCompleted + ' completed')
+                )
+              ),
+              h('button', { 'data-cfl-scripted-mode': 'true',
+                onClick: function() { upd({ rpModeRP: 'scripted', rpScriptKey: null }); if (soundEnabled) sfxClick(); },
+                style: { display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderRadius: 14, border: '1px solid #334155', background: 'transparent', cursor: 'pointer', textAlign: 'left' }
+              },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 26, flexShrink: 0 } }, '🎬'),
+                h('div', null,
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 2 } }, 'Scripted scenes (no AI)'),
+                  h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8'), lineHeight: 1.5 } }, 'Choose what to say from a few options and see how each person reacts.')
                 )
               )
             )
@@ -2421,6 +2614,7 @@ window.SelHub = window.SelHub || {
                   return;
                 }
               }
+              if (!_cflAiOn) return;
               var newHistory = rpChatHistory.concat([{ role: 'user', text: userMsg }]);
               upd({ rpChatHistory: newHistory, rpLoadingRP: true, rpTurnCount: rpTurnCount + 1, rpInputText: '' });
 
@@ -2681,6 +2875,7 @@ window.SelHub = window.SelHub || {
                   return;
                 }
               }
+              if (!_cflAiOn) return;
               var newHistory = medChatHistory2.concat([{ role: 'mediator', text: userMsg }]);
               upd({ medChatHistory2: newHistory, medLoadingRP: true, medTurnCount: medTurnCount + 1, medInputText: '' });
 
@@ -2808,6 +3003,148 @@ window.SelHub = window.SelHub || {
       }
 
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Role-Play, scripted scenes (no AI, 2026-11-04) ──
+      // Without AI this IS the Role-Play tab; with AI it is a third mode.
+      // Zero AI calls: AdventureOffline is pure UI; safety is the local regex check.
+      // ══════════════════════════════════════════════════════════
+      if (activeTab === 'roleplay' && (!_cflAiOn || rpModeRP === 'scripted')) {
+        roleplayContent = (function() {
+          var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+          var aoTheme = _cflHC ? 'contrast' : (_cflL ? 'light' : 'dark');
+          var aoT = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
+          var findSc = function(bank, id) { var all = [].concat(bank.elementary, bank.middle, bank.high); for (var i = 0; i < all.length; i++) { if (all[i].id === id) return all[i]; } return null; };
+          var entries = [];
+          Object.keys(CFL_RP_SCRIPTS).forEach(function(k) { var sc = findSc(ROLEPLAY_SCENARIOS, k); if (sc) entries.push({ key: k, kind: 'practice', sc: sc, story: CFL_RP_SCRIPTS[k] }); });
+          Object.keys(CFL_MED_SCRIPTS).forEach(function(k) { var sc = findSc(MEDIATION_SCENARIOS, k); if (sc) entries.push({ key: k, kind: 'mediation', sc: sc, story: CFL_MED_SCRIPTS[k] }); });
+          // This grade band's scenes first; the rest stay playable.
+          entries.sort(function(a, b) { return (a.sc.band === band ? 0 : 1) - (b.sc.band === band ? 0 : 1); });
+          var done = d.rpScriptDone || {};
+          var foundFor = function(key) { return Object.keys(done).filter(function(x) { return x.indexOf(key + ':') === 0; }).length; };
+          var endCount = function(story) { return story.scenes.filter(function(s) { return s.ending; }).length; };
+          var cur = null;
+          entries.forEach(function(e) { if (e.key === d.rpScriptKey) cur = e; });
+          var curTs = cflTs ? cflTs.byKey(d.rpScriptKey) : null;
+          if (curTs) cur = { key: curTs.key, ts: curTs, sc: { title: curTs.title || cflTs.from }, story: curTs.story };
+          var btnBase = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: _cflFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+          var btnMain = Object.assign({}, btnBase, { border: 'none', background: _cflSolid(ACCENT), color: _cflFg('#fff') });
+          var crisis = ((d._rpScriptTier || 0) >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null;
+          var say = function(msg) { if (announceToSR) announceToSR(msg); };
+
+          if (!cur) {
+            var card = function(e) {
+              var who = e.kind === 'practice' ? e.sc.character.emoji + ' ' + e.sc.character.name : e.sc.charA.emoji + ' ' + e.sc.charA.name + ' and ' + e.sc.charB.emoji + ' ' + e.sc.charB.name;
+              return h('button', { key: e.key, 'data-cfl-script-card': e.key,
+                onClick: function() { upd({ rpScriptKey: e.key, rpScriptRun: (d.rpScriptRun || 0) + 1, rpScriptPath: null, rpScriptEnding: null, rpScriptReflectDraft: '', rpScriptReflectSaved: false }); if (soundEnabled) sfxClick(); say('Scripted scene started: ' + e.sc.title + '.'); },
+                style: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, border: '1px solid #334155', background: _cflBg('#1e293b'), cursor: 'pointer', textAlign: 'left' }
+              },
+                h('div', null,
+                  h('div', { style: { fontSize: 14, fontWeight: 700, color: _cflFg('#f1f5f9'), marginBottom: 2 } }, e.sc.title),
+                  h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8'), lineHeight: 1.4 } }, e.sc.desc),
+                  h('div', { style: { fontSize: 11, color: _cflFg('#94a3b8'), marginTop: 4 } }, who + ' · Endings found: ' + foundFor(e.key) + ' of ' + endCount(e.story))
+                )
+              );
+            };
+            var group = function(kind, label) {
+              return h('div', { role: 'group', 'aria-label': label, style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
+                h('h4', { style: { margin: '0 0 2px', fontSize: 13, color: _cflFg('#cbd5e1') } }, label),
+                entries.filter(function(e) { return e.kind === kind; }).map(card));
+            };
+            return h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                _cflAiOn ? h('button', { 'aria-label': 'Back to role-play modes', onClick: function() { upd('rpModeRP', null); }, style: { background: 'none', border: 'none', color: _cflFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '←') : null,
+                h('h3', { style: { color: _cflFg('#f1f5f9'), fontSize: 18, margin: 0 } }, '🎬 Scripted Role-Play')
+              ),
+              h('p', { style: { color: _cflFg('#94a3b8'), fontSize: 12, marginBottom: 16 } }, 'Choose what to say and see how they react. Each scene has more than one ending; replay to find them all.'),
+              cflTs ? cflTs.renderSection({ onPlay: cflStartTeacher }) : null,
+              group('practice', 'Talk it out (1-on-1)'),
+              group('mediation', 'Mediate (help two people)')
+            );
+          }
+
+          var sceneById = function(id) { for (var i = 0; i < cur.story.scenes.length; i++) { if (cur.story.scenes[i].id === id) return cur.story.scenes[i]; } return null; };
+          var reachEnding = function(endId) {
+            var next = Object.assign({}, done);
+            var first = foundFor(cur.key) === 0;
+            next[cur.key + ':' + endId] = true;
+            upd({ rpScriptEnding: endId, rpScriptDone: next, rpScriptReflectSaved: false });
+            if (first) {
+              // The SEL hub's awardXP takes (amount). XP once per scene.
+              if (typeof awardXP === 'function') awardXP(10);
+              logPractice('roleplay', cur.key);
+              tryAwardBadge('scripted_scene');
+            }
+            say('Ending reached. Read what worked, then reflect.');
+          };
+          // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+          var onPlayerClick = function(ev) {
+            var el = ev && ev.target && ev.target.closest ? ev.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+            if (!el) return;
+            var to = el.getAttribute('data-offline-choice');
+            var target = to ? sceneById(to) : null;
+            if (target && target.ending) reachEnding(to);
+            else if (d.rpScriptEnding) upd('rpScriptEnding', null);
+          };
+          // Built-in player for an older host without AdventureOffline.
+          var fallbackPlayer = function() {
+            var path = (Array.isArray(d.rpScriptPath) ? d.rpScriptPath : []).filter(function(id) { return !!sceneById(id); });
+            if (!path.length) path = [cur.story.start];
+            var scn = sceneById(path[path.length - 1]);
+            var go = function(to) { upd('rpScriptPath', path.concat([to])); var t2 = sceneById(to); if (t2 && t2.ending) reachEnding(to); };
+            return h('section', { 'data-cfl-fallback-player': 'true', 'aria-label': cur.story.title, style: { background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 18 } },
+              h('h3', { style: { margin: '0 0 10px', fontSize: 16, fontWeight: 800, color: _cflFg('#f1f5f9') } }, scn.ending ? 'The end' : 'Step ' + path.length),
+              h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: _cflFg('#e2e8f0') } }, scn.text),
+              !scn.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 14 } },
+                scn.choices.map(function(c, i) { return h('button', { key: i, 'data-cfl-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, btnBase, { textAlign: 'left', fontWeight: 600 }) }, c.label); })),
+              h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
+                h('button', { disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: path.slice(0, -1), rpScriptEnding: null }); }, style: btnBase }, '← Back'),
+                h('button', { disabled: path.length < 2, onClick: function() { upd({ rpScriptPath: [cur.story.start], rpScriptEnding: null }); }, style: scn.ending ? btnMain : btnBase }, scn.ending ? '↺ Play again' : '↺ Start over'))
+            );
+          };
+          var player = (AO && typeof AO.Player === 'function')
+            ? h(AO.Player, { key: cur.key + ':' + (d.rpScriptRun || 0), story: cur.story, t: aoT, theme: aoTheme })
+            : fallbackPlayer();
+          var who2 = cur.ts ? cflTs.from : cur.kind === 'practice' ? 'Talk it out with ' + cur.sc.character.emoji + ' ' + cur.sc.character.name : 'Mediate between ' + cur.sc.charA.emoji + ' ' + cur.sc.charA.name + ' and ' + cur.sc.charB.emoji + ' ' + cur.sc.charB.name;
+          var draft = String(d.rpScriptReflectDraft || '');
+          return h('div', { style: { padding: 20, maxWidth: 620, margin: '0 auto' } },
+            crisis,
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+              h('button', { onClick: function() { upd({ rpScriptKey: null, rpScriptEnding: null }); }, style: Object.assign({}, btnBase, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cflFg('#94a3b8') }) }, '← All scenes'),
+              h('div', null,
+                h('h3', { style: { margin: 0, fontSize: 17, color: _cflFg('#f1f5f9') } }, cur.sc.title),
+                h('div', { style: { fontSize: 12, color: _cflFg('#94a3b8') } }, who2)
+              )
+            ),
+            cur.ts ? cflTs.renderIntro(cur.ts) : null,
+            h('div', { 'data-cfl-script-player': cur.key, onClick: onPlayerClick }, player),
+            h('p', { style: { fontSize: 11, color: _cflFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundFor(cur.key) + ' of ' + endCount(cur.story)),
+            d.rpScriptEnding ? h('div', { 'data-cfl-reflect': 'true', style: { background: _cflBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14 } },
+              h('label', { htmlFor: 'cfl-reflect-script', style: { display: 'block', fontSize: 13, fontWeight: 800, color: _cflFg('#f1f5f9'), marginBottom: 6 } }, '✍️ Reflect'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: _cflFg('#cbd5e1'), lineHeight: 1.5 } }, cur.kind !== 'mediation'
+                ? 'Which choice changed how the other person reacted? What words could you use in a real disagreement?'
+                : 'Which mediation step helped most? What would you say first if you helped two friends in real life?'),
+              h('textarea', { id: 'cfl-reflect-script', value: draft, rows: 3, maxLength: 2000,
+                onChange: function(e) { upd('rpScriptReflectDraft', e.target.value); },
+                style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #475569', background: _cflBg('#0f172a'), color: _cflFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+                h('button', { 'data-cfl-reflect-save': 'true', disabled: !draft.trim(), style: btnMain, onClick: function() {
+                  var txt = draft.trim();
+                  if (!txt) return;
+                  if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                    var chk = window.SelHub.safeRehearseCheck(txt, { toolId: 'conflict', onSafetyFlag: onSafetyFlag });
+                    if (chk && chk.action === 'block') { upd('_rpScriptTier', 3); say('Please use the support resources on this screen.'); }
+                  }
+                  var list = (Array.isArray(d.rpScriptReflections) ? d.rpScriptReflections : []).concat([{ scenarioId: cur.key, ending: d.rpScriptEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+                  upd({ rpScriptReflections: list, rpScriptReflectDraft: '', rpScriptReflectSaved: true });
+                  say('Reflection saved.');
+                } }, 'Save reflection'),
+                d.rpScriptReflectSaved ? h('span', { role: 'status', style: { fontSize: 12, color: _cflFg('#94a3b8') } }, 'Saved to your work.') : null
+              )
+            ) : null
+          );
+        })();
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── TAB: Progress ──
       // ══════════════════════════════════════════════════════════
       var progressContent = null;
@@ -2860,11 +3197,13 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
+      if (activeTab === 'roleplay' && cflTs && cflTs.editing) roleplayContent = cflTs.renderEditor();
       var content = cfContent || isContent || deContent || rpContent || stylesContent || apologyContent || cooldownContent || medContent || roleplayContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('conflict', h, ctx) : null),
         tabBar,
+        (cflTs && activeTab !== 'roleplay') ? cflTs.renderJump({ onOpen: function() { upd({ activeTab: 'roleplay', rpModeRP: 'scripted', rpScriptKey: null }); } }) : null,
         heroBand,
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),

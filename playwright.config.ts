@@ -19,8 +19,8 @@ import { defineConfig, devices } from '@playwright/test';
  * and make every one of them slower.
  *
  * NOTE ON baseURL (2026-08-16): the default is the live Cloudflare shell at
- * .../app/. The old default, https://prismflow-911fe.web.app, still answers 200
- * but serves a FROZEN pre-migration bundle (main.0b2144c6.js vs the repo's
+ * .../app/. The old default, https://prismflow-911fe.web.app, must stay offline;
+ * it served a FROZEN pre-migration bundle (main.0b2144c6.js vs the repo's
  * main.bf002dda.js), so the whole suite silently "passed" against months-old
  * code. The Prismflow production-path cleanup (AGENT_HANDOFF.md, 2026-07-09)
  * moved serving to the CDN; nothing repointed this file until now.

@@ -32,7 +32,7 @@ describe('Solar System SVG keyboard alternatives', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.earth',
+        selectedPlanet: 'Earth',
         showDefender: true,
         showCrater: true,
       },

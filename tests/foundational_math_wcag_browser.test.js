@@ -49,6 +49,7 @@ const fractionCases = Object.entries(fractionTabs).flatMap(([navMode, tabs]) => 
   file: 'stem_lab/stem_tool_fractions.js',
   id: 'fractionViz',
   state: { _fractions: { navMode, tab } },
+  asTeacher: navMode === 'teacher',
 })));
 
 const fractionNestedCases = [
@@ -66,6 +67,7 @@ const fractionNestedCases = [
   file: 'stem_lab/stem_tool_fractions.js',
   id: 'fractionViz',
   state: { _fractions: { navMode, tab, [stateKey]: value } },
+  asTeacher: navMode === 'teacher' || value === 'tabguide',
 })));
 
 const numberLineCases = ['explore', 'challenges', 'skipcount', 'fracdec', 'magCompare'].map((tab) => ({
@@ -168,7 +170,7 @@ function renderCase(testCase) {
   resetStemLab();
   document.head.querySelectorAll('style').forEach((style) => style.remove());
   loadTool(testCase.file, testCase.id);
-  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides ? { ...testCase.overrides, theme: themeFor(testCase) } : undefined));
+  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides ? { ...testCase.overrides, theme: themeFor(testCase) } : testCase.asTeacher ? { isTeacherMode: true } : undefined));
 }
 
 function compactViolations(violations) {

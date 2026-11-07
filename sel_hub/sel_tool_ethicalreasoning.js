@@ -621,17 +621,17 @@ window.SelHub = window.SelHub || {
   var BADGES = [
     { id: 'ethics-scholar', name: 'Ethics Scholar', emoji: '\uD83C\uDF93', desc: 'Studied 3+ ethical frameworks', check: function(d) { return (d.frameworksStudied || []).length >= 3; } },
     { id: 'dilemma-solver', name: 'Dilemma Solver', emoji: '\uD83E\uDDE9', desc: 'Completed 5+ branching dilemmas', check: function(d) { return (d.dilemmasCompleted || []).length >= 5; } },
-    { id: 'framework-thinker', name: 'Framework Thinker', emoji: '\uD83D\uDD2D', desc: 'Analyzed a dilemma through 3 different frameworks', check: function(d) { return (d.frameworksApplied || []).length >= 3; } },
-    { id: 'debate-champion', name: 'Debate Champion', emoji: '\uD83C\uDFC5', desc: 'Completed 3+ debate preparations', check: function(d) { return (d.debatesCompleted || 0) >= 3; } },
-    { id: 'moral-philosopher', name: 'Moral Philosopher', emoji: '\uD83E\uDDD9', desc: 'Completed the moral reasoning assessment', check: function(d) { return d.kohlbergComplete === true; } },
-    { id: 'socratic-thinker', name: 'Socratic Thinker', emoji: '\uD83C\uDFDB\uFE0F', desc: 'Engaged in 5+ rounds of Socratic dialogue', check: function(d) { return (d.dialogue || []).length >= 10; } },
+    { id: 'framework-thinker', name: 'Framework Thinker', emoji: '\uD83D\uDD2D', desc: 'Analyzed a dilemma through 3 different frameworks', aiOnly: true, check: function(d) { return (d.frameworksApplied || []).length >= 3; } },
+    { id: 'debate-champion', name: 'Debate Champion', emoji: '\uD83C\uDFC5', desc: 'Completed 3+ debate preparations', aiOnly: true, check: function(d) { return (d.debatesCompleted || 0) >= 3; } },
+    { id: 'moral-philosopher', name: 'Moral Philosopher', emoji: '\uD83E\uDDD9', desc: 'Completed the moral reasoning assessment', aiOnly: true, check: function(d) { return d.kohlbergComplete === true; } },
+    { id: 'socratic-thinker', name: 'Socratic Thinker', emoji: '\uD83C\uDFDB\uFE0F', desc: 'Engaged in 5+ rounds of Socratic dialogue', aiOnly: true, check: function(d) { return (d.dialogue || []).length >= 10; } },
     { id: 'perspective-master', name: 'Perspective Master', emoji: '\uD83D\uDC41\uFE0F', desc: 'Explored all stakeholder perspectives in a dilemma', check: function(d) { return d.allStakeholdersViewed === true; } },
     { id: 'deep-diver', name: 'Deep Diver', emoji: '\uD83C\uDF0A', desc: 'Explored 3+ deep contemporary dilemmas', check: function(d) { return (d.deepDilemmasExplored || []).length >= 3; } },
-    { id: 'case-study-scholar', name: 'Case Study Scholar', emoji: '\uD83D\uDCD6', desc: 'Completed 3+ ethical case studies', check: function(d) { return (d.caseStudiesCompleted || []).length >= 3; } },
-    { id: 'values-explorer', name: 'Values Explorer', emoji: '\uD83D\uDC8E', desc: 'Completed the values clarification exercise', check: function(d) { return d.valuesComplete === true; } },
+    { id: 'case-study-scholar', name: 'Case Study Scholar', emoji: '\uD83D\uDCD6', desc: 'Completed 3+ ethical case studies', aiOnly: true, check: function(d) { return (d.caseStudiesCompleted || []).length >= 3; } },
+    { id: 'values-explorer', name: 'Values Explorer', emoji: '\uD83D\uDC8E', desc: 'Completed the values clarification exercise', aiOnly: true, check: function(d) { return d.valuesComplete === true; } },
     { id: 'decision-tree-builder', name: 'Decision Tree Builder', emoji: '\uD83C\uDF32', desc: 'Built an ethical decision tree', check: function(d) { return d.decisionTreeComplete === true; } },
     { id: 'philosophy-fan', name: 'Philosophy Fan', emoji: '\uD83E\uDDD0', desc: 'Explored 4+ philosophers', check: function(d) { return (d.philosophersExplored || []).length >= 4; } },
-    { id: 'ethical-leader', name: 'Ethical Leader', emoji: '\uD83C\uDF1F', desc: 'Earned 8+ other badges', check: function(d) {
+    { id: 'ethical-leader', name: 'Ethical Leader', emoji: '\uD83C\uDF1F', desc: 'Earned 8+ other badges', aiOnly: true /* 8 needs AI badges */, check: function(d) {
       var count = 0;
       for (var i = 0; i < BADGES.length; i++) {
         if (BADGES[i].id !== 'ethical-leader' && BADGES[i].check(d)) count++;
@@ -679,6 +679,7 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var callGemini = ctx.callGemini;
+      var _ethAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
@@ -710,6 +711,9 @@ window.SelHub = window.SelHub || {
       };
 
       var tab = d.tab || 'dilemmas';
+      if (!_ethAiOn && tab === 'dialogue') tab = 'dilemmas';
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _ethAiOn || !b.aiOnly || b.check(d); });
       var selectedDilemma = d.dilemmaId ? DILEMMAS.find(function(dl) { return dl.id === d.dilemmaId; }) : null;
       var selectedFramework = d.frameworkId || null;
       var dialogueHistory = d.dialogue || [];
@@ -718,7 +722,7 @@ window.SelHub = window.SelHub || {
 
       // ── Socratic dialogue with AI ──
       var askSocratic = function(userInput) {
-        if (!callGemini || !userInput) return;
+        if (!_ethAiOn || !userInput) return;
         upd('aiLoading', true);
         var dilemmaContext = selectedDilemma ? 'The dilemma is: ' + selectedDilemma.title + '. ' + selectedDilemma.scenario : '';
         var frameworkContext = selectedFramework ? 'The student is currently analyzing through the lens of: ' + (FRAMEWORKS.find(function(f) { return f.id === selectedFramework; }) || {}).name + '.' : '';
@@ -752,7 +756,7 @@ window.SelHub = window.SelHub || {
 
       // ── Generate AI analysis through a framework ──
       var analyzeWithFramework = function(frameworkId) {
-        if (!callGemini || !selectedDilemma) return;
+        if (!_ethAiOn || !selectedDilemma) return;
         upd('aiLoading', true);
         var fw = FRAMEWORKS.find(function(f) { return f.id === frameworkId; });
         var prompt = 'Analyze this ethical dilemma through the lens of ' + fw.name + ' (' + fw.thinker + ').\n' +
@@ -777,7 +781,7 @@ window.SelHub = window.SelHub || {
 
       // ── Generate AI debate feedback ──
       var getDebateFeedback = function() {
-        if (!callGemini) return;
+        if (!_ethAiOn) return;
         upd('aiLoading', true);
         var topic = d.debateTopicObj;
         var side = d.debateSide;
@@ -812,7 +816,7 @@ window.SelHub = window.SelHub || {
 
       // ── Generate Kohlberg assessment AI feedback ──
       var getKohlbergFeedback = function() {
-        if (!callGemini) return;
+        if (!_ethAiOn) return;
         upd('aiLoading', true);
         var answers = d.kohlbergAnswers || {};
         var answerTexts = [];
@@ -874,7 +878,7 @@ window.SelHub = window.SelHub || {
           // Badge counter
           h('div', { className: 'ml-auto flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-3 py-1' },
             h('span', { className: 'text-sm' }, '\uD83C\uDFC5'),
-            h('span', { className: 'text-xs font-bold text-amber-700' }, countBadges(d) + '/' + BADGES.length)
+            h('span', { className: 'text-xs font-bold text-amber-700' }, countBadges(d) + '/' + shownBadges.length)
           )
         ),
 
@@ -887,7 +891,7 @@ window.SelHub = window.SelHub || {
             { id: 'casestudies', label: '\uD83D\uDCD6 Cases' },
             { id: 'frameworks', label: '\uD83C\uDFDB\uFE0F Frameworks' },
             { id: 'explore', label: '\uD83D\uDD0D Explore' },
-            { id: 'dialogue', label: '\uD83D\uDCAC Socratic' },
+            _ethAiOn ? { id: 'dialogue', label: '\uD83D\uDCAC Socratic' } : null,
             { id: 'values', label: '\uD83D\uDC8E Values' },
             { id: 'decisiontree', label: '\uD83C\uDF32 Tree' },
             { id: 'philosophy', label: '\uD83E\uDDD0 Thinkers' },
@@ -895,7 +899,7 @@ window.SelHub = window.SelHub || {
             { id: 'debate', label: '\uD83C\uDFA4 Debate' },
             { id: 'badges', label: '\uD83C\uDFC5 Badges' },
           ].map(function(t) {
-            return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); }, style: { minWidth: 92 },
+            return t && h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); }, style: { minWidth: 92 },
               className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700')
             }, t.label);
           })
@@ -1114,7 +1118,7 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // AI discussion button
-                  callGemini && h('button', { 'aria-label': 'AI discussion button', onClick: function() {
+                  _ethAiOn && h('button', { 'aria-label': 'AI discussion button', onClick: function() {
                     upd('aiLoading', true);
                     var prompt = 'A ' + (gradeLevel || '5th grade') + ' student is exploring an ethical scenario.\n' +
                       'Scenario: ' + sc.scenario + '\n' +
@@ -1216,7 +1220,7 @@ window.SelHub = window.SelHub || {
                 }),
 
                 // Apply to active dilemma
-                selectedDilemma && h('button', { onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
+                _ethAiOn && selectedDilemma && h('button', { onClick: function() { analyzeWithFramework(fw.id); upd('tab', 'explore'); },
                   disabled: aiLoading,
                   className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-40 flex items-center gap-2'
                 }, h(Sparkles, { size: 14 }), 'Analyze "' + selectedDilemma.title + '" with this framework')
@@ -1303,7 +1307,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-300 bg-white text-slate-800',
               'aria-label': 'Your ethical position'
             }),
-            d.position && d.position.length > 20 && h('button', { 'aria-label': 'Challenge my reasoning with Socratic dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
+            _ethAiOn && d.position && d.position.length > 20 && h('button', { 'aria-label': 'Challenge my reasoning with Socratic dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
               className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2'
             }, '\uD83D\uDCAC Challenge my reasoning with Socratic dialogue')
           ),
@@ -1311,7 +1315,7 @@ window.SelHub = window.SelHub || {
           // Quick analyze buttons
           h('div', {  className: 'flex flex-wrap gap-2' },
             FRAMEWORKS.map(function(fw) {
-              return h('button', { 'aria-label': 'Analyze with framework', key: fw.id, onClick: function() { analyzeWithFramework(fw.id); }, disabled: aiLoading,
+              return _ethAiOn && h('button', { 'aria-label': 'Analyze with framework', key: fw.id, onClick: function() { analyzeWithFramework(fw.id); }, disabled: aiLoading,
                 className: 'px-3 py-1.5 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 transition-colors disabled:opacity-40'
               }, fw.emoji + ' Analyze with ' + fw.name);
             })
@@ -1456,7 +1460,7 @@ window.SelHub = window.SelHub || {
                 },
                   className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors'
                 }, 'Next \u2192'),
-                step === total - 1 && answeredCount >= Math.ceil(total * 0.6) && h('button', { 'aria-label': 'See reasoning pattern', onClick: function() {
+                _ethAiOn && step === total - 1 && answeredCount >= Math.ceil(total * 0.6) && h('button', { 'aria-label': 'See reasoning pattern', onClick: function() {
                   getKohlbergFeedback();
                 }, disabled: aiLoading,
                   className: 'px-6 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors disabled:opacity-40 flex items-center gap-2'
@@ -1601,7 +1605,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Submit for feedback
-              callGemini && h('button', { 'aria-label': 'Get debate feedback', onClick: function() {
+              _ethAiOn && h('button', { 'aria-label': 'Get debate feedback', onClick: function() {
                 if ((!d.debateArgs || d.debateArgs.length < 20)) {
                   addToast('Write at least a few sentences for your arguments first!');
                   return;
@@ -1734,7 +1738,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Socratic dialogue for case study
-              h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
+              _ethAiOn && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83D\uDCAC Socratic Dialogue'),
 
                 csSocratic.length > 0 && h('div', { className: 'space-y-2 max-h-[300px] overflow-y-auto' },
@@ -1755,7 +1759,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex gap-2' },
                   h('input', { 'aria-label': 'Socratic dialogue input for case study', type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
                     onKeyDown: function(e) {
-                      if (e.key === 'Enter' && d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
+                      if (e.key === 'Enter' && d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && _ethAiOn) {
                         var userInput = d.caseStudySocraticInput;
                         upd('aiLoading', true);
                         var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
@@ -1780,7 +1784,7 @@ window.SelHub = window.SelHub || {
                     className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40'
                   }),
                   h('button', { 'aria-label': 'Send Socratic response', disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()), onClick: function() {
-                    if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && callGemini) {
+                    if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && _ethAiOn) {
                       var userInput = d.caseStudySocraticInput;
                       upd('aiLoading', true);
                       var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
@@ -1807,7 +1811,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Mark complete & get AI insight
-              callGemini && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
+              _ethAiOn && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
                 upd('aiLoading', true);
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student just analyzed an ethical case study.\n' +
                   'Case: "' + cs.title + '": ' + cs.background + '\n' +
@@ -1956,7 +1960,7 @@ window.SelHub = window.SelHub || {
               ),
 
               // Complete button
-              callGemini && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
+              _ethAiOn && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
                 upd('aiLoading', true);
                 var rankedNames = ranked.map(function(vid) { var v = VALUES_LIST.find(function(val) { return val.id === vid; }); return v ? v.name : vid; });
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student completed a values clarification exercise.\n' +
@@ -2232,7 +2236,7 @@ window.SelHub = window.SelHub || {
           ),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
-            BADGES.map(function(badge) {
+            shownBadges.map(function(badge) {
               var earned = badge.check(d);
               return h('div', { key: badge.id,
                 className: 'p-4 rounded-2xl border-2 transition-all ' + (earned ? 'border-amber-300 bg-amber-50 shadow-md' : 'border-dashed border-slate-400 bg-slate-50')

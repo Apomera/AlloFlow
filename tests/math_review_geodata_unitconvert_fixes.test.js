@@ -127,6 +127,9 @@ describe('quiz next question', () => {
 describe('save without a unitConvert slice', () => {
   it('saving from an old project with no unitConvert data does not throw', () => {
     const h = harness({});
+    // Engagement build (2026-11-04): a new student guesses first; Save opens
+    // once the guess is locked.
+    buttonWithText(h.render(), 'Lock my guess').props.onClick();
     const save = buttonWithLabel(h.render(), 'Save');
     expect(() => save.props.onClick()).not.toThrow();
     expect(h.uc().history).toHaveLength(1);
@@ -136,7 +139,7 @@ describe('save without a unitConvert slice', () => {
 
 describe('metric-prefix canvas labels', () => {
   it('writes powers of ten as exponents, not as 10+3 or 10-12', () => {
-    const canvas = walk(harness({}).render(), (n) => n.type === 'canvas')[0];
+    const canvas = walk(harness({ unitConvert: { guessFirst: false } }).render(), (n) => n.type === 'canvas')[0];
     const refFn = canvas.ref || canvas.props.ref;
     expect(typeof refFn).toBe('function');
     const drawn = [];

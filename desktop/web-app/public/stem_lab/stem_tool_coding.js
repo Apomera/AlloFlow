@@ -1,4 +1,12 @@
 // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-coding-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-coding-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-coding-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"codingPlayground\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"codingPlayground\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"codingPlayground\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"codingPlayground\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
+    document.head.appendChild(st);
+  })();
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -816,23 +824,33 @@
       var extraTurtles = (opts.extraTurtles || []).slice();
       var vars = {};
       var pitchAngle = opts.pitchAngle || 0, yawAngle = opts.yawAngle || 0, rollAngle = opts.rollAngle || 0, turtleZ = opts.turtleZ || 0;
-      function flattenBlocks(bArr) {
-        var flat = [];
+      // A typed repeat(1000000, ...) froze the tab here, before MAXSTEPS could stop it. Stop expanding at a limit,
+      // leave an empty repeat at once, and budget the array copies that an if or a call inside a big repeat makes.
+      var FLAT_LIMIT = MAXSTEPS * 2, COPY_LIMIT = 2e8, LINE_LIMIT = 200000, copyWork = 0, flatCapped = false;
+      function flattenBlocks(bArr, into) {
+        var out = into || [];
         for (var j = 0; j < bArr.length; j++) {
+          if (out.length >= FLAT_LIMIT) { flatCapped = true; break; }
           var blk = bArr[j];
           if (blk.type === 'repeat') {
             var times = blk.times || 4;
-            for (var r = 0; r < times; r++) { flat = flat.concat(flattenBlocks(blk.children || [])); }
-          } else { flat.push(blk); }
+            for (var r = 0; r < times; r++) {
+              var sizeBefore = out.length;
+              flattenBlocks(blk.children || [], out);
+              if (out.length === sizeBefore) break;
+              if (out.length >= FLAT_LIMIT) { flatCapped = true; break; }
+            }
+          } else { out.push(blk); }
         }
-        return flat;
+        return out;
       }
       var flat = flattenBlocks(blocks);
       var idx = 0;
       var frames = [];
-      var diag = { cappedWhile: false, cappedSteps: false, unknownCalls: [] };
+      var diag = { cappedWhile: false, cappedSteps: flatCapped, unknownCalls: [] };
       while (idx < flat.length) {
-        if (frames.length >= MAXSTEPS) { diag.cappedSteps = true; break; }
+        if (flatCapped) diag.cappedSteps = true;
+        if (frames.length >= MAXSTEPS || copyWork > COPY_LIMIT) { diag.cappedSteps = true; break; }
         var b = flat[idx];
         var preLen = allLines.length, pre3DLen = lines3D.length, audio = null;
         if (b.type === 'setVar') {
@@ -844,6 +862,7 @@
           var condResult = evalCondition(b.condition || 'x > 250', t, vars);
           var branch = condResult ? (b.children || []) : (b.elseChildren || []);
           var branchFlat = flattenBlocks(branch);
+          copyWork += flat.length + branchFlat.length;
           flat = flat.slice(0, idx + 1).concat(branchFlat).concat(flat.slice(idx + 1));
         } else if (b.type === 'forward') {
           var dist = resolveVal(b.distance != null ? b.distance : 50, vars, t);
@@ -901,6 +920,7 @@
             b._iterCount++;
             var whileBody = flattenBlocks(b.children || []);
             var whileMarker = Object.assign({}, b);
+            copyWork += flat.length + whileBody.length;
             flat = flat.slice(0, idx + 1).concat(whileBody).concat([whileMarker]).concat(flat.slice(idx + 1));
           } else { if (b._iterCount >= 1000 && evalCondition(b.condition || 'x < 450', t, vars)) diag.cappedWhile = true; b._iterCount = 0; }
         } else if (b.type === 'function') {
@@ -910,6 +930,7 @@
           var funcBody = vars['__func_' + _fn];
           if (funcBody && funcBody.length > 0) {
             var callBody = flattenBlocks(JSON.parse(JSON.stringify(funcBody)));
+            copyWork += flat.length + callBody.length;
             flat = flat.slice(0, idx + 1).concat(callBody).concat(flat.slice(idx + 1));
           } else if (diag.unknownCalls.indexOf(_fn) < 0) { diag.unknownCalls.push(_fn); }
         } else if (b.type === 'random') {
@@ -917,7 +938,9 @@
           var rMax = resolveVal(b.randomMax != null ? b.randomMax : 100, vars, t);
           vars[b.varName || 'r'] = Math.floor(Math.random() * (rMax - rMin + 1)) + rMin;
         } else if (b.type === 'stamp') {
-          if (allLines.length > 0) {
+          // A stamp doubles the drawing, so 40 of them would never finish.
+          if (allLines.length >= LINE_LIMIT) { diag.cappedSteps = true; }
+          else if (allLines.length > 0) {
             var stampLines = allLines.slice();
             var ox = stampLines[0].x1, oy = stampLines[0].y1;
             var dx = t.x - ox, dy = t.y - oy;
@@ -1525,19 +1548,24 @@
               return gridCopy[ny][nx].wall;
             }
 
-            function flattenRobot(bArr) {
-              var flat = [];
+            // The robot stops after maxSteps, so nothing past this limit could ever run.
+            var ROBOT_FLAT_LIMIT = maxSteps * 2;
+            function flattenRobot(bArr, into) {
+              var flat = into || [];
               for (var j = 0; j < bArr.length; j++) {
+                if (flat.length >= ROBOT_FLAT_LIMIT) break;
                 var blk = bArr[j];
                 if (blk.type === 'repeatR') {
                   var times = blk.times || 3;
                   for (var r = 0; r < times; r++) {
-                    flat = flat.concat(flattenRobot(blk.children || []));
+                    var sizeBefore = flat.length;
+                    flattenRobot(blk.children || [], flat);
+                    if (flat.length === sizeBefore || flat.length >= ROBOT_FLAT_LIMIT) break;
                   }
                 } else if (blk.type === 'whileNotGoal') {
                   // Expand up to maxSteps iterations
-                  for (var w = 0; w < maxSteps; w++) {
-                    flat = flat.concat(flattenRobot(blk.children || []));
+                  for (var w = 0; w < maxSteps && flat.length < ROBOT_FLAT_LIMIT; w++) {
+                    flattenRobot(blk.children || [], flat);
                     flat.push({ type: '_checkGoal' });
                   }
                 } else if (blk.type === 'ifWall') {

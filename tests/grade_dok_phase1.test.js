@@ -58,6 +58,23 @@ function recheckHandler() {
   return new Function('isTeacherMode', 'isProcessing', 'gradeLevel', 'dokLevel', 'handleGenerate', '_resourceMutationStateRef', 'onUpdateResource', 'return ' + shell.slice(start, end));
 }
 
+describe('Source view check failures', () => {
+  const broken = () => fixture(null, { addToast: vi.fn(), setError: vi.fn(), setHistory: vi.fn(() => { throw new Error('storage broke'); }) }).deps;
+  it('returns the reason instead of switching to the error screen when asked', async () => {
+    const deps = broken();
+    const result = await dispatcher.handleGenerate('analysis', null, false, source, { stayOnView: true, inlineFailure: true }, false, deps);
+    expect(result.failureMessage).toMatch(/Error generating content/);
+    expect(deps.setError.mock.calls.filter(([value]) => value)).toEqual([]);
+    expect(deps.addToast).toHaveBeenCalledWith(result.failureMessage, 'error');
+  });
+  it('keeps the error screen for every other caller', async () => {
+    const deps = broken();
+    const result = await dispatcher.handleGenerate('analysis', null, false, source, { stayOnView: true }, false, deps);
+    expect(result).toBeUndefined();
+    expect(deps.setError).toHaveBeenLastCalledWith(expect.stringMatching(/Error generating content/));
+  });
+});
+
 describe('Analyze Source: Depth of Knowledge estimate and targets', () => {
   it.each(['unstructured response', '{}', '[]', '{"accuracy":[]}', '{"readingLevel":""}', '{"readingLevel":" "}', '{"accuracy":"Unknown"}', '{"accuracy":{"rating":"unknown"}}', '{"concepts":["N/A"]}', ''])('keeps an unusable first check retryable (%s)', async response => {
     const { deps } = fixture(null, { callGemini: vi.fn(async () => response), addToast: vi.fn() });
@@ -238,6 +255,25 @@ describe('Analyze Source: Depth of Knowledge estimate and targets', () => {
     live = { ...initial, data: { ...initial.data, originalText: 'A newer edit.' } };
     await handler(true, false, '12th Grade', '', async () => checked, { current: { isTeacherMode: true } }, update)(initial);
     expect(live.data).toMatchObject({ originalText: 'A newer edit.', [flag]: true });
+  });
+  it('analyzes the edited wording, not the wording saved in the report it replaces', async () => {
+    const edited = source + ' Tides follow the Moon.';
+    const initial = { id: 'old-report', type: 'analysis', title: 'Teacher’s title', sourceFamilyId: 'old-report', config: { grade: '5th Grade', language: 'English' },
+      sourceSnapshot: window.AlloModules.InstructionalContext.createSourceSnapshot(source, { sourceArtifactId: 'old-report', language: 'English' }),
+      data: { originalText: source, sourceLanguage: 'English', concepts: ['old finding'], readingLevel: { range: 'Grade 3' }, accuracy: { rating: 'High', reason: '' }, grammar: [] } };
+    let live = initial;
+    const { deps, callGemini } = fixture(rawReport(), { history: [initial], inputText: edited });
+    const generate = async (type, language, loading, input, options, switchView, overrides) => dispatcher.handleGenerate(type, language, loading, input, options, switchView, Object.assign(deps, overrides));
+    const update = (id, apply) => { const next = apply(live); if (next === live) return false; live = next; return live; };
+    globalThis._alloHostHandlers = () => ({ analysisForSourceText: (item, text) => ({ ...item, data: { ...item.data, originalText: text } }) });
+    try {
+      const opened = await recheckHandler()(true, false, '5th Grade', '', generate, { current: { isTeacherMode: true } }, update)(initial, { replace: true, text: edited, inlineFailure: true });
+      expect(opened).toBe(live);
+      expect(callGemini.mock.calls.some(([prompt]) => String(prompt).includes('Tides follow the Moon.'))).toBe(true);
+      expect(live).toMatchObject({ id: 'old-report', title: 'Teacher’s title', data: { originalText: edited, concepts: ['orbit'] } });
+      expect(deps.setHistory).not.toHaveBeenCalled();
+      expect(deps.setGeneratedContent).not.toHaveBeenCalled();
+    } finally { delete globalThis._alloHostHandlers; }
   });
   it('keeps a well-formed estimate, rounds the level and caps the ideas', () => {
     const r = dispatcher.normalizeAnalysisResult(rawReport({ depthOfKnowledge: { level: '2', reason: 'Facts only.', ideas: ['a', 'b', 'c', 'd', 'e'] } }));

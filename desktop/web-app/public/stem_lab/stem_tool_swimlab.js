@@ -181,7 +181,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         else Object.keys(obj).forEach(function(k) { upd(k, obj[k]); });
       };
       var addToast = ctx.addToast || function(msg) { console.log('[SwimLab]', msg); };
-      var callGemini = ctx.callGemini || null;
+      // Student AI-off: null unless text AI is usable, so "Ask the Lifeguard" hides.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
 
       var gradeBand = (ctx.gradeBand || 'g68').toLowerCase();
       if (['k2','g35','g68','g912'].indexOf(gradeBand) === -1) gradeBand = 'g68';
@@ -189,7 +194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       // ── State schema ──
       // No entry consent gate. Modules with heavier content (cold water, ice, autism)
       // surface their own inline content notes. Default view is the menu.
-      var view = d.view || 'menu';
+      var view = (d.view === 'askLifeguard' && !callGemini) ? 'menu' : (d.view || 'menu');
       var consentAccepted = true;  // retained as a no-op flag for compatibility with old saved state
       var modulesVisited = d.modulesVisited || {};
       var quizResults = d.quizResults || {};
@@ -441,10 +446,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
         { id: 'autismWater',  icon: '♾️', label: __alloT('stem.swimlab.autism_water', 'Autism + Water'),              section: 'modules',   desc: __alloT('stem.swimlab.the_160x_drowning_risk_defense_in_dept', 'The 160x drowning risk. Defense-in-depth prevention. Adapted swim instruction. Swimsuit color visibility.'), ready: true },
         // Practice
         { id: 'cumulative',   icon: '🎯', label: __alloT('stem.swimlab.cumulative_quiz', 'Cumulative Quiz'),             section: 'practice',  desc: __alloT('stem.swimlab.15_questions_across_all_nine_modules_m', '15 questions across all nine modules. Missed answers link you straight back to the module you need to review.'), ready: true },
-        { id: 'askLifeguard', icon: '🤖', label: __alloT('stem.swimlab.ask_the_lifeguard_ai', 'Ask the Lifeguard (AI)'),      section: 'practice',  desc: __alloT('stem.swimlab.type_a_swimming_or_water_question_ai_r', 'Type a swimming or water question; AI returns a sourced answer. Educational only.'), ready: true },
+        callGemini && { id: 'askLifeguard', icon: '🤖', label: __alloT('stem.swimlab.ask_the_lifeguard_ai', 'Ask the Lifeguard (AI)'),      section: 'practice',  desc: __alloT('stem.swimlab.type_a_swimming_or_water_question_ai_r', 'Type a swimming or water question; AI returns a sourced answer. Educational only.'), ready: true },
         // Resources
         { id: 'resources',    icon: '📚', label: __alloT('stem.swimlab.resources', 'Resources'),                   section: 'resources', desc: __alloT('stem.swimlab.every_org_cited_in_this_tool_plus_adap', 'Every org cited in this tool, plus adaptive swim programs and Maine-specific links.'), ready: true }
-      ];
+      ].filter(Boolean);
 
       // Section metadata. Order in this array is render order. The "start"
       // section gets a heavier treatment to draw the eye for first-time users.

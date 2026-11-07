@@ -23,10 +23,19 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-numberline-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-numberline-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:is([style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(103, 232, 249)\"],[style*=\"background-color: rgb(103, 232, 249)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(254, 215, 170)\"],[style*=\"background-color: rgb(254, 215, 170)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] :is(.allo-fd-bg,.allo-nl-bg-explore,.allo-nl-bg-challenges,.allo-nl-bg-skipcount):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:is([style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(103, 232, 249)\"],[style*=\"background-color: rgb(103, 232, 249)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(254, 215, 170)\"],[style*=\"background-color: rgb(254, 215, 170)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(8, 145, 178)\"],[style*=\"background-color: rgb(8, 145, 178)\"],[style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"]):not(:empty){color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:is([style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(103, 232, 249)\"],[style*=\"background-color: rgb(103, 232, 249)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(254, 215, 170)\"],[style*=\"background-color: rgb(254, 215, 170)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] :is(.allo-fd-bg,.allo-nl-bg-explore,.allo-nl-bg-challenges,.allo-nl-bg-skipcount):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:is([style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(103, 232, 249)\"],[style*=\"background-color: rgb(103, 232, 249)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(250, 204, 21)\"],[style*=\"background-color: rgb(250, 204, 21)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"],[style*=\"background: rgb(254, 215, 170)\"],[style*=\"background-color: rgb(254, 215, 170)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(8, 145, 178)\"],[style*=\"background-color: rgb(8, 145, 178)\"],[style*=\"background: rgb(6, 182, 212)\"],[style*=\"background-color: rgb(6, 182, 212)\"],[style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  // Tool-owned contrast rules (not generated). Path chips, dark emphasis, grey axis labels.
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-numberline-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-numberline-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"numberline\"] [data-nl-path-step] > span[style*=\"background: rgb(226, 232, 240)\"]{background:#000!important;box-shadow:inset 0 0 0 2px #ffff00}.theme-contrast [data-stem-tool-shell=\"numberline\"] b[class*=\"text-\"]:not(button *){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"numberline\"] svg text:is([fill=\"#64748b\"],[fill=\"#475569\"]){fill:#000!important}";
+    document.head.appendChild(st);
+  })();
+  // end tool-owned contrast rules
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -69,23 +78,1430 @@ window.StemLab = window.StemLab || {
       '.allo-nl-bg-challenges { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-nl-bg-skipcount { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(147,51,234,0.10) 0%, rgba(147,51,234,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
       '.allo-fd-card-pulse { animation: allo-fd-landmark-pop 0.6s ease-out; }',
+      '[data-lp-cell]:focus { outline: none; } [data-lp-cell]:focus-visible { stroke: #c2410c; stroke-width: 4px; fill-opacity: 0.08; }',
       '@media (prefers-reduced-motion: reduce) { .allo-fd-marker, .allo-fd-marker-celebrate, .allo-fd-card-pulse, .allo-fd-repeat-dot { animation: none !important; } .allo-fd-fill, .allo-fd-marker-slide { transition: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
 
+  // Quest-hook labels read the translator of the last render (labels are
+  // getters, so a language change shows on the next read).
+  var __nlLastT = null;
+  var __alloT = function(k, fb) {
+    var v; try { v = typeof __nlLastT === 'function' ? __nlLastT(k, fb) : null; } catch (e) { v = null; }
+    return (v == null || v === k) ? (fb != null ? fb : k) : v;
+  };
+  var FD_MAX_DEN = 100;          // largest denominator the Fractions line will draw
+  var FD_MAX_ABS = 1e12;         // largest value it will plot; beyond this whole-number maths stops being exact
+  var FD_LABEL_MAX_TICKS = 24;   // label every fraction tick only up to this many
+
+  // ═══ PRACTICE ENGINE: pure functions, no React (exposed as config._engine) ═══
+  // Items are graded by POSITION (a marker the student places by pointer or
+  // keyboard) or by a typed answer for "read the line" items. Wrong answers are
+  // matched against named misconceptions before any reveal.
+  var NLE = (function() {
+    function clean(v) {
+      if (typeof v !== 'number' || !isFinite(v)) return v;
+      var r = Number(v.toPrecision(12));
+      return Math.abs(r) < 1e-12 ? 0 : r;
+    }
+    function near(a, b, tol) { return typeof a === 'number' && typeof b === 'number' && isFinite(a) && isFinite(b) && Math.abs(a - b) <= (tol == null ? 1e-9 : tol); }
+    function gcd(a, b) { a = Math.abs(Math.round(a)); b = Math.abs(Math.round(b)); while (b) { var r = a % b; a = b; b = r; } return a || 1; }
+    // Fill {name} placeholders; a replacer FUNCTION so "$&"-style patterns are never expanded.
+    // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
+    function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+    function fill(s, map) {
+      return __alloOneWord(String(s).replace(/\{(\w+)\}/g, function(m, k) { return map && Object.prototype.hasOwnProperty.call(map, k) ? String(map[k]) : m; }));
+    }
+    function fmt(v) { return String(clean(v)); }
+    function fracStr(n, d) { return d === 1 ? String(n) : n + '/' + d; }
+    function mixedStr(v, q) {
+      var sign = v < 0 ? '-' : '';
+      var a = Math.abs(v), w = Math.floor(a + 1e-9), p = Math.round((a - w) * q);
+      if (p === q) { w += 1; p = 0; }
+      if (p === 0) return sign + w;
+      var g = gcd(p, q);
+      return sign + (w ? w + ' ' : '') + (p / g) + '/' + (q / g);
+    }
+    function paren(v) { return v < 0 ? '(' + fmt(v) + ')' : fmt(v); }
+    function ri(rng, lo, hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
+    function pk(rng, arr) { return arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))]; }
+    function seeded(seed) { var s = (seed >>> 0) || 1; return function() { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+    function range(lo, hi, stp) { var out = []; for (var v = lo; v <= hi + 1e-9; v += (stp || 1)) out.push(clean(v)); return out; }
+
+    // Typed answers: integers, decimals, a/b fractions and "w a/b" mixed numbers.
+    function parseAnswer(text) {
+      var s = String(text == null ? '' : text).trim().replace(/[−–]/g, '-').replace(/\s+/g, ' ');
+      if (!s) return null;
+      var m = /^([+-]?)(\d+) (\d+)\/(\d+)$/.exec(s);
+      if (m) {
+        var md = Number(m[4]); if (!md) return null;
+        return { value: (Number(m[2]) + Number(m[3]) / md) * (m[1] === '-' ? -1 : 1), kind: 'mixed' };
+      }
+      m = /^([+-]?\d+)\/([+-]?\d+)$/.exec(s);
+      if (m) { var d = Number(m[2]); if (!d) return null; return { value: Number(m[1]) / d, kind: 'fraction', num: Number(m[1]), den: d }; }
+      if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)) return { value: Number(s), kind: 'number' };
+      return null;
+    }
+
+    // Grade bands for this tool: 2-3 whole numbers + rounding, 4-5 fractions +
+    // decimals, 6+ integers + rationals. The host passes ctx.gradeBand as
+    // 'k2' | 'g35' | 'g68' | 'g912'; 3rd grade is split off g35 by gradeLevel.
+    var BANDS = ['b23', 'b45', 'b6'];
+    function bandFor(gradeBand, gradeLevel) {
+      var gb = String(gradeBand || '').toLowerCase();
+      var gl = String(gradeLevel || '').toLowerCase();
+      if (gb === 'k2') return 'b23';
+      if (gb === 'g35') return /\b3rd\b/.test(gl) ? 'b23' : 'b45';
+      if (gb === 'g68' || gb === 'g912') return 'b6';
+      if (/kindergarten|\b(1st|2nd|3rd)\b/.test(gl)) return 'b23';
+      if (/\b(4th|5th)\b/.test(gl)) return 'b45';
+      if (/\b(6th|7th|8th|9th|10th|11th|12th)\b|college|graduate/.test(gl)) return 'b6';
+      return 'b45';
+    }
+
+    // Tick layout for the Explore / Quick-question lines. Integer ranges of
+    // 4-20 units keep one tick per unit; everything else gets a 1/2/5 x 10^k
+    // major step with value-based minor ticks, and both ends are always drawn.
+    function niceStep(raw) {
+      var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      var m = raw / mag;
+      return clean((m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * mag);
+    }
+    function decimalsOf(x) { var d = 0; while (d < 8 && Math.abs(x * Math.pow(10, d) - Math.round(x * Math.pow(10, d))) > 1e-7) d++; return d; }
+    function lineTicks(min, max) {
+      var len = max - min;
+      if (!(len > 0) || !isFinite(len)) return { majors: [{ v: min, label: true }], minors: [], major: 1, minor: 0 };
+      var major, minorDiv;
+      if (len >= 4 && len <= 20 && near(len, Math.round(len)) && near(min, Math.round(min))) { major = 1; minorDiv = 0; }
+      else {
+        major = niceStep(len / 10);
+        var mant = Math.round(major / Math.pow(10, Math.floor(Math.log10(major) + 1e-9)));
+        minorDiv = mant === 2 ? 4 : mant === 5 ? 5 : (len >= 20 ? 10 : 2);
+      }
+      var majors = [];
+      var k0 = Math.ceil(min / major - 1e-9), k1 = Math.floor(max / major + 1e-9);
+      for (var k = k0; k <= k1; k++) majors.push({ v: clean(k * major), label: true });
+      var hasMin = majors.length && near(majors[0].v, min, major * 1e-6);
+      var hasMax = majors.length && near(majors[majors.length - 1].v, max, major * 1e-6);
+      if (!hasMin) {
+        if (majors.length && majors[0].v - min < 0.4 * major) majors[0].label = false;
+        majors.unshift({ v: clean(min), label: true, end: true });
+      }
+      if (!hasMax) {
+        var last = majors[majors.length - 1];
+        if (last && max - last.v < 0.4 * major) last.label = false;
+        majors.push({ v: clean(max), label: true, end: true });
+      }
+      var minors = [];
+      if (minorDiv) {
+        var minor = major / minorDiv;
+        var m0 = Math.ceil(min / minor - 1e-9), m1 = Math.floor(max / minor + 1e-9);
+        if (m1 - m0 <= 160) {
+          for (var j = m0; j <= m1; j++) {
+            var mv = clean(j * minor);
+            if (Math.abs(mv / major - Math.round(mv / major)) < 1e-6) continue;
+            if (near(mv, min, minor * 1e-6) || near(mv, max, minor * 1e-6)) continue;
+            var idx = Math.round(mv / minor);
+            minors.push({ v: mv, mid: minorDiv % 2 === 0 && ((idx % minorDiv) + minorDiv) % minorDiv === minorDiv / 2 });
+          }
+        }
+      }
+      return { majors: majors, minors: minors, major: major, minor: minorDiv ? major / minorDiv : 0, decimals: Math.max(decimalsOf(major), decimalsOf(min), decimalsOf(max)) };
+    }
+
+    var BAND_TYPES = {
+      b23: ['placeWhole', 'readScale', 'roundLine', 'estimateOpen'],
+      b45: ['placeFraction', 'readFraction', 'placeDecimal', 'estimateOpen'],
+      b6: ['placeInteger', 'hopSum', 'placeRational', 'absDistance', 'estimateOpen']
+    };
+    var ALL_TYPES = ['placeWhole', 'readScale', 'roundLine', 'placeFraction', 'readFraction', 'placeDecimal', 'placeInteger', 'hopSum', 'placeRational', 'absDistance', 'estimateOpen'];
+    var POSITION_TYPES = { placeWhole: true, placeFraction: true, placeDecimal: true, placeInteger: true, hopSum: true, placeRational: true, estimateOpen: true };
+    function typesFor(band, allowed) {
+      if (Array.isArray(allowed)) {
+        var f = allowed.filter(function(x) { return ALL_TYPES.indexOf(x) !== -1; });
+        if (f.length) return f;
+      }
+      return BAND_TYPES[band] || BAND_TYPES.b45;
+    }
+    var _idSeq = 0;
+    function newId() { _idSeq += 1; return 'nl' + Date.now().toString(36) + '-' + _idSeq + '-' + Math.floor(Math.random() * 1e6).toString(36); }
+
+    // opts.young (K-2): every line stays inside 0-20; whole-number lines are mostly 0-10.
+    function genItem(type, band, rng, opts) {
+      rng = rng || Math.random;
+      var young = !!(opts && opts.young);
+      if (ALL_TYPES.indexOf(type) === -1) type = BAND_TYPES[band] ? BAND_TYPES[band][0] : 'placeFraction';
+      var it = { v: 2, id: newId(), type: type, band: band, answer: POSITION_TYPES[type] ? 'position' : (type === 'readFraction' ? 'fraction' : 'number'), tries: 0 };
+      var T, q, p, W;
+      if (type === 'placeWhole') {
+        var variants = [
+          { min: 0, max: 10, step: 1, labels: [0, 5, 10], snap: 1, pool: [1, 2, 3, 4, 6, 7, 8, 9] },
+          { min: 0, max: 20, step: 1, labels: [0, 10, 20], snap: 1, pool: range(1, 19).filter(function(v) { return v !== 10; }) },
+          { min: 0, max: 100, step: 10, labels: [0, 50, 100], snap: 5, pool: range(5, 95, 5).filter(function(v) { return v !== 50; }) },
+          { min: 0, max: 1000, step: 100, labels: [0, 500, 1000], snap: 50, pool: range(50, 950, 50).filter(function(v) { return v !== 500; }) }
+        ];
+        var vr = pk(rng, young ? [variants[0], variants[0], variants[0], variants[1]] : [variants[0], variants[0], variants[1], variants[1], variants[2], variants[3]]);
+        T = pk(rng, vr.pool);
+        it.line = { min: vr.min, max: vr.max, step: vr.step, labels: vr.labels };
+        it.snap = vr.snap; it.tol = vr.snap * 0.49; it.text = fmt(T);
+      } else if (type === 'readScale') {
+        var youngScale = young ? pk(rng, [[1, 10, 0], [1, 10, 10], [2, 5, 0], [2, 10, 0], [5, 4, 0]]) : null;
+        var s = young ? youngScale[0] : pk(rng, [2, 5, 5, 10, 25]);
+        var spaces = young ? youngScale[1] : pk(rng, [5, 10, 10]);
+        var a = young ? youngScale[2] : (rng() < 0.3 ? s * spaces * ri(rng, 1, 3) : 0);
+        var k = ri(rng, 1, spaces - 1);
+        T = a + k * s;
+        it.line = { min: a, max: a + s * spaces, step: s, labels: [a, a + s * spaces] };
+        it.arrow = T; it.k = k; it.s = s; it.spaces = spaces; it.tol = 1e-9; it.text = fmt(T);
+      } else if (type === 'roundLine') {
+        var base = young ? 10 : pk(rng, [10, 10, 100]);
+        var N;
+        do { N = young ? ri(rng, 1, 19) : base === 10 ? ri(rng, 11, 99) : ri(rng, 101, 999); } while (N % base === 0);
+        var lo = Math.floor(N / base) * base, hi = lo + base;
+        T = (N - lo) * 2 >= base ? hi : lo;
+        it.line = { min: lo, max: hi, step: base / 10, labels: [lo, hi], mid: lo + base / 2 };
+        it.arrow = N; it.N = N; it.base = base; it.lo = lo; it.hi = hi; it.binary = true; it.tol = 1e-9; it.text = fmt(N);
+      } else if (type === 'estimateOpen') {
+        if (young) {
+          do { T = ri(rng, 1, 19); } while (T === 10);
+          it.line = { min: 0, max: 20, step: null, open: true, labels: [0, 20] };
+          it.snap = 1; it.tol = 1; it.close = 2; it.text = fmt(T); it.young = true;
+        } else if (band === 'b6') {
+          do { T = ri(rng, -95, 95); } while (Math.abs(T) < 6 || Math.abs(Math.abs(T) - 50) < 4);
+          it.line = { min: -100, max: 100, step: null, open: true, labels: [-100, 100] };
+          it.snap = 1; it.tol = 10; it.close = 20; it.text = fmt(T);
+        } else if (band === 'b45' && rng() < 0.5) {
+          var fr = pk(rng, [[1, 4], [3, 4], [1, 3], [2, 3], [1, 5], [2, 5], [3, 5], [4, 5], [1, 8], [3, 8], [5, 8], [7, 8], [1, 10], [3, 10], [7, 10], [9, 10], [1, 6], [5, 6]]);
+          T = fr[0] / fr[1]; it.p = fr[0]; it.q = fr[1];
+          it.line = { min: 0, max: 1, step: null, open: true, labels: [0, 1] };
+          it.snap = 0.01; it.tol = 0.05; it.close = 0.1; it.text = fracStr(fr[0], fr[1]);
+        } else {
+          do { T = ri(rng, 3, 97); } while (Math.abs(T - 50) < 4);
+          it.line = { min: 0, max: 100, step: null, open: true, labels: [0, 100] };
+          it.snap = 1; it.tol = 5; it.close = 10; it.text = fmt(T);
+        }
+      } else if (type === 'placeFraction') {
+        q = pk(rng, [2, 3, 4, 4, 5, 6, 8, 8, 10]);
+        W = pk(rng, [1, 1, 2, 3]);
+        do { p = ri(rng, 1, q * W - 1); } while (p % q === 0);
+        T = p / q; it.p = p; it.q = q;
+        var labelsF = range(0, W);
+        if (rng() < 0.35 && q <= 8) {
+          it.line = { min: 0, max: W, step: 1, labels: labelsF };
+          it.snap = W > 1 ? 0.02 : 0.01; it.tol = Math.min(0.4 / q, 0.04 * W); it.noFractionTicks = true;
+        } else {
+          it.line = { min: 0, max: W, step: 1 / q, labels: labelsF };
+          it.snap = 1 / q; it.tol = 0.49 / q;
+        }
+        it.text = fracStr(p, q);
+      } else if (type === 'readFraction') {
+        q = pk(rng, [2, 3, 4, 4, 5, 6, 8]);
+        W = pk(rng, [1, 1, 2]);
+        do { p = ri(rng, 1, q * W - 1); } while (p % q === 0);
+        T = p / q; it.p = p; it.q = q;
+        it.line = { min: 0, max: W, step: 1 / q, labels: range(0, W) };
+        it.arrow = T; it.tol = 1e-6; it.text = fracStr(p, q);
+      } else if (type === 'placeDecimal') {
+        var two = rng() < 0.4;
+        W = pk(rng, [1, 1, 2]);
+        var dd;
+        if (!two) { do { dd = ri(rng, 1, 10 * W - 1); } while (dd % 10 === 0); T = dd / 10; it.snap = 0.1; it.tol = 0.049; }
+        else { do { dd = ri(rng, 1, 100 * W - 1); } while (dd % 10 === 0); T = dd / 100; it.snap = 0.01; it.tol = 0.0049; }
+        it.places = two ? 2 : 1;
+        it.line = { min: 0, max: W, step: 0.1, labels: W === 1 ? [0, 0.5, 1] : [0, 1, 2] };
+        it.text = T.toFixed(two ? 2 : 1);
+      } else if (type === 'placeInteger') {
+        T = ri(rng, 1, 9) * (rng() < 0.7 ? -1 : 1);
+        it.line = { min: -10, max: 10, step: 1, labels: [-10, -5, 0, 5, 10] };
+        it.snap = 1; it.tol = 0.49; it.text = fmt(T);
+      } else if (type === 'hopSum') {
+        var ha, hb, op, guard = 0;
+        do {
+          ha = ri(rng, -8, 8); hb = ri(rng, -8, 8); op = rng() < 0.5 ? '+' : '-';
+          T = op === '+' ? ha + hb : ha - hb; guard++;
+        } while ((hb === 0 || Math.abs(T) > 12 || (ha >= 0 && hb >= 0 && op === '+')) && guard < 200);
+        it.a = ha; it.b = hb; it.op = op;
+        it.line = { min: -15, max: 15, step: 1, labels: [-15, -10, -5, 0, 5, 10, 15] };
+        it.points = [ha];
+        it.snap = 1; it.tol = 0.49; it.text = fmt(T);
+        it.expr = fmt(ha) + ' ' + (op === '+' ? '+' : '−') + ' ' + paren(hb);
+      } else if (type === 'placeRational') {
+        q = pk(rng, [2, 4, 4, 10]);
+        var w = ri(rng, 0, 2);
+        p = ri(rng, 1, q - 1);
+        var sign = rng() < 0.75 ? -1 : 1;
+        T = clean(sign * (w + p / q));
+        it.q = q; it.w = w;
+        it.line = { min: -3, max: 3, step: q === 10 ? 0.5 : 1 / q, labels: range(-3, 3) };
+        it.snap = q === 10 ? 0.1 : 1 / q; it.tol = (q === 10 ? 0.1 : 1 / q) * 0.49;
+        it.text = q === 10 ? fmt(T) : mixedStr(T, q);
+      } else if (type === 'absDistance') {
+        it.line = { min: -15, max: 15, step: 1, labels: [-15, -10, -5, 0, 5, 10, 15] };
+        it.tol = 1e-9;
+        if (rng() < 0.5) {
+          var x = ri(rng, 1, 12) * (rng() < 0.75 ? -1 : 1);
+          it.kind = 'abs'; it.x = x; it.points = [x]; T = Math.abs(x); it.text = fmt(x);
+        } else {
+          var da = -ri(rng, 1, 9), db = ri(rng, 1, 9);
+          if (rng() < 0.5) { var sw = da; da = db; db = sw; }
+          it.kind = 'dist'; it.a = da; it.b = db; it.points = [da, db]; T = Math.abs(da - db); it.text = fmt(da) + ', ' + fmt(db);
+        }
+      }
+      it.target = clean(T);
+      return it;
+    }
+    function nextItem(band, allowed, rng, lastType, opts) {
+      rng = rng || Math.random;
+      var list = typesFor(band, allowed);
+      var choices = list.length > 1 ? list.filter(function(x) { return x !== lastType; }) : list;
+      return genItem(pk(rng, choices), band, rng, opts);
+    }
+    function snapPos(item, v) {
+      var ln = item.line, s = item.snap || 1;
+      var r = clean(Math.round((v - ln.min) / s) * s + ln.min);
+      return Math.max(ln.min, Math.min(ln.max, r));
+    }
+
+    function diagnose(item, v) {
+      var T = item.target, tl = Math.max(item.tol || 0, 1e-9);
+      var is = function(x) { return near(v, x, tl); };
+      var st = item.line && item.line.step;
+      switch (item.type) {
+        case 'readScale':
+          if (is(item.line.min + (item.k + 1) * item.s)) return 'ticks_not_spaces';
+          if (item.s !== 1 && is(item.line.min + item.k)) return 'scale_as_ones';
+          if (is(T - item.s) || is(T + item.s)) return 'one_space_off';
+          break;
+        case 'placeWhole':
+          if (is(T - st)) return 'ticks_not_spaces';
+          if (is(T + st)) return 'one_space_off';
+          break;
+        case 'placeInteger':
+          if (T !== 0 && is(-T)) return 'sign_ignored';
+          if (T < 0 && is(item.line.min + Math.abs(T))) return 'counted_from_end';
+          if (is(T > 0 ? T - st : T + st)) return 'ticks_not_spaces';
+          if (is(T > 0 ? T + st : T - st)) return 'one_space_off';
+          break;
+        case 'roundLine':
+          var other = near(T, item.hi) ? item.lo : item.hi;
+          if (is(other)) return (item.N - item.lo) * 2 === item.base ? 'round_halfway' : 'round_wrong_side';
+          if (item.base === 100 && is(Math.round(item.N / 10) * 10)) return 'round_wrong_place';
+          if (item.base === 10 && is(Math.round(item.N / 100) * 100)) return 'round_wrong_place';
+          break;
+        case 'placeFraction':
+          if (item.p !== T && item.p <= item.line.max && is(item.p)) return 'whole_number_bias';
+          if (item.q <= item.line.max && is(item.q)) return 'whole_number_bias';
+          if (item.p === 1 && item.q >= 4 && item.line.max === 1 && v >= 0.5) return 'denominator_bigger';
+          // Whole line taken as 1: p/q of the WHOLE line lands at T × max.
+          if (item.line.max > 1 && T * item.line.max <= item.line.max + 1e-9 && is(T * item.line.max)) return 'whole_is_line';
+          if (item.noFractionTicks) break;      // no fraction ticks drawn: nothing to miscount
+          if (is(T - 1 / item.q)) return 'ticks_not_spaces';
+          if (is(T + 1 / item.q)) return 'one_space_off';
+          break;
+        case 'readFraction':
+          if (is(item.p)) return 'whole_number_bias';
+          if (is(item.p / (item.q + 1)) || is((item.p + 1) / item.q)) return 'ticks_not_spaces';
+          if (item.line.max > 1 && is(item.p / (item.q * item.line.max))) return 'whole_is_line';
+          if (is((item.p - 1) / item.q)) return 'one_space_off';
+          break;
+        case 'placeDecimal':
+          if ((T * 10 <= item.line.max && is(T * 10)) || is(T / 10)) return 'place_value_shift';
+          if (item.places === 1 && is(T - 0.1)) return 'ticks_not_spaces';
+          if (item.places === 1 && is(T + 0.1)) return 'one_space_off';
+          break;
+        case 'placeRational':
+          if (is(-T)) return 'sign_ignored';
+          var aw = Math.floor(Math.abs(T) + 1e-9), af = clean(Math.abs(T) - aw);
+          if (T < 0 && aw >= 1 && af > 0 && (is(-aw + af) || is(-(aw + 1) + af))) return 'negative_fraction_direction';
+          if (is(T - st) || is(T + st)) return 'one_space_off';
+          break;
+        case 'hopSum':
+          if (is(item.op === '+' ? item.a - item.b : item.a + item.b)) return 'hop_direction';
+          if (item.a !== 0 && is(item.op === '+' ? item.b : -item.b)) return 'started_at_zero';
+          if (T !== 0 && is(-T)) return 'sign_ignored';
+          if (is(T - 1) || is(T + 1)) return 'one_space_off';
+          break;
+        case 'absDistance':
+          if (v < 0) return 'abs_kept_sign';
+          if (item.kind === 'dist' && is(Math.abs(Math.abs(item.a) - Math.abs(item.b)))) return 'distance_subtracted_sizes';
+          break;
+        case 'estimateOpen':
+          if (item.line.min === 0 && item.line.max === 100 && T <= 30 && v - T > 15) return 'compressed_scale';
+          if (item.q && item.q >= 5 && T < 0.5 && v > T + 0.2) return 'denominator_bigger';
+          if (item.line.min < 0 && T !== 0 && near(v, -T, item.tol)) return 'sign_ignored';
+          break;
+      }
+      return null;
+    }
+
+    function grade(item, resp) {
+      if (!item || !resp) return { valid: false };
+      var value;
+      if (item.answer === 'position') {
+        if (typeof resp.pos !== 'number' || !isFinite(resp.pos)) return { valid: false };
+        value = resp.pos;
+      } else {
+        var parsed = parseAnswer(resp.text);
+        if (!parsed || !isFinite(parsed.value)) return { valid: false };
+        value = parsed.value;
+      }
+      var ok = near(value, item.target, Math.max(item.tol || 0, 1e-9));
+      var close = !ok && item.close != null && near(value, item.target, item.close);
+      return { valid: true, ok: ok, close: close, mis: ok ? null : diagnose(item, value), value: value, dir: value < item.target ? 'left' : 'right' };
+    }
+
+    // ── Words (every string goes through the caller's t with a literal key) ──
+    function promptText(item, t) {
+      switch (item.type) {
+        case 'readScale': return t('stem.numberline.pp_q_read_scale', 'What number does the arrow point to?');
+        case 'readFraction': return t('stem.numberline.pp_q_read_fraction', 'What fraction does the arrow point to? Type it like 3/4.');
+        case 'roundLine': return fill(t('stem.numberline.pp_q_round', 'The arrow marks {n}. Round {n} to the nearest {base}.'), { n: item.N, base: item.base });
+        case 'estimateOpen': return fill(t('stem.numberline.pp_q_estimate', 'Estimate: place a marker where {n} belongs. Only the two ends are labelled.'), { n: item.text });
+        case 'hopSum': return fill(t('stem.numberline.pp_q_hop', 'Start at {a}. Place a marker where {expr} lands.'), { a: fmt(item.a), expr: item.expr });
+        case 'absDistance':
+          return item.kind === 'abs'
+            ? fill(t('stem.numberline.pp_q_abs', 'What is |{x}|, the distance from {x} to 0?'), { x: fmt(item.x) })
+            : fill(t('stem.numberline.pp_q_dist', 'What is the distance between {a} and {b}?'), { a: fmt(item.a), b: fmt(item.b) });
+        default: return fill(t('stem.numberline.pp_q_place', 'Place a marker at {n} on the number line.'), { n: item.text });
+      }
+    }
+    function labelList(vals) { return vals.map(fmt).join(', '); }
+    function describeLine(item, t) {
+      var ln = item.line, out = [];
+      if (ln.open) out.push(fill(t('stem.numberline.pp_desc_open', 'Open number line from {min} to {max}. Only the two ends are labelled, and there are no tick marks in between.'), { min: fmt(ln.min), max: fmt(ln.max) }));
+      else out.push(fill(t('stem.numberline.pp_desc_ticked', 'Number line from {min} to {max}, cut into {count} equal spaces by tick marks. Labelled ticks: {labels}.'), { min: fmt(ln.min), max: fmt(ln.max), count: Math.round((ln.max - ln.min) / ln.step), labels: labelList(ln.labels) }));
+      if (item.type === 'roundLine') out.push(fill(t('stem.numberline.pp_desc_mid', 'A taller tick marks the halfway point between {lo} and {hi}.'), { lo: fmt(item.lo), hi: fmt(item.hi) }));
+      if (item.arrow != null && item.type !== 'roundLine') out.push(describeSpot(item, item.arrow, t, 'arrow'));
+      if (item.type === 'roundLine') out.push(describeSpot(item, item.arrow, t, 'arrow'));
+      (item.points || []).forEach(function(v) { out.push(fill(t('stem.numberline.pp_desc_point', 'A dot marks {v}.'), { v: fmt(v) })); });
+      return out.join(' ');
+    }
+    // Where a point sits, in the same terms a sighted student reads: spaces
+    // counted from the nearest labelled tick on its left (never the value itself).
+    function describeSpot(item, v, t, who) {
+      var ln = item.line;
+      if (typeof v !== 'number' || !isFinite(v)) return who === 'arrow' ? '' : t('stem.numberline.pp_no_marker', 'No marker placed yet. Press an arrow key or tap the line to place it.');
+      if (ln.open) {
+        var f = (v - ln.min) / (ln.max - ln.min);
+        // Whole sentences per zone and per subject (arrow / marker), so no
+        // translated phrase is inserted into another sentence.
+        var zi = f < 0.08 ? 0 : f < 0.3 ? 1 : f < 0.45 ? 2 : f <= 0.55 ? 3 : f <= 0.7 ? 4 : f <= 0.92 ? 5 : 6;
+        if (who === 'arrow') {
+          return zi === 0 ? t('stem.numberline.pp_arrow_zone_0', 'The arrow is very near the left end.')
+            : zi === 1 ? t('stem.numberline.pp_arrow_zone_1', 'The arrow is in the left part of the line.')
+            : zi === 2 ? t('stem.numberline.pp_arrow_zone_2', 'The arrow is a little left of the middle.')
+            : zi === 3 ? t('stem.numberline.pp_arrow_zone_3', 'The arrow is near the middle.')
+            : zi === 4 ? t('stem.numberline.pp_arrow_zone_4', 'The arrow is a little right of the middle.')
+            : zi === 5 ? t('stem.numberline.pp_arrow_zone_5', 'The arrow is in the right part of the line.')
+            : t('stem.numberline.pp_arrow_zone_6', 'The arrow is very near the right end.');
+        }
+        return zi === 0 ? t('stem.numberline.pp_marker_zone_0', 'Your marker is very near the left end.')
+          : zi === 1 ? t('stem.numberline.pp_marker_zone_1', 'Your marker is in the left part of the line.')
+          : zi === 2 ? t('stem.numberline.pp_marker_zone_2', 'Your marker is a little left of the middle.')
+          : zi === 3 ? t('stem.numberline.pp_marker_zone_3', 'Your marker is near the middle.')
+          : zi === 4 ? t('stem.numberline.pp_marker_zone_4', 'Your marker is a little right of the middle.')
+          : zi === 5 ? t('stem.numberline.pp_marker_zone_5', 'Your marker is in the right part of the line.')
+          : t('stem.numberline.pp_marker_zone_6', 'Your marker is very near the right end.');
+      }
+      var labels = ln.labels.slice().sort(function(a, b) { return a - b; });
+      var L = labels[0];
+      labels.forEach(function(x) { if (x <= v + 1e-9) L = x; });
+      var spaces = (v - L) / ln.step;
+      var k = Math.floor(spaces + 1e-6), rem = spaces - k;
+      if (rem < 1e-6 || rem > 1 - 1e-6) {
+        if (rem > 0.5) k += 1;
+        if (k === 0) return fill(who === 'arrow' ? t('stem.numberline.pp_arrow_on_label', 'The arrow points to the labelled tick {L}.') : t('stem.numberline.pp_marker_on_label', 'Your marker is on the labelled tick {L}.'), { L: fmt(L) });
+        if (k === 1) return fill(who === 'arrow' ? t('stem.numberline.pp_arrow_ticks_one', 'The arrow points to the tick 1 space right of the labelled tick {L}.') : t('stem.numberline.pp_marker_ticks_one', 'Your marker is on the tick 1 space right of the labelled tick {L}.'), { L: fmt(L) });
+        return fill(who === 'arrow' ? t('stem.numberline.pp_arrow_ticks', 'The arrow points to the tick {k} spaces right of the labelled tick {L}.') : t('stem.numberline.pp_marker_ticks', 'Your marker is on the tick {k} spaces right of the labelled tick {L}.'), { k: k, L: fmt(L) });
+      }
+      var pi = rem < 0.35 ? 0 : rem <= 0.65 ? 1 : 2, s;
+      if (k === 1) {
+        if (who === 'arrow') s = pi === 0 ? t('stem.numberline.pp_arrow_between_0_one', 'The arrow is 1 full space right of the labelled tick {L}, then a little way across the next space.')
+          : pi === 1 ? t('stem.numberline.pp_arrow_between_1_one', 'The arrow is 1 full space right of the labelled tick {L}, then about halfway across the next space.')
+          : t('stem.numberline.pp_arrow_between_2_one', 'The arrow is 1 full space right of the labelled tick {L}, then most of the way across the next space.');
+        else s = pi === 0 ? t('stem.numberline.pp_marker_between_0_one', 'Your marker is 1 full space right of the labelled tick {L}, then a little way across the next space.')
+          : pi === 1 ? t('stem.numberline.pp_marker_between_1_one', 'Your marker is 1 full space right of the labelled tick {L}, then about halfway across the next space.')
+          : t('stem.numberline.pp_marker_between_2_one', 'Your marker is 1 full space right of the labelled tick {L}, then most of the way across the next space.');
+        return fill(s, { L: fmt(L) });
+      }
+      if (who === 'arrow') s = pi === 0 ? t('stem.numberline.pp_arrow_between_0', 'The arrow is {k} full spaces right of the labelled tick {L}, then a little way across the next space.')
+        : pi === 1 ? t('stem.numberline.pp_arrow_between_1', 'The arrow is {k} full spaces right of the labelled tick {L}, then about halfway across the next space.')
+        : t('stem.numberline.pp_arrow_between_2', 'The arrow is {k} full spaces right of the labelled tick {L}, then most of the way across the next space.');
+      else s = pi === 0 ? t('stem.numberline.pp_marker_between_0', 'Your marker is {k} full spaces right of the labelled tick {L}, then a little way across the next space.')
+        : pi === 1 ? t('stem.numberline.pp_marker_between_1', 'Your marker is {k} full spaces right of the labelled tick {L}, then about halfway across the next space.')
+        : t('stem.numberline.pp_marker_between_2', 'Your marker is {k} full spaces right of the labelled tick {L}, then most of the way across the next space.');
+      return fill(s, { k: k, L: fmt(L) });
+    }
+
+    function misInfo(code, item, t) {
+      var T = item.target;
+      switch (code) {
+        case 'ticks_not_spaces': return { title: t('stem.numberline.mis_ticks_title', 'Counting tick marks, not spaces'), body: t('stem.numberline.mis_ticks_body', 'It looks like you counted the tick marks, including the one you started on. A number line measures distance: count the spaces (the jumps) between ticks, not the ticks themselves.') };
+        case 'scale_as_ones': return { title: t('stem.numberline.mis_scale_title', 'Each space is not worth 1'), body: t('stem.numberline.mis_scale_body', 'You counted each space as 1. Work out what one space is worth: take the distance between two labels and divide it by the number of spaces between them.') };
+        case 'one_space_off': return { title: t('stem.numberline.mis_one_off_title', 'One space off'), body: t('stem.numberline.mis_one_off_body', 'You are exactly one space away. Recount the spaces, starting from a labelled tick.') };
+        case 'whole_number_bias': return { title: t('stem.numberline.mis_whole_title', 'Reading a fraction as whole numbers'), body: t('stem.numberline.mis_whole_body', 'A fraction is one number, not two whole numbers. The denominator tells you how many equal spaces each whole is cut into; the numerator tells you how many of those spaces to count from 0.') };
+        case 'denominator_bigger': return { title: t('stem.numberline.mis_den_title', 'Bigger denominator, bigger fraction?'), body: t('stem.numberline.mis_den_body', 'A bigger denominator cuts the whole into MORE pieces, so each piece is SMALLER. One eighth is less than one quarter.') };
+        case 'whole_is_line': return { title: t('stem.numberline.mis_whole_line_title', 'The whole is 0 to 1, not the whole line'), body: t('stem.numberline.mis_whole_line_body', 'You treated the entire line as one whole. The denominator counts the equal spaces between 0 and 1 only; each whole on the line is cut the same way.') };
+        case 'place_value_shift': return { title: t('stem.numberline.mis_pv_title', 'Place value shift'), body: t('stem.numberline.mis_pv_body', 'Your marker is ten times too far or ten times too close to 0. The ticks between 0 and 1 are tenths; a hundredth is one tenth of one of those spaces.') };
+        case 'sign_ignored': return { title: t('stem.numberline.mis_sign_title', 'Wrong side of zero'), body: t('stem.numberline.mis_sign_body', 'You are the right distance from 0 but on the wrong side. Negative numbers are left of 0 and positive numbers are right of 0.') };
+        case 'counted_from_end': return { title: t('stem.numberline.mis_end_title', 'Counted from the end, not from 0'), body: t('stem.numberline.mis_end_body', 'You counted from the end of the line. A number tells you its distance from 0, so start counting at 0.') };
+        case 'negative_fraction_direction': return { title: t('stem.numberline.mis_negfrac_title', 'The fraction part goes the same way'), body: fill(t('stem.numberline.mis_negfrac_body', '{n} means {w} whole units AND a fraction more, all to the left of 0. Go past {nw} to the left; do not come back toward 0.'), { n: item.text, w: Math.floor(Math.abs(T) + 1e-9), nw: fmt(-Math.floor(Math.abs(T) + 1e-9)) }) };
+        case 'hop_direction': return { title: t('stem.numberline.mis_hop_title', 'Hopped the wrong way'), body: t('stem.numberline.mis_hop_body', 'Check the direction of the hop. Adding a positive number or subtracting a negative number moves right. Adding a negative number or subtracting a positive number moves left.') };
+        case 'started_at_zero': return { title: t('stem.numberline.mis_zero_title', 'Started at 0'), body: fill(t('stem.numberline.mis_zero_body', 'You hopped from 0. Start at the first number, {a}, then make the hop.'), { a: fmt(item.a) }) };
+        case 'abs_kept_sign': return { title: t('stem.numberline.mis_abs_title', 'Distance is never negative'), body: t('stem.numberline.mis_abs_body', 'Absolute value is a distance, and a distance cannot be negative. Count the spaces; do not keep the minus sign.') };
+        case 'distance_subtracted_sizes': return { title: t('stem.numberline.mis_dist_title', 'The points are on opposite sides of 0'), body: t('stem.numberline.mis_dist_body', 'One number is left of 0 and the other is right of 0, so the gap between them crosses 0. Add the two distances to 0.') };
+        case 'round_halfway': return { title: t('stem.numberline.mis_half_title', 'Exactly halfway rounds up'), body: t('stem.numberline.mis_half_body', 'A number exactly halfway between two multiples rounds up to the larger one.') };
+        case 'round_wrong_side': return { title: t('stem.numberline.mis_side_title', 'Check which multiple is closer'), body: t('stem.numberline.mis_side_body', 'Find the taller halfway tick. Numbers before it round down; numbers at it or past it round up.') };
+        case 'round_wrong_place': return { title: t('stem.numberline.mis_place_title', 'Rounded to a different place'), body: fill(t('stem.numberline.mis_place_body', 'Check the place you are rounding to: the nearest {base}. Your answer should be one of the two labelled ends.'), { base: item.base }) };
+        case 'compressed_scale': return { title: t('stem.numberline.mis_compress_title', 'Small numbers squeezed to the right'), body: t('stem.numberline.mis_compress_body', 'Small numbers need small distances. Use landmarks: 50 is halfway, 25 is a quarter of the way, 10 is only a tenth of the way.') };
+      }
+      return null;
+    }
+
+    function hints(item, t) {
+      switch (item.type) {
+        case 'placeWhole': return [t('stem.numberline.h_whole_1', 'Look at the labelled ticks. How many spaces are between two labels?'), t('stem.numberline.h_whole_2', 'Work out what one space is worth.'), t('stem.numberline.h_whole_3', 'Count spaces from the nearest labelled tick, not tick marks.')];
+        case 'readScale': return [t('stem.numberline.h_read_1', 'How many equal spaces are between the two labels?'), t('stem.numberline.h_read_2', 'Divide the distance between the labels by the number of spaces to find what one space is worth.'), t('stem.numberline.h_read_3', 'Count the spaces from the left label to the arrow and add that many space-values.')];
+        case 'roundLine': return [t('stem.numberline.h_round_1', 'Your answer must be one of the two labelled ends.'), t('stem.numberline.h_round_2', 'Find the taller tick in the middle: it is halfway.'), t('stem.numberline.h_round_3', 'Is the arrow before the halfway tick, or at or after it?')];
+        case 'estimateOpen': return [t('stem.numberline.h_est_1', 'Find the middle of the line first. What number goes there?'), t('stem.numberline.h_est_2', 'Then find the quarter points, halfway to each end.'), t('stem.numberline.h_est_3', 'Is your number closer to the middle or to an end?')];
+        case 'placeFraction': return [t('stem.numberline.h_frac_1', 'Is the fraction less than 1, or more? Find the whole number it sits next to.'), t('stem.numberline.h_frac_2', 'The denominator tells you how many equal spaces to cut each whole into.'), t('stem.numberline.h_frac_3', 'Count numerator-many spaces from 0.')];
+        case 'readFraction': return [t('stem.numberline.h_rfrac_1', 'Look only between 0 and 1. How many equal spaces are there?'), t('stem.numberline.h_rfrac_2', 'That number of spaces is the denominator.'), t('stem.numberline.h_rfrac_3', 'Count the spaces from 0 to the arrow: that is the numerator.')];
+        case 'placeDecimal': return [t('stem.numberline.h_dec_1', 'The ticks between 0 and 1 are tenths: 0.1, 0.2, 0.3 and so on.'), t('stem.numberline.h_dec_2', 'The first digit after the point counts tenths.'), t('stem.numberline.h_dec_3', 'A second digit splits one tenth-space into ten even smaller steps.')];
+        case 'placeInteger': return [t('stem.numberline.h_int_1', 'Find 0 first.'), t('stem.numberline.h_int_2', 'Negative numbers go left of 0, positive numbers right of 0.'), t('stem.numberline.h_int_3', 'The number without its sign is how many spaces to count from 0.')];
+        case 'hopSum': return [t('stem.numberline.h_hop_1', 'Put your finger on the starting dot.'), t('stem.numberline.h_hop_2', 'Decide the direction: adding a negative, or subtracting a positive, moves left.'), t('stem.numberline.h_hop_3', 'Hop as many spaces as the second number without its sign.')];
+        case 'placeRational': return [t('stem.numberline.h_rat_1', 'Which side of 0? Check the sign.'), t('stem.numberline.h_rat_2', 'Find the two whole numbers it sits between.'), t('stem.numberline.h_rat_3', 'Count the fraction part from the whole number that is closer to 0, moving away from 0.')];
+        case 'absDistance': return [t('stem.numberline.h_abs_1', 'Absolute value means distance from 0.'), t('stem.numberline.h_abs_2', 'Count the spaces between the points, not the tick labels.'), t('stem.numberline.h_abs_3', 'A distance is never negative.')];
+      }
+      return [];
+    }
+
+    // Worked solution for an item (used for the reveal AND for fading worked
+    // examples, which are generated on a DIFFERENT item so nothing leaks).
+    function steps(item, t) {
+      var T = item.target, ln = item.line, out = [];
+      switch (item.type) {
+        case 'placeWhole':
+          out.push(fill(t('stem.numberline.ws_whole_1', 'The labelled ticks are {labels}.'), { labels: labelList(ln.labels) }));
+          out.push(fill(t('stem.numberline.ws_whole_2', 'From {a} to {b} there are {n} spaces, so each space is worth {s}.'), { a: fmt(ln.labels[0]), b: fmt(ln.labels[1]), n: Math.round((ln.labels[1] - ln.labels[0]) / ln.step), s: fmt(ln.step) }));
+          var wk = clean((T - ln.labels[0]) / ln.step);
+          out.push(fill(wk === 1 ? t('stem.numberline.ws_whole_3_one', 'Count 1 space of {s} from {a} to reach {n}.') : t('stem.numberline.ws_whole_3', 'Count {k} spaces of {s} from {a} to reach {n}.'), { k: fmt(wk), s: fmt(ln.step), a: fmt(ln.labels[0]), n: item.text }));
+          break;
+        case 'readScale':
+          out.push(fill(t('stem.numberline.ws_read_1', '{n} equal spaces go from {min} to {max}, so each space is worth {s}.'), { n: item.spaces, min: fmt(ln.min), max: fmt(ln.max), s: fmt(item.s) }));
+          out.push(fill(item.k === 1 ? t('stem.numberline.ws_read_2_one', 'The arrow is 1 space right of {min}.') : t('stem.numberline.ws_read_2', 'The arrow is {k} spaces right of {min}.'), { k: item.k, min: fmt(ln.min) }));
+          out.push(fill(t('stem.numberline.ws_read_3', '{min} + {k} × {s} = {n}.'), { min: fmt(ln.min), k: item.k, s: fmt(item.s), n: fmt(T) }));
+          break;
+        case 'roundLine':
+          out.push(fill(t('stem.numberline.ws_round_1', '{n} is between {lo} and {hi}.'), { n: item.N, lo: item.lo, hi: item.hi }));
+          out.push(fill(t('stem.numberline.ws_round_2', 'Halfway between them is {mid}.'), { mid: fmt(ln.mid) }));
+          out.push(near(T, item.hi)
+            ? fill(t('stem.numberline.ws_round_up', '{n} is at or past the halfway point, so it rounds up to {ans}.'), { n: item.N, ans: item.hi })
+            : fill(t('stem.numberline.ws_round_down', '{n} is before the halfway point, so it rounds down to {ans}.'), { n: item.N, ans: item.lo }));
+          break;
+        case 'estimateOpen':
+          var mid = clean((ln.min + ln.max) / 2);
+          out.push(fill(t('stem.numberline.ws_est_1', 'Halfway between {min} and {max} is {mid}.'), { min: fmt(ln.min), max: fmt(ln.max), mid: fmt(mid) }));
+          out.push(T < mid
+            ? fill(t('stem.numberline.ws_est_left', '{n} is less than {mid}, so it goes left of the middle.'), { n: item.text, mid: fmt(mid) })
+            : fill(t('stem.numberline.ws_est_right', '{n} is more than {mid}, so it goes right of the middle.'), { n: item.text, mid: fmt(mid) }));
+          out.push(item.young
+            ? fill(t('stem.numberline.ws_est_3_young', '{n} is {d} away from {end}, the closer end.'), { n: item.text, d: fmt(Math.min(T - ln.min, ln.max - T)), end: fmt(T < mid ? ln.min : ln.max) })
+            : fill(t('stem.numberline.ws_est_3', '{n} sits {pct} percent of the way from {min} to {max}.'), { n: item.text, pct: Math.round((T - ln.min) / (ln.max - ln.min) * 100), min: fmt(ln.min), max: fmt(ln.max) }));
+          break;
+        case 'placeFraction':
+          out.push(fill(t('stem.numberline.ws_frac_1', 'The denominator is {q}, so cut each whole into {q} equal spaces.'), { q: item.q }));
+          out.push(fill(t('stem.numberline.ws_frac_2', 'Each space is 1/{q}.'), { q: item.q }));
+          out.push(fill(item.p === 1 ? t('stem.numberline.ws_frac_3_one', 'Count 1 space from 0 to reach {f}.') : t('stem.numberline.ws_frac_3', 'Count {p} spaces from 0 to reach {f}.'), { p: item.p, f: item.text }));
+          break;
+        case 'readFraction':
+          out.push(fill(t('stem.numberline.ws_rfrac_1', 'Between 0 and 1 there are {q} equal spaces, so each space is 1/{q}.'), { q: item.q }));
+          out.push(item.p === 1 ? t('stem.numberline.ws_rfrac_2_one', 'From 0 to the arrow there is 1 space.') : fill(t('stem.numberline.ws_rfrac_2', 'From 0 to the arrow there are {p} spaces.'), { p: item.p }));
+          out.push(fill(t('stem.numberline.ws_rfrac_3', 'So the arrow points to {f}.'), { f: item.text }));
+          break;
+        case 'placeDecimal':
+          out.push(t('stem.numberline.ws_dec_1', 'The ticks between 0 and 1 are tenths: 0.1, 0.2, 0.3 and so on.'));
+          var tenths = Math.floor(T * 10 + 1e-9);
+          if (item.places === 1) out.push(fill(tenths === 1 ? t('stem.numberline.ws_dec_2a_one', '{n} is 1 tenth, so count 1 tenth-space from 0.') : t('stem.numberline.ws_dec_2a', '{n} is {k} tenths, so count {k} tenth-spaces from 0.'), { n: item.text, k: tenths }));
+          else {
+            var hund = Math.round(T * 100) - tenths * 10, k1 = tenths === 1, h1 = hund === 1;
+            out.push(fill(k1 && h1 ? t('stem.numberline.ws_dec_2b_one_both', '{n} is 1 tenth and 1 hundredth: go to {low}, then 1 tenth of the way across the next space.')
+              : k1 ? t('stem.numberline.ws_dec_2b_one_k', '{n} is 1 tenth and {h} hundredths: go to {low}, then {h} tenths of the way across the next space.')
+              : h1 ? t('stem.numberline.ws_dec_2b_one_h', '{n} is {k} tenths and 1 hundredth: go to {low}, then 1 tenth of the way across the next space.')
+              : t('stem.numberline.ws_dec_2b', '{n} is {k} tenths and {h} hundredths: go to {low}, then {h} tenths of the way across the next space.'), { n: item.text, k: tenths, h: hund, low: (tenths / 10).toFixed(1) }));
+          }
+          out.push(fill(t('stem.numberline.ws_dec_3', 'That point is {n}.'), { n: item.text }));
+          break;
+        case 'placeInteger':
+          out.push(t('stem.numberline.ws_int_1', 'Find 0.'));
+          out.push(T < 0 ? fill(t('stem.numberline.ws_int_2n', '{n} is negative, so it is left of 0.'), { n: item.text }) : fill(t('stem.numberline.ws_int_2p', '{n} is positive, so it is right of 0.'), { n: item.text }));
+          out.push(fill(Math.abs(T) === 1 ? t('stem.numberline.ws_int_3_one', 'Count 1 space from 0 to reach {n}.') : t('stem.numberline.ws_int_3', 'Count {k} spaces from 0 to reach {n}.'), { k: Math.abs(T), n: item.text }));
+          break;
+        case 'hopSum':
+          return hopSteps(item.a, item.op, item.b, t);
+        case 'placeRational':
+          var w = Math.floor(Math.abs(T) + 1e-9);
+          out.push(T < 0 ? fill(t('stem.numberline.ws_rat_1n', '{n} is negative, so start at 0 and move left.'), { n: item.text }) : fill(t('stem.numberline.ws_rat_1p', '{n} is positive, so start at 0 and move right.'), { n: item.text }));
+          if (w > 0) out.push(fill(t('stem.numberline.ws_rat_2', 'Move {w} whole units to {wv}, then keep going the same way for the fraction part.'), { w: w, wv: fmt(T < 0 ? -w : w) }));
+          out.push(fill(t('stem.numberline.ws_rat_3', 'You reach {n}, between {lo} and {hi}.'), { n: item.text, lo: fmt(Math.floor(T)), hi: fmt(Math.ceil(T)) }));
+          break;
+        case 'absDistance':
+          if (item.kind === 'abs') {
+            out.push(fill(t('stem.numberline.ws_abs_1', '|{x}| means the distance from {x} to 0.'), { x: fmt(item.x) }));
+            out.push(fill(Math.abs(item.x) === 1 ? t('stem.numberline.ws_abs_2_one', 'There is 1 space between {x} and 0.') : t('stem.numberline.ws_abs_2', 'There are {d} spaces between {x} and 0.'), { d: Math.abs(item.x), x: fmt(item.x) }));
+            out.push(fill(t('stem.numberline.ws_abs_3', 'A distance is never negative, so |{x}| = {d}.'), { x: fmt(item.x), d: Math.abs(item.x) }));
+          } else {
+            var oa = Math.abs(item.a) === 1, ob = Math.abs(item.b) === 1;
+            out.push(fill(oa && ob ? t('stem.numberline.ws_dist_1_one_both', '{a} is 1 space from 0, and {b} is 1 space from 0.')
+              : oa ? t('stem.numberline.ws_dist_1_one_a', '{a} is 1 space from 0, and {b} is {db} spaces from 0.')
+              : ob ? t('stem.numberline.ws_dist_1_one_b', '{a} is {da} spaces from 0, and {b} is 1 space from 0.')
+              : t('stem.numberline.ws_dist_1', '{a} is {da} spaces from 0, and {b} is {db} spaces from 0.'), { a: fmt(item.a), da: Math.abs(item.a), b: fmt(item.b), db: Math.abs(item.b) }));
+            out.push(fill(t('stem.numberline.ws_dist_2', 'They are on opposite sides of 0, so add: {da} + {db} = {d}.'), { da: Math.abs(item.a), db: Math.abs(item.b), d: fmt(T) }));
+          }
+          break;
+      }
+      return out;
+    }
+    function hopSteps(a, op, b, t) {
+      var r = op === '+' ? a + b : a - b, out = [];
+      out.push(a === 0 ? t('stem.numberline.ws_hop_start0', 'Start at 0.') : fill(t('stem.numberline.ws_hop_start', 'Start at 0 and move to {a}.'), { a: fmt(a) }));
+      var mag = Math.abs(b);
+      if (op === '+' && b >= 0) out.push(fill(t('stem.numberline.ws_hop_add_pos', 'Adding {b} means moving {m} to the right.'), { b: fmt(b), m: mag }));
+      else if (op === '+') out.push(fill(t('stem.numberline.ws_hop_add_neg', 'Adding {b} means moving {m} to the left.'), { b: fmt(b), m: mag }));
+      else if (b >= 0) out.push(fill(t('stem.numberline.ws_hop_sub_pos', 'Subtracting {b} means moving {m} to the left.'), { b: fmt(b), m: mag }));
+      else out.push(fill(t('stem.numberline.ws_hop_sub_neg', 'Subtracting {b} means moving {m} to the right: taking away a negative is the same as adding its opposite.'), { b: fmt(b), m: mag }));
+      out.push(fill(t('stem.numberline.ws_hop_land', 'You land on {r}. So {expr} = {r}.'), { r: fmt(r), expr: fmt(a) + ' ' + (op === '+' ? '+' : '−') + ' ' + paren(b) }));
+      return out;
+    }
+
+    return {
+      clean: clean, near: near, gcd: gcd, fill: fill, fmt: fmt, fracStr: fracStr, mixedStr: mixedStr, paren: paren, seeded: seeded,
+      parseAnswer: parseAnswer, BANDS: BANDS, bandFor: bandFor, lineTicks: lineTicks, niceStep: niceStep,
+      BAND_TYPES: BAND_TYPES, ALL_TYPES: ALL_TYPES, POSITION_TYPES: POSITION_TYPES, typesFor: typesFor,
+      genItem: genItem, nextItem: nextItem, snapPos: snapPos, diagnose: diagnose, grade: grade,
+      promptText: promptText, describeLine: describeLine, describeSpot: describeSpot, misInfo: misInfo,
+      hints: hints, steps: steps, hopSteps: hopSteps
+    };
+  })();
+
+  // ═══ STAGE B ENGINE (pure, exposed as config._engineB): decimal zoom,
+  // ordering mixed forms, ruler + line plot, integers in context, and the
+  // "bigger denominator" claim-evidence-reasoning investigation.
+  var NLB = (function() {
+    var clean = NLE.clean, near = NLE.near, fill = NLE.fill, fmt = NLE.fmt;
+    var MINUS = '−';
+    function ri(rng, lo, hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
+    function pk(rng, arr) { return arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))]; }
+    function shuffle(rng, arr) { var a = arr.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+    var _seq = 0;
+    function newId(p) { _seq += 1; return p + Date.now().toString(36) + '-' + _seq; }
+    function sgn(v) { return v < 0 ? MINUS : ''; }
+    function signed(v) { return sgn(v) + fmt(Math.abs(v)); }
+    function decPlaces(s) { var m = /\.(\d+)$/.exec(String(s)); return m ? m[1].length : 0; }
+    // Typed answers: numbers, fractions, mixed numbers; a $ sign and a trailing
+    // unit word (inches, degrees, m, dollars) are allowed and ignored.
+    function parseNum(text) {
+      var s = String(text == null ? '' : text).replace(/\$/g, '').trim();
+      s = s.replace(/\s*(inches|inch|in\.?|["”]|°\s*[fc]?|degrees?|metres?|meters?|m|dollars?)\s*$/i, '').trim();
+      var p = NLE.parseAnswer(s);
+      return p && isFinite(p.value) ? p.value : null;
+    }
+    function decText(v) {
+      var r = Math.round(v * 1000) / 1000;
+      return { text: signed(r), exact: near(v, r, 1e-9) };
+    }
+
+    // ── Decimal zoom: a view is one interval cut into ten spaces. Level 0 is a
+    // whole cut into tenths, level 1 a tenth cut into hundredths, level 2 a
+    // hundredth cut into thousandths.
+    var DZ_LEVELS = 3;
+    function dzView(lo, level) {
+      var lv = Math.max(0, Math.min(DZ_LEVELS - 1, Math.round(Number(level) || 0)));
+      var width = clean(Math.pow(10, -lv)), step = clean(Math.pow(10, -(lv + 1)));
+      var l = Number(lo); if (!isFinite(l)) l = 0;
+      l = clean(Math.floor(l / width + 1e-9) * width);
+      l = Math.max(0, Math.min(clean(10 - width), l));
+      return { lo: l, hi: clean(l + width), level: lv, width: width, step: step };
+    }
+    function dzZoomIn(view, pos) {
+      if (!view || view.level >= DZ_LEVELS - 1) return null;
+      if (typeof pos !== 'number' || !isFinite(pos) || pos < view.lo - 1e-9 || pos > view.hi + 1e-9) return null;
+      var k = Math.max(0, Math.min(9, Math.floor((pos - view.lo) / view.step + 1e-9)));
+      return dzView(clean(view.lo + k * view.step), view.level + 1);
+    }
+    function dzZoomOut(view) { return view && view.level > 0 ? dzView(view.lo, view.level - 1) : null; }
+    function dzPan(view, dir) {
+      var nl = clean(view.lo + (dir < 0 ? -1 : 1) * view.width);
+      if (nl < -1e-9 || nl > 10 - view.width + 1e-9) return null;
+      return dzView(nl, view.level);
+    }
+    function dzTicks(view) { var out = []; for (var k = 0; k <= 10; k++) out.push(clean(view.lo + k * view.step)); return out; }
+    function dzLabel(v, level) { return Number(v).toFixed(level + 1); }
+    function dzTrail(view) { var out = []; for (var L = 0; L <= view.level; L++) out.push(dzView(view.lo, L)); return out; }
+    function dzDigits(v) { var n = Math.round(Math.abs(v) * 1000); return { ones: Math.floor(n / 1000), tenths: Math.floor(n / 100) % 10, hundredths: Math.floor(n / 10) % 10, thousandths: n % 10 }; }
+    function dzCap(band, cap) { var m = band === 'b23' ? 2 : 3; var c = Number(cap); return c >= 1 && c <= 3 ? Math.min(m, c) : m; }
+    function genDzPlace(band, rng, cap) {
+      rng = rng || Math.random;
+      var maxP = dzCap(band, cap);
+      var places = maxP === 1 ? 1 : maxP === 2 ? pk(rng, [1, 2, 2]) : pk(rng, [2, 3, 3]);
+      var W = band === 'b6' ? ri(rng, 0, 3) : 0;
+      var d = [];
+      for (var i = 0; i < places; i++) d.push(ri(rng, i === places - 1 ? 1 : 0, 9));
+      if (places >= 2 && rng() < 0.35) d[ri(rng, 0, places - 2)] = 0;
+      var text = W + '.' + d.join('');
+      return { id: newId('dz'), kind: 'dzPlace', band: band, places: places, W: W, text: text, target: clean(Number(text)), tries: 0 };
+    }
+    function diagnoseDzPlace(item, v) {
+      var T = item.target, W = item.W || 0, P = item.places;
+      var is = function(x) { return near(v, x, 1e-7); };
+      var frac = String(item.text).split('.')[1] || '';
+      if (/0/.test(frac)) { var nz = frac.replace(/0/g, ''); if (nz && is(clean(W + Number('0.' + nz)))) return 'dz_zero_dropped'; }
+      if (is(clean(W + (T - W) * 10)) || is(clean(W + (T - W) / 10))) return 'place_value_shift';
+      for (var k = 1; k < P; k++) {
+        var s = Math.pow(10, k);
+        if (is(clean(W + Math.floor((T - W) * s + 1e-9) / s)) || is(clean(W + Math.round((T - W) * s) / s))) return 'dz_stopped_early';
+      }
+      var codes = ['dz_off_tenths', 'dz_off_hundredths', 'dz_off_thousandths'];
+      for (var p = 1; p <= P; p++) { var st = Math.pow(10, -p); if (is(clean(T + st)) || is(clean(T - st))) return codes[p - 1]; }
+      return null;
+    }
+    function gradeDzPlace(item, pos) {
+      if (!item || typeof pos !== 'number' || !isFinite(pos)) return { valid: false };
+      var ok = near(pos, item.target, 1e-7);
+      return { valid: true, ok: ok, mis: ok ? null : diagnoseDzPlace(item, pos), value: pos, dir: pos < item.target ? 'left' : 'right' };
+    }
+    // One whole sentence per decimal place (never "the {place} place"), so
+    // translators keep gender, case and articles inside each sentence.
+    function dzNowText(level, t) {
+      return level === 0 ? t('stem.numberline.dz_now_l0', 'The line now runs from {a} to {b}, cut into ten tenths.')
+        : level === 1 ? t('stem.numberline.dz_now_l1', 'The line now runs from {a} to {b}, cut into ten hundredths.')
+        : t('stem.numberline.dz_now_l2', 'The line now runs from {a} to {b}, cut into ten thousandths.');
+    }
+    function dzValueText(level, t) {
+      return level === 0 ? t('stem.numberline.dz_valuetext_l0', 'Your marker is on the tick {v}. Each space here is one tenth.')
+        : level === 1 ? t('stem.numberline.dz_valuetext_l1', 'Your marker is on the tick {v}. Each space here is one hundredth.')
+        : t('stem.numberline.dz_valuetext_l2', 'Your marker is on the tick {v}. Each space here is one thousandth.');
+    }
+    function dzDescText(level, t) {
+      return level === 0 ? t('stem.numberline.dz_desc_l0', 'Number line from {a} to {b}, cut into ten equal spaces. Each space is one tenth, and every tick is labelled. Zoom path: {trail}.')
+        : level === 1 ? t('stem.numberline.dz_desc_l1', 'Number line from {a} to {b}, cut into ten equal spaces. Each space is one hundredth, and every tick is labelled. Zoom path: {trail}.')
+        : t('stem.numberline.dz_desc_l2', 'Number line from {a} to {b}, cut into ten equal spaces. Each space is one thousandth, and every tick is labelled. Zoom path: {trail}.');
+    }
+    function dzPlaceSteps(item, t) {
+      var T = item.target, W = item.W || 0, out = [];
+      var frac = String(item.text).split('.')[1] || '';
+      for (var i = 0; i < item.places; i++) {
+        var s = Math.pow(10, i + 1);
+        var a = clean(W + Math.floor((T - W) * s / 10 + 1e-9) * 10 / s);
+        if (i > 0) out.push(fill(i === 1 ? t('stem.numberline.dz_ws_zoom_l1', 'Zoom in on the space from {a} to {b}. Each space there is one hundredth.') : t('stem.numberline.dz_ws_zoom_l2', 'Zoom in on the space from {a} to {b}. Each space there is one thousandth.'), { a: dzLabel(a, i - 1), b: dzLabel(clean(a + 10 / s), i - 1) }));
+        if (i === item.places - 1) {
+          out.push(fill(i === 0 ? t('stem.numberline.dz_ws_land_l0', '{n} has {d} in the tenths place, so it is on the tick {n}.')
+            : i === 1 ? t('stem.numberline.dz_ws_land_l1', '{n} has {d} in the hundredths place, so it is on the tick {n}.')
+            : t('stem.numberline.dz_ws_land_l2', '{n} has {d} in the thousandths place, so it is on the tick {n}.'), { n: item.text, d: frac.charAt(i) }));
+        } else {
+          var lo = clean(W + Math.floor((T - W) * s + 1e-9) / s);
+          out.push(fill(i === 0 ? t('stem.numberline.dz_ws_space_l0', '{n} has {d} in the tenths place, so it sits between {a} and {b}.')
+            : t('stem.numberline.dz_ws_space_l1', '{n} has {d} in the hundredths place, so it sits between {a} and {b}.'), { n: item.text, d: frac.charAt(i), a: dzLabel(lo, i), b: dzLabel(clean(lo + 1 / s), i) }));
+        }
+      }
+      return out;
+    }
+    function genDzCompare(band, rng, cap) {
+      rng = rng || Math.random;
+      var maxP = dzCap(band, cap);
+      var W = band === 'b6' && rng() < 0.4 ? ri(rng, 1, 3) : 0;
+      var kind = pk(rng, maxP >= 2 ? ['longerSmaller', 'longerSmaller', 'longerBigger', 'zeroPlace', 'equal'] : ['tenths']);
+      var digits = function(n) { var s = ''; for (var i = 0; i < n; i++) s += ri(rng, 0, 9); return s; };
+      var lastNZ = function(n) { return n <= 0 ? '' : digits(n - 1) + ri(rng, 1, 9); };
+      var sa, sb, d, L;
+      if (kind === 'longerSmaller') { d = ri(rng, 2, 9); L = ri(rng, 2, maxP); sa = W + '.' + d; sb = W + '.' + (d - 1) + lastNZ(L - 1); }
+      else if (kind === 'longerBigger') { d = ri(rng, 1, 8); L = ri(rng, 2, maxP); sa = W + '.' + d; sb = W + '.' + d + lastNZ(L - 1); }
+      else if (kind === 'zeroPlace') { sa = W + '.0' + ri(rng, 1, 9); sb = W + '.' + ri(rng, 1, 9); }
+      else if (kind === 'equal') { var base = maxP === 3 && rng() < 0.5 ? ri(rng, 1, 9) + '' + ri(rng, 1, 9) : '' + ri(rng, 1, 9); sa = W + '.' + base; sb = sa + '0'; }
+      else { var a1 = ri(rng, 1, 9), b1; do { b1 = ri(rng, 1, 9); } while (b1 === a1); sa = W + '.' + a1; sb = W + '.' + b1; }
+      if (rng() < 0.5) { var sw = sa; sa = sb; sb = sw; }
+      var a = clean(Number(sa)), b = clean(Number(sb));
+      return { id: newId('dc'), kind: 'dzCompare', band: band, sa: sa, sb: sb, a: a, b: b, rel: near(a, b, 1e-12) ? '=' : a < b ? '<' : '>', tries: 0, binary: true };
+    }
+    // rel = the student's claim about a (first) versus b (second): '<', '>' or '='.
+    function diagnoseDzCompare(item, rel) {
+      if (rel === item.rel) return null;
+      var la = decPlaces(item.sa), lb = decPlaces(item.sb);
+      if (rel === '=') return 'dz_not_equal';
+      if (item.rel === '=') return 'dz_trailing_zero';   // 0.5 vs 0.50: equal, so neither digit rule applies
+      if (la === lb) return 'dz_compare_digits';
+      var claimedBiggerIsA = rel === '>';
+      return claimedBiggerIsA === (la > lb) ? 'longer_is_bigger' : 'shorter_is_bigger';
+    }
+    function gradeDzCompare(item, rel) {
+      if (!item || (rel !== '<' && rel !== '>' && rel !== '=')) return { valid: false };
+      var ok = rel === item.rel;
+      return { valid: true, ok: ok, mis: ok ? null : diagnoseDzCompare(item, rel) };
+    }
+    function dzCompareSteps(item, t) {
+      var P = Math.max(decPlaces(item.sa), decPlaces(item.sb), 1);
+      var pa = item.a.toFixed(P), pb = item.b.toFixed(P), out = [];
+      out.push(fill(t('stem.numberline.dz_cs_pad', 'Write both with the same number of decimal places: {a} and {b}.'), { a: pa, b: pb }));
+      if (item.rel === '=') { out.push(fill(t('stem.numberline.dz_cs_equal', 'Every place matches, so {x} = {y}. A zero on the end does not change the value.'), { x: item.sa, y: item.sb })); return out; }
+      var fa = pa.split('.')[1], fb = pb.split('.')[1], i = 0;
+      while (i < fa.length && fa.charAt(i) === fb.charAt(i)) i++;
+      out.push(fill(i === 0 ? t('stem.numberline.dz_cs_first_l0', 'The first place that is different is the tenths place: {da} and {db}.')
+        : i === 1 ? t('stem.numberline.dz_cs_first_l1', 'The first place that is different is the hundredths place: {da} and {db}.')
+        : t('stem.numberline.dz_cs_first_l2', 'The first place that is different is the thousandths place: {da} and {db}.'), { da: fa.charAt(i), db: fb.charAt(i) }));
+      out.push(item.rel === '<'
+        ? fill(t('stem.numberline.dz_cs_less', 'So {x} < {y}: {x} is less than {y}.'), { x: item.sa, y: item.sb })
+        : fill(t('stem.numberline.dz_cs_more', 'So {x} > {y}: {x} is greater than {y}.'), { x: item.sa, y: item.sb }));
+      if (decPlaces(item.sa) !== decPlaces(item.sb)) out.push(t('stem.numberline.dz_cs_digits', 'More digits do not make a decimal bigger. Each place to the right is worth ten times less.'));
+      return out;
+    }
+
+    // ── Ordering fractions, decimals and percents on one line ──
+    function oFrac(n, d, neg) { return { kind: 'frac', text: (neg ? MINUS : '') + n + '/' + d, value: clean((neg ? -1 : 1) * n / d), n: n, d: d }; }
+    function oDec(s, neg) { return { kind: 'dec', text: (neg ? MINUS : '') + s, value: clean((neg ? -1 : 1) * Number(s)), places: decPlaces(s) }; }
+    function oPct(p) { return { kind: 'pct', text: p + '%', value: clean(p / 100), p: p }; }
+    function oMixed(w, n, d) { return { kind: 'mixed', text: w + ' ' + n + '/' + d, value: clean(w + n / d), n: n, d: d, w: w }; }
+    function isSorted(nums) { for (var i = 0; i < nums.length - 1; i++) if (nums[i].value > nums[i + 1].value) return false; return true; }
+    function genOrder(band, rng) {
+      rng = rng || Math.random;
+      var count = band === 'b23' ? 3 : band === 'b45' ? 4 : 5;
+      var line = band === 'b6' ? { min: -1, max: 2, step: 0.25, labels: [-1, 0, 1, 2], snap: 0.05 } : { min: 0, max: 1, step: 0.1, labels: [0, 0.5, 1], snap: 0.01 };
+      var gap = band === 'b6' ? 0.1 : band === 'b23' ? 0.1 : 0.06;
+      var nums = [];
+      var fits = function(x) { return x.value > line.min + 1e-9 && x.value < line.max - 1e-9 && nums.every(function(y) { return Math.abs(y.value - x.value) >= gap - 1e-9 && y.text !== x.text; }); };
+      var add = function(x) { if (x && fits(x)) { nums.push(x); return true; } return false; };
+      var FR23 = [[1, 2], [1, 4], [3, 4], [1, 3], [2, 3]];
+      var FR = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5], [1, 8], [3, 8], [5, 8], [7, 8], [1, 10], [3, 10], [7, 10], [9, 10], [1, 6], [5, 6]];
+      var randDecStr = function(pl) { var s = '0.'; for (var i = 0; i < pl; i++) s += ri(rng, i === pl - 1 ? 1 : 0, 9); return s; };
+      var makers = [
+        { kind: 'frac', fn: function() { var f = pk(rng, band === 'b23' ? FR23 : FR); return oFrac(f[0], f[1], band === 'b6' && rng() < 0.3); } },
+        { kind: 'dec', fn: function() { return oDec(randDecStr(band === 'b23' ? 1 : pk(rng, [1, 2, 2, 3])), band === 'b6' && rng() < 0.3); } }
+      ];
+      if (band !== 'b23') makers.push({ kind: 'pct', fn: function() { return oPct(band === 'b6' && rng() < 0.35 ? pk(rng, [110, 120, 125, 150, 175]) : ri(rng, 2, 98)); } });
+      if (band === 'b6') makers.push({ kind: 'mixed', fn: function() { var f = pk(rng, [[1, 4], [1, 2], [3, 4], [1, 3], [2, 3], [1, 5], [4, 5]]); return oMixed(1, f[0], f[1]); } });
+      // One planted pair per item, so the feedback can name a real slip.
+      if (band !== 'b23') {
+        var trap = pk(rng, band === 'b6' ? ['longer', 'pct', 'neg', 'neg', 'bias'] : ['longer', 'pct', 'bias', 'unit']);
+        if (trap === 'longer') { var d = ri(rng, 3, 9); add(oDec('0.' + d)); add(oDec('0.' + (d - 2) + ri(rng, 1, 9) + (rng() < 0.5 ? String(ri(rng, 1, 9)) : ''))); }
+        else if (trap === 'pct') { add(oPct(ri(rng, 2, 9))); add(oDec('0.' + ri(rng, 3, 9))); }
+        else if (trap === 'bias') { var bp = pk(rng, [[[1, 2], [3, 8]], [[1, 2], [2, 5]], [[3, 4], [5, 8]], [[1, 2], [3, 10]]]); add(oFrac(bp[0][0], bp[0][1])); add(oFrac(bp[1][0], bp[1][1])); }
+        else if (trap === 'unit') { var up = pk(rng, [[3, 4], [4, 8], [2, 3], [5, 10]]); add(oFrac(1, up[0])); add(oFrac(1, up[1])); }
+        else { var np = pk(rng, [['0.25', '0.5'], ['0.2', '0.75'], ['0.4', '0.8'], ['0.3', '0.65']]); add(oDec(np[0], true)); add(oDec(np[1], true)); }
+      }
+      makers.forEach(function(mk) {
+        if (nums.some(function(x) { return x.kind === mk.kind; })) return;
+        for (var tries = 0; tries < 40 && nums.length < count; tries++) if (add(mk.fn())) break;
+      });
+      for (var guard = 0; nums.length < count && guard < 400; guard++) add(pk(rng, makers).fn());
+      var out = shuffle(rng, nums);
+      for (var s = 0; s < 6 && isSorted(out); s++) out = shuffle(rng, nums);
+      if (isSorted(out)) out = out.slice().reverse();
+      return { id: newId('ord'), kind: 'order', band: band, nums: out, line: line, tries: 0 };
+    }
+    // L is the bigger number but the student placed it LEFT of R.
+    function diagnosePair(L, R) {
+      if (L.value >= 0 && R.value < 0) return 'sign_ignored';
+      if (L.value < 0 && R.value < 0) return 'ord_negative';
+      if (R.kind === 'pct' && L.kind !== 'pct' && R.p > L.value) return 'ord_percent_whole';
+      if (R.kind === 'pct' || L.kind === 'pct') return 'ord_percent_convert';
+      if (L.kind === 'dec' && R.kind === 'dec') { if (R.places > L.places) return 'longer_is_bigger'; if (R.places < L.places) return 'shorter_is_bigger'; }
+      if (L.kind === 'frac' && R.kind === 'frac') { if (R.n === L.n && R.d > L.d) return 'denominator_bigger'; if (R.n > L.n && R.d > L.d) return 'whole_number_bias'; }
+      return 'ord_swap';
+    }
+    function gradeOrder(item, pos) {
+      var n = item && item.nums ? item.nums.length : 0;
+      if (!n || !Array.isArray(pos) || pos.length !== n) return { valid: false, missing: 0 };
+      for (var i = 0; i < n; i++) if (typeof pos[i] !== 'number' || !isFinite(pos[i])) return { valid: false, missing: i };
+      var idx = []; for (i = 0; i < n; i++) idx.push(i);
+      idx.sort(function(x, y) { return (pos[x] - pos[y]) || (x - y); });
+      var k, L, R;
+      for (k = 0; k < n - 1; k++) { L = idx[k]; R = idx[k + 1]; if (near(pos[L], pos[R], 1e-9)) return { valid: true, ok: false, mis: 'ord_same_spot', pair: [L, R], order: idx }; }
+      for (k = 0; k < n - 1; k++) { L = idx[k]; R = idx[k + 1]; if (item.nums[L].value > item.nums[R].value) return { valid: true, ok: false, mis: diagnosePair(item.nums[L], item.nums[R]), pair: [L, R], order: idx }; }
+      var far = idx.filter(function(j) { return Math.abs(pos[j] - item.nums[j].value) > (item.line.max - item.line.min) * 0.1 + 1e-9; });
+      return { valid: true, ok: true, order: idx, far: far };
+    }
+    function orderSteps(item, t) {
+      var conv = [];
+      item.nums.forEach(function(x) {
+        if (x.kind === 'dec') return;
+        var dt = decText(x.value);
+        conv.push(fill(dt.exact ? t('stem.numberline.ord_ws_conv', '{x} = {d}') : t('stem.numberline.ord_ws_conv_approx', '{x} is about {d}'), { x: x.text, d: dt.text }));
+      });
+      var out = [];
+      if (conv.length) out.push(fill(t('stem.numberline.ord_ws_1', 'Write each number as a decimal: {list}.'), { list: conv.join('; ') }));
+      out.push(t('stem.numberline.ord_ws_2', 'Compare the decimals place by place, starting from the left. Negative numbers are less than 0, and the one farther from 0 is less.'));
+      var sorted = item.nums.slice().sort(function(a, b) { return a.value - b.value; });
+      out.push(fill(t('stem.numberline.ord_ws_3', 'From least to greatest: {list}.'), { list: sorted.map(function(x) { return x.text; }).join(' < ') }));
+      return out;
+    }
+
+    // ── Ruler measurement (3.MD.4, 4.MD.4, 5.MD.2) ──
+    var MS_THINGS = ['pencil', 'crayon', 'leaf', 'feather', 'ribbon', 'caterpillar', 'key', 'straw'];
+    function rulerDenFor(band) { return band === 'b23' ? 4 : 8; }
+    function genMeasure(band, rng, precLock) {
+      rng = rng || Math.random;
+      var rd = rulerDenFor(band);
+      var pl = Number(precLock);
+      var prec = (pl === 2 || pl === 4 || pl === 8) ? Math.min(pl, rd) : pk(rng, band === 'b23' ? [2, 4, 4] : band === 'b45' ? [2, 4, 8, 8] : [4, 8, 8]);
+      var start = band === 'b6' ? pk(rng, [0, 1, 1, 2]) : band === 'b45' ? pk(rng, [0, 0, 0, 1]) : 0;
+      var L = 2.5, T = 2.5;                                            // fallback: valid for every precision
+      for (var guard = 0; guard < 400; guard++) {
+        var lenTicks = ri(rng, rd + 1, rd * Math.min(5, 6 - start) - 1);
+        var cl = lenTicks / rd;
+        var scaled = cl * prec, fr = scaled - Math.floor(scaled + 1e-9);
+        if (Math.abs(fr - 0.5) < 1e-9) continue;                       // an exact midpoint has no nearest mark
+        var ct = clean(Math.round(scaled) / prec);
+        if (prec > 2 && near(ct, Math.round(ct))) continue;            // keep a fraction part to read
+        if (prec < rd && near(cl, ct) && rng() < 0.6) continue;        // mostly make the student round
+        L = cl; T = ct;
+        break;
+      }
+      return { id: newId('ms'), kind: 'measure', band: band, rd: rd, prec: prec, start: start, len: clean(L), end: clean(start + L), target: T, thing: pk(rng, MS_THINGS), tries: 0 };
+    }
+    function msText(v, q) { return NLE.mixedStr(v, q); }
+    function diagnoseMeasure(item, v) {
+      var T = item.target, s = item.start, L = item.len, rd = item.rd, prec = item.prec;
+      var is = function(x) { return near(v, x, 1e-6); };
+      if (s > 0 && (is(clean(T + s)) || is(item.end))) return 'ms_read_end';
+      if (prec < rd && is(L)) return 'ms_not_rounded';
+      var w = Math.floor(L + 1e-9), k8 = Math.round((L - w) * rd);
+      var wT = Math.floor(T + 1e-9), kp = Math.round((T - wT) * prec);
+      if ((k8 > 0 && is(clean(w + k8 / 10))) || (kp > 0 && is(clean(wT + kp / 10)))) return 'ms_tenths';
+      if (k8 > 0 && prec !== rd && is(clean(w + k8 / prec))) return 'ms_space_size';
+      if (k8 > 0 && is(clean(w + k8 / (rd / 2)))) return 'ms_space_size';
+      if (prec < rd && (is(clean(T + 1 / prec)) || is(clean(T - 1 / prec))) && Math.abs(v - L) > Math.abs(T - L)) return 'ms_round_far';
+      if (is(clean(T + 1 / rd)) || is(clean(T - 1 / rd))) return 'one_space_off';
+      return null;
+    }
+    function gradeMeasure(item, text) {
+      var v = parseNum(text);
+      if (v == null) return { valid: false };
+      var ok = near(v, item.target, 1e-6);
+      return { valid: true, ok: ok, mis: ok ? null : diagnoseMeasure(item, v), value: v };
+    }
+    function thingName(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.ms_th_pencil', 'pencil');
+        case 'crayon': return t('stem.numberline.ms_th_crayon', 'crayon');
+        case 'leaf': return t('stem.numberline.ms_th_leaf', 'leaf');
+        case 'feather': return t('stem.numberline.ms_th_feather', 'feather');
+        case 'ribbon': return t('stem.numberline.ms_th_ribbon', 'ribbon');
+        case 'caterpillar': return t('stem.numberline.ms_th_caterpillar', 'caterpillar');
+        case 'key': return t('stem.numberline.ms_th_key', 'key');
+        default: return t('stem.numberline.ms_th_straw', 'straw');
+      }
+    }
+    // Whole sentences per object, so translators never insert a noun (gender,
+    // case and articles stay inside each sentence).
+    function msQText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.ms_q_pencil', 'How long is the pencil? Measure it to the nearest {u} inch.');
+        case 'crayon': return t('stem.numberline.ms_q_crayon', 'How long is the crayon? Measure it to the nearest {u} inch.');
+        case 'leaf': return t('stem.numberline.ms_q_leaf', 'How long is the leaf? Measure it to the nearest {u} inch.');
+        case 'feather': return t('stem.numberline.ms_q_feather', 'How long is the feather? Measure it to the nearest {u} inch.');
+        case 'ribbon': return t('stem.numberline.ms_q_ribbon', 'How long is the ribbon? Measure it to the nearest {u} inch.');
+        case 'caterpillar': return t('stem.numberline.ms_q_caterpillar', 'How long is the caterpillar? Measure it to the nearest {u} inch.');
+        case 'key': return t('stem.numberline.ms_q_key', 'How long is the key? Measure it to the nearest {u} inch.');
+        default: return t('stem.numberline.ms_q_straw', 'How long is the straw? Measure it to the nearest {u} inch.');
+      }
+    }
+    function msLiesText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.ms_lies_pencil', 'The pencil lies along the ruler.');
+        case 'crayon': return t('stem.numberline.ms_lies_crayon', 'The crayon lies along the ruler.');
+        case 'leaf': return t('stem.numberline.ms_lies_leaf', 'The leaf lies along the ruler.');
+        case 'feather': return t('stem.numberline.ms_lies_feather', 'The feather lies along the ruler.');
+        case 'ribbon': return t('stem.numberline.ms_lies_ribbon', 'The ribbon lies along the ruler.');
+        case 'caterpillar': return t('stem.numberline.ms_lies_caterpillar', 'The caterpillar lies along the ruler.');
+        case 'key': return t('stem.numberline.ms_lies_key', 'The key lies along the ruler.');
+        default: return t('stem.numberline.ms_lies_straw', 'The straw lies along the ruler.');
+      }
+    }
+    function msStartText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.ms_ws_start_pencil', 'The pencil starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'crayon': return t('stem.numberline.ms_ws_start_crayon', 'The crayon starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'leaf': return t('stem.numberline.ms_ws_start_leaf', 'The leaf starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'feather': return t('stem.numberline.ms_ws_start_feather', 'The feather starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'ribbon': return t('stem.numberline.ms_ws_start_ribbon', 'The ribbon starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'caterpillar': return t('stem.numberline.ms_ws_start_caterpillar', 'The caterpillar starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        case 'key': return t('stem.numberline.ms_ws_start_key', 'The key starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+        default: return t('stem.numberline.ms_ws_start_straw', 'The straw starts at the {s}-inch mark, not at 0, so subtract {s} from the mark at its right end.');
+      }
+    }
+    function msStart0Text(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.ms_ws_start0_pencil', 'The pencil starts at 0, so its length is the mark at its right end.');
+        case 'crayon': return t('stem.numberline.ms_ws_start0_crayon', 'The crayon starts at 0, so its length is the mark at its right end.');
+        case 'leaf': return t('stem.numberline.ms_ws_start0_leaf', 'The leaf starts at 0, so its length is the mark at its right end.');
+        case 'feather': return t('stem.numberline.ms_ws_start0_feather', 'The feather starts at 0, so its length is the mark at its right end.');
+        case 'ribbon': return t('stem.numberline.ms_ws_start0_ribbon', 'The ribbon starts at 0, so its length is the mark at its right end.');
+        case 'caterpillar': return t('stem.numberline.ms_ws_start0_caterpillar', 'The caterpillar starts at 0, so its length is the mark at its right end.');
+        case 'key': return t('stem.numberline.ms_ws_start0_key', 'The key starts at 0, so its length is the mark at its right end.');
+        default: return t('stem.numberline.ms_ws_start0_straw', 'The straw starts at 0, so its length is the mark at its right end.');
+      }
+    }
+    function lpGtText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_q_gt_pencil', 'How many pencils are longer than {v} inches?');
+        case 'ribbon': return t('stem.numberline.lp_q_gt_ribbon', 'How many ribbons are longer than {v} inches?');
+        case 'caterpillar': return t('stem.numberline.lp_q_gt_caterpillar', 'How many caterpillars are longer than {v} inches?');
+        case 'feather': return t('stem.numberline.lp_q_gt_feather', 'How many feathers are longer than {v} inches?');
+        default: return t('stem.numberline.lp_q_gt_leaf', 'How many leaves are longer than {v} inches?');
+      }
+    }
+    function lpAtText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_q_at_pencil', 'How many pencils are exactly {v} inches long?');
+        case 'ribbon': return t('stem.numberline.lp_q_at_ribbon', 'How many ribbons are exactly {v} inches long?');
+        case 'caterpillar': return t('stem.numberline.lp_q_at_caterpillar', 'How many caterpillars are exactly {v} inches long?');
+        case 'feather': return t('stem.numberline.lp_q_at_feather', 'How many feathers are exactly {v} inches long?');
+        default: return t('stem.numberline.lp_q_at_leaf', 'How many leaves are exactly {v} inches long?');
+      }
+    }
+    function lpRangeText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_q_range_pencil', 'What is the difference in length between the longest pencil and the shortest pencil?');
+        case 'ribbon': return t('stem.numberline.lp_q_range_ribbon', 'What is the difference in length between the longest ribbon and the shortest ribbon?');
+        case 'caterpillar': return t('stem.numberline.lp_q_range_caterpillar', 'What is the difference in length between the longest caterpillar and the shortest caterpillar?');
+        case 'feather': return t('stem.numberline.lp_q_range_feather', 'What is the difference in length between the longest feather and the shortest feather?');
+        default: return t('stem.numberline.lp_q_range_leaf', 'What is the difference in length between the longest leaf and the shortest leaf?');
+      }
+    }
+    function lpTotalText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_q_total_pencil', 'All the pencils that are {v} inches long are laid end to end. How long is the line they make, in inches?');
+        case 'ribbon': return t('stem.numberline.lp_q_total_ribbon', 'All the ribbons that are {v} inches long are laid end to end. How long is the line they make, in inches?');
+        case 'caterpillar': return t('stem.numberline.lp_q_total_caterpillar', 'All the caterpillars that are {v} inches long are laid end to end. How long is the line they make, in inches?');
+        case 'feather': return t('stem.numberline.lp_q_total_feather', 'All the feathers that are {v} inches long are laid end to end. How long is the line they make, in inches?');
+        default: return t('stem.numberline.lp_q_total_leaf', 'All the leaves that are {v} inches long are laid end to end. How long is the line they make, in inches?');
+      }
+    }
+    function lpCaptionText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_caption_pencil', 'Lengths of {n} pencils, measured to the nearest 1/{p} inch');
+        case 'ribbon': return t('stem.numberline.lp_caption_ribbon', 'Lengths of {n} ribbons, measured to the nearest 1/{p} inch');
+        case 'caterpillar': return t('stem.numberline.lp_caption_caterpillar', 'Lengths of {n} caterpillars, measured to the nearest 1/{p} inch');
+        case 'feather': return t('stem.numberline.lp_caption_feather', 'Lengths of {n} feathers, measured to the nearest 1/{p} inch');
+        default: return t('stem.numberline.lp_caption_leaf', 'Lengths of {n} leaves, measured to the nearest 1/{p} inch');
+      }
+    }
+    function lpMissText(id, t) {
+      switch (id) {
+        case 'pencil': return t('stem.numberline.lp_miss_pencil', 'Line plot of {n} pencils');
+        case 'ribbon': return t('stem.numberline.lp_miss_ribbon', 'Line plot of {n} ribbons');
+        case 'caterpillar': return t('stem.numberline.lp_miss_caterpillar', 'Line plot of {n} caterpillars');
+        case 'feather': return t('stem.numberline.lp_miss_feather', 'Line plot of {n} feathers');
+        default: return t('stem.numberline.lp_miss_leaf', 'Line plot of {n} leaves');
+      }
+    }
+    function msPrompt(item, t) {
+      return fill(msQText(item.thing, t), { u: '1/' + item.prec });
+    }
+    // Where an edge sits, in the ruler's own small spaces (what a sighted
+    // student counts), never the length itself. One whole sentence per case.
+    function msEdge(item, v, t, side) {
+      var w = Math.floor(v + 1e-9), k = Math.round((v - w) * item.rd), right = side === 'right';
+      if (k === item.rd) { w += 1; k = 0; }
+      var s;
+      if (k === 0) s = right ? t('stem.numberline.ms_right_mark', 'Its right end lines up with the {w}-inch mark.') : t('stem.numberline.ms_left_mark', 'Its left end lines up with the {w}-inch mark.');
+      else if (item.rd === 8) s = k === 1
+        ? (right ? t('stem.numberline.ms_right_8_one', 'Its right end lines up with the tick 1 eighth-inch space past the {w}-inch mark.') : t('stem.numberline.ms_left_8_one', 'Its left end lines up with the tick 1 eighth-inch space past the {w}-inch mark.'))
+        : (right ? t('stem.numberline.ms_right_8_many', 'Its right end lines up with the tick {k} eighth-inch spaces past the {w}-inch mark.') : t('stem.numberline.ms_left_8_many', 'Its left end lines up with the tick {k} eighth-inch spaces past the {w}-inch mark.'));
+      else s = k === 1
+        ? (right ? t('stem.numberline.ms_right_4_one', 'Its right end lines up with the tick 1 quarter-inch space past the {w}-inch mark.') : t('stem.numberline.ms_left_4_one', 'Its left end lines up with the tick 1 quarter-inch space past the {w}-inch mark.'))
+        : (right ? t('stem.numberline.ms_right_4_many', 'Its right end lines up with the tick {k} quarter-inch spaces past the {w}-inch mark.') : t('stem.numberline.ms_left_4_many', 'Its left end lines up with the tick {k} quarter-inch spaces past the {w}-inch mark.'));
+      return fill(s, { k: k, w: w });
+    }
+    function msDescribe(item, t) {
+      var ruler = item.rd === 8 ? t('stem.numberline.ms_ruler_8', 'An inch ruler from 0 to 6. Each inch is cut into 8 equal small spaces (eighths), with longer ticks at the halves and quarters.')
+        : t('stem.numberline.ms_ruler_4', 'An inch ruler from 0 to 6. Each inch is cut into 4 equal small spaces (quarters), with a longer tick at each half.');
+      return [ruler, msLiesText(item.thing, t), msEdge(item, item.start, t, 'left'), msEdge(item, item.end, t, 'right')].join(' ');
+    }
+    function msHints(item, t) {
+      return [
+        item.start > 0 ? t('stem.numberline.ms_h1_offset', 'Look at where the object starts. It does not start at 0, so you will need to subtract.') : t('stem.numberline.ms_h1_zero', 'The object starts at 0, so its length is the mark at its right end.'),
+        fill(t('stem.numberline.ms_h2', 'Count the small spaces past the last whole inch. On this ruler each small space is 1/{rd} inch.'), { rd: item.rd }),
+        item.prec < item.rd ? fill(t('stem.numberline.ms_h3_round', 'Which 1/{p}-inch mark is closest to the end? Round to that mark.'), { p: item.prec }) : t('stem.numberline.ms_h3_simplify', 'Write the small spaces as a fraction of an inch, and simplify it if you can.')
+      ];
+    }
+    function msSteps(item, t) {
+      var out = [];
+      out.push(item.start > 0 ? fill(msStartText(item.thing, t), { s: item.start }) : msStart0Text(item.thing, t));
+      out.push(fill(t('stem.numberline.ms_ws_end', 'The right end lines up with {e} inches.'), { e: msText(item.end, item.rd) }));
+      if (item.start > 0) out.push(fill(t('stem.numberline.ms_ws_sub', '{e} − {s} = {l} inches.'), { e: msText(item.end, item.rd), s: item.start, l: msText(item.len, item.rd) }));
+      out.push(item.prec < item.rd && !near(item.len, item.target)
+        ? fill(t('stem.numberline.ms_ws_round', 'To the nearest 1/{p} inch, {l} inches rounds to {a} inches.'), { p: item.prec, l: msText(item.len, item.rd), a: msText(item.target, item.prec) })
+        : fill(t('stem.numberline.ms_ws_done', 'The length is {a} inches.'), { a: msText(item.target, item.prec) }));
+      return out;
+    }
+
+    // ── Line plot of measurement data ──
+    function genLinePlot(band, rng, precLock) {
+      rng = rng || Math.random;
+      var maxPrec = band === 'b23' ? 4 : 8;
+      var pl = Number(precLock);
+      var prec = (pl === 2 || pl === 4 || pl === 8) ? Math.min(pl, maxPrec) : maxPrec;
+      var span = prec === 8 ? 1 : prec === 4 ? 2 : 3;
+      var a = ri(rng, 1, 3);
+      var cols = span * prec + 1;
+      var N = band === 'b23' ? ri(rng, 8, 10) : ri(rng, 10, 12);
+      var counts = [], i;
+      for (i = 0; i < cols; i++) counts.push(0);
+      var modeCol = ri(rng, 1, cols - 2);
+      counts[modeCol] = ri(rng, 3, 4);
+      var rem = N - counts[modeCol];
+      for (var guard = 0; rem > 0 && guard < 2000; guard++) {
+        var c = ri(rng, 0, cols - 1);
+        if (c !== modeCol && counts[c] < counts[modeCol] - 1) { counts[c] += 1; rem -= 1; }
+      }
+      var data = [];
+      counts.forEach(function(n, col) { for (var k = 0; k < n; k++) data.push(clean(a + col / prec)); });
+      data = shuffle(rng, data);
+      var item = { id: newId('lp'), kind: 'lineplot', band: band, prec: prec, a: a, span: span, cols: cols, counts: counts, data: data, thing: pk(rng, ['leaf', 'pencil', 'ribbon', 'caterpillar', 'feather']), tries: 0 };
+      item.questions = lpQuestions(item, rng);
+      return item;
+    }
+    function lpValue(item, col) { return clean(item.a + col / item.prec); }
+    function lpText(item, v) { return NLE.mixedStr(v, item.prec); }
+    function gradePlot(item, sc) {
+      if (!item || !Array.isArray(sc) || sc.length !== item.cols) return { valid: false };
+      var total = 0, N = item.data.length, diffs = [];
+      for (var i = 0; i < item.cols; i++) { var n = Number(sc[i]) || 0; total += n; if (n !== item.counts[i]) diffs.push(i); }
+      if (!total) return { valid: false };
+      if (!diffs.length) return { valid: true, ok: true };
+      var mis = total < N ? 'lp_too_few' : total > N ? 'lp_too_many' : 'lp_misplaced';
+      if (total === N) {
+        [-1, 1].forEach(function(sh) {
+          var same = true;
+          for (var j = 0; j < item.cols; j++) { var src = j - sh; var want = src >= 0 && src < item.cols ? item.counts[src] : 0; if ((Number(sc[j]) || 0) !== want) { same = false; break; } }
+          if (same) mis = 'lp_shifted';
+        });
+      }
+      return { valid: true, ok: false, mis: mis, cols: diffs, total: total, need: N };
+    }
+    function lpQuestions(item, rng) {
+      var vals = item.data, maxV = Math.max.apply(null, vals), minV = Math.min.apply(null, vals);
+      var modeCol = item.counts.indexOf(Math.max.apply(null, item.counts));
+      var modeV = lpValue(item, modeCol);
+      var used = []; item.counts.forEach(function(n, c) { if (n > 0) used.push(c); });
+      var inner = used.filter(function(c) { return c > used[0] && c < used[used.length - 1] && item.counts[c] > 0; });
+      var thrCol = inner.length ? pk(rng, inner) : used[0];
+      var thr = lpValue(item, thrCol);
+      var others = used.filter(function(c) { return c !== modeCol; });
+      var atCol = others.length ? pk(rng, others) : modeCol;
+      var gt = vals.filter(function(v) { return v > thr + 1e-9; }).length;
+      var q = {
+        mode: { id: 'mode', answer: modeV, count: item.counts[modeCol] },
+        gt: { id: 'gt', v: thr, answer: gt, inclusive: gt + item.counts[thrCol], below: vals.length - gt - item.counts[thrCol] },
+        at: { id: 'at', v: lpValue(item, atCol), answer: item.counts[atCol] },
+        range: { id: 'range', answer: clean(maxV - minV), max: maxV, min: minV },
+        total: { id: 'total', v: modeV, answer: clean(item.counts[modeCol] * modeV), count: item.counts[modeCol] }
+      };
+      var pick = item.band === 'b23' ? ['mode', 'gt', 'at'] : item.band === 'b45' ? ['mode', 'range', 'total'] : ['gt', 'range', 'total'];
+      return pick.map(function(k) { return q[k]; });
+    }
+    function lpPrompt(item, q, t) {
+      switch (q.id) {
+        case 'mode': return t('stem.numberline.lp_q_mode', 'Which length was measured most often?');
+        case 'gt': return fill(lpGtText(item.thing, t), { v: lpText(item, q.v) });
+        case 'at': return fill(lpAtText(item.thing, t), { v: lpText(item, q.v) });
+        case 'range': return lpRangeText(item.thing, t);
+        default: return fill(lpTotalText(item.thing, t), { v: lpText(item, q.v) });
+      }
+    }
+    function gradeLpQuestion(q, text) {
+      var v = parseNum(text);
+      if (v == null) return { valid: false };
+      var ok = near(v, q.answer, 1e-6), mis = null;
+      if (!ok) {
+        if (q.id === 'mode' && near(v, q.count)) mis = 'lp_mode_count';
+        else if (q.id === 'gt' && near(v, q.inclusive)) mis = 'lp_count_inclusive';
+        else if (q.id === 'gt' && near(v, q.below)) mis = 'lp_count_wrong_side';
+        else if (q.id === 'range' && near(v, clean(q.max + q.min))) mis = 'lp_range_added';
+        else if (q.id === 'range' && (near(v, q.max) || near(v, q.min))) mis = 'lp_range_one_end';
+        else if (q.id === 'total' && near(v, q.count)) mis = 'lp_total_count';
+        else if (q.id === 'total' && near(v, q.v)) mis = 'lp_total_one';
+      }
+      return { valid: true, ok: ok, mis: mis, value: v };
+    }
+    function lpQSteps(item, q, t) {
+      switch (q.id) {
+        case 'mode': return [fill(t('stem.numberline.lp_ws_mode', 'The tallest stack of X marks is at {v} inches, with {n} marks.'), { v: lpText(item, q.answer), n: q.count })];
+        case 'gt': return [fill(t('stem.numberline.lp_ws_gt', 'Count the X marks to the right of {v}, not the ones at {v}: {n}.'), { v: lpText(item, q.v), n: q.answer })];
+        case 'at': return [fill(t('stem.numberline.lp_ws_at', 'Count the X marks above {v}: {n}.'), { v: lpText(item, q.v), n: q.answer })];
+        case 'range': return [fill(t('stem.numberline.lp_ws_range', 'Longest {a} minus shortest {b} equals {d} inches.'), { a: lpText(item, q.max), b: lpText(item, q.min), d: lpText(item, q.answer) })];
+        default: return [fill(t('stem.numberline.lp_ws_total', '{n} lengths of {v} inches: {n} × {v} = {a} inches.'), { n: q.count, v: lpText(item, q.v), a: lpText(item, q.answer) })];
+      }
+    }
+
+    // ── Integers in context: temperature, elevation, money ──
+    var IC_LINES = {
+      temp: { min: -20, max: 20, step: 1, labels: [-20, -15, -10, -5, 0, 5, 10, 15, 20], snap: 1, vertical: true },
+      elev: { min: -50, max: 50, step: 5, labels: [-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50], snap: 5, vertical: true },
+      money: { min: -50, max: 50, step: 5, labels: [-50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50], snap: 5, vertical: false }
+    };
+    var IC_NAMES = [['Ana', 'Ben'], ['Kai', 'Mia'], ['Leo', 'Zoe'], ['Sam', 'Ivy']];
+    function icKinds(band) { return band === 'b6' ? ['icPlace', 'icCompare', 'icDebt', 'icChange', 'icDistance'] : band === 'b45' ? ['icPlace', 'icCompare', 'icChange'] : ['icPlace', 'icCompare']; }
+    function icVal(item, v) {
+      if (item.ctx === 'temp') return sgn(v) + Math.abs(v) + ' °' + item.unit;
+      if (item.ctx === 'elev') return sgn(v) + Math.abs(v) + ' m';
+      return sgn(v) + '$' + Math.abs(v);
+    }
+    function genIc(band, rng, kind) {
+      rng = rng || Math.random;
+      var kinds = icKinds(band);
+      if (kinds.indexOf(kind) === -1) kind = pk(rng, kinds);
+      var ctxId = kind === 'icDebt' ? 'money' : band === 'b23' ? 'temp' : pk(rng, ['temp', 'elev', 'money']);
+      var ln = IC_LINES[ctxId], st = ln.step;
+      var mult = function(lo, hi) { return ri(rng, Math.ceil(lo / st), Math.floor(hi / st)) * st; };
+      var it = { id: newId('ic'), kind: kind, band: band, ctx: ctxId, unit: rng() < 0.5 ? 'F' : 'C', line: ln, tries: 0, names: pk(rng, IC_NAMES) };
+      var a, b, guard = 0;
+      if (kind === 'icPlace') {
+        do { a = mult(ln.min + st, ln.max - st); guard++; } while ((Math.abs(a) < 2 * st || (rng() < 0.7 && a > 0)) && guard < 100);
+        it.target = a; it.answer = 'position';
+      } else if (kind === 'icCompare' || kind === 'icDebt') {
+        var both = kind === 'icDebt' || rng() < 0.6;
+        do {
+          a = mult(ln.min + st, both ? -st : ln.max - st);
+          b = mult(ln.min + st, both ? -st : ln.max - st);
+          guard++;
+        } while ((a === b || (a >= 0 && b >= 0) || Math.abs(a - b) < 2 * st) && guard < 200);
+        it.a = a; it.b = b; it.ask = kind === 'icDebt' ? 'debt' : (rng() < 0.6 ? 'lower' : 'higher');
+        it.answerIdx = it.ask === 'higher' ? (a > b ? 0 : 1) : (a < b ? 0 : 1);
+        it.answer = 'choice'; it.binary = true;
+      } else if (kind === 'icChange') {
+        var up = rng() < 0.55, T;
+        do {
+          a = ctxId === 'elev' ? mult(-45, -10) : mult(ln.min + 2 * st, ln.max - 2 * st);
+          b = mult(2 * st, ctxId === 'temp' ? 15 : 30);
+          T = up ? a + b : a - b;
+          guard++;
+        } while ((T <= ln.min || T >= ln.max || (ctxId === 'elev' && T > 0) || (a >= 0 && T >= 0) || T === 0) && guard < 300);
+        it.start = a; it.delta = b; it.up = up; it.target = T; it.answer = 'position';
+      } else {
+        do { a = mult(ln.min + st, -st); b = mult(st, ln.max - st); guard++; } while (Math.abs(a) === Math.abs(b) && guard < 100);
+        it.a = a; it.b = b; it.target = b - a; it.answer = 'number';
+      }
+      return it;
+    }
+    function icPrompt(item, t) {
+      var V = function(v) { return icVal(item, v); };
+      var m = function(v) { return Math.abs(v); };
+      var p = item.names[0], q = item.names[1];
+      switch (item.kind) {
+        case 'icPlace':
+          if (item.ctx === 'temp') return fill(t('stem.numberline.ic_q_place_temp', 'The temperature is {v}. Mark it on the temperature line.'), { v: V(item.target) });
+          if (item.ctx === 'elev') return item.target < 0 ? fill(t('stem.numberline.ic_q_place_below', 'A submarine is {m} m below sea level. Mark its elevation.'), { m: m(item.target) }) : fill(t('stem.numberline.ic_q_place_above', 'A gull is flying {m} m above sea level. Mark its elevation.'), { m: m(item.target) });
+          return item.target < 0 ? fill(t('stem.numberline.ic_q_place_owe', '{p} owes ${m}. Mark {p}’s balance.'), { p: p, m: m(item.target) }) : fill(t('stem.numberline.ic_q_place_have', '{p} has ${m} saved. Mark {p}’s balance.'), { p: p, m: m(item.target) });
+        case 'icCompare':
+          if (item.ctx === 'temp') return fill(item.ask === 'lower' ? t('stem.numberline.ic_q_colder', 'Which temperature is colder: {a} or {b}?') : t('stem.numberline.ic_q_warmer', 'Which temperature is warmer: {a} or {b}?'), { a: V(item.a), b: V(item.b) });
+          if (item.ctx === 'elev') return fill(item.ask === 'lower' ? t('stem.numberline.ic_q_lower', 'Which elevation is lower: {a} or {b}?') : t('stem.numberline.ic_q_higher', 'Which elevation is higher: {a} or {b}?'), { a: V(item.a), b: V(item.b) });
+          return fill(item.ask === 'lower' ? t('stem.numberline.ic_q_less_money', 'Which balance is lower: {a} or {b}?') : t('stem.numberline.ic_q_more_money', 'Which balance is higher: {a} or {b}?'), { a: V(item.a), b: V(item.b) });
+        case 'icDebt': return fill(t('stem.numberline.ic_q_debt', '{p}’s balance is {a}. {q}’s balance is {b}. Who owes more money?'), { p: p, q: q, a: V(item.a), b: V(item.b) });
+        case 'icChange':
+          if (item.ctx === 'temp') return fill(item.up ? t('stem.numberline.ic_q_rise', 'At 6 a.m. the temperature was {s}. By noon it had risen {d} degrees. Mark the noon temperature.') : t('stem.numberline.ic_q_fall', 'At noon the temperature was {s}. By midnight it had fallen {d} degrees. Mark the midnight temperature.'), { s: V(item.start), d: item.delta });
+          if (item.ctx === 'elev') return fill(item.up ? t('stem.numberline.ic_q_swim_up', 'A diver is at {s}. She swims up {d} m. Mark where she is now.') : t('stem.numberline.ic_q_swim_down', 'A diver is at {s}. She swims down {d} m. Mark where she is now.'), { s: V(item.start), d: item.delta });
+          return fill(item.up ? t('stem.numberline.ic_q_earn', 'Your balance is {s}. You earn ${d}. Mark your new balance.') : t('stem.numberline.ic_q_spend', 'Your balance is {s}. You spend ${d}. Mark your new balance.'), { s: V(item.start), d: item.delta });
+        default:
+          if (item.ctx === 'temp') return fill(t('stem.numberline.ic_q_dist_temp', 'How many degrees warmer is {b} than {a}?'), { a: V(item.a), b: V(item.b) });
+          if (item.ctx === 'elev') return fill(t('stem.numberline.ic_q_dist_elev', 'A gull is at {b} and a diver is at {a}. How many metres apart are they?'), { a: V(item.a), b: V(item.b) });
+          return fill(t('stem.numberline.ic_q_dist_money', 'Your balance went from {a} to {b}. By how many dollars did it go up?'), { a: V(item.a), b: V(item.b) });
+      }
+    }
+    function icChoices(item, t) {
+      if (item.kind === 'icDebt') return [item.names[0], item.names[1]];
+      return [icVal(item, item.a), icVal(item, item.b)];
+    }
+    function diagnoseIc(item, v) {
+      var T = item.target, st = item.line.step;
+      var is = function(x) { return near(v, x, 1e-9); };
+      if (item.kind === 'icChange') {
+        if (is(item.up ? item.start - item.delta : item.start + item.delta)) return 'ic_change_direction';
+        if (item.start !== 0 && is(item.up ? item.delta : -item.delta)) return 'started_at_zero';
+      }
+      if (item.kind === 'icDistance') {
+        if (v < 0) return 'abs_kept_sign';
+        if (is(Math.abs(Math.abs(item.a) - Math.abs(item.b)))) return 'distance_subtracted_sizes';
+        return null;
+      }
+      if (T !== 0 && is(-T)) return 'ic_wrong_side';
+      if (is(T + st) || is(T - st)) return 'one_space_off';
+      return null;
+    }
+    function diagnoseIcChoice(item, idx) {
+      if (idx === item.answerIdx) return null;
+      if (item.kind === 'icDebt') return 'ic_debt_balance';
+      return item.a < 0 && item.b < 0 ? 'negative_magnitude' : 'ic_sign_compare';
+    }
+    function gradeIc(item, resp) {
+      if (!item || !resp) return { valid: false };
+      if (item.answer === 'choice') {
+        if (resp.choice !== 0 && resp.choice !== 1) return { valid: false };
+        var okc = resp.choice === item.answerIdx;
+        return { valid: true, ok: okc, mis: okc ? null : diagnoseIcChoice(item, resp.choice) };
+      }
+      var v = item.answer === 'position' ? resp.pos : parseNum(resp.text);
+      if (typeof v !== 'number' || !isFinite(v)) return { valid: false };
+      var ok = near(v, item.target, 1e-9);
+      return { valid: true, ok: ok, mis: ok ? null : diagnoseIc(item, v), value: v };
+    }
+    // The order sentence that links the words to the symbols (6.NS.7b).
+    function icSentence(item, t) {
+      if (item.kind === 'icDebt') {
+        var iMore = item.a < item.b ? 0 : 1, more = iMore === 0 ? item.a : item.b, less = iMore === 0 ? item.b : item.a;
+        return fill(t('stem.numberline.ic_sent_debt', '{p} owes ${m1} and {q} owes ${m2}. {p} owes more, even though {pa} < {qa}: the bigger debt is the balance farther below 0.'), { p: item.names[iMore], q: item.names[1 - iMore], m1: Math.abs(more), m2: Math.abs(less), pa: signed(more), qa: signed(less) });
+      }
+      var lo = Math.min(item.a, item.b), hi = Math.max(item.a, item.b);
+      var map = { lo: icVal(item, lo), hi: icVal(item, hi), lon: signed(lo), hin: signed(hi) };
+      if (item.ctx === 'temp') return fill(t('stem.numberline.ic_sent_temp', '{lo} is colder than {hi}, so {lon} < {hin}.'), map);
+      if (item.ctx === 'elev') return fill(t('stem.numberline.ic_sent_elev', '{lo} is lower than {hi}, so {lon} < {hin}.'), map);
+      return fill(t('stem.numberline.ic_sent_money', 'A balance of {lo} is lower than a balance of {hi}, so {lon} < {hin}.'), map);
+    }
+    function icHints(item, t) {
+      switch (item.kind) {
+        case 'icPlace': return [t('stem.numberline.ic_h_place_1', 'Find 0 first. Below zero, below sea level, or owing money means a negative number.'), fill(t('stem.numberline.ic_h_place_2', 'Each space on this line is worth {s}.'), { s: item.line.step }), t('stem.numberline.ic_h_place_3', 'Count spaces from 0 in the right direction.')];
+        case 'icCompare': return [t('stem.numberline.ic_h_cmp_1', 'Picture both values on the line.'), t('stem.numberline.ic_h_cmp_2', 'Lower on a vertical line (or farther left on a horizontal one) means colder, lower, or less money.'), t('stem.numberline.ic_h_cmp_3', 'Below zero, the number farther from 0 is the lower one.')];
+        case 'icDebt': return [t('stem.numberline.ic_h_debt_1', 'Owing $30 is a balance of −$30.'), t('stem.numberline.ic_h_debt_2', 'Who owes more is about the size of the debt: how far each balance is from 0.'), t('stem.numberline.ic_h_debt_3', 'Compare the absolute values.')];
+        case 'icChange': return [t('stem.numberline.ic_h_chg_1', 'Start at the first value on the line.'), t('stem.numberline.ic_h_chg_2', 'Rising, earning and swimming up move up the line (right on a horizontal line). Falling, spending and swimming down move down (left).'), fill(t('stem.numberline.ic_h_chg_3', 'Move {d} in steps of {s}.'), { d: item.delta, s: item.line.step })];
+        default: return [t('stem.numberline.ic_h_dist_1', 'Find both values on the line.'), t('stem.numberline.ic_h_dist_2', 'Count from the lower value up to 0, then from 0 up to the higher value.'), t('stem.numberline.ic_h_dist_3', 'Add the two parts. A distance is never negative.')];
+      }
+    }
+    function icSteps(item, t) {
+      var V = function(v) { return icVal(item, v); };
+      switch (item.kind) {
+        case 'icPlace': return [item.target < 0 ? fill(t('stem.numberline.ic_ws_place_neg', '{v} is below zero, so it is {k} spaces of {s} below 0.'), { v: V(item.target), k: Math.abs(item.target) / item.line.step, s: item.line.step }) : fill(t('stem.numberline.ic_ws_place_pos', '{v} is above zero, so it is {k} spaces of {s} above 0.'), { v: V(item.target), k: Math.abs(item.target) / item.line.step, s: item.line.step })];
+        case 'icChange': return [
+          fill(t('stem.numberline.ic_ws_chg_1', 'Start at {s}.'), { s: V(item.start) }),
+          fill(item.up ? t('stem.numberline.ic_ws_chg_up', 'Move up {d}: {s} + {d} = {r}.') : t('stem.numberline.ic_ws_chg_down', 'Move down {d}: {s} − {d} = {r}.'), { s: signed(item.start), d: item.delta, r: signed(item.target) })];
+        case 'icDistance': return [
+          fill(t('stem.numberline.ic_ws_dist_1', 'From {a} up to 0 is {da}. From 0 up to {b} is {db}.'), { a: signed(item.a), b: signed(item.b), da: Math.abs(item.a), db: Math.abs(item.b) }),
+          fill(t('stem.numberline.ic_ws_dist_2', '{da} + {db} = {d}.'), { da: Math.abs(item.a), db: Math.abs(item.b), d: item.target })];
+        default: return [icSentence(item, t)];
+      }
+    }
+    function icAnswerText(item, t) {
+      if (item.answer === 'choice') return icChoices(item, t)[item.answerIdx];
+      if (item.answer === 'number') return String(item.target);
+      return icVal(item, item.target);
+    }
+    // Screen-reader position on a context line, in spaces from a labelled tick
+    // ("above" on a vertical line, "right of" on a horizontal one).
+    function icSpot(line, v, vertical, t) {
+      if (typeof v !== 'number' || !isFinite(v)) return t('stem.numberline.ic_no_marker', 'No marker placed yet. Press an arrow key or tap the line to place it.');
+      var L = line.labels[0];
+      line.labels.forEach(function(x) { if (x <= v + 1e-9) L = x; });
+      var k = Math.round((v - L) / line.step);
+      if (k === 0) return fill(t('stem.numberline.ic_on_label', 'Your marker is on the labelled tick {L}.'), { L: signed(L) });
+      if (k === 1) return fill(vertical ? t('stem.numberline.ic_ticks_above_one', 'Your marker is on the tick 1 space above the labelled tick {L}.') : t('stem.numberline.ic_ticks_right_one', 'Your marker is on the tick 1 space right of the labelled tick {L}.'), { L: signed(L) });
+      return fill(vertical ? t('stem.numberline.ic_ticks_above', 'Your marker is on the tick {k} spaces above the labelled tick {L}.') : t('stem.numberline.ic_ticks_right', 'Your marker is on the tick {k} spaces right of the labelled tick {L}.'), { k: k, L: signed(L) });
+    }
+
+    // ── CER: "Is a fraction with a bigger denominator always smaller?" ──
+    function cerRow(a, b) {
+      var va = a[0] / a[1], vb = b[0] / b[1];
+      var bigDen = a[1] > b[1] ? 'a' : b[1] > a[1] ? 'b' : null;
+      var smaller = near(va, vb, 1e-12) ? 'equal' : va < vb ? 'a' : 'b';
+      return { a: a, b: b, va: va, vb: vb, bigDen: bigDen, smaller: smaller, tests: !!bigDen, counter: !!bigDen && smaller !== bigDen, sameNum: !!bigDen && a[0] === b[0] };
+    }
+    function cerOkFrac(f) { return Array.isArray(f) && f.length === 2 && Number.isInteger(f[0]) && Number.isInteger(f[1]) && f[0] >= 1 && f[0] <= 12 && f[1] >= 1 && f[1] <= 12; }
+    function cerEvaluate(cer) {
+      var rows = ((cer && cer.rows) || []).filter(function(r) { return r && cerOkFrac(r.a) && cerOkFrac(r.b); }).map(function(r) { return cerRow(r.a, r.b); });
+      if (rows.filter(function(r) { return r.tests; }).length < 3) return { ok: false, code: 'cer_need_tests' };
+      var counterIdx = -1, supportIdx = -1;
+      rows.forEach(function(r, i) { if (r.counter && counterIdx < 0) counterIdx = i; if (r.tests && !r.counter && supportIdx < 0) supportIdx = i; });
+      if (cer.claim === 'always') return counterIdx >= 0 ? { ok: false, code: 'cer_ignores_counter', row: counterIdx } : { ok: false, code: 'cer_try_numerators' };
+      if (cer.claim === 'never') return supportIdx >= 0 ? { ok: false, code: 'cer_ignores_support', row: supportIdx } : { ok: false, code: 'cer_try_same_num' };
+      if (cer.claim !== 'sameNum') return { ok: false, code: 'cer_need_claim' };
+      if (counterIdx < 0) return { ok: false, code: 'cer_try_numerators' };
+      if (!rows.some(function(r) { return r.sameNum; })) return { ok: false, code: 'cer_try_same_num' };
+      if (cer.cite == null || !rows[cer.cite] || !rows[cer.cite].counter) return { ok: false, code: 'cer_cite_counter', row: counterIdx };
+      if (cer.reason !== 'pieces') return { ok: false, code: cer.reason === 'bigger_numbers' ? 'whole_number_bias' : cer.reason === 'den_only' ? 'cer_reason_den' : 'cer_need_reason' };
+      return { ok: true };
+    }
+
+    // ── Named misconceptions for the stage B activities (falls back to NLE) ──
+    function misInfo(code, item, t, extra) {
+      var x = (extra && extra.x) || '', y = (extra && extra.y) || '';
+      switch (code) {
+        case 'longer_is_bigger': return { title: t('stem.numberline.mis_longer_title', 'Longer decimal, bigger number?'), body: t('stem.numberline.mis_longer_body', 'More digits do not make a decimal bigger. Compare place by place from the left: first the ones, then the tenths. 0.4 is greater than 0.375 because 4 tenths is more than 3 tenths; the extra digits are worth very little.') };
+        case 'shorter_is_bigger': return { title: t('stem.numberline.mis_shorter_title', 'Shorter decimal, bigger number?'), body: t('stem.numberline.mis_shorter_body', 'Hundredths are small, but having them does not make a number smaller. When the tenths match, the number with more hundredths is greater: 0.45 is greater than 0.4.') };
+        case 'dz_not_equal': return { title: t('stem.numberline.mis_dz_neq_title', 'These are not equal'), body: t('stem.numberline.mis_dz_neq_body', 'Write both with the same number of decimal places. If any place has a different digit, the numbers are not equal.') };
+        case 'dz_trailing_zero': return { title: t('stem.numberline.mis_dz_tz_title', 'A zero on the end changes nothing'), body: t('stem.numberline.mis_dz_tz_body', 'Write both with the same number of decimal places and compare them place by place. Every digit matches, so the numbers are equal: a zero on the end of a decimal does not make it bigger or smaller.') };
+        case 'dz_compare_digits': return { title: t('stem.numberline.mis_dz_digits_title', 'Check the first place that differs'), body: t('stem.numberline.mis_dz_digits_body', 'Both have the same number of places. Find the first place, from the left, where the digits differ: the bigger digit there wins.') };
+        case 'dz_zero_dropped': return { title: t('stem.numberline.mis_dzzero_title', 'A zero holds a place'), body: t('stem.numberline.mis_dzzero_body', 'A zero inside a decimal is a placeholder. 0.305 has 0 hundredths: it is between 0.30 and 0.31, not at 0.35.') };
+        case 'dz_stopped_early': return { title: t('stem.numberline.mis_stopped_title', 'Zoom in further'), body: t('stem.numberline.mis_stopped_body', 'You found the right neighbourhood, but this number has more decimal places. Zoom in on the space it is in and place the next digit.') };
+        case 'dz_off_tenths': return { title: t('stem.numberline.mis_off_tenths_title', 'One tenth off'), body: t('stem.numberline.mis_off_tenths_body', 'Check the tenths digit: you are one tenth (0.1) away.') };
+        case 'dz_off_hundredths': return { title: t('stem.numberline.mis_off_hundredths_title', 'One hundredth off'), body: t('stem.numberline.mis_off_hundredths_body', 'Check the hundredths digit: you are one hundredth (0.01) away.') };
+        case 'dz_off_thousandths': return { title: t('stem.numberline.mis_off_thousandths_title', 'One thousandth off'), body: t('stem.numberline.mis_off_thousandths_body', 'Check the thousandths digit: you are one thousandth (0.001) away. Count the small spaces from the labelled tick again.') };
+        case 'ord_same_spot': return { title: t('stem.numberline.mis_same_spot_title', 'Two numbers on one spot'), body: fill(t('stem.numberline.mis_same_spot_body', 'You put {x} and {y} on the same spot, but they are not equal. Write both as decimals to see which is bigger.'), { x: x, y: y }) };
+        case 'ord_negative': return { title: t('stem.numberline.mis_neg_order_title', 'Farther below zero is less'), body: t('stem.numberline.mis_neg_order_body', 'For negative numbers, the one farther from 0 is the smaller one, so it goes farther left.') };
+        case 'ord_percent_whole': return { title: t('stem.numberline.mis_pct_whole_title', 'A percent is not a whole number'), body: t('stem.numberline.mis_pct_whole_body', 'A percent means hundredths: 8% is 0.08, which is much less than 0.5.') };
+        case 'ord_percent_convert': return { title: t('stem.numberline.mis_pct_conv_title', 'Change the percent to a decimal'), body: t('stem.numberline.mis_pct_conv_body', 'Write the percent as hundredths (75% = 0.75) before you compare.') };
+        case 'ord_swap': return { title: t('stem.numberline.mis_swap_title', 'Two numbers are swapped'), body: t('stem.numberline.mis_swap_body', 'Write both as decimals and compare them place by place.') };
+        case 'ms_read_end': return { title: t('stem.numberline.mis_ms_end_title', 'Read the end mark, not the length'), body: t('stem.numberline.mis_ms_end_body', 'The object does not start at 0. The mark at its right end is not its length: subtract the starting mark.') };
+        case 'ms_not_rounded': return { title: t('stem.numberline.mis_ms_round_title', 'Round to the unit asked for'), body: t('stem.numberline.mis_ms_round_body', 'That is the exact reading in small spaces. The question asks for the nearest mark of a bigger unit: find which of those marks is closest.') };
+        case 'ms_tenths': return { title: t('stem.numberline.mis_ms_tenths_title', 'Ruler spaces are not tenths'), body: t('stem.numberline.mis_ms_tenths_body', 'An inch ruler is not cut into tenths. Three small spaces of 1/8 inch is 3/8 inch, not 0.3 inch.') };
+        case 'ms_space_size': return { title: t('stem.numberline.mis_ms_space_title', 'Check what one small space is worth'), body: t('stem.numberline.mis_ms_space_body', 'Count how many small spaces make one whole inch. That number is the denominator of each small space.') };
+        case 'ms_round_far': return { title: t('stem.numberline.mis_ms_far_title', 'Pick the closer mark'), body: t('stem.numberline.mis_ms_far_body', 'You rounded to a mark, but not the closest one. Count the small spaces to the marks on each side of the end.') };
+        case 'lp_too_few': return { title: t('stem.numberline.mis_lp_few_title', 'Some measurements are missing'), body: t('stem.numberline.mis_lp_few_body', 'Your plot has fewer X marks than there are measurements in the table. Every measurement gets exactly one X.') };
+        case 'lp_too_many': return { title: t('stem.numberline.mis_lp_many_title', 'Too many X marks'), body: t('stem.numberline.mis_lp_many_body', 'Your plot has more X marks than there are measurements. Cross off each measurement in the table as you plot it.') };
+        case 'lp_misplaced': return { title: t('stem.numberline.mis_lp_place_title', 'Some X marks are in the wrong column'), body: t('stem.numberline.mis_lp_place_body', 'The number of marks is right, but some are above the wrong length. Check each fraction against the labels on the line.') };
+        case 'lp_shifted': return { title: t('stem.numberline.mis_lp_shift_title', 'Every mark is one column off'), body: t('stem.numberline.mis_lp_shift_body', 'All your marks moved one space. Start from the first label on the line and match each length to its own tick.') };
+        case 'lp_mode_count': return { title: t('stem.numberline.mis_lp_mode_title', 'The question asks for a length'), body: t('stem.numberline.mis_lp_mode_body', 'You gave the number of X marks. The answer is the length under the tallest stack.') };
+        case 'lp_count_inclusive': return { title: t('stem.numberline.mis_lp_incl_title', 'Longer than means strictly more'), body: t('stem.numberline.mis_lp_incl_body', 'Do not count the X marks that are exactly at that length: they are not longer than it.') };
+        case 'lp_count_wrong_side': return { title: t('stem.numberline.mis_lp_side_title', 'Count the other side'), body: t('stem.numberline.mis_lp_side_body', 'Longer lengths are to the RIGHT on the line. You counted the shorter ones.') };
+        case 'lp_range_added': return { title: t('stem.numberline.mis_lp_add_title', 'Difference means subtract'), body: t('stem.numberline.mis_lp_add_body', 'The difference between the longest and the shortest is longest minus shortest. You added them.') };
+        case 'lp_range_one_end': return { title: t('stem.numberline.mis_lp_end_title', 'Use both ends'), body: t('stem.numberline.mis_lp_end_body', 'The difference needs both the longest and the shortest length: subtract one from the other.') };
+        case 'lp_total_count': return { title: t('stem.numberline.mis_lp_tc_title', 'Lengths, not marks'), body: t('stem.numberline.mis_lp_tc_body', 'You gave how many there are. Each one has a length, so add that length once for every X mark (or multiply).') };
+        case 'lp_total_one': return { title: t('stem.numberline.mis_lp_t1_title', 'Add every one'), body: t('stem.numberline.mis_lp_t1_body', 'That is the length of one. Laid end to end, all of them together are longer: add the length once for every X mark.') };
+        case 'negative_magnitude': return { title: t('stem.numberline.mis_negmag_title', 'Bigger digit, but below zero'), body: t('stem.numberline.mis_negmag_body', 'Below zero, a bigger digit means farther below 0. −8 is colder (lower) than −3, so −8 < −3.') };
+        case 'ic_sign_compare': return { title: t('stem.numberline.mis_signcmp_title', 'Below zero is lower than above zero'), body: t('stem.numberline.mis_signcmp_body', 'Every negative number is less than every positive number: anything below 0 is lower, colder, or less money than anything above 0.') };
+        case 'ic_debt_balance': return { title: t('stem.numberline.mis_debt_title', 'Owing more is a lower balance'), body: t('stem.numberline.mis_debt_body', 'The bigger debt is the balance farther below 0. A balance of −$30 is less than −$10, but it means owing MORE: compare the sizes, |−30| = 30 and |−10| = 10.') };
+        case 'whole_number_bias': return item && item.cer ? { title: t('stem.numberline.mis_cer_whole_title', 'Bigger numbers, bigger fraction?'), body: t('stem.numberline.mis_cer_whole_body', 'That reason would make 2/8 bigger than 1/2. Check it against your own evidence: a fraction is about the size of the pieces AND how many you take.') } : NLE.misInfo(code, item || { target: 0, text: '' }, t);
+        case 'cer_reason_den': return { title: t('stem.numberline.mis_cer_den_title', 'The numerator matters too'), body: t('stem.numberline.mis_cer_den_body', 'Your counterexample shows the denominator is not the whole story: with more pieces you can take more of them.') };
+        case 'cer_need_reason': return { title: t('stem.numberline.mis_cer_reason_title', 'Choose your reasoning'), body: t('stem.numberline.mis_cer_reason_body', 'Pick the reason that explains WHY your claim is true.') };
+        case 'cer_need_tests': return { title: t('stem.numberline.mis_cer_tests_title', 'Collect more evidence'), body: t('stem.numberline.mis_cer_tests_body', 'Add at least 3 pairs with different denominators to your evidence table before you decide.') };
+        case 'cer_ignores_counter': return { title: t('stem.numberline.mis_cer_counter_title', 'Your own evidence disagrees'), body: fill(t('stem.numberline.mis_cer_counter_body', 'Look at row {r} of your evidence: the fraction with the bigger denominator is NOT the smaller one. One counterexample is enough to show "always" is false.'), { r: (extra && extra.row != null ? extra.row + 1 : 1) }) };
+        case 'cer_ignores_support': return { title: t('stem.numberline.mis_cer_support_title', 'Sometimes it is true'), body: fill(t('stem.numberline.mis_cer_support_body', 'Look at row {r} of your evidence: there the bigger denominator DOES give the smaller fraction, so "never" is false.'), { r: (extra && extra.row != null ? extra.row + 1 : 1) }) };
+        case 'cer_try_numerators': return { title: t('stem.numberline.mis_cer_trynum_title', 'Test a harder case'), body: t('stem.numberline.mis_cer_trynum_body', 'All your pairs agree so far. Try a pair where the fraction with the bigger denominator also has a much bigger numerator, like 3/4 and 1/2.') };
+        case 'cer_try_same_num': return { title: t('stem.numberline.mis_cer_same_title', 'Test equal numerators'), body: t('stem.numberline.mis_cer_same_body', 'Add a pair with the SAME numerator and different denominators, like 1/3 and 1/5. When is the claim true?') };
+        case 'cer_cite_counter': return { title: t('stem.numberline.mis_cer_cite_title', 'Cite a counterexample'), body: t('stem.numberline.mis_cer_cite_body', 'Choose an evidence row where the fraction with the bigger denominator is the bigger (or an equal) fraction.') };
+        case 'cer_need_claim': return { title: t('stem.numberline.mis_cer_claim_title', 'Choose a claim'), body: t('stem.numberline.mis_cer_claim_body', 'Pick the claim your evidence supports.') };
+        case 'ic_wrong_side': return { title: t('stem.numberline.mis_ic_side_title', 'Wrong side of zero'), body: t('stem.numberline.mis_ic_side_body', 'You are the right distance from 0 but on the wrong side of it. Below zero, below sea level and owing money are negative; above zero and money you have are positive.') };
+        case 'ic_change_direction': return { title: t('stem.numberline.mis_ic_dir_title', 'Moved the wrong way'), body: t('stem.numberline.mis_ic_dir_body', 'Check the direction of the change. Rising, earning and swimming up make the number bigger; falling, spending and swimming down make it smaller.') };
+      }
+      if (item && item.kind === 'icChange') item = { a: item.start, target: item.target, text: '' };
+      return NLE.misInfo(code, item || { target: 0, text: '', base: '' }, t);
+    }
+
+    return {
+      MINUS: MINUS, signed: signed, parseNum: parseNum, decPlaces: decPlaces, decText: decText,
+      DZ_LEVELS: DZ_LEVELS, dzView: dzView, dzZoomIn: dzZoomIn, dzZoomOut: dzZoomOut, dzPan: dzPan, dzTicks: dzTicks, dzLabel: dzLabel, dzTrail: dzTrail, dzDigits: dzDigits, dzCap: dzCap,
+      genDzPlace: genDzPlace, gradeDzPlace: gradeDzPlace, diagnoseDzPlace: diagnoseDzPlace, dzPlaceSteps: dzPlaceSteps,
+      genDzCompare: genDzCompare, gradeDzCompare: gradeDzCompare, diagnoseDzCompare: diagnoseDzCompare, dzCompareSteps: dzCompareSteps,
+      genOrder: genOrder, gradeOrder: gradeOrder, diagnosePair: diagnosePair, orderSteps: orderSteps,
+      rulerDenFor: rulerDenFor, genMeasure: genMeasure, gradeMeasure: gradeMeasure, diagnoseMeasure: diagnoseMeasure, msText: msText, msPrompt: msPrompt, msDescribe: msDescribe, msEdge: msEdge, msHints: msHints, msSteps: msSteps, thingName: thingName, lpCaptionText: lpCaptionText, lpMissText: lpMissText,
+      dzNowText: dzNowText, dzValueText: dzValueText, dzDescText: dzDescText,
+      genLinePlot: genLinePlot, gradePlot: gradePlot, lpValue: lpValue, lpText: lpText, lpPrompt: lpPrompt, gradeLpQuestion: gradeLpQuestion, lpQSteps: lpQSteps,
+      IC_LINES: IC_LINES, icKinds: icKinds, icVal: icVal, genIc: genIc, icPrompt: icPrompt, icChoices: icChoices, gradeIc: gradeIc, diagnoseIc: diagnoseIc, icSentence: icSentence, icHints: icHints, icSteps: icSteps, icAnswerText: icAnswerText, icSpot: icSpot,
+      cerRow: cerRow, cerEvaluate: cerEvaluate, cerOkFrac: cerOkFrac, misInfo: misInfo
+    };
+  })();
 
   window.StemLab.registerTool('numberline', {
     icon: '\uD83D\uDCCF', label: 'Number Line',
-    desc: 'Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.',
+    desc: 'Interactive number line: place-it practice graded by position, skip counting, fractions and decimals, integer hops, opposites and absolute value.',
     color: 'blue', category: 'math',
+    _engine: NLE,
+    _engineB: NLB,
     questHooks: [
-      { id: 'solve_5', label: 'Answer 5 challenges correctly', icon: '\uD83D\uDCCF', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 correct'; } },
-      { id: 'try_4_types', label: 'Try 4 different challenge types', icon: '\uD83C\uDF08', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.challengeTypesUsed || {}).length + '/4 types'; } },
-      { id: 'streak_5', label: 'Reach a streak of 5', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+      { id: 'solve_5', get label() { return __alloT('stem.numberline.quest_solve5', 'Answer 5 challenges correctly'); }, icon: '\uD83D\uDCCF', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return NLE.fill(__alloT('stem.numberline.quest_solve5_progress', '{n}/5 correct'), { n: (d.score && d.score.correct) || 0 }); } },
+      { id: 'try_4_types', get label() { return __alloT('stem.numberline.quest_types4', 'Try 4 different challenge types'); }, icon: '\uD83C\uDF08', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return NLE.fill(__alloT('stem.numberline.quest_types4_progress', '{n}/4 types'), { n: Object.keys(d.challengeTypesUsed || {}).length }); } },
+      { id: 'streak_5', get label() { return __alloT('stem.numberline.quest_streak5', 'Reach a streak of 5'); }, icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return NLE.fill(__alloT('stem.numberline.quest_streak5_progress', 'best {n}/5'), { n: d.bestStreak || 0 }); } }
     ],
     render: function(ctx) {
       var React = ctx.React;
+      __nlLastT = ctx && typeof ctx.t === 'function' ? ctx.t : null;
       var h = React.createElement;
 
       if (!this._NumberLineComponent) {
@@ -142,12 +1558,26 @@ window.StemLab = window.StemLab || {
           var sfxNewChallenge = function() { playTone(392, 0.08, 'triangle', 0.08); setTimeout(function() { playTone(523, 0.12, 'triangle', 0.1); }, 80); };
 
           // ── State defaults ──
-          var tab = _n.tab || 'explore';
+          // Dynamic Assessment presets spell these two tabs skipCount and fracDec.
+          var tab = _n.tab === 'skipCount' ? 'skipcount' : _n.tab === 'fracDec' ? 'fracdec' : (_n.tab || 'explore');
+          // A saved or preset tab must be a real one: 'constructor' crashed TAB_META[tab], and anything else left an empty panel.
+          if (['explore', 'challenges', 'skipcount', 'fracdec', 'magCompare', 'decimals', 'order', 'measure', 'intctx'].indexOf(tab) < 0) tab = 'explore';
+          // a first visit opens on the path step (set below, once the band is known)
+          // ── Grade band + teacher settings ──
+          var teacherView = ctx.isTeacherMode === true;
+          var teacher = (_n.teacher && typeof _n.teacher === 'object') ? _n.teacher : {};
+          var autoBand = NLE.bandFor(ctx.gradeBand, ctx.gradeLevel);
+          var lockBand = NLE.BANDS.indexOf(teacher.lockBand) !== -1 ? teacher.lockBand : null;
+          var band = lockBand || (NLE.BANDS.indexOf(_n.ppBand) !== -1 ? _n.ppBand : autoBand);
+          if (!_n.tab) tab = band === 'b23' ? 'challenges' : band === 'b6' ? 'intctx' : 'fracdec';
+          // K-2 learners (young) get bigger, calmer lines and a read-aloud question.
+          var young = band === 'b23' && (String(ctx.gradeBand || '').toLowerCase() === 'k2' || /kindergarten|\b(1st|2nd)\b/i.test(String(ctx.gradeLevel || '')));
           var rawRange = _n.range || { min: 0, max: 20 };
           var range = {
             min: Number.isFinite(rawRange.min) ? rawRange.min : 0,
             max: Number.isFinite(rawRange.max) ? rawRange.max : 20
           };
+          if (young) range = { min: Math.max(0, range.min), max: Math.min(20, range.max) };
           if (!(range.max > range.min)) range = { min: 0, max: 20 };
           var rangeDraftState = React.useState({ min: String(range.min), max: String(range.max) });
           var rangeDrafts = rangeDraftState[0];
@@ -169,17 +1599,84 @@ window.StemLab = window.StemLab || {
           var bestStreak = _n.bestStreak || 0;
           var badges = _n.badges || {};
 
+          // ── Colour palette for every SVG (light / dark via ctx.isDark). Each SVG
+          // paints its own background so contrast never depends on the host card.
+          var isDark = !!ctx.isDark;
+          var P = isDark
+            ? { bg: '#0f172a', ink: '#e2e8f0', axis: '#93c5fd', tick: '#93c5fd', minor: '#60a5fa', label: '#bfdbfe', muted: '#cbd5e1', student: '#fdba74', correct: '#6ee7b7', arrow: '#fca5a5', hop: '#c4b5fd', hop2: '#fdba74', bar: '#7dd3fc', point: '#93c5fd', mid: '#fde68a', soft: '#1e293b' }
+            : { bg: '#ffffff', ink: '#0f172a', axis: '#3b82f6', tick: '#1e40af', minor: '#3b82f6', label: '#1e3a8a', muted: '#475569', student: '#c2410c', correct: '#047857', arrow: '#b91c1c', hop: '#6d28d9', hop2: '#c2410c', bar: '#0369a1', point: '#1d4ed8', mid: '#a16207', soft: '#f1f5f9' };
+          var PF = isDark
+            ? { line: '#67e8f9', frac: '#a5f3fc', dec: '#cbd5e1', marker: '#fca5a5', cmp: '#22d3ee', cmpText: '#a5f3fc', empty: '#164e63', fill: '#22d3ee', part: '#0e7490', edge: '#67e8f9', trail: '#94a3b8', bg: '#0f172a' }
+            : { line: '#0e7490', frac: '#155e75', dec: '#475569', marker: '#dc2626', cmp: '#0891b2', cmpText: '#0e7490', empty: '#ecfeff', fill: '#0891b2', part: '#67e8f9', edge: '#0e7490', trail: '#64748b', bg: '#ffffff' };
+
+          // "Hear the question": the browser's own speech (offline); a note when it is missing.
+          var ttsNoteState = React.useState(false);
+          var ttsNote = ttsNoteState[0], setTtsNote = ttsNoteState[1];
+          var speakText = function(text) {
+            var ok = false;
+            try {
+              if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+                var u = new window.SpeechSynthesisUtterance(String(text || ''));
+                u.rate = 0.9;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+                spokeRef.current = true;
+                ok = true;
+              }
+            } catch (e) { ok = false; }
+            if (!ok) { setTtsNote(true); announceToSR(t('stem.numberline.tts_unavailable', 'Read-aloud is not available here. The question is written above.')); }
+          };
+          var spokeRef = React.useRef(false);
+          React.useEffect(function() { return function() { try { if (spokeRef.current && window.speechSynthesis && window.speechSynthesis.cancel) window.speechSynthesis.cancel(); } catch (e) {} }; }, []);
+          // Phone-width layout: lines use a narrower drawing so labels stay >= 14 px.
+          var narrowQuery = '(max-width: 560px)';
+          var narrowState = React.useState(function() { try { return !!(window.matchMedia && window.matchMedia(narrowQuery).matches); } catch (e) { return false; } });
+          var narrow = narrowState[0], setNarrow = narrowState[1];
+          React.useEffect(function() {
+            var mq = null;
+            try { mq = window.matchMedia ? window.matchMedia(narrowQuery) : null; } catch (e) { mq = null; }
+            if (!mq) return;
+            var onChange = function() { setNarrow(!!mq.matches); };
+            if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
+            return function() { if (mq.removeEventListener) mq.removeEventListener('change', onChange); else if (mq.removeListener) mq.removeListener(onChange); };
+          }, []);
+          var allowedTypes = Array.isArray(teacher.types) && teacher.types.length ? teacher.types.filter(function(x) { return NLE.ALL_TYPES.indexOf(x) !== -1; }) : null;
+          if (allowedTypes && !allowedTypes.length) allowedTypes = null;
+          var allowReveal = teacher.allowReveal !== false;
+          var lockMode = teacher.lockMode === 'place' || teacher.lockMode === 'quick' ? teacher.lockMode : null;
+          var pp = (_n.pp && typeof _n.pp === 'object' && _n.pp.item && _n.pp.item.v === 2 && _n.pp.item.line) ? _n.pp : null;
+          var ppMissed = Array.isArray(_n.ppMissed) ? _n.ppMissed : [];
+          var ppStats = (_n.ppStats && typeof _n.ppStats === 'object') ? _n.ppStats : {};
+          var ppSolvedByType = (_n.ppSolvedByType && typeof _n.ppSolvedByType === 'object') ? _n.ppSolvedByType : {};
+          var challengeMode = lockMode || (_n.challengeMode === 'quick' || _n.challengeMode === 'place' ? _n.challengeMode : (_n.challenge ? 'quick' : 'place'));
+
           // Skip count state
           var skipBound = function(value, min, max, fallback) { var n = Number(value); return Number.isFinite(n) ? Math.max(min, Math.min(max, Math.trunc(n))) : fallback; };
           var skipBy = skipBound(_n.skipBy == null ? 2 : _n.skipBy, 1, 100, 2);
           var skipFrom = skipBound(_n.skipFrom == null ? 0 : _n.skipFrom, -1000, 1000, 0);
           var skipCount = skipBound(_n.skipCount == null ? 8 : _n.skipCount, 1, 20, 8);
           var skipDirection = _n.skipDirection === 'backward' ? 'backward' : 'forward';
+          // K-2: every landing stays inside 0-20, so the hops left depend on the start and the hop size.
+          var skipHopMax = 20;
+          if (young) {
+            skipBy = Math.min(skipBy, 10);
+            skipFrom = Math.max(0, Math.min(20, skipFrom));
+            if (skipDirection === 'backward') { if (skipFrom < skipBy) skipFrom = skipBy; } else if (skipFrom + skipBy > 20) skipFrom = 20 - skipBy;
+            skipHopMax = Math.floor((skipDirection === 'backward' ? skipFrom : 20 - skipFrom) / skipBy);
+            skipCount = Math.min(skipCount, skipHopMax);
+          }
           var skipStep = skipDirection === 'backward' ? -skipBy : skipBy;
           var skipDraftState = React.useState({ skipBy:String(skipBy), skipFrom:String(skipFrom), skipCount:String(skipCount) });
           var skipDrafts = skipDraftState[0], setSkipDrafts = skipDraftState[1];
           React.useEffect(function(){setSkipDrafts({skipBy:String(skipBy),skipFrom:String(skipFrom),skipCount:String(skipCount)});},[skipBy,skipFrom,skipCount]);
           var showSkipMarkers = _n.showSkipMarkers != null ? _n.showSkipMarkers : true;
+          // Inline two-step confirm for the teacher's "clear log" (confirm() is dead in Canvas).
+          var clearArmState = React.useState(false);
+          var clearArm = clearArmState[0], setClearArm = clearArmState[1];
+          // The overview panel builds its body only while it is open (it was
+          // rebuilt, closed and unseen, on every render).
+          var focusOpenState = React.useState(false);
+          var focusOpen = focusOpenState[0], setFocusOpen = focusOpenState[1];
 
           // AI Tutor state
           var showAITutor = _n.showAITutor || false;
@@ -205,19 +1702,30 @@ window.StemLab = window.StemLab || {
           var fdTrail = Array.isArray(_n.fdTrail) ? _n.fdTrail : [];
 
           // ── Fractions ↔ Decimals tab state ──
-          var fdValue = _n.fdValue != null ? _n.fdValue : 0.5;
-          var fdDen = _n.fdDen || 4;
-          var fdMin = _n.fdMin != null ? _n.fdMin : 0;
-          var fdMax = _n.fdMax != null ? _n.fdMax : 1;
+          // Saved state is sanitised: a 1/97 + 1/98 sum once stored fdDen = 9506
+          // (76k SVG nodes), and typed denominators of 2.5 or -4 were stored as-is.
+          var fdValue = typeof _n.fdValue === 'number' && isFinite(_n.fdValue) ? _n.fdValue : 0.5;
+          var fdDen = Number.isInteger(_n.fdDen) && _n.fdDen >= 1 && _n.fdDen <= FD_MAX_DEN ? _n.fdDen : 4;
+          var fdMin = typeof _n.fdMin === 'number' && isFinite(_n.fdMin) ? _n.fdMin : 0;
+          var fdMax = typeof _n.fdMax === 'number' && isFinite(_n.fdMax) ? _n.fdMax : 1;
+          if (!(fdMax > fdMin) || Math.abs(fdMin) > FD_MAX_ABS || Math.abs(fdMax) > FD_MAX_ABS) { fdMin = 0; fdMax = 1; }
+          if (Math.abs(fdValue) > FD_MAX_ABS) fdValue = 0.5;
           var fdShowBar = _n.fdShowBar !== false;       // default ON (length model)
           var fdShowReps = _n.fdShowReps !== false;     // default ON (pie + grid + dots)
           var fdShowMoney = _n.fdShowMoney || false;
           var fdShowExpansion = _n.fdShowExpansion || false;
-          var fdSnap = !!_n.fdSnap;                     // default OFF — free placement; opt-in via checkbox
+          // Free placement by default. On the landmark path step (band b45, under 3 found) a release snaps, like the
+          // other drags: 0.004 of the line is about 2 px, too small to hit. The checkbox shows it and can turn it off.
+          var fdLandmarkStep = band === 'b45' && Object.keys((_n.fdLandmarksFound && typeof _n.fdLandmarksFound === 'object') ? _n.fdLandmarksFound : {}).length < 3;
+          var fdSnap = _n.fdSnap != null ? !!_n.fdSnap : fdLandmarkStep;
           var fdCompareOn = _n.fdCompareOn || false;
+          var fdMoreOpen = _n.fdMoreOpen === true;
           var fdCompareValue = _n.fdCompareValue != null ? _n.fdCompareValue : 0.75;
           var fdLastLandmark = _n.fdLastLandmark != null ? _n.fdLastLandmark : null;
           var fdCelebrate = _n.fdCelebrate || false;    // brief pulse flag after landmark hit
+          // The value the student last set by drag, arrow keys or a typed value.
+          var fdStudentMoveRef = React.useRef(null);
+          var fdStudentSet = function(v) { fdStudentMoveRef.current = v; return v; };
 
           // Fraction-arithmetic + common-denominator hunter state
           var fdLastOpText = _n.fdLastOpText || '';
@@ -242,12 +1750,16 @@ window.StemLab = window.StemLab || {
           var minRangeDraft = parseRangeDraft(rangeDrafts.min);
           var maxRangeDraft = parseRangeDraft(rangeDrafts.max);
           var rangeDraftsNumeric = minRangeDraft.valid && maxRangeDraft.valid;
-          var rangeDraftsOrdered = rangeDraftsNumeric && maxRangeDraft.value > minRangeDraft.value;
+          var rangeDraftsAscending = rangeDraftsNumeric && maxRangeDraft.value > minRangeDraft.value;
+          var rangeDraftsInLimit = !young || (rangeDraftsNumeric && minRangeDraft.value >= 0 && maxRangeDraft.value <= 20);
+          var rangeDraftsOrdered = rangeDraftsAscending && rangeDraftsInLimit;
           var rangeDraftMessage = !rangeDraftsNumeric
             ? t('stem.numberline.finish_range_value', 'Finish entering a number for both range bounds.')
-            : !rangeDraftsOrdered
+            : !rangeDraftsAscending
               ? t('stem.numberline.invalid_range', 'Minimum value must be less than maximum value.')
-              : '';
+              : !rangeDraftsInLimit
+                ? t('stem.numberline.range_young_limit', 'Use numbers from 0 to 20 on this line.')
+                : '';
 
           var updateExploreRangeBound = function(key, rawValue) {
             var nextDrafts = { min: rangeDrafts.min, max: rangeDrafts.max };
@@ -255,7 +1767,7 @@ window.StemLab = window.StemLab || {
             setRangeDrafts(nextDrafts);
             var nextMin = parseRangeDraft(nextDrafts.min);
             var nextMax = parseRangeDraft(nextDrafts.max);
-            if (nextMin.valid && nextMax.valid && nextMax.value > nextMin.value) {
+            if (nextMin.valid && nextMax.valid && nextMax.value > nextMin.value && (!young || (nextMin.value >= 0 && nextMax.value <= 20))) {
               upd({ range: { min: nextMin.value, max: nextMax.value } });
             }
           };
@@ -270,6 +1782,8 @@ window.StemLab = window.StemLab || {
                 min: minRangeDraft.valid ? rangeDrafts.min : String(range.min),
                 max: maxRangeDraft.valid ? rangeDrafts.max : String(range.max)
               });
+            } else if (!rangeDraftsInLimit) {
+              setRangeDrafts({ min: String(range.min), max: String(range.max) });
             }
             if (addToast) addToast(rangeDraftMessage, 'warning');
             if (announceToSR) announceToSR(rangeDraftMessage);
@@ -299,7 +1813,7 @@ window.StemLab = window.StemLab || {
                 newBadges[b.id] = true;
                 awarded = true;
                 sfxBadge();
-                addToast(b.icon + ' Badge: ' + b.name + ' \u2014 ' + b.desc, 'success');
+                addToast(b.icon + ' ' + NLE.fill(t('stem.numberline.badge_toast', 'Badge earned: {name}. {desc}'), { name: b.name, desc: b.desc }), 'success');
                 awardXP('numberlineBadge', 15, b.name);
               }
             });
@@ -319,14 +1833,16 @@ window.StemLab = window.StemLab || {
             };
           };
 
-          // ═══ CHALLENGE GENERATION (6 types) ═══
+          // ═══ QUICK QUESTIONS: classic typed-answer generator ═══
+          // Placement ("put a marker at N") moved to Place it, which grades the
+          // marker's POSITION; a typed number used to pass here with no marker.
           var genChallenge = function() {
-            var rMin = difficulty === 'hard' ? -20 : difficulty === 'medium' ? -5 : 0;
+            var rMin = young ? 0 : difficulty === 'hard' ? -20 : difficulty === 'medium' ? -5 : 0;
             var rMax = difficulty === 'easy' ? 10 : 20;
             upd({ range: { min: rMin, max: rMax } });
 
-            var types = ['identify', 'estimate', 'place', 'rounding', 'between', 'fraction'];
-            if (difficulty === 'easy') types = ['identify', 'estimate', 'place', 'rounding', 'between'];
+            var types = ['identify', 'estimate', 'rounding', 'between', 'fraction'];
+            if (difficulty === 'easy' || young) types = ['identify', 'estimate', 'rounding', 'between'];
             var type = pick(types);
             var ch;
 
@@ -339,26 +1855,28 @@ window.StemLab = window.StemLab || {
               val2 = Math.round(val2 * 10) / 10;
               ch = { type: 'estimate', _arrowValue: val2, answer: Math.round(val2), question: t('stem.numberline.estimate_the_value_the_arrow_points_to', 'Estimate the value the arrow points to (nearest whole number).') };
 
-            } else if (type === 'place') {
-              var val3 = randInt(rMin, rMax);
-              ch = { type: 'place', targetValue: val3, answer: val3, question: 'Click the number line to place a marker at ' + val3 + '.' };
-
             } else if (type === 'rounding') {
-              var bases = difficulty === 'easy' ? [10] : difficulty === 'hard' ? [10, 100, 1000] : [10, 100];
+              var bases = difficulty === 'easy' || young ? [10] : difficulty === 'hard' ? [10, 100, 1000] : [10, 100];
               var base = pick(bases);
-              var raw = randInt(base === 10 ? 1 : base === 100 ? 10 : 100, base === 10 ? 99 : base === 100 ? 999 : 9999);
+              var raw = randInt(base === 10 ? 1 : base === 100 ? 10 : 100, base === 10 ? (young ? rMax - 1 : 99) : base === 100 ? 999 : 9999);
+              if (young && raw === 10) raw = 11;
               var rounded = Math.round(raw / base) * base;
-              ch = { type: 'rounding', roundingValue: raw, roundingBase: base, question: 'Round ' + raw + ' to the nearest ' + base + '.', answer: rounded, hint: raw + ' is between ' + (Math.floor(raw / base) * base) + ' and ' + ((Math.floor(raw / base) + 1) * base) };
-              upd({ range: { min: Math.floor(raw / base) * base - base, max: (Math.floor(raw / base) + 2) * base } });
+              var rLo = Math.floor(raw / base) * base, rHi = rLo + base;
+              ch = { type: 'rounding', roundingValue: raw, roundingBase: base, answer: rounded,
+                question: t('stem.numberline.q_round', 'Round {n} to the nearest {base}.').replace('{n}', function() { return raw; }).replace('{base}', function() { return base; }),
+                hint: t('stem.numberline.q_round_hint', '{n} is between {lo} and {hi}.').replace('{n}', function() { return raw; }).replace('{lo}', function() { return rLo; }).replace('{hi}', function() { return rHi; }) };
+              upd({ range: young ? { min: Math.max(0, rLo - base), max: Math.min(20, rHi + base) } : { min: rLo - base, max: rHi + base } });
 
             } else if (type === 'between') {
               var a = randInt(rMin, rMax - 2);
               var b = a + randInt(2, 4);
+              if (young && b > rMax) b = rMax;
               // Any integer strictly between low and high is accepted — graded
               // declaratively in checkAnswer from low/high, NOT via a function
               // stored in state (functions do not survive state serialization,
               // and the fallback exact-match would mark valid answers wrong).
-              ch = { type: 'between', question: 'Name a whole number between ' + a + ' and ' + b + '.', low: a, high: b, answer: a + 1 };
+              ch = { type: 'between', low: a, high: b, answer: a + 1,
+                question: t('stem.numberline.q_between', 'Name a whole number between {a} and {b}.').replace('{a}', function() { return a; }).replace('{b}', function() { return b; }) };
 
             } else if (type === 'fraction') {
               var den = pick([2, 3, 4, 5, 8, 10]);
@@ -367,7 +1885,8 @@ window.StemLab = window.StemLab || {
               var displayFrac = num + '/' + den;
               var arrowPos = fracVal;
               // exact carries the unrounded value; graded with tolerance in checkAnswer.
-              ch = { type: 'fraction', _arrowValue: arrowPos, question: 'The arrow points to ' + displayFrac + '. What is this as a decimal? (1 decimal place)', answer: Math.round(fracVal * 10) / 10, exact: fracVal };
+              ch = { type: 'fraction', _arrowValue: arrowPos, num: num, den: den, answer: Math.round(fracVal * 10) / 10, exact: fracVal,
+                question: t('stem.numberline.q_fraction', 'The arrow points to {f}. What is this as a decimal? (1 decimal place)').replace('{f}', function() { return displayFrac; }) };
               upd({ range: { min: Math.floor(fracVal) - 1, max: Math.ceil(fracVal) + 1 } });
             }
 
@@ -382,12 +1901,48 @@ window.StemLab = window.StemLab || {
           // ═══ CHECK ANSWER ═══
           var rLen = range.max - range.min;
           var challengeSubmissionPending = false;
+          // Named misconceptions for Quick questions (a second try comes before any reveal).
+          var classicParse = function(raw) {
+            var answerText = String(raw == null ? '' : raw).trim().replace(/\u2212/g, '-');
+            if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(answerText)) return null;
+            var n = Number(answerText);
+            return Number.isFinite(n) ? n : null;
+          };
+          var classicMisconception = function(ch, ans) {
+            if (!ch) return '';
+            if (ch.type === 'between') {
+              if (ans === ch.low || ans === ch.high) return t('stem.numberline.cm_between_ends', 'Between means strictly inside: the two numbers named in the question do not count.');
+              if (ans !== Math.floor(ans)) return t('stem.numberline.cm_between_whole', 'The question asks for a whole number, with no fraction part.');
+            }
+            if (ch.type === 'rounding' && ch.roundingBase > 0 && Number.isFinite(ch.roundingValue)) {
+              var lo = Math.floor(ch.roundingValue / ch.roundingBase) * ch.roundingBase, hi = lo + ch.roundingBase;
+              if (ans === lo || ans === hi) return t('stem.numberline.cm_round_side', 'You chose a neighbouring multiple, but not the closer one. Compare the number with the halfway point between them.');
+              if (ans % ch.roundingBase !== 0) return t('stem.numberline.cm_round_multiple', 'A rounded answer must be a multiple of the place you are rounding to.');
+            }
+            if (ch.type === 'fraction') {
+              var fm = /(\d+)\/(\d+)/.exec(String(ch.question || ''));
+              var fn = ch.num != null ? ch.num : (fm ? Number(fm[1]) : null), fd = ch.den != null ? ch.den : (fm ? Number(fm[2]) : null);
+              if (fn != null && fd) {
+                if (Math.abs(ans - Number(fn + '.' + fd)) < 1e-9) return t('stem.numberline.cm_frac_digits', 'A fraction bar means divide. The numerator divided by the denominator gives the decimal; it is not the two numbers joined by a point.');
+                if (fn && Math.abs(ans - fd / fn) < 0.06) return t('stem.numberline.cm_frac_flip', 'You divided the denominator by the numerator. Divide the top number by the bottom number.');
+              }
+            }
+            if ((ch.type === 'identify' || ch.type === 'estimate') && ans !== 0 && Math.abs(ans + Number(ch.answer)) < 1e-9) return t('stem.numberline.cm_sign', 'Check the sign: is the arrow left of 0 or right of 0?');
+            return '';
+          };
           var checkAnswer = function() {
-            if (!challenge || challengeSubmissionPending || challenge.solved) return;
-            var answerText = String(answer == null ? '' : answer).trim().replace(/\u2212/g, '-');
-            if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(answerText)) return;
-            var ans = Number(answerText);
-            if (!Number.isFinite(ans)) return;
+            if (!challenge || challengeSubmissionPending || challenge.solved || challenge.revealed) return;
+            var ans;
+            if (challenge.type === 'place') {
+              // Legacy saved "place" questions: graded from the marker's position, never from a typed number.
+              var placed = Array.isArray(_n.markers) ? _n.markers[0] : null;
+              if (!placed || typeof placed.value !== 'number' || !Number.isFinite(placed.value)) return;
+              ans = placed.value;
+            } else {
+              var parsedTyped = classicParse(answer);
+              if (parsedTyped == null) return;
+              ans = parsedTyped;
+            }
             challengeSubmissionPending = true;
 
             var ok;
@@ -406,34 +1961,43 @@ window.StemLab = window.StemLab || {
               ok = ans === challenge.answer;
             }
 
-            var newStreak = ok ? streak + 1 : 0;
+            // Same rule as Place it: no credit once an item is missed (two wrong
+            // tries), and none after any wrong try on a two-way rounding choice.
+            var priorWrong = challenge.tries || 0;
+            var earns = ok && priorWrong < (challenge.type === 'rounding' ? 1 : 2);
+            var newStreak = earns ? streak + 1 : 0;
             var newBest = Math.max(bestStreak, newStreak);
-            var newCorrect = score.correct + (ok ? 1 : 0);
+            var newCorrect = score.correct + (earns ? 1 : 0);
             var newTotal = score.total + 1;
 
             // Per-type counters
-            var newRounding = roundingSolved + (ok && challenge.type === 'rounding' ? 1 : 0);
-            var newFraction = fractionSolved + (ok && challenge.type === 'fraction' ? 1 : 0);
-            var newNegative = negativeSolved + (ok && challenge.type === 'identify' && challenge.answer < 0 ? 1 : 0);
-            var newPlace = placeSolved + (ok && challenge.type === 'place' ? 1 : 0);
+            var newRounding = roundingSolved + (earns && challenge.type === 'rounding' ? 1 : 0);
+            var newFraction = fractionSolved + (earns && challenge.type === 'fraction' ? 1 : 0);
+            var newNegative = negativeSolved + (earns && challenge.type === 'identify' && challenge.answer < 0 ? 1 : 0);
+            var newPlace = placeSolved + (earns && challenge.type === 'place' ? 1 : 0);
 
             if (ok) {
               sfxCorrect();
               if (newStreak === 3 || newStreak === 5 || newStreak === 10) sfxStreak();
-              announceToSR('Correct!');
             } else {
               sfxWrong();
-              announceToSR('Incorrect');
             }
+            var wrongTries = (challenge.tries || 0) + (ok ? 0 : 1);
+            var namedMis = ok ? '' : classicMisconception(challenge, ans);
+            var wrongMsg = namedMis || (wrongTries >= 2
+              ? t('stem.numberline.try_again_second', 'Not yet. Check the size of each space and the distance from zero, then try once more or show a worked solution.')
+              : t('stem.numberline.try_visual_hint', 'Not yet. Use the marks and distances on the line, then try again.'));
+            if (ok) announceToSR(t('stem.numberline.sr_correct', 'Correct!'));
+            else announceToSR(wrongMsg);
 
             upd({
-              challenge: ok ? Object.assign({}, challenge, { solved: true }) : challenge,
+              challenge: ok ? Object.assign({}, challenge, { solved: true }) : Object.assign({}, challenge, { tries: wrongTries }),
               feedback: ok
                 ? { correct: true, msg: _n.challengeSupportUsed ? t('stem.numberline.correct_with_support', 'Correct with support. Try a new problem to check your understanding.') : t('stem.numberline.correct_independent', 'Correct — solved independently.') }
-                : { correct: false, msg: t('stem.numberline.try_visual_hint', 'Not yet. Use the marks and distances on the line, then try again.') },
+                : { correct: false, named: !!namedMis, msg: wrongMsg },
               challengeSupportUsed: !ok || !!_n.challengeSupportUsed,
-              independentCorrect: (_n.independentCorrect || 0) + (ok && !_n.challengeSupportUsed ? 1 : 0),
-              supportedCorrect: (_n.supportedCorrect || 0) + (ok && _n.challengeSupportUsed ? 1 : 0),
+              independentCorrect: (_n.independentCorrect || 0) + (earns && !_n.challengeSupportUsed ? 1 : 0),
+              supportedCorrect: (_n.supportedCorrect || 0) + (earns && _n.challengeSupportUsed ? 1 : 0),
               score: { correct: newCorrect, total: newTotal },
               streak: newStreak,
               bestStreak: newBest,
@@ -442,7 +2006,7 @@ window.StemLab = window.StemLab || {
               negativeSolved: newNegative,
               placeSolved: newPlace
             });
-            if (ok) awardXP('numberline', 5, 'number line');
+            if (earns) awardXP('numberline', _n.challengeSupportUsed ? 2 : 5, 'number line');
 
             checkBadges({
               correct: newCorrect, streak: newStreak,
@@ -454,8 +2018,9 @@ window.StemLab = window.StemLab || {
           };
 
           // ═══ AI TUTOR ═══
+          var aiAvailable = typeof ctx.callGemini === 'function' && ctx.aiHintsEnabled !== false;
           var askAITutor = function() {
-            if (!aiQuestion.trim()) return;
+            if (!aiQuestion.trim() || !aiAvailable) return;
             upd({ aiLoading: true, aiResponse: '' });
             var prompt = 'You are a friendly math tutor helping a student learn about number lines. ' +
               'They are working on the "' + tab + '" tab with range [' + range.min + ', ' + range.max + ']. ' +
@@ -465,30 +2030,35 @@ window.StemLab = window.StemLab || {
               upd({ aiResponse: resp, aiLoading: false, aiAsked: (_n.aiAsked || 0) + 1 });
               checkBadges(Object.assign(getBadgeUpdates(), { aiAsked: (_n.aiAsked || 0) + 1 }));
             }).catch(function() {
-              upd({ aiResponse: 'Sorry, I could not connect to the AI tutor right now.', aiLoading: false });
+              upd({ aiResponse: t('stem.numberline.ai_error', 'Sorry, I could not connect to the AI tutor right now.'), aiLoading: false });
             });
           };
 
           // ═══ KEYBOARD SHORTCUTS ═══
+          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this
+          // tool AND not on a control (a button, field, slider or tab keeps its
+          // own keys, so a letter typed or spoken on a button never fires these).
+          var shortcutRef = React.useRef(null);
+          shortcutRef.current = function(key) {
+            // 1-9 follow the tabs as shown (the band's core activities first).
+            var ti = '123456789'.indexOf(key);
+            if (key && key.length === 1 && ti >= 0 && tabs[ti]) { sfxClick(); upd({ tab: tabs[ti].id }); }
+            else if (key === 'n' || key === 'N') { if (tab === 'challenges') { if (challengeMode === 'place') ppNew(); else genChallenge(); } }
+            else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
+          };
           React.useEffect(function() {
             var handler = function(e) {
-              // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
               var nlRoot = document.querySelector('[data-numberline-root]');
               if (!nlRoot || !e.target || !nlRoot.contains(e.target)) return;
               if (e.ctrlKey || e.metaKey || e.altKey) return;
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-              var key = e.key;
-              if (key === '1') { sfxClick(); upd({ tab: 'explore' }); }
-              else if (key === '2') { sfxClick(); upd({ tab: 'challenges' }); }
-              else if (key === '3') { sfxClick(); upd({ tab: 'skipcount' }); }
-              else if (key === '4') { sfxClick(); upd({ tab: 'fracdec' }); }
-              else if (key === '5') { sfxClick(); upd({ tab: 'magCompare' }); }
-              else if (key === 'n' || key === 'N') { if (tab === 'challenges') genChallenge(); }
-              else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
+              var tg = e.target, role = tg.getAttribute ? (tg.getAttribute('role') || '') : '';
+              if (/^(INPUT|TEXTAREA|SELECT|BUTTON|A|SUMMARY)$/.test(tg.tagName) || tg.isContentEditable) return;
+              if (/^(slider|tab|button|checkbox|radio|switch|spinbutton|menuitem|option|gridcell)$/.test(role)) return;
+              if (shortcutRef.current) shortcutRef.current(e.key);
             };
             window.addEventListener('keydown', handler);
             return function() { window.removeEventListener('keydown', handler); };
-          }, [tab, showAITutor]);
+          }, []);
 
           // ═══ FRACTIONS↔DECIMALS LANDMARK DETECTION ═══
           // When the marker lands on a famous fraction (1/2, 1/4, 1/3…), brief
@@ -521,218 +2091,386 @@ window.StemLab = window.StemLab || {
             }
             var lastKey = fdLastLandmark != null ? fdLastLandmark : 'none';
             var thisKey = hit ? hit.dec : 'none';
+            // Only the student's own drag, arrow keys or typed value finds a
+            // landmark: the starting marker and the chips never pay or tick.
+            var mine = fdStudentMoveRef.current;
+            fdStudentMoveRef.current = null;
+            var byStudent = mine != null && Math.abs(mine - fdValue) < 1e-9;
             if (thisKey !== lastKey) {
-              if (hit) {
-                upd({ fdLastLandmark: thisKey, fdCelebrate: true });
-                sfxStreak();
-                addToast(hit.emoji + ' Landmark: ' + hit.name + ' = ' + hit.dec, 'success');
-                if (typeof awardXP === 'function') awardXP('numberlineLandmark', 3, 'landmark');
-                setTimeout(function() { upd({ fdCelebrate: false }); }, 700);
+              if (hit && !byStudent) {
+                upd({ fdLastLandmark: thisKey, fdCelebrate: false });
+              } else if (hit) {
+                // XP and the toast come once per DISTINCT landmark: sweeping the
+                // arrow keys back and forth used to pay 3 XP on every pass.
+                var found = (_n.fdLandmarksFound && typeof _n.fdLandmarksFound === 'object') ? _n.fdLandmarksFound : {};
+                var isNew = !found[thisKey];
+                var patch = { fdLastLandmark: thisKey, fdCelebrate: true };
+                if (isNew) { patch.fdLandmarksFound = Object.assign({}, found); patch.fdLandmarksFound[thisKey] = true; }
+                upd(patch);
+                var lmMsg = NLE.fill(t('stem.numberline.landmark_found', 'Landmark: {name} = {frac}'), { name: hit.name, frac: hit.dec });
+                if (isNew) {
+                  sfxStreak();
+                  addToast(hit.emoji + ' ' + lmMsg, 'success');
+                  if (typeof awardXP === 'function') awardXP('numberlineLandmark', 3, 'landmark ' + thisKey);
+                }
+                announceToSR(lmMsg);
               } else {
-                upd({ fdLastLandmark: thisKey });
+                upd({ fdLastLandmark: thisKey, fdCelebrate: false });
               }
             }
-          }, [fdValue, tab]);
+          }, [fdValue, tab, fdLastLandmark]);
+          // A move that changed nothing (an arrow key at the line's end) stays armed no longer than this commit.
+          React.useEffect(function() { fdStudentMoveRef.current = null; });
+          React.useEffect(function() {
+            if (!fdCelebrate) return;
+            var celebrateTimer = setTimeout(function() { upd({ fdCelebrate: false }); }, 700);
+            return function() { clearTimeout(celebrateTimer); };
+          }, [fdCelebrate]);
 
           // ═══ SVG NUMBER LINE RENDERER ═══
           var W = 700, H = 120, PAD = 40;
 
-          var renderNumberLine = function(rangeObj, arrowValue, skipMarkersList) {
+          // probe (Explore only): { value, onSet } makes the line a slider the
+          // student taps, drags or moves with the arrow keys.
+          var renderNumberLine = function(rangeObj, arrowValue, skipMarkersList, probe) {
             var rMin = rangeObj.min;
             var rMax = rangeObj.max;
             var rL = rMax - rMin;
             if (rL <= 0) rL = 1;
-
-            var steps = 20;
-            var minorSteps = 0;
-            if (rL <= 20) { steps = rL; minorSteps = 0; }
-            else if (rL <= 50) { steps = 10; minorSteps = 5; }
-            else if (rL <= 100) { steps = 10; minorSteps = 10; }
-            else if (rL <= 1000) { steps = 10; minorSteps = 10; }
-            else { steps = 10; minorSteps = 5; }
-            // Wide lines whose ends sit on a 1/2/5 x 10^k grid get ticks on that grid. rL/10
-            // ticks labelled 30..60 as 30, 33, 36... (no 40 or 50 for "round 47 to the nearest
-            // 10") and spaced -20..20 minor ticks 0.8 apart under integer arrows.
-            if (rL > 20) {
-              var niceMag = Math.pow(10, Math.floor(Math.log10(rL / 10)));
-              var niceMant = rL / 10 / niceMag;
-              var niceMant2 = niceMant <= 1 ? 1 : niceMant <= 2 ? 2 : niceMant <= 5 ? 5 : 10;
-              var niceMajor = niceMant2 * niceMag;
-              var onNiceGrid = function(v) { var q = v / niceMajor; return Math.abs(q - Math.round(q)) < 1e-9; };
-              if (onNiceGrid(rMin) && onNiceGrid(rMax)) {
-                steps = Math.round(rL / niceMajor);
-                minorSteps = niceMant2 === 2 ? 4 : niceMant2 === 5 ? 5 : 10;
-              }
-            }
-
-            if (steps <= 0) steps = 1;
+            // Phone width: a narrower drawing keeps labels >= 14 px (no sideways scroll).
+            var W = narrow ? 360 : 700, PAD = narrow ? 30 : 40;
+            var X = function(v) { return PAD + (v - rMin) / rL * (W - 2 * PAD); };
+            // Ticks sit on VALUES (1/2/5 x 10^k steps); ranges under 20 units used
+            // to get whole-number ticks only (0..1 had two ticks, 0..37 was cut in 3.7s).
+            var tk = NLE.lineTicks(rMin, rMax);
+            var fmtTick = function(v) { return Number(v.toFixed(Math.min(6, tk.decimals || 0))).toLocaleString(undefined, { maximumFractionDigits: 6 }); };
             var ticks = [];
-
-            for (var i = 0; i <= steps; i++) {
-              var rawVal = rMin + (i * rL / steps);
-              var val = Math.round(rawVal * 100) / 100;
-              var x = PAD + i / steps * (W - 2 * PAD);
-              var valStr = val.toLocaleString();
-              var transformAttr = (valStr.length > 4) ? ('rotate(-40 ' + x + ' 98)') : '';
-
+            // Narrow drawing: label every 2nd/5th/10th major tick when labels would collide.
+            var labelEvery = 1;
+            if (narrow && tk.majors.length > 1) {
+              var longest = 0;
+              tk.majors.forEach(function(m) { longest = Math.max(longest, fmtTick(m.v).length); });
+              var gap = (W - 2 * PAD) / Math.max(1, (rMax - rMin) / tk.major);
+              [1, 2, 5, 10].some(function(k) { labelEvery = k; return gap * k >= longest * 10.5 + 8; });
+            }
+            var labelThis = function(m) {
+              if (labelEvery === 1 || m.end) return m.label;
+              var idx = Math.round(m.v / tk.major);
+              return m.label && idx % labelEvery === 0;
+            };
+            tk.majors.forEach(function(m, i) {
+              var x = X(m.v);
+              var valStr = fmtTick(m.v);
+              var tilt = !narrow && valStr.length > 4;
+              var transformAttr = tilt ? ('rotate(-40 ' + x + ' 98)') : '';
               ticks.push(h('g', { key: 'major-' + i },
-                h('line', { x1: x, y1: 38, x2: x, y2: 82, stroke: '#1e40af', strokeWidth: 2.5 }),
-                h('text', {
-                  x: x, y: 102, textAnchor: valStr.length > 4 ? 'end' : 'middle',
+                h('line', { x1: x, y1: 38, x2: x, y2: 82, stroke: P.tick, strokeWidth: 2.5 }),
+                labelThis(m) && h('text', {
+                  x: x, y: 102, textAnchor: tilt ? 'end' : 'middle',
                   transform: transformAttr,
-                  fill: '#1e3a8a', fontSize: valStr.length > 4 ? '13' : '16',
+                  fill: P.label, fontSize: narrow ? '17' : valStr.length > 4 ? '13' : '16',
                   fontWeight: 'bold', fontFamily: 'monospace'
                 }, valStr)
               ));
-
-              if (i < steps && minorSteps > 0) {
-                for (var j = 1; j < minorSteps; j++) {
-                  var minorX = x + (j / minorSteps) * ((W - 2 * PAD) / steps);
-                  var isMid = minorSteps % 2 === 0 && j === minorSteps / 2;
-                  ticks.push(h('line', {
-                    key: 'minor-' + i + '-' + j,
-                    x1: minorX, y1: isMid ? 45 : 52, x2: minorX, y2: isMid ? 75 : 68,
-                    stroke: '#60a5fa', strokeWidth: isMid ? 2 : 1.5
-                  }));
-                }
-              }
-            }
+            });
+            tk.minors.forEach(function(m, i) {
+              var minorX = X(m.v);
+              ticks.push(h('line', {
+                key: 'minor-' + i,
+                x1: minorX, y1: m.mid ? 45 : 52, x2: minorX, y2: m.mid ? 75 : 68,
+                stroke: P.minor, strokeWidth: m.mid ? 2 : 1.5
+              }));
+            });
 
             // Arrow element
             var arrowEl = null;
-            if (arrowValue != null) {
-              var arrowX = PAD + (arrowValue - rMin) / rL * (W - 2 * PAD);
+            if (arrowValue != null && isFinite(arrowValue)) {
+              var arrowX = X(arrowValue);
               arrowEl = h('g', { key: 'arrow' },
-                h('line', { x1: arrowX, y1: 8, x2: arrowX, y2: 38, stroke: '#ef4444', strokeWidth: 2.5 }),
-                h('polygon', { points: (arrowX - 6) + ',38 ' + (arrowX + 6) + ',38 ' + arrowX + ',48', fill: '#ef4444' }),
-                h('text', { x: arrowX, y: 7, textAnchor: 'middle', fill: '#ef4444', fontSize: '11', fontWeight: 'bold' }, '\u25BC')
+                h('line', { x1: arrowX, y1: 8, x2: arrowX, y2: 38, stroke: P.arrow, strokeWidth: 2.5 }),
+                h('polygon', { points: (arrowX - 6) + ',38 ' + (arrowX + 6) + ',38 ' + arrowX + ',48', fill: P.arrow })
               );
             }
 
             // Marker dots
             var markerEls = (markers || []).map(function(m, i) {
-              var mx = PAD + (m.value - rMin) / rL * (W - 2 * PAD);
+              var mx = X(m.value);
               return h('g', { key: 'marker-' + i },
-                h('circle', { cx: mx, cy: 60, r: 10, fill: m.color || '#ef4444', stroke: '#fff', strokeWidth: 2 }),
-                h('text', { x: mx, y: 30, textAnchor: 'middle', fill: m.color || '#ef4444', fontSize: '12', fontWeight: 'bold' }, m.label || m.value)
+                h('circle', { cx: mx, cy: 60, r: 10, fill: m.color || '#ef4444', stroke: P.bg, strokeWidth: 2 }),
+                h('text', { x: mx, y: 30, textAnchor: 'middle', fill: P.ink, fontSize: '12', fontWeight: 'bold' }, m.label || m.value)
               );
             });
 
             // Distance arcs between consecutive markers (sorted by value) — visualizes subtraction
             var distArcEls = [];
-            if ((markers || []).length >= 2) {
-              var sortedMarkers = (markers || []).slice().sort(function(a, b) { return a.value - b.value; });
+            var sortedMarkers = (markers || []).slice().sort(function(a, b) { return a.value - b.value; });
+            if (sortedMarkers.length >= 2) {
               for (var dmi = 0; dmi < sortedMarkers.length - 1; dmi++) {
                 var a = sortedMarkers[dmi], b = sortedMarkers[dmi + 1];
-                var ax = PAD + (a.value - rMin) / rL * (W - 2 * PAD);
-                var bx = PAD + (b.value - rMin) / rL * (W - 2 * PAD);
+                var ax = X(a.value), bx = X(b.value);
                 if (bx - ax < 18) continue; // too cramped to label
                 var midDx = (ax + bx) / 2;
                 var diff = +(b.value - a.value).toFixed(2);
                 var arcPeak = 78 + Math.min(22, (bx - ax) * 0.18);
                 distArcEls.push(h('g', { key: 'dist-' + dmi },
-                  h('path', {
-                    d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75',
-                    fill: 'none', stroke: '#0ea5e9', strokeWidth: 1.6, strokeDasharray: '4 3', opacity: 0.85
-                  }),
-                  h('rect', {
-                    x: midDx - 18, y: arcPeak - 4, width: 36, height: 13, rx: 6,
-                    fill: '#e0f2fe', stroke: '#0ea5e9', strokeWidth: 1
-                  }),
-                  h('text', {
-                    x: midDx, y: arcPeak + 6, textAnchor: 'middle',
-                    fill: '#0369a1', fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace'
-                  }, 'Δ ' + diff)
+                  h('path', { d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75', fill: 'none', stroke: P.bar, strokeWidth: 1.6, strokeDasharray: '4 3' }),
+                  h('rect', { x: midDx - 18, y: arcPeak - 4, width: 36, height: 13, rx: 6, fill: P.soft, stroke: P.bar, strokeWidth: 1 }),
+                  h('text', { x: midDx, y: arcPeak + 6, textAnchor: 'middle', fill: P.bar, fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace' }, 'Δ ' + diff)
                 ));
               }
             }
 
-            // Skip count markers + arc-shaped hops (visual repeated addition)
-            var skipEls = [];
-            if (skipMarkersList && skipMarkersList.length > 0) {
-              skipMarkersList.forEach(function(sm, i) {
-                var sx = PAD + (sm - rMin) / rL * (W - 2 * PAD);
-                if (sx >= PAD && sx <= W - PAD) {
-                  skipEls.push(h('g', { key: 'skip-' + i },
-                    h('circle', { cx: sx, cy: 60, r: 7, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 1.5, opacity: 0.85 }),
-                    h('text', { x: sx, y: 22, textAnchor: 'middle', fill: '#7c3aed', fontSize: '10', fontWeight: 'bold' }, sm)
-                  ));
-                  if (i > 0) {
-                    var prevSx = PAD + (skipMarkersList[i - 1] - rMin) / rL * (W - 2 * PAD);
-                    var midX = (prevSx + sx) / 2;
-                    var hopWidth = Math.abs(sx - prevSx);
-                    var arcHeight = Math.min(30, Math.max(14, hopWidth * 0.38));
-                    var peakY = 56 - arcHeight;
-                    skipEls.push(h('path', {
-                      key: 'skip-arc-' + i,
-                      d: 'M ' + prevSx + ' 56 Q ' + midX + ' ' + peakY + ' ' + sx + ' 56',
-                      fill: 'none',
-                      stroke: '#a78bfa',
-                      strokeWidth: 2,
-                      strokeLinecap: 'round',
-                      opacity: 0.8
-                    }));
-                    // Small downward triangle at landing — "hop ends here"
-                    skipEls.push(h('polygon', {
-                      key: 'skip-arrow-' + i,
-                      points: (sx - 3) + ',52 ' + sx + ',58 ' + (sx + 3) + ',52',
-                      fill: '#8b5cf6',
-                      opacity: 0.9
-                    }));
-                    // Small "+by" label at the arc peak
-                    if (hopWidth > 30) {
-                      var stepVal = sm - skipMarkersList[i - 1];
-                      var hopLabel = (stepVal >= 0 ? '+' : '') + stepVal;
-                      skipEls.push(h('text', {
-                        key: 'skip-step-' + i,
-                        x: midX, y: peakY - 2,
-                        textAnchor: 'middle',
-                        fill: '#7c3aed', fontSize: 9, fontWeight: 'bold', fontFamily: 'monospace'
-                      }, hopLabel));
-                    }
-                  }
-                }
-              });
-            }
+            // Non-visual equivalent: the line, its labelled ticks, the arrow (in
+            // spaces from a labelled tick, as a sighted reader counts) and markers.
+            var labelled = tk.majors.filter(function(m) { return m.label; }).map(function(m) { return m.v; });
+            var spotItem = { line: { min: rMin, max: rMax, step: tk.minor || tk.major, labels: labelled } };
+            var descParts = [NLE.fill(t('stem.numberline.nl_desc', 'Number line from {min} to {max}. Labelled ticks every {major}.'), { min: fmtTick(rMin), max: fmtTick(rMax), major: fmtTick(tk.major * labelEvery) })];
+            if (labelEvery > 1) descParts.push(NLE.fill(t('stem.numberline.nl_desc_unlabelled', 'Unlabelled big ticks every {major}.'), { major: fmtTick(tk.major) }));
+            if (tk.minor) descParts.push(NLE.fill(t('stem.numberline.nl_desc_minor', 'Small ticks every {minor}.'), { minor: fmtTick(tk.minor) }));
+            if (arrowEl) descParts.push(NLE.describeSpot(spotItem, arrowValue, t, 'arrow'));
+            if (sortedMarkers.length) descParts.push(NLE.fill(t('stem.numberline.nl_desc_markers', 'Markers at {list}.'), { list: sortedMarkers.map(function(m) { return (m.label ? m.label + ' ' : '') + NLE.fmt(m.value); }).join(', ') }));
+            var lineDesc = descParts.join(' ');
 
-            return h('div', { style: { maxWidth: '100%', overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': t('stem.numberline.scroll_ticks', 'Number line: scroll horizontally to read every tick') },
-              h('p', { className: 'text-sm text-slate-600 mb-2 sm:hidden', style: { position: 'sticky', left: 0 } }, t('stem.numberline.scroll_hint', 'Scroll sideways to see the full number line.')),
-              h('svg', {
-              width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
-              style: { minWidth: 600, cursor: (challenge && challenge.type === 'place') ? 'crosshair' : 'default' },
-              role: 'img',
-              'aria-label': challenge && challenge.question ? challenge.question : 'Number line visualization',
-              onClick: function(e) {
-                if (!challenge || challenge.type !== 'place') return;
-                var rect = e.currentTarget.getBoundingClientRect();
-                var scaleX = W / rect.width;
-                var clickX = (e.clientX - rect.left) * scaleX;
-                var fraction = (clickX - PAD) / (W - 2 * PAD);
-                var valObj = rMin + fraction * rL;
-                var step = rL > 50 ? Math.max(1, Math.round(rL / 50)) : 1;
-                var valSnapped = Math.round(valObj / step) * step;
-                if (valSnapped < rMin) valSnapped = rMin;
-                if (valSnapped > rMax) valSnapped = rMax;
-                sfxClick();
-                upd({
-                  answer: String(valSnapped),
-                  markers: [{ value: valSnapped, color: '#f59e0b', label: '?' }]
-                });
+            // Explore probe: the existing slider pattern (tap, drag, arrows, Page, Home/End).
+            var svgProps = { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full', style: narrow ? {} : { minWidth: 600 }, role: 'img', 'aria-label': lineDesc };
+            var probeEl = null;
+            if (probe) {
+              var pSnap = tk.minor || tk.major || 1;
+              var pClamp = function(v) { if (v <= rMin) return rMin; if (v >= rMax) return rMax; var r = NLE.clean(Math.round(v / pSnap) * pSnap); return Math.max(rMin, Math.min(rMax, r)); };
+              var pv = probe.value != null && isFinite(probe.value) ? probe.value : null;
+              svgProps.role = 'slider';
+              svgProps.tabIndex = 0;
+              svgProps['aria-label'] = t('stem.numberline.explore_slider_name', 'Explore marker: tap or drag on the line');
+              svgProps['aria-valuemin'] = rMin;
+              svgProps['aria-valuemax'] = rMax;
+              if (pv != null) svgProps['aria-valuenow'] = pv;
+              svgProps['aria-valuetext'] = pv == null ? t('stem.numberline.explore_slider_empty', 'No marker yet. Press an arrow key or tap the line.') : NLE.fill(t('stem.numberline.explore_slider_value', 'Marker at {v}'), { v: dispNum(pv) });
+              svgProps['aria-describedby'] = 'nl-explore-desc';
+              svgProps.style = Object.assign({}, svgProps.style, { touchAction: 'pan-y', cursor: 'pointer', minWidth: 0 });
+              svgProps.onKeyDown = function(e) {
+                var start = pv == null ? pClamp((rMin + rMax) / 2) : pv, next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = pv == null ? start : pv + pSnap;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = pv == null ? start : pv - pSnap;
+                else if (e.key === 'PageUp') next = start + tk.major;
+                else if (e.key === 'PageDown') next = start - tk.major;
+                else if (e.key === 'Home') next = rMin;
+                else if (e.key === 'End') next = rMax;
+                if (next == null) return;
+                e.preventDefault();
+                probe.onSet(pClamp(next), 'key');
+              };
+              bindPointerDrag(svgProps, false, function(el, ev) {
+                var x = null;
+                try { var ctm = el.getScreenCTM && el.getScreenCTM(); if (ctm && el.createSVGPoint) { var pt = el.createSVGPoint(); pt.x = ev.clientX; pt.y = 0; x = pt.matrixTransform(ctm.inverse()).x; } } catch (err) { x = null; }
+                if (x == null || !isFinite(x)) { var rc = el.getBoundingClientRect(); x = rc.width ? (ev.clientX - rc.left) * (W / rc.width) : PAD; }
+                return pClamp(rMin + (x - PAD) / (W - 2 * PAD) * rL);
+              }, probe.onSet);
+              if (coarsePointer) svgProps.style.minHeight = 96;
+              if (pv != null) {
+                var px = X(pv);
+                probeEl = h('g', { key: 'probe', 'data-nl-probe': 'true' },
+                  h('line', { x1: px, y1: 26, x2: px, y2: 60, stroke: P.student, strokeWidth: 3 }),
+                  h('polygon', { points: (px - 8) + ',22 ' + (px + 8) + ',22 ' + px + ',34', fill: P.student }),
+                  h('circle', { cx: px, cy: 60, r: coarsePointer ? 12 : 8, fill: P.student, stroke: P.bg, strokeWidth: 2 }),
+                  h('text', { x: px, y: 16, textAnchor: 'middle', fill: P.student, fontSize: 14, fontWeight: 'bold', fontFamily: 'monospace' }, dispNum(pv)));
               }
-            },
-              h('line', { x1: PAD, y1: 60, x2: W - PAD, y2: 60, stroke: '#3b82f6', strokeWidth: 3, strokeLinecap: 'round' }),
-              ticks,
-              arrowEl,
-              markerEls,
-              distArcEls,
-              skipEls,
-              h('polygon', { points: (W - PAD) + ',53 ' + (W - PAD + 10) + ',60 ' + (W - PAD) + ',67', fill: '#3b82f6' }),
-              h('polygon', { points: PAD + ',53 ' + (PAD - 10) + ',60 ' + PAD + ',67', fill: '#3b82f6' })
-            ));
+            }
+            var svgEl = h('svg', svgProps,
+                h('rect', { x: 0, y: 0, width: W, height: H, rx: 10, fill: P.bg }),
+                h('line', { x1: PAD, y1: 60, x2: W - PAD, y2: 60, stroke: P.axis, strokeWidth: 3, strokeLinecap: 'round' }),
+                ticks,
+                arrowEl,
+                markerEls,
+                distArcEls,
+                probeEl,
+                h('polygon', { points: (W - PAD) + ',53 ' + (W - PAD + 10) + ',60 ' + (W - PAD) + ',67', fill: P.axis }),
+                h('polygon', { points: PAD + ',53 ' + (PAD - 10) + ',60 ' + PAD + ',67', fill: P.axis })
+              );
+            var descEl = h('p', { id: probe ? 'nl-explore-desc' : undefined, className: 'text-xs mt-1 text-slate-700' }, lineDesc);
+            // Phone width draws to fit, so the sideways-scroll region is only for wide drawings.
+            if (narrow || probe) return h('div', { style: { maxWidth: '100%', width: '100%' } }, svgEl, descEl);
+            return h('div', { style: { maxWidth: '100%', overflowX: 'auto' }, tabIndex: 0, role: 'region', 'aria-label': t('stem.numberline.scroll_ticks', 'Number line: scroll horizontally to read every tick') },
+              h('p', { className: 'text-sm mb-2 sm:hidden text-slate-700', style: { position: 'sticky', left: 0 } }, t('stem.numberline.scroll_hint', 'Scroll sideways to see the full number line.')),
+              svgEl,
+              descEl
+            );
+          };
+
+          // ═══ GENERIC ACCESSIBLE LINE (Place it items + integer lab) ═══
+          // A slider when o.slider is set (arrow keys, Page keys, Home/End, pointer
+          // tap or drag), otherwise an image whose aria-label describes it.
+          var dispNum = function(v) { return NLE.fmt(v).replace(/^-/, '−'); };
+          // Touch-robust drag for every slider line: pointer capture keeps the drag
+          // on the line when a finger slides off it, a second finger is ignored, and
+          // pointerup, pointercancel or lost capture always ends the drag. Coarse
+          // (touch) pointers get a taller hit area and a bigger handle.
+          var coarsePointer = (function() { try { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) { return false; } })();
+          var bindPointerDrag = function(props, disabled, valueAt, onSet) {
+            props.onPointerDown = function(e) {
+              if (disabled) return;
+              if (e.button != null && e.button > 0) return;
+              if (e.cancelable) e.preventDefault();
+              var el = e.currentTarget, pid = e.pointerId;
+              // Touch waits: the browser cancels the pointer if this becomes a page scroll (touch-action: pan-y).
+              var live = e.pointerType !== 'touch';
+              var begin = function(ev) { live = true; try { el.focus({ preventScroll: true }); } catch (err) {} onSet(valueAt(el, ev), 'pointer'); };
+              try { if (pid != null && el.setPointerCapture) el.setPointerCapture(pid); } catch (err) {}
+              if (live) begin(e);
+              var mine = function(ev) { return pid == null || ev.pointerId == null || ev.pointerId === pid; };
+              var sx = e.clientX, sy = e.clientY;
+              var move = function(ev) { if (!mine(ev)) return; if (live) { onSet(valueAt(el, ev), 'drag'); return; } var dx = Math.abs(ev.clientX - sx); if (dx >= 6 && dx > Math.abs(ev.clientY - sy)) begin(ev); };
+              var end = function(ev) {
+                if (ev && !mine(ev)) return;
+                if (!live && ev && ev.type === 'pointerup') begin(ev);
+                window.removeEventListener('pointermove', move);
+                window.removeEventListener('pointerup', end);
+                window.removeEventListener('pointercancel', end);
+                el.removeEventListener('lostpointercapture', end);
+                try { if (pid != null && el.releasePointerCapture && (!el.hasPointerCapture || el.hasPointerCapture(pid))) el.releasePointerCapture(pid); } catch (err) {}
+              };
+              window.addEventListener('pointermove', move);
+              window.addEventListener('pointerup', end);
+              window.addEventListener('pointercancel', end);
+              el.addEventListener('lostpointercapture', end);
+            };
+          };
+          var lineSvg = function(o) {
+            // Phone width: a narrower drawing (and bigger type) keeps labels >= 14 px.
+            var LW = narrow ? 380 : 700, LP = 44, LH = o.height || 150, AY = o.axisY || 96;
+            var fsz = function(n) { return narrow ? n + 3 : n; };
+            var span = (o.max - o.min) || 1;
+            var X = function(v) { return LP + (v - o.min) / span * (LW - 2 * LP); };
+            var kids = [];
+            kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: LW, height: LH, rx: 12, fill: P.bg }));
+            if (o.mirror) kids.push(h('line', { key: 'mirror', x1: X(0), y1: 12, x2: X(0), y2: LH - 12, stroke: P.muted, strokeWidth: 2, strokeDasharray: '6 5' }));
+            kids.push(h('line', { key: 'axis', x1: LP - 16, y1: AY, x2: LW - LP + 16, y2: AY, stroke: P.axis, strokeWidth: 3 }));
+            kids.push(h('polygon', { key: 'ar', points: (LW - LP + 16) + ',' + (AY - 7) + ' ' + (LW - LP + 28) + ',' + AY + ' ' + (LW - LP + 16) + ',' + (AY + 7), fill: P.axis }));
+            kids.push(h('polygon', { key: 'al', points: (LP - 16) + ',' + (AY - 7) + ' ' + (LP - 28) + ',' + AY + ' ' + (LP - 16) + ',' + (AY + 7), fill: P.axis }));
+            var labelSet = {};
+            (o.labels || []).forEach(function(v) { labelSet[NLE.fmt(v)] = true; });
+            if (!o.open && o.step > 0) {
+              var k0 = Math.ceil(o.min / o.step - 1e-9), k1 = Math.floor(o.max / o.step + 1e-9);
+              if (k1 - k0 <= 400) {
+                for (var k = k0; k <= k1; k++) {
+                  var tv = NLE.clean(k * o.step);
+                  var isLab = !!labelSet[NLE.fmt(tv)], isMid = o.mid != null && NLE.near(tv, o.mid, 1e-9);
+                  var len = isMid ? 22 : isLab ? 16 : 10;
+                  kids.push(h('line', { key: 'tk' + k, x1: X(tv), y1: AY - len, x2: X(tv), y2: AY + len, stroke: isMid ? P.mid : P.tick, strokeWidth: isLab || isMid ? 2.5 : 1.5 }));
+                }
+              }
+            } else {
+              [o.min, o.max].forEach(function(v, i) { kids.push(h('line', { key: 'end' + i, x1: X(v), y1: AY - 16, x2: X(v), y2: AY + 16, stroke: P.tick, strokeWidth: 2.5 })); });
+            }
+            (o.labels || []).forEach(function(v, i) {
+              var lt = o.labelFmt ? o.labelFmt(v) : dispNum(v);
+              kids.push(h('text', { key: 'lb' + i, x: X(v), y: AY + 38, textAnchor: 'middle', fill: P.label, fontSize: fsz(o.labelSize || 17), fontWeight: 'bold', fontFamily: 'monospace' },
+                o.accentLast && lt.length > 1 ? [h('tspan', { key: 'a' }, lt.slice(0, -1)), h('tspan', { key: 'b', fill: P.hop, fontSize: fsz(o.labelSize || 17) + 2 }, lt.slice(-1))] : lt));
+            });
+            (o.bars || []).forEach(function(b, i) {
+              var x1 = X(Math.min(b.from, b.to)), x2 = X(Math.max(b.from, b.to)), by = AY - 30 - i * 18;
+              kids.push(h('g', { key: 'bar' + i },
+                h('rect', { x: x1, y: by, width: Math.max(2, x2 - x1), height: 8, rx: 3, fill: b.color || P.bar }),
+                b.label && h('text', { x: (x1 + x2) / 2, y: by - 5, textAnchor: 'middle', fill: b.color || P.bar, fontSize: fsz(14), fontWeight: 'bold' }, b.label)));
+            });
+            (o.hops || []).forEach(function(hp, i) {
+              var hx1 = X(hp.from), hx2 = X(hp.to), lift = 30 + (hp.level || 0) * 18;
+              var col = hp.color || P.hop, dir = hx2 >= hx1 ? 1 : -1;
+              kids.push(h('g', { key: 'hop' + i },
+                h('path', { d: 'M ' + hx1 + ' ' + (AY - 6) + ' Q ' + ((hx1 + hx2) / 2) + ' ' + (AY - 6 - lift * 2) + ' ' + hx2 + ' ' + (AY - 6), fill: 'none', stroke: col, strokeWidth: 3 }),
+                h('polygon', { points: (hx2 - dir * 9) + ',' + (AY - 16) + ' ' + hx2 + ',' + (AY - 5) + ' ' + (hx2 - dir * 1) + ',' + (AY - 18), fill: col }),
+                hp.label && h('text', { x: (hx1 + hx2) / 2, y: AY - 10 - lift, textAnchor: 'middle', fill: col, fontSize: fsz(14), fontWeight: 'bold' }, hp.label)));
+            });
+            (o.points || []).forEach(function(pt, i) {
+              kids.push(h('g', { key: 'pt' + i },
+                h('circle', { cx: X(pt.v), cy: AY, r: 7, fill: pt.color || P.point, stroke: P.bg, strokeWidth: 2 }),
+                pt.label && h('text', { x: X(pt.v), y: AY - 16 - (pt.level || 0) * 16, textAnchor: 'middle', fill: pt.color || P.point, fontSize: fsz(13), fontWeight: 'bold' }, pt.label)));
+            });
+            if (o.arrow != null) {
+              var axX = X(o.arrow);
+              kids.push(h('g', { key: 'arrow' },
+                h('line', { x1: axX, y1: 10, x2: axX, y2: AY - 18, stroke: P.arrow, strokeWidth: 3 }),
+                h('polygon', { points: (axX - 8) + ',' + (AY - 20) + ' ' + (axX + 8) + ',' + (AY - 20) + ' ' + axX + ',' + (AY - 6), fill: P.arrow })));
+            }
+            if (o.correct != null) {
+              var cx = X(o.correct);
+              kids.push(h('g', { key: 'correct' },
+                h('polygon', { points: (cx - 9) + ',' + (AY + 22) + ' ' + (cx + 9) + ',' + (AY + 22) + ' ' + cx + ',' + (AY + 8), fill: P.correct }),
+                o.correctLabel && h('text', { x: cx, y: LH - 6, textAnchor: 'middle', fill: P.correct, fontSize: fsz(14), fontWeight: 'bold' }, o.correctLabel)));
+            }
+            if (o.marker != null && isFinite(o.marker)) {
+              var mx = X(o.marker);
+              kids.push(h('g', { key: 'marker' },
+                h('line', { x1: mx, y1: 14, x2: mx, y2: AY, stroke: P.student, strokeWidth: 3 }),
+                h('polygon', { points: (mx - 10) + ',12 ' + (mx + 10) + ',12 ' + mx + ',28', fill: P.student }),
+                h('circle', { cx: mx, cy: AY, r: coarsePointer && o.slider ? 13 : 8, fill: P.student, stroke: P.bg, strokeWidth: 2 })));
+            }
+            var props = { viewBox: '0 0 ' + LW + ' ' + LH, width: '100%', focusable: 'false', style: { display: 'block', maxWidth: '100%', height: 'auto' } };
+            var s = o.slider;
+            if (s) {
+              var snap = s.snap || o.step || 1;
+              var snapTo = function(v) {
+                var r = NLE.clean(Math.round((v - o.min) / snap) * snap + o.min);
+                return Math.max(o.min, Math.min(o.max, r));
+              };
+              var toValue = function(el, clientX) {
+                var x = null;
+                try {
+                  var ctm = el.getScreenCTM && el.getScreenCTM();
+                  if (ctm && el.createSVGPoint) { var pt = el.createSVGPoint(); pt.x = clientX; pt.y = 0; x = pt.matrixTransform(ctm.inverse()).x; }
+                } catch (err) { x = null; }
+                if (x == null || !isFinite(x)) { var rc = el.getBoundingClientRect(); x = rc.width ? (clientX - rc.left) * (LW / rc.width) : LP; }
+                return snapTo(o.min + (x - LP) / (LW - 2 * LP) * span);
+              };
+              props.role = 'slider';
+              props.tabIndex = 0;
+              props['aria-label'] = s.name;
+              props['aria-valuemin'] = o.min;
+              props['aria-valuemax'] = o.max;
+              if (o.marker != null) props['aria-valuenow'] = o.marker;
+              props['aria-valuetext'] = s.valuetext;
+              if (s.describedBy) props['aria-describedby'] = s.describedBy;
+              if (s.disabled) props['aria-disabled'] = 'true';
+              props.style.touchAction = 'pan-y';
+              props.style.cursor = s.disabled ? 'default' : 'pointer';
+              props.onKeyDown = function(e) {
+                if (s.disabled) return;
+                var big = s.bigStep || (o.step && o.step > snap ? o.step : snap * 10);
+                var cur = o.marker;
+                var start = cur == null ? snapTo((o.min + o.max) / 2) : cur;
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = cur == null ? start : cur + snap;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = cur == null ? start : cur - snap;
+                else if (e.key === 'PageUp') next = start + big;
+                else if (e.key === 'PageDown') next = start - big;
+                else if (e.key === 'Home') next = o.min;
+                else if (e.key === 'End') next = o.max;
+                if (next == null) return;
+                e.preventDefault();
+                s.onSet(snapTo(next), 'key');
+              };
+              bindPointerDrag(props, s.disabled, function(el, ev) { return toValue(el, ev.clientX); }, s.onSet);
+              if (coarsePointer) props.style.minHeight = 96;
+            } else {
+              props.role = 'img';
+              props['aria-label'] = o.desc || '';
+            }
+            return h('svg', props, kids);
+          };
+
+          // Sonification: low tone = left end, high tone = right end, then the marker.
+          var sonify = function(min, max, v) {
+            if (v == null || !isFinite(v)) return;
+            var f = Math.max(0, Math.min(1, (v - min) / ((max - min) || 1)));
+            var hz = function(fr) { return 262 * Math.pow(2, 2 * fr); };
+            playTone(hz(0), 0.18, 'sine', 0.1);
+            setTimeout(function() { playTone(hz(1), 0.18, 'sine', 0.1); }, 260);
+            setTimeout(function() { playTone(hz(f), 0.32, 'triangle', 0.14); }, 620);
           };
 
           // ═══ TAB: EXPLORE ═══
           var renderExplore = function() {
+            var exploreProbe = typeof _n.exploreProbe === 'number' && isFinite(_n.exploreProbe) && _n.exploreProbe >= range.min && _n.exploreProbe <= range.max ? _n.exploreProbe : null;
+            var sortedMk = markers.slice().map(function(m, i) { return { m: m, i: i }; }).sort(function(a, b) { return a.m.value - b.m.value; });
             return h('div', { className: 'space-y-4 allo-nl-bg-explore' },
               // Range controls
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -770,28 +2508,47 @@ window.StemLab = window.StemLab || {
                 className: 'text-xs font-bold text-red-700'
               }, rangeDraftMessage),
               // Quick range presets
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center' }, 'Presets:'),
-                [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
-                  return h('button', { key: pr.join('-'),
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.numberline.presets_group', 'Range presets') },
+                h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center', 'aria-hidden': 'true' }, t('stem.numberline.presets', 'Presets:')),
+                (young ? [[0, 10], [0, 20]] : [[0, 1], [0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]]).map(function(pr) {
+                  return h('button', { key: pr.join('-'), type: 'button',
+                    'aria-pressed': range.min === pr[0] && range.max === pr[1],
                     onClick: function() {
                       sfxClick();
                       setRangeDrafts({ min: String(pr[0]), max: String(pr[1]) });
                       upd({ range: { min: pr[0], max: pr[1] } });
                     },
+                    style: { minHeight: 32 },
                     className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-blue-50 text-blue-700 border border-blue-600 hover:bg-blue-100 transition-all'
-                  }, pr[0] + ' to ' + pr[1]);
+                  }, NLE.fill(t('stem.numberline.preset_range', '{min} to {max}'), { min: pr[0], max: pr[1] }));
                 })
               ),
               // Number line
-              h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
-                renderNumberLine(range, null, null)
+              h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-3 flex flex-col items-center' },
+                renderNumberLine(range, null, null, { value: exploreProbe, onSet: function(v, how) { upd({ exploreProbe: v }); if (how === 'pointer') sfxClick(); if (how === 'key') announceToSR(NLE.fill(t('stem.numberline.explore_slider_value', 'Marker at {v}'), { v: dispNum(v) })); } }),
+                h('button', { type: 'button', disabled: exploreProbe == null, 'data-nl-probe-add': 'true',
+                  onClick: function() {
+                    if (exploreProbe == null) return;
+                    var labelEl = document.getElementById('nlMarkerLabel');
+                    var colorEl = document.getElementById('nlMarkerColor');
+                    sfxClick();
+                    upd({ markers: markers.concat([{ value: exploreProbe, label: labelEl ? labelEl.value : '', color: colorEl ? colorEl.value : '#ef4444' }]) });
+                    announceToSR(NLE.fill(t('stem.numberline.marker_added', 'Marker added at {v}.'), { v: exploreProbe }));
+                    if (labelEl) labelEl.value = '';
+                  },
+                  style: { minHeight: 44 },
+                  className: 'mt-2 px-4 py-2 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50' },
+                  exploreProbe == null ? t('stem.numberline.add_marker_here_empty', 'Keep this marker') : NLE.fill(t('stem.numberline.add_marker_here', 'Keep a marker at {v}'), { v: dispNum(exploreProbe) })),
+                h('button', { type: 'button', onClick: function() { var probe = sortedMk.length ? sortedMk[sortedMk.length - 1].m.value : null; if (probe != null) sonify(range.min, range.max, probe); },
+                  disabled: !markers.length, style: { minHeight: 36 },
+                  className: 'mt-2 px-3 py-1 rounded-lg text-xs font-bold border border-blue-600 text-blue-700 bg-blue-50 disabled:opacity-50' },
+                  t('stem.numberline.hear_last_marker', 'Hear where the last marker is (low = left end, high = right end)'))
               ),
               // Add marker: labels stay visible after a value is entered.
               h('div', { className: 'flex flex-col sm:flex-row flex-wrap gap-2 sm:items-end' },
                 h('label', { htmlFor: 'nlMarkerVal', className: 'text-sm font-bold' }, t('stem.numberline.marker_value', 'Marker value'),
                 h('input', {
-                  type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
+                  type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max, step: 'any',
                   placeholder: t('stem.numberline.value', 'Value'),
                   'aria-label': t('stem.numberline.marker_value', 'Marker value'),
                   className: 'block mt-1 w-full sm:w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
@@ -803,7 +2560,7 @@ window.StemLab = window.StemLab || {
                   className: 'block mt-1 w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 })),
                 h('label', { htmlFor: 'nlMarkerColor', className: 'text-sm font-bold' }, t('stem.numberline.marker_color', 'Marker color'), h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': t('stem.numberline.marker_color', 'Marker color'), className: 'block mt-1 w-12 h-11 rounded cursor-pointer' })),
-                h('button', { 'aria-label': t('stem.numberline.add', '+ Add'),
+                h('button', { type: 'button', 'aria-label': t('stem.numberline.add_marker', 'Add marker'),
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
                     var labelEl = document.getElementById('nlMarkerLabel');
@@ -812,97 +2569,567 @@ window.StemLab = window.StemLab || {
                     var v = parseFloat(valEl.value);
                     if (isNaN(v)) return;
                     if (v < range.min || v > range.max) {
-                      var markerMessage = 'Marker value must be between ' + range.min + ' and ' + range.max + '.';
+                      var markerMessage = NLE.fill(t('stem.numberline.marker_out_of_range', 'Marker value must be between {min} and {max}.'), { min: range.min, max: range.max });
                       if (addToast) addToast(markerMessage, 'warning');
                       if (announceToSR) announceToSR(markerMessage);
                       return;
                     }
                     sfxClick();
                     upd({ markers: markers.concat([{ value: v, label: labelEl ? labelEl.value : '', color: colorEl ? colorEl.value : '#ef4444' }]) });
+                    announceToSR(NLE.fill(t('stem.numberline.marker_added', 'Marker added at {v}.'), { v: v }));
                     if (valEl) valEl.value = '';
                     if (labelEl) labelEl.value = '';
                   },
+                  style: { minHeight: 44 },
                   className: 'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-600'
                 }, t('stem.numberline.add_2', '+ Add')),
-                markers.length > 0 && h('button', { 'aria-label': t('stem.numberline.clear', 'Clear'),
-                  onClick: function() { upd({ markers: [] }); },
-                  className: 'px-3 py-1.5 bg-slate-200 text-slate-600 font-bold rounded-lg text-sm hover:bg-slate-300'
+                markers.length > 0 && h('button', { type: 'button', 'aria-label': t('stem.numberline.clear_markers', 'Clear all markers'),
+                  onClick: function() { upd({ markers: [] }); announceToSR(t('stem.numberline.markers_cleared', 'All markers removed.')); },
+                  style: { minHeight: 44 },
+                  className: 'px-3 py-1.5 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300'
                 }, t('stem.numberline.clear_2', 'Clear'))
+              ),
+              // Data table: every marker and the distance to the next one.
+              sortedMk.length > 0 && h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left text-xs font-bold mb-1' }, t('stem.numberline.marker_table', 'Markers in order, with the distance to the next marker')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', className: 'text-left border px-2 py-1' }, t('stem.numberline.col_marker', 'Marker')),
+                  h('th', { scope: 'col', className: 'text-left border px-2 py-1' }, t('stem.numberline.col_value', 'Value')),
+                  h('th', { scope: 'col', className: 'text-left border px-2 py-1' }, t('stem.numberline.col_gap', 'Distance to next')),
+                  h('th', { scope: 'col', className: 'text-left border px-2 py-1' }, t('stem.numberline.col_remove', 'Remove')))),
+                h('tbody', null, sortedMk.map(function(row, i) {
+                  var nextRow = sortedMk[i + 1];
+                  return h('tr', { key: 'mk' + row.i },
+                    h('td', { className: 'border px-2 py-1' }, row.m.label || '—'),
+                    h('td', { className: 'border px-2 py-1 font-mono' }, dispNum(row.m.value)),
+                    h('td', { className: 'border px-2 py-1 font-mono' }, nextRow ? NLE.fmt(+(nextRow.m.value - row.m.value).toFixed(4)) : '—'),
+                    h('td', { className: 'border px-2 py-1' }, h('button', { type: 'button', style: { minHeight: 28, minWidth: 28 },
+                      'aria-label': NLE.fill(t('stem.numberline.remove_marker', 'Remove the marker at {v}'), { v: row.m.value }),
+                      onClick: function() { upd({ markers: markers.filter(function(_, j) { return j !== row.i; }) }); },
+                      className: 'px-2 rounded border border-slate-400' }, '×')));
+                }))
               )
             );
           };
 
+          // ═══ PLACE IT: position-graded practice ═══
+          var typeName = function(type) {
+            switch (type) {
+              case 'placeWhole': return t('stem.numberline.type_place_whole', 'Place whole numbers');
+              case 'readScale': return t('stem.numberline.type_read_scale', 'Read a scaled line');
+              case 'roundLine': return t('stem.numberline.type_round', 'Round on the line');
+              case 'estimateOpen': return t('stem.numberline.type_estimate', 'Estimate on an open line');
+              case 'placeFraction': return t('stem.numberline.type_place_fraction', 'Place fractions');
+              case 'readFraction': return t('stem.numberline.type_read_fraction', 'Name the fraction');
+              case 'placeDecimal': return t('stem.numberline.type_place_decimal', 'Place decimals');
+              case 'placeInteger': return t('stem.numberline.type_place_integer', 'Place integers');
+              case 'hopSum': return t('stem.numberline.type_hop', 'Integer hops: add and subtract');
+              case 'placeRational': return t('stem.numberline.type_place_rational', 'Place negative fractions and decimals');
+              case 'absDistance': return t('stem.numberline.type_abs', 'Absolute value and distance');
+              case 'identify': return t('stem.numberline.ctype_identify', 'Identify');
+              case 'estimate': return t('stem.numberline.ctype_estimate', 'Estimate');
+              case 'rounding': return t('stem.numberline.ctype_rounding', 'Rounding');
+              case 'between': return t('stem.numberline.ctype_between', 'Between');
+              case 'fraction': return t('stem.numberline.ctype_fraction', 'Fraction');
+              case 'place': return t('stem.numberline.ctype_place', 'Place');
+              case 'dzPlace': return t('stem.numberline.type_dz_place', 'Decimal zoom: place a decimal');
+              case 'dzCompare': return t('stem.numberline.type_dz_compare', 'Decimal zoom: compare decimals');
+              case 'order': return t('stem.numberline.type_order', 'Order fractions, decimals and percents');
+              case 'measure': return t('stem.numberline.type_measure', 'Measure with a ruler');
+              case 'lineplot': return t('stem.numberline.type_lineplot', 'Build a line plot');
+              case 'lpq': return t('stem.numberline.type_lpq', 'Answer from a line plot');
+              case 'icPlace': return t('stem.numberline.type_ic_place', 'Integers in context: place');
+              case 'icCompare': return t('stem.numberline.type_ic_compare', 'Integers in context: compare in words');
+              case 'icDebt': return t('stem.numberline.type_ic_debt', 'Integers in context: who owes more');
+              case 'icChange': return t('stem.numberline.type_ic_change', 'Integers in context: changes');
+              case 'icDistance': return t('stem.numberline.type_ic_distance', 'Integers in context: distance apart');
+              case 'skip': return t('stem.numberline.type_skip', 'Skip count: predict the landing');
+            }
+            return type;
+          };
+          var bandName = function(b) {
+            return b === 'b23' ? t('stem.numberline.band_23', 'Grades 2–3: whole numbers and rounding')
+              : b === 'b45' ? t('stem.numberline.band_45', 'Grades 4–5: fractions and decimals')
+              : t('stem.numberline.band_6', 'Grade 6 and up: integers and rational numbers');
+          };
+          // Skip-count prediction slips (named before any reveal, like every other tab).
+          var skipMis = function(code) {
+            switch (code) {
+              case 'skip_stayed': return { title: t('stem.numberline.mis_skip_stayed_title', 'That is where you are now'), body: t('stem.numberline.mis_skip_stayed_body', 'You gave the landing you are on. Predict where the next hop lands.') };
+              case 'skip_direction': return { title: t('stem.numberline.mis_skip_dir_title', 'Check the direction'), body: skipStep > 0 ? t('stem.numberline.mis_skip_dir_fwd_body', 'Counting forward makes the number bigger, so this hop moves to the right.') : t('stem.numberline.mis_skip_dir_back_body', 'Counting backward makes the number smaller, so this hop moves to the left.') };
+              case 'skip_by_one': return { title: t('stem.numberline.mis_skip_one_title', 'Hop by the hop size, not by 1'), body: NLE.fill(t('stem.numberline.mis_skip_one_body', 'Each hop jumps {by}, not 1.'), { by: skipBy }) };
+              case 'skip_two_hops': return { title: t('stem.numberline.mis_skip_two_title', 'One hop at a time'), body: t('stem.numberline.mis_skip_two_body', 'You jumped two hops. Predict just the next landing.') };
+              default: return null;
+            }
+          };
+          var misTitle = function(code) {
+            var sm = skipMis(code);
+            if (sm) return sm.title;
+            var info = NLB.misInfo(code, { target: 0, text: '', base: '' }, t);
+            return info ? info.title : t('stem.numberline.mis_none', 'No named pattern');
+          };
+          var hashStr = function(s) { var x = 2166136261; for (var i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; };
+          var answerShown = function(item, value) {
+            if (value == null || !isFinite(value)) return '';
+            if (item.q && (item.type === 'placeFraction' || item.type === 'readFraction' || item.type === 'estimateOpen')) {
+              var near = Math.round(value * item.q);
+              return Math.abs(value * item.q - near) < 1e-6 ? NLE.fracStr(near, item.q) : NLE.fmt(Math.round(value * 100) / 100);
+            }
+            return NLE.fmt(Math.round(value * 1000) / 1000);
+          };
+
+          var ppNew = function(typeOverride, quiet) {
+            var genNext = function() { return typeOverride ? NLE.genItem(typeOverride, band, null, { young: young }) : NLE.nextItem(band, allowedTypes, Math.random, pp && pp.item ? pp.item.type : null, { young: young }); };
+            var item = genNext();
+            // A short K-2 pool repeats often: never the same question twice in a row.
+            for (var again = 0; again < 8 && pp && pp.item && item.type === pp.item.type && item.target === pp.item.target; again++) item = genNext();
+            var stats = Object.assign({}, ppStats);
+            var st = Object.assign({ served: 0, correct: 0, missed: 0 }, stats[item.type]);
+            st.served += 1;
+            stats[item.type] = st;
+            var newTypes = Object.assign({}, challengeTypesUsed);
+            newTypes[item.type] = true;
+            if (!quiet) sfxNewChallenge();
+            var freshPp = { item: item, pos: null, text: '', tries: 0, hints: 0, status: 'open', fb: null, exampleOpen: false };
+            if (quiet) { freshPp.quiet = true; upd({ pp: freshPp }); return; }
+            upd({ pp: freshPp, ppStats: stats, challengeTypesUsed: newTypes });
+            announceToSR(NLE.promptText(item, t));
+          };
+          var ppSet = function(patch) { if (pp) upd(Object.assign(pp.quiet && pp.item ? nlbServe(pp.item.type) : {}, { pp: Object.assign({}, pp, patch, { quiet: false }) })); };
+          var ppLogMiss = function(item, value, mis, source) {
+            var entry = { type: item.type, band: item.band || band, prompt: NLE.promptText(item, t), answer: answerShown(item, value), correct: item.answer === 'position' || item.type === 'readFraction' ? (item.type === 'roundLine' ? NLE.fmt(item.target) : item.text) : NLE.fmt(item.target), mis: mis || '', source: source || 'place', ts: Date.now() };
+            if (item.type === 'roundLine' || item.type === 'readScale' || item.type === 'absDistance') entry.correct = NLE.fmt(item.target);
+            return ppMissed.concat([entry]).slice(-60);
+          };
+          var ppCheck = function() {
+            if (!pp || pp.status !== 'open') return;
+            var item = pp.item;
+            var res = NLE.grade(item, item.answer === 'position' ? { pos: pp.pos } : { text: pp.text });
+            if (!res.valid) {
+              var need = item.answer === 'position'
+                ? t('stem.numberline.pp_need_marker', 'Place your marker first: tap the line or use the arrow keys.')
+                : t('stem.numberline.pp_need_text', 'Type an answer first.');
+              ppSet({ fb: { kind: 'invalid' } });
+              announceToSR(need);
+              return;
+            }
+            var tries = pp.tries + 1;
+            var stats = Object.assign({}, ppStats);
+            var st = Object.assign({ served: 0, correct: 0, missed: 0 }, stats[item.type]);
+            var alreadyMissed = !!pp.missed;
+            if (res.ok) {
+              var independent = tries === 1 && pp.hints === 0 && !pp.exampleOpen;
+              var earns = !alreadyMissed && !(item.binary && tries > 1);
+              var xp = earns ? (independent ? 5 : 2) : 0;
+              var newStreak = earns ? streak + 1 : 0;
+              var solvedBy = Object.assign({}, ppSolvedByType);
+              if (independent) solvedBy[item.type] = (solvedBy[item.type] || 0) + 1;
+              if (!alreadyMissed) st.correct += 1;
+              stats[item.type] = st;
+              var isFrac = item.type === 'placeFraction' || item.type === 'readFraction' || item.type === 'placeDecimal' || (item.type === 'estimateOpen' && item.q);
+              var isNeg = item.band === 'b6' || item.target < 0;
+              var patch = {
+                pp: Object.assign({}, pp, { tries: tries, status: 'correct', fb: { kind: 'correct', independent: independent, xp: xp, missed: alreadyMissed } }),
+                ppStats: stats, ppSolvedByType: solvedBy,
+                score: { correct: score.correct + (earns ? 1 : 0), total: score.total + 1 },
+                streak: newStreak, bestStreak: Math.max(bestStreak, newStreak),
+                placeSolved: placeSolved + (earns && item.answer === 'position' ? 1 : 0),
+                fractionSolved: fractionSolved + (earns && isFrac ? 1 : 0),
+                negativeSolved: negativeSolved + (earns && isNeg ? 1 : 0),
+                roundingSolved: roundingSolved + (earns && item.type === 'roundLine' ? 1 : 0)
+              };
+              if (earns) { if (independent) patch.independentCorrect = (_n.independentCorrect || 0) + 1; else patch.supportedCorrect = (_n.supportedCorrect || 0) + 1; }
+              upd(patch);
+              sfxCorrect();
+              if (newStreak === 3 || newStreak === 5 || newStreak === 10) sfxStreak();
+              if (xp > 0) awardXP('numberline', xp, 'Number line placement');
+              announceToSR(alreadyMissed
+                ? t('stem.numberline.pp_found_after_miss', 'You found it. This one stays on your review list.')
+                : independent ? t('stem.numberline.pp_correct_indep', 'Correct, on your own.') : t('stem.numberline.pp_correct_support', 'Correct, with support.'));
+              if (earns) checkBadges({
+                correct: patch.score.correct, streak: newStreak, typesUsed: Object.keys(challengeTypesUsed).length,
+                roundingSolved: patch.roundingSolved, fractionSolved: patch.fractionSolved, negativeSolved: patch.negativeSolved,
+                placeSolved: patch.placeSolved, aiAsked: _n.aiAsked || 0
+              });
+              return;
+            }
+            // Wrong: named misconception first; after the SECOND wrong try the item
+            // counts as missed (logged for the teacher) and a reveal may be offered.
+            var nowMissed = alreadyMissed || tries >= 2;
+            var wpatch = {
+              pp: Object.assign({}, pp, { tries: tries, missed: nowMissed, fb: { kind: 'wrong', mis: res.mis, close: res.close, dir: res.dir } }),
+              streak: 0, score: { correct: score.correct, total: score.total + 1 }
+            };
+            if (nowMissed && !alreadyMissed) {
+              wpatch.ppMissed = ppLogMiss(item, res.value, res.mis, 'place');
+              st.missed += 1; stats[item.type] = st; wpatch.ppStats = stats;
+            }
+            upd(wpatch);
+            sfxWrong();
+            var info = res.mis ? NLE.misInfo(res.mis, item, t) : null;
+            announceToSR(info ? info.title + '. ' + info.body : (res.close ? t('stem.numberline.pp_close', 'Close, but not inside the target yet. Adjust a little and check again.') : t('stem.numberline.pp_not_yet', 'Not yet. Try again.')));
+          };
+          var ppReveal = function() {
+            if (!pp || pp.status !== 'open' || !allowReveal || pp.tries < 2) return;
+            ppSet({ status: 'revealed' });
+            announceToSR(NLE.steps(pp.item, t).join(' '));
+          };
+
+          // Legacy saved "place" questions (graded by a typed number) become a
+          // Place it item at the same target, on the same line.
+          React.useEffect(function() {
+            var ch = _n.challenge;
+            if (!ch || ch.type !== 'place' || ch.solved) return;
+            var target = Number(ch.targetValue != null ? ch.targetValue : ch.answer);
+            var item = NLE.genItem('placeWhole', band, null, { young: young });
+            if (isFinite(target) && target >= range.min && target <= range.max) {
+              var tk2 = NLE.lineTicks(range.min, range.max);
+              var stp = tk2.minor || tk2.major;
+              item.line = { min: range.min, max: range.max, step: stp, labels: tk2.majors.filter(function(m) { return m.label; }).map(function(m) { return m.v; }) };
+              item.target = target; item.text = NLE.fmt(target); item.snap = stp; item.tol = stp * 0.49;
+            }
+            upd({ challenge: null, answer: '', feedback: null, challengeMode: 'place', pp: { item: item, pos: null, text: '', tries: 0, hints: 0, status: 'open', fb: null, exampleOpen: false } });
+          }, []);
+
+          var renderWorked = function(item, stage) {
+            // A parallel example on DIFFERENT numbers, stable for this item.
+            var ex = null;
+            for (var seedTry = 0; seedTry < 6 && !ex; seedTry++) {
+              var cand = NLE.genItem(item.type, item.band || band, NLE.seeded(hashStr(item.id) + 101 * seedTry + 7), { young: young });
+              if (!NLE.near(cand.target, item.target, 1e-9)) ex = cand;
+            }
+            if (!ex) return null;
+            var exSteps = NLE.steps(ex, t);
+            var shown = stage === 0 ? exSteps : exSteps.slice(0, 1);
+            return h('div', { className: 'rounded-xl p-3 border', style: { borderColor: '#475569' }, 'data-pp-worked': stage },
+              h('p', { className: 'text-xs font-bold uppercase tracking-wide' }, stage === 0 ? t('stem.numberline.pp_worked_full', 'Worked example (different numbers)') : t('stem.numberline.pp_worked_partial', 'Worked example: first step only. You finish the thinking.')),
+              h('p', { className: 'text-sm font-bold mt-1' }, NLE.promptText(ex, t)),
+              lineSvg({ min: ex.line.min, max: ex.line.max, step: ex.line.step, open: ex.line.open, labels: ex.line.labels, mid: ex.line.mid, arrow: ex.arrow, points: (ex.points || []).map(function(v) { return { v: v, label: dispNum(v) }; }),
+                correct: stage === 0 && ex.answer === 'position' ? ex.target : null, correctLabel: stage === 0 && ex.answer === 'position' ? ex.text : null,
+                height: 140, desc: NLE.describeLine(ex, t) }),
+              h('ol', { className: 'list-decimal pl-5 text-sm space-y-0.5 mt-1' }, shown.map(function(s, i) { return h('li', { key: i }, s); }))
+            );
+          };
+
+          var renderPlacePractice = function() {
+            var item = pp ? pp.item : null;
+            var levelLocked = !!lockBand;
+            var head = h('div', { className: 'flex flex-col gap-2' },
+              h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': t('stem.numberline.pp_level', 'Practice level') },
+                h('span', { className: 'text-xs font-bold', 'aria-hidden': 'true' }, t('stem.numberline.pp_level_label', 'Level:')),
+                NLE.BANDS.map(function(b) {
+                  return h('button', { key: b, type: 'button', 'aria-pressed': band === b, disabled: levelLocked,
+                    onClick: function() { sfxClick(); upd({ ppBand: b, pp: null }); announceToSR(bandName(b)); },
+                    style: { minHeight: 36 },
+                    className: 'px-2 py-1 rounded-lg text-xs font-bold border ' + (band === b ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-800 border-blue-600') + ' disabled:opacity-60' }, bandName(b));
+                }),
+                !levelLocked && _n.ppBand && h('button', { type: 'button', style: { minHeight: 36 }, onClick: function() { upd({ ppBand: null, pp: null }); },
+                  className: 'px-2 py-1 rounded-lg text-xs font-bold border border-slate-500 bg-white text-slate-800' }, t('stem.numberline.pp_level_auto', 'Use my grade level'))
+              ),
+              levelLocked && h('p', { className: 'text-xs italic' }, t('stem.numberline.pp_level_locked', 'Your teacher set this level.'))
+            );
+            if (!item) {
+              return h('div', { className: 'space-y-3', 'data-place-practice': 'empty' }, head,
+                h('p', { className: 'text-sm' }, t('stem.numberline.pp_intro', 'Place it: each item asks you to put a marker on a number line, or to read one. You commit your answer first; the line only shows the answer after you check. Every placement is graded by where your marker is.')),
+                h('button', { type: 'button', 'data-nl-start': 'true', onClick: function() { ppNew(); }, style: { minHeight: 44 },
+                  className: 'w-full py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-sm' }, t('stem.numberline.pp_start', 'Start practice')));
+            }
+            var isPos = item.answer === 'position';
+            var done = pp.status !== 'open';
+            var fb = pp.fb;
+            var solvedCount = ppSolvedByType[item.type] || 0;
+            var workedStage = Math.min(2, Math.floor(solvedCount / 2));
+            var hintList = NLE.hints(item, t);
+            var promptId = 'nl-pp-prompt', descId = 'nl-pp-desc';
+            var showCorrect = done;
+            var hopReveal = done && item.type === 'hopSum' ? [
+              { from: 0, to: item.a, label: dispNum(item.a), color: P.hop, level: 0 },
+              { from: item.a, to: item.target, label: (item.op === '+' ? '+' : '−') + NLE.paren(item.b), color: P.hop2, level: 1 }
+            ] : [];
+            var barsReveal = done && item.type === 'absDistance' ? (item.kind === 'abs' ? [{ from: 0, to: item.x, label: '|' + dispNum(item.x) + '| = ' + item.target }] : [{ from: item.a, to: item.b, label: NLE.fmt(item.target) }]) : [];
+            var lineEl = lineSvg({
+              min: item.line.min, max: item.line.max, step: item.line.step, open: item.line.open, labels: item.line.labels, mid: item.line.mid,
+              arrow: item.arrow, points: (item.points || []).map(function(v) { return { v: v, label: dispNum(v) }; }),
+              hops: hopReveal, bars: barsReveal,
+              marker: isPos ? pp.pos : null,
+              correct: showCorrect && (isPos || item.type === 'readFraction' || item.type === 'readScale') ? item.target : null,
+              correctLabel: showCorrect ? (item.type === 'roundLine' ? null : item.text) : null,
+              height: 160,
+              desc: NLE.describeLine(item, t),
+              slider: isPos ? {
+                name: t('stem.numberline.pp_slider_name', 'Your marker on the number line'),
+                valuetext: NLE.describeSpot(item, pp.pos, t, 'marker'),
+                snap: item.snap, describedBy: promptId + ' ' + descId, disabled: done,
+                onSet: function(v, how) { ppSet({ pos: v, fb: fb && fb.kind === 'invalid' ? null : fb }); if (how === 'pointer') sfxClick(); }
+              } : null
+            });
+            var feedbackEl = null;
+            if (fb && fb.kind === 'correct') {
+              feedbackEl = h('div', { className: 'rounded-lg p-3 border-2', style: { borderColor: '#047857' } },
+                h('p', { className: 'text-sm font-bold', style: { color: '#065f46' } },
+                  fb.missed ? t('stem.numberline.pp_found_after_miss', 'You found it. This one stays on your review list.')
+                    : fb.independent ? NLE.fill(t('stem.numberline.pp_correct_indep_xp', 'Correct, on your own. +{xp} XP'), { xp: fb.xp })
+                    : fb.xp > 0 ? NLE.fill(t('stem.numberline.pp_correct_support_xp', 'Correct, with support. +{xp} XP'), { xp: fb.xp })
+                    : t('stem.numberline.pp_correct_support', 'Correct, with support.')),
+                h('ol', { className: 'list-decimal pl-5 text-sm mt-1 space-y-0.5' }, NLE.steps(item, t).map(function(s, i) { return h('li', { key: i }, s); })));
+            } else if (fb && fb.kind === 'wrong') {
+              var info = fb.mis ? NLE.misInfo(fb.mis, item, t) : null;
+              var dirMsg = isPos && !info && !fb.close ? (fb.dir === 'left' ? t('stem.numberline.pp_dir_left', 'Your marker is to the left of where it belongs.') : t('stem.numberline.pp_dir_right', 'Your marker is to the right of where it belongs.')) : '';
+              feedbackEl = h('div', { className: 'rounded-lg p-3 border-2', style: { borderColor: '#b91c1c' }, 'data-pp-mis': fb.mis || '' },
+                info && h('p', { className: 'text-sm font-bold' }, info.title),
+                h('p', { className: 'text-sm' }, info ? info.body : fb.close ? t('stem.numberline.pp_close', 'Close, but not inside the target yet. Adjust a little and check again.') : t('stem.numberline.pp_not_yet', 'Not yet. Try again.')),
+                dirMsg && h('p', { className: 'text-sm' }, dirMsg),
+                pp.tries >= 2 && !done && h('p', { className: 'text-xs italic mt-1' }, allowReveal
+                  ? t('stem.numberline.pp_review_note', 'This item is now on your review list. Keep trying, or show the answer.')
+                  : t('stem.numberline.pp_review_note_noreveal', 'This item is now on your review list. Keep trying, use a hint, or skip to the next item.')));
+            } else if (fb && fb.kind === 'invalid') {
+              feedbackEl = h('p', { className: 'text-sm font-bold' }, isPos ? t('stem.numberline.pp_need_marker', 'Place your marker first: tap the line or use the arrow keys.') : t('stem.numberline.pp_need_text', 'Type an answer first.'));
+            }
+            var revealEl = pp.status === 'revealed' ? h('div', { className: 'rounded-lg p-3 border-2', style: { borderColor: '#047857' } },
+              h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: item.type === 'readFraction' || item.answer === 'position' ? item.text : NLE.fmt(item.target) })),
+              h('ol', { className: 'list-decimal pl-5 text-sm space-y-0.5' }, NLE.steps(item, t).map(function(s, i) { return h('li', { key: i }, s); }))) : null;
+
+            return h('div', { className: 'space-y-3', 'data-place-practice': item.type },
+              young && !levelLocked ? h('details', { className: 'text-xs' }, h('summary', { className: 'font-bold' }, t('stem.numberline.pp_level_change', 'Change level')), head) : head,
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', { className: 'text-[0.6875rem] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800' }, typeName(item.type)),
+                streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-700' }, NLE.fill(t('stem.numberline.streak_n', 'Streak {n}'), { n: streak }))),
+              workedStage < 2 && !done && renderWorked(item, workedStage),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('p', { id: promptId, className: young ? 'text-lg font-bold' : 'text-base font-bold' }, NLE.promptText(item, t)),
+                young && h('button', { type: 'button', 'data-nl-hear': 'true', onClick: function() { speakText(NLE.promptText(item, t)); }, style: { minHeight: 44 },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border border-blue-600 text-blue-800 bg-white' }, t('stem.numberline.hear_question', 'Hear the question'))),
+              ttsNote && young && h('p', { className: 'text-xs' }, t('stem.numberline.tts_unavailable', 'Read-aloud is not available here. The question is written above.')),
+              h('div', { className: 'rounded-xl border-2 border-blue-200 p-2', style: { background: P.bg } }, lineEl),
+              h('p', { id: descId, className: young ? 'sr-only' : 'text-xs' }, NLE.describeLine(item, t)),
+              isPos && h('p', { className: 'text-sm font-bold' }, t('stem.numberline.pp_tap_short', 'Tap or drag on the line.')),
+              isPos && h('details', { className: 'text-xs' },
+                h('summary', null, t('stem.numberline.pp_keys_summary', 'Keyboard keys')),
+                h('p', null, t('stem.numberline.pp_keys', 'Tap or drag on the line, or focus it and use the arrow keys (Page Up and Page Down jump a whole space; Home and End go to the ends).'))),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                !isPos && h('input', { type: 'text', inputMode: item.answer === 'fraction' ? 'text' : 'decimal', value: pp.text || '', disabled: done,
+                  'aria-label': t('stem.numberline.pp_answer', 'Your answer'), 'aria-describedby': promptId,
+                  onChange: function(e) { ppSet({ text: e.target.value, fb: fb && fb.kind === 'invalid' ? null : fb }); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); ppCheck(); } },
+                  className: 'px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono w-40', style: { minHeight: 44 } }),
+                !done && h('button', { type: 'button', onClick: ppCheck, style: { minHeight: 44 },
+                  className: 'px-4 py-2 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-800' }, isPos ? t('stem.numberline.pp_check_place', 'Check my placement') : t('stem.numberline.pp_check', 'Check my answer')),
+                isPos && h('button', { type: 'button', disabled: pp.pos == null, onClick: function() { sonify(item.line.min, item.line.max, pp.pos); }, style: { minHeight: 44 },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border border-blue-600 text-blue-800 bg-white disabled:opacity-50' }, t('stem.numberline.pp_hear', 'Hear my marker')),
+                !done && pp.hints < hintList.length && h('button', { type: 'button', onClick: function() { ppSet({ hints: pp.hints + 1 }); announceToSR(hintList[pp.hints]); }, style: { minHeight: 44 },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border border-amber-700 text-amber-900 bg-amber-50' }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: pp.hints + 1, total: hintList.length })),
+                !done && workedStage === 2 && !pp.exampleOpen && h('button', { type: 'button', onClick: function() { ppSet({ exampleOpen: true }); }, style: { minHeight: 44 },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border border-slate-500 text-slate-800 bg-white' }, t('stem.numberline.pp_show_example', 'Show me an example')),
+                !done && pp.tries >= 2 && allowReveal && h('button', { type: 'button', onClick: ppReveal, style: { minHeight: 44 },
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold border border-rose-700 text-rose-900 bg-rose-50' }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || pp.tries >= 2) && h('button', { type: 'button', onClick: function() { ppNew(); }, style: { minHeight: 44 },
+                  className: 'px-4 py-2 rounded-lg text-sm font-bold bg-indigo-700 text-white hover:bg-indigo-800' }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))
+              ),
+              pp.hints > 0 && h('ol', { className: 'list-decimal pl-5 text-sm space-y-0.5 rounded-lg p-2 bg-amber-50 text-amber-900', 'aria-label': t('stem.numberline.pp_hints', 'Hints') },
+                hintList.slice(0, pp.hints).map(function(s, i) { return h('li', { key: i }, s); })),
+              pp.exampleOpen && !done && renderWorked(item, 0),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, feedbackEl, revealEl)
+            );
+          };
+
           // ═══ TAB: CHALLENGES ═══
-          var renderChallenges = function() {
-            return h('div', { className: 'space-y-4 allo-nl-bg-challenges' },
+          var renderQuick = function() {
+            var tries = challenge ? (challenge.tries || 0) : 0;
+            var closed = !!(challenge && (challenge.solved || challenge.revealed || (feedback && feedback.correct)));
+            var quickHint = !challenge ? '' : challenge.type === 'rounding' ? t('stem.numberline.rounding_hint', 'Find the two neighboring multiples and their midpoint. Which multiple is closer?') : challenge.type === 'fraction' ? t('stem.numberline.fraction_hint', 'Count equal intervals from zero. The denominator tells you how many intervals make one whole.') : t('stem.numberline.distance_hint', 'Check the endpoints, the size of each interval, and the distance from zero.');
+            return h('div', { className: 'space-y-4' },
               // Number line (with challenge arrow)
               h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
                 renderNumberLine(range, challenge ? challenge._arrowValue : null, null)
               ),
-              // Challenge section
               h('div', { className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
                 h('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-2' },
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
-                    h('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.numberline.number_line_challenge', '\uD83C\uDFAF Number Line Challenge')),
-                    h('div', { className: 'flex gap-0.5 ml-2' },
+                    h('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.numberline.number_line_challenge', '🎯 Number Line Challenge')),
+                    h('div', { className: 'flex gap-0.5 ml-2', role: 'group', 'aria-label': t('stem.numberline.difficulty', 'Difficulty') },
                       ['easy', 'medium', 'hard'].map(function(d) {
-                        return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                          className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                        }, d);
+                        return h('button', { key: d, type: 'button', 'aria-pressed': difficulty === d, onClick: function() { sfxClick(); upd({ difficulty: d }); }, style: { minHeight: 32 },
+                          className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full transition-all ' +
+                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-700 hover:bg-slate-200')
+                        }, d === 'easy' ? t('stem.numberline.diff_easy', 'easy') : d === 'medium' ? t('stem.numberline.diff_medium', 'medium') : t('stem.numberline.diff_hard', 'hard'));
                       })
                     )
                   ),
-                  h('span', { className: 'text-[0.6875rem] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { className: 'text-[0.6875rem] text-slate-700' }, NLE.fill(t('stem.numberline.types_tried', '{n} question types tried'), { n: Object.keys(challengeTypesUsed).length }))
                 ),
 
                 !challenge
                   ? h('button', { 'aria-label': t('stem.numberline.generate_challenge', 'Generate Challenge'),
-                      onClick: genChallenge,
+                      onClick: genChallenge, style: { minHeight: 44 },
                       className: 'w-full py-2.5 ' + (ctx.isContrast ? 'bg-black border-2 border-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-600') + ' text-white font-bold rounded-xl text-sm transition-all shadow-md'
-                    }, t('stem.numberline.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
+                    }, t('stem.numberline.generate_challenge_2', '🎲 Generate Challenge'))
                   : h('div', { className: 'space-y-2' },
                       h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-[0.6875rem] font-bold uppercase text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full' }, challenge.type),
-                        streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
+                        h('span', { className: 'text-[0.6875rem] font-bold uppercase text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full' }, typeName(challenge.type)),
+                        streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-700' }, NLE.fill(t('stem.numberline.streak_n', 'Streak {n}'), { n: streak }))
                       ),
                       h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),
                       h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
                         h('input', {
-                          type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1', min: challenge.type === 'place' ? range.min : undefined, max: challenge.type === 'place' ? range.max : undefined,
+                          type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1',
                           onChange: function(e) { upd({ answer: e.target.value, feedback: null }); },
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
-                          disabled: !!(feedback && feedback.correct),
-                          placeholder: challenge.type === 'place' ? t('stem.numberline.placement_value', 'Value to place') : t('stem.numberline.your_answer', 'Your answer'),
-                          'aria-label': challenge.type === 'place' ? t('stem.numberline.keyboard_placement_value', 'Placement value') : t('stem.numberline.challenge_answer', 'Challenge answer'),
-                          className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
+                          disabled: closed,
+                          placeholder: t('stem.numberline.your_answer', 'Your answer'),
+                          'aria-label': t('stem.numberline.challenge_answer', 'Challenge answer'),
+                          className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono', style: { minHeight: 44 }
                         }),
                         h('button', { 'aria-label': t('stem.numberline.check_answer', 'Check Answer'),
                           onClick: checkAnswer,
-                          disabled: !answer || !!(feedback && feedback.correct),
-                          className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
-                        }, challenge.type === 'place' ? 'Check Placement' : 'Check')
+                          disabled: !answer || closed, style: { minHeight: 44 },
+                          className: 'px-4 py-2 bg-blue-700 text-white font-bold rounded-lg text-sm hover:bg-blue-800 disabled:opacity-50 transition-all'
+                        }, t('stem.numberline.check', 'Check'))
                       ),
-                      feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-700' : 'text-red-700') }, feedback.msg),
-                      feedback && !feedback.correct && h('div', { className: 'rounded-lg p-3 bg-blue-50 text-blue-900 space-y-2' },
-                        h('p', { className: 'text-sm' }, challenge.type === 'rounding' ? t('stem.numberline.rounding_hint', 'Find the two neighboring multiples and their midpoint. Which multiple is closer?') : challenge.type === 'fraction' ? t('stem.numberline.fraction_hint', 'Count equal intervals from zero. The denominator tells you how many intervals make one whole.') : t('stem.numberline.distance_hint', 'Check the endpoints, the size of each interval, and the distance from zero.')),
+                      feedback && h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-800' : 'text-red-800') }, feedback.msg),
+                      // The same hint-ladder look as every other activity: a hint button, then the hint list.
+                      !closed && !challenge.hintShown && h('button', { type: 'button', style: { minHeight: 44 }, className: btnHint,
+                        onClick: function() { upd({ challenge: Object.assign({}, challenge, { hintShown: true }), challengeSupportUsed: true }); announceToSR(quickHint); } },
+                        NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: 1, total: 1 })),
+                      !challenge.revealed && challenge.hintShown && h('div', { className: 'space-y-2' },
+                        hintsEl([quickHint], 1),
                         challenge.type === 'rounding' && Number.isFinite(challenge.roundingValue) && challenge.roundingBase > 0 && (function() {
                           var lo = Math.floor(challenge.roundingValue / challenge.roundingBase) * challenge.roundingBase, hi = lo + challenge.roundingBase, mid = (lo + hi) / 2;
                           var x = 30 + (challenge.roundingValue - lo) / (hi - lo) * 260;
-                          return h('svg', {viewBox:'0 0 320 100',role:'img','aria-label':challenge.roundingValue+'; '+lo+' — '+mid+' — '+hi,style:{width:'100%',maxWidth:520}},
-                            h('line',{x1:30,x2:290,y1:45,y2:45,stroke:'#1e40af',strokeWidth:3}),
-                            [lo,mid,hi].map(function(value,i){return h('g',{key:i},h('line',{x1:30+i*130,x2:30+i*130,y1:35,y2:55,stroke:'#1e40af',strokeWidth:2}),h('text',{x:30+i*130,y:80,textAnchor:'middle',fill:'#1e3a8a',fontSize:16},value));}),
-                            h('circle',{cx:x,cy:45,r:6,fill:'#9f1239'}),h('text',{x:x,y:22,textAnchor:'middle',fill:'#881337',fontSize:16},challenge.roundingValue));
-                        })(),
-                        h('button', { type: 'button', className: 'rounded-lg border border-blue-700 px-3 py-2 text-sm font-bold', onClick: function() { upd({ solutionShown: true, challengeSupportUsed: true }); } }, t('stem.numberline.show_solution', 'Show a worked solution')),
-                        _n.solutionShown && h('p', { role: 'status', className: 'text-sm font-bold' }, t('stem.numberline.solution_value', 'One correct answer is: ') + challenge.answer + '. ' + (challenge.hint || ''))
+                          return h('svg', { viewBox: '0 0 320 100', role: 'img', 'aria-label': NLE.fill(t('stem.numberline.round_svg_desc', '{n} marked on a line from {lo} to {hi}, with the halfway point {mid} marked.'), { n: challenge.roundingValue, lo: lo, hi: hi, mid: mid }), style: { width: '100%', maxWidth: 520 } },
+                            h('rect', { x: 0, y: 0, width: 320, height: 100, fill: P.bg }),
+                            h('line', { x1: 30, x2: 290, y1: 45, y2: 45, stroke: P.tick, strokeWidth: 3 }),
+                            [lo, mid, hi].map(function(value, i) { return h('g', { key: i }, h('line', { x1: 30 + i * 130, x2: 30 + i * 130, y1: 35, y2: 55, stroke: P.tick, strokeWidth: 2 }), h('text', { x: 30 + i * 130, y: 80, textAnchor: 'middle', fill: P.label, fontSize: 16 }, value)); }),
+                            h('circle', { cx: x, cy: 45, r: 6, fill: P.arrow }), h('text', { x: x, y: 22, textAnchor: 'middle', fill: P.arrow, fontSize: 16 }, challenge.roundingValue));
+                        })()),
+                      feedback && !feedback.correct && !challenge.revealed && h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                        tries >= 2 && allowReveal && h('button', { type: 'button', style: { minHeight: 44 }, className: btnReveal,
+                          onClick: function() {
+                            var revealPatch = { solutionShown: true, challengeSupportUsed: true, challenge: Object.assign({}, challenge, { revealed: true }) };
+                            revealPatch.ppMissed = ppMissed.concat([{ type: challenge.type, band: band, prompt: challenge.question, answer: String(answer), correct: String(challenge.answer), mis: '', source: 'quick', ts: Date.now() }]).slice(-60);
+                            upd(revealPatch);
+                          } }, t('stem.numberline.show_solution', 'Show a worked solution')),
+                        tries < 2 && h('p', { className: 'text-xs italic' }, t('stem.numberline.second_try_first', 'Have another go first. After a second try you can see a worked solution.'))
                       ),
-                      feedback && h('button', { 'aria-label': t('stem.numberline.next_challenge', 'Next Challenge'),
-                        onClick: genChallenge,
-                        className: 'text-xs text-blue-600 font-bold hover:underline'
-                      }, t('stem.numberline.next_challenge_2', '\u27A1\uFE0F Next Challenge'))
+                      challenge.revealed && h('div', { role: 'status', className: 'rounded-lg p-3 bg-blue-50 text-blue-900' },
+                        h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.solution_value_n', 'One correct answer is {a}.'), { a: challenge.answer })),
+                        challenge.hint && h('p', { className: 'text-sm' }, challenge.hint),
+                        h('p', { className: 'text-xs italic' }, t('stem.numberline.revealed_no_score', 'Because the answer was shown, this question does not score. Try a new one.'))),
+                      (feedback || challenge.revealed) && h('button', { type: 'button', 'aria-label': t('stem.numberline.next_challenge', 'Next Challenge'),
+                        onClick: genChallenge, style: { minHeight: 36 },
+                        className: 'text-sm text-blue-800 font-bold hover:underline'
+                      }, t('stem.numberline.next_challenge_2', '➡️ Next Challenge'))
                     )
               )
+            );
+          };
+
+          var renderChallenges = function() {
+            return h('div', { className: 'space-y-4 allo-nl-bg-challenges' },
+              !lockMode && h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.challenge_mode', 'Challenge mode') },
+                [['place', t('stem.numberline.mode_place', 'Place it: graded by position')], ['quick', t('stem.numberline.mode_quick', 'Quick questions: typed answers')]].map(function(m) {
+                  return h('button', { key: m[0], type: 'button', 'aria-pressed': challengeMode === m[0], style: { minHeight: 44 },
+                    onClick: function() { sfxClick(); upd({ challengeMode: m[0] }); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-bold border ' + (challengeMode === m[0] ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-800 border-blue-600') }, m[1]);
+                })),
+              lockMode && h('p', { className: 'text-xs italic' }, t('stem.numberline.mode_locked', 'Your teacher chose this practice mode.')),
+              challengeMode === 'place' ? renderPlacePractice() : renderQuick()
+            );
+          };
+
+          // ═══ TEACHER PANEL (ctx.isTeacherMode only) ═══
+          var renderTeacherPanel = function() {
+            if (!teacherView) return null;
+            var setT = function(patch) { upd({ teacher: Object.assign({}, teacher, patch) }); };
+            var byMis = {};
+            ppMissed.forEach(function(m) { var k = m.mis || 'none'; byMis[k] = (byMis[k] || 0) + 1; });
+            var misRows = Object.keys(byMis).sort(function(a, b) { return byMis[b] - byMis[a]; });
+            var typeList = allowedTypes || [];
+            return h('section', { className: 'rounded-2xl border-2 border-violet-300 bg-violet-50 p-3 space-y-3 text-violet-950', 'aria-label': t('stem.numberline.teacher_panel', 'Teacher controls'), 'data-numberline-teacher': 'true' },
+              h('h4', { className: 'text-sm font-black' }, t('stem.numberline.teacher_title', 'Teacher controls (students do not see this panel)')),
+              h('p', { className: 'text-xs font-bold', 'data-nl-teacher-session': 'true' }, t('stem.numberline.teacher_session_only', 'These settings last for this session only: they are not saved, so set them again after the page is reloaded.')),
+              h('div', { role: 'group', 'aria-label': t('stem.numberline.teacher_level', 'Lock the practice level'), className: 'flex flex-wrap gap-1.5 items-center' },
+                h('span', { className: 'text-xs font-bold', 'aria-hidden': 'true' }, t('stem.numberline.teacher_level', 'Lock the practice level')),
+                [null].concat(NLE.BANDS).map(function(b) {
+                  return h('button', { key: String(b), type: 'button', 'aria-pressed': (lockBand || null) === b, style: { minHeight: 36 },
+                    onClick: function() { setT({ lockBand: b }); },
+                    className: 'px-2 py-1 rounded-lg text-xs font-bold border border-violet-700 ' + ((lockBand || null) === b ? 'bg-violet-700 text-white' : 'bg-white text-violet-900') },
+                    b ? bandName(b) : t('stem.numberline.teacher_unlocked', 'Not locked (student or grade level)'));
+                })),
+              h('div', { role: 'group', 'aria-label': t('stem.numberline.teacher_mode', 'Lock the challenge mode'), className: 'flex flex-wrap gap-1.5 items-center' },
+                h('span', { className: 'text-xs font-bold', 'aria-hidden': 'true' }, t('stem.numberline.teacher_mode', 'Lock the challenge mode')),
+                [[null, t('stem.numberline.teacher_mode_free', 'Student chooses')], ['place', t('stem.numberline.teacher_mode_place', 'Place it only')], ['quick', t('stem.numberline.teacher_mode_quick', 'Quick questions only')]].map(function(m) {
+                  return h('button', { key: String(m[0]), type: 'button', 'aria-pressed': (lockMode || null) === m[0], style: { minHeight: 36 },
+                    onClick: function() { setT({ lockMode: m[0] }); },
+                    className: 'px-2 py-1 rounded-lg text-xs font-bold border border-violet-700 ' + ((lockMode || null) === m[0] ? 'bg-violet-700 text-white' : 'bg-white text-violet-900') }, m[1]);
+                })),
+              h('fieldset', { className: 'border border-violet-300 rounded-lg p-2' },
+                h('legend', { className: 'text-xs font-bold px-1' }, t('stem.numberline.teacher_types', 'Item types students get (none ticked = the level’s usual mix)')),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-1' },
+                  NLE.ALL_TYPES.map(function(ty) {
+                    var on = typeList.indexOf(ty) !== -1;
+                    return h('label', { key: ty, className: 'flex items-center gap-2 text-xs', style: { minHeight: 28 } },
+                      h('input', { type: 'checkbox', checked: on, onChange: function() {
+                        var next = on ? typeList.filter(function(x) { return x !== ty; }) : typeList.concat([ty]);
+                        setT({ types: next.length ? next : null });
+                      } }), typeName(ty));
+                  }))),
+              h('label', { className: 'flex items-center gap-2 text-xs font-bold', style: { minHeight: 28 } },
+                h('input', { type: 'checkbox', checked: allowReveal, onChange: function() { setT({ allowReveal: !allowReveal }); } }),
+                t('stem.numberline.teacher_reveal', 'Allow "Show the answer" after two tries')),
+              [
+                ['dzCap', t('stem.numberline.teacher_dz', 'Decimal zoom: deepest place'), [[null, t('stem.numberline.teacher_auto', 'Grade level')], [1, t('stem.numberline.teacher_dz_1', 'Tenths')], [2, t('stem.numberline.teacher_dz_2', 'Hundredths')], [3, t('stem.numberline.teacher_dz_3', 'Thousandths')]]],
+                ['msPrec', t('stem.numberline.teacher_ms', 'Ruler and line plot: precision'), [[null, t('stem.numberline.teacher_auto', 'Grade level')], [2, '1/2'], [4, '1/4'], [8, '1/8']]],
+                ['icDir', t('stem.numberline.teacher_ic', 'Integers in context: line direction'), [[null, t('stem.numberline.teacher_ic_free', 'Student chooses')], ['vertical', t('stem.numberline.ic_dir_v', 'Vertical line')], ['horizontal', t('stem.numberline.ic_dir_h', 'Horizontal line')]]]
+              ].map(function(g) {
+                var curV = teacher[g[0]] == null ? null : teacher[g[0]];
+                return h('div', { key: g[0], role: 'group', 'aria-label': g[1], className: 'flex flex-wrap gap-1.5 items-center' },
+                  h('span', { className: 'text-xs font-bold', 'aria-hidden': 'true' }, g[1]),
+                  g[2].map(function(opt) {
+                    var on = curV === opt[0];
+                    return h('button', { key: String(opt[0]), type: 'button', 'aria-pressed': on, style: { minHeight: 36 },
+                      onClick: function() { var p = {}; p[g[0]] = opt[0]; setT(p); },
+                      className: 'px-2 py-1 rounded-lg text-xs font-bold border border-violet-700 ' + (on ? 'bg-violet-700 text-white' : 'bg-white text-violet-900') }, opt[1]);
+                  }));
+              }),
+              h('div', null,
+                h('h5', { className: 'text-xs font-black mb-1' }, NLE.fill(t('stem.numberline.teacher_missed_title', 'Missed items: {n}'), { n: ppMissed.length })),
+                ppMissed.length === 0 ? h('p', { className: 'text-xs' }, t('stem.numberline.teacher_missed_none', 'No missed items yet. An item counts as missed after two wrong tries or a reveal.'))
+                  : h('div', { className: 'space-y-2' },
+                    h('table', { className: 'w-full text-xs border-collapse' },
+                      h('caption', { className: 'text-left font-bold' }, t('stem.numberline.teacher_by_mis', 'Missed items by misconception')),
+                      h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_mis', 'Pattern')), h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_count', 'Count')))),
+                      h('tbody', null, misRows.map(function(k) { return h('tr', { key: k }, h('td', { className: 'border px-1' }, k === 'none' ? t('stem.numberline.mis_none', 'No named pattern') : misTitle(k)), h('td', { className: 'border px-1' }, byMis[k])); }))),
+                    h('table', { className: 'w-full text-xs border-collapse' },
+                      h('caption', { className: 'text-left font-bold' }, t('stem.numberline.teacher_recent', 'Most recent missed items')),
+                      h('thead', null, h('tr', null,
+                        h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_item', 'Item')),
+                        h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_student', 'Student answer')),
+                        h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_correct', 'Correct answer')),
+                        h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_mis', 'Pattern')))),
+                      h('tbody', null, ppMissed.slice(-12).reverse().map(function(m, i) {
+                        return h('tr', { key: i },
+                          h('td', { className: 'border px-1' }, m.prompt || typeName(m.type)),
+                          h('td', { className: 'border px-1 font-mono' }, m.answer || '—'),
+                          h('td', { className: 'border px-1 font-mono' }, m.correct || '—'),
+                          h('td', { className: 'border px-1' }, m.mis ? misTitle(m.mis) : '—'));
+                      }))),
+                    clearArm
+                      ? h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                          h('span', { className: 'text-xs font-bold' }, t('stem.numberline.teacher_clear_confirm', 'Clear the missed-items log for this student?')),
+                          h('button', { type: 'button', style: { minHeight: 36 }, className: 'px-2 py-1 rounded-lg text-xs font-bold bg-rose-700 text-white', onClick: function() { upd({ ppMissed: [] }); setClearArm(false); announceToSR(t('stem.numberline.teacher_cleared', 'Missed-items log cleared.')); } }, t('stem.numberline.teacher_clear_yes', 'Yes, clear it')),
+                          h('button', { type: 'button', style: { minHeight: 36 }, className: 'px-2 py-1 rounded-lg text-xs font-bold border border-violet-700 bg-white', onClick: function() { setClearArm(false); } }, t('stem.numberline.teacher_clear_no', 'Keep it')))
+                      : h('button', { type: 'button', style: { minHeight: 36 }, className: 'px-2 py-1 rounded-lg text-xs font-bold border border-rose-700 text-rose-900 bg-white', onClick: function() { setClearArm(true); } }, t('stem.numberline.teacher_clear', 'Clear the log')))),
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left font-bold' }, t('stem.numberline.teacher_stats_all', 'Results by item type (all activities)')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_type', 'Item type')),
+                  h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_served', 'Served')),
+                  h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_right', 'Correct')),
+                  h('th', { scope: 'col', className: 'border px-1 text-left' }, t('stem.numberline.col_missed', 'Missed')))),
+                h('tbody', null, Object.keys(ppStats).map(function(ty) {
+                  var s = ppStats[ty] || {};
+                  return h('tr', { key: ty }, h('td', { className: 'border px-1' }, typeName(ty)), h('td', { className: 'border px-1' }, s.served || 0), h('td', { className: 'border px-1' }, s.correct || 0), h('td', { className: 'border px-1' }, s.missed || 0));
+                })))
             );
           };
 
@@ -917,38 +3144,99 @@ window.StemLab = window.StemLab || {
             var low = Math.min(skipFrom, end), span = Math.abs(end - skipFrom);
             var xAt = function(value) { return 38 + (value - low) / span * 284; };
             var resetSteps = function(patch) { patch.skipShown = _n.skipShown == null ? null : 0; upd(patch); };
+            // ── Predict, then check: the student commits to the next landing before
+            // the hop is drawn. 1 XP per distinct hop, first try and no hint only.
+            var skipBase = [skipFrom, skipBy, skipDirection].join('|');
+            var skipLast = _n.skipPredLast && _n.skipPredLast.base === skipBase && _n.skipPredLast.n === shown ? _n.skipPredLast : null;
+            // Hops shown ahead of a prediction (Next hop, Show all hops, a reveal) never pay.
+            var skipSeen = (_n.skipSeen && typeof _n.skipSeen === 'object' && !Array.isArray(_n.skipSeen)) ? _n.skipSeen : {};
+            var seenThrough = function(from, to) { var m = Object.assign({}, skipSeen); for (var si = from + 1; si <= to; si++) m[skipBase + '|' + si] = true; return m; };
+            var renderSkipPredict = function(cur, here) {
+              var nextIdx = cur + 1, nextVal = skipFrom + nextIdx * skipStep, key = skipBase + '|' + nextIdx;
+              var sp = _n.skipPred && _n.skipPred.key === key ? _n.skipPred : { key: key, text: '', tries: 0, hints: 0, fb: null };
+              var setSp = function(patch) { upd({ skipPred: Object.assign({}, sp, patch) }); };
+              var spHints = [
+                NLE.fill(skipStep > 0 ? t('stem.numberline.skp_h1_fwd', 'Each hop adds {by}.') : t('stem.numberline.skp_h1_back', 'Each hop subtracts {by}.'), { by: skipBy }),
+                NLE.fill(skipStep > 0 ? t('stem.numberline.skp_h2_fwd', 'Start at {v} and count on {by} more.') : t('stem.numberline.skp_h2_back', 'Start at {v} and count back {by}.'), { v: here, by: skipBy })
+              ];
+              var prompt = NLE.fill(t('stem.numberline.skp_q', 'You are on {v}. Predict where hop {n} lands.'), { v: here, n: nextIdx });
+              var check = function() {
+                var v = NLB.parseNum(sp.text);
+                if (v == null) { var need = t('stem.numberline.pp_need_text', 'Type an answer first.'); setSp({ fb: { kind: 'invalid', msg: need } }); announceToSR(need); return; }
+                var nt = sp.tries + 1;
+                if (NLE.near(v, nextVal, 1e-9)) {
+                  var indep = nt === 1 && !sp.hints, doneMap = (_n.skipPredDone && typeof _n.skipPredDone === 'object') ? _n.skipPredDone : {};
+                  // No farming: hops of 1 never pay, and at most 20 hops pay per session.
+                  var earns = indep && !doneMap[key] && !skipSeen[key] && skipBy >= 2 && Object.keys(doneMap).length < 20;
+                  var patch = { skipShown: nextIdx, skipPred: null, skipPredLast: { kind: 'correct', base: skipBase, n: nextIdx, v: nextVal, xp: earns ? 1 : 0, independent: indep } };
+                  if (earns) { var dm = Object.assign({}, doneMap); dm[key] = true; patch.skipPredDone = dm; var sv = Object.assign({}, nlbSolved); sv.skip = (sv.skip || 0) + 1; patch.nlbSolved = sv; }
+                  upd(patch); sfxCorrect();
+                  if (earns) awardXP('numberline', 1, 'Skip count prediction');
+                  announceToSR(NLE.fill(t('stem.numberline.skp_right_sr', 'Correct. Hop {n} lands on {v}.'), { n: nextIdx, v: nextVal }));
+                  return;
+                }
+                var mis = NLE.near(v, here) ? 'skip_stayed' : NLE.near(v, here - skipStep) ? 'skip_direction' : NLE.near(v, here + 2 * skipStep) ? 'skip_two_hops' : skipBy !== 1 && (NLE.near(v, here + 1) || NLE.near(v, here - 1)) ? 'skip_by_one' : null;
+                var spatch = { skipPred: Object.assign({}, sp, { tries: nt, fb: { kind: 'wrong', mis: mis } }) };
+                if (nt === 2) spatch.ppMissed = ppMissed.concat([nlbMiss('skip', prompt, String(sp.text || ''), String(nextVal), mis)]).slice(-60);
+                upd(spatch); sfxWrong();
+                var mi = skipMis(mis);
+                announceToSR(mi ? mi.title + '. ' + mi.body : t('stem.numberline.pp_not_yet', 'Not yet. Try again.'));
+              };
+              var reveal = function() { upd({ skipShown: nextIdx, skipPred: null, skipSeen: seenThrough(cur, nextIdx), skipPredLast: { kind: 'revealed', base: skipBase, n: nextIdx, v: nextVal, xp: 0 } }); announceToSR(NLE.fill(t('stem.numberline.skp_revealed', 'Hop {n} lands on {v}. A shown answer earns no points.'), { n: nextIdx, v: nextVal })); };
+              var fbx = sp.fb, mi = fbx && fbx.kind === 'wrong' ? skipMis(fbx.mis) : null;
+              return h('div', { className: 'rounded-lg p-3 space-y-2', style: { border: '1px solid ' + edge }, 'data-skip-predict': nextIdx },
+                h('label', { htmlFor: 'nl-skip-pred', className: 'block text-sm font-bold' }, prompt),
+                h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                  h('input', { id: 'nl-skip-pred', 'data-nl-start': 'true', type: 'text', inputMode: 'numeric', autoComplete: 'off', value: sp.text || '',
+                    onChange: function(e) { setSp({ text: e.target.value, fb: sp.fb && sp.fb.kind === 'invalid' ? null : sp.fb }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); check(); } },
+                    style: { minHeight: 44, width: 120, border: '1px solid ' + soft, borderRadius: 8, textAlign: 'center', background: panel, color: ink } }),
+                  h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, t('stem.numberline.skp_check', 'Check my prediction')),
+                  sp.hints < spHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setSp({ hints: sp.hints + 1 }); announceToSR(spHints[sp.hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: sp.hints + 1, total: spHints.length })),
+                  sp.tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: reveal }, t('stem.numberline.skp_reveal', 'Show the next hop'))),
+                hintsEl(spHints, sp.hints),
+                h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  fbx && fbx.kind === 'invalid' && h('p', { className: 'text-sm font-bold' }, fbx.msg),
+                  fbx && fbx.kind === 'wrong' && h('div', { className: 'rounded-lg p-3 border-2 bg-white text-slate-900', style: { borderColor: '#b91c1c' }, 'data-skip-mis': fbx.mis || '' },
+                    mi && h('p', { className: 'text-sm font-bold' }, mi.title),
+                    h('p', { className: 'text-sm' }, mi ? mi.body : t('stem.numberline.pp_not_yet', 'Not yet. Try again.')),
+                    sp.tries >= 2 && h('p', { className: 'text-xs italic mt-1' }, allowReveal ? t('stem.numberline.skp_two_tries', 'Try once more, or show the next hop.') : t('stem.numberline.skp_two_tries_noreveal', 'Try once more, or use a hint.')))));
+            };
             var points = Array.from({ length: shown + 1 }, function(_, i) { return skipFrom + i * skipStep; });
             var equation = skipFrom + ' ' + sign + ' ' + shown + ' × ' + skipBy + ' = ' + landing;
+            var sk = P.ink; // SVG paint: concrete colours (CSS var() is not reliable in SVG attributes)
             var actionStyle = { minHeight:44, padding:'8px 12px', border:'1px solid '+soft, borderRadius:8, background:panel, color:ink, fontWeight:700 };
             var ticks = [];
             for (var tick = 0; tick <= skipCount; tick++) {
               var value = skipFrom + tick * skipStep, x = xAt(value);
-              var labelled = tick === 0 || tick === skipCount || tick % Math.ceil(skipCount / 3) === 0;
+              // While walking hop by hop, ticks not reached yet stay unlabelled so a
+              // prediction is never read straight off the line.
+              var labelled = (tick === 0 || tick === skipCount || tick % Math.ceil(skipCount / 3) === 0) && (shown >= skipCount || tick <= shown);
               ticks.push(h('g', {key:'tick-'+tick},
-                h('line', {x1:x,x2:x,y1:89,y2:labelled?105:98,stroke:ink,strokeWidth:1.5}),
-                labelled && h('text', {x:x,y:124,textAnchor:'middle',fill:ink,fontSize:14}, value)));
+                h('line', {x1:x,x2:x,y1:89,y2:labelled?105:98,stroke:sk,strokeWidth:1.5}),
+                labelled && h('text', {x:x,y:124,textAnchor:'middle',fill:sk,fontSize:14}, value)));
             }
             var hops = points.slice(1).map(function(value, i) {
               var x1=xAt(points[i]), x2=xAt(value), direction=skipStep>0?1:-1;
               return h('g', {key:'hop-'+i,'data-skip-hop':i+1,'data-from':points[i],'data-to':value},
-                h('path', {d:'M '+x1+' 89 Q '+((x1+x2)/2)+' 33 '+x2+' 89',fill:'none',stroke:ink,strokeWidth:i===shown-1?3:1.5}),
-                h('path', {d:'M '+(x2-direction*5)+' 81 L '+x2+' 89 L '+(x2+direction*1)+' 80',fill:'none',stroke:ink,strokeWidth:1.5}));
+                h('path', {d:'M '+x1+' 89 Q '+((x1+x2)/2)+' 33 '+x2+' 89',fill:'none',stroke:sk,strokeWidth:i===shown-1?3:1.5}),
+                h('path', {d:'M '+(x2-direction*5)+' 81 L '+x2+' 89 L '+(x2+direction*1)+' 80',fill:'none',stroke:sk,strokeWidth:1.5}));
             });
             return h('div', {className:'space-y-4 allo-nl-bg-skipcount','data-skip-activity':true,style:{background:panel,color:ink}},
               h('p', {className:'text-sm'}, t('stem.numberline.hops_intro', 'Count the hops, not the starting point. Each equal hop changes the value by the same amount.')),
               h('style',null,'@media(max-width:479px){.allo-skip-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}.allo-skip-controls>label:first-child{grid-column:1 / -1}}'),
               h('div', {className:'allo-skip-controls grid grid-cols-3 gap-3'},
                 [
-                  {key:'skipFrom',label:t('stem.numberline.start_from','Start From'),value:skipFrom,min:-1000,max:1000},
-                  {key:'skipBy',label:t('stem.numberline.skip_by','Skip By'),value:skipBy,min:1,max:100},
-                  {key:'skipCount',label:t('stem.numberline.number_of_hops','Number of hops'),value:skipCount,min:1,max:20}
+                  {key:'skipFrom',label:t('stem.numberline.start_from','Start From'),value:skipFrom,min:young?0:-1000,max:young?20:1000},
+                  {key:'skipBy',label:t('stem.numberline.skip_by','Skip By'),value:skipBy,min:1,max:young?10:100},
+                  {key:'skipCount',label:t('stem.numberline.number_of_hops','Number of hops'),value:skipCount,min:1,max:skipHopMax}
                 ].map(function(field) {
                   return h('label', {key:field.key,className:'block rounded-lg p-3 text-sm font-bold',style:{border:'1px solid '+edge}},field.label,
                     h('input', {type:'text',inputMode:'numeric',value:skipDrafts[field.key],'aria-label':field.label,'aria-describedby':'skip-bound-'+field.key,
                       onChange:function(e){var raw=e.target.value;setSkipDrafts(function(previous){var next=Object.assign({},previous);next[field.key]=raw;return next;});if(!/^[+-]?\d+$/.test(raw.trim()))return;var patch={};patch[field.key]=skipBound(raw,field.min,field.max,field.min===1?1:0);resetSteps(patch);},
                       onBlur:function(){setSkipDrafts(function(previous){var next=Object.assign({},previous);next[field.key]=String(field.value);return next;});},
                       style:{display:'block',width:'100%',minHeight:44,marginTop:6,border:'1px solid '+soft,borderRadius:8,textAlign:'center',background:panel,color:ink}}),
-                    h('span',{id:'skip-bound-'+field.key,className:'block text-xs',style:{marginTop:6,color:soft}},field.min+' '+t('stem.numberline.through_bound','to')+' '+field.max));
+                    h('span',{id:'skip-bound-'+field.key,className:'block text-xs',style:{marginTop:6,color:soft}},NLE.fill(t('stem.numberline.bound_range','{min} to {max}'),{min:field.min,max:field.max})));
                 })),
               h('div', {role:'group','aria-label':t('stem.numberline.count_direction','Counting direction'),className:'flex flex-wrap gap-2'},
                 ['forward','backward'].map(function(direction){return h('button',{key:direction,type:'button','aria-pressed':skipDirection===direction,
@@ -956,32 +3244,38 @@ window.StemLab = window.StemLab || {
                   direction==='forward'?t('stem.numberline.forward_right','Forward: add →'):t('stem.numberline.backward_left','← Backward: subtract'));})),
               h('div', {className:'flex flex-wrap gap-2'},
                 h('span',{className:'text-sm self-center'},t('stem.numberline.count_by','Count by:')),
-                [2,3,5,10,25,100].map(function(size){return h('button',{key:size,type:'button','aria-pressed':skipBy===size,style:actionStyle,
+                (young?[2,3,5,10]:[2,3,5,10,25,100]).map(function(size){return h('button',{key:size,type:'button','aria-pressed':skipBy===size,style:actionStyle,
                   onClick:function(){sfxClick();resetSteps({skipBy:size});}},String(size));})),
               h('div', {className:'rounded-xl p-3 space-y-3',style:{border:'1px solid '+edge}},
-                h('p', {className:'text-sm font-bold'},t('stem.numberline.each_hop','Each hop: ')+sign+skipBy+' · '+(skipStep>0?t('stem.numberline.moves_right','move right'):t('stem.numberline.moves_left','move left'))),
-                h('svg', {viewBox:'0 0 360 145',role:'img','aria-label':t('stem.numberline.equal_hops','Equal hops on a number line')+': '+equation,style:{width:'100%',maxWidth:720,display:'block',margin:'0 auto'}},
-                  h('line',{x1:18,x2:342,y1:94,y2:94,stroke:ink,strokeWidth:2}),
-                  h('path',{d:'M 24 89 L 18 94 L 24 99 M 336 89 L 342 94 L 336 99',fill:'none',stroke:ink,strokeWidth:2}),
+                h('p', {className:'text-sm font-bold'},NLE.fill(skipStep>0?t('stem.numberline.each_hop_right','Each hop: {sign}{by}. Move right.'):t('stem.numberline.each_hop_left','Each hop: {sign}{by}. Move left.'),{sign:sign,by:skipBy})),
+                h('svg', {viewBox:'0 0 360 145',role:'img','aria-label':NLE.fill(t('stem.numberline.equal_hops_desc','Equal hops on a number line: {eq}. Start and landings: {list}.'),{eq:equation,list:points.join(', ')}),style:{width:'100%',maxWidth:720,display:'block',margin:'0 auto'}},
+                  h('rect',{x:0,y:0,width:360,height:145,rx:10,fill:P.bg}),
+                  h('line',{x1:18,x2:342,y1:94,y2:94,stroke:sk,strokeWidth:2}),
+                  h('path',{d:'M 24 89 L 18 94 L 24 99 M 336 89 L 342 94 L 336 99',fill:'none',stroke:sk,strokeWidth:2}),
                   ticks,hops,
                   showSkipMarkers && points.map(function(value,i){return i===0
-                    ? h('rect',{key:i,'data-skip-marker':i,x:xAt(value)-4,y:90,width:8,height:8,fill:ink})
-                    : h('circle',{key:i,'data-skip-marker':i,cx:xAt(value),cy:94,r:i===shown?5:3,fill:ink});})),
+                    ? h('rect',{key:i,'data-skip-marker':i,x:xAt(value)-4,y:90,width:8,height:8,fill:sk})
+                    : h('circle',{key:i,'data-skip-marker':i,cx:xAt(value),cy:94,r:i===shown?5:3,fill:sk});})),
                 h('p', {className:'text-sm',style:{color:soft}},t('stem.numberline.hop_scale_note','The spacing represents value. Square: start; circles: landings. The start is zero hops.')),
                 h('div', {role:'status','aria-live':'polite','aria-atomic':'true','data-skip-progress':shown},
-                  h('p',{className:'text-sm'},t('stem.numberline.hops_completed','Hops completed: ')+shown+' / '+skipCount),
+                  h('p',{className:'text-sm'},NLE.fill(t('stem.numberline.hops_completed_n','Hops completed: {n} of {total}'),{n:shown,total:skipCount})),
                   h('p',{'data-skip-equation':true,className:'text-lg font-bold',style:{overflowWrap:'anywhere'}},equation)),
                 h('div',{className:'flex flex-wrap gap-2'},
                   h('button',{type:'button',style:actionStyle,onClick:function(){upd({skipShown:0});}},t('stem.numberline.restart_hops','Start at zero hops')),
                   h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===0?0.5:1}),disabled:shown===0,onClick:function(){upd({skipShown:Math.max(0,shown-1)});}},t('stem.numberline.previous_hop','Previous hop')),
-                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){upd({skipShown:Math.min(skipCount,shown+1)});}},t('stem.numberline.next_hop','Next hop')),
-                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){upd({skipShown:null});}},t('stem.numberline.show_all_hops','Show all hops'))),
-                h('p',{className:'text-sm'},shown<skipCount?t('stem.numberline.predict_next_hop','Predict the next landing before choosing Next hop.'):t('stem.numberline.explain_hops','Explain how the start, number of hops, and hop size appear in the equation.'))),
+                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){var nx=Math.min(skipCount,shown+1);upd({skipShown:nx,skipSeen:seenThrough(shown,nx)});}},t('stem.numberline.next_hop','Next hop')),
+                  h('button',{type:'button',style:Object.assign({},actionStyle,{opacity:shown===skipCount?0.5:1}),disabled:shown===skipCount,onClick:function(){upd({skipShown:null,skipSeen:seenThrough(shown,skipCount)});}},t('stem.numberline.show_all_hops','Show all hops'))),
+                shown<skipCount ? renderSkipPredict(shown, landing) : h('p',{className:'text-sm'},t('stem.numberline.explain_hops','Explain how the start, number of hops, and hop size appear in the equation.'), ' ', t('stem.numberline.skp_start_hint','To predict each landing yourself, choose Start at zero hops.')),
+                skipLast && h('div',{role:'status','aria-live':'polite','aria-atomic':'true'},
+                  skipLast.kind==='correct' && h('p',{className:'text-sm font-bold','data-skip-pred-result':'correct'},
+                    NLE.fill(skipLast.xp>0?t('stem.numberline.skp_right_xp','Correct, on your own: hop {n} lands on {v}. +{xp} XP'):skipLast.independent?t('stem.numberline.skp_right_indep','Correct, on your own: hop {n} lands on {v}.'):t('stem.numberline.skp_right_support','Correct, with support: hop {n} lands on {v}.'),{n:skipLast.n,v:skipLast.v,xp:skipLast.xp})),
+                  skipLast.kind==='revealed' && h('p',{className:'text-sm font-bold','data-skip-pred-result':'revealed'},
+                    NLE.fill(t('stem.numberline.skp_revealed','Hop {n} lands on {v}. A shown answer earns no points.'),{n:skipLast.n,v:skipLast.v})))),
               h('div',{className:'rounded-xl p-3 space-y-2',style:{border:'1px solid '+edge}},
                 h('p',{className:'text-sm font-bold'},t('stem.numberline.hop_sequence','Start and landings')),
                 h('ol',{'data-skip-sequence':true,style:{display:'flex',flexWrap:'wrap',gap:8,listStyle:'none',padding:0,margin:0}},
                   points.map(function(value,i){return h('li',{key:i,'data-skip-landing':value,style:{padding:'8px 12px',border:'1px solid '+edge,borderRadius:8,textAlign:'center'}},
-                    h('span',{className:'block text-xs'},i===0?t('stem.numberline.hop_start','Start · 0 hops'):t('stem.numberline.hop_number','Hop ')+i),
+                    h('span',{className:'block text-xs'},i===0?t('stem.numberline.hop_start','Start · 0 hops'):NLE.fill(t('stem.numberline.hop_number_n','Hop {n}'),{n:i})),
                     h('strong',{className:'block'},value),
                     i>0&&h('span',{className:'block text-xs'},points[i-1]+' '+sign+' '+skipBy+' = '+value));}))),
               h('button',{type:'button',style:actionStyle,'aria-pressed':showSkipMarkers,onClick:function(){sfxClick();upd({showSkipMarkers:!showSkipMarkers});}},
@@ -998,20 +3292,13 @@ window.StemLab = window.StemLab || {
             var fdLen = fdMax - fdMin;
             if (fdLen <= 0) fdLen = 1;
 
-            var gcdFn = function(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; };
-
-            var snapValue = function(v) {
-              if (!fdSnap) return v;
-              var step = 1 / fdDen;
-              return Math.round((v - fdMin) / step) * step + fdMin;
-            };
+            var gcdFn = function(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var tmp = b; b = a % b; a = tmp; } return a || 1; };
 
             // Current value as fraction at fdDen
             var nearestNum = Math.round(fdValue * fdDen);
             var isExactFrac = Math.abs(fdValue * fdDen - nearestNum) < 0.005;
-            // gcd(0, n) = n, which would collapse "0/4" to "0/1". Pedagogically we
-            // want to keep the original denominator visible (the student is exploring
-            // "fourths"). Special-case numerator-zero.
+            // gcd(0, n) = n, which would collapse "0/4" to "0/1". Keep the
+            // student's denominator visible when the numerator is zero.
             var g, simpNum, simpDen;
             if (nearestNum === 0) {
               g = 1; simpNum = 0; simpDen = fdDen;
@@ -1023,8 +3310,7 @@ window.StemLab = window.StemLab || {
             var decimal = Math.round(fdValue * 10000) / 10000;
             var percent = Math.round(fdValue * 10000) / 100;
 
-            // Repeating-decimal detection: terminates iff simplified denominator
-            // factors into only 2s and 5s. 1/4 = 0.25 (terminates), 1/3 = 0.333… (repeats).
+            // Terminates iff the simplified denominator has only 2s and 5s.
             var isRepeatingDecimal = (function() {
               if (!isExactFrac || simpNum === 0) return false;
               var d = simpDen;
@@ -1053,14 +3339,12 @@ window.StemLab = window.StemLab || {
               return parts.length > 1 ? '-(' + parts.join(' + ') + ')' : '-' + parts[0];
             })();
 
-            // Mixed-number form for values ≥ 1 (improper → mixed)
-            // 3/2 = 1 1/2. The bridge between abstract improper notation and
-            // the "amount more than one whole" intuition.
+            // Mixed-number form for values with size 1 or more (3/2 = 1 1/2).
             var mixedNumber = (function() {
               if (!isExactFrac || Math.abs(fdValue) < 1) return null;
               var sign = fdValue < 0 ? '-' : '';
               var abs = Math.abs(fdValue);
-              var wholePart = Math.floor(abs);
+              var wholePart = Math.floor(abs + 1e-9);
               var remainingFrac = abs - wholePart;
               if (remainingFrac < 0.005) return { whole: wholePart, num: 0, den: 1, sign: sign };
               var rNum = Math.round(remainingFrac * fdDen);
@@ -1068,93 +3352,88 @@ window.StemLab = window.StemLab || {
               return { whole: wholePart, num: rNum / rG, den: fdDen / rG, sign: sign };
             })();
 
-            // Equivalent fractions — the same value with proportionally larger denominators.
-            // 1/2 = 2/4 = 3/6 = 4/8 = 5/10. Makes the "infinite names, same point" point.
+            // Equivalent fractions: the same point, many names (1/2 = 2/4 = 3/6 ...).
             var equivalentFractions = (function() {
               if (!isExactFrac || simpNum === 0 || simpDen === 0) return [];
               var equivs = [];
               for (var k = 1; k <= 6; k++) {
                 var n = simpNum * k;
                 var d = simpDen * k;
-                if (d > 100) break;
+                if (d > FD_MAX_DEN) break;
                 equivs.push({ n: n, d: d, k: k });
               }
               return equivs;
             })();
 
-            // Plain-English fraction reading
+            // The fraction in words, one translated phrase per denominator.
             var fracInWords = (function() {
               if (!isExactFrac) return '';
-              if (simpNum === 0) return 'zero';
-              var denWord = { 2: 'half', 3: 'third', 4: 'quarter', 5: 'fifth', 6: 'sixth', 8: 'eighth', 10: 'tenth', 12: 'twelfth', 16: 'sixteenth', 20: 'twentieth' }[simpDen] || ('over ' + simpDen);
-              if (simpDen === 2 && simpNum === 1) return 'one half';
-              var plural = simpNum > 1 && denWord.indexOf('over') === -1 ? denWord + 's' : denWord;
-              var numWord = { 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten' }[simpNum] || simpNum;
-              return numWord + ' ' + plural;
+              if (simpNum === 0) return t('stem.numberline.fd_words_zero', 'zero');
+              if (simpDen === 2 && Math.abs(simpNum) === 1) return t('stem.numberline.fd_words_half', 'one half');
+              // One whole phrase per denominator and number (never "{n} {unit}").
+              var many = Math.abs(simpNum) !== 1;
+              var words = {
+                2: many ? t('stem.numberline.fd_w_halves', '{n} halves') : t('stem.numberline.fd_w_half', '{n} half'),
+                3: many ? t('stem.numberline.fd_w_thirds', '{n} thirds') : t('stem.numberline.fd_w_third', '{n} third'),
+                4: many ? t('stem.numberline.fd_w_quarters', '{n} quarters') : t('stem.numberline.fd_w_quarter', '{n} quarter'),
+                5: many ? t('stem.numberline.fd_w_fifths', '{n} fifths') : t('stem.numberline.fd_w_fifth', '{n} fifth'),
+                6: many ? t('stem.numberline.fd_w_sixths', '{n} sixths') : t('stem.numberline.fd_w_sixth', '{n} sixth'),
+                8: many ? t('stem.numberline.fd_w_eighths', '{n} eighths') : t('stem.numberline.fd_w_eighth', '{n} eighth'),
+                10: many ? t('stem.numberline.fd_w_tenths', '{n} tenths') : t('stem.numberline.fd_w_tenth', '{n} tenth'),
+                12: many ? t('stem.numberline.fd_w_twelfths', '{n} twelfths') : t('stem.numberline.fd_w_twelfth', '{n} twelfth')
+              }[simpDen];
+              if (!words) return NLE.fill(t('stem.numberline.fd_words_over', '{n} over {d}'), { n: simpNum, d: simpDen });
+              return NLE.fill(words, { n: simpNum });
             })();
 
             // Drag-the-marker (pointer events). Tap places; drag glides without snap;
-            // release snaps to denominator if snap is on.
-            // NOTE: uses svgEl.getScreenCTM().inverse() to map client coords to SVG
-            // coords. This handles viewBox + preserveAspectRatio="xMidYMid meet" (the
-            // default) correctly on wide screens where the viewBox is height-fit and
-            // horizontally centered with empty side-padding. Hand-rolled scaleX math
-            // breaks on wide containers and causes clicks to compress / snap leftward.
+            // release snaps to the 1/fdDen grid when snap is on. getScreenCTM maps
+            // client coordinates through the viewBox (wide screens letterbox it).
             var startPointer = function(e) {
+              if (e.button != null && e.button > 0) return;
               if (e.cancelable) e.preventDefault();
-              var svgEl = e.currentTarget;
-              var W_ = 700, PAD_ = 50, USABLE_ = 600;
-              // Disable the marker's 420ms transform-transition during drag so it
-              // tracks the cursor in real time. Pointermove fires every ~16ms; if
-              // each new position has to animate over 420ms, the marker perpetually
-              // lags behind. Re-enabled on release so the snap-to-fraction motion
-              // still feels smooth.
+              var svgEl = e.currentTarget, pid = e.pointerId;
+              try { if (pid != null && svgEl.setPointerCapture) svgEl.setPointerCapture(pid); } catch (err) {}
+              var mine = function(ev) { return pid == null || ev.pointerId == null || ev.pointerId === pid; };
+              var W_ = narrow ? 400 : 700, PAD_ = 50, USABLE_ = W_ - 100;
               window._fdDragging = true;
               var clampMove = function(clientX, clientY) {
-                var x;
-                if (svgEl && typeof svgEl.getScreenCTM === 'function' && typeof svgEl.createSVGPoint === 'function') {
-                  var ctm = svgEl.getScreenCTM();
-                  if (ctm) {
+                var x = null;
+                try {
+                  var ctm = svgEl.getScreenCTM && svgEl.getScreenCTM();
+                  if (ctm && svgEl.createSVGPoint) {
                     var pt = svgEl.createSVGPoint();
-                    pt.x = clientX;
-                    pt.y = clientY != null ? clientY : 0;
-                    var spt = pt.matrixTransform(ctm.inverse());
-                    x = spt.x;
-                  } else {
-                    // Fallback: simple linear mapping (only correct if rect.width matches viewBox)
-                    var rect = svgEl.getBoundingClientRect();
-                    x = (clientX - rect.left) * (W_ / rect.width);
+                    pt.x = clientX; pt.y = clientY != null ? clientY : 0;
+                    x = pt.matrixTransform(ctm.inverse()).x;
                   }
-                } else {
-                  var rect2 = svgEl.getBoundingClientRect();
-                  x = (clientX - rect2.left) * (W_ / rect2.width);
-                }
-                var frac = (x - PAD_) / USABLE_;
-                var v = fdMin + frac * fdLen;
+                } catch (err) { x = null; }
+                if (x == null || !isFinite(x)) { var rect = svgEl.getBoundingClientRect(); x = rect.width ? (clientX - rect.left) * (W_ / rect.width) : PAD_; }
+                var v = fdMin + ((x - PAD_) / USABLE_) * fdLen;
                 if (v < fdMin) v = fdMin;
                 if (v > fdMax) v = fdMax;
                 return v;
               };
-              var v0 = clampMove(e.clientX, e.clientY);
-              upd({ fdValue: v0 });
-              var move = function(ev) {
-                var v = clampMove(ev.clientX, ev.clientY);
-                upd({ fdValue: v });
-              };
-              var up = function() {
+              // Touch waits for a tap or a sideways drag, so a swipe that starts on the line scrolls the page.
+              var live = e.pointerType !== 'touch';
+              var place = function(ev) { live = true; try { svgEl.focus({ preventScroll: true }); } catch (err) {} upd({ fdValue: fdStudentSet(clampMove(ev.clientX, ev.clientY)) }); };
+              if (live) place(e);
+              var sx = e.clientX, sy = e.clientY;
+              var move = function(ev) { if (!mine(ev)) return; if (live) { upd({ fdValue: fdStudentSet(clampMove(ev.clientX, ev.clientY)) }); return; } var dx = Math.abs(ev.clientX - sx); if (dx >= 6 && dx > Math.abs(ev.clientY - sy)) place(ev); };
+              var up = function(ev) {
+                if (ev && !mine(ev)) return;
+                if (!live && ev && ev.type === 'pointerup') place(ev);
                 window.removeEventListener('pointermove', move);
                 window.removeEventListener('pointerup', up);
                 window.removeEventListener('pointercancel', up);
-                // Drag is over — re-enable the smooth transition so the snap-to-grid
-                // motion (below) animates instead of teleporting.
+                svgEl.removeEventListener('lostpointercapture', up);
+                try { if (pid != null && svgEl.releasePointerCapture && (!svgEl.hasPointerCapture || svgEl.hasPointerCapture(pid))) svgEl.releasePointerCapture(pid); } catch (err) {}
                 window._fdDragging = false;
-                if (fdSnap && typeof ctx.setToolData === 'function') {
+                if (live && fdSnap && typeof ctx.setToolData === 'function') {
                   ctx.setToolData(function(prev) {
                     var nl = (prev && prev._numberline) || {};
-                    var curVal = nl.fdValue != null ? nl.fdValue : 0.5;
-                    var step = 1 / (nl.fdDen || fdDen);
-                    var mn = nl.fdMin != null ? nl.fdMin : fdMin;
-                    var snapped = Math.round((curVal - mn) / step) * step + mn;
+                    var curVal = typeof nl.fdValue === 'number' ? nl.fdValue : 0.5;
+                    var den = Number.isInteger(nl.fdDen) && nl.fdDen >= 1 && nl.fdDen <= FD_MAX_DEN ? nl.fdDen : fdDen;
+                    var snapped = fdStudentSet(NLE.clean(Math.round(curVal * den) / den));
                     return Object.assign({}, prev, { _numberline: Object.assign({}, nl, { fdValue: snapped }) });
                   });
                 }
@@ -1162,25 +3441,21 @@ window.StemLab = window.StemLab || {
               window.addEventListener('pointermove', move);
               window.addEventListener('pointerup', up);
               window.addEventListener('pointercancel', up);
+              svgEl.addEventListener('lostpointercapture', up);
             };
 
-            // ── Fraction arithmetic on the line ──
-            // Adding 1/4 to 1/4 makes the marker SLIDE to 1/2 — visible motion,
-            // not magic. Auto-extends the line if you drift past the edge.
+            // ── Fraction arithmetic on the line: the marker slides; the line auto-extends.
             var applyArith = function(op, n, d) {
-              if (!d || d === 0) return;
+              if (!d) return;
               var delta = n / d;
               var prev = fdValue;
-              var next = op === '+' ? prev + delta : prev - delta;
+              var next = NLE.clean(op === '+' ? prev + delta : prev - delta);
               var newMin = fdMin, newMax = fdMax;
-              // Extend the line with a little padding so the result doesn't sit exactly on the end arrow
-              // (the old condition was a garbled ternary that produced edge-hugging / wrong extents).
               if (next > newMax) newMax = Math.ceil(next + 0.5);
               if (next < newMin) newMin = Math.floor(next - 0.5);
               var prevR = Math.round(prev * 1000) / 1000;
               var nextR = Math.round(next * 1000) / 1000;
-              var eqText = prevR + ' ' + op + ' ' + n + '/' + d + ' = ' + nextR;
-              // Push prev into the ghost trail (cap at 5 entries, oldest first)
+              var eqText = prevR + ' ' + (op === '+' ? '+' : '−') + ' ' + n + '/' + d + ' = ' + nextR;
               var newTrail = (fdTrail || []).concat([prev]);
               if (newTrail.length > 5) newTrail = newTrail.slice(-5);
               sfxClick();
@@ -1189,17 +3464,18 @@ window.StemLab = window.StemLab || {
             };
 
             // ── Common-denominator hunter (LCM-based) ──
-            // To add 1/2 and 1/3, you need a shared denominator. LCM(2,3)=6 works.
-            // 1/2 = 3/6, 1/3 = 2/6, sum = 5/6. Shows the whole renaming step explicitly.
             var lcmCalc = function(a, b) {
               if (a <= 0 || b <= 0) return 1;
               return Math.abs(a * b) / gcdFn(a, b);
             };
-            var lcmOfDen = lcmCalc(fdCDD1 || 1, fdCDD2 || 1);
-            var cd1Mult = lcmOfDen / (fdCDD1 || 1);
-            var cd2Mult = lcmOfDen / (fdCDD2 || 1);
-            var cd1ScaledN = fdCDN1 * cd1Mult;
-            var cd2ScaledN = fdCDN2 * cd2Mult;
+            var cdOk = function(v, lo) { return Number.isInteger(v) && v >= lo && v <= 100; };
+            var cdD1 = cdOk(fdCDD1, 1) ? fdCDD1 : 2, cdD2 = cdOk(fdCDD2, 1) ? fdCDD2 : 3;
+            var cdN1 = cdOk(fdCDN1, 0) ? fdCDN1 : 1, cdN2 = cdOk(fdCDN2, 0) ? fdCDN2 : 1;
+            var lcmOfDen = lcmCalc(cdD1, cdD2);
+            var cd1Mult = lcmOfDen / cdD1;
+            var cd2Mult = lcmOfDen / cdD2;
+            var cd1ScaledN = cdN1 * cd1Mult;
+            var cd2ScaledN = cdN2 * cd2Mult;
             var cdSumN = cd1ScaledN + cd2ScaledN;
             var cdSumD = lcmOfDen;
             var cdSumG = gcdFn(cdSumN, cdSumD);
@@ -1207,253 +3483,253 @@ window.StemLab = window.StemLab || {
             var cdSumSimpD = cdSumD / cdSumG;
             var cdSumValue = cdSumN / cdSumD;
 
-            // Keyboard navigation: nudge marker by 1/fdDen, jump by 5 with Shift,
-            // Home/End to endpoints, PageUp/PageDown by 5 steps. Marker must be focusable.
+            // Keyboard: every step lands ON the 1/fdDen grid (integer numerators, so
+            // six sixths is exactly 1, and a free 0.37 steps to 2/4, not 0.62).
+            var describeFd = function(v) {
+              var k = Math.round(v * fdDen), exact = Math.abs(v * fdDen - k) < 0.005;
+              var dv = Math.round(v * 10000) / 10000;
+              return exact ? NLE.fill(t('stem.numberline.fd_announce_exact', '{dec}, which is {n}/{d}'), { dec: dv, n: k, d: fdDen }) : String(dv);
+            };
             var stepBy = function(steps) {
-              var step = 1 / fdDen;
-              var next = fdValue + steps * step;
+              var k = fdValue * fdDen;
+              var onGrid = Math.abs(k - Math.round(k)) < 1e-6;
+              var base = onGrid ? Math.round(k) : (steps > 0 ? Math.floor(k) : Math.ceil(k));
+              var next = NLE.clean((base + steps) / fdDen);
               if (next < fdMin) next = fdMin;
               if (next > fdMax) next = fdMax;
-              upd({ fdValue: next });
-              announceToSR((Math.round(next * 1000) / 1000) + '');
+              upd({ fdValue: fdStudentSet(next) });
+              announceToSR(describeFd(next));
             };
             var handleLineKey = function(e) {
               var key = e.key;
               var handled = true;
               if (key === 'ArrowLeft' || key === 'ArrowDown') stepBy(e.shiftKey ? -5 : -1);
               else if (key === 'ArrowRight' || key === 'ArrowUp') stepBy(e.shiftKey ? 5 : 1);
-              else if (key === 'Home') { upd({ fdValue: fdMin }); announceToSR(fdMin + ''); }
-              else if (key === 'End') { upd({ fdValue: fdMax }); announceToSR(fdMax + ''); }
+              else if (key === 'Home') { upd({ fdValue: fdStudentSet(fdMin) }); announceToSR(describeFd(fdMin)); }
+              else if (key === 'End') { upd({ fdValue: fdStudentSet(fdMax) }); announceToSR(describeFd(fdMax)); }
               else if (key === 'PageDown') stepBy(-5);
               else if (key === 'PageUp') stepBy(5);
               else handled = false;
               if (handled) { e.preventDefault(); sfxClick(); }
             };
 
-            // Custom number line for this tab
+            // Ticks every 1/fdDen of ONE unit across the whole range (0..2 in fourths
+            // is 0, 1/4, 2/4 ... 8/4 = 2), not fdDen ticks stretched over the range.
+            var tk0 = Math.ceil(fdMin * fdDen - 1e-9), tk1 = Math.floor(fdMax * fdDen + 1e-9);
+            var tickCount = tk1 - tk0 + 1;
+            var fracTicksDrawn = tickCount <= 400;
+            var labelAll = tickCount <= FD_LABEL_MAX_TICKS + 1;
+            // Phone: 17-18 px labels need 50 of the drawing's 300 usable units per label.
+            var labelK = 1;
+            if (narrow && labelAll && tickCount > 1) {
+              var fdGap = 300 / (tickCount - 1);
+              for (labelK = 1; labelK < fdDen; labelK++) { if (fdDen % labelK === 0 && fdGap * labelK >= 50) break; }
+            }
+
+            var valueText = isExactFrac
+              ? (isRepeatingDecimal
+                ? NLE.fill(t('stem.numberline.fd_valuetext_repeat', '{dec}, which is {n} over {d}, a repeating decimal'), { dec: decimal, n: simpNum, d: simpDen })
+                : NLE.fill(t('stem.numberline.fd_valuetext_exact', '{dec}, which is {n} over {d}'), { dec: decimal, n: simpNum, d: simpDen }))
+              : NLE.fill(t('stem.numberline.fd_valuetext_near', '{dec}, near {n} over {d}'), { dec: decimal, n: nearestNum, d: fdDen });
+
             var renderFdLine = function() {
-              var W = 700, H = 170, PAD = 50;
-              // Rotate labels at high denominators to prevent overlap
-              var rotate = fdDen >= 12;
-              var rotateAngle = fdDen >= 16 ? -45 : -30;
-              var fracFontSize = fdDen >= 16 ? 10 : 12;
+              var W = narrow ? 400 : 700, H = 170, PAD = 50;
+              var rotate = !narrow && labelAll && tickCount > 13;
+              var rotateAngle = tickCount > 17 ? -45 : -30;
+              var fracFontSize = narrow ? 18 : tickCount > 17 ? 10 : 12;
+              var X = function(v) { return PAD + ((v - fdMin) / fdLen) * (W - 2 * PAD); };
               var ticks = [];
-              for (var i = 0; i <= fdDen; i++) {
-                var tickFrac = fdMin + i * fdLen / fdDen;
-                var x = PAD + (i / fdDen) * (W - 2 * PAD);
-                var tickNum = Math.round(tickFrac * fdDen);
-                var fracLabel = (tickNum % fdDen === 0) ? ('' + (tickNum / fdDen)) : (tickNum + '/' + fdDen); // label from tick VALUE, not index — was wrong off the 0..1 range
-                var decLabel = '' + (Math.round(tickFrac * 1000) / 1000);
-                var fracTextProps = {
-                  x: x, y: rotate ? 56 : 60, textAnchor: rotate ? 'end' : 'middle',
-                  fill: '#155e75', fontSize: fracFontSize, fontWeight: 'bold', fontFamily: 'monospace'
-                };
-                if (rotate) fracTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' ' + 56 + ')';
-                var decTextProps = {
-                  x: x, y: rotate ? 122 : 118, textAnchor: rotate ? 'start' : 'middle',
-                  fill: '#475569', fontSize: 10, fontFamily: 'monospace'
-                };
-                if (rotate) decTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' ' + 122 + ')';
-                ticks.push(h('g', { key: 'fdt-' + i },
-                  h('line', { x1: x, y1: 70, x2: x, y2: 100, stroke: '#0e7490', strokeWidth: 2 }),
-                  h('text', fracTextProps, fracLabel),
-                  h('text', decTextProps, decLabel)
+              var pushTick = function(k, v, whole) {
+                var x = X(v);
+                var showLabel = whole || (labelAll && k % labelK === 0);
+                var fracLabel = whole ? String(Math.round(v)) : (k + '/' + fdDen);
+                var decLabel = '' + (Math.round(v * 1000) / 1000);
+                var fracTextProps = { x: x, y: rotate ? 56 : 60, textAnchor: rotate ? 'end' : 'middle', fill: PF.frac, fontSize: fracFontSize, fontWeight: 'bold', fontFamily: 'monospace', stroke: PF.bg, strokeWidth: 3, paintOrder: 'stroke' };
+                if (rotate) fracTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' 56)';
+                var decTextProps = { x: x, y: rotate ? 122 : 118, textAnchor: rotate ? 'start' : 'middle', fill: PF.dec, fontSize: narrow ? 17 : 10, fontFamily: 'monospace' };
+                if (rotate) decTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' 122)';
+                ticks.push(h('g', { key: 'fdt-' + k },
+                  h('line', { x1: x, y1: whole ? 66 : 72, x2: x, y2: whole ? 104 : 98, stroke: PF.line, strokeWidth: whole ? 2.5 : 1.5 }),
+                  showLabel && h('text', fracTextProps, fracLabel),
+                  showLabel && h('text', decTextProps, decLabel)
                 ));
+              };
+              if (fracTicksDrawn) {
+                for (var k = tk0; k <= tk1; k++) pushTick(k, k / fdDen, k % fdDen === 0);
+              } else {
+                // One tick per whole number froze the tab on a typed 100000. Label a readable number of round ones.
+                var fdWholeSpan = Math.floor(fdMax) - Math.ceil(fdMin), fdWholeMax = narrow ? 6 : 12, fdWholeStep = 1;
+                if (fdWholeSpan > fdWholeMax) {
+                  var fdMag = Math.pow(10, Math.floor(Math.log(fdWholeSpan / fdWholeMax) / Math.LN10));
+                  fdWholeStep = [1, 2, 5, 10].map(function(m) { return m * fdMag; }).filter(function(s) { return fdWholeSpan / s <= fdWholeMax; })[0];
+                }
+                for (var wv = Math.ceil(Math.ceil(fdMin) / fdWholeStep) * fdWholeStep; wv <= Math.floor(fdMax); wv += fdWholeStep) pushTick(wv * fdDen, wv, true);
               }
-              var mx = PAD + ((fdValue - fdMin) / fdLen) * (W - 2 * PAD);
-              // ── Bugfix: stable slide class + inline transition control ──
-              // The marker animates from a leftmost-baseline flash if the slide
-              // class is toggled in the same React render that updates the
-              // inline transform — browsers race the class-mounted transition
-              // against the new transform value, falling back to translate(0,0)
-              // as the "before" state in some browsers.
-              //
-              // Fix: keep the slide class on the element ALWAYS so transitions
-              // are registered once and the browser keeps the prior computed
-              // transform as the "from" value. During drag, override with
-              // inline `transition: none` so cursor-tracking is real-time.
-              // Both transform and transition update in the same render pass,
-              // eliminating the class-vs-style timing race.
+              var mx = X(fdValue);
+              // Keep the slide class on the marker ALWAYS (so the browser keeps the
+              // prior transform as the "from" value); inline transition:none during drag.
               var isDragging = typeof window !== 'undefined' && window._fdDragging === true;
               var markerCls = 'allo-fd-marker allo-fd-marker-slide' + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
               var markerStyle = { transform: 'translate(' + mx + 'px, 0px)' };
               if (isDragging) markerStyle.transition = 'none';
-              var markerEl = h('g', { key: 'fd-marker', className: markerCls,
-                style: markerStyle
-              },
-                h('line', { x1: 0, y1: 30, x2: 0, y2: 85, stroke: '#dc2626', strokeWidth: 2.5 }),
-                h('circle', { cx: 0, cy: 85, r: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
-                h('polygon', { points: '-6,30 6,30 0,40', fill: '#dc2626' }),
-                h('text', { x: 0, y: 24, textAnchor: 'middle', fill: '#dc2626', fontSize: 11, fontWeight: 'bold' }, decimal)
+              var markerEl = h('g', { key: 'fd-marker', className: markerCls, style: markerStyle },
+                h('line', { x1: 0, y1: 30, x2: 0, y2: 44, stroke: PF.marker, strokeWidth: 2.5 }),
+                h('line', { x1: 0, y1: 66, x2: 0, y2: 85, stroke: PF.marker, strokeWidth: 2.5 }),
+                h('circle', { cx: 0, cy: 85, r: 9, fill: PF.marker, stroke: PF.bg, strokeWidth: 2 }),
+                h('polygon', { points: '-6,30 6,30 0,40', fill: PF.marker }),
+                h('text', { x: 0, y: 24, textAnchor: 'middle', fill: PF.marker, fontSize: narrow ? 15 : 11, fontWeight: 'bold' }, decimal)
               );
-
-              // Ghost trail: prior arithmetic positions, fading by age
               var trailEls = [];
-              if (fdTrail && fdTrail.length >= 1) {
-                fdTrail.forEach(function(tv, ti) {
-                  if (tv < fdMin || tv > fdMax) return;
-                  var tx = PAD + ((tv - fdMin) / fdLen) * (W - 2 * PAD);
-                  var age = fdTrail.length - 1 - ti;   // 0 = most recent, larger = older
-                  var op = Math.max(0.12, 0.45 - age * 0.08);
-                  trailEls.push(h('g', { key: 'fd-trail-' + ti, opacity: op },
-                    h('circle', { cx: tx, cy: 85, r: 6, fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, strokeDasharray: '2 2' }),
-                    h('text', { x: tx, y: 76, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9, fontFamily: 'monospace' }, Math.round(tv * 100) / 100)
-                  ));
-                });
-              }
+              (fdTrail || []).forEach(function(tv, ti) {
+                if (typeof tv !== 'number' || tv < fdMin || tv > fdMax) return;
+                var tx = X(tv);
+                var age = fdTrail.length - 1 - ti;
+                var op = Math.max(0.8, 1 - age * 0.05);
+                trailEls.push(h('g', { key: 'fd-trail-' + ti },
+                  h('circle', { cx: tx, cy: 85, r: 6, fill: 'none', stroke: PF.marker, strokeWidth: 1.5, strokeDasharray: '2 2', opacity: op }),
+                  h('text', { x: tx, y: 76, textAnchor: 'middle', fill: PF.trail, fontSize: 9, fontFamily: 'monospace' }, Math.round(tv * 100) / 100)
+                ));
+              });
               var compareEl = null;
               if (fdCompareOn) {
-                var cmx = PAD + ((fdCompareValue - fdMin) / fdLen) * (W - 2 * PAD);
+                var cmx = X(fdCompareValue);
                 compareEl = h('g', { key: 'fd-cmp' },
-                  h('line', { x1: cmx, y1: 85, x2: cmx, y2: 140, stroke: '#0891b2', strokeWidth: 2.5, strokeDasharray: '4 2', className: 'allo-fd-fill' }),
-                  h('circle', { cx: cmx, cy: 140, r: 7, fill: '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'allo-fd-fill' }),
-                  h('text', { x: cmx, y: 156, textAnchor: 'middle', fill: '#0e7490', fontSize: 11, fontWeight: 'bold' }, (Math.round(fdCompareValue * 1000) / 1000))
+                  h('line', { x1: cmx, y1: 85, x2: cmx, y2: 140, stroke: PF.cmp, strokeWidth: 2.5, strokeDasharray: '4 2' }),
+                  h('circle', { cx: cmx, cy: 140, r: 7, fill: PF.cmp, stroke: PF.bg, strokeWidth: 2 }),
+                  h('text', { x: cmx, y: 156, textAnchor: 'middle', fill: PF.cmpText, fontSize: 11, fontWeight: 'bold' }, (Math.round(fdCompareValue * 1000) / 1000))
                 );
               }
               var svgH = rotate ? 190 : H;
               return h('svg', {
                 width: '100%', height: svgH, viewBox: '0 0 ' + W + ' ' + svgH, className: 'max-w-full',
-                style: { cursor: 'grab', touchAction: 'none', userSelect: 'none' },
+                style: { cursor: 'grab', touchAction: 'pan-y', userSelect: 'none' },
                 role: 'slider',
                 'aria-label': t('stem.numberline.number_line_marker_use_arrow_keys_to_m', 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.'),
                 tabIndex: 0,
                 'aria-valuemin': fdMin,
                 'aria-valuemax': fdMax,
                 'aria-valuenow': Math.round(fdValue * 1000) / 1000,
-                'aria-valuetext': decimal + (isExactFrac ? ', which is ' + simpNum + ' over ' + simpDen : ', near ' + nearestNum + ' over ' + fdDen) + (isRepeatingDecimal ? ', repeating decimal' : ''),
+                'aria-valuetext': valueText,
                 onPointerDown: startPointer,
                 onKeyDown: handleLineKey
               },
-                h('line', { x1: PAD, y1: 85, x2: W - PAD, y2: 85, stroke: '#0e7490', strokeWidth: 3, strokeLinecap: 'round' }),
+                h('rect', { x: 0, y: 0, width: W, height: svgH, rx: 10, fill: PF.bg }),
+                h('line', { x1: PAD, y1: 85, x2: W - PAD, y2: 85, stroke: PF.line, strokeWidth: 3, strokeLinecap: 'round' }),
                 ticks,
                 trailEls,
                 markerEl,
                 compareEl,
-                h('polygon', { points: (W - PAD) + ',78 ' + (W - PAD + 10) + ',85 ' + (W - PAD) + ',92', fill: '#0e7490' }),
-                h('polygon', { points: PAD + ',78 ' + (PAD - 10) + ',85 ' + PAD + ',92', fill: '#0e7490' })
+                h('polygon', { points: (W - PAD) + ',78 ' + (W - PAD + 10) + ',85 ' + (W - PAD) + ',92', fill: PF.line }),
+                h('polygon', { points: PAD + ',78 ' + (PAD - 10) + ',85 ' + PAD + ',92', fill: PF.line })
               );
             };
 
-            // Fraction bar (length model)
+            // ── Area / set models: one picture per whole (up to 4), so 3/2 shows one
+            // full circle plus half of a second instead of "3 of 2 filled". ──
+            var absV = Math.abs(fdValue);
+            var absScaled = Math.round(absV * fdDen * 1e6) / 1e6;
+            var MODEL_MAX = 4;
+            var wholesNeeded = Math.max(1, Math.ceil(absV - 1e-9));
+            var wholesShown = Math.min(MODEL_MAX, wholesNeeded);
+            var fullWholes = Math.floor(absScaled / fdDen + 1e-9);
+            var remParts = Math.round((absScaled - fullWholes * fdDen) * 100) / 100;
+            var partsText = Math.round(absScaled * 100) / 100;
+            var modelCaption = absV <= 1 + 1e-9
+              ? NLE.fill(t('stem.numberline.fd_model_one', '{p} of {d} equal parts are filled.'), { p: partsText, d: fdDen })
+              : remParts === 0
+                ? NLE.fill(t('stem.numberline.fd_model_wholes', '{w} full wholes are filled: {p} parts of size 1/{d}.'), { w: fullWholes, p: partsText, d: fdDen })
+                : NLE.fill(t('stem.numberline.fd_model_multi', '{w} full wholes and {r} of {d} parts of the next whole are filled.'), { w: fullWholes, r: remParts, d: fdDen });
+            var modelNotes = [];
+            if (fdValue < 0) modelNotes.push(t('stem.numberline.fd_model_negative', 'The value is negative, so these models show its size: its distance from 0.'));
+            if (wholesNeeded > MODEL_MAX) modelNotes.push(NLE.fill(t('stem.numberline.fd_model_more', 'Only the first {n} wholes are drawn.'), { n: MODEL_MAX }));
+            var fillOfWhole = function(i) { return Math.max(0, Math.min(fdDen, absScaled - i * fdDen)); };
+
             var renderFracBar = function() {
-              var W = 700, H = 70, PAD = 50;
-              var barH = 40, barY = 12;
+              var W = 700, PAD = 50, barH = 34, rowH = 50;
+              var H = 14 + wholesShown * rowH;
               var segW = (W - 2 * PAD) / fdDen;
-              var segs = [];
-              for (var i = 0; i < fdDen; i++) {
-                var x = PAD + i * segW;
-                var fillFrac = 0;
-                var scaledVal = fdValue * fdDen;
-                if (scaledVal >= i + 1) fillFrac = 1;
-                else if (scaledVal > i) fillFrac = scaledVal - i;
-                segs.push(h('g', { key: 'bar-' + i },
-                  h('rect', { x: x, y: barY, width: segW, height: barH, fill: '#ecfeff', stroke: '#0e7490', strokeWidth: 1.5 }),
-                  fillFrac > 0 && h('rect', { x: x, y: barY, width: segW * fillFrac, height: barH, fill: '#06b6d4', opacity: 0.85, className: 'allo-fd-fill' })
-                ));
-                if (segW > 30) {
-                  segs.push(h('text', { key: 'bar-lbl-' + i,
-                    x: x + segW / 2, y: barY + barH + 14,
-                    textAnchor: 'middle', fill: '#155e75', fontSize: 10, fontFamily: 'monospace'
-                  }, (i + 1) + '/' + fdDen));
+              var segs = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: PF.bg })];
+              for (var row = 0; row < wholesShown; row++) {
+                var filledParts = fillOfWhole(row);
+                var y = 8 + row * rowH;
+                for (var i = 0; i < fdDen; i++) {
+                  var x = PAD + i * segW;
+                  var fillFrac = Math.max(0, Math.min(1, filledParts - i));
+                  segs.push(h('g', { key: 'bar-' + row + '-' + i },
+                    h('rect', { x: x, y: y, width: segW, height: barH, fill: PF.empty, stroke: PF.edge, strokeWidth: 1.5 }),
+                    fillFrac > 0 && h('rect', { x: x, y: y, width: segW * fillFrac, height: barH, fill: PF.fill, className: 'allo-fd-fill' })
+                  ));
                 }
+                if (wholesShown > 1) segs.push(h('text', { key: 'bar-w-' + row, x: PAD - 8, y: y + barH / 2 + 5, textAnchor: 'end', fill: PF.frac, fontSize: 12, fontWeight: 'bold' }, String(row + 1)));
               }
-              return h('svg', {
-                width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
-                role: 'img',
-                'aria-label': 'Fraction bar showing approximately ' + simpNum + ' out of ' + simpDen + ' parts filled'
-              }, segs);
+              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full', role: 'img',
+                'aria-label': NLE.fill(t('stem.numberline.fd_bar_desc', 'Fraction bar, one row per whole, each cut into {d} equal parts. {caption}'), { d: fdDen, caption: modelCaption }) }, segs);
             };
 
-            // Pie / circle (area model)
             var renderFracPie = function() {
-              var W = 180, H = 180, cx = 90, cy = 90, r = 72;
-              var slices = [];
-              var scaled = fdValue * fdDen;
-              var fullCount = Math.floor(scaled + 0.0000001);
-              var partial = scaled - fullCount;
-              if (partial < 0.001) partial = 0;
-              if (fullCount > fdDen) { fullCount = fdDen; partial = 0; }
-              var wedgePath = function(startFrac, endFrac) {
+              var S = 180, r = 72;
+              var slices = [h('rect', { key: 'bg', x: 0, y: 0, width: S * wholesShown, height: S, fill: PF.bg })];
+              var wedgePath = function(cx, cy, startFrac, endFrac) {
+                if (endFrac - startFrac >= 1 - 1e-9) return 'M ' + (cx - r) + ' ' + cy + ' A ' + r + ' ' + r + ' 0 1 1 ' + (cx + r) + ' ' + cy + ' A ' + r + ' ' + r + ' 0 1 1 ' + (cx - r) + ' ' + cy + ' Z';
                 var a1 = startFrac * 2 * Math.PI - Math.PI / 2;
                 var a2 = endFrac * 2 * Math.PI - Math.PI / 2;
-                var x1 = cx + r * Math.cos(a1);
-                var y1 = cy + r * Math.sin(a1);
-                var x2 = cx + r * Math.cos(a2);
-                var y2 = cy + r * Math.sin(a2);
                 var large = (a2 - a1) > Math.PI ? 1 : 0;
-                return 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2 + ' Z';
+                return 'M ' + cx + ' ' + cy + ' L ' + (cx + r * Math.cos(a1)) + ' ' + (cy + r * Math.sin(a1)) + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(a2)) + ' ' + (cy + r * Math.sin(a2)) + ' Z';
               };
-              for (var i = 0; i < fdDen; i++) {
-                slices.push(h('path', { key: 'pie-bg-' + i, d: wedgePath(i / fdDen, (i + 1) / fdDen), fill: '#ecfeff', stroke: '#0e7490', strokeWidth: 1.5 }));
+              for (var w = 0; w < wholesShown; w++) {
+                var cx = S * w + 90, cy = 90;
+                var filled = fillOfWhole(w);
+                var fullCount = Math.floor(filled + 1e-6);
+                var partial = filled - fullCount;
+                if (partial < 0.001) partial = 0;
+                for (var i = 0; i < fdDen; i++) slices.push(h('path', { key: 'pie-bg-' + w + '-' + i, d: wedgePath(cx, cy, i / fdDen, (i + 1) / fdDen), fill: PF.empty, stroke: PF.edge, strokeWidth: 1.2 }));
+                for (var j = 0; j < fullCount; j++) slices.push(h('path', { key: 'pie-f-' + w + '-' + j, d: wedgePath(cx, cy, j / fdDen, (j + 1) / fdDen), fill: PF.fill, stroke: PF.edge, strokeWidth: 1.2, className: 'allo-fd-fill' }));
+                if (partial > 0 && fullCount < fdDen) slices.push(h('path', { key: 'pie-p-' + w, d: wedgePath(cx, cy, fullCount / fdDen, (fullCount + partial) / fdDen), fill: PF.part, stroke: PF.edge, strokeWidth: 1.2, className: 'allo-fd-fill' }));
               }
-              for (var j = 0; j < fullCount; j++) {
-                slices.push(h('path', { key: 'pie-f-' + j, d: wedgePath(j / fdDen, (j + 1) / fdDen), fill: '#06b6d4', opacity: 0.88, stroke: '#0e7490', strokeWidth: 1.5, className: 'allo-fd-fill' }));
-              }
-              if (partial > 0 && fullCount < fdDen) {
-                slices.push(h('path', { key: 'pie-partial', d: wedgePath(fullCount / fdDen, (fullCount + partial) / fdDen), fill: '#67e8f9', opacity: 0.65, stroke: '#0e7490', strokeWidth: 1.5, className: 'allo-fd-fill' }));
-              }
-              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Circle in ' + fdDen + ' wedges, ' + (isExactFrac ? simpNum + ' of ' + simpDen : 'about ' + nearestNum + '/' + fdDen) + ' filled' }, slices);
+              return h('svg', { width: '100%', height: S, viewBox: '0 0 ' + (S * wholesShown) + ' ' + S, role: 'img',
+                'aria-label': NLE.fill(t('stem.numberline.fd_pie_desc', 'Circles, each cut into {d} equal wedges. {caption}'), { d: fdDen, caption: modelCaption }) }, slices);
             };
 
-            // Hundred-grid (10×10, bridge to percent)
             var renderFracGrid = function() {
-              var W = 180, H = 180, PAD = 4;
-              var cellSize = (W - 2 * PAD) / 10;
-              var fillCount = Math.round(fdValue * 100);
-              if (fillCount < 0) fillCount = 0;
-              if (fillCount > 100) fillCount = 100;
-              var cells = [];
-              for (var rr = 0; rr < 10; rr++) {
-                for (var cc = 0; cc < 10; cc++) {
-                  var idx = rr * 10 + cc;
-                  var filled = idx < fillCount;
-                  cells.push(h('rect', {
-                    key: 'g-' + idx,
-                    x: PAD + cc * cellSize, y: PAD + rr * cellSize,
-                    width: cellSize - 0.5, height: cellSize - 0.5,
-                    fill: filled ? '#06b6d4' : '#ecfeff',
-                    stroke: '#0e7490', strokeWidth: 0.5,
-                    opacity: filled ? 0.88 : 1,
-                    className: filled ? 'allo-fd-fill' : null
-                  }));
+              var S = 180, PAD = 4;
+              var cellSize = (S - 2 * PAD) / 10;
+              var totalHundredths = Math.round(absV * 100);
+              var cells = [h('rect', { key: 'bg', x: 0, y: 0, width: S * wholesShown, height: S, fill: PF.bg })];
+              for (var w = 0; w < wholesShown; w++) {
+                var fillCount = Math.max(0, Math.min(100, totalHundredths - w * 100));
+                var ox = S * w;
+                for (var rr = 0; rr < 10; rr++) {
+                  for (var cc = 0; cc < 10; cc++) {
+                    var idx = rr * 10 + cc;
+                    cells.push(h('rect', { key: 'g-' + w + '-' + idx, x: ox + PAD + cc * cellSize, y: PAD + rr * cellSize, width: cellSize - 0.5, height: cellSize - 0.5,
+                      fill: idx < fillCount ? PF.fill : PF.empty, stroke: PF.edge, strokeWidth: 0.5 }));
+                  }
                 }
               }
-              cells.push(h('line', { key: 'mid-v', x1: PAD + 5 * cellSize, y1: PAD, x2: PAD + 5 * cellSize, y2: PAD + 10 * cellSize, stroke: '#0e7490', strokeWidth: 1.2, opacity: 0.5 }));
-              cells.push(h('line', { key: 'mid-h', x1: PAD, y1: PAD + 5 * cellSize, x2: PAD + 10 * cellSize, y2: PAD + 5 * cellSize, stroke: '#0e7490', strokeWidth: 1.2, opacity: 0.5 }));
-              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fillCount + ' of 100 squares filled, which is ' + percent + ' percent' }, cells);
+              return h('svg', { width: '100%', height: S, viewBox: '0 0 ' + (S * wholesShown) + ' ' + S, role: 'img',
+                'aria-label': NLE.fill(t('stem.numberline.fd_grid_desc', 'Hundred grids: {n} small squares are filled in all, which is {pct} percent of one whole grid.'), { n: totalHundredths, pct: percent }) }, cells);
             };
 
-            // Dot-set (discrete / NCTM set model)
             var renderFracDots = function() {
-              var W = 180, H = 180, PAD = 12;
-              var cols = fdDen <= 5 ? fdDen : (fdDen <= 10 ? 5 : (fdDen <= 12 ? 4 : (fdDen <= 16 ? 4 : 5)));
+              var S = 180, PAD = 12;
+              var cols = fdDen <= 5 ? fdDen : (fdDen <= 10 ? 5 : (fdDen <= 16 ? 4 : 10));
               var rows = Math.ceil(fdDen / cols);
-              var scaled = fdValue * fdDen;
-              var fullCount = Math.floor(scaled + 0.0000001);
-              var partial = scaled - fullCount;
-              if (partial < 0.001) partial = 0;
-              if (fullCount > fdDen) { fullCount = fdDen; partial = 0; }
-              var spacingX = (W - 2 * PAD) / cols;
-              var spacingY = (H - 2 * PAD) / rows;
-              var dotR = Math.min(spacingX, spacingY) * 0.36;
-              var dots = [];
-              for (var i = 0; i < fdDen; i++) {
-                var c = i % cols;
-                var rIdx = Math.floor(i / cols);
-                var dcx = PAD + spacingX * (c + 0.5);
-                var dcy = PAD + spacingY * (rIdx + 0.5);
-                var isFull = i < fullCount;
-                var isPartial = i === fullCount && partial > 0;
-                dots.push(h('circle', {
-                  key: 'd-' + i,
-                  cx: dcx, cy: dcy, r: dotR,
-                  fill: isFull ? '#06b6d4' : (isPartial ? '#67e8f9' : '#ecfeff'),
-                  stroke: '#0e7490', strokeWidth: 1.5,
-                  opacity: isFull ? 0.9 : (isPartial ? 0.65 : 1),
-                  className: (isFull || isPartial) ? 'allo-fd-fill' : null
-                }));
+              var spacingX = (S - 2 * PAD) / cols;
+              var spacingY = (S - 2 * PAD) / rows;
+              var dotR = Math.max(1.5, Math.min(spacingX, spacingY) * 0.36);
+              var dots = [h('rect', { key: 'bg', x: 0, y: 0, width: S * wholesShown, height: S, fill: PF.bg })];
+              for (var w = 0; w < wholesShown; w++) {
+                var filled = fillOfWhole(w);
+                var fullCount = Math.floor(filled + 1e-6);
+                var partial = filled - fullCount > 0.001;
+                for (var i = 0; i < fdDen; i++) {
+                  var isFull = i < fullCount, isPartial = i === fullCount && partial;
+                  dots.push(h('circle', { key: 'd-' + w + '-' + i, cx: S * w + PAD + spacingX * ((i % cols) + 0.5), cy: PAD + spacingY * (Math.floor(i / cols) + 0.5), r: dotR,
+                    fill: isFull ? PF.fill : (isPartial ? PF.part : PF.empty), stroke: PF.edge, strokeWidth: 1.2 }));
+                }
               }
-              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fullCount + ' of ' + fdDen + ' dots filled' + (partial > 0 ? ', plus a partial one' : '') }, dots);
+              return h('svg', { width: '100%', height: S, viewBox: '0 0 ' + (S * wholesShown) + ' ' + S, role: 'img',
+                'aria-label': NLE.fill(t('stem.numberline.fd_dots_desc', 'Dot sets of {d} dots for each whole. {caption}'), { d: fdDen, caption: modelCaption }) }, dots);
             };
 
             var presetFracs = [
@@ -1464,437 +3740,446 @@ window.StemLab = window.StemLab || {
               { n: 1, d: 8, dec: '0.125' }, { n: 3, d: 8, dec: '0.375' }, { n: 5, d: 8, dec: '0.625' }, { n: 7, d: 8, dec: '0.875' },
               { n: 1, d: 10, dec: '0.1' }, { n: 1, d: 100, dec: '0.01' }
             ];
+            var chip = 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all';
 
             return h('div', { className: 'space-y-4 allo-fd-bg' },
+              // Core first: the line, its parts, its names, typed values and the bar.
+              h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('p', { className: 'text-[0.6875rem] font-bold text-cyan-800' }, t('stem.numberline.number_line_fractions_above_decimals_b', '📏 Number line — fractions above, decimals below')),
+                  h('span', { className: 'text-[0.6875rem] italic text-slate-700' }, t('stem.numberline.tap_or_drag_the_marker', 'Tap or drag the marker'))
+                ),
+                renderFdLine(),
+                labelAll && labelK > 1 && h('p', { className: 'text-[0.6875rem] mt-1 text-slate-700' }, labelK >= fdDen
+                  ? NLE.fill(t('stem.numberline.fd_labels_thinned', 'There are {n} ticks, so only whole numbers are labelled. Each small tick is 1/{d}.'), { n: tickCount, d: fdDen })
+                  : NLE.fill(t('stem.numberline.fd_labels_every', 'Every {k} ticks get a label so they fit. Each small tick is 1/{d}.'), { k: labelK, d: fdDen })),
+                !labelAll && h('p', { className: 'text-[0.6875rem] mt-1 text-slate-700' }, fracTicksDrawn
+                  ? NLE.fill(t('stem.numberline.fd_labels_thinned', 'There are {n} ticks, so only whole numbers are labelled. Each small tick is 1/{d}.'), { n: tickCount, d: fdDen })
+                  : t('stem.numberline.fd_ticks_thinned', 'This line is too long to draw every fraction tick, so only whole numbers are shown.'))
+              ),
+
               h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200' },
-                h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
-                  h('span', { className: 'text-xs font-bold text-cyan-800' }, t('stem.numberline.divide_the_line_into', 'Divide the line into:')),
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-2', role: 'group', 'aria-label': t('stem.numberline.divide_the_line_into', 'Divide the line into:') },
+                  h('span', { className: 'text-xs font-bold text-cyan-800', 'aria-hidden': 'true' }, t('stem.numberline.divide_the_line_into', 'Divide the line into:')),
                   [2, 3, 4, 5, 6, 8, 10, 12, 16, 20].map(function(d) {
                     return h('button', {
-                      key: d,
+                      key: d, type: 'button',
                       'aria-pressed': fdDen === d,
                       onClick: function() { sfxClick(); upd({ fdDen: d }); },
+                      style: { minHeight: 32 },
                       className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' +
-                        (fdDen === d ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
-                    }, d + ' parts');
+                        (fdDen === d ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-800 border border-cyan-600 hover:bg-cyan-100')
+                    }, NLE.fill(t('stem.numberline.fd_parts', '{d} parts'), { d: d }));
                   })
                 ),
                 h('div', { className: 'flex flex-wrap items-center gap-3 text-[0.6875rem]' },
-                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                  h('label', { className: 'font-bold text-cyan-800 flex items-center gap-1 cursor-pointer', style: { minHeight: 28 } },
                     h('input', { type: 'checkbox', checked: fdSnap, onChange: function() { upd({ fdSnap: !fdSnap }); } }),
-                    'Snap to fractions of ' + fdDen
+                    NLE.fill(t('stem.numberline.fd_snap', 'Snap to the nearest 1/{d}'), { d: fdDen })
                   ),
-                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                  h('label', { className: 'font-bold text-cyan-800 flex items-center gap-1 cursor-pointer', style: { minHeight: 28 } },
                     h('input', { type: 'checkbox', checked: fdShowBar, onChange: function() { upd({ fdShowBar: !fdShowBar }); } }),
-                    'Bar'
+                    t('stem.numberline.fd_show_bar', 'Bar')
                   ),
-                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                  h('label', { className: 'font-bold text-cyan-800 flex items-center gap-1 cursor-pointer', style: { minHeight: 28 } },
                     h('input', { type: 'checkbox', checked: fdShowReps, onChange: function() { upd({ fdShowReps: !fdShowReps }); } }),
                     t('stem.numberline.pie_grid_dots', 'Pie + grid + dots')
                   )
                 )
               ),
 
-              fdShowBar && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-700 mb-1' }, '▒ Fraction bar — length model (' + fdDen + ' equal parts)'),
-                renderFracBar()
-              ),
-
-              h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
-                h('div', { className: 'flex items-center justify-between mb-1' },
-                  h('p', { className: 'text-[0.6875rem] font-bold text-cyan-700' }, t('stem.numberline.number_line_fractions_above_decimals_b', '📏 Number line — fractions above, decimals below')),
-                  h('span', { className: 'text-[0.6875rem] text-slate-600 italic' }, t('stem.numberline.tap_or_drag_the_marker', 'Tap or drag the marker'))
-                ),
-                renderFdLine()
-              ),
-
-              fdShowReps && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-700 mb-2' },
-                  t('stem.numberline.same_amount_three_more_visuals_quantit', '🔄 Same amount, three more visuals. Quantity is conserved across every representation.')
-                ),
-                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
-                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.pie_area', '◐ Pie (area)')),
-                    renderFracPie(),
-                    h('p', { className: 'text-[0.625rem] text-slate-700 italic mt-1 text-center' },
-                      isExactFrac ? (simpNum + ' of ' + simpDen + ' wedges') : ('~' + nearestNum + '/' + fdDen + ' wedges')
-                    )
-                  ),
-                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.hundred_grid', '⊞ Hundred grid')),
-                    renderFracGrid(),
-                    h('p', { className: 'text-[0.625rem] text-slate-700 italic mt-1 text-center' },
-                      Math.round(fdValue * 100) + ' of 100 squares = ' + percent + '%'
-                    )
-                  ),
-                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
-                    h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.dots_set', '● Dots (set)')),
-                    renderFracDots(),
-                    h('p', { className: 'text-[0.625rem] text-slate-700 italic mt-1 text-center' },
-                      Math.floor(fdValue * fdDen) + ' of ' + fdDen + ' dots filled'
-                    )
-                  )
-                ),
-                h('p', { className: 'text-[0.625rem] text-slate-600 italic mt-2 text-center' },
-                  'Length, area, base-10 area, discrete count. Four ways to see ' + (isExactFrac ? simpNum + '/' + simpDen : decimal) + '.'
-                )
-              ),
-
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 h('div', { className: 'bg-cyan-50 rounded-xl p-3 border-2 border-cyan-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                  h('p', { className: 'text-[0.625rem] font-bold text-cyan-700 uppercase tracking-wider mb-1' }, t('stem.numberline.fraction', 'Fraction')),
+                  h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 uppercase tracking-wider mb-1' }, t('stem.numberline.fraction', 'Fraction')),
                   h('p', { className: 'text-2xl font-bold text-cyan-900 font-mono' },
                     isExactFrac ? (simpNum + '/' + simpDen) : ('≈ ' + nearestNum + '/' + fdDen)
                   ),
-                  mixedNumber && mixedNumber.whole > 0 && h('p', { className: 'text-sm font-bold text-cyan-700 font-mono mt-0.5' },
-                    mixedNumber.sign + mixedNumber.whole + (mixedNumber.num > 0 ? ' ' + mixedNumber.num + '/' + mixedNumber.den : '') + ' (mixed)'
+                  mixedNumber && mixedNumber.whole > 0 && h('p', { className: 'text-sm font-bold text-cyan-800 font-mono mt-0.5' },
+                    NLE.fill(t('stem.numberline.fd_mixed', '{m} as a mixed number'), { m: mixedNumber.sign + mixedNumber.whole + (mixedNumber.num > 0 ? ' ' + mixedNumber.num + '/' + mixedNumber.den : '') })
                   ),
                   isExactFrac
-                    ? h('p', { className: 'text-[0.625rem] text-cyan-700 italic mt-1' }, fracInWords)
-                    : h('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1' }, 'not exact at ' + fdDen + 'ths')
+                    ? h('p', { className: 'text-[0.625rem] text-cyan-800 italic mt-1' }, fracInWords)
+                    : h('p', { className: 'text-[0.625rem] text-slate-700 italic mt-1' }, NLE.fill(t('stem.numberline.fd_not_exact', 'Not exactly on a 1/{d} tick'), { d: fdDen }))
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl p-3 border-2 border-amber-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                  h('p', { className: 'text-[0.625rem] font-bold text-amber-700 uppercase tracking-wider mb-1' },
+                  h('p', { className: 'text-[0.625rem] font-bold text-amber-800 uppercase tracking-wider mb-1' },
                     t('stem.numberline.decimal', 'Decimal'),
                     isRepeatingDecimal && h('span', { className: 'allo-fd-repeat-dot ml-1', title: t('stem.numberline.this_decimal_repeats_forever', 'This decimal repeats forever') }, ' ↻')
                   ),
                   h('p', { className: 'text-2xl font-bold text-amber-900 font-mono' }, decimal + (isRepeatingDecimal ? '…' : '')),
                   isRepeatingDecimal
-                    ? h('p', { className: 'text-[0.625rem] text-amber-700 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = repeats forever')
-                    : h('p', { className: 'text-[0.625rem] text-amber-700 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = ' + decimal)
+                    ? h('p', { className: 'text-[0.625rem] text-amber-800 italic mt-1' }, NLE.fill(t('stem.numberline.fd_repeats', '{n} ÷ {d} repeats forever'), { n: simpNum, d: simpDen }))
+                    : h('p', { className: 'text-[0.625rem] text-amber-800 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = ' + decimal)
                 ),
                 h('div', { className: 'bg-emerald-50 rounded-xl p-3 border-2 border-emerald-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
-                  h('p', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, t('stem.numberline.percent', 'Percent')),
+                  h('p', { className: 'text-[0.625rem] font-bold text-emerald-800 uppercase tracking-wider mb-1' }, t('stem.numberline.percent', 'Percent')),
                   h('p', { className: 'text-2xl font-bold text-emerald-900 font-mono' }, percent + '%'),
-                  h('p', { className: 'text-[0.625rem] text-emerald-700 italic mt-1' }, t('stem.numberline.per_hundred', 'per hundred'))
-                )
-              ),
-
-              // ── Fraction arithmetic on the line (slide the marker) ──
-              h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-fuchsia-800 mb-1' },
-                  t('stem.numberline.move_the_marker_by_a_fraction_fraction', '➕➖ Move the marker by a fraction — fraction arithmetic on the line')
-                ),
-                h('p', { className: 'text-[0.625rem] text-fuchsia-700 italic mb-2' },
-                  t('stem.numberline.click_a_chip_below_the_marker_slides_a', 'Click a chip below. The marker slides; all four visuals update. The line auto-extends if you drift past the edge.')
-                ),
-                h('div', { className: 'space-y-1.5' },
-                  ['+', '−'].map(function(op) {
-                    return h('div', { key: 'arith-row-' + op, className: 'flex flex-wrap items-center gap-1.5' },
-                      h('span', { className: 'text-base font-bold text-fuchsia-700 w-5 text-center', 'aria-hidden': 'true' }, op),
-                      [[1,2], [1,3], [1,4], [1,5], [1,6], [1,8], [1,10], [2,3], [3,4], [1,1]].map(function(pair) {
-                        return h('button', {
-                          key: op + '-' + pair[0] + '-' + pair[1],
-                          onClick: function() { applyArith(op, pair[0], pair[1]); },
-                          'aria-label': op + ' ' + pair[0] + ' over ' + pair[1],
-                          className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold font-mono transition-all ' +
-                            'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100 hover:shadow-sm'
-                        }, op + pair[0] + '/' + pair[1]);
-                      })
-                    );
-                  })
-                ),
-                fdLastOpText && h('p', {
-                  className: 'text-xs font-bold text-fuchsia-900 font-mono mt-2 bg-white rounded px-2 py-1 inline-block border border-fuchsia-200',
-                  'aria-live': 'polite'
-                }, '🧮 ' + fdLastOpText)
-              ),
-
-              // ── Common-denominator hunter (LCM-based fraction addition) ──
-              h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-rose-800 mb-1' },
-                  t('stem.numberline.common_denominator_hunter_how_to_add_f', '🤝 Common-denominator hunter — how to add fractions with different denominators')
-                ),
-                h('p', { className: 'text-[0.625rem] text-rose-700 italic mb-2' },
-                  t('stem.numberline.you_cannot_add_1_2_1_3_directly_first_', 'You cannot add 1/2 + 1/3 directly. First find a shared denominator (the LCM works), rename each fraction, then add the numerators.')
-                ),
-                h('div', { className: 'flex flex-wrap items-center gap-1 mb-2 text-sm font-mono' },
-                  h('input', { type: 'number', value: fdCDN1, min: 0, max: 100, step: 1,
-                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN1: v }); },
-                    'aria-label': t('stem.numberline.first_fraction_numerator', 'First fraction numerator'),
-                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
-                  h('span', { className: 'text-rose-700 font-bold' }, '/'),
-                  h('input', { type: 'number', value: fdCDD1, min: 1, max: 100, step: 1,
-                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD1: v }); },
-                    'aria-label': t('stem.numberline.first_fraction_denominator', 'First fraction denominator'),
-                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
-                  h('span', { className: 'mx-2 text-rose-700 font-bold text-base' }, '+'),
-                  h('input', { type: 'number', value: fdCDN2, min: 0, max: 100, step: 1,
-                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN2: v }); },
-                    'aria-label': t('stem.numberline.second_fraction_numerator', 'Second fraction numerator'),
-                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
-                  h('span', { className: 'text-rose-700 font-bold' }, '/'),
-                  h('input', { type: 'number', value: fdCDD2, min: 1, max: 100, step: 1,
-                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD2: v }); },
-                    'aria-label': t('stem.numberline.second_fraction_denominator', 'Second fraction denominator'),
-                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
-                  h('span', { className: 'ml-2 text-rose-700 font-bold' }, t('stem.numberline.str', '= ?'))
-                ),
-                h('div', { className: 'text-xs space-y-1 text-rose-900 mb-2 bg-white/60 rounded p-2 border border-rose-100' },
-                  h('p', {}, t('stem.numberline.smallest_common_denominator', 'Smallest common denominator: '),
-                    h('b', { className: 'font-mono text-base text-rose-900' }, 'LCM(' + fdCDD1 + ', ' + fdCDD2 + ') = ' + lcmOfDen)
-                  ),
-                  h('p', { className: 'font-mono' },
-                    '  ' + fdCDN1 + '/' + fdCDD1 + ' → ' + cd1ScaledN + '/' + lcmOfDen,
-                    h('span', { className: 'text-[0.625rem] text-rose-600 ml-2' }, '(× ' + cd1Mult + '/' + cd1Mult + ' top and bottom)')
-                  ),
-                  h('p', { className: 'font-mono' },
-                    '  ' + fdCDN2 + '/' + fdCDD2 + ' → ' + cd2ScaledN + '/' + lcmOfDen,
-                    h('span', { className: 'text-[0.625rem] text-rose-600 ml-2' }, '(× ' + cd2Mult + '/' + cd2Mult + ' top and bottom)')
-                  ),
-                  h('p', { className: 'font-mono font-bold' },
-                    '  Sum: ' + cd1ScaledN + '/' + lcmOfDen + ' + ' + cd2ScaledN + '/' + lcmOfDen + ' = ' + cdSumN + '/' + lcmOfDen +
-                    (cdSumSimpD !== cdSumD ? ' = ' + cdSumSimpN + '/' + cdSumSimpD : '') +
-                    ' ≈ ' + (Math.round(cdSumValue * 1000) / 1000)
-                  )
-                ),
-                h('button', {
-                  onClick: function() {
-                    var newMax = fdMax;
-                    if (cdSumValue > newMax) newMax = Math.ceil(cdSumValue);
-                    sfxClick();
-                    upd({
-                      fdValue: cdSumValue, fdDen: cdSumD, fdMax: newMax,
-                      fdLastOpText: fdCDN1 + '/' + fdCDD1 + ' + ' + fdCDN2 + '/' + fdCDD2 + ' = ' + cdSumSimpN + '/' + cdSumSimpD
-                    });
-                    announceToSR('Sum plotted: ' + cdSumSimpN + ' over ' + cdSumSimpD);
-                  },
-                  className: 'px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded hover:bg-rose-800 transition-all'
-                }, t('stem.numberline.plot_the_sum_on_the_line', '→ Plot the sum on the line')),
-                h('div', { className: 'flex flex-wrap gap-1 mt-2' },
-                  h('span', { className: 'text-[0.625rem] font-bold text-rose-700 self-center mr-1' }, 'Try:'),
-                  [[1,2,1,3], [1,4,1,3], [2,3,1,6], [3,4,1,8], [1,5,2,5], [1,2,1,4]].map(function(q, idx) {
-                    return h('button', {
-                      key: 'cdq-' + idx,
-                      onClick: function() { sfxClick(); upd({ fdCDN1: q[0], fdCDD1: q[1], fdCDN2: q[2], fdCDD2: q[3] }); },
-                      className: 'px-2 py-0.5 rounded text-[0.625rem] font-mono bg-white text-rose-700 border border-rose-300 hover:bg-rose-100'
-                    }, q[0] + '/' + q[1] + ' + ' + q[2] + '/' + q[3]);
-                  })
-                )
-              ),
-
-              // ── Equivalent fractions ribbon (same point, many names) ──
-              equivalentFractions.length > 1 && h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-teal-800 mb-2' },
-                  t('stem.numberline.equivalent_fractions_same_point_many_n', '∞ Equivalent fractions — same point, many names. Click to re-divide the line.')
-                ),
-                h('div', { className: 'flex flex-wrap items-center gap-1.5' },
-                  equivalentFractions.map(function(eq, idx) {
-                    var active = eq.d === fdDen;
-                    return h(React.Fragment, { key: 'eq-' + eq.d },
-                      idx > 0 && h('span', { className: 'text-teal-500 font-bold text-xs' }, '='),
-                      h('button', {
-                        'aria-label': eq.n + ' over ' + eq.d + (active ? ' (current)' : ''),
-                        'aria-pressed': active,
-                        onClick: function() {
-                          sfxClick();
-                          upd({ fdDen: eq.d });
-                          announceToSR(eq.n + ' over ' + eq.d);
-                        },
-                        className: 'px-2 py-1 rounded-lg text-xs font-bold font-mono transition-all ' +
-                          (active ? 'bg-teal-700 text-white shadow-sm' : 'bg-white text-teal-700 border border-teal-300 hover:bg-teal-100')
-                      }, eq.n + '/' + eq.d)
-                    );
-                  })
-                ),
-                h('p', { className: 'text-[0.625rem] text-teal-700 italic mt-2' },
-                  t('stem.numberline.multiply_or_divide_the_top_and_bottom_', 'Multiply (or divide) the top AND bottom by the same number → same value, different name. The marker does not move.')
+                  h('p', { className: 'text-[0.625rem] text-emerald-800 italic mt-1' }, t('stem.numberline.per_hundred', 'per hundred'))
                 )
               ),
 
               h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3' },
                 h('div', {},
-                  h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_fraction_plot_it', 'Type a fraction, plot it:')),
+                  h('p', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_fraction_plot_it', 'Type a fraction, plot it:')),
                   h('div', { className: 'flex items-center gap-1' },
-                    h('input', { type: 'number', placeholder: 'n', min: 0, id: 'fdNum',
+                    h('input', { type: 'number', placeholder: 'n', step: 1, id: 'fdNum',
                       'aria-label': t('stem.numberline.fraction_numerator', 'Fraction numerator'),
-                      className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
-                    h('span', { className: 'text-xl font-bold text-slate-600' }, '/'),
-                    h('input', { type: 'number', placeholder: 'd', min: 1, id: 'fdDenInput',
+                      className: 'w-16 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: { minHeight: 36 } }),
+                    h('span', { className: 'text-xl font-bold text-slate-700', 'aria-hidden': 'true' }, '/'),
+                    h('input', { type: 'number', placeholder: 'd', min: 1, max: FD_MAX_DEN, step: 1, id: 'fdDenInput',
                       'aria-label': t('stem.numberline.fraction_denominator', 'Fraction denominator'),
-                      className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
-                    h('button', { 'aria-label': t('stem.numberline.plot_fraction', 'Plot fraction'),
+                      className: 'w-16 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: { minHeight: 36 } }),
+                    h('button', { type: 'button', 'aria-label': t('stem.numberline.plot_fraction', 'Plot fraction'),
                       onClick: function() {
                         var nEl = document.getElementById('fdNum');
                         var dEl = document.getElementById('fdDenInput');
                         if (!nEl || !dEl) return;
-                        var nv = parseFloat(nEl.value), dv = parseFloat(dEl.value);
-                        if (isNaN(nv) || isNaN(dv) || dv === 0) { addToast('Enter a numerator and non-zero denominator.', 'warning'); return; }
+                        var nv = Number(nEl.value), dv = Number(dEl.value);
+                        // Whole-number numerator; whole-number denominator 1..100 (2.5 and -4 were drawn as-is).
+                        if (nEl.value === '' || dEl.value === '' || !Number.isInteger(nv) || !Number.isInteger(dv) || dv < 1 || dv > FD_MAX_DEN) {
+                          var badMsg = NLE.fill(t('stem.numberline.fd_plot_invalid', 'Use a whole-number numerator and a whole-number denominator from 1 to {max}.'), { max: FD_MAX_DEN });
+                          addToast(badMsg, 'warning'); announceToSR(badMsg); return;
+                        }
                         var v = nv / dv;
+                        if (Math.abs(v) > FD_MAX_ABS) { var bigF = t('stem.numberline.fd_too_big', 'That number is too big for this line. Try one under a trillion.'); addToast(bigF, 'warning'); announceToSR(bigF); return; }
                         var newMin = fdMin, newMax = fdMax;
                         if (v > newMax) newMax = Math.ceil(v);
                         if (v < newMin) newMin = Math.floor(v);
                         sfxClick();
-                        upd({ fdValue: v, fdDen: dv, fdMin: newMin, fdMax: newMax });
-                        announceToSR(nv + ' over ' + dv + ' equals ' + (Math.round(v * 1000) / 1000));
+                        upd({ fdValue: fdStudentSet(v), fdDen: dv, fdMin: newMin, fdMax: newMax, fdLastLandmark: null });
+                        announceToSR(NLE.fill(t('stem.numberline.fd_plotted_frac', '{n} over {d} equals {v}.'), { n: nv, d: dv, v: Math.round(v * 1000) / 1000 }));
                       },
+                      style: { minHeight: 36 },
                       className: 'px-2.5 py-1 bg-cyan-700 text-white text-xs font-bold rounded hover:bg-cyan-800 transition-all'
                     }, t('stem.numberline.plot', '→ Plot'))
                   )
                 ),
                 h('div', {},
-                  h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_decimal_plot_it', 'Type a decimal, plot it:')),
+                  h('p', { className: 'block text-[0.6875rem] font-bold text-slate-700 mb-1' }, t('stem.numberline.type_a_decimal_plot_it', 'Type a decimal, plot it:')),
                   h('div', { className: 'flex items-center gap-1' },
                     h('input', { type: 'number', step: 0.01, placeholder: '0.00', id: 'fdDec',
                       'aria-label': t('stem.numberline.decimal_value', 'Decimal value'),
-                      className: 'flex-1 px-2 py-1 text-sm border border-slate-300 rounded font-mono' }),
-                    h('button', { 'aria-label': t('stem.numberline.plot_decimal', 'Plot decimal'),
+                      className: 'flex-1 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: { minHeight: 36 } }),
+                    h('button', { type: 'button', 'aria-label': t('stem.numberline.plot_decimal', 'Plot decimal'),
                       onClick: function() {
                         var dEl = document.getElementById('fdDec');
                         if (!dEl) return;
                         var v = parseFloat(dEl.value);
-                        if (isNaN(v)) { addToast('Enter a decimal.', 'warning'); return; }
+                        if (isNaN(v) || !isFinite(v)) { var dm = t('stem.numberline.fd_enter_decimal', 'Enter a decimal.'); addToast(dm, 'warning'); announceToSR(dm); return; }
+                        if (Math.abs(v) > FD_MAX_ABS) { var bigD = t('stem.numberline.fd_too_big', 'That number is too big for this line. Try one under a trillion.'); addToast(bigD, 'warning'); announceToSR(bigD); return; }
                         var newMin = fdMin, newMax = fdMax;
                         if (v > newMax) newMax = Math.ceil(v);
                         if (v < newMin) newMin = Math.floor(v);
                         sfxClick();
-                        upd({ fdValue: v, fdMin: newMin, fdMax: newMax });
-                        announceToSR(v + ' on the line');
+                        upd({ fdValue: fdStudentSet(v), fdMin: newMin, fdMax: newMax, fdLastLandmark: null });
+                        announceToSR(NLE.fill(t('stem.numberline.fd_plotted_dec', '{v} is on the line.'), { v: v }));
                       },
+                      style: { minHeight: 36 },
                       className: 'px-2.5 py-1 bg-amber-700 text-white text-xs font-bold rounded hover:bg-amber-800 transition-all'
                     }, t('stem.numberline.plot_2', '→ Plot'))
                   )
                 )
               ),
 
-              h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
-                h('p', { className: 'text-[0.6875rem] font-bold text-indigo-700 mb-2' }, t('stem.numberline.quick_conversions_click_to_plot', '📌 Quick conversions (click to plot):')),
-                h('div', { className: 'flex flex-wrap gap-1.5' },
-                  presetFracs.map(function(pf) {
-                    var v = pf.n / pf.d;
-                    var active = Math.abs(v - fdValue) < 0.001 && fdDen === pf.d;
-                    return h('button', {
-                      key: pf.n + '_' + pf.d,
-                      'aria-label': pf.n + ' over ' + pf.d + ' equals ' + pf.dec,
+              fdShowBar && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
+                h('p', { className: 'text-[0.6875rem] font-bold text-cyan-800 mb-1' }, NLE.fill(t('stem.numberline.fd_bar_title', 'Fraction bar: length model, {d} equal parts per whole'), { d: fdDen })),
+                renderFracBar()
+              ),
+
+              h('details', { className: 'rounded-xl border-2 border-cyan-200 p-3', 'data-fd-more': 'true', open: fdMoreOpen,
+                onToggle: function(e) { var o = !!(e.currentTarget && e.currentTarget.open); if (o !== fdMoreOpen) upd({ fdMoreOpen: o }); } },
+                h('summary', { className: 'text-sm font-bold text-cyan-900 cursor-pointer' }, t('stem.numberline.fd_more', 'More fraction tools: pictures, adding, conversions and comparing')),
+                h('div', { className: 'space-y-4 mt-3' },
+                  fdShowReps && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
+                    h('p', { className: 'text-[0.6875rem] font-bold text-cyan-800 mb-2' },
+                      t('stem.numberline.same_amount_three_more_visuals_quantit', '🔄 Same amount, three more visuals. Quantity is conserved across every representation.')
+                    ),
+                    h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+                      h('div', { className: 'flex flex-col items-center rounded-lg p-2 border border-cyan-200' },
+                        h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.pie_area', '◐ Pie (area)')),
+                        renderFracPie()
+                      ),
+                      h('div', { className: 'flex flex-col items-center rounded-lg p-2 border border-cyan-200' },
+                        h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.hundred_grid', '⊞ Hundred grid')),
+                        renderFracGrid(),
+                        h('p', { className: 'text-[0.625rem] mt-1 text-center text-slate-700' },
+                          NLE.fill(t('stem.numberline.fd_grid_caption', '{n} hundredths = {pct}%'), { n: Math.round(absV * 100), pct: percent }))
+                      ),
+                      h('div', { className: 'flex flex-col items-center rounded-lg p-2 border border-cyan-200' },
+                        h('p', { className: 'text-[0.625rem] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, t('stem.numberline.dots_set', '● Dots (set)')),
+                        renderFracDots()
+                      )
+                    ),
+                    h('p', { className: 'text-xs mt-2 text-center font-bold text-cyan-900', 'data-fd-model-caption': 'true' }, modelCaption),
+                    modelNotes.map(function(note, i) { return h('p', { key: 'mn' + i, className: 'text-[0.625rem] italic text-center text-slate-700' }, note); }),
+                    h('p', { className: 'text-[0.625rem] italic mt-1 text-center text-slate-700' },
+                      NLE.fill(t('stem.numberline.fd_four_ways', 'Length, area, base-10 area and a discrete count: four ways to see {v}.'), { v: isExactFrac ? simpNum + '/' + simpDen : decimal })
+                    )
+                  ),
+
+                  // ── Equivalent fractions ribbon (same point, many names) ──
+                  equivalentFractions.length > 1 && h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
+                    h('p', { className: 'text-[0.6875rem] font-bold text-teal-800 mb-2' },
+                      t('stem.numberline.equivalent_fractions_same_point_many_n', '∞ Equivalent fractions — same point, many names. Click to re-divide the line.')
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                      equivalentFractions.map(function(eq, idx) {
+                        var active = eq.d === fdDen;
+                        return h(React.Fragment, { key: 'eq-' + eq.d },
+                          idx > 0 && h('span', { className: 'text-teal-800 font-bold text-xs', 'aria-hidden': 'true' }, '='),
+                          h('button', { type: 'button',
+                            'aria-label': NLE.fill(active ? t('stem.numberline.fd_eq_current', '{n} over {d}, current') : t('stem.numberline.fd_eq', '{n} over {d}'), { n: eq.n, d: eq.d }),
+                            'aria-pressed': active,
+                            onClick: function() {
+                              sfxClick();
+                              upd({ fdDen: eq.d });
+                              announceToSR(NLE.fill(t('stem.numberline.fd_eq', '{n} over {d}'), { n: eq.n, d: eq.d }));
+                            },
+                            style: { minHeight: 32 },
+                            className: 'px-2 py-1 rounded-lg text-xs font-bold font-mono transition-all ' +
+                              (active ? 'bg-teal-700 text-white shadow-sm' : 'bg-white text-teal-800 border border-teal-500 hover:bg-teal-100')
+                          }, eq.n + '/' + eq.d)
+                        );
+                      })
+                    ),
+                    h('p', { className: 'text-[0.625rem] text-teal-800 italic mt-2' },
+                      t('stem.numberline.multiply_or_divide_the_top_and_bottom_', 'Multiply (or divide) the top AND bottom by the same number → same value, different name. The marker does not move.')
+                    )
+                  ),
+
+                  // ── Fraction arithmetic on the line (slide the marker) ──
+                  h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
+                    h('p', { className: 'text-[0.6875rem] font-bold text-fuchsia-800 mb-1' },
+                      t('stem.numberline.move_the_marker_by_a_fraction_fraction', '➕➖ Move the marker by a fraction — fraction arithmetic on the line')
+                    ),
+                    h('p', { className: 'text-[0.625rem] text-fuchsia-800 italic mb-2' },
+                      t('stem.numberline.click_a_chip_below_the_marker_slides_a', 'Click a chip below. The marker slides; all four visuals update. The line auto-extends if you drift past the edge.')
+                    ),
+                    h('div', { className: 'space-y-1.5' },
+                      ['+', '-'].map(function(op) {
+                        return h('div', { key: 'arith-row-' + op, className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': op === '+' ? t('stem.numberline.fd_add_group', 'Add a fraction') : t('stem.numberline.fd_sub_group', 'Subtract a fraction') },
+                          h('span', { className: 'text-base font-bold text-fuchsia-800 w-5 text-center', 'aria-hidden': 'true' }, op === '+' ? '+' : '−'),
+                          [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 8], [1, 10], [2, 3], [3, 4], [1, 1]].map(function(pair) {
+                            return h('button', {
+                              key: op + '-' + pair[0] + '-' + pair[1], type: 'button',
+                              onClick: function() { applyArith(op, pair[0], pair[1]); },
+                              'aria-label': NLE.fill(op === '+' ? t('stem.numberline.fd_add_n', 'Add {n}/{d}') : t('stem.numberline.fd_sub_n', 'Subtract {n}/{d}'), { n: pair[0], d: pair[1] }),
+                              style: { minHeight: 32 },
+                              className: chip + ' font-mono bg-white text-fuchsia-800 border border-fuchsia-500 hover:bg-fuchsia-100'
+                            }, (op === '+' ? '+' : '−') + pair[0] + '/' + pair[1]);
+                          })
+                        );
+                      })
+                    ),
+                    fdLastOpText && h('p', {
+                      className: 'text-xs font-bold text-fuchsia-900 font-mono mt-2 bg-white rounded px-2 py-1 inline-block border border-fuchsia-200',
+                      'aria-live': 'polite'
+                    }, fdLastOpText)
+                  ),
+
+                  // ── Common-denominator hunter (LCM-based fraction addition) ──
+                  h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
+                    h('p', { className: 'text-[0.6875rem] font-bold text-rose-800 mb-1' },
+                      t('stem.numberline.common_denominator_hunter_how_to_add_f', '🤝 Common-denominator hunter — how to add fractions with different denominators')
+                    ),
+                    h('p', { className: 'text-[0.625rem] text-rose-800 italic mb-2' },
+                      t('stem.numberline.you_cannot_add_1_2_1_3_directly_first_', 'You cannot add 1/2 + 1/3 directly. First find a shared denominator (the LCM works), rename each fraction, then add the numerators.')
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-1 mb-2 text-sm font-mono' },
+                      [['fdCDN1', cdN1, 0, t('stem.numberline.first_fraction_numerator', 'First fraction numerator')], ['fdCDD1', cdD1, 1, t('stem.numberline.first_fraction_denominator', 'First fraction denominator')], ['fdCDN2', cdN2, 0, t('stem.numberline.second_fraction_numerator', 'Second fraction numerator')], ['fdCDD2', cdD2, 1, t('stem.numberline.second_fraction_denominator', 'Second fraction denominator')]].map(function(f, i) {
+                        return h(React.Fragment, { key: f[0] },
+                          i === 1 || i === 3 ? h('span', { className: 'text-rose-800 font-bold', 'aria-hidden': 'true' }, '/') : null,
+                          i === 2 ? h('span', { className: 'mx-2 text-rose-800 font-bold text-base', 'aria-hidden': 'true' }, '+') : null,
+                          h('input', { type: 'number', value: f[1], min: f[2], max: 100, step: 1,
+                            onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= f[2] && v <= 100) { var p = {}; p[f[0]] = v; upd(p); } },
+                            'aria-label': f[3],
+                            className: 'w-14 px-1 py-0.5 border border-rose-600 rounded text-center', style: { minHeight: 32 } }));
+                      }),
+                      h('span', { className: 'ml-2 text-rose-800 font-bold', 'aria-hidden': 'true' }, t('stem.numberline.str', '= ?'))
+                    ),
+                    h('div', { className: 'text-xs space-y-1 text-rose-900 mb-2 bg-white/60 rounded p-2 border border-rose-100' },
+                      h('p', {}, t('stem.numberline.smallest_common_denominator', 'Smallest common denominator: '),
+                        h('b', { className: 'font-mono text-base text-rose-900' }, 'LCM(' + cdD1 + ', ' + cdD2 + ') = ' + lcmOfDen)
+                      ),
+                      h('p', { className: 'font-mono' }, cdN1 + '/' + cdD1 + ' → ' + cd1ScaledN + '/' + lcmOfDen + ' ',
+                        h('span', { className: 'text-[0.625rem] text-rose-800 ml-2' }, NLE.fill(t('stem.numberline.fd_times_top_bottom', '(multiply top and bottom by {m})'), { m: cd1Mult }))
+                      ),
+                      h('p', { className: 'font-mono' }, cdN2 + '/' + cdD2 + ' → ' + cd2ScaledN + '/' + lcmOfDen + ' ',
+                        h('span', { className: 'text-[0.625rem] text-rose-800 ml-2' }, NLE.fill(t('stem.numberline.fd_times_top_bottom', '(multiply top and bottom by {m})'), { m: cd2Mult }))
+                      ),
+                      h('p', { className: 'font-mono font-bold' },
+                        NLE.fill(t('stem.numberline.fd_sum', 'Sum: {expr}'), { expr: cd1ScaledN + '/' + lcmOfDen + ' + ' + cd2ScaledN + '/' + lcmOfDen + ' = ' + cdSumN + '/' + lcmOfDen +
+                          (cdSumSimpD !== cdSumD ? ' = ' + cdSumSimpN + '/' + cdSumSimpD : '') + ' ≈ ' + (Math.round(cdSumValue * 1000) / 1000) })
+                      )
+                    ),
+                    h('button', { type: 'button',
+                      onClick: function() {
+                        var newMax = fdMax;
+                        if (cdSumValue > newMax) newMax = Math.ceil(cdSumValue);
+                        // Draw at the common denominator when it is small, else the simplified
+                        // one; a 9,506-part line (1/97 + 1/98) is never drawn.
+                        var drawDen = cdSumD <= FD_LABEL_MAX_TICKS ? cdSumD : (cdSumSimpD <= FD_MAX_DEN ? cdSumSimpD : fdDen);
+                        sfxClick();
+                        upd({ fdValue: cdSumValue, fdDen: drawDen, fdMax: newMax,
+                          fdLastOpText: cdN1 + '/' + cdD1 + ' + ' + cdN2 + '/' + cdD2 + ' = ' + cdSumSimpN + '/' + cdSumSimpD });
+                        announceToSR(drawDen === cdSumSimpD || drawDen === cdSumD
+                          ? NLE.fill(t('stem.numberline.fd_sum_plotted', 'Sum plotted: {n} over {d}.'), { n: cdSumSimpN, d: cdSumSimpD })
+                          : NLE.fill(t('stem.numberline.fd_sum_plotted_big', 'Sum plotted: {n} over {d}. That denominator is too large to draw every tick, so the line keeps its current ticks.'), { n: cdSumSimpN, d: cdSumSimpD }));
+                      },
+                      style: { minHeight: 36 },
+                      className: 'px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded hover:bg-rose-800 transition-all'
+                    }, t('stem.numberline.plot_the_sum_on_the_line', '→ Plot the sum on the line')),
+                    h('div', { className: 'flex flex-wrap gap-1 mt-2' },
+                      h('span', { className: 'text-[0.625rem] font-bold text-rose-800 self-center mr-1' }, t('stem.numberline.fd_try', 'Try:')),
+                      [[1, 2, 1, 3], [1, 4, 1, 3], [2, 3, 1, 6], [3, 4, 1, 8], [1, 5, 2, 5], [1, 2, 1, 4]].map(function(q, idx) {
+                        return h('button', { key: 'cdq-' + idx, type: 'button',
+                          onClick: function() { sfxClick(); upd({ fdCDN1: q[0], fdCDD1: q[1], fdCDN2: q[2], fdCDD2: q[3] }); },
+                          style: { minHeight: 28 },
+                          className: 'px-2 py-0.5 rounded text-[0.625rem] font-mono bg-white text-rose-800 border border-rose-400 hover:bg-rose-100'
+                        }, q[0] + '/' + q[1] + ' + ' + q[2] + '/' + q[3]);
+                      })
+                    )
+                  ),
+
+                  h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
+                    h('p', { className: 'text-[0.6875rem] font-bold text-indigo-800 mb-2' }, t('stem.numberline.quick_conversions_click_to_plot', '📌 Quick conversions (click to plot):')),
+                    h('div', { className: 'flex flex-wrap gap-1.5' },
+                      presetFracs.map(function(pf) {
+                        var v = pf.n / pf.d;
+                        var active = Math.abs(v - fdValue) < 0.001 && fdDen === pf.d;
+                        var say = NLE.fill(t('stem.numberline.fd_preset_say', '{n} over {d} equals {dec}'), { n: pf.n, d: pf.d, dec: pf.dec });
+                        return h('button', {
+                          key: pf.n + '_' + pf.d, type: 'button',
+                          'aria-label': say, 'aria-pressed': active,
+                          onClick: function() {
+                            sfxClick();
+                            var nextMax = fdMax;
+                            if (v > fdMax) nextMax = Math.ceil(v);
+                            upd({ fdValue: v, fdDen: pf.d, fdMax: nextMax });
+                            announceToSR(say);
+                          },
+                          style: { minHeight: 32 },
+                          className: chip + ' font-mono ' + (active ? 'bg-indigo-700 text-white shadow-sm' : 'bg-white text-indigo-800 border border-indigo-500 hover:bg-indigo-100')
+                        }, pf.n + '/' + pf.d + ' = ' + pf.dec);
+                      })
+                    )
+                  ),
+
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                    h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+                      h('div', { className: 'flex items-center justify-between mb-1' },
+                        h('p', { className: 'text-[0.6875rem] font-bold text-emerald-800' }, t('stem.numberline.money_view', '💵 Money view')),
+                        h('button', { type: 'button',
+                          onClick: function() { upd({ fdShowMoney: !fdShowMoney }); },
+                          'aria-expanded': fdShowMoney, style: { minHeight: 28 },
+                          className: 'text-[0.625rem] font-bold text-emerald-800 hover:underline px-2'
+                        }, fdShowMoney ? t('stem.numberline.hide', 'hide') : t('stem.numberline.show', 'show'))
+                      ),
+                      fdShowMoney && h('div', {},
+                        h('p', { className: 'text-lg font-bold text-emerald-900 font-mono' }, NLE.fill(t('stem.numberline.fd_money', '{amount} of $1.00'), { amount: moneyStr })),
+                        h('p', { className: 'text-[0.6875rem] text-emerald-800 mt-1' },
+                          t('stem.numberline.a_quarter_is_0_25_1_4_of_a_dollar_a_di', 'A quarter is $0.25 = 1/4 of a dollar. A dime is $0.10 = 1/10. Coins are decimal-fraction practice.')
+                        )
+                      )
+                    ),
+                    h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-200' },
+                      h('div', { className: 'flex items-center justify-between mb-1' },
+                        h('p', { className: 'text-[0.6875rem] font-bold text-sky-800' }, t('stem.numberline.place_value_expansion', '🔍 Place-value expansion')),
+                        h('button', { type: 'button',
+                          onClick: function() { upd({ fdShowExpansion: !fdShowExpansion }); },
+                          'aria-expanded': fdShowExpansion, style: { minHeight: 28 },
+                          className: 'text-[0.625rem] font-bold text-sky-800 hover:underline px-2'
+                        }, fdShowExpansion ? t('stem.numberline.hide', 'hide') : t('stem.numberline.show', 'show'))
+                      ),
+                      fdShowExpansion && h('div', {},
+                        h('p', { className: 'text-base font-bold text-sky-900 font-mono' }, decimal + ' = ' + expansion),
+                        h('p', { className: 'text-[0.6875rem] text-sky-800 mt-1 italic' },
+                          t('stem.numberline.every_decimal_place_is_a_fraction_1st_', 'Every decimal place IS a fraction. 1st place: tenths, 2nd: hundredths, 3rd: thousandths.')
+                        )
+                      )
+                    )
+                  ),
+
+                  h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
+                    h('div', { className: 'flex items-center justify-between mb-2' },
+                      h('p', { className: 'text-[0.6875rem] font-bold text-purple-800' }, t('stem.numberline.compare_two_values', '↔ Compare two values')),
+                      h('label', { className: 'text-[0.6875rem] font-bold text-purple-800 flex items-center gap-1 cursor-pointer', style: { minHeight: 28 } },
+                        h('input', { type: 'checkbox', checked: fdCompareOn, onChange: function() { upd({ fdCompareOn: !fdCompareOn }); } }),
+                        t('stem.numberline.fd_compare_enabled', 'Show a second value')
+                      )
+                    ),
+                    fdCompareOn && h('div', {},
+                      h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                        h('span', { className: 'text-xs font-bold text-purple-800', 'aria-hidden': 'true' }, t('stem.numberline.second_value', 'Second value:')),
+                        h('input', { type: 'number', value: fdCompareValue, step: 0.01, min: fdMin, max: fdMax,
+                          onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && isFinite(v)) upd({ fdCompareValue: v }); },
+                          'aria-label': t('stem.numberline.second_value_2', 'Second value'),
+                          className: 'w-24 px-2 py-1 text-sm border border-purple-600 rounded font-mono', style: { minHeight: 32 }
+                        }),
+                        h('span', { className: 'text-xs font-mono text-purple-800' }, '≈ ' + Math.round(fdCompareValue * fdDen) + '/' + fdDen)
+                      ),
+                      h('p', { className: 'text-[0.6875rem] text-purple-900', role: 'status' },
+                        (function() {
+                          var a = fdValue, b = fdCompareValue;
+                          var aR = Math.round(a * 1000) / 1000, bR = Math.round(b * 1000) / 1000;
+                          if (Math.abs(a - b) < 0.001) return NLE.fill(t('stem.numberline.fd_cmp_equal', 'Equal: both are {a}.'), { a: aR });
+                          if (a > b) return NLE.fill(t('stem.numberline.fd_cmp_greater', '{a} > {b}: the red marker is to the right.'), { a: aR, b: bR });
+                          return NLE.fill(t('stem.numberline.fd_cmp_less', '{a} < {b}: the red marker is to the left.'), { a: aR, b: bR });
+                        })()
+                      )
+                    )
+                  ),
+
+                  h('div', { className: 'flex flex-wrap items-center gap-2 text-[0.6875rem]' },
+                    h('span', { className: 'font-bold text-slate-700' }, t('stem.numberline.line_range', 'Line range:')),
+                    h('label', { className: 'flex items-center gap-1' }, t('stem.numberline.fd_min', 'min'),
+                      h('input', { type: 'number', value: fdMin, step: 1,
+                        onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && isFinite(v) && v < fdMax && (fdMax - v) * fdDen <= 2000) upd({ fdMin: v }); },
+                        'aria-label': t('stem.numberline.line_minimum', 'Line minimum'),
+                        className: 'w-16 px-2 py-0.5 border border-slate-500 rounded font-mono', style: { minHeight: 32 }
+                      })
+                    ),
+                    h('label', { className: 'flex items-center gap-1' }, t('stem.numberline.fd_max', 'max'),
+                      h('input', { type: 'number', value: fdMax, step: 1,
+                        onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && isFinite(v) && v > fdMin && (v - fdMin) * fdDen <= 2000) upd({ fdMax: v }); },
+                        'aria-label': t('stem.numberline.line_maximum', 'Line maximum'),
+                        className: 'w-16 px-2 py-0.5 border border-slate-500 rounded font-mono', style: { minHeight: 32 }
+                      })
+                    ),
+                    [[0, 1, t('stem.numberline.0_to_1', '0 to 1')], [0, 2, t('stem.numberline.0_to_2', '0 to 2')], [-1, 1, t('stem.numberline.1_to_1', '-1 to 1')]].map(function(rg) {
+                      return h('button', { key: rg[2], type: 'button', onClick: function() { sfxClick(); upd({ fdMin: rg[0], fdMax: rg[1], fdValue: Math.max(rg[0], Math.min(rg[1], fdValue)) }); }, style: { minHeight: 32 },
+                        className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-800 hover:bg-slate-200 font-bold' }, rg[2]);
+                    }),
+                    h('button', { type: 'button',
                       onClick: function() {
                         sfxClick();
-                        var nextMax = fdMax;
-                        if (v > fdMax) nextMax = Math.ceil(v);
-                        upd({ fdValue: v, fdDen: pf.d, fdMax: nextMax });
-                        announceToSR(pf.n + ' over ' + pf.d + ' equals ' + pf.dec);
+                        upd({
+                          fdValue: 0.5, fdDen: 4, fdMin: 0, fdMax: 1,
+                          fdShowBar: true, fdShowReps: true, fdSnap: null,
+                          fdShowMoney: false, fdShowExpansion: false,
+                          fdCompareOn: false, fdCompareValue: 0.75,
+                          fdLastLandmark: null, fdCelebrate: false,
+                          fdLastOpText: '', fdTrail: [],
+                          fdCDN1: 1, fdCDD1: 2, fdCDN2: 1, fdCDD2: 3
+                        });
+                        announceToSR(t('stem.numberline.fd_reset_done', 'Fractions and decimals reset to the starting settings.'));
                       },
-                      className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all font-mono ' +
-                        (active ? 'bg-indigo-700 text-white shadow-sm' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
-                    }, pf.n + '/' + pf.d + ' = ' + pf.dec);
-                  })
-                )
-              ),
-
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
-                h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-                  h('div', { className: 'flex items-center justify-between mb-1' },
-                    h('p', { className: 'text-[0.6875rem] font-bold text-emerald-800' }, t('stem.numberline.money_view', '💵 Money view')),
-                    h('button', {
-                      onClick: function() { upd({ fdShowMoney: !fdShowMoney }); },
-                      'aria-expanded': fdShowMoney,
-                      className: 'text-[0.625rem] font-bold text-emerald-700 hover:underline'
-                    }, fdShowMoney ? 'hide' : 'show')
+                      'aria-label': t('stem.numberline.reset_frac_dec_tab_to_defaults', 'Reset Frac Dec tab to defaults'),
+                      style: { minHeight: 32 },
+                      className: 'ml-auto px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100 font-bold'
+                    }, t('stem.numberline.reset_frac_dec', '↺ Reset Frac↔Dec'))
                   ),
-                  fdShowMoney && h('div', {},
-                    h('p', { className: 'text-lg font-bold text-emerald-900 font-mono' }, moneyStr + ' of $1.00'),
-                    h('p', { className: 'text-[0.6875rem] text-emerald-700 mt-1' },
-                      t('stem.numberline.a_quarter_is_0_25_1_4_of_a_dollar_a_di', 'A quarter is $0.25 = 1/4 of a dollar. A dime is $0.10 = 1/10. Coins are decimal-fraction practice.')
+
+                  h('details', { className: 'bg-white rounded-xl border border-cyan-200 p-3' },
+                    h('summary', { className: 'text-xs font-bold text-cyan-800 cursor-pointer' }, t('stem.numberline.why_fractions_and_decimals_are_the_sam', '💡 Why fractions and decimals are the same thing')),
+                    h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
+                      h('p', {}, h('b', {}, t('stem.numberline.a_fraction_is_a_division_problem', 'A fraction IS a division problem. ')), t('stem.numberline.3_4_means_3_divided_by_4_type_3_4_into', '3/4 means "3 divided by 4." Type 3 ÷ 4 into any calculator: 0.75. The slash and ÷ mean the same thing.')),
+                      h('p', {}, h('b', {}, t('stem.numberline.a_decimal_is_a_fraction_with_a_hidden_', 'A decimal IS a fraction with a hidden denominator. ')), t('stem.numberline.0_6_means_6_tenths_6_10_0_25_means_25_', '0.6 means "6 tenths," 6/10. 0.25 means "25 hundredths," 25/100, which simplifies to 1/4.')),
+                      h('p', {}, h('b', {}, t('stem.numberline.the_number_line_proves_it', 'The number line proves it. ')), t('stem.numberline.the_point_at_1_4_is_the_same_point_as_', 'The point at 1/4 is the same point as the point at 0.25. Same spot, two names.')),
+                      h('p', {}, h('b', {}, t('stem.numberline.some_terminate_some_repeat', 'Some terminate, some repeat. ')), t('stem.numberline.1_2_0_5_stops_1_4_0_25_stops_1_3_0_333', '1/2 = 0.5 (stops). 1/4 = 0.25 (stops). 1/3 = 0.333… (repeats forever). The denominator decides: if it factors into only 2s and 5s, it terminates. Otherwise it repeats. Watch the ↻ symbol on the decimal card.'))
                     )
                   )
-                ),
-                h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-200' },
-                  h('div', { className: 'flex items-center justify-between mb-1' },
-                    h('p', { className: 'text-[0.6875rem] font-bold text-sky-800' }, t('stem.numberline.place_value_expansion', '🔍 Place-value expansion')),
-                    h('button', {
-                      onClick: function() { upd({ fdShowExpansion: !fdShowExpansion }); },
-                      'aria-expanded': fdShowExpansion,
-                      className: 'text-[0.625rem] font-bold text-sky-700 hover:underline'
-                    }, fdShowExpansion ? 'hide' : 'show')
-                  ),
-                  fdShowExpansion && h('div', {},
-                    h('p', { className: 'text-base font-bold text-sky-900 font-mono' }, decimal + ' = ' + expansion),
-                    h('p', { className: 'text-[0.6875rem] text-sky-700 mt-1 italic' },
-                      t('stem.numberline.every_decimal_place_is_a_fraction_1st_', 'Every decimal place IS a fraction. 1st place: tenths, 2nd: hundredths, 3rd: thousandths.')
-                    )
-                  )
-                )
-              ),
-
-              h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
-                h('div', { className: 'flex items-center justify-between mb-2' },
-                  h('p', { className: 'text-[0.6875rem] font-bold text-purple-800' }, t('stem.numberline.compare_two_values', '↔ Compare two values')),
-                  h('label', { className: 'text-[0.6875rem] font-bold text-purple-700 flex items-center gap-1 cursor-pointer' },
-                    h('input', { type: 'checkbox', checked: fdCompareOn, onChange: function() { upd({ fdCompareOn: !fdCompareOn }); } }),
-                    'enabled'
-                  )
-                ),
-                fdCompareOn && h('div', {},
-                  h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
-                    h('span', { className: 'text-xs font-bold text-purple-700' }, t('stem.numberline.second_value', 'Second value:')),
-                    h('input', { type: 'number', value: fdCompareValue, step: 0.01, min: fdMin, max: fdMax,
-                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd({ fdCompareValue: v }); },
-                      'aria-label': t('stem.numberline.second_value_2', 'Second value'),
-                      className: 'w-24 px-2 py-1 text-sm border border-purple-300 rounded font-mono'
-                    }),
-                    h('span', { className: 'text-xs font-mono text-purple-700' }, '≈ ' + Math.round(fdCompareValue * fdDen) + '/' + fdDen)
-                  ),
-                  h('p', { className: 'text-[0.6875rem] text-purple-800' },
-                    (function() {
-                      var a = fdValue, b = fdCompareValue;
-                      var aR = Math.round(a * 1000) / 1000, bR = Math.round(b * 1000) / 1000;
-                      if (Math.abs(a - b) < 0.001) return '= Equal: both are ' + aR + '.';
-                      if (a > b) return aR + ' > ' + bR + ' (red marker is to the right).';
-                      return aR + ' < ' + bR + ' (red marker is to the left).';
-                    })()
-                  )
-                )
-              ),
-
-              h('div', { className: 'flex flex-wrap items-center gap-2 text-[0.6875rem]' },
-                h('span', { className: 'font-bold text-slate-600' }, t('stem.numberline.line_range', 'Line range:')),
-                h('label', { className: 'flex items-center gap-1' }, 'min',
-                  h('input', { type: 'number', value: fdMin, step: 1,
-                    onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v < fdMax) upd({ fdMin: v }); },
-                    'aria-label': t('stem.numberline.line_minimum', 'Line minimum'),
-                    className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
-                  })
-                ),
-                h('label', { className: 'flex items-center gap-1' }, 'max',
-                  h('input', { type: 'number', value: fdMax, step: 1,
-                    onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v > fdMin) upd({ fdMax: v }); },
-                    'aria-label': t('stem.numberline.line_maximum', 'Line maximum'),
-                    className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
-                  })
-                ),
-                h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 1 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.0_to_1', '0 to 1')),
-                h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 2 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.0_to_2', '0 to 2')),
-                h('button', { onClick: function() { sfxClick(); upd({ fdMin: -1, fdMax: 1 }); },
-                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, t('stem.numberline.1_to_1', '-1 to 1')),
-                h('button', {
-                  onClick: function() {
-                    sfxClick();
-                    upd({
-                      fdValue: 0.5, fdDen: 4, fdMin: 0, fdMax: 1,
-                      fdShowBar: true, fdShowReps: true, fdSnap: false,
-                      fdShowMoney: false, fdShowExpansion: false,
-                      fdCompareOn: false, fdCompareValue: 0.75,
-                      fdLastLandmark: null, fdCelebrate: false,
-                      fdLastOpText: '', fdTrail: [],
-                      fdCDN1: 1, fdCDD1: 2, fdCDN2: 1, fdCDD2: 3
-                    });
-                    announceToSR('Frac Dec reset to defaults');
-                  },
-                  'aria-label': t('stem.numberline.reset_frac_dec_tab_to_defaults', 'Reset Frac Dec tab to defaults'),
-                  className: 'ml-auto px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold'
-                }, t('stem.numberline.reset_frac_dec', '↺ Reset Frac↔Dec'))
-              ),
-
-              h('details', { className: 'bg-white rounded-xl border border-cyan-200 p-3' },
-                h('summary', { className: 'text-xs font-bold text-cyan-700 cursor-pointer' }, t('stem.numberline.why_fractions_and_decimals_are_the_sam', '💡 Why fractions and decimals are the same thing')),
-                h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
-                  h('p', {}, h('b', {}, t('stem.numberline.a_fraction_is_a_division_problem', 'A fraction IS a division problem. ')), t('stem.numberline.3_4_means_3_divided_by_4_type_3_4_into', '3/4 means "3 divided by 4." Type 3 ÷ 4 into any calculator: 0.75. The slash and ÷ mean the same thing.')),
-                  h('p', {}, h('b', {}, t('stem.numberline.a_decimal_is_a_fraction_with_a_hidden_', 'A decimal IS a fraction with a hidden denominator. ')), t('stem.numberline.0_6_means_6_tenths_6_10_0_25_means_25_', '0.6 means "6 tenths," 6/10. 0.25 means "25 hundredths," 25/100, which simplifies to 1/4.')),
-                  h('p', {}, h('b', {}, t('stem.numberline.the_number_line_proves_it', 'The number line proves it. ')), t('stem.numberline.the_point_at_1_4_is_the_same_point_as_', 'The point at 1/4 is the same point as the point at 0.25. Same spot, two names.')),
-                  h('p', {}, h('b', {}, t('stem.numberline.some_terminate_some_repeat', 'Some terminate, some repeat. ')), t('stem.numberline.1_2_0_5_stops_1_4_0_25_stops_1_3_0_333', '1/2 = 0.5 (stops). 1/4 = 0.25 (stops). 1/3 = 0.333… (repeats forever). The denominator decides: if it factors into only 2s and 5s, it terminates. Otherwise it repeats. Watch the ↻ symbol on the decimal card.'))
-                )
-              )
+                ))
             );
           };
 
@@ -1903,19 +4188,20 @@ window.StemLab = window.StemLab || {
             var earned = Object.keys(badges).length;
             if (earned === 0) return null;
             return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-wider mb-2' },
-                '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
+              h('p', { className: 'text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider mb-2' },
+                NLE.fill(t('stem.numberline.badges_count', 'Badges: {n} of {total}'), { n: earned, total: BADGES.length })
               ),
-              h('div', { className: 'flex flex-wrap gap-1.5' },
+              h('ul', { className: 'flex flex-wrap gap-1.5', style: { listStyle: 'none', padding: 0, margin: 0 } },
                 BADGES.map(function(b) {
                   var has = badges[b.id];
-                  return h('div', {
+                  return h('li', {
                     key: b.id,
                     title: b.name + ': ' + b.desc,
+                    'aria-label': NLE.fill(has ? t('stem.numberline.badge_has', '{name}, earned: {desc}') : t('stem.numberline.badge_not', '{name}, not yet earned: {desc}'), { name: b.name, desc: b.desc }),
                     className: 'w-8 h-8 rounded-lg flex items-center justify-center text-base ' +
-                      (has ? 'bg-amber-200 shadow-sm' : 'bg-slate-100 opacity-30'),
+                      (has ? 'bg-amber-200 shadow-sm' : 'bg-slate-100 opacity-40'),
                     style: { filter: has ? 'none' : 'grayscale(1)' }
-                  }, b.icon);
+                  }, h('span', { 'aria-hidden': 'true' }, b.icon));
                 })
               )
             );
@@ -1926,13 +4212,14 @@ window.StemLab = window.StemLab || {
             if (!showAITutor) return null;
             return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
               h('div', { className: 'flex items-center justify-between' },
-                h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.numberline.ai_number_line_tutor', '\uD83E\uDD16 AI Number Line Tutor')),
-                h('button', { 'aria-label': t('stem.numberline.toggle_number_line_option', 'Toggle number line option'),
-                  onClick: function() { upd({ showAITutor: false }); },
-                  className: 'text-sky-400 hover:text-sky-600 text-lg font-bold'
-                }, '\u00D7')
+                h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.numberline.ai_number_line_tutor', '🤖 AI Number Line Tutor')),
+                h('button', { type: 'button', 'aria-label': t('stem.numberline.close_ai_tutor', 'Close the AI tutor'),
+                  onClick: function() { upd({ showAITutor: false }); }, style: { minWidth: 32, minHeight: 32 },
+                  className: 'text-sky-800 hover:text-sky-900 text-lg font-bold'
+                }, '×')
               ),
-              h('div', { className: 'flex gap-2' },
+              !aiAvailable && h('p', { className: 'text-sm text-sky-900' }, t('stem.numberline.ai_unavailable', 'The AI tutor is not available here. The hints and worked examples in Challenges work without it.')),
+              aiAvailable && h('div', { className: 'flex gap-2' },
                 h('input', {
                   type: 'text', value: aiQuestion,
                   onChange: function(e) { upd({ aiQuestion: e.target.value }); },
@@ -1941,77 +4228,1318 @@ window.StemLab = window.StemLab || {
                   'aria-label': t('stem.numberline.ask_about_number_lines', 'Ask about number lines...'),
                   className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
                 }),
-                h('button', { onClick: askAITutor,
-                  disabled: aiLoading || !aiQuestion.trim(),
+                h('button', { type: 'button', onClick: askAITutor,
+                  disabled: aiLoading || !aiQuestion.trim(), style: { minHeight: 40 },
                   className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
-                }, aiLoading ? '\u23F3' : 'Ask')
+                }, aiLoading ? t('stem.numberline.ai_thinking', 'Thinking…') : t('stem.numberline.ai_ask', 'Ask'))
               ),
-              h('div', { className: 'flex flex-wrap gap-1.5' },
-                ['What is a number line?', 'How do I round numbers?', 'What is skip counting?', 'How do negative numbers work?'].map(function(q) {
-                  return h('button', { 'aria-label': t('stem.numberline.ask_question', 'Ask question'),
-                    key: q,
+              aiAvailable && h('div', { className: 'flex flex-wrap gap-1.5' },
+                [t('stem.numberline.ai_q1', 'What is a number line?'), t('stem.numberline.ai_q2', 'How do I round numbers?'), t('stem.numberline.ai_q3', 'What is skip counting?'), t('stem.numberline.ai_q4', 'How do negative numbers work?')].map(function(q, qi) {
+                  return h('button', { type: 'button', 'aria-label': NLE.fill(t('stem.numberline.ask_question_n', 'Use the question: {q}'), { q: q }),
+                    key: 'aiq' + qi, style: { minHeight: 32 },
                     onClick: function() { upd({ aiQuestion: q }); },
                     className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
                   }, q);
                 })
               ),
-              aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
+              aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-800 whitespace-pre-wrap border border-sky-100', role: 'status' }, aiResponse)
             );
           };
 
+          // ═══ INTEGER LAB: hops for a ± b, opposites as a mirror, |x| as distance ═══
+          var renderIntegerLab = function() {
+            var raw = (_n.intLab && typeof _n.intLab === 'object') ? _n.intLab : {};
+            var ci = function(v, lo, hi, fb) { var n = Number(v); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : fb; };
+            var il = {
+              mode: raw.mode === 'mirror' || raw.mode === 'abs' ? raw.mode : 'hops',
+              a: ci(raw.a, -10, 10, 3), op: raw.op === '-' ? '-' : '+', b: ci(raw.b, -10, 10, -5),
+              pred: typeof raw.pred === 'number' && isFinite(raw.pred) ? raw.pred : null, checked: !!raw.checked,
+              x: ci(raw.x, -10, 10, -4), opp: typeof raw.opp === 'number' && isFinite(raw.opp) ? raw.opp : null, oppChecked: !!raw.oppChecked,
+              ax: ci(raw.ax, -12, 12, -6), absGuess: typeof raw.absGuess === 'string' ? raw.absGuess : '', absChecked: !!raw.absChecked,
+              da: ci(raw.da, -12, 12, -3), db: ci(raw.db, -12, 12, 5),
+              // Same rule as every tab: a wrong check names the slip and leaves the
+              // marker editable; the answer shows only when right or on request after 2 tries.
+              tries: ci(raw.tries, 0, 99, 0), mis: typeof raw.mis === 'string' ? raw.mis : null, wrong: !!raw.wrong,
+              oppTries: ci(raw.oppTries, 0, 99, 0), oppWrong: raw.oppWrong === 'same' || raw.oppWrong === 'no' ? raw.oppWrong : null,
+              absTries: ci(raw.absTries, 0, 99, 0), absShown: !!raw.absShown
+            };
+            var setIL = function(patch) { upd({ intLab: Object.assign({}, il, patch) }); };
+            var r = il.op === '+' ? il.a + il.b : il.a - il.b;
+            var opSym = il.op === '+' ? '+' : '−';
+            var expr = dispNum(il.a) + ' ' + opSym + ' ' + (il.b < 0 ? '(' + dispNum(il.b) + ')' : dispNum(il.b));
+            var labels20 = [-20, -15, -10, -5, 0, 5, 10, 15, 20];
+            var labels10 = [-10, -5, 0, 5, 10];
+            var labels15 = [-15, -10, -5, 0, 5, 10, 15];
+            var btnCls = function(on) { return 'px-3 py-1.5 rounded-lg text-xs font-bold border ' + (on ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-sky-900 border-sky-600'); };
+            var numField = function(key, label, lo, hi, val, reset) {
+              return h('label', { key: key, className: 'flex flex-col text-xs font-bold' }, label,
+                h('input', { type: 'number', min: lo, max: hi, step: 1, value: val,
+                  onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= lo && v <= hi) { var p = Object.assign({}, reset || {}); p[key] = v; setIL(p); } },
+                  className: 'mt-1 w-20 px-2 py-1 border border-sky-600 rounded font-mono', style: { minHeight: 40 } }));
+            };
+            var status = function(kids) { return h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'space-y-1' }, kids); };
+            var body;
+            if (il.mode === 'hops') {
+              var hopItem = { type: 'hopSum', a: il.a, b: il.b, op: il.op, target: r, tol: 0.49, line: { min: -20, max: 20, step: 1, labels: labels20 }, points: [il.a] };
+              var hopOk = il.checked && il.pred === r;
+              var hopMis = il.checked && !hopOk && il.pred != null ? NLE.diagnose(hopItem, il.pred) : !il.checked && il.wrong ? il.mis : null;
+              var hopInfo = hopMis ? NLE.misInfo(hopMis, hopItem, t) : null;
+              var resetPred = { pred: null, checked: false, tries: 0, mis: null, wrong: false };
+              var hopCheck = function() {
+                if (il.pred == null) return;
+                if (il.pred === r) { setIL({ checked: true, wrong: false }); sfxCorrect(); announceToSR(NLE.hopSteps(il.a, il.op, il.b, t).join(' ')); return; }
+                var m = NLE.diagnose(hopItem, il.pred), info = m ? NLE.misInfo(m, hopItem, t) : null;
+                setIL({ tries: il.tries + 1, mis: m || null, wrong: true }); sfxWrong();
+                announceToSR(info ? info.title + '. ' + info.body : t('stem.numberline.pp_not_yet', 'Not yet. Try again.'));
+              };
+              body = h('div', { className: 'space-y-2', 'data-int-mode': 'hops' },
+                h('p', { className: 'text-sm' }, t('stem.numberline.il_hops_intro', 'Predict first: place your marker where the answer lands, then check to see the hops.')),
+                h('div', { className: 'flex flex-wrap items-end gap-3' },
+                  numField('a', t('stem.numberline.il_first', 'First number (start)'), -10, 10, il.a, resetPred),
+                  h('div', { role: 'group', 'aria-label': t('stem.numberline.il_operation', 'Operation'), className: 'flex gap-1' },
+                    h('button', { type: 'button', 'aria-pressed': il.op === '+', onClick: function() { setIL(Object.assign({ op: '+' }, resetPred)); }, style: { minHeight: 40, minWidth: 40 }, className: btnCls(il.op === '+'), 'aria-label': t('stem.numberline.il_add', 'Add') }, '+'),
+                    h('button', { type: 'button', 'aria-pressed': il.op === '-', onClick: function() { setIL(Object.assign({ op: '-' }, resetPred)); }, style: { minHeight: 40, minWidth: 40 }, className: btnCls(il.op === '-'), 'aria-label': t('stem.numberline.il_subtract', 'Subtract') }, '−')),
+                  numField('b', t('stem.numberline.il_second', 'Second number'), -10, 10, il.b, resetPred),
+                  h('button', { type: 'button', style: { minHeight: 40 }, className: btnCls(false),
+                    onClick: function() {
+                      var na, nb, nop, guard = 0;
+                      do { na = Math.floor(Math.random() * 17) - 8; nb = Math.floor(Math.random() * 17) - 8; nop = Math.random() < 0.5 ? '+' : '-'; guard++; }
+                      while ((nb === 0 || Math.abs(nop === '+' ? na + nb : na - nb) > 18 || (na >= 0 && nb >= 0)) && guard < 100);
+                      setIL(Object.assign({ a: na, b: nb, op: nop }, resetPred));
+                    } }, t('stem.numberline.il_new_problem', 'New problem'))),
+                h('p', { className: 'text-lg font-bold font-mono' }, NLE.fill(t('stem.numberline.il_expr_q', '{expr} = ?'), { expr: expr })),
+                lineSvg({ min: -20, max: 20, step: 1, labels: labels20, points: [{ v: il.a, label: t('stem.numberline.il_start_short', 'start') }],
+                  marker: il.pred, hops: il.checked ? [{ from: 0, to: il.a, label: dispNum(il.a), color: P.hop, level: 0 }, { from: il.a, to: r, label: opSym + (il.b < 0 ? '(' + dispNum(il.b) + ')' : dispNum(il.b)), color: P.hop2, level: 1 }] : [],
+                  correct: il.checked ? r : null, correctLabel: il.checked ? dispNum(r) : null, height: 170, axisY: 110,
+                  slider: { name: t('stem.numberline.il_pred_name', 'Predict where you land'), valuetext: NLE.describeSpot(hopItem, il.pred, t, 'marker'), snap: 1, disabled: il.checked, describedBy: 'nl-il-desc',
+                    onSet: function(v) { setIL({ pred: v }); } } }),
+                h('p', { id: 'nl-il-desc', className: 'text-xs' }, NLE.describeLine(hopItem, t)),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  !il.checked && h('button', { type: 'button', disabled: il.pred == null, onClick: hopCheck, style: { minHeight: 44 },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold bg-sky-700 text-white disabled:opacity-50' }, t('stem.numberline.il_check', 'Check my prediction')),
+                  !il.checked && il.tries >= 2 && allowReveal && h('button', { type: 'button', style: { minHeight: 44 }, className: btnReveal, onClick: function() { setIL({ checked: true }); announceToSR(NLE.hopSteps(il.a, il.op, il.b, t).join(' ')); } }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                  il.checked && h('button', { type: 'button', onClick: function() { setIL(resetPred); }, style: { minHeight: 44 },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold border border-sky-700 bg-white text-sky-900' }, t('stem.numberline.il_again', 'Predict again'))),
+                status([
+                  il.checked && h('p', { key: 'v', className: 'text-sm font-bold' }, hopOk
+                    ? NLE.fill(t('stem.numberline.il_hop_yes', 'Yes: {expr} = {r}.'), { expr: expr, r: dispNum(r) })
+                    : NLE.fill(t('stem.numberline.il_hop_no', 'Not quite: you predicted {p}, and {expr} = {r}.'), { p: dispNum(il.pred), expr: expr, r: dispNum(r) })),
+                  hopInfo && h('p', { key: 'm', className: 'text-sm' }, h('b', null, hopInfo.title + ': '), hopInfo.body),
+                  !il.checked && il.wrong && !hopInfo && h('p', { key: 'n', className: 'text-sm' }, t('stem.numberline.pp_not_yet', 'Not yet. Try again.')),
+                  !il.checked && il.tries >= 2 && h('p', { key: 'r', className: 'text-xs italic' }, allowReveal ? t('stem.numberline.il_two_tries', 'Move your marker and check again, or show the answer.') : t('stem.numberline.il_two_tries_noreveal', 'Move your marker and check again.')),
+                  il.checked && h('ol', { key: 's', className: 'list-decimal pl-5 text-sm' }, NLE.hopSteps(il.a, il.op, il.b, t).map(function(s, i) { return h('li', { key: i }, s); }))
+                ]));
+            } else if (il.mode === 'mirror') {
+              var mItem = { line: { min: -10, max: 10, step: 1, labels: labels10 }, points: [il.x] };
+              var oppOk = il.oppChecked && il.opp === -il.x;
+              var dist = Math.abs(il.x);
+              body = h('div', { className: 'space-y-2', 'data-int-mode': 'mirror' },
+                h('div', { className: 'flex flex-wrap items-end gap-3' }, numField('x', t('stem.numberline.il_number', 'Number'), -10, 10, il.x, { opp: null, oppChecked: false, oppTries: 0, oppWrong: null })),
+                h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.il_mirror_q', 'Where is the opposite of {x}? Place your marker, then check.'), { x: dispNum(il.x) })),
+                lineSvg({ min: -10, max: 10, step: 1, labels: labels10, points: [{ v: il.x, label: dispNum(il.x) }], marker: il.opp, mirror: il.oppChecked,
+                  correct: il.oppChecked ? -il.x : null, correctLabel: il.oppChecked ? dispNum(-il.x) : null,
+                  bars: il.oppChecked && il.x !== 0 ? [{ from: 0, to: il.x, label: String(dist) }, { from: 0, to: -il.x, label: String(dist) }] : [], height: 170, axisY: 110,
+                  slider: { name: t('stem.numberline.il_opp_name', 'Your marker for the opposite'), valuetext: NLE.describeSpot(mItem, il.opp, t, 'marker'), snap: 1, disabled: il.oppChecked, describedBy: 'nl-il-desc',
+                    onSet: function(v) { setIL({ opp: v }); } } }),
+                h('p', { id: 'nl-il-desc', className: 'text-xs' }, NLE.describeLine(mItem, t)),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  !il.oppChecked && h('button', { type: 'button', disabled: il.opp == null, style: { minHeight: 44 },
+                    onClick: function() {
+                      if (il.opp === -il.x) { setIL({ oppChecked: true, oppWrong: null }); sfxCorrect(); return; }
+                      var w = il.opp === il.x && il.x !== 0 ? 'same' : 'no';
+                      setIL({ oppTries: il.oppTries + 1, oppWrong: w }); sfxWrong();
+                      announceToSR(w === 'same' ? t('stem.numberline.il_opp_same', 'That is the number itself. Its opposite is the same distance from 0 on the OTHER side.') : t('stem.numberline.il_opp_no', 'Not quite. The opposite is the same distance from 0 as the number, on the other side of 0.'));
+                    },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold bg-sky-700 text-white disabled:opacity-50' }, t('stem.numberline.il_check_opp', 'Check the opposite')),
+                  !il.oppChecked && il.oppTries >= 2 && allowReveal && h('button', { type: 'button', style: { minHeight: 44 }, className: btnReveal, onClick: function() { setIL({ oppChecked: true }); } }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                  il.oppChecked && h('button', { type: 'button', onClick: function() { setIL({ opp: null, oppChecked: false, oppTries: 0, oppWrong: null }); }, style: { minHeight: 44 },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold border border-sky-700 bg-white text-sky-900' }, t('stem.numberline.il_again', 'Predict again'))),
+                status([
+                  il.oppChecked && h('p', { key: 'v', className: 'text-sm font-bold' }, oppOk
+                    ? (il.x === 0 ? t('stem.numberline.il_opp_zero', '0 is its own opposite: it is 0 units from 0.') : NLE.fill(dist === 1 ? t('stem.numberline.il_opp_yes_one', '{x} and {nx} are opposites: each is 1 unit from 0, on opposite sides of 0.') : t('stem.numberline.il_opp_yes', '{x} and {nx} are opposites: each is {d} units from 0, on opposite sides of 0.'), { x: dispNum(il.x), nx: dispNum(-il.x), d: dist }))
+                    : il.opp === il.x && il.x !== 0 ? t('stem.numberline.il_opp_same', 'That is the number itself. Its opposite is the same distance from 0 on the OTHER side.')
+                    : t('stem.numberline.il_opp_no', 'Not quite. The opposite is the same distance from 0 as the number, on the other side of 0.')),
+                  !il.oppChecked && il.oppWrong && h('p', { key: 'w', className: 'text-sm font-bold' }, il.oppWrong === 'same' ? t('stem.numberline.il_opp_same', 'That is the number itself. Its opposite is the same distance from 0 on the OTHER side.') : t('stem.numberline.il_opp_no', 'Not quite. The opposite is the same distance from 0 as the number, on the other side of 0.')),
+                  il.oppChecked && h('p', { key: 'f', className: 'text-sm' }, NLE.fill(t('stem.numberline.il_opp_twice', 'The opposite of the opposite is the number itself: −(−{x}) = {x}.'), { x: dispNum(il.x) }))
+                ]));
+            } else {
+              var aItem = { line: { min: -15, max: 15, step: 1, labels: labels15 }, points: [il.ax] };
+              var parsed = NLE.parseAnswer(il.absGuess);
+              var absVal = Math.abs(il.ax);
+              var absOk = il.absChecked && parsed && NLE.near(parsed.value, absVal);
+              var absCheck = function() {
+                var p = NLE.parseAnswer(il.absGuess);
+                if (!p) return;
+                var ok = NLE.near(p.value, absVal);
+                setIL({ absChecked: true, absTries: ok ? il.absTries : il.absTries + 1 }); (ok ? sfxCorrect : sfxWrong)();
+              };
+              var dd = Math.abs(il.da - il.db);
+              var dItem = { line: { min: -15, max: 15, step: 1, labels: labels15 }, points: [il.da, il.db] };
+              body = h('div', { className: 'space-y-2', 'data-int-mode': 'abs' },
+                h('div', { className: 'flex flex-wrap items-end gap-3' }, numField('ax', t('stem.numberline.il_number', 'Number'), -12, 12, il.ax, { absGuess: '', absChecked: false, absTries: 0, absShown: false })),
+                h('p', { className: 'text-sm font-bold', id: 'nl-il-absq' }, NLE.fill(t('stem.numberline.il_abs_q', 'What is |{x}|? Type the distance from {x} to 0.'), { x: dispNum(il.ax) })),
+                lineSvg({ min: -15, max: 15, step: 1, labels: labels15, points: [{ v: il.ax, label: dispNum(il.ax) }],
+                  bars: absOk || il.absShown ? [{ from: 0, to: il.ax, label: '|' + dispNum(il.ax) + '| = ' + absVal }] : [], height: 160, axisY: 104,
+                  desc: NLE.describeLine(aItem, t) }),
+                h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                  h('input', { type: 'text', inputMode: 'decimal', value: il.absGuess, disabled: il.absChecked && absOk, 'aria-label': t('stem.numberline.il_abs_answer', 'Your answer for the absolute value'), 'aria-describedby': 'nl-il-absq',
+                    onChange: function(e) { setIL({ absGuess: e.target.value, absChecked: false }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter' && NLE.parseAnswer(il.absGuess)) absCheck(); },
+                    className: 'w-28 px-2 py-1 border border-sky-600 rounded font-mono', style: { minHeight: 44 } }),
+                  h('button', { type: 'button', disabled: !parsed || (il.absChecked && absOk) || il.absShown, onClick: absCheck, style: { minHeight: 44 },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold bg-sky-700 text-white disabled:opacity-50' }, t('stem.numberline.il_check_abs', 'Check')),
+                  !absOk && !il.absShown && il.absTries >= 2 && allowReveal && h('button', { type: 'button', style: { minHeight: 44 }, className: btnReveal, onClick: function() { setIL({ absShown: true }); } }, t('stem.numberline.pp_reveal', 'Show the answer'))),
+                status([
+                  il.absChecked && parsed && h('p', { key: 'v', className: 'text-sm' }, absOk
+                    ? NLE.fill(t('stem.numberline.il_abs_yes', '|{x}| = {d}. Absolute value is the distance from 0, so it is never negative. Only |0| is 0.'), { x: dispNum(il.ax), d: absVal })
+                    : parsed.value < 0 ? NLE.misInfo('abs_kept_sign', {}, t).body
+                    : NLE.fill(t('stem.numberline.il_abs_no', 'Not quite. Count the spaces between {x} and 0.'), { x: dispNum(il.ax) })),
+                  il.absShown && !absOk && h('p', { key: 'rv', className: 'text-sm font-bold' }, NLE.fill(absVal === 1 ? t('stem.numberline.il_abs_shown_one', 'The answer is |{x}| = 1: {x} is 1 space from 0.') : t('stem.numberline.il_abs_shown', 'The answer is |{x}| = {d}: {x} is {d} spaces from 0.'), { x: dispNum(il.ax), d: absVal }))
+                ]),
+                h('div', { className: 'rounded-lg border border-sky-300 p-2 space-y-2' },
+                  h('p', { className: 'text-sm font-bold' }, t('stem.numberline.il_dist_title', 'Distance between two numbers')),
+                  h('div', { className: 'flex flex-wrap items-end gap-3' },
+                    numField('da', t('stem.numberline.il_point_a', 'Point A'), -12, 12, il.da),
+                    numField('db', t('stem.numberline.il_point_b', 'Point B'), -12, 12, il.db)),
+                  lineSvg({ min: -15, max: 15, step: 1, labels: labels15, points: [{ v: il.da, label: 'A' }, { v: il.db, label: 'B', color: P.hop }],
+                    bars: il.da !== il.db ? [{ from: il.da, to: il.db, label: String(dd) }] : [], height: 150, axisY: 96, desc: NLE.describeLine(dItem, t) }),
+                  h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.il_dist', 'The distance between {a} and {b} is |{a} − {pb}| = {d}.'), { a: dispNum(il.da), b: dispNum(il.db), pb: il.db < 0 ? '(' + dispNum(il.db) + ')' : dispNum(il.db), d: dd })))
+              );
+            }
+            return h('div', { className: 'space-y-3' },
+              h('div', { role: 'group', 'aria-label': t('stem.numberline.il_modes', 'Integer lab activities'), className: 'flex flex-wrap gap-2' },
+                [['hops', t('stem.numberline.il_mode_hops', 'Hops: add and subtract')], ['mirror', t('stem.numberline.il_mode_mirror', 'Opposites: the mirror')], ['abs', t('stem.numberline.il_mode_abs', 'Absolute value: distance')]].map(function(m) {
+                  return h('button', { key: m[0], type: 'button', 'aria-pressed': il.mode === m[0], onClick: function() { sfxClick(); setIL({ mode: m[0] }); }, style: { minHeight: 44 }, className: btnCls(il.mode === m[0]) }, m[1]);
+                })),
+              body);
+          };
+
+          // ═══ STAGE B ACTIVITIES: shared helpers ═══
+          var nlbSolved = (_n.nlbSolved && typeof _n.nlbSolved === 'object') ? _n.nlbSolved : {};
+          var tDzCap = [1, 2, 3].indexOf(teacher.dzCap) !== -1 ? teacher.dzCap : null;
+          var tMsPrec = [2, 4, 8].indexOf(teacher.msPrec) !== -1 ? teacher.msPrec : null;
+          var tIcDir = teacher.icDir === 'vertical' || teacher.icDir === 'horizontal' ? teacher.icDir : null;
+          var btnMain = 'px-4 py-2 rounded-lg text-sm font-bold bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50';
+          var btnSoft = 'px-3 py-2 rounded-lg text-sm font-bold border border-blue-600 text-blue-800 bg-white disabled:opacity-50';
+          var btnHint = 'px-3 py-2 rounded-lg text-sm font-bold border border-amber-700 text-amber-900 bg-amber-50';
+          var btnReveal = 'px-3 py-2 rounded-lg text-sm font-bold border border-rose-700 text-rose-900 bg-rose-50';
+          var btnNext = 'px-4 py-2 rounded-lg text-sm font-bold bg-indigo-700 text-white hover:bg-indigo-800';
+          var pressCls = function(on) { return 'px-3 py-2 rounded-lg text-sm font-bold border ' + (on ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-800 border-blue-600'); };
+          var B44 = { minHeight: 44 };
+          // Saved activity items are checked before use: a malformed one (old or
+          // hand-edited toolData) is dropped and the activity starts fresh.
+          var isNum = function(v) { return typeof v === 'number' && isFinite(v); };
+          var okDz = function(it) { return !!it && ((it.kind === 'dzPlace' && typeof it.text === 'string' && isNum(it.target) && [1, 2, 3].indexOf(it.places) !== -1) || (it.kind === 'dzCompare' && typeof it.sa === 'string' && typeof it.sb === 'string' && isNum(it.a) && isNum(it.b) && /^[<>=]$/.test(it.rel))); };
+          var okOrd = function(it) { return !!it && Array.isArray(it.nums) && it.nums.length >= 2 && it.nums.every(function(x) { return x && typeof x.text === 'string' && isNum(x.value); }) && !!it.line && isNum(it.line.min) && isNum(it.line.max) && it.line.max > it.line.min && isNum(it.line.step) && it.line.step > 0 && isNum(it.line.snap) && it.line.snap > 0 && Array.isArray(it.line.labels); };
+          var okMs = function(it) { return !!it && it.kind === 'measure' && (it.rd === 4 || it.rd === 8) && [2, 4, 8].indexOf(it.prec) !== -1 && isNum(it.start) && isNum(it.end) && isNum(it.len) && isNum(it.target) && it.end <= 6 && it.start >= 0; };
+          var okLp = function(it) { return !!it && it.kind === 'lineplot' && Array.isArray(it.counts) && Array.isArray(it.data) && Array.isArray(it.questions) && it.cols === it.counts.length && it.cols >= 2 && it.cols <= 40 && [2, 4, 8].indexOf(it.prec) !== -1 && isNum(it.a); };
+          var okIc = function(it) { return !!it && NLB.icKinds('b6').indexOf(it.kind) !== -1 && !!it.line && isNum(it.line.min) && isNum(it.line.max) && isNum(it.line.step) && it.line.step > 0 && Array.isArray(it.line.labels) && it.line.labels.length >= 2 && Array.isArray(it.names); };
+          var nlbServe = function(typeId) {
+            var stats = Object.assign({}, ppStats);
+            var st = Object.assign({ served: 0, correct: 0, missed: 0 }, stats[typeId]);
+            st.served += 1; stats[typeId] = st;
+            var used = Object.assign({}, challengeTypesUsed); used[typeId] = true;
+            return { ppStats: stats, challengeTypesUsed: used };
+          };
+          // XP only for a verified, unrevealed item: full on a first, unaided try,
+          // part after a hint, a worked example or a second try; none once missed.
+          var nlbXp = function(s, full, part) { if (s.missed) return 0; return s.tries === 1 && !s.hints && !s.exampleOpen ? full : part; };
+          var nlbMiss = function(typeId, prompt, answer, correct, mis) { return { type: typeId, band: band, prompt: prompt, answer: answer, correct: correct, mis: mis || '', source: 'nlb', ts: Date.now() }; };
+          // One checked answer = ONE state patch (statePatch carries the activity's own state).
+          var nlbResult = function(typeId, ok, o) {
+            var stats = Object.assign({}, ppStats);
+            var st = Object.assign({ served: 0, correct: 0, missed: 0 }, stats[typeId]);
+            var patch = Object.assign({}, o.statePatch || {});
+            if (ok) {
+              var xp = o.xp || 0, earns = xp > 0;
+              if (!o.alreadyMissed) st.correct += 1;
+              stats[typeId] = st; patch.ppStats = stats;
+              var newStreak = earns ? streak + 1 : 0;
+              patch.score = { correct: score.correct + (earns ? 1 : 0), total: score.total + 1 };
+              patch.streak = newStreak; patch.bestStreak = Math.max(bestStreak, newStreak);
+              if (earns) { var sv = Object.assign({}, nlbSolved); sv[typeId] = (sv[typeId] || 0) + 1; patch.nlbSolved = sv; }
+              if (earns && o.frac) patch.fractionSolved = fractionSolved + 1;
+              if (earns && o.neg) patch.negativeSolved = negativeSolved + 1;
+              upd(patch);
+              sfxCorrect();
+              if (newStreak === 3 || newStreak === 5 || newStreak === 10) sfxStreak();
+              if (earns) {
+                awardXP('numberline', xp, o.reason);
+                checkBadges({ correct: patch.score.correct, streak: newStreak, typesUsed: Object.keys(challengeTypesUsed).length, roundingSolved: roundingSolved,
+                  fractionSolved: patch.fractionSolved != null ? patch.fractionSolved : fractionSolved, negativeSolved: patch.negativeSolved != null ? patch.negativeSolved : negativeSolved,
+                  placeSolved: placeSolved, aiAsked: _n.aiAsked || 0 });
+              }
+              return;
+            }
+            patch.streak = 0;
+            patch.score = { correct: score.correct, total: score.total + 1 };
+            if (o.nowMissed && !o.alreadyMissed) { patch.ppMissed = ppMissed.concat([o.miss]).slice(-60); st.missed += 1; stats[typeId] = st; patch.ppStats = stats; }
+            upd(patch);
+            sfxWrong();
+          };
+          var stepsList = function(list, key) { return h('ol', { key: key, className: 'list-decimal pl-5 text-sm mt-1 space-y-0.5' }, list.map(function(s, i) { return h('li', { key: i }, s); })); };
+          // Feedback box shared by every stage B activity (inside a polite live region).
+          var nlbFeedback = function(fb, o) {
+            if (!fb) return null;
+            o = o || {};
+            if (fb.kind === 'invalid') return h('p', { className: 'text-sm font-bold' }, fb.msg || t('stem.numberline.pp_need_text', 'Type an answer first.'));
+            if (fb.kind === 'correct') {
+              return h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' }, 'data-nlb-fb': 'correct' },
+                h('p', { className: 'text-sm font-bold', style: { color: '#065f46' } },
+                  fb.missed ? t('stem.numberline.pp_found_after_miss', 'You found it. This one stays on your review list.')
+                    : fb.xp > 0 ? NLE.fill(fb.independent ? t('stem.numberline.pp_correct_indep_xp', 'Correct, on your own. +{xp} XP') : t('stem.numberline.pp_correct_support_xp', 'Correct, with support. +{xp} XP'), { xp: fb.xp })
+                    : t('stem.numberline.pp_correct_support', 'Correct, with support.')),
+                o.extra || null,
+                o.steps ? stepsList(o.steps, 'st') : null);
+            }
+            var info = fb.mis ? NLB.misInfo(fb.mis, o.item, t, o.miExtra) : null;
+            return h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#b91c1c' }, 'data-nlb-mis': fb.mis || '' },
+              info && h('p', { className: 'text-sm font-bold' }, info.title),
+              h('p', { className: 'text-sm' }, info ? info.body : t('stem.numberline.pp_not_yet', 'Not yet. Try again.')),
+              o.extra || null,
+              o.note ? h('p', { className: 'text-xs italic mt-1' }, o.note) : null);
+          };
+          var announceFb = function(fb, item, extra) {
+            if (!fb || fb.kind !== 'wrong') return;
+            var info = fb.mis ? NLB.misInfo(fb.mis, item, t, extra) : null;
+            announceToSR(info ? info.title + '. ' + info.body : t('stem.numberline.pp_not_yet', 'Not yet. Try again.'));
+          };
+          var reviewNote = function(tries, binary) {
+            if (binary) return tries >= 2 && allowReveal
+              ? t('stem.numberline.nlb_binary_note_reveal', 'With only a few choices, a guess does not show what you know, so this item is on your review list. Try again, or show the answer.')
+              : t('stem.numberline.nlb_binary_note_v2', 'With only a few choices, a guess does not show what you know, so this item is now on your review list. Read the feedback and try once more; a second try earns no points.');
+            if (tries < 2) return null;
+            return allowReveal ? t('stem.numberline.pp_review_note', 'This item is now on your review list. Keep trying, or show the answer.') : t('stem.numberline.pp_review_note_noreveal', 'This item is now on your review list. Keep trying, use a hint, or skip to the next item.');
+          };
+          var hintsEl = function(list, n) {
+            if (!n) return null;
+            return h('ol', { className: 'list-decimal pl-5 text-sm space-y-0.5 rounded-lg p-2 bg-amber-50 text-amber-900', 'aria-label': t('stem.numberline.pp_hints', 'Hints') }, list.slice(0, n).map(function(s, i) { return h('li', { key: i }, s); }));
+          };
+          var workedB = function(prompt, list, stage) {
+            var shown = stage === 0 ? list : list.slice(0, 1);
+            return h('div', { className: 'rounded-xl p-3 border bg-white', style: { borderColor: '#475569' }, 'data-nlb-worked': stage },
+              h('p', { className: 'text-xs font-bold uppercase tracking-wide' }, stage === 0 ? t('stem.numberline.pp_worked_full', 'Worked example (different numbers)') : t('stem.numberline.pp_worked_partial', 'Worked example: first step only. You finish the thinking.')),
+              h('p', { className: 'text-sm font-bold mt-1' }, prompt),
+              stepsList(shown, 'ws'));
+          };
+          // A parallel example on DIFFERENT numbers, stable for this item (never the item itself).
+          var exampleFor = function(item, gen, same) {
+            for (var k = 0; k < 8; k++) { var ex = gen(NLE.seeded(hashStr(String(item.id)) + 131 * k + 11)); if (!same(ex)) return ex; }
+            return null;
+          };
+
+          // Vertical number line (thermometer, elevation). Up = greater; a slider
+          // when o.slider is set (Up/Right raise, Down/Left lower, Page keys jump,
+          // Home/End go to the ends), otherwise an image described by o.desc.
+          var vlineSvg = function(o) {
+            var VW = 260, VH = o.height || 460, TP = 34, AX = 120;
+            var span = (o.max - o.min) || 1;
+            var Y = function(v) { return VH - TP - (v - o.min) / span * (VH - 2 * TP); };
+            var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: VW, height: VH, rx: 12, fill: P.bg })];
+            kids.push(h('line', { key: 'axis', x1: AX, y1: TP - 16, x2: AX, y2: VH - TP + 16, stroke: P.axis, strokeWidth: 3 }));
+            kids.push(h('polygon', { key: 'au', points: (AX - 7) + ',' + (TP - 16) + ' ' + AX + ',' + (TP - 28) + ' ' + (AX + 7) + ',' + (TP - 16), fill: P.axis }));
+            kids.push(h('polygon', { key: 'ad', points: (AX - 7) + ',' + (VH - TP + 16) + ' ' + AX + ',' + (VH - TP + 28) + ' ' + (AX + 7) + ',' + (VH - TP + 16), fill: P.axis }));
+            var labelSet = {};
+            (o.labels || []).forEach(function(v) { labelSet[NLE.fmt(v)] = true; });
+            var k0 = Math.ceil(o.min / o.step - 1e-9), k1 = Math.floor(o.max / o.step + 1e-9);
+            for (var k = k0; k <= k1 && k1 - k0 <= 200; k++) {
+              var tv = NLE.clean(k * o.step), isLab = !!labelSet[NLE.fmt(tv)], len = isLab ? 14 : 7;
+              kids.push(h('line', { key: 'tk' + k, x1: AX - len, y1: Y(tv), x2: AX + len, y2: Y(tv), stroke: tv === 0 ? P.mid : P.tick, strokeWidth: isLab || tv === 0 ? 2.5 : 1.25 }));
+            }
+            (o.labels || []).forEach(function(v, i) {
+              kids.push(h('text', { key: 'lb' + i, x: AX - 22, y: Y(v) + 6, textAnchor: 'end', fill: P.label, fontSize: 16, fontWeight: 'bold', fontFamily: 'monospace' }, dispNum(v)));
+            });
+            if (o.zeroWord) kids.push(h('text', { key: 'zw', x: AX + 22, y: Y(0) - 8, textAnchor: 'start', fill: P.muted, fontSize: 13, fontWeight: 'bold' }, o.zeroWord));
+            (o.hops || []).forEach(function(hp, i) {
+              var y1 = Y(hp.from), y2 = Y(hp.to), lift = 34 + (hp.level || 0) * 18, col = hp.color || P.hop, dir = y2 >= y1 ? 1 : -1;
+              kids.push(h('g', { key: 'hop' + i },
+                h('path', { d: 'M ' + (AX + 6) + ' ' + y1 + ' Q ' + (AX + 6 + lift * 2) + ' ' + ((y1 + y2) / 2) + ' ' + (AX + 6) + ' ' + y2, fill: 'none', stroke: col, strokeWidth: 3 }),
+                h('polygon', { points: (AX + 16) + ',' + (y2 - dir * 9) + ' ' + (AX + 5) + ',' + y2 + ' ' + (AX + 18) + ',' + (y2 - dir * 1), fill: col }),
+                hp.label && h('text', { x: AX + 12 + lift, y: (y1 + y2) / 2 + 5, textAnchor: 'start', fill: col, fontSize: 14, fontWeight: 'bold' }, hp.label)));
+            });
+            (o.points || []).forEach(function(pt, i) {
+              kids.push(h('g', { key: 'pt' + i },
+                h('circle', { cx: AX, cy: Y(pt.v), r: 7, fill: pt.color || P.point, stroke: P.bg, strokeWidth: 2 }),
+                pt.label && h('text', { x: AX + 16, y: Y(pt.v) + 5, textAnchor: 'start', fill: pt.color || P.point, fontSize: 13, fontWeight: 'bold' }, pt.label)));
+            });
+            if (o.correct != null) {
+              var cy = Y(o.correct);
+              kids.push(h('g', { key: 'correct' },
+                h('polygon', { points: (AX - 9) + ',' + cy + ' ' + (AX - 21) + ',' + (cy - 8) + ' ' + (AX - 21) + ',' + (cy + 8), fill: P.correct }),
+                o.correctLabel && h('text', { x: AX + 78, y: cy + 18, textAnchor: 'start', fill: P.correct, fontSize: 14, fontWeight: 'bold' }, o.correctLabel)));
+            }
+            if (o.marker != null && isFinite(o.marker)) {
+              var my = Y(o.marker);
+              kids.push(h('g', { key: 'marker' },
+                h('line', { x1: AX, y1: my, x2: AX + 66, y2: my, stroke: P.student, strokeWidth: 3 }),
+                h('polygon', { points: (AX + 70) + ',' + (my - 10) + ' ' + (AX + 70) + ',' + (my + 10) + ' ' + (AX + 54) + ',' + my, fill: P.student }),
+                h('circle', { cx: AX, cy: my, r: coarsePointer && o.slider ? 13 : 8, fill: P.student, stroke: P.bg, strokeWidth: 2 })));
+            }
+            var props = { viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', focusable: 'false', 'data-nl-vertical': 'true', style: { display: 'block', maxWidth: 260, margin: '0 auto', height: 'auto' } };
+            var s = o.slider;
+            if (s) {
+              var snap = s.snap || o.step || 1;
+              var snapTo = function(v) { var r = NLE.clean(Math.round((v - o.min) / snap) * snap + o.min); return Math.max(o.min, Math.min(o.max, r)); };
+              var toValue = function(el, ev) {
+                var y = null;
+                try { var ctm = el.getScreenCTM && el.getScreenCTM(); if (ctm && el.createSVGPoint) { var pt = el.createSVGPoint(); pt.x = ev.clientX || 0; pt.y = ev.clientY; y = pt.matrixTransform(ctm.inverse()).y; } } catch (err) { y = null; }
+                if (y == null || !isFinite(y)) { var rc = el.getBoundingClientRect(); y = rc.height ? (ev.clientY - rc.top) * (VH / rc.height) : VH / 2; }
+                return snapTo(o.min + (VH - TP - y) / (VH - 2 * TP) * span);
+              };
+              props.role = 'slider'; props.tabIndex = 0;
+              props['aria-orientation'] = 'vertical';
+              props['aria-label'] = s.name;
+              props['aria-valuemin'] = o.min; props['aria-valuemax'] = o.max;
+              if (o.marker != null) props['aria-valuenow'] = o.marker;
+              props['aria-valuetext'] = s.valuetext;
+              if (s.describedBy) props['aria-describedby'] = s.describedBy;
+              if (s.disabled) props['aria-disabled'] = 'true';
+              props.style.touchAction = 'none';
+              props.style.cursor = s.disabled ? 'default' : 'pointer';
+              props.onKeyDown = function(e) {
+                if (s.disabled) return;
+                var big = s.bigStep || snap * 5, cur = o.marker;
+                var start = cur == null ? snapTo((o.min + o.max) / 2) : cur, next = null;
+                if (e.key === 'ArrowUp' || e.key === 'ArrowRight') next = cur == null ? start : cur + snap;
+                else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') next = cur == null ? start : cur - snap;
+                else if (e.key === 'PageUp') next = start + big;
+                else if (e.key === 'PageDown') next = start - big;
+                else if (e.key === 'Home') next = o.min;
+                else if (e.key === 'End') next = o.max;
+                if (next == null) return;
+                e.preventDefault();
+                s.onSet(snapTo(next), 'key');
+              };
+              bindPointerDrag(props, s.disabled, toValue, s.onSet);
+            } else {
+              props.role = 'img';
+              props['aria-label'] = o.desc || '';
+            }
+            return h('svg', props, kids);
+          };
+
+          // ═══ TAB: DECIMAL ZOOM (4.NF.6-7, 5.NBT.1, 5.NBT.3) ═══
+          var dzS = (_n.dz && typeof _n.dz === 'object') ? _n.dz : {};
+          var setDz = function(patch) { upd({ dz: Object.assign({}, dzS, patch) }); };
+          // Place-value chart: one row per place (narrow enough for a 320 px screen),
+          // one column per number.
+          var dzPlaceTable = function(cols) {
+            var places = [t('stem.numberline.dz_col_ones', 'Ones'), t('stem.numberline.dz_col_tenths', 'Tenths'), t('stem.numberline.dz_col_hundredths', 'Hundredths'), t('stem.numberline.dz_col_thousandths', 'Thousandths')];
+            var digits = cols.map(function(c) { var dg = NLB.dzDigits(c.v); return [dg.ones, dg.tenths, dg.hundredths, dg.thousandths]; });
+            return h('table', { className: 'text-sm border-collapse bg-white text-slate-900', 'data-dz-chart': 'true' },
+              h('caption', { className: 'text-left text-xs font-bold mb-1' }, t('stem.numberline.dz_chart_caption', 'Place-value chart')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', className: 'border border-slate-400 px-2 text-left' }, t('stem.numberline.dz_col_place', 'Place')),
+                cols.map(function(c, i) { return h('th', { key: i, scope: 'col', className: 'border border-slate-400 px-2 font-mono text-center' }, c.label); }))),
+              h('tbody', null, places.map(function(pn, j) {
+                return h('tr', { key: j },
+                  h('th', { scope: 'row', className: 'border border-slate-400 px-2 text-left' }, pn),
+                  cols.map(function(c, i) { return h('td', { key: i, className: 'border border-slate-400 px-2 text-center font-mono' }, j === 0 || j <= c.places ? digits[i][j] : '—'); }));
+              })));
+          };
+          var renderDecimals = function() {
+            var mode = dzS.mode === 'place' || dzS.mode === 'compare' ? dzS.mode : 'explore';
+            var item = okDz(dzS.item) && ((mode === 'place' && dzS.item.kind === 'dzPlace') || (mode === 'compare' && dzS.item.kind === 'dzCompare')) ? dzS.item : null;
+            var view = NLB.dzView(dzS.lo != null ? dzS.lo : (item && item.W) || 0, dzS.level);
+            var pos = typeof dzS.pos === 'number' && isFinite(dzS.pos) ? dzS.pos : null;
+            var inView = pos != null && pos >= view.lo - 1e-9 && pos <= view.hi + 1e-9;
+            var done = !!item && dzS.status && dzS.status !== 'open';
+            var tries = dzS.tries || 0, hints = dzS.hints || 0, fb = dzS.fb || null;
+            var zIn = inView ? NLB.dzZoomIn(view, pos) : null, zOut = NLB.dzZoomOut(view), pPrev = NLB.dzPan(view, -1), pNext = NLB.dzPan(view, 1);
+            var range2 = function(v) { return NLE.fill(t('stem.numberline.dz_range', '{a} to {b}'), { a: v.lo.toFixed(v.level), b: v.hi.toFixed(v.level) }); };
+            var go = function(v, msgKey) {
+              if (!v) return;
+              setDz({ lo: v.lo, level: v.level });
+              announceToSR(NLE.fill(NLB.dzNowText(v.level, t), { a: v.lo.toFixed(v.level), b: v.hi.toFixed(v.level) }));
+            };
+            var newItem = function(m) {
+              var it = m === 'compare' ? NLB.genDzCompare(band, Math.random, tDzCap) : NLB.genDzPlace(band, Math.random, tDzCap);
+              var patch = nlbServe(it.kind);
+              patch.dz = { mode: m, item: it, lo: it.W || 0, level: 0, pos: null, status: 'open', tries: 0, hints: 0, fb: null, choice: null, exampleOpen: false };
+              upd(patch); sfxNewChallenge();
+              announceToSR(m === 'compare' ? NLE.fill(t('stem.numberline.dz_q_compare', 'Compare {a} and {b}. Choose the sentence that is true.'), { a: it.sa, b: it.sb }) : NLE.fill(t('stem.numberline.dz_q_place', 'Place {n} on the number line. Zoom in as far as you need.'), { n: it.text }));
+            };
+            var setMode = function(m) { sfxClick(); upd({ dz: { mode: m, lo: 0, level: 0, pos: null } }); };
+            var check = function() {
+              if (!item || done) return;
+              var res = item.kind === 'dzPlace' ? NLB.gradeDzPlace(item, pos) : NLB.gradeDzCompare(item, dzS.choice);
+              if (!res.valid) { var msg = item.kind === 'dzPlace' ? t('stem.numberline.pp_need_marker', 'Place your marker first: tap the line or use the arrow keys.') : t('stem.numberline.dz_need_choice', 'Choose one of the sentences first.'); setDz({ fb: { kind: 'invalid', msg: msg } }); announceToSR(msg); return; }
+              var nt = tries + 1, binary = item.kind === 'dzCompare';
+              var alreadyMissed = !!dzS.missed;
+              var prompt = item.kind === 'dzPlace' ? NLE.fill(t('stem.numberline.dz_q_place', 'Place {n} on the number line. Zoom in as far as you need.'), { n: item.text }) : NLE.fill(t('stem.numberline.dz_q_compare', 'Compare {a} and {b}. Choose the sentence that is true.'), { a: item.sa, b: item.sb });
+              if (res.ok) {
+                var xp = binary ? (alreadyMissed ? 0 : (hints ? 1 : 3)) : nlbXp({ tries: nt, hints: hints, exampleOpen: dzS.exampleOpen, missed: alreadyMissed }, 3, 1);
+                var nf = { kind: 'correct', xp: xp, independent: nt === 1 && !hints && !dzS.exampleOpen, missed: alreadyMissed };
+                var reveal = item.kind === 'dzPlace' ? NLB.dzView(item.target, item.places - 1) : null;
+                nlbResult(item.kind, true, { xp: xp, reason: 'Decimal zoom', alreadyMissed: alreadyMissed, frac: true,
+                  statePatch: { dz: Object.assign({}, dzS, { tries: nt, status: 'correct', fb: nf }, reveal ? { lo: reveal.lo, level: reveal.level } : {}) } });
+                announceToSR(xp > 0 && nf.independent ? t('stem.numberline.pp_correct_indep', 'Correct, on your own.') : t('stem.numberline.pp_correct_support', 'Correct, with support.'));
+                return;
+              }
+              var nowMissed = alreadyMissed || binary || nt >= 2;
+              var wf = { kind: 'wrong', mis: res.mis };
+              var ans = item.kind === 'dzPlace' ? NLE.fmt(pos) : item.sa + ' ' + dzS.choice + ' ' + item.sb;
+              nlbResult(item.kind, false, { alreadyMissed: alreadyMissed, nowMissed: nowMissed,
+                miss: nlbMiss(item.kind, prompt, ans, item.kind === 'dzPlace' ? item.text : item.sa + ' ' + item.rel + ' ' + item.sb, res.mis),
+                statePatch: { dz: Object.assign({}, dzS, { tries: nt, missed: nowMissed, fb: wf }) } });
+              announceFb(wf, item);
+            };
+            // Same rule on every tab: a reveal only after two tries, and it earns nothing.
+            var reveal = function() {
+              if (!item || done || tries < 2 || !allowReveal) return;
+              if (item.kind === 'dzCompare') { setDz({ status: 'revealed' }); announceToSR(NLB.dzCompareSteps(item, t).join(' ')); return; }
+              var rv = NLB.dzView(item.target, item.places - 1);
+              setDz({ status: 'revealed', lo: rv.lo, level: rv.level });
+              announceToSR(NLB.dzPlaceSteps(item, t).join(' '));
+            };
+            var modeBar = h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.dz_mode', 'Decimal zoom activity') },
+              [['explore', t('stem.numberline.dz_mode_explore', 'Explore the zoom')], ['place', t('stem.numberline.dz_mode_place', 'Place a decimal')], ['compare', t('stem.numberline.dz_mode_compare', 'Compare two decimals')]].map(function(m) {
+                return h('button', { key: m[0], type: 'button', 'aria-pressed': mode === m[0], style: B44, onClick: function() { setMode(m[0]); }, className: pressCls(mode === m[0]) }, m[1]);
+              }));
+            var trail = NLB.dzTrail(view).map(range2);
+            var placeLine = mode !== 'compare';
+            var shownCorrect = item && item.kind === 'dzPlace' && done && item.target >= view.lo - 1e-9 && item.target <= view.hi + 1e-9 ? item.target : null;
+            var lineSvgEl = placeLine ? lineSvg({
+              min: view.lo, max: view.hi, step: view.step, labels: NLB.dzTicks(view), labelFmt: function(v) { return NLB.dzLabel(v, view.level); }, accentLast: true, labelSize: 15,
+              marker: inView ? pos : null, correct: shownCorrect, correctLabel: shownCorrect != null ? item.text : null, height: 160,
+              slider: {
+                name: t('stem.numberline.dz_slider', 'Decimal marker on the zoomed number line'),
+                valuetext: inView ? NLE.fill(NLB.dzValueText(view.level, t), { v: NLB.dzLabel(pos, view.level) }) :t('stem.numberline.pp_no_marker', 'No marker placed yet. Press an arrow key or tap the line to place it.'),
+                snap: view.step, bigStep: NLE.clean(view.step * 5), describedBy: 'nl-dz-desc', disabled: !!done,
+                onSet: function(v, how) { setDz({ pos: v, fb: fb && fb.kind === 'invalid' ? null : fb }); if (how === 'pointer') sfxClick(); }
+              }
+            }) : null;
+            var lineEl = placeLine && h('div', { key: 'line', className: 'rounded-xl border-2 border-blue-200 p-2', style: { background: P.bg } }, lineSvgEl);
+            var zoomBar = placeLine && h('div', { key: 'zoom', className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.dz_zoom_controls', 'Zoom controls') },
+              h('button', { type: 'button', style: B44, disabled: !zIn || !!done, className: btnMain, onClick: function() { go(zIn); } },
+                zIn ? NLE.fill(t('stem.numberline.dz_zoom_in', 'Zoom in on {r}'), { r: range2(zIn) }) : view.level >= NLB.DZ_LEVELS - 1 ? t('stem.numberline.dz_zoom_max', 'Thousandths: fully zoomed in') : t('stem.numberline.dz_zoom_need', 'Zoom in: place the marker in a space first')),
+              h('button', { type: 'button', style: B44, disabled: !zOut || !!done, className: btnSoft, onClick: function() { go(zOut); } }, zOut ? NLE.fill(t('stem.numberline.dz_zoom_out', 'Zoom out to {r}'), { r: range2(zOut) }) : t('stem.numberline.dz_zoom_top', 'Zoom out')),
+              h('button', { type: 'button', style: B44, disabled: !pPrev || !!done, className: btnSoft, onClick: function() { go(pPrev); } }, pPrev ? NLE.fill(t('stem.numberline.dz_pan_prev', 'Show {r}'), { r: range2(pPrev) }) : t('stem.numberline.dz_pan_none_prev', 'No space to the left')),
+              h('button', { type: 'button', style: B44, disabled: !pNext || !!done, className: btnSoft, onClick: function() { go(pNext); } }, pNext ? NLE.fill(t('stem.numberline.dz_pan_next', 'Show {r}'), { r: range2(pNext) }) : t('stem.numberline.dz_pan_none_next', 'No space to the right')));
+            var descEl = placeLine && h('p', { key: 'desc', id: 'nl-dz-desc', className: 'text-xs' },
+              NLE.fill(NLB.dzDescText(view.level, t), { a: view.lo.toFixed(view.level), b: view.hi.toFixed(view.level), trail: trail.join(' → ') }));
+            var body = [];
+            if (mode === 'explore') {
+              body.push(h('p', { key: 'ex', className: 'text-sm' }, t('stem.numberline.dz_explore_intro', 'Place the marker, then zoom in on the space it is in. Each zoom cuts one space into ten smaller ones: tenths, then hundredths, then thousandths. The coloured last digit on each label is the place you are reading now.')));
+              body.push(lineEl, descEl, zoomBar);
+              if (inView) body.push(h('div', { key: 'chart' }, dzPlaceTable([{ label: NLB.dzLabel(pos, view.level), v: pos, places: view.level + 1 }])));
+            } else if (!item) {
+              body.push(h('p', { key: 'in', className: 'text-sm' }, mode === 'place' ? t('stem.numberline.dz_place_intro', 'You get a decimal to place. Put the marker in the right space, zoom in, and repeat until you can land exactly on it. Your placement is graded by where the marker is.') : t('stem.numberline.dz_compare_intro', 'You get two decimals. Decide which sentence is true before anything is shown on a line.')));
+              body.push(h('button', { key: 'go', type: 'button', 'data-nl-start': 'true', style: B44, className: 'w-full ' + btnMain, onClick: function() { newItem(mode); } }, t('stem.numberline.pp_start', 'Start practice')));
+            } else if (item.kind === 'dzPlace') {
+              var dHints = [t('stem.numberline.dz_h1', 'Start with the tenths digit: which tenth-space is the number in?'), t('stem.numberline.dz_h2', 'Put the marker in that space, then zoom in on it.'), t('stem.numberline.dz_h3', 'Repeat for each digit. A 0 digit means the number is in the first small space, right after the left tick.')];
+              var wStage = Math.min(2, Math.floor((nlbSolved.dzPlace || 0) / 2));
+              var ex = !done && (wStage < 2 || dzS.exampleOpen) ? exampleFor(item, function(r) { return NLB.genDzPlace(item.band || band, r, tDzCap); }, function(e) { return NLE.near(e.target, item.target, 1e-9); }) : null;
+              if (ex) body.push(h('div', { key: 'wk' }, workedB(NLE.fill(t('stem.numberline.dz_q_place', 'Place {n} on the number line. Zoom in as far as you need.'), { n: ex.text }), NLB.dzPlaceSteps(ex, t), dzS.exampleOpen ? 0 : wStage)));
+              body.push(h('p', { key: 'q', id: 'nl-dz-prompt', className: 'text-base font-bold' }, NLE.fill(t('stem.numberline.dz_q_place', 'Place {n} on the number line. Zoom in as far as you need.'), { n: item.text })));
+              body.push(lineEl, descEl, zoomBar);
+              if (inView) body.push(h('div', { key: 'chart' }, dzPlaceTable([{ label: t('stem.numberline.dz_row_marker', 'Your marker'), v: pos, places: view.level + 1 }])));
+              body.push(h('div', { key: 'btns', className: 'flex flex-wrap gap-2' },
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, t('stem.numberline.pp_check_place', 'Check my placement')),
+                !done && hints < dHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setDz({ hints: hints + 1 }); announceToSR(dHints[hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: hints + 1, total: dHints.length })),
+                !done && wStage === 2 && !dzS.exampleOpen && h('button', { type: 'button', style: B44, className: btnSoft, onClick: function() { setDz({ exampleOpen: true }); } }, t('stem.numberline.pp_show_example', 'Show me an example')),
+                !done && tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: reveal }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || tries >= 2) && h('button', { type: 'button', style: B44, className: btnNext, onClick: function() { newItem('place'); } }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))));
+              body.push(h('div', { key: 'hn' }, hintsEl(dHints, hints)));
+              body.push(h('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, steps: fb && fb.kind === 'correct' ? NLB.dzPlaceSteps(item, t) : null, note: !done ? reviewNote(tries, false) : null }),
+                dzS.status === 'revealed' && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' } },
+                  h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: item.text })), stepsList(NLB.dzPlaceSteps(item, t), 'rv'))));
+            } else {
+              var cHints = [t('stem.numberline.dz_ch1', 'Line up the decimal points. Write both with the same number of decimal places by adding zeros on the end.'), t('stem.numberline.dz_ch2', 'Compare the ones, then the tenths, then the hundredths: the first place that differs decides.')];
+              var rels = [['<', t('stem.numberline.dz_rel_lt', '{a} is less than {b}')], ['>', t('stem.numberline.dz_rel_gt', '{a} is greater than {b}')], ['=', t('stem.numberline.dz_rel_eq', '{a} is equal to {b}')]];
+              var wStageC = Math.min(2, Math.floor((nlbSolved.dzCompare || 0) / 2));
+              var exC = !done && wStageC < 2 ? exampleFor(item, function(r) { return NLB.genDzCompare(item.band || band, r, tDzCap); }, function(e) { return e.sa === item.sa && e.sb === item.sb; }) : null;
+              if (exC) body.push(h('div', { key: 'wk' }, workedB(NLE.fill(t('stem.numberline.dz_q_compare', 'Compare {a} and {b}. Choose the sentence that is true.'), { a: exC.sa, b: exC.sb }), NLB.dzCompareSteps(exC, t), wStageC)));
+              body.push(h('p', { key: 'q', className: 'text-base font-bold' }, NLE.fill(t('stem.numberline.dz_q_compare', 'Compare {a} and {b}. Choose the sentence that is true.'), { a: item.sa, b: item.sb })));
+              body.push(h('div', { key: 'ch', className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.dz_choose', 'Choose a sentence') },
+                rels.map(function(r) {
+                  return h('button', { key: r[0], type: 'button', 'aria-pressed': dzS.choice === r[0], disabled: !!done, style: B44, className: pressCls(dzS.choice === r[0]) + ' disabled:opacity-70',
+                    onClick: function() { setDz({ choice: r[0], fb: fb && fb.kind === 'invalid' ? null : fb }); } }, NLE.fill(r[1], { a: item.sa, b: item.sb }));
+                })));
+              if (hints > 0 || done) body.push(h('div', { key: 'chart' }, dzPlaceTable([{ label: item.sa, v: item.a, places: Math.max(1, NLB.decPlaces(item.sa)) }, { label: item.sb, v: item.b, places: Math.max(1, NLB.decPlaces(item.sb)) }])));
+              if (done) {
+                var W0 = Math.floor(Math.min(item.a, item.b));
+                body.push(h('div', { key: 'cl', className: 'rounded-xl border-2 border-blue-200 p-2', style: { background: P.bg } }, lineSvg({ min: W0, max: W0 + 1, step: 0.1, labels: [W0, W0 + 0.5, W0 + 1], height: 130,
+                  points: [{ v: item.a, label: item.sa, color: P.point }, { v: item.b, label: item.sb, color: P.hop, level: item.rel === '=' || Math.abs(item.a - item.b) < 0.08 ? 1 : 0 }],
+                  desc: NLE.fill(t('stem.numberline.dz_cmp_line_desc', 'Number line from {a} to {b} with {x} and {y} marked.'), { a: W0, b: W0 + 1, x: item.sa, y: item.sb }) })));
+              }
+              // Legacy saved "missed" (one-shot) items show like a reveal.
+              var shownC = dzS.status === 'revealed' || dzS.status === 'missed';
+              body.push(h('div', { key: 'btns', className: 'flex flex-wrap gap-2' },
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, t('stem.numberline.pp_check', 'Check my answer')),
+                !done && hints < cHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setDz({ hints: hints + 1 }); announceToSR(cHints[hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: hints + 1, total: cHints.length })),
+                !done && tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: reveal }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || tries >= 2) && h('button', { type: 'button', style: B44, className: btnNext, onClick: function() { newItem('compare'); } }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))));
+              body.push(h('div', { key: 'hn' }, hintsEl(cHints, hints)));
+              body.push(h('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, steps: fb && fb.kind === 'correct' ? NLB.dzCompareSteps(item, t) : null, note: fb && fb.kind === 'wrong' && !done ? reviewNote(tries, true) : null }),
+                shownC && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' }, 'data-nl-revealed': 'dzCompare' },
+                  h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: item.sa + ' ' + item.rel + ' ' + item.sb })), stepsList(NLB.dzCompareSteps(item, t), 'rv'))));
+            }
+            return h('div', { className: 'space-y-3 rounded-xl border border-blue-200 bg-white p-3 text-slate-900', 'data-nl-decimals': mode }, modeBar, body);
+          };
+
+          // ═══ TAB: ORDER NUMBERS (fractions, decimals, percents on one line) ═══
+          var ordS = (_n.ord && typeof _n.ord === 'object') ? _n.ord : {};
+          var setOrd = function(patch) { upd({ ord: Object.assign({}, ordS, patch) }); };
+          var renderOrder = function() {
+            var item = okOrd(ordS.item) ? ordS.item : null;
+            var newOrd = function() {
+              var it = NLB.genOrder(band);
+              var patch = nlbServe('order');
+              patch.ord = { item: it, pos: it.nums.map(function() { return null; }), sel: 0, status: 'open', tries: 0, hints: 0, fb: null };
+              upd(patch); sfxNewChallenge();
+              announceToSR(NLE.fill(t('stem.numberline.ord_q', 'Put each number on the line, then check your order from least to greatest: {list}.'), { list: it.nums.map(function(x) { return x.text; }).join(', ') }));
+            };
+            if (!item) {
+              return h('div', { className: 'space-y-3 rounded-xl border border-blue-200 bg-white p-3 text-slate-900', 'data-nl-order': 'empty' },
+                h('p', { className: 'text-sm' }, t('stem.numberline.ord_intro', 'You get a mix of fractions, decimals and percents. Place each one on the same number line, then check whether your order from least to greatest is right. Feedback names the slip, such as reading a percent as a whole number or thinking a longer decimal is bigger.')),
+                h('button', { type: 'button', 'data-nl-start': 'true', style: B44, className: 'w-full ' + btnMain, onClick: newOrd }, t('stem.numberline.pp_start', 'Start practice')));
+            }
+            var nums = item.nums, ln = item.line;
+            var pos = Array.isArray(ordS.pos) && ordS.pos.length === nums.length ? ordS.pos : nums.map(function() { return null; });
+            var sel = Number.isInteger(ordS.sel) && ordS.sel >= 0 && ordS.sel < nums.length ? ordS.sel : 0;
+            var done = ordS.status && ordS.status !== 'open';
+            var tries = ordS.tries || 0, hints = ordS.hints || 0, fb = ordS.fb || null;
+            var fakeItem = { line: { min: ln.min, max: ln.max, step: ln.step, labels: ln.labels } };
+            var prompt = NLE.fill(t('stem.numberline.ord_q', 'Put each number on the line, then check your order from least to greatest: {list}.'), { list: nums.map(function(x) { return x.text; }).join(', ') });
+            var setPos = function(i, v) { var np = pos.slice(); np[i] = v; setOrd({ pos: np, fb: fb && fb.kind === 'invalid' ? null : fb }); };
+            var placedOrder = nums.map(function(x, i) { return i; }).filter(function(i) { return pos[i] != null; }).sort(function(a, b) { return pos[a] - pos[b]; });
+            var unplaced = nums.map(function(x, i) { return i; }).filter(function(i) { return pos[i] == null; });
+            var check = function() {
+              if (done) return;
+              var res = NLB.gradeOrder(item, pos);
+              if (!res.valid) { var msg = NLE.fill(t('stem.numberline.ord_need_all', 'Place every number first. {n} is not on the line yet.'), { n: nums[res.missing || 0].text }); setOrd({ fb: { kind: 'invalid', msg: msg } }); announceToSR(msg); return; }
+              var nt = tries + 1, alreadyMissed = !!ordS.missed;
+              if (res.ok) {
+                var xp = nlbXp({ tries: nt, hints: hints, exampleOpen: false, missed: alreadyMissed }, 4, 2);
+                var nf = { kind: 'correct', xp: xp, independent: nt === 1 && !hints, missed: alreadyMissed, far: res.far };
+                nlbResult('order', true, { xp: xp, reason: 'Ordering numbers', alreadyMissed: alreadyMissed, frac: true, statePatch: { ord: Object.assign({}, ordS, { pos: pos, tries: nt, status: 'correct', fb: nf }) } });
+                announceToSR(t('stem.numberline.ord_right', 'Your order is right.'));
+                return;
+              }
+              var nowMissed = alreadyMissed || nt >= 2;
+              var wf = { kind: 'wrong', mis: res.mis, pair: res.pair };
+              nlbResult('order', false, { alreadyMissed: alreadyMissed, nowMissed: nowMissed,
+                miss: nlbMiss('order', prompt, res.order.map(function(i) { return nums[i].text; }).join(' < '), nums.slice().sort(function(a, b) { return a.value - b.value; }).map(function(x) { return x.text; }).join(' < '), res.mis),
+                statePatch: { ord: Object.assign({}, ordS, { pos: pos, tries: nt, missed: nowMissed, fb: wf }) } });
+              announceFb(wf, item, { x: nums[res.pair[0]].text, y: nums[res.pair[1]].text });
+            };
+            var oHints = [t('stem.numberline.ord_h1', 'Change every number to a decimal first. A percent is hundredths: 40% = 0.40.'), t('stem.numberline.ord_h2', 'Use landmarks: is each number less than one half, about one half, or more?'), t('stem.numberline.ord_h3', 'Compare decimals place by place from the left. More digits does not mean bigger.')];
+            var showTrue = done && (ordS.status === 'revealed' || ordS.status === 'correct');
+            var points = [];
+            nums.forEach(function(x, i) { if (i !== sel && pos[i] != null) points.push({ v: pos[i], label: x.text, color: P.point, level: (placedOrder.indexOf(i) % 2) }); });
+            if (showTrue) nums.forEach(function(x) { points.push({ v: x.value, label: '', color: P.correct }); });
+            var lineEl = lineSvg({ min: ln.min, max: ln.max, step: ln.step, labels: ln.labels, points: points, marker: pos[sel], height: 170, axisY: 110,
+              slider: {
+                name: NLE.fill(t('stem.numberline.ord_slider', 'Marker for {n}'), { n: nums[sel].text }),
+                valuetext: NLE.fill(t('stem.numberline.ord_valuetext', '{n}: {spot}'), { n: nums[sel].text, spot: NLE.describeSpot(fakeItem, pos[sel], t, 'marker') }),
+                snap: ln.snap, bigStep: ln.step, describedBy: 'nl-ord-desc', disabled: !!done,
+                onSet: function(v, how) { setPos(sel, v); if (how === 'pointer') sfxClick(); }
+              } });
+            var chipKey = function(e, i) {
+              var n = nums.length, ni = -1;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') ni = (i + 1) % n;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') ni = (i + n - 1) % n;
+              else if (e.key === 'Home') ni = 0; else if (e.key === 'End') ni = n - 1;
+              if (ni < 0) return;
+              e.preventDefault();
+              setOrd({ sel: ni });
+              var group = e.currentTarget.parentNode;
+              setTimeout(function() { var b = group && group.querySelectorAll('[role="radio"]')[ni]; if (b) b.focus(); }, 0);
+            };
+            var pairNote = fb && fb.kind === 'wrong' && fb.pair && fb.mis !== 'ord_same_spot' ? h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.ord_pair_note', 'You put {x} to the left of {y}, but {x} is the greater number.'), { x: nums[fb.pair[0]].text, y: nums[fb.pair[1]].text })) : null;
+            var farNote = fb && fb.kind === 'correct' && fb.far && fb.far.length ? h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.ord_far', 'To place them more exactly next time, use these values: {list}.'), { list: fb.far.map(function(i) { var d = NLB.decText(nums[i].value); return NLE.fill(d.exact ? t('stem.numberline.ord_ws_conv', '{x} = {d}') : t('stem.numberline.ord_ws_conv_approx', '{x} is about {d}'), { x: nums[i].text, d: d.text }); }).join('; ') })) : null;
+            return h('div', { className: 'space-y-3 rounded-xl border border-blue-200 bg-white p-3 text-slate-900', 'data-nl-order': 'item' },
+              h('p', { id: 'nl-ord-prompt', className: 'text-base font-bold' }, prompt),
+              h('div', { role: 'radiogroup', 'aria-label': t('stem.numberline.ord_pick', 'Choose the number to move'), className: 'flex flex-wrap gap-2' },
+                nums.map(function(x, i) {
+                  return h('button', { key: i, type: 'button', role: 'radio', 'aria-checked': i === sel, tabIndex: i === sel ? 0 : -1, style: B44,
+                    'aria-label': NLE.fill(pos[i] == null ? t('stem.numberline.ord_chip_unplaced', '{n}, not placed yet') : t('stem.numberline.ord_chip_placed', '{n}, placed'), { n: x.text }),
+                    onClick: function() { setOrd({ sel: i }); }, onKeyDown: function(e) { chipKey(e, i); },
+                    className: 'px-3 py-2 rounded-lg text-base font-bold font-mono border-2 ' + (i === sel ? 'bg-orange-700 text-white border-orange-700' : 'bg-white text-slate-900 border-slate-500') },
+                    x.text, pos[i] != null ? h('span', { 'aria-hidden': 'true' }, ' ✓') : null);
+                })),
+              h('div', { className: 'rounded-xl border-2 border-blue-200 p-2', style: { background: P.bg } }, lineEl),
+              h('p', { id: 'nl-ord-desc', className: 'text-xs' },
+                NLE.fill(t('stem.numberline.ord_line_desc', 'Number line from {min} to {max}. Pick a number above, then tap the line or use the arrow keys to move its marker.'), { min: dispNum(ln.min), max: dispNum(ln.max) }), ' ',
+                placedOrder.length ? NLE.fill(t('stem.numberline.ord_list', 'Your line, from left to right: {list}.'), { list: placedOrder.map(function(i) { return nums[i].text; }).join(', ') }) : '', ' ',
+                unplaced.length ? NLE.fill(t('stem.numberline.ord_unplaced', 'Not placed yet: {list}.'), { list: unplaced.map(function(i) { return nums[i].text; }).join(', ') }) : ''),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, t('stem.numberline.ord_check', 'Check my order')),
+                !done && hints < oHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setOrd({ hints: hints + 1 }); announceToSR(oHints[hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: hints + 1, total: oHints.length })),
+                !done && tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: function() { setOrd({ status: 'revealed' }); announceToSR(NLB.orderSteps(item, t).join(' ')); } }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || tries >= 2) && h('button', { type: 'button', style: B44, className: btnNext, onClick: newOrd }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))),
+              hintsEl(oHints, hints),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, miExtra: fb && fb.pair ? { x: nums[fb.pair[0]].text, y: nums[fb.pair[1]].text } : null, steps: fb && fb.kind === 'correct' ? NLB.orderSteps(item, t) : null, extra: fb && fb.kind === 'wrong' ? pairNote : farNote, note: !done ? reviewNote(tries, false) : null }),
+                ordS.status === 'revealed' && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' } },
+                  h('p', { className: 'text-sm font-bold' }, t('stem.numberline.ord_reveal_title', 'Here is the order, and how to find it. The green dots on the line show where each number really is.')), stepsList(NLB.orderSteps(item, t), 'rv'))));
+          };
+
+          // ═══ TAB: RULER + LINE PLOT (3.MD.4, 4.MD.4, 5.MD.2) ═══
+          var msS = (_n.ms && typeof _n.ms === 'object') ? _n.ms : {};
+          var lpS = (_n.lp && typeof _n.lp === 'object') ? _n.lp : {};
+          var setMs = function(patch) { upd({ ms: Object.assign({}, msS, patch) }); };
+          var setLp = function(patch) { upd({ lp: Object.assign({}, lpS, patch) }); };
+          var RC = isDark
+            ? { body: '#422006', edge: '#fbbf24', tick: '#fde68a', label: '#fef3c7', obj: '#fdba74', objText: '#0f172a', guide: '#cbd5e1' }
+            : { body: '#fef3c7', edge: '#92400e', tick: '#1f2937', label: '#1f2937', obj: '#c2410c', objText: '#ffffff', guide: '#475569' };
+          var rulerSvg = function(item) {
+            var RW = 720, RH = 190, RP = 30, PX = (RW - 2 * RP) / 6;
+            var X = function(v) { return RP + v * PX; };
+            var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: RW, height: RH, rx: 12, fill: P.bg })];
+            kids.push(h('rect', { key: 'obj', x: X(item.start), y: 16, width: X(item.end) - X(item.start), height: 40, rx: 8, fill: RC.obj }));
+            kids.push(h('text', { key: 'objt', x: (X(item.start) + X(item.end)) / 2, y: 42, textAnchor: 'middle', fill: RC.objText, fontSize: 16, fontWeight: 'bold' }, NLB.thingName(item.thing, t)));
+            [item.start, item.end].forEach(function(v, i) { kids.push(h('line', { key: 'g' + i, x1: X(v), y1: 56, x2: X(v), y2: 74, stroke: RC.guide, strokeWidth: 2, strokeDasharray: '4 3' })); });
+            kids.push(h('rect', { key: 'body', x: RP - 16, y: 74, width: 6 * PX + 32, height: 96, rx: 4, fill: RC.body, stroke: RC.edge, strokeWidth: 2 }));
+            var rd = item.rd;
+            for (var k = 0; k <= 6 * rd; k++) {
+              var whole = k % rd === 0, half = !whole && (k * 2) % rd === 0, quarter = !whole && !half && (k * 4) % rd === 0;
+              var len = whole ? 44 : half ? 32 : quarter ? 24 : 16;
+              kids.push(h('line', { key: 'rk' + k, x1: X(k / rd), y1: 74, x2: X(k / rd), y2: 74 + len, stroke: RC.tick, strokeWidth: whole ? 2.5 : 1.5 }));
+              if (whole) kids.push(h('text', { key: 'rl' + k, x: X(k / rd), y: 140, textAnchor: 'middle', fill: RC.label, fontSize: 18, fontWeight: 'bold', fontFamily: 'monospace' }, String(k / rd)));
+            }
+            kids.push(h('text', { key: 'unit', x: X(6) - 4, y: 162, textAnchor: 'end', fill: RC.label, fontSize: 13, fontWeight: 'bold' }, t('stem.numberline.ms_inches', 'inches')));
+            return h('svg', { viewBox: '0 0 ' + RW + ' ' + RH, width: '100%', role: 'img', focusable: 'false', 'aria-label': NLB.msDescribe(item, t), 'data-nl-ruler': rd, style: { display: 'block', maxWidth: '100%', height: 'auto' } }, kids);
+          };
+          // grid (optional): the plot itself becomes an ARIA grid with one cell per
+          // length. Each cell is a whole column (a big touch target): tap above the
+          // stack to add an X, tap the stack to remove one; arrows rove the cells.
+          var lpSvg = function(item, counts, sel, desc, grid) {
+            var LW = 700, LH = 250, AY = 196, X0 = 50, X1 = 650;
+            var X = function(c) { return X0 + c * (X1 - X0) / (item.cols - 1); };
+            var colW = (X1 - X0) / (item.cols - 1);
+            var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: LW, height: LH, rx: 12, fill: P.bg })];
+            if (sel != null) kids.push(h('rect', { key: 'sel', x: X(sel) - 22, y: 8, width: 44, height: AY - 4, rx: 6, fill: P.soft, stroke: P.student, strokeWidth: 2 }));
+            kids.push(h('line', { key: 'ax', x1: X0 - 20, y1: AY, x2: X1 + 20, y2: AY, stroke: P.axis, strokeWidth: 3 }));
+            for (var c = 0; c < item.cols; c++) {
+              var v = NLB.lpValue(item, c), whole = NLE.near(v, Math.round(v));
+              kids.push(h('line', { key: 't' + c, x1: X(c), y1: AY - 8, x2: X(c), y2: AY + 8, stroke: P.tick, strokeWidth: whole ? 2.5 : 1.5 }));
+              kids.push(h('text', { key: 'l' + c, x: X(c), y: AY + (c % 2 ? 44 : 28), textAnchor: 'middle', fill: P.label, fontSize: 14, fontWeight: whole ? 'bold' : 'normal', fontFamily: 'monospace' }, NLB.lpText(item, v)));
+              for (var j = 0; j < Math.min(8, counts[c] || 0); j++) {
+                var cy = AY - 22 - j * 21;
+                kids.push(h('g', { key: 'x' + c + '-' + j },
+                  h('line', { x1: X(c) - 8, y1: cy - 8, x2: X(c) + 8, y2: cy + 8, stroke: P.hop, strokeWidth: 3 }),
+                  h('line', { x1: X(c) - 8, y1: cy + 8, x2: X(c) + 8, y2: cy - 8, stroke: P.hop, strokeWidth: 3 })));
+              }
+            }
+            if (!grid) return h('svg', { viewBox: '0 0 ' + LW + ' ' + LH, width: '100%', role: 'img', focusable: 'false', 'aria-label': desc, style: { display: 'block', maxWidth: '100%', height: 'auto' } }, kids);
+            var yOf = function(el, ev) {
+              var svgEl = el.ownerSVGElement || el, y = null;
+              try { var ctm = svgEl.getScreenCTM && svgEl.getScreenCTM(); if (ctm && svgEl.createSVGPoint) { var pt = svgEl.createSVGPoint(); pt.x = ev.clientX || 0; pt.y = ev.clientY || 0; y = pt.matrixTransform(ctm.inverse()).y; } } catch (err) { y = null; }
+              if (y == null || !isFinite(y)) { var rc = svgEl.getBoundingClientRect ? svgEl.getBoundingClientRect() : null; y = rc && rc.height ? (ev.clientY - rc.top) * (LH / rc.height) : null; }
+              return y;
+            };
+            var cells = [];
+            for (var gc = 0; gc < item.cols; gc++) {
+              (function(c) {
+                var n = Math.min(8, counts[c] || 0), stackTop = AY - 22 - (n - 1) * 21 - 11;
+                cells.push(h('rect', { key: 'gc' + c, role: 'gridcell', tabIndex: c === sel ? 0 : -1, 'data-lp-cell': c,
+                  'aria-label': NLE.fill(t('stem.numberline.lp_col_btn', '{v} inches, {n} X marks'), { v: NLB.lpText(item, NLB.lpValue(item, c)), n: counts[c] || 0 }),
+                  x: X(c) - colW / 2, y: 4, width: colW, height: LH - 8, fill: '#000000', fillOpacity: 0, style: { cursor: 'pointer' },
+                  onClick: function(e) {
+                    var y = e && e.detail !== 0 ? yOf(e.currentTarget, e) : null;
+                    grid.onSet(c, n > 0 && y != null && y >= stackTop && y <= AY + 4 ? -1 : 1);
+                  },
+                  onFocus: function() { if (c !== sel) grid.onSel(c); },
+                  onKeyDown: function(e) { grid.onKey(e, c); } }));
+              })(gc);
+            }
+            return h('svg', { viewBox: '0 0 ' + LW + ' ' + LH, width: '100%', role: 'grid', 'aria-label': grid.name, 'aria-describedby': grid.describedBy, 'aria-rowcount': 1, 'aria-colcount': item.cols, 'data-nl-lp-grid': 'true', style: { display: 'block', maxWidth: '100%', height: 'auto', touchAction: 'manipulation' } },
+              kids, h('g', { role: 'row' }, cells));
+          };
+          var lpDesc = function(item, counts, mine) {
+            var parts = [];
+            for (var c = 0; c < item.cols; c++) if (counts[c]) parts.push(NLE.fill(t('stem.numberline.lp_desc_col', '{n} at {v}'), { n: counts[c], v: NLB.lpText(item, NLB.lpValue(item, c)) }));
+            var a = NLB.lpText(item, item.a), b = NLB.lpText(item, NLB.lpValue(item, item.cols - 1));
+            if (!parts.length) return NLE.fill(t('stem.numberline.lp_desc_empty', 'Line plot from {a} to {b} inches in steps of 1/{p} inch. No X marks yet.'), { a: a, b: b, p: item.prec });
+            return NLE.fill(mine ? t('stem.numberline.lp_desc_mine', 'Your line plot from {a} to {b} inches. X marks: {list}.') : t('stem.numberline.lp_desc_right', 'The correct line plot from {a} to {b} inches. X marks: {list}.'), { a: a, b: b, list: parts.join(', ') });
+          };
+          var renderMeasureOne = function() {
+            var item = okMs(msS.item) ? msS.item : null;
+            var newMs = function() {
+              var it = NLB.genMeasure(band, Math.random, tMsPrec);
+              var patch = nlbServe('measure');
+              patch.ms = { item: it, text: '', status: 'open', tries: 0, hints: 0, fb: null, exampleOpen: false };
+              upd(patch); sfxNewChallenge(); announceToSR(NLB.msPrompt(it, t));
+            };
+            if (!item) return h('div', { className: 'space-y-2' },
+              h('p', { className: 'text-sm' }, t('stem.numberline.ms_intro', 'Read an inch ruler to the nearest half, quarter or eighth of an inch. Some objects do not start at 0. Type the length as a fraction or mixed number, like 2 3/4.')),
+              h('button', { type: 'button', 'data-nl-start': 'true', style: B44, className: 'w-full ' + btnMain, onClick: newMs }, t('stem.numberline.pp_start', 'Start practice')));
+            var done = msS.status && msS.status !== 'open', tries = msS.tries || 0, hints = msS.hints || 0, fb = msS.fb || null;
+            var mHints = NLB.msHints(item, t);
+            var wStage = Math.min(2, Math.floor((nlbSolved.measure || 0) / 2));
+            var check = function() {
+              if (done) return;
+              var res = NLB.gradeMeasure(item, msS.text);
+              if (!res.valid) { var msg = t('stem.numberline.ms_need', 'Type a length first, such as 2 3/4 or 2.75.'); setMs({ fb: { kind: 'invalid', msg: msg } }); announceToSR(msg); return; }
+              var nt = tries + 1, alreadyMissed = !!msS.missed;
+              if (res.ok) {
+                var xp = nlbXp({ tries: nt, hints: hints, exampleOpen: msS.exampleOpen, missed: alreadyMissed }, 3, 1);
+                nlbResult('measure', true, { xp: xp, reason: 'Ruler measurement', alreadyMissed: alreadyMissed, frac: true, statePatch: { ms: Object.assign({}, msS, { tries: nt, status: 'correct', fb: { kind: 'correct', xp: xp, independent: nt === 1 && !hints && !msS.exampleOpen, missed: alreadyMissed } }) } });
+                announceToSR(t('stem.numberline.ms_right', 'Correct length.'));
+                return;
+              }
+              var nowMissed = alreadyMissed || nt >= 2, wf = { kind: 'wrong', mis: res.mis };
+              nlbResult('measure', false, { alreadyMissed: alreadyMissed, nowMissed: nowMissed, miss: nlbMiss('measure', NLB.msPrompt(item, t), String(msS.text || ''), NLB.msText(item.target, item.prec), res.mis),
+                statePatch: { ms: Object.assign({}, msS, { tries: nt, missed: nowMissed, fb: wf }) } });
+              announceFb(wf, item);
+            };
+            var ex = !done && (wStage < 2 || msS.exampleOpen) ? exampleFor(item, function(r) { return NLB.genMeasure(item.band || band, r, item.prec); }, function(e) { return NLE.near(e.end, item.end) && e.start === item.start; }) : null;
+            return h('div', { className: 'space-y-3', 'data-nl-measure': item.prec },
+              ex && h('div', null, workedB(NLB.msPrompt(ex, t), NLB.msSteps(ex, t), msS.exampleOpen ? 0 : wStage), h('div', { className: 'mt-1' }, rulerSvg(ex))),
+              h('p', { id: 'nl-ms-prompt', className: 'text-base font-bold' }, NLB.msPrompt(item, t)),
+              h('div', { className: 'rounded-xl border-2 border-amber-200 p-2', style: { background: P.bg } }, rulerSvg(item)),
+              h('p', { className: 'text-xs' }, NLB.msDescribe(item, t)),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('label', { htmlFor: 'nl-ms-input', className: 'text-sm font-bold' }, t('stem.numberline.ms_len_label', 'Length in inches')),
+                h('input', { id: 'nl-ms-input', type: 'text', inputMode: 'text', value: msS.text || '', disabled: !!done, 'aria-describedby': 'nl-ms-prompt', autoComplete: 'off',
+                  onChange: function(e) { setMs({ text: e.target.value, fb: fb && fb.kind === 'invalid' ? null : fb }); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); check(); } },
+                  className: 'px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono w-36', style: B44 }),
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, t('stem.numberline.pp_check', 'Check my answer')),
+                !done && hints < mHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setMs({ hints: hints + 1 }); announceToSR(mHints[hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: hints + 1, total: mHints.length })),
+                !done && wStage === 2 && !msS.exampleOpen && h('button', { type: 'button', style: B44, className: btnSoft, onClick: function() { setMs({ exampleOpen: true }); } }, t('stem.numberline.pp_show_example', 'Show me an example')),
+                !done && tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: function() { setMs({ status: 'revealed' }); announceToSR(NLB.msSteps(item, t).join(' ')); } }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || tries >= 2) && h('button', { type: 'button', style: B44, className: btnNext, onClick: newMs }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))),
+              hintsEl(mHints, hints),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, steps: fb && fb.kind === 'correct' ? NLB.msSteps(item, t) : null, note: !done ? reviewNote(tries, false) : null }),
+                msS.status === 'revealed' && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' } },
+                  h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: NLB.msText(item.target, item.prec) })), stepsList(NLB.msSteps(item, t), 'rv'))));
+          };
+          var renderLinePlot = function() {
+            var item = okLp(lpS.item) ? lpS.item : null;
+            var newLp = function() {
+              var it = NLB.genLinePlot(band, Math.random, tMsPrec);
+              var patch = nlbServe('lineplot');
+              patch.lp = { item: it, counts: it.counts.map(function() { return 0; }), sel: 0, struck: {}, status: 'open', tries: 0, fb: null, q: {} };
+              upd(patch); sfxNewChallenge();
+              announceToSR(t('stem.numberline.lp_start_sr', 'New data set. Build the line plot from the table: one X for each measurement.'));
+            };
+            if (!item) return h('div', { className: 'space-y-2' },
+              h('p', { className: 'text-sm' }, t('stem.numberline.lp_intro', 'Make a line plot from a table of measurements: put one X above the right length for each one. Then use your plot to answer questions, including adding and subtracting the fractions.')),
+              h('button', { type: 'button', 'data-nl-start': 'true', style: B44, className: 'w-full ' + btnMain, onClick: newLp }, t('stem.numberline.lp_new', 'Get a data set')));
+            var counts = Array.isArray(lpS.counts) && lpS.counts.length === item.cols ? lpS.counts : item.counts.map(function() { return 0; });
+            var sel = Number.isInteger(lpS.sel) && lpS.sel >= 0 && lpS.sel < item.cols ? lpS.sel : 0;
+            var struck = lpS.struck && typeof lpS.struck === 'object' ? lpS.struck : {};
+            var built = lpS.status === 'correct' || lpS.status === 'revealed';
+            var tries = lpS.tries || 0, fb = lpS.fb || null;
+            var change = function(c, d) {
+              if (built) return;
+              var nc = counts.slice(); nc[c] = Math.max(0, Math.min(8, (nc[c] || 0) + d));
+              setLp({ counts: nc, sel: c, fb: null });
+              announceToSR(NLE.fill(t('stem.numberline.lp_col_now', '{v} inches now has {n} X marks.'), { v: NLB.lpText(item, NLB.lpValue(item, c)), n: nc[c] }));
+            };
+            var colKey = function(e, c) {
+              var ni = -1;
+              if (e.key === 'ArrowRight') ni = Math.min(item.cols - 1, c + 1);
+              else if (e.key === 'ArrowLeft') ni = Math.max(0, c - 1);
+              else if (e.key === 'Home') ni = 0; else if (e.key === 'End') ni = item.cols - 1;
+              else if (e.key === 'ArrowUp') { e.preventDefault(); change(c, 1); return; }
+              else if (e.key === 'ArrowDown' || e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); change(c, -1); return; }
+              if (ni < 0) return;
+              e.preventDefault();
+              setLp({ sel: ni });
+              var bar = e.currentTarget.parentNode, inGrid = e.currentTarget.hasAttribute && e.currentTarget.hasAttribute('data-lp-cell');
+              setTimeout(function() { var b = bar && bar.querySelectorAll(inGrid ? '[data-lp-cell]' : 'button')[ni]; if (b && b.focus) b.focus(); }, 0);
+            };
+            // The plot grid: the same keys as the buttons, plus Enter / Space to add.
+            var gridKey = function(e, c) {
+              if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); change(c, 1); return; }
+              colKey(e, c);
+            };
+            var lpHintList = [
+              t('stem.numberline.lp_h1', 'Start with the first measurement in the table. Find its length on the line and add one X above it.'),
+              t('stem.numberline.lp_h2', 'Cross off each measurement in the table as you plot it, so none is counted twice or left out.'),
+              NLE.fill(t('stem.numberline.lp_h3', 'Count your X marks. There should be {n}: one for each measurement.'), { n: item.data.length })
+            ];
+            var lpHints = lpS.hints || 0;
+            var checkPlot = function() {
+              if (built) return;
+              var res = NLB.gradePlot(item, counts);
+              if (!res.valid) { var msg = t('stem.numberline.lp_need', 'Add X marks to the plot first.'); setLp({ fb: { kind: 'invalid', msg: msg } }); announceToSR(msg); return; }
+              var nt = tries + 1, alreadyMissed = !!lpS.missed;
+              if (res.ok) {
+                var xp = alreadyMissed ? 0 : nt === 1 && !lpHints ? 5 : 2;
+                nlbResult('lineplot', true, { xp: xp, reason: 'Line plot', alreadyMissed: alreadyMissed, frac: true, statePatch: { lp: Object.assign({}, lpS, { counts: counts, tries: nt, status: 'correct', fb: { kind: 'correct', xp: xp, independent: nt === 1 && !lpHints, missed: alreadyMissed } }) } });
+                announceToSR(t('stem.numberline.lp_right', 'Your line plot matches the table. Now answer the questions.'));
+                return;
+              }
+              var nowMissed = alreadyMissed || nt >= 2;
+              var wf = { kind: 'wrong', mis: res.mis, col: res.cols[0] };
+              nlbResult('lineplot', false, { alreadyMissed: alreadyMissed, nowMissed: nowMissed, miss: nlbMiss('lineplot', NLE.fill(NLB.lpMissText(item.thing, t), { n: item.data.length }), lpDesc(item, counts, true), lpDesc(item, item.counts, false), res.mis),
+                statePatch: { lp: Object.assign({}, lpS, { counts: counts, tries: nt, missed: nowMissed, fb: wf }) } });
+              announceFb(wf, item);
+            };
+            var colNote = fb && fb.kind === 'wrong' && fb.col != null ? h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.lp_check_col', 'Start by checking the column at {v} inches against the table.'), { v: NLB.lpText(item, NLB.lpValue(item, fb.col)) })) : null;
+            var qState = lpS.q && typeof lpS.q === 'object' ? lpS.q : {};
+            var setQ = function(i, patch) { var nq = Object.assign({}, qState); nq[i] = Object.assign({}, qState[i] || {}, patch); setLp({ q: nq }); };
+            return h('div', { className: 'space-y-3', 'data-nl-lineplot': lpS.status || 'open' },
+              h('div', { className: 'grid grid-cols-1 gap-3' },
+                h('table', { className: 'text-sm border-collapse bg-white text-slate-900 self-start' },
+                  h('caption', { className: 'text-left text-xs font-bold mb-1' }, NLE.fill(NLB.lpCaptionText(item.thing, t), { n: item.data.length, p: item.prec })),
+                  h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', className: 'border border-slate-400 px-1' }, t('stem.numberline.lp_col_n', 'No.')),
+                    h('th', { scope: 'col', className: 'border border-slate-400 px-1' }, t('stem.numberline.lp_col_len', 'Length (in)')),
+                    h('th', { scope: 'col', className: 'border border-slate-400 px-1' }, t('stem.numberline.lp_col_done', 'Plotted?')))),
+                  h('tbody', null, item.data.map(function(v, i) {
+                    var on = !!struck[i];
+                    return h('tr', { key: i },
+                      h('td', { className: 'border border-slate-400 px-1 text-center' }, i + 1),
+                      h('td', { className: 'border border-slate-400 px-1 font-mono', style: on ? { textDecoration: 'line-through' } : null }, NLB.lpText(item, v)),
+                      h('td', { className: 'border border-slate-400 px-1 text-center' },
+                        h('button', { type: 'button', 'aria-pressed': on, style: { minHeight: 32, minWidth: 44 }, className: 'px-2 rounded border border-slate-500 text-xs font-bold ' + (on ? 'bg-slate-700 text-white' : 'bg-white text-slate-800'),
+                          'aria-label': NLE.fill(t('stem.numberline.lp_cross', 'Cross off measurement {i}, {v} inches'), { i: i + 1, v: NLB.lpText(item, v) }),
+                          onClick: function() { var ns = Object.assign({}, struck); ns[i] = !on; setLp({ struck: ns }); } }, on ? '✓' : '—')));
+                  }))),
+                h('div', { className: 'space-y-2 min-w-0' },
+                  h('div', { className: 'rounded-xl border-2 border-violet-200 p-2', style: { background: P.bg } }, built ? lpSvg(item, counts, null, lpDesc(item, counts, true))
+                    : lpSvg(item, counts, sel, null, { name: t('stem.numberline.lp_grid_name', 'Your line plot: one column for each length'), describedBy: 'nl-lp-desc nl-lp-help',
+                        onSet: function(c, d) { change(c, d); }, onSel: function(c) { setLp({ sel: c }); }, onKey: gridKey })),
+                  !built && h('p', { id: 'nl-lp-desc', className: 'text-xs' }, lpDesc(item, counts, true)),
+                  !built && h('p', { id: 'nl-lp-help', className: 'text-xs' }, t('stem.numberline.lp_help_v2', 'Tap the plot above a length to add an X there, or tap an X to remove one. With the keyboard, use the plot or the length buttons: the Up arrow, Enter or Space adds an X; the Down arrow, Delete or Backspace removes one; the Left and Right arrows move between lengths.')),
+                  !built && h('div', { role: 'toolbar', 'aria-label': t('stem.numberline.lp_toolbar', 'Line plot lengths'), 'aria-describedby': 'nl-lp-help', className: 'flex flex-wrap gap-1' },
+                    counts.map(function(n, c) {
+                      return h('button', { key: c, type: 'button', tabIndex: c === sel ? 0 : -1, style: { minHeight: 44, minWidth: 52 },
+                        'aria-label': NLE.fill(t('stem.numberline.lp_col_btn', '{v} inches, {n} X marks'), { v: NLB.lpText(item, NLB.lpValue(item, c)), n: n }),
+                        onClick: function() { change(c, 1); }, onKeyDown: function(e) { colKey(e, c); },
+                        className: 'px-1 py-1 rounded-lg text-xs font-bold font-mono border-2 ' + (c === sel ? 'border-orange-700 bg-orange-50 text-orange-900' : 'border-violet-600 bg-white text-violet-900') },
+                        NLB.lpText(item, NLB.lpValue(item, c)), h('span', { 'aria-hidden': 'true', className: 'block' }, '×' + n));
+                    })),
+                  !built && h('div', { className: 'flex flex-wrap gap-2' },
+                    h('button', { type: 'button', style: B44, className: btnSoft, disabled: !counts[sel], onClick: function() { change(sel, -1); } }, NLE.fill(t('stem.numberline.lp_remove', 'Remove an X from {v}'), { v: NLB.lpText(item, NLB.lpValue(item, sel)) })),
+                    h('button', { type: 'button', style: B44, className: btnSoft, onClick: function() { setLp({ counts: item.counts.map(function() { return 0; }), fb: null }); } }, t('stem.numberline.lp_clear', 'Clear my plot')),
+                    h('button', { type: 'button', style: B44, className: btnMain, onClick: checkPlot }, t('stem.numberline.lp_check', 'Check my line plot')),
+                    lpHints < lpHintList.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setLp({ hints: lpHints + 1 }); announceToSR(lpHintList[lpHints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: lpHints + 1, total: lpHintList.length })),
+                    tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: function() { setLp({ status: 'revealed' }); announceToSR(lpDesc(item, item.counts, false)); } }, t('stem.numberline.pp_reveal', 'Show the answer'))),
+                  !built && hintsEl(lpHintList, lpHints),
+                  lpS.status === 'revealed' && h('div', { className: 'rounded-xl border-2 border-emerald-300 p-2', style: { background: P.bg } }, lpSvg(item, item.counts, null, lpDesc(item, item.counts, false))))),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, extra: colNote, note: !built ? reviewNote(tries, false) : null }),
+                lpS.status === 'revealed' && h('p', { className: 'text-sm font-bold' }, t('stem.numberline.lp_revealed', 'The correct plot is shown. Use it to answer the questions; they do not score after a reveal.'))),
+              built && h('div', { className: 'space-y-3', 'data-nl-lp-questions': 'true' },
+                h('h5', { className: 'text-sm font-black' }, t('stem.numberline.lp_q_title', 'Use the line plot to answer')),
+                item.questions.map(function(q, i) {
+                  var qs = qState[i] || {}, qDone = qs.status === 'correct' || qs.status === 'revealed', qt = qs.tries || 0, qh = qs.hints || 0;
+                  var qid = 'nl-lpq-' + i, qv = q.v != null ? NLB.lpText(item, q.v) : '';
+                  var qHints = q.id === 'mode' ? [t('stem.numberline.lp_qh_mode_1', 'Look for the tallest stack of X marks.'), t('stem.numberline.lp_qh_mode_2', 'The answer is the length written under that stack, not the number of X marks.')]
+                    : q.id === 'gt' ? [NLE.fill(t('stem.numberline.lp_qh_gt_1', 'Find {v} on the line.'), { v: qv }), NLE.fill(t('stem.numberline.lp_qh_gt_2', 'Count only the X marks to the right of {v}. The marks at {v} are not longer than it.'), { v: qv })]
+                    : q.id === 'at' ? [NLE.fill(t('stem.numberline.lp_qh_at_1', 'Find {v} on the line.'), { v: qv }), t('stem.numberline.lp_qh_at_2', 'Count the X marks stacked above that length.')]
+                    : q.id === 'range' ? [t('stem.numberline.lp_qh_range_1', 'Find the X mark farthest to the left (the shortest) and the one farthest to the right (the longest).'), t('stem.numberline.lp_qh_range_2', 'Subtract: the longest length minus the shortest length.')]
+                    : [NLE.fill(t('stem.numberline.lp_qh_total_1', 'Count the X marks above {v}.'), { v: qv }), NLE.fill(t('stem.numberline.lp_qh_total_2', 'Add {v} once for every one of those X marks, or multiply.'), { v: qv })];
+                  var checkQ = function() {
+                    if (qDone) return;
+                    var res = NLB.gradeLpQuestion(q, qs.text);
+                    if (!res.valid) { setQ(i, { fb: { kind: 'invalid', msg: t('stem.numberline.pp_need_text', 'Type an answer first.') } }); return; }
+                    var nt = qt + 1, missed = !!qs.missed;
+                    var nq = Object.assign({}, qState);
+                    if (res.ok) {
+                      var indep = nt === 1 && !qh;
+                      var xp = missed || lpS.status === 'revealed' ? 0 : indep ? 2 : 1;
+                      nq[i] = Object.assign({}, qs, { tries: nt, status: 'correct', fb: { kind: 'correct', xp: xp, independent: indep, missed: missed } });
+                      nlbResult('lpq', true, { xp: xp, reason: 'Line plot question', alreadyMissed: missed, frac: true, statePatch: { lp: Object.assign({}, lpS, { q: nq }) } });
+                      announceToSR(xp > 0 && indep ? t('stem.numberline.pp_correct_indep', 'Correct, on your own.') : t('stem.numberline.pp_correct_support', 'Correct, with support.'));
+                      return;
+                    }
+                    var nowMissed = missed || nt >= 2;
+                    nq[i] = Object.assign({}, qs, { tries: nt, missed: nowMissed, fb: { kind: 'wrong', mis: res.mis } });
+                    nlbResult('lpq', false, { alreadyMissed: missed, nowMissed: nowMissed, miss: nlbMiss('lpq', NLB.lpPrompt(item, q, t), String(qs.text || ''), NLB.lpText(item, q.answer), res.mis), statePatch: { lp: Object.assign({}, lpS, { q: nq }) } });
+                    announceFb({ kind: 'wrong', mis: res.mis }, item);
+                  };
+                  return h('div', { key: i, className: 'rounded-lg border border-slate-300 p-2 space-y-1' },
+                    h('label', { htmlFor: qid, className: 'block text-sm font-bold' }, NLB.lpPrompt(item, q, t)),
+                    h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                      h('input', { id: qid, type: 'text', value: qs.text || '', disabled: qDone, autoComplete: 'off',
+                        onChange: function(e) { setQ(i, { text: e.target.value, fb: null }); },
+                        onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkQ(); } },
+                        className: 'px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono w-32', style: B44 }),
+                      !qDone && h('button', { type: 'button', style: B44, className: btnMain, onClick: checkQ }, t('stem.numberline.pp_check', 'Check my answer')),
+                      !qDone && qh < qHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setQ(i, { hints: qh + 1 }); announceToSR(qHints[qh]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: qh + 1, total: qHints.length })),
+                      !qDone && qt >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: function() { setQ(i, { status: 'revealed' }); announceToSR(NLB.lpQSteps(item, q, t).join(' ')); } }, t('stem.numberline.pp_reveal', 'Show the answer'))),
+                    !qDone && hintsEl(qHints, qh),
+                    h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                      nlbFeedback(qs.fb, { item: item, steps: qs.fb && qs.fb.kind === 'correct' ? NLB.lpQSteps(item, q, t) : null, note: !qDone ? reviewNote(qt, false) : null }),
+                      qs.status === 'revealed' && h('div', { className: 'rounded-lg p-2 border-2 bg-white', style: { borderColor: '#047857' } },
+                        h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: NLB.lpText(item, q.answer) })), stepsList(NLB.lpQSteps(item, q, t), 'rv'))));
+                }),
+                h('button', { type: 'button', style: B44, className: btnNext, onClick: newLp }, t('stem.numberline.lp_new_set', 'New data set'))));
+          };
+          var renderMeasure = function() {
+            var sub = _n.msMode === 'plot' ? 'plot' : 'measure';
+            return h('div', { className: 'space-y-3 rounded-xl border border-amber-200 bg-white p-3 text-slate-900', 'data-nl-measure-tab': sub },
+              h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.ms_mode', 'Measurement activity') },
+                [['measure', t('stem.numberline.ms_mode_measure', 'Measure with a ruler')], ['plot', t('stem.numberline.ms_mode_plot', 'Make a line plot')]].map(function(m) {
+                  return h('button', { key: m[0], type: 'button', 'aria-pressed': sub === m[0], style: B44, className: pressCls(sub === m[0]), onClick: function() { sfxClick(); upd({ msMode: m[0] }); } }, m[1]);
+                })),
+              tMsPrec && h('p', { className: 'text-xs italic' }, NLE.fill(t('stem.numberline.ms_locked', 'Your teacher set the precision to the nearest 1/{p} inch.'), { p: tMsPrec })),
+              sub === 'plot' ? renderLinePlot() : renderMeasureOne());
+          };
+
+          // ═══ TAB: INTEGERS IN CONTEXT (6.NS.5, 6.NS.6c, 6.NS.7) ═══
+          var icS = (_n.ic && typeof _n.ic === 'object') ? _n.ic : {};
+          var setIc = function(patch) { upd(Object.assign(icS.quiet && icS.item ? nlbServe(icS.item.kind) : {}, { ic: Object.assign({}, icS, patch, { quiet: false }) })); };
+          // kind is optional (the learning path asks for a particular kind).
+          var icNew = function(kind, extra, quiet) {
+            var it = NLB.genIc(band, Math.random, typeof kind === 'string' ? kind : undefined);
+            var patch = Object.assign(quiet ? {} : nlbServe(it.kind), extra || {});
+            patch.ic = { item: it, pos: null, text: '', choice: null, status: 'open', tries: 0, hints: 0, fb: null, dir: icS.dir || null, shown: false, quiet: quiet === true };
+            upd(patch); if (!quiet) { sfxNewChallenge(); announceToSR(NLB.icPrompt(it, t)); }
+          };
+          var renderIntCtx = function() {
+            var item = okIc(icS.item) ? icS.item : null;
+            var newIc = function() { icNew(); };
+            var dirOf = tIcDir || (icS.dir === 'vertical' || icS.dir === 'horizontal' ? icS.dir : (item && !item.line.vertical ? 'horizontal' : 'vertical'));
+            var dirBar = h('div', { className: 'flex flex-wrap gap-2 items-center', role: 'group', 'aria-label': t('stem.numberline.ic_dir', 'Number line direction') },
+              [['vertical', t('stem.numberline.ic_dir_v', 'Vertical line')], ['horizontal', t('stem.numberline.ic_dir_h', 'Horizontal line')]].map(function(d) {
+                return h('button', { key: d[0], type: 'button', 'aria-pressed': dirOf === d[0], disabled: !!tIcDir, style: B44, className: pressCls(dirOf === d[0]) + ' disabled:opacity-60', onClick: function() { sfxClick(); setIc({ dir: d[0] }); } }, d[1]);
+              }),
+              tIcDir && h('span', { className: 'text-xs italic' }, t('stem.numberline.ic_dir_locked', 'Your teacher chose the line direction.')));
+            if (!item) {
+              return h('div', { className: 'space-y-3 rounded-xl border border-sky-200 bg-white p-3 text-slate-900', 'data-nl-intctx': 'empty' },
+                h('p', { className: 'text-sm' }, t('stem.numberline.ic_intro', 'Negative numbers in real life: temperatures below zero, places below sea level, and money owed. Place values on a vertical or horizontal line, compare them in words (colder than, lower than, owes more), and work out changes and distances.')),
+                dirBar,
+                h('button', { type: 'button', 'data-nl-start': 'true', style: B44, className: 'w-full ' + btnMain, onClick: newIc }, t('stem.numberline.pp_start', 'Start practice')));
+            }
+            var vertical = dirOf === 'vertical';
+            var done = icS.status && icS.status !== 'open', tries = icS.tries || 0, hints = icS.hints || 0, fb = icS.fb || null;
+            var isPos = item.answer === 'position', isChoice = item.answer === 'choice';
+            var prompt = NLB.icPrompt(item, t);
+            var iHints = NLB.icHints(item, t);
+            var ctxTitle = item.ctx === 'temp' ? NLE.fill(t('stem.numberline.ic_ctx_temp', 'Temperature (°{u})'), { u: item.unit }) : item.ctx === 'elev' ? t('stem.numberline.ic_ctx_elev', 'Elevation in metres (0 is sea level)') : t('stem.numberline.ic_ctx_money', 'Bank balance in dollars (below 0 means money owed)');
+            var check = function() {
+              if (done) return;
+              var res = NLB.gradeIc(item, { pos: icS.pos, text: icS.text, choice: icS.choice });
+              if (!res.valid) { var msg = isPos ? t('stem.numberline.pp_need_marker', 'Place your marker first: tap the line or use the arrow keys.') : isChoice ? t('stem.numberline.dz_need_choice', 'Choose one of the sentences first.') : t('stem.numberline.pp_need_text', 'Type an answer first.'); setIc({ fb: { kind: 'invalid', msg: msg } }); announceToSR(msg); return; }
+              var nt = tries + 1, alreadyMissed = !!icS.missed;
+              if (res.ok) {
+                var xp = isChoice ? (alreadyMissed ? 0 : hints ? 1 : 3) : nlbXp({ tries: nt, hints: hints, exampleOpen: false, missed: alreadyMissed }, 3, 1);
+                nlbResult(item.kind, true, { xp: xp, reason: 'Integers in context', alreadyMissed: alreadyMissed, neg: true, statePatch: { ic: Object.assign({}, icS, { tries: nt, status: 'correct', fb: { kind: 'correct', xp: xp, independent: nt === 1 && !hints, missed: alreadyMissed } }) } });
+                announceToSR(isChoice ? NLB.icSentence(item, t) : xp > 0 && nt === 1 && !hints ? t('stem.numberline.pp_correct_indep', 'Correct, on your own.') : t('stem.numberline.pp_correct_support', 'Correct, with support.'));
+                return;
+              }
+              var nowMissed = alreadyMissed || isChoice || nt >= 2, wf = { kind: 'wrong', mis: res.mis };
+              var ans = isPos ? NLB.icVal(item, icS.pos) : isChoice ? NLB.icChoices(item, t)[icS.choice] : String(icS.text || '');
+              nlbResult(item.kind, false, { alreadyMissed: alreadyMissed, nowMissed: nowMissed, miss: nlbMiss(item.kind, prompt, ans, NLB.icAnswerText(item, t), res.mis),
+                statePatch: { ic: Object.assign({}, icS, { tries: nt, missed: nowMissed, fb: wf }) } });
+              announceFb(wf, item);
+            };
+            var points = [];
+            if (item.kind === 'icChange') points.push({ v: item.start, label: NLE.fill(t('stem.numberline.ic_start_label', 'start {v}'), { v: dispNum(item.start) }), color: P.point });
+            if (item.kind === 'icDistance' || (isChoice && (done || icS.shown))) { points.push({ v: item.a, label: isChoice && item.kind === 'icDebt' ? item.names[0] : dispNum(item.a), color: P.point }); points.push({ v: item.b, label: isChoice && item.kind === 'icDebt' ? item.names[1] : dispNum(item.b), color: P.hop, level: 1 }); }
+            var hops = done && item.kind === 'icChange' ? [{ from: item.start, to: item.target, label: (item.up ? '+' : '−') + item.delta, color: P.hop2 }] : [];
+            var lineO = { min: item.line.min, max: item.line.max, step: item.line.step, labels: item.line.labels, points: points, hops: hops,
+              marker: isPos ? icS.pos : null,
+              correct: done && isPos ? item.target : null, correctLabel: done && isPos ? dispNum(item.target) : null,
+              zeroWord: item.ctx === 'elev' ? t('stem.numberline.ic_sea_level', 'sea level') : null,
+              desc: NLE.fill(t('stem.numberline.ic_line_desc', '{title}: a number line from {min} to {max}, with a tick every {s} and labels every {L}.'), { title: ctxTitle, min: dispNum(item.line.min), max: dispNum(item.line.max), s: item.line.step, L: item.line.labels[1] - item.line.labels[0] }) + (points.length ? ' ' + NLE.fill(t('stem.numberline.ic_points_desc', 'Marked: {list}.'), { list: points.map(function(p) { return p.label; }).join(', ') }) : ''),
+              slider: isPos ? { name: item.ctx === 'temp' ? NLE.fill(t('stem.numberline.ic_slider_temp', 'Your marker on the temperature line (°{u})'), { u: item.unit }) : item.ctx === 'elev' ? t('stem.numberline.ic_slider_elev', 'Your marker on the elevation line') : t('stem.numberline.ic_slider_money', 'Your marker on the bank balance line'), valuetext: NLB.icSpot(item.line, icS.pos, vertical, t), snap: item.line.snap, bigStep: item.line.labels[1] - item.line.labels[0], describedBy: 'nl-ic-prompt nl-ic-desc', disabled: !!done,
+                onSet: function(v, how) { setIc({ pos: v, fb: fb && fb.kind === 'invalid' ? null : fb }); if (how === 'pointer') sfxClick(); } } : null };
+            var lineEl = vertical ? vlineSvg(lineO) : lineSvg(Object.assign({}, lineO, { height: 170, axisY: 100 }));
+            var choices = isChoice ? NLB.icChoices(item, t) : [];
+            return h('div', { className: 'space-y-3 rounded-xl border border-sky-200 bg-white p-3 text-slate-900', 'data-nl-intctx': item.kind, 'data-nl-dir': dirOf },
+              dirBar,
+              h('p', { className: 'text-xs font-bold uppercase tracking-wide text-sky-800' }, ctxTitle),
+              h('p', { id: 'nl-ic-prompt', className: 'text-base font-bold' }, prompt),
+              h('div', { className: 'rounded-xl border-2 border-sky-200 p-2', style: { background: P.bg } }, lineEl),
+              h('p', { id: 'nl-ic-desc', className: 'text-xs' }, lineO.desc),
+              isPos && h('p', { className: 'text-xs' }, vertical ? t('stem.numberline.ic_keys_v', 'Tap or drag on the line, or focus it and use the Up and Down arrow keys (Page Up and Page Down jump between labels).') : t('stem.numberline.pp_keys', 'Tap or drag on the line, or focus it and use the arrow keys (Page Up and Page Down jump a whole space; Home and End go to the ends).')),
+              isChoice && h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.numberline.ic_choose', 'Choose your answer') },
+                choices.map(function(c, i) { return h('button', { key: i, type: 'button', 'data-nl-start': i === 0 ? 'true' : undefined, 'aria-pressed': icS.choice === i, disabled: !!done, style: B44, className: pressCls(icS.choice === i) + ' font-mono disabled:opacity-70', onClick: function() { setIc({ choice: i, fb: fb && fb.kind === 'invalid' ? null : fb }); } }, c); })),
+              item.answer === 'number' && h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('label', { htmlFor: 'nl-ic-input', className: 'text-sm font-bold' }, t('stem.numberline.pp_answer', 'Your answer')),
+                h('input', { id: 'nl-ic-input', type: 'text', value: icS.text || '', disabled: !!done, autoComplete: 'off', 'aria-describedby': 'nl-ic-prompt',
+                  onChange: function(e) { setIc({ text: e.target.value, fb: fb && fb.kind === 'invalid' ? null : fb }); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); check(); } },
+                  className: 'px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono w-32', style: B44 })),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: check }, isPos ? t('stem.numberline.pp_check_place', 'Check my placement') : t('stem.numberline.pp_check', 'Check my answer')),
+                !done && hints < iHints.length && h('button', { type: 'button', style: B44, className: btnHint, onClick: function() { setIc({ hints: hints + 1, shown: isChoice ? true : icS.shown }); announceToSR(iHints[hints]); } }, NLE.fill(t('stem.numberline.pp_hint_btn', 'Hint {n} of {total}'), { n: hints + 1, total: iHints.length })),
+                !done && tries >= 2 && allowReveal && h('button', { type: 'button', style: B44, className: btnReveal, onClick: function() { setIc({ status: 'revealed' }); announceToSR(NLB.icSteps(item, t).join(' ')); } }, t('stem.numberline.pp_reveal', 'Show the answer')),
+                (done || tries >= 2) && h('button', { type: 'button', style: B44, className: btnNext, onClick: newIc }, done ? t('stem.numberline.pp_next', 'Next item') : t('stem.numberline.pp_skip', 'Skip to the next item'))),
+              hintsEl(iHints, hints),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                nlbFeedback(fb, { item: item, steps: fb && fb.kind === 'correct' ? NLB.icSteps(item, t) : null, note: fb && fb.kind === 'wrong' && !done ? reviewNote(tries, isChoice) : null }),
+                (icS.status === 'revealed' || icS.status === 'missed') && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' } },
+                  h('p', { className: 'text-sm font-bold' }, NLE.fill(t('stem.numberline.pp_answer_is', 'The answer is {a}. Here is how to find it:'), { a: NLB.icAnswerText(item, t) })), stepsList(NLB.icSteps(item, t), 'rv'))));
+          };
+
+          // ═══ CER INVESTIGATION: "Is a fraction with a bigger denominator always smaller?" ═══
+          var cerS = (_n.cer && typeof _n.cer === 'object') ? _n.cer : {};
+          var setCer = function(patch) { upd({ cer: Object.assign({}, cerS, patch) }); };
+          var renderCer = function() {
+            var fa = NLB.cerOkFrac(cerS.a) ? cerS.a : [1, 2], fbb = NLB.cerOkFrac(cerS.b) ? cerS.b : [1, 3];
+            var rows = Array.isArray(cerS.rows) ? cerS.rows.filter(function(r) { return r && NLB.cerOkFrac(r.a) && NLB.cerOkFrac(r.b); }) : [];
+            var CLAIMS = [['always', t('stem.numberline.cer_claim_always', 'Yes. A bigger denominator always means a smaller fraction.')], ['sameNum', t('stem.numberline.cer_claim_same', 'Not always. It is true when the numerators are the same, but not always when they are different.')], ['never', t('stem.numberline.cer_claim_never', 'No. A bigger denominator never makes a smaller fraction.')]];
+            var REASONS = [['pieces', t('stem.numberline.cer_reason_pieces', 'A bigger denominator cuts the whole into more, smaller pieces, but the numerator says how many pieces you take, so more pieces can make up for smaller ones.')], ['bigger_numbers', t('stem.numberline.cer_reason_bigger', 'Bigger numbers make bigger fractions.')], ['den_only', t('stem.numberline.cer_reason_den', 'Only the denominator matters when you compare fractions.')]];
+            var claimText = function(id) { var c = CLAIMS.filter(function(x) { return x[0] === id; })[0]; return c ? c[1] : ''; };
+            var pred = cerS.pred || null, fb = cerS.fb || null, done = !!cerS.done;
+            var fracSel = function(which, idx, label) {
+              var cur = which === 'a' ? fa : fbb, id = 'nl-cer-' + which + idx;
+              return h('label', { key: id, htmlFor: id, className: 'flex items-center gap-1 text-xs font-bold' }, label,
+                h('select', { id: id, value: cur[idx], disabled: !pred || done, style: { minHeight: 36 }, className: 'border border-slate-500 rounded px-1 text-sm bg-white text-slate-900',
+                  onChange: function(e) { var nv = cur.slice(); nv[idx] = parseInt(e.target.value, 10); var p = {}; p[which] = nv; p.fb = null; setCer(p); } },
+                  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function(n) { return h('option', { key: n, value: n }, n); })));
+            };
+            var cur = NLB.cerRow(fa, fbb);
+            var maxV = Math.max(1, Math.ceil(Math.max(cur.va, cur.vb)));
+            var dup = rows.some(function(r) { return r.a[0] === fa[0] && r.a[1] === fa[1] && r.b[0] === fbb[0] && r.b[1] === fbb[1]; });
+            var addRow = function() {
+              if (!pred || done || dup || rows.length >= 12) return;
+              setCer({ rows: rows.concat([{ a: fa.slice(), b: fbb.slice() }]), fb: null });
+              announceToSR(NLE.fill(t('stem.numberline.cer_added', 'Added row {n}: {a} and {b}.'), { n: rows.length + 1, a: fa[0] + '/' + fa[1], b: fbb[0] + '/' + fbb[1] }));
+            };
+            var conclude = function() {
+              if (done) return;
+              var res = NLB.cerEvaluate({ rows: rows, claim: cerS.claim, reason: cerS.reason, cite: cerS.cite != null && cerS.cite !== '' ? Number(cerS.cite) : null });
+              if (res.ok) {
+                var first = _n.cerDone !== true;
+                upd({ cer: Object.assign({}, cerS, { done: true, fb: { kind: 'correct' } }), cerDone: true });
+                sfxCorrect();
+                if (first) awardXP('numberline', 10, 'Fraction investigation');
+                announceToSR(t('stem.numberline.cer_ok_sr', 'Your claim, evidence and reasoning fit together.'));
+                return;
+              }
+              setCer({ fb: { kind: 'wrong', mis: res.code, row: res.row } });
+              sfxWrong();
+              announceFb({ kind: 'wrong', mis: res.code }, { cer: true }, { row: res.row });
+            };
+            var rowWord = function(r, side) { return side === 'equal' ? t('stem.numberline.cer_equal', 'They are equal') : (side === 'a' ? r.a : r.b).join('/'); };
+            return h('section', { className: 'space-y-3 rounded-xl border-2 border-emerald-300 bg-white p-3 text-slate-900', 'aria-label': t('stem.numberline.cer_title', 'Investigation: is a fraction with a bigger denominator always smaller?'), 'data-nl-cer': done ? 'done' : pred ? 'evidence' : 'predict', 'data-nl-start': 'true', tabIndex: -1 },
+              h('h4', { className: 'text-sm font-black text-emerald-900' }, t('stem.numberline.cer_title', 'Investigation: is a fraction with a bigger denominator always smaller?')),
+              h('p', { className: 'text-xs' }, t('stem.numberline.cer_intro', 'Claim, evidence, reasoning. Predict first, then test pairs of fractions on the number line, then decide what your evidence shows.')),
+              _n.cerDone === true && !done && h('p', { className: 'text-xs italic' }, t('stem.numberline.cer_again', 'You finished this investigation before. You can run it again; it does not give XP twice.')),
+              h('fieldset', { className: 'border border-emerald-300 rounded-lg p-2 space-y-1' },
+                h('legend', { className: 'text-xs font-bold px-1' }, t('stem.numberline.cer_step1', 'Step 1. Your prediction')),
+                pred ? h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.cer_pred_is', 'You predicted: {c}'), { c: claimText(pred) }))
+                  : CLAIMS.map(function(c) {
+                      return h('label', { key: c[0], className: 'flex items-start gap-2 text-sm', style: { minHeight: 32 } },
+                        h('input', { type: 'radio', name: 'nl-cer-pred', value: c[0], checked: cerS.predDraft === c[0], onChange: function() { setCer({ predDraft: c[0] }); }, style: { marginTop: 3 } }), c[1]);
+                    }).concat([
+                    h('button', { key: 'lock', type: 'button', style: B44, disabled: !cerS.predDraft, className: btnMain, onClick: function() { setCer({ pred: cerS.predDraft }); announceToSR(t('stem.numberline.cer_locked_sr', 'Prediction saved. Now collect evidence.')); } }, t('stem.numberline.cer_lock', 'Lock in my prediction'))])),
+              pred && h('fieldset', { className: 'border border-emerald-300 rounded-lg p-2 space-y-2' },
+                h('legend', { className: 'text-xs font-bold px-1' }, t('stem.numberline.cer_step2', 'Step 2. Collect evidence: compare two fractions on the line')),
+                h('div', { className: 'flex flex-wrap gap-3 items-center' },
+                  h('span', { className: 'text-sm font-bold' }, 'A'), fracSel('a', 0, t('stem.numberline.cer_num', 'numerator')), fracSel('a', 1, t('stem.numberline.cer_den', 'denominator')),
+                  h('span', { className: 'text-sm font-bold' }, 'B'), fracSel('b', 0, t('stem.numberline.cer_num', 'numerator')), fracSel('b', 1, t('stem.numberline.cer_den', 'denominator'))),
+                lineSvg({ min: 0, max: maxV, step: maxV > 1 ? 0.5 : 0.25, labels: maxV > 1 ? [0, 1, 2] : [0, 0.5, 1], height: 120, axisY: 70,
+                  points: [{ v: Math.min(maxV, cur.va), label: 'A ' + fa[0] + '/' + fa[1], color: P.point }, { v: Math.min(maxV, cur.vb), label: 'B ' + fbb[0] + '/' + fbb[1], color: P.hop, level: Math.abs(cur.va - cur.vb) < 0.12 ? 1 : 0 }],
+                  desc: NLE.fill(t('stem.numberline.cer_line_desc', 'A = {a} is at {va} and B = {b} is at {vb} on a number line from 0 to {m}.'), { a: fa[0] + '/' + fa[1], b: fbb[0] + '/' + fbb[1], va: NLB.decText(cur.va).text, vb: NLB.decText(cur.vb).text, m: maxV }) }),
+                h('button', { type: 'button', style: B44, disabled: dup || done || rows.length >= 12, className: btnSoft, onClick: addRow }, dup ? t('stem.numberline.cer_dup', 'This pair is already in your table') : t('stem.numberline.cer_add', 'Add this pair to my evidence')),
+                rows.length > 0 && h('table', { className: 'w-full text-xs border-collapse' },
+                  h('caption', { className: 'text-left font-bold' }, t('stem.numberline.cer_table', 'My evidence')),
+                  h('thead', null, h('tr', null, [t('stem.numberline.cer_col_row', 'Row'), 'A', 'B', t('stem.numberline.cer_col_bigden', 'Bigger denominator'), t('stem.numberline.cer_col_smaller', 'Smaller fraction on the line')].map(function(c, i) { return h('th', { key: i, scope: 'col', className: 'border border-slate-400 px-1 text-left' }, c); }))),
+                  h('tbody', null, rows.map(function(r0, i) {
+                    var r = NLB.cerRow(r0.a, r0.b);
+                    return h('tr', { key: i },
+                      h('td', { className: 'border border-slate-400 px-1' }, i + 1),
+                      h('td', { className: 'border border-slate-400 px-1 font-mono' }, r.a.join('/')),
+                      h('td', { className: 'border border-slate-400 px-1 font-mono' }, r.b.join('/')),
+                      h('td', { className: 'border border-slate-400 px-1 font-mono' }, r.bigDen ? rowWord(r, r.bigDen) : t('stem.numberline.cer_same_den', 'Same denominator (does not test the question)')),
+                      h('td', { className: 'border border-slate-400 px-1 font-mono' }, rowWord(r, r.smaller)));
+                  })))),
+              pred && rows.length > 0 && h('fieldset', { className: 'border border-emerald-300 rounded-lg p-2 space-y-2' },
+                h('legend', { className: 'text-xs font-bold px-1' }, t('stem.numberline.cer_step3', 'Step 3. Your conclusion')),
+                h('p', { className: 'text-xs font-bold' }, t('stem.numberline.cer_claim_q', 'Claim: what does your evidence show?')),
+                CLAIMS.map(function(c) {
+                  return h('label', { key: c[0], className: 'flex items-start gap-2 text-sm', style: { minHeight: 32 } },
+                    h('input', { type: 'radio', name: 'nl-cer-claim', value: c[0], checked: cerS.claim === c[0], disabled: done, onChange: function() { setCer({ claim: c[0], fb: null }); }, style: { marginTop: 3 } }), c[1]);
+                }),
+                h('label', { htmlFor: 'nl-cer-cite', className: 'block text-xs font-bold' }, t('stem.numberline.cer_cite_q', 'Evidence: which row is your best counterexample, if you have one?')),
+                h('select', { id: 'nl-cer-cite', value: cerS.cite != null ? String(cerS.cite) : '', disabled: done, style: { minHeight: 36 }, className: 'border border-slate-500 rounded px-1 text-sm bg-white text-slate-900', onChange: function(e) { setCer({ cite: e.target.value === '' ? null : Number(e.target.value), fb: null }); } },
+                  h('option', { value: '' }, t('stem.numberline.cer_cite_none', 'No row chosen')),
+                  rows.map(function(r, i) { return h('option', { key: i, value: String(i) }, NLE.fill(t('stem.numberline.cer_cite_row', 'Row {n}: {a} and {b}'), { n: i + 1, a: r.a.join('/'), b: r.b.join('/') })); })),
+                h('p', { className: 'text-xs font-bold' }, t('stem.numberline.cer_reason_q', 'Reasoning: why is your claim true?')),
+                REASONS.map(function(c) {
+                  return h('label', { key: c[0], className: 'flex items-start gap-2 text-sm', style: { minHeight: 32 } },
+                    h('input', { type: 'radio', name: 'nl-cer-reason', value: c[0], checked: cerS.reason === c[0], disabled: done, onChange: function() { setCer({ reason: c[0], fb: null }); }, style: { marginTop: 3 } }), c[1]);
+                }),
+                !done && h('button', { type: 'button', style: B44, className: btnMain, onClick: conclude }, t('stem.numberline.cer_check', 'Check my conclusion'))),
+              !done && pred && h('details', { className: 'text-xs' },
+                h('summary', { style: { minHeight: 32 }, className: 'font-bold cursor-pointer' }, t('stem.numberline.cer_stuck', 'Stuck? Questions to try')),
+                h('ul', { className: 'list-disc pl-5 space-y-0.5' },
+                  h('li', null, t('stem.numberline.cer_stuck_1', 'What happens when both fractions have the same numerator?')),
+                  h('li', null, t('stem.numberline.cer_stuck_2', 'Can a fraction with a big denominator still be close to 1?')),
+                  h('li', null, t('stem.numberline.cer_stuck_3', 'Does one pair that disagrees change your answer?')))),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                fb && fb.kind === 'wrong' && nlbFeedback(fb, { item: { cer: true }, miExtra: { row: fb.row } }),
+                done && h('div', { className: 'rounded-lg p-3 border-2 bg-white', style: { borderColor: '#047857' }, 'data-nl-cer-done': 'true' },
+                  h('p', { className: 'text-sm font-bold', style: { color: '#065f46' } }, t('stem.numberline.cer_ok', 'Your claim, evidence and reasoning fit together.')),
+                  pred && pred !== 'sameNum' && h('p', { className: 'text-sm' }, NLE.fill(t('stem.numberline.cer_changed', 'You first predicted: {c} Your evidence changed your mind, which is what evidence is for.'), { c: claimText(pred) })),
+                  h('p', { className: 'text-sm' }, t('stem.numberline.cer_summary', 'With the same numerator, more pieces means smaller pieces, so the bigger denominator gives the smaller fraction (1/5 < 1/3). With different numerators you must look at both numbers: 3/4 has a bigger denominator than 1/2 and is still bigger.')),
+                  typeof setStemLabTool === 'function' && h('button', { type: 'button', style: B44, className: btnSoft, onClick: function() { setStemLabTool('fractions'); } }, t('stem.numberline.link_fractions', 'Open the Fractions lab')))));
+          };
+
           // ══════════ MAIN RENDER ══════════
-          var tabs = [
-            { id: 'explore', icon: '\uD83D\uDCCF', label: t('stem.numberline.explore', 'Explore') },
-            { id: 'challenges', icon: '\uD83C\uDFAF', label: t('stem.numberline.challenges', 'Challenges') },
-            { id: 'skipcount', icon: '\uD83D\uDD22', label: t('stem.numberline.skip_count', 'Skip Count') },
-            { id: 'fracdec', icon: '\u00BD', label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals") },
-            { id: 'magCompare', icon: '\uD83D\uDD04', label: t("stem.numberline.nav_compare_fractions", "Compare fractions") }
-          ];
+          var TAB_DEFS = {
+            explore: { icon: '📏', label: t('stem.numberline.explore', 'Explore') },
+            challenges: { icon: '🎯', label: t('stem.numberline.challenges', 'Challenges') },
+            skipcount: { icon: '🔢', label: t('stem.numberline.skip_count', 'Skip Count') },
+            fracdec: { icon: '½', label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals") },
+            magCompare: { icon: '🔄', label: t("stem.numberline.nav_compare_fractions", "Compare fractions") },
+            decimals: { icon: '🔍', label: t('stem.numberline.nav_decimal_zoom', 'Decimal zoom') },
+            order: { icon: '↔', label: t('stem.numberline.nav_order', 'Order numbers') },
+            measure: { icon: '📐', label: t('stem.numberline.nav_measure', 'Ruler & line plot') },
+            intctx: { icon: '🌡', label: t('stem.numberline.nav_intctx', 'Integers in context') }
+          };
+          // The band's core activities come first. Every tab stays reachable, except that K-2 students see only theirs (their teacher still sees all).
+          var TAB_ORDER = {
+            b23: { core: ['challenges', 'skipcount', 'measure', 'explore'], more: ['fracdec', 'magCompare', 'order', 'decimals', 'intctx'] },
+            b45: { core: ['fracdec', 'magCompare', 'decimals', 'order', 'measure', 'challenges'], more: ['explore', 'skipcount', 'intctx'] },
+            b6: { core: ['intctx', 'challenges', 'order', 'decimals'], more: ['explore', 'fracdec', 'magCompare', 'measure', 'skipcount'] }
+          };
+          var tabOrder = TAB_ORDER[band] || TAB_ORDER.b45;
+          // A saved or preset tab from the hidden group keeps its button while it is open, so its panel still has a tab.
+          var moreTabIds = young && !teacherView ? tabOrder.more.filter(function(id) { return id === tab; }) : tabOrder.more;
+          var tabs = tabOrder.core.concat(moreTabIds).map(function(id) { return { id: id, icon: TAB_DEFS[id].icon, label: TAB_DEFS[id].label, core: tabOrder.core.indexOf(id) !== -1 }; });
+
+          // ═══ "START HERE": a short learning path for the band; ticks come from
+          // saved progress keys (ppSolvedByType, nlbSolved, fdLandmarksFound, cerDone).
+          var pathSteps = function() {
+            var cnt = function(map, k) { var v = map && map[k]; return typeof v === 'number' && isFinite(v) ? v : 0; };
+            var fdFound = Object.keys((_n.fdLandmarksFound && typeof _n.fdLandmarksFound === 'object') ? _n.fdLandmarksFound : {}).length;
+            var goTab = function(id, extra) { return function() { upd(Object.assign({ tab: id }, extra || {})); }; };
+            var goPlace = function(type) {
+              return function(quiet) {
+                if (lockMode === 'quick') { upd({ tab: 'challenges' }); return; }
+                upd({ tab: 'challenges', challengeMode: 'place' });
+                var allowed = !allowedTypes || allowedTypes.indexOf(type) !== -1;
+                if (allowed && !(pp && pp.item && pp.item.type === type && pp.status === 'open')) ppNew(type, quiet === true);
+              };
+            };
+            var goDz = function(m) { return function() { upd(dzS.mode === m ? { tab: 'decimals' } : { tab: 'decimals', dz: { mode: m, lo: 0, level: 0, pos: null } }); }; };
+            var goIc = function(kinds) {
+              return function(quiet) {
+                if (okIc(icS.item) && kinds.indexOf(icS.item.kind) !== -1 && icS.status === 'open') { upd({ tab: 'intctx' }); return; }
+                icNew(kinds[Math.floor(Math.random() * kinds.length)], { tab: 'intctx' }, quiet === true);
+              };
+            };
+            var goSkip = function() { upd({ tab: 'skipcount', skipShown: _n.skipShown == null || _n.skipShown >= skipCount ? 0 : _n.skipShown }); };
+            var lineplot = { id: 'lineplot', label: t('stem.numberline.path_lineplot', 'Make a line plot of measurements'), n: cnt(nlbSolved, 'lineplot'), need: 1, go: goTab('measure', { msMode: 'plot' }) };
+            if (band === 'b23') return [
+              { id: 'placeWhole', label: t('stem.numberline.path_place_whole', 'Place whole numbers on a line'), n: cnt(ppSolvedByType, 'placeWhole'), need: 2, go: goPlace('placeWhole') },
+              { id: 'roundLine', label: t('stem.numberline.path_round', 'Round numbers on a line'), n: cnt(ppSolvedByType, 'roundLine'), need: 2, go: goPlace('roundLine') },
+              { id: 'skip', label: t('stem.numberline.path_skip', 'Skip count: predict each landing'), n: cnt(nlbSolved, 'skip'), need: 3, go: goSkip },
+              { id: 'measure', label: t('stem.numberline.path_measure', 'Measure with an inch ruler'), n: cnt(nlbSolved, 'measure'), need: 2, go: goTab('measure', { msMode: 'measure' }) },
+              lineplot
+            ];
+            if (band === 'b6') return [
+              { id: 'icPlace', label: t('stem.numberline.path_ic_place', 'Integers in context: place temperatures, elevations and balances'), n: cnt(nlbSolved, 'icPlace'), need: 2, go: goIc(['icPlace']) },
+              { id: 'icCompare', label: t('stem.numberline.path_ic_compare', 'Compare integers in words: colder, lower, owes more'), n: cnt(nlbSolved, 'icCompare') + cnt(nlbSolved, 'icDebt'), need: 2, go: goIc(['icCompare', 'icDebt']) },
+              { id: 'hopSum', label: t('stem.numberline.path_hops', 'Integer hops: add and subtract on a line'), n: cnt(ppSolvedByType, 'hopSum'), need: 2, go: goPlace('hopSum') },
+              { id: 'order', label: t('stem.numberline.path_order_rational', 'Order rational numbers, including negatives'), n: cnt(nlbSolved, 'order'), need: 2, go: goTab('order') },
+              { id: 'dzCompare', label: t('stem.numberline.path_dz_compare', 'Decimal zoom: compare decimals'), n: cnt(nlbSolved, 'dzCompare'), need: 2, go: goDz('compare') }
+            ];
+            return [
+              { id: 'landmarks', label: t('stem.numberline.path_landmarks', 'Fractions and decimals: find 3 landmark points'), n: fdFound, need: 3, go: goTab('fracdec') },
+              { id: 'placeFraction', label: t('stem.numberline.path_place_fraction', 'Place fractions on a line'), n: cnt(ppSolvedByType, 'placeFraction'), need: 2, go: goPlace('placeFraction') },
+              { id: 'cer', label: t('stem.numberline.path_cer', 'Investigate: does a bigger denominator mean a smaller fraction?'), n: _n.cerDone === true ? 1 : 0, need: 1, go: goTab('magCompare') },
+              { id: 'dzPlace', label: t('stem.numberline.path_dz_place', 'Decimal zoom: place decimals'), n: cnt(nlbSolved, 'dzPlace'), need: 2, go: goDz('place') },
+              { id: 'order', label: t('stem.numberline.path_order', 'Order fractions, decimals and percents'), n: cnt(nlbSolved, 'order'), need: 1, go: goTab('order') },
+              lineplot
+            ];
+          };
+          var renderPath = function() {
+            var steps = pathSteps();
+            var doneCount = steps.filter(function(s) { return s.n >= s.need; }).length;
+            var nextIdx = -1;
+            steps.forEach(function(s, i) { if (nextIdx < 0 && s.n < s.need) nextIdx = i; });
+            // Phone width: only the next step shows until the student asks for all of them.
+            var compact = narrow && !pathAll && nextIdx >= 0;
+            return h('section', { className: 'rounded-2xl border-2 border-blue-300 bg-white p-3 space-y-2 text-slate-900', 'aria-labelledby': 'nl-path-title', 'data-nl-path': band },
+              h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+                h('h3', { id: 'nl-path-title', className: 'text-sm font-black text-blue-900' }, t('stem.numberline.path_title', 'Start here')),
+                h('p', { className: 'text-xs font-bold' }, NLE.fill(t('stem.numberline.path_count', '{n} of {total} steps done'), { n: doneCount, total: steps.length }))),
+              !compact && h('p', { className: 'text-xs' }, bandName(band)),
+              h('ol', { id: 'nl-path-list', className: 'space-y-1', style: { listStyle: 'none', padding: 0, margin: 0 } }, steps.map(function(s, i) {
+                var ok = s.n >= s.need, isNext = i === nextIdx;
+                if (compact && !isNext) return null;
+                return h('li', { key: s.id, 'data-nl-path-step': s.id, 'data-done': ok ? 'true' : 'false', className: 'flex flex-wrap items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true', className: 'inline-flex items-center justify-center rounded-full text-xs font-black', style: { width: 26, height: 26, flexShrink: 0, background: ok ? '#047857' : isNext ? '#1d4ed8' : '#e2e8f0', color: ok || isNext ? '#ffffff' : '#0f172a' } }, ok ? '✓' : String(i + 1)),
+                  h('button', { type: 'button', style: { minHeight: 44 }, 'aria-describedby': 'nl-path-st-' + s.id,
+                    onClick: function() { sfxClick(); pathFocusRef.current = { tab: PATH_TAB[s.id] || null, tries: 0, at: Date.now() }; s.go(); announceToSR(s.label); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-bold border text-left ' + (isNext ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-900 border-blue-600') }, s.label),
+                  h('span', { id: 'nl-path-st-' + s.id, className: 'text-xs font-bold' }, ok ? t('stem.numberline.path_done', 'Done') : NLE.fill(t('stem.numberline.path_progress', '{n} of {need} done'), { n: Math.min(s.n, s.need), need: s.need })));
+              })),
+              narrow && nextIdx >= 0 && h('button', { type: 'button', 'aria-expanded': !compact, 'aria-controls': 'nl-path-list', style: { minHeight: 44 }, onClick: function() { setPathAll(!pathAll); },
+                className: 'px-3 py-2 rounded-lg text-sm font-bold border border-slate-500 bg-white text-slate-800' },
+                compact ? NLE.fill(t('stem.numberline.path_show_all', 'Show all {n} steps'), { n: steps.length }) : t('stem.numberline.path_show_next', 'Show only the next step')),
+              doneCount === steps.length && h('p', { className: 'text-xs font-bold' }, t('stem.numberline.path_all_done', 'Every step is done. Try the other activities in the tabs below.')));
+          };
+          var pathAllState = React.useState(false);
+          var pathAll = pathAllState[0], setPathAll = pathAllState[1];
+          var PATH_TAB = { placeWhole: 'challenges', roundLine: 'challenges', skip: 'skipcount', measure: 'measure', lineplot: 'measure', icPlace: 'intctx', icCompare: 'intctx', hopSum: 'challenges', order: 'order', dzCompare: 'decimals', landmarks: 'fracdec', placeFraction: 'challenges', cer: 'magCompare', dzPlace: 'decimals' };
+          // A first visit (no saved tab) opens on the next unfinished path step.
+          var firstOpenRef = React.useRef(!_n.tab);
+          React.useEffect(function() {
+            if (!firstOpenRef.current) return;
+            firstOpenRef.current = false;
+            var steps = pathSteps();
+            var next = steps.filter(function(s) { return s.n < s.need; })[0] || steps[0];
+            if (next) next.go(true);
+          }, []);
+          // A path step button lands the student on the activity: scroll to it
+          // and move focus to its first learning control (a line or an answer).
+          var pathFocusRef = React.useRef(null);
+          React.useEffect(function() {
+            var want = pathFocusRef.current;
+            if (!want) return;
+            if (Date.now() - want.at > 2000) { pathFocusRef.current = null; return; }
+            var giveUp = ++want.tries > 6;
+            if (want.tab && tab !== want.tab) { if (giveUp) pathFocusRef.current = null; return; }
+            var panel = document.getElementById('numberline-panel-' + tab);
+            if (!panel) { if (giveUp) pathFocusRef.current = null; return; }
+            var target = panel.querySelector('[data-nl-start]:not([disabled])') || panel.querySelector('[role="slider"]:not([aria-disabled="true"]), input:not([disabled]):not([type="checkbox"]):not([type="radio"])');
+            // The panel is already this step's content: land now, never on a later render.
+            pathFocusRef.current = null;
+            target = target || panel;
+            try { target.focus({ preventScroll: true }); } catch (e) {}
+            var still = false;
+            try { still = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            if (typeof target.scrollIntoView === 'function') { try { target.scrollIntoView({ block: target === panel ? 'start' : 'center', behavior: still ? 'auto' : 'smooth' }); } catch (e) {} }
+          });
 
           var renderNumberLineFocus = function() {
+            var focusProps = {
+              className: 'rounded-2xl border border-blue-200 bg-white shadow-sm overflow-hidden',
+              'data-numberline-focus': 'true',
+              role: 'region',
+              'aria-label': t('stem.numberline.number_line_workspace', 'Number Line workspace'),
+              onToggle: function(e) { var o = !!(e.currentTarget && e.currentTarget.open); if (o !== focusOpen) setFocusOpen(o); }
+            };
+            var focusSummary = h('summary', { className: 'cursor-pointer p-3 text-sm font-bold', style: { color: 'var(--allo-stem-text, #0f172a)', background: 'var(--allo-stem-panel, #f8fafc)' } }, t('stem.numberline.workspace_overview', 'Explore the number line: overview and activities'));
+            if (!focusOpen) return h('details', focusProps, focusSummary);
             var activeTab = tabs.filter(function(t2) { return t2.id === tab; })[0] || tabs[0];
             var rangeLen = range.max - range.min;
             if (rangeLen <= 0) rangeLen = 1;
-            var accuracy = score.total ? Math.round((score.correct / score.total) * 100) + '%' : 'Ready';
+            var accuracy = score.total ? Math.round((score.correct / score.total) * 100) + '%' : t('stem.numberline.accuracy_ready', 'Ready');
             var earnedBadges = Object.keys(badges).length;
             var modeCards = [
-              {
-                id: 'explore',
-                label: t('stem.numberline.focus_explore_label', 'Explore'),
-                metric: range.min + ' to ' + range.max,
-                body: t('stem.numberline.focus_explore_body', 'Set the range, add markers, and compare distances.'),
-                active: 'border-blue-500 bg-blue-50 text-blue-900'
-              },
-              {
-                id: 'challenges',
-                label: t('stem.numberline.focus_challenges_label', 'Challenge'),
-                metric: score.correct + '/' + score.total,
-                body: challenge ? challenge.question : t('stem.numberline.focus_challenges_body', 'Practice estimating, rounding, and locating values.'),
-                active: 'border-amber-500 bg-amber-50 text-amber-900'
-              },
-              {
-                id: 'skipcount',
-                label: t('stem.numberline.focus_skip_label', 'Skip Count'),
-                metric: (skipStep < 0 ? '−' : '+') + skipBy,
-                body: skipCount + ' hops from ' + skipFrom,
-                active: 'border-violet-500 bg-violet-50 text-violet-900'
-              },
-              {
-                id: 'fracdec',
-                label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals"),
-                metric: fdDen + ' parts',
-                body: t('stem.numberline.focus_frac_body', 'Connect fractions, decimals, percents, and area models.'),
-                active: 'border-cyan-600 bg-cyan-50 text-cyan-900'
-              },
-              {
-                id: 'magCompare',
-                label: t('stem.numberline.focus_compare_label', 'Compare'),
-                metric: t('stem.numberline.focus_compare_metric', 'A vs B'),
-                body: t('stem.numberline.focus_compare_body', 'Test fraction size relationships without a score.'),
-                active: 'border-emerald-500 bg-emerald-50 text-emerald-900'
-              }
+              { id: 'explore', label: t('stem.numberline.focus_explore_label', 'Explore'), metric: NLE.fill(t('stem.numberline.preset_range', '{min} to {max}'), { min: range.min, max: range.max }),
+                body: t('stem.numberline.focus_explore_body', 'Set the range, add markers, and compare distances.'), active: 'border-blue-500 bg-blue-50 text-blue-900' },
+              { id: 'challenges', label: t('stem.numberline.focus_challenges_label', 'Challenge'), metric: score.correct + '/' + score.total,
+                body: challengeMode === 'place' && pp ? NLE.promptText(pp.item, t) : challengeMode === 'quick' && challenge ? challenge.question : t('stem.numberline.focus_challenges_body', 'Practice estimating, rounding, and locating values.'), active: 'border-amber-500 bg-amber-50 text-amber-900' },
+              { id: 'skipcount', label: t('stem.numberline.focus_skip_label', 'Skip Count'), metric: (skipStep < 0 ? '−' : '+') + skipBy,
+                body: NLE.fill(t('stem.numberline.focus_skip_body', '{n} hops from {start}'), { n: skipCount, start: skipFrom }), active: 'border-violet-500 bg-violet-50 text-violet-900' },
+              { id: 'fracdec', label: t("stem.numberline.nav_fractions_decimals", "Fractions & decimals"), metric: NLE.fill(t('stem.numberline.fd_parts', '{d} parts'), { d: fdDen }),
+                body: t('stem.numberline.focus_frac_body', 'Connect fractions, decimals, percents, and area models.'), active: 'border-cyan-600 bg-cyan-50 text-cyan-900' },
+              { id: 'magCompare', label: t('stem.numberline.focus_compare_label', 'Compare'), metric: t('stem.numberline.focus_compare_metric', 'A vs B'),
+                body: t('stem.numberline.focus_compare_body', 'Test fraction size relationships without a score.'), active: 'border-emerald-500 bg-emerald-50 text-emerald-900' },
+              { id: 'decimals', label: t('stem.numberline.nav_decimal_zoom', 'Decimal zoom'), metric: '0.001',
+                body: t('stem.numberline.focus_dz_body', 'Zoom from tenths to thousandths to place and compare decimals.'), active: 'border-blue-500 bg-blue-50 text-blue-900' },
+              { id: 'order', label: t('stem.numberline.nav_order', 'Order numbers'), metric: '<',
+                body: t('stem.numberline.focus_ord_body', 'Put fractions, decimals and percents in order on one line.'), active: 'border-orange-500 bg-orange-50 text-orange-900' },
+              { id: 'measure', label: t('stem.numberline.nav_measure', 'Ruler & line plot'), metric: '1/8',
+                body: t('stem.numberline.focus_ms_body', 'Measure to the nearest half, quarter or eighth inch, then plot the data.'), active: 'border-amber-500 bg-amber-50 text-amber-900' },
+              { id: 'intctx', label: t('stem.numberline.nav_intctx', 'Integers in context'), metric: '−5',
+                body: t('stem.numberline.focus_ic_body', 'Temperatures, elevations and money owed on vertical or horizontal lines.'), active: 'border-sky-500 bg-sky-50 text-sky-900' }
             ];
 
+            var tabIds = tabs.map(function(t2) { return t2.id; });
+            modeCards = modeCards.filter(function(card) { return tabIds.indexOf(card.id) !== -1; });
+            modeCards.sort(function(a, b) { return tabIds.indexOf(a.id) - tabIds.indexOf(b.id); });
             var mapX = function(value) {
               var x = 54 + ((value - range.min) / rangeLen) * 532;
               if (x < 54) x = 54;
@@ -2019,7 +5547,7 @@ window.StemLab = window.StemLab || {
               return x;
             };
             var focusValue = range.min + rangeLen * 0.6;
-            if (tab === 'challenges' && challenge && challenge._arrowValue != null) focusValue = challenge._arrowValue;
+            if (tab === 'challenges' && challengeMode === 'quick' && challenge && challenge._arrowValue != null) focusValue = challenge._arrowValue;
             else if (tab === 'skipcount') focusValue = skipFrom + skipStep * (_n.skipShown == null ? skipCount : skipBound(_n.skipShown, 0, skipCount, 0));
             else if (tab === 'fracdec') {
               var fdSpan = fdMax - fdMin;
@@ -2038,43 +5566,34 @@ window.StemLab = window.StemLab || {
               return m && typeof m.value === 'number' && !isNaN(m.value);
             });
 
-            return h('details', {
-              className: 'rounded-2xl border border-blue-200 bg-white shadow-sm overflow-hidden',
-              'data-numberline-focus': 'true',
-              role: 'region',
-              'aria-label': t('stem.numberline.number_line_workspace', 'Number Line workspace')
-            },
-              h('summary', { className: 'cursor-pointer p-3 text-sm font-bold', style:{color:'var(--allo-stem-text, #0f172a)',background:'var(--allo-stem-panel, #f8fafc)'} }, t('stem.numberline.workspace_overview', 'Explore the number line: overview and activities')),
+            return h('details', Object.assign({ open: true }, focusProps), focusSummary,
               h('div', { className: 'grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-4 p-4' },
                 h('div', { className: 'space-y-3' },
                   h('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3' },
                     h('div', null,
                       h('p', { className: 'text-xs font-bold uppercase tracking-wide text-blue-700' }, t('stem.numberline.number_line_workspace_label', 'Number Line Workspace')),
-                      h('h2', { className: 'text-xl font-black text-slate-900 leading-tight' }, activeTab.label + ': ' + t('stem.numberline.make_magnitude_visible', 'make magnitude visible')),
-                      h('p', { className: 'text-sm text-slate-600 mt-1 leading-relaxed' }, t('stem.numberline.focus_summary', 'Use one line to locate values, show jumps, and connect equivalent forms.'))
+                      h('h2', { className: 'text-xl font-black text-slate-900 leading-tight' }, NLE.fill(t('stem.numberline.focus_heading', '{tab}: make magnitude visible'), { tab: activeTab.label })),
+                      h('p', { className: 'text-sm text-slate-700 mt-1 leading-relaxed' }, t('stem.numberline.focus_summary', 'Use one line to locate values, show jumps, and connect equivalent forms.'))
                     ),
                     h('div', { className: 'grid grid-cols-3 gap-2 text-center sm:min-w-[210px]' },
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.range', 'Range')),
+                        h('p', { className: 'text-xs text-slate-700 font-bold' }, t('stem.numberline.range', 'Range')),
                         h('p', { className: 'text-sm font-black text-slate-900 font-mono' }, range.min + '..' + range.max)
                       ),
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.accuracy', 'Accuracy')),
+                        h('p', { className: 'text-xs text-slate-700 font-bold' }, t('stem.numberline.accuracy', 'Accuracy')),
                         h('p', { className: 'text-sm font-black text-slate-900' }, accuracy)
                       ),
                       h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
-                        h('p', { className: 'text-xs text-slate-600 font-bold' }, t('stem.numberline.badges', 'Badges')),
+                        h('p', { className: 'text-xs text-slate-700 font-bold' }, t('stem.numberline.badges', 'Badges')),
                         h('p', { className: 'text-sm font-black text-slate-900' }, earnedBadges + '/' + BADGES.length)
                       )
                     )
                   ),
                   h('div', { className: 'rounded-2xl border border-slate-200 bg-slate-950 p-3' },
                     h('svg', {
-                      width: '100%',
-                      height: 150,
-                      viewBox: '0 0 640 150',
-                      role: 'img',
-                      'aria-label': 'Overview number line from ' + range.min + ' to ' + range.max + ' with the current activity highlighted'
+                      width: '100%', height: 150, viewBox: '0 0 640 150', role: 'img',
+                      'aria-label': NLE.fill(t('stem.numberline.overview_desc', 'Overview number line from {min} to {max} with the current activity, {tab}, highlighted.'), { min: range.min, max: range.max, tab: activeTab.label })
                     },
                       h('defs', null,
                         h('linearGradient', { id: 'nlFocusTrack', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
@@ -2088,13 +5607,13 @@ window.StemLab = window.StemLab || {
                       labelValues.map(function(item) {
                         var x = mapX(item.value);
                         return h('g', { key: item.key },
-                          h('line', { x1: x, y1: 62, x2: x, y2: 102, stroke: '#e2e8f0', strokeWidth: 2, opacity: 0.85 }),
+                          h('line', { x1: x, y1: 62, x2: x, y2: 102, stroke: '#e2e8f0', strokeWidth: 2 }),
                           h('text', { x: x, y: 124, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 15, fontFamily: 'monospace', fontWeight: '700' }, item.label)
                         );
                       }),
                       range.min < 0 && range.max > 0 && h('g', { key: 'zero' },
-                        h('circle', { cx: mapX(0), cy: 82, r: 10, fill: '#facc15', opacity: 0.95 }),
-                        h('text', { x: mapX(0), y: 48, textAnchor: 'middle', fill: '#fde68a', fontSize: 13, fontWeight: '800' }, 'zero')
+                        h('circle', { cx: mapX(0), cy: 82, r: 10, fill: '#facc15' }),
+                        h('text', { x: mapX(0), y: 48, textAnchor: 'middle', fill: '#fde68a', fontSize: 13, fontWeight: '800' }, t('stem.numberline.zero_word', 'zero'))
                       ),
                       visibleMarkers.map(function(m, idx) {
                         var x = mapX(m.value);
@@ -2120,14 +5639,14 @@ window.StemLab = window.StemLab || {
                       onClick: function() { sfxClick(); upd({ tab: card.id }); },
                       'aria-pressed': isActive,
                       className: 'rounded-xl border p-3 text-left transition-all hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
-                        (isActive ? card.active : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'),
+                        (isActive ? card.active : 'border-slate-200 bg-slate-50 text-slate-800 hover:bg-white'),
                       style: { minHeight: 88 }
                     },
                       h('div', { className: 'flex items-center justify-between gap-2' },
                         h('span', { className: 'text-sm font-black' }, card.label),
                         h('span', { className: 'text-sm font-black font-mono' }, card.metric)
                       ),
-                      h('p', { className: 'text-xs leading-snug mt-1 opacity-80' }, card.body)
+                      h('p', { className: 'text-xs leading-snug mt-1' }, card.body)
                     );
                   })
                 )
@@ -2143,202 +5662,248 @@ window.StemLab = window.StemLab || {
             else if (e.key === 'End') nextIndex = tabs.length - 1;
             if (nextIndex < 0) return;
             e.preventDefault();
-            var tabNodes = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+            var list = e.currentTarget.closest ? e.currentTarget.closest('[role="tablist"]') : e.currentTarget.parentNode;
+            var tabNodes = (list || e.currentTarget.parentNode).querySelectorAll('[role="tab"]');
             var nextTab = tabNodes[nextIndex];
             if (nextTab) { nextTab.focus(); nextTab.click(); }
           };
 
+          var renderHero = function() {
+            var TAB_META = {
+              explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '📏', title: t('stem.numberline.explore_the_visual_home_for_number_sen', 'Explore — the visual home for number sense'),  hint: t('stem.numberline.numbers_as_positions_on_a_line_not_jus', 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.') },
+              challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '🎯', title: t('stem.numberline.challenges_estimate_locate_compare', 'Challenges — estimate, locate, compare'),          hint: t('stem.numberline.where_does_7_8_sit_what_about_2_4_esti', 'Where does 7/8 sit? What about −2.4? Estimation builds magnitude sense. Research by Siegler and colleagues links number-line estimation precision to later math achievement.') },
+              skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔢', title: t('stem.numberline.skip_count_the_bridge_to_multiplicatio', 'Skip Count — the bridge to multiplication'),     hint: t('stem.numberline.2_4_6_8_the_2_times_table_walking_skip', '2, 4, 6, 8… = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.') },
+              fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '½', title: t('stem.numberline.fractions_decimals_same_point_two_name', 'Fractions ↔ Decimals, same point, two names'), hint: t('stem.numberline.a_fraction_is_a_division_problem_a_dec', 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000… 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.') },
+              magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') },
+              decimals: { accent: '#1d4ed8', soft: 'rgba(29,78,216,0.10)', icon: '🔍', title: t('stem.numberline.dz_hero_title', 'Decimal zoom: tenths, hundredths, thousandths'), hint: t('stem.numberline.dz_hero_hint', 'Each zoom cuts one space into ten, so each place is worth one tenth of the place to its left. A longer decimal is not automatically bigger: 0.4 > 0.375. Common Core 4.NF.6, 4.NF.7, 5.NBT.1, 5.NBT.3.') },
+              order: { accent: '#c2410c', soft: 'rgba(194,65,12,0.10)', icon: '↔', title: t('stem.numberline.ord_hero_title', 'Order numbers in different forms'), hint: t('stem.numberline.ord_hero_hint', 'Fractions, decimals and percents are different names for points on one line. Converting to one form, and using landmarks such as one half, makes ordering reliable. Common Core 4.NF.2, 6.NS.7, 7.NS.2d.') },
+              measure: { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '📐', title: t('stem.numberline.ms_hero_title', 'A ruler is a number line'), hint: t('stem.numberline.ms_hero_hint', 'The inch marks are whole numbers and the small ticks are halves, quarters and eighths. Measurements become data, and a line plot is a number line that counts them. Common Core 3.MD.4, 4.MD.4, 5.MD.2.') },
+              intctx: { accent: '#0369a1', soft: 'rgba(3,105,161,0.10)', icon: '🌡', title: t('stem.numberline.ic_hero_title', 'Integers in context'), hint: t('stem.numberline.ic_hero_hint', 'A thermometer and a sea-level chart are vertical number lines. Comparing in words (colder than, lower than) matches comparing with < and >, but owing MORE money is a LOWER balance. Common Core 6.NS.5, 6.NS.6c, 6.NS.7.') }
+            };
+            var START = {
+              explore: t('stem.numberline.start_explore_v2', 'Tap or drag on the line to place a marker, or type a value below. Change the range to zoom.'),
+              challenges: young ? t('stem.numberline.start_challenges_young_v2', 'Read the question. Put the marker on the line, or type your answer. Then check.') : t('stem.numberline.start_challenges_place', 'Choose Place it to put markers on a line (graded by where they land), or Quick questions for typed answers. Commit your answer, then check.'),
+              skipcount: t('stem.numberline.start_skipcount', 'Choose a starting number and a step size, then use the playback controls to follow the jumps.'),
+              fracdec: t('stem.numberline.start_fracdec', 'Enter a fraction or decimal to see where it belongs on the line.'),
+              magCompare: t('stem.numberline.start_magCompare', 'Change the two fractions and compare their positions. Record what you notice.'),
+              decimals: t('stem.numberline.start_decimals', 'Place the marker, zoom in on its space, and read the next decimal place. Then try placing or comparing decimals.'),
+              order: t('stem.numberline.start_order', 'Choose a number, put its marker on the line, and repeat for every number. Then check your order.'),
+              measure: t('stem.numberline.start_measure', 'Measure objects with the inch ruler, or build a line plot from a table of measurements and answer questions about it.'),
+              intctx: t('stem.numberline.start_intctx', 'Read the situation, then place, compare or calculate on a vertical or horizontal number line.')
+            };
+            var meta = TAB_META[tab] || TAB_META.explore;
+            // White host card in light AND dark: accent at 55% clears 4.5:1 on its tint.
+            var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { return Math.round(parseInt(meta.accent.substr(i, 2), 16) * 0.55); }).join(',') + ')';
+            return h('div', {
+              style: {
+                padding: '12px 14px', borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55', borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { className: 'mt-2 text-sm leading-relaxed' }, START[tab] || START.explore),
+                h('details', { className: 'math-learning-note' },
+                  h('summary', null, t('stem.numberline.about_model', 'About this activity')),
+                  h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
+              )
+            );
+          };
+
+          var renderMagCompare = function() {
+            var iq = _n.magHunt || { numA: 1, denA: 2, numB: 1, denB: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            function setIQ(patch) { upd({ magHunt: Object.assign({}, iq, patch) }); }
+            var fracA = iq.numA / iq.denA;
+            var fracB = iq.numB / iq.denB;
+            var diff = Math.abs(fracA - fracB);
+            var state;
+            if (diff < 0.01) state = 'equal';
+            else if (Math.abs(fracA - 0.5) < 0.02 || Math.abs(fracB - 0.5) < 0.02) state = 'halfLandmark';
+            else if (fracA < fracB) state = 'aSmaller';
+            else state = 'bSmaller';
+            var STATES = {
+              equal:          { label: t('stem.numberline.equivalent_fractions', '🟰 Equivalent fractions'),    color: '#6d28d9', bg: '#f5f3ff', border: '#c4b5fd' },
+              halfLandmark:   { label: t('stem.numberline.one_is_the_landmark', '⭐ One is the ½ landmark'),    color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
+              aSmaller:       { label: t('stem.numberline.a_b', '🔼 A < B'),                    color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
+              bSmaller:       { label: t('stem.numberline.a_b_2', '🔽 A > B'),                    color: '#047857', bg: '#ecfdf5', border: '#86efac' }
+            };
+            var stateMeta = STATES[state];
+            function logObs() {
+              setIQ({ log: (iq.log || []).concat([{ a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB, va: fracA.toFixed(2), vb: fracB.toFixed(2), st: state }]).slice(-8) });
+            }
+            return h('div', { className: 'p-3 rounded-xl bg-white border border-blue-200 shadow-sm' },
+              h('h3', { className: 'text-sm font-black text-blue-800 mb-1' }, t('stem.numberline.magnitude_discovery', '🔄 Magnitude discovery')),
+              h('p', { className: 'text-[0.6875rem] text-slate-800 mb-2 leading-relaxed' }, t('stem.numberline.adjust_the_numerators_and_denominators', 'Adjust the numerators and denominators of two fractions. The widget tells you one of four discrete relationships. No score, no reveal — just sweep and notice.')),
+              h('div', { className: 'mb-2 p-2 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+                h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
+                h('div', { className: 'text-[0.625rem] text-slate-800 mt-0.5 font-mono' }, 'A = ' + iq.numA + '/' + iq.denA + ' ≈ ' + fracA.toFixed(2) + '   B = ' + iq.numB + '/' + iq.denB + ' ≈ ' + fracB.toFixed(2))
+              ),
+              lineSvg({ min: 0, max: Math.max(1, Math.ceil(Math.max(fracA, fracB))), step: 0.5, labels: Math.max(fracA, fracB) > 1 ? [0, 0.5, 1, 1.5, 2] : [0, 0.5, 1],
+                points: [{ v: fracA, label: 'A' }, { v: fracB, label: 'B', color: P.hop }], height: 120, axisY: 66,
+                desc: NLE.fill(t('stem.numberline.mag_line_desc', 'A at {a} and B at {b} on a number line from 0.'), { a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB }) }),
+              h('div', { className: 'grid grid-cols-2 gap-2 mb-2 mt-2' },
+                [
+                  { key: 'numA', label: t('stem.numberline.a_num', 'A num'), val: iq.numA, max: 10 }, { key: 'denA', label: t('stem.numberline.a_den', 'A den'), val: iq.denA, max: 10 },
+                  { key: 'numB', label: t('stem.numberline.b_num', 'B num'), val: iq.numB, max: 10 }, { key: 'denB', label: t('stem.numberline.b_den', 'B den'), val: iq.denB, max: 10 }
+                ].map(function(s) {
+                  return h('div', { key: s.key },
+                    h('label', { htmlFor: 'mh-' + s.key, className: 'block text-[0.625rem] font-bold text-slate-800' },
+                      s.label + ': ', h('span', { className: 'font-mono text-blue-800' }, s.val)),
+                    h('input', { id: 'mh-' + s.key, type: 'range', min: 1, max: s.max, step: 1, value: s.val,
+                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                      className: 'w-full', 'aria-label': s.label, style: { minHeight: 24 } }));
+                })
+              ),
+              h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
+                h('button', { type: 'button', onClick: logObs, style: { minHeight: 32 }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-800 border border-slate-400' }, t('stem.numberline.log', '📋 Log')),
+                h('button', { type: 'button', onClick: function() { setIQ({ numA: 1, denA: 2, numB: 1, denB: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: 32 }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-800 border border-slate-400' }, t('stem.numberline.reset', '↺ Reset')),
+                (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-700 italic' }, NLE.fill(t('stem.numberline.mag_logged', '{n} logged'), { n: (iq.log || []).length }))
+              ),
+              (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-800 mb-2' },
+                h('thead', null, h('tr', { className: 'bg-slate-100' }, ['A', 'B', '≈A', '≈B', t('stem.numberline.mag_col_state', 'Relationship')].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                h('tbody', null, iq.log.map(function(o, idx) {
+                  return h('tr', { key: 'lr' + idx },
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.a),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.va),
+                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.vb),
+                    h('td', { className: 'px-1 border border-slate-200' }, STATES[o.st] ? STATES[o.st].label : o.st));
+                }))
+              ),
+              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.numberline.hypothesis_free_text_when_do_two_fract', 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?'),
+                'aria-label': t('stem.numberline.hypothesis', 'Fraction relationship hypothesis'),
+                className: 'w-full text-[0.6875rem] border border-slate-500 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
+              !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 32 }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-900 border border-amber-400 mb-2' }, t('stem.numberline.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+              iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-800 leading-relaxed mb-2' },
+                h('ul', { className: 'list-disc pl-4 space-y-0.5' },
+                  h('li', null, t('stem.numberline.find_two_fractions_with_different_nume', 'Find two fractions with different numerators and denominators that are equal.')),
+                  h('li', null, t('stem.numberline.what_makes_a_fraction_close_to_what_ab', 'What makes a fraction close to ½? What about close to 1?')),
+                  h('li', null, t('stem.numberline.when_are_two_fractions_easy_to_compare', 'When are two fractions easy to compare? When are they hard?')))),
+              h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
+                h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-emerald-900 cursor-pointer', style: { minHeight: 28 } },
+                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                  t('stem.numberline.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
+                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.numberline.explain_how_to_compare_two_fractions_w', 'Explain how to compare two fractions without converting to decimals.'),
+                  'aria-label': t('stem.numberline.explanation', 'Explain how to compare two fractions'),
+                  className: 'w-full text-[0.6875rem] border border-emerald-600 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
+              h('div', { className: 'mt-2 text-[0.5625rem] italic text-slate-700' }, t('stem.numberline.design_note_discrete_4_state_outcome_n', 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.'))
+            );
+          };
+
+          var showIntLab = _n.showIntegerLab != null ? !!_n.showIntegerLab : band === 'b6';
+          var related = [
+            { id: 'fractions', label: t('stem.numberline.link_fractions', 'Open the Fractions lab') },
+            { id: 'coordinate', label: t('stem.numberline.link_coordinate', 'Open the Coordinate grid') },
+            { id: 'inequality', label: t('stem.numberline.link_inequality', 'Open the Inequality grapher') }
+          ];
+
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200', 'data-numberline-root': 'true' },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-2' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back') },
-                h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-              h('h3', { className: 'text-lg font-bold text-blue-800' + (ctx.isContrast ? ' text-white' : '') }, t('stem.numberline.number_line', '\uD83D\uDCCF Number Line')),
+              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.numberline.back', 'Back'), style: { minWidth: 32, minHeight: 32 } },
+                h(ArrowLeft, { size: 18, className: 'text-slate-700' })),
+              h('h3', { className: 'text-lg font-bold text-blue-800' + (ctx.isContrast ? ' text-white' : '') }, t('stem.numberline.number_line', '📏 Number Line')),
               h('div', { className: 'ml-auto flex items-center gap-3' },
-                streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' }, 'Best: ' + bestStreak),
-                h('span', { className: 'text-xs font-bold text-blue-600', style: { color: ctx.isContrast ? '#ffff00' : undefined } }, score.correct + '/' + score.total),
-                h('button', {
+                streak > 0 && h('span', { className: 'text-xs font-bold text-orange-700' }, NLE.fill(t('stem.numberline.streak_n', 'Streak {n}'), { n: streak })),
+                bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-700' }, NLE.fill(t('stem.numberline.best_n', 'Best: {n}'), { n: bestStreak })),
+                h('span', { className: 'text-xs font-bold text-blue-700', style: { color: ctx.isContrast ? '#ffff00' : undefined }, 'aria-label': NLE.fill(t('stem.numberline.score_label', 'Score: {c} correct out of {n} checks'), { c: score.correct, n: score.total }) }, score.correct + '/' + score.total),
+                h('button', { type: 'button',
                   onClick: function() {
                     var next = !muted;
                     upd({ muted: next });
-                    if (!next) { /* unmuting: chirp once so user knows it's on */ setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
-                    announceToSR(next ? 'Sound muted' : 'Sound on');
+                    if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
+                    announceToSR(next ? t('stem.numberline.sound_muted', 'Sound muted') : t('stem.numberline.sound_on', 'Sound on'));
                   },
-                  'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
-                  'aria-pressed': muted,
-                  title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
-                  className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' +
-                    (muted ? 'text-slate-400' : 'text-blue-600')
-                }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A')
+                  'aria-label': muted ? t('stem.numberline.unmute', 'Unmute sound effects') : t('stem.numberline.mute', 'Mute sound effects'),
+                  'aria-pressed': muted, style: { minWidth: 32, minHeight: 32 },
+                  className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-600' : 'text-blue-700')
+                }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊'))
               )
             ),
 
+            renderTeacherPanel(),
+            renderPath(),
             renderNumberLineFocus(),
 
-            // Tab bar
-            h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections') },
-              tabs.map(function(t2, tabIndex) {
+            // Tab bar: the band's core activities, then the rest (one tablist, two rows).
+            h('div', { role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections'), className: 'space-y-1 bg-blue-50 rounded-xl p-1 border border-blue-200', 'data-nl-tab-order': band },
+              (function(btns) {
+                var nCore = tabOrder.core.length;
+                var rowCls = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1';
+                var lab = function(txt) { return h('p', { 'aria-hidden': 'true', className: 'text-[0.6875rem] font-black uppercase tracking-wide text-blue-900 px-1' }, txt); };
+                return [
+                  h('div', { key: 'core-l' }, lab(t('stem.numberline.tabs_core', 'For your level'))),
+                  h('div', { key: 'core', className: rowCls, 'data-nl-tab-group': 'core' }, btns.slice(0, nCore)),
+                  moreTabIds.length > 0 && h('div', { key: 'more-l' }, lab(t('stem.numberline.tabs_more', 'More activities'))),
+                  moreTabIds.length > 0 && h('div', { key: 'more', className: rowCls, 'data-nl-tab-group': 'more' }, btns.slice(nCore))
+                ];
+              })(tabs.map(function(t2, tabIndex) {
                 return h('button', { key: t2.id, id: 'numberline-tab-' + t2.id,
                   'aria-controls': 'numberline-panel-' + t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   onKeyDown: function(e) { numberlineTabKeyDown(e, tabIndex); },
                   role: 'tab', 'aria-selected': tab === t2.id, tabIndex: tab === t2.id ? 0 : -1,
                   style: { minHeight: 44, minWidth: 0, overflowWrap: 'anywhere' }, className: 'py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
-                    (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-700 hover:text-blue-800')
-                }, t2.icon + ' ' + t2.label);
-              })
+                    (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-800 hover:text-blue-900')
+                }, h('span', { 'aria-hidden': 'true' }, t2.icon + ' '), t2.label);
+              }))
             ),
 
-            // ── Topic-accent hero band per tab ──
-            (function() {
-              var TAB_META = {
-                explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: t('stem.numberline.explore_the_visual_home_for_number_sen', 'Explore \u2014 the visual home for number sense'),  hint: t('stem.numberline.numbers_as_positions_on_a_line_not_jus', 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.') },
-                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: t('stem.numberline.challenges_estimate_locate_compare', 'Challenges \u2014 estimate, locate, compare'),          hint: t('stem.numberline.where_does_7_8_sit_what_about_2_4_esti', 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Research by Siegler and colleagues links number-line estimation precision to later math achievement.') },
-                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: t('stem.numberline.skip_count_the_bridge_to_multiplicatio', 'Skip Count \u2014 the bridge to multiplication'),     hint: t('stem.numberline.2_4_6_8_the_2_times_table_walking_skip', '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.') },
-                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: t('stem.numberline.fractions_decimals_same_point_two_name', 'Fractions \u2194 Decimals, same point, two names'), hint: t('stem.numberline.a_fraction_is_a_division_problem_a_dec', 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.') },
-                magCompare: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '🔄', title: t('stem.numberline.compare_magnitude_discovery', 'Compare — magnitude discovery'), hint: t('stem.numberline.two_fractions_four_possible_relationsh', 'Two fractions, four possible relationships: equal, touching the ½ landmark, A smaller, or B smaller. Sweep the sliders, log what you notice, and write your own comparison rule.') }
-              };
-              var meta = TAB_META[tab] || TAB_META.explore;
-              // White host card in light AND dark: accent at 55% clears 4.5:1 on its tint.
-              var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { return Math.round(parseInt(meta.accent.substr(i, 2), 16) * 0.55); }).join(',') + ')';
-              var startInstructions = {"explore":"Set the minimum and maximum, then enter a marker value and choose Add.","challenges":"Choose a challenge, enter your answer or place a marker, then check your work.","skipcount":"Choose a starting number and a step size, then use the playback controls to follow the jumps.","fracdec":"Enter a fraction or decimal to see where it belongs on the line.","magCompare":"Change the two fractions and compare their positions. Record what you notice."};
-              return h('div', { role: 'tabpanel', id: 'numberline-panel-' + tab,
-                'aria-labelledby': 'numberline-tab-' + tab, tabIndex: 0,
-                style: {
-                  margin: '0 0 12px',
-                  padding: '12px 14px',
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-                  border: '1px solid ' + meta.accent + '55',
-                  borderLeft: '4px solid ' + meta.accent,
-                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-                }
-              },
-                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-                h('div', { style: { flex: 1, minWidth: 220 } },
-                  h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.numberline.start_' + tab, startInstructions[tab] || startInstructions.explore)),
-              h('details', { className: 'math-learning-note' },
-                h('summary', null, t('stem.numberline.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
-                )
-              );
-            })(),
-
-            // Active tab
-            tab === 'magCompare' && (function() {
-              var iq = _n.magHunt || { numA: 1, denA: 2, numB: 1, denB: 3, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-              function setIQ(patch) { upd({ magHunt: Object.assign({}, iq, patch) }); }
-              var fracA = iq.numA / iq.denA;
-              var fracB = iq.numB / iq.denB;
-              var diff = Math.abs(fracA - fracB);
-              var state;
-              if (diff < 0.01) state = 'equal';
-              else if (Math.abs(fracA - 0.5) < 0.02 || Math.abs(fracB - 0.5) < 0.02) state = 'halfLandmark';
-              else if (fracA < fracB) state = 'aSmaller';
-              else state = 'bSmaller';
-              var stateMeta = {
-                equal:          { label: t('stem.numberline.equivalent_fractions', '🟰 Equivalent fractions'),    color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                halfLandmark:   { label: t('stem.numberline.one_is_the_landmark', '⭐ One is the ½ landmark'),    color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
-                aSmaller:       { label: t('stem.numberline.a_b', '🔼 A < B'),                    color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                bSmaller:       { label: t('stem.numberline.a_b_2', '🔽 A > B'),                    color: '#047857', bg: '#ecfdf5', border: '#86efac' }
-              }[state];
-              function logObs() {
-                setIQ({ log: (iq.log || []).concat([{ a: iq.numA + '/' + iq.denA, b: iq.numB + '/' + iq.denB, va: fracA.toFixed(2), vb: fracB.toFixed(2), st: state }]).slice(-8) });
-              }
-              return h('div', { className: 'p-3 rounded-xl bg-white border border-blue-200 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-blue-700 mb-1' }, t('stem.numberline.magnitude_discovery', '🔄 Magnitude discovery')),
-                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-2 leading-relaxed' }, t('stem.numberline.adjust_the_numerators_and_denominators', 'Adjust the numerators and denominators of two fractions. The widget tells you one of four discrete relationships. No score, no reveal — just sweep and notice.')),
-                h('div', { className: 'mb-2 p-2 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
-                  h('div', { className: 'text-sm font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                  h('div', { className: 'text-[0.625rem] text-slate-700 mt-0.5 font-mono' }, 'A = ' + iq.numA + '/' + iq.denA + ' ≈ ' + fracA.toFixed(2) + '   B = ' + iq.numB + '/' + iq.denB + ' ≈ ' + fracB.toFixed(2))
-                ),
-                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
-                  [
-                    { key: 'numA', label: t('stem.numberline.a_num', 'A num'), val: iq.numA, max: 10 }, { key: 'denA', label: t('stem.numberline.a_den', 'A den'), val: iq.denA, max: 10 },
-                    { key: 'numB', label: t('stem.numberline.b_num', 'B num'), val: iq.numB, max: 10 }, { key: 'denB', label: t('stem.numberline.b_den', 'B den'), val: iq.denB, max: 10 }
-                  ].map(function(s) {
-                    return h('div', { key: s.key },
-                      h('label', { htmlFor: 'mh-' + s.key, className: 'block text-[0.625rem] font-bold text-slate-700' },
-                        s.label + ': ', h('span', { className: 'font-mono text-blue-700' }, s.val)),
-                      h('input', { id: 'mh-' + s.key, type: 'range', min: 1, max: s.max, step: 1, value: s.val,
-                        onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.label }));
-                  })
-                ),
-                h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                  h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, t('stem.numberline.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ numA: 1, denA: 2, numB: 1, denB: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.numberline.reset', '↺ Reset')),
-                  (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
-                ),
-                (iq.log || []).length > 0 && h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700 mb-2' },
-                  h('thead', null, h('tr', { className: 'bg-slate-100' }, ['A', 'B', '≈A', '≈B', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                  h('tbody', null, iq.log.map(function(o, idx) {
-                    return h('tr', { key: 'lr' + idx },
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.a),
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.b),
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.va),
-                      h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.vb),
-                      h('td', { className: 'px-1 border border-slate-200' }, o.st));
-                  }))
-                ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.numberline.hypothesis_free_text_when_do_two_fract', 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?'),
-                  'aria-label': t('stem.numberline.hypothesis', 'Fraction relationship hypothesis'),
-                  className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300 mb-2' }, t('stem.numberline.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700 leading-relaxed mb-2' },
-                  h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    h('li', null, t('stem.numberline.find_two_fractions_with_different_nume', 'Find two fractions with different numerators and denominators that are equal.')),
-                    h('li', null, t('stem.numberline.what_makes_a_fraction_close_to_what_ab', 'What makes a fraction close to ½? What about close to 1?')),
-                    h('li', null, t('stem.numberline.when_are_two_fractions_easy_to_compare', 'When are two fractions easy to compare? When are they hard?')))),
-                h('div', { className: 'p-2 rounded bg-emerald-50 border border-emerald-200' },
-                  h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold text-emerald-800 cursor-pointer' },
-                    h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                    t('stem.numberline.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.numberline.explain_how_to_compare_two_fractions_w', 'Explain how to compare two fractions without converting to decimals.'),
-                    'aria-label': t('stem.numberline.explanation', 'Explain how to compare two fractions'),
-                    className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
-                h('div', { className: 'mt-2 text-[0.5625rem] italic text-slate-500' }, t('stem.numberline.design_note_discrete_4_state_outcome_n', 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.'))
-              );
-            })(),
-            tab === 'explore' && renderExplore(),
-            tab === 'challenges' && renderChallenges(),
-            tab === 'skipcount' && renderSkipCount(),
-            tab === 'fracdec' && renderFracDec(),
+            // The tabpanel wraps the hero AND the tab's real content.
+            h('div', { role: 'tabpanel', id: 'numberline-panel-' + tab, 'aria-labelledby': 'numberline-tab-' + tab, tabIndex: 0, className: 'space-y-4' },
+              renderHero(),
+              tab === 'magCompare' && renderMagCompare(),
+              tab === 'magCompare' && renderCer(),
+              tab === 'decimals' && renderDecimals(),
+              tab === 'order' && renderOrder(),
+              tab === 'measure' && renderMeasure(),
+              tab === 'intctx' && renderIntCtx(),
+              tab === 'explore' && renderExplore(),
+              tab === 'challenges' && renderChallenges(),
+              tab === 'skipcount' && renderSkipCount(),
+              tab === 'fracdec' && renderFracDec()
+            ),
 
             // Badges
             renderBadges(),
 
             // AI Tutor toggle + panel
-            h('div', { className: 'flex gap-2' },
-              !showAITutor && h('button', { 'aria-label': t('stem.numberline.ai_tutor', 'AI Tutor'),
-                onClick: function() { sfxClick(); upd({ showAITutor: true }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
-              }, t('stem.numberline.ai_tutor_2', '\uD83E\uDD16 AI Tutor'))
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              !showAITutor && h('button', { type: 'button', 'aria-label': t('stem.numberline.ai_tutor', 'AI Tutor'),
+                onClick: function() { sfxClick(); upd({ showAITutor: true }); }, style: { minHeight: 36 },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-600 hover:bg-sky-100 transition-all'
+              }, t('stem.numberline.ai_tutor_2', '🤖 AI Tutor')),
+              typeof setStemLabTool === 'function' && h('nav', { 'aria-label': t('stem.numberline.related_tools', 'Related tools'), className: 'flex flex-wrap gap-2 items-center' },
+                related.map(function(rt) {
+                  return h('button', { key: rt.id, type: 'button', onClick: function() { setStemLabTool(rt.id); }, style: { minHeight: 36 },
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-500 bg-white text-slate-800 hover:bg-slate-50' }, rt.label);
+                }))
             ),
             renderAITutor(),
 
             // Keyboard hints
             h('p', { className: 'sr-only' },
-              t('stem.numberline.1_4_tabs_n_new_challenge_ai_tutor_on_m', '\u2328\uFE0F 1-5: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends')
+              t('stem.numberline.kbd_hint_v2', '⌨️ 1-9: tabs | N: new challenge | ?: AI tutor. These keys work when focus is on the tool area, not on a button or field. On a number line: arrow keys move the marker, Home/End go to the ends.')
             ),
 
-            // \u2550\u2550\u2550 INTEGERS & ABSOLUTE VALUE \u2550\u2550\u2550
+            // ═══ INTEGERS: hops, opposites, absolute value as distance ═══
             h('div', { className: 'mt-4 rounded-2xl border border-sky-200 bg-white p-3 shadow-sm' },
               h('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
                 h('div', null,
-                  h('h4', { className: 'text-sm font-bold text-sky-700' }, t('stem.numberline.integers_absolute_value_distance_from_', 'Integers - Absolute value = distance from zero')),
-                  h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.numberline.integer_lab_summary', 'Open the mini lab when negative numbers are the focus.'))
+                  h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.numberline.il_title', 'Integer lab: hops, opposites and absolute value')),
+                  h('p', { className: 'text-xs text-slate-700 mt-1' }, t('stem.numberline.il_summary', 'Predict where a hop lands, find an opposite with a mirror at 0, and see absolute value as a distance.'))
                 ),
                 h('button', {
                   type: 'button',
-                  onClick: function() { sfxClick(); upd({ showIntegerLab: !showIntegerLab }); },
-                  'aria-expanded': showIntegerLab,
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold border border-sky-500 text-sky-700 bg-sky-50 hover:bg-sky-100'
-                }, showIntegerLab ? t('stem.numberline.hide_integer_lab', 'Hide mini lab') : t('stem.numberline.open_integer_lab', 'Open mini lab'))
+                  onClick: function() { sfxClick(); upd({ showIntegerLab: !showIntLab }); },
+                  'aria-expanded': showIntLab, style: { minHeight: 40 },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold border border-sky-600 text-sky-800 bg-sky-50 hover:bg-sky-100'
+                }, showIntLab ? t('stem.numberline.hide_integer_lab', 'Hide mini lab') : t('stem.numberline.open_integer_lab', 'Open mini lab'))
               ),
-              showIntegerLab && h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'mt-3 rounded-xl overflow-hidden border border-sky-200', style: { position: 'relative', background: '#020210', aspectRatio: '16/4' } },
+              showIntLab && h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'mt-3 rounded-xl border border-sky-200 p-3 bg-white text-slate-900', style: { position: 'relative' } },
                 h('button', {
                   type: 'button',
                   'data-allo-fs-btn': 'true',
@@ -2346,84 +5911,9 @@ window.StemLab = window.StemLab || {
                   'aria-label': t('stem.numberline.enter_fullscreen', 'View the number line fullscreen'),
                   'data-fs-out': t('stem.numberline.enter_fullscreen', 'View the number line fullscreen'),
                   'data-fs-in': t('stem.numberline.exit_fullscreen', 'Exit fullscreen number line (Escape)'),
-                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(125,211,252,0.6)', color: '#e0f2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(125,211,252,0.6)', color: '#e0f2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
                 }, h('span', { 'aria-hidden': 'true' }, '⛶')),
-                h('canvas', {
-                  role: 'img',
-                  tabIndex: 0,
-                  'aria-label': t('stem.numberline.absolute_value_number_line_showing_dis', 'Absolute value number line showing distance from zero'),
-                  ref: function(cvEl) {
-                    if (!cvEl) return;
-                    if (cvEl._nlAnim) return;
-                    var c2 = cvEl.getContext('2d');
-                    var W = cvEl.offsetWidth || 600;
-                    var H = cvEl.offsetHeight || 150;
-                    cvEl.width = W * 2; cvEl.height = H * 2;
-                    c2.scale(2, 2);
-                    var start = performance.now();
-                    function drawNl() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._nlAnim); if (cvEl._nlRO) cvEl._nlRO.disconnect(); return; }
-                      var t = (performance.now() - start) / 1000;
-                      c2.fillStyle = '#020210';
-                      c2.fillRect(0, 0, W, H);
-                      var midY = H / 2;
-                      c2.save();
-                      c2.shadowColor = 'rgba(125,211,252,0.6)'; c2.shadowBlur = 5;
-                      c2.strokeStyle = '#7dd3fc'; c2.lineWidth = 2;
-                      c2.beginPath();
-                      c2.moveTo(20, midY); c2.lineTo(W - 20, midY);
-                      c2.stroke();
-                      c2.restore();
-                      var pxPerUnit = (W - 40) / 20;
-                      for (var v = -10; v <= 10; v++) {
-                        var px = (W / 2) + v * pxPerUnit;
-                        c2.beginPath();
-                        c2.moveTo(px, midY - 5); c2.lineTo(px, midY + 5);
-                        c2.stroke();
-                        c2.font = 'bold 9px monospace'; c2.fillStyle = v === 0 ? '#fde047' : '#94a3b8'; c2.textAlign = 'center';
-                        c2.fillText(v, px, midY + 18);
-                      }
-                      var current = Math.round(7 * Math.sin(t * 0.8));
-                      var cpx = (W / 2) + current * pxPerUnit;
-                      // Arrow from 0 to current — glowing amber so the magnitude reads at a glance
-                      c2.save();
-                      c2.shadowColor = 'rgba(251,191,36,0.85)'; c2.shadowBlur = 8;
-                      c2.strokeStyle = '#fbbf24'; c2.lineWidth = 3;
-                      c2.beginPath();
-                      c2.moveTo(W / 2, midY - 15); c2.lineTo(cpx, midY - 15);
-                      c2.stroke();
-                      var ahx = current > 0 ? -5 : 5;
-                      c2.beginPath();
-                      c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 18);
-                      c2.moveTo(cpx, midY - 15); c2.lineTo(cpx + ahx, midY - 12);
-                      c2.stroke();
-                      c2.restore();
-                      c2.fillStyle = '#fbbf24'; c2.font = 'bold 10px sans-serif'; c2.textAlign = 'center';
-                      c2.fillText('|' + current + '| = ' + Math.abs(current), (W / 2 + cpx) / 2, midY - 20);
-                      c2.fillStyle = '#dc2626';
-                      c2.shadowColor = 'rgba(239,68,68,0.8)';
-                      c2.shadowBlur = 10;
-                      c2.beginPath();
-                      c2.arc(cpx, midY, 6, 0, Math.PI * 2);
-                      c2.fill();
-                      c2.shadowBlur = 0;
-                      c2.fillStyle = 'rgba(0,0,0,0.85)';
-                      c2.fillRect(8, H - 14, W - 16, 12);
-                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
-                      c2.fillText('Absolute value strips the sign \u2014 always positive. |\u22125| = |+5| = 5', W / 2, H - 5);
-                      cvEl._nlAnim = requestAnimationFrame(drawNl);
-                    }
-                    drawNl();
-                    var ro = new ResizeObserver(function() {
-                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2;
-                      c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative, repeated resizes compounded the transform
-                    });
-                    cvEl._nlRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
-                    ro.observe(cvEl);
-                  },
-                  style: { width: '100%', height: '100%', display: 'block' }
-                })
+                renderIntegerLab()
               )
             )
           );

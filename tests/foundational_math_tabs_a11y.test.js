@@ -57,7 +57,8 @@ describe('Money Math section tab semantics', () => {
 
   for (const tab of ['coins', 'change', 'tips', 'store', 'budget', 'cents', 'word', 'exchange', 'finance', 'inquiry']) {
     it(`connects ${tab} to the active panel`, () => {
-      const host = parse(renderTool('moneyMath', { _moneyMath: { tab } }));
+      // Word Problems needs AI; the tab is hidden when there is none.
+      const host = parse(renderTool('moneyMath', { _moneyMath: { tab } }, { callGemini: () => Promise.resolve('') }));
       const tabList = host.querySelector('[role="tablist"][aria-label="Money Tool sections"]');
       const active = tabList.querySelector('[role="tab"][aria-selected="true"]');
       const panel = host.querySelector('#money-tool-panel[role="tabpanel"]');

@@ -35,6 +35,30 @@ const ALLO_AAC_MAX_AUDIO_CHARS = 256 * 1024;
 const ALLO_AAC_PACK_AUDIO_ITEM_CHARS = 1024 * 1024;
 const ALLO_AAC_PACK_AUDIO_CHARS = 1024 * 1024;
 const _alloAacText = (value, max = 240) => String(value == null ? String() : value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+// Student AI off: callTTS returns no cloud voice; a cell with no recording uses the device voice.
+const _alloAacStudentDeviceVoice = (text, locale) => {
+  if (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false;
+  } catch (_) {}
+  try {
+    if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false;
+  } catch (_) {}
+  const synth = window.speechSynthesis;
+  const phrase = String(text == null ? '' : text).trim();
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+  try {
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
+    if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+    if (locale && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(String(locale))) u.lang = String(locale);
+    synth.cancel();
+    synth.speak(u);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
 const _alloAacInteger = (value, min, max, fallback) => {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(min, Math.min(max, Math.round(number))) : fallback;
@@ -1302,14 +1326,20 @@ const LiveAacBoardDialog = ({
   const interactiveCells = cells.filter(cell => !!(cell && (cell.displayLabel || cell.vocalLabel || cell.originalLabel || cell.image)));
   const locale = portable && portable.board ? portable.board.locale : 'en-US';
   const direction = portable && portable.board && portable.board.direction === 'rtl' ? 'rtl' : 'ltr';
+  const speakTapRef = useRef(0);
   const speak = React.useCallback((text, cell) => {
     const phrase = _alloAacText(text, 2000);
     if (!phrase || typeof onSpeak !== 'function') return;
+    const tap = ++speakTapRef.current;
     try {
       const result = onSpeak(phrase, cell || null);
-      if (result && typeof result.catch === 'function') result.catch(() => {});
+      if (result && typeof result.then === 'function') {
+        result.then(played => {
+          if (!played && tap === speakTapRef.current) _alloAacStudentDeviceVoice(phrase, locale);
+        }, () => {});
+      }
     } catch (_) {}
-  }, [onSpeak]);
+  }, [onSpeak, locale]);
   const activateCell = React.useCallback(cell => {
     if (!cell) return;
     const phrase = cell.vocalLabel || cell.displayLabel || cell.originalLabel;

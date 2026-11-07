@@ -22,6 +22,14 @@
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 // Image changes use the host's resource/entry task, shared with AI generation.
 // Mulberry is fetched only when its picker opens, a search is submitted, or a result is selected.
+// Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function glossaryAiDoor(kind, t) {
+  try {
+    return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+  } catch (_) {
+    return null;
+  }
+}
 const GLOSSARY_IMAGE_TYPES = /^image\/(png|jpeg|gif|webp|avif)$/i;
 function readGlossaryImageFile(file, signal, allowSvg = false) {
   if (!file || !(GLOSSARY_IMAGE_TYPES.test(file.type) || allowSvg && file.type === 'image/svg+xml')) return Promise.reject(new Error('Choose a PNG, JPEG, GIF, WebP, or AVIF image.'));
@@ -320,6 +328,7 @@ function GlossaryImageControls({
   const [error, setError] = React.useState('');
   const [undo, setUndo] = React.useState(null);
   const [description, setDescription] = React.useState(glossaryCurrentDescription(item));
+  const aiDoor = glossaryAiDoor('images', t);
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const openerRef = React.useRef(null);
@@ -642,9 +651,13 @@ function GlossaryImageControls({
   }, text('glossary.images.photo', 'Find photo')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: buttonClass,
-    disabled: working || !onGenerate,
+    disabled: working || !onGenerate || !!aiDoor?.disabled,
+    title: aiDoor?.title || undefined,
     onClick: generate
-  }, text('glossary.images.generate', 'Generate image'))), /*#__PURE__*/React.createElement("p", {
+  }, text('glossary.images.generate', 'Generate image')), aiDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
+    t: t,
+    kind: "images"
+  })), /*#__PURE__*/React.createElement("p", {
     id: uploadHelpId,
     className: "mb-4 text-xs text-slate-600"
   }, text('glossary.images.upload_help', 'Upload PNG, JPEG, GIF, WebP, or AVIF images, up to 10 MB.')), mode === 'mulberry' ? /*#__PURE__*/React.createElement("section", {
@@ -1403,9 +1416,20 @@ function glossaryStartProvenance(content, translate) {
   }
   return translate('glossary.flashcard_provenance', "Provenance: generated from this lesson's source text and selected grade level.");
 }
+
+// Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
+function _glossaryViewAiDoor(kind, t) {
+  try {
+    return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+  } catch (_) {
+    return null;
+  }
+}
 function GlossaryView(props) {
   // Pure data + state reads
   var t = props.t;
+  var glossaryEditDoor = _glossaryViewAiDoor('imageEdit', t),
+    glossaryTextDoor = _glossaryViewAiDoor('text', t);
   var generatedContent = props.generatedContent;
   var glossaryBaseLanguage = glossaryFieldLanguage(generatedContent);
   var history = props.history;
@@ -5656,7 +5680,12 @@ function GlossaryView(props) {
     size: 12,
     className: "animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
-  }), " ", glossaryText('glossary_health.analyzing', 'Analyzing glossary quality...'))), !isMemoryGame && /*#__PURE__*/React.createElement("div", {
+  }), " ", glossaryText('glossary_health.analyzing', 'Analyzing glossary quality...'))), !isMemoryGame && isEditingGlossary && glossaryTextDoor?.disabled && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
+    "data-glossary-ai-setup": true,
+    className: "mb-2 print:hidden"
+  }, /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
+    t: t
+  })), !isMemoryGame && /*#__PURE__*/React.createElement("div", {
     "data-help-key": "glossary_terms_table",
     className: "overflow-hidden rounded-lg border border-slate-400 shadow-sm"
   }, isEditingGlossary && /*#__PURE__*/React.createElement("p", {
@@ -5838,12 +5867,12 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
-      disabled: isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx],
+      disabled: isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx] || !!glossaryEditDoor?.disabled,
       "aria-label": glossaryText('glossary.remove_image_words_aria', 'Remove words from image for {term}', {
         term: item.term
       }),
       className: "min-h-11 w-full mb-1.5 text-[11px] bg-red-50 text-red-800 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm",
-      title: t('glossary.auto_remove_tooltip'),
+      title: glossaryEditDoor?.title || t('glossary.auto_remove_tooltip'),
       "data-help-key": "glossary_remove_words"
     }, isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
@@ -5864,14 +5893,14 @@ function GlossaryView(props) {
       })),
       placeholder: t('glossary.custom_edit_placeholder'),
       className: "min-h-11 min-w-0 w-full flex-1 text-xs border border-yellow-400 rounded px-2 py-1 focus:ring-2 focus:ring-yellow-500",
-      onKeyDown: e => handleGlossaryInputEnter(e, () => handleRefineGlossaryImage(idx), !String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx])
+      onKeyDown: e => handleGlossaryInputEnter(e, () => handleRefineGlossaryImage(idx), !String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx] || !!glossaryEditDoor?.disabled)
     }), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": glossaryText('glossary.apply_image_edit_aria', 'Apply image edit for {term}', {
         term: item.term
       }),
       onClick: () => handleRefineGlossaryImage(idx),
-      disabled: !String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || !!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]),
+      disabled: !String(glossaryRefinementInputs[entryKey] || glossaryRefinementInputs[idx] || '').trim() || !!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]) || !!glossaryEditDoor?.disabled,
       "aria-busy": !!(isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx]),
       className: "min-h-11 min-w-11 inline-flex items-center justify-center bg-yellow-400 text-yellow-900 p-2 rounded hover:bg-yellow-50 focus-visible:ring-2 focus-visible:ring-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed shrink-0",
       title: glossaryText('glossary.apply_image_edit_aria', 'Apply image edit for {term}', {
@@ -6102,12 +6131,12 @@ function GlossaryView(props) {
         display: canEditGlossary ? undefined : 'none'
       },
       onClick: () => handleGenerateTermEtymology(idx, item.term),
-      disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
+      disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] || !!glossaryTextDoor?.disabled,
       "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
       "aria-live": "polite",
       className: "mt-2 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1",
       "data-help-key": "glossary_etymology_info",
-      title: t('glossary.etymology_label') || 'Word roots'
+      title: glossaryTextDoor?.title || t('glossary.etymology_label') || 'Word roots'
     }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12,
       className: "animate-spin motion-reduce:animate-none"
@@ -6685,10 +6714,10 @@ function GlossaryView(props) {
               display: canEditGlossary ? undefined : 'none'
             },
             onClick: () => handleGenerateTermEtymology(idx, item.term),
-            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
+            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] || !!glossaryTextDoor?.disabled,
             "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
             className: "mt-1 text-[11px] text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1",
-            title: rootsLabel
+            title: glossaryTextDoor?.title || rootsLabel
           }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
             size: 10,
             className: "animate-spin motion-reduce:animate-none"
@@ -6701,10 +6730,10 @@ function GlossaryView(props) {
               display: canEditGlossary ? undefined : 'none'
             },
             onClick: () => handleGenerateTermEtymology(idx, item.term),
-            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx],
+            disabled: isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] || !!glossaryTextDoor?.disabled,
             "aria-busy": !!(isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx]),
             className: "mt-1 text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-wait flex items-center gap-1 justify-center",
-            title: rootsLabel,
+            title: glossaryTextDoor?.title || rootsLabel,
             dir: isRtlLang(lang) ? 'rtl' : 'ltr'
           }, isGeneratingEtymology[entryKey] || isGeneratingEtymology[idx] ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
             size: 12,

@@ -61,7 +61,7 @@ function expectDescribedTextarea(host, textarea) {
   expect(ids).toHaveLength(2);
   const descriptions = ids.map((id) => [...host.querySelectorAll('[id]')].find((element) => element.id === id));
   expect(descriptions.every(Boolean)).toBe(true);
-  expect(descriptions[0].textContent).toBe('Your notes save automatically. Keep your own observations here, separate from dive discoveries.');
+  expect(descriptions[0].textContent).toBe('Keep your own observations here, separate from dive discoveries. They stay until this page closes and are not kept after that, so the next student on a shared computer cannot read them. Print My reef report to keep them.');
   expect(descriptions[1].textContent).toBe(textarea.value.length + ' / 600 characters');
   expect(textarea.maxLength).toBe(600);
 }
@@ -155,7 +155,7 @@ describe('marine personal field notes', () => {
       const html = renderTool('coralReef', { coralReef: { section: 'guide', guideSpeciesId: 'reef_star', speciesFieldNotes: { reef_star: 'My own observation.' } } }, { theme, reduceMotion: true });
       expect(html, theme).toContain('data-field-notes="reef_star"');
       expect(html, theme).toContain('My own observation.');
-      expect(html, theme).toContain('Your notes save automatically. Keep your own observations here, separate from dive discoveries.');
+      expect(html, theme).toContain('Keep your own observations here, separate from dive discoveries. They stay until this page closes and are not kept after that, so the next student on a shared computer cannot read them. Print My reef report to keep them.');
       expect(html, theme).not.toContain('undefined');
       expect(html, theme).not.toContain('NaN');
     }

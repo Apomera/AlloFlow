@@ -591,6 +591,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _gmAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
@@ -603,6 +604,7 @@ window.SelHub = window.SelHub || {
 
       // Navigation
       var activeTab     = d.activeTab || 'reframe';
+      if (!_gmAiOn && activeTab === 'coach') activeTab = 'reframe';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Brain Science state
@@ -688,10 +690,10 @@ window.SelHub = window.SelHub || {
         { id: 'reframe',  icon: '\uD83D\uDD04', label: 'Reframe It' },
         { id: 'stories',  icon: '\uD83C\uDF1F', label: 'Yet Stories' },
         { id: 'map',      icon: '\uD83D\uDDFA\uFE0F', label: 'My Growth Map' },
-        { id: 'coach',    icon: '\uD83E\uDD16', label: callGemini ? 'AI Coach' : 'AI Coach (off)' },
+        { id: 'coach',    icon: '\uD83E\uDD16', label: 'AI Coach' },
         { id: 'letter',   icon: '\u2709\uFE0F', label: 'Future Me' },
         { id: 'educator', icon: '\uD83C\uDFEB', label: 'Educator Lens' },
-      ];
+      ].filter(function (t) { return _gmAiOn || t.id !== 'coach'; });
 
       // Count explored tabs for progress
       var exploredTabs = d.exploredTabs || {};
@@ -700,7 +702,7 @@ window.SelHub = window.SelHub || {
         newExplored[activeTab] = true;
         upd('exploredTabs', newExplored);
       }
-      var exploredCount = Object.keys(exploredTabs).length;
+      var exploredCount = TABS.filter(function (t) { return !!exploredTabs[t.id]; }).length;
 
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + _gmC('#d1fae5'), background: 'linear-gradient(180deg, ' + _gmC('#f0fdf4') + ', ' + _gmC('#ecfdf5') + ')', flexShrink: 0 }
@@ -1181,7 +1183,7 @@ window.SelHub = window.SelHub || {
             window.SelHub.giveCoachConsent();
             upd('_consentRefresh', Date.now());
           }, ctx.activeSessionCode);
-        } else if (!callGemini) {
+        } else if (!_gmAiOn) {
           // No AI provider here (PPS students use the app without Gemini). Say so, and hand the
           // student the tab that does the same work by hand.
           coachContent = h('div', { 'data-gm-coach-off': 'true', style: { padding: '20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' } },
@@ -1225,7 +1227,7 @@ window.SelHub = window.SelHub || {
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
-                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && callGemini) {
+                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && _gmAiOn) {
                   var userMsg = coachInput.trim();
                   var newHistory = (coachHistory || []).concat([{ role: 'user', text: userMsg }]);
                   upd({ coachHistory: newHistory, coachInput: '', coachLoading: true });
@@ -1271,13 +1273,13 @@ window.SelHub = window.SelHub || {
                   });
                 }
               },
-              disabled: coachLoading || !callGemini,
+              disabled: coachLoading || !_gmAiOn,
               placeholder: coachLoading ? 'Thinking...' : 'Tell me what you\u2019re struggling with...',
               style: { flex: 1, border: '2px solid #a7f3d0', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
-                if (!coachInput.trim() || coachLoading || !callGemini) return;
+                if (!coachInput.trim() || coachLoading || !_gmAiOn) return;
                 // Trigger same logic as Enter key
                 var ev = { key: 'Enter', target: {} };
                 // For simplicity, duplicate the logic inline
@@ -1325,7 +1327,7 @@ window.SelHub = window.SelHub || {
                   });
                 });
               },
-              disabled: coachLoading || !coachInput.trim() || !callGemini,
+              disabled: coachLoading || !coachInput.trim() || !_gmAiOn,
               style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? EMERALD_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),

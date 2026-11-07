@@ -1632,7 +1632,265 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
   // REGISTER TOOL
   // ═══════════════════════════════════════════════════════════════
 
+  // ══════════════════════════════════════════════════════════════
+  // ── Scripted practice (no AI, 2026-11-04 AI-off sweep wave 5) ──
+  // Branching scripts in the shared AdventureOffline story format, played with
+  // AlloModules.AdventureOffline.Player (built-in fallback for older hosts).
+  // Braided (branches rejoin); every ending closes with a short "What worked:"
+  // debrief. English, like the rest of this tool's content. Zero AI calls.
+  // Rows: [id, text, [[choice label, to], ...]]; a row with no choices is an
+  // ending (its text may be an array of lines).
+  // ══════════════════════════════════════════════════════════════
+  function _saSpScript(title, rows) {
+    var text = function(v) { return Array.isArray(v) ? v.join('\n') : v; };
+    return { version: 1, title: title, start: rows[0][0], scenes: rows.map(function(r) {
+      return r[2]
+        ? { id: r[0], text: text(r[1]), ending: false, choices: r[2].map(function(c) { return { label: c[0], to: c[1] }; }) }
+        : { id: r[0], text: text(r[1]), ending: true, choices: [] };
+    }) };
+  }
+
+  var SA_SCRIPTS = {
+    m1: _saSpScript('New Teacher, New Year', [
+      ['start', "It's the second week of school. Your new math teacher, Ms. Rivera, hasn't mentioned your 504 plan (extended time, breaks, and a seat near the front), and there's a quiz on Friday. Class just ended, and she's packing up.", [
+        ['Say nothing and hope she reads your plan before Friday.', 'wait'],
+        ["Walk up: 'Ms. Rivera, do you have a minute? I wanted to talk about my 504 plan.'", 'open'],
+        ["Call out in front of the class: 'You know I get extra time, right?'", 'public']]],
+      ['wait', "Friday comes. The quiz starts, and Ms. Rivera says, 'You have 20 minutes.' Your stomach drops. Waiting for adults to notice often means the accommodation doesn't happen.", [
+        ["Quietly go to her desk: 'I have extended time in my 504 plan. Can we talk about it?'", 'open'],
+        ['Rush through the quiz and say nothing.', 'end_unspoken']]],
+      ['public', "A few kids turn around. Ms. Rivera looks surprised. 'Let's talk about that after class.' Bringing it up in front of everyone can feel exposing, and teachers often respond better one-on-one.", [
+        ["After class: 'Sorry about that. Can we talk about my 504 now?'", 'open'],
+        ['Skip it. It felt too awkward.', 'end_unspoken']]],
+      ['open', "She stops packing. 'Sure. What's up?'", [
+        ["'I have a 504 plan for ADHD. It includes extended time, breaks, and a seat near the front. I wanted to make sure you have it.'", 'clear'],
+        ["'Um, I'm really sorry to bother you, I know you're super busy, and it's probably not a big deal, but...'", 'overexplain']]],
+      ['overexplain', "Ms. Rivera waits, looking a little confused. 'Okay... what do you need?' Lots of apologizing can bury your actual ask.", [
+        ["Take a breath and say it in one sentence: 'I have a 504 plan with extended time, breaks, and front seating.'", 'clear'],
+        ["'Never mind, it's fine.'", 'end_unspoken']]],
+      ['clear', "'Oh, thank you for telling me. I haven't read every plan yet. Which parts matter most in my class?'", [
+        ["'Extended time on quizzes matters most, especially Friday. And sitting near the front helps me focus.'", 'specific'],
+        ["'Um, all of them, I guess?'", 'vague']]],
+      ['vague', "'Okay... what does extended time look like for you? Time and a half? Finishing at lunch?' Being specific helps a teacher actually follow the plan.", [
+        ["'Time and a half. I can finish in the resource room if class ends.'", 'specific'],
+        ["'I don't know. Whatever you think.'", 'end_partial']]],
+      ['specific', "Ms. Rivera writes it down. 'Got it. On Friday you'll have time and a half. Do you want to move seats now, or tomorrow?'", [
+        ["'Tomorrow is fine. Thanks for listening.'", 'end_clear'],
+        ["'Could you not mention it in front of the class? I'd like it to stay private.'", 'privacy']]],
+      ['privacy', "'Absolutely. I'll move a few seats around so it doesn't stand out.' Asking for privacy is part of self-advocacy too.", [
+        ["'Thank you. That really helps.'", 'end_clear'],
+        ["'Thanks. Can I come to you if something isn't working?'", 'end_clear']]],
+      ['end_clear', ["Ms. Rivera smiles. 'Of course. Thanks for speaking up. It helps me teach you better.' On Friday, you have the time you need.", '', 'What worked:', "• Choosing a private moment ('Do you have a minute?').", '• Making the ask in one clear sentence, without over-apologizing.', '• Being specific about what you need and when (time and a half, Friday quiz).', "• It's your plan. You're allowed to make sure it's followed, and to ask for privacy."]],
+      ['end_partial', ["Ms. Rivera says she'll read your plan tonight. That's progress, but she still isn't sure what you need on Friday.", '', 'What worked:', '• You started the conversation, which is often the hardest part.', "• Next time, have one or two specifics ready ('time and a half on quizzes'). An accommodation card can help.", "• If you aren't sure what your plan says, your case manager can go over it with you."]],
+      ['end_unspoken', ["This time, the accommodation didn't happen. That's frustrating, and it isn't your fault.", '', 'What worked:', '• Noticing that you needed to speak up is the first step.', "• It's not too late: talk to the teacher privately, or ask your case manager or a parent to help.", "• Try one clear sentence: 'I have a 504 plan with extended time. Can we talk about it?'"]]
+    ]),
+    m6: _saSpScript('The Substitute and the Pop Quiz', [
+      ['start', "There's a substitute today. He announces a pop quiz: 'No exceptions on time. Finish or don't.' You have extended time in your 504 plan. Nobody else in class knows about your plan.", [
+        ["Raise your hand and say loudly: 'That's not fair, I'm allowed extra time!'", 'loud'],
+        ['Wait until everyone starts, then walk up to his desk quietly.', 'quiet'],
+        ['Say nothing and do what you can.', 'silent']]],
+      ['loud', "Heads turn. The substitute frowns: 'I said no exceptions.' Arguing in front of everyone can make adults dig in, and now the whole room is paying attention to you.", [
+        ["Lower your voice: 'Can I talk to you at your desk for a second?'", 'quiet'],
+        ["'You can't do that! I'm going to tell!'", 'standoff']]],
+      ['standoff', "'Please sit down.' The substitute sounds annoyed now, and your face gets hot. Escalating usually makes the other person defend their rule.", [
+        ["Take a breath, then quietly: 'Sorry. Could I talk to you privately for a moment?'", 'quiet'],
+        ['Sit down upset and leave the quiz half done.', 'end_later']]],
+      ['silent', "You start the quiz. When time is called, you're only halfway done, and you feel panic rising. Staying quiet protected your privacy, but your accommodation didn't happen.", [
+        ['Go up to his desk as everyone hands in their quizzes.', 'quiet'],
+        ['Leave it, and tell your case manager tomorrow.', 'end_later']]],
+      ['quiet', "You go to the substitute's desk and keep your voice low. He looks up, a little wary. 'Yes?'", [
+        ["'I have a 504 plan that gives me extended time on tests and quizzes. My teacher usually has me finish in the resource room.'", 'clear'],
+        ["'Um, I'm kind of special or whatever, and I get extra time.'", 'unclear']]],
+      ['unclear', "'Special how? Nobody told me about that.' Vague words leave the other person guessing. The name of your plan and the specific accommodation help.", [
+        ["'It's a 504 plan. It says I get extended time. It should be in the sub folder, or the office can check.'", 'clear'],
+        ["'Never mind.'", 'end_later']]],
+      ['clear', "'Nobody mentioned that to me,' he says, still unsure. 'How do I know?'", [
+        ["'You could check the sub notes or call the office. Or I can finish it with my case manager, Mr. Ellis.'", 'options'],
+        ["'You just have to believe me!'", 'standoff']]],
+      ['options', "He flips through the folder. 'Huh. There's a note here about accommodations.' He nods. 'Okay. Take the time you need, and finish in the resource room if the bell rings.'", [
+        ["'Thank you.'", 'end_resolved'],
+        ["'Thanks. Could you leave a note for my teacher that I finished there?'", 'end_resolved']]],
+      ['end_resolved', ["You finish the quiz in the resource room, calmer than you expected. Nobody in class had to hear about your plan.", '', 'What worked:', '• Speaking privately at the desk instead of announcing it to the class.', "• Calm, specific words: '504 plan', 'extended time', and where you usually finish.", '• Offering a way to check (sub notes, the office, your case manager) made it easy to say yes.', '• Staying steady when an adult doubted you.']],
+      ['end_later', ["The quiz is over, and your extra time didn't happen today. That's frustrating, and it isn't your fault.", '', 'What worked:', '• You can still fix this: tell your teacher or case manager and ask about finishing or retaking it.', "• Next time, try quietly at the desk: 'I have a 504 plan with extended time. Can I talk to you for a second?'", "• Knowing your plan's exact words makes the ask easier."]]
+    ]),
+    h1: _saSpScript('College Visit: Disability Services', [
+      ['start', "You're on a college visit with your family. You want to stop by the Disability Services office to ask how accommodations work there. Your parent says, 'Do we really need to? Maybe you won't need anything in college.'", [
+        ["'Okay, never mind.'", 'skip'],
+        ["'I'd like to go. I want to know how it works before I apply.'", 'insist'],
+        ["'Can you do the talking if we go?'", 'parenttalks']]],
+      ['skip', "You keep walking the tour. Later you wonder what you missed. You can still email or call the office. It isn't too late.", [
+        ["Turn back: 'Actually, I do want to stop by. It matters to me.'", 'insist'],
+        ['Plan to email the office after the visit.', 'end_email']]],
+      ['insist', "Your parent nods. 'Okay, if it matters to you.' Saying why something matters to you is self-advocacy, even with family.", [
+        ['Walk in and introduce yourself to the staff member.', 'intro'],
+        ['Walk in and let your parent explain everything.', 'parenttalks']]],
+      ['parenttalks', "Your parent starts explaining your IEP. The staff member, Dana, listens, then turns to you. 'In college, students request accommodations themselves. What would you like to know?' In college, YOU are the one who asks.", [
+        ["'I have an IEP now. I want to know how to register and what accommodations are possible.'", 'intro'],
+        ["Shrug: 'I don't know. My mom handles that stuff.'", 'shrug']]],
+      ['shrug', "Dana smiles kindly. 'That's really common. Here it will be your call, and we can help you learn how.' She hands you a card.", [
+        ["Try again: 'Okay. What would I need to register?'", 'docs'],
+        ['Take the card and leave.', 'end_email']]],
+      ['intro', "Dana says, 'Welcome! What did you use in high school?'", [
+        ["'Extended time on tests, a quiet testing room, and copies of class notes.'", 'docs'],
+        ["'Um, stuff. I'm not totally sure.'", 'unsure']]],
+      ['unsure', "'No problem. Your IEP will list them. It helps to know which ones actually work for you.' Knowing your own accommodations makes asking easier.", [
+        ["'Extended time and a quiet room help me the most.'", 'docs'],
+        ["'I'll look at my IEP and email you.'", 'end_email']]],
+      ['docs', "'Great. To register, you send us documentation and meet with us. College is different from high school: there's no IEP, but there are accommodations, and you request them.'", [
+        ["Ask: 'What documentation do you need, and how recent does it have to be?'", 'questions'],
+        ["Nod and say 'okay' without asking anything.", 'end_partial']]],
+      ['questions', "Dana writes it down for you: 'A recent evaluation and your IEP. Register as soon as you're accepted, before classes start.' Your parent looks impressed.", [
+        ["'Thanks. Can I email you if I have more questions?'", 'end_ready'],
+        ["'Will my professors know my diagnosis?'", 'end_ready']]],
+      ['end_ready', ["Dana explains that professors get a letter listing your accommodations, not your diagnosis, and that you can email any time. You leave with a card, a checklist, and a lot more confidence.", '', 'What worked:', '• Explaining why it mattered to you, even when a parent was unsure.', "• Speaking for yourself. In college, you're the one who requests accommodations.", '• Knowing which accommodations actually help you.', '• Asking specific questions: what documentation, how recent, and who sees it.']],
+      ['end_partial', ["You leave with a brochure. It's a start, but you're not sure what to send or when.", '', 'What worked:', '• Going in at all was a real step.', "• Next time, ask: 'What documentation do you need, and when should I register?'", '• Writing your questions down before a visit makes them easier to ask.']],
+      ['end_email', ["You leave without talking to anyone yet. That's okay. Disability Services offices answer emails and phone calls all the time.", '', 'What worked:', '• Noticing that this matters to you.', "• A simple email works: 'I'm a future student with an IEP. How do I register for accommodations?'", '• A school counselor or case manager can help you write it.']]
+    ]),
+    h2: _saSpScript('When a Teacher Says No to Your IEP', [
+      ['start', "Your calculus teacher, Mr. Hale, tells the class: 'My policy is no extended time for anyone, period. Fair means everyone is treated the same.' Your IEP gives you extended time on tests.", [
+        ["Say 'fine' and take tests without your accommodation.", 'accept'],
+        ["'That's illegal! You can't do that!'", 'heated'],
+        ["After class: 'Can I talk with you about my IEP?'", 'private']]],
+      ['accept', "On the next test, you run out of time on the last three problems. Going along with it doesn't make the IEP stop being yours.", [
+        ['Ask Mr. Hale to talk after class.', 'private'],
+        ["Tell your case manager what's happening.", 'escalate']]],
+      ['heated', "Mr. Hale crosses his arms. 'Don't tell me how to run my class.' He's digging in. You might be right, but how you say it changes whether he can hear it.", [
+        ["Lower your voice: 'Sorry. Can we talk about it after class?'", 'private'],
+        ['Storm out of the room.', 'end_stuck']]],
+      ['private', "After class, he sighs. 'Look, everyone has stuff going on. In college, nobody will give you extra time.'", [
+        ["'My IEP says I get time and a half on tests. It's a legal plan, and teachers are required to follow it.'", 'firm'],
+        ["'I guess you're right. Maybe I don't really need it.'", 'doubt']]],
+      ['doubt', "You walk out feeling small. But your IEP team decided you need this for real reasons, and colleges DO provide accommodations through Disability Services. A teacher's doubt doesn't erase your plan.", [
+        ["Go back tomorrow with your IEP page: 'I'd like to talk about this again.'", 'firm'],
+        ['Talk to your case manager.', 'escalate']]],
+      ['firm', "Mr. Hale frowns. 'I'm not sure that's really required.' He isn't budging yet.", [
+        ["'I'd like to bring in my case manager, so we're all on the same page.'", 'escalate'],
+        ["'You're the worst teacher I've ever had.'", 'heated']]],
+      ['escalate', "Your case manager, Ms. Okafor, listens. 'Thank you for telling me. Can you write down what happened and when?'", [
+        ['Write down the dates, what he said, and which tests were affected.', 'document'],
+        ["'Can't you just handle it without me?'", 'handoff']]],
+      ['handoff', "'I'll help, absolutely. But you know best what happened. Your voice helps the most,' Ms. Okafor says.", [
+        ["'Okay. I'll write it down.'", 'document'],
+        ["'I'd rather just let it go.'", 'end_stuck']]],
+      ['document', "Ms. Okafor sets up a meeting with Mr. Hale. You bring your notes and the page of your IEP that lists extended time.", [
+        ["Say calmly: 'I need extended time on tests, as my IEP says. I want to do well in this class.'", 'end_resolved'],
+        ['Let Ms. Okafor do all the talking.', 'end_partial']]],
+      ['end_resolved', ["Mr. Hale reads the IEP page. 'Okay. Time and a half, starting with the next test.' Ms. Okafor says she'll check in with you both in two weeks.", '', 'What worked:', "• Starting privately, and staying calm and specific ('time and a half', 'my IEP').", "• Not letting a teacher's doubt make you doubt your plan.", '• Escalating step by step: teacher, then case manager, then a meeting.', '• Writing down dates and what happened gave the adults facts to act on.']],
+      ['end_partial', ["Ms. Okafor explains the IEP, and Mr. Hale agrees to follow it. Your accommodation is back.", '', 'What worked:', '• Going to your case manager and writing down what happened.', '• Next time, try saying one sentence yourself in the meeting. Practicing now builds the skill you will use in college.']],
+      ['end_stuck', ["For now nothing has changed, and that is frustrating. You don't have to fix this alone.", '', 'What worked:', "• Next time, try 'Can we talk after class?' and calm, specific words.", "• Your case manager, a parent, or your school's 504/IEP coordinator can help. Telling them is not getting someone in trouble. It is using your rights.", '• Write down what happened and when.']]
+    ])
+  };
+
+  // Scenario keys with at least one ending reached (scripted practice).
+  function _saSpFinished(done) {
+    var seen = {};
+    Object.keys(done || {}).forEach(function(k) { if (k.indexOf('teacher:') !== 0) seen[k.split(':')[0]] = true; });
+    return Object.keys(seen);
+  }
+
+  // Scripted-practice panel. State lives in this tool's toolData: spId, spRun,
+  // spPath, spEnding, spDone, spDraft, spSaved, spCrisis, spReflections.
+  // o: { h, d, set(patch), id, t, theme, toolId, band, onSafetyFlag, announce,
+  //      onFirst(doneMap) (XP + badges, once per scenario), onBack, reflectPrompt,
+  //      c: { fg, muted, card, line, accent, accentFg, field } }
+  function _saSpPanel(o) {
+    var h = o.h, d = o.d, c = o.c, id = o.id, story = o.story || SA_SCRIPTS[id];
+    if (!story) return null;
+    var AO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
+    var done = (d.spDone && typeof d.spDone === 'object') ? d.spDone : {};
+    var sceneOf = function(sid) { for (var i = 0; i < story.scenes.length; i++) { if (story.scenes[i].id === sid) return story.scenes[i]; } return null; };
+    var say = function(msg) { if (typeof o.announce === 'function') { try { o.announce(msg); } catch (_) {} } };
+    function reach(endId) {
+      var next = Object.assign({}, done);
+      var first = !Object.keys(next).some(function(k) { return k.indexOf(id + ':') === 0; });
+      next[id + ':' + endId] = true;
+      o.set({ spEnding: endId, spDone: next, spSaved: false });
+      if (first && typeof o.onFirst === 'function') o.onFirst(next);
+      say('Ending reached. Read what worked, then reflect.');
+    }
+    // AdventureOffline.Player keeps its own path; its buttons carry data attributes we read on the way up.
+    function onPlayerClick(e) {
+      var el = e && e.target && e.target.closest ? e.target.closest('[data-offline-choice],[data-offline-back],[data-offline-restart]') : null;
+      if (!el) return;
+      var to = el.getAttribute('data-offline-choice');
+      var target = to ? sceneOf(to) : null;
+      if (target && target.ending) reach(to);
+      else if (d.spEnding) o.set({ spEnding: null });
+    }
+    var btn = { minHeight: 44, padding: '8px 14px', borderRadius: 10, border: '1px solid ' + c.line, background: 'transparent', color: c.fg, fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+    var btnPrimary = Object.assign({}, btn, { border: '1px solid ' + (c.accentLine || c.accent), background: c.accent, color: c.accentFg });
+    // Built-in player for an older host without AdventureOffline.
+    function fallbackPlayer() {
+      var path = (Array.isArray(d.spPath) ? d.spPath : []).filter(function(s) { return !!sceneOf(s); });
+      if (!path.length) path = [story.start];
+      var cur = sceneOf(path[path.length - 1]);
+      var go = function(to) { o.set({ spPath: path.concat([to]) }); var sc = sceneOf(to); if (sc && sc.ending) reach(to); };
+      return h('section', { 'data-sp-fallback-player': 'true', 'aria-label': story.title, style: { padding: 16, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('h4', { style: { margin: '0 0 8px', fontSize: 15, fontWeight: 800, color: c.fg } }, cur.ending ? 'The end' : 'Step ' + path.length),
+        h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: c.fg } }, cur.text),
+        !cur.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 12 } },
+          cur.choices.map(function(ch, i) {
+            return h('button', { key: i, type: 'button', 'data-sp-choice': ch.to, onClick: function() { go(ch.to); }, style: Object.assign({}, btn, { textAlign: 'left', fontWeight: 600 }) }, ch.label);
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: path.slice(0, -1), spEnding: null }); }, style: btn }, '← Back'),
+          h('button', { type: 'button', disabled: path.length < 2, onClick: function() { o.set({ spPath: [story.start], spEnding: null }); }, style: cur.ending ? btnPrimary : btn }, cur.ending ? '↺ Play again' : '↺ Start over')
+        )
+      );
+    }
+    var endCount = story.scenes.filter(function(s) { return s.ending; }).length;
+    var found = Object.keys(done).filter(function(k) { return k.indexOf(id + ':') === 0; }).length;
+    var th = o.theme || {};
+    var player = (AO && typeof AO.Player === 'function')
+      ? h(AO.Player, { key: id + ':' + (d.spRun || 0), story: story, t: o.t, theme: th.isContrast ? 'contrast' : (th.isDark ? 'dark' : 'light') })
+      : fallbackPlayer();
+    var fieldId = 'sp-reflect-' + o.toolId;
+    function saveReflection() {
+      var txt = String(d.spDraft || '').trim();
+      if (!txt) return;
+      // Local safety check only (no AI): a critical match shows crisis resources.
+      var crisis = false;
+      try {
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var r = window.SelHub.safeRehearseCheck(txt, { toolId: o.toolId, onSafetyFlag: o.onSafetyFlag || null });
+          crisis = !!(r && r.action === 'block');
+        }
+      } catch (_) {}
+      var list = (Array.isArray(d.spReflections) ? d.spReflections : []).concat([{ scenarioId: id, ending: d.spEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
+      o.set({ spReflections: list, spDraft: '', spSaved: true, spCrisis: crisis || !!d.spCrisis });
+      say(crisis ? 'Reflection saved. Support resources are on this screen.' : 'Reflection saved.');
+    }
+    return h('div', { 'data-sp-panel': id, style: { display: 'grid', gap: 12 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+        h('div', null,
+          h('div', { style: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: c.muted } }, o.kicker || 'Scripted practice · no AI'),
+          h('div', { style: { fontSize: 16, fontWeight: 800, color: c.fg } }, story.title || o.kicker)
+        ),
+        h('button', { type: 'button', 'data-sp-back': 'true', onClick: o.onBack, style: Object.assign({}, btn, { minHeight: 36, fontSize: 12 }) }, '← Choose another')
+      ),
+      h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5, color: c.muted } }, 'Choose what you would do. Each choice shows what happens next. There is more than one ending; play again to find the others.'),
+      o.introEl || null,
+      (d.spCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, o.band) : null,
+      h('div', { 'data-sp-player': id, onClick: onPlayerClick }, player),
+      h('p', { style: { margin: 0, fontSize: 12, textAlign: 'center', color: c.muted } }, 'Endings found: ' + found + ' of ' + endCount),
+      d.spEnding ? h('div', { 'data-sp-reflect': id, style: { padding: 14, borderRadius: 12, border: '1px solid ' + c.line, background: c.card } },
+        h('label', { htmlFor: fieldId, style: { display: 'block', fontSize: 13, fontWeight: 800, color: c.fg, marginBottom: 4 } }, 'Reflect'),
+        h('p', { style: { margin: '0 0 8px', fontSize: 12, lineHeight: 1.5, color: c.muted } }, o.reflectPrompt),
+        h('textarea', { id: fieldId, rows: 3, maxLength: 2000, value: d.spDraft || '',
+          onChange: function(e) { o.set({ spDraft: e.target.value, spSaved: false }); },
+          style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid ' + c.line, background: c.field, color: c.fg, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
+          h('button', { type: 'button', 'data-sp-reflect-save': 'true', disabled: !String(d.spDraft || '').trim(), onClick: saveReflection, style: btnPrimary }, 'Save reflection'),
+          d.spSaved ? h('span', { role: 'status', style: { fontSize: 12, color: c.muted } }, 'Saved to your work.') : null
+        )
+      ) : null,
+      (window.SelHub && typeof window.SelHub.renderResourceFooter === 'function') ? window.SelHub.renderResourceFooter(h, o.band) : null
+    );
+  }
+
   window.SelHub.registerTool('selfAdvocacy', {
+    offlineScripts: SA_SCRIPTS,
     icon: '\uD83D\uDDE3\uFE0F',
     label: 'Self-Advocacy Studio',
     desc: 'Know your rights, understand your IEP or 504, request accommodations, navigate disclosure decisions, escalate when things go wrong, prepare for adulthood, practice with AI.',
@@ -1643,6 +1901,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       var h = React.createElement;
       var addToast = ctx.addToast || function() {};
       var callGemini = ctx.callGemini;
+      var _saAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand === 'elementary' ? 'middle' : (ctx.gradeBand || 'middle');
       if (band !== 'middle' && band !== 'high') band = 'middle';
 
@@ -1938,7 +2197,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           { id: 'disclose', icon: '\uD83D\uDD11', title: 'Disclosure Decisions', body: 'You never have to share your diagnosis with anyone. Decide what to share, with whom, and when. Audience-specific scripts at different disclosure depths.', color: 'from-amber-700 to-orange-700' },
           { id: 'escalate', icon: '\uD83D\uDEA8', title: 'When Things Go Wrong', body: 'What to do when accommodations are denied, delayed, or not implemented. Escalation levels from a direct conversation through OCR complaints. Know what each level costs and what it gets you.', color: 'from-rose-700 to-red-700' },
           { id: 'transition', icon: '\uD83C\uDF9F\uFE0F', title: 'Transition to Adulthood', body: 'Age of majority, college disability services, workplace ADA rights. Planning for the moment when rights transfer and you\'re driving.', color: 'from-sky-700 to-blue-800' },
-          { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice Scenarios', body: 'Realistic scenarios to practice self-advocacy. Pick a situation, write your response, and get AI coaching feedback.', color: 'from-fuchsia-700 to-rose-700' },
+          { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice Scenarios', body: _saAiOn ? 'Realistic scenarios to practice self-advocacy. Pick a situation, write your response, and get AI coaching feedback.' : 'Realistic scenarios to practice self-advocacy. Pick a situation, write your response, and play the scripted conversation.', color: 'from-fuchsia-700 to-rose-700' },
           { id: 'meeting', icon: '\uD83D\uDCDD', title: 'Meeting Prep', body: 'Fill in a worksheet before your IEP, 504, or parent-teacher meeting. Print it and bring it with you. Includes conversation starters for when you need them.', color: 'from-teal-700 to-cyan-700' },
           { id: 'letter', icon: '\u270F\uFE0F', title: 'Letter & Email Builder', body: '6 templates for common formal requests: asking for an evaluation, requesting a meeting, following up on accommodations, requesting an IEE, introducing yourself to a new teacher, sending a thank-you with an agreement summary.', color: 'from-amber-700 to-yellow-700' },
           { id: 'resources', icon: '\uD83D\uDCDA', title: 'Resource Library', body: 'Crisis lines, national advocacy orgs, federal agencies, Maine-specific resources, self-advocacy tools, transition prep, and recommended reading. All in one place.', color: 'from-slate-700 to-stone-700' },
@@ -2787,26 +3046,74 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       }
 
       // ── Practice view ──
+      // Teacher scenes from the active station (shared hub helper; an older hub has none).
+      var _saTsApi = window.SelHub && window.SelHub.teacherScenes;
+      var saTs = (_saTsApi && typeof _saTsApi.bind === 'function') ? _saTsApi.bind({ ctx: ctx, h: h, toolId: 'selfAdvocacy', d: d, set: upd, announce: announceSR,
+        theme: { isDark: true, isContrast: !!(ctx.theme && ctx.theme.isContrast) },
+        aiTopic: 'a realistic conversation where a student asks a teacher or other adult for what they need',
+        aiExtra: 'Choices are things the student could say; scenes show how the adult responds. Never diagnose, and never tell the student they must disclose a disability.' }) : null;
       function renderPractice() {
         var scenarios = PRACTICE_SCENARIOS[viewBand] || PRACTICE_SCENARIOS.middle;
         var selected = pScenarioId ? scenarios.find(function(s) { return s.id === pScenarioId; }) : null;
 
         var selectScenario = function(id) {
-          upd({ pScenarioId: id, pResponse: '', pCritique: '', pRehearseMode: false, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false });
+          upd({ pScenarioId: id, pResponse: '', pCritique: '', pRehearseMode: false, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false, spId: '' });
         };
+
+        // ── Scripted conversation (no AI): offered in place of the AI rehearsal when
+        // AI is off, and as a "Scripted version" option beside it when AI is on.
+        if (saTs && saTs.editing) return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6' }, saTs.renderEditor());
+        var saTsScene = saTs ? saTs.byKey(d.spId) : null;
+        var saStartTeacher = function(s) {
+          upd({ pScenarioId: null, spId: s.key, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false, pRehearseMode: false });
+          announceSR('Scripted conversation started: ' + (s.title || saTs.from));
+        };
+        if (saTsScene) return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6' },
+          _saSpPanel({
+            h: h, d: d, set: upd, id: d.spId, t: typeof ctx.t === 'function' ? ctx.t : null,
+            theme: { isDark: true, isContrast: !!(ctx.theme && ctx.theme.isContrast) }, toolId: 'selfadvocacy', band: viewBand === 'high' ? 'high' : 'middle',
+            story: saTsScene.story, kicker: saTs.from, introEl: saTs.renderIntro(saTsScene),
+            onSafetyFlag: ctx.onSafetyFlag || null, announce: announceSR,
+            onBack: function() { upd({ spId: '', spEnding: null }); },
+            reflectPrompt: 'Which words made your ask clear? What is one sentence you could use in a real conversation?',
+            c: { fg: '#f1f5f9', muted: '#cbd5e1', card: '#0f172a', line: '#64748b', accent: '#6d28d9', accentFg: '#ffffff', field: '#0f172a' },
+            onFirst: function() { if (typeof ctx.awardXP === 'function') ctx.awardXP(10); }
+          })
+        );
+        var saScript = selected ? SA_SCRIPTS[selected.id] : null;
+        var saSpOn = !!(saScript && d.spId === selected.id);
+        var startScript = function() {
+          if (!saScript) return;
+          upd({ spId: selected.id, spRun: (d.spRun || 0) + 1, spEnding: null, spPath: null, spDraft: '', spSaved: false, pRehearseMode: false });
+          announceSR('Scripted conversation started: ' + saScript.title);
+        };
+        var saSpSection = !saScript ? null : (saSpOn
+          ? h('div', { className: 'mt-5 pt-4 border-t border-fuchsia-500/20' },
+              _saSpPanel({
+                h: h, d: d, set: upd, id: selected.id, t: typeof ctx.t === 'function' ? ctx.t : null,
+                theme: { isDark: true, isContrast: !!(ctx.theme && ctx.theme.isContrast) }, toolId: 'selfadvocacy', band: viewBand === 'high' ? 'high' : 'middle',
+                onSafetyFlag: ctx.onSafetyFlag || null, announce: announceSR,
+                onBack: function() { upd({ spId: '', spEnding: null }); },
+                reflectPrompt: 'Which words made your ask clear? What is one sentence you could use in a real conversation?',
+                c: { fg: '#f1f5f9', muted: '#cbd5e1', card: '#0f172a', line: '#64748b', accent: '#6d28d9', accentFg: '#ffffff', field: '#0f172a' },
+                onFirst: function() { if (typeof ctx.awardXP === 'function') ctx.awardXP(10); }
+              })
+            )
+          : (!_saAiOn ? h('div', { 'data-sp-card': selected.id, className: 'mt-5 pt-4 border-t border-fuchsia-500/20 flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black text-fuchsia-300 mb-0.5' }, '🎭 Practice the conversation'),
+                h('div', { className: 'text-xs text-slate-300' }, 'A scripted conversation: choose what you would say at each step and see how it goes.')
+              ),
+              h('button', { type: 'button', 'data-sp-start': selected.id, onClick: startScript, className: 'px-3 py-2 rounded-lg text-xs font-bold bg-violet-700 text-white hover:bg-violet-800' }, 'Start scripted practice →')
+            ) : null));
 
         // ── Multi-turn rehearsal: AI plays the `peer` defined in each scenario.
         // The "scene" is the scenario.situation, the "character" is scenario.peer.
         // Pattern proven in Upstander + Restorative Circle: send → coach → end-reflect.
         var bandLabel = viewBand === 'high' ? 'high school' : (viewBand === 'middle' ? 'middle school' : 'middle school');
         var startRolePlay = function() {
-          if (!selected) return;
-          if (!callGemini) {
-            // Fallback: skip AI opener generation, use a generic prompt.
-            upd({ pRehearseMode: true, pRpHistory: [{ speaker: 'ai', text: 'Hi — what did you want to talk to me about?' }], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false });
-            return;
-          }
-          upd({ pRehearseMode: true, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: true });
+          if (!selected || !_saAiOn) return;
+          upd({ pRehearseMode: true, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: true, spId: '' });
           announceSR('Generating role-play opener');
           var prompt =
             'You are starting a role-play for a self-advocacy rehearsal tool. The student is about to practice having a real conversation. ' +
@@ -2831,7 +3138,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             });
         };
         var sendRpTurn = function() {
-          if (!callGemini || !pRpInput.trim() || !selected) return;
+          if (!_saAiOn || !pRpInput.trim() || !selected) return;
           var studentTurn = pRpInput.trim();
           // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
           var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
@@ -2884,7 +3191,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             });
         };
         var coachRp = function() {
-          if (!callGemini || pRpHistory.length === 0 || !selected) return;
+          if (!_saAiOn || pRpHistory.length === 0 || !selected) return;
           upd('pRpLoading', true);
           var historyText = pRpHistory.map(function(t) {
             if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
@@ -2904,7 +3211,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           Promise.resolve(callGemini(prompt, false, false, 0.5, null))
             .then(function(r) {
               var coachText = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
-              coachText = (coachText || 'Take a breath. What is the actual ask? State it once, clearly, without justifying it twice.').trim();
+              coachText = String(r == null ? '' : coachText).trim();
+              if (!coachText) throw new Error('empty reply');
               upd({ pRpHistory: pRpHistory.concat([{ speaker: 'coach', text: coachText }]), pRpLoading: false });
             })
             .catch(function() {
@@ -2913,7 +3221,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             });
         };
         var endRp = function() {
-          if (!callGemini || !selected) return;
+          if (!_saAiOn || !selected) return;
           upd('pRpLoading', true);
           var historyText = pRpHistory.map(function(t) {
             if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
@@ -2945,7 +3253,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         };
 
         var critique = function() {
-          if (!callGemini) { addToast({ message: 'AI unavailable', type: 'error' }); return; }
+          if (!_saAiOn) return;
           if (!selected) return;
           if (!pResponse || pResponse.length < 20) { addToast({ message: 'Write at least a sentence or two before asking for feedback.', type: 'warning' }); return; }
           // Safety pre-check on the student's written draft. If critical-tier
@@ -2978,7 +3286,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           h('h2', { className: 'text-2xl font-black text-indigo-200' }, '\uD83C\uDFAF Practice Scenarios'),
           renderBandSelector(),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Pick a scenario. Read the situation. Write what you\'d actually say or do. Get AI coaching on what\'s strong and where it could be stronger. Not a test. The point is to build muscle for real conversations.'),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, _saAiOn
+            ? 'Pick a scenario. Read the situation. Write what you\'d actually say or do. Get AI coaching on what\'s strong and where it could be stronger. Not a test. The point is to build muscle for real conversations.'
+            : 'Pick a scenario. Read the situation. Write what you\'d actually say or do, then try the scripted conversation where there is one. Not a test. The point is to build muscle for real conversations.'),
+          saTs ? saTs.renderSection({ onPlay: saStartTeacher }) : null,
 
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Choose a practice scenario' },
             scenarios.map(function(s) {
@@ -2992,7 +3303,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 className: 'text-left p-3 rounded-lg border-2 transition focus:ring-2 focus:ring-fuchsia-400 focus:outline-none ' + (sel ? 'bg-fuchsia-900/40 border-fuchsia-400' : 'bg-slate-800/60 border-slate-600 hover:border-fuchsia-500/50')
               },
                 h('div', { className: 'text-sm font-black ' + (sel ? 'text-fuchsia-100' : 'text-fuchsia-200') }, s.title),
-                h('div', { className: 'text-xs text-slate-300 mt-1' }, s.goal)
+                h('div', { className: 'text-xs text-slate-300 mt-1' }, s.goal),
+                !_saAiOn && SA_SCRIPTS[s.id] && h('div', { className: 'text-xs font-bold text-violet-200 mt-1' }, '🎭 Scripted conversation')
               );
             })
           ),
@@ -3013,7 +3325,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             }),
             h('div', { className: 'flex justify-between items-center mt-2 text-xs text-slate-400' },
               h('span', { 'aria-live': 'polite', 'aria-atomic': 'true' }, (pResponse || '').length + ' characters'),
-              h('button', {
+              _saAiOn && h('button', {
                 onClick: critique,
                 disabled: pLoading || !pResponse || pResponse.length < 20,
                 'aria-busy': pLoading ? 'true' : 'false',
@@ -3032,7 +3344,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             // Complementary to the Write-and-Critique flow above. Students can do
             // either or both depending on what they need: drafting helps clarify;
             // rehearsing builds nerve.
-            h('div', { className: 'mt-5 pt-4 border-t border-fuchsia-500/20' },
+            saSpSection,
+            _saAiOn && !saSpOn && h('div', { className: 'mt-5 pt-4 border-t border-fuchsia-500/20' },
               !pRehearseMode && h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('div', null,
                   h('div', { className: 'text-xs font-black text-fuchsia-300 mb-0.5' }, '🎭 Or rehearse the actual conversation'),
@@ -3040,10 +3353,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 ),
                 h('button', {
                   onClick: startRolePlay,
-                  disabled: !callGemini || pRpStarting,
+                  disabled: !_saAiOn || pRpStarting,
                   'aria-label': 'Start a role-play of this conversation',
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((!callGemini || pRpStarting) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
-                }, pRpStarting ? 'Starting…' : 'Start rehearsal →')
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((!_saAiOn || pRpStarting) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
+                }, pRpStarting ? 'Starting…' : 'Start rehearsal →'),
+                saScript && h('button', {
+                  type: 'button', onClick: startScript, 'data-sp-offer': 'true', 'data-sp-start': selected.id,
+                  'aria-label': 'Play a scripted version of this conversation (no AI)',
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold border border-violet-400/60 text-violet-100 hover:bg-violet-900/40'
+                }, 'Scripted version')
               ),
               // In-conversation state
               pRehearseMode && h('div', { className: 'space-y-3' },
@@ -3097,18 +3415,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   h('div', { className: 'flex flex-wrap gap-2' },
                     h('button', {
                       onClick: sendRpTurn,
-                      disabled: pRpLoading || !pRpInput.trim() || !callGemini,
+                      disabled: pRpLoading || !pRpInput.trim() || !_saAiOn,
                       'aria-busy': pRpLoading ? 'true' : 'false',
-                      className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((pRpLoading || !pRpInput.trim() || !callGemini) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((pRpLoading || !pRpInput.trim() || !_saAiOn) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-600')
                     }, pRpLoading ? 'Thinking…' : 'Send →'),
                     h('button', {
                       onClick: coachRp,
-                      disabled: pRpLoading || !callGemini || pRpHistory.length === 0,
-                      className: 'px-3 py-2 rounded-lg text-xs font-bold border ' + ((pRpLoading || !callGemini || pRpHistory.length === 0) ? 'bg-slate-700 text-slate-400 border-slate-600 cursor-not-allowed' : 'bg-amber-900/40 text-amber-200 border-amber-500/40 hover:bg-amber-900/60')
+                      disabled: pRpLoading || !_saAiOn || pRpHistory.length === 0,
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold border ' + ((pRpLoading || !_saAiOn || pRpHistory.length === 0) ? 'bg-slate-700 text-slate-400 border-slate-600 cursor-not-allowed' : 'bg-amber-900/40 text-amber-200 border-amber-500/40 hover:bg-amber-900/60')
                     }, '🪶 Break character — coach me'),
                     pRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
                       onClick: endRp,
-                      disabled: pRpLoading || !callGemini,
+                      disabled: pRpLoading || !_saAiOn,
                       className: 'px-3 py-2 rounded-lg text-xs font-bold border bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600'
                     }, 'End & reflect')
                   )
@@ -3136,7 +3454,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           ),
 
           h('section', { className: 'p-3 rounded-xl bg-slate-900/60 border border-indigo-500/20 text-xs text-slate-300' },
-            h('strong', null, 'No AI grades you. '), 'This is practice, not assessment. The AI coach is a sounding board. Your own sense of what feels right is the final call.'
+            h('strong', null, _saAiOn ? 'No AI grades you. ' : 'No one grades you here. '), _saAiOn ? 'This is practice, not assessment. The AI coach is a sounding board. Your own sense of what feels right is the final call.' : 'This is practice, not assessment. Your own sense of what feels right is the final call.'
           )
         );
       }
@@ -4756,6 +5074,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         }, 'Skip to main content'),
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('selfAdvocacy', h, ctx) : null),
         renderTabs(),
+        (saTs && activeTab !== 'practice') ? saTs.renderJump({ onOpen: function() { upd({ activeTab: 'practice', spId: '' }); } }) : null,
         h('main', {
           id: 'selfadv-main-content',
           tabIndex: -1,

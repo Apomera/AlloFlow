@@ -33,7 +33,7 @@ const LOG = [
   { kind: 'touch', at: 1700000180000, material: 'copper', contact_C: 20.5, fingertip_W: 1.06 },
 ];
 const STATE = {
-  _heatLab: {
+  _heatLab: { htAll: true,
     mode: 'conduction', raceOn: true, irOn: true, irCrossCm: 6,
     lens: { race: true, mug: true, mix: true, curve: true }, lensProbe: 0, mixLensP: 40, energyIn: 1500,
     insMatId: 'fibre', thickness: 10, mugMin: 20,
@@ -45,7 +45,7 @@ const STATE = {
 };
 // Second state: greyscale camera, convection mode, notebook showing all rows.
 const STATE_GREY = {
-  _heatLab: { mode: 'convection', irOn: true, irGrey: true, log: LOG, lens: { curve: true }, energyIn: 200 },
+  _heatLab: { htAll: true, mode: 'convection', irOn: true, irGrey: true, log: LOG, lens: { curve: true }, energyIn: 200 },
 };
 
 const THEMES = [

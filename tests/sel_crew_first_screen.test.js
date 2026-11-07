@@ -111,30 +111,23 @@ describe.skipIf(!R)('Crew-linked tools · first screen', () => {
 
   it('Executive Function: the badge says what it counts, and unexplored tabs are not dimmed', () => {
     const h = mount('execfunction', {});
-    expect(h.container.textContent).toMatch(/\d+ of 11 explored/);
-    expect(h.container.textContent).not.toMatch(/\b\d\/11\b/);
+    // No AI here, so the Coach tab is hidden: 10 tabs, not 11.
+    expect(h.container.textContent).toMatch(/\d+ of 10 explored/);
+    expect(h.container.textContent).not.toMatch(/\b\d\/10\b/);
     const hold = Array.from(h.container.querySelectorAll('[role="tab"]')).find((b) => b.getAttribute('aria-label') === 'Hold');
     expect(hold).toBeTruthy();
     expect(hold.style.color).not.toMatch(/71, 85, 105/); // not the old slate-600
     h.unmount();
   });
 
-  it('Growth Mindset: with no AI provider the coach tab says so and hands off to Reframe It', () => {
+  it('Growth Mindset: with no AI provider the coach tab is hidden and a stored coach tab falls back to Reframe It', () => {
     const h = mount('growthmindset', { activeTab: 'coach' });
-    const tab = Array.from(h.container.querySelectorAll('[role="tab"], button')).find((b) => /AI Coach/.test(b.textContent));
-    expect(tab).toBeTruthy();
-    expect(tab.textContent).toContain('AI Coach (off)');
-    const off = h.container.querySelector('[data-gm-coach-off]');
-    if (off) {
-      expect(off.textContent).toContain('The AI coach is off here');
-      expect(h.container.querySelector('input[placeholder*="struggling"]')).toBeNull();
-      const go = Array.from(off.querySelectorAll('button')).find((b) => /Open Reframe It/.test(b.textContent));
-      click(go);
-      expect(store.growthmindset.activeTab).toBe('reframe');
-    } else {
-      // A consent screen stands in front of the coach; the tab label alone tells the student.
-      expect(h.container.textContent).toMatch(/consent|agree|before you start/i);
-    }
+    const tab = Array.from(h.container.querySelectorAll('[role="tab"]')).find((b) => /AI Coach/.test(b.textContent));
+    expect(tab).toBeFalsy();
+    expect(h.container.querySelector('[data-gm-coach-off]')).toBeNull();
+    expect(h.container.querySelector('input[placeholder*="struggling"]')).toBeNull();
+    const reframe = Array.from(h.container.querySelectorAll('[role="tab"]')).find((b) => /Reframe It/.test(b.textContent));
+    expect(reframe && reframe.getAttribute('aria-selected')).toBe('true');
     h.unmount();
   });
 });

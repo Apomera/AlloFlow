@@ -35,7 +35,7 @@ const LOG = [
 const BARE = { shell: 'plastic', liner: 'none', mm: 0, seal: 'none', foil: false };
 const EPS = { shell: 'plastic', liner: 'eps', mm: 25, seal: 'foam', foil: false };
 const STATE = {
-  _heatLab: {
+  _heatLab: { htAll: true,
     log: LOG, cerOpen: 'massmaterial',
     cer: { massmaterial: {
       picks: [{ at: LOG[0].at, kind: 'mixing', text: 'Calorimetry: m2_kg 0.5' }, { at: LOG[1].at, kind: 'mixing', text: 'Calorimetry: m2_kg 1' }, { at: 5, kind: 'mixing', text: 'Calorimetry: deleted row' }],
@@ -53,7 +53,7 @@ const STATE = {
 // Second state: boiling (both bubbles callouts), heat from above beyond the
 // model's range, the two-experiment investigation, a 700 °C radiator.
 const STATE_2 = {
-  _heatLab: {
+  _heatLab: { htAll: true,
     energyIn: 1900, hcSub: 'ethanol', hcMode: 'heat', hcCursor: 60, cvFrom: 'above', cvFluid: 'air', cvPowerExp: 2,
     cerOpen: 'coldtohot', mode: 'radiation', radT: 700, radSurf: 'black', flStopper: true,
   },

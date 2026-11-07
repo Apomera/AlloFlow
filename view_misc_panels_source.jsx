@@ -1284,6 +1284,102 @@ function FluencyModePanel(props) {
     return s;
   };
 
+  const fluencyPassageText = typeof generatedContent?.data === 'string'
+    ? generatedContent.data
+        .split('--- ENGLISH TRANSLATION ---')[0]
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/\[\d+\]/g, '')
+        .replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, '')
+        .replace(/https?:\/\/[^\s]+/g, '')
+        .replace(/^#{1,6}\s/gm, '')
+        .replace(/\*{1,3}/g, '')
+        .trim()
+    : '';
+  // Partner check: a partner or teacher taps misread/skipped words and marks the
+  // last word read. No microphone, no AI; the only mode when student AI is off.
+  const recordingAvailable = !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  const [fluencyMethod, setFluencyMethod] = React.useState(recordingAvailable ? 'record' : 'partner');
+  const partnerMode = fluencyMethod === 'partner' || !recordingAvailable;
+  const [partnerPhase, setPartnerPhase] = React.useState('setup');
+  const [partnerSeconds, setPartnerSeconds] = React.useState(60);
+  const [partnerErrors, setPartnerErrors] = React.useState([]);
+  const [partnerLastIndex, setPartnerLastIndex] = React.useState(null);
+  const [partnerTool, setPartnerTool] = React.useState('error');
+  const [partnerElapsed, setPartnerElapsed] = React.useState(0);
+  const partnerStartRef = React.useRef(0);
+  const partnerDurationRef = React.useRef(0);
+  const partnerWords = React.useMemo(() => {
+    const F = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.Fluency;
+    if (F && typeof F.tokenizeFluencyPassage === 'function') return F.tokenizeFluencyPassage(fluencyPassageText);
+    return fluencyPassageText.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w));
+  }, [fluencyPassageText]);
+  // Host Space shortcut and PhaseK refuse to open the mic while this is set.
+  React.useEffect(() => {
+    if (!partnerMode || typeof window === 'undefined') return undefined;
+    window.__alloFluencyPartnerActive = true;
+    return () => { window.__alloFluencyPartnerActive = false; };
+  }, [partnerMode]);
+  React.useEffect(() => {
+    if (partnerPhase !== 'reading') return undefined;
+    const id = setInterval(() => {
+      const secs = (Date.now() - partnerStartRef.current) / 1000;
+      if (partnerSeconds > 0 && secs >= partnerSeconds) {
+        partnerDurationRef.current = partnerSeconds;
+        setPartnerElapsed(partnerSeconds);
+        setPartnerTool('last');
+        setPartnerPhase('marking');
+        return;
+      }
+      setPartnerElapsed(secs);
+    }, 250);
+    return () => clearInterval(id);
+  }, [partnerPhase, partnerSeconds]);
+  const resetPartnerCheck = () => {
+    setPartnerPhase('setup'); setPartnerErrors([]); setPartnerLastIndex(null); setPartnerTool('error'); setPartnerElapsed(0);
+  };
+  const startPartnerCheck = () => {
+    resetPartnerCheck();
+    setFluencyTranscript(''); setFluencyResult(null); setFluencyFeedback(''); setFluencyStatus('idle');
+    partnerStartRef.current = Date.now();
+    partnerDurationRef.current = 0;
+    setPartnerPhase('reading');
+  };
+  const stopPartnerReading = () => {
+    const secs = (Date.now() - partnerStartRef.current) / 1000;
+    partnerDurationRef.current = partnerSeconds > 0 ? Math.min(secs, partnerSeconds) : secs;
+    setPartnerElapsed(partnerDurationRef.current);
+    // Stopping by hand usually means the reader finished the passage.
+    setPartnerLastIndex(partnerWords.length ? partnerWords.length - 1 : null);
+    setPartnerTool('last');
+    setPartnerPhase('marking');
+  };
+  const tapPartnerWord = (index) => {
+    if (partnerPhase === 'marking' && partnerTool === 'last') { setPartnerLastIndex(index); return; }
+    setPartnerErrors(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
+  };
+  const finishPartnerCheck = () => {
+    const F = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.Fluency;
+    if (partnerLastIndex == null || !F || typeof F.buildPartnerFluencyResult !== 'function') return;
+    const result = F.buildPartnerFluencyResult({
+      words: partnerWords, passageText: fluencyPassageText, errorIndexes: partnerErrors,
+      lastWordIndex: partnerLastIndex, durationSeconds: partnerDurationRef.current, timeLimitSeconds: partnerSeconds,
+      passage: { sourceResourceId: generatedContent?.id, title: generatedContent?.title }
+    });
+    setFluencyTranscript(''); setFluencyFeedback(''); setFluencyResult(result); setFluencyStatus('complete');
+    setPartnerPhase('done');
+    // Saving (history, assessments, XP) runs in PhaseK with the host's deps; it
+    // takes this hand-off before any recording branch. An older PhaseK lacks
+    // recordPartnerFluencyCheck and could open the mic, so it is never called.
+    const K = window.AlloModules && window.AlloModules.PhaseKHelpers;
+    if (K && typeof K.recordPartnerFluencyCheck === 'function' && typeof toggleFluencyRecording === 'function') {
+      window.__alloFluencyPartnerResult = { result, sourceText: fluencyPassageText };
+      try { const p = toggleFluencyRecording(); if (p && typeof p.catch === 'function') p.catch(() => {}); } catch (_) {}
+    }
+  };
+  const partnerClock = (secs) => { const s = Math.max(0, Math.floor(secs)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  const isPartnerResult = fluencyResult?.scoringMethod === 'partner';
+  const hideBenchmarkForPartner = isPartnerResult && !isTeacherMode;
+
   const beginFluencyReview = () => {
     if (!fluencyResult?.wordData) return;
     setFluencyReviewDraft({
@@ -1334,7 +1430,7 @@ function FluencyModePanel(props) {
                 <div className="bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
                          <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center border border-rose-200 shadow-sm">
-                             <Mic size={20} className="text-rose-700"/>
+                             {partnerMode ? <Users size={20} className="text-rose-700"/> : <Mic size={20} className="text-rose-700"/>}
                          </div>
                          <div>
                              <h3 className="font-black text-lg text-slate-800 leading-tight">{t('fluency.title')}</h3>
@@ -1342,7 +1438,7 @@ function FluencyModePanel(props) {
                          </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        {fluencyStatus === 'idle' && (
+                        {fluencyStatus === 'idle' && !partnerMode && (
                             <div className="flex items-center gap-2">
                                 <label className="text-xs font-bold text-slate-600">{t('fluency.time_limit')}</label>
                                 <select aria-label={t('common.selection')}
@@ -1401,9 +1497,11 @@ function FluencyModePanel(props) {
                                     <div className={`text-6xl font-black ${fluencyResult.accuracy >= 90 ? 'text-green-500' : fluencyResult.accuracy >= 70 ? 'text-yellow-500' : 'text-red-500'}`}>
                                         {fluencyResult.accuracy}%
                                     </div>
+                                    {isTeacherMode && (
                                     <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${readingLevelColors[rrMetrics.readingLevel]}`}>
                                         {readingLevelLabels[rrMetrics.readingLevel]}
                                     </div>
+                                    )}
                                 </div>
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-400 text-center relative overflow-hidden animate-in zoom-in duration-300 delay-100">
                                     <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">{t('fluency.rate_label')}</div>
@@ -1411,11 +1509,12 @@ function FluencyModePanel(props) {
                                         {fluencyResult.wcpm}
                                     </div>
                                     <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mt-1">{t('fluency.wcpm_label')}</div>
-                                    <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}`}>
+                                    {!hideBenchmarkForPartner && <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full border inline-block ${levelColors[benchmarkResult.level]}`}>
                                         {levelLabels[benchmarkResult.level]}
-                                    </div>
+                                    </div>}
                                 </div>
                             </div>
+                            {!hideBenchmarkForPartner && (<>
                             <div className="flex justify-center gap-3 mb-4 items-center">
                                 <label className="text-xs font-bold text-slate-600 uppercase">{t('fluency.benchmark_title')}</label>
                                 <select aria-label={t('common.grade')} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
@@ -1449,6 +1548,7 @@ function FluencyModePanel(props) {
                                     ))}
                                 </div>
                             )}
+                            </>)}
                             {evidenceSummary && (
                                 <div className={`mb-4 rounded-xl border p-3 text-left ${evidenceSummary.benchmarkReady ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200'}`}>
                                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1464,6 +1564,7 @@ function FluencyModePanel(props) {
                                     <div className="text-[11px] text-slate-600 mt-1">{evidenceSummary.message}</div>
                                 </div>
                             )}
+                            {!(isPartnerResult && fluencyResult.review?.status !== 'reviewed') && (
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
                                     <div className="text-2xl font-black text-red-600">{rrMetrics.substitutions}</div>
@@ -1482,6 +1583,7 @@ function FluencyModePanel(props) {
                                     <div className="text-[11px] font-bold text-slate-600 uppercase">{t('fluency.self_corrections')}</div>
                                 </div>
                             </div>
+                            )}
                             <div className="flex justify-center gap-6 mb-6 text-xs">
                                 <div className="text-center"><span className="block text-lg font-black text-slate-700">1:{rrMetrics.errorRate}</span><span className="text-slate-600 font-bold uppercase">{t('fluency.error_rate')}</span></div>
                                 <div className="text-center"><span className="block text-lg font-black text-slate-700">{rrMetrics.scRate}%</span><span className="text-slate-600 font-bold uppercase">{t('fluency.sc_rate')}</span></div>
@@ -1560,8 +1662,13 @@ function FluencyModePanel(props) {
                                     <div className="text-xs font-black text-slate-700 uppercase tracking-wide">
                                         {fluencyResult.review?.status === 'reviewed'
                                             ? flText('record_reviewed', 'Teacher-reviewed running record')
+                                            : isPartnerResult
+                                            ? flText('partner_check', 'Partner check')
                                             : flText('record_automated', 'Automated running record - review recommended')}
                                     </div>
+                                    {isPartnerResult && fluencyResult.review?.status !== 'reviewed' && (
+                                        <div className="text-[11px] text-slate-700 mt-0.5">{flText('partner_practice_note', 'Practice score from a partner check. Benchmark scoring belongs to your teacher.')}</div>
+                                    )}
                                     {fluencyResult.review?.status === 'reviewed' && (
                                         <div className="text-[11px] text-slate-600 mt-0.5">
                                             {flText('revision_line', 'Revision {revision} by {reviewer}', { revision: fluencyResult.review.revision || 1, reviewer: fluencyResult.review.reviewer || flText('default_reviewer', 'Educator') })}
@@ -1744,7 +1851,55 @@ function FluencyModePanel(props) {
                             </div>
                         </div>
                     ) : (
-                        <div className="max-w-2xl">
+                        <div className="max-w-2xl w-full">
+                             {recordingAvailable && fluencyStatus === 'idle' && partnerPhase === 'setup' && (
+                                <div role="group" aria-label={t('fluency.tool_label')} className="flex flex-wrap justify-center gap-2 mb-6">
+                                    <button type="button" aria-pressed={!partnerMode} onClick={() => setFluencyMethod('record')} className={`min-h-11 inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 ${!partnerMode ? 'border-indigo-600 bg-indigo-50 text-indigo-900' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                                        <Mic size={16} aria-hidden="true" /> {t('simplified.record_my_reading') || 'Record my reading'}
+                                    </button>
+                                    <button type="button" aria-pressed={partnerMode} onClick={() => setFluencyMethod('partner')} className={`min-h-11 inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 ${partnerMode ? 'border-indigo-600 bg-indigo-50 text-indigo-900' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
+                                        <Users size={16} aria-hidden="true" /> {flText('partner_check', 'Partner check')}
+                                    </button>
+                                </div>
+                             )}
+                             {partnerMode && partnerPhase === 'setup' && fluencyStatus !== 'complete' && (
+                                <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-left" data-fluency-partner-setup>
+                                    <p className="text-sm font-semibold text-indigo-950">{flText('partner_intro', 'Read aloud while a partner follows along. No recording is made.')}</p>
+                                    <p className="text-xs text-slate-700 mt-1">{flText('partner_practice_note', 'Practice score from a partner check. Benchmark scoring belongs to your teacher.')}</p>
+                                    <label className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700">
+                                        {t('fluency.time_limit')}
+                                        <select value={partnerSeconds} onChange={(e) => setPartnerSeconds(parseInt(e.target.value, 10) || 0)} className="min-h-11 text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                            {[30, 60, 90, 120].map(sec => (
+                                                <option key={sec} value={sec}>{flText('time_limit_seconds', '{seconds} sec', { seconds: sec })}</option>
+                                            ))}
+                                            <option value={0}>{flText('partner_whole_passage', 'Whole passage')}</option>
+                                        </select>
+                                    </label>
+                                </div>
+                             )}
+                             {partnerMode && (partnerPhase === 'reading' || partnerPhase === 'marking') ? (
+                                <div data-fluency-partner-words>
+                                    <p aria-live="polite" className="mb-4 text-center text-sm font-bold text-slate-700">
+                                        {partnerPhase === 'marking' && partnerTool === 'last'
+                                            ? flText('partner_mark_last', 'Tap the last word read.')
+                                            : flText('partner_tap_errors', 'Partner: tap any word that is misread or skipped. Tap it again to undo.')}
+                                    </p>
+                                    <div role="group" aria-label={flText('partner_check', 'Partner check')} className="flex flex-wrap justify-center gap-1 text-xl md:text-2xl font-serif leading-relaxed">
+                                        {partnerWords.map((word, i) => {
+                                            const isError = partnerErrors.includes(i);
+                                            const isLast = i === partnerLastIndex;
+                                            const beyond = partnerLastIndex != null && i > partnerLastIndex;
+                                            const pressed = partnerPhase === 'marking' && partnerTool === 'last' ? isLast : isError;
+                                            return (
+                                                <button key={i} type="button" aria-pressed={pressed} onClick={() => tapPartnerWord(i)}
+                                                    className={`min-h-11 min-w-11 px-2 rounded-lg border-2 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-400 ${isError ? 'bg-red-100 text-red-900 border-red-500 line-through decoration-2' : beyond ? 'border-transparent text-slate-500' : 'border-transparent text-slate-800 hover:bg-slate-100'} ${isLast ? 'ring-4 ring-indigo-500' : ''}`}>
+                                                    {word}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                             ) : (<>
                              {fluencyTranscript && (
                                 <div className="mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-300 italic">
                                     <span className="font-bold uppercase text-xs text-rose-400 block mb-1">{t('fluency.hearing_label')}</span>
@@ -1753,23 +1908,68 @@ function FluencyModePanel(props) {
                              )}
                              <div className="text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center" data-help-key="fluency_mode_passage_display">
                                 {typeof generatedContent?.data === 'string' ? (
-                                    generatedContent?.data
-                                        .split('--- ENGLISH TRANSLATION ---')[0]
-                                        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                                        .replace(/\[\d+\]/g, '')
-                                        .replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, '')
-                                        .replace(/https?:\/\/[^\s]+/g, '')
-                                        .replace(/^#{1,6}\s/gm, '')
-                                        .replace(/\*{1,3}/g, '')
-                                        .trim()
+                                    fluencyPassageText
                                 ) : (
                                    <span className="text-slate-600 italic text-base">{t('fluency.format_error')}</span>
                                 )}
                             </div>
+                             </>)}
                         </div>
                     )}
                 </div>
                 <div className="p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4">
+                    {partnerMode ? (
+                    <div className="flex flex-wrap gap-3 items-center justify-center" data-fluency-partner-controls>
+                        {(partnerPhase === 'reading' || partnerPhase === 'marking') && (
+                            <div role="timer" className="text-4xl font-black tabular-nums text-indigo-700">
+                                {partnerClock(partnerPhase === 'reading' && partnerSeconds > 0 ? Math.ceil(partnerSeconds - partnerElapsed) : partnerElapsed)}
+                            </div>
+                        )}
+                        {partnerPhase === 'setup' && fluencyStatus !== 'complete' && (
+                            <button type="button" onClick={startPartnerCheck} disabled={!partnerWords.length}
+                                className="min-h-14 inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">
+                                <Users size={20} aria-hidden="true" /> {flText('partner_start', 'Start reading')}
+                            </button>
+                        )}
+                        {partnerPhase === 'reading' && (
+                            <button type="button" onClick={stopPartnerReading}
+                                className="min-h-14 inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-red-700 hover:bg-red-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-300">
+                                <StopCircle size={20} aria-hidden="true" /> {flText('partner_stop', 'Stop reading')}
+                            </button>
+                        )}
+                        {partnerPhase === 'marking' && (<>
+                            <div role="group" aria-label={flText('partner_check', 'Partner check')} className="flex gap-1 rounded-xl bg-slate-100 p-1">
+                                {[['last', flText('partner_tool_last', 'Last word read')], ['error', flText('partner_tool_error', 'Misread or skipped')]].map(([tool, label]) => (
+                                    <button key={tool} type="button" aria-pressed={partnerTool === tool} onClick={() => setPartnerTool(tool)}
+                                        className={`min-h-11 px-3 py-2 rounded-lg text-sm font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 ${partnerTool === tool ? 'bg-white text-indigo-900 shadow border border-indigo-300' : 'text-slate-700 hover:bg-white'}`}>
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                            <button type="button" onClick={finishPartnerCheck} disabled={partnerLastIndex == null}
+                                className="min-h-14 inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300">
+                                <CheckCircle size={20} aria-hidden="true" /> {flText('partner_show_results', 'Show results')}
+                            </button>
+                        </>)}
+                        {fluencyStatus === 'complete' && (
+                            <button type="button"
+                                onClick={() => {
+                                    setFluencyTranscript('');
+                                    setFluencyResult(null);
+                                    setIsReviewingFluency(false);
+                                    setFluencyReviewDraft(null);
+                                    setFluencyFeedback('');
+                                    setFluencyStatus('idle');
+                                    resetPartnerCheck();
+                                }}
+                                className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                aria-label={t('fluency.reset_label')}
+                            >
+                                <RefreshCw size={18} /> {t('fluency.try_again')}
+                            </button>
+                        )}
+                    </div>
+                    ) : (<>
                     {fluencyStatus === 'listening' && fluencyTimeLimit > 0 && fluencyTimerVisibility === 'visible' && (
                         <div className={`text-4xl font-black tabular-nums transition-colors ${
                             fluencyTimeRemaining <= 10 ? 'text-red-500 animate-pulse motion-reduce:animate-none' :
@@ -1831,6 +2031,7 @@ function FluencyModePanel(props) {
                              <Mic size={32} className="fill-current"/>}
                         </button>
                     </div>
+                    </>)}
                 </div>
             </div>
         </div>
@@ -3360,15 +3561,30 @@ function SourceGenPanel(props) {
                         <label className="block text-xs font-medium text-indigo-900 mb-1">
                           {t('input.length')} <span className="text-indigo-600 font-normal">{t('input.approx_words')}</span>
                         </label>
+                        <div className="flex gap-2">
                         <input
                           type="number"
                           value={sourceLength}
                           onChange={(e) => setSourceLength(e.target.value)}
                           placeholder="250"
                           step="50"
+                          min="50"
+                          max="5000"
                           className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                           aria-label={t('wizard.aria_length_label')}
                         />
+                        {/* Presets beside the exact number: pick one, or type any count. */}
+                        <select data-help-key="source_settings_length_presets" value="" onChange={(e) => { if (e.target.value) setSourceLength(e.target.value); }}
+                          aria-label={t('input.length_presets') || 'Length presets'}
+                          className="shrink-0 text-sm p-2 border border-indigo-200 rounded-md bg-white text-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none">
+                          <option value="">{t('input.length_preset_choose') || 'Presets…'}</option>
+                          <option value="200">{t('wizard.lengths.short')}</option>
+                          <option value="500">{t('wizard.lengths.medium')}</option>
+                          <option value="800">{t('wizard.lengths.long')}</option>
+                          <option value="1200">{t('wizard.lengths.extended')}</option>
+                          <option value="2000">{t('wizard.lengths.deep')}</option>
+                        </select>
+                        </div>
                       </div>
                       <div data-help-key="source_settings_instructions">
                         <label className="block text-xs font-medium text-indigo-900 mb-1">

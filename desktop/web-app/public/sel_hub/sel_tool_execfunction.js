@@ -322,6 +322,7 @@ window.SelHub = window.SelHub || {
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _efAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var announceToSR = ctx.announceToSR; // was used at the distraction-log site but never declared (ReferenceError)
       var band = ctx.gradeBand || 'middle';
@@ -334,6 +335,7 @@ window.SelHub = window.SelHub || {
 
       // State
       var activeTab    = d.activeTab || 'map';
+      if (!_efAiOn && activeTab === 'coach') activeTab = 'map';
 
       // ── Fixed hook block ──
       // render() is called inline by the host's SelPluginBridge, so every hook
@@ -475,7 +477,7 @@ window.SelHub = window.SelHub || {
         { id: 'planner', icon: '📋', label: 'Day Planner' },
         { id: 'coach',   icon: '🤖', label: 'Coach' },
         { id: 'print',   icon: '🖨', label: 'Print' }
-      ];
+      ].filter(function (t) { return _efAiOn || t.id !== 'coach'; });
 
       // Accommodation suggestions per domain — what to ask for in 504/IEP meetings
       var ACCOMMODATIONS = {
@@ -582,7 +584,7 @@ window.SelHub = window.SelHub || {
           // Results (when all answered)
           allAnswered && h('div', { style: { background: 'linear-gradient(135deg, #ecfeff, #cffafe)', border: '2px solid ' + CYAN, borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
             h('h4', { style: { fontSize: '14px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 10px' } }, '🎯 Your strategy menu'),
-            sortedByDifficulty.slice(0, 3).map(function(dom, ri) {
+            sortedByDifficulty.filter(function(dom) { return _efAiOn || dom.strategy !== 'coach'; }).slice(0, 3).map(function(dom, ri) {
               var s = scoreFor(dom);
               return h('button', {
                 key: dom.id,
@@ -1416,7 +1418,7 @@ window.SelHub = window.SelHub || {
                 type: 'text', value: coachInput,
                 onChange: function(ev) { upd('coachInput', ev.target.value); },
                 onKeyDown: function(ev) {
-                  if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && callGemini) {
+                  if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && _efAiOn) {
                     var msg = coachInput.trim();
                     var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
                     upd({ coachHistory: hist, coachInput: '', coachLoading: true });
@@ -1428,13 +1430,13 @@ window.SelHub = window.SelHub || {
                     }
                   }
                 },
-                disabled: coachLoading || !callGemini,
+                disabled: coachLoading || !_efAiOn,
                 placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
                 style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               h('button', {
                 onClick: function() {
-                  if (!coachInput.trim() || coachLoading || !callGemini) return;
+                  if (!coachInput.trim() || coachLoading || !_efAiOn) return;
                   var msg = coachInput.trim();
                   var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
                   upd({ coachHistory: hist, coachInput: '', coachLoading: true });
@@ -1445,7 +1447,7 @@ window.SelHub = window.SelHub || {
                     callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
                   }
                 },
-                disabled: coachLoading || !coachInput.trim() || !callGemini,
+                disabled: coachLoading || !coachInput.trim() || !_efAiOn,
                 'aria-label': 'Send to coach',
                 style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
               }, coachLoading ? '⏳' : '→')

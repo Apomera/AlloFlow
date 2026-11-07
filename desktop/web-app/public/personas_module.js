@@ -62,6 +62,12 @@ const PersonaEvidence = (() => {
     resolve
   };
 })();
+function _personaAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
 const createPersonas = deps => {
   const {
     liveRef,
@@ -1854,7 +1860,7 @@ const createPersonas = deps => {
     };
     const isFreshPanelStart = () => activePanelStartRequest === panelStartRequest && isCurrentPanelContext();
     const ensureImage = async char => {
-      if (char.avatarUrl) return char;
+      if (char.avatarUrl || !_personaAiUsable('images', window.callGeminiImageEdit)) return char;
       const desc = char.visualDescription || `Portrait of ${char.name}`;
       const style = char.artStyle || "Oil painting";
       let url = await generateCharacterPortrait(desc, style);
@@ -2049,6 +2055,9 @@ const createPersonas = deps => {
       }];
       const preservedOptions = personaState.options;
       const normalizedSuggestedQuestions = normalizeTextOptions(character.suggestedQuestions, 6);
+      // No usable AI (e.g. learner with AI off): skip calls that can only fail; the view shows a note.
+      const textAiUsable = _personaAiUsable('text', window.callGemini);
+      const portraitAiUsable = _personaAiUsable('images', window.callGeminiImageEdit);
       resetPersonaInterviewState();
       if (typeof setIsProcessing === 'function') setIsProcessing(false);
       const requestToken = personaSessionToken;
@@ -2067,16 +2076,16 @@ const createPersonas = deps => {
         selectedCharacter: character,
         chatHistory: initialHistory,
         suggestions: normalizedSuggestedQuestions,
-        isImageLoading: !existingImage,
+        isImageLoading: !existingImage && portraitAiUsable,
         avatarUrl: existingImage || null,
         avatarGenerationFailed: false,
         topicSparkCount: 0
       }));
       setIsPersonaChatOpen(true);
-      if (normalizedSuggestedQuestions.length === 0) {
+      if (normalizedSuggestedQuestions.length === 0 && textAiUsable) {
         generatePersonaFollowUps(initialHistory, character, 3);
       }
-      if (existingImage) return;
+      if (existingImage || !portraitAiUsable) return;
       const imageUrl = await generateCharacterPortrait(description, style);
       if ((liveRef.current.generatedContent?.data?.find?.(item => item.name === character.name)?.avatarUrl || '') !== (existingImage || '')) return;
       if (imageUrl && resourceId) {
@@ -3250,6 +3259,106 @@ const createPersonas = deps => {
   // was remapped there on 2026-07-20 and this export had no callers left.
   // Old 'persona-transcript' history items still render normally.
 
+  // Role Swap (no AI): the student answers AS the figure with source evidence. Saved as a
+  // learner-owned 'persona-reflection' item so it rides submissions and shows in the teacher inbox.
+  const roleSwapXpAwarded = new Set();
+  const handleSavePersonaRoleSwap = payload => {
+    const live = liveRef.current || {};
+    const {
+      setHistory,
+      generatedContent,
+      handleScoreUpdate
+    } = live;
+    if (typeof setHistory !== 'function' || !payload || typeof payload !== 'object') return null;
+    const clean = (value, max) => String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ').trim().slice(0, max);
+    const md = (value, max) => clean(value, max).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const label = value => clean(value, 160).replace(/[<>{}\[\]#*_~|]/g, ' ').replace(/\s+/g, ' ').trim();
+    const norm = value => String(value || '').toLocaleLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim().replace(/^["'….\s]+|["'….\s]+$/g, '');
+    const rawSource = generatedContent?.config?.personaSource;
+    const excerpt = rawSource && typeof rawSource.excerpt === 'string' ? norm(rawSource.excerpt) : '';
+    const entries = (Array.isArray(payload.entries) ? payload.entries : []).slice(0, 14).map(entry => {
+      const evidence = clean(entry?.evidence, 1000);
+      const evidenceKey = norm(evidence);
+      return {
+        speaker: label(entry?.speaker),
+        question: clean(entry?.question, 500),
+        answer: clean(entry?.answer, 4000),
+        evidence,
+        evidenceInSource: Boolean(excerpt && evidenceKey.length >= 12 && excerpt.includes(evidenceKey))
+      };
+    }).filter(entry => entry.question && entry.answer);
+    if (!entries.length) return null;
+    const checks = payload.checks && typeof payload.checks === 'object' ? payload.checks : {};
+    const selfCheck = {
+      inCharacter: checks.inCharacter === true,
+      usesEvidence: checks.usesEvidence === true,
+      accurate: checks.accurate === true
+    };
+    const names = [...new Set(entries.map(entry => entry.speaker).filter(Boolean))];
+    const subject = names.join(' & ') || 'Historical figure';
+    const resourceId = String(generatedContent?.id || '').slice(0, 240);
+    const roleSwapKey = clean(payload.key, 600) || resourceId + ':' + subject;
+    const lines = ['### Role Swap: answering as ' + subject, '*The student wrote these answers in the voice of ' + subject + ', using evidence from the source.*'];
+    entries.forEach(entry => {
+      lines.push('', '---', '', '**Question:** ' + md(entry.question, 500), '', '**Answer as ' + (entry.speaker || subject) + ':**', md(entry.answer, 4000));
+      if (entry.evidence) lines.push('', '> **Evidence from the source:** ' + md(entry.evidence, 1000) + (entry.evidenceInSource ? ' *(matches the source passage)*' : ''));
+    });
+    lines.push('', '---', '', '### Student self-check', '- [' + (selfCheck.inCharacter ? 'x' : ' ') + '] Stayed in character', '- [' + (selfCheck.usesEvidence ? 'x' : ' ') + '] Used evidence from the source', '- [' + (selfCheck.accurate ? 'x' : ' ') + '] Historically accurate to the source');
+    const existing = (Array.isArray(live.history) ? live.history : []).find(item => item?.type === 'persona-reflection' && item?.config?.roleSwapKey === roleSwapKey);
+    const id = existing?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const newItem = {
+      id,
+      type: 'persona-reflection',
+      data: lines.join('\n').slice(0, 80000),
+      meta: 'Role Swap as ' + subject + ' (' + entries.length + (entries.length === 1 ? ' answer)' : ' answers)'),
+      title: 'Role Swap: ' + subject,
+      timestamp: new Date(),
+      config: {
+        kind: 'role-swap',
+        personaResourceId: resourceId || null,
+        roleSwapKey,
+        roleSwap: {
+          mode: payload.mode === 'panel' ? 'panel' : 'single',
+          participants: names,
+          entries,
+          selfCheck
+        },
+        personaSource: rawSource && typeof rawSource === 'object' ? {
+          kind: rawSource.kind === 'analysis' ? 'analysis' : 'input',
+          topic: clean(rawSource.topic, 300),
+          fingerprint: clean(rawSource.fingerprint, 160)
+        } : null
+      }
+    };
+    setHistory(prev => {
+      const list = Array.isArray(prev) ? prev : [];
+      const index = list.findIndex(item => item?.type === 'persona-reflection' && item?.config?.roleSwapKey === roleSwapKey);
+      if (index < 0) return [...list, newItem];
+      const next = list.slice();
+      next[index] = {
+        ...newItem,
+        id: list[index].id
+      };
+      return next;
+    });
+    if (!existing && !roleSwapXpAwarded.has(roleSwapKey) && typeof handleScoreUpdate === 'function') {
+      roleSwapXpAwarded.add(roleSwapKey);
+      try {
+        handleScoreUpdate(10, 'Role Swap', id);
+      } catch (_) {}
+    }
+    return {
+      id,
+      count: entries.length,
+      updated: Boolean(existing)
+    };
+  };
+  if (!deps.probe && typeof window !== 'undefined') {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.PersonaRoleSwap = {
+      save: handleSavePersonaRoleSwap
+    };
+  }
   return {
     resetPersonaInterviewState,
     generateCharacterPortrait,
@@ -3267,6 +3376,7 @@ const createPersonas = deps => {
     handlePanelChatSubmit,
     handlePersonaChatSubmit,
     handleGeneratePersonaSummary,
+    handleSavePersonaRoleSwap,
     normalizePersonaCandidates
   };
 };
@@ -3280,7 +3390,8 @@ if (typeof window !== 'undefined') {
   window.AlloModules.normalizePersonaCandidates = items => createPersonas({
     liveRef: {
       current: {}
-    }
+    },
+    probe: true
   }).normalizePersonaCandidates(items);
   window.AlloModules.Personas = true;
   console.log('[Personas] Factory registered');

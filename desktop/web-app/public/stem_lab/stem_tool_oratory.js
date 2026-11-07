@@ -39,7 +39,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-oratory-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-oratory-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:is([style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:is([style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:is([style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:is([style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(154, 52, 18)\"],[style*=\"; color: rgb(154, 52, 18)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(185, 28, 28)\"],[style*=\"; color: rgb(185, 28, 28)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"oratory\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -1406,7 +1406,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       var awardStemXP = ctx.awardXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Student AI-off: null unless text AI is usable; AI "New"/"Generate" hide and built-in exercises stay.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var isDark = ctx.isDark;
@@ -3306,7 +3311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       setPatternScore(null);
                       setPatternStudentCurve(null);
                       // Try to load cached or generate new (skip for intonation)
-                      if (et.id !== 'intonation' && (!cachedExercises || !cachedExercises[et.id])) {
+                      if (callGemini && et.id !== 'intonation' && (!cachedExercises || !cachedExercises[et.id])) {
                         generateExercises(et.id);
                       }
                     },
@@ -3359,7 +3364,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 onClick: function() { setExerciseIndex((exerciseIndex + 1) % exercises.length); setEmphasisWord(0); setEmotionIndex(0); },
                 'aria-label': t('stem.oratory.next_exercise', 'Next exercise')
               }, '\u2192'),
-              h('button', {
+              callGemini && h('button', {
                 className: btnSecondary,
                 onClick: function() { generateExercises(exerciseType); },
                 disabled: aiLoading,
@@ -3782,7 +3787,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900'),
                   'aria-label': 'Phrase to practice in ' + langName
                 }),
-                h('button', {
+                callGemini && h('button', {
                   className: btnSecondary,
                   onClick: generateMultiPhrase,
                   disabled: aiLoading,

@@ -66,7 +66,7 @@ describe('lesson script status text', () => {
   it('translates the copy-text headings and timing line', () => {
     const script = build(DI, SHAKY, { translate: ts });
     const text = DI.scriptToText(script, { translate: ts });
-    for (const line of ['[DI_HEADING_OBJECTIVE]', '[DI_HEADING_MATERIALS]', '[DI_HEADING_WORD_LIST]', '[DI_HEADING_CAVEATS]', '[di_timing] ' + script.estimatedMinutes + ' 3', '  - [di_caveat_estimated] yacht']) {
+    for (const line of ['[DI_HEADING_OBJECTIVE]', '[DI_HEADING_MATERIALS]', '[DI_HEADING_WORD_LIST]', '[DI_HEADING_CAVEATS]', '[di_timing_goal] ' + script.estimatedMinutes + ' 3', '  - [di_caveat_estimated] yacht']) {
       expect(text.split('\n'), line).toContain(line);
     }
     expect(text.includes('OBJECTIVE\n'), 'no English heading left').toBe(false);

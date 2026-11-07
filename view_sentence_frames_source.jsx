@@ -81,7 +81,7 @@ function SentenceFramesView(props) {
   const TIER_LABELS = { emerging: ['scaffolds.tier_emerging', 'Emerging'], expanding: ['scaffolds.tier_expanding', 'Expanding'], bridging: ['scaffolds.tier_bridging', 'Bridging'] };
   const TIER_CLASSES = { emerging: 'bg-sky-50 text-sky-800 border-sky-300', expanding: 'bg-violet-50 text-violet-800 border-violet-300', bridging: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
   const tierOf = item => item && typeof item.tier === 'string' && TIER_LABELS[item.tier] ? item.tier : null;
-  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 12);
+  const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 40);
   const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
   return (

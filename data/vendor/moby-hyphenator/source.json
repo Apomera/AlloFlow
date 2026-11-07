@@ -1,0 +1,9 @@
+{
+  "name": "Moby Hyphenator II",
+  "author": "Grady Ward",
+  "source": "https://www.gutenberg.org/files/3204/files/mhyph.txt",
+  "catalog": "https://www.gutenberg.org/ebooks/3204",
+  "rights": "Public domain by grant of the author, January 2001. Project Gutenberg lists it as public domain in the USA.",
+  "sha256": "eeb30474c86b8af3469035ec1a0913e35905325ca885290db9dfed9881e230ac",
+  "encoding": "latin1, syllable breaks marked with byte 0xA5"
+}

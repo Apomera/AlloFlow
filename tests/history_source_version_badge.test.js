@@ -76,6 +76,15 @@ describe('history marks resources made from an older source version', () => {
     expect(row('Saved before versions').querySelector('[data-history-source-version]')).toBeNull();
   });
 
+  it('does not mark a report that was rechecked against the current wording', () => {
+    render([
+      { id: 'a1', type: 'analysis', title: 'Current check', sourceVersion: 1, data: { originalText: 'Garden text v2' } },
+      { id: 'a2', type: 'analysis', title: 'Earlier check', sourceVersion: 1, data: { originalText: 'Garden text v1' } },
+    ], { inUse: { text: 'Garden text v2', version: 2 } });
+    expect(row('Current check').querySelector('[data-history-source-version]')).toBeNull();
+    expect(row('Earlier check').querySelector('[data-history-source-version]').textContent).toBe('From source version 1');
+  });
+
   it('marks nothing while no source is in use', () => {
     render(items, null);
     expect(host.querySelector('[data-history-source-version]')).toBeNull();

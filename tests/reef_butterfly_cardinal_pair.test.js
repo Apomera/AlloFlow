@@ -106,9 +106,13 @@ describe('longnose butterflyfish and pajama cardinalfish specimens', () => {
         let spotted = 0, pearl = 0;
         for (let i = Math.floor(im.width * .64); i < Math.floor(im.width * .93); i++) for (let j = Math.floor(im.height * .12); j < Math.floor(im.height * .38); j++) { const k = (j * im.width + i) * 4, r = im.data[k], g = im.data[k + 1], b = im.data[k + 2]; if (r > g * 1.5 && r > b * 1.4) spotted++; if (Math.min(r, g, b) > 200) pearl++; }
         expect(spotted).toBeGreaterThan(30); expect(pearl).toBeGreaterThan(spotted);
-        const d = parts(h)[1].geometry, uv = d.attributes.uv, c = d.attributes.color; let red = 0;
-        for (let i = 0; i < uv.count; i++) if (uv.getX(i) > 1.8 && c.getX(i) > c.getY(i) * 3 && c.getX(i) > c.getZ(i) * 4) red++;
-        expect(red).toBeGreaterThan(20);
+        // The red is now a shaded bar across a pale iris (Fishes of Australia), drawn by the eye shader.
+        const d = parts(h)[1].geometry, uv = d.attributes.uv; let eye = 0;
+        for (let i = 0; i < uv.count; i++) if (uv.getX(i) > 1.8) eye++;
+        expect(eye).toBeGreaterThan(20);
+        const iris = uniforms(parts(h)[1]).reefIrisBar.value;
+        expect(iris.w, 'red iris bar enabled').toBeGreaterThan(.3);
+        expect(iris.x).toBeGreaterThan(iris.y * 3); expect(iris.x).toBeGreaterThan(iris.z * 4);
       } finally { h.dispose(); }
     });
   }

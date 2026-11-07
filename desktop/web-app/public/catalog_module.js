@@ -37,6 +37,14 @@
   }
   var e = React.createElement;
 
+  // Student AI-off: host-blocked fns are truthy, so ask the host (old-host fallback).
+  function _aiUsable(kind, fn) {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+    } catch (_) {}
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  }
+
   // Translator. Mirrors reading_library_module.js: reads the host's window.__alloT,
   // treats a key echoed back unchanged as a miss, and falls back to English.
   // Never a bare t() — an unresolved free t() takes the whole module down.
@@ -2185,7 +2193,7 @@
     var draft$ = useState(''); var draft = draft$[0], setDraft = draft$[1];
     var status$ = useState('idle'); var status = status$[0], setStatus = status$[1]; // idle|waiting|feedback|error
     var err$ = useState(''); var err = err$[0], setErr = err$[1];
-    var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
+    var aiAvailable = typeof window !== 'undefined' && _aiUsable('text', window.callGemini);
     var minTurns = (typeof c.minTurns === 'number' && c.minTurns >= 1) ? Math.floor(c.minTurns) : 3;
     var maxTurns = (typeof c.maxTurns === 'number' && c.maxTurns >= minTurns) ? Math.floor(c.maxTurns) : 12;
     var educatorTurns = msgs.filter(function (m) { return m && m.role === 'educator' && String(m.text || '').trim(); }).length;
@@ -2576,7 +2584,7 @@
     var resp$ = useState(raw.response || ''); var response = resp$[0], setResponse = resp$[1];
     var st$ = useState(typeof raw.masteryScore === 'number' ? 'done' : 'idle'); var status = st$[0], setStatus = st$[1];
     var err$ = useState(''); var err = err$[0], setErr = err$[1];
-    var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
+    var aiAvailable = typeof window !== 'undefined' && _aiUsable('text', window.callGemini);
     var score = (typeof raw.masteryScore === 'number') ? raw.masteryScore : null;
     var safeQualitativeAnalysis = Core && typeof Core.sanitizeQualitativeAnalysis === 'function' ? Core.sanitizeQualitativeAnalysis(raw.qualitativeAnalysis) : null;
 
@@ -3667,7 +3675,7 @@
 
     useEffect(function () { ensurePdCore().catch(function () {}); }, []);
 
-    var aiAvailable = typeof window !== 'undefined' && typeof window.callGemini === 'function';
+    var aiAvailable = typeof window !== 'undefined' && _aiUsable('text', window.callGemini);
 
     function generate() {
       if (!topic.trim() || status === 'generating') return;

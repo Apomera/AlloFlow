@@ -1302,6 +1302,12 @@
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
       var _refine = React.useState(''), aiRefinement = _refine[0], setAiRefinement = _refine[1];
       var _busy = React.useState(false), aiBusy = _busy[0], setAiBusy = _busy[1];
+      // Student AI-off: the optional AI modeling assistant renders only when text AI is usable.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var plAiOn = ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini));
       var freshHandoff = pendingHandoff && !keepTypedDetails;
       var sourceReview = revisedPackage || (resumedGeometry && pendingHandoff.packageReview) || null;
       // A note written about a different My Worlds project must not ship with this one.
@@ -2059,7 +2065,7 @@
 
       function callRecipeAi(kind) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D || typeof ctx.callGemini !== 'function') { announce(__alloT('stem.printlab.sr_ai_assistance_is_not_configured_manual_primitive', 'AI assistance is not configured. Manual primitive tools remain available.')); return; }
+        if (!P3D || (!plAiOn && !ctx.isTeacherMode) || typeof ctx.callGemini !== 'function') { announce(__alloT('stem.printlab.sr_ai_assistance_is_not_configured_manual_primitive', 'AI assistance is not configured. Manual primitive tools remain available.')); return; }
         var prompt = kind === 'refine' ? P3D.buildRefinePrompt(recipe, aiRefinement) : P3D.buildRecipePrompt(aiSubject);
         if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce(__alloT('stem.printlab.sr_describe_what_you_want_the_modeling_assistant_to', 'Describe what you want the modeling assistant to do.')); return; }
         var operation = beginDesignOperation('ai'), token = operation.token, startedRevision = operation.revision;
@@ -2495,6 +2501,8 @@
               !recipe && h('p', { className: 'mt-3 rounded-xl border border-dashed border-slate-600 p-4 text-sm text-slate-300' }, 'No primitive recipe yet. Add a shape, import a file, or use an optional AI starting point.'),
               recipe && h('div', { className: 'mt-3 space-y-3' }, recipe.parts.map(renderPart))
             ),
+            (!plAiOn && !ctx.isTeacherMode) ? (recipe ? h('div', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
+              h('button', { type: 'button', onClick: returnToArtStudio, className: 'min-h-[44px] rounded-xl bg-pink-800 px-4 text-sm font-bold text-white' }, 'Edit this model in Sculpt 3D')) : null) :
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-ai-title' },
               h('h2', { id: 'print-lab-ai-title', className: 'text-base font-black text-white' }, 'Optional AI modeling assistant'),
               h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Describe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.'),

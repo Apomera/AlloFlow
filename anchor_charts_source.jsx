@@ -22,6 +22,17 @@ const t = function () {
   }
   return arguments.length > 1 ? arguments[1] : arguments[0];
 };
+// Student AI-off: usable only when this AI kind can run (null, host-blocked fn
+// or policy off all count as unusable). Falls back on older hosts.
+// Non-AI completion credit. It shares prevFeedbackScore with AI grading, so a
+// later AI grade only adds XP above it and the two paths never double-award.
+const _AC_COMPLETION_XP = 30;
+function _ac_aiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
 const _ac_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 // A new picture drops the old picture's reviewed description.
 const _ac_withIcon = (section, iconUrl) => {
@@ -477,12 +488,12 @@ const AnchorChartView = React.memo((props) => {
   const rubricRequestRef = React.useRef(0);
 
   const handleSuggestRubric = async () => {
-    if (!allowRuntimeAi || !isTeacherMode || (props.callGemini === null) || (!props.callGemini && !window.callGemini)) {
+    if (!allowRuntimeAi || !isTeacherMode || !_ac_aiUsable('text', callGeminiProp)) {
       addToastProp('AI generation needs an active connection. Please try again.');
       return;
     }
     if (isGeneratingRubric) return;
-    const callGeminiFn = props.callGemini || window.callGemini;
+    const callGeminiFn = callGeminiProp;
     const request = { serial: ++rubricRequestRef.current, context: currentChart.current.rubricContext };
     const requestIsCurrent = () => mounted.current && request.serial === rubricRequestRef.current && currentChart.current.isTeacherMode && currentChart.current.rubricAllowed && currentChart.current.rubricContext === request.context;
     setIsGeneratingRubric(true);
@@ -566,7 +577,9 @@ const AnchorChartView = React.memo((props) => {
   const gradingIsEarlier = _ac_feedbackIsEarlier(gradingResult, studentAnswers);
   const awardedXp = Number(data.prevFeedbackScore) || 0;
   const [gradingState, setGradingState] = React.useState('idle');
+  const finishAwardRef = React.useRef(null);
   const callGeminiProp = allowRuntimeAi ? (props.callGemini === undefined ? (typeof window !== 'undefined' && window.callGemini) : props.callGemini) : null;
+  const studentGradingOn = _ac_aiUsable('text', callGeminiProp);
   const addXpProp = !props.previewMode && typeof props.addXp === 'function' ? props.addXp : null;
   const addToastProp = typeof props.addToast === 'function' ? props.addToast : () => {};
   const currentChart = React.useRef(null), mounted = React.useRef(true);
@@ -777,7 +790,7 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleSubmitForGrading = async () => {
     if (gradingState === 'submitting') return;
-    if (!callGeminiProp) {
+    if (!studentGradingOn) {
       addToastProp('AI grading needs an active connection. Please try again.');
       return;
     }
@@ -851,6 +864,22 @@ const AnchorChartView = React.memo((props) => {
       outcome = 'error';
       addToastProp(tx('anchor_chart.grading_error_toast', 'AI grading hit an error. Try again in a moment.'));
     } finally { if (mounted.current && currentChart.current.id === requestId) setGradingState(outcome); }
+  };
+
+  // AI off: finishing every prompt is a genuine submit and earns completion XP once.
+  const handleFinishChart = () => {
+    if (studentGradingOn || isTeacherMode) return;
+    const prompts = sections.flatMap((s) => (s && Array.isArray(s.bulletIds) ? s.bulletIds.map((id) => String(studentAnswers[s.id]?.[id] || '').trim()) : []));
+    if (!prompts.length || prompts.some((text) => !text)) {
+      addToastProp(tx('anchor_chart.finish_incomplete', 'Fill in every answer to finish your chart.'));
+      return;
+    }
+    const delta = Math.max(0, _AC_COMPLETION_XP - awardedXp);
+    if (!delta || !addXpProp || finishAwardRef.current === generatedContent.id) return;
+    finishAwardRef.current = generatedContent.id;
+    handleNoteUpdate('prevFeedbackScore', Math.max(awardedXp, _AC_COMPLETION_XP));
+    addXpProp(delta);
+    addToastProp('✨ ' + tx('anchor_chart.xp_earned', '+{amount} XP earned').replace('{amount}', () => String(delta)));
   };
 
   // Type gate AFTER all hooks (Rules of Hooks): if this isn't an anchor-chart
@@ -1167,12 +1196,21 @@ const AnchorChartView = React.memo((props) => {
                 <div className="text-sm font-bold text-fuchsia-900">🎯 {tx('anchor_chart.interactive_title', 'Interactive Anchor Chart')}</div>
                 <div className="text-[12px] text-fuchsia-800/80 mt-1">{tx('anchor_chart.workspace_hint','Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher.')}</div>
               </div>
-              <button type="button"
+              {studentGradingOn && <button type="button"
                 onClick={handleSubmitForGrading}
-                disabled={gradingState === 'submitting' || !callGeminiProp}
+                disabled={gradingState === 'submitting'}
                 className="px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-60"
                 aria-busy={gradingState === 'submitting'}
-              >{gradingState === 'submitting' ? '⏳ ' + tx('anchor_chart.grading', 'Grading…') : '✨ ' + tx('anchor_chart.submit_for_feedback', 'Submit for AI feedback')}</button>
+              >{gradingState === 'submitting' ? '⏳ ' + tx('anchor_chart.grading', 'Grading…') : '✨ ' + tx('anchor_chart.submit_for_feedback', 'Submit for AI feedback')}</button>}
+              {!studentGradingOn && (awardedXp >= _AC_COMPLETION_XP ? (
+                <span role="status" data-anchor-finish-done="true" className="px-3 py-1 text-sm font-bold rounded-full bg-amber-100 border border-amber-300 text-amber-900">
+                  <span aria-hidden="true">✨ </span>{tx('anchor_chart.xp_earned', '+{amount} XP earned').replace('{amount}', () => String(awardedXp))}
+                </span>
+              ) : (
+                <button type="button" onClick={handleFinishChart} data-anchor-finish="true"
+                  className="px-4 py-2 text-sm font-bold rounded-full bg-fuchsia-600 text-white hover:bg-fuchsia-700"
+                ><span aria-hidden="true">✅ </span>{tx('anchor_chart.finish_chart', 'Finish my chart')}</button>
+              ))}
             </div>
             {gradingResult && gradingIsEarlier ? (
               <p role="status" data-anchor-feedback-earlier-draft="true" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[12px] font-semibold text-amber-950">{tx('anchor_chart.feedback_earlier_draft', 'Feedback on an earlier draft of your chart. Keep it in view while you revise, or submit again for new feedback.')}</p>

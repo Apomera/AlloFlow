@@ -1,4 +1,13 @@
 // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-migration-hc-extra-css).
+  function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+(function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-migration-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-migration-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"migration\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"migration\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"migration\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -7193,8 +7202,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           ? t('stem.migration.scene_playback_reduced', 'Playback stays still while Reduce motion is enabled.')
           : flightPaused ? t('stem.migration.scene_playback_paused', 'Playback paused.')
           : t('stem.migration.scene_playback_running', 'Playback running.');
-        function sceneAngleText(value) { return t('stem.migration.scene_angle_value', 'Angle {value} degrees.').replace('{value}', value); }
-        function sceneElevationText(value) { return t('stem.migration.scene_elevation_value', 'Elevation {value} degrees.').replace('{value}', value); }
+        function sceneAngleText(value) { return __alloOneWord(t('stem.migration.scene_angle_value', 'Angle {value} degrees.').replace('{value}', value)); }
+        function sceneElevationText(value) { return __alloOneWord(t('stem.migration.scene_elevation_value', 'Elevation {value} degrees.').replace('{value}', value)); }
         function sceneZoomText(value) { return t('stem.migration.scene_zoom_value', 'Zoom {value} percent.').replace('{value}', Math.round(value * 100)); }
         var sceneSummary = t('stem.migration.scene_camera_selected', 'Selected camera: {camera}.').replace('{camera}', cameraName) + ' ' + scenePlayback;
         if (cameraMode === 'study') sceneSummary += ' ' +
@@ -14111,7 +14120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           : challengeComplete ? (journeyWon
             ? t('stem.migration.journey_arrived', '{birds} of 50 birds arrived safely. Score: {score}.').replace('{birds}', challengeFlockSize).replace('{score}', challengeScore)
             : (challengeEnergy <= 0 ? t('stem.migration.journey_no_energy', 'The flock ran out of energy.') : t('stem.migration.journey_no_birds', 'Too many birds were lost.')) + ' ' +
-              t('stem.migration.journey_distance_completed', 'You made it {travelled} of {distance} miles.').replace('{travelled}', challengeDistance - challengeDistRemaining).replace('{distance}', challengeDistance))
+              __alloOneWord(t('stem.migration.journey_distance_completed', 'You made it {travelled} of {distance} miles.').replace('{travelled}', challengeDistance - challengeDistRemaining).replace('{distance}', challengeDistance)))
           : challengeLoading ? t('stem.migration.journey_loading_help', 'Wait for the next decision, or continue with a local decision now.')
           : migrStr(challengeChoices && challengeChoices.scenario, '');
         var journeyStatus = challengeActive ? [challengeResult, journeyTitle, journeyContext].filter(Boolean).join(' ') : '';
@@ -14192,7 +14201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             challengeActive && h('dl', { className: 'migration-journey-metrics' },
               [
                 [t('stem.migration.energy', '\u26A1 Energy'), challengeEnergy + '%'],
-                [t('stem.migration.distance_2', '\uD83D\uDCCD Distance'), t('stem.migration.journey_miles_left', '{miles} miles left').replace('{miles}', challengeDistRemaining)],
+                [t('stem.migration.distance_2', '\uD83D\uDCCD Distance'), __alloOneWord(t('stem.migration.journey_miles_left', '{miles} miles left').replace('{miles}', challengeDistRemaining))],
                 [t('stem.migration.flock', '\uD83E\uDEBF Flock'), t('stem.migration.journey_bird_count', '{birds} birds').replace('{birds}', challengeFlockSize)],
                 [t('stem.migration.weather', '\uD83C\uDF24\uFE0F Weather'), challengeWeather]
               ].map(function(metric, index) {
@@ -14241,7 +14250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'migration-journey-choice-label' }, ch.label),
                       h('span', { id: journeyId + '-effects-' + ci, className: 'migration-journey-effects' },
                         h('span', null, t('stem.migration.journey_energy_change', 'Energy: {change} percentage points.').replace('{change}', signed(energy))),
-                        h('span', null, t('stem.migration.journey_distance_change', 'Distance: {miles} miles forward.').replace('{miles}', distance)),
+                        h('span', null, __alloOneWord(t('stem.migration.journey_distance_change', 'Distance: {miles} miles forward.').replace('{miles}', distance))),
                         h('span', null, t('stem.migration.journey_flock_change', 'Flock: {change} birds.').replace('{change}', signed(flock)))
                       )
                     );

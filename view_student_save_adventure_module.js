@@ -14,6 +14,13 @@
 
 const StudentSaveThemeFallbackContext = window.React && window.React.createContext ? window.React.createContext({ theme: "light", colorOverlay: "none" }) : null;
 const cx = (...parts) => parts.filter(Boolean).join(" ");
+function _aiUsable(kind, fn) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+}
 const STUDENT_SAVE_ANIMATION_CSS = `
 @keyframes student-save-history-pulse {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
@@ -136,6 +143,12 @@ function StudentSaveAdventurePanel({
   initiateSaveStudentProject,
   isResumingAdventure,
   isSaveActionPulsing,
+  // Host: AlloModules.AdventureOffline.find(history) -- a teacher-made story that plays with no AI.
+  offlineAdventure,
+  // Student author mode ("Write your own adventure", no AI). Needs the host's history + setHistory;
+  // an older host that does not pass them shows no button.
+  history,
+  setHistory,
   projectFileInputRef,
   sessionData,
   studentProjectSettings,
@@ -161,8 +174,26 @@ function StudentSaveAdventurePanel({
   const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
   const adventureProgress = Math.min(100, boundedPoints / unlockXp * 100);
   const adventureAvailable = isAdventureAvailable !== false;
+  const soloAdventureAiOff = !activeSessionCode && !_aiUsable("text", typeof window !== "undefined" ? window.callGemini : void 0);
+  const offlineAdventurePlay = !activeSessionCode && !!offlineAdventure && (soloAdventureAiOff || offlineAdventure.offlineOnly === true);
+  const soloAiNeededText = (() => {
+    const key = "adventure.learning_settings.solo_needs_ai";
+    const value = typeof t === "function" ? t(key) : "";
+    return value && value !== key ? value : "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.";
+  })();
   const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
+  const [showStoryAuthor, setShowStoryAuthor] = React.useState(false);
+  const offlineApi = window.AlloModules && window.AlloModules.AdventureOffline;
+  const StoryPanel = offlineApi && typeof offlineApi.Panel === "function" ? offlineApi.Panel : null;
+  const studentStoryAllowed = !activeSessionCode && typeof setHistory === "function" && !!StoryPanel && !(studentProjectSettings && studentProjectSettings.allowStudentStories === false);
+  const hasStudentStory = studentStoryAllowed && typeof offlineApi.findStudentStory === "function" && !!offlineApi.findStudentStory(history);
+  const studentStoryText = (() => {
+    const key = "adventure.offline.student_button";
+    const value = typeof t === "function" ? t(key) : "";
+    return value && value !== key ? value : "Write your own adventure";
+  })();
+  const Pencil = icon("Pencil");
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, STUDENT_SAVE_ANIMATION_CSS), /* @__PURE__ */ React.createElement(
     "section",
     {
@@ -225,7 +256,20 @@ function StudentSaveAdventurePanel({
         style: { width: `${adventureProgress}%` }
       }
     )
-  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("text-[11px] text-right font-mono", styles.progressLabel) }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP")) : !activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, hasSavedAdventure ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("text-[11px] text-right font-mono", styles.progressLabel) }, globalPoints, " / ", studentProjectSettings.adventureUnlockXP, " XP")) : offlineAdventurePlay ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.start_adventure"),
+      "data-help-key": "adventure_start_btn",
+      "data-adventure-offline-start": true,
+      onClick: handleStartAdventure,
+      className: cx("w-full py-3 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)
+    },
+    /* @__PURE__ */ React.createElement(MapIcon, { size: 18, "aria-hidden": "true" }),
+    " ",
+    t("adventure.start")
+  ) : soloAdventureAiOff ? /* @__PURE__ */ React.createElement("p", { "data-adventure-solo-ai-off": true, className: cx("text-xs leading-relaxed", styles.muted) }, soloAiNeededText) : !activeSessionCode ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, hasSavedAdventure ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -260,7 +304,20 @@ function StudentSaveAdventurePanel({
     /* @__PURE__ */ React.createElement(Sparkles, { size: 18, "aria-hidden": "true" }),
     " ",
     t("adventure.start")
-  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("session.live_active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? t("session.vote_prompt") : t("session.watch_prompt"))))));
+  )) : /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl text-center", styles.livePanel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: cx("text-sm font-bold mb-1", styles.liveTitle) }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "inline mr-1 animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("session.live_active")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.liveText) }, sessionData?.democracy?.isActive ? t("session.vote_prompt") : t("session.watch_prompt"))), studentStoryAllowed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-haspopup": "dialog",
+      "data-adventure-student-story-open": true,
+      onClick: () => setShowStoryAuthor(true),
+      className: cx("mt-3 w-full py-3 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.secondaryPurple, styles.focusPurple, styles.focusOffset)
+    },
+    /* @__PURE__ */ React.createElement(Pencil, { size: 16, "aria-hidden": "true" }),
+    " ",
+    studentStoryText,
+    hasStudentStory ? " \u2713" : ""
+  ))), showStoryAuthor && studentStoryAllowed && /* @__PURE__ */ React.createElement(StoryPanel, { studentMode: true, history, setHistory, t, theme: themeContext && themeContext.theme, onClose: () => setShowStoryAuthor(false) }));
 }
 
   window.AlloModules = window.AlloModules || {};

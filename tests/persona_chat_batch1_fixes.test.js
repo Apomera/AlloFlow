@@ -38,8 +38,10 @@ afterEach(async () => {
   if (root) await act(async () => root.unmount());
   host?.remove(); root = host = null;
   delete window.alloDeviceStorage;
+  delete window.__alloAiUsable;
 });
-async function render({ mode = 'single', isLoading = false, reflection = false } = {}) {
+async function render({ mode = 'single', isLoading = false, reflection = false, aiUsable = true } = {}) {
+  window.__alloAiUsable = () => aiUsable;
   window.alloDeviceStorage = { ready: async () => {}, get: async () => null, set: async () => {}, remove: async () => {} };
   const props = {};
   for (const name of propNames) props[name] = /^(handle|set|generate|stop)/.test(name) ? vi.fn() : /Ref$/.test(name) ? React.createRef() : false;
@@ -91,5 +93,13 @@ describe.each(['single', 'panel'])('%s mode', (mode) => {
     expect([...document.body.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Continue')).toBe(false);
     await act(async () => finish.click());
     expect(props.handleClosePersonaChat).toHaveBeenCalledTimes(1);
+  });
+
+  it('with AI unavailable, shows the greeting and a note instead of the question box', async () => {
+    await render({ mode, aiUsable: false });
+    expect(document.body.querySelector('[data-persona-ai-off]')).not.toBeNull();
+    expect(document.body.querySelector('[data-persona-composer] textarea')).toBeNull();
+    expect(document.body.textContent).toContain('Welcome to the interview.');
+    expect(document.body.querySelector('[data-help-key="persona_topic_spark"]')).toBeNull();
   });
 });

@@ -2,10 +2,10 @@
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for accessLens 1`] = `
 {
-  "buttons": 8,
+  "buttons": 7,
   "inputs": 1,
-  "lengthBucket": 29,
-  "sha": "bfc4e5d4eb1ab5f7",
+  "lengthBucket": 26,
+  "sha": "05194ae155df05d1",
   "svgs": 0,
 }
 `;
@@ -35,17 +35,17 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 21,
   "inputs": 4,
   "lengthBucket": 63,
-  "sha": "dc311e5aed629be8",
+  "sha": "aa87d49eff2c4872",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for cellularLab 1`] = `
 {
-  "buttons": 52,
-  "inputs": 3,
-  "lengthBucket": 131,
-  "sha": "6019ff100dd5881a",
+  "buttons": 71,
+  "inputs": 9,
+  "lengthBucket": 202,
+  "sha": "6c04796eff624ed3",
   "svgs": 1,
 }
 `;
@@ -64,8 +64,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 49,
   "inputs": 11,
-  "lengthBucket": 218,
-  "sha": "dd84f9e5b125e853",
+  "lengthBucket": 220,
+  "sha": "60d534fd29897f43",
   "svgs": 0,
 }
 `;
@@ -102,10 +102,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for musicSynth 1`] = `
 {
-  "buttons": 122,
+  "buttons": 118,
   "inputs": 15,
   "lengthBucket": 270,
-  "sha": "6aaf72077981db02",
+  "sha": "111696ca93eb141a",
   "svgs": 1,
 }
 `;
@@ -132,10 +132,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for worldBuilder 1`] = `
 {
-  "buttons": 15,
-  "inputs": 7,
-  "lengthBucket": 63,
-  "sha": "a7718d5d6633b37f",
+  "buttons": 11,
+  "inputs": 5,
+  "lengthBucket": 40,
+  "sha": "3ed29c95b7afe13f",
   "svgs": 1,
 }
 `;

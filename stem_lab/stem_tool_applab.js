@@ -22,7 +22,7 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-applab-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-applab-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style*=\"background: rgb(249, 250, 251)\"],[style*=\"background-color: rgb(249, 250, 251)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style^=\"color: rgb(55, 65, 81)\"],[style*=\"; color: rgb(55, 65, 81)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(107, 114, 128)\"],[style*=\"; color: rgb(107, 114, 128)\"],[style^=\"color: rgb(107, 33, 168)\"],[style*=\"; color: rgb(107, 33, 168)\"],[style^=\"color: rgb(88, 28, 135)\"],[style*=\"; color: rgb(88, 28, 135)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(91, 33, 182)\"],[style*=\"; color: rgb(91, 33, 182)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(76, 29, 149)\"],[style*=\"; color: rgb(76, 29, 149)\"],[style^=\"color: rgb(153, 27, 27)\"],[style*=\"; color: rgb(153, 27, 27)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(31, 41, 55)\"],[style*=\"; color: rgb(31, 41, 55)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(55, 65, 81)\"],[style*=\"; color: rgb(55, 65, 81)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(107, 114, 128)\"],[style*=\"; color: rgb(107, 114, 128)\"],[style^=\"color: rgb(107, 33, 168)\"],[style*=\"; color: rgb(107, 33, 168)\"],[style^=\"color: rgb(88, 28, 135)\"],[style*=\"; color: rgb(88, 28, 135)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(91, 33, 182)\"],[style*=\"; color: rgb(91, 33, 182)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(76, 29, 149)\"],[style*=\"; color: rgb(76, 29, 149)\"],[style^=\"color: rgb(153, 27, 27)\"],[style*=\"; color: rgb(153, 27, 27)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(31, 41, 55)\"],[style*=\"; color: rgb(31, 41, 55)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(249, 250, 251)\"],[style*=\"background-color: rgb(249, 250, 251)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style*=\"background: rgb(249, 250, 251)\"],[style*=\"background-color: rgb(249, 250, 251)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(245, 243, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:is([style^=\"color: rgb(55, 65, 81)\"],[style*=\"; color: rgb(55, 65, 81)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(107, 114, 128)\"],[style*=\"; color: rgb(107, 114, 128)\"],[style^=\"color: rgb(107, 33, 168)\"],[style*=\"; color: rgb(107, 33, 168)\"],[style^=\"color: rgb(88, 28, 135)\"],[style*=\"; color: rgb(88, 28, 135)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(91, 33, 182)\"],[style*=\"; color: rgb(91, 33, 182)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(76, 29, 149)\"],[style*=\"; color: rgb(76, 29, 149)\"],[style^=\"color: rgb(153, 27, 27)\"],[style*=\"; color: rgb(153, 27, 27)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(31, 41, 55)\"],[style*=\"; color: rgb(31, 41, 55)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(55, 65, 81)\"],[style*=\"; color: rgb(55, 65, 81)\"],[style^=\"color: rgb(30, 41, 59)\"],[style*=\"; color: rgb(30, 41, 59)\"],[style^=\"color: rgb(107, 114, 128)\"],[style*=\"; color: rgb(107, 114, 128)\"],[style^=\"color: rgb(107, 33, 168)\"],[style*=\"; color: rgb(107, 33, 168)\"],[style^=\"color: rgb(88, 28, 135)\"],[style*=\"; color: rgb(88, 28, 135)\"],[style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(91, 33, 182)\"],[style*=\"; color: rgb(91, 33, 182)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(76, 29, 149)\"],[style*=\"; color: rgb(76, 29, 149)\"],[style^=\"color: rgb(153, 27, 27)\"],[style*=\"; color: rgb(153, 27, 27)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(31, 41, 55)\"],[style*=\"; color: rgb(31, 41, 55)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(249, 250, 251)\"],[style*=\"background-color: rgb(249, 250, 251)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(254, 243, 199)\"],[style*=\"background-color: rgb(254, 243, 199)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"appLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -18721,6 +18721,8 @@ test('no a11y violations', async () => {
       };
       var bump = function(key) { upd(key, function(v) { return (v || 0) + 1; }); };
       var callGemini = ctx.callGemini;
+      // Build/Enhance/Suggest/Fix are AI-only: render them only when the host says text AI is usable.
+      var _aiOn = ctx.aiAvailable !== false && typeof callGemini === 'function' && !callGemini._alloQrBlocked;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var gradeLevel = ctx.gradeLevel || '5th Grade';
@@ -20130,7 +20132,7 @@ test('no a11y violations', async () => {
                     p.difficulty && h('span', { style: { fontSize: '10px', background: p.difficulty === 'Beginner' ? '#dcfce7' : p.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: p.difficulty === 'Beginner' ? '#166534' : p.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 } }, p.difficulty)
                   ),
                   p.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0', lineHeight: 1.5 } }, p.description),
-                  p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
+                  _aiOn && p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
                     style: btn(PURPLE, '#fff', false) }, __alloT('stem.applab.build_this', '🚀 Build This')),
                   p.skills && h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '8px' } }, h('strong', null, 'Skills: '), Array.isArray(p.skills) ? p.skills.join(', ') : p.skills)
                 );
@@ -20516,15 +20518,15 @@ test('no a11y violations', async () => {
 
           // Prompt input
           h('div', { style: card },
-            h('label', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
-            h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
+            _aiOn && h('label', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
+            _aiOn && h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
               placeholder: __alloT('stem.applab.describe_an_interactive_app_simulation', 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"'),
               rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none', background: '#ffffff', color: '#1f2937' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               'aria-label': __alloT('stem.applab.app_description_prompt', 'App description prompt') }),
-            h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
-              h('button', { onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: _aiOn ? '10px' : 0, flexWrap: 'wrap' } },
+              _aiOn && h('button', { onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
                 'aria-busy': isGenerating,
                 'aria-label': isGenerating ? ('Generating app: ' + genStep) : 'Generate app',
                 style: Object.assign({}, btn(PURPLE, '#fff', isGenerating || !prompt.trim()), { padding: '10px 24px', fontSize: '14px' })
@@ -20535,7 +20537,7 @@ test('no a11y violations', async () => {
                 style: btn('#fee2e2', '#991b1b', false),
                 'aria-label': __alloT('stem.applab.cancel_generation', 'Cancel generation')
               }, __alloT('stem.applab.cancel', '✕ Cancel')),
-              h('button', { onClick: suggestIdeas, disabled: sugLoading,
+              _aiOn && h('button', { onClick: suggestIdeas, disabled: sugLoading,
                 style: btn('#f1f5f9', '#374151', sugLoading) }, sugLoading ? '⏳ Thinking...' : '✨ Suggest Ideas'),
               h('button', { onClick: function() { setShowGallery(!showGallery); },
                 style: btn('#f1f5f9', '#374151', false) }, '📂 Gallery (' + gallery.length + ')'),
@@ -20550,7 +20552,7 @@ test('no a11y violations', async () => {
           ),
 
           // Suggestions
-          showSuggestions && suggestions.length > 0 && h('div', { style: card },
+          _aiOn && showSuggestions && suggestions.length > 0 && h('div', { style: card },
             h('h3', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, __alloT('stem.applab.suggested_projects', '\u2728 Suggested Projects')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' } },
               suggestions.map(function(s, i) {
@@ -20565,8 +20567,8 @@ test('no a11y violations', async () => {
             )
           ),
 
-          // Templates
-          h('div', { style: card },
+          // Templates (they only fill the AI build prompt)
+          _aiOn && h('div', { style: card },
             h('h3', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '8px' } }, __alloT('stem.applab.quick_templates', '\uD83D\uDCCB Quick Templates')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               TEMPLATES.map(function(cat) {
@@ -20758,7 +20760,7 @@ test('no a11y violations', async () => {
                 h('span', { style: { fontWeight: 'bold' } }, '⚠️ ' + iframeErrors.length + ' error(s) in generated app'),
                 h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
                   // Closes the loop: the errors we captured become the fix.
-                  h('button', { onClick: fixReportedErrors, disabled: isGenerating,
+                  _aiOn && h('button', { onClick: fixReportedErrors, disabled: isGenerating,
                     style: { background: isGenerating ? 'rgba(255,255,255,0.15)' : '#fff', border: 'none', color: isGenerating ? '#fff' : '#991b1b', padding: '3px 10px', borderRadius: '5px', cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '10px', fontWeight: 700, fontFamily: 'inherit' },
                     'aria-label': __alloT('stem.applab.fix_these_errors_with_ai', 'Fix these errors with AI')
                   }, isGenerating ? '⏳' : __alloT('stem.applab.fix_these_errors', '🔧 Fix these')),
@@ -20774,14 +20776,14 @@ test('no a11y violations', async () => {
             ),
             // Enhance bar (below preview)
             h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexShrink: 0 } },
-              h('input', { type: 'text', value: enhancePrompt, onChange: function(ev) { setEnhancePrompt(ev.target.value); },
+              _aiOn && h('input', { type: 'text', value: enhancePrompt, onChange: function(ev) { setEnhancePrompt(ev.target.value); },
                 onKeyDown: function(ev) { if (ev.key === 'Enter' && enhancePrompt.trim() && !isGenerating) enhanceApp(); },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
                 onBlur: function(e) { e.target.style.boxShadow = 'none'; },
                 placeholder: __alloT('stem.applab.enhance_add_a_dark_mode_toggle_or_make', 'Enhance: "add a dark mode toggle" or "make the particles bigger"...'),
                 style: { flex: 1, padding: '8px 14px', border: '2px solid #d1d5db', borderRadius: '10px', fontSize: '12px', outline: 'none' }, className: 'focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
                 disabled: isGenerating, 'aria-label': __alloT('stem.applab.enhancement_prompt', 'Enhancement prompt') }),
-              h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
+              _aiOn && h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
                 style: btn(PURPLE, '#fff', !enhancePrompt.trim() || isGenerating) }, isGenerating ? '\u23F3' : '\u2728 Enhance'),
               h('button', { onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); resetHistory(null); try { localStorage.removeItem(STORAGE_DRAFT); } catch(e) {} },
                 style: btn('#fee2e2', '#991b1b', false), title: __alloT('stem.applab.start_over', 'Start over') }, __alloT('stem.applab.new', '\uD83D\uDDD1\uFE0F New'))

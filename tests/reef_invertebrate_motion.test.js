@@ -21,9 +21,13 @@ function components(g) {
   return [...groups.values()];
 }
 const vertex = (p, i) => new THREE.Vector3().fromBufferAttribute(p, i);
-function measures(p, ids) {
-  const byDistance = ids.slice().sort((a, b) => vertex(p, a).lengthSq() - vertex(p, b).lengthSq());
-  const anchor = byDistance.slice(0, -1).reduce((sum, i) => sum.add(vertex(p, i)), new THREE.Vector3()).divideScalar(ids.length - 1);
+// The anchor is the centroid of the root ring: the vertices nearest the test, at rest.
+function rootRing(p, ids) {
+  const near = Math.min(...ids.map((i) => vertex(p, i).length()));
+  return ids.filter((i) => vertex(p, i).length() <= near * 1.1);
+}
+function measures(p, ids, root = rootRing(p, ids)) {
+  const anchor = root.reduce((sum, i) => sum.add(vertex(p, i)), new THREE.Vector3()).divideScalar(root.length);
   const lengths = [];
   ids.forEach((a, n) => ids.slice(n + 1).forEach((b) => lengths.push(vertex(p, a).distanceTo(vertex(p, b)))));
   return { anchor, lengths };
@@ -36,12 +40,14 @@ describe('close-view invertebrate movement', () => {
       const g = h.root.getObjectByName('long_spined_urchin-spines').geometry;
       const groups = components(g), start = g.attributes.position.array.slice();
       expect(groups.length).toBeGreaterThan(50);
-      const before = groups.map((ids) => measures(g.attributes.position, ids));
+      const roots = groups.map((ids) => rootRing(g.attributes.position, ids));
+      expect(roots.every((r) => r.length >= 3), 'each spine has a root ring').toBe(true);
+      const before = groups.map((ids, i) => measures(g.attributes.position, ids, roots[i]));
       let moved = 0;
       for (const t of [0.7, 6.2, 28.9]) {
         h.update(1 / 60, t);
         groups.forEach((ids, i) => {
-          const after = measures(g.attributes.position, ids);
+          const after = measures(g.attributes.position, ids, roots[i]);
           expect(after.anchor.distanceTo(before[i].anchor)).toBeLessThan(2e-8);
           after.lengths.forEach((length, j) => expect(Math.abs(length - before[i].lengths[j])).toBeLessThan(5e-8));
         });

@@ -18,7 +18,8 @@ describe('Calculus guided-mission input accessibility', () => {
       "'aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_8', 'Riemann-sum error at n equals 8')",
       "'aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16')",
       "'aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16')",
-      "'aria-label':'Derivative value at x '+item[0]",
+      // 2026-11-03 deep rebuild: this label now goes through i18n as a whole sentence.
+      "'aria-label':fillT(__alloT('stem.calculus.a11y_derivative_value_at_x', 'Derivative value at x {x}'), { x: item[0] })",
       "'aria-label':__alloT('stem.calculus.a11y_derivative_at_x_equals_1_for_2x_squared', 'Derivative at x equals 1 for 2x squared')",
       "'aria-label':__alloT('stem.calculus.a11y_triangle_area_in_meters', 'Triangle area in meters')",
       "'aria-label':__alloT('stem.calculus.a11y_definite_integral_value_in_meters', 'Definite integral value in meters')",

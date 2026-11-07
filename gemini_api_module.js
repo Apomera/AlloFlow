@@ -123,12 +123,20 @@ const createGeminiAPI = (deps) => {
     const _liveStoredGeminiKey = () => {
         try {
             if (typeof localStorage === 'undefined') return '';
-            const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null') || {};
+            // The host merges a key unlocked for this tab; it no longer rests in plaintext.
+            const hostRead = typeof window !== 'undefined' ? window.__alloReadStoredAiConfig : null;
+            const cfg = (typeof hostRead === 'function' ? hostRead() : JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null')) || {};
             if (String(cfg.backend || 'gemini') !== 'gemini') return '';
             return String(cfg.apiKey || '');
         } catch (_) { return ''; }
     };
-    const _resolveApiKey = () => _bootApiKey || _liveStoredGeminiKey();
+    // The host's learner-role fence wins at request time, so a client built
+    // with the teacher's device key cannot send it after a switch to student.
+    const _pastedKeyFenced = () => {
+        try { return typeof window !== 'undefined' && typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive() === true; }
+        catch (_) { return true; }
+    };
+    const _resolveApiKey = () => (_pastedKeyFenced() ? '' : (_bootApiKey || _liveStoredGeminiKey()));
 
     // Gemini accepts API keys through x-goog-api-key. Keeping credentials out
     // of URLs prevents them from leaking into browser history, proxy access

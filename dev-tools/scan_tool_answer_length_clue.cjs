@@ -115,7 +115,9 @@ function flagSchemaJudge(src, stats) {
 const rows = [];
 for (const dir of DIRS) {
   for (const f of fs.readdirSync(dir).filter((x) => /^(stem|sel)_tool_.*\.js$/.test(x))) {
-    const src = fs.readFileSync(path.join(dir, f), 'utf8');
+    let src = fs.readFileSync(path.join(dir, f), 'utf8');
+    // Printing Press wraps its whole bank for translation; measure the English behind it, or the bank goes unmeasured.
+    if (f === 'stem_tool_printingpress.js') src = src.replace(/__alloT\('stem\.printingpress\.[A-Za-z0-9_]+',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\)/g, '$1');
     const stats = { n: 0, uniq: 0, severe: 0, skipped: 0 };
 
     const tryArr = (raw, idx) => {

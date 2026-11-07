@@ -1,13 +1,12 @@
 // ═══════════════════════════════════════════
-// stem_tool_areamodel.js — Area Model Plugin (Enhanced v3)
-// 4 tabs: Basic Grid, Distributive, Partial Products, Word Problems
-// + sound effects (mutable), 13 badges, AI tutor, streak tracking,
-//   commutative toggle, skip-count overlay (mult as repeated addition),
-//   word-problem mode using real-world contexts (garden, parking lot, etc.),
-//   atmospheric backgrounds, smooth cell transitions, reset button,
-//   keyboard shortcuts
+// stem_tool_areamodel.js — Area Model (deep rebuild 2026-11-03)
+// Tabs: Basic Grid (arrays), Distributive, Partial Products (whole numbers
+// and decimals), Algorithm Bridge, Fraction Sides, Algebra Tiles, Word Problems.
+// Challenges hide every answer until the student commits; wrong answers get a
+// named mistake and a second try; reveals earn no credit. Grade levels 3, 4,
+// 5 and 6+ drive generated practice; teacher controls sit behind isTeacherMode.
 // ═══════════════════════════════════════════
-
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
@@ -23,7 +22,7 @@ window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-areamodel-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-areamodel-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] :is(.allo-am-bg-basic,.allo-am-bg-distributive,.allo-am-bg-multidigit,.allo-am-bg-word):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(255, 251, 235)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] :is(.allo-am-bg-basic,.allo-am-bg-distributive,.allo-am-bg-multidigit,.allo-am-bg-word):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(255, 251, 235)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(67, 56, 202)\"],[style*=\"; color: rgb(67, 56, 202)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"areamodel\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -48,56 +47,902 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
 
-  // Area-model v3: atmospheric backgrounds + smooth cell transitions
+  // Cell transitions + a focus ring that shows on light and dark surfaces.
   (function() {
-    if (document.getElementById('allo-areamodel-v3-css')) return;
+    if (document.getElementById('allo-areamodel-v4-css')) return;
     var st = document.createElement('style');
-    st.id = 'allo-areamodel-v3-css';
+    st.id = 'allo-areamodel-v4-css';
     st.textContent = [
       '@keyframes allo-am-cell-pulse { 0% { transform: scale(0.92); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }',
-      '@keyframes allo-am-pop { 0% { transform: scale(1); } 30% { transform: scale(1.1); } 100% { transform: scale(1); } }',
-      '.allo-am-cell { transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.18s ease; }',
+      '.allo-am-cell { transition: background-color 0.22s ease, border-color 0.22s ease; }',
       '.allo-am-cell-fill { animation: allo-am-cell-pulse 0.32s ease-out; }',
-      '.allo-am-bg-basic        { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
-      '.allo-am-bg-distributive { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(147,51,234,0.10) 0%, rgba(147,51,234,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
-      '.allo-am-bg-multidigit   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(8,145,178,0.10) 0%, rgba(8,145,178,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
-      '.allo-am-bg-word         { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '[data-areamodel-root] .allo-am-cell:focus-visible, [data-areamodel-root] button:focus-visible, [data-areamodel-root] input:focus-visible, [data-areamodel-root] select:focus-visible, [data-areamodel-root] textarea:focus-visible, [data-areamodel-root] [tabindex="0"]:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; box-shadow: 0 0 0 5px #1e293b; }',
       '@media (prefers-reduced-motion: reduce) { .allo-am-cell, .allo-am-cell-fill { transition: none !important; animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
 
+  // ═══════════════════════════════════════════════════════════════
+  // PURE CORE: number parts, area-model boxes, grading, named mistakes,
+  // generators. No React, no ctx: the tests run it directly (tool._core).
+  // ═══════════════════════════════════════════════════════════════
+  var CORE = (function() {
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var r = a % b; a = b; b = r; } return a || 1; }
+    function pow10(k) { return Math.pow(10, k); }
+    function decimalsOf(x) { var s = String(x); if (s.indexOf('e') >= 0) return 0; var i = s.indexOf('.'); return i < 0 ? 0 : s.length - i - 1; }
+    function scaled(x) { var d = Math.min(4, decimalsOf(x)); return { n: Math.round(Math.abs(x) * pow10(d)), s: d }; }
+    function fmt(x) { if (typeof x !== 'number' || !isFinite(x)) return String(x); return String(Math.round(x * 1e6) / 1e6); }
+    function clampInt(v, lo, hi, dflt) { var n = Math.round(Number(v)); if (!isFinite(n)) n = dflt; return Math.max(lo, Math.min(hi, n)); }
+    // Expanded form: 305 -> [300, 0, 5]. Zero parts stay so a zero digit shows as a box that adds no area.
+    function placeParts(n) {
+      n = Math.abs(Math.round(n));
+      var s = String(n);
+      if (s.length === 1) return [n];
+      var out = [];
+      for (var i = 0; i < s.length; i++) out.push(Number(s.charAt(i)) * pow10(s.length - 1 - i));
+      return out;
+    }
+    function partsOf(x) { var sc = scaled(x); return placeParts(sc.n).map(function(p) { return { n: p, s: sc.s, v: p / pow10(sc.s) }; }); }
+    function leadDigit(x) { var s = String(scaled(x).n); return Number(s.charAt(0)) || 0; }
+    // Rows come from the first factor (left side), columns from the second (top).
+    // Products are summed as scaled integers, so decimals stay exact.
+    function boxModel(a, b) { return modelFrom(a, b, partsOf(a), partsOf(b)); }
+    // Cut lines: a side split anywhere, not only by place value. A cut is a boundary
+    // in scaled units (0 < cut < whole), strictly increasing; at most 3 per side, or as many as its place values give.
+    function defaultCuts(x) {
+      var ps = placeParts(scaled(x).n).filter(function(p) { return p > 0; }), out = [], acc = 0;
+      for (var i = 0; i < ps.length - 1; i++) { acc += ps[i]; out.push(acc); }
+      return out;
+    }
+    function cleanCuts(x, cuts) {
+      var whole = scaled(x).n, prev = 0;
+      if (!Array.isArray(cuts) || cuts.length > Math.max(3, defaultCuts(x).length)) return null;
+      for (var i = 0; i < cuts.length; i++) { var c = cuts[i]; if (!Number.isInteger(c) || c <= prev || c >= whole) return null; prev = c; }
+      return cuts.slice();
+    }
+    function partsFromCuts(x, cuts) {
+      var sc = scaled(x), out = [], prev = 0;
+      cuts.concat([sc.n]).forEach(function(c) { out.push({ n: c - prev, s: sc.s, v: (c - prev) / pow10(sc.s) }); prev = c; });
+      return out;
+    }
+    function cutModel(a, b, cutsA, cutsB) { return modelFrom(a, b, partsFromCuts(a, cutsA), partsFromCuts(b, cutsB)); }
+    // Moves cut i to `to`, kept between its neighbours so every part stays at least one unit.
+    function moveCut(x, cuts, i, to) {
+      var whole = scaled(x).n, lo = i > 0 ? cuts[i - 1] + 1 : 1, hi = i < cuts.length - 1 ? cuts[i + 1] - 1 : whole - 1;
+      var out = cuts.slice(); out[i] = Math.max(lo, Math.min(hi, Math.round(Number(to)) || lo));
+      return out;
+    }
+    function modelFrom(a, b, rows, cols) {
+      var s = rows[0].s + cols[0].s, boxes = [], tot = 0;
+      for (var i = 0; i < rows.length; i++) {
+        for (var j = 0; j < cols.length; j++) {
+          var n = rows[i].n * cols[j].n;
+          tot += n;
+          boxes.push({ index: boxes.length, r: i, c: j, pa: rows[i].v, pb: cols[j].v, n: n, value: n / pow10(s), label: fmt(rows[i].v) + '×' + fmt(cols[j].v) });
+        }
+      }
+      return { a: a, b: b, rows: rows, cols: cols, boxes: boxes, scale: s, total: tot / pow10(s) };
+    }
+    function product(a, b) { return boxModel(a, b).total; }
+    function boxCount(a, b) { return partsOf(a).length * partsOf(b).length; }
+
+    function parseNum(text) {
+      var s = String(text == null ? '' : text).trim().replace(/\s+/g, '');
+      if (!s) return NaN;
+      if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+      else if (/^-?\d*,\d+$/.test(s)) s = s.replace(',', '.');
+      if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+      return Number(s);
+    }
+    function sameNum(x, y) { return typeof x === 'number' && typeof y === 'number' && isFinite(x) && isFinite(y) && Math.abs(x - y) < 1e-9 * Math.max(1, Math.abs(y)); }
+
+    // Fractions are kept unreduced ({num, den}); equality is by cross-multiplying.
+    function parseFrac(text) {
+      var s = String(text == null ? '' : text).trim().replace(/[⁄∕]/g, '/');
+      if (!s) return null;
+      var m = s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+      if (m) { var dd = Number(m[3]); if (!dd) return null; return { num: Number(m[1]) * dd + Number(m[2]), den: dd }; }
+      m = s.match(/^(\d+)\s*\/\s*(\d+)$/);
+      if (m) { if (!Number(m[2])) return null; return { num: Number(m[1]), den: Number(m[2]) }; }
+      var v = parseNum(s);
+      if (isFinite(v) && v >= 0) { var sc = scaled(v); return { num: sc.n, den: pow10(sc.s) }; }
+      return null;
+    }
+    function fracEq(f, num, den) { return !!f && f.num * den === num * f.den; }
+    function fracStr(num, den) { return den === 1 ? String(num) : num + '/' + den; }
+    function mixedStr(num, den) {
+      if (den === 1) return String(num);
+      if (num < den) return num + '/' + den;
+      var w = Math.floor(num / den), r = num % den;
+      return r ? w + ' ' + r + '/' + den : String(w);
+    }
+    function simplify(num, den) { var g = gcd(num, den); return { num: num / g, den: den / g }; }
+
+    // Algebra: a factor is { x: coefficient, c: constant }; (x + 3) is { x: 1, c: 3 }, 4 is { x: 0, c: 4 }.
+    function algExpand(f1, f2) {
+      return {
+        A: f1.x * f2.x, B: f1.x * f2.c + f1.c * f2.x, C: f1.c * f2.c,
+        regions: [
+          { key: 'xx', coef: f1.x * f2.x, kind: 'x2', rowPart: 'x', colPart: 'x' },
+          { key: 'xc', coef: f1.x * f2.c, kind: 'x', rowPart: 'x', colPart: 'c' },
+          { key: 'cx', coef: f1.c * f2.x, kind: 'x', rowPart: 'c', colPart: 'x' },
+          { key: 'cc', coef: f1.c * f2.c, kind: 'unit', rowPart: 'c', colPart: 'c' }
+        ]
+      };
+    }
+    // Negative numbers print with a true minus sign: x² − x − 6, (x − 3).
+    function sgn(n) { return n < 0 ? '−' + Math.abs(n) : String(n); }
+    function termStr(coef, v) { if (!coef) return ''; var m = Math.abs(coef); if (v === '') return String(m); return (m === 1 ? '' : String(m)) + v; }
+    function polyStr(A, B, C) {
+      var terms = [[A, 'x²'], [B, 'x'], [C, '']].filter(function(p) { return p[0]; });
+      if (!terms.length) return '0';
+      return terms.map(function(p, i) { var s = termStr(p[0], p[1]); return i === 0 ? (p[0] < 0 ? '−' : '') + s : (p[0] < 0 ? ' − ' : ' + ') + s; }).join('');
+    }
+    function sideStr(f, part) { if (part === 'x') return f.x === 1 ? 'x' : f.x + 'x'; return sgn(f.c); }
+    function factorStr(f) { if (!f.x) return sgn(f.c); var xs = (f.x === 1 ? '' : f.x) + 'x'; return f.c ? '(' + xs + (f.c < 0 ? ' − ' : ' + ') + Math.abs(f.c) + ')' : xs; }
+    function coefOf(s) { var str = String(s == null ? '' : s).trim(); if (!str) return 0; if (!/^-?\d+$/.test(str)) return NaN; return Number(str); }
+
+    // ── Named mistakes. Codes only: the render turns a code into a whole
+    // localized sentence, and no sentence states the correct answer. ──
+    function diagnoseWhole(ch, ans) {
+      var a = Number(ch.a), b = Number(ch.b), answer = Number(ch.answer);
+      if (typeof ans !== 'number' || !isFinite(ans)) return { code: 'not_number' };
+      var isDec = decimalsOf(a) > 0 || decimalsOf(b) > 0;
+      if (sameNum(ans, a + b)) return { code: 'added', v: { a: fmt(a), b: fmt(b) } };
+      if (ch.mode !== 'multidigit' && sameNum(ans, 2 * (a + b))) return { code: 'perimeter', v: { ans: fmt(ans) } };
+      if (ch.mode === 'distributive' && ch.split != null) {
+        var s = Number(ch.split), r = b - s;
+        if (ans === a * s || ans === a * r) return { code: 'one_piece', v: { ans: fmt(ans) } };
+        if (ans === a * s + r || ans === s + a * r) return { code: 'not_distributed', v: { a: fmt(a) } };
+      }
+      var boxy = ch.mode === 'multidigit' || ch.mode === 'algorithm' || (ch.mode === 'word' && (a >= 10 || b >= 10 || isDec));
+      var bm = boxModel(a, b);
+      if (bm.boxes.length > 1 || isDec) {
+        for (var k = 1; k <= 4; k++) {
+          if (sameNum(ans * pow10(k), answer)) return { code: isDec ? 'decimal_small' : 'pv_small', v: { k: pow10(k) } };
+          if (sameNum(ans, answer * pow10(k))) return { code: isDec ? 'decimal_big' : 'pv_big', v: { k: pow10(k) } };
+        }
+      }
+      if (boxy && bm.boxes.length > 1) {
+        var digitSum = 0;
+        bm.boxes.forEach(function(bx) { digitSum += leadDigit(bx.pa) * leadDigit(bx.pb); });
+        if (sameNum(ans, digitSum) && !sameNum(digitSum, answer)) return { code: 'digits_only' };
+        if (bm.rows.length === 2 && bm.cols.length === 2) {
+          var diag = bm.boxes[0].n + bm.boxes[3].n, cross = bm.boxes[1].n + bm.boxes[2].n;
+          if (cross && sameNum(ans, diag / pow10(bm.scale))) return { code: 'missed_cross' };
+        }
+        var big = bm.boxes[0];
+        if (!sameNum(bm.total, big.value) && sameNum(ans, big.value)) return { code: 'only_biggest', v: { label: big.label.replace('×', ' × '), n: bm.boxes.filter(function(bx) { return bx.n > 0; }).length } };
+        var totN = 0; bm.boxes.forEach(function(bx) { totN += bx.n; });
+        for (var i = 0; i < bm.boxes.length; i++) {
+          var bx = bm.boxes[i];
+          if (bx.n > 0 && sameNum(ans, (totN - bx.n) / pow10(bm.scale))) return { code: 'missed_box', v: { label: bx.label.replace('×', ' × ') } };
+        }
+      }
+      if (!isDec && Math.round(a) === a && Math.round(b) === b) {
+        if (ans === a * (b - 1) || ans === (a - 1) * b) return { code: 'row_short', v: { a: a, b: b } };
+        if (ans === a * (b + 1) || ans === (a + 1) * b) return { code: 'row_extra', v: { a: a, b: b } };
+      }
+      if (boxy && bm.boxes.length > 1 && Math.abs(ans - answer) <= Math.max(2, Math.abs(answer) * 0.02)) return { code: 'close' };
+      return { code: boxy ? 'generic_boxes' : (ch.mode === 'distributive' ? 'generic_split' : 'generic_rows'), v: { a: fmt(a), b: fmt(b) } };
+    }
+    function diagnoseFraction(ch, f) {
+      if (!f) return { code: 'frac_not_fraction' };
+      var n1 = ch.n1, d1 = ch.d1, n2 = ch.n2, d2 = ch.d2;
+      if (fracEq(f, n1 * d2 + n2 * d1, d1 * d2)) return { code: 'frac_added' };
+      if (fracEq(f, n1 + n2, d1 + d2)) return { code: 'frac_added_across' };
+      if (f.den === 1 && f.num === n1 * n2) return { code: 'frac_tile_count', v: { n: n1 * n2 } };
+      if (f.num === n1 * n2 && f.den !== d1 * d2) return { code: 'frac_tile_size' };
+      if (fracEq(f, d1 * d2 - n1 * n2, d1 * d2) && d1 * d2 > n1 * n2) return { code: 'frac_unshaded' };
+      return { code: 'frac_generic' };
+    }
+    function diagnoseAlgebra(ch, r) {
+      var e = algExpand(ch.f1, ch.f2);
+      if (!isFinite(r.A) || !isFinite(r.B) || !isFinite(r.C)) return { code: 'alg_not_number' };
+      if (e.A && (r.A === 2 * e.A || (r.A === 0 && r.B === e.B + 2 * e.A))) return { code: 'alg_x_times_x' };
+      if (r.C === ch.f1.c + ch.f2.c && r.C !== e.C) return { code: 'alg_added_constants' };
+      if (e.B && r.B === 0 && r.A === e.A && r.C === e.C) return { code: 'alg_missing_middle' };
+      var c1 = ch.f1.x * ch.f2.c, c2 = ch.f1.c * ch.f2.x;
+      if (c1 && c2 && r.B !== e.B && (r.B === c1 || r.B === c2)) return { code: 'alg_one_x_box' };
+      if (e.B !== e.C && r.B === e.C) return { code: 'alg_middle_product' };
+      if (r.A === e.A && r.B === e.B && r.C !== e.C) return { code: 'alg_constant' };
+      return { code: 'alg_generic' };
+    }
+    // One box of a model, filled in by the student.
+    function diagnoseBox(pa, pb, correct, val) {
+      if (typeof val !== 'number' || !isFinite(val)) return 'box_not_number';
+      if (sameNum(val, correct)) return 'ok';
+      var isDec = decimalsOf(pa) > 0 || decimalsOf(pb) > 0;
+      if (sameNum(val, pa + pb)) return 'box_added';
+      for (var k = 1; k <= 3; k++) {
+        if (sameNum(val * pow10(k), correct)) return isDec ? 'box_decimal' : 'box_pv_small';
+        if (sameNum(val, correct * pow10(k))) return isDec ? 'box_decimal' : 'box_pv_big';
+      }
+      if (sameNum(val, leadDigit(pa) * leadDigit(pb))) return 'box_digits';
+      if (!isDec && pa <= 20 && pb <= 20 && (val === pa * (pb - 1) || val === (pa - 1) * pb || val === pa * (pb + 1) || val === (pa + 1) * pb)) return 'box_one_off';
+      return 'box_generic';
+    }
+
+    function grade(ch, input, parts) {
+      if (!ch) return { correct: false, code: 'not_number' };
+      if (ch.mode === 'word' && ch.wkind && ch.wkind !== 'array' && ch.wkind !== 'area' && ch.wkind !== 'decimal') return grade(storyAs(ch), input, parts);
+      if (ch.mode === 'grid100') {
+        var gx = parseNum(String(input == null ? '' : input).replace(/\s*%\s*$/, ''));
+        if (sameNum(gx, Number(ch.answer))) return { correct: true };
+        return { correct: false, code: diagnoseGrid(ch, gx), v: { a: fmt(ch.a), b: fmt(ch.b) } };
+      }
+      if (ch.mode === 'divword') {
+        var dx = parseNum(input);
+        if (sameNum(dx, Number(ch.answer))) return { correct: true };
+        return { correct: false, code: diagnoseMissing(ch, dx), v: { a: ch.a, n: ch.n } };
+      }
+      if (ch.mode === 'remword') {
+        var rawR = String(input == null ? '' : input).trim();
+        if (/^\d+\s*(r|rem|remainder)\.?\s*\d+$/i.test(rawR)) return { correct: false, code: 'r_remainder_form', v: { r: ch.n % ch.a } };
+        var rx = parseNum(rawR);
+        if (sameNum(rx, Number(ch.answer))) return { correct: true };
+        return { correct: false, code: diagnoseRemainder(ch, rx), v: { r: ch.n % ch.a, x: isFinite(rx) ? fmt(rx) : '' } };
+      }
+      if (ch.mode === 'fraction') {
+        var f = parseFrac(input), ans = ch.answer || { num: ch.n1 * ch.n2, den: ch.d1 * ch.d2 };
+        if (fracEq(f, ans.num, ans.den)) return { correct: true };
+        var df = diagnoseFraction(ch, f);
+        return { correct: false, code: df.code, v: df.v || {} };
+      }
+      if (ch.mode === 'algebra') {
+        var r = { A: coefOf(parts && parts.A), B: coefOf(parts && parts.B), C: coefOf(parts && parts.C) };
+        var e = algExpand(ch.f1, ch.f2);
+        if (r.A === e.A && r.B === e.B && r.C === e.C) return { correct: true };
+        var da = diagnoseAlgebra(ch, r);
+        return { correct: false, code: da.code, v: da.v || {} };
+      }
+      var x = parseNum(input);
+      if (sameNum(x, Number(ch.answer))) return { correct: true };
+      var dw = diagnoseWhole(ch, x);
+      return { correct: false, code: dw.code, v: dw.v || {} };
+    }
+
+    // ── Generators: practice never runs out, sized by grade level and difficulty ──
+    function seeded(seed) {
+      var s = (Number(seed) >>> 0) || 1;
+      return function() { s = (s + 0x6D2B79F5) >>> 0; var t2 = s; t2 = Math.imul(t2 ^ (t2 >>> 15), t2 | 1); t2 ^= t2 + Math.imul(t2 ^ (t2 >>> 7), t2 | 61); return ((t2 ^ (t2 >>> 14)) >>> 0) / 4294967296; };
+    }
+    function rint(rand, lo, hi) { var v = lo + Math.floor(rand() * (hi - lo + 1)); return Math.max(lo, Math.min(hi, v)); }
+    function nonRound(n) { return n % 10 === 0 ? n + 1 : n; }
+    var BAND_INDEX = { g3: 0, g4: 1, g5: 2, g6: 3 };
+    var WORD_COUNT = 10;
+    function gen(mode, band, diff, rand) {
+      rand = typeof rand === 'function' ? rand : Math.random;
+      diff = diff === 'easy' || diff === 'hard' ? diff : 'medium';
+      var bi = BAND_INDEX[band]; if (bi == null) bi = 1;
+      if (mode === 'basic') {
+        var max = bi === 0 ? { easy: 5, medium: 9, hard: 10 }[diff] : { easy: 6, medium: 9, hard: 12 }[diff];
+        var a = rint(rand, 2, max), b = rint(rand, 2, max);
+        return { mode: 'basic', a: a, b: b, answer: a * b };
+      }
+      if (mode === 'distributive') {
+        var r, c, s;
+        if (bi === 0) {
+          r = rint(rand, 2, diff === 'easy' ? 5 : 9);
+          c = rint(rand, 6, diff === 'hard' ? 12 : 10);
+          s = diff !== 'hard' ? 5 : rint(rand, 1, c - 1);
+        } else {
+          r = rint(rand, 3, 9);
+          c = nonRound(rint(rand, 11, diff === 'easy' ? 19 : diff === 'medium' ? 25 : 49));
+          s = c - c % 10;
+        }
+        return { mode: 'distributive', a: r, b: c, split: s, answer: r * c };
+      }
+      if (mode === 'multidigit') {
+        var A, B, dec = false;
+        if (bi === 0) {
+          A = rint(rand, 2, 9);
+          B = diff === 'easy' ? rint(rand, 1, 9) * 10 : rint(rand, 11, diff === 'hard' ? 99 : 49);
+        } else if (bi === 1) {
+          if (diff === 'easy') { A = rint(rand, 2, 9); B = rint(rand, 11, 99); }
+          else if (diff === 'medium') { A = rint(rand, 11, 49); B = rint(rand, 11, 49); }
+          else if (rand() < 0.5) { A = rint(rand, 2, 9); B = rint(rand, 101, 9999); }
+          else { A = rint(rand, 11, 99); B = rint(rand, 11, 99); }
+        } else if (bi === 2 && rand() < 0.6) {
+          dec = true;
+          if (diff === 'easy') { A = rint(rand, 2, 9); B = nonRound(rint(rand, 11, 99)) / 10; }
+          else if (diff === 'medium') { A = nonRound(rint(rand, 11, 59)) / 10; B = nonRound(rint(rand, 11, 39)) / 10; }
+          else { A = nonRound(rint(rand, 11, 99)) / 10; B = nonRound(rint(rand, 101, 399)) / 100; }
+        } else {
+          A = rint(rand, 11, diff === 'easy' ? 49 : 99);
+          B = rint(rand, 11, diff === 'hard' ? 99 : 49);
+          if (bi === 3 && diff === 'hard') A = rint(rand, 101, 999);
+        }
+        var out = { mode: 'multidigit', a: A, b: B, answer: product(A, B) };
+        if (dec) out.dec = true;
+        return out;
+      }
+      if (mode === 'fraction') {
+        var dmax = diff === 'easy' ? 4 : 6;
+        var d1 = rint(rand, 2, dmax), d2 = rint(rand, 2, dmax);
+        var n1 = rint(rand, 1, d1 - 1), n2 = rint(rand, 1, d2 - 1);
+        if (diff === 'hard') n1 = rint(rand, d1 + 1, 2 * d1 - 1);
+        return { mode: 'fraction', n1: n1, d1: d1, n2: n2, d2: d2, a: n1 / d1, b: n2 / d2, answer: { num: n1 * n2, den: d1 * d2 } };
+      }
+      if (mode === 'algebra') {
+        var f1, f2;
+        if (diff === 'easy') { f1 = { x: 0, c: rint(rand, 2, 6) }; f2 = { x: 1, c: rint(rand, 1, 9) }; }
+        else if (diff === 'medium') { f1 = { x: 1, c: rint(rand, 1, 9) }; f2 = { x: 1, c: rint(rand, 1, 9) }; }
+        else { f1 = { x: rint(rand, 2, 3), c: rint(rand, 1, 9) }; f2 = { x: 1, c: rint(rand, 1, 9) }; }
+        var ex = algExpand(f1, f2);
+        return { mode: 'algebra', f1: f1, f2: f2, answer: { A: ex.A, B: ex.B, C: ex.C } };
+      }
+      if (mode === 'word') {
+        var wa, wb;
+        if (bi === 0) { var wm = { easy: 6, medium: 9, hard: 10 }[diff]; wa = rint(rand, 2, wm); wb = rint(rand, 2, wm); }
+        else if (bi === 1) { wa = rint(rand, 3, 9); wb = rint(rand, 12, diff === 'easy' ? 25 : 48); }
+        else { wa = rint(rand, 11, diff === 'easy' ? 19 : 39); wb = rint(rand, 12, 49); }
+        return { mode: 'word', a: wa, b: wb, answer: wa * wb, ctxIdx: rint(rand, 0, WORD_COUNT - 1) };
+      }
+      if (mode === 'algorithm') {
+        var ta, tb;
+        if (bi === 0) { ta = rint(rand, 12, 49); tb = rint(rand, 2, 9); }
+        else if (diff === 'easy') { ta = rint(rand, 12, 99); tb = rint(rand, 2, 9); }
+        else if (diff === 'medium' || bi === 1) { ta = rint(rand, 12, 99); tb = nonRound(rint(rand, 11, 49)); }
+        else { ta = rint(rand, 101, 999); tb = nonRound(rint(rand, 11, 99)); }
+        return { mode: 'algorithm', a: ta, b: tb, answer: ta * tb };
+      }
+      if (mode === 'division') return divGen(band, diff, rand);
+      if (mode === 'grid100') {
+        var gk = bi >= 3 ? (rand() < 0.5 ? 'pct' : 'dec') : 'dec';
+        var gmax = diff === 'easy' ? 5 : 9;
+        var ga = rint(rand, 1, gmax), gb = rint(rand, diff === 'hard' ? 2 : 1, 9);
+        var go = { mode: 'grid100', kind: gk, a: ga / 10, b: gb / 10, answer: gridAnswer(gk, ga, gb) };
+        if (gk === 'pct') { go.p1 = ga * 10; go.p2 = gb * 10; }
+        return go;
+      }
+      return gen('basic', band, diff, rand);
+    }
+    function probKey(ch) {
+      if (!ch) return '';
+      if (ch.mode === 'fraction') return 'f:' + ch.n1 + '/' + ch.d1 + 'x' + ch.n2 + '/' + ch.d2;
+      if (ch.mode === 'algebra') return 'g:' + factorStr(ch.f1) + factorStr(ch.f2);
+      if (ch.mode === 'grid100') return 'h:' + ch.kind + ':' + ch.a + 'x' + ch.b;
+      if (ch.mode === 'division') return 'v:' + ch.n + '/' + ch.d;
+      if (ch.mode === 'remword') return 'r:' + ch.rk + ':' + ch.n + '/' + ch.a;
+      if (ch.mode === 'word' && ch.wkind) {
+        var sa = storyAs(ch);
+        return 'w:' + ch.wkind + ':' + (sa !== ch ? probKey(sa) : ch.a + 'x' + ch.b) + (sa && sa.mode === 'divword' ? ':' + ch.n + '/' + ch.a : '');
+      }
+      return ch.mode + ':' + ch.a + 'x' + ch.b + (ch.split != null ? '/' + ch.split : '');
+    }
+    function bandFor(gradeLevel, gradeBand) {
+      var g = String(gradeLevel || '').toLowerCase();
+      if (/kinder|pre-?k/.test(g)) return 'g3';
+      var m = g.match(/(\d+)\s*(st|nd|rd|th)/);
+      if (m) { var n = Number(m[1]); return n <= 3 ? 'g3' : n === 4 ? 'g4' : n === 5 ? 'g5' : 'g6'; }
+      if (/high|college|graduate|adult|university/.test(g)) return 'g6';
+      if (gradeBand === 'k2') return 'g3';
+      if (gradeBand === 'g35') return 'g4';
+      if (gradeBand === 'g68' || gradeBand === 'g912') return 'g6';
+      return 'g4';
+    }
+
+    // ── Standard algorithm, line by line, tied to the area model columns ──
+    function noCarry(a, d) {
+      var digits = String(a).split('').reverse().map(Number), out = 0;
+      for (var i = 0; i < digits.length; i++) {
+        var p = digits[i] * d;
+        out += (i < digits.length - 1 ? p % 10 : p) * pow10(i);
+      }
+      return out;
+    }
+    function algoLines(a, b) {
+      a = Math.round(a); b = Math.round(b);
+      var bm = boxModel(a, b), lines = [];
+      for (var j = bm.cols.length - 1; j >= 0; j--) {
+        var place = bm.cols.length - 1 - j, part = bm.cols[j].n, d = part / pow10(place);
+        var digits = String(a).split('').reverse().map(Number), carry = 0, subs = [];
+        for (var i = 0; i < digits.length; i++) {
+          var prod = digits[i] * d, p = prod + carry, last = i === digits.length - 1;
+          var w = last ? p : p % 10, cout = last ? 0 : Math.floor(p / 10);
+          subs.push({ x: digits[i], d: d, prod: prod, cin: carry, p: p, w: w, cout: cout, last: last });
+          carry = cout;
+        }
+        lines.push({
+          kind: 'line', col: j, place: place, d: d, value: a * part,
+          boxes: bm.boxes.filter(function(bx) { return bx.c === j; }).map(function(bx) { return bx.index; }),
+          subs: subs, noCarry: noCarry(a, d) * pow10(place), noShift: a * d
+        });
+      }
+      var steps = lines.slice();
+      if (lines.length > 1) steps.push({ kind: 'sum', value: a * b, lines: lines.map(function(l) { return l.value; }), noShiftSum: lines.reduce(function(acc, l) { return acc + l.noShift; }, 0) });
+      return { model: bm, lines: lines, steps: steps, total: a * b };
+    }
+    function diagnoseLine(step, val) {
+      if (typeof val !== 'number' || !isFinite(val)) return 'algo_not_number';
+      if (step.kind === 'sum') {
+        if (val === step.noShiftSum && step.noShiftSum !== step.value) return 'algo_sum_no_placeholder';
+        return 'algo_sum_generic';
+      }
+      if (step.place > 0 && val === step.noShift) return 'algo_no_placeholder';
+      if (val === step.noCarry && step.noCarry !== step.value) return 'algo_no_carry';
+      if (step.place > 0 && val === step.noCarry / pow10(step.place) && step.noCarry !== step.value) return 'algo_no_carry';
+      return 'algo_generic';
+    }
+
+    // ── Division as a missing factor (4.NBT.6, 5.NBT.6): an open rectangle with
+    // area n and one side d. The student takes friendly chunks of d off the area,
+    // subtracts, and repeats; the chunks add up to the unknown side. ──
+    function divGen(band, diff, rand) {
+      rand = typeof rand === 'function' ? rand : Math.random;
+      diff = diff === 'easy' || diff === 'hard' ? diff : 'medium';
+      var bi = BAND_INDEX[band]; if (bi == null) bi = 1;
+      var d, q, r = 0;
+      if (bi === 0) { d = rint(rand, 2, diff === 'easy' ? 5 : 9); q = diff === 'hard' ? rint(rand, 11, 25) : rint(rand, 2, 10); }
+      else if (bi === 1) {
+        if (diff === 'easy') { d = rint(rand, 2, 9); q = rint(rand, 11, 40); }
+        else if (diff === 'medium') { d = rint(rand, 3, 9); q = rint(rand, 21, 150); r = rint(rand, 0, d - 1); }
+        else { d = rint(rand, 3, 9); q = rint(rand, 120, 1100); r = rint(rand, 0, d - 1); }
+      } else if (diff === 'easy') { d = rint(rand, 3, 9); q = rint(rand, 21, 150); r = rint(rand, 0, d - 1); }
+      else if (diff === 'medium') { d = rint(rand, 11, 25); q = rint(rand, 11, 40); r = rint(rand, 0, d - 1); }
+      else { d = rint(rand, 12, 49); q = rint(rand, 21, 99); r = rint(rand, 0, d - 1); }
+      var n = q * d + r;
+      if (n > 9999) { q = Math.floor((9999 - r) / d); n = q * d + r; }
+      return { mode: 'division', n: n, d: d, q: q, r: r, a: n, b: d, answer: q };
+    }
+    // Replays saved chunks against n and d; a chunk that no longer fits ends the list.
+    function divReplay(n, d, chunks) {
+      var left = n, ok = [];
+      (Array.isArray(chunks) ? chunks : []).some(function(c) {
+        c = Number(c);
+        if (!Number.isInteger(c) || c < 1 || c * d > left) return true;
+        ok.push(c); left -= c * d; return false;
+      });
+      return { chunks: ok, left: left, sum: ok.reduce(function(s, c) { return s + c; }, 0) };
+    }
+    // One partial-quotient step: chunk c, its area (c × d) and what is left.
+    function divStep(left, d, c, area, newLeft) {
+      if (!(Number.isInteger(c) && c > 0)) return 'div_chunk_not_number';
+      if (c * d > left) return 'div_chunk_too_big';
+      if (typeof area !== 'number' || !isFinite(area)) return 'div_area_not_number';
+      if (area !== c * d) {
+        if (area === c + d) return 'div_area_added';
+        for (var k = 1; k <= 3; k++) if (area * pow10(k) === c * d || area === c * d * pow10(k)) return 'div_area_pv';
+        return 'div_area_wrong';
+      }
+      if (typeof newLeft !== 'number' || !isFinite(newLeft)) return 'div_left_not_number';
+      if (newLeft !== left - area) return newLeft === left + area ? 'div_left_added' : 'div_subtract_wrong';
+      return 'ok';
+    }
+    // The biggest place-value chunk that fits: what long division would take next.
+    function divBestChunk(left, d) {
+      for (var k = 4; k >= 0; k--) { var m = pow10(k); if (m * d <= left) return Math.floor(left / (m * d)) * m; }
+      return 0;
+    }
+    // Quotient = the chunks added; remainder = what is left. A blank remainder means 0.
+    function divFinal(chunks, d, left, qv, rv) {
+      var sum = 0, areaSum = 0;
+      chunks.forEach(function(c) { sum += c; areaSum += c * d; });
+      if (typeof qv !== 'number' || !isFinite(qv)) return 'div_q_not_number';
+      if (typeof rv !== 'number' || !isFinite(rv)) rv = 0;
+      if (qv === sum && rv === left) return 'ok';
+      if (qv !== sum) {
+        if (chunks.length > 1 && chunks.indexOf(qv) >= 0) return 'div_not_added';
+        if (chunks.length > 1 && qv === chunks.length) return 'div_counted_chunks';
+        if (qv === areaSum && areaSum !== sum) return 'div_added_areas';
+        return 'div_q_wrong';
+      }
+      if (rv >= d) return 'div_remainder_too_big';
+      return 'div_r_wrong';
+    }
+    // Long division, digit by digit. Each quotient digit is a place-value chunk.
+    function longDiv(n, d) {
+      var s = String(n), cur = 0, started = false, steps = [];
+      for (var i = 0; i < s.length; i++) {
+        var before = cur * 10 + Number(s.charAt(i));
+        var qd = Math.floor(before / d);
+        if (!started && qd === 0 && i < s.length - 1) { cur = before; continue; }
+        started = true;
+        var prod = qd * d, place = s.length - 1 - i;
+        steps.push({ i: i, place: place, partial: before, digit: qd, prod: prod, rem: before - prod, chunk: qd * pow10(place), chunkArea: prod * pow10(place) });
+        cur = before - prod;
+      }
+      return { n: n, d: d, steps: steps, q: Math.floor(n / d), r: n % d };
+    }
+    function ldDiagnose(step, d, v) {
+      if (!Number.isInteger(v) || v < 0 || v > 9) return 'ld_not_digit';
+      if (v === step.digit) return 'ok';
+      if (v * d > step.partial) return 'div_chunk_too_big';
+      if (step.partial - v * d >= d) return 'ld_left_too_big';
+      return 'ld_generic';
+    }
+    // Answer to a missing-side word problem (n ÷ a, exact).
+    function diagnoseMissing(ch, x) {
+      var n = Number(ch.n), a = Number(ch.a), q = Number(ch.answer);
+      if (typeof x !== 'number' || !isFinite(x)) return 'not_number';
+      if (x === n * a) return 'w_multiplied';
+      if (x === n - a) return 'w_subtracted';
+      if (x === n + a) return 'w_added_div';
+      if (x === a) return 'w_div_side';
+      if (x * 10 === q || x === q * 10) return 'w_div_pv';
+      return 'w_div_generic';
+    }
+    // Remainder stories (4.OA.3): n ÷ a leaves a remainder, and the story decides
+    // what it means. rk 'up': everyone needs a place, so one more group; 'drop':
+    // only full groups count; 'rem': the remainder itself is the answer.
+    var REMAINDER_KINDS = ['up', 'drop', 'rem'];
+    function remainderAnswer(n, a, rk) { var q = Math.floor(n / a), r = n % a; return rk === 'up' ? (r ? q + 1 : q) : rk === 'drop' ? q : r; }
+    function diagnoseRemainder(ch, x) {
+      var n = Number(ch.n), a = Number(ch.a), q = Math.floor(n / a), r = n % a, rk = ch.rk;
+      if (typeof x !== 'number' || !isFinite(x)) return 'not_number';
+      if (!Number.isInteger(x) && Math.abs(x - n / a) < 0.01) return 'r_decimal';
+      if (rk === 'up') { if (x === q) return 'r_dropped'; if (x === r) return 'r_gave_remainder'; }
+      if (rk === 'drop') { if (x === q + 1) return 'r_rounded_up'; if (x === r) return 'r_gave_remainder'; }
+      if (rk === 'rem') { if (x === q || x === q + 1) return 'r_gave_quotient'; if (x === a - r) return 'r_gap'; }
+      if (x === n * a) return 'w_multiplied';
+      if (x === n - a) return 'w_subtracted';
+      if (x === n + a) return 'w_added_div';
+      return 'r_generic';
+    }
+    // A to-scale drawing of a finished division: chunk c is c units wide, the known
+    // side d is d units tall, and the remainder is a strip left ÷ d units wide.
+    // It is offered only when every chunk would still be wide enough to see.
+    var DIV_SCALE_MIN = 10;
+    function divScale(d, chunks, left, maxW, maxH) {
+      chunks = Array.isArray(chunks) ? chunks : [];
+      var sum = chunks.reduce(function(s, c) { return s + c; }, 0), total = sum + (left > 0 ? left / d : 0);
+      if (!chunks.length || !(total > 0) || !(d > 0)) return { ok: false, reason: 'none' };
+      var unit = Math.min(maxW / total, maxH / d);
+      var thin = Math.min.apply(null, chunks);
+      if (thin * unit < DIV_SCALE_MIN) return { ok: false, reason: 'thin_chunk', c: thin, unit: unit };
+      if (d * unit < 16) return { ok: false, reason: 'flat', unit: unit };
+      if (left > 0 && left / d * unit < 3) return { ok: false, reason: 'thin_rem', unit: unit };
+      return { ok: true, unit: unit, w: total * unit, h: d * unit };
+    }
+
+    // ── Hundred grid (5.NBT.7, 6.RP.3c): tenths × tenths, or a percent of a percent ──
+    function diagnoseGrid(ch, x) {
+      var ca = Math.round(Number(ch.a) * 10), rb = Math.round(Number(ch.b) * 10), cnt = ca * rb;
+      var pct = ch.kind === 'pct', unit = pct ? 1 : 0.01;
+      if (typeof x !== 'number' || !isFinite(x)) return 'not_number';
+      if (pct && sameNum(x, cnt / 100)) return 'g_pct_as_decimal';
+      if (sameNum(x, (ca + rb) * 10 * unit)) return 'g_added';
+      if (sameNum(x, (ca * 10 + rb * 10 - cnt) * unit)) return 'g_union';
+      if (!pct && sameNum(x, cnt)) return 'g_count';
+      if (pct && sameNum(x, ca * 10 * rb * 10)) return 'g_pct_not_scaled';
+      for (var k = 1; k <= 2; k++) {
+        if (sameNum(x, cnt * unit * pow10(k))) return 'g_decimal_big';
+        if (sameNum(x * pow10(k), cnt * unit)) return 'g_decimal_small';
+      }
+      if (x > Math.min(ca, rb) * 10 * unit + 1e-9) return 'g_bigger';
+      return 'g_generic';
+    }
+    function gridAnswer(kind, ca, rb) { return kind === 'pct' ? ca * rb : ca * rb / 100; }
+
+    // ── Factoring with algebra tiles (HSA-SSE.A.2): A x² + B x + C into a rectangle
+    // whose sides are (A x + p) and (x + q). The student picks p and q. ──
+    function facGen(diff, rand) {
+      rand = typeof rand === 'function' ? rand : Math.random;
+      var A = diff === 'hard' ? 2 : 1, p, q;
+      if (diff === 'easy') { p = rint(rand, 1, 5); q = rint(rand, 1, 5); }
+      else if (diff === 'hard') { p = rint(rand, 1, 9); q = rint(rand, 1, 6); }
+      else { p = rint(rand, 1, 9); q = rint(rand, 1, 9); }
+      return { A: A, B: A * q + p, C: p * q };
+    }
+    function facUse(F, p, q) { return { x: F.A * q + p, u: p * q }; }
+    function facCheck(F, p, q) {
+      var use = facUse(F, p, q);
+      if (use.x === F.B && use.u === F.C) return 'ok';
+      if (F.A === 1 && p + q === F.C && p * q === F.B) return 'fac_swapped';
+      if ((p === F.B && q === F.C) || (p === F.C && q === F.B)) return 'fac_coefficients';
+      if (use.x !== F.B && use.u === F.C) return 'fac_x_count';
+      if (use.x === F.B && use.u !== F.C) return 'fac_units';
+      return 'fac_both';
+    }
+    // Every (p, q) that makes a rectangle, for the "show a rectangle" reveal.
+    function facSolutions(F) {
+      var out = [];
+      for (var p = 1; p <= F.C; p++) if (F.C % p === 0 && facCheck(F, p, F.C / p) === 'ok') out.push({ p: p, q: F.C / p });
+      return out;
+    }
+    // ── Factoring with negative tiles: (A x + p)(x + q), p and q non-zero and of
+    // either sign. A negative side number makes negative (red) tiles. A positive
+    // and a negative x tile are a zero pair: together they are worth 0, so the
+    // rectangle may hold extra zero pairs and still be the same expression. ──
+    function facGenSigned(diff, rand) {
+      rand = typeof rand === 'function' ? rand : Math.random;
+      var A = diff === 'hard' ? 2 : 1, lim = diff === 'easy' ? 5 : 9, qlim = diff === 'hard' ? 6 : lim, p = 1, q = -1;
+      for (var i = 0; i < 20; i++) {
+        p = rint(rand, 1, lim) * (rand() < 0.5 ? -1 : 1);
+        q = rint(rand, 1, qlim) * (rand() < 0.5 ? -1 : 1);
+        if (p > 0 && q > 0) continue;
+        if (diff === 'easy' && A * q + p === 0) continue;
+        break;
+      }
+      if (p > 0 && q > 0) q = -q;
+      return { A: A, B: A * q + p, C: p * q };
+    }
+    function facTiles(F, p, q) {
+      var pos = (q > 0 ? F.A * q : 0) + (p > 0 ? p : 0), neg = (q < 0 ? -F.A * q : 0) + (p < 0 ? -p : 0);
+      return { pos: pos, neg: neg, pairs: Math.min(pos, neg), net: pos - neg, u: p * q };
+    }
+    function facCheckSigned(F, p, q) {
+      if (!Number.isInteger(p) || !Number.isInteger(q) || !p || !q) return 'fac_s_both';
+      var x = F.A * q + p, u = p * q;
+      if (x === F.B && u === F.C) return 'ok';
+      if (u === F.C && F.B !== 0 && x === -F.B) return 'fac_s_signs_swapped';
+      if (F.C < 0 && u > 0) return 'fac_s_need_opposite';
+      if (F.C > 0 && u < 0) return 'fac_s_need_same';
+      if (F.C > 0 && ((p > 0) === (F.B < 0))) return 'fac_s_same_sign_wrong';
+      if (u === F.C) return 'fac_s_net_x';
+      if (x === F.B) return 'fac_s_units';
+      return 'fac_s_both';
+    }
+    // Every (p, q) the steppers reach (−12 to 12, not 0) that makes the rectangle.
+    function facSolutionsSigned(F) {
+      var out = [], c = Math.abs(F.C);
+      if (!Number.isInteger(F.C) || !F.C) return out;
+      for (var p = -Math.min(c, 12); p <= Math.min(c, 12); p++) {
+        if (!p || F.C % p !== 0) continue;
+        var q = F.C / p;
+        if (Math.abs(q) <= 12 && facCheckSigned(F, p, q) === 'ok') out.push({ p: p, q: q });
+      }
+      return out;
+    }
+
+    // ── Real-world stories at every grade. Each kind is graded by the matching model. ──
+    var STORY_KINDS = { g3: ['array', 'area', 'missing'], g4: ['array', 'area', 'missing', 'remainder'], g5: ['area', 'decimal', 'fraction', 'missing', 'remainder'], g6: ['decimal', 'percent', 'algebra', 'fraction', 'missing', 'remainder'] };
+    var STORY_ALL = ['array', 'area', 'missing', 'remainder', 'decimal', 'fraction', 'percent', 'algebra'];
+    var STORY_COUNT = 4;
+    function genStory(band, diff, rand, kind) {
+      rand = typeof rand === 'function' ? rand : Math.random;
+      diff = diff === 'easy' || diff === 'hard' ? diff : 'medium';
+      var bi = BAND_INDEX[band]; if (bi == null) bi = 1;
+      var kinds = STORY_KINDS[band] || STORY_KINDS.g4;
+      if (STORY_ALL.indexOf(kind) < 0) kind = kinds[rint(rand, 0, kinds.length - 1)];
+      if (kind === 'array') return gen('word', band, diff, rand);
+      var w = rint(rand, 0, STORY_COUNT - 1), out = { mode: 'word', wkind: kind, wctx: w };
+      if (kind === 'area') {
+        var aa, bb;
+        if (bi === 0) { aa = rint(rand, 2, diff === 'easy' ? 6 : 9); bb = rint(rand, 3, diff === 'hard' ? 10 : 9); }
+        else if (bi === 1) { aa = diff === 'easy' ? rint(rand, 3, 9) : rint(rand, 11, 39); bb = rint(rand, 12, diff === 'hard' ? 99 : 49); }
+        else { aa = rint(rand, 12, 60); bb = rint(rand, 12, 99); }
+        out.a = aa; out.b = bb; out.answer = aa * bb;
+      } else if (kind === 'missing') {
+        var dv = divGen(band, diff, rand);
+        out.a = dv.d; out.n = dv.q * dv.d; out.answer = dv.q;
+      } else if (kind === 'remainder') {
+        var rk = REMAINDER_KINDS[rint(rand, 0, 2)], rd, rq;
+        if (bi <= 1) { rd = rint(rand, 3, 9); rq = rint(rand, 2, diff === 'easy' ? 9 : diff === 'medium' ? 20 : 60); }
+        else { rd = rint(rand, diff === 'easy' ? 4 : 11, diff === 'hard' ? 32 : 25); rq = rint(rand, 3, diff === 'hard' ? 40 : 20); }
+        var rr = rint(rand, 1, rd - 1);
+        out.rk = rk; out.wctx = rint(rand, 0, 1); out.a = rd; out.n = rq * rd + rr; out.answer = remainderAnswer(out.n, rd, rk);
+      } else if (kind === 'decimal') {
+        var da = bi >= 3 && diff === 'hard' ? nonRound(rint(rand, 101, 399)) / 10 : nonRound(rint(rand, 11, 59)) / 10;
+        var db = diff === 'easy' ? rint(rand, 2, 9) : nonRound(rint(rand, 11, 39)) / 10;
+        out.a = da; out.b = db; out.answer = product(da, db);
+      } else if (kind === 'fraction') {
+        var fr = gen('fraction', band, diff === 'hard' ? 'medium' : diff, rand);
+        out.n1 = fr.n1; out.d1 = fr.d1; out.n2 = fr.n2; out.d2 = fr.d2; out.answer = fr.answer;
+      } else if (kind === 'percent') {
+        var p1 = rint(rand, 1, 9) * 10, p2 = rint(rand, 1, 9) * 10;
+        out.p1 = p1; out.p2 = p2; out.a = p1 / 100; out.b = p2 / 100; out.answer = p1 * p2 / 100;
+      } else {
+        var g = gen('algebra', band, diff === 'easy' ? 'medium' : diff, rand);
+        out.f1 = g.f1; out.f2 = g.f2; out.answer = g.answer;
+      }
+      return out;
+    }
+    // The model a story is graded and hinted with.
+    function storyAs(ch) {
+      if (!ch || ch.mode !== 'word' || !ch.wkind) return ch;
+      if (ch.wkind === 'fraction') return { mode: 'fraction', n1: ch.n1, d1: ch.d1, n2: ch.n2, d2: ch.d2, answer: ch.answer };
+      if (ch.wkind === 'algebra') return { mode: 'algebra', f1: ch.f1, f2: ch.f2, answer: ch.answer };
+      if (ch.wkind === 'percent') return { mode: 'grid100', kind: 'pct', a: ch.p1 / 100, b: ch.p2 / 100, answer: ch.answer };
+      if (ch.wkind === 'missing') return { mode: 'divword', a: ch.a, n: ch.n, answer: ch.answer };
+      if (ch.wkind === 'remainder') return { mode: 'remword', a: ch.a, n: ch.n, rk: ch.rk, answer: ch.answer };
+      return ch;
+    }
+
+    // ── Worked examples: ordered steps; the fading hides the last ones first ──
+    function workedSteps(prob) {
+      if (!prob) return [];
+      if (prob.mode === 'division') {
+        var ld = longDiv(prob.n, prob.d), left = prob.n, ds = [], chunks = [];
+        ld.steps.forEach(function(s) {
+          if (!s.digit) return;
+          chunks.push(s.chunk);
+          ds.push({ k: 'w_div_area', c: s.chunk, d: prob.d, ans: s.chunkArea });
+          ds.push({ k: 'w_div_left', left: left, area: s.chunkArea, ans: left - s.chunkArea });
+          left -= s.chunkArea;
+        });
+        ds.push({ k: 'w_div_q', terms: chunks, ans: ld.q, r: ld.r });
+        return ds;
+      }
+      if (prob.mode === 'grid100') {
+        var ca = Math.round(prob.a * 10), rb = Math.round(prob.b * 10);
+        return [
+          { k: 'w_g_cols', a: prob.a, kind: prob.kind, ans: ca },
+          { k: 'w_g_rows', b: prob.b, kind: prob.kind, ans: rb },
+          { k: 'w_g_both', ca: ca, rb: rb, ans: ca * rb },
+          { k: prob.kind === 'pct' ? 'w_g_pct' : 'w_g_dec', ans: gridAnswer(prob.kind, ca, rb) }
+        ];
+      }
+      if (prob.mode === 'multidigit') {
+        var bm = boxModel(prob.a, prob.b), st = [];
+        bm.boxes.forEach(function(bx) { if (bx.n > 0) st.push({ k: 'w_box', pa: bx.pa, pb: bx.pb, ans: bx.value }); });
+        st.push({ k: 'w_total', ans: bm.total, terms: bm.boxes.filter(function(bx) { return bx.n > 0; }).map(function(bx) { return fmt(bx.value); }) });
+        return st;
+      }
+      if (prob.mode === 'distributive') {
+        var r = prob.b - prob.split;
+        return [
+          { k: 'w_box', pa: prob.a, pb: prob.split, ans: prob.a * prob.split },
+          { k: 'w_box', pa: prob.a, pb: r, ans: prob.a * r },
+          { k: 'w_total', ans: prob.a * prob.b, terms: [String(prob.a * prob.split), String(prob.a * r)] }
+        ];
+      }
+      if (prob.mode === 'fraction') {
+        return [
+          { k: 'w_frac_shaded', n1: prob.n1, n2: prob.n2, ans: prob.n1 * prob.n2 },
+          { k: 'w_frac_whole', d1: prob.d1, d2: prob.d2, ans: prob.d1 * prob.d2 },
+          { k: 'w_frac_area', ans: { num: prob.n1 * prob.n2, den: prob.d1 * prob.d2 } }
+        ];
+      }
+      if (prob.mode === 'algebra') {
+        var e = algExpand(prob.f1, prob.f2), out = [];
+        e.regions.forEach(function(rg) {
+          var rowSide = rg.rowPart === 'x' ? prob.f1.x : prob.f1.c, colSide = rg.colPart === 'x' ? prob.f2.x : prob.f2.c;
+          if (!rowSide || !colSide) return;
+          out.push({ k: rg.kind === 'x2' ? 'w_alg_x2' : rg.kind === 'x' ? 'w_alg_x' : 'w_alg_unit', rs: sideStr(prob.f1, rg.rowPart), cs: sideStr(prob.f2, rg.colPart), ans: rg.coef });
+        });
+        if (e.regions[1].coef && e.regions[2].coef) out.push({ k: 'w_alg_combine', ans: e.B });
+        return out;
+      }
+      return [];
+    }
+
+    return {
+      gcd: gcd, fmt: fmt, clampInt: clampInt, decimalsOf: decimalsOf, placeParts: placeParts, partsOf: partsOf, boxModel: boxModel, product: product, boxCount: boxCount,
+      defaultCuts: defaultCuts, cleanCuts: cleanCuts, cutModel: cutModel, moveCut: moveCut, scaledOf: scaled,
+      parseNum: parseNum, sameNum: sameNum, parseFrac: parseFrac, fracEq: fracEq, fracStr: fracStr, mixedStr: mixedStr, simplify: simplify,
+      algExpand: algExpand, polyStr: polyStr, factorStr: factorStr, sideStr: sideStr, coefOf: coefOf,
+      diagnoseWhole: diagnoseWhole, diagnoseFraction: diagnoseFraction, diagnoseAlgebra: diagnoseAlgebra, diagnoseBox: diagnoseBox, grade: grade,
+      seeded: seeded, gen: gen, probKey: probKey, bandFor: bandFor, algoLines: algoLines, diagnoseLine: diagnoseLine, workedSteps: workedSteps,
+      divGen: divGen, divReplay: divReplay, divStep: divStep, divBestChunk: divBestChunk, divFinal: divFinal, longDiv: longDiv, ldDiagnose: ldDiagnose,
+      diagnoseMissing: diagnoseMissing, diagnoseGrid: diagnoseGrid, gridAnswer: gridAnswer,
+      facGen: facGen, facUse: facUse, facCheck: facCheck, facSolutions: facSolutions,
+      facGenSigned: facGenSigned, facTiles: facTiles, facCheckSigned: facCheckSigned, facSolutionsSigned: facSolutionsSigned, sgn: sgn,
+      REMAINDER_KINDS: REMAINDER_KINDS, remainderAnswer: remainderAnswer, diagnoseRemainder: diagnoseRemainder, divScale: divScale,
+      genStory: genStory, storyAs: storyAs, STORY_KINDS: STORY_KINDS, STORY_ALL: STORY_ALL, STORY_COUNT: STORY_COUNT,
+      WORD_COUNT: WORD_COUNT
+    };
+  })();
+
+  var MODES = ['basic', 'distributive', 'multidigit', 'algorithm', 'division', 'fraction', 'grid100', 'algebra', 'word'];
+  var CHALLENGE_MODES = ['basic', 'distributive', 'multidigit', 'fraction', 'grid100', 'algebra', 'word'];
+  var BANDS = ['g3', 'g4', 'g5', 'g6'];
+  // The core tabs of each grade level, in teaching order. They come first in the
+  // tab row; every other tab follows under "More".
+  var BAND_MODES = { g3: ['basic', 'distributive', 'word'], g4: ['multidigit', 'algorithm', 'division', 'word'], g5: ['multidigit', 'grid100', 'fraction', 'word'], g6: ['algebra', 'grid100', 'word'] };
+  function tabOrderFor(band) {
+    var core = BAND_MODES[band] || BAND_MODES.g4;
+    return core.concat(MODES.filter(function(m) { return core.indexOf(m) < 0; }));
+  }
+  // How long a live AI hint may take before the built-in hint stands in.
+  var AI_HINT_WAIT_MS = 12000;
+  // Quest labels are read outside render, so they use the translator of the last render.
+  var __alloCtx_areamodel = null;
+  var __alloT = function(k, fb) {
+    var v; try { v = (__alloCtx_areamodel && typeof __alloCtx_areamodel.t === 'function') ? __alloCtx_areamodel.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null || v === k) ? (fb != null ? fb : k) : v;
+  };
+  function qfill(str, vars) { return __alloOneWord(String(str).replace(/\{(\w+)\}/g, function(m, k) { return vars && vars[k] != null ? String(vars[k]) : m; })); }
+  // Memoised array grid: up to 400 cells. Events are delegated to the grid, so the
+  // cells only re-render when the array, the highlight, the focus or the palette change.
+  var GRID_MEMO = null;
+  function gridMemo(React) {
+    if (GRID_MEMO && GRID_MEMO.React === React) return GRID_MEMO.C;
+    var h = React.createElement;
+    function AmGrid(p) {
+      var gridRows = [];
+      for (var r = 0; r < p.rows; r++) {
+        var cells = [];
+        for (var c = 0; c < p.cols; c++) {
+          var on = r < p.hr && c < p.hc;
+          cells.push(h('div', {
+            key: 'c' + r + '-' + c, role: 'gridcell', 'data-cell': r + '-' + c,
+            tabIndex: (r === p.fr && c === p.fc) ? 0 : -1, 'aria-selected': on,
+            'aria-label': qfill(p.cellTpl, { r: r + 1, c: c + 1 }),
+            className: 'allo-am-cell' + (on ? ' allo-am-cell-fill' : ''),
+            style: { width: p.cellPx, height: p.cellPx, flex: '0 0 auto', borderRadius: 4, cursor: 'pointer', background: on ? p.cellOn : p.cell, border: '1px solid ' + p.cellBorder }
+          }));
+        }
+        gridRows.push(h('div', { key: 'gr' + r, role: 'row', style: { display: 'flex', gap: p.gap } }, cells));
+      }
+      return h('div', { role: 'grid', 'aria-label': p.label, 'aria-describedby': 'am-grid-desc', 'data-areamodel-grid': true,
+        onClick: function(e) { p.box.current.click(e); }, onKeyDown: function(e) { p.box.current.key(e); },
+        style: { display: 'flex', flexDirection: 'column', gap: p.gap } }, gridRows);
+    }
+    GRID_MEMO = { React: React, C: React.memo ? React.memo(AmGrid) : AmGrid };
+    return GRID_MEMO.C;
+  }
 
   window.StemLab.registerTool('areamodel', {
-    icon: '\uD83D\uDFE7', label: 'Area Model',
-    desc: 'Visual multiplication with area model grids, distributive property, partial products, sound effects, and badges.',
+    icon: '🟧', label: 'Area Model',
+    desc: 'Multiplication as area: arrays, the distributive property, partial products with whole numbers and decimals, fraction side lengths, algebra tiles and a bridge to the standard algorithm.',
     color: 'amber', category: 'math',
     questHooks: [
-      { id: 'solve_5', label: 'Solve 5 area challenges', icon: '🟧', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 solved'; } },
-      { id: 'all_modes', label: 'Try challenges in all 4 modes', icon: '🌈', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.challengeTypesUsed || {}).length + '/4 modes'; } },
-      { id: 'streak_5', label: 'Reach a streak of 5', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } },
-      { id: 'word_3', label: 'Solve 3 word problems', icon: '📝', check: function(d) { return (d.wordSolved || 0) >= 3; }, progress: function(d) { return (d.wordSolved || 0) + '/3 word problems'; } }
+      { id: 'solve_5', get label() { return __alloT('stem.areamodel.quest_solve5', 'Solve 5 area challenges'); }, icon: '🟧', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return qfill(__alloT('stem.areamodel.quest_solve5_progress', '{n}/5 solved'), { n: (d.score && d.score.correct) || 0 }); } },
+      { id: 'all_modes', get label() { return __alloT('stem.areamodel.quest_all_modes', 'Try challenges in all 4 modes'); }, icon: '🌈', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return qfill(__alloT('stem.areamodel.quest_all_modes_progress', '{n}/4 modes'), { n: Object.keys(d.challengeTypesUsed || {}).length }); } },
+      { id: 'streak_5', get label() { return __alloT('stem.areamodel.quest_streak5', 'Reach a streak of 5'); }, icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return qfill(__alloT('stem.areamodel.quest_streak5_progress', 'best {n}/5'), { n: d.bestStreak || 0 }); } },
+      { id: 'word_3', get label() { return __alloT('stem.areamodel.quest_word3', 'Solve 3 word problems'); }, icon: '📝', check: function(d) { return (d.wordSolved || 0) >= 3; }, progress: function(d) { return qfill(__alloT('stem.areamodel.quest_word3_progress', '{n}/3 word problems'), { n: d.wordSolved || 0 }); } }
     ],
+    _core: CORE,
     render: function(ctx) {
-      // The header row and the keyboard hint sit on the HOST surface - white
-      // in light and dark, pure BLACK in the contrast theme, where they ran
-      // 2.8-3.0:1. Text on the tool own tinted cards reads as authored.
-      var isContrast = !!ctx.isContrast;
-      var onHostInk = isContrast ? ' text-white' : '';
+      __alloCtx_areamodel = ctx;
       var React = ctx.React;
       var h = React.createElement;
-      var ArrowLeft = ctx.icons.ArrowLeft;
+      var gridBox = React.useRef({ click: function() {}, key: function() {} });
+      // Cut-line drags read this render's model through cutLive, so a long drag never acts on a stale picture.
+      var cutLive = React.useRef(null);
+      var cutDrag = React.useRef(null);
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
+      var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
       var announceToSR = ctx.announceToSR;
-      var a11yClick = ctx.a11yClick;
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var isContrast = !!ctx.isContrast;
       var isDark = !!ctx.isDark || isContrast;
+      var isTeacher = ctx.isTeacherMode === true;
+      var fmt = CORE.fmt;
+      // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
+      function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+      function fill(str, vars) { return __alloOneWord(String(str).replace(/\{(\w+)\}/g, function(m, k) { return vars && vars[k] != null ? String(vars[k]) : m; })); }
+      // Template with React nodes in its {slots}: keeps the sentence whole for translators.
+      function fillNodes(str, vars) {
+        return String(str).split(/(\{\w+\})/).map(function(part, i) {
+          var m = part.match(/^\{(\w+)\}$/);
+          if (m && vars && vars[m[1]] != null) { var v = vars[m[1]]; return (typeof v === 'object') ? h(React.Fragment, { key: 'n' + i }, v) : String(v); }
+          return part;
+        });
+      }
+      function say(msg) { if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (e) {} } }
+      function toast(msg, kind) { if (typeof addToast === 'function') { try { addToast(msg, kind || 'info'); } catch (e) {} } }
 
-      // ── State via labToolData ──
+      // ── Palette: every surface sets its own colours, so light, dark and contrast all read ──
+      var C = isContrast ? {
+        bg: '#000000', card: '#000000', card2: '#000000', ink: '#ffffff', sub: '#ffffff', border: '#ffffff', ctrl: '#ffffff',
+        accent: '#ffff00', btn: '#ffff00', btnInk: '#000000', btn2: '#000000', btn2Ink: '#ffffff',
+        ok: '#66ff99', okBg: '#000000', bad: '#ffaaaa', badBg: '#000000', info: '#99ccff', infoBg: '#000000', warn: '#ffff00', warnBg: '#000000',
+        stroke: '#ffffff', cell: '#000000', cellOn: '#ffff00', cellBorder: '#ffffff', inputBg: '#000000', svgBg: '#000000'
+      } : isDark ? {
+        bg: '#0f172a', card: '#1e293b', card2: '#273449', ink: '#f1f5f9', sub: '#cbd5e1', border: '#475569', ctrl: '#94a3b8',
+        accent: '#fbbf24', btn: '#f59e0b', btnInk: '#0f172a', btn2: '#334155', btn2Ink: '#f1f5f9',
+        ok: '#86efac', okBg: '#052e16', bad: '#fca5a5', badBg: '#450a0a', info: '#93c5fd', infoBg: '#172554', warn: '#fcd34d', warnBg: '#422006',
+        stroke: '#e2e8f0', cell: '#334155', cellOn: '#fbbf24', cellBorder: '#94a3b8', inputBg: '#0f172a', svgBg: '#1e293b'
+      } : {
+        bg: '#ffffff', card: '#fffbeb', card2: '#f8fafc', ink: '#0f172a', sub: '#475569', border: '#e7d7b1', ctrl: '#64748b',
+        accent: '#92400e', btn: '#b45309', btnInk: '#ffffff', btn2: '#f1f5f9', btn2Ink: '#0f172a',
+        ok: '#166534', okBg: '#dcfce7', bad: '#991b1b', badBg: '#fee2e2', info: '#1e40af', infoBg: '#dbeafe', warn: '#92400e', warnBg: '#fef3c7',
+        stroke: '#0f172a', cell: '#fef3c7', cellOn: '#b45309', cellBorder: '#b45309', inputBg: '#ffffff', svgBg: '#ffffff'
+      };
+      var FILLS = ['#93c5fd', '#a7f3d0', '#fde68a', '#fbcfe8', '#c4b5fd', '#fdba74', '#99f6e4', '#d9f99d', '#bae6fd', '#fecaca', '#e9d5ff', '#fef08a'];
+      function btnStyle(kind, disabled) {
+        var s = kind === 'primary'
+          ? { background: C.btn, color: C.btnInk, border: '2px solid ' + C.btn, borderRadius: 10, minHeight: 44, padding: '6px 14px', fontWeight: 800, fontSize: 13, cursor: 'pointer' }
+          : { background: C.btn2, color: C.btn2Ink, border: '1px solid ' + C.ctrl, borderRadius: 10, minHeight: 36, padding: '4px 10px', fontWeight: 700, fontSize: 12, cursor: 'pointer' };
+        // The host's contrast theme paints every button black, so black ink on a "yellow" button is blank. An inset ring keeps primary and selected buttons apart.
+        if (isContrast && kind === 'primary') { s.background = '#000000'; s.color = '#ffff00'; s.border = '2px solid #ffff00'; s.boxShadow = 'inset 0 0 0 3px #ffff00'; }
+        if (disabled) { s.opacity = 0.6; s.cursor = 'not-allowed'; }
+        return s;
+      }
+      var inputStyle = { background: C.inputBg, color: C.ink, border: '2px solid ' + C.ctrl, borderRadius: 8, minHeight: 40, padding: '4px 8px', fontSize: 16, fontWeight: 700 };
+      var cardStyle = { background: C.card, color: C.ink, border: '1px solid ' + C.border, borderRadius: 14, padding: 12 };
+      function noteStyle(kind) {
+        var map = { ok: [C.ok, C.okBg], bad: [C.bad, C.badBg], info: [C.info, C.infoBg], warn: [C.warn, C.warnBg] }[kind] || [C.ink, C.card2];
+        return { color: map[0], background: map[1], border: '1px solid ' + map[0], borderRadius: 10, padding: '8px 10px', fontSize: 13, fontWeight: 700, lineHeight: 1.45 };
+      }
+
+      // ── State via toolData._areamodel ──
       var ld = ctx.toolData || {};
       var _a = ld._areamodel || {};
       var upd = function(obj) {
@@ -107,6 +952,17 @@ window.StemLab = window.StemLab || {
             return Object.assign({}, prev, { _areamodel: am });
           });
         }
+      };
+      // Reads the newest state first: for late callbacks (AI hints) that must not
+      // overwrite work done since they were sent.
+      var updWith = function(fn) {
+        if (typeof ctx.setToolData !== 'function') return;
+        ctx.setToolData(function(prev) {
+          var cur = (prev && prev._areamodel) || {};
+          var patch = fn(cur);
+          if (!patch) return prev;
+          return Object.assign({}, prev, { _areamodel: Object.assign({}, cur, patch) });
+        });
       };
 
       // ═══ SOUND EFFECTS ═══
@@ -136,1254 +992,3270 @@ window.StemLab = window.StemLab || {
       var sfxStreak = function() { playTone(440, 0.06, 'sine', 0.1); setTimeout(function() { playTone(554, 0.06, 'sine', 0.1); }, 50); setTimeout(function() { playTone(659, 0.08, 'sine', 0.1); }, 100); setTimeout(function() { playTone(880, 0.15, 'sine', 0.12); }, 150); };
       var sfxNewChallenge = function() { playTone(392, 0.08, 'triangle', 0.08); setTimeout(function() { playTone(523, 0.12, 'triangle', 0.1); }, 80); };
 
-      // ── State defaults ──
-      var dims = _a.dims || { rows: 4, cols: 6 };
-      var highlight = _a.highlight || { rows: 0, cols: 0 };
-      var challenge = _a.challenge || null;
-      var answer = _a.answer || '';
+      // ── Old saves and Dynamic Assessment presets ──
+      // DA writes { rows, cols, highlight: { row, col } } straight into _areamodel
+      // (misc_handlers_module.js); the tool used to ignore it. Read it now and fold it
+      // into dims on the next commit.
+      var presetRows = Number(_a.rows), presetCols = Number(_a.cols);
+      var hasPreset = isFinite(presetRows) && isFinite(presetCols) && presetRows >= 1 && presetCols >= 1;
+      var presetDims = hasPreset ? { rows: CORE.clampInt(presetRows, 1, 20, 4), cols: CORE.clampInt(presetCols, 1, 20, 6) } : null;
+      function normHighlight(hl, dmax) {
+        if (!hl || typeof hl !== 'object') return { rows: 0, cols: 0 };
+        if (hl.rows == null && (hl.row != null || hl.col != null)) return { rows: CORE.clampInt(Number(hl.row) + 1, 0, dmax.rows, 0), cols: CORE.clampInt(Number(hl.col) + 1, 0, dmax.cols, 0) };
+        return { rows: CORE.clampInt(hl.rows, 0, 20, 0), cols: CORE.clampInt(hl.cols, 0, 20, 0) };
+      }
+      React.useEffect(function() {
+        if (!hasPreset) return;
+        var patch = { dims: presetDims, rows: undefined, cols: undefined, viewMode: 'basic', swapped: false };
+        patch.highlight = normHighlight(_a.highlight, presetDims);
+        upd(patch);
+      }, [hasPreset, presetRows, presetCols]);
+
+      var rawDims = presetDims || _a.dims || { rows: 4, cols: 6 };
+      var dims = { rows: CORE.clampInt(rawDims.rows, 1, 20, 4), cols: CORE.clampInt(rawDims.cols, 1, 20, 6) };
+      var highlight = normHighlight(_a.highlight, dims);
+      // A saved challenge must be gradeable; anything else (old or damaged saves) is dropped.
+      function validChallenge(ch) {
+        if (!ch || typeof ch !== 'object' || CHALLENGE_MODES.indexOf(ch.mode) < 0) return null;
+        var pos = function(v) { return typeof v === 'number' && isFinite(v) && v > 0; };
+        if (ch.mode === 'fraction') return [ch.n1, ch.d1, ch.n2, ch.d2].every(function(v) { return pos(v) && Math.round(v) === v; }) ? ch : null;
+        var factorsOk = function(c) { return c.f1 && c.f2 && typeof c.f1 === 'object' && typeof c.f2 === 'object' && isFinite(c.f1.x) && isFinite(c.f1.c) && isFinite(c.f2.x) && isFinite(c.f2.c); };
+        if (ch.mode === 'algebra') return factorsOk(ch) ? ch : null;
+        if (ch.mode === 'grid100') return pos(ch.a) && pos(ch.b) && ch.a < 1 && ch.b < 1 && (ch.kind === 'dec' || ch.kind === 'pct') && isFinite(Number(ch.answer)) ? ch : null;
+        if (ch.mode === 'word' && ch.wkind != null && ch.wkind !== 'array') {
+          var k = ch.wkind;
+          if (k === 'area' || k === 'decimal') return pos(ch.a) && pos(ch.b) && isFinite(Number(ch.answer)) ? ch : null;
+          if (k === 'missing') return pos(ch.a) && pos(ch.n) && pos(ch.answer) && ch.n === ch.a * ch.answer ? ch : null;
+          if (k === 'remainder') return Number.isInteger(ch.a) && Number.isInteger(ch.n) && ch.a >= 2 && ch.n > ch.a && ch.n % ch.a > 0 && CORE.REMAINDER_KINDS.indexOf(ch.rk) >= 0 && Number(ch.answer) === CORE.remainderAnswer(ch.n, ch.a, ch.rk) ? ch : null;
+          if (k === 'fraction') return [ch.n1, ch.d1, ch.n2, ch.d2].every(function(v) { return pos(v) && Math.round(v) === v; }) ? ch : null;
+          if (k === 'percent') return pos(ch.p1) && pos(ch.p2) && ch.p1 < 100 && ch.p2 < 100 && isFinite(Number(ch.answer)) ? ch : null;
+          if (k === 'algebra') return factorsOk(ch) ? ch : null;
+          return null;
+        }
+        if (!pos(ch.a) || !pos(ch.b) || !(isFinite(Number(ch.answer)))) return null;
+        if (ch.mode === 'distributive' && ch.split != null && !(ch.split > 0 && ch.split < ch.b)) return null;
+        return ch;
+      }
+      var challenge = validChallenge(_a.challenge);
+      var answer = _a.answer == null ? '' : String(_a.answer);
+      var ansParts = _a.ansParts || { A: '', B: '', C: '' };
       var feedback = _a.feedback || null;
-      // Grade-aware default difficulty (explicit user choice always wins):
-      // K-2 easy, 3-5 medium, 6-8+ hard; unknown grade keeps the gentle default.
       var _gl = (ctx.gradeLevel || '').toLowerCase();
       var _gradeDefaultDiff = /6th|7th|8th|9th|10|11|12|high/.test(_gl) ? 'hard' : /3rd|4th|5th/.test(_gl) ? 'medium' : 'easy';
-      var difficulty = _a.difficulty || _gradeDefaultDiff;
+      var difficulty = ['easy', 'medium', 'hard'].indexOf(_a.difficulty) >= 0 ? _a.difficulty : _gradeDefaultDiff;
       var score = _a.score || { correct: 0, total: 0 };
       var streak = _a.streak || 0;
       var bestStreak = _a.bestStreak || 0;
       var badges = _a.badges || {};
-      var viewMode = _a.viewMode || 'basic';
-      var swapped = _a.swapped || false;
-      var splitAt = _a.splitAt || Math.min(5, Math.floor(dims.cols / 2));
-      var multiDims = _a.multiDims || { a: 23, b: 14 };
-
-      // AI Tutor state
-      var showAITutor = _a.showAITutor || false;
+      var swapped = !!_a.swapped;
+      var multiDims = (function(md) {
+        md = md && typeof md === 'object' ? md : {};
+        var a = Number(md.a), b = Number(md.b);
+        var ok = function(v) { return isFinite(v) && v > 0 && v <= 9999; };
+        return { a: ok(a) ? a : 23, b: ok(b) ? b : 14 };
+      })(_a.multiDims);
+      var showAITutor = !!_a.showAITutor;
       var aiResponse = _a.aiResponse || '';
-      var aiLoading = _a.aiLoading || false;
+      var aiLoading = !!_a.aiLoading;
       var aiQuestion = _a.aiQuestion || '';
-
-      // Challenge tracking
       var challengeTypesUsed = _a.challengeTypesUsed || {};
       var basicSolved = _a.basicSolved || 0;
       var distSolved = _a.distSolved || 0;
       var multiSolved = _a.multiSolved || 0;
       var wordSolved = _a.wordSolved || 0;
-
-      // v3 additions
-      var muted = _a.muted || false;                                    // global mute (read by playTone)
-      var showSkipCount = _a.showSkipCount !== false;                   // skip-count overlay on basic grid (default ON)
-      var wordCtxIdx = _a.wordCtxIdx != null ? _a.wordCtxIdx : 0;       // word problem context index
-      var wordDims = _a.wordDims || { a: 4, b: 6 };                     // word problem factors
-
-      // Effective dims
-      var rows = swapped ? dims.cols : dims.rows;
-      var cols = swapped ? dims.rows : dims.cols;
-      var activeFactorA = rows;
-      var activeFactorB = cols;
-      if (viewMode === 'multidigit') {
-        activeFactorA = challenge && challenge.mode === 'multidigit' ? challenge.a : multiDims.a;
-        activeFactorB = challenge && challenge.mode === 'multidigit' ? challenge.b : multiDims.b;
-      } else if (viewMode === 'word') {
-        activeFactorA = challenge && challenge.mode === 'word' ? challenge.a : wordDims.a;
-        activeFactorB = challenge && challenge.mode === 'word' ? challenge.b : wordDims.b;
+      var fractionSidesSolved = _a.fractionSidesSolved || 0;
+      var algebraSolved = _a.algebraSolved || 0;
+      var algorithmSolved = _a.algorithmSolved || 0;
+      var divisionSolved = _a.divisionSolved || 0;
+      var longDivSolved = _a.longDivSolved || 0;
+      var factorSolved = _a.factorSolved || 0;
+      var grid100Solved = _a.grid100Solved || 0;
+      var remainderSolved = _a.remainderSolved || 0;
+      var decimalSolved = _a.decimalSolved || 0;
+      var factorSignedSolved = _a.factorSignedSolved || 0;
+      // Path ticks that name a kind count only that kind: a percent of a percent, and a decimal or fraction story.
+      var percentSolved = _a.percentSolved || 0;
+      var decFracStorySolved = _a.decFracStorySolved || 0;
+      var wordKind = CORE.STORY_ALL.indexOf(_a.wordKind) >= 0 ? _a.wordKind : 'any';
+      var muted = !!_a.muted;
+      var showSkipCount = _a.showSkipCount !== false;
+      var wordCtxIdx = CORE.clampInt(_a.wordCtxIdx != null ? _a.wordCtxIdx : 0, 0, CORE.WORD_COUNT - 1, 0);
+      var wordDims = _a.wordDims || { a: 4, b: 6 };
+      var teacher = _a.teacher && typeof _a.teacher === 'object' ? _a.teacher : {};
+      var hiddenModes = teacher.hidden || {};
+      var defaultBand = CORE.bandFor(ctx.gradeLevel, ctx.gradeBand);
+      var band = teacher.lockBand && BANDS.indexOf(teacher.band) >= 0 ? teacher.band : (BANDS.indexOf(_a.band) >= 0 ? _a.band : defaultBand);
+      // Tabs in teaching order for the level: the core activities first.
+      var tabOrder = tabOrderFor(band);
+      var coreModes = BAND_MODES[band] || [];
+      var visibleModes = tabOrder.filter(function(m) { return isTeacher || !hiddenModes[m]; });
+      if (!visibleModes.length) visibleModes = tabOrder.slice();
+      // A first visit opens the level's first core activity.
+      var viewMode = MODES.indexOf(_a.viewMode) >= 0 ? _a.viewMode : visibleModes[0];
+      if (visibleModes.indexOf(viewMode) < 0) viewMode = visibleModes[0];
+      // A button that opens another tab is offered only when that tab is open to the student.
+      function modeOpen(m) { return visibleModes.indexOf(m) >= 0; }
+      var allowReveal = !teacher.noReveal;
+      var predictOn = !!(teacher.predictFirst || _a.predictFirst);
+      var fsides = (function(f) {
+        f = f && typeof f === 'object' ? f : {};
+        var d1 = CORE.clampInt(f.d1, 1, 12, 3), d2 = CORE.clampInt(f.d2, 1, 12, 4);
+        return { d1: d1, d2: d2, n1: CORE.clampInt(f.n1, 1, 2 * d1, Math.min(2, 2 * d1)), n2: CORE.clampInt(f.n2, 1, 2 * d2, Math.min(3, 2 * d2)) };
+      })(_a.fsides);
+      // Hundred grid: a and b in tenths (3 means 0.3 or 30%).
+      var g100 = (function(g) {
+        g = g && typeof g === 'object' ? g : {};
+        return { a: CORE.clampInt(g.a, 1, 9, 3), b: CORE.clampInt(g.b, 1, 9, 4), as: g.as === 'pct' ? 'pct' : 'dec' };
+      })(_a.g100);
+      var alg = _a.alg || {};
+      function cleanFactor(f, dflt, minX) {
+        if (!f || typeof f !== 'object') return dflt;
+        var x = CORE.clampInt(f.x, minX, 3, dflt.x), c = CORE.clampInt(f.c, 0, 9, dflt.c);
+        if (!x && !c) c = 1;
+        return { x: x, c: c };
       }
-      var activeProduct = activeFactorA * activeFactorB;
+      var algF1 = cleanFactor(alg.f1, { x: 1, c: 3 }, 0), algF2 = cleanFactor(alg.f2, { x: 1, c: 2 }, 1);
+      var algX = CORE.clampInt(alg.x != null ? alg.x : 10, 1, 20, 10);
+      // Problems the student sets up (Algorithm, Division) earn once each: retyping one resets its work, not its credit.
+      var creditKeys = Array.isArray(_a.creditKeys) ? _a.creditKeys.filter(function(k) { return typeof k === 'string'; }) : [];
+      function creditedBefore(key) { return creditKeys.indexOf(key) >= 0; }
+      function addCredit(top, key) { top.creditKeys = creditKeys.concat([key]).slice(-400); return top; }
+      // After a step that removes or disables the focused control, focus goes to what replaced it.
+      function focusSoon(sel) { setTimeout(function() { try { var el = document.querySelector('[data-areamodel-root] ' + sel); if (el && el.isConnected && typeof el.focus === 'function') el.focus(); } catch (e) {} }, 0); }
+      // Lands the student on what to do next: focus the first match of sels and
+      // scroll it to the top, so the question and the model below it are in view.
+      function focusLearn(sels, tries) {
+        tries = tries || 0;
+        setTimeout(function() {
+          var el = null;
+          try { for (var i = 0; i < sels.length && !el; i++) el = document.querySelector('[data-areamodel-root] ' + sels[i]); } catch (e) { el = null; }
+          if (!el || !el.isConnected) { if (tries < 6) focusLearn(sels, tries + 1); return; }
+          var still = false;
+          try { still = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+          try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) {} }
+          if (typeof el.scrollIntoView === 'function') { try { el.scrollIntoView({ block: 'start', behavior: still ? 'auto' : 'smooth' }); } catch (e) {} }
+        }, tries ? 50 : 0);
+      }
 
-      var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
-      var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
-      var gcd = function(a, b) { return b === 0 ? a : gcd(b, a % b); };
+      // ── Challenge status: open challenges hide every product in the tool ──
+      var chKey = challenge ? (challenge.id || CORE.probKey(challenge)) : '';
+      var chw = (_a.chWork && _a.chWork.key === chKey) ? _a.chWork : { key: chKey, attempts: 0, revealed: false, hints: 0, boxes: {}, counted: false };
+      var solved = !!(challenge && feedback && feedback.correct);
+      var revealed = !!(challenge && chw.revealed && !solved);
+      var chOpen = !!challenge && !solved && !revealed;
+      var chHere = !!challenge && challenge.mode === viewMode;
+      // The Algorithm and Division tabs can rebuild an open challenge's numbers, so
+      // their "show" buttons wait until the challenge is finished.
+      var revealOk = allowReveal && !(chOpen && (viewMode === 'algorithm' || viewMode === 'division'));
+      // Editing the model of a FINISHED challenge clears it, so the picture follows the controls.
+      function clearDone(patch) {
+        if (challenge && chHere && !chOpen) { patch.challenge = null; patch.feedback = null; patch.answer = ''; }
+        return patch;
+      }
 
-      // ═══ WORD PROBLEM CONTEXTS ═══
-      var WORD_CONTEXTS = [
-        'A garden has {a} rows with {b} plants in each row. How many plants total?',
-        'A parking lot has {a} rows with {b} cars in each row. How many cars?',
-        'A classroom has {a} rows of desks with {b} desks in each row. How many desks?',
-        'A baker made {a} trays with {b} cookies on each tray. How many cookies?',
-        'A wall has {a} rows of tiles with {b} tiles across. How many tiles?',
-        'A farmer plants {b} seeds in each of {a} rows. How many seeds?',
-        'An orchard has {a} rows of {b} trees. How many trees?',
-        'A bookstore displays {b} books on each of {a} shelves. How many books?',
-        'A theater has {a} rows with {b} seats in each row. How many seats?',
-        'A chocolate box has {a} rows with {b} chocolates each. How many chocolates?'
+      var MODE_NAMES = {
+        basic: t('stem.areamodel.basic_grid', 'Basic Grid'),
+        distributive: t('stem.areamodel.distributive', 'Distributive'),
+        multidigit: t('stem.areamodel.partial_products', 'Partial Products'),
+        algorithm: t('stem.areamodel.algorithm_tab', 'Algorithm Bridge'),
+        division: t('stem.areamodel.division_tab', 'Division'),
+        fraction: t('stem.areamodel.fraction_tab', 'Fraction Sides'),
+        grid100: t('stem.areamodel.grid100_tab', 'Hundred Grid'),
+        algebra: t('stem.areamodel.algebra_tab', 'Algebra Tiles'),
+        word: t('stem.areamodel.word_problems', 'Word Problems')
+      };
+      var MODE_ICONS = { basic: '🟧', distributive: '✂️', multidigit: '📊', algorithm: '🧮', division: '➗', fraction: '½', grid100: '💯', algebra: '🧩', word: '📝' };
+      // Student-facing level names carry no standard codes; the teacher panel keeps them.
+      var BAND_NAMES = {
+        g3: t('stem.areamodel.band_g3', 'Grade 3: arrays and facts'),
+        g4: t('stem.areamodel.band_g4_v2', 'Grade 4: multiplying bigger numbers'),
+        g5: t('stem.areamodel.band_g5_v2', 'Grade 5: decimals and fraction sides'),
+        g6: t('stem.areamodel.band_g6', 'Grade 6 and up: algebra tiles')
+      };
+      var BAND_NAMES_TEACHER = {
+        g3: t('stem.areamodel.band_g3', 'Grade 3: arrays and facts'),
+        g4: t('stem.areamodel.band_g4', 'Grade 4: multi-digit (4.NBT.5)'),
+        g5: t('stem.areamodel.band_g5', 'Grade 5: decimals and fraction sides (5.NBT.7, 5.NF.4b)'),
+        g6: t('stem.areamodel.band_g6', 'Grade 6 and up: algebra tiles')
+      };
+      var WORD_TEMPLATES = [
+        t('stem.areamodel.word_ctx_garden', 'A garden has {a} rows with {b} plants in each row. How many plants are there in all?'),
+        t('stem.areamodel.word_ctx_parking', 'A parking lot has {a} rows with {b} cars in each row. How many cars are there?'),
+        t('stem.areamodel.word_ctx_desks', 'A classroom has {a} rows of desks with {b} desks in each row. How many desks are there?'),
+        t('stem.areamodel.word_ctx_cookies', 'A baker made {a} trays with {b} cookies on each tray. How many cookies are there?'),
+        t('stem.areamodel.word_ctx_tiles', 'A wall has {a} rows of tiles with {b} tiles in each row. How many tiles are there?'),
+        t('stem.areamodel.word_ctx_seeds', 'A farmer plants {b} seeds in each of {a} rows. How many seeds does the farmer plant?'),
+        t('stem.areamodel.word_ctx_orchard', 'An orchard has {a} rows of {b} trees. How many trees are there?'),
+        t('stem.areamodel.word_ctx_books', 'A bookstore displays {b} books on each of {a} shelves. How many books are on display?'),
+        t('stem.areamodel.word_ctx_theater', 'A theater has {a} rows with {b} seats in each row. How many seats are there?'),
+        t('stem.areamodel.word_ctx_chocolates', 'A chocolate box has {a} rows with {b} chocolates in each row. How many chocolates are there?')
       ];
+      var WORD_NAMES = [
+        t('stem.areamodel.word_name_garden', 'Garden rows'), t('stem.areamodel.word_name_parking', 'Parking lot'), t('stem.areamodel.word_name_desks', 'Classroom desks'),
+        t('stem.areamodel.word_name_cookies', 'Cookie trays'), t('stem.areamodel.word_name_tiles', 'Wall tiles'), t('stem.areamodel.word_name_seeds', 'Seed rows'),
+        t('stem.areamodel.word_name_orchard', 'Orchard'), t('stem.areamodel.word_name_books', 'Bookshelves'), t('stem.areamodel.word_name_theater', 'Theater seats'),
+        t('stem.areamodel.word_name_chocolates', 'Chocolate box')
+      ];
+      // Stories for every grade. Each sentence names only the givens, never the answer.
+      var STORY_T = {
+        area: [
+          t('stem.areamodel.st_area_garden', 'A rectangular garden is {a} feet long and {b} feet wide. What is its area in square feet?'),
+          t('stem.areamodel.st_area_floor', 'A classroom floor is {a} meters long and {b} meters wide. How many square meters of carpet cover it?'),
+          t('stem.areamodel.st_area_poster', 'A poster is {a} inches tall and {b} inches wide. What is its area in square inches?'),
+          t('stem.areamodel.st_area_playground', 'A school playground is {a} yards long and {b} yards wide. What is its area in square yards?')
+        ],
+        missing: [
+          t('stem.areamodel.st_miss_garden', 'A rectangular garden has an area of {n} square feet. It is {a} feet wide. How long is it, in feet?'),
+          t('stem.areamodel.st_miss_chairs', '{n} chairs are set out in {a} equal rows. How many chairs are in each row?'),
+          t('stem.areamodel.st_miss_muffins', 'A baker shares {n} muffins equally among {a} trays. How many muffins go on each tray?'),
+          t('stem.areamodel.st_miss_mural', 'A wall mural covers {n} square feet and is {a} feet tall. How wide is it, in feet?')
+        ],
+        decimal: [
+          t('stem.areamodel.st_dec_rug', 'A rug is {a} meters long and {b} meters wide. What is its area in square meters?'),
+          t('stem.areamodel.st_dec_frame', 'A picture frame is {a} feet tall and {b} feet wide. What is its area in square feet?'),
+          t('stem.areamodel.st_dec_solar', 'A solar panel is {a} meters long and {b} meters wide. What is its area in square meters?'),
+          t('stem.areamodel.st_dec_bed', 'A vegetable bed is {a} meters long and {b} meters wide. What is its area in square meters?')
+        ],
+        fraction: [
+          t('stem.areamodel.st_frac_tile', 'A floor tile measures {w} ft by {h} ft. What is its area in square feet? Write it as a fraction.'),
+          t('stem.areamodel.st_frac_picnic', 'On a park map, a picnic area is {w} km long and {h} km wide. What is its area in square kilometers? Write it as a fraction.'),
+          t('stem.areamodel.st_frac_fabric', 'A piece of fabric is {w} yd long and {h} yd wide. What is its area in square yards? Write it as a fraction.'),
+          t('stem.areamodel.st_frac_cracker', 'A rectangular cracker is {w} in by {h} in. What is its area in square inches? Write it as a fraction.')
+        ],
+        percent: [
+          t('stem.areamodel.st_pct_garden', '{p1}% of a garden is planted with vegetables. Tomatoes fill {p2}% of the vegetable part. What percent of the whole garden is tomatoes?'),
+          t('stem.areamodel.st_pct_bus', 'At a school, {p1}% of the students ride the bus. Of the bus riders, {p2}% are in grade 6. What percent of all the students are grade 6 bus riders?'),
+          t('stem.areamodel.st_pct_store', 'A store uses {p1}% of its shelf space for food. Fruit fills {p2}% of the food space. What percent of all the shelf space holds fruit?'),
+          t('stem.areamodel.st_pct_park', 'A park is {p1}% forest. Pine trees cover {p2}% of the forest. What percent of the whole park is pine forest?')
+        ],
+        algebra: [
+          t('stem.areamodel.st_alg_patio', 'A rectangular patio is {f1} meters long and {f2} meters wide. Write its area as an expression.'),
+          t('stem.areamodel.st_alg_photo', 'A photo is {f1} cm tall and {f2} cm wide. Write its area as an expression.'),
+          t('stem.areamodel.st_alg_bed', 'A garden bed is {f1} feet long and {f2} feet wide. Write its area as an expression.'),
+          t('stem.areamodel.st_alg_banner', 'A banner is {f1} inches tall and {f2} inches wide. Write its area as an expression.')
+        ]
+      };
+      // Remainder stories: two contexts for each meaning of the remainder.
+      var STORY_R = {
+        up: [
+          t('stem.areamodel.st_rem_vans', '{n} students are going on a field trip. Each van holds {a} students. How many vans are needed so that every student has a seat?'),
+          t('stem.areamodel.st_rem_cartons', 'A farm collects {n} eggs. Each carton holds {a} eggs. How many cartons are needed to pack every egg?')
+        ],
+        drop: [
+          t('stem.areamodel.st_rem_boxes', 'A baker has {n} muffins and packs them in boxes of {a}. Only full boxes can be sold. How many full boxes can the baker sell?'),
+          t('stem.areamodel.st_rem_ribbon', 'A ribbon is {n} cm long. Each bow uses {a} cm of ribbon. How many whole bows can be made?')
+        ],
+        rem: [
+          t('stem.areamodel.st_rem_stickers', '{n} stickers are shared equally among {a} friends, and each friend gets as many as possible. How many stickers are left over?'),
+          t('stem.areamodel.st_rem_chairs', '{n} chairs are set out in full rows of {a}, and the extra chairs go in one short row at the back. How many chairs are in the short row?')
+        ]
+      };
+      var STORY_KIND_NAMES = {
+        any: t('stem.areamodel.sk_any', 'Any story for my level'),
+        array: t('stem.areamodel.sk_array', 'Rows and groups'),
+        area: t('stem.areamodel.sk_area', 'Area of a rectangle'),
+        missing: t('stem.areamodel.sk_missing', 'Missing side (division)'),
+        remainder: t('stem.areamodel.sk_remainder', 'Remainders: what does the leftover mean?'),
+        decimal: t('stem.areamodel.sk_decimal', 'Decimal measurements'),
+        fraction: t('stem.areamodel.sk_fraction', 'Fraction measurements'),
+        percent: t('stem.areamodel.sk_percent', 'Percent of a percent'),
+        algebra: t('stem.areamodel.sk_algebra', 'Area with x (algebra)')
+      };
+      function isStory(ch) { return !!(ch && ch.mode === 'word' && ch.wkind && ch.wkind !== 'array'); }
 
-      // ═══ BADGE SYSTEM ═══
+      function questionFor(ch) {
+        if (!ch) return '';
+        if (isStory(ch) && ch.wkind === 'remainder' && STORY_R[ch.rk]) return fill(STORY_R[ch.rk][CORE.clampInt(ch.wctx, 0, 1, 0)], { n: ch.n, a: ch.a });
+        if (isStory(ch) && STORY_T[ch.wkind]) {
+          var tpl = STORY_T[ch.wkind][CORE.clampInt(ch.wctx, 0, CORE.STORY_COUNT - 1, 0)];
+          if (ch.wkind === 'fraction') return fill(tpl, { w: CORE.mixedStr(ch.n1, ch.d1), h: CORE.mixedStr(ch.n2, ch.d2) });
+          if (ch.wkind === 'percent') return fill(tpl, { p1: ch.p1, p2: ch.p2 });
+          if (ch.wkind === 'algebra') return fill(tpl, { f1: CORE.factorStr(ch.f1), f2: CORE.factorStr(ch.f2) });
+          if (ch.wkind === 'missing') return fill(tpl, { n: ch.n, a: ch.a });
+          return fill(tpl, { a: fmt(ch.a), b: fmt(ch.b) });
+        }
+        if (ch.mode === 'grid100') return ch.kind === 'pct'
+          ? fill(t('stem.areamodel.q_grid_pct', 'Use the hundred grid: what is {p1}% of {p2}%? Answer as a percent.'), { p1: Math.round(ch.a * 100), p2: Math.round(ch.b * 100) })
+          : fill(t('stem.areamodel.q_grid_dec', 'Use the hundred grid: what is {a} × {b}?'), { a: fmt(ch.a), b: fmt(ch.b) });
+        if (ch.mode === 'basic') return fill(t('stem.areamodel.q_basic', 'What is {a} × {b}? Count the squares in the array.'), { a: ch.a, b: ch.b });
+        if (ch.mode === 'distributive' && ch.split != null) return fill(t('stem.areamodel.q_distributive', 'Use the distributive property: {a} × {b} = {a} × {s} + {a} × {r}. What is the product?'), { a: ch.a, b: ch.b, s: ch.split, r: ch.b - ch.split });
+        if (ch.mode === 'multidigit') return fill(t('stem.areamodel.q_partial', 'Use partial products to find {a} × {b}.'), { a: fmt(ch.a), b: fmt(ch.b) });
+        if (ch.mode === 'fraction' && ch.d1) return fill(t('stem.areamodel.q_fraction', 'A rectangle is {w} units wide and {h} units tall. What is its area in square units? Write it as a fraction.'), { w: CORE.mixedStr(ch.n1, ch.d1), h: CORE.mixedStr(ch.n2, ch.d2) });
+        if (ch.mode === 'algebra' && ch.f1) return fill(t('stem.areamodel.q_algebra', 'Use the area model to multiply {expr}. Fill in the coefficients.'), { expr: CORE.factorStr(ch.f1) + CORE.factorStr(ch.f2) });
+        if (ch.mode === 'word' && ch.ctxIdx != null && WORD_TEMPLATES[ch.ctxIdx]) return fill(WORD_TEMPLATES[ch.ctxIdx], { a: ch.a, b: ch.b });
+        return String(ch.question || '');
+      }
+      function problemText(ch) {
+        if (!ch) return '';
+        ch = CORE.storyAs(ch);
+        if (ch.mode === 'fraction') return CORE.mixedStr(ch.n1, ch.d1) + ' × ' + CORE.mixedStr(ch.n2, ch.d2);
+        if (ch.mode === 'algebra') return CORE.factorStr(ch.f1) + CORE.factorStr(ch.f2);
+        if (ch.mode === 'divword' || ch.mode === 'remword') return ch.n + ' ÷ ' + ch.a;
+        if (ch.mode === 'division') return ch.n + ' ÷ ' + ch.d;
+        if (ch.mode === 'grid100' && ch.kind === 'pct') return Math.round(ch.a * 100) + '% × ' + Math.round(ch.b * 100) + '%';
+        return fmt(ch.a) + ' × ' + fmt(ch.b);
+      }
+      function answerText(ch) {
+        if (!ch) return '';
+        ch = CORE.storyAs(ch);
+        if (ch.mode === 'grid100' && ch.kind === 'pct') return fmt(Number(ch.answer)) + '%';
+        if (ch.mode === 'fraction') { var an = ch.answer || { num: ch.n1 * ch.n2, den: ch.d1 * ch.d2 }; var sm = CORE.simplify(an.num, an.den); return CORE.fracStr(an.num, an.den) + (sm.den !== an.den ? ' = ' + CORE.mixedStr(sm.num, sm.den) : ''); }
+        if (ch.mode === 'algebra') { var e = CORE.algExpand(ch.f1, ch.f2); return CORE.polyStr(e.A, e.B, e.C); }
+        return fmt(Number(ch.answer));
+      }
+      // What the remainder means in a remainder story, shown once it is solved or revealed.
+      function remainderMeaning(ch) {
+        var v = { n: ch.n, a: ch.a, q: Math.floor(ch.n / ch.a), r: ch.n % ch.a, ans: ch.answer };
+        if (ch.rk === 'up') return fill(t('stem.areamodel.rem_mean_up', '{n} ÷ {a} = {q} R {r}. The {r} left over still need a place, so they need one more group: {ans}.'), v);
+        if (ch.rk === 'drop') return fill(t('stem.areamodel.rem_mean_drop', '{n} ÷ {a} = {q} R {r}. The {r} left over are not enough for another full group, so they are left out: {ans}.'), v);
+        return fill(t('stem.areamodel.rem_mean_rem', '{n} ÷ {a} = {q} R {r}. The question asks what is left over, so the remainder is the answer: {ans}.'), v);
+      }
+
+      // ── Named mistakes: whole sentences, never the correct answer ──
+      function mistakeText(code, v) {
+        v = v || {};
+        switch (code) {
+          case 'not_number': return t('stem.areamodel.m_not_number', 'Type your answer as a number first.');
+          case 'added': return fill(t('stem.areamodel.m_added', 'You added {a} + {b}. The model has {a} rows with {b} in each row, so multiply to count them all.'), v);
+          case 'perimeter': return fill(t('stem.areamodel.m_perimeter', '{ans} is the perimeter, the distance around the rectangle. Area counts the squares inside it.'), v);
+          case 'one_piece': return fill(t('stem.areamodel.m_one_piece', '{ans} is only one piece of the split. Find the other piece too, then add both pieces.'), v);
+          case 'not_distributed': return fill(t('stem.areamodel.m_not_distributed', 'You multiplied only one part by {a}. The distributive property multiplies both parts by {a}.'), v);
+          case 'pv_small': return fill(t('stem.areamodel.m_pv_small', 'Your answer is {k} times too small. Check the place value of each part: tens times tens make hundreds.'), v);
+          case 'pv_big': return fill(t('stem.areamodel.m_pv_big', 'Your answer is {k} times too big. Check the place value of each part before you multiply.'), v);
+          case 'decimal_small': return t('stem.areamodel.m_decimal_small', 'The digits look right, but the decimal point is too far left. Estimate first: round each factor and multiply.');
+          case 'decimal_big': return t('stem.areamodel.m_decimal_big', 'The digits look right, but the decimal point is too far right. Tenths times tenths make hundredths.');
+          case 'digits_only': return t('stem.areamodel.m_digits_only', 'You multiplied single digits without their place value. Use the expanded parts, such as 20 and 3, not 2 and 3.');
+          case 'missed_cross': return t('stem.areamodel.m_missed_cross', 'You added only the tens-times-tens box and the ones-times-ones box. The two cross boxes (tens times ones) are missing.');
+          case 'only_biggest': return fill(t('stem.areamodel.m_only_biggest', 'That is only the biggest box, {label}. The model has {n} boxes with area: add them all.'), v);
+          case 'missed_box': return fill(t('stem.areamodel.m_missed_box', 'Your total is missing one box: {label}. Add every box in the model.'), v);
+          case 'row_short': return fill(t('stem.areamodel.m_row_short', 'So close: that is exactly one row or column short. Recount {a} rows with {b} in each row.'), v);
+          case 'row_extra': return fill(t('stem.areamodel.m_row_extra', 'So close: that is one extra row or column. The model has exactly {a} rows with {b} in each row.'), v);
+          case 'close': return t('stem.areamodel.m_close', 'Very close. Your boxes are probably right: add the partial products again carefully.');
+          case 'generic_rows': return fill(t('stem.areamodel.m_generic_rows', 'Not yet. Think of it as repeated addition: one row has {b} squares, and there are {a} rows.'), v);
+          case 'generic_split': return t('stem.areamodel.m_generic_split', 'Not yet. Find each piece of the split rectangle, then add the two pieces.');
+          case 'generic_boxes': return t('stem.areamodel.m_generic_boxes', 'Not yet. Find each box (length times width), then add all the boxes.');
+          case 'frac_not_fraction': return t('stem.areamodel.m_frac_not_fraction', 'Write the area as a fraction, such as 3/8.');
+          case 'frac_added': return t('stem.areamodel.m_frac_added', 'You added the side lengths. Area multiplies them: count the tiles where both shadings overlap.');
+          case 'frac_added_across': return t('stem.areamodel.m_frac_added_across', 'You added the numerators and the denominators. Area is a product: count the tiles inside the rectangle.');
+          case 'frac_tile_count': return fill(t('stem.areamodel.m_frac_tile_count', '{n} is the number of tiles. Each tile is only part of a unit square: what fraction of the unit square is one tile?'), v);
+          case 'frac_tile_size': return t('stem.areamodel.m_frac_tile_size', 'You counted the shaded tiles correctly. Now check the tile size: how many tiles fill one whole unit square?');
+          case 'frac_unshaded': return t('stem.areamodel.m_frac_unshaded', 'That is the unshaded part of the unit square. The area is the part inside the rectangle.');
+          case 'frac_generic': return t('stem.areamodel.m_frac_generic', 'Not yet. Count the tiles inside the rectangle, then count how many tiles fill one unit square.');
+          case 'alg_not_number': return t('stem.areamodel.m_alg_not_number', 'Use whole numbers for the coefficients. Leave a box empty for 0.');
+          case 'alg_x_times_x': return t('stem.areamodel.m_alg_x_times_x', 'x times x is x squared, an x-by-x square, not 2x.');
+          case 'alg_added_constants': return t('stem.areamodel.m_alg_added_constants', 'The number box is a rectangle too: its area is the product of its sides, not their sum.');
+          case 'alg_missing_middle': return t('stem.areamodel.m_alg_missing_middle', 'You found the corner boxes but left out the x boxes. A rectangle split both ways has four boxes.');
+          case 'alg_one_x_box': return t('stem.areamodel.m_alg_one_x_box', 'You included only one of the two x boxes. Add both x boxes for the x term.');
+          case 'alg_middle_product': return t('stem.areamodel.m_alg_middle_product', 'The x term adds the two x boxes. You multiplied the numbers instead.');
+          case 'alg_constant': return t('stem.areamodel.m_alg_constant', 'Your x² and x terms are right. Check the number box: multiply its two sides.');
+          case 'alg_generic': return t('stem.areamodel.m_alg_generic', 'Not yet. Find the area of each box (side times side), then combine the x boxes.');
+          case 'box_not_number': return t('stem.areamodel.m_box_not_number', 'Type a number in this box.');
+          case 'box_added': return t('stem.areamodel.m_box_added', 'You added the two sides of this box. A box’s area is its length times its width.');
+          case 'box_pv_small': return t('stem.areamodel.m_box_pv_small', 'Check the place value: this box is too small by a power of ten.');
+          case 'box_pv_big': return t('stem.areamodel.m_box_pv_big', 'Check the place value: this box is too big by a power of ten.');
+          case 'box_decimal': return t('stem.areamodel.m_box_decimal', 'The digits are right but the decimal point is not. Tenths times tenths make hundredths.');
+          case 'box_digits': return t('stem.areamodel.m_box_digits', 'You multiplied the digits only. Use the full value of each part, such as 20, not 2.');
+          case 'box_one_off': return t('stem.areamodel.m_box_one_off', 'One row or column off. Recount this box’s sides.');
+          case 'box_generic': return t('stem.areamodel.m_box_generic', 'Not yet. Multiply this box’s length by its width.');
+          case 'algo_not_number': return t('stem.areamodel.m_algo_not_number', 'Type this line as a number.');
+          case 'algo_no_placeholder': return t('stem.areamodel.m_algo_no_placeholder', 'This line multiplies by tens, not ones. Write a 0 in the ones place first, so the line is worth ten times as much.');
+          case 'algo_no_carry': return t('stem.areamodel.m_algo_no_carry', 'You forgot a regrouped (carried) digit. When a product is 10 or more, carry the tens to the next place.');
+          case 'algo_generic': return t('stem.areamodel.m_algo_generic', 'Not yet. Multiply digit by digit from the right, carrying when a product is 10 or more.');
+          case 'algo_sum_no_placeholder': return t('stem.areamodel.m_algo_sum_no_placeholder', 'You added the lines as if both were ones. The second line is worth tens: line it up one place to the left.');
+          case 'algo_sum_generic': return t('stem.areamodel.m_algo_sum_generic', 'Not yet. Add the lines column by column, from the right.');
+          case 'div_chunk_not_number': return t('stem.areamodel.m_div_chunk_not_number', 'Type the chunk as a whole number of groups, such as 10.');
+          case 'div_chunk_too_big': return fill(t('stem.areamodel.m_div_chunk_too_big', 'That chunk is too big: {c} groups of {d} is more than the {left} you have left. Try a smaller chunk.'), v);
+          case 'div_area_not_number': return t('stem.areamodel.m_div_area_not_number', 'Type the area of this chunk: the chunk times the side you know.');
+          case 'div_area_added': return t('stem.areamodel.m_div_area_added', 'You added the chunk and the side. The area of the chunk is the chunk times the side.');
+          case 'div_area_pv': return t('stem.areamodel.m_div_area_pv', 'Check the place value of the chunk’s area: count the zeros in the chunk.');
+          case 'div_area_wrong': return t('stem.areamodel.m_div_area_wrong', 'Not yet. Multiply the chunk by the side you know to get this piece’s area.');
+          case 'div_left_not_number': return t('stem.areamodel.m_div_left_not_number', 'Type how much area is left after you take this chunk away.');
+          case 'div_left_added': return t('stem.areamodel.m_div_left_added', 'You added the chunk’s area. Taking a chunk away subtracts its area from what is left.');
+          case 'div_subtract_wrong': return t('stem.areamodel.m_div_subtract_wrong', 'The chunk and its area are right, but the subtraction is off. Subtract again carefully, regrouping if you need to.');
+          case 'div_remainder_too_big': return fill(t('stem.areamodel.m_div_remainder_too_big', 'The remainder must be smaller than the divisor. {left} is left, and that is at least {d}, so another chunk of {d} still fits.'), v);
+          case 'div_r_too_big': return fill(t('stem.areamodel.m_div_r_too_big', 'That remainder is too big: a remainder must be smaller than the divisor, {d}. The remainder is the area left after your last chunk.'), v);
+          case 'div_q_not_number': return t('stem.areamodel.m_div_q_not_number', 'Type the quotient as a whole number.');
+          case 'div_not_added': return t('stem.areamodel.m_div_not_added', 'That is only one of your chunks. The quotient is all the partial quotients added together.');
+          case 'div_counted_chunks': return t('stem.areamodel.m_div_counted_chunks', 'You counted how many chunks you took. Add the chunks themselves: they are the pieces of the unknown side.');
+          case 'div_added_areas': return t('stem.areamodel.m_div_added_areas', 'You added the areas of the chunks. The quotient is the unknown side: add the chunks, not their areas.');
+          case 'div_q_wrong': return t('stem.areamodel.m_div_q_wrong', 'Not yet. Add every chunk along the top of the rectangle.');
+          case 'div_r_wrong': return t('stem.areamodel.m_div_r_wrong', 'The remainder is the area left over after your last chunk. Look at the last amount you had left.');
+          case 'ld_not_digit': return t('stem.areamodel.m_ld_not_digit', 'Type one digit, 0 to 9.');
+          case 'ld_left_too_big': return fill(t('stem.areamodel.m_ld_left_too_big', 'That digit is too small: what would be left is still {d} or more. The remainder must be smaller than the divisor.'), v);
+          case 'ld_generic': return t('stem.areamodel.m_ld_generic', 'Not yet. How many groups of the divisor fit in this part of the dividend?');
+          case 'g_added': return t('stem.areamodel.m_g_added', 'You added the two numbers. Multiplying finds the part of the grid that is shaded both ways.');
+          case 'g_union': return t('stem.areamodel.m_g_union', 'You counted every shaded square. The product is only the squares where the two shadings overlap.');
+          case 'g_count': return t('stem.areamodel.m_g_count', 'You counted the overlap squares. Each square is one hundredth of the grid: write the count as hundredths.');
+          case 'g_pct_not_scaled': return t('stem.areamodel.m_g_pct_not_scaled', 'Percent means out of 100. The whole grid is 100%, so each small square is 1%: count the overlap squares.');
+          case 'g_pct_as_decimal': return t('stem.areamodel.m_g_pct_as_decimal', 'That is the decimal form. The question asks for a percent: how many hundredths is it?');
+          case 'g_decimal_big': return t('stem.areamodel.m_g_decimal_big', 'The digits are right, but the answer is too big. Tenths times tenths make hundredths.');
+          case 'g_decimal_small': return t('stem.areamodel.m_g_decimal_small', 'The digits are right, but the answer is too small. Count the small squares: each is one hundredth.');
+          case 'g_bigger': return t('stem.areamodel.m_g_bigger', 'Multiplying two numbers less than 1 gives an answer smaller than both of them. The overlap is a part of a part.');
+          case 'g_generic': return t('stem.areamodel.m_g_generic', 'Not yet. Count the squares shaded both ways, then write that part of the grid.');
+          case 'w_multiplied': return t('stem.areamodel.m_w_multiplied', 'You multiplied. Here you know the total and one side, so divide to find the missing side.');
+          case 'w_subtracted': return t('stem.areamodel.m_w_subtracted', 'You subtracted once. Division asks how many equal groups fit: take away groups until the total is used up.');
+          case 'w_added_div': return t('stem.areamodel.m_w_added_div', 'You added. You know the total and one side, so divide to find the missing side.');
+          case 'w_div_side': return t('stem.areamodel.m_w_div_side', 'That is the side you were given. The question asks for the other side.');
+          case 'w_div_pv': return t('stem.areamodel.m_w_div_pv', 'Check the place value: multiply your answer by the side you know and compare it with the total.');
+          case 'w_div_generic': return t('stem.areamodel.m_w_div_generic', 'Not yet. Check it: your answer times the side you know should equal the total.');
+          case 'fac_swapped': return t('stem.areamodel.m_fac_swapped', 'You swapped the jobs. The two numbers must multiply to the constant term and add to the x term.');
+          case 'fac_coefficients': return t('stem.areamodel.m_fac_coefficients', 'You used the coefficients as the sides. The side numbers must make the right number of x tiles and unit tiles together.');
+          case 'fac_x_count': return fill(t('stem.areamodel.m_fac_x_count', 'Your corner uses all {C} unit tiles, but the sides use {used} x tiles and the expression has {B}. Try another pair of numbers that multiply to {C}.'), v);
+          case 'fac_units': return fill(t('stem.areamodel.m_fac_units', 'All {B} x tiles fit along the sides, but the corner needs {used} unit tiles and the expression has {C}. Try another pair.'), v);
+          case 'fac_both': return fill(t('stem.areamodel.m_fac_both', 'Neither the x tiles nor the unit tiles match yet. Start with the corner: it must be a rectangle of exactly {C} unit tiles.'), v);
+          case 'r_dropped': return fill(t('stem.areamodel.m_r_dropped', 'You ignored the context of the remainder. That many full groups leaves {r} still without a place, and the story needs every one of them placed.'), v);
+          case 'r_rounded_up': return t('stem.areamodel.m_r_rounded_up', 'You ignored the context of the remainder. Your answer counts a group that is not full, and the story counts only full groups.');
+          case 'r_gave_quotient': return t('stem.areamodel.m_r_gave_quotient', 'You ignored the context of the remainder. That is the number of groups, but the question asks how many are left over.');
+          case 'r_gave_remainder': return t('stem.areamodel.m_r_gave_remainder', 'You ignored the context of the remainder. That is what is left over, but the question asks about groups. Read the question again.');
+          case 'r_gap': return t('stem.areamodel.m_r_gap', 'That is how many more it would take to fill one more group. The question asks how many are left over.');
+          case 'r_decimal': return fill(t('stem.areamodel.m_r_decimal', '{x} is the exact quotient as a decimal, but this story counts whole things. Decide what the remainder means here.'), v);
+          case 'r_remainder_form': return t('stem.areamodel.m_r_remainder_form', 'Answer with one number. Decide what the remainder means in this story: does it need one more group, is it left out, or is it the answer itself?');
+          case 'r_generic': return t('stem.areamodel.m_r_generic', 'Not yet. Divide to find the full groups and the remainder, then decide what the remainder means in the story.');
+          case 'fac_s_signs_swapped': return fill(t('stem.areamodel.m_fac_s_signs_swapped', 'Right numbers, wrong signs. Your corner is right, but your x tiles come to {net} and the expression has {B}. Change the sign of both numbers.'), v);
+          case 'fac_s_need_opposite': return fill(t('stem.areamodel.m_fac_s_need_opposite', 'The constant {C} is negative, so the corner needs negative unit tiles. That only happens when one side number is positive and the other is negative.'), v);
+          case 'fac_s_need_same': return fill(t('stem.areamodel.m_fac_s_need_same', 'The constant {C} is positive, but a positive times a negative makes negative unit tiles. Both side numbers need the same sign.'), v);
+          case 'fac_s_same_sign_wrong': return fill(t('stem.areamodel.m_fac_s_same_sign_wrong', 'Same signs are right for a positive constant, but not these signs. Two positive numbers make only positive x tiles and two negative numbers make only negative ones, and the expression has {B}.'), v);
+          case 'fac_s_net_x': return fill(t('stem.areamodel.m_fac_s_net_x', 'Your corner is right. Your x tiles are {pos} positive and {neg} negative. Each positive and negative pair is a zero pair that cancels, so they come to {net}, and the expression has {B}. Try another pair that multiplies to {C}.'), v);
+          case 'fac_s_units': return fill(t('stem.areamodel.m_fac_s_units', 'Your x tiles come to {B}, which is right, but the corner holds {u} unit tiles and the expression has {C}. The two side numbers must multiply to {C}.'), v);
+          case 'fac_s_both': return fill(t('stem.areamodel.m_fac_s_both', 'Neither the x tiles nor the unit tiles match yet. Start with the corner: the two side numbers must multiply to {C}, sign included.'), v);
+          case 'step_generic': return t('stem.areamodel.m_step_generic', 'Not yet. Look back at the model and recheck this step.');
+          default: return t('stem.areamodel.m_generic', 'Not yet. Look back at the model and try again.');
+        }
+      }
+      function mistakeName(code) {
+        switch (code) {
+          case 'added': return t('stem.areamodel.mn_added', 'Added instead of multiplied');
+          case 'perimeter': return t('stem.areamodel.mn_perimeter', 'Found the perimeter');
+          case 'one_piece': return t('stem.areamodel.mn_one_piece', 'Used one piece of the split');
+          case 'not_distributed': return t('stem.areamodel.mn_not_distributed', 'Multiplied only one part');
+          case 'pv_small': case 'pv_big': return t('stem.areamodel.mn_place_value', 'Place-value slip');
+          case 'decimal_small': case 'decimal_big': return t('stem.areamodel.mn_decimal', 'Decimal point misplaced');
+          case 'digits_only': return t('stem.areamodel.mn_digits_only', 'Digits without place value');
+          case 'missed_cross': return t('stem.areamodel.mn_missed_cross', 'Skipped the cross products');
+          case 'only_biggest': return t('stem.areamodel.mn_only_biggest', 'Used only the biggest box');
+          case 'missed_box': return t('stem.areamodel.mn_missed_box', 'Left out a box');
+          case 'row_short': case 'row_extra': return t('stem.areamodel.mn_off_by_row', 'Off by one row or column');
+          case 'close': return t('stem.areamodel.mn_close', 'Addition slip');
+          case 'frac_added': case 'frac_added_across': return t('stem.areamodel.mn_frac_added', 'Added the fractions');
+          case 'frac_tile_count': case 'frac_tile_size': return t('stem.areamodel.mn_frac_tiles', 'Tile count or tile size');
+          case 'frac_unshaded': return t('stem.areamodel.mn_frac_unshaded', 'Counted the unshaded part');
+          case 'alg_x_times_x': return t('stem.areamodel.mn_alg_x_times_x', 'Wrote x times x as 2x');
+          case 'alg_added_constants': return t('stem.areamodel.mn_alg_added_constants', 'Added the constants');
+          case 'alg_missing_middle': case 'alg_one_x_box': return t('stem.areamodel.mn_alg_middle', 'Missing x terms');
+          case 'alg_middle_product': return t('stem.areamodel.mn_alg_middle_product', 'Multiplied for the x term');
+          case 'revealed': return t('stem.areamodel.mn_revealed', 'Answer revealed');
+          case 'skipped': return t('stem.areamodel.mn_skipped', 'Skipped after a wrong try');
+          case 'div_chunk_too_big': return t('stem.areamodel.mn_div_chunk_too_big', 'Chunk too big');
+          case 'div_area_added': case 'div_area_pv': case 'div_area_wrong': return t('stem.areamodel.mn_div_area', 'Chunk area multiplied wrongly');
+          case 'div_left_added': case 'div_subtract_wrong': return t('stem.areamodel.mn_div_subtract', 'Subtracted wrongly');
+          case 'div_not_added': case 'div_counted_chunks': case 'div_added_areas': return t('stem.areamodel.mn_div_not_added', 'Partial quotients not added');
+          case 'div_remainder_too_big': case 'div_r_too_big': case 'ld_left_too_big': return t('stem.areamodel.mn_div_remainder', 'Remainder larger than the divisor');
+          case 'div_q_wrong': case 'div_r_wrong': case 'ld_generic': return t('stem.areamodel.mn_div_slip', 'Quotient or remainder slip');
+          case 'g_added': return t('stem.areamodel.mn_g_added', 'Added instead of multiplied');
+          case 'g_union': return t('stem.areamodel.mn_g_union', 'Counted all shading, not the overlap');
+          case 'g_count': case 'g_pct_not_scaled': case 'g_pct_as_decimal': case 'g_decimal_big': case 'g_decimal_small': return t('stem.areamodel.mn_g_place', 'Hundredths or percent slip');
+          case 'g_bigger': return t('stem.areamodel.mn_g_bigger', 'Expected a bigger product');
+          case 'w_multiplied': return t('stem.areamodel.mn_w_multiplied', 'Multiplied instead of divided');
+          case 'w_subtracted': case 'w_added_div': return t('stem.areamodel.mn_w_add_sub', 'Added or subtracted instead of divided');
+          case 'w_div_side': return t('stem.areamodel.mn_w_div_side', 'Gave the known side');
+          case 'w_div_pv': return t('stem.areamodel.mn_place_value', 'Place-value slip');
+          case 'fac_swapped': return t('stem.areamodel.mn_fac_swapped', 'Sum and product swapped');
+          case 'fac_coefficients': return t('stem.areamodel.mn_fac_coefficients', 'Used the coefficients as sides');
+          case 'fac_x_count': return t('stem.areamodel.mn_fac_x_count', 'x tiles do not match');
+          case 'fac_units': return t('stem.areamodel.mn_fac_units', 'Unit tiles do not match');
+          case 'fac_both': return t('stem.areamodel.mn_fac_both', 'Rectangle does not match');
+          case 'r_dropped': return t('stem.areamodel.mn_r_dropped', 'Ignored the context: left the remainder out');
+          case 'r_rounded_up': return t('stem.areamodel.mn_r_rounded_up', 'Ignored the context: counted a group that is not full');
+          case 'r_gave_quotient': case 'r_gave_remainder': case 'r_gap': return t('stem.areamodel.mn_r_wrong_part', 'Ignored the context: answered with the wrong part of the division');
+          case 'r_decimal': return t('stem.areamodel.mn_r_decimal', 'Gave a decimal for whole things');
+          case 'r_remainder_form': return t('stem.areamodel.mn_r_remainder_form', 'Wrote q R r instead of answering the story');
+          case 'fac_s_signs_swapped': return t('stem.areamodel.mn_fac_s_signs_swapped', 'Signs swapped');
+          case 'fac_s_need_opposite': case 'fac_s_need_same': return t('stem.areamodel.mn_fac_s_product_sign', 'Sign rule for the constant');
+          case 'fac_s_same_sign_wrong': return t('stem.areamodel.mn_fac_s_same_sign', 'Same signs, but the wrong ones');
+          case 'fac_s_net_x': return t('stem.areamodel.mn_fac_s_net_x', 'Zero pairs: net x tiles do not match');
+          case 'fac_s_units': case 'fac_s_both': return t('stem.areamodel.mn_fac_s_units', 'Corner tiles do not match');
+          case 'not_number': case 'frac_not_fraction': case 'alg_not_number': case 'div_chunk_not_number': case 'div_area_not_number': case 'div_left_not_number': case 'div_q_not_number': case 'ld_not_digit': return t('stem.areamodel.mn_not_number', 'Not a number');
+          default: return t('stem.areamodel.mn_other', 'Other');
+        }
+      }
+
+      // ── Hint ladder: three rungs per mode, none states the answer ──
+      function hintText(ch, rung) {
+        if (!ch) return '';
+        ch = CORE.storyAs(ch);
+        var a = ch.a, b = ch.b;
+        if (ch.mode === 'grid100') {
+          var ca = Math.round(a * 10), rb = Math.round(b * 10);
+          if (rung === 1) return fill(t('stem.areamodel.h_grid_1', 'Shade {ca} of the 10 columns for the first number and {rb} of the 10 rows for the second.'), { ca: ca, rb: rb });
+          if (rung === 2) return t('stem.areamodel.h_grid_2', 'The product is the part shaded both ways: count the small squares where the two shadings overlap.');
+          return ch.kind === 'pct' ? t('stem.areamodel.h_grid_3_pct', 'The whole grid is 100%, so each small square is 1%. The overlap count is the percent.')
+            : t('stem.areamodel.h_grid_3_dec', 'Each small square is one hundredth (0.01) of the grid. Write the overlap count as hundredths.');
+        }
+        if (ch.mode === 'divword') {
+          if (rung === 1) return fill(t('stem.areamodel.h_divw_1', 'Picture a rectangle with an area of {n} and one side of {a}. The other side is the unknown.'), { n: ch.n, a: a });
+          if (rung === 2) return fill(t('stem.areamodel.h_divw_2', 'Try a friendly chunk: 10 groups of {a} make {t}. Does that fit inside {n}?'), { a: a, t: 10 * a, n: ch.n });
+          return t('stem.areamodel.h_divw_3', 'Take chunks until the whole area is used up, then add the chunks. The Division tab can model it.');
+        }
+        if (ch.mode === 'remword') {
+          if (rung === 1) return fill(t('stem.areamodel.h_rem_1', 'Divide {n} by {a}: how many full groups of {a} fit, and how many are left over?'), { n: ch.n, a: a });
+          if (rung === 2) return fill(t('stem.areamodel.h_rem_2', 'Check your division: the full groups times {a}, plus what is left over, should make {n}.'), { n: ch.n, a: a });
+          return t('stem.areamodel.h_rem_3', 'Now read the question again. Does the leftover need one more group, does it get left out, or is the leftover itself the answer?');
+        }
+        if (ch.mode === 'basic' || (ch.mode === 'word' && a < 10 && b < 10 && Number.isInteger(a) && Number.isInteger(b))) {
+          if (rung === 1) return fill(t('stem.areamodel.h_rows_1', 'Count one row first: it has {b} squares.'), { b: b });
+          if (rung === 2) return fill(t('stem.areamodel.h_rows_2', 'Skip-count by {b}, once for each of the {a} rows.'), { a: a, b: b });
+          var half = Math.floor(b / 2) || 1;
+          return fill(t('stem.areamodel.h_rows_3', 'Split the array into {a} × {s} and {a} × {r}. Find both parts, then add them.'), { a: a, s: half, r: b - half });
+        }
+        if (ch.mode === 'distributive') {
+          if (rung === 1) return fill(t('stem.areamodel.h_dist_1', 'Find the left piece first: {a} rows of {s}.'), { a: a, s: ch.split });
+          if (rung === 2) return fill(t('stem.areamodel.h_dist_2', 'Now the right piece: {a} rows of {r}.'), { a: a, r: b - ch.split });
+          return t('stem.areamodel.h_dist_3', 'Add the two pieces. Together they make the whole rectangle.');
+        }
+        if (ch.mode === 'fraction') {
+          if (rung === 1) return fill(t('stem.areamodel.h_frac_1', 'Count the tiles inside the rectangle: {n1} columns and {n2} rows of tiles.'), { n1: ch.n1, n2: ch.n2 });
+          if (rung === 2) return fill(t('stem.areamodel.h_frac_2', 'One unit square holds {d1} × {d2} tiles. That tells you the size of one tile.'), { d1: ch.d1, d2: ch.d2 });
+          return t('stem.areamodel.h_frac_3', 'Area = tiles inside the rectangle, out of the tiles in one unit square. Write it as a fraction.');
+        }
+        if (ch.mode === 'algebra') {
+          if (rung === 1) return fill(t('stem.areamodel.h_alg_1', 'Label the sides: one side is {f1}, the other is {f2}. Split each side into its x part and its number part.'), { f1: CORE.factorStr(ch.f1), f2: CORE.factorStr(ch.f2) });
+          if (rung === 2) return t('stem.areamodel.h_alg_2', 'Each box is side times side. x times x makes x², x times a number makes x tiles, and a number times a number makes unit tiles.');
+          return t('stem.areamodel.h_alg_3', 'Add the x boxes together for the x term. The corner boxes give the x² term and the number term.');
+        }
+        var bm = CORE.boxModel(a, b);
+        if (rung === 1) return fill(t('stem.areamodel.h_box_1', 'Split each factor by place value: {ap} and {bp}.'), { ap: bm.rows.map(function(p) { return fmt(p.v); }).join(' + '), bp: bm.cols.map(function(p) { return fmt(p.v); }).join(' + ') });
+        if (rung === 2) return fill(t('stem.areamodel.h_box_2', 'Make a box for every pair of parts: {n} boxes. Find each box: length times width.'), { n: bm.boxes.length });
+        return fill(t('stem.areamodel.h_box_3', 'Your boxes are {list}. Find each one, then add them all.'), { list: bm.boxes.filter(function(bx) { return bx.n > 0; }).map(function(bx) { return bx.label.replace('×', ' × '); }).join(', ') });
+      }
+
+      // ═══ BADGES ═══
       var BADGES = [
-        { id: 'firstArea', icon: '\uD83D\uDFE7', name: t('stem.areamodel.first_area', 'First Area'), desc: t('stem.areamodel.solve_your_first_challenge', 'Solve your first challenge'), check: function(u) { return u.correct >= 1; } },
-        { id: 'streak3', icon: '\uD83D\uDD25', name: t('stem.areamodel.hot_streak', 'Hot Streak'), desc: t('stem.areamodel.get_a_streak_of_3', 'Get a streak of 3'), check: function(u) { return u.streak >= 3; } },
-        { id: 'streak5', icon: '\u26A1', name: t('stem.areamodel.lightning', 'Lightning'), desc: t('stem.areamodel.get_a_streak_of_5', 'Get a streak of 5'), check: function(u) { return u.streak >= 5; } },
-        { id: 'streak10', icon: '\uD83C\uDF1F', name: t('stem.areamodel.area_master', 'Area Master'), desc: t('stem.areamodel.get_a_streak_of_10', 'Get a streak of 10'), check: function(u) { return u.streak >= 10; } },
-        { id: 'score10', icon: '\uD83C\uDFC5', name: t('stem.areamodel.solid_ten', 'Solid Ten'), desc: t('stem.areamodel.score_10_correct', 'Score 10 correct'), check: function(u) { return u.correct >= 10; } },
-        { id: 'score25', icon: '\uD83C\uDFC6', name: 'Twenty-Five', desc: t('stem.areamodel.score_25_correct', 'Score 25 correct'), check: function(u) { return u.correct >= 25; } },
-        { id: 'basicPro', icon: '\uD83D\uDFE9', name: t('stem.areamodel.grid_pro', 'Grid Pro'), desc: t('stem.areamodel.solve_5_basic_grid_challenges', 'Solve 5 basic grid challenges'), check: function(u) { return u.basicSolved >= 5; } },
-        { id: 'distPro', icon: '\u2702\uFE0F', name: t('stem.areamodel.distributor', 'Distributor'), desc: t('stem.areamodel.solve_5_distributive_challenges', 'Solve 5 distributive challenges'), check: function(u) { return u.distSolved >= 5; } },
-        { id: 'multiPro', icon: '\uD83D\uDCCA', name: t('stem.areamodel.partial_pro', 'Partial Pro'), desc: t('stem.areamodel.solve_5_multi_digit_challenges', 'Solve 5 multi-digit challenges'), check: function(u) { return u.multiSolved >= 5; } },
-        { id: 'allModes', icon: '\uD83C\uDF08', name: t('stem.areamodel.well_rounded', 'Well Rounded'), desc: t('stem.areamodel.solve_challenges_in_all_4_modes', 'Solve challenges in all 4 modes'), check: function(u) { return u.typesUsed >= 4; } },
-        { id: 'commutative', icon: '\u21C4', name: t('stem.areamodel.commuter', 'Commuter'), desc: t('stem.areamodel.use_the_commutative_toggle', 'Use the commutative toggle'), check: function(u) { return u.usedCommutative; } },
-        { id: 'aiLearner', icon: '\uD83E\uDD16', name: t('stem.areamodel.ai_learner', 'AI Learner'), desc: t('stem.areamodel.ask_the_ai_tutor_a_question', 'Ask the AI tutor a question'), check: function(u) { return u.aiAsked >= 1; } },
-        { id: 'wordPro', icon: '\uD83D\uDCDD', name: t('stem.areamodel.word_wizard', 'Word Wizard'), desc: t('stem.areamodel.solve_5_word_problems', 'Solve 5 word problems'), check: function(u) { return u.wordSolved >= 5; } }
+        { id: 'firstArea', xp: true, icon: '🟧', name: t('stem.areamodel.first_area', 'First Area'), desc: t('stem.areamodel.solve_your_first_challenge', 'Solve your first challenge'), check: function(u) { return u.correct >= 1; } },
+        { id: 'streak3', xp: true, icon: '🔥', name: t('stem.areamodel.hot_streak', 'Hot Streak'), desc: t('stem.areamodel.get_a_streak_of_3', 'Get a streak of 3'), check: function(u) { return u.streak >= 3; } },
+        { id: 'streak5', xp: true, icon: '⚡', name: t('stem.areamodel.lightning', 'Lightning'), desc: t('stem.areamodel.get_a_streak_of_5', 'Get a streak of 5'), check: function(u) { return u.streak >= 5; } },
+        { id: 'streak10', xp: true, icon: '🌟', name: t('stem.areamodel.area_master', 'Area Master'), desc: t('stem.areamodel.get_a_streak_of_10', 'Get a streak of 10'), check: function(u) { return u.streak >= 10; } },
+        { id: 'score10', xp: true, icon: '🏅', name: t('stem.areamodel.solid_ten', 'Solid Ten'), desc: t('stem.areamodel.score_10_correct', 'Score 10 correct'), check: function(u) { return u.correct >= 10; } },
+        { id: 'score25', xp: true, icon: '🏆', name: t('stem.areamodel.twenty_five', 'Twenty-Five'), desc: t('stem.areamodel.score_25_correct', 'Score 25 correct'), check: function(u) { return u.correct >= 25; } },
+        { id: 'basicPro', xp: true, icon: '🟩', name: t('stem.areamodel.grid_pro', 'Grid Pro'), desc: t('stem.areamodel.solve_5_basic_grid_challenges', 'Solve 5 basic grid challenges'), check: function(u) { return u.basicSolved >= 5; } },
+        { id: 'distPro', xp: true, icon: '✂️', name: t('stem.areamodel.distributor', 'Distributor'), desc: t('stem.areamodel.solve_5_distributive_challenges', 'Solve 5 distributive challenges'), check: function(u) { return u.distSolved >= 5; } },
+        { id: 'multiPro', xp: true, icon: '📊', name: t('stem.areamodel.partial_pro', 'Partial Pro'), desc: t('stem.areamodel.solve_5_multi_digit_challenges', 'Solve 5 multi-digit challenges'), check: function(u) { return u.multiSolved >= 5; } },
+        // Solved, not started: the grid, distributive, partial-products and word modes each need a solve.
+        { id: 'allModes', xp: true, icon: '🌈', name: t('stem.areamodel.well_rounded', 'Well Rounded'), desc: t('stem.areamodel.solve_challenges_in_all_4_modes', 'Solve challenges in all 4 modes'), check: function(u) { return u.basicSolved > 0 && u.distSolved > 0 && u.multiSolved > 0 && u.wordSolved > 0; } },
+        { id: 'tileMaster', xp: true, icon: '½', name: t('stem.areamodel.tile_master', 'Tile Master'), desc: t('stem.areamodel.solve_5_fraction_side_challenges', 'Solve 5 fraction-side challenges'), check: function(u) { return u.fractionSidesSolved >= 5; } },
+        { id: 'algebraBridge', xp: true, icon: '🧩', name: t('stem.areamodel.algebra_bridge', 'Algebra Bridge'), desc: t('stem.areamodel.solve_5_algebra_challenges', 'Solve 5 algebra-tile challenges'), check: function(u) { return u.algebraSolved >= 5; } },
+        { id: 'algorithmAce', xp: true, icon: '🧮', name: t('stem.areamodel.algorithm_ace', 'Algorithm Ace'), desc: t('stem.areamodel.finish_3_algorithm_problems', 'Finish 3 algorithm problems without a reveal'), check: function(u) { return u.algorithmSolved >= 3; } },
+        { id: 'commutative', xp: false, icon: '⇄', name: t('stem.areamodel.commuter', 'Commuter'), desc: t('stem.areamodel.use_the_commutative_toggle', 'Use the commutative toggle'), check: function(u) { return u.usedCommutative; } },
+        { id: 'aiLearner', xp: false, icon: '🤖', name: t('stem.areamodel.ai_learner', 'AI Learner'), desc: t('stem.areamodel.ask_the_ai_tutor_a_question', 'Ask the AI tutor a question'), check: function(u) { return u.aiAsked >= 1; } },
+        { id: 'wordPro', xp: true, icon: '📝', name: t('stem.areamodel.word_wizard', 'Word Wizard'), desc: t('stem.areamodel.solve_5_word_problems', 'Solve 5 word problems'), check: function(u) { return u.wordSolved >= 5; } },
+        { id: 'divisionPro', xp: true, icon: '➗', name: t('stem.areamodel.fair_share', 'Fair Share'), desc: t('stem.areamodel.solve_5_divisions', 'Finish 5 divisions with partial quotients, no steps shown'), check: function(u) { return u.divisionSolved >= 5; } },
+        { id: 'factorPro', xp: true, icon: '🧱', name: t('stem.areamodel.factor_finder', 'Factor Finder'), desc: t('stem.areamodel.solve_5_factorings', 'Factor 5 expressions into tile rectangles'), check: function(u) { return u.factorSolved >= 5; } },
+        { id: 'gridPro', xp: true, icon: '💯', name: t('stem.areamodel.hundredths_hero', 'Hundredths Hero'), desc: t('stem.areamodel.solve_5_grid', 'Solve 5 hundred-grid challenges'), check: function(u) { return u.grid100Solved >= 5; } }
       ];
-
-      var checkBadges = function(updates) {
-        var newBadges = Object.assign({}, badges);
-        var awarded = false;
+      function badgeState(over) {
+        return Object.assign({
+          correct: score.correct, streak: streak, basicSolved: basicSolved, distSolved: distSolved, multiSolved: multiSolved, wordSolved: wordSolved,
+          fractionSidesSolved: fractionSidesSolved, algebraSolved: algebraSolved, algorithmSolved: algorithmSolved,
+          divisionSolved: divisionSolved, factorSolved: factorSolved, grid100Solved: grid100Solved,
+          usedCommutative: !!_a.usedCommutative, aiAsked: _a.aiAsked || 0
+        }, over || {});
+      }
+      var checkBadges = function(u) {
+        var newBadges = Object.assign({}, badges), awarded = false;
         BADGES.forEach(function(b) {
-          if (!newBadges[b.id] && b.check(updates)) {
-            newBadges[b.id] = true;
-            awarded = true;
+          if (!newBadges[b.id] && b.check(u)) {
+            newBadges[b.id] = true; awarded = true;
             sfxBadge();
-            addToast(b.icon + ' Badge: ' + b.name + ' \u2014 ' + b.desc, 'success');
-            awardXP('areamodelBadge', 15, b.name);
+            toast(fill(t('stem.areamodel.badge_toast', '{icon} Badge: {name}. {desc}'), { icon: b.icon, name: b.name, desc: b.desc }), 'success');
+            if (b.xp) awardXP('areamodelBadge', 15, b.name);
           }
         });
         if (awarded) upd({ badges: newBadges });
       };
 
-      var getBadgeUpdates = function(extraStreak, extraCorrect) {
-        return {
-          correct: score.correct + (extraCorrect || 0),
-          streak: extraStreak != null ? extraStreak : streak,
-          typesUsed: Object.keys(challengeTypesUsed).length,
-          basicSolved: basicSolved, distSolved: distSolved, multiSolved: multiSolved,
-          usedCommutative: _a.usedCommutative || false,
-          aiAsked: _a.aiAsked || 0
-        };
-      };
-
       // ═══ GENERATE CHALLENGE ═══
-      var genChallenge = function(mode) {
-        mode = mode || viewMode;
+      // storyKind (word mode only): a story kind, or 'any' for one that fits the level.
+      var genChallenge = function(mode, storyKind, extra, accept) {
+        mode = CHALLENGE_MODES.indexOf(mode) >= 0 ? mode : (CHALLENGE_MODES.indexOf(viewMode) >= 0 ? viewMode : 'basic');
+        var recent = Array.isArray(_a.recentKeys) ? _a.recentKeys : [];
+        var ch = null;
+        for (var tries = 0; tries < (accept ? 60 : 8); tries++) {
+          ch = mode === 'word' ? CORE.genStory(band, difficulty, Math.random, storyKind || wordKind) : CORE.gen(mode, band, difficulty, Math.random);
+          if (accept && !accept(ch)) continue;
+          if (tries >= 8 || recent.indexOf(CORE.probKey(ch)) < 0) break;
+        }
+        ch.id = 'c' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+        ch.question = questionFor(ch);
+        var newTypes = Object.assign({}, challengeTypesUsed); newTypes[mode] = true;
+        var patch = {
+          viewMode: mode, challenge: ch, answer: '', ansParts: { A: '', B: '', C: '' }, feedback: null,
+          chWork: { key: ch.id, attempts: 0, revealed: false, hints: 0, boxes: {}, counted: false },
+          challengeTypesUsed: newTypes, recentKeys: recent.concat([CORE.probKey(ch)]).slice(-6), highlight: { rows: 0, cols: 0 }
+        };
+        // Replacing an open challenge is a skip: the streak ends, as with "Skip this one".
+        if (chOpen) { patch.streak = 0; if ((chw.attempts || 0) > 0) patch.missedLog = logMiss(challenge, 'skipped'); }
+        if (mode === 'basic') { patch.dims = { rows: ch.a, cols: ch.b }; patch.swapped = false; patch.dimsDraft = null; }
+        else if (mode === 'distributive') { patch.dims = { rows: ch.a, cols: ch.b }; patch.splitAt = ch.split; patch.swapped = false; patch.dimsDraft = null; }
+        else if (mode === 'multidigit') { patch.multiDims = { a: ch.a, b: ch.b }; patch.multiDraft = null; patch.cuts = null; }
+        else if (mode === 'word' && !ch.wkind) { patch.wordCtxIdx = ch.ctxIdx; patch.wordDims = { a: ch.a, b: ch.b }; }
+        else if (mode === 'grid100') { patch.g100 = Object.assign({}, g100, { a: Math.round(ch.a * 10), b: Math.round(ch.b * 10), as: ch.kind }); }
+        else if (mode === 'fraction') { patch.fsides = { n1: ch.n1, d1: ch.d1, n2: ch.n2, d2: ch.d2 }; }
+        else if (mode === 'algebra') { patch.alg = Object.assign({}, alg, { f1: ch.f1, f2: ch.f2 }); }
+        if (extra) Object.assign(patch, extra);
         sfxNewChallenge();
-        var newTypes = Object.assign({}, challengeTypesUsed);
-        newTypes[mode] = true;
-
-        if (mode === 'basic') {
-          var max = difficulty === 'easy' ? 5 : difficulty === 'hard' ? 12 : 9;
-          var a = randInt(2, max);
-          var b = randInt(2, max);
-          upd({
-            viewMode: 'basic', dims: { rows: a, cols: b },
-            highlight: { rows: 0, cols: 0 },
-            challenge: { a: a, b: b, answer: a * b, question: 'What is ' + a + ' \u00d7 ' + b + '? Count the squares!', mode: 'basic' },
-            answer: '', feedback: null, challengeTypesUsed: newTypes
-          });
-        } else if (mode === 'distributive') {
-          var max2 = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 12 : 10;
-          var r = randInt(2, max2);
-          var c = randInt(4, max2);
-          var split = randInt(1, c - 1);
-          upd({
-            // swapped:false - a commuted grid split its columns at a different place than the question names.
-            viewMode: 'distributive', dims: { rows: r, cols: c }, splitAt: split, swapped: false,
-            challenge: { a: r, b: c, split: split, answer: r * c, question: 'Use distributive property: ' + r + ' \u00d7 ' + c + ' = ' + r + ' \u00d7 ' + split + ' + ' + r + ' \u00d7 ' + (c - split) + ' = ?', mode: 'distributive' },
-            answer: '', feedback: null, challengeTypesUsed: newTypes
-          });
-        } else if (mode === 'multidigit') {
-          var a2 = randInt(11, difficulty === 'hard' ? 99 : 49);
-          var b2 = randInt(11, difficulty === 'hard' ? 99 : 49);
-          upd({
-            viewMode: 'multidigit', multiDims: { a: a2, b: b2 },
-            challenge: { a: a2, b: b2, answer: a2 * b2, question: 'Use partial products to find ' + a2 + ' \u00d7 ' + b2 + ' = ?', mode: 'multidigit' },
-            answer: '', feedback: null, challengeTypesUsed: newTypes
-          });
-        } else if (mode === 'word') {
-          // "Next Challenge" and the N key call genChallenge('word'); with no branch they did nothing.
-          var maxW = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
-          var aw = randInt(2, maxW);
-          var bw = randInt(2, maxW);
-          var ctxIdxW = Math.floor(Math.random() * WORD_CONTEXTS.length);
-          upd({
-            viewMode: 'word', wordCtxIdx: ctxIdxW, wordDims: { a: aw, b: bw },
-            challenge: { a: aw, b: bw, answer: aw * bw, question: WORD_CONTEXTS[ctxIdxW].replace(/\{a\}/g, aw).replace(/\{b\}/g, bw), mode: 'word' },
-            answer: '', feedback: null, challengeTypesUsed: newTypes
-          });
-        }
+        upd(patch);
+        say(fill(t('stem.areamodel.sr_new_challenge', 'New challenge. {q}'), { q: ch.question }));
+        // The button that started it is gone now: focus the question, with the model in view.
+        focusLearn(['[data-challenge-prompt]']);
       };
 
-      // ═══ MISCONCEPTION-AWARE FEEDBACK ═══
-      // A wrong answer usually reveals WHICH mix-up happened (added instead of
-      // multiplied, found the perimeter, took only one piece of the split,
-      // skipped the cross partial-products, off by one row...). Name that exact
-      // mistake instead of just revealing the product — the error becomes the lesson.
-      var diagnoseAreaError = function(ch, ans) {
-        var a = ch.a, b = ch.b;
-        if (isNaN(ans)) return 'Type your answer as a number first — count the squares in the model.';
-        if (ans === a + b) return 'You ADDED ' + a + ' + ' + b + ' = ' + (a + b) + '. But the model shows ' + a + ' rows with ' + b + ' squares in EACH row. Multiplication counts them all: ' + a + ' × ' + b + ' = ' + ch.answer + '.';
-        if (ans === 2 * (a + b)) return 'That is the PERIMETER — the fence around the rectangle. Area counts the squares INSIDE it: ' + a + ' rows × ' + b + ' columns = ' + ch.answer + '.';
-        if (ch.mode === 'distributive' && ch.split != null && (ans === a * ch.split || ans === a * (b - ch.split))) return 'That is only ONE piece of the split! The rectangle was cut into ' + a + '×' + ch.split + ' and ' + a + '×' + (b - ch.split) + '. Add both pieces: ' + (a * ch.split) + ' + ' + (a * (b - ch.split)) + ' = ' + ch.answer + '.';
-        if (ch.mode === 'multidigit') {
-          var tA = Math.floor(a / 10) * 10, oA = a % 10, tB = Math.floor(b / 10) * 10, oB = b % 10;
-          if (ans === tA * tB + oA * oB && oA && oB) return 'You multiplied tens×tens (' + (tA * tB) + ') and ones×ones (' + (oA * oB) + ') but skipped the two CROSS pieces: ' + tA + '×' + oB + ' = ' + (tA * oB) + ' and ' + oA + '×' + tB + ' = ' + (oA * tB) + '. All four boxes together make ' + ch.answer + '.';
-          if (ans === tA * tB) return 'That is just the biggest box (tens × tens). The area model has FOUR boxes — add the other three partial products to reach ' + ch.answer + '.';
-        }
-        if (ans === a * (b - 1) || ans === (a - 1) * b) return 'So close — that is exactly one row or column SHORT. Recount: ' + a + ' rows, each with ' + b + ' squares → ' + ch.answer + '.';
-        if (ans === a * (b + 1) || ans === (a + 1) * b) return 'So close — that is one EXTRA row or column. The model has exactly ' + a + ' rows of ' + b + ' → ' + ch.answer + '.';
-        return 'Think of it as repeated addition: one row has ' + b + ' squares, and there are ' + a + ' rows — that is ' + b + ' added ' + a + ' times = ' + ch.answer + '.';
-      };
+      // One feedback style for every tab: the named mistake, then what to do next.
+      function nextStepText(tries) {
+        if (tries === 1) return t('stem.areamodel.try_again', 'Try again.');
+        return revealOk ? t('stem.areamodel.try_again_or_show', 'Try again, use a hint, or show the answer (no points).') : t('stem.areamodel.try_again_hint', 'Try again, or use a hint.');
+      }
+      function wrongNote(code, v, tries) { return mistakeText(code, v) + (tries > 0 ? ' ' + nextStepText(tries) : ''); }
+      // One hint-ladder look for every tab: "Hint n of 3" with the rungs so far.
+      function hintLadder(n, textFor, attrs) {
+        if (!(n > 0)) return null;
+        return h('div', Object.assign({ style: Object.assign({ marginTop: 8 }, noteStyle('info')), 'data-hint-ladder': n }, attrs || {}),
+          h('p', { style: { fontWeight: 800, marginBottom: 2 } }, fill(t('stem.areamodel.hint_title', 'Hint {n} of 3'), { n: n })),
+          Array.from({ length: n }, function(_, i) { return h('p', { key: 'h' + i, style: { fontWeight: 600 } }, textFor(i + 1)); }));
+      }
+      function hintButton(n, onAsk, attrs) {
+        return h('button', Object.assign({ type: 'button', onClick: function() { if (n < 3) onAsk(); }, disabled: n >= 3, style: btnStyle('secondary', n >= 3) }, attrs || {}),
+          n >= 3 ? t('stem.areamodel.no_more_hints', 'No more hints') : t('stem.areamodel.get_hint', 'Get a hint'));
+      }
+      function logMiss(ch, code) {
+        var log = Array.isArray(_a.missedLog) ? _a.missedLog : [];
+        return log.concat([{ m: ch.mode, p: ch.ptext || problemText(ch), c: code }]).slice(-40);
+      }
 
       // ═══ CHECK CHALLENGE ═══
+      // One submission per render pass: a double activation reads the same closure.
       var challengeSubmissionPending = false;
       var checkChallenge = function() {
-        if (!challenge || challengeSubmissionPending || (feedback && feedback.correct)) return;
+        if (!challenge || challengeSubmissionPending || solved || revealed) return;
         challengeSubmissionPending = true;
-        var answerText = String(answer == null ? '' : answer).trim();
-        var ans = answerText === '' ? NaN : Number(answerText);
-        var ok = Number.isFinite(ans) && Number.isInteger(ans) && ans === challenge.answer;
-        var newStreak = ok ? streak + 1 : 0;
-        var newBest = Math.max(bestStreak, newStreak);
-        var newCorrect = score.correct + (ok ? 1 : 0);
-        var newBasic = basicSolved + (ok && challenge.mode === 'basic' ? 1 : 0);
-        var newDist = distSolved + (ok && challenge.mode === 'distributive' ? 1 : 0);
-        var newMulti = multiSolved + (ok && challenge.mode === 'multidigit' ? 1 : 0);
-        var newWord = wordSolved + (ok && challenge.mode === 'word' ? 1 : 0);
-
-        if (ok) {
+        var g = CORE.grade(challenge, answer, ansParts);
+        var firstCount = !chw.counted;
+        var newScore = { correct: score.correct + (g.correct ? 1 : 0), total: score.total + (firstCount ? 1 : 0) };
+        var nextWork = Object.assign({}, chw, { counted: true });
+        if (g.correct) {
+          var newStreak = streak + 1, mode = challenge.mode;
+          var counters = {
+            basicSolved: basicSolved + (mode === 'basic' ? 1 : 0), distSolved: distSolved + (mode === 'distributive' ? 1 : 0),
+            multiSolved: multiSolved + (mode === 'multidigit' ? 1 : 0), wordSolved: wordSolved + (mode === 'word' ? 1 : 0),
+            fractionSidesSolved: fractionSidesSolved + (mode === 'fraction' ? 1 : 0), algebraSolved: algebraSolved + (mode === 'algebra' ? 1 : 0),
+            grid100Solved: grid100Solved + (mode === 'grid100' ? 1 : 0),
+            remainderSolved: remainderSolved + (mode === 'word' && challenge.wkind === 'remainder' ? 1 : 0),
+            percentSolved: percentSolved + ((mode === 'grid100' && challenge.kind === 'pct') || (mode === 'word' && challenge.wkind === 'percent') ? 1 : 0),
+            decFracStorySolved: decFracStorySolved + (mode === 'word' && (challenge.wkind === 'decimal' || challenge.wkind === 'fraction') ? 1 : 0),
+            decimalSolved: decimalSolved + (((mode === 'multidigit' || (mode === 'word' && challenge.wkind === 'decimal')) && (CORE.decimalsOf(challenge.a) > 0 || CORE.decimalsOf(challenge.b) > 0)) ? 1 : 0)
+          };
+          nextWork.credited = true;
           sfxCorrect();
           if (newStreak === 3 || newStreak === 5 || newStreak === 10) sfxStreak();
-          announceToSR('Correct!');
-        } else {
-          sfxWrong();
-          announceToSR('Incorrect. ' + diagnoseAreaError(challenge, ans));
+          // A remainder story's answer is not the quotient, so it is explained, not written as n ÷ a = answer.
+          var okMsg = challenge.wkind === 'remainder' ? fill(t('stem.areamodel.correct_rem', 'Correct! {why}'), { why: remainderMeaning(challenge) })
+            : fill(t('stem.areamodel.correct_eq', 'Correct! {p} = {ans}.'), { p: problemText(challenge), ans: answerText(challenge) });
+          say(okMsg);
+          upd(Object.assign({
+            feedback: { correct: true, msg: okMsg }, score: newScore, streak: newStreak, bestStreak: Math.max(bestStreak, newStreak), chWork: nextWork
+          }, counters));
+          if (!chw.credited) awardXP('areamodel', 5, t('stem.areamodel.xp_reason', 'Area model challenge'));
+          checkBadges(badgeState(Object.assign({ correct: newScore.correct, streak: newStreak }, counters)));
+          focusSoon('[data-next-challenge]');
+          return;
         }
-
+        nextWork.attempts = (chw.attempts || 0) + 1;
+        nextWork.lastWrong = (challenge.mode === 'algebra' || challenge.wkind === 'algebra') ? [ansParts.A, ansParts.B, ansParts.C].join(',') : answer;
+        var patch = { score: newScore, streak: 0, chWork: nextWork };
+        if (nextWork.attempts === 1) patch.missedLog = logMiss(challenge, g.code);
+        // Every tab: a named mistake and another try; the answer is shown only when
+        // the student asks for it, after two tries, and then earns nothing.
+        var msg = wrongNote(g.code, g.v, nextWork.attempts);
+        patch.feedback = { correct: false, code: g.code, v: g.v, msg: msg };
+        sfxWrong();
+        say(msg);
+        upd(patch);
+      };
+      var revealAnswer = function() {
+        if (!challenge || solved || revealed || !allowReveal || (chw.attempts || 0) < 2) return;
         upd({
-          feedback: ok
-            ? { correct: true, msg: '\u2705 Correct! ' + challenge.a + ' \u00d7 ' + challenge.b + ' = ' + challenge.answer }
-            : { correct: false, msg: '\u274C ' + diagnoseAreaError(challenge, ans) },
-          score: { correct: newCorrect, total: score.total + 1 },
-          streak: newStreak, bestStreak: newBest,
-          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti, wordSolved: newWord
+          chWork: Object.assign({}, chw, { revealed: true, counted: true }), streak: 0,
+          score: chw.counted ? score : { correct: score.correct, total: score.total + 1 },
+          revealsUsed: (_a.revealsUsed || 0) + 1, missedLog: logMiss(challenge, 'revealed'),
+          feedback: { correct: false, revealed: true, msg: t('stem.areamodel.revealed_msg', 'Revealed answers earn no points. Study the solution, then try a new challenge.') }
         });
-        if (ok) awardXP('areamodel', 5, 'area model');
-
-        checkBadges({
-          correct: newCorrect, streak: newStreak,
-          typesUsed: Object.keys(challengeTypesUsed).length,
-          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti, wordSolved: newWord,
-          usedCommutative: _a.usedCommutative || false,
-          aiAsked: _a.aiAsked || 0
-        });
+        say(fill(t('stem.areamodel.sr_revealed', 'The answer is {ans}. Revealed answers earn no points.'), { ans: answerText(challenge) }));
+        focusSoon('[data-next-challenge]');
+      };
+      var nextHint = function() {
+        if (!chOpen) return;
+        var rung = Math.min(3, (chw.hints || 0) + 1);
+        if (rung === chw.hints) return;
+        upd({ chWork: Object.assign({}, chw, { hints: rung }), hintsUsed: (_a.hintsUsed || 0) + 1 });
+        say(hintText(challenge, rung));
+      };
+      var skipChallenge = function() {
+        if (!challenge) return;
+        upd({ challenge: null, feedback: null, answer: '', ansParts: { A: '', B: '', C: '' }, streak: chOpen ? 0 : streak, missedLog: chOpen && (chw.attempts || 0) > 0 ? logMiss(challenge, 'skipped') : _a.missedLog });
+      };
+      // ── Live AI hint: only through the host's guarded getHint. If the host
+      // throws, answers with nothing, or stays silent (the gate is off, the
+      // one-hint-per-question cap is used up), a built-in hint stands in. ──
+      var canAskAI = typeof ctx.getHint === 'function' && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false;
+      var aiHint = _a.aiHint && typeof _a.aiHint === 'object' ? _a.aiHint : null;
+      function aiHintFor(key) { return aiHint && aiHint.key === key ? aiHint : null; }
+      function requestAIHint(key, question, wrong, correct, attempts, fallback) {
+        if (!canAskAI || aiHintFor(key)) return;
+        var id = 'ai' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+        var fb = fill(t('stem.areamodel.ai_fallback', 'The AI hint is not available right now, so here is a built-in hint: {hint}'), { hint: fallback });
+        var settled = false;
+        function settle(st, text) {
+          updWith(function(am) {
+            var cur = am.aiHint;
+            if (!cur || cur.key !== key || cur.id !== id) return null;
+            if (st === 'fallback' && cur.st === 'ai') return null;
+            return { aiHint: { key: key, id: id, st: st, text: text } };
+          });
+          say(text);
+        }
+        upd({ aiHint: { key: key, id: id, st: 'loading', text: '' } });
+        say(t('stem.areamodel.ai_asking', 'Asking the AI for a hint.'));
+        var timer = setTimeout(function() { if (settled) return; settled = true; settle('fallback', fb); }, AI_HINT_WAIT_MS);
+        try {
+          ctx.getHint('areamodel', question, String(wrong == null ? '' : wrong), String(correct == null ? '' : correct), attempts || 0, function(text) {
+            var s = String(text == null ? '' : text).trim();
+            clearTimeout(timer);
+            if (!s) { if (!settled) { settled = true; settle('fallback', fb); } return; }
+            settled = true;
+            settle('ai', s);
+          });
+        } catch (e) {
+          clearTimeout(timer);
+          if (!settled) { settled = true; settle('fallback', fb); }
+        }
+      }
+      function renderAIHint(key) {
+        var ah = aiHintFor(key);
+        if (!ah) return null;
+        // Announced through the tool's live region when sent; not a second status region.
+        if (ah.st === 'loading') return h('p', { 'aria-busy': 'true', 'data-ai-hint': 'loading', style: noteStyle('info') }, t('stem.areamodel.ai_asking', 'Asking the AI for a hint.'));
+        return h('p', { 'data-ai-hint': ah.st, style: noteStyle('info') }, ah.text);
+      }
+      function aiHintButton(key, onAsk) {
+        if (!canAskAI || aiHintFor(key)) return null;
+        return h('button', { type: 'button', onClick: onAsk, 'data-ai-hint-button': true, style: btnStyle('secondary') }, t('stem.areamodel.ask_ai_hint', 'Ask the AI for a hint'));
+      }
+      var askAIHint = function() {
+        if (!chOpen) return;
+        requestAIHint(chKey, questionFor(challenge), chw.lastWrong || '', answerText(challenge), chw.attempts || 0, hintText(challenge, Math.min(3, (chw.hints || 0) + 1)));
       };
 
+      // Box fill-in: each box is graded on its own, with its mistake named.
+      function checkBoxes(boxDefs) {
+        if (!chOpen) return;
+        var cur = chw.boxes || {}, next = {}, allOk = true, anyWrong = false;
+        boxDefs.forEach(function(bd) {
+          var entry = cur[bd.id] || {};
+          if (entry.st === 'ok') { next[bd.id] = entry; return; }
+          var txt = String(entry.v == null ? '' : entry.v).trim();
+          if (!txt) { next[bd.id] = entry; allOk = false; return; }
+          var val = CORE.parseNum(txt);
+          var st = bd.kind === 'coef' ? (CORE.sameNum(val, bd.ans) ? 'ok' : (bd.diag ? bd.diag(val) : 'box_generic')) : CORE.diagnoseBox(bd.pa, bd.pb, bd.ans, val);
+          next[bd.id] = { v: txt, st: st };
+          if (st !== 'ok') { allOk = false; anyWrong = true; }
+        });
+        upd({ chWork: Object.assign({}, chw, { boxes: next }) });
+        var okCount = boxDefs.filter(function(bd) { return next[bd.id] && next[bd.id].st === 'ok'; }).length;
+        say(allOk ? t('stem.areamodel.boxes_all_ok', 'Every box is right. Now add them to find the total.')
+          : fill(t('stem.areamodel.boxes_some_ok', '{ok} of {n} boxes are right.'), { ok: okCount, n: boxDefs.length }) + (anyWrong ? ' ' + t('stem.areamodel.boxes_see_notes', 'Read the note under each box that needs another look.') : ''));
+      }
+      function setBoxValue(id, v) {
+        var cur = Object.assign({}, chw.boxes || {});
+        cur[id] = { v: v, st: null };
+        upd({ chWork: Object.assign({}, chw, { boxes: cur }) });
+      }
+      function boxInput(bd, label) {
+        var entry = (chw.boxes || {})[bd.id] || {};
+        var ok = entry.st === 'ok';
+        var errId = 'am-box-err-' + bd.id;
+        return h('div', { key: 'bi-' + bd.id, style: { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 90 } },
+          h('input', {
+            type: 'text', inputMode: 'decimal', value: entry.v == null ? '' : entry.v, readOnly: ok,
+            'data-box-input': bd.id, 'aria-label': fill(t('stem.areamodel.box_input_label', 'Area of the box {label}'), { label: label }),
+            'aria-invalid': entry.st && !ok ? 'true' : undefined, 'aria-describedby': entry.st && !ok ? errId : undefined,
+            onChange: function(e) { if (ok || !chOpen) return; setBoxValue(bd.id, e.target.value); },
+            style: Object.assign({}, inputStyle, { width: '100%', maxWidth: 120, textAlign: 'center', borderColor: ok ? C.ok : entry.st ? C.bad : C.ctrl })
+          }),
+          ok && h('span', { style: { color: C.ok, fontSize: 12, fontWeight: 800 } }, '✓ ' + t('stem.areamodel.box_ok', 'Right')),
+          entry.st && !ok && h('span', { id: errId, style: { color: C.bad, fontSize: 12, fontWeight: 700, lineHeight: 1.35 } }, mistakeText(entry.st)));
+      }
+
+      // ═══ PREDICT THEN CHECK (explore) ═══
+      function predKeyFor(mode) {
+        if (mode === 'basic') return 'b:' + dims.rows + 'x' + dims.cols;
+        if (mode === 'distributive') return 'd:' + dims.rows + 'x' + dims.cols;
+        if (mode === 'multidigit') return 'm:' + multiDims.a + 'x' + multiDims.b;
+        if (mode === 'fraction') return 'f:' + fsides.n1 + '/' + fsides.d1 + 'x' + fsides.n2 + '/' + fsides.d2;
+        if (mode === 'grid100') return 'h:' + g100.as + ':' + g100.a + 'x' + g100.b;
+        return '';
+      }
+      var pred = _a.pred || null;
+      var predMode = ['basic', 'distributive', 'multidigit', 'fraction', 'grid100'].indexOf(viewMode) >= 0;
+      var predKey = predKeyFor(viewMode);
+      var predPending = predictOn && predMode && !chHere && !(pred && pred.key === predKey);
+      var hideProducts = chOpen || predPending;
+      function exploreAnswer(mode) {
+        if (mode === 'basic' || mode === 'distributive') return { a: dims.rows, b: dims.cols, mode: mode, answer: dims.rows * dims.cols, split: mode === 'distributive' ? splitLeft() : null };
+        if (mode === 'multidigit') return { a: multiDims.a, b: multiDims.b, mode: 'multidigit', answer: CORE.product(multiDims.a, multiDims.b) };
+        if (mode === 'fraction') return { mode: 'fraction', n1: fsides.n1, d1: fsides.d1, n2: fsides.n2, d2: fsides.d2, answer: { num: fsides.n1 * fsides.n2, den: fsides.d1 * fsides.d2 } };
+        if (mode === 'grid100') return { mode: 'grid100', kind: g100.as, a: g100.a / 10, b: g100.b / 10, answer: CORE.gridAnswer(g100.as, g100.a, g100.b) };
+        return null;
+      }
+      function checkPrediction() {
+        var ex = exploreAnswer(viewMode); if (!ex) return;
+        var txt = String(_a.predDraft || '').trim();
+        if (!txt) { say(t('stem.areamodel.pred_empty', 'Type your prediction first.')); return; }
+        var g = CORE.grade(ex, txt, null);
+        upd({ pred: { key: predKey, value: txt, ok: g.correct, code: g.correct ? null : g.code, v: g.v || null }, predDraft: '' });
+        focusSoon('[data-predict-result]');
+        say(g.correct ? t('stem.areamodel.pred_right', 'Your prediction matches the model.') : fill(t('stem.areamodel.pred_wrong', 'You predicted {p}. The model shows {ans}.'), { p: txt, ans: answerText(ex) }));
+      }
+
       // ═══ AI TUTOR ═══
-      // Request-ID guard: prevents stale tutor responses from overwriting
-      // newer context if the student switches tab / dimensions / question
-      // while a fetch is mid-flight.
+      var canTutor = typeof ctx.callGemini === 'function' && ctx.aiHintsEnabled !== false;
+      var activeA, activeB, activeProductText;
+      function splitLeft() { return Math.max(1, Math.min(_a.splitAt || Math.min(5, Math.floor(dims.cols / 2)) || 1, dims.cols - 1)); }
       var askAITutor = function() {
-        if (!aiQuestion.trim()) return;
+        if (!canTutor || !aiQuestion.trim()) return;
         window.__areamodelAiReqId = (window.__areamodelAiReqId || 0) + 1;
         var thisReqId = window.__areamodelAiReqId;
         upd({ aiLoading: true, aiResponse: '' });
+        // While a challenge is open the tutor gets the factors only, never the product.
+        var noTell = ' They are solving it now: do not tell them the answer or any partial result; ask guiding questions instead.';
+        var facts;
+        if (viewMode === 'word' && isStory(challenge)) facts = 'working on this word problem: "' + questionFor(challenge) + '".' + (hideProducts ? noTell : ' (Answer: ' + answerText(challenge) + '.)');
+        else if (viewMode === 'division') facts = 'dividing ' + divN + ' by ' + divD + ' with partial quotients on an open area model.' + (divPhase === 'done' ? ' (Quotient ' + divReplayed.sum + ', remainder ' + divLeft + '.)' : noTell);
+        else if (viewMode === 'algebra' && algMode === 'factor') facts = 'factoring ' + facPolyText + ' by arranging algebra tiles into a rectangle.' + (facDone ? '' : noTell);
+        else facts = hideProducts
+          ? 'working with factors ' + activeA + ' and ' + activeB + '. They are solving it now: do not tell them the product or any partial product; ask guiding questions instead.'
+          : 'working with factors ' + activeA + ' and ' + activeB + ' (product ' + activeProductText + ').';
         var prompt = 'You are a friendly math tutor helping a student learn multiplication using area models. ' +
-          'They are on the "' + viewMode + '" tab working with factors ' + activeFactorA + ' and ' + activeFactorB +
-          ' (product ' + activeProduct + '). ' +
+          'They are on the "' + viewMode + '" tab ' + facts + ' ' +
           'Their question: "' + aiQuestion + '"\n\n' +
           'Explain clearly with examples. Keep it under 150 words.';
-        ctx.callGemini(prompt, false, false, 0.7).then(function(resp) {
+        var call;
+        try { call = ctx.callGemini(prompt, false, false, 0.7); } catch (e) { call = Promise.reject(e); }
+        Promise.resolve(call).then(function(resp) {
           if (thisReqId !== window.__areamodelAiReqId) return;
-          upd({ aiResponse: resp, aiLoading: false, aiAsked: (_a.aiAsked || 0) + 1 });
-          checkBadges(Object.assign(getBadgeUpdates(), { aiAsked: (_a.aiAsked || 0) + 1 }));
+          upd({ aiResponse: String(resp || ''), aiLoading: false, aiAsked: (_a.aiAsked || 0) + 1 });
+          checkBadges(badgeState({ aiAsked: (_a.aiAsked || 0) + 1 }));
         }).catch(function() {
           if (thisReqId !== window.__areamodelAiReqId) return;
-          upd({ aiResponse: 'Sorry, I could not connect to the AI tutor right now.', aiLoading: false });
+          upd({ aiResponse: t('stem.areamodel.ai_error', 'Sorry, I could not connect to the AI tutor right now.'), aiLoading: false });
         });
       };
 
-      // ═══ KEYBOARD SHORTCUTS (non-hook: setTimeout to avoid conditional hook) ═══
-      if (!window._areaModelKbHandler) window._areaModelKbHandler = null;
-      setTimeout(function() {
-        if (window._areaModelKbHandler) {
-          window.removeEventListener('keydown', window._areaModelKbHandler);
-        }
-        window._areaModelKbHandler = function(e) {
-          // Window-level handler with no unmount cleanup: refuse to act once the tool left the DOM.
-          // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
-          var amRoot = document.querySelector('[data-areamodel-root]');
-          if (!amRoot || !e.target || !amRoot.contains(e.target)) return;
-          if (e.ctrlKey || e.metaKey || e.altKey) return;
-          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-          if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
-          else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }
-          else if (e.key === 'p' || e.key === 'P') { sfxClick(); upd({ viewMode: 'multidigit' }); }
-          else if (e.key === 'w' || e.key === 'W') { sfxClick(); upd({ viewMode: 'word' }); }
-          else if (e.key === 'n' || e.key === 'N') { genChallenge(viewMode); }
-          else if (e.key === 'c' || e.key === 'C') {
-            sfxClick();
-            upd({ swapped: !swapped, usedCommutative: true });
-            checkBadges(Object.assign(getBadgeUpdates(), { usedCommutative: true }));
-          }
-          else if (e.key === '?' || e.key === '/') { upd({ showAITutor: !showAITutor }); }
-        };
-        window.addEventListener('keydown', window._areaModelKbHandler);
-      }, 0);
+      // ═══ CROSS-LINKS (same pattern as the flagship tools) ═══
+      function toolReachable(id) {
+        try {
+          if (typeof setStemLabTool !== 'function' || !window.StemLab) return false;
+          return !!((window.StemLab.isRegistered && window.StemLab.isRegistered(id)) || typeof window.__alloEnsureStemPluginLoaded === 'function');
+        } catch (e) { return false; }
+      }
+      function openTool(id, name) {
+        var ok = false;
+        try { ok = !!(window.StemLab.isRegistered && window.StemLab.isRegistered(id)); } catch (e) { ok = false; }
+        if (!ok) { try { ok = typeof window.__alloEnsureStemPluginLoaded === 'function' && window.__alloEnsureStemPluginLoaded(id) !== false; } catch (e2) { ok = false; } }
+        if (!ok || typeof setStemLabTool !== 'function') { say(fill(t('stem.areamodel.tool_unavailable', '{name} is not available in this build.'), { name: name })); return; }
+        setStemLabTool(id);
+      }
+      function linkButton(id, name, text) {
+        if (!toolReachable(id)) return null;
+        return h('button', { type: 'button', key: 'lk-' + id, 'data-areamodel-link': id, onClick: function() { openTool(id, name); }, style: btnStyle('secondary') }, text);
+      }
 
-      // ═══ VIEW: BASIC ═══
+      // ═══ SHARED MODEL: proportional boxes for any two factors ═══
+      // Drawn to scale unless a part would be thinner than 28 px; then it says so.
+      // across: the first factor runs along the top (Partial Products uses it when
+      // that factor is the longer side, so a tall model like 44 × 12 fills the width).
+      function boxGeom(bm, across, padBottom) {
+        padBottom = padBottom || 0;
+        var xParts = across ? bm.rows : bm.cols, yParts = across ? bm.cols : bm.rows;
+        var topV = across ? bm.a : bm.b, leftV = across ? bm.b : bm.a;
+        var W = 440, H = 260, unit = Math.min(W / Math.max(topV, 1e-9), H / Math.max(leftV, 1e-9)), notToScale = false;
+        var xw = xParts.map(function(p) { var w = p.v * unit; if (w > 0 && w < 28) { w = 28; notToScale = true; } return w; });
+        var yh = yParts.map(function(p) { var hh = p.v * unit; if (hh > 0 && hh < 28) { hh = 28; notToScale = true; } return hh; });
+        var xs = [], ys = [], acc = 0;
+        xw.forEach(function(w) { xs.push(acc); acc += w; }); var totW = acc; acc = 0;
+        yh.forEach(function(hh) { ys.push(acc); acc += hh; }); var totH = acc;
+        return { across: !!across, xParts: xParts, yParts: yParts, xw: xw, yh: yh, xs: xs, ys: ys, totW: totW, totH: totH, notToScale: notToScale, vbW: totW + 100, vbH: totH + 65 + padBottom, noteY: totH + 60 + padBottom,
+          box: function(bx) { var i = across ? bx.r : bx.c, j = across ? bx.c : bx.r; return { x: 65 + xs[i], y: 40 + ys[j], w: xw[i], h: yh[j] }; } };
+      }
+      function renderBoxSvg(a, b, opts) {
+        opts = opts || {};
+        var bm = opts.model || CORE.boxModel(a, b);
+        var g = opts.geom || boxGeom(bm, opts.across);
+        var fs = (bm.cols.length > 2 || bm.rows.length > 2) ? 13 : 17;
+        var pre = opts.idPrefix || 'am-partial';
+        var sel = opts.selected;
+        var looks = opts.regionLook ? bm.boxes.map(function(bx) { return opts.regionLook(bx); }) : null;
+        return h('svg', { viewBox: '0 0 ' + g.vbW + ' ' + g.vbH, role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc',
+            style: opts.fit ? { width: '100%', height: 'auto', display: 'block', background: C.svgBg } : { width: '100%', maxHeight: 340, background: C.svgBg },
+            'data-partial-model': true, 'data-across': g.across ? 'true' : undefined },
+          h('title', { id: pre + '-title' }, opts.title || t('stem.areamodel.partial_rectangles', 'Tens-and-ones area model')),
+          h('desc', { id: pre + '-desc' }, opts.desc || ''),
+          bm.boxes.map(function(bx) {
+            var r = g.box(bx);
+            if (!r.w || !r.h) return null;
+            var lit = opts.litBoxes && opts.litBoxes.indexOf(bx.index) >= 0;
+            var lk = looks ? looks[bx.index] : null;
+            return h('rect', { key: 'r' + bx.index, x: r.x, y: r.y, width: r.w, height: r.h,
+              fill: lk && lk.fill ? lk.fill : FILLS[bx.index % FILLS.length], stroke: lk && lk.stroke ? lk.stroke : C.stroke,
+              strokeWidth: sel === bx.index || lit ? 4 : (lk && lk.sw ? lk.sw : 1), strokeDasharray: lk && lk.dash ? lk.dash : undefined,
+              'data-partial-region': bx.index, 'data-selected': sel === bx.index, 'data-region-state': lk ? lk.state : undefined,
+              onClick: opts.onSelect ? function() { opts.onSelect(bx.index); } : undefined, style: { cursor: opts.onSelect ? 'pointer' : 'default' } });
+          }),
+          // The area printed inside its own region, sized to fit; a region too small for it is left blank.
+          looks && bm.boxes.map(function(bx) {
+            var r = g.box(bx), lk = looks[bx.index];
+            if (!r.w || !r.h || !lk || !lk.text) return null;
+            var size = Math.min(18, r.h * 0.5, r.w / Math.max(1, String(lk.text).length * 0.62));
+            if (size < 9) return null;
+            return h('text', { key: 'rv' + bx.index, x: r.x + r.w / 2, y: r.y + r.h / 2 + size * 0.35, textAnchor: 'middle', fill: lk.ink || '#0f172a', fontSize: size, fontWeight: 900, 'data-region-text': bx.index, style: { pointerEvents: 'none' } }, lk.text);
+          }),
+          g.xParts.map(function(p, j) { return g.xw[j] ? h('text', { key: 'ct' + j, x: 65 + g.xs[j] + g.xw[j] / 2, y: 26, textAnchor: 'middle', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
+          g.yParts.map(function(p, i) { return g.yh[i] ? h('text', { key: 'rt' + i, x: 58, y: 45 + g.ys[i] + g.yh[i] / 2, textAnchor: 'end', fill: C.ink, fontSize: fs, fontWeight: 800 }, fmt(p.v)) : null; }),
+          opts.extra || null,
+          g.notToScale && !opts.noteOutside && h('text', { x: 65, y: g.noteY, fill: C.sub, fontSize: 12, fontWeight: 700 }, t('stem.areamodel.not_to_scale', 'Some thin parts are drawn wider than scale so you can see them.')));
+      }
+
+      // ═══ VIEW: BASIC GRID (one tab stop, arrow keys inside) ═══
+      var rows = swapped ? dims.cols : dims.rows;
+      var cols = swapped ? dims.rows : dims.cols;
+      var lockDims = chOpen && chHere && (viewMode === 'basic' || viewMode === 'distributive');
+      function gridDescText() {
+        if (hideProducts) return fill(t('stem.areamodel.grid_desc_hidden', 'An array of {r} rows with {c} squares in each row. Count, skip-count or use a fact you know to find the total.'), { r: rows, c: cols });
+        return fill(t('stem.areamodel.grid_desc', 'An array of {r} rows with {c} squares in each row: {n} squares in all.'), { r: rows, c: cols, n: rows * cols });
+      }
       var renderBasicGrid = function() {
-        var cells = [];
-        for (var i = 0; i < rows * cols; i++) {
-          var r = Math.floor(i / cols);
-          var c = i % cols;
-          var isHigh = r < highlight.rows && c < highlight.cols;
-          (function(ri, ci) {
-            var selectCell = function() {
-              sfxClick();
-              upd({ highlight: { rows: ri + 1, cols: ci + 1 } });
-            };
-            cells.push(h('div', {
-              key: i,
-              role: 'button',
-              tabIndex: 0,
-              'aria-label': 'Highlight ' + (ri + 1) + ' rows by ' + (ci + 1) + ' columns',
-              onClick: selectCell,
-              onKeyDown: function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  selectCell();
-                }
-              },
-              className: 'allo-am-cell aspect-square rounded-sm border cursor-pointer hover:scale-110 ' +
-                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm allo-am-cell-fill' : (isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-600' : 'bg-amber-100 border-amber-200 hover:bg-amber-200'))
-            }));
-          })(r, c);
+        var gf = _a.gridFocus && _a.gridFocus.r < rows && _a.gridFocus.c < cols ? _a.gridFocus : { r: 0, c: 0 };
+        var cellPx = cols <= 6 ? 44 : cols <= 9 ? 34 : cols <= 12 ? 28 : 26;
+        var gap = cols <= 9 ? 4 : 3;
+        function selectCell(ri, ci) {
+          sfxClick();
+          upd({ highlight: { rows: ri + 1, cols: ci + 1 }, gridFocus: { r: ri, c: ci } });
+          say(hideProducts
+            ? fill(t('stem.areamodel.sr_highlight_hidden', 'Highlighted {r} rows by {c} columns.'), { r: ri + 1, c: ci + 1 })
+            : fill(t('stem.areamodel.sr_highlight', 'Highlighted {r} rows by {c} columns: {n} squares.'), { r: ri + 1, c: ci + 1, n: (ri + 1) * (ci + 1) }));
         }
-        return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
-          // Skip-count overlay header (column scale + toggle)
-          h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
-            h('label', { className: 'text-[0.6875rem] font-bold text-amber-800 flex items-center gap-1 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: showSkipCount,
-                onChange: function() { sfxClick(); upd({ showSkipCount: !showSkipCount }); }
-              }),
-              t('stem.areamodel.skip_count_overlay_multiplication_as_r', '🔢 Skip-count overlay (multiplication as repeated addition)')
-            )
-          ),
-
-          // Side-by-side: row-totals column + grid
-          h('div', { className: 'flex items-start gap-2 justify-center' },
-            // Row-total column (cumulative skip count down the rows)
-            showSkipCount && h('div', {
-              className: 'flex flex-col gap-1',
-              'aria-hidden': 'false',
-              style: { fontVariantNumeric: 'tabular-nums' }
-            },
-              h('div', { className: 'text-[0.6875rem] font-bold text-amber-700 text-right pr-1 py-0.5' }, 'total'),
-              Array.from({ length: rows }, function(_, ri) {
-                var runningTotal = (ri + 1) * cols;
-                var stepLabel = '+' + cols;
-                var isInHL = ri < highlight.rows;
-                return h('div', {
-                  key: 'rt-' + ri,
-                  className: 'rounded text-xs font-bold flex flex-col items-center justify-center px-2 ' +
-                    (isInHL ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-amber-50 text-amber-700 border border-amber-100'),
-                  style: { minWidth: 48, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
-                },
-                  h('span', { className: 'text-[0.625rem] text-amber-800 leading-none' }, ri === 0 ? cols : stepLabel),
-                  h('span', { className: 'text-base leading-tight' }, runningTotal)
-                );
-              })
-            ),
-            // Row labels (1..rows) — paired with grid rows
-            h('div', { className: 'flex flex-col gap-1 self-stretch', 'aria-hidden': 'true' },
-              h('div', { className: 'text-[0.6875rem] font-bold text-amber-600 py-0.5 text-center', style: { width: 18 } }, 'r'),
-              Array.from({ length: rows }, function(_, ri) {
-                var isInHL = ri < highlight.rows;
-                return h('div', {
-                  key: 'rl-' + ri,
-                  className: 'rounded flex items-center justify-center text-xs font-bold ' +
-                    (isInHL ? 'bg-amber-200 text-amber-900' : 'bg-amber-50 text-amber-700'),
-                  style: { width: 18, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
-                }, ri + 1);
-              })
-            ),
-            // Grid with column-label header
-            h('div', { className: 'flex flex-col gap-1 flex-1 min-w-0', style: { maxWidth: 340 } },
-              // Column labels (1..cols)
-              h('div', {
-                className: 'grid gap-1',
-                'aria-hidden': 'true',
-                style: (function() {
-                  var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
-                  return { gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))', width: '100%', maxWidth: w + 'px' };
-                })()
-              },
-                Array.from({ length: cols }, function(_, ci) {
-                  var isInHL = ci < highlight.cols;
-                  return h('div', {
-                    key: 'cl-' + ci,
-                    className: 'text-center text-[0.6875rem] font-bold py-0.5 rounded ' +
-                      (isInHL ? 'bg-amber-200 text-amber-900' : 'text-amber-700')
-                  }, ci + 1);
-                })
-              ),
-              h('div', {
-                className: 'grid gap-1',
-                style: (function() {
-                  var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
-                  return {
-                    gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
-                    width: '100%',
-                    maxWidth: w + 'px'
-                  };
-                })()
-              }, cells),
-              // Highlight dimension caption shown when student has selected a sub-region
-              (highlight.rows > 0 && highlight.cols > 0) && h('div', {
-                className: 'text-center text-[0.6875rem] font-bold text-amber-700 mt-1'
-              },
-                'Highlighted: ', h('span', { className: 'text-amber-900' }, highlight.rows + ' × ' + highlight.cols),
-                ' = ',
-                h('span', { className: 'text-amber-900 text-base' }, highlight.rows * highlight.cols)
-              )
-            )
-          ),
-          showSkipCount && h('p', { className: 'text-[0.6875rem] text-amber-700 italic mt-2 text-center' },
-            'Each row adds ' + cols + '. ' + cols + ' + ' + cols + ' + ... (' + rows + ' times) = ' + cols + ' × ' + rows + ' = ' + (rows * cols)
-          )
-        );
+        function onCellKey(ri, ci) {
+          return function(e) {
+            var nr = ri, nc = ci;
+            if (e.key === 'ArrowRight') nc = Math.min(cols - 1, ci + 1);
+            else if (e.key === 'ArrowLeft') nc = Math.max(0, ci - 1);
+            else if (e.key === 'ArrowDown') nr = Math.min(rows - 1, ri + 1);
+            else if (e.key === 'ArrowUp') nr = Math.max(0, ri - 1);
+            else if (e.key === 'Home') { nc = 0; if (e.ctrlKey) nr = 0; }
+            else if (e.key === 'End') { nc = cols - 1; if (e.ctrlKey) nr = rows - 1; }
+            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCell(ri, ci); return; }
+            else return;
+            e.preventDefault();
+            var grid = e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('[role="grid"]') : null;
+            var nextEl = grid && grid.querySelector('[data-cell="' + nr + '-' + nc + '"]');
+            if (nextEl && nextEl.focus) nextEl.focus();
+            upd({ gridFocus: { r: nr, c: nc } });
+          };
+        }
+        // Delegated events: the grid reads the cell from data-cell, so the memoised
+        // cells need no handlers of their own. The box always holds this render's handlers.
+        function cellOf(e) {
+          var el = e.target && e.target.closest ? e.target.closest('[data-cell]') : null;
+          if (!el) return null;
+          var rc = String(el.getAttribute('data-cell')).split('-').map(Number);
+          return rc.length === 2 && rc[0] < rows && rc[1] < cols ? rc : null;
+        }
+        gridBox.current = {
+          click: function(e) { var rc = cellOf(e); if (rc) selectCell(rc[0], rc[1]); },
+          key: function(e) { var rc = cellOf(e); if (rc) onCellKey(rc[0], rc[1])(e); }
+        };
+        var Grid = gridMemo(React);
+        var rowLabelStyle = { height: cellPx, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, borderRadius: 4 };
+        return h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+          h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: C.ink, minHeight: 32, cursor: 'pointer' } },
+            h('input', { type: 'checkbox', checked: showSkipCount, onChange: function() { sfxClick(); upd({ showSkipCount: !showSkipCount }); }, style: { width: 20, height: 20 } }),
+            t('stem.areamodel.skip_count_overlay_multiplication_as_r', '🔢 Skip-count overlay (multiplication as repeated addition)')),
+          h('div', { style: { overflowX: 'auto', paddingBottom: 4 } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 6, justifyContent: 'center', minWidth: 'min-content', marginTop: 8 } },
+              showSkipCount && h('div', { 'aria-hidden': 'true', style: { display: 'flex', flexDirection: 'column', gap: gap, fontVariantNumeric: 'tabular-nums', paddingTop: 22 } },
+                Array.from({ length: rows }, function(_, ri) {
+                  return h('div', { key: 'rt-' + ri, style: Object.assign({}, rowLabelStyle, { minWidth: 52, flexDirection: 'column', background: C.card, color: C.ink, border: '1px solid ' + C.border }) },
+                    h('span', { className: 'text-[0.625rem] text-amber-800 leading-none', style: { color: C.accent } }, ri === 0 ? String(cols) : '+' + cols),
+                    h('span', { style: { fontSize: 14 } }, hideProducts ? '?' : String((ri + 1) * cols)));
+                })),
+              h('div', { 'aria-hidden': 'true', style: { display: 'flex', flexDirection: 'column', gap: gap, paddingTop: 22 } },
+                Array.from({ length: rows }, function(_, ri) { return h('div', { key: 'rl-' + ri, style: Object.assign({}, rowLabelStyle, { width: 22, color: C.accent, background: ri < highlight.rows ? C.card : 'transparent' }) }, ri + 1); })),
+              h('div', null,
+                h('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: gap, height: 18, marginBottom: 4 } },
+                  Array.from({ length: cols }, function(_, ci) { return h('div', { key: 'cl-' + ci, style: { width: cellPx, flex: '0 0 auto', textAlign: 'center', fontSize: 12, fontWeight: 800, color: C.accent } }, ci + 1); })),
+                h(Grid, { rows: rows, cols: cols, hr: highlight.rows, hc: highlight.cols, fr: gf.r, fc: gf.c, cellPx: cellPx, gap: gap,
+                  cellOn: C.cellOn, cell: C.cell, cellBorder: C.cellBorder, box: gridBox,
+                  cellTpl: t('stem.areamodel.cell_label', 'Row {r}, column {c}'),
+                  label: fill(t('stem.areamodel.grid_label', 'Array of {r} rows and {c} columns. Use the arrow keys to move and Enter to highlight.'), { r: rows, c: cols }) })))),
+          h('p', { id: 'am-grid-desc', style: { marginTop: 8, fontSize: 13, color: C.sub, textAlign: 'center' } }, gridDescText()),
+          (highlight.rows > 0 && highlight.cols > 0) && h('p', { style: { textAlign: 'center', fontSize: 13, fontWeight: 800, color: C.ink, marginTop: 4 } },
+            hideProducts ? fill(t('stem.areamodel.highlighted_hidden', 'Highlighted: {r} × {c}'), { r: highlight.rows, c: highlight.cols })
+              : fill(t('stem.areamodel.highlighted_value', 'Highlighted: {r} × {c} = {n}'), { r: highlight.rows, c: highlight.cols, n: highlight.rows * highlight.cols })),
+          showSkipCount && h('p', { style: { fontSize: 12, fontStyle: 'italic', color: C.sub, marginTop: 6, textAlign: 'center' } },
+            hideProducts ? fill(t('stem.areamodel.skip_line_hidden', 'Each row adds {c}. Skip-count by {c}, {r} times.'), { c: cols, r: rows })
+              : fill(t('stem.areamodel.skip_line', 'Each row adds {c}. Skip-counting by {c}, {r} times, gives {n}.'), { c: cols, r: rows, n: rows * cols })));
       };
 
       // ═══ VIEW: DISTRIBUTIVE ═══
       var renderDistributive = function() {
-        var leftCols = Math.max(1, Math.min(splitAt, cols - 1)); // keep ≥1 column on each side (stale splitAt could exceed cols after shrinking)
-        var rightCols = cols - leftCols;
-        var leftCells = [];
-        for (var i = 0; i < rows * leftCols; i++) {
-          leftCells.push(h('div', { key: 'L' + i, className: 'aspect-square rounded-sm border bg-blue-400 border-blue-500' }));
+        var a = rows, bAll = cols;
+        if (chHere && challenge.mode === 'distributive') { a = challenge.a; bAll = challenge.b; }
+        if (bAll < 2) return h('p', { style: noteStyle('info') }, t('stem.areamodel.dist_need_two', 'Use at least 2 columns so the rectangle can be split.'));
+        var leftCols = chHere && challenge.mode === 'distributive' ? challenge.split : Math.max(1, Math.min(_a.splitAt || Math.min(5, Math.floor(bAll / 2)) || 1, bAll - 1));
+        var rightCols = bAll - leftCols;
+        var leftProduct = a * leftCols, rightProduct = a * rightCols;
+        var bigModel = a * bAll > 240;
+        var boxDefs = [{ id: 'L', pa: a, pb: leftCols, ans: leftProduct }, { id: 'R', pa: a, pb: rightCols, ans: rightProduct }];
+        var fillMode = chOpen && chHere;
+        function piece(side, count, prod, color) {
+          var cells = [];
+          if (!bigModel) for (var i = 0; i < a * count; i++) cells.push(h('div', { key: side + i, style: { aspectRatio: '1 / 1', borderRadius: 3, background: color, border: '1px solid ' + C.stroke } }));
+          return h('div', { style: { flex: count, minWidth: 0, textAlign: 'center' } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: C.ink, marginBottom: 4 } }, a + ' × ' + count),
+            bigModel
+              ? h('div', { role: 'img', 'aria-label': fill(t('stem.areamodel.piece_label', 'A {a} by {c} piece'), { a: a, c: count }), style: { height: Math.min(200, 12 * a + 40), background: color, border: '2px solid ' + C.stroke, borderRadius: 6 } })
+              : h('div', { 'aria-hidden': 'true', style: { display: 'grid', gap: 2, gridTemplateColumns: 'repeat(' + count + ', minmax(0, 1fr))' } }, cells),
+            fillMode ? h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 6 } }, boxInput(side === 'L' ? boxDefs[0] : boxDefs[1], a + ' × ' + count))
+              : h('div', { style: { fontSize: 15, fontWeight: 800, color: C.ink, marginTop: 4 } }, '= ' + (hideProducts ? '?' : prod)));
         }
-        var rightCells = [];
-        for (var j = 0; j < rows * rightCols; j++) {
-          rightCells.push(h('div', { key: 'R' + j, className: 'aspect-square rounded-sm border bg-emerald-400 border-emerald-500' }));
-        }
-        var leftProduct = rows * leftCols;
-        var rightProduct = rows * rightCols;
-
-        return h('div', { className: 'space-y-3' },
-          h('div', { className: 'flex items-center gap-2 bg-violet-50 rounded-lg p-2 border border-violet-200' },
-            h('span', { className: 'text-xs font-bold text-violet-700' }, t('stem.areamodel.split_at_column', 'Split at column:')),
-            h('input', {
-              type: 'range', min: '1', max: String(cols - 1), value: leftCols,
-              onChange: function(e) { upd({ splitAt: parseInt(e.target.value) }); },
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }) },
+            h('label', { htmlFor: 'am-split', style: { fontSize: 13, fontWeight: 800, color: C.ink } }, t('stem.areamodel.split_at_column', 'Split at column:')),
+            h('input', { id: 'am-split', type: 'range', min: '1', max: String(bAll - 1), value: leftCols, disabled: fillMode,
+              onChange: function(e) { if (fillMode) return; upd(clearDone({ splitAt: parseInt(e.target.value, 10) })); },
               'aria-label': t('stem.areamodel.split_at_column_position', 'Split at column position'),
-              className: 'flex-1 accent-violet-600'
-            }),
-            h('span', { className: 'text-xs font-mono text-violet-600' }, leftCols + ' | ' + rightCols)
-          ),
-          h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
-            h('div', { className: 'flex gap-2 sm:gap-4 justify-center items-start w-full max-w-full mx-auto' },
-              h('div', { className: 'text-center', style: { flex: leftCols, minWidth: 0, transition: 'flex-grow 0.3s ease' } },
-                h('div', { className: 'text-xs font-bold text-blue-700 mb-1' }, rows + ' \u00d7 ' + leftCols),
-                h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + leftCols + ', minmax(0, 1fr))' } }, leftCells),
-                h('div', { className: 'text-sm font-bold text-blue-600 mt-1' }, '= ' + leftProduct)
-              ),
-              rightCols > 0 && h('div', { className: 'flex flex-col items-center justify-center self-stretch w-4 sm:w-8' },
-                h('div', { className: 'w-px flex-1 bg-violet-300' }),
-                h('span', { className: 'text-violet-500 font-bold text-lg py-1' }, '+'),
-                h('div', { className: 'w-px flex-1 bg-violet-300' })
-              ),
-              rightCols > 0 && h('div', { className: 'text-center', style: { flex: rightCols, minWidth: 0, transition: 'flex-grow 0.3s ease' } },
-                h('div', { className: 'text-xs font-bold text-emerald-700 mb-1' }, rows + ' \u00d7 ' + rightCols),
-                h('div', { className: 'grid gap-1 sm:gap-2', style: { gridTemplateColumns: 'repeat(' + rightCols + ', minmax(0, 1fr))' } }, rightCells),
-                h('div', { className: 'text-sm font-bold text-emerald-700 mt-1' }, '= ' + rightProduct)
-              )
-            )
-          ),
-          h('div', { className: 'bg-gradient-to-r from-blue-50 via-violet-50 to-emerald-50 rounded-xl p-4 border border-violet-200 text-center' },
-            h('div', { className: 'text-lg font-bold text-violet-800' },
-              rows + ' \u00d7 ' + cols + ' = ' + rows + ' \u00d7 ',
-              h('span', { className: 'text-blue-600' }, leftCols),
-              ' + ' + rows + ' \u00d7 ',
-              h('span', { className: 'text-emerald-600' }, rightCols)
-            ),
-            h('div', { className: 'text-xl font-bold text-violet-700 mt-1' },
-              rows * cols + ' = ',
-              h('span', { className: 'text-blue-600' }, leftProduct),
-              ' + ',
-              h('span', { className: 'text-emerald-600' }, rightProduct),
-              ' = ',
-              h('span', { className: 'text-2xl text-violet-900' }, leftProduct + rightProduct)
-            ),
-            h('p', { className: 'text-xs text-violet-700 mt-2 italic' },
-              t('stem.areamodel.distributive_property_a_b_c_a_b_a_c', '\uD83D\uDCA1 Distributive Property: a \u00d7 (b + c) = a\u00d7b + a\u00d7c'))
-          )
-        );
+              'aria-valuetext': fill(t('stem.areamodel.split_valuetext', '{l} columns and {r} columns'), { l: leftCols, r: rightCols }),
+              style: { flex: 1, minHeight: 32, accentColor: C.btn } }),
+            h('span', { style: { fontFamily: 'monospace', fontSize: 14, fontWeight: 800, color: C.ink } }, leftCols + ' | ' + rightCols)),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'flex-start' } },
+              piece('L', leftCols, leftProduct, FILLS[0]),
+              h('div', { 'aria-hidden': 'true', style: { alignSelf: 'center', fontSize: 22, fontWeight: 900, color: C.accent } }, '+'),
+              piece('R', rightCols, rightProduct, FILLS[1])),
+            h('p', { style: { marginTop: 8, fontSize: 13, color: C.sub, textAlign: 'center' } },
+              fill(t('stem.areamodel.dist_desc', 'A rectangle {a} rows tall and {b} columns wide, cut into a {a} by {l} piece and a {a} by {r} piece.'), { a: a, b: bAll, l: leftCols, r: rightCols })),
+            fillMode && h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
+              h('button', { type: 'button', onClick: function() { checkBoxes(boxDefs); }, 'data-check-boxes': true, style: Object.assign(btnStyle('secondary'), { minHeight: 44 }) }, t('stem.areamodel.check_pieces', 'Check my pieces')))),
+          h('div', { style: Object.assign({}, cardStyle, { textAlign: 'center' }) },
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: C.ink } },
+              a + ' × ' + bAll + ' = ' + a + ' × ', h('span', null, leftCols), ' + ' + a + ' × ', h('span', null, rightCols)),
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: C.ink, marginTop: 4 } },
+              hideProducts ? '= ? + ? = ?' : '= ' + leftProduct + ' + ' + rightProduct + ' = ' + (leftProduct + rightProduct)),
+            h('p', { style: { fontSize: 12, fontStyle: 'italic', color: C.sub, marginTop: 6 } },
+              t('stem.areamodel.distributive_property_a_b_c_a_b_a_c', '💡 Distributive Property: a × (b + c) = a×b + a×c'))));
       };
 
-      // ═══ VIEW: MULTI-DIGIT ═══
+      // ═══ VIEW: PARTIAL PRODUCTS (whole numbers and decimals) ═══
+      var multiDraft = _a.multiDraft || null;
+      function factorOk(v) { return isFinite(v) && v > 0 && v <= 9999 && CORE.decimalsOf(v) <= 2; }
+      function factorInput(which, label, value, locked) {
+        var draft = multiDraft && multiDraft[which] != null ? String(multiDraft[which]) : null;
+        var shown = draft != null ? draft : fmt(value);
+        var v = CORE.parseNum(shown);
+        var other = which === 'a' ? multiDims.b : multiDims.a;
+        var bad = draft != null && (!factorOk(v) || CORE.boxCount(v, other) > 12);
+        var errId = 'am-factor-err-' + which;
+        return h('div', { style: Object.assign({}, cardStyle, { padding: 10 }) },
+          h('label', { htmlFor: 'am-factor-' + which, style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.ink, marginBottom: 4 } }, label),
+          which === 'a' ? h('input', {
+            id: 'am-factor-a', type: 'text', inputMode: 'decimal', value: locked ? fmt(value) : shown, readOnly: locked, 'aria-readonly': locked || undefined,
+            'aria-label': t('stem.areamodel.factor_a', 'Factor A'),
+            'aria-invalid': bad || undefined, 'aria-describedby': bad ? errId : undefined,
+            onChange: function(e) { if (locked) return; onFactorChange('a', e.target.value); }, onBlur: function() { upd({ multiDraft: null }); },
+            style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center', opacity: locked ? 0.75 : 1 })
+          }) : h('input', {
+            id: 'am-factor-b', type: 'text', inputMode: 'decimal', value: locked ? fmt(value) : shown, readOnly: locked, 'aria-readonly': locked || undefined,
+            'aria-label': t('stem.areamodel.factor_b', 'Factor B'),
+            'aria-invalid': bad || undefined, 'aria-describedby': bad ? errId : undefined,
+            onChange: function(e) { if (locked) return; onFactorChange('b', e.target.value); }, onBlur: function() { upd({ multiDraft: null }); },
+            style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center', opacity: locked ? 0.75 : 1 })
+          }),
+          bad && h('p', { id: errId, style: { color: C.bad, fontSize: 12, fontWeight: 700, marginTop: 4 } }, t('stem.areamodel.factor_error', 'Use a number above 0 and up to 9999, with at most 2 decimal places and at most 12 boxes in all.')));
+      }
+      function onFactorChange(which, text) {
+        var draft = Object.assign({}, multiDraft || {}); draft[which] = text;
+        var v = CORE.parseNum(text);
+        var other = which === 'a' ? multiDims.b : multiDims.a;
+        var patch = { multiDraft: draft };
+        if (factorOk(v) && CORE.boxCount(v, other) <= 12) { var nd = Object.assign({}, multiDims); nd[which] = v; patch.multiDims = nd; }
+        upd(clearDone(patch));
+      }
+      // The open challenge's question, shown with its model. Path steps and challenge
+      // buttons move focus here, so the question and the model come into view together.
+      function promptBlock() {
+        if (!chHere) return null;
+        return h('div', { 'data-challenge-prompt': true, tabIndex: -1, style: { scrollMarginTop: 12, padding: '8px 12px', borderRadius: 12, borderLeft: '4px solid ' + C.accent, background: C.card, color: C.ink } },
+          h('span', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.accent } }, t('stem.areamodel.prompt_kicker', 'Your challenge')),
+          h('span', { style: { display: 'block', fontSize: 16, fontWeight: 800, lineHeight: 1.4 } }, questionFor(challenge)));
+      }
+      // Where a cut sits in the drawing, and which value a point in the drawing stands for.
+      function cutPos(parts, widths, c) {
+        var acc = 0, px = 0;
+        for (var i = 0; i < parts.length && acc < c; i++) { acc += parts[i].n; px += widths[i]; }
+        return px;
+      }
+      function unitsAt(parts, widths, px) {
+        var acc = 0, pos = 0;
+        for (var i = 0; i < parts.length; i++) {
+          var w = widths[i];
+          if (px <= pos + w || i === parts.length - 1) return acc + (w > 0 ? Math.max(0, Math.min(1, (px - pos) / w)) : 0) * parts[i].n;
+          acc += parts[i].n; pos += w;
+        }
+        return acc;
+      }
+      function cutSpot(s, c, g) {
+        var onX = s.axis === 'x', pos = onX ? cutPos(g.xParts, g.xw, c) : cutPos(g.yParts, g.yh, c);
+        return onX ? { x: 65 + pos, y: 40 + g.totH, along: 65 + pos } : { x: 65 + g.totW, y: 40 + pos, along: 40 + pos };
+      }
       var renderMultiDigit = function() {
-        var a = multiDims.a;
-        var b = multiDims.b;
-        var aTens = Math.floor(a / 10) * 10;
-        var aOnes = a % 10;
-        var bTens = Math.floor(b / 10) * 10;
-        var bOnes = b % 10;
-        var pp = [
-          { label: aTens + '\u00d7' + bTens, value: aTens * bTens, color: 'bg-blue-400', text: 'text-blue-700' },
-          { label: aTens + '\u00d7' + bOnes, value: aTens * bOnes, color: 'bg-sky-300', text: 'text-sky-700' },
-          { label: aOnes + '\u00d7' + bTens, value: aOnes * bTens, color: 'bg-emerald-300', text: 'text-emerald-700' },
-          { label: aOnes + '\u00d7' + bOnes, value: aOnes * bOnes, color: 'bg-amber-300', text: 'text-amber-700' }
-        ];
-        var total = a * b;
-        var hidden = !!(challenge && !feedback);
-        var selectionKey = a + ':' + b;
+        var inCh = chHere && challenge.mode === 'multidigit';
+        var a = inCh ? challenge.a : multiDims.a, b = inCh ? challenge.b : multiDims.b;
+        var hidden = hideProducts;
+        var fillMode = chOpen && inCh;
+        // Cut lines: place value by default. A student's own cuts belong to these factors only.
+        var cutKey = fmt(a) + 'x' + fmt(b);
+        var saved = _a.cuts && typeof _a.cuts === 'object' && _a.cuts.key === cutKey ? { A: CORE.cleanCuts(a, _a.cuts.A), B: CORE.cleanCuts(b, _a.cuts.B) } : null;
+        var custom = saved && saved.A && saved.B ? saved : null;
+        var cuts = custom || { A: CORE.defaultCuts(a), B: CORE.defaultCuts(b) };
+        var bm = custom ? CORE.cutModel(a, b, custom.A, custom.B) : CORE.boxModel(a, b);
+        // The longer side runs across, so the rectangle uses the width (44 × 12 is a wide band, not a sliver).
+        var across = a > b;
+        // The cut handles sit on the bottom and right edges, clear of the side labels; the
+        // not-to-scale note goes below the drawing as text, so a narrow drawing never clips it.
+        var geom = boxGeom(bm, across);
+        var selectionKey = a + ':' + b + (custom ? ':' + custom.A.join('.') + '|' + custom.B.join('.') : '');
         var selected = _a.partialSelectionKey === selectionKey ? _a.partialSelection : null;
-        var fills = ['#93c5fd', '#bae6fd', '#a7f3d0', '#fde68a'];
-        var parts = [[0, 0, bTens, aTens], [bTens, 0, bOnes, aTens], [0, aTens, bTens, aOnes], [bTens, aTens, bOnes, aOnes]];
-        var unit = Math.min(440 / b, 260 / a);
+        if (selected != null && !bm.boxes[selected]) selected = null;
         function selectPartial(index) { upd({ partialSelectionKey: selectionKey, partialSelection: index }); }
+        // A box's area shows once the model is open, or once the student has typed it right.
+        var boxes = inCh ? (chw.boxes || {}) : {};
+        function boxSt(bx) { var e = boxes['b' + bx.index]; return e && e.st ? e.st : null; }
+        function shown(bx) { return !hidden || boxSt(bx) === 'ok'; }
         function partialButton(index, equation) {
-          var p = pp[index];
-          return h('button', { type: 'button', 'data-partial-button': index,
+          var p = bm.boxes[index];
+          return h('button', { type: 'button', key: 'pb' + index + (equation ? 'e' : 't'), 'data-partial-button': index,
             'aria-pressed': selected === index,
-            'aria-label': t('stem.areamodel.select_partial', 'Select partial product: ') + p.label + (hidden ? '' : ' = ' + p.value),
+            'aria-label': !shown(p) ? fill(t('stem.areamodel.select_partial_hidden', 'Select partial product: {label}'), { label: p.label })
+              : fill(t('stem.areamodel.select_partial_value', 'Select partial product: {label} = {value}'), { label: p.label, value: fmt(p.value) }),
             onClick: function() { selectPartial(index); },
-            style: { minHeight: 44, padding: '6px 10px', borderRadius: 8, color: '#0f172a', background: fills[index], border: selected === index ? '3px solid #0f172a' : '1px solid #64748b', fontWeight: 800 } },
+            style: { minHeight: 44, minWidth: 44, padding: '6px 10px', borderRadius: 8, color: '#0f172a', background: FILLS[index % FILLS.length], border: selected === index ? '3px solid ' + C.stroke : '1px solid #475569', fontWeight: 800, cursor: 'pointer' } },
             !equation && h('span', { style: { display: 'block', fontSize: 13 } }, p.label),
-            h('span', { style: { fontSize: 20 } }, hidden ? '?' : p.value),
+            h('span', { style: { fontSize: 18 } }, shown(p) ? fmt(p.value) : '?'),
             selected === index && h('span', { 'aria-hidden': true }, ' ✓'));
         }
+        var boxDefs = bm.boxes.filter(function(bx) { return bx.n > 0; }).map(function(bx) { return { id: 'b' + bx.index, pa: bx.pa, pb: bx.pb, ans: bx.value }; });
+        var earnedList = fillMode ? bm.boxes.filter(function(bx) { return boxSt(bx) === 'ok'; }) : [];
+        var desc = fill(across
+            ? t('stem.areamodel.partial_desc_across', '{a} × {b}. The top is split into {ap}; the left side is split into {bp}.')
+            : t('stem.areamodel.partial_desc', '{a} × {b}. The left side is split into {ap}; the top is split into {bp}.'),
+            { a: fmt(a), b: fmt(b), ap: bm.rows.map(function(p) { return fmt(p.v); }).join(' + '), bp: bm.cols.map(function(p) { return fmt(p.v); }).join(' + ') })
+          + ' ' + (selected == null ? t('stem.areamodel.select_to_connect', 'Select a product to connect the equation to its region.') : bm.boxes[selected].label + (shown(bm.boxes[selected]) ? ' = ' + fmt(bm.boxes[selected].value) : ''))
+          + (earnedList.length ? ' ' + fill(t('stem.areamodel.partial_desc_earned', 'Boxes you have right: {list}.'), { list: earnedList.map(function(bx) { return bx.label.replace('×', ' × ') + ' = ' + fmt(bx.value); }).join('; ') }) : '');
+        var explanation;
+        if (selected == null) explanation = t('stem.areamodel.four_products_v2', 'The partial products cover the whole rectangle without overlap.');
+        else {
+          var sp = bm.boxes[selected];
+          explanation = sp.n === 0
+            ? fill(t('stem.areamodel.partial_explain_zero', '{label} = {value}. A side length is zero, so this product adds no area.'), { label: sp.label, value: shown(sp) ? fmt(sp.value) : '?' })
+            : fill(t('stem.areamodel.partial_explain', '{label} = {value}. This product measures the outlined region in square units.'), { label: sp.label, value: shown(sp) ? fmt(sp.value) : '?' });
+        }
+        // In a challenge a region stays blank with "?" until its box is typed right; then it
+        // fills with its colour and its area. A wrong box outlines its region in red.
+        function regionLook(bx) {
+          var st = boxSt(bx);
+          if (fillMode) {
+            if (st === 'ok') return { state: 'ok', text: fmt(bx.value) };
+            if (st) return { state: 'wrong', fill: C.card2, stroke: C.bad, sw: 3, dash: '7 4', text: '?', ink: C.ink };
+            return { state: 'open', fill: C.card2, text: '?', ink: C.ink };
+          }
+          return { state: hidden ? 'hidden' : 'shown', text: hidden ? '?' : fmt(bx.value) };
+        }
+        var wrongs = fillMode ? bm.boxes.filter(function(bx) { var s = boxSt(bx); return s && s !== 'ok'; }) : [];
 
-        return h('div', { className: 'space-y-3' },
-          h('div', { className: 'grid grid-cols-2 gap-3' },
-            h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-100' },
-              h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_a', 'Factor A')),
-              h('input', {
-                style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
-                type: 'number', min: '10', max: '99', value: a,
-                'aria-label': t('stem.areamodel.factor_a', 'Factor A'),
-                onChange: function(e) { upd({ multiDims: { a: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)), b: b } }); },
-                className: 'w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-lg text-center font-bold text-lg'
-              })
-            ),
-            h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-100' },
-              h('label', { className: 'block text-xs text-indigo-700 mb-1 font-bold' }, t('stem.areamodel.factor_b', 'Factor B')),
-              h('input', {
-                style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
-                type: 'number', min: '10', max: '99', value: b,
-                'aria-label': t('stem.areamodel.factor_b', 'Factor B'),
-                onChange: function(e) { upd({ multiDims: { a: a, b: Math.max(10, Math.min(99, parseInt(e.target.value) || 10)) } }); },
-                className: 'w-full px-3 py-1.5 text-sm border border-indigo-200 rounded-lg text-center font-bold text-lg'
-              })
-            )
-          ),
-          h('div', { className: 'bg-white rounded-xl border border-indigo-200 p-3', style: { color: '#0f172a' } },
-            h('p', { className: 'text-sm font-bold mb-2' }, t('stem.areamodel.linked_parts', 'Select a partial product below to locate its rectangle. Each region is drawn to scale.')),
-            h('svg', { viewBox: '0 0 ' + (b * unit + 100) + ' ' + (a * unit + 65), role: 'img', 'aria-labelledby': 'am-partial-title am-partial-desc', style: { width: '100%', maxHeight: 340, background: '#fff' }, 'data-partial-model': true },
-              h('title', { id: 'am-partial-title' }, t('stem.areamodel.partial_rectangles', 'Tens-and-ones area model')),
-              h('desc', { id: 'am-partial-desc' }, a + ' × ' + b + '. ' + (selected == null ? t('stem.areamodel.select_to_connect', 'Select a product to connect the equation to its region.') : pp[selected].label + (hidden ? '' : ' = ' + pp[selected].value))),
-              parts.map(function(part, i) { return part[2] && part[3] ? h('rect', { key: i, x: 65 + part[0] * unit, y: 40 + part[1] * unit, width: part[2] * unit, height: part[3] * unit,
-                fill: fills[i], stroke: '#0f172a', strokeWidth: selected === i ? 4 : 1, 'data-partial-region': i, 'data-selected': selected === i,
-                onClick: function() { selectPartial(i); }, style: { cursor: 'pointer' } }) : null; }),
-              h('text', { x: 65 + bTens * unit / 2, y: 26, textAnchor: 'middle', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, bTens),
-              bOnes > 0 && h('text', { x: 65 + (bTens + bOnes / 2) * unit, y: 26, textAnchor: 'middle', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, bOnes),
-              h('text', { x: 48, y: 45 + aTens * unit / 2, textAnchor: 'end', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, aTens),
-              aOnes > 0 && h('text', { x: 48, y: 45 + (aTens + aOnes / 2) * unit, textAnchor: 'end', fill: '#0f172a', fontSize: 17, fontWeight: 800 }, aOnes)),
-            h('p', { role: 'status', 'data-partial-explanation': true, className: 'text-sm mt-2', style: { minHeight: 40 } }, selected == null ? t('stem.areamodel.four_products', 'The four products cover the whole rectangle without overlap.') :
-              pp[selected].label + (hidden ? ' = ?' : ' = ' + pp[selected].value) + '. ' + (pp[selected].value === 0 ? t('stem.areamodel.zero_region', 'A side length is zero, so this product adds no area.') : t('stem.areamodel.highlighted_region', 'This product measures the outlined region in square units.')))),
-          h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-4 overflow-x-auto' },
-            h('table', { className: 'mx-auto border-collapse' },
-              h('caption', { className: 'sr-only' }, t('stem.areamodel.areamodel_data_table', 'areamodel data table')), h('thead', null,
-                h('tr', null,
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-slate-600' }, '\u00d7'),
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tl-lg border border-indigo-200', style: { minWidth: '120px', color: isContrast ? '#ffffff' : '#4338ca' } }, bTens),
-                  h('th', { scope: 'col', className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-tr-lg border border-indigo-200', style: { minWidth: '80px', color: isContrast ? '#ffffff' : '#4338ca' } }, bOnes)
-                )
-              ),
+        // ── Cut lines: the factor along the top has vertical cuts, the side factor horizontal ones ──
+        var sides = [
+          { f: 'A', x: a, cuts: cuts.A, parts: bm.rows, name: t('stem.areamodel.factor_a', 'Factor A'), axis: across ? 'x' : 'y' },
+          { f: 'B', x: b, cuts: cuts.B, parts: bm.cols, name: t('stem.areamodel.factor_b', 'Factor B'), axis: across ? 'y' : 'x' }
+        ];
+        function partsText(sd, list) { var sc = CORE.scaledOf(sd.x), prev = 0; return list.concat([sc.n]).map(function(c) { var v = (c - prev) / Math.pow(10, sc.s); prev = c; return fmt(v); }).join(' + '); }
+        function cutValueText(sd, list) { return fill(t('stem.areamodel.cut_valuetext', '{x} split into {parts}'), { x: fmt(sd.x), parts: partsText(sd, list) }); }
+        function hasEntries() { return fillMode && Object.keys(chw.boxes || {}).some(function(k) { var e = chw.boxes[k]; return e && String(e.v == null ? '' : e.v).trim() !== ''; }); }
+        function setCuts(f, list) {
+          var cur = f === 'A' ? cuts.A : cuts.B;
+          if (cur.join('.') === list.join('.')) return false;
+          var patch = { cuts: { key: cutKey, A: f === 'A' ? list : cuts.A, B: f === 'B' ? list : cuts.B }, partialSelection: null };
+          // The boxes are different now, so the student's box entries no longer apply.
+          if (fillMode) patch.chWork = Object.assign({}, chw, { boxes: {} });
+          upd(patch);
+          if (hasEntries()) say(t('stem.areamodel.cuts_cleared_boxes_sr', 'The boxes changed, so your entries were cleared.'));
+          return true;
+        }
+        function nudge(sd, i, to) { return setCuts(sd.f, CORE.moveCut(sd.x, sd.cuts, i, to)); }
+        cutLive.current = { sides: sides, geom: geom, setCuts: setCuts, valueText: cutValueText, say: say };
+        function geoFor(sd) { return sd.axis === 'x' ? { parts: geom.xParts, widths: geom.xw } : { parts: geom.yParts, widths: geom.yh }; }
+        function dragTo(e) {
+          var d = cutDrag.current, live = cutLive.current;
+          if (!d || !live) return;
+          var sd = live.sides.filter(function(s) { return s.f === d.f; })[0];
+          var wrap = e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('[data-cut-wrap]') : null;
+          var svg = wrap && wrap.querySelector('svg');
+          if (!sd || !svg) return;
+          var rect = svg.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          var g = live.geom;
+          // The cut keeps its distance from the finger, so pressing off-centre never makes it jump.
+          var vb = (sd.axis === 'x' ? (e.clientX - rect.left) / rect.width * g.vbW - 65 : (e.clientY - rect.top) / rect.height * g.vbH - 40) - (d.grab || 0);
+          var ge = sd.axis === 'x' ? { parts: g.xParts, widths: g.xw } : { parts: g.yParts, widths: g.yh };
+          var next = CORE.moveCut(sd.x, sd.cuts, d.i, unitsAt(ge.parts, ge.widths, vb));
+          if (live.setCuts(sd.f, next)) d.moved = next;
+        }
+        function dragProps(sd, i, isHandle) {
+          return {
+            onPointerDown: function(e) {
+              if ((e.button != null && e.button !== 0) || cutDrag.current) return;
+              e.preventDefault();
+              var f = sd.f, ix = i, grab = 0, live = cutLive.current;
+              var wrap = e.currentTarget.closest ? e.currentTarget.closest('[data-cut-wrap]') : null;
+              var svg = wrap && wrap.querySelector('svg'), rect = svg && svg.getBoundingClientRect();
+              if (live && rect && rect.width && rect.height) {
+                var g = live.geom, k = g.vbW / rect.width, px = (e.clientX - rect.left) * k, py = (e.clientY - rect.top) * (g.vbH / rect.height), half = 22 * k, best = Infinity;
+                // Handles overlap on a phone: the one nearest the finger is the one meant, not the one painted last.
+                if (isHandle) live.sides.forEach(function(s) { s.cuts.forEach(function(c, n) {
+                  var sp = cutSpot(s, c, g), dx = Math.abs(sp.x - px), dy = Math.abs(sp.y - py);
+                  if (dx <= half && dy <= half && dx * dx + dy * dy < best) { best = dx * dx + dy * dy; f = s.f; ix = n; }
+                }); });
+                var own = live.sides.filter(function(s) { return s.f === f; })[0];
+                if (own && own.cuts[ix] != null) grab = (own.axis === 'x' ? px : py) - cutSpot(own, own.cuts[ix], g).along;
+              }
+              cutDrag.current = { f: f, i: ix, moved: null, id: e.pointerId, x: e.clientX, y: e.clientY, active: false, grab: grab };
+              try { if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+              // The slider being dragged takes focus, so the arrow keys carry on from it.
+              var el = wrap && wrap.querySelector('[data-cut-handle="' + f + ix + '"]');
+              if (el) { try { el.focus({ preventScroll: true }); } catch (err) {} }
+            },
+            onPointerMove: function(e) {
+              var d = cutDrag.current;
+              if (!d || d.id !== e.pointerId) return;
+              // A press wobbles a little: under 4 px is a tap, and a tap must not clear the boxes.
+              if (!d.active) { if (Math.abs(e.clientX - d.x) < 4 && Math.abs(e.clientY - d.y) < 4) return; d.active = true; }
+              dragTo(e);
+            },
+            onPointerUp: function(e) {
+              var d = cutDrag.current;
+              if (!d || d.id !== e.pointerId) return;
+              cutDrag.current = null;
+              try { if (e.currentTarget.releasePointerCapture) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+              var live = cutLive.current, sd2 = live && live.sides.filter(function(s) { return s.f === d.f; })[0];
+              if (d.moved && sd2) live.say(live.valueText(sd2, d.moved));
+            },
+            onPointerCancel: function(e) {
+              var d = cutDrag.current;
+              if (!d || d.id !== e.pointerId) return;
+              cutDrag.current = null;
+              // The cut stays where the drag left it, so a screen reader still hears the new split.
+              var live = cutLive.current, sd2 = live && live.sides.filter(function(s) { return s.f === d.f; })[0];
+              if (d.moved && sd2) live.say(live.valueText(sd2, d.moved));
+            }
+          };
+        }
+        var lines = [], handles = [];
+        sides.forEach(function(sd) {
+          var ge = geoFor(sd), sc = CORE.scaledOf(sd.x), unit = Math.pow(10, sc.s);
+          sd.cuts.forEach(function(c, i) {
+            var pos = cutPos(ge.parts, ge.widths, c);
+            var vx = sd.axis === 'x' ? 65 + pos : 65 + geom.totW, vy = sd.axis === 'x' ? 40 + geom.totH : 40 + pos;
+            var lineAttrs = sd.axis === 'x' ? { x1: vx, x2: vx, y1: 34, y2: 46 + geom.totH } : { x1: 59, x2: 71 + geom.totW, y1: vy, y2: vy };
+            // The dark casing keeps the line visible over the pale regions in dark and contrast.
+            lines.push(h('line', Object.assign({ key: 'cc' + sd.f + i, stroke: '#0f172a', strokeWidth: 5, 'data-cut-casing': sd.f + i }, lineAttrs)));
+            lines.push(h('line', Object.assign({ key: 'cl' + sd.f + i, stroke: C.accent, strokeWidth: 3, 'data-cut-line': sd.f + i }, lineAttrs)));
+            // display:block: Chromium ignores touch-action on an inline SVG child, so a finger drag was cancelled and scrolled the page.
+            lines.push(h('line', Object.assign({ key: 'ch' + sd.f + i, stroke: 'transparent', strokeWidth: 20, 'data-cut-strip': sd.f + i, style: { display: 'block', cursor: sd.axis === 'x' ? 'ew-resize' : 'ns-resize', touchAction: 'none' } }, lineAttrs, dragProps(sd, i, false))));
+            var lo = i > 0 ? sd.cuts[i - 1] + 1 : 1, hi = i < sd.cuts.length - 1 ? sd.cuts[i + 1] - 1 : sc.n - 1;
+            var page = Math.max(1, Math.round(sc.n / 10));
+            handles.push(h('div', Object.assign({ key: 'hd' + sd.f + i, role: 'slider', tabIndex: 0, 'data-cut-handle': sd.f + i,
+              'aria-label': sd.cuts.length > 1 ? fill(t('stem.areamodel.cut_label_n', 'Cut line {n} on {f}'), { n: i + 1, f: sd.name }) : fill(t('stem.areamodel.cut_label', 'Cut line on {f}'), { f: sd.name }),
+              'aria-orientation': sd.axis === 'x' ? 'horizontal' : 'vertical',
+              'aria-valuemin': lo / unit, 'aria-valuemax': hi / unit, 'aria-valuenow': c / unit, 'aria-valuetext': cutValueText(sd, sd.cuts),
+              onKeyDown: function(e) {
+                var to = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') to = c + 1;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') to = c - 1;
+                else if (e.key === 'PageDown') to = c + page;
+                else if (e.key === 'PageUp') to = c - page;
+                else if (e.key === 'Home') to = lo;
+                else if (e.key === 'End') to = hi;
+                else return;
+                e.preventDefault();
+                nudge(sd, i, to);
+              },
+              style: { position: 'absolute', left: (vx / geom.vbW * 100) + '%', top: (vy / geom.vbH * 100) + '%', width: 44, height: 44, transform: 'translate(-50%, -50%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sd.axis === 'x' ? 'ew-resize' : 'ns-resize', touchAction: 'none', borderRadius: 999 } }, dragProps(sd, i, true)),
+              h('span', { 'aria-hidden': 'true', style: { width: 28, height: 28, borderRadius: 999, background: C.btn, color: C.btnInk, border: '2px solid ' + C.stroke, boxShadow: '0 0 0 2px #0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, lineHeight: 1 } }, sd.axis === 'x' ? '↔' : '↕')));
+          });
+        });
+        var hasCuts = handles.length > 0;
+        var MAXH = 400;
+        var maxW = Math.max(240, Math.round(MAXH * geom.vbW / geom.vbH));
+
+        // The table follows the drawing: the side along the top heads the columns.
+        var topParts = across ? bm.rows : bm.cols, sideP = across ? bm.cols : bm.rows;
+        function boxAt(top, side) { return across ? bm.boxes[top * bm.cols.length + side] : bm.boxes[side * bm.cols.length + top]; }
+        var thStyle = { padding: 8, fontSize: 14, fontWeight: 800, color: C.ink, background: C.card, border: '1px solid ' + C.border };
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            factorInput('a', t('stem.areamodel.factor_a', 'Factor A'), a, chOpen && inCh),
+            factorInput('b', t('stem.areamodel.factor_b', 'Factor B'), b, chOpen && inCh)),
+          chOpen && inCh && h('p', { style: { fontSize: 12, color: C.sub } }, t('stem.areamodel.factors_locked', 'The factors are locked while this challenge is open. Start a new challenge or skip it to change them.')),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg, display: 'flex', flexDirection: 'column', gap: 8 }), 'data-partial-card': true },
+            inCh && promptBlock(),
+            h('p', { style: { fontSize: 13, fontWeight: 700, margin: 0, color: C.ink } }, geom.notToScale ? t('stem.areamodel.linked_parts_thin', 'Select a partial product below to locate its rectangle.') : t('stem.areamodel.linked_parts', 'Select a partial product below to locate its rectangle. Each region is drawn to scale.')),
+            hasCuts && h('p', { style: { fontSize: 13, margin: 0, color: C.ink } }, fillMode
+              ? t('stem.areamodel.cut_hint_challenge_v2', 'Drag a cut line, or use the arrow keys on its handle, to split a side another way. Moving a cut clears your boxes, and each area stays hidden until you type it.')
+              : t('stem.areamodel.cut_hint', 'Drag a cut line, or use the arrow keys on its handle, to split a side another way. The partial products change to match.')),
+            h('div', { 'data-cut-wrap': true, style: { position: 'relative', width: '100%', maxWidth: maxW, margin: '0 auto' } },
+              renderBoxSvg(a, b, { idPrefix: 'am-partial', model: bm, geom: geom, fit: true, selected: selected, onSelect: selectPartial, desc: desc, regionLook: regionLook, extra: lines, noteOutside: true }),
+              handles),
+            geom.notToScale && h('p', { 'data-not-to-scale': true, style: { fontSize: 12, fontWeight: 700, color: C.sub, margin: 0, textAlign: 'center' } }, t('stem.areamodel.not_to_scale', 'Some thin parts are drawn wider than scale so you can see them.')),
+            wrongs.length > 0 && h('ul', { 'data-region-notes': true, style: { margin: 0, paddingLeft: 18, color: C.bad, fontSize: 13, fontWeight: 700, lineHeight: 1.4 } },
+              wrongs.map(function(bx) { return h('li', { key: 'rn' + bx.index }, fill(t('stem.areamodel.region_note', '{label}: {note}'), { label: bx.label.replace('×', ' × '), note: mistakeText(boxSt(bx)) })); })),
+            custom && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+              h('span', { 'data-cut-readout': true, style: { fontSize: 13, fontWeight: 700, color: C.ink } },
+                fill(t('stem.areamodel.cut_readout', 'Your cuts: {a} and {b}.'), { a: cutValueText(sides[0], cuts.A), b: cutValueText(sides[1], cuts.B) })),
+              h('button', { type: 'button', 'data-cuts-reset': true, onClick: function() { var p = { cuts: null, partialSelection: null }; if (fillMode) p.chWork = Object.assign({}, chw, { boxes: {} }); upd(p); say(t('stem.areamodel.cuts_reset_sr', 'The cuts are back at the place values.') + (hasEntries() ? ' ' + t('stem.areamodel.cuts_cleared_boxes_sr', 'The boxes changed, so your entries were cleared.') : '')); focusSoon('[data-cut-handle]'); }, style: Object.assign(btnStyle('secondary'), { minHeight: 44 }) },
+                t('stem.areamodel.cuts_reset', 'Cut by place value again'))),
+            h('p', { role: 'status', 'data-partial-explanation': true, style: { fontSize: 13, margin: 0, minHeight: 40, color: C.ink } }, explanation)),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg, overflowX: 'auto' }) },
+            h('table', { style: { margin: '0 auto', borderCollapse: 'collapse' } },
+              h('caption', { className: 'sr-only' }, fill(t('stem.areamodel.partial_table_caption', 'Partial products for {a} × {b}'), { a: fmt(a), b: fmt(b) })),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: thStyle }, '×'),
+                topParts.map(function(p, j) { return h('th', { key: 'h' + j, scope: 'col', style: Object.assign({}, thStyle, { minWidth: 90 }) }, fmt(p.v)); }))),
+              h('tbody', null, sideP.map(function(rp, i) {
+                return h('tr', { key: 'r' + i },
+                  h('th', { scope: 'row', style: thStyle }, fmt(rp.v)),
+                  topParts.map(function(cp, j) {
+                    var bx = boxAt(j, i);
+                    var def = boxDefs.filter(function(d) { return d.id === 'b' + bx.index; })[0];
+                    return h('td', { key: 'c' + j, style: { padding: 8, textAlign: 'center', border: '1px solid ' + C.border, background: C.card2, verticalAlign: 'top' } },
+                      partialButton(bx.index, false),
+                      fillMode && def && h('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'center' } }, boxInput(def, bx.label)));
+                  }));
+              }))),
+            fillMode && h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
+              h('button', { type: 'button', onClick: function() { checkBoxes(boxDefs); }, 'data-check-boxes': true, style: Object.assign(btnStyle('secondary'), { minHeight: 44 }) }, t('stem.areamodel.check_boxes', 'Check my boxes')))),
+          !hidden && h('div', { style: Object.assign({}, cardStyle, { textAlign: 'center' }) },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: C.sub, marginBottom: 4 } }, fill(t('stem.areamodel.partial_sum_title', '{a} × {b} = the sum of the partial products:'), { a: fmt(a), b: fmt(b) })),
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', fontSize: 18, fontWeight: 800, color: C.ink } },
+              bm.boxes.map(function(p, i) { return h(React.Fragment, { key: 'e' + i }, i > 0 && h('span', null, '+'), partialButton(i, true)); }),
+              h('span', null, '='),
+              h('span', { style: { fontSize: 22, padding: '2px 10px', borderRadius: 8, border: '2px solid ' + C.accent, color: C.ink } }, fmt(bm.total))),
+            h('p', { style: { fontSize: 12, fontStyle: 'italic', color: C.sub, marginTop: 6 } },
+              t('stem.areamodel.break_multi_digit_numbers_into_tens_an', '💡 Break multi-digit numbers into tens and ones, multiply each pair, then add!'))));
+      };
+
+      // ═══ VIEW: ALGORITHM BRIDGE (line by line, predict each line) ═══
+      var algo = _a.algo || {};
+      var algoA = CORE.clampInt(algo.a != null ? algo.a : 23, 2, 9999, 23), algoB = CORE.clampInt(algo.b != null ? algo.b : 14, 1, 99, 14);
+      var algoPlan = CORE.algoLines(algoA, algoB);
+      var algoRes = algo.res || {}, algoInp = algo.inp || {}, algoTries = algo.tries || {}, algoCode = algo.code || {};
+      var algoCur = -1;
+      for (var si = 0; si < algoPlan.steps.length; si++) { if (!algoRes[si]) { algoCur = si; break; } }
+      var algoDone = algoCur === -1;
+      function setAlgo(patch) { upd({ algo: Object.assign({}, algo, { a: algoA, b: algoB }, patch) }); }
+      function newAlgoProblem() {
+        var p = CORE.gen('algorithm', band, difficulty, Math.random);
+        upd({ algo: { a: p.a, b: p.b, res: {}, inp: {}, tries: {}, code: {}, credited: false } });
+        say(fill(t('stem.areamodel.sr_algo_new', 'New problem: {a} × {b}. Predict each line of the standard algorithm.'), { a: p.a, b: p.b }));
+      }
+      function checkAlgoStep() {
+        if (algoDone) return;
+        var step = algoPlan.steps[algoCur];
+        var txt = String(algoInp[algoCur] == null ? '' : algoInp[algoCur]).trim();
+        var val = CORE.parseNum(txt);
+        var ok = CORE.sameNum(val, step.value);
+        var res = Object.assign({}, algoRes), tries = Object.assign({}, algoTries), code = Object.assign({}, algoCode);
+        if (ok) {
+          res[algoCur] = 'ok';
+          var finished = algoCur === algoPlan.steps.length - 1;
+          var unaided = finished && Object.keys(res).every(function(k) { return res[k] === 'ok'; });
+          var algoKey = 'algo:' + algoA + 'x' + algoB;
+          var algoRepeat = unaided && !algo.credited && creditedBefore(algoKey);
+          var algoCredit = unaided && !algo.credited && !algoRepeat;
+          var patch = { algo: Object.assign({}, algo, { a: algoA, b: algoB, res: res, tries: tries, code: code, credited: algo.credited || unaided }) };
+          if (algoCredit) {
+            patch.algorithmSolved = algorithmSolved + 1;
+            addCredit(patch, algoKey);
+            awardXP('areamodel', 5, t('stem.areamodel.xp_algo', 'Standard algorithm, every line predicted'));
+          }
+          upd(patch);
+          say(finished ? fill(t('stem.areamodel.sr_algo_done', 'Right. {a} × {b} = {p}. Every line of the algorithm is a column of the area model.'), { a: algoA, b: algoB, p: algoPlan.total }) + (algoRepeat ? ' ' + t('stem.areamodel.already_credited', 'You already earned points for this problem. Try a new one for more.') : '')
+            : t('stem.areamodel.sr_algo_ok', 'Right. That line matches the area model. On to the next line.'));
+          if (algoCredit) checkBadges(badgeState({ algorithmSolved: algorithmSolved + 1 }));
+          if (finished) focusSoon('[data-algo-done]');
+          return;
+        }
+        tries[algoCur] = (tries[algoCur] || 0) + 1;
+        code[algoCur] = CORE.diagnoseLine(step, val);
+        setAlgo({ res: res, tries: tries, code: code });
+        sfxWrong();
+        say(wrongNote(code[algoCur], null, tries[algoCur]));
+      }
+      var algoHints = CORE.clampInt((algo.hints || {})[algoCur] || 0, 0, 3, 0);
+      function algoHintText(rung) {
+        var st = algoPlan.steps[algoCur];
+        if (!st) return '';
+        if (st.kind === 'sum') {
+          if (rung === 1) return t('stem.areamodel.h_algo_sum_1', 'Add the lines you have found. Together they cover the whole rectangle.');
+          if (rung === 2) return t('stem.areamodel.h_algo_sum_2', 'Line the numbers up by place value: ones under ones, tens under tens.');
+          return t('stem.areamodel.h_algo_sum_3', 'Add column by column from the right, regrouping when a column makes 10 or more.');
+        }
+        var part = st.d * Math.pow(10, st.place);
+        if (rung === 1) return fill(t('stem.areamodel.h_algo_1', 'This line is {a} × {part}: the column of boxes under {part} in the area model.'), { a: algoA, part: part });
+        if (rung === 2) return st.place > 0 ? fill(t('stem.areamodel.h_algo_2_tens', 'This line multiplies by tens: write a 0 in the ones place first, then multiply {a} by {d}.'), { a: algoA, d: st.d })
+          : t('stem.areamodel.h_algo_2', 'Multiply digit by digit from the right. When a product is 10 or more, write the ones and carry the tens.');
+        return fill(t('stem.areamodel.h_algo_3', 'Check it with the boxes in that column: {list}. Their areas add up to this line.'), { list: st.boxes.map(function(ix) { return algoPlan.model.boxes[ix].label.replace('×', ' × '); }).join(', ') });
+      }
+      function algoHint() {
+        if (algoDone || algoHints >= 3) return;
+        var hs = Object.assign({}, algo.hints || {}); hs[algoCur] = algoHints + 1;
+        upd({ algo: Object.assign({}, algo, { a: algoA, b: algoB, hints: hs }), hintsUsed: (_a.hintsUsed || 0) + 1 });
+        say(algoHintText(algoHints + 1));
+      }
+      function showAlgoStep() {
+        if (!revealOk || algoDone || (algoTries[algoCur] || 0) < 2) return;
+        var res = Object.assign({}, algoRes); res[algoCur] = 'shown';
+        setAlgo({ res: res });
+        say(fill(t('stem.areamodel.sr_algo_shown', 'This line is {v}.'), { v: algoPlan.steps[algoCur].value }));
+        if (algoCur === algoPlan.steps.length - 1) focusSoon('[data-algo-done]');
+      }
+      function subStepText(s, place) {
+        var v = { x: s.x, d: s.d, prod: s.prod, cin: s.cin, p: s.p, w: s.w, c: s.cout };
+        if (s.cin && s.cout) return fill(t('stem.areamodel.algo_sub_plus_carry', '{x} × {d} = {prod}, plus the carried {cin} makes {p}. Write {w} and carry {c}.'), v);
+        if (s.cin) return fill(t('stem.areamodel.algo_sub_plus', '{x} × {d} = {prod}, plus the carried {cin} makes {p}. Write {w}.'), v);
+        if (s.cout) return fill(t('stem.areamodel.algo_sub_carry', '{x} × {d} = {p}. Write {w} and carry {c}.'), v);
+        return fill(t('stem.areamodel.algo_sub_plain', '{x} × {d} = {p}. Write {w}.'), v);
+      }
+      var renderAlgorithm = function() {
+        var bm = algoPlan.model;
+        var shownBoxes = [];
+        algoPlan.lines.forEach(function(l, li) { if (algoRes[li]) shownBoxes = shownBoxes.concat(l.boxes); });
+        var curLine = !algoDone && algoPlan.steps[algoCur].kind === 'line' ? algoPlan.steps[algoCur] : null;
+        var width = String(algoPlan.total).length + 2;
+        function pad(s) { s = String(s); while (s.length < width) s = ' ' + s; return s; }
+        var written = [pad(algoA), '×' + pad(algoB).slice(1), new Array(width + 1).join('─')];
+        algoPlan.lines.forEach(function(l, li) { written.push(algoRes[li] ? pad(l.value) : pad('?')); });
+        if (algoPlan.lines.length > 1) { written.push(new Array(width + 1).join('─')); var sIdx = algoPlan.steps.length - 1; written.push(algoRes[sIdx] ? pad(algoPlan.total) : pad('?')); }
+        var draftA = algo.draftA != null ? String(algo.draftA) : String(algoA), draftB = algo.draftB != null ? String(algo.draftB) : String(algoB);
+        function setFactor(which, text) {
+          var p = {}; p[which === 'a' ? 'draftA' : 'draftB'] = text;
+          var v = CORE.parseNum(text);
+          var okV = which === 'a' ? (Number.isInteger(v) && v >= 2 && v <= 9999) : (Number.isInteger(v) && v >= 1 && v <= 99);
+          if (okV) { p[which] = v; p.res = {}; p.inp = {}; p.tries = {}; p.code = {}; p.hints = {}; p.credited = false; }
+          upd({ algo: Object.assign({}, algo, { a: algoA, b: algoB }, p) });
+        }
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 10, alignItems: 'end' } },
+            h('label', { style: { fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.algo_top', 'Top number'),
+              h('input', { type: 'text', inputMode: 'numeric', value: draftA, onChange: function(e) { setFactor('a', e.target.value); }, onBlur: function() { setAlgo({ draftA: null }); }, 'aria-label': t('stem.areamodel.algo_top_label', 'Top number (2 to 9999)'), style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center' }) })),
+            h('label', { style: { fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.algo_bottom', 'Bottom number'),
+              h('input', { type: 'text', inputMode: 'numeric', value: draftB, onChange: function(e) { setFactor('b', e.target.value); }, onBlur: function() { setAlgo({ draftB: null }); }, 'aria-label': t('stem.areamodel.algo_bottom_label', 'Bottom number (1 to 99)'), style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center' }) })),
+            h('button', { type: 'button', onClick: newAlgoProblem, 'data-algo-new': true, style: btnStyle('primary') }, t('stem.areamodel.algo_new', 'New problem'))),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } },
+            h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+              h('h4', { style: { fontSize: 13, fontWeight: 900, color: C.accent, margin: '0 0 6px' } }, t('stem.areamodel.algo_area_side', 'Area model')),
+              renderBoxSvg(algoA, algoB, { idPrefix: 'am-algo', litBoxes: curLine ? curLine.boxes : [],
+                title: t('stem.areamodel.algo_svg_title', 'Area model beside the algorithm'),
+                desc: fill(t('stem.areamodel.algo_svg_desc', '{a} × {b}. The outlined boxes make the line you are working on.'), { a: algoA, b: algoB }) }),
+              h('ul', { style: { listStyle: 'none', padding: 0, margin: '6px 0 0', fontSize: 13, color: C.ink } },
+                bm.boxes.map(function(bx) {
+                  var known = shownBoxes.indexOf(bx.index) >= 0;
+                  return h('li', { key: 'bx' + bx.index, style: { fontWeight: curLine && curLine.boxes.indexOf(bx.index) >= 0 ? 900 : 500 } }, bx.label.replace('×', ' × ') + ' = ' + (known ? fmt(bx.value) : '?'));
+                }))),
+            h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+              h('h4', { style: { fontSize: 13, fontWeight: 900, color: C.accent, margin: '0 0 6px' } }, t('stem.areamodel.algo_written_side', 'Standard algorithm')),
+              h('pre', { 'aria-hidden': 'true', style: { fontFamily: 'ui-monospace, monospace', fontSize: 20, lineHeight: 1.35, margin: 0, color: C.ink, background: 'transparent' } }, written.join('\n')),
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8, color: C.ink } },
+                h('caption', { style: { textAlign: 'left', fontWeight: 800, color: C.ink } }, t('stem.areamodel.algo_table_caption', 'The algorithm, line by line, and the boxes each line adds')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.algo_col_step', 'Line')),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.algo_col_value', 'Value')),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.algo_col_meaning', 'In the area model')))),
+                h('tbody', null, algoPlan.steps.map(function(st, i) {
+                  var done = !!algoRes[i];
+                  var name = st.kind === 'sum' ? t('stem.areamodel.algo_sum_name', 'Add the lines')
+                    : fill(t('stem.areamodel.algo_line_name', 'Line {n}: {a} × {part}'), { n: i + 1, a: algoA, part: st.d * Math.pow(10, st.place) });
+                  var meaning = st.kind === 'sum' ? (done ? st.lines.join(' + ') + ' = ' + st.value : t('stem.areamodel.algo_meaning_sum', 'All the boxes together'))
+                    : (done ? st.boxes.map(function(ix) { return bm.boxes[ix].label.replace('×', ' × '); }).join(' + ') + ' = ' + st.boxes.map(function(ix) { return fmt(bm.boxes[ix].value); }).join(' + ') + ' = ' + st.value
+                      : fill(t('stem.areamodel.algo_meaning_line', 'The column of boxes under {part}'), { part: st.d * Math.pow(10, st.place) }));
+                  return h('tr', { key: 's' + i, 'data-algo-step': i, 'data-algo-state': algoRes[i] || (i === algoCur ? 'current' : 'later') },
+                    h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: i === algoCur ? 900 : 600 } }, name),
+                    h('td', { style: { padding: 4, fontWeight: 800 } }, done ? String(st.value) + (algoRes[i] === 'shown' ? ' ' + t('stem.areamodel.algo_shown_tag', '(shown)') : '') : '?'),
+                    h('td', { style: { padding: 4 } }, meaning));
+                }))))),
+          !algoDone && h('div', { style: Object.assign({}, cardStyle) },
+            h('label', { htmlFor: 'am-algo-input', style: { display: 'block', fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 6 } },
+              algoPlan.steps[algoCur].kind === 'sum'
+                ? t('stem.areamodel.algo_predict_sum', 'Predict the final answer: add the lines.')
+                : (algoPlan.steps[algoCur].place > 0
+                  ? fill(t('stem.areamodel.algo_predict_tens', 'Predict line {n}: {a} × {part}. This line multiplies by tens.'), { n: algoCur + 1, a: algoA, part: algoPlan.steps[algoCur].d * Math.pow(10, algoPlan.steps[algoCur].place) })
+                  : fill(t('stem.areamodel.algo_predict_line', 'Predict line {n}: {a} × {d}.'), { n: algoCur + 1, a: algoA, d: algoPlan.steps[algoCur].d }))),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('input', { id: 'am-algo-input', type: 'text', inputMode: 'numeric', value: algoInp[algoCur] == null ? '' : algoInp[algoCur],
+                onChange: function(e) { var inp = Object.assign({}, algoInp); inp[algoCur] = e.target.value; setAlgo({ inp: inp }); },
+                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkAlgoStep(); } },
+                style: Object.assign({}, inputStyle, { flex: 1, minWidth: 120 }) }),
+              h('button', { type: 'button', onClick: checkAlgoStep, 'data-algo-check': true, style: btnStyle('primary') }, t('stem.areamodel.algo_check', 'Check this line')),
+              hintButton(algoHints, algoHint, { 'data-algo-hint': true }),
+              (algoTries[algoCur] || 0) >= 2 && revealOk && h('button', { type: 'button', onClick: showAlgoStep, 'data-algo-show': true, style: btnStyle('secondary') }, t('stem.areamodel.algo_show_np', 'Show this line (no points)'))),
+            algoCode[algoCur] && h('p', { 'data-algo-code': algoCode[algoCur], style: Object.assign({ marginTop: 8 }, noteStyle('bad')) }, wrongNote(algoCode[algoCur], null, algoTries[algoCur] || 0)),
+            hintLadder(algoHints, algoHintText),
+            (algoTries[algoCur] || 0) >= 2 && !allowReveal && h('p', { style: { fontSize: 12, color: C.sub, marginTop: 6 } }, t('stem.areamodel.reveals_off', 'Your teacher turned off answer reveals. Use the hints and keep going.'))),
+          algoPlan.lines.some(function(l, li) { return !!algoRes[li]; }) && h('div', { style: cardStyle },
+            h('h4', { style: { fontSize: 13, fontWeight: 900, color: C.accent, margin: '0 0 6px' } }, t('stem.areamodel.algo_story', 'What each written digit means')),
+            algoPlan.lines.map(function(l, li) {
+              if (!algoRes[li]) return null;
+              return h('div', { key: 'ls' + li, style: { marginBottom: 8 } },
+                h('p', { style: { fontWeight: 800, fontSize: 13, color: C.ink } }, fill(t('stem.areamodel.algo_line_name', 'Line {n}: {a} × {part}'), { n: li + 1, a: algoA, part: l.d * Math.pow(10, l.place) })),
+                l.place > 0 && h('p', { style: { fontSize: 13, color: C.sub } }, t('stem.areamodel.algo_placeholder_note', 'This line multiplies by tens, so a 0 goes in the ones place first.')),
+                h('ol', { style: { margin: '2px 0 0 18px', fontSize: 13, color: C.ink } }, l.subs.map(function(s, k) { return h('li', { key: 'sub' + k }, subStepText(s, l.place)); })));
+            })),
+          algoDone && h('p', { 'data-algo-done': true, tabIndex: -1, style: noteStyle('ok') }, fill(t('stem.areamodel.algo_done', 'Done: {a} × {b} = {p}. Each line of the algorithm is one column of the area model, and the carries are the boxes’ tens moving left.'), { a: algoA, b: algoB, p: algoPlan.total })));
+      };
+
+      // ═══ VIEW: DIVISION (missing factor, partial quotients; 4.NBT.6, 5.NBT.6) ═══
+      // An open rectangle: the area n and one side d are known, the other side is
+      // not. Each friendly chunk is a piece of that side. Chunks are stored alone
+      // and replayed, so a damaged save can only shorten the list.
+      var dv = _a.div && typeof _a.div === 'object' ? _a.div : {};
+      var divN = CORE.clampInt(dv.n != null ? dv.n : 372, 2, 9999, 372);
+      var divD = CORE.clampInt(dv.d != null ? dv.d : 6, 2, 99, 6);
+      if (divD > divN) { divN = 372; divD = 6; }
+      var divReplayed = CORE.divReplay(divN, divD, (Array.isArray(dv.steps) ? dv.steps : []).map(function(s) { return s && typeof s === 'object' ? s.c : s; }));
+      var divChunks = divReplayed.chunks, divLeft = divReplayed.left;
+      var divPhase = (dv.phase === 'final' || dv.phase === 'done') && divLeft < divD ? dv.phase : 'chunks';
+      var divDraft = dv.draft && typeof dv.draft === 'object' ? dv.draft : {};
+      var divFin = dv.fin && typeof dv.fin === 'object' ? dv.fin : {};
+      var divKey = 'div:' + divN + '/' + divD;
+      var divStepKey = divKey + ':' + divChunks.length + ':' + divPhase;
+      var divHints = CORE.clampInt(dv.hints || 0, 0, 3, 0);
+      function freshDiv(n, d, extra) { return Object.assign({ n: n, d: d, steps: [], phase: 'chunks', draft: {}, tries: 0, code: null, v: null, hints: 0, aided: false, credited: false, fin: {}, finTries: 0, finCode: null, ld: {} }, extra || {}); }
+      function setDiv(p, top) {
+        var next = Object.assign({}, dv, { n: divN, d: divD, steps: divChunks.map(function(c) { return { c: c }; }), phase: divPhase }, p);
+        upd(Object.assign({ div: next }, top || {}));
+      }
+      function divLog(code) { return logMiss({ mode: 'division', n: divN, d: divD }, code); }
+      function newDivProblem() {
+        var p = null, recent = dv.recent || [];
+        for (var i = 0; i < 8; i++) { p = CORE.divGen(band, difficulty, Math.random); if (recent.indexOf(p.n + '/' + p.d) < 0) break; }
+        upd({ div: freshDiv(p.n, p.d, { recent: recent.concat([p.n + '/' + p.d]).slice(-6) }) });
+        say(fill(t('stem.areamodel.sr_div_new', 'New problem: {n} ÷ {d}. Take friendly chunks of {d} off the area.'), { n: p.n, d: p.d }));
+      }
+      function divHintText(rung) {
+        var v = { d: divD, t: 10 * divD, left: divLeft };
+        if (rung === 1) return fill(t('stem.areamodel.h_div_1', 'Estimate first: 10 groups of {d} make {t}. Is that more or less than the {left} you have left?'), v);
+        if (rung === 2) return fill(t('stem.areamodel.h_div_2', 'Friendly chunks are easy facts: 1, 2, 5, 10, 20, 50 or 100 groups of {d}. Pick a big one that still fits in {left}.'), v);
+        return fill(t('stem.areamodel.h_div_3', 'Multiply your chunk by {d} for its area, then subtract that area from {left}.'), v);
+      }
+      function checkDivStep() {
+        if (divPhase !== 'chunks') return;
+        var c = CORE.parseNum(divDraft.c), area = CORE.parseNum(divDraft.area), nl = CORE.parseNum(divDraft.left);
+        var code = CORE.divStep(divLeft, divD, c, area, nl);
+        if (code === 'ok') {
+          sfxClick();
+          setDiv({ steps: divChunks.concat([c]).map(function(x) { return { c: x }; }), draft: {}, tries: 0, code: null, v: null, hints: 0 });
+          say(fill(t('stem.areamodel.sr_div_step_ok', 'Right: {c} groups of {d} make {area}, and {left} is left.'), { c: c, d: divD, area: area, left: nl }));
+          return;
+        }
+        var tries = (dv.tries || 0) + 1, v = { c: isFinite(c) ? fmt(c) : '?', d: divD, left: divLeft };
+        setDiv({ tries: tries, code: code, v: v }, tries === 1 ? { missedLog: divLog(code) } : null);
+        sfxWrong();
+        say(mistakeText(code, v));
+      }
+      function showDivStep() {
+        if (!revealOk || divPhase !== 'chunks' || (dv.tries || 0) < 2 || divLeft < divD) return;
+        var c = CORE.divBestChunk(divLeft, divD);
+        setDiv({ draft: { c: String(c), area: String(c * divD), left: String(divLeft - c * divD) }, aided: true, code: null, v: null });
+        say(fill(t('stem.areamodel.sr_div_shown', 'Shown: {c} groups of {d} make {area}, leaving {left}. Check it to go on. A shown step earns no points.'), { c: c, d: divD, area: c * divD, left: divLeft - c * divD }));
+      }
+      function finishChunks() {
+        if (divPhase !== 'chunks') return;
+        if (divLeft >= divD) {
+          var v = { left: divLeft, d: divD }, tries = (dv.tries || 0) + 1;
+          setDiv({ code: 'div_remainder_too_big', v: v, tries: tries }, tries === 1 ? { missedLog: divLog('div_remainder_too_big') } : null);
+          sfxWrong();
+          say(mistakeText('div_remainder_too_big', v));
+          return;
+        }
+        setDiv({ phase: 'final', code: null, v: null, tries: 0 });
+        say(t('stem.areamodel.sr_div_final', 'No more chunks fit. Now write the quotient and the remainder.'));
+        focusSoon('[data-div-final="q"]');
+      }
+      function checkDivFinal() {
+        if (divPhase !== 'final') return;
+        var qv = CORE.parseNum(divFin.q), rtxt = String(divFin.r == null ? '' : divFin.r).trim(), rv = rtxt ? CORE.parseNum(rtxt) : 0;
+        var code = rtxt && !isFinite(rv) ? 'div_r_wrong' : CORE.divFinal(divChunks, divD, divLeft, qv, rv);
+        // Here what is left is already less than the divisor: only the typed remainder is too big.
+        if (code === 'div_remainder_too_big') code = 'div_r_too_big';
+        var v = { left: divLeft, d: divD };
+        if (code === 'ok') {
+          var divRepeat = !dv.aided && !dv.credited && !dv.fromWord && creditedBefore(divKey);
+          var credit = !dv.aided && !dv.credited && !dv.fromWord && !divRepeat;
+          setDiv({ phase: 'done', finCode: null, credited: !!dv.credited || credit }, credit ? addCredit({ divisionSolved: divisionSolved + 1 }, divKey) : null);
+          sfxCorrect();
+          say(fill(t('stem.areamodel.sr_div_done', 'Right. {n} ÷ {d} = {q}, remainder {r}. The chunks along the top add up to the missing side.'), { n: divN, d: divD, q: divReplayed.sum, r: divLeft }) + (divRepeat ? ' ' + t('stem.areamodel.already_credited', 'You already earned points for this problem. Try a new one for more.') : ''));
+          focusSoon('[data-div-done]');
+          if (credit) {
+            awardXP('areamodel', 5, t('stem.areamodel.xp_div', 'Division with partial quotients'));
+            checkBadges(badgeState({ divisionSolved: divisionSolved + 1 }));
+          }
+          return;
+        }
+        var ft = (dv.finTries || 0) + 1;
+        setDiv({ finCode: code, finTries: ft }, ft === 1 ? { missedLog: divLog(code) } : null);
+        sfxWrong();
+        say(mistakeText(code, v));
+      }
+      function showDivFinal() {
+        if (!revealOk || divPhase !== 'final' || (dv.finTries || 0) < 2) return;
+        setDiv({ phase: 'done', aided: true, fin: { q: String(divReplayed.sum), r: String(divLeft) }, finCode: null });
+        say(fill(t('stem.areamodel.sr_div_final_shown', 'The quotient is {q}, remainder {r}. A shown answer earns no points.'), { q: divReplayed.sum, r: divLeft }));
+        focusSoon('[data-div-done]');
+      }
+      // Long division, line by line, after the chunks: each digit is a place-value chunk.
+      var ldPlan = CORE.longDiv(divN, divD);
+      var ld = dv.ld && typeof dv.ld === 'object' ? dv.ld : {};
+      var ldRes = ld.res || {}, ldInp = ld.inp || {}, ldTries = ld.tries || {}, ldCode = ld.code || {};
+      var ldCur = -1;
+      for (var li0 = 0; li0 < ldPlan.steps.length; li0++) { if (!ldRes[li0]) { ldCur = li0; break; } }
+      var ldDone = ldCur === -1;
+      function setLd(p, top) { setDiv({ ld: Object.assign({}, ld, p) }, top); }
+      function checkLd() {
+        if (ldDone || divPhase !== 'done') return;
+        var step = ldPlan.steps[ldCur], v = CORE.parseNum(ldInp[ldCur]);
+        var code = CORE.ldDiagnose(step, divD, v);
+        var codes = Object.assign({}, ldCode);
+        if (code === 'ok') {
+          var res = Object.assign({}, ldRes); res[ldCur] = 'ok'; delete codes[ldCur];
+          var finished = ldCur === ldPlan.steps.length - 1;
+          var unaided = finished && Object.keys(res).every(function(k) { return res[k] === 'ok'; });
+          var ldKey = 'ld:' + divN + '/' + divD;
+          var credit = unaided && !ld.credited && !creditedBefore(ldKey);
+          setLd({ res: res, code: codes, credited: !!ld.credited || credit }, credit ? addCredit({ longDivSolved: longDivSolved + 1 }, ldKey) : null);
+          if (finished) focusSoon('[data-ld-done]');
+          say(finished
+            ? fill(t('stem.areamodel.sr_ld_done', 'Long division done: {n} ÷ {d} = {q}, remainder {r}. Each digit was a place-value chunk.'), { n: divN, d: divD, q: ldPlan.q, r: ldPlan.r })
+            : fill(t('stem.areamodel.sr_ld_ok', 'Right: {digit} × {d} = {prod}, and {rem} is left. Bring down the next digit.'), { digit: step.digit, d: divD, prod: step.prod, rem: step.rem }));
+          return;
+        }
+        var tr = Object.assign({}, ldTries); tr[ldCur] = (tr[ldCur] || 0) + 1;
+        codes[ldCur] = code;
+        setLd({ tries: tr, code: codes, v: { c: isFinite(v) ? v : '?', d: divD, left: step.partial } }, tr[ldCur] === 1 ? { missedLog: divLog(code) } : null);
+        sfxWrong();
+        say(mistakeText(code, { c: isFinite(v) ? v : '?', d: divD, left: step.partial }));
+      }
+      function showLd() {
+        if (!allowReveal || ldDone || (ldTries[ldCur] || 0) < 2) return;
+        var res = Object.assign({}, ldRes); res[ldCur] = 'shown';
+        setLd({ res: res });
+        say(fill(t('stem.areamodel.sr_ld_shown', 'This digit is {digit}.'), { digit: ldPlan.steps[ldCur].digit }));
+      }
+      function ldLineText(st) {
+        if (!st.digit) return fill(t('stem.areamodel.ld_line_zero', '{partial} is less than {d}, so write 0 in the quotient.'), { partial: st.partial, d: divD });
+        return fill(t('stem.areamodel.ld_line', '{partial} ÷ {d}: {digit} groups fit. {digit} × {d} = {prod}, and {partial} − {prod} = {rem}.'), { partial: st.partial, d: divD, digit: st.digit, prod: st.prod, rem: st.rem });
+      }
+      function ldChunkText(st) {
+        var v = { digit: st.digit, chunk: st.chunk, d: divD, area: st.chunkArea };
+        if (!st.digit) return t('stem.areamodel.ld_chunk_none', 'A 0 digit is an empty chunk: nothing is taken here.');
+        if (st.place === 0) return fill(t('stem.areamodel.ld_chunk_0', 'The {digit} is in the ones place, a chunk of {chunk}: {chunk} × {d} = {area}.'), v);
+        if (st.place === 1) return fill(t('stem.areamodel.ld_chunk_1', 'The {digit} is in the tens place, a chunk of {chunk}: {chunk} × {d} = {area}.'), v);
+        if (st.place === 2) return fill(t('stem.areamodel.ld_chunk_2', 'The {digit} is in the hundreds place, a chunk of {chunk}: {chunk} × {d} = {area}.'), v);
+        return fill(t('stem.areamodel.ld_chunk_3', 'The {digit} is in the thousands place, a chunk of {chunk}: {chunk} × {d} = {area}.'), v);
+      }
+      // The written long division (aria-hidden: the table beside it carries the same lines).
+      function ldWritten() {
+        var s = String(divN), dS = String(divD), off = dS.length + 1, lines = [], last = ldPlan.steps.length - 1;
+        function padTo(str, endCol) { str = String(str); var n = endCol - str.length + 1; return (n > 0 ? new Array(n + 1).join(' ') : '') + str; }
+        var qRow = new Array(off + s.length + 1).join(' ').split('');
+        ldPlan.steps.forEach(function(st, k) { qRow[off + st.i] = ldRes[k] ? String(st.digit) : '?'; });
+        lines.push(qRow.join('').replace(/\s+$/, '') + (ldDone && ldPlan.r ? ' ' + fill(t('stem.areamodel.ld_r_short', 'R{r}'), { r: ldPlan.r }) : ''));
+        lines.push(new Array(off).join(' ') + '┌' + new Array(s.length + 1).join('─'));
+        lines.push(dS + '│' + s);
+        ldPlan.steps.forEach(function(st, k) {
+          if (!ldRes[k]) return;
+          var end = off + st.i;
+          lines.push(padTo('−' + st.prod, end));
+          lines.push(padTo(new Array(String(st.partial).length + 1).join('─'), end));
+          lines.push(k < last ? padTo(String(Number(String(st.rem) + s.charAt(st.i + 1))), end + 1) : padTo(st.rem, end));
+        });
+        return lines.join('\n');
+      }
+      // The finished division drawn to scale: each chunk is c units wide, the known
+      // side d units tall, and the remainder a strip left ÷ d units wide.
+      var DIV_SCALE_W = 560, DIV_SCALE_H = 240;
+      function renderDivScaled(n, d, chunks, left, sc, pre) {
+        var u = sc.unit, x0 = 64, top = 40, Hh = d * u, parts = [], x = x0;
+        chunks.forEach(function(c, i) {
+          var w = c * u;
+          parts.push(h('rect', { key: 'r' + i, x: x, y: top, width: w, height: Hh, fill: FILLS[i % FILLS.length], stroke: C.stroke, strokeWidth: 1.5, 'data-div-scaled-chunk': c }));
+          if (w >= String(c).length * 9 + 4) parts.push(h('text', { key: 'tq' + i, x: x + w / 2, y: top - 10, textAnchor: 'middle', fill: C.ink, fontSize: 13, fontWeight: 800 }, String(c)));
+          if (w >= String(c * d).length * 9 + 4 && Hh >= 22) parts.push(h('text', { key: 'ta' + i, x: x + w / 2, y: top + Hh / 2 + 5, textAnchor: 'middle', fill: '#0f172a', fontSize: 13, fontWeight: 800 }, String(c * d)));
+          x += w;
+        });
+        if (left > 0) {
+          var rw = left / d * u;
+          parts.push(h('rect', { key: 'rem', x: x, y: top, width: rw, height: Hh, fill: 'none', stroke: C.stroke, strokeWidth: 2, strokeDasharray: '5 3', 'data-div-scaled-rem': left }));
+          parts.push(h('text', { key: 'remt', x: x + rw + 6, y: top + Hh / 2 + 5, fill: C.ink, fontSize: 13, fontWeight: 800 }, fill(t('stem.areamodel.div_rem_svg', 'Remainder {r}'), { r: left })));
+        }
+        parts.push(h('text', { key: 'side', x: x0 - 10, y: top + Hh / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 15, fontWeight: 800 }, String(d)));
+        parts.push(h('text', { key: 'tot', x: x0, y: top + Hh + 24, fill: C.sub, fontSize: 13, fontWeight: 700 }, t('stem.areamodel.div_scale_caption', 'Drawn to scale: every chunk is as wide as its number of groups.')));
+        var desc = fill(t('stem.areamodel.div_scale_desc', 'Drawn to scale: a rectangle {d} units tall with an area of {n}. The chunks {list} sit side by side, each as wide as its number of groups, so the long side is {q} units plus a remainder strip {r} ÷ {d} of a unit wide.'),
+          { d: d, n: n, list: chunks.join(', '), q: chunks.reduce(function(s, c) { return s + c; }, 0), r: left });
+        return h('svg', { viewBox: '0 0 ' + Math.ceil(x0 + sc.w + 130) + ' ' + Math.ceil(top + Hh + 36), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 340, background: C.svgBg }, 'data-division-model': true, 'data-div-scaled': true },
+          h('title', { id: pre + '-title' }, t('stem.areamodel.div_scale_title', 'Division area model, drawn to scale')),
+          h('desc', { id: pre + '-desc' }, desc),
+          parts);
+      }
+      function renderDivSvg(n, d, chunks, left, opts) {
+        opts = opts || {};
+        var pre = opts.idPrefix || 'am-div';
+        if (opts.scale && opts.scale.ok) return renderDivScaled(n, d, chunks, left, opts.scale, pre);
+        var Hh = 130, top = 44, x0 = 64;
+        var boxW = chunks.length > 6 ? Math.max(44, Math.floor(600 / chunks.length)) : 96;
+        var narrow = boxW < 80;
+        var remW = (left > 0 || !opts.done) ? 128 : 0;
+        var W = x0 + chunks.length * boxW + remW + 16;
+        var parts = [];
+        chunks.forEach(function(c, i) {
+          var x = x0 + i * boxW;
+          parts.push(h('rect', { key: 'r' + i, x: x, y: top, width: boxW, height: Hh, fill: FILLS[i % FILLS.length], stroke: C.stroke, strokeWidth: 1.5 }));
+          parts.push(h('text', { key: 'tq' + i, x: x + boxW / 2, y: top - 10, textAnchor: 'middle', fill: C.ink, fontSize: narrow ? 12 : 16, fontWeight: 800 }, String(c)));
+          parts.push(h('text', { key: 'ta' + i, x: x + boxW / 2, y: top + Hh / 2 + 2, textAnchor: 'middle', fill: '#0f172a', fontSize: narrow ? 11 : 16, fontWeight: 800 }, String(c * d)));
+          if (!narrow) parts.push(h('text', { key: 'tm' + i, x: x + boxW / 2, y: top + Hh / 2 + 22, textAnchor: 'middle', fill: '#0f172a', fontSize: 12, fontWeight: 600 }, d + ' × ' + c));
+        });
+        if (remW) {
+          var rx = x0 + chunks.length * boxW;
+          parts.push(h('rect', { key: 'rem', x: rx, y: top, width: remW, height: Hh, fill: 'none', stroke: C.stroke, strokeWidth: 2, strokeDasharray: '7 5', 'data-div-open': true }));
+          parts.push(h('text', { key: 'remt', x: rx + remW / 2, y: top + Hh / 2 + 4, textAnchor: 'middle', fill: C.ink, fontSize: 14, fontWeight: 800 },
+            opts.done ? fill(t('stem.areamodel.div_rem_svg', 'Remainder {r}'), { r: left }) : fill(t('stem.areamodel.div_left_svg', '{left} left'), { left: left })));
+          if (!opts.done) parts.push(h('text', { key: 'remq', x: rx + remW / 2, y: top - 10, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, '?'));
+        }
+        parts.push(h('text', { key: 'side', x: x0 - 10, y: top + Hh / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, String(d)));
+        parts.push(h('text', { key: 'tot', x: x0, y: top + Hh + 26, fill: C.sub, fontSize: 13, fontWeight: 700 },
+          opts.done ? fill(t('stem.areamodel.div_svg_total_done_ns', 'Area {n}: the top side is {q}. Not drawn to scale.'), { n: n, q: chunks.reduce(function(s, c) { return s + c; }, 0) })
+            : fill(t('stem.areamodel.div_svg_total', 'Area {n}. The top side is unknown. Not drawn to scale.'), { n: n })));
+        var list = chunks.length ? chunks.join(', ') : t('stem.areamodel.div_none_yet', 'none yet');
+        var desc = opts.done
+          ? fill(t('stem.areamodel.div_svg_desc_done', 'An area model for {n} ÷ {d}. The chunks {list} fill the rectangle, so the missing side is their sum, with {r} left over.'), { n: n, d: d, list: list, r: left })
+          : fill(t('stem.areamodel.div_svg_desc', 'An open rectangle with an area of {n} and one side of {d}. The other side is unknown. Chunks taken so far: {list}. {left} is not covered yet.'), { n: n, d: d, list: list, left: left });
+        return h('svg', { viewBox: '0 0 ' + Math.max(W, 320) + ' ' + (top + Hh + 40), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxHeight: 300, background: C.svgBg }, 'data-division-model': true },
+          h('title', { id: pre + '-title' }, t('stem.areamodel.div_svg_title', 'Open area model for division')),
+          h('desc', { id: pre + '-desc' }, desc),
+          parts);
+      }
+      var renderDivision = function() {
+        // To scale only once the division is finished: drawn to scale earlier, the
+        // open part's width would give the missing side away.
+        var divSc = divPhase === 'done' ? CORE.divScale(divD, divChunks, divLeft, DIV_SCALE_W, DIV_SCALE_H) : { ok: false, reason: 'not_done' };
+        var scaleOn = !!_a.divScale && divSc.ok;
+        function divScaleNote() {
+          if (divPhase !== 'done') return t('stem.areamodel.div_scale_not_done', 'Not drawn to scale: the chunks are equal widths. Finish the division to see it drawn to scale.');
+          if (divSc.ok) return scaleOn ? t('stem.areamodel.div_scale_on_note', 'To scale: compare how wide each chunk is.') : t('stem.areamodel.div_scale_offer', 'Not drawn to scale. These chunks are wide enough to draw to scale too.');
+          if (divSc.reason === 'thin_chunk') return fill(t('stem.areamodel.div_scale_thin', 'Not drawn to scale: next to the other chunks, a chunk of {c} would be thinner than a line.'), { c: divSc.c });
+          if (divSc.reason === 'flat') return fill(t('stem.areamodel.div_scale_flat', 'Not drawn to scale: the known side, {d}, would be too short to see next to the long side.'), { d: divD });
+          if (divSc.reason === 'thin_rem') return t('stem.areamodel.div_scale_thin_rem', 'Not drawn to scale: the remainder strip would be thinner than a line.');
+          return t('stem.areamodel.div_scale_none', 'Not drawn to scale.');
+        }
+        var draftN = dv.draftN != null ? String(dv.draftN) : String(divN), draftD = dv.draftD != null ? String(dv.draftD) : String(divD);
+        var inRange = function(which, v) { return Number.isInteger(v) && v >= 2 && v <= (which === 'n' ? 9999 : 99); };
+        // The other box's typed value counts too: a dividend typed below the old
+        // divisor waits for the new divisor instead of being lost.
+        function setNum(which, text) {
+          var p = {}; p[which === 'n' ? 'draftN' : 'draftD'] = text;
+          var v = CORE.parseNum(text), ov = CORE.parseNum(which === 'n' ? draftD : draftN);
+          var nn = which === 'n' ? v : (inRange('n', ov) ? ov : divN), dd = which === 'd' ? v : (inRange('d', ov) ? ov : divD);
+          if (inRange('n', nn) && inRange('d', dd) && dd <= nn) upd({ div: Object.assign(freshDiv(nn, dd, { recent: dv.recent }), p) });
+          else upd({ div: Object.assign({}, dv, p) });
+        }
+        var bad = function(which) {
+          var v = CORE.parseNum(which === 'n' ? draftN : draftD), ov = CORE.parseNum(which === 'n' ? draftD : draftN);
+          if (!inRange(which, v)) return true;
+          return which === 'n' ? (inRange('d', ov) && ov > v) : (inRange('n', ov) && v > ov);
+        };
+        var badPair = bad('n') || bad('d');
+        var chips = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000].filter(function(c) { return c * divD <= divN; });
+        var helper = [1, 2, 5, 10, 20, 50, 100].filter(function(c) { return c * divD <= Math.max(divN, divD); });
+        var thS = { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border };
+        var lblS = { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12, fontWeight: 800, color: C.ink, flex: '1 1 120px' };
+        function draftInput(key, label) {
+          return h('label', { key: key, style: lblS }, label,
+            h('input', { type: 'text', inputMode: 'numeric', value: divDraft[key] == null ? '' : divDraft[key], 'data-div-input': key,
+              'aria-invalid': dv.code && ((key === 'c' && /chunk/.test(dv.code)) || (key === 'area' && /area/.test(dv.code)) || (key === 'left' && /left|subtract/.test(dv.code))) ? 'true' : undefined,
+              'aria-describedby': dv.code ? 'am-div-err' : undefined,
+              onChange: function(e) { var nd = Object.assign({}, divDraft); nd[key] = e.target.value; setDiv({ draft: nd }); },
+              onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkDivStep(); } },
+              style: Object.assign({}, inputStyle, { width: '100%' }) }));
+        }
+        var stepNo = divChunks.length + 1;
+        // Older saves stored the chunk-phase code for a too-big typed remainder.
+        var finCodeShown = dv.finCode === 'div_remainder_too_big' ? 'div_r_too_big' : dv.finCode;
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, alignItems: 'end' } },
+            h('label', { style: { fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.div_dividend', 'Total area (dividend)'),
+              h('input', { type: 'text', inputMode: 'numeric', value: draftN, 'data-div-n': true, 'aria-invalid': bad('n') || undefined, 'aria-describedby': badPair ? 'am-div-bad' : undefined,
+                onChange: function(e) { setNum('n', e.target.value); }, onBlur: function() { if (!inRange('n', CORE.parseNum(draftN))) setDiv({ draftN: null }); },
+                'aria-label': t('stem.areamodel.div_dividend_label', 'Total area, the dividend (2 to 9999)'), style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center' }) })),
+            h('label', { style: { fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.div_divisor', 'Known side (divisor)'),
+              h('input', { type: 'text', inputMode: 'numeric', value: draftD, 'data-div-d': true, 'aria-invalid': bad('d') || undefined, 'aria-describedby': badPair ? 'am-div-bad' : undefined,
+                onChange: function(e) { setNum('d', e.target.value); }, onBlur: function() { if (!inRange('d', CORE.parseNum(draftD))) setDiv({ draftD: null }); },
+                'aria-label': t('stem.areamodel.div_divisor_label', 'Known side, the divisor (2 to 99, not more than the total)'), style: Object.assign({}, inputStyle, { width: '100%', textAlign: 'center' }) })),
+            h('button', { type: 'button', onClick: newDivProblem, 'data-div-new': true, style: btnStyle('primary') }, t('stem.areamodel.div_new', 'New problem'))),
+          badPair && h('p', { id: 'am-div-bad', 'data-div-bad': true, style: noteStyle('warn') }, fill(t('stem.areamodel.div_bad_pair', 'Not used yet: the total must be 2 to 9999 and the known side 2 to 99, and the side cannot be more than the total. The model still shows {n} ÷ {d}.'), { n: divN, d: divD })),
+          dv.fromWord && h('p', { style: noteStyle('info') }, t('stem.areamodel.div_from_word', 'This is the division from your word problem. Model it here, then answer the word problem.')),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            renderDivSvg(divN, divD, divChunks, divLeft, { done: divPhase === 'done', scale: scaleOn ? divSc : null }),
+            h('div', { 'data-div-scale-row': divSc.ok ? 'ok' : (divPhase === 'done' ? divSc.reason : 'not_done'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 } },
+              divPhase === 'done' && divSc.ok && h('button', { type: 'button', 'aria-pressed': scaleOn, 'data-div-scale': true, onClick: function() { upd({ divScale: !scaleOn }); say(scaleOn ? t('stem.areamodel.div_scale_off_sr', 'The drawing is back to equal-width chunks, not to scale.') : t('stem.areamodel.div_scale_on_sr', 'The drawing is now to scale.')); }, style: btnStyle(scaleOn ? 'primary' : 'secondary') },
+                t('stem.areamodel.div_scale_btn', 'Draw it to scale')),
+              h('p', { style: { fontSize: 12, color: C.sub, margin: 0, flex: '1 1 220px' } }, divScaleNote())),
+            h('table', { 'data-div-table': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8, color: C.ink } },
+              h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, fill(t('stem.areamodel.div_table_caption', 'Your partial quotients for {n} ÷ {d}'), { n: divN, d: divD })),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: thS }, fill(t('stem.areamodel.div_col_chunk', 'Chunk (groups of {d})'), { d: divD })),
+                h('th', { scope: 'col', style: thS }, t('stem.areamodel.div_col_area', 'Area taken')),
+                h('th', { scope: 'col', style: thS }, t('stem.areamodel.div_col_left', 'Area left')))),
               h('tbody', null,
-                h('tr', null,
-                  h('th', { scope: 'row', style: { color: isContrast ? '#ffffff' : '#4338ca' }, className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aTens),
-                  h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[0].color + ' bg-opacity-60' },
-                    partialButton(0, false)
-                  ),
-                  h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[1].color + ' bg-opacity-60' },
-                    partialButton(1, false)
-                  )
-                ),
-                h('tr', null,
-                  h('th', { scope: 'row', style: { color: isContrast ? '#ffffff' : '#4338ca' }, className: 'p-2 text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200' }, aOnes),
-                  h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[2].color + ' bg-opacity-60' },
-                    partialButton(2, false)
-                  ),
-                  h('td', { className: 'p-3 text-center border border-indigo-200 ' + pp[3].color + ' bg-opacity-60' },
-                    partialButton(3, false)
-                  )
-                )
-              )
-            )
-          ),
-          !(challenge && !feedback) && h('div', { className: 'bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 rounded-xl p-4 border border-indigo-200 text-center' },
-            h('div', { className: 'text-sm font-bold text-slate-600 mb-1' }, a + ' \u00d7 ' + b + ' = partial products:'),
-            h('div', { className: 'flex items-center justify-center gap-2 flex-wrap text-lg font-bold' },
-              pp.map(function(p, i) {
-                return h(React.Fragment, { key: i },
-                  i > 0 && h('span', { className: 'text-slate-600' }, '+'),
-                  partialButton(i, true)
-                );
+                h('tr', { key: 'start' }, h('th', { scope: 'row', style: { textAlign: 'left', padding: 4 } }, t('stem.areamodel.div_start', 'Start')), h('td', { style: { padding: 4 } }, '—'), h('td', { style: { padding: 4, fontWeight: 800 } }, String(divN))),
+                (function() {
+                  var left = divN;
+                  return divChunks.map(function(c, i) {
+                    left -= c * divD;
+                    return h('tr', { key: 's' + i }, h('th', { scope: 'row', style: { textAlign: 'left', padding: 4 } }, String(c)), h('td', { style: { padding: 4 } }, String(c * divD)), h('td', { style: { padding: 4, fontWeight: 800 } }, String(left)));
+                  });
+                })()))),
+          divPhase === 'chunks' && h('div', { style: cardStyle, 'data-div-phase': 'chunks' },
+            h('p', { style: { fontSize: 14, fontWeight: 800, color: C.ink, margin: '0 0 6px' } },
+              fill(t('stem.areamodel.div_step_prompt', 'Step {k}: {left} is left. Take a chunk of {d}s that fits.'), { k: stepNo, left: divLeft, d: divD })),
+            h('div', { role: 'group', 'aria-label': t('stem.areamodel.div_chips_label', 'Friendly chunks'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 } },
+              chips.map(function(c) {
+                return h('button', { type: 'button', key: 'ch' + c, 'data-div-chip': c, 'aria-label': fill(t('stem.areamodel.div_chip_aria', 'Use a chunk of {c} groups'), { c: c }),
+                  onClick: function() { var nd = Object.assign({}, divDraft, { c: String(c) }); setDiv({ draft: nd }); },
+                  style: Object.assign(btnStyle('secondary'), { minWidth: 44, minHeight: 36 }) }, String(c));
+              })),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              draftInput('c', fill(t('stem.areamodel.div_in_chunk', 'Chunk: how many groups of {d}?'), { d: divD })),
+              draftInput('area', t('stem.areamodel.div_in_area', 'Area of this chunk')),
+              draftInput('left', t('stem.areamodel.div_in_left', 'Area left after it'))),
+            dv.code && h('p', { id: 'am-div-err', 'data-div-code': dv.code, style: Object.assign({ marginTop: 8 }, noteStyle('bad')) }, wrongNote(dv.code, dv.v || { left: divLeft, d: divD }, dv.tries || 0)),
+            hintLadder(divHints, divHintText, { 'data-div-hints': divHints }),
+            renderAIHint(divStepKey),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+              h('button', { type: 'button', onClick: checkDivStep, 'data-div-check': true, style: btnStyle('primary') }, t('stem.areamodel.div_check_step', 'Check this step')),
+              h('button', { type: 'button', onClick: finishChunks, 'data-div-finish': true, style: btnStyle('secondary') }, t('stem.areamodel.div_finish', 'No more chunks fit')),
+              hintButton(divHints, function() { setDiv({ hints: divHints + 1 }, { hintsUsed: (_a.hintsUsed || 0) + 1 }); say(divHintText(divHints + 1)); }, { 'data-div-hint': true }),
+              (dv.tries || 0) >= 2 && aiHintButton(divStepKey, function() {
+                requestAIHint(divStepKey, fill(t('stem.areamodel.ai_q_div', 'Divide {n} by {d} with partial quotients. {left} is still left to divide.'), { n: divN, d: divD, left: divLeft }),
+                  [divDraft.c, divDraft.area, divDraft.left].join(','), String(CORE.longDiv(divN, divD).q), dv.tries || 0, divHintText(Math.min(3, divHints + 1)));
               }),
-              h('span', { className: 'text-slate-600' }, '='),
-              h('span', { className: 'text-2xl text-indigo-900 bg-indigo-100 px-3 py-0.5 rounded-lg border border-indigo-300 shadow-sm' }, total)
-            ),
-            h('p', { className: 'text-xs text-indigo-700 mt-2 italic' },
-              t('stem.areamodel.break_multi_digit_numbers_into_tens_an', '\uD83D\uDCA1 Break multi-digit numbers into tens and ones, multiply each pair, then add!'))
-          )
-        );
+              (dv.tries || 0) >= 2 && revealOk && divLeft >= divD && h('button', { type: 'button', onClick: showDivStep, 'data-div-show': true, style: btnStyle('secondary') }, t('stem.areamodel.div_show_step', 'Show a chunk that fits (no points)'))),
+            h('details', { style: { marginTop: 8 } },
+              h('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 700, color: C.ink, minHeight: 28 } }, fill(t('stem.areamodel.div_helper', 'Helper facts for {d}'), { d: divD })),
+              h('ul', { style: { margin: '4px 0 0 18px', fontSize: 13, color: C.ink } }, helper.map(function(c) { return h('li', { key: 'hf' + c }, c + ' × ' + divD + ' = ' + c * divD); })))),
+          divPhase === 'final' && h('div', { style: cardStyle, 'data-div-phase': 'final' },
+            h('p', { style: { fontSize: 14, fontWeight: 800, color: C.ink, margin: '0 0 6px' } }, t('stem.areamodel.div_final_prompt', 'No more chunks fit. Add your chunks for the quotient. What is left is the remainder.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              ['q', 'r'].map(function(k) {
+                return h('label', { key: k, style: lblS }, k === 'q' ? t('stem.areamodel.div_quotient', 'Quotient') : t('stem.areamodel.div_remainder', 'Remainder'),
+                  h('input', { type: 'text', inputMode: 'numeric', value: divFin[k] == null ? '' : divFin[k], 'data-div-final': k,
+                    onChange: function(e) { var nf = Object.assign({}, divFin); nf[k] = e.target.value; setDiv({ fin: nf }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkDivFinal(); } },
+                    style: Object.assign({}, inputStyle, { width: '100%' }) }));
+              })),
+            dv.finCode && h('p', { 'data-div-code': finCodeShown, style: Object.assign({ marginTop: 8 }, noteStyle('bad')) }, wrongNote(finCodeShown, { left: divLeft, d: divD }, dv.finTries || 0)),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+              h('button', { type: 'button', onClick: checkDivFinal, 'data-div-final-check': true, style: btnStyle('primary') }, t('stem.areamodel.div_check_final', 'Check my answer')),
+              (dv.finTries || 0) >= 2 && revealOk && h('button', { type: 'button', onClick: showDivFinal, 'data-div-final-show': true, style: btnStyle('secondary') }, t('stem.areamodel.show_answer', 'Show the answer (no points)')))),
+          divPhase === 'done' && h('p', { style: noteStyle('ok'), 'data-div-done': true, tabIndex: -1 },
+            fill(t('stem.areamodel.div_done', '{n} ÷ {d} = {q}, remainder {r}. Your chunks {list} are the pieces of the missing side.'), { n: divN, d: divD, q: divReplayed.sum, r: divLeft, list: divChunks.join(' + ') })
+            + (dv.aided ? ' ' + t('stem.areamodel.div_aided', 'You used a shown step, so this one earns no points. Try a new problem.') : '')),
+          divPhase === 'done' && h('section', { 'aria-labelledby': 'am-ld-h', 'data-longdiv': true, style: cardStyle },
+            h('h4', { id: 'am-ld-h', style: { fontSize: 14, fontWeight: 900, color: C.accent, margin: '0 0 6px' } }, t('stem.areamodel.ld_title', 'Bridge to long division, line by line')),
+            h('p', { style: { fontSize: 13, color: C.ink, margin: '0 0 6px' } }, t('stem.areamodel.ld_intro', 'Long division is partial quotients with place-value chunks. Predict each digit of the quotient.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
+              h('pre', { 'aria-hidden': 'true', style: { fontFamily: 'ui-monospace, monospace', fontSize: 20, lineHeight: 1.3, margin: 0, color: C.ink, background: 'transparent' } }, ldWritten()),
+              h('table', { 'data-ld-table': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, color: C.ink } },
+                h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.ld_caption', 'Long division lines and the chunk each one takes')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', style: thS }, t('stem.areamodel.ld_col_line', 'Line')),
+                  h('th', { scope: 'col', style: thS }, t('stem.areamodel.ld_col_digit', 'Digit')),
+                  h('th', { scope: 'col', style: thS }, t('stem.areamodel.ld_col_chunk', 'Same as the chunk')))),
+                h('tbody', null, ldPlan.steps.map(function(st, k) {
+                  var done = !!ldRes[k];
+                  return h('tr', { key: 'ld' + k, 'data-ld-step': k, 'data-ld-state': ldRes[k] || (k === ldCur ? 'current' : 'later') },
+                    h('th', { scope: 'row', style: { textAlign: 'left', padding: 4, fontWeight: k === ldCur ? 900 : 600 } }, done ? ldLineText(st) : fill(t('stem.areamodel.ld_line_q', '{partial} ÷ {d}: how many groups fit?'), { partial: st.partial, d: divD })),
+                    h('td', { style: { padding: 4, fontWeight: 800 } }, done ? String(st.digit) + (ldRes[k] === 'shown' ? ' ' + t('stem.areamodel.algo_shown_tag', '(shown)') : '') : '?'),
+                    h('td', { style: { padding: 4 } }, done ? ldChunkText(st) : '…'));
+                })))),
+            !ldDone && h('div', { style: { marginTop: 8 } },
+              h('label', { htmlFor: 'am-ld-input', style: { display: 'block', fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 6 } },
+                fill(t('stem.areamodel.ld_predict', 'Predict the next quotient digit: how many groups of {d} fit in {partial}?'), { d: divD, partial: ldPlan.steps[ldCur].partial })),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('input', { id: 'am-ld-input', type: 'text', inputMode: 'numeric', value: ldInp[ldCur] == null ? '' : ldInp[ldCur],
+                  onChange: function(e) { var inp = Object.assign({}, ldInp); inp[ldCur] = e.target.value; setLd({ inp: inp }); },
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkLd(); } },
+                  style: Object.assign({}, inputStyle, { width: 90 }) }),
+                h('button', { type: 'button', onClick: checkLd, 'data-ld-check': true, style: btnStyle('primary') }, t('stem.areamodel.ld_check', 'Check this digit')),
+                (ldTries[ldCur] || 0) >= 2 && allowReveal && h('button', { type: 'button', onClick: showLd, 'data-ld-show': true, style: btnStyle('secondary') }, t('stem.areamodel.ld_show_np', 'Show this digit (no points)'))),
+              ldCode[ldCur] && h('p', { 'data-ld-code': ldCode[ldCur], style: Object.assign({ marginTop: 8 }, noteStyle('bad')) }, wrongNote(ldCode[ldCur], ld.v || { d: divD }, ldTries[ldCur] || 0))),
+            ldDone && h('p', { style: Object.assign({ marginTop: 8 }, noteStyle('ok')), 'data-ld-done': true, tabIndex: -1 },
+              fill(t('stem.areamodel.ld_compare', 'Long division took the chunks {ldlist} = {q}. Your chunks were {mine} = {q}. Different chunks, the same missing side.'), {
+                ldlist: ldPlan.steps.filter(function(s) { return s.digit; }).map(function(s) { return s.chunk; }).join(' + '), q: ldPlan.q, mine: divChunks.join(' + ') }))),
+          linkButton('multtable', t('stem.areamodel.multtable_tool', 'Multiplication Table'), t('stem.areamodel.link_multtable_div', 'Review the facts for your divisor in the Multiplication Table')));
+      };
+
+      // ═══ VIEW: HUNDRED GRID (5.NBT.7 decimals, 6.RP.3c percents) ═══
+      function renderHundredGrid(ca, rb, opts) {
+        opts = opts || {};
+        var pre = opts.idPrefix || 'am-g100', S = 26, ox = 50, oy = 34, cells = [];
+        for (var r = 0; r < 10; r++) for (var c = 0; c < 10; c++) {
+          var inC = c < ca, inR = r < rb, both = inC && inR;
+          cells.push(h('rect', { key: 'g' + r + '-' + c, x: ox + c * S, y: oy + r * S, width: S, height: S,
+            fill: both ? '#15803d' : inC ? '#93c5fd' : inR ? '#fde68a' : C.svgBg, stroke: C.sub, strokeWidth: 0.8, 'data-g100-cell': both ? 'both' : inC ? 'col' : inR ? 'row' : 'none' }));
+          if (both) cells.push(h('circle', { key: 'd' + r + '-' + c, cx: ox + c * S + S / 2, cy: oy + r * S + S / 2, r: 3.5, fill: '#ffffff' }));
+        }
+        var colsW = ca * S, rowsH = rb * S;
+        return h('svg', { viewBox: '0 0 ' + (ox + 10 * S + 20) + ' ' + (oy + 10 * S + 30), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxWidth: 420, maxHeight: 380, background: C.svgBg, display: 'block', margin: '0 auto' }, 'data-g100-model': true },
+          h('title', { id: pre + '-title' }, opts.title || t('stem.areamodel.g100_svg_title', 'Hundred grid area model')),
+          h('desc', { id: pre + '-desc' }, opts.desc || ''),
+          cells,
+          h('rect', { x: ox, y: oy, width: colsW, height: 10 * S, fill: 'none', stroke: C.stroke, strokeWidth: 3 }),
+          h('rect', { x: ox, y: oy, width: 10 * S, height: rowsH, fill: 'none', stroke: C.stroke, strokeWidth: 3, strokeDasharray: '8 5' }),
+          h('text', { x: ox + colsW / 2, y: oy - 10, textAnchor: 'middle', fill: C.ink, fontSize: 15, fontWeight: 800 }, opts.labelA || ''),
+          h('text', { x: ox - 8, y: oy + rowsH / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 15, fontWeight: 800 }, opts.labelB || ''));
+      }
+      var renderGrid100 = function() {
+        var inCh = chHere && challenge.mode === 'grid100';
+        var ga = inCh ? Math.round(challenge.a * 10) : g100.a, gb = inCh ? Math.round(challenge.b * 10) : g100.b, as = inCh ? challenge.kind : g100.as;
+        var pct = as === 'pct', cnt = ga * gb;
+        var la = pct ? (ga * 10) + '%' : fmt(ga / 10), lb = pct ? (gb * 10) + '%' : fmt(gb / 10);
+        var ans = CORE.gridAnswer(as, ga, gb), ansTxt = pct ? fmt(ans) + '%' : fmt(ans);
+        var locked = inCh && chOpen;
+        function setG(p) { upd(clearDone({ g100: Object.assign({}, g100, { a: ga, b: gb, as: as }, p) })); }
+        function sel(label, val, onCh, id) {
+          var opts = []; for (var k = 1; k <= 9; k++) opts.push(h('option', { key: k, value: k }, pct ? (k * 10) + '%' : fmt(k / 10)));
+          return h('label', { style: { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12, fontWeight: 800, color: C.ink } }, label,
+            h('select', { value: val, disabled: locked, 'data-g100-control': id, onChange: function(e) { if (locked) return; onCh(parseInt(e.target.value, 10)); }, style: Object.assign({}, inputStyle, { minWidth: 80 }) }, opts));
+        }
+        var desc = fill(t('stem.areamodel.g100_desc', 'A 10 by 10 grid is one whole. {ca} of the 10 columns are shaded blue for {a}. {rb} of the 10 rows are shaded yellow for {b}. The squares shaded both ways are green with a dot.'), { ca: ga, rb: gb, a: la, b: lb });
+        var cellS = { padding: 4, borderBottom: '1px solid ' + C.border, textAlign: 'left' };
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }) },
+            sel(t('stem.areamodel.g100_first', 'First number (columns)'), ga, function(v) { setG({ a: v }); }, 'a'),
+            sel(t('stem.areamodel.g100_second', 'Second number (rows)'), gb, function(v) { setG({ b: v }); }, 'b'),
+            h('div', { role: 'group', 'aria-label': t('stem.areamodel.g100_show_as', 'Show the numbers as'), style: { display: 'flex', gap: 4 } },
+              [['dec', t('stem.areamodel.g100_as_dec', 'Decimals')], ['pct', t('stem.areamodel.g100_as_pct', 'Percents')]].map(function(o) {
+                return h('button', { type: 'button', key: o[0], 'aria-pressed': as === o[0], disabled: locked, 'data-g100-as': o[0], onClick: function() { if (locked) return; setG({ as: o[0] }); }, style: btnStyle(as === o[0] ? 'primary' : 'secondary', locked) }, o[1]);
+              }))),
+          locked && h('p', { style: { fontSize: 12, color: C.sub, margin: 0 } }, t('stem.areamodel.g100_locked', 'The grid is locked while this challenge is open.')),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            renderHundredGrid(ga, gb, { desc: desc, labelA: la, labelB: lb }),
+            h('p', { style: { fontSize: 13, color: C.sub, marginTop: 6 } }, desc),
+            h('table', { 'data-g100-table': true, style: { borderCollapse: 'collapse', fontSize: 13, color: C.ink, marginTop: 6 } },
+              h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.g100_table', 'What the grid shows')),
+              h('tbody', null,
+                h('tr', null, h('th', { scope: 'row', style: cellS }, t('stem.areamodel.g100_row_cols', 'Columns shaded')), h('td', { style: cellS }, fill(t('stem.areamodel.g100_of_10', '{n} of 10'), { n: ga }))),
+                h('tr', null, h('th', { scope: 'row', style: cellS }, t('stem.areamodel.g100_row_rows', 'Rows shaded')), h('td', { style: cellS }, fill(t('stem.areamodel.g100_of_10', '{n} of 10'), { n: gb }))),
+                h('tr', null, h('th', { scope: 'row', style: cellS }, t('stem.areamodel.g100_row_both', 'Squares shaded both ways')), h('td', { style: cellS, 'data-g100-both': true }, hideProducts ? '?' : fill(t('stem.areamodel.g100_of_100', '{n} of 100'), { n: cnt }))))),
+            h('p', { style: { fontSize: 16, fontWeight: 800, color: C.ink, marginTop: 8 } },
+              hideProducts ? (pct ? fill(t('stem.areamodel.g100_eq_pct_hidden', '{a} of {b} = ?'), { a: la, b: lb }) : la + ' × ' + lb + ' = ?')
+                : (pct ? fill(t('stem.areamodel.g100_eq_pct', '{a} of {b} = {n} of the 100 squares = {ans}'), { a: la, b: lb, n: cnt, ans: ansTxt })
+                  : fill(t('stem.areamodel.g100_eq_dec', '{a} × {b} = {n} hundredths = {ans}'), { a: la, b: lb, n: cnt, ans: ansTxt }))),
+            h('p', { style: { fontSize: 12, fontStyle: 'italic', color: C.sub, marginTop: 4 } }, t('stem.areamodel.g100_note', 'Tenths times tenths make hundredths: the overlap is a part of a part, so it is smaller than both numbers.'))),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            modeOpen('multidigit') && h('button', { type: 'button', disabled: chOpen, 'data-g100-bridge': true, onClick: function() { if (chOpen) return; upd({ viewMode: 'multidigit', multiDims: { a: ga / 10, b: gb / 10 }, multiDraft: null }); }, style: btnStyle('secondary', chOpen) },
+              fill(t('stem.areamodel.g100_open_partial', 'Open {a} × {b} in Partial Products'), { a: fmt(ga / 10), b: fmt(gb / 10) }))));
+      };
+
+      // ═══ VIEW: FRACTION SIDES (5.NF.4b) ═══
+      var renderFraction = function() {
+        var inCh = chHere && challenge.mode === 'fraction';
+        var fs = inCh ? { n1: challenge.n1, d1: challenge.d1, n2: challenge.n2, d2: challenge.d2 } : fsides;
+        var U = 220;
+        var unitsW = Math.max(1, Math.ceil(fs.n1 / fs.d1)), unitsH = Math.max(1, Math.ceil(fs.n2 / fs.d2));
+        var colW = U / fs.d1, rowH = U / fs.d2;
+        var W = U * unitsW, H = U * unitsH;
+        var lines = [];
+        for (var i = 0; i <= fs.d1 * unitsW; i++) lines.push(h('line', { key: 'v' + i, x1: 40 + i * colW, y1: 30, x2: 40 + i * colW, y2: 30 + H, stroke: C.sub, strokeWidth: i % fs.d1 === 0 ? 2.5 : 0.8 }));
+        for (var j = 0; j <= fs.d2 * unitsH; j++) lines.push(h('line', { key: 'h' + j, x1: 40, y1: 30 + j * rowH, x2: 40 + W, y2: 30 + j * rowH, stroke: C.sub, strokeWidth: j % fs.d2 === 0 ? 2.5 : 0.8 }));
+        var shadeW = fs.n1 * colW, shadeH = fs.n2 * rowH;
+        var w = CORE.mixedStr(fs.n1, fs.d1), hh = CORE.mixedStr(fs.n2, fs.d2);
+        var ans = { num: fs.n1 * fs.n2, den: fs.d1 * fs.d2 }, simp = CORE.simplify(ans.num, ans.den);
+        function sel(label, val, max, onCh, id) {
+          var opts = []; for (var k = 1; k <= max; k++) opts.push(h('option', { key: k, value: k }, k));
+          return h('label', { style: { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12, fontWeight: 800, color: C.ink } }, label,
+            h('select', { value: val, disabled: inCh && !solved && !revealed, 'data-fraction-control': id, onChange: function(e) { if (inCh && chOpen) return; onCh(parseInt(e.target.value, 10)); }, style: Object.assign({}, inputStyle, { minWidth: 64 }) }, opts));
+        }
+        function setFs(p) { var n = Object.assign({}, fs, p); n.n1 = Math.min(n.n1, 2 * n.d1); n.n2 = Math.min(n.n2, 2 * n.d2); upd(clearDone({ fsides: n })); }
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }) },
+            sel(t('stem.areamodel.frac_w_num', 'Width numerator'), fs.n1, 2 * fs.d1, function(v) { setFs({ n1: v }); }, 'n1'),
+            sel(t('stem.areamodel.frac_w_den', 'Width denominator'), fs.d1, 12, function(v) { setFs({ d1: v }); }, 'd1'),
+            sel(t('stem.areamodel.frac_h_num', 'Height numerator'), fs.n2, 2 * fs.d2, function(v) { setFs({ n2: v }); }, 'n2'),
+            sel(t('stem.areamodel.frac_h_den', 'Height denominator'), fs.d2, 12, function(v) { setFs({ d2: v }); }, 'd2')),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            h('svg', { viewBox: '0 0 ' + (W + 60) + ' ' + (H + 60), role: 'img', 'aria-labelledby': 'am-frac-title am-frac-desc', style: { width: '100%', maxHeight: 360, background: C.svgBg }, 'data-fraction-model': true },
+              h('title', { id: 'am-frac-title' }, t('stem.areamodel.frac_svg_title', 'Rectangle with fraction side lengths on a unit-square grid')),
+              h('desc', { id: 'am-frac-desc' }, fill(t('stem.areamodel.frac_svg_desc', 'Each unit square is cut into {d1} columns and {d2} rows of equal tiles. The rectangle is {w} units wide and {h} units tall, so it covers {n1} columns and {n2} rows of tiles.'), { d1: fs.d1, d2: fs.d2, w: w, h: hh, n1: fs.n1, n2: fs.n2 })),
+              h('rect', { x: 40, y: 30, width: shadeW, height: shadeH, fill: FILLS[0], stroke: C.stroke, strokeWidth: 3, 'data-fraction-rect': true }),
+              lines,
+              h('text', { x: 40 + shadeW / 2, y: 20, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, w),
+              h('text', { x: 32, y: 30 + shadeH / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, hh),
+              h('text', { x: 40 + U / 2, y: 30 + H + 22, textAnchor: 'middle', fill: C.sub, fontSize: 12, fontWeight: 700 }, t('stem.areamodel.frac_unit_label', '1 unit'))),
+            h('p', { style: { fontSize: 13, color: C.sub, marginTop: 6 } }, fill(t('stem.areamodel.frac_tile_note', 'Each tile is 1/{d1} unit wide and 1/{d2} unit tall, so {t} tiles fill one unit square.'), { d1: fs.d1, d2: fs.d2, t: fs.d1 * fs.d2 })),
+            h('p', { style: { fontSize: 16, fontWeight: 800, color: C.ink, marginTop: 4 } },
+              hideProducts ? fill(t('stem.areamodel.frac_area_hidden', 'Area = {w} × {h} = ? square units'), { w: w, h: hh })
+                : fill(t('stem.areamodel.frac_area_value', 'Area = {w} × {h} = {f} square units'), { w: w, h: hh, f: CORE.fracStr(ans.num, ans.den) + (simp.den !== ans.den ? ' = ' + CORE.mixedStr(simp.num, simp.den) : '') }))),
+          linkButton('fractions', t('stem.areamodel.fractions_tool', 'Fractions'), t('stem.areamodel.link_fractions', 'Practise fraction sizes in the Fractions tool')));
+      };
+
+      // ═══ FACTORING WITH ALGEBRA TILES (grade 8 and up; HSA-SSE.A.2) ═══
+      // The reverse of multiplying: the tiles of A x² + B x + C are given, and the
+      // student sets the number part of each side until they make one rectangle.
+      var algMode = _a.algMode === 'factor' ? 'factor' : 'multiply';
+      if (viewMode === 'algebra' && chOpen && chHere && challenge.mode === 'algebra') algMode = 'multiply';
+      var fac = _a.fac && typeof _a.fac === 'object' ? _a.fac : {};
+      // fac.signed: the expression may have negative terms, built with negative tiles and zero pairs.
+      var facSigned = fac.signed === true;
+      var facF = (function(f) {
+        f = f && typeof f === 'object' ? f : {};
+        if (facSigned) {
+          var S = { A: f.A === 2 ? 2 : 1, B: CORE.clampInt(f.B, -40, 40, -1), C: CORE.clampInt(f.C, -81, 81, -6) };
+          return S.C && CORE.facSolutionsSigned(S).length ? S : { A: 1, B: -1, C: -6 };
+        }
+        var F = { A: f.A === 2 ? 2 : 1, B: CORE.clampInt(f.B, 2, 40, 5), C: CORE.clampInt(f.C, 1, 81, 6) };
+        return CORE.facSolutions(F).length ? F : { A: 1, B: 5, C: 6 };
+      })(fac.F);
+      var facLo = facSigned ? -12 : 1;
+      var facP = CORE.clampInt(fac.p, facLo, 12, 1), facQ = CORE.clampInt(fac.q, facLo, 12, 1);
+      if (!facP) facP = 1;
+      if (!facQ) facQ = 1;
+      var facDone = fac.done === 'solved' || fac.done === 'shown';
+      var facPolyText = CORE.polyStr(facF.A, facF.B, facF.C);
+      var facKey = 'fac:' + facPolyText;
+      var facHints = CORE.clampInt(fac.hints || 0, 0, 3, 0);
+      function setFac(p, top) { upd(Object.assign({ fac: Object.assign({}, fac, { F: facF, p: facP, q: facQ }, p) }, top || {})); }
+      function facHintText(rung) {
+        var v = { B: CORE.sgn(facF.B), C: CORE.sgn(facF.C) };
+        if (facSigned) {
+          if (rung === 1) return fill(t('stem.areamodel.h_fac_s_1', 'Start with the corner: it must hold {C} unit tiles. A negative corner needs one positive and one negative side number; a positive corner needs two of the same sign.'), v);
+          if (rung === 2) return fill(t('stem.areamodel.h_fac_s_2', 'List the pairs of numbers, with their signs, that multiply to {C}.'), v);
+          return facF.A === 1 ? fill(t('stem.areamodel.h_fac_s_3', 'A positive and a negative x tile make a zero pair worth 0. Pick the pair whose x tiles come to {B} once the zero pairs cancel: that is the two numbers added.'), v)
+            : fill(t('stem.areamodel.h_fac_s_3_a2', 'A positive and a negative x tile make a zero pair worth 0. With two x² tiles the x tiles come to 2 × q + p once the zero pairs cancel, and they must come to {B}.'), v);
+        }
+        if (rung === 1) return fill(t('stem.areamodel.h_fac_1', 'The x² tile goes in one corner. The {C} unit tiles must make a rectangle in the opposite corner.'), v);
+        if (rung === 2) return facF.A === 1 ? fill(t('stem.areamodel.h_fac_2', 'The unit corner is p by q, so p × q must be {C}. The x tiles line the two sides, so p + q must be {B}.'), v)
+          : fill(t('stem.areamodel.h_fac_2_a2', 'With two x² tiles stacked, the sides use 2 × q + p x tiles, and the unit corner is p by q.'), v);
+        return fill(t('stem.areamodel.h_fac_3', 'List the pairs of numbers that multiply to {C}. Then pick the pair that makes {B} x tiles.'), v);
+      }
+      function facFactors(p, q) { return CORE.factorStr({ x: facF.A, c: p }) + CORE.factorStr({ x: 1, c: q }); }
+      // A rectangle the steppers can reach (sides 1 to 12).
+      function facSolution() {
+        if (facSigned) return CORE.facSolutionsSigned(facF)[0];
+        var all = CORE.facSolutions(facF), fit = all.filter(function(s) { return s.p <= 12 && s.q <= 12; }); return fit[0] || all[0];
+      }
+      function newFacProblem(signedMode) {
+        var sg = typeof signedMode === 'boolean' ? signedMode : facSigned, F = null;
+        for (var i = 0; i < 8; i++) { F = sg ? CORE.facGenSigned(difficulty, Math.random) : CORE.facGen(difficulty, Math.random); if (CORE.polyStr(F.A, F.B, F.C) !== facPolyText) break; }
+        upd({ fac: { F: F, signed: sg, p: 1, q: 1, tries: 0, code: null, done: null, credited: false, hints: 0 } });
+        say(fill(t('stem.areamodel.sr_fac_new', 'New expression: {poly}. Arrange its tiles into one rectangle.'), { poly: CORE.polyStr(F.A, F.B, F.C) }));
+      }
+      function stepFac(which, delta) {
+        if (facDone) return;
+        function next(v) { var n = v + delta; if (facSigned && n === 0) n += delta; return Math.max(facLo, Math.min(12, n)); }
+        var p = which === 'p' ? next(facP) : facP, q = which === 'q' ? next(facQ) : facQ;
+        setFac({ p: p, q: q, code: null });
+        if (facSigned) {
+          var tl = CORE.facTiles(facF, p, q);
+          say(fill(t('stem.areamodel.sr_fac_use_s', 'Sides {f1} and {f2}. Your rectangle has {pos} positive and {neg} negative x tiles, which come to {net}, and {u} unit tiles.'), { f1: CORE.factorStr({ x: facF.A, c: p }), f2: CORE.factorStr({ x: 1, c: q }), pos: tl.pos, neg: tl.neg, net: CORE.sgn(tl.net), u: CORE.sgn(tl.u) }));
+          return;
+        }
+        var use = CORE.facUse(facF, p, q);
+        say(fill(t('stem.areamodel.sr_fac_use', 'Sides {f1} and {f2}. Your rectangle uses {x} x tiles and {u} unit tiles.'), { f1: CORE.factorStr({ x: facF.A, c: p }), f2: CORE.factorStr({ x: 1, c: q }), x: use.x, u: use.u }));
+      }
+      function checkFac() {
+        if (facDone) return;
+        var code = facSigned ? CORE.facCheckSigned(facF, facP, facQ) : CORE.facCheck(facF, facP, facQ), use = CORE.facUse(facF, facP, facQ);
+        if (code === 'ok') {
+          var credit = !fac.credited;
+          var top = credit ? { factorSolved: factorSolved + 1 } : null;
+          if (credit && facSigned) top.factorSignedSolved = factorSignedSolved + 1;
+          setFac({ done: 'solved', code: null, credited: true }, top);
+          sfxCorrect();
+          say(fill(t('stem.areamodel.sr_fac_ok', 'Your rectangle works: {poly} = {fac}.'), { poly: facPolyText, fac: facFactors(facP, facQ) }));
+          focusSoon('[data-fac-done]');
+          if (credit) {
+            awardXP('areamodel', 5, t('stem.areamodel.xp_fac', 'Factored with algebra tiles'));
+            checkBadges(badgeState({ factorSolved: factorSolved + 1 }));
+          }
+          return;
+        }
+        var tries = (fac.tries || 0) + 1;
+        var v = { used: code === 'fac_units' ? use.u : use.x, B: facF.B, C: facF.C };
+        if (facSigned) { var tl = CORE.facTiles(facF, facP, facQ); v = { B: CORE.sgn(facF.B), C: CORE.sgn(facF.C), pos: tl.pos, neg: tl.neg, net: CORE.sgn(tl.net), u: CORE.sgn(tl.u) }; }
+        setFac({ tries: tries, code: code, v: v }, tries === 1 ? { missedLog: logMiss({ mode: 'algebra', ptext: fill(t('stem.areamodel.fac_log', 'Factor {poly}'), { poly: facPolyText }) }, code) } : null);
+        sfxWrong();
+        say(wrongNote(code, v, tries));
+      }
+      // Signed tiles: x² blue, positive x green, positive units yellow, negative tiles red
+      // with a minus sign (the sign is written on every tile, not only coloured).
+      function tilesSvgSigned(p, q, ids, title, desc) {
+        var A = facF.A, X = 110, U = 20, aq = Math.abs(q), ap = Math.abs(p);
+        var colsW = [X, aq * U], rowsH = [A * X, ap * U], W = colsW[0] + colsW[1], H = rowsH[0] + rowsH[1];
+        var tiles = [], NEG = '#fca5a5';
+        function tile(key, x, y, w, hh, fillC, mark) {
+          tiles.push(h('rect', { key: key, x: 50 + x, y: 40 + y, width: w, height: hh, fill: fillC, stroke: C.stroke, strokeWidth: 1, 'data-fac-tile': mark }));
+          if (mark === '−' || mark === '+') tiles.push(h('text', { key: key + 't', x: 50 + x + w / 2, y: 40 + y + hh / 2 + 4, textAnchor: 'middle', fill: '#0f172a', fontSize: 12, fontWeight: 900 }, mark));
+        }
+        for (var a = 0; a < A; a++) tile('xx' + a, 0, a * X, X, X, '#93c5fd', 'x2');
+        for (var a2 = 0; a2 < A; a2++) for (var j = 0; j < aq; j++) tile('xc' + a2 + '-' + j, X + j * U, a2 * X, U, X, q < 0 ? NEG : '#86efac', q < 0 ? '−' : '+');
+        for (var i = 0; i < ap; i++) tile('cx' + i, 0, A * X + i * U, X, U, p < 0 ? NEG : '#86efac', p < 0 ? '−' : '+');
+        var neg = p * q < 0;
+        for (var i2 = 0; i2 < ap; i2++) for (var j2 = 0; j2 < aq; j2++) tile('cc' + i2 + '-' + j2, X + j2 * U, A * X + i2 * U, U, U, neg ? NEG : '#fde68a', neg ? '−' : '+');
+        var labels = [
+          h('text', { key: 'tx', x: 50 + X / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'),
+          h('text', { key: 'tc', x: 50 + X + colsW[1] / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, CORE.sgn(q))
+        ];
+        for (var r = 0; r < A; r++) labels.push(h('text', { key: 'lx' + r, x: 40, y: 40 + r * X + X / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'));
+        labels.push(h('text', { key: 'lc', x: 40, y: 40 + rowsH[0] + rowsH[1] / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, CORE.sgn(p)));
+        return h('svg', { viewBox: '0 0 ' + (W + 70) + ' ' + (H + 60), role: 'img', 'aria-labelledby': ids + '-title ' + ids + '-desc', style: { width: '100%', maxHeight: 380, background: C.svgBg }, 'data-factor-model': true, 'data-factor-signed': true },
+          h('title', { id: ids + '-title' }, title), h('desc', { id: ids + '-desc' }, desc), tiles, labels);
+      }
+      function showFac() {
+        if (!allowReveal || facDone || (fac.tries || 0) < 2) return;
+        var s = facSolution();
+        setFac({ p: s.p, q: s.q, done: 'shown', code: null, credited: true });
+        say(fill(t('stem.areamodel.sr_fac_shown', 'One rectangle: {poly} = {fac}. A shown rectangle earns no points.'), { poly: facPolyText, fac: facFactors(s.p, s.q) }));
+        focusSoon('[data-fac-done]');
+      }
+      function tilesSvg(f1, f2, ids, title, desc) {
+        var X = 110, U = 20;
+        var colsW = [f2.x * X, f2.c * U], rowsH = [f1.x * X, f1.c * U];
+        var W = colsW[0] + colsW[1], H = rowsH[0] + rowsH[1];
+        var tiles = [];
+        function addTiles(x0, y0, w, hgt, tw, th, fillC, key) {
+          if (!w || !hgt) return;
+          for (var yy = 0; yy < hgt - 0.01; yy += th) for (var xx = 0; xx < w - 0.01; xx += tw) tiles.push(h('rect', { key: key + xx + '-' + yy, x: 50 + x0 + xx, y: 40 + y0 + yy, width: tw, height: th, fill: fillC, stroke: C.stroke, strokeWidth: 1 }));
+        }
+        addTiles(0, 0, colsW[0], rowsH[0], X, X, '#93c5fd', 'xx');
+        addTiles(colsW[0], 0, colsW[1], rowsH[0], U, X, '#86efac', 'xc');
+        addTiles(0, rowsH[0], colsW[0], rowsH[1], X, U, '#86efac', 'cx');
+        addTiles(colsW[0], rowsH[0], colsW[1], rowsH[1], U, U, '#fde68a', 'cc');
+        var labels = [];
+        for (var cx = 0; cx < f2.x; cx++) labels.push(h('text', { key: 'tx' + cx, x: 50 + cx * X + X / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'));
+        if (f2.c) labels.push(h('text', { key: 'tc', x: 50 + colsW[0] + colsW[1] / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, String(f2.c)));
+        for (var rx = 0; rx < f1.x; rx++) labels.push(h('text', { key: 'lx' + rx, x: 40, y: 40 + rx * X + X / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'));
+        if (f1.c) labels.push(h('text', { key: 'lc', x: 40, y: 40 + rowsH[0] + rowsH[1] / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, String(f1.c)));
+        return h('svg', { viewBox: '0 0 ' + (W + 70) + ' ' + (H + 60), role: 'img', 'aria-labelledby': ids + '-title ' + ids + '-desc', style: { width: '100%', maxHeight: 380, background: C.svgBg }, 'data-factor-model': true },
+          h('title', { id: ids + '-title' }, title), h('desc', { id: ids + '-desc' }, desc), tiles, labels);
+      }
+      var renderFactor = function() {
+        var use = CORE.facUse(facF, facP, facQ);
+        var f1 = { x: facF.A, c: facP }, f2 = { x: 1, c: facQ };
+        var xOk = use.x === facF.B, uOk = use.u === facF.C;
+        var tl = CORE.facTiles(facF, facP, facQ);
+        function stepper(which, label, val) {
+          var lo = val <= facLo, hi = val >= 12;
+          var downLbl = facSigned ? (which === 'p' ? t('stem.areamodel.fac_s_p_down', 'Make the left side number one less') : t('stem.areamodel.fac_s_q_down', 'Make the top side number one less'))
+            : (which === 'p' ? t('stem.areamodel.fac_p_down', 'Take one unit row off the left side') : t('stem.areamodel.fac_q_down', 'Take one unit column off the top side'));
+          var upLbl = facSigned ? (which === 'p' ? t('stem.areamodel.fac_s_p_up', 'Make the left side number one more') : t('stem.areamodel.fac_s_q_up', 'Make the top side number one more'))
+            : (which === 'p' ? t('stem.areamodel.fac_p_up', 'Add one unit row to the left side') : t('stem.areamodel.fac_q_up', 'Add one unit column to the top side'));
+          return h('div', { role: 'group', 'aria-label': label, style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+            h('span', { style: { fontSize: 13, fontWeight: 800, color: C.ink, minWidth: 150 } }, label),
+            h('button', { type: 'button', disabled: facDone || lo, 'data-fac-step': which + '-', onClick: function() { stepFac(which, -1); },
+              'aria-label': downLbl, style: Object.assign(btnStyle('secondary', facDone || lo), { minWidth: 44, minHeight: 44, fontSize: 18 }) }, '−'),
+            h('span', { 'data-fac-value': which, 'aria-live': 'off', style: { fontSize: 18, fontWeight: 900, color: C.ink, minWidth: 28, textAlign: 'center' } }, facSigned ? CORE.sgn(val) : String(val)),
+            h('button', { type: 'button', disabled: facDone || hi, 'data-fac-step': which + '+', onClick: function() { stepFac(which, 1); },
+              'aria-label': upLbl, style: Object.assign(btnStyle('secondary', facDone || hi), { minWidth: 44, minHeight: 44, fontSize: 18 }) }, '+'));
+        }
+        var desc = facSigned
+          ? fill(t('stem.areamodel.fac_s_svg_desc', 'Your rectangle: the left side is {f1} and the top side is {f2}. It has {a} x² tiles, {pos} positive and {neg} negative x tiles ({pairs} zero pairs, so the x tiles come to {net}) and {u} unit tiles. Negative tiles are red and marked with a minus sign.'),
+            { f1: CORE.factorStr(f1), f2: CORE.factorStr(f2), a: facF.A, pos: tl.pos, neg: tl.neg, pairs: tl.pairs, net: CORE.sgn(tl.net), u: CORE.sgn(tl.u) })
+          : fill(t('stem.areamodel.fac_svg_desc', 'Your rectangle: the left side is {f1} and the top side is {f2}. It uses {a} x² tiles, {x} x tiles and {u} unit tiles.'), { f1: CORE.factorStr(f1), f2: CORE.factorStr(f2), a: facF.A, x: use.x, u: use.u });
+        var tdS = { padding: 4 }, thS2 = { padding: 4, textAlign: 'left' };
+        var signedRows = facSigned && [
+          h('tr', { key: 'x2' }, h('th', { scope: 'row', style: thS2 }, 'x²'), h('td', { style: tdS }, String(facF.A)), h('td', { style: tdS }, String(facF.A) + ' ✓')),
+          h('tr', { key: 'xp' }, h('th', { scope: 'row', style: thS2 }, t('stem.areamodel.fac_s_row_pos', 'positive x tiles')), h('td', { style: tdS }, '—'), h('td', { style: tdS }, String(tl.pos))),
+          h('tr', { key: 'xn' }, h('th', { scope: 'row', style: thS2 }, t('stem.areamodel.fac_s_row_neg', 'negative x tiles')), h('td', { style: tdS }, '—'), h('td', { style: tdS }, String(tl.neg))),
+          h('tr', { key: 'zp' }, h('th', { scope: 'row', style: thS2 }, t('stem.areamodel.fac_s_row_pairs', 'zero pairs (worth 0)')), h('td', { style: tdS }, '—'), h('td', { style: tdS }, String(tl.pairs))),
+          h('tr', { key: 'xnet' }, h('th', { scope: 'row', style: thS2 }, t('stem.areamodel.fac_s_row_net', 'x tiles after zero pairs cancel')), h('td', { style: tdS }, CORE.sgn(facF.B)), h('td', { style: Object.assign({ fontWeight: 800 }, tdS) }, CORE.sgn(tl.net) + (xOk ? ' ✓' : ' ✗'))),
+          h('tr', { key: 'u' }, h('th', { scope: 'row', style: thS2 }, t('stem.areamodel.fac_unit', 'unit')), h('td', { style: tdS }, CORE.sgn(facF.C)), h('td', { style: Object.assign({ fontWeight: 800 }, tdS) }, CORE.sgn(tl.u) + (uOk ? ' ✓' : ' ✗')))
+        ];
+        var signToggle = h('div', { role: 'group', 'aria-label': t('stem.areamodel.fac_sign_label', 'Which tiles'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+          [[false, t('stem.areamodel.fac_sign_pos', 'Positive tiles only')], [true, t('stem.areamodel.fac_sign_neg', 'With negative tiles and zero pairs')]].map(function(o) {
+            var on = facSigned === o[0];
+            return h('button', { type: 'button', key: String(o[0]), 'aria-pressed': on, 'data-fac-signed': String(o[0]), onClick: function() { if (on) return; sfxClick(); newFacProblem(o[0]); }, style: btnStyle(on ? 'primary' : 'secondary') }, o[1]);
+          }));
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 }, 'data-factor': true, 'data-factor-mode': facSigned ? 'signed' : 'positive' },
+          h('div', { style: cardStyle },
+            h('p', { style: { fontSize: 15, fontWeight: 800, color: C.ink, margin: 0 } }, fill(t('stem.areamodel.fac_goal', 'Arrange the tiles for {poly} into one rectangle.'), { poly: facPolyText })),
+            h('p', { style: { fontSize: 13, color: C.ink, margin: '4px 0 0' } }, facSigned
+              ? fill(t('stem.areamodel.fac_s_have', 'The expression has {A} x² tiles, x tiles worth {B} and unit tiles worth {C}. Negative tiles are red.'), { A: facF.A, B: CORE.sgn(facF.B), C: CORE.sgn(facF.C) })
+              : facF.A === 1
+              ? fill(t('stem.areamodel.fac_have_1', 'You have 1 x² tile, {B} x tiles and {C} unit tiles.'), { B: facF.B, C: facF.C })
+              : fill(t('stem.areamodel.fac_have_2', 'You have 2 x² tiles, {B} x tiles and {C} unit tiles.'), { B: facF.B, C: facF.C })),
+            h('p', { style: { fontSize: 12, color: C.sub, margin: '4px 0 0' } }, facSigned
+              ? t('stem.areamodel.fac_s_how', 'Set the number part of each side, positive or negative. A positive and a negative x tile make a zero pair: you may add zero pairs, because together they are worth 0.')
+              : t('stem.areamodel.fac_how', 'Set the number part of each side. The x tiles line the sides, and the unit tiles fill the corner.')),
+            signToggle),
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+            stepper('p', t('stem.areamodel.fac_p_label', 'Left side: number part'), facP),
+            stepper('q', t('stem.areamodel.fac_q_label', 'Top side: number part'), facQ)),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            facSigned ? tilesSvgSigned(facP, facQ, 'am-fac', t('stem.areamodel.fac_svg_title', 'Your tile rectangle'), desc) : tilesSvg(f1, f2, 'am-fac', t('stem.areamodel.fac_svg_title', 'Your tile rectangle'), desc),
+            h('p', { style: { fontSize: 13, color: C.sub, marginTop: 6 } }, desc),
+            h('table', { 'data-fac-table': true, style: { borderCollapse: 'collapse', fontSize: 13, color: C.ink, marginTop: 6 } },
+              h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.fac_table', 'Tiles in the expression and in your rectangle')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: { padding: 4, textAlign: 'left' } }, t('stem.areamodel.fac_col_tile', 'Tile')),
+                h('th', { scope: 'col', style: { padding: 4, textAlign: 'left' } }, t('stem.areamodel.fac_col_need', 'In the expression')),
+                h('th', { scope: 'col', style: { padding: 4, textAlign: 'left' } }, t('stem.areamodel.fac_col_used', 'In your rectangle')))),
+              facSigned ? h('tbody', null, signedRows) : h('tbody', null,
+                h('tr', null, h('th', { scope: 'row', style: { padding: 4, textAlign: 'left' } }, 'x²'), h('td', { style: { padding: 4 } }, String(facF.A)), h('td', { style: { padding: 4 } }, String(facF.A) + ' ✓')),
+                h('tr', null, h('th', { scope: 'row', style: { padding: 4, textAlign: 'left' } }, 'x'), h('td', { style: { padding: 4 } }, String(facF.B)), h('td', { style: { padding: 4, fontWeight: 800 } }, String(use.x) + (xOk ? ' ✓' : ' ✗'))),
+                h('tr', null, h('th', { scope: 'row', style: { padding: 4, textAlign: 'left' } }, t('stem.areamodel.fac_unit', 'unit')), h('td', { style: { padding: 4 } }, String(facF.C)), h('td', { style: { padding: 4, fontWeight: 800 } }, String(use.u) + (uOk ? ' ✓' : ' ✗'))))),
+            fac.code && !facDone && h('p', { 'data-fac-code': fac.code, style: Object.assign({ marginTop: 8 }, noteStyle('bad')) }, wrongNote(fac.code, fac.v, fac.tries || 0)),
+            !facDone && hintLadder(facHints, facHintText, { 'data-fac-hints': facHints }),
+            !facDone && renderAIHint(facKey),
+            facDone && h('p', { 'data-fac-done': fac.done, tabIndex: -1, style: Object.assign({ marginTop: 8 }, noteStyle('ok')) },
+              fill(t('stem.areamodel.fac_done', 'The tiles make one rectangle, so {poly} = {fac}.'), { poly: facPolyText, fac: facFactors(facP, facQ) })
+              + (fac.done === 'shown' ? ' ' + t('stem.areamodel.fac_shown_note', 'This rectangle was shown, so it earns no points.') : '')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+              !facDone && h('button', { type: 'button', onClick: checkFac, 'data-fac-check': true, style: btnStyle('primary') }, t('stem.areamodel.fac_check', 'Check my rectangle')),
+              !facDone && hintButton(facHints, function() { setFac({ hints: facHints + 1 }, { hintsUsed: (_a.hintsUsed || 0) + 1 }); say(facHintText(facHints + 1)); }, { 'data-fac-hint': true }),
+              !facDone && (fac.tries || 0) >= 2 && aiHintButton(facKey, function() {
+                requestAIHint(facKey, fill(t('stem.areamodel.ai_q_fac', 'Factor {poly} by arranging algebra tiles into a rectangle.'), { poly: facPolyText }), CORE.factorStr(f1) + CORE.factorStr(f2),
+                  facFactors(facSolution().p, facSolution().q), fac.tries || 0, facHintText(Math.min(3, facHints + 1)));
+              }),
+              !facDone && (fac.tries || 0) >= 2 && allowReveal && h('button', { type: 'button', onClick: showFac, 'data-fac-show': true, style: btnStyle('secondary') }, t('stem.areamodel.fac_show', 'Show a rectangle (no points)')),
+              facDone && facP >= 1 && facQ >= 1 && facP <= 9 && facQ <= 9 && h('button', { type: 'button', 'data-fac-multiply': true, disabled: chOpen, onClick: function() { if (chOpen) return; upd({ algMode: 'multiply', alg: Object.assign({}, alg, { f1: { x: facF.A, c: facP }, f2: { x: 1, c: facQ } }) }); }, style: btnStyle('secondary', chOpen) }, t('stem.areamodel.fac_multiply_back', 'Multiply it back')),
+              h('button', { type: 'button', onClick: newFacProblem, 'data-fac-new': true, style: btnStyle(facDone ? 'primary' : 'secondary') }, t('stem.areamodel.fac_new', 'New expression')))));
+      };
+
+      // ═══ VIEW: ALGEBRA TILES (6.EE.3, A-APR.1) ═══
+      var renderAlgebra = function() {
+        var lockMode = chOpen && chHere && challenge.mode === 'algebra';
+        var toggle = h('div', { role: 'group', 'aria-label': t('stem.areamodel.alg_mode_label', 'Algebra tiles: multiply or factor'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          [['multiply', t('stem.areamodel.alg_mode_multiply', 'Multiply: sides to area')], ['factor', t('stem.areamodel.alg_mode_factor', 'Factor: area to sides (grade 8 and up)')]].map(function(o) {
+            var on = algMode === o[0];
+            return h('button', { type: 'button', key: o[0], 'aria-pressed': on, 'data-alg-mode': o[0], disabled: lockMode && o[0] === 'factor',
+              onClick: function() { if (lockMode) return; sfxClick(); upd({ algMode: o[0] }); }, style: btnStyle(on ? 'primary' : 'secondary', lockMode && o[0] === 'factor') }, o[1]);
+          }));
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } }, toggle, algMode === 'factor' ? renderFactor() : renderAlgebraMultiply());
+      };
+      var renderAlgebraMultiply = function() {
+        var inCh = chHere && challenge.mode === 'algebra';
+        var f1 = inCh ? challenge.f1 : algF1, f2 = inCh ? challenge.f2 : algF2;
+        var e = CORE.algExpand(f1, f2);
+        var X = 110, U = 20;
+        var colsW = [f2.x * X, f2.c * U], rowsH = [f1.x * X, f1.c * U];
+        var W = colsW[0] + colsW[1], H = rowsH[0] + rowsH[1];
+        var tiles = [];
+        function addTiles(x0, y0, w, hgt, tw, th, fillC, key) {
+          if (!w || !hgt) return;
+          for (var yy = 0; yy < hgt - 0.01; yy += th) for (var xx = 0; xx < w - 0.01; xx += tw) tiles.push(h('rect', { key: key + xx + '-' + yy, x: 50 + x0 + xx, y: 40 + y0 + yy, width: tw, height: th, fill: fillC, stroke: C.stroke, strokeWidth: 1 }));
+        }
+        addTiles(0, 0, colsW[0], rowsH[0], X, X, '#93c5fd', 'xx');
+        addTiles(colsW[0], 0, colsW[1], rowsH[0], U, X, '#86efac', 'xc');
+        addTiles(0, rowsH[0], colsW[0], rowsH[1], X, U, '#86efac', 'cx');
+        addTiles(colsW[0], rowsH[0], colsW[1], rowsH[1], U, U, '#fde68a', 'cc');
+        var labels = [];
+        for (var cx = 0; cx < f2.x; cx++) labels.push(h('text', { key: 'tx' + cx, x: 50 + cx * X + X / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'));
+        if (f2.c) labels.push(h('text', { key: 'tc', x: 50 + colsW[0] + colsW[1] / 2, y: 30, textAnchor: 'middle', fill: C.ink, fontSize: 16, fontWeight: 800 }, String(f2.c)));
+        for (var rx = 0; rx < f1.x; rx++) labels.push(h('text', { key: 'lx' + rx, x: 40, y: 40 + rx * X + X / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, 'x'));
+        if (f1.c) labels.push(h('text', { key: 'lc', x: 40, y: 40 + rowsH[0] + rowsH[1] / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 16, fontWeight: 800 }, String(f1.c)));
+        var regionNames = {
+          xx: t('stem.areamodel.alg_region_xx', 'x part by x part'), xc: t('stem.areamodel.alg_region_xc', 'x part by number part'),
+          cx: t('stem.areamodel.alg_region_cx', 'number part by x part'), cc: t('stem.areamodel.alg_region_cc', 'number part by number part')
+        };
+        var regionUnits = { x2: 'x²', x: 'x', unit: '' };
+        var live = e.regions.filter(function(rg) { var rs = rg.rowPart === 'x' ? f1.x : f1.c, cs = rg.colPart === 'x' ? f2.x : f2.c; return rs && cs; });
+        var fillMode = chOpen && inCh;
+        var boxDefs = live.map(function(rg) { return { id: 'g' + rg.key, kind: 'coef', ans: rg.coef, diag: function(v) { return rg.kind === 'x2' && v === 2 * rg.coef ? 'alg_x_times_x' : (rg.kind === 'unit' && v === (rg.rowPart === 'c' ? f1.c + f2.c : -1) ? 'alg_added_constants' : 'box_generic'); } }; });
+        var atX = (f1.x * algX + f1.c) * (f2.x * algX + f2.c);
+        function setAlg(p) {
+          var patch = { alg: Object.assign({}, alg, { f1: f1, f2: f2, x: algX }, p) };
+          upd(p.f1 || p.f2 ? clearDone(patch) : patch);
+        }
+        function numSel(label, val, lo, hi, onCh, id) {
+          var opts = []; for (var k = lo; k <= hi; k++) opts.push(h('option', { key: k, value: k }, k));
+          return h('label', { style: { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12, fontWeight: 800, color: C.ink } }, label,
+            h('select', { value: val, disabled: inCh && !solved && !revealed, 'data-algebra-control': id, onChange: function(ev) { if (inCh && chOpen) return; onCh(parseInt(ev.target.value, 10)); }, style: Object.assign({}, inputStyle, { minWidth: 60 }) }, opts));
+        }
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }) },
+            numSel(t('stem.areamodel.alg_f1x', 'Left side: x count'), f1.x, 0, 3, function(v) { setAlg({ f1: { x: v, c: v === 0 ? Math.max(1, f1.c) : f1.c } }); }, 'f1x'),
+            numSel(t('stem.areamodel.alg_f1c', 'Left side: number'), f1.c, f1.x ? 0 : 1, 9, function(v) { setAlg({ f1: { x: f1.x, c: v } }); }, 'f1c'),
+            numSel(t('stem.areamodel.alg_f2x', 'Top side: x count'), f2.x, 1, 3, function(v) { setAlg({ f2: { x: v, c: f2.c } }); }, 'f2x'),
+            numSel(t('stem.areamodel.alg_f2c', 'Top side: number'), f2.c, 0, 9, function(v) { setAlg({ f2: { x: f2.x, c: v } }); }, 'f2c')),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            h('svg', { viewBox: '0 0 ' + (W + 70) + ' ' + (H + 60), role: 'img', 'aria-labelledby': 'am-alg-title am-alg-desc', style: { width: '100%', maxHeight: 380, background: C.svgBg }, 'data-algebra-model': true },
+              h('title', { id: 'am-alg-title' }, t('stem.areamodel.alg_svg_title', 'Algebra tiles area model')),
+              h('desc', { id: 'am-alg-desc' }, fill(t('stem.areamodel.alg_svg_desc', 'A rectangle {f1} tall and {f2} wide. Blue x² tiles are x by x, green x tiles are x by 1, and yellow unit tiles are 1 by 1. The x drawn here is a long bar: its real length is unknown.'), { f1: CORE.factorStr(f1), f2: CORE.factorStr(f2) })),
+              tiles, labels),
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, marginTop: 8, color: C.ink } },
+              h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.alg_table_caption', 'The four boxes of the rectangle')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.alg_col_box', 'Box')),
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.alg_col_sides', 'Sides')),
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: 4, borderBottom: '1px solid ' + C.border } }, t('stem.areamodel.alg_col_area', 'Area')))),
+              h('tbody', null, live.map(function(rg) {
+                var def = boxDefs.filter(function(d) { return d.id === 'g' + rg.key; })[0];
+                var rs = CORE.sideStr(f1, rg.rowPart), cs = CORE.sideStr(f2, rg.colPart);
+                return h('tr', { key: rg.key },
+                  h('th', { scope: 'row', style: { textAlign: 'left', padding: 4 } }, regionNames[rg.key]),
+                  h('td', { style: { padding: 4 } }, rs + ' × ' + cs),
+                  h('td', { style: { padding: 4, fontWeight: 800 } },
+                    fillMode ? h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 4 } }, boxInput(def, rs + ' × ' + cs), h('span', { style: { paddingTop: 10 } }, regionUnits[rg.kind]))
+                      : (hideProducts ? '?' : CORE.polyStr(rg.kind === 'x2' ? rg.coef : 0, rg.kind === 'x' ? rg.coef : 0, rg.kind === 'unit' ? rg.coef : 0))));
+              }))),
+            fillMode && h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
+              h('button', { type: 'button', onClick: function() { checkBoxes(boxDefs); }, 'data-check-boxes': true, style: Object.assign(btnStyle('secondary'), { minHeight: 44 }) }, t('stem.areamodel.check_boxes', 'Check my boxes'))),
+            h('p', { style: { fontSize: 16, fontWeight: 800, color: C.ink, marginTop: 8 } },
+              CORE.factorStr(f1) + CORE.factorStr(f2) + ' = ' + (hideProducts ? '?' : CORE.polyStr(e.A, e.B, e.C)))),
+          h('div', { style: cardStyle },
+            h('label', { htmlFor: 'am-alg-x', style: { display: 'block', fontSize: 13, fontWeight: 800, color: C.ink } }, fill(t('stem.areamodel.alg_x_label', 'Try a value for x: {x}'), { x: algX })),
+            h('input', { id: 'am-alg-x', type: 'range', min: 1, max: 20, value: algX, onChange: function(ev) { setAlg({ x: parseInt(ev.target.value, 10) }); }, style: { width: '100%', minHeight: 32, accentColor: C.btn } }),
+            h('p', { style: { fontSize: 13, color: C.ink, marginTop: 4 } }, hideProducts
+              ? fill(t('stem.areamodel.alg_x_check_hidden', 'When x = {x}, the sides are {s1} and {s2}. Multiply them, then check your expression gives the same number.'), { x: algX, s1: f1.x * algX + f1.c, s2: f2.x * algX + f2.c })
+              : fill(t('stem.areamodel.alg_x_check', 'When x = {x}: the sides are {s1} and {s2}, so the area is {s1} × {s2} = {v}. The expression {poly} also gives {v}.'), { x: algX, s1: f1.x * algX + f1.c, s2: f2.x * algX + f2.c, v: atX, poly: CORE.polyStr(e.A, e.B, e.C) })),
+            algX === 10 && f1.x === 1 && f2.x === 1 && h('p', { style: { fontSize: 13, color: C.sub, marginTop: 4 } }, fill(t('stem.areamodel.alg_ten_bridge', 'With x = 10 this is the same rectangle as {s1} × {s2} in Partial Products: tens times tens, tens times ones, and ones times ones.'), { s1: 10 + f1.c, s2: 10 + f2.c })),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 } },
+              modeOpen('multidigit') && h('button', { type: 'button', disabled: chOpen, 'data-algebra-bridge': true,
+                onClick: function() { if (chOpen) return; upd({ viewMode: 'multidigit', multiDims: { a: f1.x * algX + f1.c, b: f2.x * algX + f2.c }, multiDraft: null }); },
+                style: btnStyle('secondary', chOpen) }, fill(t('stem.areamodel.alg_open_numbers', 'Open {s1} × {s2} in Partial Products'), { s1: f1.x * algX + f1.c, s2: f2.x * algX + f2.c })),
+              linkButton('algebraCAS', t('stem.areamodel.algebra_tool', 'Algebra CAS'), t('stem.areamodel.link_algebra', 'Check expansions in the Algebra CAS')))));
       };
 
       // ═══ VIEW: WORD PROBLEMS ═══
-      // Real-world contexts make multiplication stick. Each prompt renders as a story
-      // PLUS the visual grid that matches it, so students see the rows-and-columns
-      // underneath the language. UDL: multiple means of representation, on the same
-      // mathematical fact.
-      var renderWordProblem = function() {
-        var isWordChallenge = !!(challenge && challenge.mode === 'word');
-        var wpA = isWordChallenge ? challenge.a : wordDims.a;
-        var wpB = isWordChallenge ? challenge.b : wordDims.b;
-        var ctx = WORD_CONTEXTS[wordCtxIdx % WORD_CONTEXTS.length] || WORD_CONTEXTS[0];
-        var story = isWordChallenge ? challenge.question : ctx.replace(/\{a\}/g, wpA).replace(/\{b\}/g, wpB);
-        var product = wpA * wpB;
-        var shouldHideProduct = isWordChallenge && !feedback;
-
-        // Build the matching grid (a rows × b cols, small cells)
-        var cells = [];
-        for (var i = 0; i < wpA * wpB; i++) {
-          cells.push(h('div', { key: 'wp-' + i,
-            className: 'allo-am-cell aspect-square rounded-sm border bg-emerald-300 border-emerald-500'
-          }));
+      // Story type picker + new-problem button, shared by array and story views.
+      function wordFooter() {
+        var recommended = CORE.STORY_KINDS[band] || [];
+        return h('div', { style: Object.assign({}, cardStyle, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }) },
+          h('p', { style: { fontSize: 13, fontWeight: 700, color: C.ink, flex: 1, minWidth: 200 } }, t('stem.areamodel.pick_a_story_look_at_the_matching_grid', 'Pick a story. Look at the matching grid. Multiplication is the count of things in a rectangle. 5 solved earns the 📝 Word Wizard badge.')),
+          h('label', { style: { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12, fontWeight: 800, color: C.ink, flex: '1 1 160px', minWidth: 0, maxWidth: '100%' } }, t('stem.areamodel.story_kind_label', 'Story type'),
+            h('select', { value: wordKind, 'data-story-kind': true, onChange: function(e) { upd({ wordKind: e.target.value }); }, style: Object.assign({}, inputStyle, { fontSize: 13, width: '100%', maxWidth: '100%', minWidth: 0 }) },
+              ['any'].concat(CORE.STORY_ALL).map(function(k) {
+                var nm = STORY_KIND_NAMES[k];
+                return h('option', { key: k, value: k }, k !== 'any' && recommended.indexOf(k) >= 0 ? fill(t('stem.areamodel.sk_fits', '{name} (fits your level)'), { name: nm }) : nm);
+              }))),
+          h('button', { type: 'button', onClick: function() { genChallenge('word', wordKind); }, 'aria-label': t('stem.areamodel.new_word_problem', 'New word problem'), style: btnStyle('primary') }, t('stem.areamodel.new_word_problem_2', '▶ New word problem')));
+      }
+      // A story of any non-array kind: the story, a matching model, no answer.
+      function renderStory(ch) {
+        var k = ch.wkind, model = null, open = chOpen;
+        if (k === 'area' || k === 'decimal') {
+          model = renderBoxSvg(ch.a, ch.b, { idPrefix: 'am-story', title: t('stem.areamodel.word_sketch_title', 'Area-model sketch of the story'),
+            desc: fill(t('stem.areamodel.word_sketch_desc', 'A rectangle {a} by {b}, split by place value into boxes.'), { a: fmt(ch.a), b: fmt(ch.b) }) });
+        } else if (k === 'remainder') {
+          model = h('div', { 'data-remainder-story': ch.rk },
+            renderDivSvg(ch.n, ch.a, [], ch.n, { idPrefix: 'am-story-rem' }),
+            h('p', { style: Object.assign({ marginTop: 6 }, noteStyle('info')) }, t('stem.areamodel.rem_think', 'The division leaves a remainder. Before you answer, decide what it means in this story: one more group, left out, or the answer itself?')),
+            modeOpen('division') && h('button', { type: 'button', 'data-story-open': 'division', onClick: function() { upd({ viewMode: 'division', div: freshDiv(ch.n, ch.a, { fromWord: true }) }); }, style: Object.assign({ marginTop: 6 }, btnStyle('secondary')) },
+              fill(t('stem.areamodel.story_open_div', 'Model {n} ÷ {a} on the Division tab'), { n: ch.n, a: ch.a })));
+        } else if (k === 'missing') {
+          model = h('div', null,
+            renderDivSvg(ch.n, ch.a, [], ch.n, { idPrefix: 'am-story-div' }),
+            modeOpen('division') && h('button', { type: 'button', 'data-story-open': 'division', onClick: function() { upd({ viewMode: 'division', div: freshDiv(ch.n, ch.a, { fromWord: true }) }); }, style: Object.assign({ marginTop: 6 }, btnStyle('secondary')) },
+              fill(t('stem.areamodel.story_open_div', 'Model {n} ÷ {a} on the Division tab'), { n: ch.n, a: ch.a })));
+        } else if (k === 'percent') {
+          model = renderHundredGrid(ch.p1 / 10, ch.p2 / 10, { idPrefix: 'am-story-g', labelA: ch.p1 + '%', labelB: ch.p2 + '%',
+            desc: fill(t('stem.areamodel.story_g_desc', 'A hundred grid is the whole. {p1}% is shaded as {ca} columns; {p2}% of that part is the {rb} shaded rows inside it.'), { p1: ch.p1, p2: ch.p2, ca: ch.p1 / 10, rb: ch.p2 / 10 }) });
+        } else if (k === 'fraction') {
+          model = h('div', null,
+            h('p', { style: { fontSize: 13, color: C.ink } }, fill(t('stem.areamodel.story_frac_desc', 'Draw a rectangle {w} by {h} on a unit square cut into {d1} by {d2} tiles.'), { w: CORE.mixedStr(ch.n1, ch.d1), h: CORE.mixedStr(ch.n2, ch.d2), d1: ch.d1, d2: ch.d2 })),
+            modeOpen('fraction') && h('button', { type: 'button', 'data-story-open': 'fraction', onClick: function() { upd({ viewMode: 'fraction', fsides: { n1: ch.n1, d1: ch.d1, n2: ch.n2, d2: ch.d2 } }); }, style: btnStyle('secondary') },
+              t('stem.areamodel.story_open_frac', 'Model it on the Fraction Sides tab')));
+        } else if (k === 'algebra') {
+          model = h('div', null,
+            h('p', { style: { fontSize: 13, color: C.ink } }, fill(t('stem.areamodel.story_alg_desc', 'Draw a rectangle with sides {f1} and {f2}, then find the area of each box.'), { f1: CORE.factorStr(ch.f1), f2: CORE.factorStr(ch.f2) })),
+            modeOpen('algebra') && h('button', { type: 'button', 'data-story-open': 'algebra', onClick: function() { upd({ viewMode: 'algebra', algMode: 'multiply', alg: Object.assign({}, alg, { f1: ch.f1, f2: ch.f2 }) }); }, style: btnStyle('secondary') },
+              t('stem.areamodel.story_open_alg', 'Model it on the Algebra Tiles tab')));
         }
-
-        return h('div', { className: 'space-y-3' },
-          // Context picker + dims
-          h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200 space-y-2' },
-            h('div', { className: 'flex flex-wrap items-center gap-2' },
-              h('span', { className: 'text-xs font-bold text-emerald-800' }, 'Story:'),
-              h('select', {
-                value: wordCtxIdx,
-                onChange: function(e) { sfxClick(); upd({ wordCtxIdx: parseInt(e.target.value, 10) }); },
-                disabled: isWordChallenge,
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 }, 'data-story': k },
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            h('p', { style: { fontSize: 12, fontWeight: 800, color: C.accent, margin: '0 0 4px' } }, STORY_KIND_NAMES[k]),
+            h('p', { 'data-challenge-prompt': true, tabIndex: -1, style: { fontSize: 15, fontWeight: 800, color: C.ink, lineHeight: 1.5, marginBottom: 10, scrollMarginTop: 12 } }, '📖 ' + questionFor(ch)),
+            h('p', { style: { fontSize: 12, fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' } }, t('stem.areamodel.what_the_picture_shows', 'What the picture shows:')),
+            model,
+            open ? h('p', { style: Object.assign({ marginTop: 10, textAlign: 'center' }, noteStyle('warn')) }, t('stem.areamodel.story_use_model', 'Use the model, then enter your answer in the challenge below.'))
+              : h('p', { style: Object.assign({ marginTop: 10, textAlign: 'center' }, noteStyle('ok')) }, k === 'remainder' ? remainderMeaning(ch) : fill(t('stem.areamodel.story_answer', '{p} = {ans}'), { p: problemText(ch), ans: answerText(ch) }))),
+          wordFooter());
+      }
+      var renderWordProblem = function() {
+        if (challenge && isStory(challenge)) return renderStory(challenge);
+        var isWordChallenge = !!(challenge && challenge.mode === 'word');
+        var wpA = isWordChallenge ? challenge.a : CORE.clampInt(wordDims.a, 2, 12, 4);
+        var wpB = isWordChallenge ? challenge.b : CORE.clampInt(wordDims.b, 2, 12, 6);
+        var story = isWordChallenge ? questionFor(challenge) : fill(WORD_TEMPLATES[wordCtxIdx], { a: wpA, b: wpB });
+        var product = wpA * wpB;
+        var lockWord = isWordChallenge && chOpen;
+        var shouldHideProduct = hideProducts;
+        var small = wpA <= 12 && wpB <= 12;
+        var cells = [];
+        if (small) for (var i = 0; i < wpA * wpB; i++) cells.push(h('div', { key: 'wp-' + i, className: 'allo-am-cell', style: { aspectRatio: '1 / 1', borderRadius: 3, background: FILLS[1], border: '1px solid ' + C.stroke } }));
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+              h('label', { htmlFor: 'am-word-story', style: { fontSize: 13, fontWeight: 800, color: C.ink } }, t('stem.areamodel.story_label', 'Story:')),
+              h('select', { id: 'am-word-story', value: wordCtxIdx, disabled: lockWord,
+                onChange: function(e) { if (lockWord) return; sfxClick(); upd(clearDone({ wordCtxIdx: parseInt(e.target.value, 10) })); },
                 'aria-label': t('stem.areamodel.word_problem_context', 'Word problem context'),
-                className: 'flex-1 min-w-0 w-full px-2 py-1 text-xs border border-emerald-600 rounded bg-white'
-              },
-                WORD_CONTEXTS.map(function(t, i) {
-                  return h('option', { key: 'wpc-' + i, value: i }, t.replace(/\{a\}/g, 'A').replace(/\{b\}/g, 'B').slice(0, 60) + (t.length > 60 ? '…' : ''));
-                })
-              ),
-              h('button', {
-                onClick: function() { sfxClick(); upd({ wordCtxIdx: (wordCtxIdx + 1) % WORD_CONTEXTS.length }); },
-                disabled: isWordChallenge,
-                'aria-label': t('stem.areamodel.next_story_context', 'Next story context'),
-                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed'
-              }, t('stem.areamodel.next', '🔀 Next'))
-            ),
-            h('div', { className: 'grid grid-cols-2 gap-2' },
-              h('div', {},
-                h('label', { className: 'block text-[0.625rem] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.a_rows_groups', 'A (rows / groups)')),
-                h('input', { type: 'range', min: '2', max: '12', value: wpA,
-                  onChange: function(e) { upd({ wordDims: { a: parseInt(e.target.value, 10), b: wpB } }); },
-                  disabled: isWordChallenge,
-                  'aria-label': t('stem.areamodel.a_factor', 'A factor'),
-                  className: 'w-full accent-emerald-600'
-                }),
-                h('div', { className: 'text-center text-base font-bold text-emerald-800' }, wpA)
-              ),
-              h('div', {},
-                h('label', { className: 'block text-[0.625rem] font-bold text-emerald-700 mb-0.5' }, t('stem.areamodel.b_per_row_per_group', 'B (per row / per group)')),
-                h('input', { type: 'range', min: '2', max: '12', value: wpB,
-                  onChange: function(e) { upd({ wordDims: { a: wpA, b: parseInt(e.target.value, 10) } }); },
-                  disabled: isWordChallenge,
-                  'aria-label': t('stem.areamodel.b_factor', 'B factor'),
-                  className: 'w-full accent-emerald-600'
-                }),
-                h('div', { className: 'text-center text-base font-bold text-emerald-800' }, wpB)
-              )
-            )
-          ),
-
-          // The story prompt itself
-          h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4' },
-            h('p', { className: 'text-sm font-bold text-emerald-900 leading-relaxed mb-3' }, '📖 ' + story),
-            h('div', { className: 'flex flex-col items-center gap-2' },
-              h('div', { className: 'text-[0.625rem] font-bold text-emerald-700 uppercase tracking-wider' }, t('stem.areamodel.what_the_picture_shows', 'What the picture shows:')),
-              h('div', {
-                className: 'grid gap-0.5',
-                style: {
-                  gridTemplateColumns: 'repeat(' + wpB + ', minmax(0, 1fr))',
-                  maxWidth: (wpB <= 6 ? wpB * 36 : wpB * 28) + 'px'
-                }
-              }, cells)
-            ),
+                style: Object.assign({}, inputStyle, { flex: 1, minWidth: 0, fontSize: 14 }) },
+                WORD_NAMES.map(function(nm, ix) { return h('option', { key: 'wpc-' + ix, value: ix }, nm); })),
+              h('button', { type: 'button', disabled: lockWord, onClick: function() { sfxClick(); upd(clearDone({ wordCtxIdx: (wordCtxIdx + 1) % CORE.WORD_COUNT })); },
+                'aria-label': t('stem.areamodel.next_story_context', 'Next story context'), style: btnStyle('secondary', lockWord) }, t('stem.areamodel.next', '🔀 Next'))),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+              h('div', null,
+                h('label', { htmlFor: 'am-word-a', style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.a_rows_groups', 'A (rows / groups)')),
+                h('input', { id: 'am-word-a', type: 'range', min: '2', max: '12', value: Math.min(12, wpA), disabled: lockWord,
+                  onChange: function(e) { if (lockWord) return; upd(clearDone({ wordDims: { a: parseInt(e.target.value, 10), b: Math.min(12, wpB) } })); },
+                  'aria-label': t('stem.areamodel.a_factor', 'A factor'), style: { width: '100%', minHeight: 32, accentColor: C.btn } }),
+                h('div', { style: { textAlign: 'center', fontWeight: 800, color: C.ink } }, wpA)),
+              h('div', null,
+                h('label', { htmlFor: 'am-word-b', style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.ink } }, t('stem.areamodel.b_per_row_per_group', 'B (per row / per group)')),
+                h('input', { id: 'am-word-b', type: 'range', min: '2', max: '12', value: Math.min(12, wpB), disabled: lockWord,
+                  onChange: function(e) { if (lockWord) return; upd(clearDone({ wordDims: { a: Math.min(12, wpA), b: parseInt(e.target.value, 10) } })); },
+                  'aria-label': t('stem.areamodel.b_factor', 'B factor'), style: { width: '100%', minHeight: 32, accentColor: C.btn } }),
+                h('div', { style: { textAlign: 'center', fontWeight: 800, color: C.ink } }, wpB)))),
+          h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
+            h('p', { 'data-challenge-prompt': isWordChallenge ? true : undefined, tabIndex: isWordChallenge ? -1 : undefined, style: { fontSize: 15, fontWeight: 800, color: C.ink, lineHeight: 1.5, marginBottom: 10, scrollMarginTop: 12 } }, '📖 ' + story),
+            h('p', { style: { fontSize: 12, fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' } }, t('stem.areamodel.what_the_picture_shows', 'What the picture shows:')),
+            small
+              ? h('div', { role: 'img', 'aria-label': fill(t('stem.areamodel.word_grid_label', 'An array of {a} rows with {b} in each row'), { a: wpA, b: wpB }), style: { display: 'grid', gap: 2, margin: '6px auto 0', gridTemplateColumns: 'repeat(' + wpB + ', minmax(0, 1fr))', maxWidth: (wpB <= 6 ? wpB * 36 : wpB * 28) + 'px' } }, cells)
+              : renderBoxSvg(wpA, wpB, { idPrefix: 'am-word', title: t('stem.areamodel.word_sketch_title', 'Area-model sketch of the story'), desc: fill(t('stem.areamodel.word_sketch_desc', 'A rectangle {a} by {b}, split by place value into boxes.'), { a: wpA, b: wpB }) }),
             shouldHideProduct
-              ? h('div', { className: 'mt-3 text-center bg-amber-50 rounded-lg p-2 border border-amber-200', role: 'status' },
-                  h('p', { className: 'text-xs font-bold text-amber-800' }, t('stem.areamodel.count_before_reveal', 'Count the grid, then enter the product in the challenge below.')),
-                  h('p', { className: 'text-[0.625rem] text-amber-700 mt-1' }, wpA + ' groups of ' + wpB + ' = ?')
-                )
-              : h('div', { className: 'mt-3 text-center bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
-                  h('p', { className: 'text-xs text-emerald-700' },
-                    wpA + ' groups of ' + wpB + ' = ',
-                    h('span', { className: 'font-mono font-bold' }, wpA + ' × ' + wpB),
-                    ' = ',
-                    h('span', { className: 'text-2xl font-bold text-emerald-900' }, product)
-                  ),
-                  h('p', { className: 'text-[0.625rem] text-emerald-700 italic mt-1' }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.'))
-                )
-          ),
-
-          // Word-problem challenge: pose a random story with hidden answer
-          h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
-            h('div', { className: 'flex items-center justify-between mb-2' },
-              h('p', { className: 'text-[0.6875rem] font-bold text-emerald-800' }, t('stem.areamodel.word_problem_challenge', '🎯 Word problem challenge')),
-              h('button', {
-                onClick: function() {
-                  // Generate a random challenge: pick a context, factors, and ask for the product
-                  sfxNewChallenge();
-                  var max = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
-                  var a2 = randInt(2, max);
-                  var b2 = randInt(2, max);
-                  var ctxIdx = Math.floor(Math.random() * WORD_CONTEXTS.length);
-                  var ctxStr = WORD_CONTEXTS[ctxIdx].replace(/\{a\}/g, a2).replace(/\{b\}/g, b2);
-                  var newTypes = Object.assign({}, challengeTypesUsed);
-                  newTypes.word = true;
-                  upd({
-                    viewMode: 'word',
-                    wordCtxIdx: ctxIdx,
-                    wordDims: { a: a2, b: b2 },
-                    challenge: { a: a2, b: b2, answer: a2 * b2, question: ctxStr, mode: 'word' },
-                    answer: '', feedback: null, challengeTypesUsed: newTypes
-                  });
-                },
-                'aria-label': t('stem.areamodel.new_word_problem', 'New word problem'),
-                className: 'px-3 py-1 bg-emerald-700 text-white text-xs font-bold rounded hover:bg-emerald-800'
-              }, t('stem.areamodel.new_word_problem_2', '▶ New word problem'))
-            ),
-            h('p', { className: 'text-[0.6875rem] text-emerald-700 italic' },
-              t('stem.areamodel.pick_a_story_look_at_the_matching_grid', 'Pick a story. Look at the matching grid. Multiplication is the count of things in a rectangle. 5 solved earns the 📝 Word Wizard badge.')
-            )
-          )
-        );
+              ? h('div', { style: Object.assign({ marginTop: 10, textAlign: 'center' }, noteStyle('warn')) },
+                  h('p', null, t('stem.areamodel.count_before_reveal', 'Count the grid, then enter the product in the challenge below.')),
+                  h('p', { style: { fontWeight: 600, marginTop: 2 } }, fill(t('stem.areamodel.groups_of_unknown', '{a} groups of {b} = ?'), { a: wpA, b: wpB })))
+              : h('div', { style: Object.assign({ marginTop: 10, textAlign: 'center' }, noteStyle('ok')) },
+                  h('p', null, fillNodes(t('stem.areamodel.groups_of_equation', '{a} groups of {b} = {a} × {b} = {product}'), { a: wpA, b: wpB, product: h('span', { className: 'text-2xl font-bold text-emerald-900', style: { color: C.ok } }, product) })),
+                  h('p', { style: { fontWeight: 600, fontStyle: 'italic', marginTop: 2 } }, t('stem.areamodel.the_grid_is_the_picture_multiplication', 'The grid is the picture. Multiplication is the math.')))),
+          wordFooter());
       };
+
+      // ═══ FADING WORKED EXAMPLES ═══
+      var WORKED_MODES = ['distributive', 'multidigit', 'division', 'fraction', 'grid100', 'algebra'];
+      var renderWorked = function(mode) {
+        if (WORKED_MODES.indexOf(mode) < 0 || chOpen || (mode === 'algebra' && algMode === 'factor')) return null;
+        var all = _a.worked || {};
+        var W = all[mode] || {};
+        var level = CORE.clampInt(W.level || 0, 0, 3, 0);
+        var seed = W.seed || (1009 + MODES.indexOf(mode) * 7919);
+        var prob = CORE.gen(mode, band, level < 2 ? 'easy' : 'medium', CORE.seeded(seed));
+        var steps = CORE.workedSteps(prob);
+        var blanks = level === 3 ? steps.length : Math.min(level, steps.length);
+        var firstBlank = steps.length - blanks;
+        var inputs = W.inputs || {}, results = W.results || {}, tries = W.tries || {}, shown = W.shown || {};
+        function setW(p) { var n = Object.assign({}, all); n[mode] = Object.assign({}, W, { level: level, seed: seed }, p); upd({ worked: n }); }
+        function nextExample(newLevel) { var n = Object.assign({}, all); n[mode] = { level: newLevel, seed: Math.floor(Math.random() * 1e9) + 1 }; upd({ worked: n }); focusSoon('[data-worked-input]'); }
+        function stepText(st) {
+          if (st.k === 'w_box') return fill(t('stem.areamodel.w_box', '{pa} × {pb} ='), { pa: fmt(st.pa), pb: fmt(st.pb) });
+          if (st.k === 'w_total') return t('stem.areamodel.w_total', 'Add all the partial products:');
+          if (st.k === 'w_frac_shaded') return fill(t('stem.areamodel.w_frac_shaded', 'Tiles inside the rectangle: {n1} × {n2} ='), { n1: st.n1, n2: st.n2 });
+          if (st.k === 'w_frac_whole') return fill(t('stem.areamodel.w_frac_whole', 'Tiles in one whole unit square: {d1} × {d2} ='), { d1: st.d1, d2: st.d2 });
+          if (st.k === 'w_frac_area') return t('stem.areamodel.w_frac_area', 'Area as a fraction of one square unit:');
+          if (st.k === 'w_alg_x2') return fill(t('stem.areamodel.w_alg_x2', 'Box {rs} × {cs}: how many x² tiles?'), { rs: st.rs, cs: st.cs });
+          if (st.k === 'w_alg_x') return fill(t('stem.areamodel.w_alg_x', 'Box {rs} × {cs}: how many x tiles?'), { rs: st.rs, cs: st.cs });
+          if (st.k === 'w_alg_unit') return fill(t('stem.areamodel.w_alg_unit', 'Box {rs} × {cs}: how many unit tiles?'), { rs: st.rs, cs: st.cs });
+          if (st.k === 'w_alg_combine') return t('stem.areamodel.w_alg_combine', 'Combine like terms: how many x tiles in all?');
+          if (st.k === 'w_div_area') return fill(t('stem.areamodel.w_div_area', 'Take a chunk of {c} groups of {d}. Its area is {c} × {d} ='), { c: st.c, d: st.d });
+          if (st.k === 'w_div_left') return fill(t('stem.areamodel.w_div_left', 'Area left: {left} − {area} ='), { left: st.left, area: st.area });
+          if (st.k === 'w_div_q') return st.r ? fill(t('stem.areamodel.w_div_q_r', 'Add the chunks {terms} for the quotient (the remainder is {r}):'), { terms: st.terms.join(' + '), r: st.r })
+            : fill(t('stem.areamodel.w_div_q', 'Add the chunks {terms} for the quotient:'), { terms: st.terms.join(' + ') });
+          if (st.k === 'w_g_cols') return fill(t('stem.areamodel.w_g_cols', 'Columns shaded for {a}, out of 10:'), { a: st.kind === 'pct' ? Math.round(st.a * 100) + '%' : fmt(st.a) });
+          if (st.k === 'w_g_rows') return fill(t('stem.areamodel.w_g_rows', 'Rows shaded for {b}, out of 10:'), { b: st.kind === 'pct' ? Math.round(st.b * 100) + '%' : fmt(st.b) });
+          if (st.k === 'w_g_both') return fill(t('stem.areamodel.w_g_both', 'Squares shaded both ways: {ca} × {rb} ='), { ca: st.ca, rb: st.rb });
+          if (st.k === 'w_g_dec') return t('stem.areamodel.w_g_dec', 'Each square is one hundredth, so the product as a decimal is:');
+          if (st.k === 'w_g_pct') return t('stem.areamodel.w_g_pct', 'Each square is 1% of the grid, so the answer as a percent is:');
+          return '';
+        }
+        function ansText(st) { return typeof st.ans === 'object' ? CORE.fracStr(st.ans.num, st.ans.den) : fmt(st.ans) + (st.k === 'w_g_pct' ? '%' : ''); }
+        function gradeStep(st, txt) {
+          if (typeof st.ans === 'object') {
+            var f = CORE.parseFrac(txt);
+            if (CORE.fracEq(f, st.ans.num, st.ans.den)) return 'ok';
+            return CORE.diagnoseFraction(prob, f).code;
+          }
+          var v = CORE.parseNum(String(txt).replace(/\s*%\s*$/, ''));
+          if (st.k === 'w_box') return CORE.diagnoseBox(st.pa, st.pb, st.ans, v);
+          if (st.k === 'w_div_area') return CORE.sameNum(v, st.ans) ? 'ok' : CORE.diagnoseBox(st.c, st.d, st.ans, v);
+          if (CORE.sameNum(v, st.ans)) return 'ok';
+          if (!isFinite(v)) return 'box_not_number';
+          if (st.k === 'w_div_left') return v === st.left + st.area ? 'div_left_added' : 'div_subtract_wrong';
+          if (st.k === 'w_div_q') return st.terms.length > 1 && st.terms.indexOf(v) >= 0 ? 'div_not_added' : 'div_q_wrong';
+          if (st.k === 'w_g_dec' || st.k === 'w_g_pct') return CORE.diagnoseGrid(prob, v);
+          if (st.k === 'w_alg_combine') return 'alg_one_x_box';
+          return 'step_generic';
+        }
+        function checkSteps() {
+          var res = Object.assign({}, results), tr = Object.assign({}, tries), allOk = true;
+          for (var i = firstBlank; i < steps.length; i++) {
+            if (res[i] === 'ok' || shown[i]) continue;
+            var txt = String(inputs[i] == null ? '' : inputs[i]).trim();
+            if (!txt) { allOk = false; continue; }
+            res[i] = gradeStep(steps[i], txt);
+            if (res[i] !== 'ok') { allOk = false; tr[i] = (tr[i] || 0) + 1; }
+          }
+          var anyShown = Object.keys(shown).length > 0;
+          if (allOk) {
+            focusSoon('[data-worked-next]');
+            if (anyShown) { setW({ results: res, tries: tr, done: 'repeat' }); say(t('stem.areamodel.w_repeat', 'All steps are filled in. You used a shown step, so try another example at this level.')); }
+            else { setW({ results: res, tries: tr, done: 'advance' }); say(t('stem.areamodel.w_advance', 'Every step is right. The next example hides one more step.')); }
+          } else {
+            setW({ results: res, tries: tr });
+            say(t('stem.areamodel.w_some_wrong', 'Some steps need another look. Read the note under each one.'));
+          }
+        }
+        var levelText = level === 0 ? t('stem.areamodel.w_level0', 'Example 1: every step is worked for you. Read it, then go on.')
+          : level === 3 ? t('stem.areamodel.w_level3', 'Your turn: every step is blank.')
+          : fill(t('stem.areamodel.w_level_n', 'Example {n}: the last {k} steps are yours to fill in.'), { n: level + 1, k: blanks });
+        return h('section', { 'aria-labelledby': 'am-worked-h', 'data-worked-mode': mode, 'data-worked-level': level, style: Object.assign({}, cardStyle, { background: C.card2 }) },
+          h('h4', { id: 'am-worked-h', style: { fontSize: 14, fontWeight: 900, color: C.accent, margin: 0 } }, fill(t('stem.areamodel.w_title', 'Worked example: {p}'), { p: problemText(prob) })),
+          h('p', { style: { fontSize: 12, color: C.sub, margin: '2px 0 8px' } }, levelText),
+          h('ol', { style: { margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6, color: C.ink, fontSize: 14 } },
+            steps.map(function(st, i) {
+              var isBlank = i >= firstBlank && !shown[i];
+              var res = results[i];
+              if (!isBlank) return h('li', { key: 'ws' + i }, stepText(st) + ' ' + ansText(st) + (shown[i] ? ' ' + t('stem.areamodel.algo_shown_tag', '(shown)') : ''));
+              return h('li', { key: 'ws' + i },
+                h('span', null, stepText(st) + ' '),
+                h('input', { type: 'text', inputMode: typeof st.ans === 'object' ? 'text' : 'decimal', value: inputs[i] == null ? '' : inputs[i], readOnly: res === 'ok', 'data-worked-input': i,
+                  'aria-label': fill(t('stem.areamodel.w_input_label', 'Step {n}'), { n: i + 1 }),
+                  onChange: function(e) { var inp = Object.assign({}, inputs); inp[i] = e.target.value; var r2 = Object.assign({}, results); delete r2[i]; setW({ inputs: inp, results: r2 }); },
+                  style: Object.assign({}, inputStyle, { width: 110, minHeight: 36, borderColor: res === 'ok' ? C.ok : res ? C.bad : C.ctrl }) }),
+                res === 'ok' && h('span', { style: { color: C.ok, fontWeight: 800, marginLeft: 6 } }, '✓'),
+                res && res !== 'ok' && h('div', { style: { color: C.bad, fontSize: 12, fontWeight: 700 } }, wrongNote(res, null, tries[i] || 0)),
+                res && res !== 'ok' && (tries[i] || 0) >= 2 && allowReveal && h('button', { type: 'button', onClick: function() { var sh = Object.assign({}, shown); sh[i] = true; setW({ shown: sh }); }, style: Object.assign({ marginTop: 4 }, btnStyle('secondary')) }, t('stem.areamodel.w_show_step', 'Show this step')));
+            })),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+            level === 0 && h('button', { type: 'button', 'data-worked-next': true, onClick: function() { nextExample(1); }, style: btnStyle('primary') }, t('stem.areamodel.w_studied', 'I studied it: next example')),
+            level > 0 && !W.done && h('button', { type: 'button', 'data-worked-check': true, onClick: checkSteps, style: btnStyle('primary') }, t('stem.areamodel.w_check', 'Check my steps')),
+            W.done === 'advance' && h('button', { type: 'button', 'data-worked-next': true, onClick: function() { nextExample(Math.min(3, level + 1)); }, style: btnStyle('primary') }, level >= 3 ? t('stem.areamodel.w_another', 'Another one') : t('stem.areamodel.w_next', 'Next example')),
+            W.done === 'repeat' && h('button', { type: 'button', 'data-worked-next': true, onClick: function() { nextExample(level); }, style: btnStyle('primary') }, t('stem.areamodel.w_retry', 'Try another at this level'))));
+      };
+
+      // ═══ PREDICTION CARD (explore) ═══
+      var renderPrediction = function() {
+        if (!predMode || !predictOn || chHere) return null;
+        var ex = exploreAnswer(viewMode);
+        if (predPending) {
+          return h('div', { style: Object.assign({}, cardStyle, { background: C.card2 }), 'data-predict-card': true },
+            h('label', { htmlFor: 'am-predict', style: { display: 'block', fontSize: 14, fontWeight: 800, color: C.ink, marginBottom: 6 } }, fill(t('stem.areamodel.pred_prompt', 'Predict first: what is {p}?'), { p: problemText(ex) })),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('input', { id: 'am-predict', type: 'text', inputMode: viewMode === 'fraction' || (viewMode === 'grid100' && g100.as === 'pct') ? 'text' : 'decimal', value: _a.predDraft || '', onChange: function(e) { upd({ predDraft: e.target.value }); },
+                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkPrediction(); } }, style: Object.assign({}, inputStyle, { flex: 1, minWidth: 120 }) }),
+              h('button', { type: 'button', onClick: checkPrediction, 'data-predict-check': true, style: btnStyle('primary') }, t('stem.areamodel.pred_check', 'Check my prediction'))));
+        }
+        if (pred && pred.key === predKey) {
+          return h('div', { style: noteStyle(pred.ok ? 'ok' : 'info'), 'data-predict-result': pred.ok ? 'ok' : 'miss', tabIndex: -1 },
+            pred.ok ? fill(t('stem.areamodel.pred_right_eq', 'Your prediction was right: {p} = {ans}.'), { p: problemText(ex), ans: answerText(ex) })
+              : fill(t('stem.areamodel.pred_wrong', 'You predicted {p}. The model shows {ans}.'), { p: pred.value, ans: answerText(ex) }) + (pred.code && ['generic_rows', 'generic_boxes', 'generic_split', 'frac_generic'].indexOf(pred.code) < 0 ? ' ' + mistakeText(pred.code, pred.v) : ''));
+        }
+        return null;
+      };
+
+      // ═══ CHALLENGE CARD ═══
+      var renderChallenge = function() {
+        if ((viewMode === 'algorithm' || viewMode === 'division') && !challenge) return null;
+        var startButtons = [
+          { m: 'basic', aria: t('stem.areamodel.grid_challenge', 'Grid Challenge'), text: t('stem.areamodel.grid_challenge_2', '🟧 Grid Challenge') },
+          { m: 'distributive', aria: t('stem.areamodel.distributive_2', 'Distributive'), text: t('stem.areamodel.distributive_3', '✂️ Distributive') },
+          { m: 'multidigit', aria: t('stem.areamodel.partial', 'Partial'), text: t('stem.areamodel.partial_2', '📊 Partial') },
+          { m: 'fraction', aria: t('stem.areamodel.fraction_challenge', 'Fraction sides'), text: t('stem.areamodel.fraction_challenge_2', '½ Fraction sides') },
+          { m: 'grid100', aria: t('stem.areamodel.grid_challenge_btn', 'Hundred grid'), text: t('stem.areamodel.grid_challenge_btn_2', '💯 Hundred grid') },
+          { m: 'algebra', aria: t('stem.areamodel.algebra_challenge', 'Algebra tiles'), text: t('stem.areamodel.algebra_challenge_2', '🧩 Algebra tiles') },
+          { m: 'word', aria: t('stem.areamodel.word_problem', 'Word Problem'), text: t('stem.areamodel.word_problem_2', '📝 Word Problem') }
+        ].filter(function(sb) { return visibleModes.indexOf(sb.m) >= 0; });
+        var recommended = BAND_MODES[band] || [];
+        var header = h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+            h('h4', { style: { fontSize: 15, fontWeight: 900, color: C.accent, margin: 0 } }, t('stem.areamodel.multiplication_challenge', '🎯 Multiplication Challenge')),
+            h('div', { role: 'group', 'aria-label': t('stem.areamodel.difficulty_label', 'Difficulty'), style: { display: 'flex', gap: 4 } },
+              [['easy', t('stem.areamodel.diff_easy', 'Easy')], ['medium', t('stem.areamodel.diff_medium', 'Medium')], ['hard', t('stem.areamodel.diff_hard', 'Hard')]].map(function(d) {
+                var on = difficulty === d[0];
+                return h('button', { type: 'button', key: d[0], 'aria-pressed': on, onClick: function() { sfxClick(); upd({ difficulty: d[0] }); },
+                  style: Object.assign(btnStyle(on ? 'primary' : 'secondary'), { minHeight: 32, padding: '2px 10px', fontSize: 12 }) }, d[1]);
+              }))),
+          h('span', { style: { fontSize: 12, color: C.sub } }, fill(t('stem.areamodel.modes_tried', '{n} modes tried'), { n: Object.keys(challengeTypesUsed).length })));
+        if (!challenge) {
+          return h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 10 }), 'data-challenge-card': 'start' },
+            header,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, startButtons.map(function(sb) {
+              return h('button', { type: 'button', key: sb.m, 'aria-label': sb.aria, onClick: function() { genChallenge(sb.m); },
+                style: Object.assign(btnStyle(recommended.indexOf(sb.m) >= 0 ? 'primary' : 'secondary'), { flex: '1 1 140px' }) }, sb.text);
+            })),
+            h('p', { style: { fontSize: 12, color: C.sub } }, fill(t('stem.areamodel.recommended_note', 'Highlighted buttons fit your level: {band}.'), { band: BAND_NAMES[band] })));
+        }
+        if (!chHere) {
+          return h('div', { style: Object.assign({}, noteStyle('info'), { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }), 'data-challenge-card': 'elsewhere' },
+            h('span', { style: { flex: 1, minWidth: 200 } }, chOpen
+              ? fill(t('stem.areamodel.open_elsewhere', 'You have an open {mode} challenge. Products stay hidden until you finish it.'), { mode: MODE_NAMES[challenge.mode] || challenge.mode })
+              : fill(t('stem.areamodel.done_elsewhere', 'Your last challenge was in {mode}.'), { mode: MODE_NAMES[challenge.mode] || challenge.mode })),
+            h('button', { type: 'button', onClick: function() { upd({ viewMode: challenge.mode }); }, style: btnStyle('secondary') }, t('stem.areamodel.back_to_challenge', 'Back to the challenge')),
+            !chOpen && h('button', { type: 'button', onClick: skipChallenge, style: btnStyle('secondary') }, t('stem.areamodel.clear_challenge', 'Clear it')));
+        }
+        var isAlg = challenge.mode === 'algebra' || challenge.wkind === 'algebra';
+        var isFracAns = challenge.mode === 'fraction' || challenge.wkind === 'fraction';
+        var isPctAns = (challenge.mode === 'grid100' && challenge.kind === 'pct') || challenge.wkind === 'percent';
+        var attempts = chw.attempts || 0;
+        var fbMsg = feedback ? (feedback.correct ? feedback.msg : (feedback.code ? (revealed ? mistakeText(feedback.code, feedback.v) : wrongNote(feedback.code, feedback.v, attempts)) : feedback.msg)) : '';
+        var answerInput = isAlg
+          ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 18, fontWeight: 800, color: C.ink } },
+              ['A', 'B', 'C'].map(function(k, ix) {
+                var lbl = k === 'A' ? t('stem.areamodel.coef_x2', 'Coefficient of x squared') : k === 'B' ? t('stem.areamodel.coef_x', 'Coefficient of x') : t('stem.areamodel.coef_c', 'Constant term');
+                return h(React.Fragment, { key: k },
+                  ix > 0 && h('span', { 'aria-hidden': 'true' }, '+'),
+                  h('input', { type: 'text', inputMode: 'numeric', value: ansParts[k] || '', disabled: solved || revealed, 'aria-label': lbl, 'data-coef-input': k,
+                    onChange: function(e) { if (solved || revealed) return; var p = Object.assign({}, ansParts); p[k] = e.target.value; upd({ ansParts: p }); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkChallenge(); } },
+                    style: Object.assign({}, inputStyle, { width: 70, textAlign: 'center' }) }),
+                  h('span', { 'aria-hidden': 'true' }, k === 'A' ? 'x²' : k === 'B' ? 'x' : ''));
+              }))
+          : h('input', {
+              type: 'text', inputMode: isFracAns || isPctAns ? 'text' : 'decimal', value: answer, disabled: solved || revealed,
+              onChange: function(e) { if (solved || revealed) return; upd({ answer: e.target.value }); },
+              onKeyDown: function(e) { if (e.key === 'Enter' && answer && !solved && !revealed) { e.preventDefault(); checkChallenge(); } },
+              placeholder: isFracAns ? t('stem.areamodel.fraction_placeholder', 'Area, e.g. 3/8') : isPctAns ? t('stem.areamodel.percent_placeholder', 'Percent, e.g. 25%')
+                : isStory(challenge) ? t('stem.areamodel.answer_placeholder', 'Answer = ?') : t('stem.areamodel.product', 'Product = ?'),
+              'aria-label': t('stem.areamodel.challenge_answer', 'Challenge answer'),
+              style: Object.assign({}, inputStyle, { flex: 1, minWidth: 140, fontFamily: 'monospace' })
+            });
+        return h('div', { style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 10 }), 'data-challenge-card': 'active' },
+          header,
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+            h('span', { style: { fontSize: 12, fontWeight: 800, color: C.accent, border: '1px solid ' + C.accent, borderRadius: 999, padding: '2px 10px' } }, MODE_NAMES[challenge.mode] || challenge.mode),
+            streak > 0 && h('span', { style: { fontSize: 12, fontWeight: 800, color: C.ink } }, fill(t('stem.areamodel.streak_label', 'Streak: {n}'), { n: streak }))),
+          h('p', { style: { fontSize: 15, fontWeight: 800, color: C.ink } }, questionFor(challenge)),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
+            answerInput,
+            h('button', { type: 'button', 'aria-label': t('stem.areamodel.check', 'Check'), onClick: checkChallenge, disabled: solved || revealed, style: btnStyle('primary', solved || revealed) },
+              solved ? t('stem.areamodel.solved', 'Solved') : t('stem.areamodel.check_2', 'Check'))),
+          fbMsg && h('p', { 'data-challenge-feedback': feedback.correct ? 'correct' : (revealed ? 'revealed' : 'wrong'), style: noteStyle(feedback.correct ? 'ok' : revealed ? 'info' : 'bad') }, fbMsg),
+          chOpen && hintLadder(chw.hints || 0, function(r) { return hintText(challenge, r); }, { 'data-hint-level': chw.hints }),
+          chOpen && renderAIHint(chKey),
+          revealed && h('div', { style: noteStyle('info'), 'data-revealed-answer': true },
+            challenge.wkind === 'remainder' ? h('p', null, remainderMeaning(challenge))
+              : h('p', null, fill(t('stem.areamodel.revealed_answer', 'Answer: {p} = {ans}.'), { p: problemText(challenge), ans: answerText(challenge) })),
+            (challenge.mode === 'multidigit' || (challenge.mode === 'word' && (!challenge.wkind || challenge.wkind === 'area' || challenge.wkind === 'decimal') && (challenge.a >= 10 || challenge.b >= 10 || CORE.decimalsOf(challenge.a) > 0 || CORE.decimalsOf(challenge.b) > 0))) && h('p', { style: { fontWeight: 600 } },
+              CORE.boxModel(challenge.a, challenge.b).boxes.filter(function(bx) { return bx.n > 0; }).map(function(bx) { return bx.label.replace('×', ' × ') + ' = ' + fmt(bx.value); }).join('; ')),
+            challenge.mode === 'distributive' && h('p', { style: { fontWeight: 600 } }, challenge.a + ' × ' + challenge.split + ' = ' + challenge.a * challenge.split + '; ' + challenge.a + ' × ' + (challenge.b - challenge.split) + ' = ' + challenge.a * (challenge.b - challenge.split))),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            chOpen && hintButton(chw.hints || 0, nextHint, { 'data-hint-button': true }),
+            chOpen && attempts >= 2 && aiHintButton(chKey, askAIHint),
+            chOpen && allowReveal && attempts >= 2 && h('button', { type: 'button', onClick: revealAnswer, 'data-reveal-button': true, style: btnStyle('secondary') }, t('stem.areamodel.show_answer', 'Show the answer (no points)')),
+            (solved || revealed) && h('button', { type: 'button', 'data-next-challenge': true, 'aria-label': t('stem.areamodel.next_challenge', 'Next Challenge'), onClick: function() { genChallenge(challenge.mode, challenge.mode === 'word' ? (challenge.wkind || 'array') : null); }, style: btnStyle('primary') },
+              t('stem.areamodel.next_challenge_2', '➡️ Next Challenge')),
+            chOpen && attempts > 0 && h('button', { type: 'button', onClick: skipChallenge, style: btnStyle('secondary') }, t('stem.areamodel.skip', 'Skip this one'))),
+          chOpen && !allowReveal && attempts >= 2 && h('p', { style: { fontSize: 12, color: C.sub } }, t('stem.areamodel.reveals_off', 'Your teacher turned off answer reveals. Use the hints and keep going.')));
+      };
+
+      // ═══ ACTIVE FACTORS (hero line, tutor) ═══
+      var heroText;
+      if (viewMode === 'multidigit') {
+        activeA = chHere ? challenge.a : multiDims.a; activeB = chHere ? challenge.b : multiDims.b;
+        activeProductText = fmt(CORE.product(activeA, activeB));
+        heroText = fmt(activeA) + ' × ' + fmt(activeB) + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'word' && isStory(challenge)) {
+        activeA = problemText(challenge); activeB = ''; activeProductText = answerText(challenge);
+        heroText = challenge.wkind === 'remainder'
+          ? (hideProducts ? fill(t('stem.areamodel.rem_hero_hidden', '{n} ÷ {a} = ? R ?'), { n: challenge.n, a: challenge.a })
+            : fill(t('stem.areamodel.rem_hero', '{n} ÷ {a} = {q} R {r}. The story’s answer is {ans}.'), { n: challenge.n, a: challenge.a, q: Math.floor(challenge.n / challenge.a), r: challenge.n % challenge.a, ans: activeProductText }))
+          : problemText(challenge) + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'division') {
+        activeA = divN; activeB = divD; activeProductText = String(divReplayed.sum);
+        heroText = divPhase === 'done'
+          ? fill(t('stem.areamodel.div_hero_done', '{n} ÷ {d} = {q} R {r}'), { n: divN, d: divD, q: divReplayed.sum, r: divLeft })
+          : divN + ' ÷ ' + divD + ' = ?';
+      } else if (viewMode === 'grid100') {
+        var hg = chHere && challenge.mode === 'grid100' ? challenge : exploreAnswer('grid100');
+        activeA = fmt(hg.a); activeB = fmt(hg.b); activeProductText = answerText(hg);
+        heroText = problemText(hg) + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'algebra' && algMode === 'factor') {
+        activeA = facPolyText; activeB = ''; activeProductText = facDone ? facFactors(facP, facQ) : '?';
+        heroText = facPolyText + ' = ' + (facDone ? facFactors(facP, facQ) : '( ? )( ? )');
+      } else if (viewMode === 'word') {
+        activeA = challenge && challenge.mode === 'word' ? challenge.a : CORE.clampInt(wordDims.a, 2, 12, 4);
+        activeB = challenge && challenge.mode === 'word' ? challenge.b : CORE.clampInt(wordDims.b, 2, 12, 6);
+        activeProductText = String(activeA * activeB);
+        heroText = activeA + ' × ' + activeB + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'fraction') {
+        var hf = chHere ? challenge : fsides;
+        activeA = CORE.mixedStr(hf.n1, hf.d1); activeB = CORE.mixedStr(hf.n2, hf.d2);
+        activeProductText = CORE.fracStr(hf.n1 * hf.n2, hf.d1 * hf.d2);
+        heroText = activeA + ' × ' + activeB + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'algebra') {
+        var g1 = chHere ? challenge.f1 : algF1, g2 = chHere ? challenge.f2 : algF2, ge = CORE.algExpand(g1, g2);
+        activeA = CORE.factorStr(g1); activeB = CORE.factorStr(g2);
+        activeProductText = CORE.polyStr(ge.A, ge.B, ge.C);
+        heroText = activeA + activeB + ' = ' + (hideProducts ? '?' : activeProductText);
+      } else if (viewMode === 'algorithm') {
+        activeA = algoA; activeB = algoB; activeProductText = String(algoPlan.total);
+        heroText = algoA + ' × ' + algoB + ' = ' + (algoRes[algoPlan.steps.length - 1] && !chOpen ? activeProductText : '?');
+      } else {
+        activeA = viewMode === 'distributive' && chHere ? challenge.a : rows;
+        activeB = viewMode === 'distributive' && chHere ? challenge.b : cols;
+        activeProductText = String(activeA * activeB);
+        heroText = activeA + ' × ' + activeB + ' = ' + (hideProducts ? '?' : activeProductText);
+      }
+
+      // ═══ MODE BANNER ═══
+      var MODE_META = {
+        basic: { title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid — multiplication as area'), start: t('stem.areamodel.start_basic', 'Change Rows and Columns to resize the array. Select a square to highlight part of it.'), hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a × b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
+        distributive: { title: t('stem.areamodel.distributive_split_the_rectangle_keep_', 'Distributive — split the rectangle, keep the area'), start: t('stem.areamodel.start_distributive', 'Adjust the factors and split to see how two smaller products make the total.'), hint: t('stem.areamodel.a_b_c_ab_ac_cut_a_4_7_grid_into_a_4_5_', 'a(b+c) = ab + ac. Cut a 4×7 grid into a 4×5 + 4×2; same total. The distributive property is the algebraic backbone of every later expansion. Common Core 3.OA.5.') },
+        multidigit: { title: t('stem.areamodel.partial_products_live', 'Partial products — split each factor by place value'), start: t('stem.areamodel.start_multidigit', 'Set the factors, then connect each smaller rectangle to its partial product.'), hint: t('stem.areamodel.partial_products_guidance_v2', 'Split both factors by place value. Multiply each pair of parts, then add the partial products. Decimals work the same way: tenths times tenths make hundredths. Common Core 4.NBT.5, 5.NBT.7.') },
+        algorithm: { title: t('stem.areamodel.algorithm_title', 'Algorithm Bridge — the standard algorithm is the area model, compressed'), start: t('stem.areamodel.start_algorithm', 'Predict each line of the standard algorithm. After each line, see which boxes of the area model it adds up.'), hint: t('stem.areamodel.algorithm_about', 'Each line of the standard algorithm is one column of boxes in the area model. Carrying moves a box’s tens into the next place. Common Core 4.NBT.5, 5.NBT.5.') },
+        division: { title: t('stem.areamodel.division_title', 'Division — find the missing side of the rectangle'), start: t('stem.areamodel.start_division', 'The area and one side are known. Take friendly chunks off the area until no more fit, then add the chunks to find the missing side.'), hint: t('stem.areamodel.division_about', 'Division is multiplication with a missing factor: n ÷ d asks how long a rectangle with area n and side d is. Partial quotients take friendly chunks; long division takes place-value chunks. The remainder is always smaller than the divisor. Common Core 3.OA.6, 4.NBT.6, 5.NBT.6.') },
+        grid100: { title: t('stem.areamodel.grid100_title', 'Hundred Grid — tenths times tenths, and percents of percents'), start: t('stem.areamodel.start_grid100', 'Shade columns for the first number and rows for the second. The squares shaded both ways are the product.'), hint: t('stem.areamodel.grid100_about', 'A 10 by 10 grid is one whole, so each column is a tenth and each small square is a hundredth, or 1%. Shade columns for one number and rows for the other: the squares shaded both ways are the product, a part of a part. Common Core 5.NBT.7, 6.RP.3c.') },
+        fraction: { title: t('stem.areamodel.fraction_title', 'Fraction Sides — tile a rectangle with unit-fraction squares'), start: t('stem.areamodel.start_fraction', 'Choose the side lengths. Count the tiles inside the rectangle and the tiles that fill one unit square.'), hint: t('stem.areamodel.fraction_about', 'Tiling with tiles 1/b by 1/d shows that the area of an a/b by c/d rectangle is (a × c)/(b × d), the same as multiplying the side lengths. Common Core 5.NF.4b.') },
+        algebra: { title: t('stem.areamodel.algebra_title', 'Algebra Tiles — the same rectangle, with x'), start: t('stem.areamodel.start_algebra', 'Choose each side. Find the four boxes, then combine the x boxes. Try x = 10 to see a two-digit multiplication.'), hint: t('stem.areamodel.algebra_about', 'The area model works for expressions: (x + a)(x + b) = x² + ax + bx + ab, because each of the four boxes is one side part times the other. Common Core 6.EE.3, 7.EE.1, HSA-APR.A.1.') },
+        word: { title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems — multiplication in the world'), start: t('stem.areamodel.start_word', 'Choose a word problem, use the model, then enter and check your answer.'), hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
+      };
+      var meta = MODE_META[viewMode];
 
       // ═══ BADGES PANEL ═══
       var renderBadges = function() {
-        var earned = Object.keys(badges).length;
+        var earned = BADGES.filter(function(b) { return badges[b.id]; }).length;
         if (earned === 0) return null;
-        return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-          h('p', { className: 'text-[0.6875rem] font-bold text-amber-600 uppercase tracking-wider mb-2' },
-            '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
-          ),
-          h('div', { className: 'flex flex-wrap gap-1.5' },
+        return h('div', { style: cardStyle },
+          h('h4', { id: 'am-badges-h', style: { fontSize: 12, fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 6px' } },
+            fill(t('stem.areamodel.badges_count', '🏅 Badges ({n} of {total})'), { n: earned, total: BADGES.length })),
+          h('ul', { 'aria-labelledby': 'am-badges-h', style: { display: 'flex', flexWrap: 'wrap', gap: 6, listStyle: 'none', padding: 0, margin: 0 } },
             BADGES.map(function(b) {
-              var has = badges[b.id];
-              return h('div', {
-                key: b.id, title: b.name + ': ' + b.desc,
-                className: 'w-8 h-8 rounded-lg flex items-center justify-center text-base ' +
-                  (has ? 'bg-amber-200 shadow-sm' : 'bg-slate-100 opacity-30'),
-                style: { filter: has ? 'none' : 'grayscale(1)' }
-              }, b.icon);
-            })
-          )
-        );
+              var has = !!badges[b.id];
+              return h('li', { key: b.id, title: b.name + ': ' + b.desc,
+                'aria-label': has ? fill(t('stem.areamodel.badge_earned', '{name}: {desc}. Earned.'), { name: b.name, desc: b.desc }) : fill(t('stem.areamodel.badge_locked', '{name}: {desc}. Not earned yet.'), { name: b.name, desc: b.desc }),
+                style: { width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, background: has ? C.card2 : 'transparent', border: '1px solid ' + (has ? C.accent : C.border), filter: has ? 'none' : 'grayscale(1)', opacity: has ? 1 : 0.45 } },
+                h('span', { 'aria-hidden': 'true' }, b.icon));
+            })));
       };
 
       // ═══ AI TUTOR PANEL ═══
       var renderAITutor = function() {
-        if (!showAITutor) return null;
-        return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
-          h('div', { className: 'flex items-center justify-between' },
-            h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.areamodel.ai_area_model_tutor', '\uD83E\uDD16 AI Area Model Tutor')),
-            h('button', { 'aria-label': t('stem.areamodel.close_ai_tutor_panel', 'Close AI tutor panel'), onClick: function() { upd({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
-          ),
-          h('div', { className: 'flex gap-2' },
-            h('input', {
-              type: 'text', value: aiQuestion,
+        if (!showAITutor || !canTutor) return null;
+        return h('div', { style: cardStyle },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+            h('h4', { style: { fontSize: 14, fontWeight: 900, color: C.info, margin: 0 } }, t('stem.areamodel.ai_area_model_tutor', '🤖 AI Area Model Tutor')),
+            h('button', { type: 'button', 'aria-label': t('stem.areamodel.close_ai_tutor_panel', 'Close AI tutor panel'), onClick: function() { upd({ showAITutor: false }); }, style: Object.assign(btnStyle('secondary'), { minWidth: 36 }) }, '×')),
+          h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
+            h('input', { type: 'text', value: aiQuestion,
               onChange: function(e) { upd({ aiQuestion: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
               placeholder: t('stem.areamodel.ask_about_area_models', 'Ask about area models...'),
               'aria-label': t('stem.areamodel.ask_the_area_model_tutor', 'Ask the area model tutor'),
-              className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
-            }),
-            h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
-              className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
-            }, aiLoading ? '\u23F3' : 'Ask')
-          ),
-          h('div', { className: 'flex flex-wrap gap-1.5' },
-            ['What is an area model?', 'How does distributive property work?', 'How to multiply 2-digit numbers?'].map(function(q) {
-              return h('button', { 'aria-label': t('stem.areamodel.ask_question', 'Ask question'),
-                key: q, onClick: function() { upd({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
-              }, q);
-            })
-          ),
-          aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
-        );
+              style: Object.assign({}, inputStyle, { flex: 1, fontSize: 14 }) }),
+            h('button', { type: 'button', onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(), 'aria-busy': aiLoading || undefined, style: btnStyle('primary', aiLoading || !aiQuestion.trim()) },
+              aiLoading ? t('stem.areamodel.ai_thinking', 'Thinking') : t('stem.areamodel.ask', 'Ask'))),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
+            [t('stem.areamodel.ai_q1', 'What is an area model?'), t('stem.areamodel.ai_q2', 'How does the distributive property work?'), t('stem.areamodel.ai_q3', 'How do I multiply 2-digit numbers?')].map(function(q, qi) {
+              return h('button', { type: 'button', key: 'q' + qi, onClick: function() { upd({ aiQuestion: q }); },
+                className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all',
+                style: { minHeight: 32, background: C.infoBg, color: C.info, border: '1px solid ' + C.info } }, q);
+            })),
+          aiResponse && h('div', { 'aria-live': 'polite', style: { marginTop: 8, padding: 10, borderRadius: 10, whiteSpace: 'pre-wrap', fontSize: 14, background: C.bg, color: C.ink, border: '1px solid ' + C.border } }, aiResponse));
+      };
+
+      // ═══ PATTERN LAB: distributive canvas + area-vs-perimeter discovery ═══
+      var canvasCaption = t('stem.areamodel.canvas_caption', 'Splitting a rectangle splits the multiplication: the two parts add back to the whole.');
+      var renderPatternLab = function() {
+        var iq = _a._areaHunt || {};
+        iq = Object.assign({ rows: 4, cols: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, iq);
+        function setIQ(patch) { upd({ _areaHunt: Object.assign({}, iq, patch) }); }
+        var area = iq.rows * iq.cols;
+        var perimeter = 2 * (iq.rows + iq.cols);
+        var state = area === perimeter ? 'special' : iq.rows === iq.cols ? 'square' : area > 50 ? 'large' : 'rectangle';
+        var sm = {
+          special: { label: t('stem.areamodel.special_case_area_perimeter_sum', '✨ Special case (area = perimeter)'), color: isDark ? '#c4b5fd' : '#6d28d9' },
+          square: { label: t('stem.areamodel.square_rows_cols', '🟦 Square (rows = cols)'), color: isDark ? '#67e8f9' : '#0e7490' },
+          large: { label: t('stem.areamodel.large_rectangle_area_50', '🟧 Large rectangle (area > 50)'), color: isDark ? '#fcd34d' : '#92400e' },
+          rectangle: { label: t('stem.areamodel.standard_rectangle', '🟩 Standard rectangle'), color: isDark ? '#86efac' : '#047857' }
+        }[state];
+        if (isContrast) sm = { label: sm.label, color: '#ffff00' };
+        var log = Array.isArray(iq.log) ? iq.log : [];
+        var cellStyle = { padding: '2px 6px', borderBottom: '1px solid ' + C.border, textAlign: 'right' };
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: cardStyle },
+            h('h4', { style: { fontSize: 14, fontWeight: 900, color: C.accent, margin: '0 0 6px' } }, t('stem.areamodel.distributive_property_a_b_c_ab_ac', '🔢 Distributive Property — a(b+c) = ab + ac')),
+            h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              style: { position: 'relative', background: '#0f172a', aspectRatio: '16/5', borderRadius: 12, overflow: 'hidden', border: '1px solid ' + C.border } },
+              h('button', {
+                type: 'button', 'data-allo-fs-btn': 'true', 'aria-pressed': 'false',
+                'aria-label': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
+                'data-fs-out': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
+                'data-fs-in': t('stem.areamodel.exit_fullscreen', 'Exit fullscreen area diagram (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(147,197,253,0.6)', color: '#dbeafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
+              h('canvas', {
+                role: 'img', tabIndex: 0, 'data-areamodel-canvas': true,
+                'aria-label': chOpen ? t('stem.areamodel.distributive_canvas_label_hidden', 'Diagram: a 3 by 6 rectangle split into a 3 by 4 part and a 3 by 2 part. 3 × (4 + 2) = 3 × 4 + 3 × 2.')
+                  : t('stem.areamodel.distributive_canvas_label', 'Diagram: a 3 by 6 rectangle split into a 3 by 4 part of 12 squares and a 3 by 2 part of 6 squares. 3 × (4 + 2) = 3 × 4 + 3 × 2 = 12 + 6 = 18.'),
+                ref: function(cvEl) {
+                  if (cvEl) cvEl._amHide = chOpen;
+                  if (!cvEl || cvEl._dpStarted) return;
+                  cvEl._dpStarted = true;
+                  var c2 = cvEl.getContext && cvEl.getContext('2d');
+                  if (!c2) return;
+                  var W = cvEl.offsetWidth || 600, H = cvEl.offsetHeight || 180;
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  if (c2.scale) c2.scale(2, 2);
+                  var start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                  function reduced() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+                  function draw(phase) {
+                    c2.fillStyle = '#0f172a'; c2.fillRect(0, 0, W, H);
+                    var unit = 16, ox = W * 0.1, oy = H * 0.3;
+                    c2.strokeStyle = '#fbbf24'; c2.lineWidth = 2; c2.strokeRect(ox, oy, 6 * unit, 3 * unit);
+                    c2.fillStyle = phase < 1 ? 'rgba(34,211,238,0.5)' : '#22d3ee'; c2.fillRect(ox, oy, 4 * unit, 3 * unit);
+                    c2.fillStyle = phase < 1 ? 'rgba(251,113,133,0.5)' : '#fb7185'; c2.fillRect(ox + 4 * unit, oy, 2 * unit, 3 * unit);
+                    c2.strokeStyle = 'rgba(255,255,255,0.45)'; c2.lineWidth = 0.75;
+                    for (var i = 1; i < 6; i++) { c2.beginPath(); c2.moveTo(ox + i * unit, oy); c2.lineTo(ox + i * unit, oy + 3 * unit); c2.stroke(); }
+                    for (var j = 1; j < 3; j++) { c2.beginPath(); c2.moveTo(ox, oy + j * unit); c2.lineTo(ox + 6 * unit, oy + j * unit); c2.stroke(); }
+                    c2.strokeStyle = '#fde047'; c2.lineWidth = 3; c2.beginPath(); c2.moveTo(ox + 4 * unit, oy); c2.lineTo(ox + 4 * unit, oy + 3 * unit); c2.stroke();
+                    c2.font = 'bold 14px sans-serif'; c2.textAlign = 'center';
+                    c2.fillStyle = '#22d3ee'; c2.fillText('3 × 4', ox + 2 * unit, oy - 6);
+                    c2.fillStyle = '#fb7185'; c2.fillText('3 × 2', ox + 5 * unit, oy - 6);
+                    c2.fillStyle = '#fbbf24'; c2.font = '12px sans-serif';
+                    c2.fillText('3', ox - 14, oy + 1.5 * unit + 5); c2.fillText('6', ox + 3 * unit, oy + 3 * unit + 14);
+                    c2.textAlign = 'left'; c2.font = 'bold 18px sans-serif'; c2.fillStyle = '#fde047';
+                    c2.fillText('3 × (4 + 2) = 3 × 4 + 3 × 2', W * 0.45, H * 0.4);
+                    c2.font = 'bold 14px sans-serif'; c2.fillText(cvEl._amHide ? '= ? + ? = ?' : '= 12 + 6 = 18', W * 0.45, H * 0.6);
+                    c2.fillStyle = 'rgba(0,0,0,0.85)'; c2.fillRect(8, H - 16, W - 16, 14);
+                    c2.font = 'bold 10px sans-serif'; c2.fillStyle = '#a5f3fc'; c2.textAlign = 'center';
+                    c2.fillText(canvasCaption, W / 2, H - 5);
+                  }
+                  // Reduced motion is read every frame: a still picture, re-checked twice a second.
+                  function frame() {
+                    if (!cvEl.isConnected) { if (cvEl._dpAnim) cancelAnimationFrame(cvEl._dpAnim); if (cvEl._dpTimer) clearTimeout(cvEl._dpTimer); if (cvEl._dpRO) cvEl._dpRO.disconnect(); return; }
+                    if (reduced()) { draw(1.5); cvEl._dpAnim = null; cvEl._dpTimer = setTimeout(frame, 500); return; }
+                    var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                    draw(((now - start) / 1000 * 0.4) % 2);
+                    cvEl._dpAnim = requestAnimationFrame(frame);
+                  }
+                  frame();
+                  if (typeof ResizeObserver === 'function') {
+                    var ro = new ResizeObserver(function() {
+                      W = cvEl.offsetWidth || W; H = cvEl.offsetHeight || H;
+                      cvEl.width = W * 2; cvEl.height = H * 2;
+                      if (c2.setTransform) { c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); }
+                      if (reduced()) draw(1.5);
+                    });
+                    cvEl._dpRO = ro;
+                    ro.observe(cvEl);
+                  }
+                },
+                style: { width: '100%', height: '100%', display: 'block' }
+              })),
+            h('p', { style: { fontSize: 12, color: C.sub, marginTop: 6 } }, canvasCaption)),
+          h('div', { style: cardStyle, 'data-area-discovery': true },
+            h('h3', { style: { fontSize: 14, fontWeight: 900, color: C.accent, margin: 0 } }, t('stem.areamodel.area_discovery', '📐 Area discovery')),
+            h('p', { style: { fontSize: 13, color: C.ink, margin: '4px 0 8px' } }, t('stem.areamodel.discovery_intro', 'Change the rows and columns. Compare the area (squares inside) with the perimeter (units around the edge). Can you find rectangles where the two numbers match?')),
+            h('div', { style: { padding: 8, borderRadius: 10, textAlign: 'center', border: '2px solid ' + sm.color, background: C.bg } },
+              h('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+              h('div', { style: { fontSize: 13, fontFamily: 'monospace', color: C.ink, marginTop: 4 } },
+                chOpen ? fill(t('stem.areamodel.discovery_readout_hidden', '{r} × {c} = ? sq units; perimeter = {p} units'), { r: iq.rows, c: iq.cols, p: perimeter })
+                  : fill(t('stem.areamodel.discovery_readout', '{r} × {c} = {area} sq units; perimeter = {p} units'), { r: iq.rows, c: iq.cols, area: area, p: perimeter }))),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 } },
+              [{ k: 'rows', l: t('stem.areamodel.disc_rows', 'Rows') }, { k: 'cols', l: t('stem.areamodel.disc_cols', 'Columns') }].map(function(s) {
+                return h('div', { key: s.k },
+                  h('label', { htmlFor: 'ar-' + s.k, style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.ink } }, s.l + ': ', h('span', { style: { fontFamily: 'monospace' } }, iq[s.k])),
+                  h('input', { id: 'ar-' + s.k, type: 'range', min: 1, max: 12, step: 1, value: iq[s.k],
+                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                    style: { width: '100%', minHeight: 32, accentColor: C.btn } }));
+              })),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+              h('button', { type: 'button', onClick: function() { setIQ({ log: log.concat([{ r: iq.rows, c: iq.cols, a: area, p: perimeter, st: state }]).slice(-8) }); say(t('stem.areamodel.disc_logged', 'Added to your table.')); }, style: btnStyle('secondary') }, t('stem.areamodel.log_v2', '📋 Add to my table')),
+              h('button', { type: 'button', onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: btnStyle('secondary') }, t('stem.areamodel.reset_2', '↺ Reset'))),
+            log.length > 0 && h('table', { style: { marginTop: 8, borderCollapse: 'collapse', fontSize: 13, color: C.ink } },
+              h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.disc_table', 'Rectangles you logged')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: cellStyle }, t('stem.areamodel.disc_rows', 'Rows')),
+                h('th', { scope: 'col', style: cellStyle }, t('stem.areamodel.disc_cols', 'Columns')),
+                h('th', { scope: 'col', style: cellStyle }, t('stem.areamodel.disc_area', 'Area (sq units)')),
+                h('th', { scope: 'col', style: cellStyle }, t('stem.areamodel.disc_perim', 'Perimeter (units)')))),
+              h('tbody', null, log.map(function(row, i) {
+                return h('tr', { key: 'lg' + i }, h('td', { style: cellStyle }, row.r), h('td', { style: cellStyle }, row.c), h('td', { style: cellStyle }, chOpen ? '?' : (row.a != null ? row.a : row.r * row.c)), h('td', { style: cellStyle }, row.p != null ? row.p : 2 * (row.r + row.c)));
+              }))),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.areamodel.hypothesis_when_does_area_rows_cols', 'Hypothesis: When does area equal perimeter?'),
+              'aria-label': t('stem.areamodel.area_hypothesis', 'Area relationship hypothesis'),
+              rows: 2, style: Object.assign({}, inputStyle, { width: '100%', marginTop: 8, fontSize: 13, fontWeight: 500 }) }),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: Object.assign({ marginTop: 6 }, btnStyle('secondary')) }, t('stem.areamodel.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('ul', { style: Object.assign({ marginTop: 6, paddingLeft: 24, listStyle: 'disc' }, noteStyle('warn')) },
+              h('li', null, t('stem.areamodel.find_sizes_where_area_perimeter_rare_i', 'Find sizes where area = perimeter (rare integers).')),
+              h('li', null, t('stem.areamodel.when_does_swapping_rows_cols_change_an', 'When does swapping rows/cols change anything?'))),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: C.ink, marginTop: 8, minHeight: 32, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 20, height: 20 } }),
+              t('stem.areamodel.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.areamodel.explain_commutative_property_area_leng', 'Explain commutative property + area = length × width.'),
+              'aria-label': t('stem.areamodel.area_explanation', 'Explain the area multiplication relationship'),
+              rows: 3, style: Object.assign({}, inputStyle, { width: '100%', marginTop: 6, fontSize: 13, fontWeight: 500 }) }),
+            h('p', { style: Object.assign({ marginTop: 8 }, noteStyle('info')) }, t('stem.areamodel.units_caveat', 'Careful with units: area is counted in square units and perimeter in units. “Area = perimeter” only means the two numbers match, not that the amounts are the same kind.')),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+              linkButton('areaPerimeter', t('stem.areamodel.area_perimeter_tool', 'Area & Perimeter Lab'), t('stem.areamodel.link_area_perimeter', 'Explore more in the Area & Perimeter Lab')))));
+      };
+
+      // ═══ START HERE: a short learning path for the level ═══
+      // Ticks come from the saved progress counts, so they survive a reload.
+      function pathSteps(b) {
+        // chKind: this step counts only that kind of challenge, so its Start opens that kind.
+        function step(id, mode, n, have, text, patch) { return { id: id, mode: mode, need: n, have: Math.min(n, have), done: have >= n, text: text, patch: patch || null }; }
+        if (b === 'g3') return [
+          step('g3_grid1', 'basic', 1, basicSolved, t('stem.areamodel.path_g3_grid1', 'Basic Grid: solve your first array challenge')),
+          step('g3_grid3', 'basic', 3, basicSolved, t('stem.areamodel.path_g3_grid3', 'Basic Grid: solve 3 array challenges')),
+          step('g3_dist1', 'distributive', 1, distSolved, t('stem.areamodel.path_g3_dist1', 'Distributive: split an array into two easier facts')),
+          step('g3_dist3', 'distributive', 3, distSolved, t('stem.areamodel.path_g3_dist3', 'Distributive: solve 3 split-array challenges')),
+          step('g3_word', 'word', 1, wordSolved, t('stem.areamodel.path_g3_word', 'Word Problems: solve a story about rows and groups'))
+        ];
+        if (b === 'g4') return [
+          step('g4_partial', 'multidigit', 2, multiSolved, t('stem.areamodel.path_g4_partial', 'Partial Products: solve 2 multi-digit challenges')),
+          step('g4_algo', 'algorithm', 1, algorithmSolved, t('stem.areamodel.path_g4_algo', 'Algorithm Bridge: predict every line of one problem')),
+          step('g4_div', 'division', 1, divisionSolved, t('stem.areamodel.path_g4_div', 'Division: find a missing side with partial quotients')),
+          step('g4_longdiv', 'division', 1, longDivSolved, t('stem.areamodel.path_g4_longdiv', 'Division: finish the bridge to long division')),
+          step('g4_rem', 'word', 1, remainderSolved, t('stem.areamodel.path_g4_rem', 'Word Problems: solve a remainder story and decide what the leftover means'), { wordKind: 'remainder' })
+        ];
+        if (b === 'g5') return [
+          step('g5_dec', 'multidigit', 2, decimalSolved, t('stem.areamodel.path_g5_dec', 'Partial Products: solve 2 decimal challenges'), { chKind: 'decimal' }),
+          step('g5_grid', 'grid100', 2, grid100Solved, t('stem.areamodel.path_g5_grid', 'Hundred Grid: solve 2 tenths-times-tenths challenges')),
+          step('g5_frac', 'fraction', 2, fractionSidesSolved, t('stem.areamodel.path_g5_frac', 'Fraction Sides: solve 2 fraction-side challenges')),
+          step('g5_word', 'word', 1, decFracStorySolved, t('stem.areamodel.path_g5_word', 'Word Problems: solve a decimal or fraction story'), { wordKind: 'decimal' })
+        ];
+        return [
+          step('g6_mult', 'algebra', 2, algebraSolved, t('stem.areamodel.path_g6_mult', 'Algebra Tiles: multiply two expressions, twice'), { algMode: 'multiply' }),
+          step('g6_factor', 'algebra', 1, factorSolved, t('stem.areamodel.path_g6_factor', 'Algebra Tiles: factor an expression into a tile rectangle'), { algMode: 'factor' }),
+          step('g6_signed', 'algebra', 1, factorSignedSolved, t('stem.areamodel.path_g6_signed', 'Algebra Tiles: factor with negative tiles and zero pairs'), { algMode: 'factor', facSigned: true }),
+          step('g6_pct', 'grid100', 1, percentSolved, t('stem.areamodel.path_g6_pct', 'Hundred Grid: find a percent of a percent'), { chKind: 'pct' }),
+          step('g6_word', 'word', 1, wordSolved, t('stem.areamodel.path_g6_word', 'Word Problems: solve a story at your level'))
+        ];
+      }
+      function stepFits(st, ch) {
+        var p = st.patch || {};
+        if (p.chKind === 'decimal') return CORE.decimalsOf(ch.a) > 0 || CORE.decimalsOf(ch.b) > 0;
+        if (p.chKind === 'pct') return ch.kind === 'pct';
+        if (p.wordKind === 'remainder') return ch.wkind === 'remainder';
+        if (p.wordKind === 'decimal') return ch.wkind === 'decimal' || ch.wkind === 'fraction';
+        return true;
+      }
+      function goStep(st) {
+        var patch = { viewMode: st.mode };
+        if (st.patch && st.patch.algMode) patch.algMode = st.patch.algMode;
+        if (st.patch && st.patch.wordKind) patch.wordKind = st.patch.wordKind;
+        if (st.patch && st.patch.algMode === 'factor' && !!st.patch.facSigned !== facSigned) {
+          var F = st.patch.facSigned ? CORE.facGenSigned(difficulty, Math.random) : CORE.facGen(difficulty, Math.random);
+          patch.fac = { F: F, signed: !!st.patch.facSigned, p: 1, q: 1, tries: 0, code: null, done: null, credited: false, hints: 0 };
+        }
+        // A step on a challenge tab starts its challenge, or goes back to the one already open there.
+        var isFactor = !!(st.patch && st.patch.algMode === 'factor');
+        if (CHALLENGE_MODES.indexOf(st.mode) >= 0 && !isFactor && !(chOpen && challenge.mode === st.mode && stepFits(st, challenge))) {
+          genChallenge(st.mode, st.patch && st.patch.wordKind ? st.patch.wordKind : null, patch, function(c) { return stepFits(st, c); });
+          return;
+        }
+        sfxClick();
+        upd(patch);
+        say(fill(t('stem.areamodel.path_go_sr', 'Opened {tab}. {step}'), { tab: MODE_NAMES[st.mode], step: st.text }));
+        var LEARN_FIRST = {
+          algorithm: ['#am-algo-input', '[data-algo-new]'],
+          division: ['[data-div-input]', '[data-div-chip]', '[data-div-final]', '[data-div-new]'],
+          algebra: ['[data-fac-step]:not([disabled])', '[data-fac-new]', '[data-challenge-prompt]']
+        };
+        focusLearn(CHALLENGE_MODES.indexOf(st.mode) >= 0 && !isFactor ? ['[data-challenge-prompt]'] : (LEARN_FIRST[st.mode] || ['[role="tabpanel"]']));
+      }
+      var renderPath = function() {
+        if (teacher.hidePath && !isTeacher) return null;
+        var steps = pathSteps(band).filter(function(st) { return visibleModes.indexOf(st.mode) >= 0; });
+        if (!steps.length) return null;
+        var doneN = steps.filter(function(st) { return st.done; }).length;
+        var nextIx = -1;
+        steps.some(function(st, i) { if (!st.done) { nextIx = i; return true; } return false; });
+        // Folded by default to one "Next" line so the model sits near the top; the full list opens on request.
+        var closed = _a.pathOpen !== true;
+        var nx = nextIx >= 0 ? steps[nextIx] : null;
+        return h('section', { 'aria-labelledby': 'am-path-h', 'data-areamodel-path': band, 'data-path-compact': closed ? 'true' : 'false', style: Object.assign({}, cardStyle, { display: 'flex', flexDirection: 'column', gap: 8, padding: closed ? '6px 12px' : cardStyle.padding }) },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+            h('h3', { id: 'am-path-h', style: { fontSize: 15, fontWeight: 900, color: C.accent, margin: 0, flex: closed ? '0 0 auto' : '1 1 200px' } }, closed ? t('stem.areamodel.path_title_short', 'Start here') : fill(t('stem.areamodel.path_title', 'Start here: {band}'), { band: BAND_NAMES[band] })),
+            closed && nx && h('p', { 'data-path-next': nx.id, style: { flex: '1 1 220px', minWidth: 0, margin: 0, fontSize: 14, fontWeight: 800, color: C.ink } },
+              fill(t('stem.areamodel.path_next_line', 'Next: step {n}: {step}'), { n: nextIx + 1, step: nx.text }),
+              nx.need > 1 ? ' ' + fill(t('stem.areamodel.path_progress', '({k} of {n})'), { k: nx.have, n: nx.need }) : ''),
+            closed && nx && h('button', { type: 'button', 'data-path-go': nx.id, onClick: function() { goStep(nx); },
+              'aria-label': fill(t('stem.areamodel.path_start_label', 'Start step {n}: {step}'), { n: nextIx + 1, step: nx.text }),
+              style: Object.assign(btnStyle('primary'), { minHeight: 44, minWidth: 64 }) }, t('stem.areamodel.path_go_next', 'Start')),
+            closed && !nx && h('p', { 'data-path-all-done': true, style: Object.assign({ flex: '1 1 220px', margin: 0 }, noteStyle('ok')) }, t('stem.areamodel.path_all_done', 'You finished the path for this level. Try the More tabs, or a harder level.')),
+            h('span', { 'data-path-count': doneN, style: { fontSize: 13, fontWeight: 800, color: C.ink } }, fill(t('stem.areamodel.path_count', '{k} of {n} done'), { k: doneN, n: steps.length })),
+            h('button', { type: 'button', 'aria-expanded': !closed, 'aria-controls': closed ? undefined : 'am-path-list', 'data-path-toggle': true, onClick: function() { upd({ pathOpen: closed }); }, style: Object.assign(btnStyle('secondary'), { minHeight: 44 }) },
+              closed ? t('stem.areamodel.path_show_all', 'Show all steps') : t('stem.areamodel.path_hide_steps', 'Hide the steps'))),
+          !closed && h('ol', { id: 'am-path-list', style: { margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 } },
+            steps.map(function(st, i) {
+              var isNext = i === nextIx;
+              return h('li', { key: st.id, 'data-path-step': st.id, 'data-path-done': st.done ? 'true' : 'false', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '4px 6px', borderRadius: 8, border: '1px solid ' + (isNext ? C.accent : C.border), background: st.done ? C.okBg : 'transparent' } },
+                h('span', { 'aria-hidden': 'true', style: { width: 26, height: 26, borderRadius: 999, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14, color: st.done ? C.ok : C.ink, border: '2px solid ' + (st.done ? C.ok : C.ctrl) } }, st.done ? '✓' : String(i + 1)),
+                h('span', { style: { flex: '1 1 200px', fontSize: 13, fontWeight: isNext ? 800 : 600, color: C.ink } },
+                  st.text,
+                  st.need > 1 ? ' ' + fill(t('stem.areamodel.path_progress', '({k} of {n})'), { k: st.have, n: st.need }) : '',
+                  h('span', { className: 'sr-only' }, ' ' + (st.done ? t('stem.areamodel.path_done_sr', 'Done.') : t('stem.areamodel.path_todo_sr', 'Not done yet.')))),
+                h('button', { type: 'button', 'data-path-go': st.id, onClick: function() { goStep(st); },
+                  'aria-label': isNext ? fill(t('stem.areamodel.path_start_label', 'Start step {n}: {step}'), { n: i + 1, step: st.text }) : fill(t('stem.areamodel.path_open_label', 'Open step {n}: {step}'), { n: i + 1, step: st.text }),
+                  style: Object.assign(btnStyle(isNext ? 'primary' : 'secondary'), { minHeight: 44 }) },
+                  isNext ? t('stem.areamodel.path_go_next', 'Start') : t('stem.areamodel.path_go', 'Open')));
+            })),
+          !closed && doneN === steps.length && h('p', { style: noteStyle('ok') }, t('stem.areamodel.path_all_done', 'You finished the path for this level. Try the More tabs, or a harder level.')));
+      };
+
+      // ═══ TEACHER PANEL (isTeacherMode only) ═══
+      var renderTeacher = function() {
+        if (!isTeacher) return null;
+        function setT(p) { upd({ teacher: Object.assign({}, teacher, p) }); }
+        var log = Array.isArray(_a.missedLog) ? _a.missedLog : [];
+        var counts = {};
+        log.forEach(function(e) { var nm = mistakeName(e.c); counts[nm] = (counts[nm] || 0) + 1; });
+        var countRows = Object.keys(counts).sort(function(x, y) { return counts[y] - counts[x]; });
+        var cell = { padding: '3px 6px', borderBottom: '1px solid ' + C.border, textAlign: 'left' };
+        var chk = function(label, on, onCh, id) {
+          return h('label', { key: id, style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.ink, minHeight: 32 } },
+            h('input', { type: 'checkbox', checked: !!on, 'data-teacher-control': id, onChange: function(e) { onCh(e.target.checked); }, style: { width: 20, height: 20 } }), label);
+        };
+        return h('section', { 'aria-labelledby': 'am-teacher-h', 'data-areamodel-teacher': true, style: Object.assign({}, cardStyle, { border: '2px dashed ' + C.accent }) },
+          h('h3', { id: 'am-teacher-h', style: { fontSize: 15, fontWeight: 900, color: C.accent, margin: 0 } }, t('stem.areamodel.teacher_title', 'Teacher tools')),
+          h('p', { style: { fontSize: 12, color: C.sub, margin: '2px 0 8px' } }, t('stem.areamodel.teacher_intro', 'Only you see this panel. Settings apply to this Area Model on this device.')),
+          h('fieldset', { style: { minWidth: 0, border: '1px solid ' + C.border, borderRadius: 10, padding: 8 } },
+            h('legend', { style: { fontSize: 13, fontWeight: 800, color: C.ink, padding: '0 4px' } }, t('stem.areamodel.teacher_level', 'Level')),
+            chk(t('stem.areamodel.teacher_lock_band', 'Lock the level for students'), teacher.lockBand, function(v) { setT({ lockBand: v, band: teacher.band || band }); }, 'lockBand'),
+            h('label', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 13, color: C.ink } }, t('stem.areamodel.teacher_band', 'Locked level'),
+              h('select', { value: teacher.band || band, 'data-teacher-control': 'band', onChange: function(e) { setT({ band: e.target.value }); }, style: Object.assign({}, inputStyle, { fontSize: 13, maxWidth: '100%', minWidth: 0 }) },
+                BANDS.map(function(b) { return h('option', { key: b, value: b }, BAND_NAMES_TEACHER[b]); })))),
+          h('fieldset', { style: { minWidth: 0, border: '1px solid ' + C.border, borderRadius: 10, padding: 8, marginTop: 8 } },
+            h('legend', { style: { fontSize: 13, fontWeight: 800, color: C.ink, padding: '0 4px' } }, t('stem.areamodel.teacher_tabs', 'Tabs students can open')),
+            tabOrder.map(function(m) {
+              return chk(MODE_NAMES[m], !hiddenModes[m], function(v) {
+                var hid = Object.assign({}, hiddenModes); if (v) delete hid[m]; else hid[m] = true;
+                if (MODES.every(function(x) { return hid[x]; })) return;
+                setT({ hidden: hid });
+              }, 'tab-' + m);
+            })),
+          h('fieldset', { style: { minWidth: 0, border: '1px solid ' + C.border, borderRadius: 10, padding: 8, marginTop: 8 } },
+            h('legend', { style: { fontSize: 13, fontWeight: 800, color: C.ink, padding: '0 4px' } }, t('stem.areamodel.teacher_support', 'Support')),
+            chk(t('stem.areamodel.teacher_allow_reveal', 'Allow “Show the answer” after two tries (no points)'), !teacher.noReveal, function(v) { setT({ noReveal: !v }); }, 'allowReveal'),
+            chk(t('stem.areamodel.teacher_predict', 'Students predict before products appear'), teacher.predictFirst, function(v) { setT({ predictFirst: v }); }, 'predictFirst'),
+            chk(t('stem.areamodel.teacher_show_path', 'Show students the Start-here path for their level'), !teacher.hidePath, function(v) { setT({ hidePath: !v }); }, 'showPath')),
+          h('div', { style: { marginTop: 8 } },
+            h('h4', { style: { fontSize: 13, fontWeight: 900, color: C.ink, margin: '0 0 4px' } }, t('stem.areamodel.teacher_summary', 'Missed-items summary')),
+            h('p', { style: { fontSize: 13, color: C.ink } }, fill(t('stem.areamodel.teacher_stats', 'Score {c} of {n}. Hints used: {h}. Answers revealed: {r}.'), { c: score.correct, n: score.total, h: _a.hintsUsed || 0, r: _a.revealsUsed || 0 })),
+            log.length === 0 ? h('p', { style: { fontSize: 13, color: C.sub } }, t('stem.areamodel.teacher_no_misses', 'No missed items yet.'))
+              : h('div', { style: { overflowX: 'auto' } },
+                  h('table', { 'data-teacher-misses': true, style: { borderCollapse: 'collapse', fontSize: 13, color: C.ink } },
+                    h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.teacher_by_mistake', 'Mistakes by type')),
+                    h('thead', null, h('tr', null, h('th', { scope: 'col', style: cell }, t('stem.areamodel.teacher_col_mistake', 'Mistake')), h('th', { scope: 'col', style: cell }, t('stem.areamodel.teacher_col_count', 'Count')))),
+                    h('tbody', null, countRows.map(function(nm) { return h('tr', { key: nm }, h('td', { style: cell }, nm), h('td', { style: cell }, counts[nm])); }))),
+                  h('table', { style: { borderCollapse: 'collapse', fontSize: 13, color: C.ink, marginTop: 8 } },
+                    h('caption', { style: { textAlign: 'left', fontWeight: 800 } }, t('stem.areamodel.teacher_recent', 'Most recent missed items')),
+                    h('thead', null, h('tr', null,
+                      h('th', { scope: 'col', style: cell }, t('stem.areamodel.teacher_col_tab', 'Tab')),
+                      h('th', { scope: 'col', style: cell }, t('stem.areamodel.teacher_col_problem', 'Problem')),
+                      h('th', { scope: 'col', style: cell }, t('stem.areamodel.teacher_col_mistake', 'Mistake')))),
+                    h('tbody', null, log.slice(-10).reverse().map(function(e, i) {
+                      return h('tr', { key: 'm' + i }, h('td', { style: cell }, MODE_NAMES[e.m] || e.m), h('td', { style: cell }, e.p), h('td', { style: cell }, mistakeName(e.c)));
+                    })))),
+            log.length > 0 && h('button', { type: 'button', onClick: function() { upd({ missedLog: [] }); }, style: Object.assign({ marginTop: 6 }, btnStyle('secondary')) }, t('stem.areamodel.teacher_clear', 'Clear the missed-items log'))));
       };
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 w-full px-2 sm:px-4 max-w-7xl mx-auto animate-in fade-in duration-200', 'data-areamodel-root': 'true' },
+      var tabIds = visibleModes;
+      return h('div', { 'data-areamodel-root': 'true', className: 'w-full max-w-7xl mx-auto',
+          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, background: C.bg, color: C.ink, borderRadius: 16 } },
         // Header
-        h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.areamodel.back', 'Back') },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-amber-800' + onHostInk }, t('stem.areamodel.area_model', '\uD83D\uDFE7 Area Model')),
-          h('div', { className: 'ml-auto flex items-center gap-3' },
-            streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[0.6875rem] text-slate-600' + onHostInk }, 'Best: ' + bestStreak),
-            h('span', { className: 'text-xs font-bold text-amber-800' + onHostInk }, score.correct + '/' + score.total),
-            h('button', {
-              onClick: function() {
-                var next = !muted;
-                upd({ muted: next });
-                if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
-                announceToSR(next ? 'Sound muted' : 'Sound on');
-              },
-              'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
-              'aria-pressed': muted,
-              title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
-              className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-400' : 'text-amber-700')
-            }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
-            h('button', {
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+          h('button', { type: 'button', onClick: function() { if (typeof setStemLabTool === 'function') setStemLabTool(null); }, 'aria-label': t('stem.areamodel.back', 'Back'), style: Object.assign(btnStyle('secondary'), { minWidth: 40, minHeight: 40 }) },
+            ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←'),
+          h('h2', { style: { fontSize: 18, fontWeight: 900, color: C.accent, margin: 0 } }, t('stem.areamodel.area_model', '🟧 Area Model')),
+          h('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+            bestStreak > 0 && h('span', { style: { fontSize: 12, color: C.sub } }, fill(t('stem.areamodel.best_streak', 'Best streak: {n}'), { n: bestStreak })),
+            h('span', { 'aria-label': fill(t('stem.areamodel.score_label', 'Score: {c} correct out of {n} challenges'), { c: score.correct, n: score.total }), style: { fontSize: 13, fontWeight: 800, color: C.ink } }, score.correct + '/' + score.total),
+            h('button', { type: 'button',
+              onClick: function() { var next = !muted; upd({ muted: next }); if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); } say(next ? t('stem.areamodel.sound_muted', 'Sound muted') : t('stem.areamodel.sound_on', 'Sound on')); },
+              'aria-label': t('stem.areamodel.sound_effects', 'Sound effects'), 'aria-pressed': !muted,
+              title: muted ? t('stem.areamodel.sound_off_title', 'Sounds are off') : t('stem.areamodel.sound_on_title', 'Sounds are on'),
+              style: Object.assign(btnStyle('secondary'), { minWidth: 40 }) }, h('span', { 'aria-hidden': 'true' }, muted ? '🔇' : '🔊')),
+            h('button', { type: 'button',
               onClick: function() {
                 sfxClick();
-                upd({
-                  dims: { rows: 4, cols: 6 },
-                  highlight: { rows: 0, cols: 0 },
-                  challenge: null, answer: '', feedback: null,
-                  swapped: false, splitAt: 3,
-                  multiDims: { a: 23, b: 14 },
-                  wordCtxIdx: 0, wordDims: { a: 4, b: 6 },
-                  streak: 0, viewMode: 'basic'
-                });
-                announceToSR('Area model reset to defaults');
+                upd({ dims: { rows: 4, cols: 6 }, highlight: { rows: 0, cols: 0 }, challenge: null, answer: '', ansParts: { A: '', B: '', C: '' }, feedback: null, swapped: false, splitAt: 3,
+                  multiDims: { a: 23, b: 14 }, multiDraft: null, dimsDraft: null, wordCtxIdx: 0, wordDims: { a: 4, b: 6 }, streak: 0, viewMode: visibleModes[0], pred: null, predDraft: '', gridFocus: null,
+                  div: null, fac: null, g100: null, algMode: 'multiply', aiHint: null, cuts: null, partialSelection: null });
+                say(t('stem.areamodel.reset_done', 'Area model reset to its starting values.'));
               },
-              'aria-label': t('stem.areamodel.reset_everything', 'Reset everything'),
-              title: t('stem.areamodel.reset_all_dimensions_and_challenges', 'Reset all dimensions and challenges'),
-              className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
-            }, t('stem.areamodel.reset', '\u21BA Reset'))
-          )
-        ),
+              'aria-label': t('stem.areamodel.reset_everything', 'Reset everything'), title: t('stem.areamodel.reset_all_dimensions_and_challenges', 'Reset all dimensions and challenges'),
+              style: btnStyle('secondary') }, t('stem.areamodel.reset', '↺ Reset')))),
 
-        // Mode tabs
-        h('div', { className: 'grid grid-cols-2 sm:flex gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200', role: 'tablist', 'aria-label': t('stem.areamodel.area_model_modes', 'Area Model modes') },
-          [
-            { id: 'basic', icon: '\uD83D\uDFE7', label: t('stem.areamodel.basic_grid', 'Basic Grid') },
-            { id: 'distributive', icon: '\u2702\uFE0F', label: t('stem.areamodel.distributive', 'Distributive') },
-            { id: 'multidigit', icon: '\uD83D\uDCCA', label: t('stem.areamodel.partial_products', 'Partial Products') },
-            { id: 'word', icon: '\uD83D\uDCDD', label: t('stem.areamodel.word_problems', 'Word Problems') }
-          ].map(function(m, tabIndex) {
+        // Settings (level, predict first) wait behind one disclosure; related tools sit beside it.
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'flex-start' } },
+          h('details', { 'data-areamodel-settings': true, style: Object.assign({}, cardStyle, { padding: '2px 10px', flex: '1 1 260px', minWidth: 0 }) },
+            h('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 800, color: C.ink, padding: '11px 0', lineHeight: '18px' } },
+              fill(t('stem.areamodel.settings_summary', 'Settings: {level}'), { level: BAND_NAMES[band] })),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', padding: '4px 0 8px' } },
+              h('label', { htmlFor: 'am-band', style: { fontSize: 13, fontWeight: 800, color: C.ink } }, t('stem.areamodel.level_label', 'Level')),
+              h('select', { id: 'am-band', value: band, disabled: !!teacher.lockBand && !isTeacher, onChange: function(e) { upd({ band: e.target.value }); }, style: Object.assign({}, inputStyle, { fontSize: 13, maxWidth: '100%' }) },
+                BANDS.map(function(b) { return h('option', { key: b, value: b }, BAND_NAMES[b]); })),
+              teacher.lockBand && h('span', { style: { fontSize: 12, color: C.sub } }, t('stem.areamodel.level_locked', 'Your teacher set this level.')),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.ink, minHeight: 32, cursor: 'pointer' } },
+                h('input', { type: 'checkbox', checked: predictOn, disabled: !!teacher.predictFirst && !isTeacher, onChange: function(e) { upd({ predictFirst: e.target.checked }); }, style: { width: 20, height: 20 } }),
+                t('stem.areamodel.predict_toggle', 'Predict before I see the product')))),
+          h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' } },
+            (viewMode === 'basic' || viewMode === 'word') && linkButton('multtable', t('stem.areamodel.multtable_tool', 'Multiplication Table'), t('stem.areamodel.link_multtable', 'Practise facts: Multiplication Table')),
+            linkButton('areaPerimeter', t('stem.areamodel.area_perimeter_tool', 'Area & Perimeter Lab'), t('stem.areamodel.link_area_perimeter_short', 'Area & Perimeter Lab')))),
+
+        // Start here: the learning path for the level
+        renderPath(),
+
+        // Mode tabs: the level's core activities first, then "More"
+        h('div', { role: 'tablist', 'aria-label': t('stem.areamodel.area_model_modes', 'Area Model modes'), 'data-tab-order': tabIds.join(','), style: { display: 'flex', flexWrap: 'wrap', gap: 4, padding: 4, borderRadius: 12, background: C.card, border: '1px solid ' + C.border } },
+          tabOrder.map(function(id) { return { id: id }; }).map(function(m, tabIndex) {
+            // Teacher-hidden tabs drop out; arrow keys move among the visible ones.
+            var pos = tabIds.indexOf(m.id);
+            if (pos < 0) return null;
+            m = { id: m.id, icon: MODE_ICONS[m.id], label: MODE_NAMES[m.id], order: tabIndex };
             var active = viewMode === m.id;
-            return h('button', { key: m.id, id: 'stem-areamodel-tab-' + m.id,
+            var n = tabIds.length;
+            var firstMore = coreModes.indexOf(m.id) < 0 && (pos === 0 || coreModes.indexOf(tabIds[pos - 1]) >= 0);
+            return h(React.Fragment, { key: m.id },
+              firstMore && pos > 0 && h('span', { 'aria-hidden': 'true', 'data-tab-more': true, style: { flexBasis: '100%', fontSize: 12, fontWeight: 800, color: C.sub, padding: '4px 6px 0' } }, t('stem.areamodel.tabs_more', 'More activities')),
+              h('button', { id: 'stem-areamodel-tab-' + m.id, type: 'button',
               role: 'tab', 'aria-selected': active,
               'aria-controls': 'stem-areamodel-panel-' + m.id,
               tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                var next = tabIndex;
-                if (e.key === 'ArrowRight') next = (tabIndex + 1) % 4;
-                else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + 4) % 4;
+                var next = pos;
+                var tabIndex = pos;
+                if (e.key === 'ArrowRight') next = (tabIndex + 1) % n;
+                else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + n) % n;
                 else if (e.key === 'Home') next = 0;
-                else if (e.key === 'End') next = 3;
+                else if (e.key === 'End') next = n - 1;
                 else return;
                 e.preventDefault();
                 var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
                 if (tabs[next]) tabs[next].focus();
-                var ids = ['basic', 'distributive', 'multidigit', 'word'];
-                upd({ viewMode: ids[next] });
+                upd({ viewMode: tabIds[next] });
               },
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
-              className: 'flex-1 min-w-0 py-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm font-bold transition-all ' +
-                (active ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-700 hover:text-amber-800')
-            }, m.icon + ' ' + m.label);
-          })
-        ),
+              style: { flex: '1 1 120px', minHeight: 40, padding: '6px 8px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                background: active ? C.bg : 'transparent', color: active ? C.accent : C.ink, border: active ? '2px solid ' + C.accent : '2px solid transparent' }
+            }, h('span', { 'aria-hidden': 'true' }, m.icon + ' '), m.label, coreModes.indexOf(m.id) >= 0 ? h('span', { className: 'sr-only' }, ' ' + t('stem.areamodel.tab_recommended', '(fits your level)')) : null,
+              isTeacher && hiddenModes[m.id] ? h('span', { style: { fontSize: 11, fontWeight: 600 } }, ' ' + t('stem.areamodel.tab_hidden_note', '(hidden from students)')) : null));
+          })),
 
-        // ── Topic-accent hero band per mode ──
+        // Tab panel: the real content of the selected mode
         h('section', {
           id: 'stem-areamodel-panel-' + viewMode,
           role: 'tabpanel',
           'aria-labelledby': 'stem-areamodel-tab-' + viewMode,
           tabIndex: 0,
           'data-areamodel-focus': 'true',
-          className: 'rounded-2xl border border-amber-200 bg-white p-4 shadow-sm',
-          style: { background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 48%, #f8fafc 100%)' }
-        }, h('p', { className: 'text-sm font-bold text-slate-800' }, activeFactorA + ' × ' + activeFactorB + (challenge && !(feedback && feedback.correct) ? ' = ?' : ' = ' + activeProduct))),
-
-        (function() {
-          var MODE_META = {
-            basic:        { accent: '#92400e', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid \u2014 multiplication as area'),                hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
-            distributive: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: t('stem.areamodel.distributive_split_the_rectangle_keep_', 'Distributive \u2014 split the rectangle, keep the area'), hint: t('stem.areamodel.a_b_c_ab_ac_cut_a_4_7_grid_into_a_4_5_', 'a(b+c) = ab + ac. Cut a 4\u00d77 grid into a 4\u00d75 + 4\u00d72; same total. The distributive property is the algebraic backbone of every later expansion. Common Core 3.OA.5.') },
-            multidigit:   { accent: '#155e75', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: t('stem.areamodel.partial_products_live', 'Partial products — split each factor by place value'),       hint: t('stem.areamodel.partial_products_guidance', 'Split both factors into tens and ones. Multiply each pair of parts, then add the partial products. The total matches the whole rectangle.') },
-            word:         { accent: '#065f46', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: t('stem.areamodel.word_problems_multiplication_in_the_wo', 'Word Problems \u2014 multiplication in the world'),   hint: t('stem.areamodel.a_garden_with_4_rows_of_6_plants_a_the', 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.') }
-          };
-          var meta = MODE_META[viewMode] || MODE_META.basic;
-              var startInstructions = {"basic":"Change Rows and Columns to resize the array. Select a square to highlight part of it.","distributive":"Adjust the factors and split to see how two smaller products make the total.","word":"Choose a word problem, use the model, then enter and check your answer.","multidigit":"Set the factors, then connect each smaller rectangle to its partial product."};
-          return h('div', {
-            style: {
-              margin: '12px 0 0',
-              padding: '12px 14px',
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
-              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-            }
-          },
-            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 12, borderRadius: 16, background: C.card2, border: '1px solid ' + C.border }
+        },
+          h('p', { style: { fontSize: 15, fontWeight: 800, color: C.ink, margin: 0 } }, heroText),
+          // The question sits above the model (Partial Products and Word Problems place it inside their model card).
+          viewMode !== 'multidigit' && viewMode !== 'word' && promptBlock(),
+          h('div', { style: { padding: '10px 12px', borderRadius: 12, borderLeft: '4px solid ' + C.accent, background: C.bg, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 28 } }, MODE_ICONS[viewMode]),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { className: 'mt-2 text-sm leading-relaxed' }, t('stem.areamodel.start_' + viewMode, startInstructions[viewMode] || startInstructions.basic)),
-              h('details', { className: 'math-learning-note' },
-                h('summary', null, t('stem.areamodel.about_model', 'About this activity')),
-                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint))
-            )
-          );
-        })(),
+              h('h3', { style: { color: C.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.25 } }, meta.title),
+              h('p', { style: { marginTop: 6, fontSize: 14, color: C.ink } }, meta.start),
+              h('details', { className: 'math-learning-note', style: { marginTop: 4 } },
+                h('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 700, color: C.ink, minHeight: 28 } }, t('stem.areamodel.about_model', 'About this activity')),
+                h('p', { style: { margin: '4px 0 0', color: C.sub, fontSize: 13, lineHeight: 1.45 } }, meta.hint)))),
+          chOpen && !chHere && h('p', { style: noteStyle('warn') }, t('stem.areamodel.hidden_note', 'Products are hidden while a challenge is open.')),
 
-        // Sliders (basic + distributive modes)
-        (viewMode === 'basic' || viewMode === 'distributive') && h('div', { className: 'grid grid-cols-2 gap-3' },
-          h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
-            h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.rows_factor_1', 'Rows (Factor 1)')),
-            h(React.Fragment, null, h('input', {
-              type: 'range', min: '1', max: '12', value: dims.rows,
-              onChange: function(e) { upd({ dims: { rows: parseInt(e.target.value), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
-              'aria-label': t('stem.areamodel.number_of_rows', 'Number of rows'),
-              className: 'w-full accent-amber-600', style: { minHeight: 32 }
-            }), h('input', {
-              type: 'number', min: '1', max: '12', value: dims.rows,
-              onChange: function(e) { upd({ dims: { rows: Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1)), cols: dims.cols }, highlight: { rows: 0, cols: 0 } }); },
-              'aria-label': t('stem.areamodel.number_of_rows', 'Number of rows') + ' (exact value)',
-              className: 'w-full rounded-lg border border-amber-600 bg-white p-2 text-base text-slate-900'
-            }))
-          ),
-          h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-100' },
-            h('label', { className: 'block text-xs text-amber-700 mb-1 font-bold' }, t('stem.areamodel.columns_factor_2', 'Columns (Factor 2)')),
-            h(React.Fragment, null, h('input', {
-              type: 'range', min: '1', max: '12', value: dims.cols,
-              onChange: function(e) { upd({ dims: { rows: dims.rows, cols: parseInt(e.target.value) }, highlight: { rows: 0, cols: 0 } }); },
-              'aria-label': t('stem.areamodel.number_of_columns', 'Number of columns'),
-              className: 'w-full accent-amber-600', style: { minHeight: 32 }
-            }), h('input', {
-              type: 'number', min: '1', max: '12', value: dims.cols,
-              onChange: function(e) { upd({ dims: { rows: dims.rows, cols: Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1)) }, highlight: { rows: 0, cols: 0 } }); },
-              'aria-label': t('stem.areamodel.number_of_columns', 'Number of columns') + ' (exact value)',
-              className: 'w-full rounded-lg border border-amber-600 bg-white p-2 text-base text-slate-900'
-            }))
-          )
-        ),
-
-        // Grid / Visualization (wrapped in mode-specific atmospheric background)
-        viewMode === 'basic' && h('div', { className: 'allo-am-bg-basic' }, renderBasicGrid()),
-        viewMode === 'distributive' && h('div', { className: 'allo-am-bg-distributive' }, renderDistributive()),
-        viewMode === 'multidigit' && h('div', { className: 'allo-am-bg-multidigit' }, renderMultiDigit()),
-        viewMode === 'word' && h('div', { className: 'allo-am-bg-word' }, renderWordProblem()),
-
-        // Product display (basic mode, no active challenge)
-        viewMode === 'basic' && !(challenge && !feedback) && h('div', { className: 'bg-white rounded-xl p-4 border border-amber-100 text-center' },
-          h('div', { className: 'text-xl font-bold text-amber-800' },
-            rows + ' \u00d7 ' + cols + ' = ',
-            h('span', { className: 'text-3xl text-amber-600' }, rows * cols)
-          ),
-          highlight.rows > 0 && highlight.cols > 0 && h('div', { className: 'text-sm text-amber-600 mt-1' },
-            'Selected: ' + highlight.rows + ' \u00d7 ' + highlight.cols + ' = ' + (highlight.rows * highlight.cols) + ' (click squares to highlight)')
-        ),
-
-        // Commutative toggle (basic mode)
-        viewMode === 'basic' && h('div', { className: 'flex flex-wrap items-center gap-3' },
-          h('button', { 'aria-label': t('stem.areamodel.clear_highlight', 'Clear highlight'),
-            onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
-            className: 'text-xs text-slate-600 hover:text-amber-600' + onHostInk
-          }, t('stem.areamodel.clear_highlight_2', 'Clear highlight')),
-          h('button', { 'aria-pressed': swapped,
-            onClick: function() {
-              sfxClick();
-              upd({ swapped: !swapped, usedCommutative: true });
-              checkBadges(Object.assign(getBadgeUpdates(), { usedCommutative: true }));
-            },
-            className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
-              (swapped ? 'bg-violet-100 text-violet-700 border border-violet-600' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-400')
-          },
-            t('stem.areamodel.swap_rows_columns', 'Swap rows and columns') + ': ' + rows + ' \u00d7 ' + cols
-          ),
-          swapped && h('span', { className: 'text-xs text-violet-500 italic' }, t('stem.areamodel.same_product_a_b_b_a', '\uD83D\uDCA1 Same product! a\u00d7b = b\u00d7a'))
-        ),
-
-        // Challenge section
-        h('div', { className: 'bg-amber-50 rounded-xl p-4 border border-amber-200 space-y-3' },
-          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-            h('div', { className: 'flex flex-wrap items-center gap-2' },
-              h('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.areamodel.multiplication_challenge', '\uD83C\uDFAF Multiplication Challenge')),
-              h('div', { className: 'flex gap-0.5 ml-2' },
-                ['easy', 'medium', 'hard'].map(function(d) {
-                  return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
-                    className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                      (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-amber-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
-                  }, d);
-                })
-              )
-            ),
-            h('span', { className: 'text-[0.6875rem] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/4 modes')
-          ),
-
-          !challenge
-            ? h('div', { className: 'flex gap-2 flex-wrap' },
-                h('button', { 'aria-label': t('stem.areamodel.grid_challenge', 'Grid Challenge'),
-                  onClick: function() { genChallenge('basic'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md min-w-[140px]'
-                }, t('stem.areamodel.grid_challenge_2', '\uD83D\uDFE7 Grid Challenge')),
-                h('button', { 'aria-label': t('stem.areamodel.distributive_2', 'Distributive'),
-                  onClick: function() { genChallenge('distributive'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md min-w-[140px]'
-                }, t('stem.areamodel.distributive_3', '\u2702\uFE0F Distributive')),
-                h('button', { 'aria-label': t('stem.areamodel.partial', 'Partial'),
-                  onClick: function() { genChallenge('multidigit'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md min-w-[140px]'
-                }, t('stem.areamodel.partial_2', '\uD83D\uDCCA Partial')),
-                h('button', { 'aria-label': t('stem.areamodel.word_problem', 'Word Problem'),
-                  onClick: function() {
-                    sfxNewChallenge();
-                    var max = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
-                    var a2 = randInt(2, max);
-                    var b2 = randInt(2, max);
-                    var ctxIdx = Math.floor(Math.random() * WORD_CONTEXTS.length);
-                    var ctxStr = WORD_CONTEXTS[ctxIdx].replace(/\{a\}/g, a2).replace(/\{b\}/g, b2);
-                    var newTypes = Object.assign({}, challengeTypesUsed); newTypes.word = true;
-                    upd({
-                      viewMode: 'word', wordCtxIdx: ctxIdx, wordDims: { a: a2, b: b2 },
-                      challenge: { a: a2, b: b2, answer: a2 * b2, question: ctxStr, mode: 'word' },
-                      answer: '', feedback: null, challengeTypesUsed: newTypes
-                    });
+          // Rows / columns controls (basic + distributive)
+          (viewMode === 'basic' || viewMode === 'distributive') && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            ['rows', 'cols'].map(function(which) {
+              var val = dims[which];
+              var draft = _a.dimsDraft && _a.dimsDraft[which] != null ? String(_a.dimsDraft[which]) : null;
+              var lbl = which === 'rows' ? t('stem.areamodel.rows_factor_1', 'Rows (Factor 1)') : t('stem.areamodel.columns_factor_2', 'Columns (Factor 2)');
+              var aria = which === 'rows' ? t('stem.areamodel.number_of_rows', 'Number of rows') : t('stem.areamodel.number_of_columns', 'Number of columns');
+              var ariaExact = which === 'rows' ? t('stem.areamodel.number_of_rows_exact', 'Number of rows (exact value)') : t('stem.areamodel.number_of_columns_exact', 'Number of columns (exact value)');
+              function commit(v) { var nd = Object.assign({}, dims); nd[which] = v; return clearDone({ dims: nd, highlight: { rows: 0, cols: 0 } }); }
+              return h('div', { key: which, style: Object.assign({}, cardStyle, { padding: 10 }) },
+                h('label', { htmlFor: 'am-dim-' + which, style: { display: 'block', fontSize: 12, fontWeight: 800, color: C.ink, marginBottom: 4 } }, lbl),
+                h('input', { id: 'am-dim-' + which, type: 'range', min: '1', max: '20', value: val, disabled: lockDims,
+                  onChange: function(e) { if (lockDims) return; upd(Object.assign(commit(parseInt(e.target.value, 10)), { dimsDraft: null })); },
+                  'aria-label': aria, style: { width: '100%', minHeight: 32, accentColor: C.btn } }),
+                h('input', { type: 'text', inputMode: 'numeric', value: lockDims ? String(val) : (draft != null ? draft : String(val)), disabled: lockDims,
+                  onChange: function(e) {
+                    if (lockDims) return;
+                    var dd = Object.assign({}, _a.dimsDraft || {}); dd[which] = e.target.value;
+                    var v = CORE.parseNum(e.target.value);
+                    var patch = { dimsDraft: dd };
+                    if (Number.isInteger(v) && v >= 1 && v <= 20) Object.assign(patch, commit(v));
+                    upd(patch);
                   },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-emerald-700 to-green-700 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-green-700 transition-all shadow-md min-w-[140px]'
-                }, t('stem.areamodel.word_problem_2', '\uD83D\uDCDD Word Problem'))
-              )
-            : h('div', { className: 'space-y-2' },
-                h('div', { className: 'flex items-center gap-2' },
-                  h('span', { className: 'text-[0.6875rem] font-bold uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full' }, challenge.mode || viewMode),
-                  streak > 0 && h('span', { className: 'text-[0.6875rem] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
-                ),
-                h('p', { className: 'text-sm font-bold text-amber-800' }, challenge.question),
-                h('div', { className: 'flex gap-2' },
-                  h('input', {
-                    type: 'number', value: answer, disabled: !!(feedback && feedback.correct),
-                    onChange: function(e) { upd({ answer: e.target.value, feedback: null }); },
-                    onKeyDown: function(e) { if (e.key === 'Enter' && answer && !(feedback && feedback.correct)) checkChallenge(); },
-                    placeholder: t('stem.areamodel.product', 'Product = ?'),
-                    'aria-label': t('stem.areamodel.challenge_answer', 'Challenge answer'),
-                    className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
-                  }),
-                  h('button', { 'aria-label': t('stem.areamodel.check', 'Check'),
-                    onClick: checkChallenge,
-                    disabled: !!(feedback && feedback.correct),
-                    className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-700'
-                  }, feedback && feedback.correct ? t('stem.areamodel.solved', 'Solved') : t('stem.areamodel.check_2', 'Check'))
-                ),
-                feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
-                feedback && h('button', { 'aria-label': t('stem.areamodel.next_challenge', 'Next Challenge'),
-                  onClick: function() { genChallenge(challenge.mode || viewMode); },
-                  className: 'text-xs text-amber-600 font-bold hover:underline'
-                }, t('stem.areamodel.next_challenge_2', '\u27A1\uFE0F Next Challenge'))
-              )
-        ),
+                  onBlur: function() { upd({ dimsDraft: null }); },
+                  'aria-label': ariaExact, style: Object.assign({}, inputStyle, { width: '100%', marginTop: 6 }) }));
+            })),
+          lockDims && h('p', { style: { fontSize: 12, color: C.sub, margin: 0 } }, t('stem.areamodel.dims_locked', 'The array is locked while this challenge is open.')),
+
+          renderPrediction(),
+
+          viewMode === 'basic' && renderBasicGrid(),
+          viewMode === 'distributive' && renderDistributive(),
+          viewMode === 'multidigit' && renderMultiDigit(),
+          viewMode === 'algorithm' && renderAlgorithm(),
+          viewMode === 'division' && renderDivision(),
+          viewMode === 'fraction' && renderFraction(),
+          viewMode === 'grid100' && renderGrid100(),
+          viewMode === 'algebra' && renderAlgebra(),
+          viewMode === 'word' && renderWordProblem(),
+
+          viewMode === 'basic' && !hideProducts && h('div', { style: Object.assign({}, cardStyle, { textAlign: 'center' }) },
+            h('div', { style: { fontSize: 20, fontWeight: 800, color: C.ink } }, rows + ' × ' + cols + ' = ', h('span', { style: { fontSize: 28, color: C.accent } }, rows * cols))),
+
+          viewMode === 'basic' && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 } },
+            h('button', { type: 'button', onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); }, style: btnStyle('secondary') }, t('stem.areamodel.clear_highlight_2', 'Clear highlight')),
+            h('button', { type: 'button', 'aria-pressed': swapped,
+              onClick: function() {
+                sfxClick();
+                upd({ swapped: !swapped, usedCommutative: true, gridFocus: null });
+                checkBadges(badgeState({ usedCommutative: true }));
+              }, style: btnStyle(swapped ? 'primary' : 'secondary') },
+              fill(t('stem.areamodel.swap_label', 'Swap rows and columns: {r} × {c}'), { r: rows, c: cols })),
+            swapped && h('span', { style: { fontSize: 13, fontStyle: 'italic', color: C.ink } }, t('stem.areamodel.same_product_a_b_b_a', '💡 Same product! a×b = b×a'))),
+
+          renderWorked(viewMode),
+          renderChallenge()),
 
         // Badges
         renderBadges(),
 
-        // AI Tutor toggle + panel
-        h('div', { className: 'flex gap-2' },
-          !showAITutor && h('button', { 'aria-label': t('stem.areamodel.ai_tutor', 'AI Tutor'),
-            onClick: function() { sfxClick(); upd({ showAITutor: true }); },
-            className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
-          }, t('stem.areamodel.ai_tutor_2', '\uD83E\uDD16 AI Tutor'))
-        ),
+        // AI tutor toggle + panel (only with a live AI backend the teacher allows)
+        canTutor && !showAITutor && h('div', null,
+          h('button', { type: 'button', onClick: function() { sfxClick(); upd({ showAITutor: true }); }, style: btnStyle('secondary') }, t('stem.areamodel.ai_tutor_2', '🤖 AI Tutor'))),
         renderAITutor(),
 
-        // Keyboard hints
-        h('div', { className: 'text-center text-[0.6875rem] text-slate-600 mt-2' + onHostInk },
-          t('stem.areamodel.b_d_p_w_switch_mode_n_new_challenge_c_', '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor')
-        ),
+        h('div', { style: { display: 'flex', justifyContent: 'center' } },
+          h('button', { type: 'button', onClick: function() { sfxClick(); upd({ showAreaPatterns: !_a.showAreaPatterns }); }, 'aria-expanded': !!_a.showAreaPatterns, style: btnStyle(_a.showAreaPatterns ? 'primary' : 'secondary') },
+            _a.showAreaPatterns ? t('stem.areamodel.hide_pattern_lab', 'Hide pattern lab') : t('stem.areamodel.show_pattern_lab', 'Show pattern lab'))),
+        _a.showAreaPatterns && renderPatternLab(),
 
-        h('div', { className: 'flex justify-center' },
-          h('button', {
-            onClick: function() { sfxClick(); upd({ showAreaPatterns: !_a.showAreaPatterns }); },
-            'aria-expanded': !!_a.showAreaPatterns,
-            className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
-              (_a.showAreaPatterns ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-50')
-          }, _a.showAreaPatterns ? t('stem.areamodel.hide_pattern_lab', 'Hide pattern lab') : t('stem.areamodel.show_pattern_lab', 'Show pattern lab'))
-        ),
-
-        // \u2550\u2550\u2550 DISTRIBUTIVE PROPERTY \u2550\u2550\u2550
-        _a.showAreaPatterns && h('div', { className: 'space-y-3' },
-        h('div', { className: 'mt-2 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
-          h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.areamodel.distributive_property_a_b_c_ab_ac', '\uD83D\uDD22 Distributive Property \u2014 a(b+c) = ab + ac')),
-          // The aspect-ratio box keeps the diagram correctly proportioned when the
-          // stage fills the screen, so the canvas needs no fullscreen-specific size.
-          h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
-            className: 'rounded-xl overflow-hidden border border-blue-200', style: { position: 'relative', background: '#0f172a', aspectRatio: '16/5' } },
-            h('button', {
-              type: 'button',
-              'data-allo-fs-btn': 'true',
-              'aria-pressed': 'false',
-              'aria-label': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
-              'data-fs-out': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
-              'data-fs-in': t('stem.areamodel.exit_fullscreen', 'Exit fullscreen area diagram (Escape)'),
-              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(147,197,253,0.6)', color: '#dbeafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
-            }, h('span', { 'aria-hidden': 'true' }, '\u26F6')),
-            h('canvas', {
-              role: 'img',
-              tabIndex: 0,
-              'aria-label': t('stem.areamodel.distributive_property_canvas', 'Animated distributive property diagram showing 3 times 4 plus 3 times 2'),
-              ref: function(cvEl) {
-                if (!cvEl) return;
-                if (cvEl._dpAnim) return;
-                var c2 = cvEl.getContext('2d');
-                var W = cvEl.offsetWidth || 600;
-                var H = cvEl.offsetHeight || 180;
-                cvEl.width = W * 2; cvEl.height = H * 2;
-                c2.scale(2, 2);
-                var start = performance.now();
-                function drawDp() {
-                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dpAnim); if (cvEl._dpRO) cvEl._dpRO.disconnect(); return; }
-                  var t = (performance.now() - start) / 1000;
-                  c2.fillStyle = '#0f172a';
-                  c2.fillRect(0, 0, W, H);
-                  // 3 \u00D7 (4 + 2) = 3\u00D74 + 3\u00D72 = 12 + 6 = 18
-                  var unit = 16;
-                  var ox = W * 0.1, oy = H * 0.3;
-                  // Big rectangle 3 \u00D7 6
-                  c2.strokeStyle = '#fbbf24';
-                  c2.lineWidth = 2;
-                  c2.strokeRect(ox, oy, 6 * unit, 3 * unit);
-                  // Left side (3 \u00D7 4) = 12
-                  var phase = (t * 0.4) % 2;
-                  c2.fillStyle = phase < 1 ? 'rgba(34,211,238,0.5)' : '#22d3ee';
-                  c2.fillRect(ox, oy, 4 * unit, 3 * unit);
-                  // Right side (3 \u00D7 2) = 6
-                  c2.fillStyle = phase < 1 ? 'rgba(251,113,133,0.5)' : '#fb7185';
-                  c2.fillRect(ox + 4 * unit, oy, 2 * unit, 3 * unit);
-                  // Glossy top-light sheen across the area tiles (depth, not a value change)
-                  var amSheen = c2.createLinearGradient(0, oy, 0, oy + 3 * unit);
-                  amSheen.addColorStop(0, 'rgba(255,255,255,0.18)');
-                  amSheen.addColorStop(0.5, 'rgba(255,255,255,0)');
-                  c2.fillStyle = amSheen;
-                  c2.fillRect(ox, oy, 6 * unit, 3 * unit);
-                  // Grid
-                  c2.strokeStyle = 'rgba(255,255,255,0.3)';
-                  c2.lineWidth = 0.5;
-                  for (var i = 1; i < 6; i++) {
-                    c2.beginPath();
-                    c2.moveTo(ox + i * unit, oy);
-                    c2.lineTo(ox + i * unit, oy + 3 * unit);
-                    c2.stroke();
-                  }
-                  for (var j = 1; j < 3; j++) {
-                    c2.beginPath();
-                    c2.moveTo(ox, oy + j * unit);
-                    c2.lineTo(ox + 6 * unit, oy + j * unit);
-                    c2.stroke();
-                  }
-                  // Divider — glowing so the split between the two products pops
-                  c2.save();
-                  c2.shadowColor = 'rgba(253,224,71,0.9)'; c2.shadowBlur = 8;
-                  c2.strokeStyle = '#fde047';
-                  c2.lineWidth = 3;
-                  c2.beginPath();
-                  c2.moveTo(ox + 4 * unit, oy);
-                  c2.lineTo(ox + 4 * unit, oy + 3 * unit);
-                  c2.stroke();
-                  c2.restore();
-                  // Labels
-                  c2.fillStyle = '#22d3ee';
-                  c2.font = 'bold 14px serif';
-                  c2.textAlign = 'center';
-                  c2.fillText('3 \u00D7 4', ox + 2 * unit, oy - 6);
-                  c2.fillStyle = '#fb7185';
-                  c2.fillText('3 \u00D7 2', ox + 5 * unit, oy - 6);
-                  c2.fillStyle = '#fbbf24';
-                  c2.font = '12px sans-serif';
-                  c2.fillText('3', ox - 14, oy + 1.5 * unit + 5);
-                  c2.fillText('6', ox + 3 * unit, oy + 3 * unit + 14);
-                  // Equation
-                  c2.fillStyle = '#fde047';
-                  c2.font = 'bold 18px serif';
-                  c2.textAlign = 'left';
-                  c2.fillText('3 \u00D7 (4 + 2) =', W * 0.55, H * 0.4);
-                  c2.fillStyle = '#22d3ee';
-                  c2.fillText('3\u00D74', W * 0.78, H * 0.4);
-                  c2.fillStyle = '#fde047';
-                  c2.fillText('+', W * 0.86, H * 0.4);
-                  c2.fillStyle = '#fb7185';
-                  c2.fillText('3\u00D72', W * 0.89, H * 0.4);
-                  c2.fillStyle = '#fde047';
-                  c2.font = 'bold 14px serif';
-                  c2.fillText('= 12 + 6 = 18', W * 0.55, H * 0.6);
-                  c2.fillStyle = 'rgba(0,0,0,0.85)';
-                  c2.fillRect(8, H - 14, W - 16, 12);
-                  c2.font = 'bold 10px sans-serif'; c2.fillStyle = '#67e8f9'; c2.textAlign = 'center';
-                  c2.fillText('Distribution lets you break big problems into easy ones. Foundation of algebra.', W / 2, H - 5);
-                  cvEl._dpAnim = requestAnimationFrame(drawDp);
-                }
-                drawDp();
-                var ro = new ResizeObserver(function() {
-                  W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                  cvEl.width = W * 2; cvEl.height = H * 2;
-                  c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
-                });
-                cvEl._dpRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
-                ro.observe(cvEl);
-              },
-              style: { width: '100%', height: '100%', display: 'block' }
-            })
-          )
-        ),
-        // === H7b'' inquiry widget: area discovery ===
-        (function() {
-          var iq = _a._areaHunt || { rows: 4, cols: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd({ _areaHunt: Object.assign({}, iq, patch) }); }
-          var area = iq.rows * iq.cols;
-          var perimeter = 2 * (iq.rows + iq.cols);
-          var state;
-          if (area === perimeter) state = 'special';
-          else if (iq.rows === iq.cols) state = 'square';
-          else if (area > 50) state = 'large';
-          else state = 'rectangle';
-          var sm = {
-            special:   { label: t('stem.areamodel.special_case_area_perimeter_sum', '✨ Special case (area = perimeter)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-            square:    { label: t('stem.areamodel.square_rows_cols', '🟦 Square (rows = cols)'), color: '#0e7490', bg: '#ecfeff', border: '#67e8f9' },
-            large:     { label: t('stem.areamodel.large_rectangle_area_50', '🟧 Large rectangle (area > 50)'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
-            rectangle: { label: t('stem.areamodel.standard_rectangle', '🟩 Standard rectangle'), color: '#047857', bg: '#ecfdf5', border: '#86efac' }
-          }[state];
-          return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-emerald-300 space-y-2' },
-            h('h3', { className: 'text-sm font-black text-emerald-700' }, t('stem.areamodel.area_discovery', '📐 Area discovery')),
-            h('p', { className: 'text-[0.6875rem] text-slate-700' }, t('stem.areamodel.sliders_for_rows_cols_discrete_4_state', 'Sliders for rows × cols. Discrete 4-state classification. No score, no reveal.')),
-            h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
-              h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-              h('div', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, iq.rows + ' × ' + iq.cols + ' = ' + area + ' sq units; perimeter = ' + perimeter + ' units')
-            ),
-            h('div', { className: 'grid grid-cols-2 gap-2' },
-              [{ k: 'rows', l: 'rows' }, { k: 'cols', l: 'cols' }].map(function(s) {
-                return h('div', { key: s.k },
-                  h('label', { htmlFor: 'ar-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-emerald-700' }, iq[s.k])),
-                  h('input', { id: 'ar-' + s.k, type: 'range', min: 1, max: 12, step: 1, value: iq[s.k],
-                    onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                    className: 'w-full', 'aria-label': s.l }));
-              })
-            ),
-            h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rows, c: iq.cols, a: area, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, t('stem.areamodel.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ rows: 4, cols: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, t('stem.areamodel.reset_2', '↺ Reset'))
-            ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.areamodel.hypothesis_when_does_area_rows_cols', 'Hypothesis: When does area equal perimeter?'),
-              'aria-label': t('stem.areamodel.area_hypothesis', 'Area relationship hypothesis'),
-              className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, t('stem.areamodel.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700' },
-              h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                h('li', null, t('stem.areamodel.find_sizes_where_area_perimeter_rare_i', 'Find sizes where area = perimeter (rare integers).')),
-                h('li', null, t('stem.areamodel.when_does_swapping_rows_cols_change_an', 'When does swapping rows/cols change anything?')))),
-            h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
-              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-              t('stem.areamodel.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.areamodel.explain_commutative_property_area_leng', 'Explain commutative property + area = length × width.'),
-              'aria-label': t('stem.areamodel.area_explanation', 'Explain the area multiplication relationship'),
-              className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
-          );
-        })()
-        )
+        renderTeacher()
       );
     }
   });

@@ -30,7 +30,7 @@ test.describe('Raptor custom control guidance',()=>{
 
   test('keeps launch instructions usable without a key and refreshes remaps while paused',async({page})=>{
     const canvas=page.locator('[data-raptor-canvas]'),cue=page.locator('[data-raptor-target-guidance]'),hint=page.locator('.rh-perch-keys'),guide=page.locator('.rh-flight-key-guide');
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     await expect(hint).toContainText('Drag to scan / look');await expect(hint).toContainText('Hold Take off to launch');
     await expect(guide).toContainText('Button Take off');await expect(guide.locator('[data-primary=true] kbd')).toHaveCount(0);
     await canvas.evaluate((c:any)=>{(window as any).placeHuntPrey(12);(window as any).advanceHunt(150);c._rhCommand('pause');});

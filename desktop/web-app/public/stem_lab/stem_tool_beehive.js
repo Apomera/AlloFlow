@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -71,6 +72,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     document.head.appendChild(st);
   })();
 
+  // Contrast theme fixes owned by this tool (allo-beehive-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-beehive-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-beehive-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-3d-frame-positions>span[data-selected=\"true\"]{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] .bee-flight-launch-cta{color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"beehive\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
+  // end contrast theme fixes
   // Discovery studio: a quiet field-station palette and a scene-led reading order.
   (function() {
     if (document.getElementById('allo-beehive-discovery-css')) return;
@@ -2078,7 +2088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var st = document.createElement('style');
     st.id = 'allo-beehive-visual-css';
     st.textContent =
-      '[data-beehive-root="true"] { --bee-accent:#d97706; --bee-accent-rgb:217,119,6; --bee-accent-deep:#92400e; --bee-secondary-rgb:16,185,129; position:relative; isolation:isolate; padding:clamp(.5rem,1.6vw,1rem); border:1px solid rgba(var(--bee-accent-rgb),.18); border-radius:1.75rem; background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.14),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.10),transparent 28rem),linear-gradient(180deg,rgba(255,251,235,.96),rgba(248,250,252,.92)); box-shadow:0 28px 80px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9); }' +
+      '[data-beehive-root="true"] { --bee-accent:#d97706; --bee-accent-rgb:217,119,6; --bee-accent-deep:#92400e; --bee-accent-on-dark:#fbbf24; --bee-secondary-rgb:16,185,129; position:relative; isolation:isolate; padding:clamp(.5rem,1.6vw,1rem); border:1px solid rgba(var(--bee-accent-rgb),.18); border-radius:1.75rem; background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.14),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.10),transparent 28rem),linear-gradient(180deg,rgba(255,251,235,.96),rgba(248,250,252,.92)); box-shadow:0 28px 80px rgba(15,23,42,.12),inset 0 1px 0 rgba(255,255,255,.9); }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-300,[data-beehive-root="true"][data-beehive-theme="light"] .text-slate-400 { color:#475569 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-emerald-500 { color:#047857 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] .text-rose-500 { color:#be123c !important; }' +
@@ -2096,14 +2106,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-300 { color:#cbd5e1 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="light"] [data-beehive-inspector="true"] .text-slate-400 { color:#94a3b8 !important; }' +
       '[data-beehive-root="true"][data-beehive-theme="dark"] { background:radial-gradient(circle at 8% 0%,rgba(var(--bee-accent-rgb),.18),transparent 30rem),radial-gradient(circle at 98% 18%,rgba(var(--bee-secondary-rgb),.12),transparent 28rem),linear-gradient(180deg,rgba(15,23,42,.98),rgba(2,6,23,.98)); border-color:rgba(var(--bee-accent-rgb),.26); box-shadow:0 30px 90px rgba(2,6,23,.55),inset 0 1px 0 rgba(255,255,255,.06); }' +
-      '[data-beehive-root="true"][data-beehive-active-mode="queen"] { --bee-accent:#9333ea; --bee-accent-rgb:147,51,234; --bee-accent-deep:#7e22ce; --bee-secondary-rgb:244,63,94; }' +
-      '[data-beehive-root="true"][data-beehive-active-mode="drone"] { --bee-accent:#4f46e5; --bee-accent-rgb:79,70,229; --bee-accent-deep:#4338ca; --bee-secondary-rgb:14,165,233; }' +
+      '[data-beehive-root="true"][data-beehive-active-mode="queen"] { --bee-accent:#9333ea; --bee-accent-rgb:147,51,234; --bee-accent-deep:#7e22ce; --bee-accent-on-dark:#d8b4fe; --bee-secondary-rgb:244,63,94; }' +
+      '[data-beehive-root="true"][data-beehive-active-mode="drone"] { --bee-accent:#4f46e5; --bee-accent-rgb:79,70,229; --bee-accent-deep:#4338ca; --bee-accent-on-dark:#a5b4fc; --bee-secondary-rgb:14,165,233; }' +
       '[data-beehive-root="true"]::before { content:""; position:absolute; z-index:-1; inset:0; border-radius:inherit; pointer-events:none; background-image:radial-gradient(circle,rgba(var(--bee-accent-rgb),.18) 0 1px,transparent 1.5px); background-size:22px 22px; opacity:.32; -webkit-mask-image:linear-gradient(135deg,#000,transparent 38%,transparent 68%,#000); mask-image:linear-gradient(135deg,#000,transparent 38%,transparent 68%,#000); }' +
       '[data-beehive-hero="true"] { min-height:6.75rem; border-color:rgba(var(--bee-accent-rgb),.30) !important; background:linear-gradient(120deg,rgba(255,255,255,.88),rgba(var(--bee-accent-rgb),.10),rgba(var(--bee-secondary-rgb),.08)) !important; box-shadow:0 18px 46px rgba(var(--bee-accent-rgb),.12),inset 0 1px 0 rgba(255,255,255,.85); backdrop-filter:blur(18px); }' +
       '[data-beehive-theme="dark"] [data-beehive-hero="true"] { background:linear-gradient(120deg,rgba(15,23,42,.94),rgba(var(--bee-accent-rgb),.18),rgba(2,6,23,.92)) !important; box-shadow:0 20px 50px rgba(2,6,23,.38),inset 0 1px 0 rgba(255,255,255,.07); }' +
       '[data-beehive-hero="true"]::after { content:""; position:absolute; width:15rem; aspect-ratio:1; right:8%; top:-9.5rem; border:2.5rem solid rgba(var(--bee-accent-rgb),.09); border-radius:999px; box-shadow:0 0 0 1.5rem rgba(var(--bee-secondary-rgb),.045); pointer-events:none; }' +
       '[data-beehive-mode-signal="true"] { display:inline-flex; align-items:center; gap:.4rem; max-width:100%; border:1px solid rgba(var(--bee-accent-rgb),.24); border-radius:999px; padding:.22rem .55rem; background:rgba(255,255,255,.68); color:var(--bee-accent-deep,var(--bee-accent)); box-shadow:0 5px 16px rgba(var(--bee-accent-rgb),.10); }' +
-      '[data-beehive-theme="dark"] [data-beehive-mode-signal="true"] { background:rgba(2,6,23,.55); color:rgb(var(--bee-accent-rgb)); border-color:rgba(var(--bee-accent-rgb),.42); }' +
+      '[data-beehive-theme="dark"] [data-beehive-mode-signal="true"] { background:rgba(2,6,23,.55); color:var(--bee-accent-on-dark); border-color:rgba(var(--bee-accent-rgb),.42); }' +
       '[data-beehive-mode-switcher="true"] { border-color:rgba(var(--bee-accent-rgb),.18) !important; background:rgba(255,255,255,.62) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 12px 34px rgba(15,23,42,.07); backdrop-filter:blur(16px); }' +
       '[data-beehive-theme="dark"] [data-beehive-mode-switcher="true"] { background:rgba(2,6,23,.42) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 38px rgba(2,6,23,.28); }' +
       '[data-beehive-mode-tab] { position:relative; isolation:isolate; overflow:hidden; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease; }' +
@@ -11794,7 +11804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       // `var t = ctx.t` removed 2026-09-21: declared, never called. This tool already uses the __alloT wrapper; the bare alias drops the English fallback, so leaving it invites a future edit to ship raw keys.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (typeof v === 'string' && v && v !== k) ? v : (fb != null ? fb : k); };
       // Fills {value1}-style placeholders, so a translation can reorder them.
-      var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+      var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
@@ -13507,8 +13517,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('div', { key: 'inspection-panel-placeholder-' + layer.id, id: 'beehive-inspector-panel-' + layer.id, role: 'tabpanel', hidden: true, 'aria-labelledby': 'beehive-inspector-tab-' + layer.id });
             }),
 
-            // ── v3.2: AI tutor for the current inspection layer ──
-            (function () {
+            // ── v3.2: AI tutor for the current inspection layer ── (hidden when ctx hands no usable callGemini)
+            typeof callGemini === 'function' && (function () {
               var LAYER_LABELS = {
                 roles: 'why bees change jobs as they age',
                 honey_chem: 'honey chemistry and enzymatic conversion',
@@ -35669,11 +35679,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { 'data-notebook-review-grid': 'true', className: 'mt-3 grid grid-cols-1 gap-2 lg:grid-cols-3', role: 'group', 'aria-label': roleName + ' claim evidence reasoning self-review' }, reviewItems.map(function(item) {
                   var checkId = 'beehive-review-' + viewMode + '-' + item.id;
                   var cueId = checkId + '-cue';
-                  return h('label', { key: item.id, htmlFor: checkId, 'data-beehive-review-criterion': item.id, className: 'flex min-h-[56px] items-start gap-3 rounded-lg border p-3 ' + (!item.available ? (dk ? 'border-slate-800 bg-slate-950/30 text-slate-500' : 'border-slate-200 bg-white/55 text-slate-500') : item.checked ? (dk ? 'border-emerald-700 bg-emerald-950/30 text-slate-100' : 'border-emerald-300 bg-white text-slate-900') : (dk ? 'border-indigo-700 bg-slate-900 text-slate-100' : 'border-indigo-200 bg-white text-slate-900')) },
+                  return h('label', { key: item.id, htmlFor: checkId, 'data-beehive-review-criterion': item.id, className: 'flex min-h-[56px] items-start gap-3 rounded-lg border p-3 ' + (!item.available ? (dk ? 'border-slate-800 bg-slate-950/30 text-slate-400' : 'border-slate-200 bg-white/55 text-slate-500') : item.checked ? (dk ? 'border-emerald-700 bg-emerald-950/30 text-slate-100' : 'border-emerald-300 bg-white text-slate-900') : (dk ? 'border-indigo-700 bg-slate-900 text-slate-100' : 'border-indigo-200 bg-white text-slate-900')) },
                     h('input', { id: checkId, type: 'checkbox', 'data-notebook-review': item.id, checked: item.checked, disabled: !item.available, onChange: function(e) { updateBeeNotebookReview(item.id, e.target.checked); }, 'aria-describedby': cueId, className: 'mt-0.5 h-5 w-5 shrink-0 accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500' }),
                     h('span', { className: 'min-w-0 flex-1' },
                       h('span', { className: 'block text-[0.6875rem] font-black' }, item.label),
-                      h('span', { id: cueId, className: 'mt-0.5 block text-[0.625rem] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-500' : 'text-slate-600')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
+                      h('span', { id: cueId, className: 'mt-0.5 block text-[0.625rem] leading-relaxed ' + (item.available ? (dk ? 'text-slate-300' : 'text-slate-600') : (dk ? 'text-slate-400' : 'text-slate-600')) }, item.available ? item.cue : 'Write the ' + item.id + ' before checking this criterion.')));
                 })),
                 h('div', { 'data-beehive-review-feedback': nextReviewItem ? nextReviewItem.id : 'ready', role: 'note', className: 'mt-3 flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between ' + (reviewCompleted === 3 ? (dk ? 'border-emerald-700/70 bg-emerald-950/25' : 'border-emerald-200 bg-white') : (dk ? 'border-slate-700 bg-slate-900/70' : 'border-slate-200 bg-white')) },
                   h('div', null,
@@ -36805,7 +36815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': reviewCompleted + ' of ' + reviewItems.length + ' experiment evidence checks ready', 'aria-valuemin': 0, 'aria-valuemax': reviewItems.length, 'aria-valuenow': reviewCompleted }, h('div', { className: 'h-full rounded-full bg-emerald-600', style: { width: (reviewCompleted / reviewItems.length * 100) + '%' } })),
                   h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' }, reviewItems.map(function(item) {
                     var cueId = 'beehive-experiment-review-' + item.id + '-cue';
-                    return h('label', { key: item.id, className: 'flex min-h-[48px] items-start gap-2 rounded-lg border p-2.5 ' + (item.available ? cardTone : (dk ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-500')) },
+                    return h('label', { key: item.id, className: 'flex min-h-[48px] items-start gap-2 rounded-lg border p-2.5 ' + (item.available ? cardTone : (dk ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')) },
                       h('input', { type: 'checkbox', 'data-experiment-notebook-review-check': item.id, checked: item.checked, disabled: !item.available, onChange: function(event) { updateExperimentNotebookReview(item.id, event.target.checked); }, 'aria-describedby': cueId, className: 'mt-0.5 h-5 w-5 shrink-0 accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500' }),
                       h('span', null, h('span', { className: 'block text-[0.625rem] font-black' }, item.label), h('span', { id: cueId, className: 'mt-0.5 block text-[0.5625rem] leading-relaxed' }, item.cue)));
                   }))),
@@ -37608,7 +37618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { 'data-beehive-mode-signal': 'true', className: 'text-[0.625rem] font-black uppercase tracking-wide' },
                     h('span', { className: 'h-2 w-2 shrink-0 rounded-full ' + beeRoleVisual(viewMode).dot, 'aria-hidden': 'true' }),
                     viewMode === 'queen' ? 'Colony network' : viewMode === 'drone' ? 'Drone flight' : 'Apiary view',
-                    h('span', { className: 'hidden max-w-[18rem] truncate font-semibold normal-case tracking-normal opacity-70 sm:inline' }, '· ' + simCardStatus(viewMode)))),
+                    h('span', { className: 'hidden max-w-[18rem] truncate font-semibold normal-case tracking-normal opacity-90 sm:inline' }, '· ' + simCardStatus(viewMode)))),
                 h('h3', { className: 'text-xl font-black tracking-tight sm:text-2xl ' + (dk ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.beehive.beehive_colony_simulator', '🐝 Beehive Colony Simulator')),
                 h('p', { className: 'mt-0.5 text-xs font-medium sm:text-sm ' + (dk ? 'text-slate-200' : 'text-slate-600') }, (viewMode === 'queen' ? __alloT('stem.beehive.tagline_network', 'A strategy game: balance workers, comb and chemical signals to out-compete a rival colony')
                   : viewMode === 'drone' ? __alloT('stem.beehive.tagline_drone', 'Fly a drone bee to the congregation area and reach a queen before his energy runs out')
@@ -39785,7 +39795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && showInspect && renderInspection(),
 
           // ── AI Beehive Tutor (reading-level aware, current view) ──
-          viewMode === 'beekeeper' && !showInspect && (function () {
+          viewMode === 'beekeeper' && !showInspect && typeof callGemini === 'function' && (function () {
             var aiLevel = d.aiLevel || (beeGradeBand === 'K–2' ? 'plain' : beeGradeBand === '9–12' ? 'hs' : 'grade5');
             var aiText = d['aiExplain_' + beeView] || '';
             var aiLoading = !!d['aiLoading_' + beeView];

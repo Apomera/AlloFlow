@@ -781,12 +781,44 @@ function createWordSoundsCore(options = {}) {
     const wordMatching=!imageAvailable || answerRevealed;
     return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
   };
-  // Progress keys follow the displayed sound label for both legacy strings
-  // and prepared pronunciation objects. One response counts once per label.
-  const phonemeLabels = phonemes => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
-    const label = typeof value === 'string' ? value : value && typeof value === 'object'
-      ? [value.grapheme, value.phoneme, value.ipa].find(v => typeof v === 'string' && v.trim()) : '';
-    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+  // Grading for a typed or chosen sound: each alternate spelling maps to ONE
+  // canonical form. Self-contained on purpose: the take-home player embeds
+  // this exact function, so the app and a downloaded file grade alike.
+  function soundAnswerMatches(answer, expected) {
+    var EQUIV = { oy: 'oi', au: 'aw', ew: 'oo', oe: 'oa', ai: 'ay', ea: 'ee', ir: 'er', ur: 'er', igh: 'ie', ou: 'ow', ck: 'k', ph: 'f', wr: 'r', kn: 'n' };
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var e = String(expected == null ? '' : expected).toLowerCase().trim();
+    if (!e) return false;
+    return a === e || (EQUIV[a] || a) === (EQUIV[e] || e);
+  }
+  // Which phoneme-bank recordings can voice a sound label, in the order the
+  // player tries them. Mirrors handleAudio's specialMap + phonemeMatches;
+  // tests/word_sounds_take_home.test.js pins both tables to the player's.
+  const PHONEME_BANK_SPECIAL = {au:'aw','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',ae:'ay',ai:'ay',a_e:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',igh:'ie',y:'ee',o_e:'oa',ow:'ow',ew:'oo',u_e:'oo',ue:'oo',ui:'oo','long u':'oo','short u':'u','ə':'schwa',schwa:'schwa'};
+  const PHONEME_BANK_MATCHES = {'ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',kn:'n',wr:'r',gn:'n',mb:'m',gh:'g',qu:'k',igh:'ie',tch:'ch',dge:'j',ai:'ay',a_e:'ay',ae:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',y:'ee',o_e:'oa',ue:'oo',ew:'oo',u_e:'oo',ui:'oo',oi:'oy',au:'aw',ou:'ow',ir:'er',ur:'er',c:'k',q:'k',x:'s',ph:'f',ck:'k',ce:'s',ci:'s',cy:'s',ge:'j',gi:'j',gy:'j','ə':'schwa','ɔɪ':'oy','aʊ':'ow','əʊ':'oa','eɪ':'ay','aɪ':'ie','iː':'ee','uː':'oo','ɑː':'ar','ɔː':'or','ɜː':'er','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ʌ':'u','ʊ':'oo','θ':'th','ð':'th','ʃ':'sh','ʒ':'sh','ŋ':'ng','tʃ':'ch','dʒ':'j','ɪə':'ear','eə':'air','ʊə':'oo'};
+  const phonemeBankCandidates = text => {
+    const lower = String(text == null ? '' : text).toLowerCase();
+    let key = lower.trim();
+    const out = [];
+    if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
+    else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
+    else if (key.endsWith(' short')) key = key.replace(' short', '');
+    const special = PHONEME_BANK_SPECIAL[key] || key;
+    out.push(special, lower);
+    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    if (match) out.push(match);
+    return [...new Set(out.filter(Boolean))];
+  };
+  // A lesson activity's item count is a minimum; this is where it must stop even
+  // if the mastery streak never comes. Never below the streak itself, or a
+  // one-item plan could not show one.
+  const lessonItemCeiling = (count, masteryThreshold) => Math.max((Number(count) || 5) * 2, Number(masteryThreshold) || 3);
+  // Progress keys are SOUNDS, the same label the learner sees, for both legacy
+  // strings and prepared pronunciation objects: c as /k/ and c as /s/ stay apart,
+  // and c, k and ck as /k/ stay together. One response counts once per label.
+  const phonemeLabels = (phonemes, isEnglish = true) => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
+    const label = phonemeLabel(value, isEnglish);
+    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label : '';
   }).filter(Boolean))];
   // Capture the supports present when answering, before success feedback can
   // reveal the word. Preserve the more specific connected-text evidence.
@@ -1466,7 +1498,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE

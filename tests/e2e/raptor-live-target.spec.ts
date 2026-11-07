@@ -13,7 +13,7 @@ test.describe('Raptor live prey-marker projection',()=>{
 
   test('tracks the rendered prey position and range in the same flight frame',async({page})=>{
     const canvas=page.locator('[data-raptor-canvas]');
-    await page.getByRole('button',{name:'Perched practice',exact:true}).click();
+    await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('perchPractice'));
     await canvas.evaluate((c:any)=>{
       const w=window as any;c._rhCommand('environment',{windSpeed:0});const s=c._rhSnapshot(),p=s.raptorPosition,yaw=s.headingRadians;
       const prey=w.pauseScene.children.filter((o:any)=>o.children.some((child:any)=>child.name.startsWith('prey-')));

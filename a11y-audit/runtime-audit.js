@@ -7,7 +7,7 @@
  *
  * Usage:
  *   node runtime-audit.js                          # defaults to localhost:3000
- *   node runtime-audit.js https://prismflow.web.app
+ *   node runtime-audit.js https://alloflow-cdn.pages.dev/app/
  *   node runtime-audit.js --json                   # output JSON report
  *
  * Prerequisites:

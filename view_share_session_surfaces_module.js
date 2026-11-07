@@ -457,11 +457,11 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 28 && /*#__PURE__*/React.createElement("div", {
+  }, connectLabel)), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 29 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"
-  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". ", tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')), /*#__PURE__*/React.createElement("ol", {
+  }, t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v', mbConfig.v, ". ", Number(mbConfig.v) < 28 ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:') : tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')), /*#__PURE__*/React.createElement("ol", {
     className: "list-decimal list-inside text-xs text-amber-900 space-y-1"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -473,7 +473,7 @@ function ClassMailboxSetupView(props) {
     type: "button",
     onClick: retryMailboxScriptSource,
     className: "font-bold underline underline-offset-2"
-  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_update_setup', 'Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.'), " ", /*#__PURE__*/React.createElement("button", {
+  }, t('mailbox.retry_loading') || 'retry loading'), ")"), " ", t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'), Number(mbConfig.v) < 28 && /*#__PURE__*/React.createElement("li", null, tx('mailbox.owner_update_setup', 'Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.'), " ", /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => copyToClipboard(ownerManifest),
     className: "font-bold underline underline-offset-2"
@@ -538,7 +538,7 @@ function ClassMailboxSetupView(props) {
     className: "flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50"
   }, t('mailbox.close_all_sessions') || 'Close all sessions'))), /*#__PURE__*/React.createElement("p", {
     className: "mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900"
-  }, t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'), /*#__PURE__*/React.createElement("button", {
+  }, t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.', " ", tx('mailbox.inbox_pickup_v29', 'With mailbox script v29 or newer, skip the Drive download: in the Submission Inbox, choose Get submissions from Class Mailbox.')), /*#__PURE__*/React.createElement("button", {
     onClick: startMailboxLiveSession,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60"

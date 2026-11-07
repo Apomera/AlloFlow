@@ -813,12 +813,44 @@ function createWordSoundsCore(options = {}) {
     const wordMatching=!imageAvailable || answerRevealed;
     return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
   };
-  // Progress keys follow the displayed sound label for both legacy strings
-  // and prepared pronunciation objects. One response counts once per label.
-  const phonemeLabels = phonemes => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
-    const label = typeof value === 'string' ? value : value && typeof value === 'object'
-      ? [value.grapheme, value.phoneme, value.ipa].find(v => typeof v === 'string' && v.trim()) : '';
-    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label.normalize('NFC').trim().toLowerCase() : '';
+  // Grading for a typed or chosen sound: each alternate spelling maps to ONE
+  // canonical form. Self-contained on purpose: the take-home player embeds
+  // this exact function, so the app and a downloaded file grade alike.
+  function soundAnswerMatches(answer, expected) {
+    var EQUIV = { oy: 'oi', au: 'aw', ew: 'oo', oe: 'oa', ai: 'ay', ea: 'ee', ir: 'er', ur: 'er', igh: 'ie', ou: 'ow', ck: 'k', ph: 'f', wr: 'r', kn: 'n' };
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var e = String(expected == null ? '' : expected).toLowerCase().trim();
+    if (!e) return false;
+    return a === e || (EQUIV[a] || a) === (EQUIV[e] || e);
+  }
+  // Which phoneme-bank recordings can voice a sound label, in the order the
+  // player tries them. Mirrors handleAudio's specialMap + phonemeMatches;
+  // tests/word_sounds_take_home.test.js pins both tables to the player's.
+  const PHONEME_BANK_SPECIAL = {au:'aw','ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',ae:'ay',ai:'ay',a_e:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',igh:'ie',y:'ee',o_e:'oa',ow:'ow',ew:'oo',u_e:'oo',ue:'oo',ui:'oo','long u':'oo','short u':'u','ə':'schwa',schwa:'schwa'};
+  const PHONEME_BANK_MATCHES = {'ā':'ay','ē':'ee','ī':'ie','ō':'oa','ū':'oo','ă':'a','ĕ':'e','ĭ':'i','ŏ':'o','ŭ':'u',kn:'n',wr:'r',gn:'n',mb:'m',gh:'g',qu:'k',igh:'ie',tch:'ch',dge:'j',ai:'ay',a_e:'ay',ae:'ay',ei:'ay',ea:'ee',ey:'ee',e_e:'ee',i_e:'ie',y:'ee',o_e:'oa',ue:'oo',ew:'oo',u_e:'oo',ui:'oo',oi:'oy',au:'aw',ou:'ow',ir:'er',ur:'er',c:'k',q:'k',x:'s',ph:'f',ck:'k',ce:'s',ci:'s',cy:'s',ge:'j',gi:'j',gy:'j','ə':'schwa','ɔɪ':'oy','aʊ':'ow','əʊ':'oa','eɪ':'ay','aɪ':'ie','iː':'ee','uː':'oo','ɑː':'ar','ɔː':'or','ɜː':'er','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ʌ':'u','ʊ':'oo','θ':'th','ð':'th','ʃ':'sh','ʒ':'sh','ŋ':'ng','tʃ':'ch','dʒ':'j','ɪə':'ear','eə':'air','ʊə':'oo'};
+  const phonemeBankCandidates = text => {
+    const lower = String(text == null ? '' : text).toLowerCase();
+    let key = lower.trim();
+    const out = [];
+    if (key.startsWith('short ') && key.length === 7) key = key.replace('short ', '');
+    else if (key.endsWith('_short')) { out.push(key); key = key.replace('_short', ''); }
+    else if (key.endsWith(' short')) key = key.replace(' short', '');
+    const special = PHONEME_BANK_SPECIAL[key] || key;
+    out.push(special, lower);
+    const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+    if (match) out.push(match);
+    return [...new Set(out.filter(Boolean))];
+  };
+  // A lesson activity's item count is a minimum; this is where it must stop even
+  // if the mastery streak never comes. Never below the streak itself, or a
+  // one-item plan could not show one.
+  const lessonItemCeiling = (count, masteryThreshold) => Math.max((Number(count) || 5) * 2, Number(masteryThreshold) || 3);
+  // Progress keys are SOUNDS, the same label the learner sees, for both legacy
+  // strings and prepared pronunciation objects: c as /k/ and c as /s/ stay apart,
+  // and c, k and ck as /k/ stay together. One response counts once per label.
+  const phonemeLabels = (phonemes, isEnglish = true) => [...new Set((Array.isArray(phonemes) ? phonemes : []).map(value => {
+    const label = phonemeLabel(value, isEnglish);
+    return typeof label === 'string' && !/^\[object /i.test(label.trim()) ? label : '';
   }).filter(Boolean))];
   // Capture the supports present when answering, before success feedback can
   // reveal the word. Preserve the more specific connected-text evidence.
@@ -1498,7 +1530,7 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -2488,9 +2520,36 @@ const WS_CORE = createWordSoundsCore();
       ],
       notes: [
         'Do not say "no" or "wrong". Give the answer, practise it together, then hand it back.',
-        'Keep the pace brisk. Long pauses after an error are what turn a small miss into a large one.',
-        'Mastery for this lesson is ' + mastery + ' consecutive correct on an item before moving on.'
+        'Keep the correction short, and allow the time this child needs to process and respond.',
+        'In the Word Sounds player, an activity keeps going until the child gets ' + mastery + ' in a row right on the first try, across different words, or reaches its item limit. That is practice success, not proof the skill will last.'
       ]
+    };
+  }
+
+  // Syllable and rhyme lessons work on larger parts of words than single sounds.
+  var WORD_PART_ACTIVITIES = { syllable_counting: true, syllable_blending: true, rhyming: true };
+  function wordPartsOf(w) {
+    return w.syllables && w.syllables.length > 1 ? w.syllables.join(' - ') : w.word;
+  }
+  function wordPartWarmup(words) {
+    var first = words[0];
+    return {
+      id: 'warmup',
+      title: 'Listening warm-up',
+      minutes: 2,
+      intent: 'Get the child listening for the larger parts of words before any task starts.',
+      teacherDoes: [
+        'Say each word below at a steady pace that suits this child.',
+        'The child says it back and shows its parts by tapping, clapping or their usual way of responding.'
+      ],
+      teacherSays: [
+        'We are warming up our listening. When I say a word, you say it back and show me its parts.',
+        'My turn first. ' + (first ? cap(first.word) + '. ' + wordPartsOf(first) + '.' : ''),
+        'Your turn.'
+      ],
+      items: words.slice(0, 6).map(function (w) {
+        return { primary: w.word, secondary: wordPartsOf(w) };
+      })
     };
   }
 
@@ -2511,6 +2570,7 @@ const WS_CORE = createWordSoundsCore();
       ? plan.activities.filter(function (a) { return a && a.id; })
       : [];
     var planned = activities.length > 0;
+    var wordPartLesson = planned && activities.every(function (a) { return WORD_PART_ACTIVITIES[a.id]; });
 
     var words = analysis.words;
     var allocation = allocate(words, activities);
@@ -2542,9 +2602,10 @@ const WS_CORE = createWordSoundsCore();
     var modelWords = teachingOrder.slice(0, 2);
     var leadWords = teachingOrder.slice(2, 5).length ? teachingOrder.slice(2, 5) : teachingOrder.slice(0, 3);
 
-    var objective = 'Given ' + analysis.wordCount + ' words built on ' + focusText
-      + ', students will ' + STRAND_OBJECTIVE_VERB[primaryStrand]
-      + ', with ' + mastery + ' consecutive correct responses per item.';
+    var objective = (wordPartLesson
+      ? 'Given ' + analysis.wordCount + ' words, students will listen for and work with syllables or rhymes'
+      : 'Given ' + analysis.wordCount + ' words built on ' + focusText + ', students will ' + STRAND_OBJECTIVE_VERB[primaryStrand])
+      + ', practising until they get ' + mastery + ' in a row right on the first try.';
 
     var sections = [];
 
@@ -2557,13 +2618,13 @@ const WS_CORE = createWordSoundsCore();
       if (aF !== bF) return bF - aF;
       return b.wordCount - a.wordCount;
     }).slice(0, 6);
-    sections.push({
+    sections.push(wordPartLesson ? wordPartWarmup(words) : {
       id: 'warmup',
       title: 'Sound warm-up',
       minutes: 2,
       intent: 'Get the sounds in this lesson fluent before any word is read.',
       teacherDoes: [
-        'Show or say each sound below. Keep it fast. Aim for about one sound per second.',
+        'Show or say each sound below at a steady pace that suits this child. Allow extra time for processing or communication needs.',
         'Any sound the group is slow on is the one to model again before you start.'
       ],
       teacherSays: [
@@ -2591,7 +2652,10 @@ const WS_CORE = createWordSoundsCore();
         'Two examples are enough. A third is usually one too many.'
       ],
       teacherSays: modelWords.length ? modelWords.reduce(function (acc, w) {
-        if (primaryStrand === 'phonemic_awareness') {
+        if (wordPartLesson) {
+          acc.push('Watch me. I am going to say this word, then say its parts.');
+          acc.push(cap(w.word) + '. ' + wordPartsOf(w) + '.');
+        } else if (primaryStrand === 'phonemic_awareness') {
           acc.push('Watch me. I am going to say the sounds in this word, then say the word.');
           acc.push(soundsOf(w) + '. ' + cap(w.word) + '.');
         } else if (primaryStrand === 'encoding') {
@@ -2619,8 +2683,8 @@ const WS_CORE = createWordSoundsCore();
         'Stay on this step until the group is together. Moving on early is what produces the errors you then have to correct.'
       ],
       teacherSays: ['Say it with me. Ready.'].concat(leadWords.map(function (w) {
-        return soundsOf(w) + '. ' + cap(w.word) + '.';
-      })).concat(['Again, a little faster.']),
+        return (wordPartLesson ? wordPartsOf(w) : soundsOf(w)) + '. ' + cap(w.word) + '.';
+      })).concat(['Again.']),
       items: leadWords.map(function (w) {
         return { primary: w.word, secondary: soundsOf(w) + '  ·  ' + w.shape };
       })
@@ -2673,7 +2737,7 @@ const WS_CORE = createWordSoundsCore();
       teacherDoes: [
         'Re-test two items the child missed earlier. Those are the ones that tell you whether the lesson held.',
         'Any correspondence still wrong after correction goes into the next warm-up.',
-        'A child at ' + mastery + ' consecutive correct across the set is ready for the next pattern. Below that, reteach this one.'
+        mastery + ' in a row shows practice success today, not that the skill will last. Use these re-tests and what you observed to decide whether to move on or reteach.'
       ],
       teacherSays: [
         'Let me hear these two again.',
@@ -2750,7 +2814,7 @@ const WS_CORE = createWordSoundsCore();
     out.push(((say && say('word_sounds.di_heading_objective')) || 'Objective').toUpperCase());
     out.push(script.objective);
     out.push('');
-    out.push((say && say('word_sounds.di_timing', { minutes: script.estimatedMinutes, mastery: script.mastery })) || ('About ' + script.estimatedMinutes + ' minutes. Mastery: ' + script.mastery + ' consecutive correct.'));
+    out.push((say && say('word_sounds.di_timing_goal', { minutes: script.estimatedMinutes, mastery: script.mastery })) || ('About ' + script.estimatedMinutes + ' minutes. Practice goal: ' + script.mastery + ' in a row, right on the first try.'));
     out.push('');
     out.push(((say && say('word_sounds.di_heading_materials')) || 'Materials').toUpperCase());
     script.materials.forEach(function (m) { out.push('  - ' + m); });

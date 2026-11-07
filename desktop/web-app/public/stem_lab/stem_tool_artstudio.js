@@ -7,6 +7,7 @@
 // ═══ Defensive StemLab guard ═══
 // Ensure window.StemLab is available before registering tools.
 // If stem_lab_module.js hasn't loaded yet, create the registry stub.
+function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -1306,6 +1307,14 @@ window.StemLab = window.StemLab || {
   // END ART STUDIO COLOR WHEEL HELPERS
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
+  // Contrast theme: hovered buttons, owned by this tool (allo-artstudio-hc-extra-css).
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-artstudio-hc-extra-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-artstudio-hc-extra-css';
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"artStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    document.head.appendChild(st);
+  })();
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -2352,7 +2361,7 @@ window.StemLab.registerTool('artStudio', {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Learning copy uses the shared translator with safe English fallbacks.
       function formatArtStudioLearningText(template, values) {
-        return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (match, key) { return Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match; });
+        return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (match, key) { return Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match; }));
       }
       function artStudioProfileText(profile, field) {
         return __alloT('stem.artstudio.learning_artist_' + profile.id.replace(/-/g, '_') + '_' + field, profile[field]);
@@ -2372,9 +2381,10 @@ window.StemLab.registerTool('artStudio', {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      // Null unless the host says the kind is usable: every AI sculpt / depth / motion control below already gates on these.
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
-      var callImagen = ctx.callImagen;
+      var callImagen = (ctx.aiImagesAvailable !== false && typeof ctx.callImagen === 'function') ? ctx.callImagen : null;
       var callGeminiVision = ctx.callGeminiVision;
       var gradeLevel = ctx.gradeLevel;
       var studioGradeBand = (function () {
@@ -14784,7 +14794,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-1", role: "group", "aria-labelledby": "artstudio-animation-source-label" },
 
-                      [{ id: 'preset', icon: '\u2728', label: __alloT('stem.artstudio.preset', 'Preset') }, { id: 'draw', icon: '\u270F\uFE0F', label: __alloT('stem.artstudio.draw', 'Draw') }, { id: 'upload', icon: '\uD83D\uDCC2', label: __alloT('stem.artstudio.upload', 'Upload') }, { id: 'transform', icon: '\uD83D\uDD04', label: __alloT('stem.artstudio.transform', 'Transform') }, { id: 'ai', icon: '\uD83E\uDD16', label: __alloT('stem.artstudio.ai_depth', 'AI Depth') }].map(function(s) {
+                      [{ id: 'preset', icon: '\u2728', label: __alloT('stem.artstudio.preset', 'Preset') }, { id: 'draw', icon: '\u270F\uFE0F', label: __alloT('stem.artstudio.draw', 'Draw') }, { id: 'upload', icon: '\uD83D\uDCC2', label: __alloT('stem.artstudio.upload', 'Upload') }, { id: 'transform', icon: '\uD83D\uDD04', label: __alloT('stem.artstudio.transform', 'Transform') }, { id: 'ai', icon: '\uD83E\uDD16', label: __alloT('stem.artstudio.ai_depth', 'AI Depth') }].filter(function(s) { return s.id !== 'ai' || !!callImagen; }).map(function(s) {
 
                         return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoAnimSource || 'preset') === s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
@@ -15262,7 +15272,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-1", role: "group", "aria-labelledby": "artstudio-ai-transform-label" },
 
-                          [{ id: 'zoom', label: __alloT('stem.artstudio.zoom_4', '\uD83D\uDD0D Zoom') }, { id: 'rotate', label: __alloT('stem.artstudio.rotate_3', '\uD83D\uDD04 Rotate') }, { id: 'bounce', label: __alloT('stem.artstudio.bounce_3', '\u26A1 Bounce') }, { id: 'slide', label: __alloT('stem.artstudio.slide_3', '\u21C6 Slide') }, { id: 'ai-motion', label: __alloT('stem.artstudio.ai_motion', '\uD83C\uDFAD AI Motion') }].map(function(t) {
+                          [{ id: 'zoom', label: __alloT('stem.artstudio.zoom_4', '\uD83D\uDD0D Zoom') }, { id: 'rotate', label: __alloT('stem.artstudio.rotate_3', '\uD83D\uDD04 Rotate') }, { id: 'bounce', label: __alloT('stem.artstudio.bounce_3', '\u26A1 Bounce') }, { id: 'slide', label: __alloT('stem.artstudio.slide_3', '\u21C6 Slide') }, { id: 'ai-motion', label: __alloT('stem.artstudio.ai_motion', '\uD83C\uDFAD AI Motion') }].filter(function(t) { return t.id !== 'ai-motion' || typeof callGemini === 'function'; }).map(function(t) {
 
                             return React.createElement("button", { key: t.id, "aria-pressed": (d.stereoAnimTransform || 'zoom') === t.id, onClick: function() {
 

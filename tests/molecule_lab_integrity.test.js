@@ -138,8 +138,8 @@ describe('Molecule Lab element catalog integrity', () => {
 
     const carbon = catalog.entries.find((entry) => entry.symbol === 'C');
     expect(carbon.name).toBe('Carbon');
-    expect(carbon.description).toBe('Carbon forms the backbone of all known life and an enormous range of compounds.');
-    expect(html).toContain('Carbon forms the backbone of all known life');
+    expect(carbon.description).toBe('Basis of all known life; forms diamond & graphite');
+    expect(html).toContain('Basis of all known life');
     expect(html).toContain('Carbon Dioxide (CO₂)');
     expect(html).toContain('Lanthanide');
     expect(html).toContain('Actinide');

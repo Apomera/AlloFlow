@@ -30,6 +30,18 @@
   }
 
   var ALPHAFOLD_URL = companionUrl('alphafold_explorer/alphafold_explorer.html?v=2', ALPHAFOLD_CDN_URL);
+  // Bridge trust: only the pop-up this tool opened, at the companion's own origin,
+  // may drive the bridge. Opaque origins (file://) report "null", which postMessage
+  // rejects as a target, so those fall back to '*' and rely on the source check.
+  var ALPHAFOLD_ORIGIN = (function () {
+    try { var o = new URL(ALPHAFOLD_URL, (window.location && window.location.href) || undefined).origin; return (o && o !== 'null') ? o : '*'; } catch (_) { return '*'; }
+  })();
+  var _alphafoldPopup = null; // module scope: a still-open pop-up keeps working after a remount
+  function _alphafoldBridgeTrusted(ev, win) {
+    var src = ev && ev.source;
+    if (!src || (src !== win && src !== _alphafoldPopup)) return false;
+    return ALPHAFOLD_ORIGIN === '*' || ev.origin === ALPHAFOLD_ORIGIN;
+  }
 
   if (typeof document !== 'undefined' && !document.getElementById('alphafold-launcher-css')) {
     var alphaFoldStyle = document.createElement('style');
@@ -280,7 +292,7 @@
         var popup = _win.current;
         if (!popup || popup.closed) return;
         var activeTheme = ctx.theme === 'light' || ctx.theme === 'contrast' ? ctx.theme : 'dark';
-        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, '*'); } catch (_) {}
+        try { popup.postMessage({ type: 'alloflow-theme-change', theme: activeTheme }, ALPHAFOLD_ORIGIN); } catch (_) {}
       }, [ctx.theme]);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
       var _bandState = React.useState('all'); var confidenceBand = _bandState[0], setConfidenceBand = _bandState[1];
@@ -644,9 +656,10 @@
         function onMsg(ev) {
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
+          if (!_alphafoldBridgeTrusted(ev, _win.current)) return;
           if (data.type === 'allocaf-hello') {
             if (_win.current && ev.source !== _win.current) return;
-            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn, cellAtlasHandoff: companionHandoffPayload() }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn, cellAtlasHandoff: companionHandoffPayload() }, ALPHAFOLD_ORIGIN); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -665,7 +678,7 @@
           if ((!isCoachRequest && !isGuideRequest && !isVariantRequest) || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
-            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), '*'); } catch (_) {}
+            try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), ALPHAFOLD_ORIGIN); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
           bumpSlice(isVariantRequest ? 'variantAnalysisCount' : (isGuideRequest ? 'guideCount' : 'coachCount'));
@@ -694,6 +707,7 @@
           return;
         }
         _win.current = w;
+        _alphafoldPopup = w;
         setPopupState('opening');
         bumpSlice('openedCount');
         if (announceToSR) announceToSR(t('stem.alphaFold.opened_sr', 'Opened AlphaFold Explorer in a new window.'));

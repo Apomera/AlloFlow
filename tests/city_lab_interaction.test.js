@@ -498,7 +498,9 @@ describe('City Planning Lab - the 3D view degrades without WebGL', () => {
   it('does not lose the board when 3D is unavailable and the view is switched back', () => {
     const { container } = mount();
     click(byText(container, 'button', '3D'));
-    expect(parcel(container, 'D6'), 'parcels should be gone in the model view').toBeFalsy();
+    // City Lab 3D W1 (2026-11-04): with no WebGL the map IS the board in the
+    // 3D view (render tier T0), beside the note, so the parcels stay.
+    expect(parcel(container, 'D6'), 'the map should be the board when 3D is unavailable').toBeTruthy();
     click(byText(container, 'button', 'Height'));
     expect(parcel(container, 'D6'), 'the board did not come back').toBeTruthy();
   });

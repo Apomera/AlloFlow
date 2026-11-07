@@ -340,7 +340,7 @@ window.SelHub = window.SelHub || {
     { id: 'gratitude_5',      icon: '\uD83D\uDE4F', name: 'Gratitude Practice', desc: 'Record 5 gratitude entries' },
     { id: 'self_aware',       icon: '\uD83E\uDDE0', name: 'Self-Aware',         desc: 'Identify 3 different triggers' },
     { id: 'pattern_spotter',  icon: '\uD83D\uDD0D', name: 'Pattern Spotter',    desc: 'View your mood insights' },
-    { id: 'ai_reflector',     icon: '\uD83E\uDD16', name: 'AI Reflector',       desc: 'Get an AI-powered insight about your patterns' },
+    { id: 'ai_reflector',     icon: '\uD83E\uDD16', name: 'AI Reflector',       desc: 'Get an AI-powered insight about your patterns', aiOnly: true },
     { id: 'mood_mapper',      icon: '\uD83C\uDF08', name: 'Mood Mapper',        desc: 'Use all 5 mood levels at least once' },
     { id: 'consistent_10',    icon: '\uD83D\uDCAA', name: 'Consistent',         desc: 'Complete 10 total check-ins' },
     { id: 'calendar_viewer',  icon: '\uD83D\uDCC5', name: 'Calendar Viewer',    desc: 'View your mood calendar for the first time' },
@@ -657,6 +657,7 @@ window.SelHub = window.SelHub || {
         var a11yClick = ctx.a11yClick;
         var celebrate = ctx.celebrate;
         var callGemini = ctx.callGemini;
+        var _jrAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
         var callTTS = ctx.callTTS;
         var band = ctx.gradeBand || 'elementary';
         var onSafetyFlag = ctx.onSafetyFlag || null;
@@ -703,6 +704,8 @@ window.SelHub = window.SelHub || {
 
         // Badges state
         var earnedBadges   = d.earnedBadges || {};
+        // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+        var shownBadges = BADGES.filter(function(b) { return _jrAiOn || !b.aiOnly || earnedBadges[b.id]; });
         var showBadgePopup = d.showBadgePopup || null;
         // Hand focus back where it came from when the badge dialog closes. Without
         // this the dialog just unmounts and focus falls to the body, dropping a
@@ -2028,8 +2031,8 @@ window.SelHub = window.SelHub || {
                 );
               })(),
 
-              // AI Insight
-              h('div', { role: 'region', 'aria-label': 'AI-powered mood insight', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              // AI Insight (hidden without usable AI unless it holds a saved insight or crisis resources)
+              (_jrAiOn || aiInsight || _journalTier >= 3) && h('div', { role: 'region', 'aria-label': 'AI-powered mood insight', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
                 h('div', { style: { fontSize: 12, color: _jouFg(ACCENT), fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
                 (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiInsight ? h('div', null,
@@ -2038,10 +2041,10 @@ window.SelHub = window.SelHub || {
                     onClick: function() { speak(aiInsight); },
                     style: { marginTop: 6, background: 'none', border: 'none', color: _jouFg(ACCENT), fontSize: 10, cursor: 'pointer' }
                   }, '\uD83D\uDD0A Read aloud')
-                ) :
+                ) : !_jrAiOn ? null :
                 h('button', { 'aria-label': aiLoading ? 'Generating insight\u2026' : 'Generate AI insight',
                   onClick: function() {
-                    if (!callGemini || aiLoading || checkIns.length < 2) {
+                    if (!_jrAiOn || aiLoading || checkIns.length < 2) {
                       if (checkIns.length < 2) addToast('Need at least 2 check-ins for AI insights!', 'warning');
                       return;
                     }
@@ -2093,6 +2096,7 @@ window.SelHub = window.SelHub || {
                           tier: safety.tier
                         });
                       }
+                      if (typeof resp !== 'string' || !resp.trim()) throw new Error('empty AI reply');
                       upd({ aiInsight: resp, aiLoading: false, _journalTier: safety.tier || 0 });
                       awardXP(10);
                       tryAwardBadge('ai_reflector');
@@ -2124,15 +2128,15 @@ window.SelHub = window.SelHub || {
           badgesContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
             h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: _jouFg('#94a3b8') } },
-              earnedCount + ' of ' + BADGES.length + ' earned'
+              earnedCount + ' of ' + shownBadges.length + ' earned'
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 20 } },
               h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: _jouBg('#1e293b'), overflow: 'hidden' } },
-                h('div', { style: { width: Math.round(earnedCount / BADGES.length * 100) + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
+                h('div', { style: { width: Math.round(Math.min(1, earnedCount / shownBadges.length) * 100) + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
               )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
-              BADGES.map(function(b) {
+              shownBadges.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: {
                   padding: 16, borderRadius: 14, textAlign: 'center',

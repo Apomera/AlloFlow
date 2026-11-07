@@ -100,6 +100,20 @@
     merged.whisperTier = ['tiny', 'base', 'small'].indexOf(merged.whisperTier) !== -1 ? merged.whisperTier : 'tiny';
     merged.lang = String(merged.lang || 'en-US');
     merged.whisperPreparedModelId = merged.whisperPreparedModelId ? String(merged.whisperPreparedModelId) : null;
+    // English and multilingual models are separate downloads, so preparing one
+    // must not make the other count as missing.
+    var prepared = Array.isArray(merged.whisperPreparedModelIds) ? merged.whisperPreparedModelIds.map(String) : [];
+    if (merged.whisperPreparedModelId && prepared.indexOf(merged.whisperPreparedModelId) === -1) prepared.push(merged.whisperPreparedModelId);
+    merged.whisperPreparedModelIds = prepared.slice(-8);
+    var speeds = {};
+    var storedSpeeds = merged.whisperSpeedByModel;
+    if (storedSpeeds && typeof storedSpeeds === 'object') {
+      Object.keys(storedSpeeds).slice(0, 8).forEach(function (modelId) {
+        var speed = Number(storedSpeeds[modelId]);
+        if (/^Xenova\/whisper-/.test(modelId) && isFinite(speed) && speed > 0) speeds[modelId] = Math.round(speed * 10) / 10;
+      });
+    }
+    merged.whisperSpeedByModel = speeds;
     return merged;
   }
 
@@ -214,7 +228,18 @@
     var profile = resolveWhisperProfile(opts.lang || loadPreference().lang || 'en-US', tier);
     if (!profile.supported) return false;
     if (isWhisperLoaded(tier, { lang: profile.requestedLanguage })) return true;
-    return loadPreference().whisperPreparedModelId === profile.modelId;
+    return loadPreference().whisperPreparedModelIds.indexOf(profile.modelId) !== -1;
+  }
+
+  // Sizes are per language family. Choosing a bigger English model must not make
+  // a smaller Spanish one count as missing, so fall back to any downloaded size.
+  var WHISPER_TIERS = ['tiny', 'base', 'small'];
+  function preparedWhisperTier(preferred, lang) {
+    var order = [preferred].concat(WHISPER_TIERS);
+    for (var i = 0; i < order.length; i++) {
+      if (order[i] && isWhisperPrepared(order[i], { lang: lang })) return order[i];
+    }
+    return null;
   }
 
   function voiceEngineDescriptor(engine, opts) {
@@ -263,8 +288,13 @@
     }
     // Older hosts do not expose readiness separately. Preserve compatibility:
     // the bridge itself remains the best available capability signal there.
-    var bridged = typeof opts.callGeminiAudio === 'function';
+    var bridged = typeof opts.callGeminiAudio === 'function' && !opts.callGeminiAudio._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
     return { available: bridged, reason: bridged ? 'bridge-only' : 'missing-audio-bridge' };
+  }
+
+  function isLocalSpeechOnly() {
+    try { return typeof window !== 'undefined' && window.__alloLocalSpeechOnly === true; }
+    catch (_) { return false; }
   }
 
   function resolveHandsFreeEngine(opts) {
@@ -277,12 +307,28 @@
     var pcmCapable = caps.getUserMedia && caps.audioContext;
     var iosCanvas = isIosCanvasVoiceSurface();
     var geminiAudioCapability = getGeminiAudioCapability(opts);
-    var geminiCapable = pcmCapable && typeof opts.callGeminiAudio === 'function' && geminiAudioCapability.available;
-    var result = { requested: requested, resolved: 'off', supported: false, reason: '', tier: tier, lang: lang, capabilities: caps };
+    var geminiCapable = pcmCapable && typeof opts.callGeminiAudio === 'function' && !opts.callGeminiAudio._alloQrBlocked && geminiAudioCapability.available;
+    var preparedTier = preparedWhisperTier(tier, lang);
+    var result = { requested: requested, resolved: 'off', supported: false, reason: '', tier: preparedTier || tier, lang: lang, capabilities: caps };
 
     if (requested === 'off') { result.reason = 'Voice input is turned off in settings.'; return result; }
     if (caps.desktopWhisper && requested !== 'gemini') {
       result.resolved = 'desktop-whisper'; result.supported = true; return result;
+    }
+    // Local-only mode: nothing may fall through to the browser's cloud service.
+    // Only an explicit Whisper choice may download; Auto needs a prepared model.
+    if (isLocalSpeechOnly() && requested !== 'gemini') {
+      result.resolved = 'whisper';
+      if (iosCanvas) {
+        result.reason = 'On-device Whisper is paused inside Gemini Canvas on iPhone or iPad. Choose Gemini transcription.';
+      } else if (!pcmCapable || !caps.dynamicImport) {
+        result.reason = 'On-device Whisper needs microphone, Web Audio, and modern module support.';
+      } else if (requested !== 'whisper' && !preparedTier) {
+        result.reason = 'Voice input needs the on-device speech model. Download it in Speech setup.';
+      } else {
+        result.supported = true;
+      }
+      return result;
     }
     if (requested === 'webspeech') {
       result.resolved = 'webspeech'; result.supported = caps.webSpeech;
@@ -306,7 +352,7 @@
         : 'Gemini transcription needs microphone access and a configured Gemini audio bridge.');
       return result;
     }
-    if (!iosCanvas && isWhisperPrepared(tier, { lang: lang }) && pcmCapable && caps.dynamicImport) {
+    if (!iosCanvas && preparedTier && pcmCapable && caps.dynamicImport) {
       result.resolved = 'whisper'; result.supported = true; return result;
     }
     if (caps.webSpeech) { result.resolved = 'webspeech'; result.supported = true; return result; }
@@ -447,6 +493,9 @@
       };
 
       r.onerror = function (e) {
+        // These cannot recover by retrying; restartOnEnd would loop on them.
+        var code = e && e.error;
+        if (code === 'not-allowed' || code === 'service-not-allowed' || code === 'language-not-supported') intentionallyStopped = true;
         if (typeof opts.onError === 'function') opts.onError(e);
         else console.warn('[Voice] speech recognition error:', e);
         active = false;
@@ -851,6 +900,170 @@
     } catch (_) {}
   }
 
+  // Whisper blocks whichever thread runs it for seconds at a time. On the page's
+  // thread that freezes the screen and loses any speech said meanwhile, because the
+  // microphone callback cannot run. So it runs in a worker, and the page-side model
+  // cache stays reachable over messages.
+  var WHISPER_WORKER_SOURCE = [
+    "var pipe = null, pendingCache = {}, cacheSerial = 0, queue = Promise.resolve();",
+    "function askCache(kind, url, buffer, contentType) {",
+    "  return new Promise(function (resolve) {",
+    "    var cacheId = ++cacheSerial;",
+    "    pendingCache[cacheId] = resolve;",
+    "    self.postMessage({ type: 'cache', kind: kind, url: url, cacheId: cacheId, buffer: buffer, contentType: contentType }, buffer ? [buffer] : []);",
+    "  });",
+    "}",
+    "function keyOf(request) { return typeof request === 'string' ? request : (request && request.url) || String(request); }",
+    "function load(m) {",
+    "  return import(m.url).then(function (T) {",
+    "    T.env.allowLocalModels = false;",
+    "    if (m.durableCache) {",
+    "      T.env.useBrowserCache = false;",
+    "      T.env.useCustomCache = true;",
+    "      T.env.customCache = {",
+    "        match: function (request) {",
+    "          return askCache('match', keyOf(request)).then(function (reply) {",
+    "            return reply.buffer ? new Response(reply.buffer, { status: 200, headers: { 'content-type': reply.contentType || 'application/octet-stream' } }) : undefined;",
+    "          });",
+    "        },",
+    "        put: function (request, response) {",
+    "          return response.clone().arrayBuffer().then(function (buffer) {",
+    "            return askCache('put', keyOf(request), buffer, response.headers.get('content-type'));",
+    "          });",
+    "        }",
+    "      };",
+    "    }",
+    "    return T.pipeline('automatic-speech-recognition', m.modelId, {",
+    "      quantized: true,",
+    "      progress_callback: function (p) { self.postMessage({ type: 'progress', progress: p }); }",
+    "    });",
+    "  }).then(function (loaded) { pipe = loaded; });",
+    "}",
+    "self.onmessage = function (event) {",
+    "  var m = event.data;",
+    "  if (m.type === 'cache-reply') {",
+    "    var done = pendingCache[m.cacheId];",
+    "    delete pendingCache[m.cacheId];",
+    "    if (done) done(m);",
+    "    return;",
+    "  }",
+    "  queue = queue.then(function () {",
+    "    return m.type === 'load' ? load(m) : pipe(m.pcm, m.options);",
+    "  }).then(function (output) {",
+    "    self.postMessage({ type: 'done', id: m.id, output: output });",
+    "  }).catch(function (error) {",
+    "    self.postMessage({ type: 'failed', id: m.id, message: String(error && error.message || error) });",
+    "  });",
+    "};",
+    "self.postMessage({ type: 'booted' });"
+  ].join('\n');
+
+  function durableWhisperCacheAdapter() {
+    try {
+      var AC = window.AlloModules && window.AlloModules.AlloCommands;
+      var cache = AC && AC.modelCache;
+      var env = {};
+      if (cache && typeof cache.installTransformersCache === 'function' && cache.installTransformersCache(env)) return env.customCache;
+    } catch (_) {}
+    return null;
+  }
+
+  // A stored recording arrives encoded. A worker has no Web Audio to decode it.
+  function audioToPcm16k(audio) {
+    if (audio instanceof Float32Array) return Promise.resolve(audio);
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return Promise.reject(new Error('Web Audio is unavailable.'));
+    return fetch(audio).then(function (response) { return response.arrayBuffer(); }).then(function (encoded) {
+      var context = new AC();
+      return context.decodeAudioData(encoded).then(function (decoded) {
+        try { context.close(); } catch (_) {}
+        return downsamplePcm(decoded.getChannelData(0), decoded.sampleRate, 16000);
+      });
+    });
+  }
+
+  function createWhisperWorkerPipeline(modelId, onProgress) {
+    return new Promise(function (resolve, reject) {
+      if (typeof Worker !== 'function' || typeof Blob !== 'function' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+        reject(new Error('Background workers are unavailable.'));
+        return;
+      }
+      var scriptUrl = URL.createObjectURL(new Blob([WHISPER_WORKER_SOURCE], { type: 'text/javascript' }));
+      var worker, serial = 0, pending = {}, bootTimer = null, booted = false;
+      var cacheAdapter = durableWhisperCacheAdapter();
+      function closeWorker() {
+        if (bootTimer) clearTimeout(bootTimer);
+        try { worker.terminate(); } catch (_) {}
+        try { URL.revokeObjectURL(scriptUrl); } catch (_) {}
+        var stopped = new Error('The speech model was replaced.');
+        stopped.name = 'AbortError';
+        failAll(stopped);
+      }
+      function request(type, fields) {
+        return new Promise(function (done, fail) {
+          var id = ++serial;
+          pending[id] = { done: done, fail: fail };
+          worker.postMessage(Object.assign({ type: type, id: id }, fields));
+        });
+      }
+      function failAll(error) {
+        Object.keys(pending).forEach(function (id) { pending[id].fail(error); });
+        pending = {};
+      }
+      function answerCache(m) {
+        var reply = { type: 'cache-reply', cacheId: m.cacheId };
+        var work = !cacheAdapter ? Promise.resolve(null)
+          : m.kind === 'put'
+            ? Promise.resolve(cacheAdapter.put(m.url, new Response(m.buffer, { headers: { 'content-type': m.contentType || 'application/octet-stream' } }))).then(function () { return null; })
+            : Promise.resolve(cacheAdapter.match(m.url));
+        work.then(function (found) {
+          if (!found) { worker.postMessage(reply); return null; }
+          return found.arrayBuffer().then(function (buffer) {
+            reply.buffer = buffer;
+            reply.contentType = found.headers && found.headers.get ? found.headers.get('content-type') : '';
+            worker.postMessage(reply, [buffer]);
+          });
+        }).catch(function () { worker.postMessage({ type: 'cache-reply', cacheId: m.cacheId }); });
+      }
+      try { worker = new Worker(scriptUrl); }
+      catch (error) { try { URL.revokeObjectURL(scriptUrl); } catch (_) {} reject(error); return; }
+      bootTimer = setTimeout(function () {
+        if (booted) return;
+        closeWorker();
+        reject(new Error('The background worker did not start.'));
+      }, 8000);
+      worker.onerror = function (event) {
+        var error = new Error((event && event.message) || 'The background worker failed.');
+        if (!booted) { closeWorker(); reject(error); return; }
+        failAll(error);
+      };
+      worker.onmessage = function (event) {
+        var m = event.data;
+        if (m.type === 'booted') {
+          booted = true;
+          clearTimeout(bootTimer);
+          bootTimer = null;
+          request('load', { url: TRANSFORMERS_CDN + '/+esm', modelId: modelId, durableCache: !!cacheAdapter }).then(function () {
+            var transcriber = function (audio, options) {
+              return audioToPcm16k(audio).then(function (pcm) { return request('run', { pcm: pcm, options: options }); });
+            };
+            transcriber.dispose = closeWorker;
+            transcriber.ownsWorker = true;
+            resolve(transcriber);
+          }, function (error) { closeWorker(); reject(error); });
+          return;
+        }
+        if (m.type === 'progress') { if (onProgress) onProgress(m.progress); return; }
+        if (m.type === 'cache') { answerCache(m); return; }
+        var waiting = pending[m.id];
+        if (!waiting) return;
+        delete pending[m.id];
+        if (m.type === 'done') waiting.done(m.output);
+        else waiting.fail(new Error(m.message || 'Transcription failed.'));
+      };
+    });
+  }
+
   function loadWhisperModel(tier, opts) {
     tier = tier || 'tiny';
     opts = opts || {};
@@ -869,28 +1082,43 @@
     if (whisperLoadingPromise && whisperLoadedModelId === profile.modelId) {
       return whisperLoadingPromise;
     }
+    if (whisperPipeline && whisperPipeline.ownsWorker) {
+      try { whisperPipeline.dispose(); } catch (_) {}
+    }
     whisperPipeline = null;
     whisperLoadedTier = tier;
     whisperLoadedModelId = profile.modelId;
     var loadSerial = ++whisperLoadSerial;
-    var loading = loadTransformersModule().then(function (transformers) {
-      installDurableWhisperCache(transformers);
-      return transformers.pipeline('automatic-speech-recognition', profile.modelId, {
-        quantized: true,
-        progress_callback: function (p) {
-          // p.status: 'progress' | 'done' | 'ready' | 'initiate' | 'download'
-          // p.file, p.progress, p.loaded, p.total
-          notifyProgress({
-            phase: 'model-fetch-progress',
-            tier: tier,
-            profile: profile.key,
-            file: p && p.file,
-            status: p && p.status,
-            progress: typeof p.progress === 'number' ? p.progress : null,
-            loaded: p && p.loaded,
-            total: p && p.total
-          });
-        }
+    var progressCallback = function (p) {
+      // Files fetch side by side, so others still report after one fails. Those
+      // late events must not make a failed download look like it is running.
+      if (loadSerial !== whisperLoadSerial || whisperLoadedModelId !== profile.modelId) return;
+      // p.status: 'progress' | 'done' | 'ready' | 'initiate' | 'download'
+      // p.file, p.progress, p.loaded, p.total
+      notifyProgress({
+        phase: 'model-fetch-progress',
+        tier: tier,
+        profile: profile.key,
+        file: p && p.file,
+        status: p && p.status,
+        progress: p && typeof p.progress === 'number' ? p.progress : null,
+        loaded: p && p.loaded,
+        total: p && p.total
+      });
+    };
+    var loading = createWhisperWorkerPipeline(profile.modelId, progressCallback).catch(function (workerError) {
+      // A school security policy can block workers. Slower and it can freeze the
+      // page, but it still works, so it stays as the fallback.
+      console.warn('[Voice] Whisper worker unavailable, using the page thread:', workerError && workerError.message);
+      return loadTransformersModule().then(function (transformers) {
+        // v2 tries /models/ on this site first. The host answers unknown paths with
+        // its HTML page and a 200, which the library then fails to parse as the model.
+        if (transformers.env) transformers.env.allowLocalModels = false;
+        installDurableWhisperCache(transformers);
+        return transformers.pipeline('automatic-speech-recognition', profile.modelId, {
+          quantized: true,
+          progress_callback: progressCallback
+        });
       });
     }).then(function (pipe) {
       if (loadSerial !== whisperLoadSerial || whisperLoadedModelId !== profile.modelId) {
@@ -900,7 +1128,7 @@
         throw superseded;
       }
       whisperPipeline = pipe;
-      savePreference({ whisperTier: tier, whisperPreparedModelId: profile.modelId });
+      savePreference(opts.preferTier ? { whisperTier: tier, whisperPreparedModelId: profile.modelId } : { whisperPreparedModelId: profile.modelId });
       notifyProgress({ phase: 'model-loaded', tier: tier, profile: profile.key, language: profile.language });
       return pipe;
     }).catch(function (err) {
@@ -919,7 +1147,193 @@
   // Public preloader — call this from Settings UI when user clicks
   // "Load Whisper" so the model fetches without performing a transcribe.
   function preloadWhisper(tier, opts) {
-    return loadWhisperModel(tier, opts);
+    return loadWhisperModel(tier, Object.assign({}, opts, { preferTier: true }));
+  }
+
+  // The one status check. Saved flags go stale when a browser clears storage, and
+  // the durable store and the browser cache can each hold a model.
+  function whisperModelStored(profile) {
+    var durable = null;
+    try {
+      var cache = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+      if (cache && typeof cache.hasUrlLike === 'function') durable = Promise.resolve(cache.hasUrlLike([profile.modelId + '/', 'decoder_model_merged']));
+    } catch (_) {}
+    var browser = null;
+    try {
+      if (typeof caches !== 'undefined') {
+        browser = caches.open('transformers-cache').then(function (store) {
+          return store.match('https://huggingface.co/' + profile.modelId + '/resolve/main/onnx/decoder_model_merged_quantized.onnx');
+        }).then(function (found) { return !!found; });
+      }
+    } catch (_) {}
+    return Promise.all([
+      durable ? durable.catch(function () { return null; }) : null,
+      browser ? browser.catch(function () { return null; }) : null
+    ]).then(function (answers) {
+      if (answers[0] === true || answers[1] === true) return true;
+      return answers[0] === false && answers[1] === false ? false : null;
+    });
+  }
+
+  function getWhisperModelStatus() {
+    var checks = [];
+    WHISPER_TIERS.forEach(function (tier) {
+      [['english', 'en-US'], ['multilingual', 'es']].forEach(function (pair) {
+        var profile = resolveWhisperProfile(pair[1], tier);
+        checks.push(whisperModelStored(profile).then(function (stored) {
+          return { tier: tier, key: pair[0], modelId: profile.modelId, stored: stored };
+        }));
+      });
+    });
+    return Promise.all(checks).then(function (found) {
+      var prefs = loadPreference();
+      var prepared = prefs.whisperPreparedModelIds.slice();
+      var status = {};
+      found.forEach(function (entry) {
+        var at = prepared.indexOf(entry.modelId);
+        if (entry.stored === true && at === -1) prepared.push(entry.modelId);
+        if (entry.stored === false && at !== -1 && whisperLoadedModelId !== entry.modelId) prepared.splice(at, 1);
+      });
+      if (prepared.join('|') !== prefs.whisperPreparedModelIds.join('|')) {
+        savePreference({ whisperPreparedModelIds: prepared, whisperPreparedModelId: prepared.length ? prepared[prepared.length - 1] : null });
+      }
+      found.forEach(function (entry) {
+        status[entry.tier] = status[entry.tier] || {};
+        status[entry.tier][entry.key] = prepared.indexOf(entry.modelId) !== -1;
+      });
+      return status;
+    });
+  }
+
+  // A lesson can lag a little but has to catch up, or the backlog grows all class.
+  var WHISPER_LESSON_SPEED = 1.5;
+  var WHISPER_NEXT_TIER = { tiny: { tier: 'base', cost: 2.5 }, base: { tier: 'small', cost: 4 } };
+  function assessWhisperSpeed(audioSeconds, processingMs, tier) {
+    var speed = processingMs > 0 ? audioSeconds / (processingMs / 1000) : 0;
+    var next = WHISPER_NEXT_TIER[tier];
+    return {
+      speed: Math.round(speed * 10) / 10,
+      verdict: speed >= WHISPER_LESSON_SPEED ? 'lesson' : (speed >= 1 ? 'short' : 'slow'),
+      biggerTier: next && speed / next.cost >= WHISPER_LESSON_SPEED ? next.tier : null
+    };
+  }
+
+  // One test press: listen, then transcribe on this device only. Never uses a
+  // cloud engine, and the recording is dropped when this returns.
+  function startMicrophoneCheck(opts) {
+    opts = opts || {};
+    var seconds = Math.max(2, Math.min(15, Number(opts.seconds) || 8));
+    var tier = opts.tier || null;
+    var lang = opts.lang || loadPreference().lang || 'en-US';
+    var cancelled = false, stream = null, context = null, source = null, processor = null, gain = null, timer = null, lease = null, stopRun = null;
+    function closeMic() {
+      if (timer) clearTimeout(timer);
+      timer = null;
+      try { if (source) source.disconnect(); } catch (_) {}
+      try { if (processor) { processor.onaudioprocess = null; processor.disconnect(); } } catch (_) {}
+      try { if (gain) gain.disconnect(); } catch (_) {}
+      try { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+      try { if (context) context.close(); } catch (_) {}
+      source = processor = gain = stream = context = null;
+    }
+    function release() {
+      var held = lease;
+      lease = null;
+      try { if (held) held.release('microphone-test-finished'); } catch (_) {}
+    }
+    function cancel() {
+      if (cancelled) return;
+      cancelled = true;
+      closeMic();
+      release();
+      if (stopRun) {
+        var aborted = new Error('The microphone test was stopped.');
+        aborted.name = 'AbortError';
+        stopRun(aborted);
+      }
+    }
+    function phase(name) {
+      if (typeof opts.onPhase === 'function') { try { opts.onPhase(name); } catch (_) {} }
+    }
+    var promise = new Promise(function (resolve, reject) {
+      stopRun = reject;
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+        reject(new Error('Microphone access is unavailable.'));
+        return;
+      }
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { reject(new Error('Web Audio is unavailable.')); return; }
+      lease = acquireVoiceSession('speech-setup', {
+        mode: 'microphone', label: 'Microphone test', engine: 'browser-whisper',
+        engineLabel: 'On-device test', privacy: 'Audio stays on this device.', onStop: cancel
+      });
+      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (opened) {
+        if (cancelled) {
+          try { opened.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+          return;
+        }
+        stream = opened;
+        context = new AC();
+        var rate = context.sampleRate || 48000;
+        var blocks = [], total = 0, peak = 0;
+        source = context.createMediaStreamSource(stream);
+        processor = context.createScriptProcessor(4096, 1, 1);
+        gain = context.createGain();
+        gain.gain.value = 0;
+        processor.onaudioprocess = function (event) {
+          var block = new Float32Array(event.inputBuffer.getChannelData(0));
+          var energy = 0;
+          for (var i = 0; i < block.length; i++) {
+            var size = Math.abs(block[i]);
+            if (size > peak) peak = size;
+            energy += block[i] * block[i];
+          }
+          blocks.push(block);
+          total += block.length;
+          if (typeof opts.onLevel === 'function') {
+            try { opts.onLevel(Math.min(1, Math.sqrt(energy / block.length) * 8)); } catch (_) {}
+          }
+        };
+        source.connect(processor);
+        processor.connect(gain);
+        gain.connect(context.destination);
+        try { Promise.resolve(context.resume()).catch(function () {}); } catch (_) {}
+        phase('listening');
+        timer = setTimeout(function () {
+          closeMic();
+          if (cancelled) return;
+          var joined = new Float32Array(total);
+          var offset = 0;
+          blocks.forEach(function (block) { joined.set(block, offset); offset += block.length; });
+          blocks = [];
+          var pcm = downsamplePcm(joined, rate, 16000);
+          var report = { seconds: pcm.length / 16000, heardSound: peak >= 0.01, heardSpeech: pcmVoicedMs(pcm) >= 200, transcript: null, assessment: null, tier: null };
+          if (!tier || !report.heardSpeech) { release(); resolve(report); return; }
+          phase('transcribing');
+          function run() { return transcribeAudio(null, { engine: 'whisper', tier: tier, lang: lang, pcm: pcm }); }
+          loadWhisperModel(tier, { lang: lang }).then(run).then(function (first) {
+            var assessment = assessWhisperSpeed(report.seconds, first.durationMs, tier);
+            report.transcript = filterWhisperHallucination(first.transcript, pcm);
+            report.tier = tier;
+            report.assessment = assessment;
+            // A first run includes warm-up, so a slow verdict gets one more try.
+            if (assessment.verdict === 'lesson' || cancelled) return null;
+            return run().then(function (second) {
+              report.assessment = assessWhisperSpeed(report.seconds, Math.min(first.durationMs, second.durationMs), tier);
+            });
+          }).then(function () {
+            if (cancelled) return;
+            var prefs = loadPreference();
+            var speeds = Object.assign({}, prefs.whisperSpeedByModel);
+            speeds[resolveWhisperProfile(lang, tier).modelId] = report.assessment.speed;
+            savePreference({ whisperSpeedByModel: speeds });
+            release();
+            resolve(report);
+          }).catch(function (error) { release(); reject(error); });
+        }, seconds * 1000);
+      }).catch(function (error) { closeMic(); release(); reject(error); });
+    });
+    return { promise: promise, cancel: cancel };
   }
 
   function isWhisperLoaded(tier, opts) {
@@ -1003,6 +1417,17 @@
       buffers = []; bufferedSamples = 0; speechSamples = 0; silentSamples = 0;
       preRoll = []; preRollSamples = 0; speaking = false;
     }
+    // Hands back speech still being buffered, for a stop mid-sentence.
+    function flush() {
+      var segment = null;
+      if (speaking && speechSamples >= msToSamples(minSpeechMs)) {
+        segment = new Float32Array(bufferedSamples);
+        var offset = 0;
+        for (var j = 0; j < buffers.length; j++) { segment.set(buffers[j], offset); offset += buffers[j].length; }
+      }
+      reset();
+      return segment;
+    }
     function push(frame) {
       if (!frame || !frame.length) return { segment: null, speaking: speaking, speechStarted: false, speechEnded: false };
       var copy = frame.slice ? frame.slice(0) : new Float32Array(frame);
@@ -1035,7 +1460,31 @@
       reset();
       return { segment: segment, speaking: false, speechStarted: false, speechEnded: true };
     }
-    return { push: push, reset: reset, isSpeaking: function () { return speaking; } };
+    return { push: push, reset: reset, flush: flush, isSpeaking: function () { return speaking; } };
+  }
+
+  // Whisper invents stock phrases on near-silence ("Thank you.", "Thanks for
+  // watching!"). They are also things people say, so a stock phrase is dropped
+  // only when the audio held almost no real voice. A bare word like "music" is
+  // an answer; only a wrapped label like "(music)" or "♪" counts as a label.
+  var WHISPER_STOCK_PHRASE = /^(?:thank you(?: very much| so much)?(?: for watching)?|thanks(?: for watching)?|you|bye|okay|please subscribe|subscribe to (?:my|the|our) channel|see you (?:next time|in the next (?:one|video))|(?:subtitles|captions|transcribed|translated) by .*|amara\.org.*)$/;
+  var WHISPER_SOUND_LABEL = /^\s*(?:[(\[*♪♫].*[)\]*♪♫]|[.…~\s-]*)[\s.]*$/;
+  function pcmVoicedMs(pcm) {
+    if (!pcm || !pcm.length) return 0;
+    var size = 1600, voiced = 0;
+    for (var start = 0; start < pcm.length; start += size) {
+      var end = Math.min(start + size, pcm.length), sum = 0;
+      for (var i = start; i < end; i++) sum += pcm[i] * pcm[i];
+      if (Math.sqrt(sum / (end - start)) >= 0.02) voiced += 1;
+    }
+    return voiced * 100;
+  }
+  function filterWhisperHallucination(text, pcm) {
+    var value = String(text || '').trim();
+    if (!value || WHISPER_SOUND_LABEL.test(value)) return '';
+    var normalized = value.toLowerCase().replace(/[.!?,…"'’\s]+$/g, '').replace(/^["'\s]+/g, '');
+    if (!WHISPER_STOCK_PHRASE.test(normalized)) return value;
+    return pcmVoicedMs(pcm) < 200 ? '' : value;
   }
 
   function parseGeminiTranscript(value) {
@@ -1085,6 +1534,12 @@
         var inferenceOptions = whisperProfile.key === 'multilingual'
           ? { language: whisperProfile.language, task: 'transcribe', return_timestamps: false }
           : { return_timestamps: false };
+        // Without chunking the pipeline keeps only the first 30 s of audio. A
+        // stored recording has unknown length, so it always gets chunked.
+        if (!(opts.pcm instanceof Float32Array) || opts.pcm.length > 28 * 16000) {
+          inferenceOptions.chunk_length_s = 30;
+          inferenceOptions.stride_length_s = 5;
+        }
         return transcriber(opts.pcm instanceof Float32Array ? opts.pcm : audioBase64, inferenceOptions);
       }).then(function (output) {
         var text = (output && output.text) ? output.text.trim() : '';
@@ -1320,6 +1775,10 @@
     var inputSampleRate = 48000;
     var transcribing = false;
     var queuedSegment = null;
+    // Dictation keeps every segment in order; commands keep only the newest,
+    // so a stale command cannot run after a backlog clears.
+    var segmentBacklog = [];
+    var draining = false;
     var errorStreak = 0;
     var diagnosticsSessionRecorded = false;
     var pcmOutputTransition = Promise.resolve();
@@ -1410,6 +1869,8 @@
       closeWebCapture();
       closePcmGraph();
       queuedSegment = null;
+      segmentBacklog = [];
+      draining = false;
       transcribing = false;
     }
 
@@ -1460,7 +1921,16 @@
     }
 
     function processQueuedSegment(myGeneration) {
-      if (!active || paused || outputSuspended || transcribing || !queuedSegment || generation !== myGeneration) return;
+      if (!active || generation !== myGeneration) return;
+      if (opts.keepAllSegments === true && segmentBacklog.length && !transcribing) {
+        processPcmSegment(segmentBacklog.shift(), myGeneration);
+        return;
+      }
+      if (draining && !transcribing && !segmentBacklog.length) {
+        finish('completed', true);
+        return;
+      }
+      if (paused || outputSuspended || transcribing || !queuedSegment) return;
       var next = queuedSegment;
       queuedSegment = null;
       processPcmSegment(next, myGeneration);
@@ -1468,7 +1938,11 @@
 
     function processPcmSegment(segment, myGeneration) {
       if (!active || generation !== myGeneration || !segment) return;
-      if (transcribing) { queuedSegment = segment; return; }
+      if (transcribing) {
+        if (opts.keepAllSegments === true) segmentBacklog.push(segment);
+        else queuedSegment = segment;
+        return;
+      }
       transcribing = true;
       var pcm = downsamplePcm(segment, inputSampleRate, 16000);
       if (opts.continuous === false) closePcmGraph();
@@ -1490,12 +1964,15 @@
         if (!active || generation !== myGeneration) return;
         transcribing = false;
         errorStreak = 0;
-        var heard = emitTranscript(result && result.transcript, null);
+        var heardText = result && result.transcript;
+        if (opts.filterHallucinations === true) heardText = filterWhisperHallucination(heardText, pcm);
+        var heard = emitTranscript(heardText, null);
         if (!heard) _recordHandsFreeNoSpeech(engineMeta.engine);
         if (opts.continuous === false) {
           finish('completed', true);
           return;
         }
+        if (draining) { processQueuedSegment(myGeneration); return; }
         setState('listening', { message: translateVoiceText('voice.engine_listening', '{engine} is listening.', { engine: engineMeta.engineLabel }) });
         if (!heard && typeof opts.onNoSpeech === 'function') {
           try { opts.onNoSpeech(); } catch (_) {}
@@ -1540,6 +2017,7 @@
           });
           return;
         }
+        if (draining) { processQueuedSegment(myGeneration); return; }
         setState('listening', { reason: 'transcription-retry', message: translateVoiceText('voice.transcription_retry_listening', 'Transcription failed. Listening for another turn.') });
         processQueuedSegment(myGeneration);
       });
@@ -1567,7 +2045,7 @@
         processorNode = audioContext.createScriptProcessor(4096, 1, 1);
         silentGain = audioContext.createGain();
         silentGain.gain.value = 0;
-        vad = createHandsFreeVad({ sampleRate: inputSampleRate });
+        vad = createHandsFreeVad({ sampleRate: inputSampleRate, maxMs: opts.maxSegmentMs });
         processorNode.onaudioprocess = function (event) {
           if (!active || paused || outputSuspended || generation !== myGeneration || !vad) {
             if (vad) vad.reset();
@@ -1754,6 +2232,15 @@
       supported: isHandsFreeSupported({ engine: opts.engine, tier: opts.tier, lang: opts.lang, callGeminiAudio: opts.callGeminiAudio }),
       start: start,
       stop: function () { finish('stopped', true); },
+      // Like stop, but the speech already captured still gets transcribed.
+      drain: function () {
+        if (!active) return;
+        draining = true;
+        var leftover = vad ? vad.flush() : null;
+        closePcmGraph();
+        if (leftover) processPcmSegment(leftover, generation);
+        else processQueuedSegment(generation);
+      },
       abort: function (reason) { finish(reason || 'cancelled', false); },
       cancel: function (reason) { finish(reason || 'cancelled', false); },
       pause: pause,
@@ -1768,6 +2255,148 @@
       getEngine: function () { return engineMeta.engine; }
     };
     return controller;
+  }
+
+  // A standards-shaped stand-in for the browser's SpeechRecognition. In local-only
+  // mode the host installs it over the native class, so every caller works unchanged
+  // and none can reach the browser's cloud service. It gives final results only, with
+  // no confidence: callers treat a missing score as unknown. A caller that asks for
+  // processLocally gets the browser's own on-device engine, which refuses, not uploads.
+  function createLocalSpeechRecognition(nativeCtor) {
+    var nativeOnDevice = !!(nativeCtor && nativeCtor.prototype && 'processLocally' in nativeCtor.prototype);
+    var FORWARDED = ['onstart', 'onresult', 'onerror', 'onspeechstart', 'onspeechend', 'onaudiostart', 'onaudioend', 'onsoundstart', 'onsoundend', 'onnomatch'];
+    var rec = { continuous: false, interimResults: false, lang: 'en-US', maxAlternatives: 1, grammars: null, onend: null };
+    FORWARDED.forEach(function (name) { rec[name] = null; });
+    if (nativeOnDevice) rec.processLocally = false;
+    var controller = null, nativeRec = null, results = [], idleTimer = null;
+    var ended = true, announcedStart = false, stopRequested = false;
+
+    function fire(name, event) {
+      if (typeof rec[name] !== 'function') return;
+      try { rec[name].call(rec, event || {}); } catch (error) { console.warn('[Voice] speech handler failed:', error); }
+    }
+    function clearIdle() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+    function end() {
+      if (ended) return;
+      ended = true;
+      clearIdle();
+      controller = null;
+      nativeRec = null;
+      fire('onend');
+    }
+    function failSoon(code, message) {
+      ended = false;
+      setTimeout(function () {
+        fire('onerror', { error: code, message: message || '' });
+        end();
+      }, 0);
+    }
+    function startOnDevice() {
+      var native = new nativeCtor();
+      native.processLocally = true;
+      if (native.processLocally !== true) { failSoon('service-not-allowed', 'On-device recognition is unavailable.'); return; }
+      native.continuous = rec.continuous;
+      native.interimResults = rec.interimResults;
+      native.lang = rec.lang;
+      native.maxAlternatives = rec.maxAlternatives;
+      FORWARDED.forEach(function (name) { native[name] = function (event) { fire(name, event); }; });
+      native.onend = end;
+      nativeRec = native;
+      ended = false;
+      native.start();
+    }
+
+    rec.start = function () {
+      if (!ended) {
+        var busy = new Error('Speech recognition has already started.');
+        busy.name = 'InvalidStateError';
+        throw busy;
+      }
+      if (rec.processLocally === true && nativeOnDevice) { startOnDevice(); return; }
+      results = [];
+      announcedStart = false;
+      stopRequested = false;
+      var lang = rec.lang || 'en-US';
+      var profile = resolveWhisperProfile(lang, loadPreference().whisperTier || 'tiny');
+      if (profile && profile.supported === false) {
+        failSoon('language-not-supported', 'On-device speech does not support this language.');
+        return;
+      }
+      var choice = resolveHandsFreeEngine({ engine: 'auto', lang: lang });
+      if (!choice.supported || choice.resolved !== 'whisper') {
+        try { window.dispatchEvent(new CustomEvent('alloflow:speech-setup-needed', { detail: { reason: choice.reason || '', lang: lang } })); } catch (_) {}
+        failSoon('service-not-allowed', choice.reason || 'On-device speech is not ready.');
+        return;
+      }
+      var continuous = rec.continuous === true;
+      ended = false;
+      controller = createHandsFreeRecognizer({
+        engine: 'whisper',
+        tier: choice.tier,
+        lang: lang,
+        continuous: continuous,
+        keepAllSegments: true,
+        filterHallucinations: true,
+        maxSegmentMs: 25000,
+        onStateChange: function (status) {
+          if (status.state !== 'listening' || announcedStart) return;
+          announcedStart = true;
+          fire('onstart');
+          fire('onaudiostart');
+          // The browser's engine gives up after several silent seconds; a single-turn
+          // caller waits on that, or its mic button would stay lit forever.
+          if (!continuous) {
+            idleTimer = setTimeout(function () {
+              idleTimer = null;
+              if (ended || !controller) return;
+              fire('onerror', { error: 'no-speech', message: '' });
+              controller.abort('no-speech');
+              end();
+            }, 8000);
+          }
+        },
+        onSpeechStart: function () { clearIdle(); fire('onspeechstart'); },
+        onSpeechEnd: function () { fire('onspeechend'); },
+        onTranscript: function (text) {
+          var result = [{ transcript: text }];
+          result.isFinal = true;
+          results.push(result);
+          fire('onresult', { results: results, resultIndex: results.length - 1 });
+        },
+        onError: function (error, detail) {
+          if (!detail || !detail.fatal) return;
+          var name = error && error.name;
+          fire('onerror', {
+            error: name === 'NotAllowedError' || name === 'SecurityError' ? 'not-allowed'
+              : (name === 'NotFoundError' || name === 'NotReadableError' ? 'audio-capture' : 'service-not-allowed'),
+            message: error && error.message || ''
+          });
+        },
+        onEnd: function (detail) {
+          if (!continuous && !stopRequested && !results.length && detail && detail.reason === 'completed') {
+            fire('onerror', { error: 'no-speech', message: '' });
+          }
+          end();
+        }
+      });
+      controller.start();
+    };
+    rec.stop = function () {
+      stopRequested = true;
+      clearIdle();
+      if (nativeRec) { nativeRec.stop(); return; }
+      if (controller) controller.drain();
+    };
+    rec.abort = function () {
+      stopRequested = true;
+      if (nativeRec) { nativeRec.abort(); return; }
+      if (controller) controller.abort('aborted');
+      end();
+    };
+    return rec;
   }
 
   // App-wide voice-session arbitration. Dictation, agent commands, hands-free
@@ -2205,7 +2834,8 @@
       if ((requested === 'whisper' || requested === 'best' || (requested === 'auto' && isWhisperLoaded())) && caps.mediaRecorder) {
         return startRecordedEngine('whisper', { engine: 'browser-whisper', engineLabel: 'Browser Whisper', privacy: 'Audio stays in this browser.' }, myGeneration);
       }
-      if (requested === 'gemini' && caps.mediaRecorder && typeof opts.callGeminiAudio === 'function') {
+      // Blocked host fns are truthy; host policy (student AI off, audio not approved) decides.
+      if (requested === 'gemini' && caps.mediaRecorder && typeof opts.callGeminiAudio === 'function' && !opts.callGeminiAudio._alloQrBlocked && getGeminiAudioCapability(opts).available) {
         return startRecordedEngine('gemini', { engine: 'gemini-audio', engineLabel: 'Cloud AI transcription', privacy: 'Audio is sent to the configured AI provider.' }, myGeneration);
       }
       if (caps.webSpeech) {
@@ -2430,6 +3060,10 @@
     resolveWhisperProfile: resolveWhisperProfile,
     subscribeToVoiceProgress: subscribeToVoiceProgress,
     isWhisperPrepared: isWhisperPrepared,
+    preparedWhisperTier: preparedWhisperTier,
+    getWhisperModelStatus: getWhisperModelStatus,
+    assessWhisperSpeed: assessWhisperSpeed,
+    startMicrophoneCheck: startMicrophoneCheck,
 
     // Phase 3v.4 — shipped
     gradeAudioJustification: gradeAudioJustification,
@@ -2439,6 +3073,8 @@
     // Phase 3v.5 - shared session arbitration + honest engine status
     createDictationController: createDictationController,
     createHandsFreeRecognizer: createHandsFreeRecognizer,
+    createLocalSpeechRecognition: createLocalSpeechRecognition,
+    isLocalSpeechOnly: isLocalSpeechOnly,
     getHandsFreeDiagnostics: getHandsFreeDiagnostics,
     resetHandsFreeDiagnostics: resetHandsFreeDiagnostics,
     resolveHandsFreeEngine: resolveHandsFreeEngine,
@@ -2462,13 +3098,14 @@
       downsamplePcm: downsamplePcm,
       pcmToWavDataUri: pcmToWavDataUri,
       createHandsFreeVad: createHandsFreeVad,
+      filterWhisperHallucination: filterWhisperHallucination,
       parseGeminiTranscript: parseGeminiTranscript
     },
     _phase: '3v.9',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference', 'setVoiceEngine', 'normalizeVoiceEngine',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
-      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'isWhisperPrepared', 'getLoadedWhisperTier', 'resolveWhisperProfile', 'subscribeToVoiceProgress',
+      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'isWhisperPrepared', 'preparedWhisperTier', 'getWhisperModelStatus', 'assessWhisperSpeed', 'startMicrophoneCheck', 'getLoadedWhisperTier', 'resolveWhisperProfile', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
       'createDictationController', 'createHandsFreeRecognizer', 'getHandsFreeDiagnostics', 'resetHandsFreeDiagnostics', 'resolveHandsFreeEngine', 'isIosCanvasVoiceSurface', 'getGeminiAudioCapability', 'isHandsFreeSupported', 'voiceEngineDescriptor', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
       'acquireVoiceSession', 'stopActiveVoiceSession', 'getActiveVoiceSessionStatus', 'subscribeToVoiceSessionStatus'

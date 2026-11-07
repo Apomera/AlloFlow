@@ -111,9 +111,9 @@ describe('modeled survey provenance', () => {
   it('captures the run through the real model-to-survey action without overwriting an earlier scenario', async () => {
     const t = await mount({ section: 'model', model: X.scenarioSettings('recent'), modelSurveyYear: 30, modelSeed: 11, modelRevealedFor: { recent: true, warmer: true } });
     await click(button(t, 'Survey this reef in year 30')); expect(t.data.modelSite.modelRun.seed).toBe(11);
-    await t.update({ surveyStage: 'results' }); await click(saveButton(t));
+    await t.update({ surveyStage: 'results', records: { 0: 'sand' } }); await click(saveButton(t));
     await t.update({ section: 'model', model: X.scenarioSettings('warmer') });
-    await click(button(t, 'Survey this reef in year 30')); await t.update({ surveyStage: 'results' });
+    await click(button(t, 'Survey this reef in year 30')); await t.update({ surveyStage: 'results', records: { 0: 'sand' } });
     expect(saveButton(t).disabled).toBe(false); await click(saveButton(t));
     expect(t.data.surveyLog).toHaveLength(2);
     expect(t.data.surveyLog.map(e => e.modelRun.scenarioId)).toEqual(['recent', 'warmer']);

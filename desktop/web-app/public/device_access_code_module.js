@@ -3,8 +3,12 @@
  *
  * This is deliberately separate from saved-work encryption. An access code is
  * shared-device friction around educator UI; it is not an authorization
- * boundary and does not decrypt local data. Only a salted PBKDF2 verifier is
+ * boundary and does not decrypt saved work. Only a salted PBKDF2 verifier is
  * persisted. The entered code stays in the caller's transient input state.
+ *
+ * The one thing it does encrypt is the teacher's saved AI provider key, so a
+ * student on a shared device cannot read or use it. See "Saved AI provider
+ * keys" below.
  */
 (function () {
   'use strict';
@@ -106,6 +110,171 @@
     return value;
   }
 
+  // Saved AI provider keys. They rest encrypted under the access code; a
+  // verified code decrypts them into this tab's sessionStorage, where the host
+  // reads them (_alloStoredAiConfig). The code is never kept, so a key edited
+  // after unlocking stays tab-only until the teacher saves it with the code.
+  var AI_CONFIG_KEY = 'alloflow_ai_config';
+  var AI_LOCKED_KEY = 'alloflow_ai_secrets_locked_v1';
+  var AI_SESSION_KEY = 'alloflow_ai_secrets_session_v1';
+  var AI_SECRET_FIELDS = ['apiKey', 'geminiApiKey'];
+
+  function readStoredObject(store, key) {
+    if (!store) return null;
+    try {
+      var value = JSON.parse(store.getItem(key) || 'null');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    } catch (_) { return null; }
+  }
+  function pickAiSecrets(source) {
+    var out = {};
+    AI_SECRET_FIELDS.forEach(function (field) {
+      if (source && typeof source[field] === 'string' && source[field]) out[field] = source[field];
+    });
+    return out;
+  }
+  function hasAiSecrets(secrets) {
+    return Object.keys(secrets).length > 0;
+  }
+  function announceAiKeyChange() {
+    try {
+      if (typeof root.dispatchEvent !== 'function' || typeof root.CustomEvent !== 'function') return;
+      root.dispatchEvent(new root.CustomEvent('alloflow:ai-key-lock-changed'));
+      root.dispatchEvent(new root.CustomEvent('alloflow:ai-config-changed'));
+    } catch (_) {}
+  }
+  function aiSessionSecrets() {
+    return pickAiSecrets(readStoredObject(sessionStore(), AI_SESSION_KEY));
+  }
+  function aiSessionUnsaved() {
+    var value = readStoredObject(sessionStore(), AI_SESSION_KEY);
+    return !!(value && value.unsaved === true);
+  }
+  function writeAiSession(secrets, unsaved) {
+    var store = sessionStore();
+    if (!store) return;
+    if (hasAiSecrets(secrets)) store.setItem(AI_SESSION_KEY, JSON.stringify(Object.assign({}, secrets, { unsaved: !!unsaved })));
+    else store.removeItem(AI_SESSION_KEY);
+  }
+  function plaintextAiSecrets() {
+    return pickAiSecrets(readStoredObject(localStore(), AI_CONFIG_KEY));
+  }
+  function removePlaintextAiSecrets() {
+    var store = localStore();
+    var config = readStoredObject(store, AI_CONFIG_KEY);
+    if (!config || !hasAiSecrets(pickAiSecrets(config))) return;
+    AI_SECRET_FIELDS.forEach(function (field) { delete config[field]; });
+    store.setItem(AI_CONFIG_KEY, JSON.stringify(config));
+  }
+  function lockedAiRecord() {
+    var value = readStoredObject(localStore(), AI_LOCKED_KEY);
+    return value && value.kind === 'alloenc' ? value : null;
+  }
+  function aiKeyStatus() {
+    var session = hasAiSecrets(aiSessionSecrets());
+    var saved = !!lockedAiRecord();
+    return {
+      saved: saved,
+      locked: saved && !session,
+      unlocked: session,
+      unsaved: session && (!saved || aiSessionUnsaved()),
+      plaintextOnDevice: hasAiSecrets(plaintextAiSecrets())
+    };
+  }
+  async function writeLockedAiSecrets(code, options) {
+    var secrets = Object.assign({}, plaintextAiSecrets(), aiSessionSecrets());
+    if (!hasAiSecrets(secrets)) return false;
+    var crypto = cryptoApi();
+    if (!crypto || typeof crypto.encryptJSON !== 'function') throw new Error('Encryption is unavailable.');
+    var record = await crypto.encryptJSON(secrets, normalizeCode(code), options && options.iterations);
+    var store = localStore();
+    if (!store) throw new Error('Device storage is unavailable.');
+    // Ciphertext lands first: a failed write must not lose the only copy.
+    store.setItem(AI_LOCKED_KEY, JSON.stringify(record));
+    writeAiSession(secrets, false);
+    removePlaintextAiSecrets();
+    announceAiKeyChange();
+    return true;
+  }
+  async function unlockAiKey(code) {
+    var record = lockedAiRecord();
+    if (!record || hasAiSecrets(aiSessionSecrets())) return false;
+    var crypto = cryptoApi();
+    if (!crypto || typeof crypto.decryptJSON !== 'function') throw new Error('Encryption is unavailable.');
+    writeAiSession(pickAiSecrets(await crypto.decryptJSON(record, normalizeCode(code))), false);
+    announceAiKeyChange();
+    return true;
+  }
+  // A failure here must never fail the access check that called it.
+  async function syncAiKeyAfterVerifiedCode(code, options) {
+    try { await unlockAiKey(code); } catch (_) {}
+    try { if (hasAiSecrets(plaintextAiSecrets())) await writeLockedAiSecrets(code, options); } catch (_) {}
+  }
+  // Wipes the tab's copy when a key is saved under a code (entering a learner
+  // role). A tab-only key has no other copy, so it stays for the teacher.
+  function lockAiKey() {
+    if (!lockedAiRecord() || !hasAiSecrets(aiSessionSecrets())) return false;
+    writeAiSession({}, false);
+    announceAiKeyChange();
+    return true;
+  }
+  function forgetAiKey() {
+    var store = localStore();
+    if (store) store.removeItem(AI_LOCKED_KEY);
+    writeAiSession({}, false);
+    removePlaintextAiSecrets();
+    announceAiKeyChange();
+  }
+  // Called for every settings write. Returns the config for localStorage; keys
+  // move to this tab, except an unchanged older plaintext key, which stays
+  // where it is until the teacher protects it (or it would vanish on tab close).
+  function splitAiSecretsForSave(config) {
+    var next = Object.assign({}, config);
+    var plaintext = plaintextAiSecrets();
+    var prior = aiSessionSecrets();
+    var secrets = {};
+    AI_SECRET_FIELDS.forEach(function (field) {
+      var value = typeof next[field] === 'string' ? next[field] : '';
+      if (!value || (plaintext[field] === value && !prior[field])) return;
+      secrets[field] = value;
+      delete next[field];
+    });
+    var changed = JSON.stringify(secrets) !== JSON.stringify(prior);
+    if (hasAiSecrets(secrets)) {
+      writeAiSession(secrets, changed || aiSessionUnsaved());
+    } else if (hasAiSecrets(prior)) {
+      writeAiSession({}, false);
+      var store = localStore();
+      if (store) store.removeItem(AI_LOCKED_KEY);
+    }
+    return next;
+  }
+  async function protectAiKey(code, options) {
+    if (!status().configured) {
+      await setCode(code, options);
+      return { ok: true, reason: 'created', retryAfterMs: 0 };
+    }
+    var result = await verify(code, options);
+    if (!result.ok) return result;
+    await writeLockedAiSecrets(code, options);
+    return { ok: true, reason: 'saved', retryAfterMs: 0 };
+  }
+  async function unlockAiKeyWithCode(code, options) {
+    if (status().configured) {
+      var result = await verify(code, options);
+      if (!result.ok) return result;
+      return aiKeyStatus().locked
+        ? { ok: false, reason: 'undecryptable', retryAfterMs: 0 }
+        : { ok: true, reason: 'unlocked', retryAfterMs: 0 };
+    }
+    try {
+      await unlockAiKey(code);
+      return { ok: true, reason: 'unlocked', retryAfterMs: 0 };
+    } catch (_) {
+      return { ok: false, reason: 'incorrect', retryAfterMs: 0 };
+    }
+  }
+
   async function initialize(options) {
     var value = configuredValue();
     if (parseVerifier(value)) {
@@ -156,6 +325,7 @@
     if (typeof crypto.needsPasswordUpgrade === 'function' && crypto.needsPasswordUpgrade(verifier)) {
       try { writeVerifier(await crypto.hashPassword(normalizeCode(code))); } catch (_) {}
     }
+    await syncAiKeyAfterVerifiedCode(code, options);
     return { ok: true, reason: 'verified', retryAfterMs: 0 };
   }
 
@@ -170,6 +340,7 @@
     var verifier = await crypto.hashPassword(requireNewCode(newCode), options && options.iterations);
     writeVerifier(verifier);
     writeBackoff(null);
+    try { await writeLockedAiSecrets(newCode, options); } catch (_) {}
     return { configured: true };
   }
 
@@ -185,6 +356,14 @@
     if (!result.ok) return result;
     writeVerifier(null);
     writeBackoff(null);
+    // No code means nothing to encrypt under: the key stays for this tab only,
+    // and never goes back to plaintext on the device.
+    var store = localStore();
+    if (store && lockedAiRecord()) {
+      store.removeItem(AI_LOCKED_KEY);
+      writeAiSession(aiSessionSecrets(), true);
+      announceAiKeyChange();
+    }
     return { ok: true, reason: 'removed', retryAfterMs: 0 };
   }
 
@@ -196,6 +375,14 @@
     setCode: setCode,
     changeCode: changeCode,
     removeCode: removeCode,
+    aiKeyStatus: aiKeyStatus,
+    protectAiKey: protectAiKey,
+    unlockAiKeyWithCode: unlockAiKeyWithCode,
+    lockAiKey: lockAiKey,
+    forgetAiKey: forgetAiKey,
+    splitAiSecretsForSave: splitAiSecretsForSave,
+    AI_LOCKED_KEY: AI_LOCKED_KEY,
+    AI_SESSION_KEY: AI_SESSION_KEY,
     STORAGE_KEY: STORAGE_KEY,
     MIN_CODE_LENGTH: MIN_CODE_LENGTH,
     _internal: { parseVerifier: parseVerifier, recordFailure: recordFailure, retryAfter: retryAfter }

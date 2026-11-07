@@ -105,7 +105,7 @@ describe.each(paths)('Material Decomposer interaction accessibility: %s', path =
     ['quiz', '#stem-decomposer-quiz-start'], ['tutor', '#stem-decomposer-tutor-input'],
     ['decompHunt', '[aria-label="Decomposition hypothesis"]'],
   ])('includes material controls and the %s activity in its named tab panel', (tab, activitySelector) => {
-    const view = mountTool(path, { tab, activeScene: 'kitchen', huntTarget: 'k_faucet' });
+    const view = mountTool(path, { tab, activeScene: 'kitchen', huntTarget: 'k_faucet' }, tab === 'tutor' ? { callGemini: () => Promise.resolve('') } : {});
     const selectedTab = view.one('[role="tab"][aria-selected="true"]');
     const panel = view.one('#' + selectedTab.getAttribute('aria-controls'));
     expect(panel.getAttribute('role')).toBe('tabpanel');
@@ -232,12 +232,10 @@ describe.each(paths)('Material Decomposer interaction accessibility: %s', path =
     expect(document.activeElement).toBe(nextFocus);
   });
 
-  it('explains unavailable tutoring and keeps request controls disabled', () => {
+  it('hides the tutor when AI is unavailable (2026-11-03 AI-off sweep)', () => {
     const view = mountTool(path, { tab: 'tutor', aiInput: 'What is water?' }, { callGemini: null });
-    expect(view.one('#stem-decomposer-tutor-status').textContent).toMatch(/unavailable|not available|connect/i);
-    expect(view.button('Send question').disabled).toBe(true);
-    for (const suggestion of view.all('[data-decomposer-tutor-question]')) expect(suggestion.disabled).toBe(true);
-    enter(view.one('#stem-decomposer-tutor-input'));
+    expect(document.querySelector('#stem-decomposer-tutor-input')).toBeNull();
+    expect(document.querySelector('#stem-decomposer-tutor-status')).toBeNull();
     expect(view.state().aiLoading).not.toBe(true);
     expect(view.state().aiMessages || []).toHaveLength(0);
   });

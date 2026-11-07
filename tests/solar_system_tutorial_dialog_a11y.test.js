@@ -60,7 +60,7 @@ describe('Solar System first-visit tutorial dialog', () => {
   it('names, focuses, traps, dismisses, and returns focus from the tutorial', async () => {
     const config = window.StemLab._registry.solarSystem;
     function Host() {
-      const [toolData, setToolData] = React.useState({ solarSystem: { tutorialDismissed: false, selectedPlanet: 'stem.solar_sys.earth' } });
+      const [toolData, setToolData] = React.useState({ solarSystem: { tutorialDismissed: false, selectedPlanet: 'Earth' } });
       return config.render(makeCtx({ toolData, setToolData }));
     }
 

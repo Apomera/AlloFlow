@@ -5,6 +5,9 @@
 // the answer is shown the item is locked (no credit, inputs disabled, "Answer shown.
 // Try the next one."), keyed by the item and kept in tool state, so a reload or a
 // grid click cannot reopen it. An item solved before any reveal pays as before.
+// Deep pass 11-03: the first miss now names the misconception and allows a second
+// try (answer hidden); the item locks on the SECOND miss. Stage C 11-03: the
+// answer then waits for the student's "Show the answer" button (every tab alike).
 // MATH_REVIEW3_COORDGRID points the suite at another copy (mutation checks).
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
@@ -44,6 +47,7 @@ async function mount(cg) {
 
 const input = (sel) => document.querySelector('input[aria-label' + sel + ']');
 const checkBtn = () => document.querySelector('button[aria-label="Check"]');
+const revealBtn = () => document.querySelector('[data-coordgrid-reveal]');
 const pageText = () => document.body.textContent.replace(/\s+/g, ' ');
 
 async function type(sel, value) {
@@ -91,7 +95,12 @@ describe('slope: a wrong check shows the answer and locks the item', () => {
     await mount(slopeStart());
     await typeSlope('6', '8', '3/4');
     await click(checkBtn());
+    expect(latest.gridFeedback.msg).not.toMatch(/should be/);
+    await typeSlope('6', '7', '3/4');
+    await click(checkBtn());
     expect(latest.gridFeedback.correct).toBe(false);
+    expect(latest.gridFeedback.msg).not.toMatch(/should be/);
+    await click(revealBtn());
     expect(latest.gridFeedback.msg).toMatch(/run should be 9/);
     await typeSlope('6', '9', '2/3');
     await submit('^="Slope as"');
@@ -105,6 +114,9 @@ describe('slope: a wrong check shows the answer and locks the item', () => {
     await mount(slopeStart());
     await typeSlope('1', '1', '1');
     await click(checkBtn());
+    await typeSlope('1', '2', '1');
+    await click(checkBtn());
+    await click(revealBtn());
     // The keyboard plot button at (0, 0) hits the challenge point, which used to clear the feedback.
     const plot = [...document.querySelectorAll('button')].find((b) => b.textContent === 'Plot or remove point');
     expect(plot, 'plot button').toBeTruthy();
@@ -153,6 +165,11 @@ describe('distance: a wrong check shows the answer and locks the item', () => {
     await mount(distStart());
     await type('="Distance answer"', '7');
     await click(checkBtn());
+    expect(latest.gridFeedback.msg).not.toMatch(/Distance = 10/);
+    await type('="Distance answer"', '8');
+    await click(checkBtn());
+    expect(latest.gridFeedback.msg).not.toMatch(/Distance = 10/);
+    await click(revealBtn());
     expect(latest.gridFeedback.msg).toMatch(/Distance = 10\.0/);
     await type('="Distance answer"', '10');
     await submit('="Distance answer"');

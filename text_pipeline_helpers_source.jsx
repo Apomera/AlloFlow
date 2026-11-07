@@ -95,6 +95,41 @@ const isSameLanguage = (a, b) => {
   const y = _foldLanguageName(normalizeLanguageName(b));
   return !!x && x === y;
 };
+// Display names only: saved data keeps the English names. `native` is the language's
+// own name (what a newcomer recognizes); `inUi` is its name in the app language.
+// Own names for languages the browser's data lacks or names only in English.
+const _ownLanguageNames = { 'haitian creole': 'Kreyòl ayisyen', latin: 'Latina', hmong: 'Hmoob', marshallese: 'Kajin M̧ajeļ',
+  acholi: 'Leb Acoli', 'maay maay': 'Af-Maay', 'chin (hakha)': 'Laiholh', tagalog: 'Tagalog', twi: 'Twi' };
+const _displayLanguageTag = name => {
+  const lookup = typeof window !== 'undefined' ? window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode : null;
+  if (typeof lookup !== 'function' || !name) return '';
+  const tag = String(lookup(name) || '');
+  // The speech lookup answers en-US for any name it does not know.
+  if (!tag || (tag === 'en-US' && !/^en(?:glish)?\b/i.test(name))) return '';
+  if (/^chinese \(simplified\)$/i.test(name)) return 'zh-Hans';
+  if (/^chinese \(traditional\)$/i.test(name)) return 'zh-Hant';
+  return /\(|^[a-z]{2,3}-/i.test(name) ? tag : tag.split('-')[0];
+};
+const _intlLanguageName = (tag, locale) => {
+  try { return new Intl.DisplayNames([locale], { type: 'language', fallback: 'none' }).of(tag) || ''; } catch (_) { return ''; }
+};
+const _capitalizeName = (text, tag) => {
+  try { return text.charAt(0).toLocaleUpperCase(tag || undefined) + text.slice(1); } catch (_) { return text.charAt(0).toUpperCase() + text.slice(1); }
+};
+const languageLabels = (value, uiLanguage) => {
+  const name = normalizeLanguageName(value) || _normLangName(value);
+  const tag = _displayLanguageTag(name);
+  const intlNative = tag ? _intlLanguageName(tag, tag) : '';
+  const native = _ownLanguageNames[_foldLanguageName(name)]
+    || (intlNative && _foldLanguageName(intlNative) !== _foldLanguageName(_intlLanguageName(tag, 'en')) ? _capitalizeName(intlNative, tag) : '') || name;
+  const uiTag = _displayLanguageTag(normalizeLanguageName(uiLanguage) || 'English');
+  const inUi = (tag && uiTag && !/^en\b/i.test(uiTag) && _intlLanguageName(tag, uiTag)) || name;
+  return { name, tag, native, inUi, uiTag };
+};
+const formatLanguageList = (names, uiLanguage) => {
+  const list = (Array.isArray(names) ? names : []).filter(item => typeof item === 'string' && item.trim());
+  try { return new Intl.ListFormat([_displayLanguageTag(normalizeLanguageName(uiLanguage) || 'English') || 'en'], { type: 'conjunction' }).format(list); } catch (_) { return list.join(', '); }
+};
 const _concreteLanguage = value => {
   const language = normalizeLanguageName(value);
   return language && !/^(all selected languages|all-selected|app|auto|off)$/i.test(language) ? language : '';
@@ -1483,7 +1518,7 @@ const parseTaggedContent = (text) => {
               const level = headerMatch[1].length;
               const headerContent = headerMatch[2];
               const cleanHeaderContent = headerContent.replace(/<[nvad]>/g, '').replace(/<\/[nvad]>/g, '');
-              const headerTokens = cleanHeaderContent.split(/([a-zA-Z0-9À-ÿ·]+)|(\s+)|([^a-zA-Z0-9À-ÿ·\s]+)/g).filter(Boolean);
+              const headerTokens = cleanHeaderContent.split(/([\p{L}\p{M}\p{N}·]+)|(\s+)|([^\p{L}\p{M}\p{N}·\s]+)/gu).filter(Boolean);
               headerTokens.forEach(token => {
                    const { text: cleanText, syllables } = extractSyllables(token);
                    result.push({
@@ -1513,7 +1548,7 @@ const parseTaggedContent = (text) => {
                       id: `pos-${idCounter++}`
                   });
               } else {
-                  const tokens = part.split(/([a-zA-Z0-9À-ÿ·]+)|(\s+)|([^a-zA-Z0-9À-ÿ·\s]+)/g).filter(Boolean);
+                  const tokens = part.split(/([\p{L}\p{M}\p{N}·]+)|(\s+)|([^\p{L}\p{M}\p{N}·\s]+)/gu).filter(Boolean);
                   tokens.forEach(token => {
                       const isMarkdown = /^[*#_`~]+$/.test(token);
                       const { text: cleanText, syllables } = extractSyllables(token);
@@ -1996,6 +2031,8 @@ const createTextPipelineHelpers = () => ({
   getArtifactPrimaryLanguage,
   getGlossaryBaseLanguage,
   isSameLanguage,
+  languageLabels,
+  formatLanguageList,
   getArtifactTranslationTarget,
   getArtifactTranslationTextAttributes,
   TRANSLATION_MODE_AUTO,

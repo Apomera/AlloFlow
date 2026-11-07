@@ -140,7 +140,32 @@ describe('the printed script', () => {
   it('states an objective naming the focus pattern and the mastery criterion', () => {
     const { script } = scriptFor(OR_PACK);
     expect(script.objective).toContain('/or/');
-    expect(script.objective).toContain('3 consecutive correct');
+    expect(script.objective).toContain('3 in a row right on the first try');
+  });
+
+  it('does not overclaim mastery or set a pace the child must keep up with', () => {
+    const text = DI.scriptToText(scriptFor(OR_PACK).script);
+    for (const claim of [/ready for the next pattern/i, /mastery/i, /keep it fast/i, /one sound per second/i, /brisk/i, /a little faster/i]) {
+      expect(text, String(claim)).not.toMatch(claim);
+    }
+    expect(text).toContain('not proof the skill will last');
+  });
+
+  it('opens a syllable or rhyme lesson with word parts, not single sounds', () => {
+    const { script } = scriptFor(OR_PACK, { masteryThreshold: 3, activities: [{ id: 'syllable_counting', count: 3 }, { id: 'rhyming', count: 2 }] });
+    const warmup = script.sections.find((s) => s.id === 'warmup');
+    expect(warmup.title).toBe('Listening warm-up');
+    expect(warmup.items.map((i) => i.primary)).toContain(OR_PACK[0].word);
+    expect(warmup.items.some((i) => /^\//.test(i.primary))).toBe(false);
+    expect(script.objective).toContain('syllables or rhymes');
+    expect(script.objective).not.toContain('sound spelled');
+    expect(script.sections.find((s) => s.id === 'model').teacherSays.join(' ')).toContain('its parts');
+  });
+
+  it('keeps the sound warm-up when any activity in the plan works on single sounds', () => {
+    const { script } = scriptFor(OR_PACK, { masteryThreshold: 3, activities: [{ id: 'syllable_counting', count: 3 }, { id: 'counting', count: 2 }] });
+    expect(script.sections.find((s) => s.id === 'warmup').title).toBe('Sound warm-up');
+    expect(script.objective).toContain('sound spelled');
   });
 
   it('follows model, then lead, then test, then correction', () => {
@@ -286,6 +311,19 @@ describe('degenerate inputs', () => {
     const items = script.sections.find((s) => s.id === 'test_counting').items;
     expect(items.length).toBe(10);
     expect(new Set(items.map((i) => i.primary)).size).toBe(OR_PACK.length);
+    // 10 items over 6 words: a total and a distinct count alone would also accept
+    // one word five times, so check how often each word actually appears.
+    const uses = OR_PACK.map((word) => items.filter((i) => i.primary === word.word).length);
+    expect(uses.reduce((sum, n) => sum + n, 0)).toBe(10);
+    expect(Math.min(...uses)).toBe(Math.floor(10 / OR_PACK.length));
+    expect(Math.max(...uses)).toBe(Math.ceil(10 / OR_PACK.length));
+  });
+
+  it('uses each word at most once when the plan asks for fewer items than there are words', () => {
+    const { script } = scriptFor(OR_PACK, { masteryThreshold: 3, activities: [{ id: 'counting', count: 3 }] });
+    const primaries = script.sections.find((s) => s.id === 'test_counting').items.map((i) => i.primary);
+    expect(primaries.length).toBe(3);
+    expect(new Set(primaries).size).toBe(3);
   });
 
   it('is deterministic: the same pack produces the same script', () => {

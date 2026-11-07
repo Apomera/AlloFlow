@@ -224,6 +224,34 @@ const _pcmChunksToWavBlob = (chunks, totalBytes, sampleRate = 24000) => {
     view.setUint32(40, totalBytes, true);
     return new Blob([header, ...chunks], { type: 'audio/wav' });
 };
+// Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+const _audioStudentDeviceVoice = (text, opts = {}) => {
+    if (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return false;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false; } catch (_) {}
+    try { if (JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'off') return false; } catch (_) {}
+    const synth = window.speechSynthesis;
+    const phrase = String(text == null ? '' : text).trim();
+    if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !phrase) return false;
+    try {
+        const u = new SpeechSynthesisUtterance(phrase);
+        const rate = Number(opts.rate) > 0 ? Number(opts.rate) : (Number(window.__alloPlaybackRate) || 1);
+        u.rate = Math.max(0.5, Math.min(2, rate));
+        const volume = Number(opts.volume ?? window.__alloVoiceVolume);
+        if (Number.isFinite(volume)) u.volume = Math.max(0, Math.min(1, volume));
+        if (opts.language) {
+            try {
+                const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode;
+                const tag = typeof resolve === 'function' ? resolve(opts.language) : '';
+                if (tag) u.lang = tag;
+            } catch (_) {}
+        }
+        if (typeof opts.onEnd === 'function') { u.onend = opts.onEnd; u.onerror = opts.onEnd; }
+        synth.cancel();
+        synth.speak(u);
+        return true;
+    } catch (_) { return false; }
+};
+
 const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
   const { AVAILABLE_VOICES, fetchTTSBytes, callTTS, downloadingContentId, selectedVoice, textFormat, setDownloadingContentId, persistentVoiceMapRef, addToast, t, warnLog, pcmToMp3, pcmToWav } = deps;
   try { if (window._DEBUG_AUDIO_HELPERS) console.log("[AudioHelpers] handleDownloadAudio fired"); } catch(_) {}
@@ -314,11 +342,14 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             requestedSegmentCount += 1;
             let result;
             const localKokoroVoice = /^(af_|am_|bf_|bm_)/i.test(String(voice || ''));
+            // Student AI off: never download the Kokoro model for a learner;
+            // callTTS uses one only when it is already on this device.
+            const studentAiOff = window.__alloStudentAiDisabled === true;
             if (localKokoroVoice && typeof callTTS === 'function') {
-                if (!window._kokoroTTS?.ready && typeof window.__loadKokoroTTS === 'function') {
+                if (!studentAiOff && !window._kokoroTTS?.ready && typeof window.__loadKokoroTTS === 'function') {
                     await window.__loadKokoroTTS();
                 }
-                if (!window._kokoroTTS?.ready) throw new Error('The selected local voice is not ready for download');
+                if (!studentAiOff && !window._kokoroTTS?.ready) throw new Error('The selected local voice is not ready for download');
                 const audioUrl = await callTTS(text, voice, 1, {
                     maxRetries: 0,
                     signal: downloadSignal,
@@ -326,6 +357,13 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
                     reason: 'download-audio',
                     ...(deps.language ? { language: deps.language } : {}),
                 });
+                if (!audioUrl && studentAiOff) {
+                    const studentError = new Error('No on-device voice is ready for this download.');
+                    studentError.code = 'BROWSER_TTS_REQUIRED';
+                    studentError.useBrowserTts = true;
+                    studentError.studentAiOff = true;
+                    throw studentError;
+                }
                 if (!audioUrl) throw new Error(`Local TTS returned no audio for segment ${requestedSegmentCount}`);
                 const response = await fetch(audioUrl, { signal: downloadSignal || undefined });
                 if (!response.ok) throw new Error(`Local TTS clip could not be read for segment ${requestedSegmentCount}`);
@@ -417,9 +455,14 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
             // therefore no file. Say that, rather than the generic failure — the
             // user picked this voice deliberately and the fix is one dropdown away.
             warnLog("Download Audio: device voice cannot produce a file");
+            // Student AI off: no cloud voice exists for this learner, so do not point at one.
+            const studentAiOffToast = err?.studentAiOff === true || window.__alloStudentAiDisabled === true;
             addToast(
-                t('common.audio_device_voice_no_file')
-                || 'The device voice reads aloud but cannot be saved as a file. Pick a cloud or on-device voice in the narrator settings to download audio.',
+                studentAiOffToast
+                    ? (t('common.audio_device_voice_no_file_student')
+                        || 'The device voice reads aloud but cannot be saved as a file. Use read aloud to listen instead.')
+                    : (t('common.audio_device_voice_no_file')
+                        || 'The device voice reads aloud but cannot be saved as a file. Pick a cloud or on-device voice in the narrator settings to download audio.'),
                 "info"
             );
         } else {
@@ -455,6 +498,7 @@ const handleCardAudioSequence = async (e, deps) => {
   let timer = null;
   let resolveDelay = null;
   let finished = false;
+  let deviceVoiceSpeaking = false;
   const isCurrent = () => !finished && playbackSessionRef.current === sessionId && !isMuted();
   const preferences = () => {
     const groupRate = typeof deps.getGroupTtsSpeed === 'function' ? deps.getGroupTtsSpeed() : null;
@@ -481,6 +525,10 @@ const handleCardAudioSequence = async (e, deps) => {
     window.removeEventListener('alloflow-mute-changed', onMute);
     window.removeEventListener('alloflow:playback-stopped', finish);
     window.removeEventListener('alloflow:audio-preferences-changed', applyPreferences);
+    if (deviceVoiceSpeaking) {
+      deviceVoiceSpeaking = false;
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
     if (ownedAudio) {
       ownedAudio.onended = null;
       ownedAudio.onerror = null;
@@ -555,7 +603,7 @@ const handleCardAudioSequence = async (e, deps) => {
           warnLog('Card audio generation failed:', error);
         }
         if (!isCurrent()) { finish(); return; }
-        if (url) break;
+        if (url || window.__alloStudentAiDisabled === true) break;
         if (attempt === 0) await delay(1500);
         if (!isCurrent()) { finish(); return; }
       }
@@ -563,7 +611,16 @@ const handleCardAudioSequence = async (e, deps) => {
         if (!isCurrent()) { finish(); return; }
         timer = setTimeout(() => { timer = null; playNext(idx + 1); }, 500);
       };
-      if (!url) { advance(); return; }
+      if (!url) {
+        const pref = preferences();
+        let spokenDone = false;
+        const spoken = _audioStudentDeviceVoice(sequence[idx].text, {
+          rate: pref.rate, volume: pref.volume, language: sequence[idx].language,
+          onEnd: () => { if (spokenDone) return; spokenDone = true; deviceVoiceSpeaking = false; advance(); }
+        });
+        if (spoken) { deviceVoiceSpeaking = true; return; }
+        advance(); return;
+      }
       addBlobUrl(url);
       const audio = new Audio(url);
       ownedAudio = audio;

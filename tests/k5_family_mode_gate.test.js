@@ -1,5 +1,6 @@
-// Family mode cannot open the Teacher Dashboard, Assessment Center, Dynamic Assessment
-// or BehaviorLens (fleet wave 2, lane K5).
+// Family mode cannot open the Teacher Dashboard, Assessment Center or Dynamic Assessment
+// (fleet wave 2, lane K5). BehaviorLens opens for a parent ONLY as its one-student family view:
+// the header's "Home behavior tools" is deliberate, so the test below pins the family-only props.
 //
 // WHY: family mode runs with isTeacherMode true AND isParentMode true. The Educator
 // Hub hid Report Writer from parents (hideSchoolProfessional) but still offered the
@@ -87,7 +88,7 @@ const MODES = {
 };
 
 describe('host render gates (AlloFlowANTI.txt)', () => {
-  it('Assessment Center, Dynamic Assessment and BehaviorLens stay closed for a parent even with their flags set', () => {
+  it('Assessment Center and Dynamic Assessment stay closed for a parent even with their flags set', () => {
     // The Assessment Center panel is gated at its mount (its isOpen stays shared with the research suite).
     const panelAt = ANTI.indexOf('<StudentAnalyticsPanel');
     const mountStart = ANTI.lastIndexOf('{isTeacherMode', panelAt);
@@ -96,7 +97,6 @@ describe('host render gates (AlloFlowANTI.txt)', () => {
     const gates = {
       assessmentCenter: '(' + mount + ') && (' + attrExpr('<StudentAnalyticsPanel') + ')',
       dynamicAssessment: attrExpr('<CDNModuleGate moduleKey="DynamicAssessment"'),
-      behaviorLens: attrExpr('<CDNModuleGate moduleKey="BehaviorLens"'),
     };
     const flags = { showClassAnalytics: true, isResearchSuiteOpen: false, isDynamicAssessmentOpen: true, showBehaviorLens: true };
     for (const [name, expr] of Object.entries(gates)) {
@@ -104,6 +104,20 @@ describe('host render gates (AlloFlowANTI.txt)', () => {
       expect(!!evalWith(expr, { ...flags, ...MODES.teacher }), name + ' must open for a teacher').toBe(true);
       expect(!!evalWith(expr, { ...flags, ...MODES.independent }), name + ' must open for an independent learner').toBe(true);
     }
+  });
+
+  it('BehaviorLens gives a parent only the family view, and stays closed to an independent learner', () => {
+    const expr = attrExpr('<CDNModuleGate moduleKey="BehaviorLens"');
+    expect(!!evalWith(expr, { showBehaviorLens: true, ...MODES.parent })).toBe(true);
+    expect(!!evalWith(expr, { showBehaviorLens: true, ...MODES.teacher })).toBe(true);
+    expect(!!evalWith(expr, { showBehaviorLens: true, ...MODES.independent })).toBe(false);
+    expect(!!evalWith(expr, { showBehaviorLens: false, ...MODES.parent })).toBe(false);
+    const at = ANTI.indexOf('<CDNModuleGate moduleKey="BehaviorLens"');
+    const props = ANTI.slice(at, at + 1200);
+    expect(props).toContain('familyOnly: isParentMode');
+    expect(props).toContain("key: isParentMode ? 'family' : 'staff'");
+    expect(props).toContain('dashboardData: isParentMode ? [] : dashboardData');
+    expect(props).toContain('isTeacherMode: isTeacherMode && !isParentMode');
   });
 
   it('the dashboard gives a parent the learner progress view, never the Teacher Dashboard', () => {

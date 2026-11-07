@@ -4,6 +4,10 @@ export const POST_MERGE_PARTS = {
   "acropora_clathrata": ["colony"],
   "acropora_humilis": ["colony"],
   "acropora_millepora": ["colony"],
+  "fire_coral": ["colony"],
+  "blue_coral": ["colony"],
+  "pipe_organ_coral": ["colony"],
+  "birdsnest_coral": ["colony"],
   "leaf_scorpionfish": [
     "leaf-body-and-fins"
   ],
@@ -46,6 +50,18 @@ export const POST_MERGE_PARTS = {
     "oral-discs",
     "feeding-tentacles"
   ],
+  "bubble_coral": [
+    "colony-base",
+    "vesicles"
+  ],
+  "hammer_coral": [
+    "colony-base",
+    "tentacles"
+  ],
+  "flowerpot_coral": [
+    "columns",
+    "polyps"
+  ],
   "banded_sea_krait": [
     "banded-body-paddle",
     "yellow-lipped-head"
@@ -69,6 +85,10 @@ export const POST_MERGE_PARTS = {
     "tunic",
     "siphons"
   ],
+  "drupella_snail": ["coral-tip-and-shells", "siphons-tentacles"],
+  "pincushion_sea_star": ["inflated-cushion-body", "oral-tube-feet"],
+  "spanish_dancer": ["body-rhinophores-gills", "undulating-mantle-skirt"],
+  "banded_coral_shrimp": ["banded-body-legs-tail", "banded-claws-white-antennae"],
   "feather_duster_worm": [
     "tube",
     "feeding-crown"

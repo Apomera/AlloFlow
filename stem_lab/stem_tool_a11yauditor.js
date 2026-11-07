@@ -201,7 +201,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var Sparkles = ctx.icons.Sparkles;
       var X = ctx.icons.X;
       var addToast = ctx.addToast;
-      var callGemini = ctx.callGemini;
+      // Null when the host says text AI is unusable: every AI pass hides; the measured HTML audit still runs.
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
@@ -232,6 +233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var auditLoading = d.auditLoading || false;
       var deterministicAudit = d.deterministicAudit || null;
       var auditInputMode = d.auditInputMode || 'url'; // 'url' | 'html' | 'pdf' | 'screenshot'
+      if (!callGemini) auditInputMode = 'html'; // the only mode with a non-AI (measured) audit
       var auditHistory = Array.isArray(d.auditHistory) ? d.auditHistory : [];
       var selectedCriterion = d.selectedCriterion || null;
       var badges = Array.isArray(d.badges) ? d.badges : [];
@@ -434,8 +436,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       };
 
       var runAudit = function(input, inputType) {
-        if (!callGemini) return;
         var _detAudit = (inputType === 'html') ? __alloA11yPure.deterministicAudit(input) : null;
+        if (!callGemini) { if (_detAudit) updMulti({ deterministicAudit: _detAudit }); return; }
         updMulti({ auditLoading: true, deterministicAudit: _detAudit });
         var target = inputType === 'url' ? 'a website at URL: ' + input + '. Use your training knowledge of this website\u2019s structure, layout, and common patterns.' : 'the following HTML content';
         var htmlCtx = inputType === 'html' ? 'HTML:\n"""\n' + input.substring(0, 8000) + '\n"""\n\n' : '';
@@ -516,6 +518,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       };
 
       React.useEffect(function() { checkBadges(); }, [auditsCompleted, criteriaExplored, reportsDownloaded]);
+
+      // Measured (code-only) HTML findings; shown inside AI results, or alone when AI is off.
+      var renderMeasuredPanel = function() {
+        return (
+            deterministicAudit && deterministicAudit.ok && h('div', { className: 'bg-indigo-50 rounded-2xl border-2 border-indigo-300 p-4' },
+              h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD2C'),
+                h('h4', { className: 'text-xs font-bold text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.measured_checks', 'Measured checks')),
+                h('span', { className: 'ml-auto text-[0.625rem] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, t('stem.a11yauditor.deterministic_badge', 'Deterministic \u00B7 not AI'))
+              ),
+              h('p', { className: 'text-[0.6875rem] text-slate-500 mb-2' }, t('stem.a11yauditor.measured_hint', 'Counted directly from your HTML by code (DOMParser + WCAG contrast math) \u2014 ground truth, separate from the AI passes.')),
+              deterministicAudit.findings.length === 0
+                ? h('div', { className: 'text-sm font-bold text-emerald-700' }, '\u2713 ' + t('stem.a11yauditor.no_measured_issues', 'No problems in the automatically-checkable criteria.'))
+                : h('ul', { className: 'space-y-1.5' }, deterministicAudit.findings.map(function(_fi, _i) {
+                    return h('li', { key: _i, className: 'text-sm text-slate-700 flex items-start gap-2' },
+                      h('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded ' + (_fi.severity === 'serious' ? 'bg-red-100 text-red-700' : _fi.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600') }, _fi.wcag),
+                      h('span', null, h('strong', null, _fi.criterion), ' \u2014 ' + _fi.detail)
+                    );
+                  })),
+              h('p', { className: 'text-[0.625rem] text-slate-400 mt-2' }, t('stem.a11yauditor.measured_scope', 'Automated checks cover only part of WCAG; the AI passes add judgement on the rest.'))
+            )
+        );
+      };
 
       // ═══ RENDER ═══
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
@@ -622,8 +647,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 { id: 'screenshot', icon: '\uD83D\uDCF7', label: t('stem.a11yauditor.screenshot', 'Screenshot') },
                 { id: 'social', icon: '\uD83D\uDCF1', label: t('stem.a11yauditor.social_media', 'Social Media') },
                 { id: 'gov', icon: '\uD83C\uDFDB\uFE0F', label: 'Gov/School' }
-              ].map(function(mode) {
+              ].filter(function(mode) { return callGemini || mode.id === 'html'; }).map(function(mode) {
                 return h('button', { key: mode.id,
+                  'aria-pressed': auditInputMode === mode.id,
                   onClick: function() { upd('auditInputMode', mode.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[0.6875rem] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                 }, mode.icon + ' ' + mode.label);
@@ -719,7 +745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Platform selector
             h('div', { className: 'flex gap-1 bg-pink-50 rounded-lg p-1' },
               [{ id: 'instagram', label: t('stem.a11yauditor.instagram', 'Instagram') }, { id: 'twitter', label: 'X/Twitter' }, { id: 'facebook', label: t('stem.a11yauditor.facebook', 'Facebook') }, { id: 'linkedin', label: 'LinkedIn' }, { id: 'tiktok', label: 'TikTok' }].map(function(p) {
-                return h('button', { key: p.id, onClick: function() { upd('socialPlatform', p.id); },
+                return h('button', { key: p.id, 'aria-pressed': socialPlatform === p.id, onClick: function() { upd('socialPlatform', p.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[0.6875rem] font-bold transition-all ' + (socialPlatform === p.id ? 'bg-white text-pink-700 shadow-sm' : 'text-pink-500/60 hover:text-pink-600')
                 }, p.label);
               })
@@ -760,7 +786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Entity type
             h('div', { className: 'flex gap-1 bg-amber-50 rounded-lg p-1 mb-2' },
               [{ id: 'school', label: t('stem.a11yauditor.school', '\uD83C\uDFEB School') }, { id: 'library', label: t('stem.a11yauditor.library', '\uD83D\uDCDA Library') }, { id: 'city', label: t('stem.a11yauditor.city_county', '\uD83C\uDFD9\uFE0F City/County') }, { id: 'state', label: t('stem.a11yauditor.state', '\uD83C\uDFDB\uFE0F State') }].map(function(t) {
-                return h('button', { key: t.id, onClick: function() { upd('govEntityType', t.id); },
+                return h('button', { key: t.id, 'aria-pressed': govEntityType === t.id, onClick: function() { upd('govEntityType', t.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[0.6875rem] font-bold transition-all ' + (govEntityType === t.id ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-500/60 hover:text-amber-600')
                 }, t.label);
               })
@@ -787,8 +813,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('p', { className: 'text-xs text-teal-500 mt-1' }, t('stem.a11yauditor.checking_structure_images_contrast_key', 'Checking structure, images, contrast, keyboard access, and more'))
           ),
 
+          !callGemini && renderMeasuredPanel(),
+
           // Results
-          auditResult && auditResult.score >= 0 && h('div', { className: 'space-y-4' },
+          callGemini && auditResult && auditResult.score >= 0 && h('div', { className: 'space-y-4' },
 
             // Score header
             h('div', { className: 'bg-gradient-to-r ' + (auditResult.score >= 80 ? 'from-green-500 to-emerald-600' : auditResult.score >= 60 ? 'from-amber-500 to-orange-600' : auditResult.score >= 40 ? 'from-orange-500 to-red-500' : 'from-red-600 to-rose-700') + ' text-white rounded-2xl p-6 text-center' },
@@ -800,23 +828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Score breakdown radar
-            deterministicAudit && deterministicAudit.ok && h('div', { className: 'bg-indigo-50 rounded-2xl border-2 border-indigo-300 p-4' },
-              h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
-                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD2C'),
-                h('h4', { className: 'text-xs font-bold text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.measured_checks', 'Measured checks')),
-                h('span', { className: 'ml-auto text-[0.625rem] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, t('stem.a11yauditor.deterministic_badge', 'Deterministic \u00B7 not AI'))
-              ),
-              h('p', { className: 'text-[0.6875rem] text-slate-500 mb-2' }, t('stem.a11yauditor.measured_hint', 'Counted directly from your HTML by code (DOMParser + WCAG contrast math) \u2014 ground truth, separate from the AI passes.')),
-              deterministicAudit.findings.length === 0
-                ? h('div', { className: 'text-sm font-bold text-emerald-700' }, '\u2713 ' + t('stem.a11yauditor.no_measured_issues', 'No problems in the automatically-checkable criteria.'))
-                : h('ul', { className: 'space-y-1.5' }, deterministicAudit.findings.map(function(_fi, _i) {
-                    return h('li', { key: _i, className: 'text-sm text-slate-700 flex items-start gap-2' },
-                      h('span', { className: 'text-[0.625rem] font-bold px-1.5 py-0.5 rounded ' + (_fi.severity === 'serious' ? 'bg-red-100 text-red-700' : _fi.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-600') }, _fi.wcag),
-                      h('span', null, h('strong', null, _fi.criterion), ' \u2014 ' + _fi.detail)
-                    );
-                  })),
-              h('p', { className: 'text-[0.625rem] text-slate-400 mt-2' }, t('stem.a11yauditor.measured_scope', 'Automated checks cover only part of WCAG; the AI passes add judgement on the rest.'))
-            ),
+            renderMeasuredPanel(),
             auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, t('stem.a11yauditor.score_breakdown', 'Score Breakdown')),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
@@ -1104,7 +1116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Recipient selector
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'ada_coordinator', label: t('stem.a11yauditor.ada_coordinator', '\uD83C\uDFE2 ADA Coordinator') }, { id: 'doj', label: t('stem.a11yauditor.dept_of_justice', '\uD83C\uDFDB\uFE0F Dept. of Justice') }].map(function(opt) {
-                return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
+                return h('button', { key: opt.id, 'aria-pressed': complaintType === opt.id, onClick: function() { upd('complaintType', opt.id); },
                   className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                 }, opt.label);
               })
@@ -1118,7 +1130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             // Auto-populate from last audit
             auditResult && auditResult.issues && h('p', { className: 'text-[0.6875rem] text-teal-700 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
             // Generate button
-            h('button', {
+            callGemini && h('button', {
               'aria-label': t('stem.a11yauditor.generate_complaint_letter', 'Generate complaint letter'),
               disabled: !complaintEntity.trim() || complaintLoading,
               onClick: async function() {

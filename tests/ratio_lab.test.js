@@ -546,20 +546,21 @@ describe('Ratios, Rates & Proportions Lab', () => {
 
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
-    let tabs = [...document.querySelectorAll('[role="tab"]')];
+    let tabs = [...document.querySelectorAll('[aria-label="Learning mode"] [role="tab"]')];
     expect(tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1, -1, -1]);
     for (const tab of tabs) {
       expect(document.getElementById(tab.getAttribute('aria-controls'))).toBeTruthy();
     }
     tabs[0].focus();
     await React.act(async () => { tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); });
-    tabs = [...document.querySelectorAll('[role="tab"]')];
+    tabs = [...document.querySelectorAll('[aria-label="Learning mode"] [role="tab"]')];
     expect(tabs[1].getAttribute('aria-selected')).toBe('true');
     expect(document.activeElement).toBe(tabs[1]);
     await React.act(async () => { tabs[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true })); });
-    tabs = [...document.querySelectorAll('[role="tab"]')];
+    tabs = [...document.querySelectorAll('[aria-label="Learning mode"] [role="tab"]')];
     expect(tabs[4].getAttribute('aria-selected')).toBe('true');
-    expect(document.querySelector('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe(tabs[4].id);
+    // 2026-11-04: a Practice/Missions tab list now wraps the modes, so the mode panel is found by id.
+    expect(document.getElementById('ratio-mode-panel').getAttribute('aria-labelledby')).toBe(tabs[4].id);
     await React.act(async () => { root.unmount(); });
   });
 

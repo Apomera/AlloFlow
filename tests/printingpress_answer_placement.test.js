@@ -20,10 +20,13 @@ const PATHS = [
   'stem_lab/stem_tool_printingpress.js',
   'desktop/web-app/public/stem_lab/stem_tool_printingpress.js',
 ];
-const src = readFileSync(PATHS[0], 'utf8');
+// Options are wrapped for translation; this measures the English behind them.
+const ppEnglishSource = (s) => s.replace(/__alloT\('stem\.printingpress\.[A-Za-z0-9_]+',\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\)/g, '$1');
+const rawSrc = readFileSync(PATHS[0], 'utf8');
+const src = ppEnglishSource(rawSrc);
 
 const start = src.indexOf('function ppPlaceAnswer(');
-const place = new Function('return ' + src.slice(start, src.indexOf('\n      }', start) + 8))();
+const place = new Function('ppEn', 'return ' + src.slice(start, src.indexOf('\n      }', start) + 8))((s) => s);
 
 function strs(raw) {
   const out = []; let i = 0;
@@ -51,7 +54,7 @@ for (const m of src.matchAll(/prompt:\s*__alloT\('[^']*',\s*'((?:[^'\\]|\\.)*)'\
 
 describe('printingpress answer placement', () => {
   it('keeps the deployed copy identical to the audited source', () => {
-    expect(readFileSync(PATHS[1], 'utf8')).toBe(src);
+    expect(readFileSync(PATHS[1], 'utf8')).toBe(rawSrc);
   });
 
   it('extraction reaches the bulk of the catalog and the authored bank really is biased (calibration)', () => {

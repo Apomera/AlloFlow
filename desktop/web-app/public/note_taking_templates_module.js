@@ -53,6 +53,13 @@
   // NOTE-TAKING TEMPLATE COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
+function _ntAiUsable(kind, fn) {
+  try {
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+  } catch (_) {
+  }
+  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+}
 const _genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 const _normalizeBlank = (s) => String(s == null ? "" : s).toLowerCase().normalize("NFKD").replace(/([\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}])\p{M}+/gu, "$1").normalize("NFC").replace(/[\p{Pd}\p{Pc}]+/gu, " ").replace(/[\p{P}`]+/gu, "").replace(/\s+/g, " ").trim();
 const _CardSection = ({ title, hint, color = "indigo", children }) => {
@@ -374,7 +381,7 @@ function _useNotesFeedback(props, templateType) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [xpEarned, setXpEarned] = React.useState(0);
   const generatedContent = props.generatedContent;
-  const callGemini = props.allowRuntimeAi !== false && !props.isTeacherMode ? props.callGemini : null;
+  const callGemini = props.allowRuntimeAi !== false && !props.isTeacherMode && _ntAiUsable("text", props.callGemini) ? props.callGemini : null;
   const addToast = props.addToast || (() => {
   });
   const handleScoreUpdate = !props.previewMode && !props.isTeacherMode ? props.handleScoreUpdate : null;
@@ -462,7 +469,7 @@ function _useNotesFeedback(props, templateType) {
     props.handleNoteUpdate?.("feedback", null);
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function", hideRequest: !props.isTeacherMode && typeof callGemini !== "function", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
 }
 const _ConnectionsSection = ({ value, onChange, hint, t }) => {
   const tt = t || ((k, d) => d || k);
@@ -487,7 +494,8 @@ const _ConnectionsSection = ({ value, onChange, hint, t }) => {
     )
   );
 };
-const _GetFeedbackButton = ({ onClick, isLoading, disabled, t, colorClass = "emerald" }) => {
+const _GetFeedbackButton = ({ onClick, isLoading, disabled, hidden, t, colorClass = "emerald" }) => {
+  if (hidden) return null;
   const palette = {
     emerald: "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700",
     sky: "bg-sky-700 hover:bg-sky-800 text-white border-sky-700",
@@ -618,7 +626,7 @@ const CornellNotesView = React.memo((props) => {
       "aria-label": t("a11y.cornell_summary"),
       "data-help-key": "cornell_notes_summary_section"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, hasGuidance ? _noteText(t, "note_taking.cornell_footer_guided", "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, "note_taking.cornell_footer", "Cornell Notes: cues on the left, notes on the right, summary below."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, hasGuidance ? _noteText(t, "note_taking.cornell_footer_guided", "Cornell Notes: use cues and notes together, then summarize below.") : _noteText(t, "note_taking.cornell_footer", "Cornell Notes: cues on the left, notes on the right, summary below."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const LabReportView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -735,7 +743,7 @@ const LabReportView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.conclusion", "Conclusion"),
       "data-help-key": "lab_report_conclusion_field"
     }
-  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.lab_connections_hint", "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.lab_footer", "Return to this Lab Report to keep adding observations across days."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.lab_connections_hint", "Optional \u2014 how do these results connect to the real world, another experiment, or a concept you've learned? An analogy or memory hook is welcome too."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "sky" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.lab_footer", "Return to this Lab Report to keep adding observations across days."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const ReadingResponseView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -844,7 +852,7 @@ const ReadingResponseView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.question", "Question"),
       "data-help-key": "reading_response_open_question_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.reading_response_footer", "Browse your Reading Responses to build a record of your reading life."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "violet" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.reading_response_footer", "Browse your Reading Responses to build a record of your reading life."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const DoubleEntryView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -922,7 +930,7 @@ const DoubleEntryView = React.memo((props) => {
     },
     "+ ",
     _noteText(t, "note_taking.add_entry", "Add entry")
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.double_entry_footer", "Double-Entry Journal: quotes on the left, your thinking on the right."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "rose" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.double_entry_footer", "Double-Entry Journal: quotes on the left, your thinking on the right."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const GuidedNotesView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -996,7 +1004,7 @@ const GuidedNotesView = React.memo((props) => {
       "aria-label": _noteText(t, "note_taking.own_notes", "My own notes"),
       "data-help-key": "guided_notes_own_notes_field"
     }
-  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.guided_footer", "The blanks are the key terms \u2014 revisit them to study."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  )), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "emerald" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.guided_footer", "The blanks are the key terms \u2014 revisit them to study."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 const QAndAView = React.memo((props) => {
   const generatedContent = props.generatedContent;
@@ -1080,7 +1088,7 @@ const QAndAView = React.memo((props) => {
     },
     "+ ",
     _noteText(t, "note_taking.add_question", "Add question")
-  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.qa_connections_hint", "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.qa_footer", "Switch to Quiz me to self-test with active recall."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
+  ))), /* @__PURE__ */ React.createElement(_ConnectionsSection, { value: data.connections, onChange: (e) => handleNoteUpdate("connections", e.target.value), hint: _noteText(t, "note_taking.qa_connections_hint", "Optional \u2014 connect this topic to another subject or real life, or invent a memory hook of your own for a tricky answer."), t }), /* @__PURE__ */ React.createElement(_GetFeedbackButton, { onClick: fb.requestFeedback, isLoading: fb.isLoading, disabled: !fb.canRequest, hidden: fb.hideRequest, t, colorClass: "cyan" }), /* @__PURE__ */ React.createElement(_NotesFeedbackPanel, { feedback: fb.feedback, xpEarned: fb.xpEarned, onDismiss: fb.dismiss, t, earlierDraft: fb.isEarlierDraft, earlierSource: fb.isEarlierSource }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic text-center" }, _noteText(t, "note_taking.qa_footer", "Switch to Quiz me to self-test with active recall."), " ", _noteText(t, "studio_response.check_save_status", "Check the workspace save status before leaving.")));
 });
 function _autoGrowTextarea(el) {
   if (!el || el.tagName !== "TEXTAREA") return;
@@ -1382,7 +1390,7 @@ const NotebookOverlay = React.memo((props) => {
   const onSelectEntry = props.onSelectEntry || (() => {
   });
   const t = props.t || ((k, d) => d || k);
-  const callGemini = props.allowRuntimeAi !== false ? props.callGemini : null;
+  const callGemini = props.allowRuntimeAi !== false && _ntAiUsable("text", props.callGemini) ? props.callGemini : null;
   const addToast = props.addToast || (() => {
   });
   const [activeFilter, setActiveFilter] = React.useState("all");
@@ -1515,7 +1523,7 @@ const NotebookOverlay = React.memo((props) => {
         " ",
         /* @__PURE__ */ React.createElement("span", { className: "opacity-75 ml-1" }, "(", count, ")")
       );
-    }), /* @__PURE__ */ React.createElement("div", { className: "ml-auto flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    }), /* @__PURE__ */ React.createElement("div", { className: "ml-auto flex items-center gap-2" }, typeof callGemini === "function" && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

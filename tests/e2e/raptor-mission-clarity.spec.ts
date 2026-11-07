@@ -41,7 +41,7 @@ for(const mission of ['feedChicks','silentStrike'])test.describe('Raptor mission
       const outcome=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(49);c._rhCommand('hold',{key:' ',pressed:true});w.stepHunt(1);c._rhCommand('hold',{key:' ',pressed:false});const outside=document.querySelector('[data-raptor-mission-route]')!.getAttribute('data-route-outcome');w.placeHuntPrey(47);w.stepHunt(1);const glide=document.querySelector('[data-raptor-mission-route]')!.getAttribute('data-route-outcome');w.placeHuntPrey(47);c._rhCommand('hold',{key:' ',pressed:true});w.stepHunt(1);return {outside,glide};});expect(outcome).toEqual({outside:'active',glide:'active'});
     }else{
       for(let i=0;i<12;i++){
-        const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
+        const done=await page.evaluate(()=>{const w=window as any,c=document.querySelector('[data-raptor-canvas]') as any;w.placeHuntPrey(3);c._rhCommand('strike');w.stepHunt(1);const n=w.huntScene.getObjectByName('raptor-nest');if(n){const s=c._rhSnapshot();n.position.set(s.raptorPosition.x+2,s.raptorPosition.y-(s.nest.y-n.position.y),s.raptorPosition.z);w.stepHunt(25);}if(document.querySelector('[data-mission-state="success"]'))return true;w.advanceHunt(1000);return false;});if(done)break;
       }
     }
     const outcome=mission==='silentStrike'?'failed':'success',label=outcome==='success'?'Mission complete':'Mission ended';

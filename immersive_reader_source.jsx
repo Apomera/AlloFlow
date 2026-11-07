@@ -397,7 +397,16 @@ const ImmersiveToggleButton = React.memo(({ active, onClick, settingKey, toggleS
     </button>
   ));
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+// Student AI-off: POS/syllable tagging needs AI; null, host-blocked fn or
+// policy off all count as unusable. Falls back on older hosts.
+function _irAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, syllablesOnDevice, isFocusReaderActive, onToggleFocusReader }) => {
   // Back-compat: if the parent hasn't upgraded to the unified Focus Mode prop
   // yet, synthesize it from the two legacy props (Speed Read and Chunk Stream).
   const focusReaderActive = (typeof isFocusReaderActive === 'boolean')
@@ -424,6 +433,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
   // generation is in-flight, we still toggle the setting so the color turns on
   // immediately and starts highlighting the moment tagging finishes — the user
   // doesn't have to click again.
+  // Tagged text already present keeps the toggles; otherwise they need usable AI.
+  const _irAiOk = _irAiUsable('text', typeof window !== 'undefined' ? window.callGemini : null);
+  const posAvailable = !!posReady || _irAiOk;
+  const syllablesAvailable = !!syllablesReady || !!syllablesOnDevice || !!posReady || _irAiOk;
   const handlePosToggle = useCallback((settingKey) => {
     if (!posReady && onGeneratePOS && !isGeneratingPOS) {
       // Fire-and-forget: we don't await because the setting toggle below should
@@ -491,7 +504,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             >
               {t('immersive.wide_text')}
             </ImmersiveToggleButton>
-            <ImmersiveToggleButton toggleSetting={toggleSetting}
+            {syllablesAvailable && <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.showSyllables}
               onClick={handleSyllableToggle}
               title={(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady)) ? 'Generating syllable markers…' : t('immersive.toggle_syllables')}
@@ -499,7 +512,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               disabled={(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady && !posReady)) && !settings.showSyllables}
             >
               {t('immersive.syllables')}{(isGeneratingSyllables || (isGeneratingPOS && !syllablesReady && !posReady)) && settings.showSyllables ? ' …' : ''}
-            </ImmersiveToggleButton>
+            </ImmersiveToggleButton>}
             <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.lineFocus}
               settingKey="lineFocus"
@@ -637,7 +650,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 When tagging is in-flight we show a subtle spinner suffix so the
                 user knows why highlights haven't appeared yet. The toggled-on
                 color flips immediately so the button state doesn't appear stuck. */}
-            <ImmersiveToggleButton toggleSetting={toggleSetting}
+            {posAvailable && <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.showNouns}
               onClick={() => handlePosToggle('showNouns')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_nouns')}
@@ -645,8 +658,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               disabled={isGeneratingPOS && !posReady && !settings.showNouns}
             >
               {t('immersive.nouns')}{isGeneratingPOS && settings.showNouns ? ' …' : ''}
-            </ImmersiveToggleButton>
-            <ImmersiveToggleButton toggleSetting={toggleSetting}
+            </ImmersiveToggleButton>}
+            {posAvailable && <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.showVerbs}
               onClick={() => handlePosToggle('showVerbs')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_verbs')}
@@ -654,8 +667,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               disabled={isGeneratingPOS && !posReady && !settings.showVerbs}
             >
               {t('immersive.verbs')}{isGeneratingPOS && settings.showVerbs ? ' …' : ''}
-            </ImmersiveToggleButton>
-            <ImmersiveToggleButton toggleSetting={toggleSetting}
+            </ImmersiveToggleButton>}
+            {posAvailable && <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.showAdjectives}
               onClick={() => handlePosToggle('showAdjectives')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adjectives')}
@@ -663,8 +676,8 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               disabled={isGeneratingPOS && !posReady && !settings.showAdjectives}
             >
               {t('immersive.adjectives')}{isGeneratingPOS && settings.showAdjectives ? ' …' : ''}
-            </ImmersiveToggleButton>
-            <ImmersiveToggleButton toggleSetting={toggleSetting}
+            </ImmersiveToggleButton>}
+            {posAvailable && <ImmersiveToggleButton toggleSetting={toggleSetting}
               active={settings.showAdverbs}
               onClick={() => handlePosToggle('showAdverbs')}
               title={isGeneratingPOS ? 'Classifying parts of speech…' : t('immersive.highlight_adverbs')}
@@ -672,7 +685,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               disabled={isGeneratingPOS && !posReady && !settings.showAdverbs}
             >
               {t('immersive.adverbs')}{isGeneratingPOS && settings.showAdverbs ? ' …' : ''}
-            </ImmersiveToggleButton>
+            </ImmersiveToggleButton>}
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         {/* Font picker — Lexend and OpenDyslexic are the dyslexia-friendly options
@@ -2032,7 +2045,8 @@ const KaraokePlaybackOverlay = React.memo(({ text, sentenceList, requestedVoice,
         if (/^[ab][fm]_/i.test(requestedVoice || '')) {
             try { kokoroUsesDeviceProvider = JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider === 'browser'; } catch (_) {}
         }
-        if (/^[ab][fm]_/i.test(requestedVoice || '') && !kokoroUsesDeviceProvider) {
+        // Student AI off: a Kokoro voice not on this device is never downloaded; the device voice reads.
+        if (/^[ab][fm]_/i.test(requestedVoice || '') && !kokoroUsesDeviceProvider && window.__alloStudentAiDisabled !== true) {
             finishAudioLoad(audioLoadOwner);
             setPlaybackFallbackNotice('The selected Kokoro voice could not read this sentence. Check the voice download or choose another voice, then press Play to retry.');
             setIsPlaying(false);

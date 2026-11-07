@@ -7,7 +7,8 @@ const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_l
 
 describe('Skate Lab inquiry accessibility', () => {
   it('names the hang-time hypothesis textarea in source and public mirrors', () => {
-    const expected = "'aria-label': __alloT('stem.skatelab.hypothesis_input', 'Skate physics investigation hypothesis')";
+    // Re-keyed _v2 on 2026-11-03: the registered English still read "hang-time".
+    const expected = "'aria-label': __alloT('stem.skatelab.hypothesis_input_v2', 'Skate physics investigation hypothesis')";
     for (const file of [sourcePath, publicPath]) expect(fs.readFileSync(file, 'utf8')).toContain(expected);
   });
 

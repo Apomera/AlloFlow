@@ -41,7 +41,7 @@ function balanced(at, open, close) {
 function literal(marker, open = '{', close = '}') {
   const at = SRC.indexOf(marker);
   expect(at, marker).toBeGreaterThan(-1);
-  return new Function('t', 'return (' + balanced(at, open, close) + ')')((k) => k);
+  return new Function('t', 'return (' + balanced(at, open, close) + ')')((k, f) => (f != null ? f : k));
 }
 function fn(name) {
   const at = SRC.indexOf('  function ' + name + '(');
@@ -357,7 +357,7 @@ describe('Minerals in your life: scavenger hunt', () => {
     const used = [...new Set(LIFE.map((it) => it.mineral))];
     const fits = used.filter((id) => ['gypsum', 'talc', 'mica', 'graphite'].includes(id));
     expect(fits.length).toBe(4);
-        // Labels are the harness's untranslated keys, e.g. stem.rocks.mica_muscovite.
+        // Labels are each call's English fallback, as the tool renders them when strings are missing.
     const label = (id) => MINERALS.find((m) => m.id === id).label;
     const named = text.replace(/^.*?is /, '').replace(/[.]$/, '').split(/, | or /);
     expect(named.sort()).toEqual(fits.map(label).sort());

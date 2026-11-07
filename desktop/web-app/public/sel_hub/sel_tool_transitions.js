@@ -145,6 +145,7 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _trAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
@@ -155,6 +156,7 @@ window.SelHub = window.SelHub || {
       };
 
       var activeTab      = d.activeTab || 'identify';
+      if (!_trAiOn && activeTab === 'coach') activeTab = 'identify';
       var soundEnabled   = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Identify state
@@ -199,7 +201,7 @@ window.SelHub = window.SelHub || {
         { id: 'plan',     icon: '\uD83D\uDDFA\uFE0F', label: 'My Plan' },
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'AI Support' },
         { id: 'print',    icon: '\uD83D\uDDA8', label: 'Print' },
-      ];
+      ].filter(function (t) { return _trAiOn || t.id !== 'coach'; });
 
       // Track explored tabs
       var exploredTabs = d.exploredTabs || {};
@@ -576,7 +578,7 @@ window.SelHub = window.SelHub || {
       // ── AI Support Coach ──
       // ══════════════════════════════════════════════════════════
       var coachContent = null;
-      if (activeTab === 'coach') {
+      if (activeTab === 'coach' && _trAiOn) {
         var hasSafetyLayer = window.SelHub && window.SelHub.hasCoachConsent;
         var hasConsent = hasSafetyLayer ? window.SelHub.hasCoachConsent() : true;
         if (hasSafetyLayer && !hasConsent) {
@@ -626,7 +628,7 @@ window.SelHub = window.SelHub || {
               type: 'text', value: coachInput,
               onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
-                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && callGemini) {
+                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && _trAiOn) {
                   var userMsg = coachInput.trim();
                   var newHist = (coachHistory || []).concat([{ role: 'user', text: userMsg }]);
                   upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
@@ -663,14 +665,14 @@ window.SelHub = window.SelHub || {
                   });
                 }
               },
-              disabled: coachLoading || !callGemini,
+              disabled: coachLoading || !_trAiOn,
               placeholder: coachLoading ? 'Listening...' : 'How are you feeling about the change?',
               style: { flex: 1, border: '2px solid #bae6fd', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
               'aria-label': coachLoading ? 'Transition coach is responding' : 'Send message to transition coach',
               onClick: function() {
-                if (!coachInput.trim() || coachLoading || !callGemini) return;
+                if (!coachInput.trim() || coachLoading || !_trAiOn) return;
                 // Same send logic — trigger via synthetic Enter
                 var kev = new KeyboardEvent('keydown', { key: 'Enter' });
                 // Inline for reliability
@@ -695,7 +697,7 @@ window.SelHub = window.SelHub || {
                   upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not alone in this, and what you\u2019re feeling makes complete sense.' }]), coachLoading: false });
                 });
               },
-              disabled: coachLoading || !coachInput.trim() || !callGemini,
+              disabled: coachLoading || !coachInput.trim() || !_trAiOn,
               style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? SKY_FILL : _trC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\u2728 Send')
           ),

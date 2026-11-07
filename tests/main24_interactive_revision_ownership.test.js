@@ -119,9 +119,9 @@ describe('DBQ revision ownership and recovery', () => {
     await act(async () => button('Compare My Assessment').click());
     expect(f.state.responses._reliabilityAI_A).toEqual(modes[0].result);
   });
-  it('keeps ordinary work available while feedback controls are disabled', () => {
+  it('keeps ordinary work available while learner feedback controls are hidden', () => {
     const f = fixture(); f.state.callGemini = null; f.refresh();
-    expect(button('Get AI Feedback').disabled).toBe(true);
+    expect([...host.querySelectorAll('button')].some(node => node.textContent.includes('Get AI Feedback'))).toBe(false);
     expect(host.querySelector('textarea[aria-label="Synthesis essay"]').disabled).toBe(false);
     expect(host.textContent).toContain('AI feedback is unavailable in this session.');
   });

@@ -9065,7 +9065,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return function() { window.removeEventListener('alloflow-roadready-storage-blocked', onBlocked); };
       }, []);
       var callTTS = ctx.callTTS || null;
-      var callGemini = ctx.callGemini || null;
+      // Student AI-off: null unless text AI is usable, so the AI Coach view, Coach Mode
+      // and Drive Reflection hide.
+      var _aiUsable = function (kind, fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+      };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       // AI gate (default OFF). Coach Mode (a 35s loop that ships driving telemetry
       // to the AI) and the rideshare passenger-line rewrite only run when a teacher
       // has enabled AI hints. Captured next to callGemini so it shares its freshness.
@@ -9158,7 +9164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
       };
 
-      var view = d.view || 'menu';
+      var view = (d.view === 'aiCoach' && !callGemini) ? 'menu' : (d.view || 'menu');
       var inputPreferencesVersion=useState(0);
       useEffect(function(){return window.StemInput ? window.StemInput.subscribe(function(){inputPreferencesVersion[1](function(n){return n+1;});}) : undefined;},[]);
       useEffect(function(){return window.StemInput ? window.StemInput.claim('roadReady') : undefined;},[]);
@@ -29845,10 +29851,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         { view: 'knowYourCar', goal: 'pre-drive', icon: '🔍', name: __alloT('stem.roadready.know_your_car_2', 'Know Your Car'), desc: __alloT('stem.roadready.every_part_explained_engine_to_tires_2', 'Every part explained — engine to tires.') },
         { view: 'keyboardCheatSheet', goal: 'pre-drive', icon: '⌨️', name: __alloT('stem.roadready.keyboard_shortcuts_3', 'Keyboard Shortcuts'), desc: __alloT('stem.roadready.all_in_drive_controls_at_a_glance', 'All in-drive controls at a glance.') },
         { view: 'learningPath', goal: 'progress', icon: '🎯', name: __alloT('stem.roadready.learning_path_2', 'Learning Path'), desc: __alloT('stem.roadready.step_by_step_guided_progression_2', 'Step-by-step guided progression.') },
-        { view: 'aiCoach', goal: 'progress', icon: '🤖', name: __alloT('stem.roadready.ai_driving_coach_2', 'AI Driving Coach'), desc: __alloT('stem.roadready.gemini_reviews_your_last_drive', 'Gemini reviews your last drive.') },
+        callGemini && { view: 'aiCoach', goal: 'progress', icon: '🤖', name: __alloT('stem.roadready.ai_driving_coach_2', 'AI Driving Coach'), desc: __alloT('stem.roadready.gemini_reviews_your_last_drive', 'Gemini reviews your last drive.') },
         { view: 'roadTrip', goal: 'fun', icon: '🗺️', name: __alloT('stem.roadready.road_trip_planner_2', 'Road Trip Planner'), desc: __alloT('stem.roadready.distance_fuel_cost_and_stop_planning', 'Distance, fuel cost, and stop planning.') },
         { view: 'carBuying', goal: 'fun', icon: '💵', name: __alloT('stem.roadready.first_car_guide_2', 'First Car Guide'), desc: __alloT('stem.roadready.what_to_look_for_what_to_avoid_2', 'What to look for, what to avoid.') }
-      ];
+      ].filter(Boolean);
       var goals = [
         { id: 'all', label: __alloT('stem.roadready.help_goal_all', 'All'), icon: '🧭' },
         { id: 'permit', label: __alloT('stem.roadready.study_for_permit', 'Study for permit'), icon: '📝' },
@@ -30342,7 +30348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', null, __alloT('stem.roadready.ride_along_mode', '🎧 Ride-Along mode')),
               h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '11px' } }, __alloT('stem.roadready.ride_along_automatic_scope', '— automatic steering, braking, and narration on road scenarios; parking and roundabout courses stay hands-on'))
             ),
-            aiHintsEnabled && h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginTop: '8px' } },
+            aiHintsEnabled && callGemini && h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginTop: '8px' } },
               h('input', { type: 'checkbox', checked: !!d.coachMode,
                 onChange: function(e) { upd('coachMode', e.target.checked); }
               }),

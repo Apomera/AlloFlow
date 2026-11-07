@@ -731,7 +731,9 @@ const handleStartAdventure = async (deps) => {
       const reading = resolveAdventureReadingSource(deps, false);
       // Opening settings is not generation; an ambiguous reading is chosen only
       // after the learner finishes setup and starts the adventure.
-      if (reading.status !== 'ambiguous' && !String(reading.text || '').trim()) {
+      // A teacher-made offline story needs no source text (the view plays it with no AI).
+      const offlineStory = !isTeacherMode && !activeSessionCode && window.AlloModules?.AdventureOffline?.find?.(history);
+      if (!offlineStory && reading.status !== 'ambiguous' && !String(reading.text || '').trim()) {
           addToast(t('adventure.no_text_error'), "error");
           return;
       }
@@ -1293,7 +1295,8 @@ Do NOT force all characters into every scene — let the narrative decide natura
       setShowDice(true);
     } catch (error) {
       warnLog("Adventure Text Error:", error);
-      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : t('toasts.connection_failed'), "error");
+      const aiOff = !!error && (error.code === 'allo-qr-ai-disabled' || error.code === 'allo/no-api-key');
+      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : aiOff ? t('toasts.ai_available') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'text', payload: currentInput });
       const snapshot = lastTurnSnapshot.current;
       setAdventureState(prev => snapshot ? { ...snapshot, isLoading: false, isImageLoading: false } : { ...prev, isLoading: false });
@@ -1606,7 +1609,8 @@ const handleAdventureChoice = async (choice, deps) => {
       }
     } catch (error) {
       warnLog("Adventure Turn Error:", error);
-      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : t('toasts.connection_failed'), "error");
+      const aiOff = !!error && (error.code === 'allo-qr-ai-disabled' || error.code === 'allo/no-api-key');
+      addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : aiOff ? t('toasts.ai_available') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'choice', payload: normalizedChoice });
       setAdventureState(prev => {
           return {

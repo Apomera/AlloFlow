@@ -5,6 +5,15 @@ var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
+// Host doorway for AI-only teacher actions (disabled + reason + setup link); null on old hosts.
+function _teacherAiDoor(t, kind) {
+  try { return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind || 'text', t) : null; } catch (_) { return null; }
+}
+function TeacherAiSetupNotice({ t, className }) {
+  var N = typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
+  return N && _teacherAiDoor(t)?.disabled ? <div className={className}><N t={t} /></div> : null;
+}
+
 function alloTeacherStableId(prefix) {
   var value = '';
   try {
@@ -2202,7 +2211,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               🪑 {t('roster.seating_chart') || 'Seating Chart'}
             </button>
           )}
-          <button type="button" onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
+          <button type="button" onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0 || !!_teacherAiDoor(t)?.disabled} title={_teacherAiDoor(t)?.title || undefined} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
           {activeSessionCode && (
@@ -2332,7 +2341,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <div className="flex items-start justify-between gap-3"><div><h3 id="roster-batch-title" className="text-sm font-black text-amber-950">Differentiate by group</h3><p className="mt-1 text-xs text-amber-900">Create the selected resource types for every roster group.</p></div><button type="button" onClick={() => setShowBatchConfig(false)} className="min-h-9 min-w-9 rounded-full hover:bg-amber-100" aria-label="Close batch configuration"><X size={16} className="mx-auto" /></button></div>
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">{Object.keys(batchTypes).map(type => <label key={type} className="flex min-h-10 items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 text-xs font-bold text-amber-950"><input type="checkbox" checked={!!batchTypes[type]} onChange={event => setBatchTypes(previous => ({ ...previous, [type]: event.target.checked }))} /> {type.replace(/-/g, ' ')}</label>)}</div>
               {batchStatus && <p role="alert" className="mt-2 text-xs font-bold text-red-700">{batchStatus}</p>}
-              <div className="mt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-2"><button type="button" onClick={() => setShowBatchConfig(false)} className="min-h-11 rounded-lg border border-slate-400 px-4 text-sm font-bold">Cancel</button><button type="button" onClick={handleRunBatchGenerate} className="min-h-11 rounded-lg bg-amber-700 px-4 text-sm font-bold text-white">Generate for {groupIds.length} group{groupIds.length === 1 ? '' : 's'}</button></div>
+              <div className="mt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-2"><button type="button" onClick={() => setShowBatchConfig(false)} className="min-h-11 rounded-lg border border-slate-400 px-4 text-sm font-bold">Cancel</button><button type="button" onClick={handleRunBatchGenerate} disabled={!!_teacherAiDoor(t)?.disabled} className="min-h-11 rounded-lg bg-amber-700 px-4 text-sm font-bold text-white disabled:opacity-50">Generate for {groupIds.length} group{groupIds.length === 1 ? '' : 's'}</button></div>
             </section>
           )}
           {(studentCodenames.length > 10 || normalizedStudentQuery) && (
@@ -4684,7 +4693,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         </div>
     );
     const generateBossAsset = async () => {
-        if (bossStats?.image || bossStats?.isGenerating || typeof onGenerateImage !== 'function') return;
+        if (bossStats?.image || bossStats?.isGenerating || typeof onGenerateImage !== 'function' || _teacherAiDoor(t, 'images')?.disabled) return;
         try {
             const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
             await updateDoc(sessionRef, { "quizState.bossStats.isGenerating": true });
@@ -5813,7 +5822,7 @@ const calculateAnalyticsMetrics = (dashboardData) => {
     const history = student.history || [];
     const responses = student.responses || {};
     let studentHasQuiz = false;
-    const adventureItems = history.filter(h => h.type === 'adventure');
+    const adventureItems = history.filter(item => item.type === 'adventure' && !(item.data && (item.data.kind === 'student-story' || item.data.kind === 'offline-reflection' || item.data.offlineStory)));
     if (adventureItems.length > 0) {
         const lastAdventure = adventureItems[adventureItems.length - 1];
         // The game saves progress under data.snapshot; data.level is the legacy shape.
@@ -6763,15 +6772,16 @@ Return ONLY JSON:
         </h4>
         <button type="button"
           onClick={handleGenerateClassInsights}
-          disabled={insightsLoading || agg.studentsWithNotebook < 2}
+          disabled={insightsLoading || agg.studentsWithNotebook < 2 || !!_teacherAiDoor(t)?.disabled}
           className="px-3 py-1.5 text-xs font-bold text-violet-800 bg-violet-100 border border-violet-300 rounded-full hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           aria-label={t('dashboard.class_notebook.ai_button_aria') || 'Generate AI insights on class-wide note-taking patterns'}
-          title={agg.studentsWithNotebook < 2 ? (t('dashboard.class_notebook.need_more_short') || 'Need 2+ students with notebook') : (t('dashboard.class_notebook.ai_button_tooltip') || 'AI looks for class-wide patterns and suggests mini-lessons')}
+          title={_teacherAiDoor(t)?.title || (agg.studentsWithNotebook < 2 ? (t('dashboard.class_notebook.need_more_short') || 'Need 2+ students with notebook') : (t('dashboard.class_notebook.ai_button_tooltip') || 'AI looks for class-wide patterns and suggests mini-lessons'))}
           data-help-key="dashboard_class_notebook_ai_btn"
         >
           {insightsLoading ? '⏳' : '✨'} {t('dashboard.class_notebook.ai_button') || 'AI Class Insights'}
         </button>
       </div>
+      <TeacherAiSetupNotice t={t} className="mb-3" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <div className="bg-violet-50 rounded-xl p-3 text-center border border-violet-200">
           <div className="text-2xl font-black text-violet-700">{agg.studentsWithNotebook}</div>
@@ -7828,7 +7838,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
   };
   const getStudentLevel = (history) => {
       if (!history || !Array.isArray(history)) return "N/A";
-      const adventureItem = history.slice().reverse().find(item => item.type === 'adventure');
+      const adventureItem = history.slice().reverse().find(item => item.type === 'adventure' && !(item.data && (item.data.kind === 'student-story' || item.data.kind === 'offline-reflection' || item.data.offlineStory)));
       const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
       if (Number.isFinite(adventureLevel) && adventureLevel > 0) return adventureLevel;
       return "N/A";
@@ -8250,7 +8260,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     const rows = dashboardData.map(student => {
         const name = (student.studentNickname || "Anonymous").replace(/"/g, '""');
         const date = new Date(student.timestamp).toLocaleDateString();
-        const adventureItem = student.history.slice().reverse().find(item => item.type === 'adventure');
+        const adventureItem = student.history.slice().reverse().find(item => item.type === 'adventure' && !(item.data && (item.data.kind === 'student-story' || item.data.kind === 'offline-reflection' || item.data.offlineStory)));
         const adventureLevel = adventureItem && adventureItem.data ? Number(adventureItem.data.snapshot?.level ?? adventureItem.data.level) : NaN;
         const level = Number.isFinite(adventureLevel) && adventureLevel > 0 ? adventureLevel : "N/A";
         let totalQuizScore = 0;
@@ -8732,9 +8742,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                      ><span className="hidden sm:inline">📓 Export notebooks ({filteredNotebookCount})</span><span className="sm:hidden">📓 PDF ({filteredNotebookCount})</span></button>
                                      <button type="button"
                                          onClick={handleBulkGenerateFeedback}
-                                         disabled={filteredNotebookCount === 0}
+                                         disabled={filteredNotebookCount === 0 || !!_teacherAiDoor(t)?.disabled}
                                          className="text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 px-2 sm:px-2.5 py-1 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-40 disabled:cursor-not-allowed"
-                                         title={filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back')}
+                                         title={_teacherAiDoor(t)?.title || (filteredNotebookCount === 0 ? (t('dashboard.bulk.no_notebook_in_filter') || 'No filtered students have notebook entries') : (t('dashboard.bulk.feedback_tooltip') || 'AI generates one short feedback note per student, ready to print + hand back'))}
                                      ><span className="hidden sm:inline">💬 AI feedback sheets ({filteredNotebookCount})</span><span className="sm:hidden">💬 AI ({filteredNotebookCount})</span></button>
                                  </div>
                              );

@@ -174,6 +174,7 @@ window.SelHub = window.SelHub || {
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
       var callGemini = ctx.callGemini;
+      var _coAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
@@ -184,7 +185,8 @@ window.SelHub = window.SelHub || {
       };
 
       var activeTab    = d.activeTab || 'pillars';
-      var soundOn      = d.soundOn != null ? d.soundOn : true;
+      if (!_coAiOn && activeTab === 'coach') activeTab = 'pillars';
+      var soundOn     = d.soundOn != null ? d.soundOn : true;
       var pillarIdx    = (Number.isInteger(d.pillarIdx) && d.pillarIdx >= 0 ? d.pillarIdx : 0);
       var criticIdx    = (Number.isInteger(d.criticIdx) && d.criticIdx >= 0 ? d.criticIdx : 0);
       var criticInput  = d.criticInput || '';
@@ -238,7 +240,7 @@ window.SelHub = window.SelHub || {
         { id: 'letter',  icon: '\u2709\uFE0F', label: 'Kind Letter' },
         { id: 'coach',   icon: '\uD83E\uDD16', label: 'Compassion Coach' },
         { id: 'print',   icon: '\uD83D\uDDA8', label: 'Print' },
-      ];
+      ].filter(function (t) { return _coAiOn || t.id !== 'coach'; });
 
       // Track explored tabs
       var exploredTabs = d.exploredTabs || {};
@@ -482,7 +484,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', gap: '8px' } },
             h('input', { 'aria-label': 'Share your inner critic thought', type: 'text', value: coachInput, onChange: function(ev) { upd('coachInput', ev.target.value); },
               onKeyDown: function(ev) {
-                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && callGemini) {
+                if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && _coAiOn) {
                   var msg = coachInput.trim();
                   var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
                   upd({ coachHistory: hist, coachInput: '', coachLoading: true });
@@ -499,13 +501,13 @@ window.SelHub = window.SelHub || {
                   }
                 }
               },
-              disabled: coachLoading || !callGemini,
+              disabled: coachLoading || !_coAiOn,
               placeholder: coachLoading ? 'Listening with care...' : 'What is your inner critic saying?',
               style: { flex: 1, border: '2px solid #ddd6fe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
-                if (!coachInput.trim() || coachLoading || !callGemini) return;
+                if (!coachInput.trim() || coachLoading || !_coAiOn) return;
                 var msg = coachInput.trim();
                 var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
                 upd({ coachHistory: hist, coachInput: '', coachLoading: true });
@@ -519,7 +521,7 @@ window.SelHub = window.SelHub || {
                   callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false, _lastTier: preFallback2.action === 'block' ? 3 : 0 }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not your inner critic. You are the one who hears it \u2014 and that observer deserves tremendous kindness.' }]), coachLoading: false }); });
                 }
               },
-              disabled: coachLoading || !coachInput.trim() || !callGemini,
+              disabled: coachLoading || !coachInput.trim() || !_coAiOn,
               style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? PURPLE_FILL : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
             }, coachLoading ? '\u23F3' : '\uD83D\uDC9C')
           ),

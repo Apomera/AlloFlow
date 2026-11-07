@@ -16,9 +16,8 @@ session-code entropy — plus the client-side mitigations already shipped and th
 **Two backends (correction, verified 2026-07-01):** on **Gemini Canvas** the platform injects
 `__firebase_config` — a *Google-managed* project we cannot configure (no console, no rules
 deploy; platform policy governs it; per-app `artifacts/{appId}` namespacing). Outside Canvas, the
-desktop/web-app demo uses the *owned* project **`prismflow-911fe`** (`desktop/web-app/.env`) —
-everything in §2/§3 applies to that project, and to whatever owned project hosts the classroom
-phase. The classroom phase should run on an owned project regardless: a platform-managed backend
+each district runs its *own* Firebase project (`prismflow-911fe` is retired and must stay offline) —
+everything in §2/§3 applies to that district project. The classroom phase should run on an owned project regardless: a platform-managed backend
 offers no DPA, retention control, or auditability for a district.
 
 AlloFlow's live sessions run on a Firebase project using **anonymous authentication**. All live
@@ -256,7 +255,7 @@ is already shipped: the Worker's response gets assigned to `window.__alloRtcConf
 ## 6. Recommended rollout order
 
 1. **Firestore rules** in a staging Firebase project → emulator test matrix (§2.2.5) → deploy to
-   prod → full Canvas + prismflow smoke of: join, poll round-trip, Pictionary round, quiz answer,
+   prod → full Canvas + district-project smoke of: join, poll round-trip, Pictionary round, quiz answer,
    group/individual push, signals, end-session (both paths).
 2. **App Check in monitoring mode** → verify Canvas attestation → enforce (or document Canvas
    exemption).

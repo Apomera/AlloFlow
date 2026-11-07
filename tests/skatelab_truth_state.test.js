@@ -246,7 +246,9 @@ describe('Skate Lab setup/result truthfulness', () => {
     locked.innerHTML = lockedHtml;
 
     expect(locked.querySelector('.skatelab-shell')?.getAttribute('data-skatelab-prediction-locked')).toBe('true');
-    expect(locked.querySelector('.sk-status')?.textContent).toMatch(/run.+reveal/i);
+    // Engagement pass: positive wording ("Guess saved. Run the model to see
+    // what really happens.") replaced "Prediction locked: run … to reveal".
+    expect(locked.querySelector('.sk-status')?.textContent).toMatch(/run the model to see what really happens/i);
     expect(locked.querySelector('.sk-status')?.textContent).not.toContain('Predicted result:');
     expect(locked.querySelector('#sk-canvas-summary')?.textContent).not.toContain('Current model range is');
     expect([...locked.querySelectorAll('.sk-metric-value')].every((metric) => metric.textContent === '—')).toBe(true);

@@ -427,7 +427,8 @@ describe('Skate Lab stage A bug regressions', () => {
     expect(physics.simHalfpipe({}).score).toBeUndefined();
     expect(physics.simGapJump({}).score).toBeUndefined();
     const sim = physics.simGapJump({ speedMph: 17, angleDeg: 35, gapFt: 15 });
-    const state = await mount(seed({ mode: 'gap', estimateValue: sim.rangeFt.toFixed(1) }));
+    // Stage D: estimates count only while predict-first hides the results.
+    const state = await mount(seed({ mode: 'gap', estimateChallenge: true, estimateValue: sim.rangeFt.toFixed(1) }));
     await launch();
     await launch();
     expect(state.latest.skatelab.stats.runs).toBe(2);

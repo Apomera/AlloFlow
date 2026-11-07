@@ -4089,6 +4089,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _dwAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var band = ctx.gradeBand || 'middle';
       if (band === 'elementary') band = 'middle'; // 6-12 tool: map elementary to middle (light touch only)
 
@@ -4602,8 +4603,9 @@ var EDUCATOR_GUIDES_DIGITAL = [
       }
 
       function renderAIReframe() {
+        if (!_dwAiOn) return null;
         function runReframe() {
-          if (!rfInput.trim() || !callGemini) return;
+          if (!rfInput.trim() || !_dwAiOn) return;
           // Safety pre-check: kids type comparison thoughts here ("I'll never
           // be like them" / darker variants). Block on critical content;
           // surface crisis resources instead of an AI reframe.
@@ -4668,22 +4670,22 @@ var EDUCATOR_GUIDES_DIGITAL = [
             h('div', { style: { display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' } },
               h('button', {
                 onClick: runReframe,
-                disabled: rfLoading || !rfInput.trim() || !callGemini,
+                disabled: rfLoading || !rfInput.trim() || !_dwAiOn,
                 'aria-busy': rfLoading ? 'true' : 'false',
                 style: {
                   padding: '8px 14px',
-                  background: (rfLoading || !rfInput.trim() || !callGemini) ? _dwC('#94a3b8') : '#db2777',
+                  background: (rfLoading || !rfInput.trim() || !_dwAiOn) ? _dwC('#94a3b8') : '#db2777',
                   color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700,
-                  cursor: (rfLoading || !rfInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                  cursor: (rfLoading || !rfInput.trim() || !_dwAiOn) ? 'not-allowed' : 'pointer',
                   fontSize: 13
                 }
-              }, rfLoading ? 'Thinking...' : (callGemini ? 'Reframe this' : 'AI not available')),
+              }, rfLoading ? 'Thinking...' : (_dwAiOn ? 'Reframe this' : 'AI not available')),
               rfReply && h('button', {
                 onClick: function() { upd({ rfInput: '', rfReply: '' }); },
                 style: { padding: '8px 14px', background: _dwC('#fff'), color: _dwC('#0f172a'), border: '1px solid #cbd5e1', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
               }, 'Try another')
             ),
-            !callGemini && h('p', { style: { fontSize: 11, color: _dwC('#9d174d'), marginTop: 6 } },
+            !_dwAiOn && h('p', { style: { fontSize: 11, color: _dwC('#9d174d'), marginTop: 6 } },
               'AI features need a connection. While offline: try writing what the kindest person in your life would say back to you.'),
             // Surface 988 / Crisis Text Line block when last reframe input was tier-3.
             (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),

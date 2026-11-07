@@ -4609,12 +4609,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var activeSounds = d.activeSounds || { cricket: true, frog: true, owl: true, bat: true, whale: false, dolphin: false };
       var noiseLevel = typeof d.noiseLevel === 'number' ? d.noiseLevel : 0;
       var ecoSection = d.ecoSection || 'soundscape'; // 'soundscape' | 'bioacoustics' | 'soundmap'
+      // Sound Map is AI-generated only: hidden when ctx hands no usable callGemini.
+      if (ecoSection === 'soundmap' && !callGemini) ecoSection = 'soundscape';
       var soundmapPrompt = d.soundmapPrompt || '';
       var soundmapResult = d.soundmapResult || '';
       var soundmapLoading = d.soundmapLoading || false;
 
       function renderEcologyTab() {
-        var ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics', 'soundmap'];
+        var ECOLOGY_SECTION_IDS = callGemini ? ['soundscape', 'bioacoustics', 'soundmap'] : ['soundscape', 'bioacoustics'];
         var ecologyTabKeyDown = function(e, index) {
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECOLOGY_SECTION_IDS.length;
@@ -4639,7 +4641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               { id: 'soundscape', label: t('stem.echolocation.soundscape', 'Soundscape'), icon: '\uD83C\uDF33' },
               { id: 'bioacoustics', label: t('stem.echolocation.bioacoustics', 'Bioacoustics'), icon: '\uD83D\uDD0A' },
               { id: 'soundmap', label: t('stem.echolocation.sound_map', 'Sound Map'), icon: '\uD83D\uDDFA\uFE0F' }
-            ].map(function(s, si) {
+            ].filter(function(s) { return s.id !== 'soundmap' || !!callGemini; }).map(function(s, si) {
               var active = ecoSection === s.id;
               return h('button', {
                 key: s.id, id: 'echolocation-ecology-tab-' + s.id, role: 'tab',

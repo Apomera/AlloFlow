@@ -15,11 +15,12 @@
   CODAP (Common Online Data Analysis Platform) is the Concord Consortium's
   MIT-licensed data-science workspace — codap.concord.org — one of the most
   evidence-based open tools in data literacy. Credit and thanks to the
-  Concord Consortium. This page embeds the hosted CODAP release and loads a
-  tiny AlloFlow "tutor link" plugin into it (?di=), which answers "what is the
-  student working with right now?" in three bounded layers: shape (dataset /
-  collection / column names, case counts, which graphs exist), per-column
-  summary statistics, and a capped sample of real rows. See tutor_plugin.html.
+  Concord Consortium. This page embeds a PINNED hosted CODAP build (see
+  CODAP_BASE) and loads a tiny AlloFlow "tutor link" plugin into it (?di=),
+  which answers "what is the student working with right now?" in three
+  bounded layers: shape (dataset / collection / column names, case counts,
+  which graphs exist), per-column summary statistics, and a capped sample of
+  real rows. The same plugin creates datasets in CODAP. See tutor_plugin.html.
 
   The Socratic tutor:
   - AI path: questions go to the OPENER AlloFlow window over postMessage
@@ -28,8 +29,18 @@
     prompt is ask-don't-tell: the tutor nudges with questions, it does not
     pronounce conclusions.
   - No-AI path (AI off, opener closed, or standalone): a built-in bank of
-    Socratic data-thinking prompts, so the panel is useful with zero AI.
+    Socratic data-thinking prompts, so the panel is useful with zero AI. Each
+    no-AI question is still reported to the launcher, so the Ask quests count.
   - Nothing here is persisted: the conversation lives in this window only.
+
+  Investigate panel: starter datasets (sent by the launcher with their
+  citations) and guided questions per grade band. Predict -> load the data ->
+  explore in CODAP -> claim / evidence / reasoning -> named-misconception
+  feedback with a second try -> only then, how the data compares with the
+  prediction.
+
+  Language: the launcher passes ?lang= and sends every visible string with the
+  handshake. CODAP opens in the matching language when it has one.
 
   NOTE: CODAP itself loads from codap.concord.org (internet required).
   Roadmap: vendor a CODAP build into School Box for offline classrooms (MIT
@@ -57,6 +68,7 @@
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #4f46e5; --ok: #4ade80; --warn: #fbbf24;
+    --heading: #a5b4fc; --note-bg: #1f2a44; --bad: #fca5a5;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
@@ -64,6 +76,7 @@
     --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
     --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
     --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+    --heading: #4338ca; --note-bg: #eef2ff; --bad: #b91c1c;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
@@ -71,40 +84,79 @@
     --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
     --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
     --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+    --heading: #ffff00; --note-bg: #000000; --bad: #ff6b6b;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
   :root[data-theme="contrast"] button,
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
+  :root[data-theme="contrast"] button:not(:disabled) { background: #000000; color: #ffff00; border: 2px solid #ffff00; }
   :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
   @media (forced-colors: active) {
     button, input, select, textarea, a { forced-color-adjust: auto; }
   }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
-  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
-  .tutor { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; }
-  .tutor h2 { font-size: 12px; margin: 0; padding: 10px 12px 6px; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.06em; }
+  .tutor { flex: 0 0 360px; display: flex; flex-direction: column; background: var(--panel); border-inline-end: 1px solid var(--line); min-width: 0; overflow-y: auto; }
+  .tutor h2 { font-size: 12px; margin: 0; padding: 10px 12px 6px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
   .ai-state { padding: 0 12px 8px; font-size: 11.5px; color: var(--dim); }
-  .ai-state .on { color: var(--ok); font-weight: 700; }
-  .ai-state .off { color: var(--warn); font-weight: 700; }
-  .log { flex: 1 1 auto; overflow-y: auto; padding: 6px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .ai-state.is-on { color: var(--ok); }
+  .ai-state.is-off { color: var(--warn); }
+  .inv { margin: 0 12px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
+  .inv > summary { cursor: pointer; padding: 10px 12px; font-weight: 700; font-size: 13px; min-height: 44px; display: flex; align-items: center; }
+  .inv-body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45; }
+  .inv-body label, .inv-body legend { font-weight: 700; font-size: 12px; }
+  .inv-body summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 700; }
+  .inv-body .sub { border: 1px solid var(--line); border-radius: 8px; padding: 0 8px; }
+  .inv-body .sub-body, .inv-body .fields, #claimChecks { display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
+  .inv-body .field-label { font-weight: 700; font-size: 12px; }
+  .inv-body select, .inv-body textarea, .inv-body input[type=text], .inv-body input[type=number] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 13px; font-family: inherit; min-height: 40px; }
+  .inv-body select:disabled { opacity: 1; color: var(--dim); }
+  .inv-body fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px 8px; margin: 0; }
+  .inv-body .opt { display: flex; align-items: center; gap: 8px; min-height: 32px; font-weight: 400; font-size: 12.5px; }
+  .inv-body .opt input { width: 20px; height: 20px; flex: 0 0 auto; }
+  .muted { color: var(--dim); font-size: 11.5px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; color: var(--warn); border: 1px solid var(--warn); border-radius: 999px; padding: 1px 8px; width: fit-content; }
+  .step { font-weight: 700; color: var(--heading); font-size: 12px; margin-top: 4px; }
+  .note { background: var(--note-bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .note ul { margin: 4px 0 0; padding-inline-start: 18px; }
+  .note.bad { border-color: var(--bad); }
+  .prompts { margin: 0; padding-inline-start: 18px; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  a { color: var(--heading); }
+  .tbl-wrap { max-height: 220px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; font-size: 11.5px; width: 100%; }
+  caption { text-align: start; font-weight: 700; padding: 4px 6px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 3px 6px; text-align: start; white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--panel2); }
+  .log { flex: 1 0 180px; overflow-y: auto; padding: 6px 12px; display: flex; flex-direction: column; gap: 8px; }
   .msg { border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.45; max-width: 95%; white-space: pre-wrap; }
   .msg.tutor-msg { background: var(--panel2); border: 1px solid var(--line); align-self: flex-start; }
-  .msg.student-msg { background: #3730a3; align-self: flex-end; }
+  .msg.student-msg { background: #3730a3; color: #ffffff; align-self: flex-end; }
   .msg.meta { background: transparent; color: var(--dim); font-size: 11.5px; padding: 0 2px; align-self: center; text-align: center; }
   form { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); flex: 0 0 auto; }
   input[type=text] { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
-  button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  :where(button, input):focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
-  button:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 36px; }
+  :root[data-theme="light"] button:not(.quiet):not(:disabled) { color: #ffffff; }
+  :where(button, input, select, textarea, summary, a):focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+  button:disabled { background: #3f3f5a; color: #c7c7dd; cursor: not-allowed; }
   button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+  /* Load waits for CODAP: still focusable (aria-disabled), with its reason shown. */
+  button[aria-disabled="true"] { background: #3f3f5a; color: #e2e2f0; cursor: not-allowed; }
+  :root[data-theme="contrast"] button[aria-disabled="true"] { background: #000000; color: #ffffff; border: 2px dashed #ffffff; }
+  .question-card { font-size: 15px; font-weight: 700; line-height: 1.4; margin: 4px 0 0; }
+  .phone-note { display: none; margin: 0 12px 8px; }
+  .phone-note p { margin: 0 0 6px; }
+  @media (max-width: 480px) { .phone-note { display: block; } }
+  @media (max-width: 480px) { button, .inv-body .opt, .inv-body select, .inv-body input[type=text], .inv-body input[type=number] { min-height: 44px; } }
   .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; flex: 0 0 auto; }
   .codap { position: relative; flex: 1 1 auto; min-width: 0; background: #fff; }
   .codap iframe { width: 100%; height: 100%; border: 0; display: block; }
@@ -113,32 +165,134 @@
   .workspace-status button { background: #4f46e5; color: #fff; }
   .workspace-status button:hover { background: #4338ca; }
   .workspace-status button:focus-visible { outline-color: #b45309; }
-  @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 45%; border-right: 0; border-bottom: 1px solid var(--line); } }
+  @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 55%; border-inline-end: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
 <body>
 <header>
   <h1>📊 Data Lab</h1>
-  <span class="sub">CODAP workspace (Concord Consortium, MIT) + AlloFlow Socratic tutor</span>
+  <span class="sub" data-i18n="header_sub">CODAP workspace (Concord Consortium, MIT) + AlloFlow Socratic tutor</span>
 </header>
 <div class="wrap">
-  <aside class="tutor" aria-label="Socratic data tutor">
-    <h2>Thinking partner</h2>
+  <aside class="tutor" aria-label="Socratic data tutor" data-i18n-aria-label="tutor_region">
+    <h2 data-i18n="tutor_heading">Thinking partner</h2>
     <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <section class="note phone-note" id="phoneNote" aria-labelledby="phoneNoteText">
+      <p id="phoneNoteText" data-i18n="phone_note">CODAP works best on a laptop or Chromebook.</p>
+      <div class="row"><button type="button" class="quiet" id="phoneTableBtn" data-i18n="table_toggle">Show the data as a text table</button><button type="button" class="quiet" id="phoneDataPlotBtn" data-i18n="phone_dataplot_btn" hidden>Graph points in Data Plot instead</button></div>
+      <p id="phoneStatus" class="muted" role="status" aria-live="polite"></p>
+    </section>
+    <details class="inv" id="invPanel" open>
+      <summary data-i18n="inv_heading">Investigate</summary>
+      <div class="inv-body">
+        <p class="muted" id="standaloneNote" data-i18n="standalone_note" hidden>This window is not connected to AlloFlow, so the starter datasets are in English and your progress is not saved.</p>
+        <span class="badge" id="assignedBadge" data-i18n="assigned_badge" hidden>Assigned by your teacher</span>
+        <span class="badge" id="surveyBadge" hidden></span>
+        <p id="questionText" class="note question-card" aria-live="polite" hidden></p>
+        <div id="predictBlock" hidden>
+          <p class="step" data-i18n="step_predict">Step 1: Predict before you look at the data.</p>
+          <fieldset id="predictChoices"><legend data-i18n="predict_legend">My prediction</legend></fieldset>
+          <div id="predictFreeWrap" hidden>
+            <label for="predictFree" data-i18n="predict_free_label">Write your prediction</label>
+            <textarea id="predictFree" rows="2" maxlength="300"></textarea>
+          </div>
+          <div class="row"><button type="button" id="lockBtn" data-i18n="lock_btn">Lock in my prediction</button></div>
+          <p id="predictStatus" class="muted" role="status" aria-live="polite"></p>
+        </div>
+        <div id="exploreBlock" hidden>
+          <p class="step" data-i18n="step_explore">Step 2: Explore. Load the data, then drag column names onto a graph in CODAP.</p>
+          <div class="row"><button type="button" id="loadBtn" data-i18n="load_btn">Load this data into CODAP</button></div>
+          <p id="loadWait" class="muted" hidden></p>
+          <button type="button" class="quiet" id="loadRetry" data-i18n="ws_retry" hidden>Retry CODAP</button>
+          <p id="datasetStatus" class="muted" role="status" aria-live="polite"></p>
+          <p class="muted" id="datasetSource" hidden></p>
+          <section id="surveyBlock" class="note" hidden aria-labelledby="surveyHeading">
+            <p class="step" id="surveyHeading" data-i18n="survey_heading">Add answers to the class survey</p>
+            <p id="surveyQuestion" hidden></p>
+            <p class="muted" data-i18n="survey_privacy">Do not type names. Answers stay in this window until you close it, and in CODAP once they are loaded. If AI hints are on, the tutor can see a sample of the answers in CODAP when someone asks it a question.</p>
+            <div id="surveyFields" class="fields"></div>
+            <div class="row"><button type="button" id="surveyAddBtn" data-i18n="survey_add_btn">Add my answer</button><button type="button" class="quiet" id="surveyUndoBtn" data-i18n="survey_undo_btn">Remove the last answer</button></div>
+            <p id="surveyStatus" class="muted" role="status" aria-live="polite"></p>
+            <div class="row"><button type="button" class="quiet" id="surveyCopyBtn" data-i18n="survey_copy_btn">Copy all answers as text</button></div>
+            <textarea id="surveyCopyBox" rows="4" readonly hidden aria-label="Copying did not work here. Select the text in this box and copy it." data-i18n-aria-label="survey_copy_manual"></textarea>
+            <label for="surveyPaste" data-i18n="survey_paste_label">Paste answers copied from another device</label>
+            <textarea id="surveyPaste" rows="3"></textarea>
+            <div class="row"><button type="button" class="quiet" id="surveyPasteBtn" data-i18n="survey_paste_btn">Add these answers</button></div>
+          </section>
+          <div id="promptsBlock" hidden>
+            <p class="step" data-i18n="prompts_heading">Questions to think about</p>
+            <ul class="prompts" id="promptList"></ul>
+          </div>
+          <div id="graphBlock" hidden>
+            <p class="step" data-i18n="step_graph">Step 3: Make the graph</p>
+            <p id="graphTask"></p>
+            <div class="row"><button type="button" id="graphCheckBtn" data-i18n="graph_check_btn">Check my graph</button></div>
+            <div id="graphFeedback" role="status" aria-live="polite"></div>
+          </div>
+          <details id="tableDetails">
+            <summary data-i18n="table_toggle">Show the data as a text table</summary>
+            <div class="tbl-wrap" id="tableWrap" tabindex="0" role="region" aria-label="Show the data as a text table" data-i18n-aria-label="table_toggle"></div>
+          </details>
+        </div>
+        <div id="cerBlock" hidden>
+          <p class="step" id="cerStep">Step 3: Write a claim, the evidence for it, and your reasoning.</p>
+          <label for="cerClaim" data-i18n="claim_label">Claim: one sentence that answers the question</label>
+          <textarea id="cerClaim" rows="2" maxlength="400"></textarea>
+          <label for="cerEvidence" data-i18n="evidence_label">Evidence: values or comparisons from the data</label>
+          <textarea id="cerEvidence" rows="2" maxlength="600"></textarea>
+          <label for="cerReasoning" data-i18n="reasoning_label">Reasoning: why does your evidence support your claim?</label>
+          <textarea id="cerReasoning" rows="2" maxlength="600"></textarea>
+          <div id="claimChecks" hidden>
+            <fieldset id="scopeSet"><legend data-i18n="claim_scope_legend">How much of the data does your claim describe?</legend></fieldset>
+            <fieldset id="kindSet"><legend data-i18n="claim_kind_legend">What does your claim say?</legend></fieldset>
+          </div>
+          <div class="row"><button type="button" id="checkBtn" data-i18n="check_btn">Check my thinking</button></div>
+          <div id="cerFeedback" role="status" aria-live="polite"></div>
+          <div class="row"><button type="button" class="quiet" id="revealBtn" data-i18n="reveal_btn" hidden>Compare my prediction with the data</button></div>
+          <section id="revealBlock" class="note" hidden aria-labelledby="revealHeading">
+            <p class="step" id="revealHeading" tabindex="-1" data-i18n="reveal_heading">What the data shows</p>
+            <div id="revealBody"></div>
+          </section>
+        </div>
+        <details id="chooseDetails" class="sub" open>
+          <summary data-i18n="choose_heading">Choose a dataset or question</summary>
+          <div class="sub-body">
+            <label for="datasetSelect" data-i18n="dataset_label">Starter dataset</label>
+            <select id="datasetSelect"><option value="" data-i18n="dataset_none">Choose a dataset…</option></select>
+            <div id="questionBlock" class="fields" hidden>
+              <label for="questionSelect" data-i18n="question_label">Question to investigate</label>
+              <select id="questionSelect"></select>
+            </div>
+            <details id="pasteDetails" class="sub">
+              <summary data-i18n="paste_heading">Paste a table</summary>
+              <div class="sub-body">
+                <p class="muted" data-i18n="paste_help">Paste rows copied from a spreadsheet or another AlloFlow tool. Put the column names on the first row.</p>
+                <label for="pasteTitle" data-i18n="paste_title_label">Name for this data</label>
+                <input type="text" id="pasteTitle" maxlength="80">
+                <label for="pasteData" data-i18n="paste_data_label">Table (columns separated by commas or tabs)</label>
+                <textarea id="pasteData" rows="4"></textarea>
+                <div class="row"><button type="button" id="pasteBtn" data-i18n="paste_btn">Make a dataset and send it to CODAP</button></div>
+                <p id="pasteStatus" class="muted" role="status" aria-live="polite"></p>
+              </div>
+            </details>
+          </div>
+        </details>
+      </div>
+    </details>
     <div class="log" id="log" aria-live="polite"></div>
     <form id="askForm">
-      <input type="text" id="askInput" maxlength="400" placeholder="Ask, or describe what you notice…" aria-label="Ask the tutor">
-      <button type="submit" id="askBtn">Ask</button>
+      <input type="text" id="askInput" maxlength="400" placeholder="Ask, or describe what you notice…" aria-label="Ask the tutor" data-i18n-placeholder="ask_placeholder" data-i18n-aria-label="ask_label">
+      <button type="submit" id="askBtn" data-i18n="ask_btn">Ask</button>
     </form>
-    <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn">🤔 Give me something to think about</button></div>
-    <div class="privacy">Privacy: the tutor can see your <b>column names, summary statistics, and a sample of rows</b> from your table, so it can ask about what your data actually shows. The conversation is not saved. AI answers only flow when your teacher has AI hints on.</div>
+    <div style="padding: 0 12px 10px;"><button type="button" class="quiet" id="nudgeBtn" data-i18n="nudge_btn">🤔 Give me something to think about</button></div>
+    <div class="privacy" id="privacyNote">Privacy: the tutor can see your <b>column names, summary statistics, and up to 20 rows from each table</b>, so it can ask about what your data actually shows. In a small table, that can be every row. AlloFlow does not save this conversation. AI answers only flow when your teacher has AI hints on.</div>
   </aside>
-  <main class="codap" id="codapRegion" aria-label="CODAP data workspace" aria-busy="true">
+  <main class="codap" id="codapRegion" aria-label="CODAP data workspace" data-i18n-aria-label="codap_region" aria-busy="true">
     <div class="workspace-status" id="workspaceStatus" role="status" aria-live="polite" aria-atomic="true">
-      <p id="workspaceStatusText">Loading the CODAP workspace?</p>
-      <button type="button" id="retryWorkspace" hidden>Retry CODAP</button>
+      <p id="workspaceStatusText">Loading the CODAP workspace…</p>
+      <button type="button" id="retryWorkspace" data-i18n="ws_retry" hidden>Retry CODAP</button>
     </div>
-    <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" allow="clipboard-read; clipboard-write"></iframe>
+    <iframe id="codapFrame" title="CODAP — Common Online Data Analysis Platform" data-i18n-title="codap_frame_title" allow="clipboard-read; clipboard-write"></iframe>
   </main>
 </div>
 
@@ -146,8 +300,595 @@
 (function () {
   'use strict';
 
-  // ── CODAP embed (hosted release + our tutor plugin injected via ?di=) ──
-  var CODAP_BASE = 'https://codap.concord.org/releases/latest/static/dg/en/cert/index.html';
+  // == data lab core start (pure helpers; tests run this slice in a VM) ==
+  // CODAP 3.1.2 ships these UI languages (checked in its bundle, 2026-11-03).
+  // AlloFlow sets <html lang> to a base code, so map base codes to CODAP's.
+  var CODAP_LANGS = { de: 'de', el: 'el', en: 'en-US', es: 'es', fa: 'fa', fr: 'fr', he: 'he', iw: 'he', ja: 'ja', ko: 'ko', nb: 'nb', no: 'nb', nl: 'nl', nn: 'nn', pl: 'pl', pt: 'pt-BR', sl: 'sl', th: 'th', tr: 'tr', zh: 'zh-Hans' };
+  var RTL_LANGS = { ar: 1, he: 1, iw: 1, fa: 1, ur: 1, ps: 1, yi: 1, dv: 1, ckb: 1, sd: 1, ug: 1 };
+  function safeLang(code) {
+    var c = String(code || '').trim();
+    return /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$/.test(c) ? c : 'en';
+  }
+  function codapLangFor(code) {
+    var c = safeLang(code).toLowerCase();
+    if (c === 'zh-tw' || c === 'zh-hant' || c === 'zh-hk') return 'zh-TW';
+    if (c === 'pt-pt') return 'pt-BR';
+    return CODAP_LANGS[c.split('-')[0]] || '';
+  }
+  function isRtl(code) { return !!RTL_LANGS[safeLang(code).toLowerCase().split('-')[0]]; }
+  function codapFrameUrl(base, pluginUrl, lang) {
+    var codapLang = codapLangFor(lang);
+    return base + '?di=' + encodeURIComponent(pluginUrl) + (codapLang ? '&lang=' + encodeURIComponent(codapLang) : '');
+  }
+  function fill(template, map) {
+    return String(template || '').replace(/\{(\w+)\}/g, function (whole, key) {
+      return Object.prototype.hasOwnProperty.call(map || {}, key) ? String(map[key]) : whole;
+    });
+  }
+  // Average ranks (ties share the mean rank), then Pearson on the ranks.
+  function ranks(values) {
+    var idx = values.map(function (v, i) { return i; }).sort(function (a, b) { return values[a] - values[b]; });
+    var out = new Array(values.length);
+    var i = 0;
+    while (i < idx.length) {
+      var j = i;
+      while (j + 1 < idx.length && values[idx[j + 1]] === values[idx[i]]) j++;
+      var r = (i + j) / 2 + 1;
+      for (var k = i; k <= j; k++) out[idx[k]] = r;
+      i = j + 1;
+    }
+    return out;
+  }
+  function spearman(xs, ys) {
+    var pairs = [];
+    for (var i = 0; i < Math.min(xs.length, ys.length); i++) {
+      var x = Number(xs[i]), y = Number(ys[i]);
+      if (xs[i] !== '' && ys[i] !== '' && isFinite(x) && isFinite(y)) pairs.push([x, y]);
+    }
+    if (pairs.length < 3) return null;
+    var rx = ranks(pairs.map(function (p) { return p[0]; }));
+    var ry = ranks(pairs.map(function (p) { return p[1]; }));
+    var n = pairs.length, mx = 0, my = 0;
+    for (var a = 0; a < n; a++) { mx += rx[a]; my += ry[a]; }
+    mx /= n; my /= n;
+    var sxy = 0, sxx = 0, syy = 0;
+    for (var b = 0; b < n; b++) { sxy += (rx[b] - mx) * (ry[b] - my); sxx += (rx[b] - mx) * (rx[b] - mx); syy += (ry[b] - my) * (ry[b] - my); }
+    if (!sxx || !syy) return 0;
+    return sxy / Math.sqrt(sxx * syy);
+  }
+  function trendDirection(rho) {
+    if (rho === null || rho === undefined || !isFinite(rho)) return 'none';
+    if (rho >= 0.5) return 'up';
+    if (rho <= -0.5) return 'down';
+    return 'none';
+  }
+  function attrIndex(dataset, key) {
+    for (var i = 0; i < dataset.attributes.length; i++) if (dataset.attributes[i].key === key) return i;
+    return -1;
+  }
+  function column(dataset, key) {
+    var i = attrIndex(dataset, key);
+    return i < 0 ? [] : dataset.rows.map(function (r) { return r[i]; });
+  }
+  function evaluateTrend(dataset, inv) {
+    var rho = spearman(column(dataset, inv.x), column(dataset, inv.y));
+    return { rho: rho, direction: trendDirection(rho) };
+  }
+  function evaluateMax(dataset, inv) {
+    var vals = column(dataset, inv.attr), labels = column(dataset, inv.label);
+    var best = -1;
+    for (var i = 0; i < vals.length; i++) {
+      if (typeof vals[i] === 'number' && isFinite(vals[i]) && (best < 0 || vals[i] > vals[best])) best = i;
+    }
+    return best < 0 ? null : { label: String(labels[best]), value: vals[best] };
+  }
+  // Words, in any script: Intl.Segmenter finds word boundaries in Chinese,
+  // Japanese and Thai, which do not put spaces between words.
+  function countWords(text) {
+    var s = String(text || '').trim();
+    if (!s) return 0;
+    try {
+      if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+        var n = 0;
+        var segs = new Intl.Segmenter(undefined, { granularity: 'word' }).segment(s);
+        for (var it = segs[Symbol.iterator](), step = it.next(); !step.done; step = it.next()) if (step.value.isWordLike) n++;
+        return n;
+      }
+    } catch (_) {}
+    return s.split(/\s+/).filter(Boolean).length;
+  }
+  function numericPairs(dataset, xKey, yKey) {
+    var xs = column(dataset, xKey), ys = column(dataset, yKey), out = [];
+    for (var i = 0; i < Math.min(xs.length, ys.length); i++) {
+      if (typeof xs[i] === 'number' && typeof ys[i] === 'number' && isFinite(xs[i]) && isFinite(ys[i])) out.push([xs[i], ys[i]]);
+    }
+    return out;
+  }
+  // "Every single case fits" is false when two cases go against the data's own
+  // overall direction (or when there is no overall direction at all).
+  function trendCounterexample(dataset, inv) {
+    var dir = evaluateTrend(dataset, inv).direction;
+    if (dir === 'none') return true;
+    var p = numericPairs(dataset, inv.x, inv.y);
+    for (var i = 0; i < p.length; i++) {
+      for (var j = 0; j < p.length; j++) {
+        if (p[i][0] < p[j][0] && (dir === 'up' ? p[i][1] > p[j][1] : p[i][1] < p[j][1])) return true;
+      }
+    }
+    return false;
+  }
+  function median(values) {
+    var v = values.slice().sort(function (a, b) { return a - b; });
+    if (!v.length) return null;
+    var m = Math.floor(v.length / 2);
+    return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+  }
+  // Group comparison: median of inv.attr inside each category of inv.group.
+  function evaluateGroup(dataset, inv) {
+    var g = column(dataset, inv.group), v = column(dataset, inv.attr);
+    var by = {}, order = [];
+    for (var i = 0; i < g.length; i++) {
+      if (g[i] === '' || g[i] == null || typeof v[i] !== 'number' || !isFinite(v[i])) continue;
+      var k = String(g[i]);
+      if (!by[k]) { by[k] = []; order.push(k); }
+      by[k].push(v[i]);
+    }
+    var groups = order.map(function (k) { return { label: k, median: median(by[k]), n: by[k].length, min: Math.min.apply(null, by[k]), max: Math.max.apply(null, by[k]) }; });
+    groups.sort(function (a, b) { return b.median - a.median; });
+    if (!groups.length) return null;
+    var top = groups[0];
+    var overlap = groups.slice(1).some(function (o) { return o.max > top.min; });
+    return { top: top.label, groups: groups, overlap: overlap };
+  }
+  function groupLabels(dataset, key) {
+    var seen = {}, out = [];
+    column(dataset, key).forEach(function (v) { var s = String(v == null ? '' : v); if (s && !seen[s]) { seen[s] = 1; out.push(s); } });
+    return out;
+  }
+  // Most common answer in a category column: { tops: [labels], n, total } or null.
+  function evaluateMode(dataset, inv) {
+    var counts = {}, order = [], total = 0;
+    column(dataset, inv.attr).forEach(function (v) {
+      var s = String(v == null ? '' : v).trim();
+      if (!s) return;
+      if (!counts[s]) { counts[s] = 0; order.push(s); }
+      counts[s] += 1; total += 1;
+    });
+    if (!total) return null;
+    var n = 0;
+    order.forEach(function (s) { if (counts[s] > n) n = counts[s]; });
+    return { tops: order.filter(function (s) { return counts[s] === n; }), n: n, total: total };
+  }
+  function finiteColumn(dataset, key) {
+    return column(dataset, key).filter(function (v) { return typeof v === 'number' && isFinite(v); });
+  }
+  function meanOf(nums) { var s = 0; nums.forEach(function (v) { s += v; }); return nums.length ? s / nums.length : null; }
+  function attrLabel(dataset, key) { var i = attrIndex(dataset, key); return i < 0 ? key : dataset.attributes[i].name; }
+  function modeFact(dataset, attr) {
+    var m = evaluateMode(dataset, { attr: attr });
+    if (!m) return { key: 'reveal_no_rows', map: {} };
+    return m.tops.length > 1
+      ? { key: 'reveal_mode_tie', map: { attr: attrLabel(dataset, attr), labels: m.tops, n: m.n, total: m.total } }
+      : { key: 'reveal_mode', map: { attr: attrLabel(dataset, attr), label: m.tops[0], n: m.n, total: m.total } };
+  }
+  // What the data shows for an open ("free") question, computed from the rows at
+  // reveal time: [{ key, map }] (numbers in map are formatted by the page; labels
+  // and years are strings; an array is a list of labels).
+  function revealFacts(dataset, inv) {
+    var out = [];
+    (inv.facts || []).forEach(function (f) {
+      var i = attrIndex(dataset, f.attr || f.x);
+      if (i < 0) return;
+      if (f.type === 'center') {
+        if (dataset.attributes[i].type === 'categorical') { out.push(modeFact(dataset, f.attr)); return; }
+        var nums = finiteColumn(dataset, f.attr);
+        if (!nums.length) { out.push({ key: 'reveal_no_rows', map: {} }); return; }
+        out.push({ key: 'fact_center', map: { attr: attrLabel(dataset, f.attr), median: median(nums), mean: meanOf(nums), min: Math.min.apply(null, nums), max: Math.max.apply(null, nums), n: nums.length } });
+      } else if (f.type === 'nearMean') {
+        var vals = finiteColumn(dataset, f.attr), mean = meanOf(vals);
+        if (!vals.length) return;
+        out.push({ key: 'fact_near_mean', map: { n: vals.filter(function (v) { return Math.abs(v - mean) <= f.width; }).length, total: vals.length, width: f.width } });
+      } else if (f.type === 'extremes') {
+        var v = column(dataset, f.attr), lab = column(dataset, f.label), hi = -1, lo = -1;
+        for (var k = 0; k < v.length; k++) {
+          if (typeof v[k] !== 'number' || !isFinite(v[k])) continue;
+          if (hi < 0 || v[k] > v[hi]) hi = k;
+          if (lo < 0 || v[k] < v[lo]) lo = k;
+        }
+        if (hi < 0) return;
+        out.push({ key: 'fact_extremes', map: { attr: attrLabel(dataset, f.attr), maxLabel: String(lab[hi]), max: v[hi], minLabel: String(lab[lo]), min: v[lo] } });
+      } else if (f.type === 'ratePerYear') {
+        var p = numericPairs(dataset, f.x, f.y).filter(function (q) { return q[0] >= f.from && q[0] <= f.to; }).sort(function (a, b) { return a[0] - b[0]; });
+        if (p.length < 2 || p[p.length - 1][0] === p[0][0]) return;
+        var a = p[0], b = p[p.length - 1];
+        var yi = attrIndex(dataset, f.y), yUnit = yi < 0 ? '' : dataset.attributes[yi].unit;
+        out.push({ key: 'fact_rate', map: { from: String(a[0]), to: String(b[0]), y: attrLabel(dataset, f.y) + (yUnit ? ' (' + yUnit + ')' : ''), rate: (b[1] - a[1]) / (b[0] - a[0]) } });
+      } else if (f.type === 'groupTrend') {
+        var all = spearman(column(dataset, f.x), column(dataset, f.y));
+        if (all === null) return;
+        var names = { x: attrLabel(dataset, f.x), y: attrLabel(dataset, f.y) };
+        out.push({ key: 'fact_all_rho', map: { x: names.x, y: names.y, rho: all } });
+        groupLabels(dataset, f.group).forEach(function (g) {
+          var gi = attrIndex(dataset, f.group);
+          var sub = { attributes: dataset.attributes, rows: dataset.rows.filter(function (r) { return String(r[gi]) === g; }) };
+          var r = spearman(column(sub, f.x), column(sub, f.y));
+          if (r !== null) out.push({ key: 'fact_group_rho', map: { group: g, x: names.x, y: names.y, rho: r } });
+        });
+        out.push({ key: 'fact_rho_scale', map: {} });
+      }
+    });
+    return out;
+  }
+  // Claim-evidence-reasoning check. Returns named misconception codes; [] = ready.
+  // No keyword lists: for trend and group questions the student says how far
+  // the claim reaches and whether it claims a cause, and the data decides
+  // whether "every single case" is true.
+  // opts: { attributeNames, claimChecks, kindAsked, scope: 'most'|'every'|'beyond',
+  //         claimKind: 'pattern'|'cause', causalCaution, counterexample }
+  function checkCER(cer, opts) {
+    opts = opts || {};
+    var issues = [];
+    var claim = String((cer && cer.claim) || '').trim();
+    var evidence = String((cer && cer.evidence) || '').trim();
+    var reasoning = String((cer && cer.reasoning) || '').trim();
+    if (countWords(claim) < 2) issues.push('no_claim');
+    var names = (opts.attributeNames || []).map(function (n) { return String(n).toLowerCase(); }).filter(Boolean);
+    var evLower = evidence.toLowerCase();
+    var citesData = /\p{N}/u.test(evidence) || names.some(function (n) { return evLower.indexOf(n) !== -1; });
+    if (!citesData) issues.push('no_data');
+    if (opts.claimChecks) {
+      if (!opts.scope || (opts.kindAsked && !opts.claimKind)) issues.push('no_claim_type');
+      else {
+        if (opts.kindAsked && opts.claimKind === 'cause' && opts.causalCaution) issues.push('causal');
+        if (opts.scope === 'beyond') issues.push('beyond');
+        else if (opts.scope === 'every' && opts.counterexample) issues.push('counterexample');
+      }
+    }
+    if (countWords(reasoning) < 6) issues.push('short_reasoning');
+    return issues;
+  }
+
+  // ── Graph check: what CODAP reports vs the graph the question needs ──
+  function normName(s) { return String(s == null ? '' : s).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''); }
+  // Most informative feedback wins: any columns outrank the plugin's empty graph.
+  var GRAPH_RANK = { pass: 6, swapped: 5, one_axis: 4, legend_only: 3, wrong_attrs: 2, empty_graph: 1 };
+  // report: { ok, graphs: [{ x, y, legend, top, right }], unreadable }
+  // target: { x, y ('' = one attribute on either axis), anyOrder }
+  function checkGraph(report, target) {
+    if (!report || report.ok !== true || !Array.isArray(report.graphs)) return { status: 'unavailable' };
+    if (!report.graphs.length) return { status: report.unreadable ? 'unavailable' : 'no_graph' };
+    var tx = normName(target.x), ty = normName(target.y);
+    var best = null;
+    report.graphs.forEach(function (g) {
+      var gx = normName(g.x), gy = normName(g.y);
+      var others = [g.legend, g.top, g.right].map(normName);
+      var r;
+      if (!gx && !gy) r = others.indexOf(tx) !== -1 || (ty && others.indexOf(ty) !== -1) ? { status: 'legend_only', missing: others.indexOf(tx) !== -1 ? target.x : target.y } : { status: 'empty_graph' };
+      else if (!ty) {
+        if (gx === tx || gy === tx) r = { status: 'pass' };
+        else if (others.indexOf(tx) !== -1) r = { status: 'legend_only', missing: target.x };
+        else r = { status: 'wrong_attrs', found: [g.x, g.y].filter(Boolean) };
+      } else if (gx === tx && gy === ty) r = { status: 'pass' };
+      else if (gx === ty && gy === tx) r = { status: target.anyOrder ? 'pass' : 'swapped' };
+      else if (gx === tx || gy === tx || gx === ty || gy === ty) {
+        var hasX = gx === tx || gy === tx;
+        var missing = hasX ? target.y : target.x;
+        r = others.indexOf(normName(missing)) !== -1 ? { status: 'legend_only', missing: missing } : { status: 'one_axis', missing: missing, found: hasX ? target.x : target.y };
+      } else r = { status: 'wrong_attrs', found: [g.x, g.y].filter(Boolean) };
+      if (!best || GRAPH_RANK[r.status] > GRAPH_RANK[best.status]) best = r;
+    });
+    return best;
+  }
+
+  // ── Delimited text (paste a table, class survey merge) ──
+  function parseDelimited(text) {
+    var src = String(text || '').replace(/\r\n?/g, '\n');
+    var firstLine = src.split('\n')[0] || '';
+    var delim = firstLine.indexOf('\t') !== -1 ? '\t' : (firstLine.indexOf(';') !== -1 && firstLine.indexOf(',') === -1 ? ';' : ',');
+    var rows = [], row = [], cur = '', q = false;
+    for (var i = 0; i < src.length && rows.length < 2001; i++) {
+      var ch = src[i];
+      if (q) {
+        if (ch === '"') { if (src[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch;
+      } else if (ch === '"' && cur === '') q = true;
+      else if (ch === delim) { row.push(cur); cur = ''; }
+      else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else cur += ch;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows.map(function (r) { return r.slice(0, 30).map(function (c) { return c.trim().slice(0, 200); }); })
+      .filter(function (r) { return r.some(function (c) { return c !== ''; }); }).slice(0, 2001);
+  }
+  function toNumber(s) {
+    var t = String(s).trim().replace(/\s/g, '');
+    if (/^-?\d+,\d+$/.test(t)) t = t.replace(',', '.');
+    if (t === '' || !/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(t)) return null;
+    var n = Number(t);
+    return isFinite(n) ? n : null;
+  }
+  // First row = column names ("Name (unit)" keeps the unit); a column is a number
+  // column when most of its filled cells are numbers.
+  // colName (optional): the page's translated 'Column {n}' for a blank header.
+  function tableFromText(text, colName) {
+    var rows = parseDelimited(text);
+    if (rows.length < 2) return null;
+    var head = rows[0];
+    var width = head.length;
+    if (!head.some(function (h) { return h; })) return null;
+    var body = rows.slice(1).map(function (r) { var out = r.slice(0, width); while (out.length < width) out.push(''); return out; });
+    var attributes = head.map(function (h, i) {
+      var m = /^(.*?)\s*\(([^()]{1,30})\)$/.exec(h);
+      var name = (m ? m[1] : h) || fill(colName || 'Column {n}', { n: i + 1 });
+      var filled = body.filter(function (r) { return r[i] !== ''; });
+      var nums = filled.filter(function (r) { return toNumber(r[i]) !== null; }).length;
+      return { key: 'c' + i, name: name.slice(0, 60), unit: m ? m[2] : '', type: filled.length && nums >= filled.length * 0.8 ? 'numeric' : 'categorical' };
+    });
+    var data = body.map(function (r) {
+      return r.map(function (c, i) { if (attributes[i].type !== 'numeric') return c; var n = toNumber(c); return n === null ? '' : n; });
+    });
+    return { attributes: attributes, rows: data };
+  }
+  // One survey answer checked against its column's entry spec.
+  function surveyValue(entry, raw) {
+    var s = String(raw == null ? '' : raw).trim();
+    if (!s) return { ok: false, error: 'missing' };
+    if (entry.type === 'number') {
+      var n = toNumber(s);
+      if (n === null) return { ok: false, error: 'not_number' };
+      if ((typeof entry.min === 'number' && n < entry.min) || (typeof entry.max === 'number' && n > entry.max)) return { ok: false, error: 'range' };
+      return { ok: true, value: n };
+    }
+    if (entry.type === 'choice') {
+      // Exact, then any case, then a loose match only when it is the only one:
+      // "A+", "A" and "A-" (or "<5" and ">5") are all the same once punctuation goes.
+      var cs = entry.choices || [], low = s.toLowerCase();
+      var hit = cs.filter(function (c) { return c === s; })[0] || cs.filter(function (c) { return c.toLowerCase() === low; })[0];
+      if (!hit) { var loose = cs.filter(function (c) { return normName(c) === normName(s); }); hit = loose.length === 1 ? loose[0] : null; }
+      return hit ? { ok: true, value: hit } : { ok: false, error: 'not_choice' };
+    }
+    return { ok: true, value: s.replace(/\s+/g, ' ').slice(0, 40) };
+  }
+  function surveyRowsFromText(text, attributes) {
+    var rows = parseDelimited(text);
+    if (rows.length && rows[0].length >= attributes.length && attributes.every(function (a, i) { return normName(rows[0][i]) === normName(a.name); })) rows = rows.slice(1);
+    var good = [], skipped = 0;
+    rows.forEach(function (r) {
+      var vals = attributes.map(function (a, i) { return surveyValue(a.entry || { type: 'text' }, r[i]); });
+      if (vals.every(function (v) { return v.ok; })) good.push(vals.map(function (v) { return v.value; }));
+      else skipped++;
+    });
+    return { rows: good, skipped: skipped };
+  }
+  function csvCell(v) { var s = String(v == null ? '' : v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  function rowsToCsv(attributes, rows) {
+    return [attributes.map(function (a) { return csvCell(a.name); }).join(',')].concat(rows.map(function (r) { return r.map(csvCell).join(','); })).join('\n');
+  }
+  var FACT_TYPES = { center: 1, nearMean: 1, extremes: 1, ratePerYear: 1, groupTrend: 1 };
+  // Catalog from the launcher: keep only the expected shapes, bounded.
+  function sanitizeCatalog(list) {
+    if (!Array.isArray(list)) return [];
+    return list.slice(0, 12).map(function (ds) {
+      if (!ds || typeof ds.id !== 'string' || !Array.isArray(ds.attributes) || !Array.isArray(ds.rows)) return null;
+      var attrs = ds.attributes.slice(0, 30).map(function (a) {
+        var out = { key: String((a && a.key) || '').slice(0, 30), name: String((a && a.name) || '').slice(0, 60), unit: String((a && a.unit) || '').slice(0, 30), type: a && a.type === 'categorical' ? 'categorical' : 'numeric' };
+        var e = a && a.entry;
+        if (e && (e.type === 'number' || e.type === 'choice' || e.type === 'text')) {
+          out.entry = { type: e.type };
+          if (e.type === 'choice') out.entry.choices = (Array.isArray(e.choices) ? e.choices : []).filter(function (c) { return typeof c === 'string' && c.trim(); }).slice(0, 8).map(function (c) { return c.slice(0, 30); });
+          if (typeof e.min === 'number' && isFinite(e.min)) out.entry.min = e.min;
+          if (typeof e.max === 'number' && isFinite(e.max)) out.entry.max = e.max;
+        }
+        return out;
+      });
+      var rows = ds.rows.slice(0, 2000).filter(Array.isArray).map(function (r) {
+        return attrs.map(function (a, i) { var v = r[i]; return typeof v === 'number' ? (isFinite(v) ? v : '') : String(v == null ? '' : v).slice(0, 200); });
+      });
+      var invs = (Array.isArray(ds.investigations) ? ds.investigations : []).slice(0, 12).map(function (inv) {
+        if (!inv || typeof inv.id !== 'string' || typeof inv.question !== 'string') return null;
+        var kind = inv.kind === 'trend' || inv.kind === 'max' || inv.kind === 'group' || inv.kind === 'mode' ? inv.kind : 'free';
+        var facts = (Array.isArray(inv.facts) ? inv.facts : []).slice(0, 4).map(function (f) {
+          if (!f || !FACT_TYPES[f.type]) return null;
+          var num = function (v) { return typeof v === 'number' && isFinite(v) ? v : 0; };
+          return { type: f.type, attr: String(f.attr || '').slice(0, 30), label: String(f.label || '').slice(0, 30), x: String(f.x || '').slice(0, 30), y: String(f.y || '').slice(0, 30), group: String(f.group || '').slice(0, 30), width: num(f.width), from: num(f.from), to: num(f.to) };
+        }).filter(Boolean);
+        var gr = inv.graph && typeof inv.graph === 'object' && inv.graph.x ? { x: String(inv.graph.x).slice(0, 30), y: String(inv.graph.y || '').slice(0, 30), anyOrder: !!inv.graph.anyOrder } : null;
+        return {
+          id: inv.id.slice(0, 60), kind: kind, question: inv.question.slice(0, 300),
+          bands: Array.isArray(inv.bands) ? inv.bands.filter(function (b) { return typeof b === 'string'; }).slice(0, 4) : [],
+          x: String(inv.x || ''), y: String(inv.y || ''), attr: String(inv.attr || ''), label: String(inv.label || ''), group: String(inv.group || ''), graph: gr,
+          optUp: String(inv.optUp || ''), optDown: String(inv.optDown || ''), optNone: String(inv.optNone || ''),
+          causalCaution: !!inv.causalCaution, absoluteCaution: !!inv.absoluteCaution, facts: facts,
+          prompts: (Array.isArray(inv.prompts) ? inv.prompts : []).filter(function (p) { return typeof p === 'string'; }).slice(0, 6).map(function (p) { return p.slice(0, 300); })
+        };
+      }).filter(Boolean);
+      var src = ds.source && typeof ds.source === 'object' ? ds.source : {};
+      var url = String(src.url || '');
+      return {
+        id: ds.id.slice(0, 40), title: String(ds.title || ds.id).slice(0, 80), description: String(ds.description || '').slice(0, 300),
+        surveyQuestion: typeof ds.surveyQuestion === 'string' ? ds.surveyQuestion.slice(0, 200) : '',
+        source: { name: String(src.name || '').slice(0, 120), url: /^https:\/\//.test(url) ? url.slice(0, 300) : '', note: String(src.note || '').slice(0, 400) },
+        attributes: attrs, rows: rows, investigations: invs
+      };
+    }).filter(Boolean);
+  }
+  // == data lab core end ==
+
+  // ── Strings: English defaults; the launcher sends translations ─────
+  var STR = {
+    tutor_region: 'Socratic data tutor',
+    ask_label: 'Ask the tutor',
+    ask_placeholder: 'Ask, or describe what you notice…',
+    codap_region: 'CODAP data workspace',
+    codap_frame_title: 'CODAP — Common Online Data Analysis Platform',
+    privacy: '',
+    page_title: 'AlloFlow Data Lab',
+    ws_loading: 'Loading the CODAP workspace…',
+    ws_offline_needed: 'CODAP needs an internet connection. Reconnect, then retry the workspace.',
+    ws_slow: 'CODAP is taking longer than expected. Check your connection, then retry if needed.',
+    ws_loaded: 'CODAP workspace loaded.',
+    ws_failed: 'CODAP could not load. Check your connection and retry.',
+    ws_offline: 'You are offline. Reconnect to load the CODAP workspace.',
+    state_connecting: 'Connecting to AlloFlow…',
+    state_ai_on_sees: 'AlloFlow connected. The AI tutor is on and can see your workspace.',
+    state_ai_on: 'AlloFlow connected. The AI tutor is on.',
+    state_ai_off: 'AlloFlow connected. AI hints are off, so the tutor uses built-in thinking prompts.',
+    state_standalone: 'Running on its own, so the tutor uses built-in thinking prompts. Open the Data Lab from AlloFlow for the AI tutor.',
+    state_opener_closed: 'The AlloFlow tab was closed, so the tutor uses built-in thinking prompts.',
+    welcome: 'Welcome to the Data Lab! Build a table or load a dataset — I’ll ask questions, not give answers. What are you curious about?',
+    thinking: 'thinking…',
+    offline_fallback: 'I can’t reach the AI tutor right now — but here’s something to chew on: {nudge}',
+    fb_unavailable: 'The AI tutor is unavailable right now. Meanwhile: {nudge}',
+    fb_busy: 'The tutor is still thinking about another question. Meanwhile: {nudge}',
+    fb_disabled: 'AI hints are off right now. Meanwhile: {nudge}',
+    fb_invalid: 'I could not read that question. Try asking it another way. Meanwhile: {nudge}',
+    bank_1: 'Before graphing anything: what do you EXPECT this data will show? Write your guess down — then check.',
+    bank_2: 'Look at your graph. What surprises you about it? What would NOT have surprised you?',
+    bank_3: 'Which case is the most unusual one in your data? What makes it unusual — and is it a mistake or a discovery?',
+    bank_4: 'If you could add one more column of data, what would it be? What question would it let you answer?',
+    bank_5: 'What would this graph look like if there were NO relationship between the two things? How different is yours?',
+    bank_6: 'Who collected this data, and what might they have missed? What is NOT in this dataset?',
+    bank_7: 'Try describing the shape of your data in three words. Would a friend draw the same graph from your words?',
+    bank_8: 'If you split your data into two groups, which split would be most interesting? Why that one?',
+    bank_9: 'What claim could you defend with this data — and what claim would be TOO strong to make?',
+    bank_10: 'Averages hide things. What does the average in your data hide?',
+    dataset_none: 'Choose a dataset…',
+    source_line: 'Source: {source}',
+    source_link: 'Open the source (new tab)',
+    locked_note: 'Prediction locked: {prediction}',
+    need_prediction: 'Choose or write a prediction first.',
+    loading_data: 'Sending the data to CODAP…',
+    loaded_data: '{title} is in CODAP as a table with {rows} rows. Use the Graph button in CODAP and drag column names onto its axes.',
+    loaded_data_graph: '{title} is in CODAP as a table with {rows} rows, next to an empty graph. Drag column names from the table onto the graph’s axes.',
+    load_wait: 'Waiting for CODAP to finish opening. Load turns on when it is ready.',
+    load_wait_failed: 'CODAP is not open, so the data cannot load yet. Retry CODAP, or read the data in the text table.',
+    load_ready: 'CODAP is ready. You can load the data now.',
+    phone_dataplot_sent: 'Data Plot is opening in your AlloFlow tab. Switch back to that tab to use it.',
+    loaded_empty: '{title} is in CODAP as an empty table. Click the table to add one row for each person.',
+    load_failed: 'CODAP did not accept the data. Use the text table below, or try again when CODAP has finished loading.',
+    no_plugin: 'The link to CODAP is not ready yet. Wait for CODAP to finish loading, then try again.',
+    incoming_data: 'Data arrived from {source}: {title}. Adding it to CODAP…',
+    incoming_source_default: 'another AlloFlow tool',
+    revise_heading: 'Revise, then check again:',
+    mis_no_claim: 'Missing claim: write one sentence that answers the question.',
+    mis_no_data: 'Evidence without data: point to the table. Name a column, quote a value, or compare two numbers.',
+    mis_causal: 'Correlation is not causation: two things changing together does not prove one causes the other. Can you say what the data shows without claiming a cause?',
+    mis_no_claim_type: 'Answer the two questions about your claim, so you can check how strong it is.',
+    mis_beyond: 'Overgeneralizing: this data has {rows} rows, so it cannot show what happens to cases outside it. Can you make your claim match the data?',
+    mis_counterexample: 'Not every case fits: at least one case in this data goes against the overall pattern. Find it, then make your claim match the data.',
+    mis_no_rows: 'There are no answers in the table yet, so there is nothing to make a claim about. Add answers first, then check your thinking.',
+    scope_most: 'Most of the cases in this data',
+    scope_every: 'Every single case in this data',
+    scope_beyond: 'Every case anywhere, even ones that are not in this data',
+    kind_pattern: 'It describes a pattern: the two things change together',
+    kind_cause: 'It says one thing causes the other',
+    reveal_group: 'In this data, {group} has the highest middle value (median) of {attr}.',
+    reveal_group_line: '{group}: median {median} ({n} cases)',
+    predict_select_label: 'Choose your prediction',
+    predict_select_none: 'Choose…',
+    graph_task_xy: 'Make a graph with {x} across the bottom (the x-axis) and {y} up the side (the y-axis).',
+    graph_task_pair: 'Make a graph that shows {a} on one axis and {b} on the other.',
+    graph_task_one: 'Make a graph of {x}: drag that column onto one axis.',
+    graph_checking: 'Asking CODAP which graphs are open…',
+    graph_pass: 'Your graph shows the right columns. Now look for a pattern.',
+    graph_no_graph: 'I do not see a graph yet. In CODAP, press Graph on the tool shelf, then drag column names onto the axes.',
+    graph_empty: 'Your graph has no columns on its axes yet. Drag a column name from the table onto an axis.',
+    graph_swapped: 'Your axes are swapped: {x} goes across the bottom and {y} goes up the side. The column that might explain the change usually goes across the bottom.',
+    graph_one_axis: 'Your graph shows {found}, but not {missing} yet. Drag {missing} onto the empty axis.',
+    graph_legend_only: '{missing} is colouring the points, not sitting on an axis. Drag it onto an axis.',
+    graph_wrong: 'Your graph shows {found}. This question needs {need}.',
+    graph_unavailable: 'I cannot read your CODAP graphs from here right now, so check it yourself: {task}',
+    graph_steps_two: 'How to do it: 1. Press Graph on the CODAP tool shelf. 2. Drag {x} from the table onto the bottom axis. 3. Drag {y} onto the side axis.',
+    graph_steps_one: 'How to do it: 1. Press Graph on the CODAP tool shelf. 2. Drag {x} from the table onto the bottom axis.',
+    survey_question_line: 'Survey question: {question}',
+    survey_choose: 'Choose…',
+    survey_added: 'Answer added. Answers in the table: {n}. Pass to the next person.',
+    survey_added_codap: 'Answer added here and in CODAP. Answers in the table: {n}. Pass to the next person.',
+    survey_missing: 'Fill in {name} first.',
+    survey_not_number: '{name} must be a number.',
+    survey_out_of_range: '{name} must be a number from {min} to {max}.',
+    survey_undone: 'Removed the last answer. Answers in the table: {n}.',
+    survey_undone_codap: 'Removed the last answer here. It is already in CODAP, so select that row in the CODAP table and delete it there too.',
+    survey_nothing_to_undo: 'There are no answers to remove.',
+    survey_copied: 'Copied the answers ({n}). Paste them into the Data Lab on another device to combine the class data.',
+    survey_copy_manual: 'Copying did not work here. Select the text in this box and copy it.',
+    survey_pasted: 'Answers added: {added}. Lines skipped because they did not fit the survey: {skipped}.',
+    survey_from_teacher: 'Class survey from your teacher',
+    paste_bad: 'That did not look like a table. Put the column names on the first row and one case on each row after it.',
+    paste_default_title: 'Pasted data',
+    paste_source: 'a pasted table',
+    paste_column: 'Column {n}',
+    mis_short_reasoning: 'Reasoning too thin: explain how your evidence connects to your claim, in at least one full sentence.',
+    cer_ok: 'Your claim, evidence and reasoning fit together. Well done.',
+    cer_second_try: 'Revise and check again, or compare your prediction with the data now. If you compare first, this investigation will not count as finished.',
+    step_cer: 'Step 3: Write a claim, the evidence for it, and your reasoning.',
+    step_cer4: 'Step 4: Write a claim, the evidence for it, and your reasoning.',
+    reveal_no_rows: 'There are no answers in the table yet. Add your class’s answers, then compare.',
+    reveal_mode: 'The most common answer for {attr} is {label}: {n} of {total} answers.',
+    reveal_mode_tie: 'These answers are tied as the most common for {attr}: {labels}. Each one has {n} of {total} answers.',
+    fact_center: 'For {attr}, the middle value (median) is {median} and the average (mean) is {mean}. The values run from {min} to {max} ({n} cases).',
+    fact_near_mean: 'Only {n} of {total} cases are within {width} of the average.',
+    fact_extremes: 'The highest {attr} is {maxLabel} ({max}). The lowest is {minLabel} ({min}).',
+    fact_rate: 'From {from} to {to}, {y} changed by about {rate} per year.',
+    fact_all_rho: 'With every case together, the rank correlation between {x} and {y} is {rho}.',
+    fact_group_rho: 'Inside {group} only, the rank correlation between {x} and {y} is {rho}.',
+    fact_rho_scale: 'A rank correlation near 1 or −1 means a strong pattern and near 0 means none; its sign tells you which way the pattern goes.',
+    custom_p1: 'Which columns in this data help answer the question?',
+    custom_p2: 'What graph would show the answer? Which column goes across the bottom?',
+    custom_p3: 'Is there a case that does not fit what you expect? What could explain it?',
+    reveal_trend_up: 'Overall, {y} tends to go up as {x} goes up.',
+    reveal_trend_down: 'Overall, {y} tends to go down as {x} goes up.',
+    reveal_trend_none: 'There is no clear up or down pattern between {x} and {y}.',
+    reveal_rho: 'Rank correlation (Spearman’s rho): {rho}. Values near 1 or −1 mean a strong pattern; near 0 means none.',
+    reveal_max: 'The highest {attr} in this data belongs to {label}.',
+    reveal_match: 'Your prediction matched the data. What would you investigate next?',
+    reveal_mismatch: 'Your prediction did not match the data, and that is how science works. What surprised you most?',
+    reveal_free: 'Compare your prediction with what you found. What would you investigate next?',
+    reveal_hidden: 'Your teacher will go over the results with the class.',
+    table_caption: '{title} ({rows} rows)',
+    table_empty: 'No rows yet.',
+    band_k2: 'Grades K–2', band_g35: 'Grades 3–5', band_g68: 'Grades 6–8', band_g912: 'Grades 9–12',
+    question_option: '{bands}: {question}',
+    prediction_free_shown: 'You predicted: “{prediction}”',
+    opt_up_default: 'It goes up', opt_down_default: 'It goes down', opt_none_default: 'No clear pattern',
+    plugin_title: 'AlloFlow tutor link',
+    plugin_connected: 'Connected. The tutor can see your columns, summary statistics, and up to 20 rows from each table.',
+    plugin_failed: 'Could not reach CODAP. The tutor will work without a data snapshot.'
+  };
+  var STATIC_KEYS = ['header_sub', 'tutor_heading', 'inv_heading', 'dataset_label', 'dataset_none', 'assigned_badge', 'question_label', 'step_predict', 'predict_legend', 'predict_free_label', 'lock_btn', 'step_explore', 'load_btn', 'prompts_heading', 'table_toggle', 'step_cer', 'claim_label', 'evidence_label', 'reasoning_label', 'check_btn', 'reveal_heading', 'ask_btn', 'nudge_btn', 'ws_retry', 'step_graph', 'reveal_btn', 'graph_check_btn', 'claim_scope_legend', 'claim_kind_legend', 'survey_heading', 'survey_privacy', 'survey_add_btn', 'survey_undo_btn', 'survey_copy_btn', 'survey_paste_label', 'survey_paste_btn', 'paste_heading', 'paste_help', 'paste_title_label', 'paste_data_label', 'paste_btn', 'standalone_note', 'choose_heading', 'phone_note', 'phone_dataplot_btn'];
+  function S(key) { return Object.prototype.hasOwnProperty.call(STR, key) ? STR[key] : key; }
+  function applyStrings(incoming) {
+    if (!incoming || typeof incoming !== 'object') return;
+    Object.keys(incoming).forEach(function (k) {
+      var v = incoming[k];
+      if (typeof v !== 'string' || !v.trim() || k.length > 40) return;
+      if (Object.prototype.hasOwnProperty.call(STR, k) || STATIC_KEYS.indexOf(k) !== -1) STR[k] = v.slice(0, 800);
+    });
+    STATIC_KEYS.forEach(function (k) {
+      if (!STR[k]) return;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-i18n="' + k + '"]'), function (el) { el.textContent = STR[k]; });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-aria-label]'), function (el) { var k = el.getAttribute('data-i18n-aria-label'); if (STR[k]) el.setAttribute('aria-label', STR[k]); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-placeholder]'), function (el) { var k = el.getAttribute('data-i18n-placeholder'); if (STR[k]) el.setAttribute('placeholder', STR[k]); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-title]'), function (el) { var k = el.getAttribute('data-i18n-title'); if (STR[k]) el.setAttribute('title', STR[k]); });
+    if (STR.privacy) document.getElementById('privacyNote').textContent = STR.privacy;
+    if (STR.page_title) document.title = STR.page_title;
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  var pageLang = safeLang(params.get('lang') || 'en');
+  function applyLang(code, dir) {
+    pageLang = safeLang(code);
+    document.documentElement.lang = pageLang;
+    document.documentElement.dir = (dir === 'rtl' || dir === 'ltr') ? dir : (isRtl(pageLang) ? 'rtl' : 'ltr');
+  }
+  applyLang(pageLang);
+
+  // ── CODAP embed (pinned release + our tutor plugin injected via ?di=) ──
+  // Pinned 2026-11-03 to CODAP 3.1.2 (build 3012), the current stable release.
+  // The old unpinned 'latest' v2 URL now only redirects to the unpinned v3 app.
+  // Never turn on CODAP's standalone mode here: in CODAP v3 it hides the tool
+  // shelf (no Table/Graph buttons) and fills the workspace with this plugin.
+  var CODAP_BASE = 'https://codap.concord.org/app/version/3.1.2/index.html';
   var pluginUrl = new URL('tutor_plugin.html', document.baseURI || window.location.href).href;
   var codapFrame = document.getElementById('codapFrame');
   var codapRegion = document.getElementById('codapRegion');
@@ -166,7 +907,16 @@
   aiStateEl.setAttribute('aria-live', 'polite');
   aiStateEl.setAttribute('aria-atomic', 'true');
   askForm.setAttribute('aria-busy', 'false');
-  function setWorkspaceStatus(message, canRetry, isBusy) {
+  var workspaceFailed = false; // CODAP could not load (the Load reason says so)
+  var workspaceLoaded = false; // the frame fired load for the current CODAP
+  var PLUGIN_WAIT_MS = 20000;  // after the frame loads, how long Load waits before offering Retry
+  var pluginWaitTimer = null;
+  var pluginWaitOver = false;
+  var codapGen = 0;            // bumps when CODAP restarts (a new, empty document)
+  var loadBusy = false;
+  function setWorkspaceStatus(message, canRetry, isBusy, failed) {
+    workspaceFailed = !!failed;
+    if (loadBtn) renderLoadGate();
     workspaceStatusText.textContent = message || '';
     workspaceStatus.hidden = !message;
     retryWorkspace.hidden = !canRetry;
@@ -176,44 +926,95 @@
   function clearWorkspaceTimers() {
     if (workspaceTimer) clearTimeout(workspaceTimer);
     if (workspaceReadyTimer) clearTimeout(workspaceReadyTimer);
+    if (pluginWaitTimer) clearTimeout(pluginWaitTimer);
     workspaceTimer = null;
     workspaceReadyTimer = null;
+    pluginWaitTimer = null;
+  }
+
+  // The frame's load event fires even for a blocked or failed page, and a plugin
+  // that never reports in would leave Load waiting forever, so the wait ends.
+  function startPluginWait() {
+    if (pluginWaitTimer) clearTimeout(pluginWaitTimer);
+    pluginWaitTimer = setTimeout(function () {
+      pluginWaitTimer = null;
+      if (pluginAlive) return;
+      pluginWaitOver = true;
+      renderLoadGate();
+      if (!loadBtn.disabled) datasetStatus.textContent = S('load_wait_failed');
+    }, PLUGIN_WAIT_MS);
+  }
+  // CODAP restarted or the plugin's frame is gone: the old plugin window and
+  // everything this window put in that CODAP document no longer exist.
+  function forgetPlugin() {
+    pluginAlive = false;
+    pluginWin = null;
+    pluginOrigin = null;
+    loadBusy = false;
+    codapGen += 1;
+    codapContexts = {};
+    surveySent = 0;
+    inv.loaded = false;
+    datasetStatus.textContent = '';
+    renderAiState();
+  }
+  function pluginLive() {
+    if (pluginWin && pluginWin.closed) { forgetPlugin(); startPluginWait(); renderLoadGate(); }
+    return !!(pluginAlive && pluginWin);
   }
 
   function loadWorkspace() {
     clearWorkspaceTimers();
     if (navigator.onLine === false) {
-      setWorkspaceStatus('CODAP needs an internet connection. Reconnect, then retry the workspace.', true, false);
+      setWorkspaceStatus(S('ws_offline_needed'), true, false, true);
       return;
     }
-    setWorkspaceStatus('Loading the CODAP workspace?', false, true);
-    codapFrame.src = CODAP_BASE + '?standalone=true&di=' + encodeURIComponent(pluginUrl);
+    if (pluginWin || pluginAlive) forgetPlugin();
+    workspaceLoaded = false;
+    pluginWaitOver = false;
+    setWorkspaceStatus(S('ws_loading'), false, true);
+    codapFrame.src = codapFrameUrl(CODAP_BASE, pluginUrl, pageLang);
     workspaceTimer = setTimeout(function () {
-      setWorkspaceStatus('CODAP is taking longer than expected. Check your connection, then retry if needed.', true, false);
+      setWorkspaceStatus(S('ws_slow'), true, false);
     }, 12000);
   }
 
   codapFrame.addEventListener('load', function () {
     clearTimeout(workspaceTimer);
     workspaceTimer = null;
-    setWorkspaceStatus('CODAP workspace loaded.', false, false);
+    workspaceLoaded = true;
+    setWorkspaceStatus(S('ws_loaded'), false, false);
     workspaceReadyTimer = setTimeout(function () { workspaceStatus.hidden = true; }, 900);
+    if (!pluginAlive) startPluginWait();
   });
   codapFrame.addEventListener('error', function () {
     clearTimeout(workspaceTimer);
     workspaceTimer = null;
-    setWorkspaceStatus('CODAP could not load. Check your connection and retry.', true, false);
+    setWorkspaceStatus(S('ws_failed'), true, false, true);
   });
-  retryWorkspace.addEventListener('click', loadWorkspace);
+  // Retry hides its own button, so focus moves on to the next step.
+  function retryCodap() {
+    loadWorkspace();
+    if (!retryWorkspace.hidden) return;
+    codapRegion.setAttribute('tabindex', '-1');
+    try { (loadBtn && !exploreBlock.hidden && !loadBtn.disabled ? loadBtn : codapRegion).focus(); } catch (_) {}
+  }
+  retryWorkspace.addEventListener('click', retryCodap);
+  document.getElementById('loadRetry').addEventListener('click', retryCodap);
+  // A loaded CODAP keeps working offline, and reloading it would erase the
+  // student's tables and graphs, so a network blip leaves it alone.
+  function codapRunning() { return workspaceLoaded && pluginAlive; }
   window.addEventListener('offline', function () {
+    if (codapRunning()) return;
     clearWorkspaceTimers();
-    setWorkspaceStatus('You are offline. Reconnect to load the CODAP workspace.', true, false);
+    setWorkspaceStatus(S('ws_offline'), true, false, true);
   });
-  window.addEventListener('online', loadWorkspace);
+  window.addEventListener('online', function () { if (!codapRunning()) loadWorkspace(); });
   loadWorkspace();
 
   var aiAvailable = false;
   var openerOk = false;
+  var openerClosed = false;
   var pluginAlive = false;
   var pluginWin = null; // the tutor plugin's window (nested inside CODAP) — captured from its alive ping
   var history = [];   // {role:'student'|'tutor', text} — in-memory only
@@ -230,30 +1031,36 @@
   }
 
   function renderAiState() {
-    aiStateEl.innerHTML = openerOk
-      ? (aiAvailable
-        ? 'AlloFlow connected · AI tutor <span class="on">on</span>' + (pluginAlive ? ' · sees your workspace shape' : '')
-        : 'AlloFlow connected · AI hints are <span class="off">off</span> — using built-in thinking prompts')
-      : 'Running standalone — using built-in thinking prompts (open from AlloFlow for the AI tutor)';
+    var key, cls = 'ai-state';
+    if (openerClosed) { key = 'state_opener_closed'; cls += ' is-off'; }
+    else if (!openerOk) { key = 'state_standalone'; }
+    else if (aiAvailable) { key = pluginAlive ? 'state_ai_on_sees' : 'state_ai_on'; cls += ' is-on'; }
+    else { key = 'state_ai_off'; cls += ' is-off'; }
+    aiStateEl.className = cls;
+    aiStateEl.textContent = S(key);
   }
+  function checkOpener() {
+    if (openerOk && (!window.opener || window.opener.closed)) {
+      openerOk = false;
+      openerClosed = true;
+      renderAiState();
+    }
+  }
+  setInterval(checkOpener, 3000);
 
   // ── Built-in Socratic bank (the zero-AI path is still a real tutor) ──
-  var SOCRATIC_BANK = [
-    'Before graphing anything: what do you EXPECT this data will show? Write your guess down — then check.',
-    'Look at your graph. What surprises you about it? What would NOT have surprised you?',
-    'Which case is the most unusual one in your data? What makes it unusual — and is it a mistake or a discovery?',
-    'If you could add one more column of data, what would it be? What question would it let you answer?',
-    'What would this graph look like if there were NO relationship between the two things? How different is yours?',
-    'Who collected this data, and what might they have missed? What is NOT in this dataset?',
-    'Try describing the shape of your data in three words. Would a friend draw the same graph from your words?',
-    'If you split your data into two groups, which split would be most interesting? Why that one?',
-    'What claim could you defend with this data — and what claim would be TOO strong to make?',
-    'Averages hide things. What does the average in your data hide?'
-  ];
-  var bankIndex = Math.floor(Math.random() * SOCRATIC_BANK.length);
+  var BANK_KEYS = ['bank_1', 'bank_2', 'bank_3', 'bank_4', 'bank_5', 'bank_6', 'bank_7', 'bank_8', 'bank_9', 'bank_10'];
+  var bankIndex = Math.floor(Math.random() * BANK_KEYS.length);
+  var invPromptIndex = -1;
   function nextNudge() {
-    bankIndex = (bankIndex + 1) % SOCRATIC_BANK.length;
-    return SOCRATIC_BANK[bankIndex];
+    // An active investigation's own questions come first, then the general bank.
+    var inv = currentInvestigation();
+    if (inv && !predictionGated() && inv.prompts.length && invPromptIndex < inv.prompts.length - 1) {
+      invPromptIndex += 1;
+      return inv.prompts[invPromptIndex];
+    }
+    bankIndex = (bankIndex + 1) % BANK_KEYS.length;
+    return S(BANK_KEYS[bankIndex]);
   }
 
   function rememberTurn(role, text) {
@@ -265,11 +1072,11 @@
   }
 
   function tutorFallback(errorCode) {
-    var lead = 'The AI tutor is unavailable right now.';
-    if (errorCode === 'busy') lead = 'The tutor is still thinking about another question.';
-    else if (errorCode === 'ai-disabled') lead = 'AI hints are off right now.';
-    else if (errorCode === 'invalid-question') lead = 'I could not read that question. Try asking it another way.';
-    return lead + ' Meanwhile: ' + nextNudge();
+    var key = 'fb_unavailable';
+    if (errorCode === 'busy') key = 'fb_busy';
+    else if (errorCode === 'ai-disabled') key = 'fb_disabled';
+    else if (errorCode === 'invalid-question') key = 'fb_invalid';
+    return fill(S(key), { nudge: nextNudge() });
   }
 
   // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
@@ -289,21 +1096,46 @@
       if (!fromOpener) return;
       openerOrigin = event.origin || openerOrigin;
       openerOk = true;
+      openerClosed = false;
       aiAvailable = Boolean(data.ai);
+      receiveReady(data);
       renderAiState();
+      phoneDataPlotBtn.hidden = false;
+      return;
+    }
+    if (data.type === 'allodatalab-focus') {
+      if (!fromOpener) return;
+      focusInvestigation(data.investigationId);
+      return;
+    }
+    if (data.type === 'allodatalab-load-dataset') {
+      if (!fromOpener) return;
+      receiveExternalDataset(data.dataset);
       return;
     }
     if (data.type === 'allodatalab-plugin-alive') {
       if (event.origin !== window.location.origin) return;
-      if (pluginWin && event.source !== pluginWin) return;
+      if (pluginWin && event.source !== pluginWin) {
+        if (!pluginWin.closed) return;
+        forgetPlugin();
+      }
+      var wasAlive = pluginAlive;
+      if (pluginWaitTimer) { clearTimeout(pluginWaitTimer); pluginWaitTimer = null; }
+      pluginWaitOver = false;
       pluginAlive = true;
       pluginWin = event.source || pluginWin; // direct line to the plugin, through CODAP's iframe boundary
       pluginOrigin = event.origin || pluginOrigin;
+      sendPluginStrings();
       renderAiState();
+      renderLoadGate();
+      if (!wasAlive && (loadWaitClicked || document.activeElement === loadBtn)) { loadWaitClicked = false; datasetStatus.textContent = S('load_ready'); }
+      flushDatasetQueue();
       return;
     }
+    var fromPlugin = !!(pluginWin && event.source === pluginWin && event.origin === pluginOrigin);
+    if (data.type === 'allodatalab-codap-component-changed') { if (fromPlugin) onCodapComponentChanged(); return; }
     var trustedResponse = (data.type === 'allodatalab-ai-response' && fromOpener)
-      || (data.type === 'allodatalab-snapshot' && pluginWin && event.source === pluginWin && event.origin === pluginOrigin);
+      || ((data.type === 'allodatalab-snapshot' || data.type === 'allodatalab-dataset-created' || data.type === 'allodatalab-graph-report' || data.type === 'allodatalab-items-added') && fromPlugin);
     if (trustedResponse && data.id && pending[data.id]) {
       var entry = pending[data.id];
       delete pending[data.id];
@@ -318,6 +1150,13 @@
       if (!sendFn()) { var e = pending[id]; delete pending[id]; if (e) { clearTimeout(e.timer); } resolve(null); }
     });
   }
+  function toPlugin(payload) {
+    if (!pluginAlive || !pluginWin) return false;
+    try { pluginWin.postMessage(payload, pluginOrigin && pluginOrigin !== 'null' ? pluginOrigin : '*'); return true; } catch (_) { return false; }
+  }
+  function sendPluginStrings() {
+    toPlugin({ type: 'allodatalab-plugin-strings', lang: pageLang, dir: document.documentElement.dir, strings: { plugin_title: S('plugin_title'), plugin_connected: S('plugin_connected'), plugin_failed: S('plugin_failed') } });
+  }
 
   function getSnapshot() {
     if (!pluginAlive || !pluginWin) return Promise.resolve(null);
@@ -329,13 +1168,15 @@
 
   function askAi(question, snapshot) {
     var id = 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    var inv = currentInvestigation();
     return requestWithTimeout(function () {
       return toOpener({
         type: 'allodatalab-ai-request',
         id: id,
         question: question,
         snapshot: snapshot,
-        history: history.slice(-6)
+        history: history.slice(-6),
+        investigation: inv ? inv.question : ''
       });
     }, id, 25000);
   }
@@ -350,8 +1191,11 @@
     askInput.value = '';
     addMsg('student-msg', question);
     rememberTurn('student', question);
+    checkOpener();
     if (!(openerOk && aiAvailable)) {
-      var fallback = 'I can’t reach the AI tutor right now — but here’s something to chew on: ' + nextNudge();
+      // Still a real question: report it so the launcher's Ask quests count it.
+      toOpener({ type: 'allodatalab-offline-ask' });
+      var fallback = fill(S('offline_fallback'), { nudge: nextNudge() });
       addMsg('tutor-msg', fallback);
       rememberTurn('tutor', fallback);
       return;
@@ -359,7 +1203,7 @@
     busy = true;
     askBtn.disabled = true;
     askForm.setAttribute('aria-busy', 'true');
-    addMsg('meta', 'thinking…');
+    addMsg('meta', S('thinking'));
     getSnapshot().then(function (snapshot) {
       return askAi(question, snapshot);
     }).then(function (res) {
@@ -382,8 +1226,900 @@
     rememberTurn('tutor', nudge);
   });
 
+  // ═══ Investigate panel ═══════════════════════════════════════════════
+  var datasetSelect = document.getElementById('datasetSelect');
+  var datasetSource = document.getElementById('datasetSource');
+  var assignedBadge = document.getElementById('assignedBadge');
+  var questionBlock = document.getElementById('questionBlock');
+  var questionSelect = document.getElementById('questionSelect');
+  var questionText = document.getElementById('questionText');
+  var invPanel = document.getElementById('invPanel');
+  var predictBlock = document.getElementById('predictBlock');
+  var predictChoices = document.getElementById('predictChoices');
+  var predictFreeWrap = document.getElementById('predictFreeWrap');
+  var predictFree = document.getElementById('predictFree');
+  var lockBtn = document.getElementById('lockBtn');
+  var predictStatus = document.getElementById('predictStatus');
+  var exploreBlock = document.getElementById('exploreBlock');
+  var loadBtn = document.getElementById('loadBtn');
+  var loadWait = document.getElementById('loadWait');
+  var loadWaitClicked = false;
+  var chooseDetails = document.getElementById('chooseDetails');
+  var chooserForQuestion = null; // whether the chooser was last set for a shown question
+  var chooserFoldLater = false;  // fold once focus has left it (folding around the focus would drop it)
+  var datasetStatus = document.getElementById('datasetStatus');
+  var promptsBlock = document.getElementById('promptsBlock');
+  var promptList = document.getElementById('promptList');
+  var tableWrap = document.getElementById('tableWrap');
+  var tableDetails = document.getElementById('tableDetails');
+  var cerBlock = document.getElementById('cerBlock');
+  var cerClaim = document.getElementById('cerClaim');
+  var cerEvidence = document.getElementById('cerEvidence');
+  var cerReasoning = document.getElementById('cerReasoning');
+  var checkBtn = document.getElementById('checkBtn');
+  var revealBtn = document.getElementById('revealBtn');
+  var cerStep = document.getElementById('cerStep');
+  var revealHeading = document.getElementById('revealHeading');
+  var cerFeedback = document.getElementById('cerFeedback');
+  var revealBlock = document.getElementById('revealBlock');
+  var revealBody = document.getElementById('revealBody');
+
+  // == fallback catalog start (generated from the launcher's English catalog by work_datalab/stageB_sync_fallback.cjs; dataLab_deep_stageB_popup.test.js keeps it in step) ==
+  var FALLBACK_CATALOG = [{"id":"planets","title":"The eight planets","description":"Size, distance, year length, gravity and temperature for each planet in our solar system.","source":{"name":"NASA Planetary Fact Sheet (NSSDCA)","url":"https://nssdc.gsfc.nasa.gov/planetary/factsheet/","note":"Values as published by NASA. Mean temperature is an average over the whole planet; gas giants are measured where the pressure equals 1 bar."},"attributes":[{"key":"planet","name":"Planet","type":"categorical"},{"key":"distance","name":"Distance from Sun","unit":"million km","type":"numeric"},{"key":"period","name":"Length of year","unit":"Earth days","type":"numeric"},{"key":"diameter","name":"Diameter","unit":"km","type":"numeric"},{"key":"mass","name":"Mass","unit":"10^24 kg","type":"numeric"},{"key":"density","name":"Density","unit":"kg/m³","type":"numeric"},{"key":"gravity","name":"Surface gravity","unit":"m/s²","type":"numeric"},{"key":"day","name":"Length of day","unit":"hours","type":"numeric"},{"key":"temp","name":"Mean temperature","unit":"°C","type":"numeric"}],"rows":[["Mercury",57.9,88,4879,0.33,5429,3.7,4222.6,167],["Venus",108.2,224.7,12104,4.87,5243,8.9,2802,464],["Earth",149.6,365.2,12756,5.97,5514,9.8,24,15],["Mars",228,687,6792,0.642,3934,3.7,24.7,-65],["Jupiter",778.5,4331,142984,1898,1326,23.1,9.9,-110],["Saturn",1432,10747,120536,568,687,9,10.7,-140],["Uranus",2867,30589,51118,86.8,1270,8.7,17.2,-195],["Neptune",4515,59800,49528,102,1638,11,16.1,-200]],"investigations":[{"id":"planets_hottest","bands":["k2","g35"],"kind":"max","attr":"temp","label":"planet","graph":{"x":"temp"},"question":"Which planet is the hottest? Is it the one closest to the Sun?","prompts":["Which column tells you how hot a planet is? Which column tells you how close it is to the Sun?","Can you put the planets in order from closest to farthest? Does the hottest one come first?","If the closest planet is not the hottest, what else could make a planet hot?"]},{"id":"planets_cold","bands":["g35","g68"],"kind":"trend","x":"distance","y":"temp","absoluteCaution":true,"graph":{"x":"distance","y":"temp"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"As planets get farther from the Sun, what happens to their temperature?","prompts":["What graph would let you see distance and temperature at the same time?","Which planet does not fit the pattern? What is different about it?","The distances run from about 58 to 4,515 million km. How could you make the close planets easier to see on your graph?"]},{"id":"planets_kepler","bands":["g68","g912"],"kind":"trend","x":"distance","y":"period","graph":{"x":"distance","y":"period"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"How does a planet’s distance from the Sun relate to the length of its year?","prompts":["When you graph year length against distance, is it a straight line or a curve? How can you tell?","If distance doubles, does the year double too? Find two planets that let you check.","CODAP can add a column with a formula. What new column might turn the curve into a straight line?"]},{"id":"planets_gravity","bands":["g68","g912"],"kind":"trend","x":"diameter","y":"gravity","absoluteCaution":true,"graph":{"x":"diameter","y":"gravity"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"Do bigger planets always have stronger surface gravity?","prompts":["Which planets break the pattern you expected? Look closely at Saturn and Uranus.","Is there another column that might explain the planets that break the pattern?","What is the difference between “usually” and “always” when you only have eight cases?"]}]},{"id":"olympic100","title":"Olympic men’s 100 m winning times","description":"The gold medal time in the men’s 100 metres at every Summer Olympics from 1896 to 2024.","source":{"name":"International Olympic Committee results (olympics.com)","url":"https://www.olympics.com/en/olympic-games/olympic-results","note":"Official winning times. Before 1968 races were timed by hand to a tenth of a second. The Tokyo 2020 Games were held in 2021. No Games were held in 1916, 1940 or 1944."},"attributes":[{"key":"year","name":"Year","type":"numeric"},{"key":"winner","name":"Winner","type":"categorical"},{"key":"time","name":"Winning time","unit":"seconds","type":"numeric"},{"key":"timing","name":"Timing","type":"categorical"}],"rows":[[1896,"Thomas Burke",12,"hand-timed"],[1900,"Frank Jarvis",11,"hand-timed"],[1904,"Archie Hahn",11,"hand-timed"],[1908,"Reggie Walker",10.8,"hand-timed"],[1912,"Ralph Craig",10.8,"hand-timed"],[1920,"Charles Paddock",10.8,"hand-timed"],[1924,"Harold Abrahams",10.6,"hand-timed"],[1928,"Percy Williams",10.8,"hand-timed"],[1932,"Eddie Tolan",10.3,"hand-timed"],[1936,"Jesse Owens",10.3,"hand-timed"],[1948,"Harrison Dillard",10.3,"hand-timed"],[1952,"Lindy Remigino",10.4,"hand-timed"],[1956,"Bobby Morrow",10.5,"hand-timed"],[1960,"Armin Hary",10.2,"hand-timed"],[1964,"Bob Hayes",10,"hand-timed"],[1968,"Jim Hines",9.95,"electronic"],[1972,"Valeriy Borzov",10.14,"electronic"],[1976,"Hasely Crawford",10.06,"electronic"],[1980,"Allan Wells",10.25,"electronic"],[1984,"Carl Lewis",9.99,"electronic"],[1988,"Carl Lewis",9.92,"electronic"],[1992,"Linford Christie",9.96,"electronic"],[1996,"Donovan Bailey",9.84,"electronic"],[2000,"Maurice Greene",9.87,"electronic"],[2004,"Justin Gatlin",9.85,"electronic"],[2008,"Usain Bolt",9.69,"electronic"],[2012,"Usain Bolt",9.63,"electronic"],[2016,"Usain Bolt",9.81,"electronic"],[2021,"Marcell Jacobs",9.8,"electronic"],[2024,"Noah Lyles",9.79,"electronic"]],"investigations":[{"id":"olympic_faster","bands":["k2","g35"],"kind":"trend","x":"year","y":"time","causalCaution":true,"absoluteCaution":true,"graph":{"x":"year","y":"time"},"optUp":"The winning times got bigger (slower)","optDown":"The winning times got smaller (faster)","optNone":"The times stayed about the same","question":"Have Olympic sprinters gotten faster over the years?","prompts":["Is a smaller time faster or slower? How do you know?","Find the first race and the last race. What changed?","Did the time get smaller every single time? Find a year where it did not."]},{"id":"olympic_predict","bands":["g68"],"kind":"free","graph":{"x":"year","y":"time"},"facts":[{"type":"ratePerYear","x":"year","y":"time","from":1896,"to":1936},{"type":"ratePerYear","x":"year","y":"time","from":1984,"to":2024}],"question":"What will the winning time be at the 2028 Olympics? How sure can you be?","prompts":["Which years would you trust most to make your prediction? Why those?","Did the time drop by the same amount every Olympics? What does that mean for your guess?","Instead of one number, what range of times would you bet on?"]},{"id":"olympic_extrapolate","bands":["g912"],"kind":"trend","x":"year","y":"time","causalCaution":true,"absoluteCaution":true,"graph":{"x":"year","y":"time"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"How have winning times changed since 1896, and how far into the future can a trend line be trusted?","prompts":["If you fit a straight line, in what year would it predict a time of zero seconds? What does that tell you?","Early times were hand-timed to a tenth of a second. How could that affect your line?","Is one straight line the best description, or does the change slow down? What evidence would decide it?"]}]},{"id":"co2","title":"Carbon dioxide at Mauna Loa, Hawaii","description":"The average amount of carbon dioxide in the air each year since 1959, in parts per million.","source":{"name":"NOAA Global Monitoring Laboratory and Scripps Institution of Oceanography","url":"https://gml.noaa.gov/ccgg/trends/data.html","note":"Annual means, file of 9 October 2026. NOAA notes the latest year can change slightly after recalibration. From December 2022 to July 2023 the readings came from nearby Maunakea, after a volcanic eruption."},"attributes":[{"key":"year","name":"Year","type":"numeric"},{"key":"co2","name":"CO2","unit":"ppm","type":"numeric"}],"rows":[[1959,315.98],[1960,316.91],[1961,317.64],[1962,318.45],[1963,318.99],[1964,319.62],[1965,320.04],[1966,321.37],[1967,322.18],[1968,323.05],[1969,324.62],[1970,325.68],[1971,326.32],[1972,327.46],[1973,329.68],[1974,330.19],[1975,331.13],[1976,332.03],[1977,333.84],[1978,335.41],[1979,336.84],[1980,338.76],[1981,340.12],[1982,341.48],[1983,343.15],[1984,344.87],[1985,346.35],[1986,347.61],[1987,349.31],[1988,351.69],[1989,353.2],[1990,354.45],[1991,355.7],[1992,356.54],[1993,357.21],[1994,358.96],[1995,360.97],[1996,362.74],[1997,363.88],[1998,366.84],[1999,368.54],[2000,369.71],[2001,371.32],[2002,373.45],[2003,375.98],[2004,377.7],[2005,379.98],[2006,382.09],[2007,384.02],[2008,385.83],[2009,387.64],[2010,390.1],[2011,391.85],[2012,394.06],[2013,396.74],[2014,398.81],[2015,401.01],[2016,404.41],[2017,406.76],[2018,408.72],[2019,411.65],[2020,414.21],[2021,416.41],[2022,418.53],[2023,421.08],[2024,424.61],[2025,427.35]],"investigations":[{"id":"co2_rising","bands":["g35","g68"],"kind":"trend","x":"year","y":"co2","causalCaution":true,"graph":{"x":"year","y":"co2"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"How has the amount of carbon dioxide in the air changed since 1959?","prompts":["What does “parts per million” mean? How could you explain it to a friend?","Did it ever go down from one year to the next? How would you check?","How much did it change from your first year to your last year?"]},{"id":"co2_speed","bands":["g68","g912"],"kind":"free","graph":{"x":"year","y":"co2"},"facts":[{"type":"ratePerYear","x":"year","y":"co2","from":1959,"to":1969},{"type":"ratePerYear","x":"year","y":"co2","from":2015,"to":2025}],"question":"Is carbon dioxide rising at a steady speed, or is it speeding up?","prompts":["How could you work out how much it rose in each decade? Try a new column.","Compare the 1960s with the 2010s. What would “steady” look like on your graph?","If a straight line fits the early years, does it still fit the recent ones?"]}]},{"id":"penguins","title":"Penguins of the Palmer Archipelago, Antarctica","description":"Bill, flipper and body measurements of 344 wild penguins of three species, measured from 2007 to 2009.","source":{"name":"Palmer Station Antarctica LTER and Dr. Kristen Gorman (palmerpenguins data package)","url":"https://allisonhorst.github.io/palmerpenguins/","note":"From Gorman, Williams and Fraser (2014), PLoS ONE 9(3): e90081, shared free of copyright (CC0) by Horst, Hill and Gorman. A blank cell means that value was not measured."},"attributes":[{"key":"species","name":"Species","type":"categorical"},{"key":"island","name":"Island","type":"categorical"},{"key":"bill_length","name":"Bill length","unit":"mm","type":"numeric"},{"key":"bill_depth","name":"Bill depth","unit":"mm","type":"numeric"},{"key":"flipper","name":"Flipper length","unit":"mm","type":"numeric"},{"key":"mass","name":"Body mass","unit":"g","type":"numeric"},{"key":"sex","name":"Sex","type":"categorical"},{"key":"year","name":"Year","type":"numeric"}],"rows":[["Adelie","Torgersen",39.1,18.7,181,3750,"male",2007],["Adelie","Torgersen",39.5,17.4,186,3800,"female",2007],["Adelie","Torgersen",40.3,18,195,3250,"female",2007],["Adelie","Torgersen","","","","","",2007],["Adelie","Torgersen",36.7,19.3,193,3450,"female",2007],["Adelie","Torgersen",39.3,20.6,190,3650,"male",2007],["Adelie","Torgersen",38.9,17.8,181,3625,"female",2007],["Adelie","Torgersen",39.2,19.6,195,4675,"male",2007],["Adelie","Torgersen",34.1,18.1,193,3475,"",2007],["Adelie","Torgersen",42,20.2,190,4250,"",2007],["Adelie","Torgersen",37.8,17.1,186,3300,"",2007],["Adelie","Torgersen",37.8,17.3,180,3700,"",2007],["Adelie","Torgersen",41.1,17.6,182,3200,"female",2007],["Adelie","Torgersen",38.6,21.2,191,3800,"male",2007],["Adelie","Torgersen",34.6,21.1,198,4400,"male",2007],["Adelie","Torgersen",36.6,17.8,185,3700,"female",2007],["Adelie","Torgersen",38.7,19,195,3450,"female",2007],["Adelie","Torgersen",42.5,20.7,197,4500,"male",2007],["Adelie","Torgersen",34.4,18.4,184,3325,"female",2007],["Adelie","Torgersen",46,21.5,194,4200,"male",2007],["Adelie","Biscoe",37.8,18.3,174,3400,"female",2007],["Adelie","Biscoe",37.7,18.7,180,3600,"male",2007],["Adelie","Biscoe",35.9,19.2,189,3800,"female",2007],["Adelie","Biscoe",38.2,18.1,185,3950,"male",2007],["Adelie","Biscoe",38.8,17.2,180,3800,"male",2007],["Adelie","Biscoe",35.3,18.9,187,3800,"female",2007],["Adelie","Biscoe",40.6,18.6,183,3550,"male",2007],["Adelie","Biscoe",40.5,17.9,187,3200,"female",2007],["Adelie","Biscoe",37.9,18.6,172,3150,"female",2007],["Adelie","Biscoe",40.5,18.9,180,3950,"male",2007],["Adelie","Dream",39.5,16.7,178,3250,"female",2007],["Adelie","Dream",37.2,18.1,178,3900,"male",2007],["Adelie","Dream",39.5,17.8,188,3300,"female",2007],["Adelie","Dream",40.9,18.9,184,3900,"male",2007],["Adelie","Dream",36.4,17,195,3325,"female",2007],["Adelie","Dream",39.2,21.1,196,4150,"male",2007],["Adelie","Dream",38.8,20,190,3950,"male",2007],["Adelie","Dream",42.2,18.5,180,3550,"female",2007],["Adelie","Dream",37.6,19.3,181,3300,"female",2007],["Adelie","Dream",39.8,19.1,184,4650,"male",2007],["Adelie","Dream",36.5,18,182,3150,"female",2007],["Adelie","Dream",40.8,18.4,195,3900,"male",2007],["Adelie","Dream",36,18.5,186,3100,"female",2007],["Adelie","Dream",44.1,19.7,196,4400,"male",2007],["Adelie","Dream",37,16.9,185,3000,"female",2007],["Adelie","Dream",39.6,18.8,190,4600,"male",2007],["Adelie","Dream",41.1,19,182,3425,"male",2007],["Adelie","Dream",37.5,18.9,179,2975,"",2007],["Adelie","Dream",36,17.9,190,3450,"female",2007],["Adelie","Dream",42.3,21.2,191,4150,"male",2007],["Adelie","Biscoe",39.6,17.7,186,3500,"female",2008],["Adelie","Biscoe",40.1,18.9,188,4300,"male",2008],["Adelie","Biscoe",35,17.9,190,3450,"female",2008],["Adelie","Biscoe",42,19.5,200,4050,"male",2008],["Adelie","Biscoe",34.5,18.1,187,2900,"female",2008],["Adelie","Biscoe",41.4,18.6,191,3700,"male",2008],["Adelie","Biscoe",39,17.5,186,3550,"female",2008],["Adelie","Biscoe",40.6,18.8,193,3800,"male",2008],["Adelie","Biscoe",36.5,16.6,181,2850,"female",2008],["Adelie","Biscoe",37.6,19.1,194,3750,"male",2008],["Adelie","Biscoe",35.7,16.9,185,3150,"female",2008],["Adelie","Biscoe",41.3,21.1,195,4400,"male",2008],["Adelie","Biscoe",37.6,17,185,3600,"female",2008],["Adelie","Biscoe",41.1,18.2,192,4050,"male",2008],["Adelie","Biscoe",36.4,17.1,184,2850,"female",2008],["Adelie","Biscoe",41.6,18,192,3950,"male",2008],["Adelie","Biscoe",35.5,16.2,195,3350,"female",2008],["Adelie","Biscoe",41.1,19.1,188,4100,"male",2008],["Adelie","Torgersen",35.9,16.6,190,3050,"female",2008],["Adelie","Torgersen",41.8,19.4,198,4450,"male",2008],["Adelie","Torgersen",33.5,19,190,3600,"female",2008],["Adelie","Torgersen",39.7,18.4,190,3900,"male",2008],["Adelie","Torgersen",39.6,17.2,196,3550,"female",2008],["Adelie","Torgersen",45.8,18.9,197,4150,"male",2008],["Adelie","Torgersen",35.5,17.5,190,3700,"female",2008],["Adelie","Torgersen",42.8,18.5,195,4250,"male",2008],["Adelie","Torgersen",40.9,16.8,191,3700,"female",2008],["Adelie","Torgersen",37.2,19.4,184,3900,"male",2008],["Adelie","Torgersen",36.2,16.1,187,3550,"female",2008],["Adelie","Torgersen",42.1,19.1,195,4000,"male",2008],["Adelie","Torgersen",34.6,17.2,189,3200,"female",2008],["Adelie","Torgersen",42.9,17.6,196,4700,"male",2008],["Adelie","Torgersen",36.7,18.8,187,3800,"female",2008],["Adelie","Torgersen",35.1,19.4,193,4200,"male",2008],["Adelie","Dream",37.3,17.8,191,3350,"female",2008],["Adelie","Dream",41.3,20.3,194,3550,"male",2008],["Adelie","Dream",36.3,19.5,190,3800,"male",2008],["Adelie","Dream",36.9,18.6,189,3500,"female",2008],["Adelie","Dream",38.3,19.2,189,3950,"male",2008],["Adelie","Dream",38.9,18.8,190,3600,"female",2008],["Adelie","Dream",35.7,18,202,3550,"female",2008],["Adelie","Dream",41.1,18.1,205,4300,"male",2008],["Adelie","Dream",34,17.1,185,3400,"female",2008],["Adelie","Dream",39.6,18.1,186,4450,"male",2008],["Adelie","Dream",36.2,17.3,187,3300,"female",2008],["Adelie","Dream",40.8,18.9,208,4300,"male",2008],["Adelie","Dream",38.1,18.6,190,3700,"female",2008],["Adelie","Dream",40.3,18.5,196,4350,"male",2008],["Adelie","Dream",33.1,16.1,178,2900,"female",2008],["Adelie","Dream",43.2,18.5,192,4100,"male",2008],["Adelie","Biscoe",35,17.9,192,3725,"female",2009],["Adelie","Biscoe",41,20,203,4725,"male",2009],["Adelie","Biscoe",37.7,16,183,3075,"female",2009],["Adelie","Biscoe",37.8,20,190,4250,"male",2009],["Adelie","Biscoe",37.9,18.6,193,2925,"female",2009],["Adelie","Biscoe",39.7,18.9,184,3550,"male",2009],["Adelie","Biscoe",38.6,17.2,199,3750,"female",2009],["Adelie","Biscoe",38.2,20,190,3900,"male",2009],["Adelie","Biscoe",38.1,17,181,3175,"female",2009],["Adelie","Biscoe",43.2,19,197,4775,"male",2009],["Adelie","Biscoe",38.1,16.5,198,3825,"female",2009],["Adelie","Biscoe",45.6,20.3,191,4600,"male",2009],["Adelie","Biscoe",39.7,17.7,193,3200,"female",2009],["Adelie","Biscoe",42.2,19.5,197,4275,"male",2009],["Adelie","Biscoe",39.6,20.7,191,3900,"female",2009],["Adelie","Biscoe",42.7,18.3,196,4075,"male",2009],["Adelie","Torgersen",38.6,17,188,2900,"female",2009],["Adelie","Torgersen",37.3,20.5,199,3775,"male",2009],["Adelie","Torgersen",35.7,17,189,3350,"female",2009],["Adelie","Torgersen",41.1,18.6,189,3325,"male",2009],["Adelie","Torgersen",36.2,17.2,187,3150,"female",2009],["Adelie","Torgersen",37.7,19.8,198,3500,"male",2009],["Adelie","Torgersen",40.2,17,176,3450,"female",2009],["Adelie","Torgersen",41.4,18.5,202,3875,"male",2009],["Adelie","Torgersen",35.2,15.9,186,3050,"female",2009],["Adelie","Torgersen",40.6,19,199,4000,"male",2009],["Adelie","Torgersen",38.8,17.6,191,3275,"female",2009],["Adelie","Torgersen",41.5,18.3,195,4300,"male",2009],["Adelie","Torgersen",39,17.1,191,3050,"female",2009],["Adelie","Torgersen",44.1,18,210,4000,"male",2009],["Adelie","Torgersen",38.5,17.9,190,3325,"female",2009],["Adelie","Torgersen",43.1,19.2,197,3500,"male",2009],["Adelie","Dream",36.8,18.5,193,3500,"female",2009],["Adelie","Dream",37.5,18.5,199,4475,"male",2009],["Adelie","Dream",38.1,17.6,187,3425,"female",2009],["Adelie","Dream",41.1,17.5,190,3900,"male",2009],["Adelie","Dream",35.6,17.5,191,3175,"female",2009],["Adelie","Dream",40.2,20.1,200,3975,"male",2009],["Adelie","Dream",37,16.5,185,3400,"female",2009],["Adelie","Dream",39.7,17.9,193,4250,"male",2009],["Adelie","Dream",40.2,17.1,193,3400,"female",2009],["Adelie","Dream",40.6,17.2,187,3475,"male",2009],["Adelie","Dream",32.1,15.5,188,3050,"female",2009],["Adelie","Dream",40.7,17,190,3725,"male",2009],["Adelie","Dream",37.3,16.8,192,3000,"female",2009],["Adelie","Dream",39,18.7,185,3650,"male",2009],["Adelie","Dream",39.2,18.6,190,4250,"male",2009],["Adelie","Dream",36.6,18.4,184,3475,"female",2009],["Adelie","Dream",36,17.8,195,3450,"female",2009],["Adelie","Dream",37.8,18.1,193,3750,"male",2009],["Adelie","Dream",36,17.1,187,3700,"female",2009],["Adelie","Dream",41.5,18.5,201,4000,"male",2009],["Gentoo","Biscoe",46.1,13.2,211,4500,"female",2007],["Gentoo","Biscoe",50,16.3,230,5700,"male",2007],["Gentoo","Biscoe",48.7,14.1,210,4450,"female",2007],["Gentoo","Biscoe",50,15.2,218,5700,"male",2007],["Gentoo","Biscoe",47.6,14.5,215,5400,"male",2007],["Gentoo","Biscoe",46.5,13.5,210,4550,"female",2007],["Gentoo","Biscoe",45.4,14.6,211,4800,"female",2007],["Gentoo","Biscoe",46.7,15.3,219,5200,"male",2007],["Gentoo","Biscoe",43.3,13.4,209,4400,"female",2007],["Gentoo","Biscoe",46.8,15.4,215,5150,"male",2007],["Gentoo","Biscoe",40.9,13.7,214,4650,"female",2007],["Gentoo","Biscoe",49,16.1,216,5550,"male",2007],["Gentoo","Biscoe",45.5,13.7,214,4650,"female",2007],["Gentoo","Biscoe",48.4,14.6,213,5850,"male",2007],["Gentoo","Biscoe",45.8,14.6,210,4200,"female",2007],["Gentoo","Biscoe",49.3,15.7,217,5850,"male",2007],["Gentoo","Biscoe",42,13.5,210,4150,"female",2007],["Gentoo","Biscoe",49.2,15.2,221,6300,"male",2007],["Gentoo","Biscoe",46.2,14.5,209,4800,"female",2007],["Gentoo","Biscoe",48.7,15.1,222,5350,"male",2007],["Gentoo","Biscoe",50.2,14.3,218,5700,"male",2007],["Gentoo","Biscoe",45.1,14.5,215,5000,"female",2007],["Gentoo","Biscoe",46.5,14.5,213,4400,"female",2007],["Gentoo","Biscoe",46.3,15.8,215,5050,"male",2007],["Gentoo","Biscoe",42.9,13.1,215,5000,"female",2007],["Gentoo","Biscoe",46.1,15.1,215,5100,"male",2007],["Gentoo","Biscoe",44.5,14.3,216,4100,"",2007],["Gentoo","Biscoe",47.8,15,215,5650,"male",2007],["Gentoo","Biscoe",48.2,14.3,210,4600,"female",2007],["Gentoo","Biscoe",50,15.3,220,5550,"male",2007],["Gentoo","Biscoe",47.3,15.3,222,5250,"male",2007],["Gentoo","Biscoe",42.8,14.2,209,4700,"female",2007],["Gentoo","Biscoe",45.1,14.5,207,5050,"female",2007],["Gentoo","Biscoe",59.6,17,230,6050,"male",2007],["Gentoo","Biscoe",49.1,14.8,220,5150,"female",2008],["Gentoo","Biscoe",48.4,16.3,220,5400,"male",2008],["Gentoo","Biscoe",42.6,13.7,213,4950,"female",2008],["Gentoo","Biscoe",44.4,17.3,219,5250,"male",2008],["Gentoo","Biscoe",44,13.6,208,4350,"female",2008],["Gentoo","Biscoe",48.7,15.7,208,5350,"male",2008],["Gentoo","Biscoe",42.7,13.7,208,3950,"female",2008],["Gentoo","Biscoe",49.6,16,225,5700,"male",2008],["Gentoo","Biscoe",45.3,13.7,210,4300,"female",2008],["Gentoo","Biscoe",49.6,15,216,4750,"male",2008],["Gentoo","Biscoe",50.5,15.9,222,5550,"male",2008],["Gentoo","Biscoe",43.6,13.9,217,4900,"female",2008],["Gentoo","Biscoe",45.5,13.9,210,4200,"female",2008],["Gentoo","Biscoe",50.5,15.9,225,5400,"male",2008],["Gentoo","Biscoe",44.9,13.3,213,5100,"female",2008],["Gentoo","Biscoe",45.2,15.8,215,5300,"male",2008],["Gentoo","Biscoe",46.6,14.2,210,4850,"female",2008],["Gentoo","Biscoe",48.5,14.1,220,5300,"male",2008],["Gentoo","Biscoe",45.1,14.4,210,4400,"female",2008],["Gentoo","Biscoe",50.1,15,225,5000,"male",2008],["Gentoo","Biscoe",46.5,14.4,217,4900,"female",2008],["Gentoo","Biscoe",45,15.4,220,5050,"male",2008],["Gentoo","Biscoe",43.8,13.9,208,4300,"female",2008],["Gentoo","Biscoe",45.5,15,220,5000,"male",2008],["Gentoo","Biscoe",43.2,14.5,208,4450,"female",2008],["Gentoo","Biscoe",50.4,15.3,224,5550,"male",2008],["Gentoo","Biscoe",45.3,13.8,208,4200,"female",2008],["Gentoo","Biscoe",46.2,14.9,221,5300,"male",2008],["Gentoo","Biscoe",45.7,13.9,214,4400,"female",2008],["Gentoo","Biscoe",54.3,15.7,231,5650,"male",2008],["Gentoo","Biscoe",45.8,14.2,219,4700,"female",2008],["Gentoo","Biscoe",49.8,16.8,230,5700,"male",2008],["Gentoo","Biscoe",46.2,14.4,214,4650,"",2008],["Gentoo","Biscoe",49.5,16.2,229,5800,"male",2008],["Gentoo","Biscoe",43.5,14.2,220,4700,"female",2008],["Gentoo","Biscoe",50.7,15,223,5550,"male",2008],["Gentoo","Biscoe",47.7,15,216,4750,"female",2008],["Gentoo","Biscoe",46.4,15.6,221,5000,"male",2008],["Gentoo","Biscoe",48.2,15.6,221,5100,"male",2008],["Gentoo","Biscoe",46.5,14.8,217,5200,"female",2008],["Gentoo","Biscoe",46.4,15,216,4700,"female",2008],["Gentoo","Biscoe",48.6,16,230,5800,"male",2008],["Gentoo","Biscoe",47.5,14.2,209,4600,"female",2008],["Gentoo","Biscoe",51.1,16.3,220,6000,"male",2008],["Gentoo","Biscoe",45.2,13.8,215,4750,"female",2008],["Gentoo","Biscoe",45.2,16.4,223,5950,"male",2008],["Gentoo","Biscoe",49.1,14.5,212,4625,"female",2009],["Gentoo","Biscoe",52.5,15.6,221,5450,"male",2009],["Gentoo","Biscoe",47.4,14.6,212,4725,"female",2009],["Gentoo","Biscoe",50,15.9,224,5350,"male",2009],["Gentoo","Biscoe",44.9,13.8,212,4750,"female",2009],["Gentoo","Biscoe",50.8,17.3,228,5600,"male",2009],["Gentoo","Biscoe",43.4,14.4,218,4600,"female",2009],["Gentoo","Biscoe",51.3,14.2,218,5300,"male",2009],["Gentoo","Biscoe",47.5,14,212,4875,"female",2009],["Gentoo","Biscoe",52.1,17,230,5550,"male",2009],["Gentoo","Biscoe",47.5,15,218,4950,"female",2009],["Gentoo","Biscoe",52.2,17.1,228,5400,"male",2009],["Gentoo","Biscoe",45.5,14.5,212,4750,"female",2009],["Gentoo","Biscoe",49.5,16.1,224,5650,"male",2009],["Gentoo","Biscoe",44.5,14.7,214,4850,"female",2009],["Gentoo","Biscoe",50.8,15.7,226,5200,"male",2009],["Gentoo","Biscoe",49.4,15.8,216,4925,"male",2009],["Gentoo","Biscoe",46.9,14.6,222,4875,"female",2009],["Gentoo","Biscoe",48.4,14.4,203,4625,"female",2009],["Gentoo","Biscoe",51.1,16.5,225,5250,"male",2009],["Gentoo","Biscoe",48.5,15,219,4850,"female",2009],["Gentoo","Biscoe",55.9,17,228,5600,"male",2009],["Gentoo","Biscoe",47.2,15.5,215,4975,"female",2009],["Gentoo","Biscoe",49.1,15,228,5500,"male",2009],["Gentoo","Biscoe",47.3,13.8,216,4725,"",2009],["Gentoo","Biscoe",46.8,16.1,215,5500,"male",2009],["Gentoo","Biscoe",41.7,14.7,210,4700,"female",2009],["Gentoo","Biscoe",53.4,15.8,219,5500,"male",2009],["Gentoo","Biscoe",43.3,14,208,4575,"female",2009],["Gentoo","Biscoe",48.1,15.1,209,5500,"male",2009],["Gentoo","Biscoe",50.5,15.2,216,5000,"female",2009],["Gentoo","Biscoe",49.8,15.9,229,5950,"male",2009],["Gentoo","Biscoe",43.5,15.2,213,4650,"female",2009],["Gentoo","Biscoe",51.5,16.3,230,5500,"male",2009],["Gentoo","Biscoe",46.2,14.1,217,4375,"female",2009],["Gentoo","Biscoe",55.1,16,230,5850,"male",2009],["Gentoo","Biscoe",44.5,15.7,217,4875,"",2009],["Gentoo","Biscoe",48.8,16.2,222,6000,"male",2009],["Gentoo","Biscoe",47.2,13.7,214,4925,"female",2009],["Gentoo","Biscoe","","","","","",2009],["Gentoo","Biscoe",46.8,14.3,215,4850,"female",2009],["Gentoo","Biscoe",50.4,15.7,222,5750,"male",2009],["Gentoo","Biscoe",45.2,14.8,212,5200,"female",2009],["Gentoo","Biscoe",49.9,16.1,213,5400,"male",2009],["Chinstrap","Dream",46.5,17.9,192,3500,"female",2007],["Chinstrap","Dream",50,19.5,196,3900,"male",2007],["Chinstrap","Dream",51.3,19.2,193,3650,"male",2007],["Chinstrap","Dream",45.4,18.7,188,3525,"female",2007],["Chinstrap","Dream",52.7,19.8,197,3725,"male",2007],["Chinstrap","Dream",45.2,17.8,198,3950,"female",2007],["Chinstrap","Dream",46.1,18.2,178,3250,"female",2007],["Chinstrap","Dream",51.3,18.2,197,3750,"male",2007],["Chinstrap","Dream",46,18.9,195,4150,"female",2007],["Chinstrap","Dream",51.3,19.9,198,3700,"male",2007],["Chinstrap","Dream",46.6,17.8,193,3800,"female",2007],["Chinstrap","Dream",51.7,20.3,194,3775,"male",2007],["Chinstrap","Dream",47,17.3,185,3700,"female",2007],["Chinstrap","Dream",52,18.1,201,4050,"male",2007],["Chinstrap","Dream",45.9,17.1,190,3575,"female",2007],["Chinstrap","Dream",50.5,19.6,201,4050,"male",2007],["Chinstrap","Dream",50.3,20,197,3300,"male",2007],["Chinstrap","Dream",58,17.8,181,3700,"female",2007],["Chinstrap","Dream",46.4,18.6,190,3450,"female",2007],["Chinstrap","Dream",49.2,18.2,195,4400,"male",2007],["Chinstrap","Dream",42.4,17.3,181,3600,"female",2007],["Chinstrap","Dream",48.5,17.5,191,3400,"male",2007],["Chinstrap","Dream",43.2,16.6,187,2900,"female",2007],["Chinstrap","Dream",50.6,19.4,193,3800,"male",2007],["Chinstrap","Dream",46.7,17.9,195,3300,"female",2007],["Chinstrap","Dream",52,19,197,4150,"male",2007],["Chinstrap","Dream",50.5,18.4,200,3400,"female",2008],["Chinstrap","Dream",49.5,19,200,3800,"male",2008],["Chinstrap","Dream",46.4,17.8,191,3700,"female",2008],["Chinstrap","Dream",52.8,20,205,4550,"male",2008],["Chinstrap","Dream",40.9,16.6,187,3200,"female",2008],["Chinstrap","Dream",54.2,20.8,201,4300,"male",2008],["Chinstrap","Dream",42.5,16.7,187,3350,"female",2008],["Chinstrap","Dream",51,18.8,203,4100,"male",2008],["Chinstrap","Dream",49.7,18.6,195,3600,"male",2008],["Chinstrap","Dream",47.5,16.8,199,3900,"female",2008],["Chinstrap","Dream",47.6,18.3,195,3850,"female",2008],["Chinstrap","Dream",52,20.7,210,4800,"male",2008],["Chinstrap","Dream",46.9,16.6,192,2700,"female",2008],["Chinstrap","Dream",53.5,19.9,205,4500,"male",2008],["Chinstrap","Dream",49,19.5,210,3950,"male",2008],["Chinstrap","Dream",46.2,17.5,187,3650,"female",2008],["Chinstrap","Dream",50.9,19.1,196,3550,"male",2008],["Chinstrap","Dream",45.5,17,196,3500,"female",2008],["Chinstrap","Dream",50.9,17.9,196,3675,"female",2009],["Chinstrap","Dream",50.8,18.5,201,4450,"male",2009],["Chinstrap","Dream",50.1,17.9,190,3400,"female",2009],["Chinstrap","Dream",49,19.6,212,4300,"male",2009],["Chinstrap","Dream",51.5,18.7,187,3250,"male",2009],["Chinstrap","Dream",49.8,17.3,198,3675,"female",2009],["Chinstrap","Dream",48.1,16.4,199,3325,"female",2009],["Chinstrap","Dream",51.4,19,201,3950,"male",2009],["Chinstrap","Dream",45.7,17.3,193,3600,"female",2009],["Chinstrap","Dream",50.7,19.7,203,4050,"male",2009],["Chinstrap","Dream",42.5,17.3,187,3350,"female",2009],["Chinstrap","Dream",52.2,18.8,197,3450,"male",2009],["Chinstrap","Dream",45.2,16.6,191,3250,"female",2009],["Chinstrap","Dream",49.3,19.9,203,4050,"male",2009],["Chinstrap","Dream",50.2,18.8,202,3800,"male",2009],["Chinstrap","Dream",45.6,19.4,194,3525,"female",2009],["Chinstrap","Dream",51.9,19.5,206,3950,"male",2009],["Chinstrap","Dream",46.8,16.5,189,3650,"female",2009],["Chinstrap","Dream",45.7,17,195,3650,"female",2009],["Chinstrap","Dream",55.8,19.8,207,4000,"male",2009],["Chinstrap","Dream",43.5,18.1,202,3400,"female",2009],["Chinstrap","Dream",49.6,18.2,193,3775,"male",2009],["Chinstrap","Dream",50.8,19,210,4100,"male",2009],["Chinstrap","Dream",50.2,18.7,198,3775,"female",2009]],"investigations":[{"id":"penguins_flippers","bands":["k2","g35"],"kind":"group","group":"species","attr":"flipper","graph":{"x":"species","y":"flipper","anyOrder":true},"question":"Which kind of penguin has the longest flippers?","prompts":["Which column tells you the kind of penguin? Which one tells you how long the flippers are?","Are all the penguins of one kind the same size, or are some bigger than others?","Can you find a penguin from the longest group that has shorter flippers than a penguin from another group?"]},{"id":"penguins_mass","bands":["g35","g68"],"kind":"trend","x":"flipper","y":"mass","causalCaution":true,"graph":{"x":"flipper","y":"mass"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"Do penguins with longer flippers weigh more?","prompts":["Where are the penguins with the longest flippers on your graph? Are they high up or low down?","Some penguins have blank cells. What should you do with them, and why?","Do longer flippers make a penguin heavier, or could both come from something else, like being a bigger species?"]},{"id":"penguins_bills","bands":["g912"],"kind":"free","graph":{"x":"bill_length","y":"bill_depth"},"facts":[{"type":"groupTrend","x":"bill_length","y":"bill_depth","group":"species"}],"question":"How are bill length and bill depth related? Does your answer change when you look at one species at a time?","prompts":["Make the graph, then drag Species into the middle of it to colour the points. What changes?","Inside one colour, which way do the points go? Is it the same way as all the points together?","How can a pattern for everyone point one way while the pattern inside each group points the other way?"]}]},{"id":"faithful","title":"Old Faithful geyser eruptions","description":"How long 272 eruptions of the Old Faithful geyser in Yellowstone National Park lasted, and how long people waited for the next one.","source":{"name":"Old Faithful data in R (datasets::faithful), from W. Härdle","url":"https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/faithful.html","note":"Also studied by Azzalini and Bowman (1990), Applied Statistics 39(3). Times are in minutes. The wait is the time until the next eruption."},"attributes":[{"key":"eruption","name":"Eruption length","unit":"minutes","type":"numeric"},{"key":"wait","name":"Wait until the next eruption","unit":"minutes","type":"numeric"}],"rows":[[3.6,79],[1.8,54],[3.333,74],[2.283,62],[4.533,85],[2.883,55],[4.7,88],[3.6,85],[1.95,51],[4.35,85],[1.833,54],[3.917,84],[4.2,78],[1.75,47],[4.7,83],[2.167,52],[1.75,62],[4.8,84],[1.6,52],[4.25,79],[1.8,51],[1.75,47],[3.45,78],[3.067,69],[4.533,74],[3.6,83],[1.967,55],[4.083,76],[3.85,78],[4.433,79],[4.3,73],[4.467,77],[3.367,66],[4.033,80],[3.833,74],[2.017,52],[1.867,48],[4.833,80],[1.833,59],[4.783,90],[4.35,80],[1.883,58],[4.567,84],[1.75,58],[4.533,73],[3.317,83],[3.833,64],[2.1,53],[4.633,82],[2,59],[4.8,75],[4.716,90],[1.833,54],[4.833,80],[1.733,54],[4.883,83],[3.717,71],[1.667,64],[4.567,77],[4.317,81],[2.233,59],[4.5,84],[1.75,48],[4.8,82],[1.817,60],[4.4,92],[4.167,78],[4.7,78],[2.067,65],[4.7,73],[4.033,82],[1.967,56],[4.5,79],[4,71],[1.983,62],[5.067,76],[2.017,60],[4.567,78],[3.883,76],[3.6,83],[4.133,75],[4.333,82],[4.1,70],[2.633,65],[4.067,73],[4.933,88],[3.95,76],[4.517,80],[2.167,48],[4,86],[2.2,60],[4.333,90],[1.867,50],[4.817,78],[1.833,63],[4.3,72],[4.667,84],[3.75,75],[1.867,51],[4.9,82],[2.483,62],[4.367,88],[2.1,49],[4.5,83],[4.05,81],[1.867,47],[4.7,84],[1.783,52],[4.85,86],[3.683,81],[4.733,75],[2.3,59],[4.9,89],[4.417,79],[1.7,59],[4.633,81],[2.317,50],[4.6,85],[1.817,59],[4.417,87],[2.617,53],[4.067,69],[4.25,77],[1.967,56],[4.6,88],[3.767,81],[1.917,45],[4.5,82],[2.267,55],[4.65,90],[1.867,45],[4.167,83],[2.8,56],[4.333,89],[1.833,46],[4.383,82],[1.883,51],[4.933,86],[2.033,53],[3.733,79],[4.233,81],[2.233,60],[4.533,82],[4.817,77],[4.333,76],[1.983,59],[4.633,80],[2.017,49],[5.1,96],[1.8,53],[5.033,77],[4,77],[2.4,65],[4.6,81],[3.567,71],[4,70],[4.5,81],[4.083,93],[1.8,53],[3.967,89],[2.2,45],[4.15,86],[2,58],[3.833,78],[3.5,66],[4.583,76],[2.367,63],[5,88],[1.933,52],[4.617,93],[1.917,49],[2.083,57],[4.583,77],[3.333,68],[4.167,81],[4.333,81],[4.5,73],[2.417,50],[4,85],[4.167,74],[1.883,55],[4.583,77],[4.25,83],[3.767,83],[2.033,51],[4.433,78],[4.083,84],[1.833,46],[4.417,83],[2.183,55],[4.8,81],[1.833,57],[4.8,76],[4.1,84],[3.966,77],[4.233,81],[3.5,87],[4.366,77],[2.25,51],[4.667,78],[2.1,60],[4.35,82],[4.133,91],[1.867,53],[4.6,78],[1.783,46],[4.367,77],[3.85,84],[1.933,49],[4.5,83],[2.383,71],[4.7,80],[1.867,49],[3.833,75],[3.417,64],[4.233,76],[2.4,53],[4.8,94],[2,55],[4.15,76],[1.867,50],[4.267,82],[1.75,54],[4.483,75],[4,78],[4.117,79],[4.083,78],[4.267,78],[3.917,70],[4.55,79],[4.083,70],[2.417,54],[4.183,86],[2.217,50],[4.45,90],[1.883,54],[1.85,54],[4.283,77],[3.95,79],[2.333,64],[4.15,75],[2.35,47],[4.933,86],[2.9,63],[4.583,85],[3.833,82],[2.083,57],[4.367,82],[2.133,67],[4.35,74],[2.2,54],[4.45,83],[3.567,73],[4.5,73],[4.15,88],[3.817,80],[3.917,71],[4.45,83],[2,56],[4.283,79],[4.767,78],[4.533,84],[1.85,58],[4.25,83],[1.983,43],[2.25,60],[4.75,75],[4.117,81],[2.15,46],[4.417,90],[1.817,46],[4.467,74]],"investigations":[{"id":"faithful_wait","bands":["g68","g912"],"kind":"trend","x":"eruption","y":"wait","causalCaution":true,"graph":{"x":"eruption","y":"wait"},"optUp":"Longer eruptions are followed by longer waits","optDown":"Longer eruptions are followed by shorter waits","optNone":"Eruption length does not tell you about the wait","question":"After a longer eruption, do visitors wait longer or shorter for the next one?","prompts":["Which column goes across the bottom of your graph, and why that one?","Do the points make one cloud or two? What could that mean?","A park ranger just timed a 4-minute eruption. What wait would you tell visitors to expect, and how sure are you?"]},{"id":"faithful_two","bands":["g68","g912"],"kind":"free","graph":{"x":"eruption"},"facts":[{"type":"center","attr":"eruption"},{"type":"nearMean","attr":"eruption","width":0.5}],"question":"Are Old Faithful’s eruptions all about the same length, or are there different kinds?","prompts":["Make a dot plot of eruption length. Where do the dots bunch up?","If the dots make two bunches, how would you describe a “typical” eruption?","Does the average land inside a bunch or between them? Why does that matter?"]}]},{"id":"usPopulation","title":"United States population at each census, 1910–2020","description":"How many people lived in the United States at each ten-year census, and how fast that number grew.","source":{"name":"U.S. Census Bureau, 2020 Census apportionment data","url":"https://www.census.gov/data/tables/time-series/dec/popchange-data-text.html","note":"Resident population on census day. The percent change compares each census with the one ten years before. Density is people per square mile of land."},"attributes":[{"key":"year","name":"Census year","type":"numeric"},{"key":"population","name":"Population","unit":"people","type":"numeric"},{"key":"pct","name":"Change since the last census","unit":"%","type":"numeric"},{"key":"density","name":"People per square mile","type":"numeric"}],"rows":[[1910,92228531,21,26],[1920,106021568,15,29.9],[1930,123202660,16.2,34.7],[1940,132165129,7.3,37.2],[1950,151325798,14.5,42.6],[1960,179323175,18.5,50.6],[1970,203211926,13.3,57.5],[1980,226545805,11.5,64.1],[1990,248709873,9.8,70.4],[2000,281421906,13.2,79.7],[2010,308745538,9.7,87.4],[2020,331449281,7.4,93.8]],"investigations":[{"id":"uspop_growth","bands":["g35","g68"],"kind":"trend","x":"year","y":"population","causalCaution":true,"graph":{"x":"year","y":"population"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"How has the number of people in the United States changed since 1910?","prompts":["How many people lived in the United States in 1910? In 2020? How could you compare them?","Did the population ever go down from one census to the next? How would you check?","Time passing does not make people. What things could make a population grow?"]},{"id":"uspop_rate","bands":["g68","g912"],"kind":"free","graph":{"x":"year","y":"pct"},"facts":[{"type":"extremes","attr":"pct","label":"year"}],"question":"Did the population grow by the same percent every ten years? Which ten years grew the least?","prompts":["Can the population keep growing while the percent change gets smaller? How?","Which census shows the smallest growth? What was happening in the ten years before it?","If the growth rate kept shrinking, what would the population graph look like?"]}]},{"id":"usHouse2020","title":"U.S. states: population and seats in the House, 2020","description":"Each state’s 2020 population and how many of the 435 seats in the U.S. House of Representatives it was given.","source":{"name":"U.S. Census Bureau, 2020 Census apportionment data","url":"https://www.census.gov/data/tables/time-series/dec/popchange-data-text.html","note":"After each census the 435 House seats are shared among the 50 states by population, so Washington, D.C. and Puerto Rico are not in this table. People per seat uses the apportionment population, which also counts federal workers living overseas."},"attributes":[{"key":"state","name":"State","type":"categorical"},{"key":"population","name":"Population in 2020","unit":"people","type":"numeric"},{"key":"seats","name":"Seats in the House","type":"numeric"},{"key":"seat_change","name":"Change in seats since 2010","type":"numeric"},{"key":"per_seat","name":"People per seat","unit":"people","type":"numeric"}],"rows":[["Alabama",5024279,7,0,718579],["Alaska",733391,1,0,736081],["Arizona",7151502,9,0,795436],["Arkansas",3011524,4,0,753439],["California",39538223,52,-1,761091],["Colorado",5773714,8,1,722771],["Connecticut",3605944,5,0,721660],["Delaware",989948,1,0,990837],["Florida",21538187,28,1,770376],["Georgia",10711908,14,0,766091],["Hawaii",1455271,2,0,730069],["Idaho",1839106,2,0,920689],["Illinois",12812508,17,-1,754279],["Indiana",6785528,9,0,754476],["Iowa",3190369,4,0,798102],["Kansas",2937880,4,0,735216],["Kentucky",4505836,6,0,751557],["Louisiana",4657757,6,0,776911],["Maine",1362359,2,0,681791],["Maryland",6177224,8,0,773160],["Massachusetts",7029917,9,0,781497],["Michigan",10077331,13,-1,775726],["Minnesota",5706494,8,0,713719],["Mississippi",2961279,4,0,740979],["Missouri",6154913,8,0,770035],["Montana",1084225,2,1,542704],["Nebraska",1961504,3,0,654444],["Nevada",3104614,4,0,777116],["New Hampshire",1377529,2,0,689545],["New Jersey",9288994,12,0,774541],["New Mexico",2117522,3,0,706740],["New York",20201249,26,-1,777529],["North Carolina",10439388,14,1,746711],["North Dakota",779094,1,0,779702],["Ohio",11799448,15,-1,787257],["Oklahoma",3959353,5,0,792703],["Oregon",4237256,6,1,706917],["Pennsylvania",13002700,17,-1,765403],["Rhode Island",1097379,2,0,549082],["South Carolina",5118425,7,0,732102],["South Dakota",886667,1,0,887770],["Tennessee",6910840,9,0,768544],["Texas",29145505,38,2,767981],["Utah",3271616,4,0,818813],["Vermont",643077,1,0,643503],["Virginia",8631393,11,0,786777],["Washington",7705281,10,0,771595],["West Virginia",1793716,2,-1,897523],["Wisconsin",5893718,8,0,737184],["Wyoming",576851,1,0,577719]],"investigations":[{"id":"house_most","bands":["g35"],"kind":"max","attr":"seats","label":"state","graph":{"x":"seats"},"question":"Which state has the most seats in the U.S. House of Representatives?","prompts":["Which column tells you how many seats a state has?","How could you sort the table so the biggest number comes first?","Is the state with the most seats also the state with the most people? How can you check?"]},{"id":"house_seats","bands":["g68","g912"],"kind":"trend","x":"population","y":"seats","graph":{"x":"population","y":"seats"},"optUp":"It goes up","optDown":"It goes down","optNone":"No clear pattern","question":"Do states with more people get more seats in the House?","prompts":["Does your graph look like a straight line, a curve, or a cloud? What does that tell you?","Find two states with about the same population. Do they have the same number of seats?","Every state gets at least one seat. Where do those states sit on your graph?"]},{"id":"house_fair","bands":["g912"],"kind":"free","graph":{"x":"population","y":"per_seat"},"facts":[{"type":"extremes","attr":"per_seat","label":"state"}],"question":"Does one seat in the House stand for about the same number of people in every state?","prompts":["Which state has the most people per seat, and which has the fewest? How far apart are they?","Seats come in whole numbers. Why does that stop the numbers from being exactly equal?","Are small states or big states more spread out on your graph? Why might that be?"]}]},{"id":"classSurvey","title":"Our class survey (you collect it)","description":"An empty table for data your class collects together. Add one row for each person.","source":{"name":"Your class","url":"","note":"Use first names or numbers only if your teacher says so; you do not need names to answer the question."},"attributes":[{"key":"fruit","name":"Favorite fruit","type":"categorical","entry":{"type":"text"}},{"key":"pets","name":"Number of pets","type":"numeric","entry":{"type":"number","min":0,"max":100}},{"key":"travel","name":"How I get to school","type":"categorical","entry":{"type":"choice","choices":["Walk","Bus","Car","Bike or scooter","Another way"]}}],"rows":[],"investigations":[{"id":"survey_travel","bands":["k2","g35"],"kind":"mode","attr":"travel","graph":{"x":"travel"},"question":"What is the most common way people in our class get to school?","prompts":["How will you count each way of getting to school?","Which graph shows the biggest group best?","Would another class get the same answer? Why or why not?"]},{"id":"survey_pets","bands":["g35","g68"],"kind":"free","graph":{"x":"pets"},"facts":[{"type":"center","attr":"pets"}],"question":"How many pets does a typical student in our class have?","prompts":["What could “typical” mean: the most common number, the middle number, or the average?","Does one person with lots of pets change your answer? Which way of finding “typical” changes most?","How spread out are the numbers? How could you show that on a dot plot?"]}]}];
+  // == fallback catalog end ==
+
+  var standaloneNote = document.getElementById('standaloneNote');
+  var surveyBadge = document.getElementById('surveyBadge');
+  var pasteTitle = document.getElementById('pasteTitle');
+  var pasteData = document.getElementById('pasteData');
+  var pasteStatus = document.getElementById('pasteStatus');
+  var graphBlock = document.getElementById('graphBlock');
+  var graphTask = document.getElementById('graphTask');
+  var graphCheckBtn = document.getElementById('graphCheckBtn');
+  var graphFeedback = document.getElementById('graphFeedback');
+  var surveyBlock = document.getElementById('surveyBlock');
+  var surveyQuestion = document.getElementById('surveyQuestion');
+  var surveyFields = document.getElementById('surveyFields');
+  var surveyStatus = document.getElementById('surveyStatus');
+  var surveyCopyBox = document.getElementById('surveyCopyBox');
+  var surveyPaste = document.getElementById('surveyPaste');
+  var claimChecks = document.getElementById('claimChecks');
+  var scopeSet = document.getElementById('scopeSet');
+  var kindSet = document.getElementById('kindSet');
+
+  var catalog = [];
+  var external = [];  // datasets sent by other tools (openInDataLab) or pasted
+  var band = 'g68';
+  var assignment = null;
+  var surveyInfo = null; // { question } when the teacher shared a class survey
+  function freshInv(dsId, invId) { return { dsId: dsId, invId: invId, prediction: null, loaded: false, attempts: 0, passed: false, revealReady: false, revealed: false, graphAttempts: 0, graphPassed: false }; }
+  var inv = freshInv('', '');
+  var datasetQueue = [];
+  var codapContexts = {};   // dataset id -> CODAP data context names this window made
+  var surveyRows = [];      // class survey answers: this window only, never saved
+  var surveySent = 0;       // how many of surveyRows are already in CODAP
+  var surveySig = '';
+  var graphBusy = false;
+  var recheckTimer = null;
+
+  function allDatasets() { return catalog.concat(external); }
+  function currentDataset() {
+    var list = allDatasets();
+    for (var i = 0; i < list.length; i++) if (list[i].id === inv.dsId) return list[i];
+    return null;
+  }
+  function currentInvestigation() {
+    var ds = currentDataset();
+    if (!ds) return null;
+    if (assignment && assignment.datasetId === ds.id && assignment.customQuestion && inv.invId === 'custom') {
+      return { id: 'custom', kind: 'free', question: assignment.customQuestion, prompts: [S('custom_p1'), S('custom_p2'), S('custom_p3')], bands: [], graph: null, facts: [] };
+    }
+    for (var i = 0; i < ds.investigations.length; i++) if (ds.investigations[i].id === inv.invId) return ds.investigations[i];
+    return null;
+  }
+  function predictionGated() { return !!(currentInvestigation() && requirePrediction() && !inv.prediction); }
+  function requirePrediction() { return !(assignment && assignment.requirePrediction === false && assignment.datasetId === inv.dsId); }
+  function allowReveal() { return !(assignment && assignment.allowReveal === false && assignment.datasetId === inv.dsId); }
+  function isSurvey(ds) { return !!(ds && ds.id === 'classSurvey' && ds.attributes.some(function (a) { return a.entry; })); }
+  function attrName(ds, key) { var i = attrIndex(ds, key); return i < 0 ? key : ds.attributes[i].name; }
+  function listText(items) {
+    try { if (typeof Intl !== 'undefined' && Intl.ListFormat) return new Intl.ListFormat(pageLang, { type: 'conjunction' }).format(items); } catch (_) {}
+    return items.join(', ');
+  }
+
+  // Keep the session's survey answers when the launcher re-sends the catalog,
+  // unless the teacher changed the survey's columns.
+  function adoptSurveyRows() {
+    var ds = null;
+    for (var i = 0; i < catalog.length; i++) if (catalog[i].id === 'classSurvey') ds = catalog[i];
+    if (!ds) return false;
+    var sig = JSON.stringify(ds.attributes.map(function (a) { return [a.name, a.entry || null]; }));
+    var changed = sig !== surveySig;
+    if (changed) { surveySig = sig; surveyRows = []; surveySent = 0; delete codapContexts.classSurvey; }
+    ds.rows = surveyRows;
+    return changed;
+  }
+
+  function receiveReady(data) {
+    applyLang(data.lang || pageLang, data.dir);
+    applyStrings(data.strings);
+    band = /^(k2|g35|g68|g912)$/.test(data.gradeBand) ? data.gradeBand : band;
+    var keepDs = inv.dsId, keepInv = inv.invId;
+    catalog = sanitizeCatalog(data.catalog);
+    var surveyChanged = adoptSurveyRows();
+    standaloneNote.hidden = true;
+    var a = data.assignment;
+    assignment = (a && typeof a === 'object' && typeof a.datasetId === 'string') ? {
+      datasetId: a.datasetId.slice(0, 40), investigationId: typeof a.investigationId === 'string' ? a.investigationId.slice(0, 60) : '',
+      customQuestion: typeof a.customQuestion === 'string' ? a.customQuestion.slice(0, 300) : '',
+      allowReveal: a.allowReveal !== false, requirePrediction: a.requirePrediction !== false
+    } : null;
+    surveyInfo = data.survey && typeof data.survey.question === 'string' ? { question: data.survey.question.slice(0, 200) } : null;
+    renderDatasetOptions();
+    var startNow = pendingStart;
+    pendingStart = '';
+    if (startNow && focusInvestigation(startNow)) { keepDs = inv.dsId; keepInv = inv.invId; }
+    if (assignment && (assignment.datasetId !== keepDs || (assignment.customQuestion ? 'custom' : assignment.investigationId) !== keepInv)) {
+      selectDataset(assignment.datasetId, assignment.customQuestion ? 'custom' : assignment.investigationId);
+    } else if (!assignment && surveyInfo && !keepDs) {
+      selectDataset('classSurvey', '');
+    } else if (keepDs) {
+      renderInvestigation();
+      if (surveyChanged && keepDs === 'classSurvey') renderSurveyFields();
+    }
+    renderAiState();
+    sendPluginStrings();
+  }
+
+  // Open one investigation by id (a learning-path step from the launcher).
+  // A teacher assignment always wins, and an unknown id does nothing.
+  var pendingStart = '';
+  function focusInvestigation(id) {
+    if (typeof id !== 'string' || !/^[A-Za-z0-9_]{1,60}$/.test(id) || assignment) return false;
+    var list = allDatasets();
+    for (var i = 0; i < list.length; i++) {
+      for (var j = 0; j < list[i].investigations.length; j++) {
+        if (list[i].investigations[j].id !== id) continue;
+        if (inv.dsId !== list[i].id || inv.invId !== id) selectDataset(list[i].id, id);
+        invPanel.open = true;
+        try { questionText.setAttribute('tabindex', '-1'); questionText.focus(); } catch (_) {}
+        return true;
+      }
+    }
+    return false;
+  }
+  function renderDatasetOptions() {
+    var keep = inv.dsId;
+    while (datasetSelect.options.length > 1) datasetSelect.remove(1);
+    datasetSelect.options[0].textContent = S('dataset_none');
+    allDatasets().forEach(function (ds) {
+      var o = document.createElement('option');
+      o.value = ds.id;
+      o.textContent = ds.title;
+      datasetSelect.appendChild(o);
+    });
+    datasetSelect.value = keep;
+    datasetSelect.disabled = !!assignment;
+  }
+
+  function bandLabels(bands) { return bands.map(function (b) { return S('band_' + b); }).join(', '); }
+
+  function resetCheckUi() {
+    invPromptIndex = -1;
+    checkBtn.disabled = false;
+    revealBtn.hidden = true;
+    while (cerFeedback.firstChild) cerFeedback.removeChild(cerFeedback.firstChild);
+    while (graphFeedback.firstChild) graphFeedback.removeChild(graphFeedback.firstChild);
+    Array.prototype.forEach.call(claimChecks.querySelectorAll('input'), function (el) { el.checked = false; });
+  }
+
+  function selectDataset(dsId, invId) {
+    inv = freshInv(dsId, '');
+    resetCheckUi();
+    datasetSelect.value = dsId;
+    var ds = currentDataset();
+    if (ds) {
+      var pick = invId;
+      if (!pick || (pick !== 'custom' && !ds.investigations.some(function (i) { return i.id === pick; }))) {
+        var forBand = ds.investigations.filter(function (i) { return i.bands.indexOf(band) !== -1; })[0];
+        pick = (forBand || ds.investigations[0] || {}).id || '';
+      }
+      inv.invId = pick;
+    }
+    cerClaim.value = ''; cerEvidence.value = ''; cerReasoning.value = ''; predictFree.value = '';
+    renderInvestigation();
+    renderSurveyFields();
+  }
+
+  function renderInvestigation() {
+    var ds = currentDataset();
+    var question = currentInvestigation();
+    var assigned = !!(assignment && ds && assignment.datasetId === ds.id);
+    assignedBadge.hidden = !assigned;
+    surveyBadge.hidden = !(ds && ds.surveyQuestion && surveyInfo);
+    surveyBadge.textContent = S('survey_from_teacher');
+    var gated = predictionGated();
+    // The citation's note can state the finding ("seats are shared by population").
+    datasetSource.hidden = !ds || gated;
+    datasetSource.textContent = '';
+    if (ds) {
+      datasetSource.appendChild(document.createTextNode(fill(S('source_line'), { source: ds.source.name || '' }) + (ds.source.note ? ' ' + ds.source.note : '') + ' '));
+      if (ds.source.url) {
+        var link = document.createElement('a');
+        link.href = ds.source.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+        link.textContent = S('source_link');
+        datasetSource.appendChild(link);
+      }
+    }
+    // Question chooser
+    questionBlock.hidden = !ds || (!ds.investigations.length && !(assigned && assignment.customQuestion));
+    while (questionSelect.firstChild) questionSelect.removeChild(questionSelect.firstChild);
+    if (ds) {
+      ds.investigations.forEach(function (q) {
+        var o = document.createElement('option');
+        o.value = q.id;
+        o.textContent = fill(S('question_option'), { bands: bandLabels(q.bands), question: q.question });
+        questionSelect.appendChild(o);
+      });
+      if (assigned && assignment.customQuestion) {
+        var co = document.createElement('option'); co.value = 'custom'; co.textContent = assignment.customQuestion; questionSelect.appendChild(co);
+      }
+      questionSelect.value = inv.invId;
+    }
+    questionSelect.disabled = assigned;
+    questionText.textContent = question ? question.question : '';
+    questionText.hidden = !question;
+    // The chooser folds away once a question is on screen, and opens when none is.
+    if (chooserForQuestion !== !!question) {
+      chooserForQuestion = !!question;
+      chooserFoldLater = !!question && chooseDetails.contains(document.activeElement);
+      if (!chooserFoldLater) chooseDetails.open = !question;
+    }
+    // Step 1: predict (only when there is a question)
+    predictBlock.hidden = !question;
+    renderPredictionChoices(ds, question);
+    // Step 2: explore
+    exploreBlock.hidden = !ds;
+    loadBtn.disabled = gated;
+    renderLoadGate();
+    var prompts = question ? question.prompts : [];
+    promptsBlock.hidden = !prompts.length || gated;
+    while (promptList.firstChild) promptList.removeChild(promptList.firstChild);
+    prompts.forEach(function (p) { var li = document.createElement('li'); li.textContent = p; promptList.appendChild(li); });
+    var target = graphTarget(ds, question);
+    graphBlock.hidden = !target;
+    graphTask.textContent = target ? graphTaskText(target) : '';
+    graphCheckBtn.disabled = gated || graphBusy;
+    surveyBlock.hidden = !isSurvey(ds);
+    surveyQuestion.hidden = !(ds && ds.surveyQuestion);
+    surveyQuestion.textContent = ds && ds.surveyQuestion ? fill(S('survey_question_line'), { question: ds.surveyQuestion }) : '';
+    tableDetails.hidden = gated;
+    if (gated) tableDetails.open = false;
+    renderTable(ds);
+    // Step 3: CER (after a prediction is locked)
+    cerBlock.hidden = !(question && inv.prediction);
+    cerStep.textContent = S(target ? 'step_cer4' : 'step_cer');
+    renderClaimChecks(question);
+    // Step 5 is on demand: the comparison button appears after a passing check
+    // or a second try, never before.
+    revealBtn.hidden = !(question && inv.revealReady && !inv.revealed);
+    if (!inv.revealed) { revealBlock.hidden = true; }
+  }
+
+  // ── Prediction ──────────────────────────────────────────────────────
+  function trendOptions(question) {
+    return [
+      { value: 'up', label: question.optUp || S('opt_up_default') },
+      { value: 'down', label: question.optDown || S('opt_down_default') },
+      { value: 'none', label: question.optNone || S('opt_none_default') }
+    ];
+  }
+  function predictionOptions(ds, question) {
+    if (question.kind === 'trend') return trendOptions(question);
+    if (question.kind === 'max') {
+      var labelIdx = attrIndex(ds, question.label);
+      return labelIdx < 0 ? [] : ds.rows.map(function (r) { return { value: String(r[labelIdx]), label: String(r[labelIdx]) }; });
+    }
+    if (question.kind === 'group') return groupLabels(ds, question.group).map(function (g) { return { value: g, label: g }; });
+    if (question.kind === 'mode') {
+      // The column's own list of choices (the class survey), so a prediction
+      // can be made before anyone has answered.
+      var mi = attrIndex(ds, question.attr);
+      var entry = mi < 0 ? null : ds.attributes[mi].entry;
+      var choices = entry && entry.type === 'choice' ? entry.choices : groupLabels(ds, question.attr);
+      return choices.length ? choices.map(function (c) { return { value: c, label: c }; }) : null;
+    }
+    return null;
+  }
+  var predictionRenderedFor = null;
+  function renderPredictionChoices(ds, question) {
+    var same = predictionRenderedFor === inv;
+    predictionRenderedFor = inv;
+    var oldRadio = predictChoices.querySelector('input[name="prediction"]:checked');
+    var oldSelect = document.getElementById('predSelect');
+    var keepValue = same && !inv.prediction ? (oldRadio ? oldRadio.value : (oldSelect ? oldSelect.value : '')) : '';
+    var keepFocus = same && predictChoices.contains(document.activeElement) ? document.activeElement.id : '';
+    Array.prototype.slice.call(predictChoices.querySelectorAll('.opt, .predict-select')).forEach(function (el) { el.remove(); });
+    predictChoices.hidden = true;
+    predictFreeWrap.hidden = true;
+    lockBtn.hidden = !!inv.prediction;
+    if (!question) return;
+    var opts = predictionOptions(ds, question);
+    if (opts && opts.length > 10) {
+      // A long list (for example 50 states) is one select, not 50 radio buttons.
+      predictChoices.hidden = false;
+      var wrap = document.createElement('div'); wrap.className = 'predict-select';
+      var lab = document.createElement('label'); lab.htmlFor = 'predSelect'; lab.textContent = S('predict_select_label');
+      var sel = document.createElement('select'); sel.id = 'predSelect';
+      var none = document.createElement('option'); none.value = ''; none.textContent = S('predict_select_none'); sel.appendChild(none);
+      opts.forEach(function (o) { var op = document.createElement('option'); op.value = o.value; op.textContent = o.label; sel.appendChild(op); });
+      sel.disabled = !!inv.prediction;
+      if (inv.prediction) sel.value = inv.prediction.value; else if (keepValue) sel.value = keepValue;
+      wrap.appendChild(lab); wrap.appendChild(sel);
+      predictChoices.appendChild(wrap);
+    } else if (opts) {
+      predictChoices.hidden = false;
+      opts.forEach(function (o, i) {
+        var lab2 = document.createElement('label');
+        lab2.className = 'opt';
+        var input = document.createElement('input');
+        input.type = 'radio'; input.name = 'prediction'; input.value = o.value; input.id = 'pred_' + i;
+        input.disabled = !!inv.prediction;
+        input.checked = inv.prediction ? inv.prediction.value === o.value : keepValue === o.value;
+        lab2.appendChild(input);
+        lab2.appendChild(document.createTextNode(o.label));
+        predictChoices.appendChild(lab2);
+      });
+    } else {
+      predictFreeWrap.hidden = false;
+      predictFree.disabled = !!inv.prediction;
+    }
+    predictStatus.textContent = inv.prediction ? fill(S('locked_note'), { prediction: inv.prediction.label }) : '';
+    if (keepFocus && document.getElementById(keepFocus)) { try { document.getElementById(keepFocus).focus(); } catch (_) {} }
+  }
+
+  function lockPrediction() {
+    var question = currentInvestigation();
+    if (!question || inv.prediction) return;
+    if (question.kind === 'free' || !predictionOptions(currentDataset(), question)) {
+      var text = predictFree.value.trim().slice(0, 300);
+      if (!text) { predictStatus.textContent = S('need_prediction'); return; }
+      inv.prediction = { value: text, label: text };
+    } else {
+      var sel = document.getElementById('predSelect');
+      if (sel) {
+        if (!sel.value) { predictStatus.textContent = S('need_prediction'); return; }
+        inv.prediction = { value: sel.value, label: sel.options[sel.selectedIndex].textContent };
+      } else {
+        var checked = predictChoices.querySelector('input[name="prediction"]:checked');
+        if (!checked) { predictStatus.textContent = S('need_prediction'); return; }
+        inv.prediction = { value: checked.value, label: checked.parentNode.textContent };
+      }
+    }
+    renderInvestigation();
+    lockBtn.hidden = true;
+    loadBtn.focus();
+  }
+
+  function renderTable(ds) {
+    while (tableWrap.firstChild) tableWrap.removeChild(tableWrap.firstChild);
+    if (!ds) return;
+    var table = document.createElement('table');
+    var cap = document.createElement('caption');
+    cap.textContent = fill(S('table_caption'), { title: ds.title, rows: ds.rows.length });
+    table.appendChild(cap);
+    var thead = document.createElement('thead'), hr = document.createElement('tr');
+    ds.attributes.forEach(function (a) {
+      var th = document.createElement('th'); th.scope = 'col';
+      th.textContent = a.unit ? a.name + ' (' + a.unit + ')' : a.name;
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr); table.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    if (!ds.rows.length) {
+      var er = document.createElement('tr'), ec = document.createElement('td');
+      ec.colSpan = ds.attributes.length; ec.textContent = S('table_empty'); er.appendChild(ec); tbody.appendChild(er);
+    }
+    ds.rows.slice(0, 500).forEach(function (r) {
+      var tr = document.createElement('tr');
+      r.forEach(function (v) { var td = document.createElement('td'); td.textContent = String(v); tr.appendChild(td); });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+  }
+
+  // ── Sending data to CODAP (through the tutor-link plugin) ────────────
+  function codapDataset(ds) {
+    return { name: ds.title, title: ds.title, attributes: ds.attributes.map(function (a) { return { name: a.name, unit: a.unit, type: a.type }; }), rows: ds.rows };
+  }
+  function flushDatasetQueue() {
+    if (!pluginAlive || !pluginWin) return;
+    while (datasetQueue.length) sendDatasetToCodap(datasetQueue.shift());
+  }
+  function newId(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function sendDatasetToCodap(job) {
+    if (!pluginAlive || !pluginWin) {
+      if (job.fromLoad) loadBusy = false;
+      datasetQueue.push(job);
+      datasetStatus.textContent = S('no_plugin');
+      return;
+    }
+    datasetStatus.textContent = S('loading_data');
+    var id = newId('d');
+    var gen = codapGen;
+    var sentRows = job.ds.rows.length;
+    requestWithTimeout(function () {
+      return toPlugin({ type: 'allodatalab-create-dataset', id: id, dataset: codapDataset(job.ds), graph: !!job.withGraph });
+    }, id, 20000).then(function (res) {
+      if (gen !== codapGen) return;
+      if (job.fromLoad) loadBusy = false;
+      if (res && res.ok) {
+        if (res.name) (codapContexts[job.ds.id] = codapContexts[job.ds.id] || []).push(String(res.name).slice(0, 60));
+        if (job.ds.id === 'classSurvey') surveySent = Math.min(sentRows, surveyRows.length);
+        datasetStatus.textContent = fill(S(job.ds.rows.length ? (res.graph ? 'loaded_data_graph' : 'loaded_data') : 'loaded_empty'), { title: job.ds.title, rows: res.rows || job.ds.rows.length });
+        if (job.starter) {
+          toOpener({ type: 'allodatalab-progress', event: 'dataset-loaded', datasetId: job.ds.id });
+          if (job.ds.id === inv.dsId) { inv.loaded = true; renderInvestigation(); }
+        }
+      } else {
+        datasetStatus.textContent = S('load_failed');
+        var details = document.getElementById('tableDetails'); if (details) details.open = true;
+      }
+    });
+  }
+  function addExternal(clean, sourceName) {
+    external.push(clean);
+    renderDatasetOptions();
+    // A teacher assignment keeps the panel (the dataset menu is locked to it, so
+    // switching away would strand the student); the data still goes to CODAP.
+    if (!assignment) selectDataset(clean.id, '');
+    addMsg('meta', fill(S('incoming_data'), { source: sourceName, title: clean.title }));
+    sendDatasetToCodap({ ds: clean, starter: false });
+  }
+  function receiveExternalDataset(raw) {
+    if (!raw || typeof raw !== 'object') return;
+    var id = 'ext' + (external.length + 1);
+    var clean = sanitizeCatalog([{ id: id, title: raw.title, description: '', source: { name: raw.source || '' }, attributes: (Array.isArray(raw.attributes) ? raw.attributes : []).map(function (a, i) { return { key: 'c' + i, name: a && a.name, unit: a && a.unit, type: a && a.type === 'categorical' ? 'categorical' : 'numeric' }; }), rows: raw.rows, investigations: [] }])[0];
+    if (!clean || !clean.attributes.length) return;
+    addExternal(clean, clean.source.name || S('incoming_source_default'));
+  }
+  // "Paste a table": the working path when data cannot travel by message
+  // (the desktop app) or comes from a spreadsheet.
+  function pasteTable() {
+    var table = tableFromText(pasteData.value, S('paste_column'));
+    if (!table || !table.rows.length) { pasteStatus.textContent = S('paste_bad'); return; }
+    var title = pasteTitle.value.trim().slice(0, 80) || S('paste_default_title');
+    var clean = sanitizeCatalog([{ id: 'ext' + (external.length + 1), title: title, description: '', source: { name: S('paste_source') }, attributes: table.attributes, rows: table.rows, investigations: [] }])[0];
+    if (!clean) { pasteStatus.textContent = S('paste_bad'); return; }
+    pasteStatus.textContent = '';
+    pasteData.value = '';
+    addExternal(clean, S('paste_source'));
+  }
+
+  // ── Class survey: one form, rows kept in this window only ─────────────
+  function renderSurveyFields() {
+    while (surveyFields.firstChild) surveyFields.removeChild(surveyFields.firstChild);
+    var ds = currentDataset();
+    if (!isSurvey(ds)) return;
+    ds.attributes.forEach(function (a, i) {
+      var e = a.entry || { type: 'text' };
+      var id = 'sv_' + i;
+      var lab = document.createElement('label'); lab.htmlFor = id; lab.className = 'field-label'; lab.textContent = a.name;
+      var el;
+      if (e.type === 'choice') {
+        el = document.createElement('select');
+        var none = document.createElement('option'); none.value = ''; none.textContent = S('survey_choose'); el.appendChild(none);
+        (e.choices || []).forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = c; el.appendChild(o); });
+      } else {
+        el = document.createElement('input');
+        el.type = e.type === 'number' ? 'number' : 'text';
+        if (e.type === 'number') { el.setAttribute('inputmode', 'decimal'); el.step = 'any'; if (typeof e.min === 'number') el.min = String(e.min); if (typeof e.max === 'number') el.max = String(e.max); }
+        else el.maxLength = 40;
+        el.autocomplete = 'off';
+      }
+      el.id = id;
+      surveyFields.appendChild(lab);
+      surveyFields.appendChild(el);
+    });
+  }
+  function surveyContext() { var list = codapContexts.classSurvey; return list && list.length ? list[list.length - 1] : ''; }
+  function sendSurveyRows(rows) {
+    var ctxName = surveyContext();
+    var ds = currentDataset();
+    if (!ctxName || !pluginAlive || !pluginWin || !ds) return Promise.resolve(false);
+    var id = newId('a');
+    return requestWithTimeout(function () {
+      return toPlugin({ type: 'allodatalab-add-items', id: id, contextName: ctxName, attributes: ds.attributes.map(function (a) { return { name: a.name }; }), rows: rows });
+    }, id, 8000).then(function (res) { return !!(res && res.ok); });
+  }
+  function addSurveyAnswer() {
+    var ds = currentDataset();
+    if (!isSurvey(ds)) return;
+    var row = [];
+    for (var i = 0; i < ds.attributes.length; i++) {
+      var a = ds.attributes[i], e = a.entry || { type: 'text' };
+      var el = document.getElementById('sv_' + i);
+      var res = surveyValue(e, el ? el.value : '');
+      if (!res.ok) {
+        var key = res.error === 'missing' || res.error === 'not_choice' ? 'survey_missing' : (res.error === 'range' ? 'survey_out_of_range' : 'survey_not_number');
+        surveyStatus.textContent = fill(S(key), { name: a.name, min: e.min, max: e.max });
+        if (el) el.focus();
+        return;
+      }
+      row.push(res.value);
+    }
+    surveyRows.push(row);
+    var inCodap = !!surveyContext();
+    var n = surveyRows.length;
+    surveyStatus.textContent = fill(S('survey_added'), { n: n });
+    ds.attributes.forEach(function (_, j) { var el2 = document.getElementById('sv_' + j); if (el2) el2.value = ''; });
+    var first = document.getElementById('sv_0'); if (first) first.focus();
+    renderTable(ds);
+    if (inCodap) sendSurveyRows([row]).then(function (ok) {
+      if (!ok) return;
+      surveySent = Math.min(surveySent + 1, surveyRows.length);
+      if (surveyRows.length === n) surveyStatus.textContent = fill(S('survey_added_codap'), { n: n });
+    });
+  }
+  function undoSurveyAnswer() {
+    var ds = currentDataset();
+    if (!surveyRows.length) { surveyStatus.textContent = S('survey_nothing_to_undo'); return; }
+    var wasInCodap = surveyRows.length <= surveySent;
+    surveyRows.pop();
+    surveySent = Math.min(surveySent, surveyRows.length);
+    surveyStatus.textContent = fill(S(wasInCodap ? 'survey_undone_codap' : 'survey_undone'), { n: surveyRows.length });
+    renderTable(ds);
+  }
+  function copySurvey() {
+    var ds = currentDataset();
+    if (!isSurvey(ds)) return;
+    var text = rowsToCsv(ds.attributes, surveyRows);
+    function manual() {
+      surveyCopyBox.value = text; surveyCopyBox.hidden = false;
+      surveyStatus.textContent = S('survey_copy_manual');
+      try { surveyCopyBox.focus(); surveyCopyBox.select(); } catch (_) {}
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { surveyCopyBox.hidden = true; surveyStatus.textContent = fill(S('survey_copied'), { n: surveyRows.length }); }, manual);
+        return;
+      }
+    } catch (_) {}
+    manual();
+  }
+  function pasteSurvey() {
+    var ds = currentDataset();
+    if (!isSurvey(ds)) return;
+    var res = surveyRowsFromText(surveyPaste.value, ds.attributes);
+    res.rows.forEach(function (r) { surveyRows.push(r); });
+    surveyPaste.value = '';
+    surveyStatus.textContent = fill(S('survey_pasted'), { added: res.rows.length, skipped: res.skipped });
+    renderTable(ds);
+    if (res.rows.length && surveyContext()) sendSurveyRows(res.rows).then(function (ok) { if (ok) surveySent = Math.min(surveySent + res.rows.length, surveyRows.length); });
+  }
+
+  // ── Make the graph: ask CODAP (documented component API) what is on the axes ──
+  function graphTarget(ds, question) {
+    if (!ds || !question || !question.graph || attrIndex(ds, question.graph.x) < 0) return null;
+    var y = question.graph.y && attrIndex(ds, question.graph.y) >= 0 ? attrName(ds, question.graph.y) : '';
+    return { x: attrName(ds, question.graph.x), y: y, anyOrder: !!question.graph.anyOrder };
+  }
+  function graphTaskText(target) {
+    if (!target.y) return fill(S('graph_task_one'), { x: target.x });
+    if (target.anyOrder) return fill(S('graph_task_pair'), { a: target.x, b: target.y });
+    return fill(S('graph_task_xy'), { x: target.x, y: target.y });
+  }
+  function graphFeedbackText(result, target) {
+    switch (result.status) {
+      case 'pass': return S('graph_pass');
+      case 'no_graph': return S('graph_no_graph');
+      case 'empty_graph': return S('graph_empty');
+      case 'swapped': return fill(S('graph_swapped'), { x: target.x, y: target.y });
+      case 'one_axis': return fill(S('graph_one_axis'), { found: result.found, missing: result.missing });
+      case 'legend_only': return fill(S('graph_legend_only'), { missing: result.missing });
+      case 'wrong_attrs': return fill(S('graph_wrong'), { found: listText(result.found || []), need: listText(target.y ? [target.x, target.y] : [target.x]) });
+      default: return fill(S('graph_unavailable'), { task: graphTaskText(target) });
+    }
+  }
+  function requestGraphReport() {
+    if (!pluginAlive || !pluginWin) return Promise.resolve(null);
+    var id = newId('g');
+    return requestWithTimeout(function () { return toPlugin({ type: 'allodatalab-graph-check', id: id }); }, id, 8000);
+  }
+  function checkMyGraph() {
+    var ds = currentDataset(), question = currentInvestigation();
+    var target = graphTarget(ds, question);
+    if (!target || graphBusy || predictionGated()) return;
+    graphBusy = true;
+    graphCheckBtn.disabled = true;
+    graphFeedback.textContent = S('graph_checking');
+    var forInv = inv;
+    requestGraphReport().then(function (report) {
+      graphBusy = false;
+      if (forInv !== inv) { renderInvestigation(); return; }
+      graphCheckBtn.disabled = !!(requirePrediction() && !inv.prediction);
+      var result = checkGraph(report, target);
+      while (graphFeedback.firstChild) graphFeedback.removeChild(graphFeedback.firstChild);
+      var box = document.createElement('div');
+      box.className = 'note' + (result.status === 'pass' || result.status === 'unavailable' ? '' : ' bad');
+      var p = document.createElement('p'); p.textContent = graphFeedbackText(result, target); box.appendChild(p);
+      if (result.status !== 'unavailable') inv.graphAttempts += 1;
+      // Hint ladder: the named problem first; the step-by-step after a second miss.
+      if (result.status !== 'pass' && (inv.graphAttempts >= 2 || result.status === 'unavailable')) {
+        var steps = document.createElement('p');
+        steps.textContent = fill(S(target.y ? 'graph_steps_two' : 'graph_steps_one'), { x: target.x, y: target.y });
+        box.appendChild(steps);
+      }
+      graphFeedback.appendChild(box);
+      if (result.status === 'pass' && !inv.graphPassed) {
+        inv.graphPassed = true;
+        if (catalog.indexOf(ds) !== -1 && question.id !== 'custom') toOpener({ type: 'allodatalab-progress', event: 'graph-made', investigationId: question.id, passed: true });
+      }
+    });
+  }
+  // CODAP says a component changed: if the student already asked for a check
+  // and has not passed yet, check again (quietly debounced).
+  function onCodapComponentChanged() {
+    if (!inv.graphAttempts || inv.graphPassed || graphBusy) return;
+    if (recheckTimer) clearTimeout(recheckTimer);
+    recheckTimer = setTimeout(function () { recheckTimer = null; checkMyGraph(); }, 800);
+  }
+
+  // ── Claim / evidence / reasoning, then the reveal ─────────────────────
+  var MIS_KEYS = { no_claim: 'mis_no_claim', no_data: 'mis_no_data', no_claim_type: 'mis_no_claim_type', causal: 'mis_causal', beyond: 'mis_beyond', counterexample: 'mis_counterexample', short_reasoning: 'mis_short_reasoning' };
+  function claimQuestionsFor(question) {
+    if (!question) return null;
+    if (question.kind === 'trend') return { scope: true, kind: true };
+    if (question.kind === 'group' || question.kind === 'mode') return { scope: true, kind: false };
+    return null;
+  }
+  function radios(container, name, options) {
+    Array.prototype.slice.call(container.querySelectorAll('.opt')).forEach(function (el) { el.remove(); });
+    options.forEach(function (o, i) {
+      var lab = document.createElement('label'); lab.className = 'opt';
+      var input = document.createElement('input'); input.type = 'radio'; input.name = name; input.value = o; input.id = name + '_' + i;
+      lab.appendChild(input); lab.appendChild(document.createTextNode(S(name + '_' + o)));
+      container.appendChild(lab);
+    });
+  }
+  var claimChecksFor = '';
+  function renderClaimChecks(question) {
+    var q = claimQuestionsFor(question);
+    claimChecks.hidden = !q;
+    if (!q) { claimChecksFor = ''; return; }
+    var sig = question.id + '|' + inv.dsId;
+    if (claimChecksFor === sig) return;
+    claimChecksFor = sig;
+    radios(scopeSet, 'scope', ['most', 'every', 'beyond']);
+    radios(kindSet, 'kind', ['pattern', 'cause']);
+    kindSet.hidden = !q.kind;
+  }
+  function checkedValue(name) { var el = claimChecks.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+  function counterexampleFor(ds, question) {
+    if (question.kind === 'trend') return trendCounterexample(ds, question);
+    if (question.kind === 'group') { var g = evaluateGroup(ds, question); return !g || g.overlap; }
+    // Every single answer is the same one only when there is one kind of answer.
+    if (question.kind === 'mode') { var m = evaluateMode(ds, question); return !m || m.tops.length > 1 || m.n !== m.total; }
+    return false;
+  }
+  function checkThinking() {
+    var ds = currentDataset(), question = currentInvestigation();
+    if (!ds || !question || !inv.prediction || inv.revealed || inv.passed) return;
+    while (cerFeedback.firstChild) cerFeedback.removeChild(cerFeedback.firstChild);
+    if (!ds.rows.length) {
+      // An empty table (the class survey before anyone answers): there is no
+      // data to claim anything about, so this is not a try and earns nothing.
+      var empty = document.createElement('div'); empty.className = 'note bad';
+      var ep = document.createElement('p'); ep.textContent = S('mis_no_rows'); empty.appendChild(ep);
+      cerFeedback.appendChild(empty);
+      return;
+    }
+    var cq = claimQuestionsFor(question);
+    var issues = checkCER({ claim: cerClaim.value, evidence: cerEvidence.value, reasoning: cerReasoning.value }, {
+      attributeNames: ds.attributes.map(function (a) { return a.name; }),
+      claimChecks: !!cq, kindAsked: !!(cq && cq.kind),
+      scope: checkedValue('scope'), claimKind: checkedValue('kind'),
+      causalCaution: question.causalCaution,
+      counterexample: cq ? counterexampleFor(ds, question) : false
+    });
+    inv.attempts += 1;
+    while (cerFeedback.firstChild) cerFeedback.removeChild(cerFeedback.firstChild);
+    var box = document.createElement('div');
+    box.className = 'note' + (issues.length ? ' bad' : '');
+    if (issues.length) {
+      var p = document.createElement('p'); p.textContent = S('revise_heading'); box.appendChild(p);
+      var ul = document.createElement('ul');
+      issues.forEach(function (code) { var li = document.createElement('li'); li.textContent = fill(S(MIS_KEYS[code]), { rows: ds.rows.length }); ul.appendChild(li); });
+      box.appendChild(ul);
+    }
+    var passed = issues.length === 0;
+    if (passed || inv.attempts >= 2) {
+      var done = document.createElement('p');
+      done.textContent = passed ? S('cer_ok') : S('cer_second_try');
+      box.appendChild(done);
+      // Same order in every investigation: check, second try, then the
+      // comparison on demand. Only a passing check counts; after a pass the
+      // check is closed so it cannot be counted twice.
+      inv.revealReady = true;
+      if (passed) {
+        inv.passed = true;
+        checkBtn.disabled = true;
+        toOpener({ type: 'allodatalab-progress', event: 'investigation-done', investigationId: question.id, passed: true });
+      }
+    }
+    cerFeedback.appendChild(box);
+    revealBtn.hidden = !inv.revealReady || inv.revealed;
+  }
+  function showReveal() {
+    var ds = currentDataset(), question = currentInvestigation();
+    if (!ds || !question || !inv.prediction || !inv.revealReady || inv.revealed) return;
+    reveal(ds, question);
+    revealBtn.hidden = true;
+    try { revealHeading.focus(); } catch (_) {}
+  }
+  function fmtNum(n) {
+    try { return new Intl.NumberFormat(pageLang, { maximumFractionDigits: 2 }).format(n); } catch (_) { return String(Math.round(n * 100) / 100); }
+  }
+  // A small rate keeps two significant digits: two decimals turned the Olympic
+  // -0.005 s/year into -0.01, twice its real size.
+  function fmtRate(n) {
+    if (Math.abs(n) >= 1 || n === 0) return fmtNum(n);
+    try { return new Intl.NumberFormat(pageLang, { maximumSignificantDigits: 2 }).format(n); } catch (_) { return String(Number(n.toPrecision(2))); }
+  }
+  function factText(f) {
+    var map = {};
+    Object.keys(f.map).forEach(function (k) {
+      var v = f.map[k];
+      map[k] = Array.isArray(v) ? listText(v) : typeof v === 'number' ? (k === 'rho' ? v.toFixed(2).replace('-', '−') : k === 'rate' ? fmtRate(v) : fmtNum(v)) : v;
+    });
+    return fill(S(f.key), map);
+  }
+  function reveal(ds, question) {
+    inv.revealed = true;
+    checkBtn.disabled = true;
+    while (revealBody.firstChild) revealBody.removeChild(revealBody.firstChild);
+    function line(text) { var p = document.createElement('p'); p.textContent = text; revealBody.appendChild(p); }
+    if (!allowReveal()) { line(S('reveal_hidden')); revealBlock.hidden = false; return; }
+    if (question.kind === 'trend') {
+      var res = evaluateTrend(ds, question);
+      line(fill(S('reveal_trend_' + res.direction), { x: attrName(ds, question.x), y: attrName(ds, question.y) }));
+      if ((band === 'g68' || band === 'g912') && res.rho !== null) line(fill(S('reveal_rho'), { rho: res.rho.toFixed(2).replace('-', '−') }));
+      line(S(inv.prediction.value === res.direction ? 'reveal_match' : 'reveal_mismatch'));
+    } else if (question.kind === 'max') {
+      var top = evaluateMax(ds, question);
+      if (top) line(fill(S('reveal_max'), { attr: attrName(ds, question.attr), label: top.label }));
+      line(S(top && inv.prediction.value === top.label ? 'reveal_match' : 'reveal_mismatch'));
+    } else if (question.kind === 'group') {
+      var g = evaluateGroup(ds, question);
+      if (g) {
+        line(fill(S('reveal_group'), { group: g.top, attr: attrName(ds, question.attr) }));
+        g.groups.forEach(function (row) { line(fill(S('reveal_group_line'), { group: row.label, median: fmtNum(row.median), n: row.n })); });
+      }
+      line(S(g && inv.prediction.value === g.top ? 'reveal_match' : 'reveal_mismatch'));
+    } else if (question.kind === 'mode') {
+      var mf = modeFact(ds, question.attr);
+      line(factText(mf));
+      if (mf.key !== 'reveal_no_rows') {
+        var mm = evaluateMode(ds, question);
+        line(S(mm.tops.indexOf(inv.prediction.value) !== -1 ? 'reveal_match' : 'reveal_mismatch'));
+      }
+    } else {
+      line(fill(S('prediction_free_shown'), { prediction: inv.prediction.label }));
+      revealFacts(ds, question).forEach(function (f) { line(factText(f)); });
+      line(S('reveal_free'));
+    }
+    revealBlock.hidden = false;
+  }
+
+  datasetSelect.addEventListener('change', function () { selectDataset(datasetSelect.value, ''); });
+  questionSelect.addEventListener('change', function () {
+    inv = freshInv(inv.dsId, questionSelect.value);
+    resetCheckUi();
+    renderInvestigation();
+  });
+  lockBtn.addEventListener('click', lockPrediction);
+  chooseDetails.addEventListener('focusout', function (e) {
+    if (!chooserFoldLater || !e.relatedTarget || chooseDetails.contains(e.relatedTarget)) return;
+    chooserFoldLater = false;
+    chooseDetails.open = false;
+  });
+  // Load waits for CODAP: aria-disabled (still focusable) with the reason shown,
+  // then it turns on by itself when the tutor-link plugin says it is alive.
+  function renderLoadGate() {
+    var waiting = !pluginAlive;
+    if (waiting) { loadBtn.setAttribute('aria-disabled', 'true'); loadBtn.setAttribute('aria-describedby', 'loadWait'); }
+    else { loadBtn.removeAttribute('aria-disabled'); loadBtn.removeAttribute('aria-describedby'); }
+    loadWait.hidden = !waiting;
+    var stuck = workspaceFailed || pluginWaitOver;
+    loadWait.textContent = S(stuck ? 'load_wait_failed' : 'load_wait');
+    document.getElementById('loadRetry').hidden = !(waiting && stuck);
+  }
+  loadBtn.addEventListener('click', function () {
+    var ds = currentDataset();
+    if (!ds) return;
+    if (currentInvestigation() && requirePrediction() && !inv.prediction) { predictStatus.textContent = S('need_prediction'); return; }
+    pluginLive();
+    if (loadBtn.getAttribute('aria-disabled') === 'true') {
+      loadWaitClicked = true;
+      datasetStatus.textContent = S(workspaceFailed || pluginWaitOver ? 'load_wait_failed' : 'load_wait');
+      return;
+    }
+    if (loadBusy) return;
+    loadBusy = true;
+    // The plugin also makes an EMPTY graph beside the table when the question
+    // has a graph to make (once per dataset in this CODAP); the student still
+    // drags the columns onto its axes.
+    var inCodap = !!(codapContexts[ds.id] && codapContexts[ds.id].length);
+    sendDatasetToCodap({ ds: ds, starter: catalog.indexOf(ds) !== -1, fromLoad: true, withGraph: !inCodap && !!graphTarget(ds, currentInvestigation()) });
+  });
+  // Phones: CODAP is a tiny frame. Offer the text table, or Data Plot in AlloFlow.
+  var phoneStatus = document.getElementById('phoneStatus');
+  var phoneDataPlotBtn = document.getElementById('phoneDataPlotBtn');
+  document.getElementById('phoneTableBtn').addEventListener('click', function () {
+    var details = tableDetails;
+    if (predictionGated()) {
+      // The table is the data: it waits for Lock too.
+      invPanel.open = true;
+      phoneStatus.textContent = S('need_prediction');
+      var firstChoice = predictChoices.querySelector('input, select');
+      try { (firstChoice || predictFree).focus(); } catch (_) {}
+      return;
+    }
+    if (!currentDataset() || exploreBlock.hidden) {
+      invPanel.open = true; chooseDetails.open = true;
+      try { datasetSelect.focus(); } catch (_) {}
+      return;
+    }
+    invPanel.open = true;
+    details.open = true;
+    var sum = details.querySelector('summary');
+    try { sum.focus(); sum.scrollIntoView({ block: 'start' }); } catch (_) {}
+  });
+  phoneDataPlotBtn.addEventListener('click', function () {
+    checkOpener();
+    if (!openerOk || !toOpener({ type: 'allodatalab-open-tool', tool: 'dataPlot' })) {
+      // Nothing to hand off to: say so, and keep focus on a live button.
+      phoneDataPlotBtn.hidden = true;
+      phoneStatus.textContent = S('state_opener_closed');
+      try { document.getElementById('phoneTableBtn').focus(); } catch (_) {}
+      return;
+    }
+    try { window.opener.focus(); } catch (_) {}
+    phoneStatus.textContent = S('phone_dataplot_sent');
+  });
+  checkBtn.addEventListener('click', checkThinking);
+  revealBtn.addEventListener('click', showReveal);
+  graphCheckBtn.addEventListener('click', checkMyGraph);
+  document.getElementById('pasteBtn').addEventListener('click', pasteTable);
+  document.getElementById('surveyAddBtn').addEventListener('click', addSurveyAnswer);
+  document.getElementById('surveyUndoBtn').addEventListener('click', undoSurveyAnswer);
+  document.getElementById('surveyCopyBtn').addEventListener('click', copySurvey);
+  document.getElementById('surveyPasteBtn').addEventListener('click', pasteSurvey);
+  // Enter in a survey field adds the answer (the form is not a <form>, so no page reload).
+  surveyFields.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') { e.preventDefault(); addSurveyAnswer(); } });
+
+  if (window.location.hostname === 'data-lab.test') {
+    // Real-browser probe seam (only on the test host name).
+    window.__dataLabTest = {
+      loadFirstStarter: function () { if (!catalog.length) return 'no-catalog'; selectDataset(catalog[0].id, ''); sendDatasetToCodap({ ds: catalog[0], starter: true }); return 'sent'; },
+      receiveReady: receiveReady
+    };
+  }
+
+  // Before (or without) the AlloFlow handshake, the English starter catalog
+  // keeps the window useful on its own, e.g. opened from the desktop app.
+  catalog = sanitizeCatalog(FALLBACK_CATALOG);
+  adoptSurveyRows();
+  renderDatasetOptions();
+  // Opened from a learning-path step (?start=<investigation id>).
+  if (!focusInvestigation(params.get('start')) && /^[A-Za-z0-9_]{1,60}$/.test(params.get('start') || '')) pendingStart = params.get('start');
+  setTimeout(function () { if (!openerOk) standaloneNote.hidden = false; }, 2600);
+
   // ── Boot ─────────────────────────────────────────────────────────────
-  addMsg('tutor-msg', 'Welcome to the Data Lab! Build a table or drag in a dataset on the right — I’ll ask questions, not give answers. What are you curious about?');
+  renderAiState();
+  aiStateEl.textContent = S('state_connecting');
+  addMsg('tutor-msg', S('welcome'));
   var hello = function () { toOpener({ type: 'allodatalab-hello' }); };
   hello();
   setTimeout(hello, 900);

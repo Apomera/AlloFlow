@@ -4,7 +4,7 @@
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-typingpractice-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-typingpractice-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-speech-bubble,.tp-battle-stage-default .tp-amb):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:is([style*=\"background: rgb(255, 245, 250)\"],[style*=\"background-color: rgb(255, 245, 250)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-shell,.tp-fest-toggle,.tp-battle-stage-oceanic .tp-amb,.tp-battle-stage-steampunk .tp-amb):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-speech-bubble){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 245, 250)\"],[style*=\"background-color: rgb(255, 245, 250)\"])){color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
+    st.textContent = ".theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-speech-bubble,.tp-battle-stage-default .tp-amb):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:is([style*=\"background: rgb(255, 245, 250)\"],[style*=\"background-color: rgb(255, 245, 250)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-shell,.tp-fest-toggle,.tp-battle-stage-oceanic .tp-amb,.tp-battle-stage-steampunk .tp-amb):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] :is(.tp-fest-speech-bubble){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 245, 250)\"],[style*=\"background-color: rgb(255, 245, 250)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"typingPractice\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -4591,6 +4591,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       __alloTPCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
+        // Student AI-off: AI passage generation and story/prompt images render only when usable.
+        var _aiUsable = function (kind, fn) {
+          try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+          return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        };
+        var _tpAiOn = function (fn, kind) { return ctx.aiAvailable !== false && typeof fn === 'function' && !fn._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable(kind, fn)); };
+        var tpTextAiOn = _tpAiOn(ctx.callGemini, 'text');
+        var tpImageAiOn = _tpAiOn(ctx.callImagen, 'images');
         var React = ctx.React;
         var h = React.createElement;
         var useState = React.useState;
@@ -8035,6 +8043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var isPassage = drill.id === 'passage';
                 var isCustom  = drill.id === 'custom';
                 if (!isPassage && !isCustom) return null;
+                if (!tpImageAiOn) return null;
                 var accKey = isPassage ? 'storyModeImage' : 'promptModeImage';
                 var hintKey = isPassage ? 'story' : 'prompt';
                 if (state.accommodations && state.accommodations[accKey]) return null;
@@ -8435,7 +8444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         };
 
         var generatePassage = function() {
-          var callGemini = ctx.callGemini;
+          var callGemini = tpTextAiOn ? ctx.callGemini : null;
           if (!callGemini) {
             // The newly rendered alert is the single announcement source.
             setGenError('AI generation is not available in this context. Please reload and try again.');
@@ -8870,7 +8879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Actions
             h('div', { role: 'group', 'aria-label': __alloTPT('stem.typingpractice.a11y_passage_generation_actions', 'Passage generation actions'), style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } },
-              h('button', {
+              tpTextAiOn && h('button', {
                 type: 'button',
                 onClick: genLoading ? null : generatePassage,
                 disabled: genLoading,
@@ -10230,7 +10239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         //   caller asked for refinement, use callGeminiImageEdit.
         // - Otherwise use callImagen for a fresh generation.
         var generateVisualForSession = function(promptText, mode, allowRefine) {
-          if (!ctx.callImagen) {
+          if (!tpImageAiOn || !ctx.callImagen) {
             setImgError('Image generation is not available in this context.');
             return;
           }
@@ -11139,6 +11148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var storyEligible = s.drillId === 'passage' && state.accommodations.storyModeImage;
                 var promptEligible = s.drillId === 'custom' && state.accommodations.promptModeImage;
                 if (!storyEligible && !promptEligible) return null;
+                if (!tpImageAiOn) return null;
                 var mode = storyEligible ? 'story' : 'prompt';
                 // Resolve the drill text that was typed — for passages that's
                 // state.aiPassage.text; for custom it's the active library entry.
@@ -11898,8 +11908,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null,
             renderToggleRow('Keep going after mistakes', 'Maintains typing flow after a wrong key, records what differed, and reviews mistakes at the end.', acc.errorTolerant, function() { toggle('errorTolerant', 'Keep going after mistakes'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist', 'Predictive assist'); }, palette),
-            renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage', 'Story mode'); }, palette),
-            renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage', 'Prompt mode'); }, palette),
+            tpImageAiOn && renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage', 'Story mode'); }, palette),
+            tpImageAiOn && renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage', 'Prompt mode'); }, palette),
             renderToggleRow('Assessment mode', 'Hides WPM, accuracy, and timer during the drill. For clinicians running a clean baseline where clock-watching would affect the measurement. Metrics are still saved and shown at the end.', acc.assessmentMode, function() { toggle('assessmentMode', 'Assessment mode'); }, palette),
 
             renderTypingPracticeSettingsAnchor('tp-s-sight', __alloT('stem.typingpractice.sight_read', 'Sight-read'), palette),

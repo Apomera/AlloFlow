@@ -1242,6 +1242,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 return React.createElement("button", { key: s,
 
+                  'aria-pressed': sortOrder === s,
                   onClick: function () { updDS('sortOrder', s); },
 
                   className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all",
@@ -1302,7 +1303,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { onClick: function () { updDS('showTrendline', !showTrendline); },
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { 'aria-pressed': !!showTrendline, onClick: function () { updDS('showTrendline', !showTrendline); },
 
                 className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold ml-auto transition-all",
 
@@ -1736,6 +1737,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             (function () {
 
+              // AI data story renders only when ctx hands a usable callGemini (null when AI is off).
+              if (typeof callGemini !== 'function') return null;
               var aiLevel = d.aiLevel || 'grade5';
 
               var aiStory = d.aiStory || '';

@@ -3336,8 +3336,8 @@
                   el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: 15 }); }, 'aria-pressed': phishMode === 'triage',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
-                  // AI Case Generator Button
-                  el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
+                  // AI Case Generator Button (hidden when the host has no usable text AI)
+                  !!(ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked) && el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: aiGeneratedEmail ? '2px solid #a855f7' : '2px solid rgba(168,85,247,0.3)', background: aiGeneratedEmail ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.08))', color: aiGeneratedEmail ? '#c084fc' : '#a78bfa', fontSize: 12, fontWeight: 800, cursor: aiEmailLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', opacity: aiEmailLoading ? 0.6 : 1, animation: aiEmailLoading ? 'pulse 1.5s ease-in-out infinite' : 'none' } },
                     el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? 'New AI Case' : 'AI Case'))
                 ),
@@ -4004,8 +4004,8 @@
                     style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83C\uDFAD Next Scenario \u2192')
                 ),
-                // AI Threat Briefing
-                el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.15)' } },
+                // AI Threat Briefing (AI-only: hidden when aiChat is unavailable)
+                !!(ctx.aiAvailable !== false && ctx.aiChat) && el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.15)' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800 } }, '\uD83E\uDD16 AI Threat Briefing'),
                     el('button', { onClick: function() {
@@ -4013,6 +4013,7 @@
                         upd('threatLoading', true);
                         ctx.aiChat('You are a cybersecurity educator. Generate a brief, engaging "Daily Threat Briefing" for a student. Include: 1) A real-world attack type (name it), 2) How it works in 2-3 sentences, 3) One defense tip. Keep it under 120 words. Use a serious but approachable tone. Format with line breaks.', function(resp) {
                           upd({ threatBriefing: resp, threatLoading: false });
+                          if (!resp || !String(resp).trim()) return; // XP only for a real briefing (aiChat hands back null on failure)
                           ctx.awardXP('cyberDefense', 3);
                           if (ctx.addToast) ctx.addToast('\uD83E\uDD16 +3 XP! Threat briefing received', 'info');
                         });
@@ -6125,7 +6126,7 @@
                             title: t('stem.cyberdefense.read_aloud_text_to_speech', 'Read aloud (text-to-speech)'),
                             style: { padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                             '\uD83D\uDD0A Read'),
-                          ctx.callGemini && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
+                          ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
                             onClick: generateAIRedCard, disabled: warRoomAICardLoading,
                             'aria-label': t('stem.cyberdefense.generate_a_new_ai_red_team_scenario', 'Generate a new AI red team scenario'),
                             title: t('stem.cyberdefense.ask_the_ai_to_generate_a_fresh_scenari', 'Ask the AI to generate a fresh scenario for this stage. Only available before playing any defenses.'),

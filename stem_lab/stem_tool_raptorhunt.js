@@ -272,13 +272,14 @@
     '@media(prefers-reduced-motion:reduce){.rh-hero-action,.rh-quick-card,.rh-quick-arrow,.rh-category-card,.rh-collection-action,.rh-collection-card,.rh-collection-card-arrow{transition:none!important;}.rh-hero-action:hover,.rh-quick-card:hover,.rh-category-card:hover,.rh-collection-action:hover,.rh-collection-card:hover{transform:none!important;}.rh-collection-card:hover .rh-collection-card-arrow{transform:translateY(-50%);}}',
     '@media(forced-colors:active){.rh-collection-hero,.rh-collection-progress-card,.rh-collection-directory,.rh-collection-card,.rh-collection-card-icon,.rh-collection-progress-track{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-collection-kicker,.rh-collection-directory-kicker,.rh-collection-title,.rh-collection-desc,.rh-collection-progress-head,.rh-collection-progress-head strong,.rh-collection-progress-copy,.rh-collection-progress-copy strong,.rh-collection-next span,.rh-collection-next strong,.rh-collection-directory-head h2,.rh-collection-directory-head>span,.rh-collection-card-index,.rh-collection-card-copy strong,.rh-collection-card-copy>span,.rh-collection-card-status,.rh-collection-card-arrow{color:CanvasText}.rh-collection-progress-track>span{background:Highlight}.rh-collection-action{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-collection-card[data-section-state="next"],.rh-collection-card[data-section-state="visited"]{border-color:Highlight;}}'
   ].join('');
-  st.textContent += "\n.rh-practice-toggle{position:absolute;right:12px;bottom:12px;z-index:24;min-height:42px;padding:9px 14px;border:1px solid #8eacb5;border-radius:8px;background:rgba(15,23,42,.86);color:#e5f5f3;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer}.rh-practice-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8}.rh-practice-toggle:focus-visible{outline:3px solid #f5d897;outline-offset:3px}.rh-practice-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;max-width:calc(100% - 40px);padding:10px 20px;border:1px solid rgba(234,213,165,.4);border-radius:12px;background:rgba(11,24,33,.82);color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15)}.rh-practice-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-practice-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-practice-track{display:flex;justify-content:center;align-items:center;gap:7px;margin:8px 0}.rh-practice-track .rh-practice-pip{display:grid;place-items:center;width:22px;height:22px;margin:0;border:1px solid #788c96;border-radius:50%;font:600 10px/1 ui-monospace,monospace;color:#c4d2d7;background:#172a36}.rh-practice-pip[data-state=current]{border-color:#ffd18b!important;color:#ffe6b6!important;box-shadow:0 0 0 3px rgba(255,209,139,.13)}.rh-practice-pip[data-state=centered],.rh-practice-pip[data-state=passed]{border-color:#8ee4c0!important;background:#173d35!important;color:#bbffe3!important}.rh-practice-pip[data-state=missed]{border-color:#d5a896!important;color:#ffd1ba!important}.rh-practice-track .rh-practice-score{margin:0 0 0 5px;padding-left:10px;border-left:1px solid #647782;color:#ffe5af;font:600 11px/1.4 ui-sans-serif,system-ui;white-space:nowrap}.rh-practice-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-practice-hud{top:18px}[data-raptor-flight-trail=\"true\"] .rh-flight-reticle,[data-raptor-flight-trail=\"true\"] .rh-flight-target-cue,[data-raptor-flight-trail=\"true\"] .rh-flight-lock-meters,[data-raptor-flight-trail=\"true\"] .rh-flight-mission-hud{display:none!important}@media(max-width:760px){.rh-practice-toggle{bottom:64px;right:8px;padding:8px 10px;font-size:11px}[data-raptor-scenic-view=\"true\"] .rh-practice-toggle{bottom:12px}.rh-practice-hud{top:118px;width:245px;padding:8px 12px}}@media(forced-colors:active){.rh-practice-toggle,.rh-practice-hud{background:Canvas;color:CanvasText;border-color:CanvasText}}\n";
+  st.textContent += "\n.rh-practice-toggle{position:absolute;right:12px;bottom:12px;z-index:24;min-height:42px;padding:9px 14px;border:1px solid #8eacb5;border-radius:8px;background:rgba(15,23,42,.86);color:#e5f5f3;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer}.rh-practice-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8}.rh-practice-toggle:focus-visible{outline:3px solid #f5d897;outline-offset:3px}@media (min-width:821px){[data-raptor-perched=true] .rh-perch-hud{left:auto;right:64px;transform:none;top:92px;width:280px}}.rh-hunter-cue{position:absolute;left:50%;bottom:66px;transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid #fca5a5;border-radius:999px;background:rgba(40,12,12,.86);color:#fee2e2;font:600 13px/1.3 ui-sans-serif,system-ui;pointer-events:none;white-space:nowrap}.rh-hunter-arrow{display:inline-block;font-size:17px;line-height:1}.rh-hunter-cue[data-hunter-state=far]{border-color:#64748b;background:rgba(15,23,42,.72);color:#e2e8f0}.rh-hunter-cue[data-hunter-state=resting]{border-color:#6ee7b7;background:rgba(6,40,30,.86);color:#d1fae5}.rh-hunter-cue[data-hunter-state=near]{background:#b91c1c;color:#fff;border-color:#fff}[data-raptor-scenic-view=true] .rh-hunter-cue{display:none}@media (forced-colors:active){.rh-hunter-cue,.rh-hunter-cue[data-hunter-state]{background:Canvas;color:CanvasText;border-color:CanvasText}}@media (min-width:821px){.rh-practice-hud[data-trail-state=flying]{left:auto;right:64px;transform:none;top:92px;width:264px}}.rh-practice-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;max-width:calc(100% - 40px);padding:10px 20px;border:1px solid rgba(234,213,165,.4);border-radius:12px;background:rgba(11,24,33,.82);color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15)}.rh-practice-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-practice-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-practice-track{display:flex;justify-content:center;align-items:center;gap:7px;margin:8px 0}.rh-practice-track .rh-practice-pip{display:grid;place-items:center;width:22px;height:22px;margin:0;border:1px solid #788c96;border-radius:50%;font:600 10px/1 ui-monospace,monospace;color:#c4d2d7;background:#172a36}.rh-practice-pip[data-state=current]{border-color:#ffd18b!important;color:#ffe6b6!important;box-shadow:0 0 0 3px rgba(255,209,139,.13)}.rh-practice-pip[data-state=centered],.rh-practice-pip[data-state=passed]{border-color:#8ee4c0!important;background:#173d35!important;color:#bbffe3!important}.rh-practice-pip[data-state=missed]{border-color:#d5a896!important;color:#ffd1ba!important}.rh-practice-track .rh-practice-score{margin:0 0 0 5px;padding-left:10px;border-left:1px solid #647782;color:#ffe5af;font:600 11px/1.4 ui-sans-serif,system-ui;white-space:nowrap}.rh-practice-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-practice-hud{top:18px}[data-raptor-flight-trail=\"true\"] .rh-flight-reticle,[data-raptor-flight-trail=\"true\"] .rh-flight-target-cue,[data-raptor-flight-trail=\"true\"] .rh-flight-lock-meters,[data-raptor-flight-trail=\"true\"] .rh-flight-mission-hud{display:none!important}@media(max-width:760px){.rh-practice-toggle{bottom:64px;right:8px;padding:8px 10px;font-size:11px}[data-raptor-scenic-view=\"true\"] .rh-practice-toggle{bottom:12px}.rh-practice-hud{top:118px;width:245px;padding:8px 12px}}@media(forced-colors:active){.rh-practice-toggle,.rh-practice-hud{background:Canvas;color:CanvasText;border-color:CanvasText}}\n";
   st.textContent += '@media(max-width:760px){[data-raptor-flight-trail=true] .rh-flight-heading,[data-raptor-flight-trail=true] .rh-flight-attitude{display:none!important}}.rh-practice-hud[data-trail-state=grounded],.rh-practice-hud[data-trail-state=recovering]{border-color:#fbbf24}.rh-practice-hud[data-trail-state=grounded] .rh-practice-hint,.rh-practice-hud[data-trail-state=recovering] .rh-practice-hint{color:#fef3c7}.rh-practice-hud[data-trail-state=paused]{border-color:#93c5fd}.rh-practice-hud[data-trail-state=paused] .rh-practice-hint{color:#dbeafe}@media(forced-colors:active){.rh-practice-hud[data-trail-state],.rh-practice-hud[data-trail-state] .rh-practice-hint{border-color:CanvasText;color:CanvasText}}';
   st.textContent += '.rh-practice-hud .rh-practice-hint{color:#fff0cf;font-weight:600}.rh-practice-hud .rh-practice-feedback{margin-top:7px;padding-top:6px;border-top:1px solid #536873;color:#bad3d5;font-size:11px;line-height:1.35}.rh-practice-hud .rh-practice-feedback[data-feedback-tone=passed]{color:#a7ebcb}.rh-practice-hud .rh-practice-feedback[data-feedback-tone=missed]{color:#ffd1ba}@media(max-width:760px){.rh-practice-hud .rh-practice-feedback{position:absolute;top:-54px;right:0;box-sizing:border-box;width:124px;margin:0;padding:5px 7px;border:1px solid #536873;border-radius:8px;background:rgba(11,24,33,.94);font-size:10px;line-height:1.3}[data-raptor-scenic-view=true] .rh-practice-hud .rh-practice-feedback{position:static;width:auto;margin-top:7px;padding:6px 0 0;border:0;border-top:1px solid #536873;border-radius:0;background:transparent}}@media(forced-colors:active){.rh-practice-hud .rh-practice-hint,.rh-practice-hud .rh-practice-feedback[data-feedback-tone]{color:CanvasText;border-color:CanvasText}}';
   st.textContent += '@media(max-width:760px){.rh-practice-hud[data-trail-state=flying]{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;text-align:left}.rh-practice-hud[data-trail-state=flying]>strong{font-size:12px;letter-spacing:0;grid-column:1;grid-row:1}.rh-practice-hud[data-trail-state=flying] .rh-practice-track{display:contents}.rh-practice-hud[data-trail-state=flying] .rh-practice-pip{position:absolute;width:1px;height:1px;padding:0;border:0!important;clip-path:inset(50%);overflow:hidden;white-space:nowrap}.rh-practice-hud[data-trail-state=flying] .rh-practice-score{grid-column:2;grid-row:1;margin:0;padding:0;border:0;font-size:10px;align-self:center}.rh-practice-hud[data-trail-state=flying] .rh-practice-hint{grid-column:1/-1;margin:0;font-size:11px;line-height:1.35}.rh-practice-hud[data-trail-state=flying] .rh-practice-best,[data-raptor-scenic-view=true] .rh-practice-hud[data-trail-state=flying] .rh-practice-feedback{grid-column:1/-1}}';
     st.textContent += ".rh-practice-hud[data-complete=true]{width:340px;max-width:calc(100% - 32px);box-sizing:border-box;background:rgba(11,24,33,.96);border-color:#b89960;box-shadow:0 12px 32px rgba(0,0,0,.3)}.rh-practice-hud .rh-practice-best{font-size:11px;color:#bad6d6;margin-top:6px}.rh-practice-coach{margin:10px 0;color:#e4eceb;font:12px/1.5 system-ui}.rh-practice-actions{display:flex;flex-wrap:wrap;gap:8px;pointer-events:auto}.rh-practice-actions button{flex:1;min-height:42px;padding:8px 10px;border:1px solid #668788;border-radius:8px;background:#203b43;color:#f0f6f4;font:600 12px/1.35 system-ui;cursor:pointer}.rh-practice-actions button:first-child{background:#f2cd88;color:#182d33;border-color:#f2cd88}.rh-practice-actions button:hover{filter:brightness(1.12)}.rh-practice-actions button:focus-visible{outline:3px solid #fff;outline-offset:3px}.rh-practice-actions button:disabled{opacity:.55;cursor:default}.rh-practice-hud [hidden]{display:none!important}@media(forced-colors:active){.rh-practice-hud[data-complete=true],.rh-practice-actions button,.rh-practice-actions button:first-child{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-practice-hud .rh-practice-best,.rh-practice-coach{color:CanvasText}.rh-practice-actions button:focus-visible{outline-color:Highlight}}";
   st.textContent += "@media(max-width:760px){[data-raptor-trail-result=true] .rh-practice-hud{top:78px}[data-raptor-trail-result=true][data-raptor-scenic-view=true] .rh-practice-hud{top:18px}[data-raptor-trail-result=true] .rh-flight-heading,[data-raptor-trail-result=true] .rh-flight-attitude,[data-raptor-trail-result=true] .rh-flight-state,[data-raptor-trail-result=true] .rh-flight-wind,[data-raptor-trail-result=true] .rh-flight-altitude-gauge,[data-raptor-trail-result=true] .rh-flight-mission-hud,[data-raptor-trail-result=true] .rh-flight-target-cue,[data-raptor-trail-result=true] .rh-flight-lock-meters,[data-raptor-trail-result=true] .rh-flight-reticle{display:none!important}}";
-  st.textContent += "\n[data-raptor-perched=\"true\"] .rh-flight-mission-hud{display:none!important}.rh-perch-toggle{bottom:60px}.rh-perch-toggle:disabled{opacity:.68;cursor:default}.rh-perch-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-perch-hud{top:18px}.rh-perch-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-perch-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-perch-hud{position:absolute;top:92px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;border:1px solid;border-radius:12px;color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15);width:350px;max-width:calc(100% - 40px);padding:12px 18px;border-color:#a5baa0;background:rgba(16,32,30,.94)}.rh-perch-hud .rh-perch-keys{margin-top:8px;color:#f4dda8;font-weight:600}@media(max-width:760px){[data-raptor-perched=\"true\"] .rh-flight-heading,[data-raptor-perched=\"true\"] .rh-flight-attitude{display:none!important}.rh-perch-toggle{bottom:112px}[data-raptor-scenic-view=\"true\"] .rh-perch-toggle{bottom:60px}.rh-perch-hud{top:118px;width:270px}}\n";
+  st.textContent += "\n[data-raptor-perched=\"true\"] .rh-flight-mission-hud{display:none!important}.rh-perch-toggle{bottom:60px}.rh-perch-toggle:disabled{opacity:.68;cursor:default}.rh-perch-hud[hidden]{display:none}[data-raptor-scenic-view=\"true\"] .rh-perch-hud{top:18px}.rh-perch-hud strong{display:block;font:600 15px/1.4 ui-sans-serif,system-ui;letter-spacing:.03em}.rh-perch-hud span{display:block;margin-top:3px;font:12px/1.4 ui-sans-serif,system-ui;color:#d0dfdf}.rh-perch-hud{position:absolute;top:124px;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;border:1px solid;border-radius:12px;color:#fff0cf;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15);width:350px;max-width:calc(100% - 40px);padding:12px 18px;border-color:#a5baa0;background:rgba(16,32,30,.94)}.rh-perch-hud .rh-perch-keys{margin-top:8px;color:#f4dda8;font-weight:600}@media(max-width:760px){[data-raptor-perched=\"true\"] .rh-flight-heading,[data-raptor-perched=\"true\"] .rh-flight-attitude{display:none!important}.rh-perch-toggle{bottom:112px}[data-raptor-scenic-view=\"true\"] .rh-perch-toggle{bottom:60px}.rh-perch-hud{top:118px;width:270px}}\n";
+  st.textContent += ".rh-mode-fieldset{margin:0 0 12px;padding:0;border:0;min-width:0}.rh-mode-legend{margin-bottom:6px;padding:0;color:#fde68a;font:800 13px/1.4 ui-sans-serif,system-ui}.rh-mode-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}.rh-mode-card{position:relative;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f1f5f9;cursor:pointer}.rh-mode-card:hover{border-color:#cbd5e1}.rh-mode-card input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.rh-mode-card[data-selected=true]{border:2px solid #fbbf24;padding:9px 11px;background:#1e293b}.rh-mode-card:has(input:focus-visible){outline:3px solid #67e8f9;outline-offset:2px}.rh-mode-name{font:800 13px/1.3 ui-sans-serif,system-ui}.rh-mode-check{color:#fde68a}.rh-mode-tag{color:#cbd5e1;font:500 12px/1.4 ui-sans-serif,system-ui}.rh-mode-level{color:#fde68a;font:700 11px/1.3 ui-sans-serif,system-ui}.rh-mode-guide{padding:14px;border:1px solid #38bdf8;border-radius:12px;background:#0b1622;color:#e2e8f0}.rh-mode-guide-title{margin:0 0 10px;color:#fff;font:800 16px/1.3 ui-sans-serif,system-ui}.rh-mode-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 18px}.rh-mode-guide h5{margin:0 0 3px;color:#7dd3fc;font:800 12px/1.4 ui-sans-serif,system-ui}.rh-mode-guide p{margin:0;font:400 13px/1.55 ui-sans-serif,system-ui}.rh-mode-guide .rh-mode-sources{margin-top:12px;padding-top:8px;border-top:1px solid #334155;color:#b6c4d4;font-size:11px;line-height:1.5}@media(forced-colors:active){.rh-mode-card[data-selected=true]{border-color:Highlight}}";
   st.textContent += "\n.rh-scenic-toggle{position:absolute;z-index:24;left:12px;bottom:12px;min-height:40px;padding:9px 13px;border:1px solid #94a3b8;border-radius:8px;background:rgba(15,23,42,.82);color:#f1f5f9;font:600 12px/1.4 ui-sans-serif,system-ui;cursor:pointer;}\n.rh-scenic-toggle[aria-pressed=\"true\"]{border-color:#e8c47f;color:#f5e6c8;}\n[data-raptor-scenic-view=\"true\"] .rh-flight-telemetry-strip,[data-raptor-scenic-view=\"true\"] .rh-flight-key-guide,[data-raptor-scenic-view=\"true\"] .rh-flight-state,[data-raptor-scenic-view=\"true\"] .rh-flight-wind,[data-raptor-scenic-view=\"true\"] .rh-flight-heading,[data-raptor-scenic-view=\"true\"] .rh-flight-attitude,[data-raptor-scenic-view=\"true\"] .rh-flight-altitude-gauge,[data-raptor-scenic-view=\"true\"] .rh-flight-reticle,[data-raptor-scenic-view=\"true\"] .rh-flight-target-cue,[data-raptor-scenic-view=\"true\"] .rh-flight-lock-meters,[data-raptor-scenic-view=\"true\"] .rh-flight-marker,[data-raptor-scenic-view=\"true\"] .rh-flight-mission-hud{display:none!important;}\n@media(max-width:760px){.rh-scenic-toggle{bottom:64px;left:8px;min-height:40px;padding:8px;font-size:11px;}[data-raptor-scenic-view=\"true\"] .rh-scenic-toggle{bottom:12px;}}\n@media(forced-colors:active){.rh-scenic-toggle,.rh-scenic-toggle[aria-pressed=\"true\"]{background:ButtonFace;color:ButtonText;border-color:ButtonText;}}\n";
   st.textContent += `
 
@@ -1057,10 +1058,10 @@
     '.rh-flight-pause{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.72);backdrop-filter:blur(3px);pointer-events:none;}',
     '.rh-flight-pause[data-visible="true"]{display:flex;}',
     '.rh-flight-pause-card{border:2px solid #67e8f9;border-radius:14px;background:rgba(15,23,42,.96);padding:18px 24px;color:#ecfeff;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.4);}',
-    '.rh-flight-mission-hud{position:absolute;right:10px;top:104px;bottom:auto;z-index:8;max-width:min(330px,48%);border:2px solid #fbbf24;border-radius:10px;background:rgba(15,23,42,.94);padding:9px 12px;color:#f8fafc;font:700 11px/1.35 ui-sans-serif,system-ui;pointer-events:none;}.rh-flight-mission-progress{display:block;}.rh-flight-mission-focus{display:block;margin-top:5px;padding-top:5px;border-top:1px solid rgba(251,191,36,.34);color:#fef3c7;font:800 9px/1.25 ui-sans-serif,system-ui;letter-spacing:.05em;text-transform:uppercase;}.rh-flight-mission-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,.24);}.rh-flight-mission-route-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;color:#64748b;font:800 7px/1.05 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;text-align:center;}.rh-flight-mission-route-step:not(:last-child)::after{content:"";position:absolute;z-index:0;top:4px;left:calc(50% + 6px);right:calc(-50% + 2px);border-top:1px solid rgba(100,116,139,.45);}.rh-flight-mission-route-dot{position:relative;z-index:1;display:block;width:8px;height:8px;border:2px solid #475569;border-radius:50%;background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.9);}.rh-flight-mission-route-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-mission-route-step[data-route-state="current"]{color:#fef3c7;}.rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fde68a;background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.2),0 0 10px rgba(251,191,36,.58);}.rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-route-step[data-route-state="complete"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-step{color:#a7f3d0;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"]{color:#fecaca;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fca5a5;background:#f87171;}',
+    '.rh-flight-mission-hud{position:absolute;right:10px;top:104px;bottom:auto;z-index:8;width:min(306px,48%);max-width:min(330px,48%);border:2px solid #fbbf24;border-radius:10px;background:rgba(15,23,42,.94);padding:9px 12px;color:#f8fafc;font:700 11px/1.35 ui-sans-serif,system-ui;pointer-events:none;}.rh-flight-mission-progress{display:block;}.rh-flight-mission-focus{display:block;margin-top:5px;padding-top:5px;border-top:1px solid rgba(251,191,36,.34);color:#fef3c7;font:800 9px/1.25 ui-sans-serif,system-ui;letter-spacing:.05em;text-transform:uppercase;}.rh-flight-mission-route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid rgba(148,163,184,.24);}.rh-flight-mission-route-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;color:#64748b;font:800 7px/1.05 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;text-align:center;}.rh-flight-mission-route-step:not(:last-child)::after{content:"";position:absolute;z-index:0;top:4px;left:calc(50% + 6px);right:calc(-50% + 2px);border-top:1px solid rgba(100,116,139,.45);}.rh-flight-mission-route-dot{position:relative;z-index:1;display:block;width:8px;height:8px;border:2px solid #475569;border-radius:50%;background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.9);}.rh-flight-mission-route-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-mission-route-step[data-route-state="current"]{color:#fef3c7;}.rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fde68a;background:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.2),0 0 10px rgba(251,191,36,.58);}.rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-route-step[data-route-state="complete"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-step{color:#a7f3d0;}.rh-flight-mission-route[data-route-outcome="success"] .rh-flight-mission-route-dot{border-color:#6ee7b7;background:#34d399;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"]{color:#fecaca;}.rh-flight-mission-route[data-route-outcome="failed"] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:#fca5a5;background:#f87171;}',
     '.rh-flight-mission-hud[data-hunt-step]{--hunt-accent:#8dd6df;border:1px solid var(--hunt-accent);background:linear-gradient(145deg,#102c35,#0b1722);box-shadow:0 6px 18px rgba(0,0,0,.16);}.rh-flight-mission-hud[data-hunt-step="success"],.rh-flight-mission-hud[data-hunt-step="strike"]{--hunt-accent:#9be7bb;}.rh-flight-mission-hud[data-hunt-step="reset"]{--hunt-accent:#f2d092;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-progress{font:700 9px/1.4 ui-sans-serif,system-ui;color:#c1d5dc;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-phase{display:block;margin-top:5px;font:800 12px/1.3 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;color:var(--hunt-accent);}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-focus{margin-top:5px;padding-top:0;border:0;font:500 10px/1.4 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;color:#e3edf0;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step{font-size:8px;color:#b2c4cd;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-label{font-size:8px;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="current"]{color:#fff;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="complete"]{color:#a7f3d0;}.rh-flight-mission-hud[data-hunt-step] .rh-flight-mission-route-step[data-route-state="current"] .rh-flight-mission-route-dot{border-color:var(--hunt-accent);background:var(--hunt-accent);box-shadow:0 0 0 2px rgba(141,214,223,.14);}',
     '.rh-flight-touch-hint{display:none;position:absolute;z-index:18;left:50%;bottom:22px;transform:translateX(-50%);align-items:center;gap:8px;padding:7px 10px;border:1px solid rgba(103,232,249,.58);border-radius:999px;background:rgba(2,6,23,.82);color:#ecfeff;box-shadow:0 8px 22px rgba(2,6,23,.28);font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;pointer-events:none;white-space:nowrap;}.rh-flight-touch-hint::before{content:"↔";display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:1px solid rgba(103,232,249,.72);border-radius:50%;color:#67e8f9;font:900 12px/1 ui-sans-serif,system-ui;}.rh-flight-touch-hint-detail{color:#bae6fd;font:700 8px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:none;}.rh-flight-touch-hint[data-visible="true"]{display:inline-flex;}.rh-flight-touch-hint[data-visible="true"]::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(103,232,249,.22);border-radius:inherit;animation:rhTouchHintPulse 2.2s ease-in-out infinite;}@keyframes rhTouchHintPulse{0%,100%{opacity:.25;transform:scale(.98);}50%{opacity:.7;transform:scale(1.02);}}',
-    '@media(max-width:760px){.rh-flight-mission-hud{max-width:min(360px,64%);}.rh-flight-mission-route-step{font-size:6px;}}@media(max-width:430px){.rh-flight-mission-hud{right:7px;bottom:8px;max-width:calc(100% - 14px);padding:8px 9px;}.rh-flight-mission-route{gap:2px;}.rh-flight-mission-route-label{font-size:6px;}}',
+    '@media(max-width:760px){.rh-flight-mission-hud{width:min(306px,64%);max-width:min(360px,64%);}.rh-flight-mission-route-step{font-size:6px;}}@media(max-width:430px){.rh-flight-mission-hud{right:7px;bottom:8px;width:calc(100% - 14px);max-width:calc(100% - 14px);padding:8px 9px;}.rh-flight-mission-route{gap:2px;}.rh-flight-mission-route-label{font-size:6px;}}',
     '@media(pointer:fine){.rh-flight-touch-hint{display:none!important;}}@media(prefers-reduced-motion:reduce){.rh-flight-touch-hint[data-visible="true"]::after{animation:none;}}',
     '.rh-active-flight-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 12px;border:1px solid #64748b;border-radius:12px;background:linear-gradient(100deg,rgba(15,23,42,.96),rgba(8,47,73,.78));}',
     '.rh-flight-species-profile{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,2fr);gap:12px;align-items:center;margin-top:12px;padding:11px 12px;border:1px solid rgba(103,232,249,.48);border-radius:11px;background:linear-gradient(100deg,rgba(8,47,73,.52),rgba(15,23,42,.72));}',
@@ -1231,7 +1232,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     tundra: { tempC: -10, precipitation: 0.82 },
     mountain: { tempC: 2, precipitation: 0.75 },
     cliff: { tempC: 9, precipitation: 0.72 },
-    grassland: { tempC: 17, precipitation: 0.58 }
+    grassland: { tempC: 17, precipitation: 0.58 },
+    desert: { tempC: 34, precipitation: 0.04 }
   };
   // WCAG relative luminance from a THREE.Color's sRGB components. Used to ask how
   // well a bird separates from what it is seen against, which is a brightness
@@ -1512,10 +1514,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     var progress = Math.max(0, Math.min(1, (distance - near) / 32));
     return progress * progress * (3 - 2 * progress);
   }
-  function raptorCarryOpacity(ageMs, reducedMotion) {
-    if (ageMs >= 1100) return 0;
+  var RAPTOR_CARRY_MS = 4200;
+  function raptorCarryOpacity(ageMs, reducedMotion, durationMs) {
+    var duration = durationMs || 1100;
+    if (ageMs >= duration) return 0;
     if (reducedMotion) return 1;
-    var progress = Math.max(0, Math.min(1, (ageMs-900)/200));
+    var progress = Math.max(0, Math.min(1, (ageMs-(duration-200))/200));
     return 1-progress*progress*(3-2*progress);
   }
   function raptorCarryGrip(ageMs, reducedMotion, paused) {
@@ -2635,6 +2639,1172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     }
     return d;
   }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // SPECIES ENCYCLOPEDIA — data + engines. 41 raptors, each with a procedural field-mark plate.
+  // ══════════════════════════════════════════════════════════════════════
+  var ENC_WORLD_LAND = RH_WORLD_LAND;
+  function BirdPlates(h) {
+    'use strict';
+    var uid = 0;
+    var OUTLINE = 'rgba(28,22,18,.8)';
+    function f(n) { return Math.round(n * 100) / 100; }
+    function smooth(pts, closed) {
+      var n = pts.length, d, i;
+      function P(i) { if (closed) return pts[((i % n) + n) % n]; return pts[Math.max(0, Math.min(n - 1, i))]; }
+      d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]);
+      var segs = closed ? n : n - 1;
+      for (i = 0; i < segs; i++) {
+        var p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+        var c1 = p1[2] === 'c' ? p1 : [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        var c2 = p2[2] === 'c' ? p2 : [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += 'C' + f(c1[0]) + ' ' + f(c1[1]) + ' ' + f(c2[0]) + ' ' + f(c2[1]) + ' ' + f(p2[0]) + ' ' + f(p2[1]);
+      }
+      return closed ? d + 'Z' : d;
+    }
+    function ell(cx, cy, rx, ry) { return 'M' + f(cx - rx) + ' ' + f(cy) + 'a' + f(rx) + ' ' + f(ry) + ' 0 1 0 ' + f(rx * 2) + ' 0a' + f(rx) + ' ' + f(ry) + ' 0 1 0 ' + f(-rx * 2) + ' 0Z'; }
+    function poly(pts) { var d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]); for (var i = 1; i < pts.length; i++) d += 'L' + f(pts[i][0]) + ' ' + f(pts[i][1]); return d + 'Z'; }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function mix(c1, c2, t) {
+      function p(c) { c = String(c).replace('#', ''); if (c.length === 3) c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2]; return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)]; }
+      var a = p(c1), b = p(c2), o = [0, 1, 2].map(function(i) { return Math.round(lerp(a[i], b[i], t)); });
+      return '#' + o.map(function(v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+    }
+    function shade(c, t) { return t >= 0 ? mix(c, '#ffffff', t) : mix(c, '#000000', -t); }
+    function hash(s) { var x = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
+    function rng(seed) { var s = (seed >>> 0) || 1; return function() { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+    function P(d, props) { return h('path', Object.assign({ d: d }, props)); }
+
+    var BACKDROPS = {
+      wood:  { sky: ['#cfe4d0', '#f0f6e8'], ground: '#8aa57a', far: '#a9c39a' },
+      open:  { sky: ['#bcd9ef', '#eaf4fb'], ground: '#b9c98b', far: '#a6bf9a' },
+      water: { sky: ['#bcd7ea', '#e7f2f8'], ground: '#7fa9bf', far: '#9cbdc9' },
+      marsh: { sky: ['#d9e6c9', '#f2f1dc'], ground: '#8fa86c', far: '#b3c492' },
+      shore: { sky: ['#cfe3ee', '#f5f1e2'], ground: '#d7c9a0', far: '#b8cdd6' },
+      sea:   { sky: ['#a8c7de', '#e2eef5'], ground: '#4f83a4', far: '#7ea6bf' },
+      rock:  { sky: ['#b9d3e3', '#e9f1f4'], ground: '#8d8b86', far: '#9fb3be' },
+      snow:  { sky: ['#cfdcea', '#f1f5f9'], ground: '#eef2f6', far: '#c3d0dc' },
+      night: { sky: ['#1f2a4c', '#4b5779'], ground: '#2b3a40', far: '#37465a' },
+      dusk:  { sky: ['#e8b98c', '#f6e3c9'], ground: '#7a8a5e', far: '#a79a7e' },
+      desert:{ sky: ['#e3cfa6', '#f6ebd3'], ground: '#c7a574', far: '#d3b98c' },
+      tundra:{ sky: ['#c8d8e4', '#eef2f4'], ground: '#9da483', far: '#b6bfb0' }
+    };
+
+    function billPath(type, bx, by, L, d) {
+      switch (type) {
+        case 'awl':    return smooth([[bx, by - d / 2], [bx + L * .55, by - d * .38], [bx + L, by + d * .05, 'c'], [bx + L * .5, by + d * .42], [bx, by + d / 2]], true);
+        case 'flat':   return smooth([[bx, by - d / 2], [bx + L * .6, by - d * .46], [bx + L, by + d * .12, 'c'], [bx + L * .55, by + d * .5], [bx, by + d / 2]], true);
+        case 'hook':   return smooth([[bx, by - d / 2], [bx + L * .55, by - d * .52], [bx + L * .98, by - d * .1], [bx + L * 1.0, by + d * .5, 'c'], [bx + L * .72, by + d * .15], [bx + L * .4, by + d * .38], [bx, by + d / 2]], true);
+        case 'heavy':  return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .56], [bx + L * .95, by - d * .12], [bx + L, by + d * .22, 'c'], [bx + L * .55, by + d * .42], [bx, by + d / 2]], true);
+        case 'chisel': return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .42], [bx + L, by - d * .1, 'c'], [bx + L, by + d * .14, 'c'], [bx + L * .5, by + d * .42], [bx, by + d / 2]], true);
+        case 'decurve':return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .25 + L * .08], [bx + L * .95, by + L * .38, 'c'], [bx + L * .5, by + d * .35 + L * .14], [bx, by + d / 2]], true);
+        case 'long':   return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .35], [bx + L, by - d * .04, 'c'], [bx + L * .5, by + d * .35], [bx, by + d / 2]], true);
+        case 'duck':   return smooth([[bx, by - d * .5], [bx + L * .6, by - d * .55], [bx + L * .97, by - d * .2], [bx + L, by + d * .12], [bx + L * .6, by + d * .5], [bx, by + d * .5]], true);
+        case 'goose':  return smooth([[bx, by - d * .5], [bx + L * .9, by - d * .12], [bx + L, by + d * .2, 'c'], [bx + L * .6, by + d * .5], [bx, by + d * .5]], true);
+        case 'puffin': return smooth([[bx, by - d * .55], [bx + L * .55, by - d * .5], [bx + L, by + d * .1, 'c'], [bx + L * .55, by + d * .62], [bx, by + d * .55]], true);
+        case 'pointy': return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .42], [bx + L, by + d * .1, 'c'], [bx + L * .5, by + d * .44], [bx, by + d / 2]], true);
+        default:       return smooth([[bx, by - d / 2], [bx + L * .5, by - d * .46], [bx + L, by + d * .12, 'c'], [bx + L * .5, by + d * .46], [bx, by + d / 2]], true);
+      }
+    }
+
+    // ---------- colour resolution ----------
+    function colors(sp) {
+      var c = sp.c || {}, o = {};
+      o.back = c.back || '#7a6a58';
+      o.under = c.under || '#e8e0d0';
+      o.wing = c.wing || shade(o.back, -.14);
+      o.tail = c.tail || o.wing;
+      o.crown = c.crown || null;      // cap overlay (only when given)
+      o.face = c.face || null;        // head-side overlay
+      o.throat = c.throat || null;    // throat overlay (only when given)
+      o.breast = c.breast || null;    // upper-chest overlay
+      o.nape = c.nape || null;
+      o.rump = c.rump || null;
+      o.bill = c.bill || '#4a4038';
+      o.leg = c.leg || '#5c5046';
+      o.eye = c.eye || '#15110e';
+      o.ring = c.ring || null;
+      o.cheek = c.cheek || null;
+      o.cov = c.cov || null;
+      o.patch = c.patch || null;
+      o.mark = c.mark || shade(o.back, -.42);   // streaks / bars / spots
+      o.light = c.light || '#f4efe3';           // wingbars, supercilium, outer tail
+      o.dark = c.dark || '#1d1a17';             // masks, caps, bibs
+      for (var k in c) if (!(k in o) || o[k] == null) o[k] = c[k];
+      return o;
+    }
+
+    // ---------- shared mark engine ----------
+    // G = { clip: id, headClip: id, wingClip: id, bodyClip: id, a,b,cx,cy (body ellipse centre/radii), hx,hy,hr (head), billBase:[x,y], eye:[x,y,r], wing:{pts}, tail:{...} }
+    function seededRand(sp) { return rng(hash(sp.id || sp.name || 'x')); }
+    function drawHeadMarks(sp, c, G, M, out, R) {
+      var hx = G.hx, hy = G.hy, hr = G.hr, bx = G.billBase[0], by = G.billBase[1];
+      var hc = 'url(#' + G.headClip + ')';
+      function has(k) { return M.indexOf(k) >= 0; }
+      var g = [];
+      if (c.crown) g.push(P(poly([[hx - hr * 1.6, hy - hr * 2], [hx + hr * 1.6, hy - hr * 2], [hx + hr * 1.6, hy - hr * (has('capLow') ? .02 : .30)], [hx + hr * .3, hy - hr * (has('capLow') ? .12 : .34)], [hx - hr * 1.6, hy - hr * (has('capLow') ? .06 : .22)]]), { fill: c.crown }));
+      if (c.face) g.push(P(ell(hx - hr * .05, hy + hr * .22, hr * .95, hr * .6), { fill: c.face }));
+      if (c.nape) g.push(P(ell(hx - hr * .95, hy + hr * .05, hr * .55, hr * .7), { fill: c.nape }));
+      if (c.throat) g.push(P(smooth([[bx - 1, by + hr * .16], [hx + hr * .3, hy + hr * .62], [hx - hr * .7, hy + hr * .78], [hx - hr * 1.6, hy + hr * .7], [hx - hr * 1.6, hy + hr * 2], [hx + hr * 1.6, hy + hr * 2], [hx + hr * 1.6, by + hr * .16]], true), { fill: c.throat }));
+      if (has('mask')) g.push(P(smooth([[bx + 1, by - hr * .12], [hx + hr * .25, hy - hr * .42], [hx - hr * .55, hy - hr * .32], [hx - hr * .55, hy + hr * .2], [hx + hr * .25, hy + hr * .3], [bx + 1, by + hr * .2]], true), { fill: c.dark, opacity: .94 }));
+      if (has('eyeline')) g.push(P('M' + f(bx) + ' ' + f(hy - hr * .06) + 'L' + f(hx - hr * 1.2) + ' ' + f(hy + hr * .02), { stroke: c.dark, strokeWidth: hr * .26, fill: 'none', strokeLinecap: 'butt', opacity: .92 }));
+      if (has('eyestripeThin')) g.push(P('M' + f(bx) + ' ' + f(hy - hr * .06) + 'L' + f(hx - hr * 1.1) + ' ' + f(hy + hr * .02), { stroke: c.dark, strokeWidth: hr * .14, fill: 'none', opacity: .9 }));
+      if (has('supercilium')) g.push(P('M' + f(bx - 1) + ' ' + f(hy - hr * .36) + 'Q' + f(hx + hr * .1) + ' ' + f(hy - hr * .6) + ' ' + f(hx - hr * 1.25) + ' ' + f(hy - hr * .18), { stroke: c.light, strokeWidth: hr * .2, fill: 'none', opacity: .95 }));
+      if (has('crownStripe')) g.push(P('M' + f(hx + hr * .6) + ' ' + f(hy - hr * .95) + 'Q' + f(hx - hr * .4) + ' ' + f(hy - hr * 1.15) + ' ' + f(hx - hr * 1.4) + ' ' + f(hy - hr * .35), { stroke: c.light, strokeWidth: hr * .2, fill: 'none' }));
+      if (has('malar')) g.push(P('M' + f(bx - hr * .1) + ' ' + f(by + hr * .22) + 'Q' + f(hx + hr * .1) + ' ' + f(hy + hr * .85) + ' ' + f(hx - hr * .55) + ' ' + f(hy + hr * 1.15), { stroke: c.dark, strokeWidth: hr * .17, fill: 'none', strokeLinecap: 'round' }));
+      if (has('whiteCheek') || c.cheek) g.push(P(ell(hx - hr * .05, hy + hr * .26, hr * .82, hr * .42), { fill: c.cheek || '#f4f1ea' }));
+      if (has('headPatch')) g.push(P(ell(hx - hr * .38, hy - hr * .05, hr * .55, hr * .5), { fill: c.light }));
+      if (has('loresPatch')) g.push(P(ell(hx + hr * .5, hy + hr * .05, hr * .32, hr * .4), { fill: c.light }));
+      if (has('foreheadWhite')) g.push(P(ell(hx + hr * .55, hy - hr * .55, hr * .36, hr * .3), { fill: c.light }));
+      if (has('gular')) g.push(P(smooth([[bx - 1, by + hr * .05], [hx + hr * .5, hy + hr * .4], [hx - hr * .1, hy + hr * .75], [bx - hr * .3, by + hr * .5]], true), { fill: c.gular || '#e8923a' }));
+      if (has('chinPatch')) g.push(P(ell(hx + hr * .35, hy + hr * .58, hr * .5, hr * .3), { fill: c.light }));
+      if (has('loresY')) g.push(P(ell(hx + hr * .62, hy + hr * .0, hr * .28, hr * .2), { fill: c.loresC || '#f0d830' }));
+      if (has('comb')) g.push(P(ell(hx + hr * .26, hy - hr * .46, hr * .42, hr * .14), { fill: c.combC || '#d8283a' }));
+      if (has('foreheadDark')) g.push(P(ell(hx + hr * .72, hy - hr * .42, hr * .34, hr * .3), { fill: c.dark }));
+      if (has('earSpot')) g.push(P(ell(hx - hr * .4, hy + hr * .08, hr * .22, hr * .24), { fill: c.dark, opacity: .85 }));
+      if (has('lores')) g.push(P(ell(bx - hr * .12, hy - hr * .02, hr * .42, hr * .18), { fill: c.dark, opacity: .9 }));
+      out.push(h.apply(null, ['g', { key: 'headmarks', clipPath: hc }].concat(g)));
+    }
+
+    function drawBodyMarks(sp, c, G, M, out, R) {
+      function has(k) { return M.indexOf(k) >= 0; }
+      var a = G.a, b = G.b, cx = G.cx || 0, cy = G.cy || 0, bc = 'url(#' + G.bodyClip + ')';
+      var g = [], i, x, y;
+      if (c.breast) g.push(P(ell(cx + a * .62, cy - b * .02, a * .5, b * .7), { fill: c.breast }));
+      if (has('hoodChest')) g.push(P(ell(cx + a * .68, cy - b * .3, a * .42, b * .72), { fill: c.throat || c.crown || c.dark }));
+      if (has('breastBand')) g.push(P('M' + f(cx + a * .46) + ' ' + f(cy - b * .78) + 'Q' + f(cx + a * .72) + ' ' + f(cy - b * .1) + ' ' + f(cx + a * .5) + ' ' + f(cy + b * .72), { stroke: c.band || c.dark, strokeWidth: b * .26, fill: 'none' }));
+      if (has('breastBand2')) g.push(P('M' + f(cx + a * .3) + ' ' + f(cy - b * .78) + 'Q' + f(cx + a * .56) + ' ' + f(cy - b * .1) + ' ' + f(cx + a * .34) + ' ' + f(cy + b * .72), { stroke: c.band || c.dark, strokeWidth: b * .2, fill: 'none' }));
+      if (has('breastSpot')) g.push(P(ell(cx + a * .55, cy - b * .05, a * .1, b * .17), { fill: c.dark }));
+      if (has('flank') && c.flank) g.push(P(ell(cx - a * .05, cy + b * .22, a * .42, b * .3), { fill: c.flank }));
+      if (has('bellyPatch')) g.push(P(ell(cx + a * .28, cy + b * .5, a * .46, b * .4), { fill: c.dark }));
+      if (has('bib')) g.push(P(ell(cx + a * .78, cy - b * .55, a * .26, b * .36), { fill: c.dark }));
+      if (c.rump) g.push(P(ell(cx - a * .62, cy - b * .72, a * .3, b * .22), { fill: c.rump }));
+      if (has('streakBreast') || has('streakFlank') || has('spotBreast') || has('barBelly') || has('chevron')) {
+        var rnd = rng(hash((sp.id || 'x') + 'b'));
+        if (has('streakBreast')) for (i = 0; i < 16; i++) { x = cx + a * (.12 + .78 * rnd()); y = cy + b * (-.55 + 1.05 * rnd()); if (x < cx + a * .15 && y > cy + b * .5) continue; g.push(P('M' + f(x) + ' ' + f(y) + 'l' + f(-.4) + ' ' + f(b * .26), { stroke: c.mark, strokeWidth: 1.5, strokeLinecap: 'round', fill: 'none', opacity: .9 })); }
+        if (has('streakFlank')) for (i = 0; i < 9; i++) { x = cx - a * .55 + a * 1.0 * (i / 8) + (rnd() - .5) * 4; y = cy + b * (.1 + .35 * rnd()); g.push(P('M' + f(x) + ' ' + f(y) + 'l' + f(-3) + ' ' + f(b * .26), { stroke: c.mark, strokeWidth: 1.4, strokeLinecap: 'round', fill: 'none', opacity: .85 })); }
+        if (has('spotBreast')) for (i = 0; i < 22; i++) { x = cx + a * (.2 + .72 * rnd()); y = cy + b * (-.55 + 1.0 * rnd()); g.push(P(ell(x, y, 1.7, 2.1), { fill: c.mark, opacity: .85 })); }
+        if (has('chevron')) for (i = 0; i < 16; i++) { x = cx + a * (.1 + .8 * rnd()); y = cy + b * (-.5 + 1.0 * rnd()); g.push(P('M' + f(x - 2.4) + ' ' + f(y) + 'l2.4 2.6l2.4 -2.6', { stroke: c.mark, strokeWidth: 1.3, fill: 'none', opacity: .85 })); }
+        if (has('barBelly')) for (i = 0; i < 9; i++) { x = cx - a * .3 + i * (a * 1.2 / 8); g.push(P('M' + f(x) + ' ' + f(cy - b * .5) + 'Q' + f(x + 3) + ' ' + f(cy + b * .1) + ' ' + f(x - 1) + ' ' + f(cy + b * .75), { stroke: c.mark, strokeWidth: 2, fill: 'none', opacity: .8 })); }
+      }
+      if (has('backStripe')) g.push(P('M' + f(cx + a * .5) + ' ' + f(cy - b * .78) + 'Q' + f(cx - a * .2) + ' ' + f(cy - b * .86) + ' ' + f(cx - a * .9) + ' ' + f(cy - b * .5), { stroke: c.light, strokeWidth: b * .34, fill: 'none', opacity: .95 }));
+      if (has('backBars')) for (i = 0; i < 7; i++) { x = cx + a * .45 - i * (a * .22); g.push(P('M' + f(x) + ' ' + f(cy - b * .95) + 'l' + f(-3) + ' ' + f(b * .55), { stroke: c.mark, strokeWidth: 1.8, fill: 'none', opacity: .85 })); }
+      if (has('wattle')) g.push(P(ell(cx + a * .98, cy - b * .1, a * .07, b * .26), { fill: c.wattleC || '#c8321f' }));
+      out.push(h.apply(null, ['g', { key: 'bodymarks', clipPath: bc }].concat(g)));
+    }
+
+    function drawWing(sp, c, G, M, out) {
+      // G.wing: {d, bars:[paths], edge:[paths]} in local coords; clipped to the wing shape itself
+      function has(k) { return M.indexOf(k) >= 0; }
+      var w = G.wing, g = [], i;
+      g.push(P(w.d, { fill: c.wing, stroke: shade(c.wing, -.35), strokeWidth: .9 }));
+      g.push(h('g', { key: 'wmarks', clipPath: 'url(#' + G.wingClip + ')' }, [
+        c.cov ? P(w.cov, { fill: c.cov, key: 'cov' }) : null,
+        has('scapularStreaks') ? w.streaks.map(function(d, i) { return P(d, { key: 's' + i, stroke: shade(c.back, -.45), strokeWidth: 1.4, fill: 'none', opacity: .8 }); }) : null,
+        w.edge.map(function(d, i) { return P(d, { key: 'e' + i, stroke: shade(c.wing, -.3), strokeWidth: .8, fill: 'none', opacity: .7 }); }),
+        has('wingbars') ? w.bars.map(function(d, i) { return P(d, { key: 'b' + i, stroke: c.light, strokeWidth: 2.6, fill: 'none', opacity: .96 }); }) : null,
+        has('wingbar1') ? P(w.bars[0], { key: 'b1', stroke: c.light, strokeWidth: 2.6, fill: 'none', opacity: .96 }) : null,
+        has('wingPatch') ? P(w.patch, { key: 'wp', fill: c.patch || c.light }) : null,
+        has('epaulet') ? [P(w.epaulet, { key: 'ep', fill: c.patch || '#d1362a' }), P(w.epaulet2, { key: 'ep2', fill: c.patch2 || '#efc65a' })] : null,
+        has('wingSpots') ? [0, 1, 2, 3].map(function(r) { return [0, 1, 2, 3, 4, 5].map(function(q) { return P(ell(G.a * (.42 - q * .17 + (r % 2) * .06), G.b * (-.35 + r * .2), 1.8, 1.8), { key: 'ws' + r + '_' + q, fill: c.light, opacity: .95 }); }); }) : null,
+        has('tipsBlackWing') ? P(poly([[-G.a * .56, -G.b * 1], [-G.a * 3, -G.b * 1], [-G.a * 3, G.b * 1], [-G.a * .56, G.b * 1]]), { key: 'tbw', fill: c.dark }) : null,
+        has('tertEdge') ? P(w.tert, { key: 'te', stroke: c.light, strokeWidth: 1.8, fill: 'none', opacity: .9 }) : null
+      ]));
+      out.push(h.apply(null, ['g', { key: 'wing' }].concat(g)));
+    }
+
+
+
+    // ---------- shared: capsule + counter-rotated head assembly ----------
+    function rotp(p, deg, o) { var r = deg * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r), x = p[0] - o[0], y = p[1] - o[1]; return [o[0] + x * cs - y * sn, o[1] + x * sn + y * cs]; }
+    function capsule(p1, r1, p2, r2) {
+      var dx = p2[0] - p1[0], dy = p2[1] - p1[1], L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L;
+      return 'M' + f(p1[0] + nx * r1) + ' ' + f(p1[1] + ny * r1) + 'L' + f(p2[0] + nx * r2) + ' ' + f(p2[1] + ny * r2) + 'A' + f(r2) + ' ' + f(r2) + ' 0 0 0 ' + f(p2[0] - nx * r2) + ' ' + f(p2[1] - ny * r2) + 'L' + f(p1[0] - nx * r1) + ' ' + f(p1[1] - ny * r1) + 'A' + f(r1) + ' ' + f(r1) + ' 0 0 0 ' + f(p1[0] + nx * r1) + ' ' + f(p1[1] + ny * r1) + 'Z';
+    }
+    // o: id, Hx, Hy, hr, ry, pivot, tilt, bill, bl, bd, blen, bdep, billX, billY, eye:[dx,dy,r] (fractions of hr), crest, crestFill, cere, iris, raptor
+    function headAssembly(sp, c, M, o) {
+      function has(k) { return M.indexOf(k) >= 0; }
+      var hr = o.hr, Hx = o.Hx, Hy = o.Hy, piv = o.pivot, ry = o.ry || 1;
+      var cen = rotp([Hx, Hy], o.tilt, piv);
+      var tr = 'rotate(' + f(o.tilt) + ' ' + f(piv[0]) + ' ' + f(piv[1]) + ')';
+      var cHead = o.id + '-h';
+      var headD = ell(Hx, Hy, hr, hr * ry);
+      var bBase = [Hx + hr * (o.billX == null ? .84 : o.billX), Hy + hr * (o.billY == null ? .08 : o.billY)];
+      var bLen = hr * o.blen * (sp.bl || 1), bDep = hr * o.bdep * (sp.bd || 1);
+      var billD = billPath(o.bill, bBase[0], bBase[1], bLen, bDep);
+      var billTip = [bBase[0] + bLen, bBase[1] + bDep * .1];
+      var ex = o.eye || [.36, -.12, .19];
+      var eye = [Hx + hr * ex[0], Hy + hr * ex[1], hr * ex[2] * (sp.eyeS || 1)];
+      var G = { headClip: cHead, hx: Hx, hy: Hy, hr: hr, billBase: bBase, eye: eye };
+      var backH = smooth([[Hx + hr * 1.1, Hy + hr * .12], [Hx + hr * .45, Hy + hr * .5], [Hx - hr * .2, Hy + hr * .82], [Hx - hr * 1.3, Hy + hr * 1.0]], false) + 'L' + f(Hx - hr * 1.6) + ' ' + f(Hy - hr * 3) + 'L' + f(Hx + hr * 1.4) + ' ' + f(Hy - hr * 3) + 'Z';
+      var crestD = null;
+      if (o.crest) {
+        var cl = o.crest === 'long' ? 21 : o.crest === 'tuft' ? 11 : 15;
+        // 'sweep' is the long, flowing crest of a Wood Duck: it rises over the crown and streams back, instead of standing up like a tuft.
+        if (o.crest === 'sweep') crestD = smooth([[Hx + hr * .45, Hy - hr * .78, 'c'], [Hx - hr * .15, Hy - hr * 1.2], [Hx - hr * 1.4, Hy - hr * .8], [Hx - hr * 2.15, Hy - hr * .12, 'c'], [Hx - hr * 1.0, Hy - hr * .14], [Hx - hr * .25, Hy - hr * .08, 'c']], true);
+        else if (o.crest !== 'fan') crestD = smooth([[Hx + hr * .5, Hy - hr * .8, 'c'], [Hx + hr * .05 - 3, Hy - hr - cl * .78], [Hx - hr * .9 - cl * .75, Hy - hr * .88 - cl * .5, 'c'], [Hx - hr * .5, Hy - hr * .5], [Hx - hr * .2, Hy - hr * .05, 'c'], [Hx + hr * .4, Hy - hr * .2, 'c']], true);
+      }
+      var defs = [h('clipPath', { id: cHead, key: 'ch' }, P(headD))];
+      var fanO = o.crest === 'fan' ? smooth([[Hx + hr * .2, Hy - hr * .9, 'c'], [Hx - hr * .9, Hy - hr * 1.5], [Hx - hr * 2.0, Hy - hr * .4], [Hx - hr * 1.6, Hy + hr * .7], [Hx - hr * .6, Hy + hr * .6, 'c']], true) : null;
+      var outline = h('g', { key: 'hol', transform: tr, fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, P(headD, { key: 'hd' }), P(billD, { key: 'bd' }), crestD ? P(crestD, { key: 'cr' }) : null, fanO ? P(fanO, { key: 'fo' }) : null);
+      var els = [];
+      var fanD = o.crest === 'fan' ? smooth([[Hx + hr * .2, Hy - hr * .9, 'c'], [Hx - hr * .9, Hy - hr * 1.5], [Hx - hr * 2.0, Hy - hr * .4], [Hx - hr * 1.6, Hy + hr * .7], [Hx - hr * .6, Hy + hr * .6, 'c']], true) : null;
+      if (fanD) els.push(P(fanD, { key: 'fan', fill: c.crest || c.crown || c.back, stroke: OUTLINE, strokeWidth: .9 }), P(ell(Hx - hr * 1.1, Hy - hr * .35, hr * .62, hr * .46), { key: 'fanp', fill: c.fanPatch || c.light }));
+      els.push(P(headD, { key: 'hb', fill: c.under }));
+      els.push(P(backH, { key: 'hbk', fill: c.back, clipPath: 'url(#' + cHead + ')' }));
+      if (has('hoodFull')) els.push(P(headD, { key: 'hood', fill: c.hood || c.dark }));
+      els.push(P(ell(Hx - hr * .1, Hy - hr * .72, hr * .7, hr * .2), { key: 'hhl', fill: '#fff', opacity: .14, clipPath: 'url(#' + cHead + ')' }));
+      drawHeadMarks(sp, c, G, M, els);
+      if (has('disc')) els.push(h('g', { key: 'disc', clipPath: 'url(#' + cHead + ')' }, P(smooth([[Hx + hr * .5, Hy - hr * .55], [Hx - hr * .5, Hy - hr * .72], [Hx - hr * .95, Hy + hr * .1], [Hx - hr * .3, Hy + hr * .8], [Hx + hr * .55, Hy + hr * .6]], true), { fill: 'none', stroke: c.dark, strokeWidth: 1.6, opacity: .7 })));
+      if (has('brow')) els.push(P('M' + f(Hx + hr * .66) + ' ' + f(Hy - hr * .3) + 'Q' + f(Hx + hr * .2) + ' ' + f(Hy - hr * .56) + ' ' + f(Hx - hr * .3) + ' ' + f(Hy - hr * .34), { key: 'brow', stroke: c.browC || c.dark, strokeWidth: hr * .24, strokeLinecap: 'round', fill: 'none', opacity: .9 }));
+      if (crestD) els.push(P(crestD, { key: 'crest', fill: c.crest || c.crown || c.back, stroke: OUTLINE, strokeWidth: .9 }));
+      if (o.crestMark) els.push(P(o.crestMark(Hx, Hy, hr), { key: 'crm', fill: 'none', stroke: c.light, strokeWidth: 1.2, opacity: .7 }));
+      els.push(P(billD, { key: 'bill', fill: c.bill, stroke: shade(c.bill, -.45), strokeWidth: .8 }));
+      if (o.cere) {
+        var cd = smooth([[bBase[0] - 2, bBase[1] - bDep * .5 - 1], [bBase[0] + bLen * .26, bBase[1] - bDep * .46], [bBase[0] + bLen * .28, bBase[1] + bDep * .3], [bBase[0] - 2, bBase[1] + bDep * .5]], true);
+        els.push(P(cd, { key: 'cere', fill: c.cere || '#e8c040', stroke: shade(c.cere || '#e8c040', -.4), strokeWidth: .6 }));
+        els.push(P('M' + f(bBase[0] + bLen * .26) + ' ' + f(bBase[1] - bDep * .1) + 'l1.6 .4', { key: 'nost', stroke: '#2a2118', strokeWidth: 1.4, strokeLinecap: 'round' }));
+      }
+      if (has('gullSpot')) els.push(h('circle', { key: 'gs', cx: billTip[0] - bLen * .22, cy: billTip[1] + bDep * .18, r: Math.max(1.4, bDep * .2), fill: '#d0392b' }));
+      if (has('billRing')) els.push(P('M' + f(billTip[0] - bLen * .26) + ' ' + f(billTip[1] - bDep * .5) + 'l0 ' + f(bDep * .95), { key: 'brg', stroke: '#1c1c1e', strokeWidth: Math.max(1.4, bDep * .22), fill: 'none' }));
+      if (has('billLine')) els.push(P('M' + f(billTip[0] - bLen * .42) + ' ' + f(billTip[1] - bDep * .5) + 'l0 ' + f(bDep * .95), { key: 'bln', stroke: '#f4f1ea', strokeWidth: Math.max(1.2, bDep * .13), fill: 'none' }));
+      if (has('puffinBill')) els.push(h('g', { key: 'pfb', clipPath: 'url(#' + o.id + '-pbc)' }, P(poly([[bBase[0], bBase[1] - bDep], [bBase[0] + bLen * .38, bBase[1] - bDep], [bBase[0] + bLen * .38, bBase[1] + bDep], [bBase[0], bBase[1] + bDep]]), { fill: c.billBase || '#7e8a92' }), P(poly([[bBase[0] + bLen * .38, bBase[1] - bDep], [bBase[0] + bLen * .74, bBase[1] - bDep], [bBase[0] + bLen * .74, bBase[1] + bDep], [bBase[0] + bLen * .38, bBase[1] + bDep]]), { fill: c.billMid || '#e9bf2c' }), P(poly([[bBase[0] + bLen * .74, bBase[1] - bDep], [bBase[0] + bLen * 1.1, bBase[1] - bDep], [bBase[0] + bLen * 1.1, bBase[1] + bDep], [bBase[0] + bLen * .74, bBase[1] + bDep]]), { fill: c.billTip || '#e0472a' })));
+      if (has('billRing')) els.push(P('M' + f(billTip[0] - bLen * .26) + ' ' + f(billTip[1] - bDep * .5) + 'l0 ' + f(bDep * .95), { key: 'brg', stroke: '#1c1c1e', strokeWidth: Math.max(1.4, bDep * .22), fill: 'none' }));
+      if (has('billLine')) els.push(P('M' + f(billTip[0] - bLen * .42) + ' ' + f(billTip[1] - bDep * .5) + 'l0 ' + f(bDep * .95), { key: 'bln', stroke: '#f4f1ea', strokeWidth: Math.max(1.2, bDep * .13), fill: 'none' }));
+      if (has('puffinBill')) defs.push(h('clipPath', { id: o.id + '-pbc', key: 'pbc' }, P(billD)));
+      if (has('billTwo')) els.push(P('M' + f(bBase[0] + 1) + ' ' + f(bBase[1] + hr * .06) + 'L' + f(billTip[0] - 1.5) + ' ' + f(billTip[1] - .5), { key: 'bl2', stroke: shade(c.bill, -.5), strokeWidth: .7, fill: 'none' }));
+      if (c.ring || has('eyering')) els.push(h('circle', { key: 'er', cx: eye[0], cy: eye[1], r: eye[2] * 1.95, fill: 'none', stroke: c.ring || c.light, strokeWidth: eye[2] * .55 }));
+      if (o.raptor) {
+        els.push(h('circle', { key: 'iris', cx: eye[0], cy: eye[1], r: eye[2] * 1.18, fill: c.iris || '#4b3317' }), h('circle', { key: 'pup', cx: eye[0] + .3, cy: eye[1], r: eye[2] * .62, fill: '#0c0a08' }));
+      } else els.push(h('circle', { key: 'eye', cx: eye[0], cy: eye[1], r: eye[2], fill: c.eye }));
+      els.push(h('circle', { key: 'eyeh', cx: eye[0] + eye[2] * .35, cy: eye[1] - eye[2] * .35, r: eye[2] * .28, fill: '#fff', opacity: .85 }));
+      var ext = [[billTip[0], billTip[1]], [Hx, Hy - hr * 1.1 - (o.crest ? 14 : 0)], [Hx - hr, Hy]].map(function(p) { return rotp(p, o.tilt, piv); });
+      return { defs: defs, outline: outline, fill: h('g', { key: 'headg', transform: tr }, els), cen: cen, headClip: cHead, ext: ext, headD: headD };
+    }
+
+
+    // ---------- tail outline kinds (shared) ----------
+    function tailShape(kind, tx0, ty0, tex, tey, wb, tipw, tdx, tdy, nx, ny) {
+      var pts;
+      if (kind === 'fk') {
+        var mx = (tx0 + tex) / 2, my = (ty0 + tey) / 2;
+        pts = [[tx0 - nx * wb * .5, ty0 - ny * wb * .5, 'c'], [tex - nx * tipw * .62, tey - ny * tipw * .62, 'c'], [mx - 8 * tdx, my + 8 * tdy, 'c'], [tex + nx * tipw * .62, tey + ny * tipw * .62, 'c'], [tx0 + nx * wb * .5, ty0 + ny * wb * .5, 'c']];
+        return poly(pts);
+      }
+      if (kind === 'rd') {
+        pts = [[tx0 - nx * wb * .5, ty0 - ny * wb * .5, 'c'], [tex - nx * tipw * .5 + 4 * tdx, tey - ny * tipw * .5 - 4 * tdy], [tex - 3 * tdx, tey + 3 * tdy], [tex + nx * tipw * .5 + 4 * tdx, tey + ny * tipw * .5 - 4 * tdy], [tx0 + nx * wb * .5, ty0 + ny * wb * .5, 'c']];
+        return smooth(pts, true);
+      }
+      if (kind === 'nt') {
+        pts = [[tx0 - nx * wb * .5, ty0 - ny * wb * .5, 'c'], [tex - nx * tipw * .55, tey - ny * tipw * .55, 'c'], [tex + 5 * tdx, tey - 5 * tdy, 'c'], [tex + nx * tipw * .55, tey + ny * tipw * .55, 'c'], [tx0 + nx * wb * .5, ty0 + ny * wb * .5, 'c']];
+        return poly(pts);
+      }
+      if (kind === 'pt') {
+        pts = [[tx0 - nx * wb * .5, ty0 - ny * wb * .5, 'c'], [tex - nx * tipw * .28, tey - ny * tipw * .28, 'c'], [tex - 6 * tdx, tey + 6 * tdy, 'c'], [tex + nx * tipw * .28, tey + ny * tipw * .28, 'c'], [tx0 + nx * wb * .5, ty0 + ny * wb * .5, 'c']];
+        return poly(pts);
+      }
+      // Default (square) tail: the base stays sharp where it tucks under the body, the tip corners are softly rounded, and a
+      // gentle outward curve on each edge stops it reading as a flat slab.
+      var bow = wb * .05;
+      pts = [[tx0 - nx * wb * .5, ty0 - ny * wb * .5, 'c'],
+        [(tx0 + tex) / 2 - nx * (wb + tipw) * .25 - nx * bow, (ty0 + tey) / 2 - ny * (wb + tipw) * .25 - ny * bow],
+        [tex - nx * tipw * .47 + 2.4 * tdx, tey - ny * tipw * .47 - 2.4 * tdy],
+        [tex - 1.2 * tdx, tey + 1.2 * tdy],
+        [tex + nx * tipw * .47 + 2.4 * tdx, tey + ny * tipw * .47 - 2.4 * tdy],
+        [(tx0 + tex) / 2 + nx * (wb + tipw) * .25 + nx * bow, (ty0 + tey) / 2 + ny * (wb + tipw) * .25 + ny * bow],
+        [tx0 + nx * wb * .5, ty0 + ny * wb * .5, 'c']];
+      return smooth(pts, true);
+    }
+
+    function foldedWing(a, b, P1, kind) {
+      var d = smooth([[a * .46, -b * .56], [a * .60, -b * .16], [a * .40, b * .20], [-a * .06, b * .34], [-a * .56, b * .18], [-a * .94 - P1, -b * .04, 'c'], [-a * .62, -b * .34], [-a * .06, -b * .60]], true);
+      return {
+        d: d,
+        cov: smooth([[a * .5, -b * .62], [a * .66, -b * .16], [a * .30, b * .02], [-a * .18, -b * .04], [-a * .30, -b * .48], [-a * .06, -b * .64]], true),
+        bars: ['M' + f(a * .52) + ' ' + f(-b * .10) + 'Q' + f(a * .14) + ' ' + f(-b * .02) + ' ' + f(-a * .22) + ' ' + f(-b * .28), 'M' + f(a * .42) + ' ' + f(b * .12) + 'Q' + f(a * .06) + ' ' + f(b * .2) + ' ' + f(-a * .36) + ' ' + f(-b * .04)],
+        edge: [0, 1, 2, 3, 4].map(function(i) { var t = i / 4; return 'M' + f(lerp(a * .12, -a * .3, t)) + ' ' + f(lerp(b * .28, b * .14, t)) + 'L' + f(lerp(-a * .72 - P1 * .55, -a * .92 - P1, t)) + ' ' + f(lerp(b * .05, -b * .04, t) - b * .02); }),
+        streaks: [0, 1, 2, 3, 4, 5].map(function(i) { return 'M' + f(a * (.38 - i * .12)) + ' ' + f(-b * .55) + 'l' + f(-a * .1) + ' ' + f(b * .34); }),
+        patch: ell(-a * .1, -b * .12, a * .26, b * .16),
+        epaulet: ell(a * .42, -b * .38, a * .17, b * .2), epaulet2: ell(a * .40, -b * .12, a * .15, b * .08),
+        tert: 'M' + f(a * .1) + ' ' + f(b * .26) + 'Q' + f(-a * .3) + ' ' + f(b * .22) + ' ' + f(-a * .6) + ' ' + f(b * .02)
+      };
+    }
+
+    // ---------- archetype: PASSERINE ----------
+    function passerine(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var len = sp.len || 1, bh = sp.bh || 1, hd = sp.hd || 1, tl = sp.tl || 1, pr = sp.prim == null ? 1 : sp.prim, lg = sp.leg || 1;
+      var a = 38 * len, b = 25 * bh, hr = 14.5 * hd;
+      var posture = sp.rot == null ? 30 : sp.rot;
+      var tilt = posture * (sp.headTilt == null ? .8 : sp.headTilt);
+      var pivot = [a * .56, -b * .42];
+      var nk = sp.nk || 0;
+      var Hx = a * .74 + nk * .6, Hy = -b * .86 - nk * .8;
+      // tail
+      var T = 38 * tl, wb = b * .62, tipw = wb * (sp.tailW || 1);
+      var tx0 = -a * .72, ty0 = -b * .42, ang = (sp.tailAng == null ? 9 : sp.tailAng) * Math.PI / 180;
+      var tdx = Math.cos(ang), tdy = Math.sin(ang), tex = tx0 - T * tdx, tey = ty0 + T * tdy, nx = -tdy, ny = tdx;
+      var tailD = tailShape(sp.tailTip || 'sq', tx0, ty0, tex, tey, wb, tipw, tdx, tdy, nx, ny);
+      var bodyD = smooth([[-a * 1.0, -b * .12], [-a * .70, -b * .80], [-a * .15, -b * 1.0], [a * .42, -b * .96], [a * .90, -b * .52], [a * 1.02, b * .10], [a * .80, b * .66], [a * .20, b * 1.0], [-a * .45, b * .80]], true);
+      var bt = sp.bill || 'cone';
+      var bd = { cone: .78, awl: .26, flat: .62, hook: .62, heavy: .84, chisel: .5, decurve: .26, long: .3, pointy: .48 }[bt] || .6;
+      var blen = { cone: .78, awl: 1.02, flat: .86, hook: .84, heavy: 1.28, chisel: 1.2, decurve: 1.7, long: 1.8, pointy: .92 }[bt] || .9;
+      var H = headAssembly(sp, c, M, { id: id, Hx: Hx, Hy: Hy, hr: hr, ry: sp.headY, pivot: pivot, tilt: tilt, bill: bt, blen: blen, bdep: bd, crest: sp.crest });
+      var neckD = capsule(pivot, hr * 1.15, H.cen, hr * 1.02);
+      var headW = ell(H.cen[0], H.cen[1], hr, hr * (sp.headY || 1));
+      var P1 = 10 * pr;
+      var wing = foldedWing(a, b, P1);
+      var wingD = wing.d;
+      var la = sp.line == null ? 0 : sp.line;
+      var sideD = smooth([[H.cen[0] + hr * .3, H.cen[1] + hr * .9], [a * .64, -b * .26 + la * b * .5], [a * .22, b * .08 + la * b * .5], [-a * .5, b * .14 + la * b * .35], [-a * 1.25, b * .02]], false);
+      var backD = sideD + 'L' + f(-a * 1.3) + ' ' + f(-b * 3) + 'L' + f(H.cen[0] + hr * 1.3) + ' ' + f(-b * 3) + 'Z';
+      var footY = b * .92 + 17 * lg, footX = a * .08;
+      var legs = ['M' + f(a * .0) + ' ' + f(b * .78) + 'L' + f(footX - 3) + ' ' + f(footY), 'M' + f(a * .12) + ' ' + f(b * .76) + 'L' + f(footX + 4) + ' ' + f(footY)];
+      var toes = 'M' + f(footX - 9) + ' ' + f(footY + 1) + 'L' + f(footX + 7) + ' ' + f(footY + 1);
+      var feet = [footX, footY];
+      var tr = 'translate(120 150) rotate(' + f(-posture) + ') translate(' + f(-feet[0]) + ' ' + f(-feet[1]) + ')';
+      var cUnion = id + '-u', cBody = id + '-b', cWing = id + '-w';
+      var G = { bodyClip: cBody, wingClip: cWing, a: a, b: b, cx: 0, cy: 0, wing: wing };
+      var defs = [
+        h('clipPath', { id: cUnion, key: 'cu' }, [P(bodyD, { key: 1 }), P(neckD, { key: 3 }), P(tailD, { key: 4 }), P(headW, { key: 5 })]),
+        h('clipPath', { id: cBody, key: 'cb' }, [P(bodyD, { key: 1 }), P(neckD, { key: 2 })]),
+        h('clipPath', { id: cWing, key: 'cw' }, P(wingD))
+      ].concat(H.defs);
+      var els = [];
+      els.push(h('g', { key: 'legs', fill: 'none', stroke: c.leg, strokeWidth: 2.2, strokeLinecap: 'round' }, legs.map(function(d, i) { return P(d, { key: i }); }), P(toes, { strokeWidth: 2 })));
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, [tailD, bodyD, neckD].map(function(d, i) { return P(d, { key: i }); })));
+      els.push(H.outline);
+      els.push(P(tailD, { key: 'tail', fill: c.tail }));
+      if (has('tailWhite')) els.push(P('M' + f(tx0 - nx * wb * .5) + ' ' + f(ty0 - ny * wb * .5) + 'L' + f(tex - nx * tipw * .5) + ' ' + f(tey - ny * tipw * .5) + 'L' + f(tex - nx * tipw * .5 + 3) + ' ' + f(tey - ny * tipw * .5 + 5) + 'L' + f(tx0 - nx * wb * .5 + 3) + ' ' + f(ty0 - ny * wb * .5 + 5) + 'Z', { key: 'tw', fill: c.light, opacity: .95, clipPath: 'url(#' + cUnion + ')' }));
+      if (has('tailBand')) els.push(P(poly([[tex + 9 * tdx, tey - 11], [tex - 4 * tdx, tey - 11], [tex - 4 * tdx, tey + 11], [tex + 9 * tdx, tey + 11]]), { key: 'tb', fill: c.tailBand || '#f2c22c', clipPath: 'url(#' + cUnion + ')' }));
+      if (has('tailBars')) els.push(h('g', { key: 'tbars', clipPath: 'url(#' + cUnion + ')' }, [0, 1, 2, 3, 4].map(function(i) { var d = 8 + i * 6.8; return P('M' + f(tx0 - d * tdx) + ' ' + f(ty0 + d * tdy - 12) + 'l-2 24', { key: i, stroke: c.tailMark || c.mark, strokeWidth: 1.5, fill: 'none', opacity: .8 }); })));
+      els.push(h('g', { key: 'base', clipPath: 'url(#' + cUnion + ')' }, [
+        P(bodyD, { key: 'bu', fill: c.under }), P(neckD, { key: 'nu', fill: c.under }),
+        P(backD, { key: 'back', fill: c.back })
+      ]));
+      if (has('hoodNeck')) els.push(P(neckD, { key: 'hoodn', fill: c.hood || c.dark, clipPath: 'url(#' + cUnion + ')' }));
+      els.push(h('g', { key: 'sh', clipPath: 'url(#' + cBody + ')' }, [
+        P(ell(a * .15, b * .95, a * 1.1, b * .38), { key: 'bs', fill: shade(c.under, -.35), opacity: .17 }),
+        P(ell(-a * .1, -b * .9, a * .9, b * .22), { key: 'hl', fill: '#fff', opacity: .11 })
+      ]));
+      drawBodyMarks(sp, c, G, M, els);
+      drawWing(sp, c, G, M, els);
+      els.push(H.fill);
+      var ext = [[-a * 1.0, -b], [tex, tey + 6], [tex, tey - 6], [feet[0] - 9, feet[1] + 2], [feet[0] + 9, feet[1] + 2], [a * 1.05, b], [-a - P1, 0]].concat(H.ext);
+      var ang2 = -posture * Math.PI / 180, cs = Math.cos(ang2), sn = Math.sin(ang2);
+      ext = ext.map(function(p) { var x = p[0] - feet[0], y = p[1] - feet[1]; return [120 + x * cs - y * sn, 150 + x * sn + y * cs]; });
+      return { defs: defs, g: h('g', { transform: tr }, els), ext: ext, perchW: sp.perchW || 4.2, perch: sp.perch || 'twig' };
+    }
+
+
+    // ---------- archetype: RAPTOR (perched, hooked bill) ----------
+    function raptor(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var len = sp.len || 1, bh = sp.bh || 1, hd = sp.hd || 1, tl = sp.tl || 1, pr = sp.prim == null ? 1 : sp.prim, lg = sp.leg || 1;
+      var a = 44 * len, b = 28 * bh, hr = 14.5 * hd;
+      var long = sp.neckLong ? 1 : 0;
+      var posture = sp.rot == null ? 52 : sp.rot;
+      var tilt = posture * (sp.headTilt == null ? .86 : sp.headTilt);
+      var pivot = [a * .56, -b * .4];
+      var Hx = a * (.76 + .12 * long), Hy = -b * (.9 + .14 * long);
+      var T = 50 * tl, wb = b * .78, tipw = wb * (sp.tailW || 1);
+      var tx0 = -a * .76, ty0 = -b * .34, ang = (sp.tailAng == null ? 20 : sp.tailAng) * Math.PI / 180;
+      var tdx = Math.cos(ang), tdy = Math.sin(ang), tex = tx0 - T * tdx, tey = ty0 + T * tdy, nx = -tdy, ny = tdx;
+      var tailD = tailShape(sp.tailTip || 'sq', tx0, ty0, tex, tey, wb, tipw, tdx, tdy, nx, ny);
+      var bodyD = smooth([[-a * 1.0, -b * .16], [-a * .72, -b * .80], [-a * .1, -b * 1.0], [a * .44, -b * .96], [a * .90, -b * .50], [a * 1.0, b * .12], [a * .80, b * .68], [a * .20, b * 1.0], [-a * .5, b * .78]], true);
+      var bt = sp.bill || 'hook';
+      var H = headAssembly(sp, c, M, { id: id, Hx: Hx, Hy: Hy, hr: hr, ry: sp.headY || .94, pivot: pivot, tilt: tilt, bill: bt, blen: bt === 'hook' ? 1.0 : 1.2, bdep: .86, billX: .74, billY: .18, eye: [.3, -.02, .2], crest: sp.crest, cere: true, raptor: true });
+      var neckD = capsule(pivot, hr * 1.2, H.cen, hr * 1.04);
+      var headW = ell(H.cen[0], H.cen[1], hr, hr * (sp.headY || .94));
+      var P1 = 22 * pr;
+      var wing = foldedWing(a, b, P1);
+      var wingD = wing.d;
+      var la = sp.line == null ? .1 : sp.line;
+      var sideD = smooth([[H.cen[0] + hr * .2, H.cen[1] + hr * .9], [a * .66, -b * .22 + la * b * .5], [a * .22, b * .12 + la * b * .5], [-a * .5, b * .16 + la * b * .35], [-a * 1.25, b * .02]], false);
+      var backD = sideD + 'L' + f(-a * 1.3) + ' ' + f(-b * 3) + 'L' + f(H.cen[0] + hr * 1.3) + ' ' + f(-b * 3) + 'Z';
+      var footY = b * .96 + 15 * lg, footX = a * .16;
+      var pantsLong = has('pantsLong');
+      var pantsD = pantsLong ? smooth([[-a * .2, b * .55], [a * .38, b * .5], [a * .36, footY - 5], [a * .02, footY + 2], [-a * .18, b * .85]], true) : ell(a * .12, b * .78, a * .36, b * .36);
+      var legD = 'M' + f(footX) + ' ' + f(b * .9) + 'L' + f(footX + 1) + ' ' + f(footY);
+      var talons = 'M' + f(footX - 7) + ' ' + f(footY + 1) + 'q6 -3 14 0M' + f(footX - 7) + ' ' + f(footY + 1) + 'q-2 3 -4 5M' + f(footX + 7) + ' ' + f(footY + 1) + 'q3 1 5 6M' + f(footX + 1) + ' ' + f(footY + 1) + 'q1 4 0 6';
+      var feet = [footX, footY];
+      var tr = 'translate(120 150) rotate(' + f(-posture) + ') translate(' + f(-feet[0]) + ' ' + f(-feet[1]) + ')';
+      var cUnion = id + '-u', cBody = id + '-b', cWing = id + '-w', cPants = id + '-pc';
+      var G = { bodyClip: cBody, wingClip: cWing, a: a, b: b, cx: 0, cy: 0, wing: wing };
+      var defs = [
+        h('clipPath', { id: cUnion, key: 'cu' }, [P(bodyD, { key: 1 }), P(neckD, { key: 3 }), P(tailD, { key: 4 }), P(headW, { key: 5 })]),
+        h('clipPath', { id: cBody, key: 'cb' }, [P(bodyD, { key: 1 }), P(neckD, { key: 2 })]),
+        h('clipPath', { id: cWing, key: 'cw' }, P(wingD)),
+        h('clipPath', { id: cPants, key: 'cpc' }, P(pantsD))
+      ].concat(H.defs);
+      var els = [];
+      var legCol = c.leg === '#5c5046' ? '#e0b83a' : c.leg;
+      els.push(h('g', { key: 'legs', fill: 'none', strokeLinecap: 'round' }, P(legD, { stroke: OUTLINE, strokeWidth: 6.2 }), P(legD, { stroke: legCol, strokeWidth: 4 }), P(talons, { stroke: '#2a2420', strokeWidth: 2.2 })));
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 3, strokeLinejoin: 'round' }, [tailD, bodyD, neckD, pantsD].map(function(d, i) { return P(d, { key: i }); })));
+      els.push(H.outline);
+      els.push(P(tailD, { key: 'tail', fill: c.tail }));
+      if (has('tailBars')) els.push(h('g', { key: 'tbars', clipPath: 'url(#' + cUnion + ')' }, [0, 1, 2, 3, 4].map(function(i) { var d = 12 + i * 8; return P('M' + f(tx0 - d * tdx - nx * wb * .6) + ' ' + f(ty0 + d * tdy - ny * wb * .6) + 'L' + f(tx0 - d * tdx + nx * wb * .6) + ' ' + f(ty0 + d * tdy + ny * wb * .6), { key: i, stroke: c.tailMark || c.mark, strokeWidth: 2.6, fill: 'none', opacity: .85 }); })));
+      if (has('tailTip')) els.push(P('M' + f(tex + 5 * tdx - nx * wb * .6) + ' ' + f(tey - 5 * tdy - ny * wb * .6) + 'L' + f(tex + 5 * tdx + nx * wb * .6) + ' ' + f(tey - 5 * tdy + ny * wb * .6), { key: 'tt', stroke: c.light, strokeWidth: 3, fill: 'none', clipPath: 'url(#' + cUnion + ')' }));
+      els.push(h('g', { key: 'base', clipPath: 'url(#' + cUnion + ')' }, [
+        P(bodyD, { key: 'bu', fill: c.under }), P(neckD, { key: 'nu', fill: c.under }),
+        P(backD, { key: 'back', fill: c.back })
+      ]));
+      els.push(h('g', { key: 'sh', clipPath: 'url(#' + cBody + ')' }, [
+        P(ell(a * .15, b * .95, a * 1.1, b * .38), { key: 'bs', fill: shade(c.under, -.35), opacity: .18 }),
+        P(ell(-a * .1, -b * .9, a * .9, b * .22), { key: 'hl', fill: '#fff', opacity: .1 })
+      ]));
+      if (has('hoodNeck')) els.push(h('g', { key: 'hoodn', clipPath: 'url(#' + cBody + ')' }, P(neckD, { fill: c.hood || c.dark })));
+      drawBodyMarks(sp, c, G, M, els);
+      if (has('bellyBand')) els.push(h('g', { key: 'bb', clipPath: 'url(#' + cBody + ')' }, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function(i) { var x = a * (.05 + i * .085); return P('M' + f(x) + ' ' + f(b * (.28 - Math.abs(i - 4.5) * .01)) + 'l-1 ' + f(b * .3), { key: i, stroke: c.mark, strokeWidth: 2.2, strokeLinecap: 'round', fill: 'none', opacity: .9 }); })));
+      els.push(P(pantsD, { key: 'pants', fill: c.pants || (c.under === c.back ? shade(c.under, -.1) : c.under), stroke: shade(c.pants || c.under, -.35), strokeWidth: .9 }));
+      if (has('pantsBars')) els.push(h('g', { key: 'pb', clipPath: 'url(#' + cPants + ')' }, [0, 1, 2, 3, 4].map(function(i) { return P('M' + f(-a * .22) + ' ' + f(b * (.5 + i * .13)) + 'q' + f(a * .3) + ' 3 ' + f(a * .6) + ' 0', { key: i, stroke: c.mark, strokeWidth: 1.8, fill: 'none', opacity: .8 }); })));
+      drawWing(sp, c, G, M, els);
+      els.push(H.fill);
+      var ext = [[-a * 1.0, -b], [tex, tey + 6], [tex, tey - 6], [feet[0] - 9, feet[1] + 6], [feet[0] + 9, feet[1] + 6], [a * 1.05, b], [-a - P1, b * .1]].concat(H.ext);
+      var ang2 = -posture * Math.PI / 180, cs = Math.cos(ang2), sn = Math.sin(ang2);
+      ext = ext.map(function(p) { var x = p[0] - feet[0], y = p[1] - feet[1]; return [120 + x * cs - y * sn, 150 + x * sn + y * cs]; });
+      return { defs: defs, g: h('g', { transform: tr }, els), ext: ext, perchW: 7, perch: sp.perch || 'twig' };
+    }
+
+
+    // ---------- archetype: OWL (front view on a branch) ----------
+    function owl(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var len = sp.len || 1, bh = sp.bh || 1, hd = sp.hd || 1;
+      var bw = 33 * len, bhh = 42 * bh, hw = 35 * hd, hh = 27 * hd;
+      var cyB = 26, cyH = -24;
+      var footY = cyB + bhh * .96 + 6;
+      var tuft = sp.tufts || 0;       // 0 none, 1 short, 2 long
+      var bodyD = smooth([[0, cyB - bhh * 1.0], [bw * .75, cyB - bhh * .72], [bw * 1.02, cyB - bhh * .1], [bw * .88, cyB + bhh * .62], [bw * .42, cyB + bhh * .98], [0, cyB + bhh * 1.0], [-bw * .42, cyB + bhh * .98], [-bw * .88, cyB + bhh * .62], [-bw * 1.02, cyB - bhh * .1], [-bw * .75, cyB - bhh * .72]], true);
+      var headD = smooth([[0, cyH - hh * 1.04], [hw * .62, cyH - hh * .86], [hw * 1.0, cyH - hh * .2], [hw * .9, cyH + hh * .55], [hw * .45, cyH + hh * .98], [0, cyH + hh * 1.0], [-hw * .45, cyH + hh * .98], [-hw * .9, cyH + hh * .55], [-hw * 1.0, cyH - hh * .2], [-hw * .62, cyH - hh * .86]], true);
+      var tuftH = tuft === 2 ? 22 : tuft === 1 ? 11 : 0;
+      var tuftL = tuft ? smooth([[-hw * .66, cyH - hh * .66, 'c'], [-hw * .86, cyH - hh - tuftH, 'c'], [-hw * .28, cyH - hh * .98, 'c']], true) : null;
+      var tuftR = tuft ? smooth([[hw * .66, cyH - hh * .66, 'c'], [hw * .86, cyH - hh - tuftH, 'c'], [hw * .28, cyH - hh * .98, 'c']], true) : null;
+      var disc = c.disc || shade(c.under, .1);
+      var rim = c.rim || shade(c.back, -.1);
+      var heart = has('heart');
+      var discL = heart ? smooth([[0, cyH - hh * .2, 'c'], [-hw * .25, cyH - hh * .98], [-hw * .78, cyH - hh * .72], [-hw * .92, cyH + hh * .2], [-hw * .5, cyH + hh * .9], [0, cyH + hh * .62, 'c']], true) : ell(-hw * .43, cyH + 1, hw * .5, hh * .8);
+      var discR = heart ? smooth([[0, cyH - hh * .2, 'c'], [hw * .25, cyH - hh * .98], [hw * .78, cyH - hh * .72], [hw * .92, cyH + hh * .2], [hw * .5, cyH + hh * .9], [0, cyH + hh * .62, 'c']], true) : ell(hw * .43, cyH + 1, hw * .5, hh * .8);
+      var er = hh * .3 * (sp.eyeS || 1), ex = hw * .4, ey = cyH - 1;
+      var cB = id + '-ob';
+      var defs = [h('clipPath', { id: cB, key: 'cb' }, P(bodyD))];
+      var els = [];
+      // feet / talons
+      var feet = [-13, 13].map(function(x, i) { return h('g', { key: 'ft' + i }, P(ell(x, footY - 3, 8, 5.5), { fill: c.feet || shade(c.under, -.05), stroke: OUTLINE, strokeWidth: 1.2 }), [-4, 0, 4].map(function(dx, j) { return P('M' + f(x + dx) + ' ' + f(footY + 1) + 'q0 4 ' + f(dx * .5) + ' 6', { key: j, stroke: '#2a2420', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' }); })); });
+      els.push(h('g', { key: 'feet' }, feet));
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, P(bodyD, { key: 'b' }), P(headD, { key: 'h' }), tuftL ? P(tuftL, { key: 'tl' }) : null, tuftR ? P(tuftR, { key: 'tr' }) : null));
+      els.push(P(bodyD, { key: 'bf', fill: c.under }));
+      // folded wings: darker side panels
+      var wingL = smooth([[-bw * .66, cyB - bhh * .78], [-bw * 1.0, cyB - bhh * .1], [-bw * .86, cyB + bhh * .62], [-bw * .42, cyB + bhh * .92], [-bw * .3, cyB + bhh * .3], [-bw * .38, cyB - bhh * .35]], true);
+      var wingR = smooth([[bw * .66, cyB - bhh * .78], [bw * 1.0, cyB - bhh * .1], [bw * .86, cyB + bhh * .62], [bw * .42, cyB + bhh * .92], [bw * .3, cyB + bhh * .3], [bw * .38, cyB - bhh * .35]], true);
+      els.push(h('g', { key: 'wings', clipPath: 'url(#' + cB + ')' }, P(wingL, { key: 'wl', fill: c.back }), P(wingR, { key: 'wr', fill: c.back }),
+        has('wingSpots') ? [-1, 1].map(function(sgn) { return [0, 1, 2, 3, 4, 5].map(function(i) { return P(ell(sgn * bw * (.64 + (i % 2) * .08), cyB - bhh * .5 + i * bhh * .2, 2.1, 2.1), { key: sgn + '_' + i, fill: c.light, opacity: .9 }); }); }) : null));
+      // breast pattern
+      var rnd = rng(hash((sp.id || 'o') + 'o'));
+      var br = [], i, x, y;
+      if (has('streakBreast')) for (i = 0; i < 30; i++) { x = (rnd() - .5) * bw * 1.1; y = cyB - bhh * .55 + rnd() * bhh * 1.2; br.push(P('M' + f(x) + ' ' + f(y) + 'l0 ' + f(bhh * .2), { key: 's' + i, stroke: c.mark, strokeWidth: 1.7, strokeLinecap: 'round', fill: 'none', opacity: .85 })); }
+      if (has('barBelly')) for (i = 0; i < 9; i++) { y = cyB - bhh * .55 + i * bhh * .17; br.push(P('M' + f(-bw * .7) + ' ' + f(y) + 'Q0 ' + f(y + 4) + ' ' + f(bw * .7) + ' ' + f(y), { key: 'b' + i, stroke: c.mark, strokeWidth: 2.2, fill: 'none', opacity: .85 })); }
+      if (has('spotBreast')) for (i = 0; i < 18; i++) { x = (rnd() - .5) * bw * 1.1; y = cyB - bhh * .6 + rnd() * bhh * 1.3; br.push(P(ell(x, y, 1.9, 2.3), { key: 'p' + i, fill: c.mark, opacity: .85 })); }
+      if (has('herring')) for (i = 0; i < 8; i++) { y = cyB - bhh * .55 + i * bhh * .18; br.push(P('M' + f(-bw * .6) + ' ' + f(y) + 'l' + f(bw * .3) + ' 5l' + f(bw * .3) + ' -5l' + f(bw * .3) + ' 5l' + f(bw * .3) + ' -5', { key: 'h' + i, stroke: c.mark, strokeWidth: 1.5, fill: 'none', opacity: .85 })); }
+      els.push(h('g', { key: 'bm', clipPath: 'url(#' + cB + ')' }, br));
+      // head
+      els.push(P(headD, { key: 'hf', fill: c.crownC || c.back }));
+      if (tuftL) els.push(P(tuftL, { key: 'tlf', fill: c.back }), P(tuftR, { key: 'trf', fill: c.back }));
+      // head streak/spots
+      var hdm = [];
+      if (has('capSpots')) for (i = 0; i < 14; i++) { hdm.push(P(ell((rnd() - .5) * hw * 1.7, cyH - hh * (.35 + rnd() * .55), 1.5, 1.5), { key: 'c' + i, fill: c.light, opacity: .9 })); }
+      if (has('capStreaks')) for (i = 0; i < 12; i++) { hdm.push(P('M' + f((rnd() - .5) * hw * 1.7) + ' ' + f(cyH - hh * (.5 + rnd() * .4)) + 'l0 5', { key: 'cs' + i, stroke: c.mark, strokeWidth: 1.4, fill: 'none', opacity: .8 })); }
+      els.push(h('g', { key: 'hm', clipPath: 'url(#' + id + '-oh)' }, hdm));
+      defs.push(h('clipPath', { id: id + '-oh', key: 'coh' }, P(headD)));
+      // facial disc
+      els.push(P(discL, { key: 'dl', fill: disc, stroke: rim, strokeWidth: 2.2 }), P(discR, { key: 'dr', fill: disc, stroke: rim, strokeWidth: 2.2 }));
+      if (has('ruff')) els.push(P('M' + f(-hw * .9) + ' ' + f(cyH + hh * .5) + 'Q0 ' + f(cyH + hh * 1.15) + ' ' + f(hw * .9) + ' ' + f(cyH + hh * .5), { key: 'ruff', fill: 'none', stroke: c.mark, strokeWidth: 2.6, strokeLinecap: 'round', opacity: .8 }));
+      if (has('browDark')) els.push(P('M' + f(-ex - er * 1.6) + ' ' + f(ey - er * 1.5) + 'L' + f(-ex * .12) + ' ' + f(ey - er * .6) + 'M' + f(ex + er * 1.6) + ' ' + f(ey - er * 1.5) + 'L' + f(ex * .12) + ' ' + f(ey - er * .6), { key: 'brow', stroke: c.dark, strokeWidth: er * .9, strokeLinecap: 'round', fill: 'none', opacity: .85 }));
+      if (has('eyeSurround')) els.push(h('circle', { key: 'sl', cx: -ex, cy: ey, r: er * 1.55, fill: c.dark, opacity: .55 }), h('circle', { key: 'sr', cx: ex, cy: ey, r: er * 1.55, fill: c.dark, opacity: .55 }));
+      // chin patch
+      if (has('chinWhite')) els.push(P(ell(0, cyH + hh * .72, 7, 4.6), { key: 'chin', fill: c.light }));
+      // eyes
+      [-ex, ex].forEach(function(x2, k) {
+        var dark = c.eyeDark;
+        els.push(h('circle', { key: 'e' + k, cx: x2, cy: ey, r: er, fill: dark ? '#2a1c12' : (c.iris || '#f0c020'), stroke: OUTLINE, strokeWidth: 1 }));
+        els.push(h('circle', { key: 'p' + k, cx: x2, cy: ey, r: er * (dark ? .78 : .56), fill: '#0b0907' }));
+        els.push(h('circle', { key: 'h' + k, cx: x2 + er * .28, cy: ey - er * .3, r: er * .24, fill: '#fff', opacity: .9 }));
+      });
+      // beak
+      els.push(P(smooth([[-3.6, cyH + 1, 'c'], [3.6, cyH + 1, 'c'], [0, cyH + 14, 'c']], true), { key: 'beak', fill: c.bill || '#d9cfa8', stroke: OUTLINE, strokeWidth: 1 }));
+      var ext = [[-hw - 3, cyH - hh - tuftH - 2], [hw + 3, cyH - hh - tuftH - 2], [-bw * 1.02, cyB], [bw * 1.02, cyB], [-14, footY + 6], [14, footY + 6]].map(function(p) { return [120 + p[0], 150 - footY + p[1]]; });
+      return { defs: defs, g: h('g', { transform: 'translate(120 ' + f(150 - footY) + ')' }, els), ext: ext, perchW: 6, perch: sp.perch || 'twig' };
+    }
+
+
+    // ---------- archetype: STANDER (heron, shorebird, gull, tern, woodcock...) ----------
+    function stander(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var len = sp.len || 1, bh = sp.bh || 1, hd = sp.hd || 1, tl = sp.tl || 1, pr = sp.prim == null ? 1 : sp.prim;
+      var neck = sp.neck == null ? .4 : sp.neck, legL = sp.leg == null ? 1 : sp.leg;
+      var posture = sp.rot == null ? 20 : sp.rot;
+      var a = 36 * len, b = 21 * bh, hr = 11.5 * hd;
+      var N0 = [a * .8, -b * .34];
+      var L = 12 + 62 * neck;
+      var world;
+      if (neck >= .7) world = [[0, 0], [9, -L * .22], [-3, -L * .52], [5, -L * .8], [11, -L]];
+      else if (neck >= .45) world = [[0, 0], [5, -L * .35], [8, -L * .7], [10, -L]];
+      else world = [[0, 0], [3, -L * .5], [5, -L]];
+      if (sp.neckCurve) world = sp.neckCurve(L);
+      var neckEndW = world[world.length - 1];
+      var neckEnd = rotp(neckEndW, posture, [0, 0]);
+      var Hx = N0[0] + neckEnd[0], Hy = N0[1] + neckEnd[1];
+      var neckW = hr * (1.75 - .8 * Math.min(neck, 1)) * (sp.neckW || 1);
+      var neckPath = smooth(world, false);
+      var tilt = posture * (sp.headTilt == null ? .95 : sp.headTilt) + (sp.headDown || 0);
+      var bt = sp.bill || 'pointy';
+      var bdTab = { cone: .78, awl: .26, flat: .62, hook: .62, heavy: .84, chisel: .5, decurve: .26, long: .3, pointy: .48, dagger: .5 };
+      var blTab = { cone: .78, awl: 1.02, flat: .86, hook: 1.0, heavy: 1.28, chisel: 1.2, decurve: 1.7, long: 2.0, pointy: .92, dagger: 2.3 };
+      var H = headAssembly(sp, c, M, { id: id, Hx: Hx, Hy: Hy, hr: hr, ry: sp.headY, pivot: [Hx, Hy], tilt: tilt, bill: bt === 'dagger' ? 'long' : bt, blen: blTab[bt] || .9, bdep: (bdTab[bt] || .6), crest: sp.crest });
+      // tail + body
+      var T = 30 * tl, wb = b * .7, tipw = wb * (sp.tailW || 1);
+      var tx0 = -a * .72, ty0 = -b * .34, ang = (sp.tailAng == null ? 10 : sp.tailAng) * Math.PI / 180;
+      var tdx = Math.cos(ang), tdy = Math.sin(ang), tex = tx0 - T * tdx, tey = ty0 + T * tdy, nx = -tdy, ny = tdx;
+      var tailD = tailShape(sp.tailTip || 'sq', tx0, ty0, tex, tey, wb, tipw, tdx, tdy, nx, ny);
+      var bodyD = smooth([[-a * 1.0, -b * .14], [-a * .7, -b * .8], [-a * .15, -b * 1.0], [a * .42, -b * .96], [a * .92, -b * .5], [a * 1.04, b * .1], [a * .82, b * .66], [a * .2, b * 1.0], [-a * .45, b * .82]], true);
+      var P1 = 18 * pr;
+      var wing = foldedWing(a, b, P1);
+      var la = sp.line == null ? 0 : sp.line;
+      var sideD = smooth([[Hx - hr * .2, Hy + hr * .3], [a * .8, -b * .3 + la * b * .4], [a * .3, b * .02 + la * b * .5], [-a * .5, b * .14 + la * b * .35], [-a * 1.25, b * .02]], false);
+      var backD = sideD + 'L' + f(-a * 1.3) + ' ' + f(-b * 3) + 'L' + f(Hx + hr * 1.3) + ' ' + f(-b * 3) + 'Z';
+      // legs (hip fixed; feet hang straight down in WORLD space)
+      var hip = [a * .06, b * .72], LL = 24 * legL;
+      var footW = [0, LL], foot2W = [9, LL * .96];
+      var footLocal = [hip[0] + rotp(footW, posture, [0, 0])[0], hip[1] + rotp(footW, posture, [0, 0])[1]];
+      var legCol = c.leg;
+      var legsG = h('g', { key: 'legs', transform: 'translate(' + f(hip[0]) + ' ' + f(hip[1]) + ') rotate(' + f(posture) + ')', fill: 'none', stroke: legCol, strokeLinecap: 'round' },
+        [foot2W, footW].map(function(ft, i) {
+          var kx = ft[0] + (i ? 1 : 3), ky = ft[1] * .55;
+          return h('g', { key: 'lg' + i },
+            P('M' + f(ft[0] * .2) + ' 0L' + f(kx) + ' ' + f(ky) + 'L' + f(ft[0]) + ' ' + f(ft[1]), { strokeWidth: sp.legW || 2.2, strokeLinejoin: 'round' }),
+            P('M' + f(ft[0] - 6) + ' ' + f(ft[1] + .5) + 'L' + f(ft[0] + 8) + ' ' + f(ft[1] + .5) + 'M' + f(ft[0]) + ' ' + f(ft[1]) + 'l4 0', { strokeWidth: 1.8 }));
+        }));
+      var tr = 'translate(120 150) rotate(' + f(-posture) + ') translate(' + f(-footLocal[0]) + ' ' + f(-footLocal[1]) + ')';
+      var cUnion = id + '-u', cBody = id + '-b', cWing = id + '-w';
+      var G = { bodyClip: cBody, wingClip: cWing, a: a, b: b, cx: 0, cy: 0, wing: wing };
+      var defs = [
+        h('clipPath', { id: cUnion, key: 'cu' }, [P(bodyD, { key: 1 }), P(tailD, { key: 4 })]),
+        h('clipPath', { id: cBody, key: 'cb' }, P(bodyD)),
+        h('clipPath', { id: cWing, key: 'cw' }, P(wing.d))
+      ].concat(H.defs);
+      var neckT = 'translate(' + f(N0[0]) + ' ' + f(N0[1]) + ') rotate(' + f(posture) + ')';
+      var els = [];
+      els.push(legsG);
+      els.push(h('g', { key: 'nol', transform: neckT }, P(neckPath, { stroke: OUTLINE, strokeWidth: neckW + 2.8, fill: 'none', strokeLinecap: 'round' })));
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, [tailD, bodyD].map(function(d, i) { return P(d, { key: i }); })));
+      els.push(H.outline);
+      els.push(P(tailD, { key: 'tail', fill: c.tail }));
+      if (has('tailWhiteSides')) els.push(P(tailD, { key: 'tws', fill: c.light, clipPath: 'url(#' + cUnion + ')', opacity: .0 }));
+      els.push(h('g', { key: 'base', clipPath: 'url(#' + cUnion + ')' }, [P(bodyD, { key: 'bu', fill: c.under }), P(backD, { key: 'back', fill: c.back })]));
+      els.push(h('g', { key: 'sh', clipPath: 'url(#' + cBody + ')' }, [
+        P(ell(a * .15, b * .95, a * 1.1, b * .38), { key: 'bs', fill: shade(c.under, -.35), opacity: .16 }),
+        P(ell(-a * .1, -b * .9, a * .9, b * .22), { key: 'hl', fill: '#fff', opacity: .1 })]));
+      // neck colouring
+      var nc = c.neckC || (has('neckBack') ? c.back : c.under);
+      els.push(h('g', { key: 'nfill', transform: neckT, fill: 'none', strokeLinecap: 'round' },
+        P(neckPath, { key: 'n1', stroke: nc, strokeWidth: neckW }),
+        has('neckPale') || has('neckBack') ? null : P(neckPath, { key: 'n2', stroke: c.neckBackC || c.back, strokeWidth: neckW * .5, transform: 'translate(' + f(-neckW * .24) + ' ' + f(-neckW * .06) + ')', opacity: .95 }),
+        has('neckStreaks') ? [0, 1, 2, 3, 4, 5].map(function(i) { var y = -L * (.2 + i * .14); return P('M' + f(2 + (i % 2)) + ' ' + f(y) + 'l.8 ' + f(L * .08), { key: 'ns' + i, stroke: c.mark, strokeWidth: 1.3, opacity: .9 }); }) : null));
+      drawBodyMarks(sp, c, G, M, els);
+      drawWing(sp, c, G, M, els);
+      els.push(H.fill);
+      var ext = [[-a * 1.0, -b], [tex, tey + 6], [tex, tey - 6], [footLocal[0] - 9, footLocal[1] + 3], [footLocal[0] + 18, footLocal[1] + 3], [a * 1.05, b], [-a - P1, 0], [N0[0], N0[1]]].concat(H.ext);
+      var ang2 = -posture * Math.PI / 180, cs = Math.cos(ang2), sn = Math.sin(ang2);
+      ext = ext.map(function(p) { var x = p[0] - footLocal[0], y = p[1] - footLocal[1]; return [120 + x * cs - y * sn, 150 + x * sn + y * cs]; });
+      return { defs: defs, g: h('g', { transform: tr }, els), ext: ext, perch: sp.ground || 'ground', perchW: 3 };
+    }
+
+
+    function polyPoint(pts, t) {
+      var tot = 0, i, segs = [];
+      for (i = 1; i < pts.length; i++) { var l = Math.sqrt(Math.pow(pts[i][0] - pts[i - 1][0], 2) + Math.pow(pts[i][1] - pts[i - 1][1], 2)); segs.push(l); tot += l; }
+      var want = tot * t, acc = 0;
+      for (i = 0; i < segs.length; i++) { if (acc + segs[i] >= want) { var u = (want - acc) / (segs[i] || 1); return [lerp(pts[i][0], pts[i + 1][0], u), lerp(pts[i][1], pts[i + 1][1], u)]; } acc += segs[i]; }
+      return pts[pts.length - 1];
+    }
+
+    // ---------- archetype: SWIMMER (duck, goose, swan, loon, merganser, cormorant, grebe) ----------
+    function swimmer(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var len = sp.len || 1, bh = sp.bh || 1, hd = sp.hd || 1, tl = sp.tl || 1, pr = sp.prim == null ? 1 : sp.prim;
+      var a = 40 * len, b = 21 * bh, hr = 11.5 * hd;
+      var neck = sp.neck == null ? .4 : sp.neck;
+      var wl = b * (sp.sink == null ? .3 : sp.sink);
+      var N0 = [a * .8, -b * .3];
+      var L = 14 + 52 * neck;
+      var world = sp.neckW0 ? sp.neckW0(L) : neck >= .9 ? [[0, 0], [9, -L * .2], [-2, -L * .5], [8, -L * .82], [14, -L]] : neck >= .5 ? [[0, 0], [5, -L * .5], [6, -L]] : [[0, 0], [5, -L * .5], [7, -L]];
+      var Hx = N0[0] + world[world.length - 1][0], Hy = N0[1] + world[world.length - 1][1];
+      var neckW = hr * (1.55 - .5 * Math.min(neck, 1)) * (sp.neckT || 1);
+      var neckPath = smooth(world, false);
+      var bt = sp.bill || 'duck';
+      var bdTab = { duck: .62, goose: .6, long: .42, hook: .46, pointy: .5, cone: .7 }, blTab = { duck: 1.5, goose: 1.1, long: 2.2, hook: 1.7, pointy: 1.0, cone: .8 };
+      var H = headAssembly(sp, c, M, { id: id, Hx: Hx, Hy: Hy, hr: hr, ry: sp.headY, pivot: [Hx, Hy], tilt: sp.tilt || 0, bill: bt, blen: blTab[bt] || 1.2, bdep: bdTab[bt] || .55, crest: sp.crest, billY: .22 });
+      var T = 16 * tl;
+      var bodyD = smooth([[-a * 1.06, -b * .42, 'c'], [-a * .62, -b * .78], [0, -b * .88], [a * .55, -b * .72], [a * .98, -b * .25], [a * .9, b * .4], [a * .3, b * .85], [-a * .4, b * .8], [-a * .96, b * .15]], true);
+      var tailD = poly([[-a * 1.0, -b * .55], [-a * 1.0 - T, -b * (.62 + (sp.tailUp == null ? .18 : sp.tailUp)), 'c'], [-a * .94, -b * .1]]);
+      var wing = foldedWing(a, b, 8 * pr);
+      wing.spec = smooth([[a * .12, b * .02], [-a * .38, -b * .02], [-a * .5, b * .1], [a * .02, b * .16]], true);
+      var la = sp.line == null ? .1 : sp.line;
+      var sideD = smooth([[Hx - hr * .2, Hy + hr * .3], [a * .85, -b * .4 + la * b * .3], [a * .3, b * .05 + la * b * .4], [-a * .5, b * .1 + la * b * .3], [-a * 1.25, b * .0]], false);
+      var backD = sideD + 'L' + f(-a * 1.3) + ' ' + f(-b * 3) + 'L' + f(Hx + hr * 1.3) + ' ' + f(-b * 3) + 'Z';
+      var cUnion = id + '-u', cBody = id + '-b', cWing = id + '-w';
+      var G = { bodyClip: cBody, wingClip: cWing, a: a, b: b, cx: 0, cy: 0, wing: wing };
+      var defs = [
+        h('clipPath', { id: cUnion, key: 'cu' }, [P(bodyD, { key: 1 }), P(tailD, { key: 4 })]),
+        h('clipPath', { id: cBody, key: 'cb' }, P(bodyD)),
+        h('clipPath', { id: cWing, key: 'cw' }, P(wing.d))
+      ].concat(H.defs);
+      var neckT = 'translate(' + f(N0[0]) + ' ' + f(N0[1]) + ')';
+      var els = [];
+      els.push(h('g', { key: 'nol', transform: neckT }, P(neckPath, { stroke: OUTLINE, strokeWidth: neckW + 2.8, fill: 'none', strokeLinecap: 'round' })));
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, [tailD, bodyD].map(function(d, i) { return P(d, { key: i }); })));
+      els.push(H.outline);
+      els.push(P(tailD, { key: 'tail', fill: c.tail }));
+      els.push(h('g', { key: 'base', clipPath: 'url(#' + cUnion + ')' }, [P(bodyD, { key: 'bu', fill: c.under }), P(backD, { key: 'back', fill: c.back })]));
+      els.push(h('g', { key: 'sh', clipPath: 'url(#' + cBody + ')' }, [P(ell(a * .1, b * .9, a * 1.1, b * .4), { key: 'bs', fill: shade(c.under, -.35), opacity: .14 }), P(ell(-a * .1, -b * .9, a * .9, b * .22), { key: 'hl', fill: '#fff', opacity: .12 })]));
+      var nc = c.neckC || c.back;
+      var collarPt = polyPoint(world, .5);
+      els.push(h('g', { key: 'nfill', transform: neckT, fill: 'none', strokeLinecap: 'round' },
+        P(neckPath, { key: 'n1', stroke: nc, strokeWidth: neckW }),
+        c.neckFront ? P(neckPath, { key: 'n2', stroke: c.neckFront, strokeWidth: neckW * .55, transform: 'translate(' + f(neckW * .22) + ' 0)' }) : null,
+        has('collar') ? P('M' + f(collarPt[0] - neckW / 2) + ' ' + f(collarPt[1]) + 'l' + f(neckW) + ' 0', { key: 'col', stroke: c.light, strokeWidth: 2.6 }) : null,
+        has('neckStripes') ? [0, 1, 2, 3, 4].map(function(i) { var q = polyPoint(world, .25 + i * .15); return P('M' + f(q[0] - neckW / 2) + ' ' + f(q[1]) + 'l' + f(neckW) + ' 0', { key: 'st' + i, stroke: c.light, strokeWidth: 1.6, opacity: .9 }); }) : null,
+        has('neckStripe') ? P(neckPath, { key: 'nst', stroke: c.light, strokeWidth: neckW * .2, transform: 'translate(' + f(neckW * .02) + ' 0)', opacity: .95 }) : null));
+      drawBodyMarks(sp, c, G, M, els);
+      // speculum before the wing so the wing outline sits on it
+      drawWing(sp, c, G, M, els);
+      if (has('speculum')) els.push(h('g', { key: 'spec', clipPath: 'url(#' + cWing + ')' }, P(wing.spec, { fill: c.patch || '#2b5fb0', stroke: c.light, strokeWidth: 1.2 })));
+      if (has('flankPatch')) els.push(h('g', { key: 'fp', clipPath: 'url(#' + cBody + ')' }, P(ell(-a * .1, b * .02, a * .5, b * .26), { fill: c.light, opacity: .95 })));
+      els.push(H.fill);
+      // water overlay
+      var W = 600;
+      var waveD = 'M' + f(-W) + ' ' + f(wl) + 'q' + f(W * .13) + ' -3 ' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0t' + f(W * .26) + ' 0V' + f(b * 3) + 'H' + f(-W) + 'Z';
+      els.push(P(waveD, { key: 'water', fill: 'rgba(76,128,160,.62)', stroke: 'rgba(255,255,255,.55)', strokeWidth: 1.2 }));
+      els.push(P('M' + f(-a * 1.4) + ' ' + f(wl + 9) + 'h' + f(a * .8) + 'M' + f(a * .1) + ' ' + f(wl + 14) + 'h' + f(a * 1.1) + 'M' + f(-a * .9) + ' ' + f(wl + 20) + 'h' + f(a * .6), { key: 'rip', stroke: 'rgba(255,255,255,.4)', strokeWidth: 1.1, fill: 'none', strokeLinecap: 'round' }));
+      var tr = 'translate(120 ' + f(150 - wl + 2) + ')';
+      var ext = [[-a * 1.06 - T, -b * .8], [a * 1.0, b * .2], [-a * 1.0, wl + 14], [a * 1.0, wl + 14], [N0[0], N0[1]]].concat(H.ext);
+      ext = ext.map(function(p) { return [120 + p[0], 150 - wl + 2 + p[1]]; });
+      return { defs: defs, g: h('g', { transform: tr }, els), ext: ext, perch: 'none', perchW: 0 };
+    }
+
+
+    // ---------- archetype: FLYER (dorsal view, wings spread: swift, gannet, shearwater, petrel, fulmar...) ----------
+    function flyer(sp, c, ctx) {
+      var id = ctx.id, M = sp.m || [];
+      function has(k) { return M.indexOf(k) >= 0; }
+      var S = 82 * (sp.span || 1), C = 22 * (sp.chord || 1), sweep = sp.sweep == null ? .35 : sp.sweep, bend = sp.bend || 0;
+      var bl = 30 * (sp.len || 1), bw = 8 * (sp.bw || 1), hr = 6.2 * (sp.hd || 1);
+      var T = 26 * (sp.tl || 1), tw = 9 * (sp.tailW || 1);
+      var wingPts = [[5, -bl * .42], [S * .3, -bl * .5 - bend * 10], [S * .65, -bl * .4 + sweep * S * .2], [S, -bl * .2 + sweep * S * .5, 'c'], [S * .74, bl * .02 + sweep * S * .32 + C * .15], [S * .4, bl * .08 + C * .55], [6, bl * .26 + C * .7]];
+      var wingD = smooth(wingPts, true);
+      var wingL = smooth(wingPts.map(function(p) { return [-p[0], p[1], p[2]]; }), true);
+      var bodyD = smooth([[0, -bl * 1.0], [bw * .8, -bl * .55], [bw, 0], [bw * .7, bl * .6], [0, bl * 1.0], [-bw * .7, bl * .6], [-bw, 0], [-bw * .8, -bl * .55]], true);
+      var tk = sp.tailTip || 'pt';
+      var tailD = tk === 'fk' ? poly([[-bw * .6, bl * .8], [-tw * 1.4, bl * .8 + T, 'c'], [0, bl * .8 + T * .6, 'c'], [tw * 1.4, bl * .8 + T, 'c'], [bw * .6, bl * .8]]) : tk === 'sq' ? poly([[-bw * .6, bl * .8], [-tw, bl * .8 + T], [tw, bl * .8 + T], [bw * .6, bl * .8]]) : poly([[-bw * .6, bl * .8], [-tw * .7, bl * .8 + T * .8], [0, bl * .8 + T, 'c'], [tw * .7, bl * .8 + T * .8], [bw * .6, bl * .8]]);
+      var Hy = -bl - hr * .55;
+      var headD = ell(0, Hy, hr * .95, hr);
+      var bt = sp.bill || 'pointy';
+      var blen = { cone: 6, awl: 8, hook: 9, heavy: 11, pointy: 8, long: 13, dagger: 15 }[bt] || 8;
+      var bdep = { cone: 5, awl: 2, hook: 3.4, heavy: 5.4, pointy: 3.2, long: 3, dagger: 4.4 }[bt] || 3;
+      var billD = poly([[-bdep / 2, Hy - hr * .6], [bdep / 2, Hy - hr * .6], [0, Hy - hr * .6 - blen * (sp.bl || 1), 'c']]);
+      var cW = id + '-w', cWl = id + '-wl', cAll = id + '-all';
+      var defs = [h('clipPath', { id: cW, key: 'w' }, P(wingD)), h('clipPath', { id: cWl, key: 'wl' }, P(wingL)), h('clipPath', { id: cAll, key: 'a' }, [P(wingD, { key: 1 }), P(wingL, { key: 2 }), P(bodyD, { key: 3 }), P(tailD, { key: 4 })])];
+      var els = [];
+      els.push(h('g', { key: 'ol', fill: OUTLINE, stroke: OUTLINE, strokeWidth: 2.8, strokeLinejoin: 'round' }, [wingD, wingL, bodyD, tailD, headD].map(function(d, i) { return P(d, { key: i }); }), P(billD, { key: 'bo' })));
+      if (has('legsTrail')) els.push(P('M-3 ' + f(bl * .8 + T * .5) + 'l-1 ' + f(T * .9) + 'M3 ' + f(bl * .8 + T * .5) + 'l1 ' + f(T * .9), { key: 'lt', stroke: c.leg, strokeWidth: 1.3, fill: 'none' }), P(poly([[-4, bl * .8 + T * 1.4], [-1.5, bl * .8 + T * 1.4 + 4], [-5, bl * .8 + T * 1.4 + 4]]), { key: 'lw', fill: c.legWeb || '#e8d24a', opacity: .9 }));
+      els.push(P(tailD, { key: 'tail', fill: c.tail }));
+      if (has('tailBand')) els.push(P(tailD, { key: 'tbn', fill: 'none', stroke: c.tailBand || c.dark, strokeWidth: 3.2, clipPath: 'url(#' + cAll + ')', opacity: .0 }));
+      [[wingD, cW, 'r'], [wingL, cWl, 'l']].forEach(function(w) {
+        var g = [P(w[0], { key: 'f', fill: c.wing })];
+        var sg = w[2] === 'l' ? -1 : 1;
+        g.push(P(smooth([[sg * 5, -bl * .42], [sg * S * .3, -bl * .5 - bend * 10], [sg * S * .6, -bl * .38 + sweep * S * .16], [sg * S * .62, bl * .02 + sweep * S * .2 + C * .1], [sg * S * .35, bl * .08 + C * .5], [sg * 6, bl * .24 + C * .6]], true), { key: 'cov', fill: c.back, opacity: .9 }));
+        if (has('tipsBlack')) g.push(P(poly([[sg * S * .7, -bl * 1.5], [sg * S * 1.5, -bl * 1.5], [sg * S * 1.5, bl * 3], [sg * S * .7 - sg * 6, bl * 3]]), { key: 'tip', fill: c.tip || c.dark }));
+        if (has('trailDark')) g.push(P('M' + f(sg * 6) + ' ' + f(bl * .26 + C * .7) + 'Q' + f(sg * S * .4) + ' ' + f(bl * .08 + C * .55) + ' ' + f(sg * S * .74) + ' ' + f(bl * .02 + sweep * S * .32 + C * .15), { key: 'tr', stroke: c.dark, strokeWidth: 3, fill: 'none', opacity: .8 }));
+        if (has('wingBar')) g.push(P('M' + f(sg * 8) + ' ' + f(-bl * .18) + 'Q' + f(sg * S * .5) + ' ' + f(-bl * .26 + sweep * S * .12) + ' ' + f(sg * S * .86) + ' ' + f(-bl * .1 + sweep * S * .38), { key: 'wb', stroke: c.light, strokeWidth: 2.4, fill: 'none', opacity: .95 }));
+        for (var q = 1; q <= 5; q++) g.push(P('M' + f(sg * S * (.2 + q * .13)) + ' ' + f(bl * .06 + C * .5 + q * 1.4 - sweep * S * .02 * q) + 'l' + f(sg * 2) + ' ' + f(C * .35), { key: 'fe' + q, stroke: shade(c.wing, -.3), strokeWidth: .8, fill: 'none', opacity: .55 }));
+        els.push(h.apply(null, ['g', { key: 'w' + w[2], clipPath: 'url(#' + w[1] + ')' }].concat(g)));
+      });
+      els.push(P(bodyD, { key: 'body', fill: c.back }));
+      if (has('rumpWhite')) els.push(P(ell(0, bl * .55, bw * 1.15, bl * .26), { key: 'rump', fill: c.light, clipPath: 'url(#' + cAll + ')' }));
+      els.push(P(ell(0, -bl * .1, bw * .4, bl * .6), { key: 'bhl', fill: '#fff', opacity: .14 }));
+      els.push(P(headD, { key: 'head', fill: c.crown || c.back }));
+      if (has('headDark')) els.push(P(headD, { key: 'hd2', fill: c.dark }));
+      els.push(P(billD, { key: 'bill', fill: c.bill, stroke: shade(c.bill, -.45), strokeWidth: .7 }));
+      els.push(h('circle', { key: 'e1', cx: -hr * .62, cy: Hy - hr * .05, r: 1.5, fill: c.eye }), h('circle', { key: 'e2', cx: hr * .62, cy: Hy - hr * .05, r: 1.5, fill: c.eye }));
+      var ext = [[-S, -bl * .2 + sweep * S * .5], [S, -bl * .2 + sweep * S * .5], [0, Hy - hr - blen], [0, bl * .8 + T + 3]];
+      return { defs: defs, g: h('g', { transform: 'translate(120 90)' }, els), ext: ext.map(function(p) { return [120 + p[0], 90 + p[1]]; }), perch: 'none', perchW: 0, flying: true };
+    }
+
+    var ARCH = { passerine: passerine, raptor: raptor, owl: owl, stander: stander, swimmer: swimmer, flyer: flyer };
+
+    // ---------- plate wrapper ----------
+    function perchEls(kind, perchW, fx, fy, s, B, sp) {
+      var els = [], w = (perchW || 4.2);
+      if (kind === 'twig') {
+        els.push(h('path', { key: 'tw', d: 'M18 ' + f(fy + 2) + 'Q120 ' + f(fy - 3) + ' 222 ' + f(fy - 8), stroke: '#5b4634', strokeWidth: w, strokeLinecap: 'round', fill: 'none' }));
+        els.push(h('path', { key: 'twh', d: 'M18 ' + f(fy + 2 - w * .22) + 'Q120 ' + f(fy - 3 - w * .22) + ' 222 ' + f(fy - 8 - w * .22), stroke: 'rgba(255,236,205,.38)', strokeWidth: w * .3, strokeLinecap: 'round', fill: 'none' }));
+        els.push(h('path', { key: 'tw2', d: 'M70 ' + f(fy + 1) + 'q-8 12 -22 14', stroke: '#5b4634', strokeWidth: w * .45, strokeLinecap: 'round', fill: 'none' }));
+      } else if (kind === 'trunk') {
+        var tx = fx - 4 * s, tw = 40 * s;
+        els.push(h('rect', { key: 'tk', x: tx + 3 * s, y: -4, width: tw, height: 190, fill: '#6b5240' }));
+        els.push(h('rect', { key: 'tk2', x: tx + 3 * s, y: -4, width: tw * .28, height: 190, fill: '#7d6350', opacity: .9 }));
+        for (var q = 0; q < 9; q++) els.push(h('path', { key: 'bk' + q, d: 'M' + f(tx + (8 + (q * 13) % 30) * s) + ' ' + f(-4 + q * 22) + 'l' + f(2 * s) + ' 14', stroke: '#4a3828', strokeWidth: 1.6, fill: 'none', opacity: .8 }));
+        els.push(h('path', { key: 'moss', d: 'M' + f(tx + 3 * s) + ' ' + f(fy + 18) + 'q' + f(12 * s) + ' 8 ' + f(24 * s) + ' 0v12h-' + f(24 * s) + 'z', fill: '#7a9a5a', opacity: .55 }));
+      } else if (kind === 'rock') {
+        els.push(h('path', { key: 'rk', d: 'M14 ' + f(fy + 34) + 'Q20 ' + f(fy + 4) + ' 70 ' + f(fy + 2) + 'Q120 ' + f(fy - 4) + ' 176 ' + f(fy + 3) + 'Q226 ' + f(fy + 8) + ' 228 ' + f(fy + 36) + 'Z', fill: '#8b8a85', stroke: '#5f5e5a', strokeWidth: 1.4 }));
+        els.push(h('path', { key: 'rk2', d: 'M60 ' + f(fy + 20) + 'q30 -6 60 -2M130 ' + f(fy + 12) + 'q26 -4 52 0', stroke: '#6d6c68', strokeWidth: 1.4, fill: 'none' }));
+      } else if (kind === 'ground') {
+        els.push(h('ellipse', { key: 'sh', cx: fx, cy: fy + 2, rx: 34 * s, ry: 3.4, fill: 'rgba(30,24,20,.22)' }));
+        els.push(h('path', { key: 'gr', d: 'M0 ' + f(fy + 3) + 'Q60 ' + f(fy - 1) + ' 120 ' + f(fy + 2) + 'T240 ' + f(fy + 1) + 'V' + f(fy + 12) + 'H0Z', fill: B.ground, opacity: .55 }));
+        if (sp.hab === 'water' || sp.hab === 'shore' || sp.hab === 'marsh') els.push(h('path', { key: 'rp', d: 'M' + f(fx - 40 * s) + ' ' + f(fy + 6) + 'h' + f(80 * s) + 'M' + f(fx - 24 * s) + ' ' + f(fy + 10) + 'h' + f(54 * s), stroke: 'rgba(255,255,255,.55)', strokeWidth: 1.2, strokeLinecap: 'round', fill: 'none' }));
+      }
+      return els;
+    }
+
+    function backdropBase(sp, id, B, perchY) {
+      var hab = sp.hab || 'wood', els = [];
+      els.push(h('path', { key: 'far', d: 'M0 ' + f(perchY - 6) + 'Q60 ' + f(perchY - 36) + ' 120 ' + f(perchY - 14) + 'T240 ' + f(perchY - 22) + 'V180H0Z', fill: B.far, opacity: .6 }));
+      if (hab === 'wood') [30, 82, 150, 204].forEach(function(x, i) { els.push(h('path', { key: 'tr' + i, d: 'M' + x + ' ' + f(perchY - 4) + 'l' + (4 + i % 2) + ' -' + (38 + i * 7) + 'l' + (4 + i % 2) + ' ' + (38 + i * 7) + 'z', fill: '#7f9b72', opacity: .35 })); });
+      if (hab === 'night') [20, 60, 96, 140, 188, 214].forEach(function(x, i) { els.push(h('circle', { key: 'st' + i, cx: x, cy: 14 + (i * 23) % 50, r: 1.1, fill: '#fff', opacity: .8 })); });
+      if (hab === 'sea' || hab === 'water') els.push(h('path', { key: 'wv', d: 'M0 ' + f(perchY + 6) + 'q30 -6 60 0t60 0t60 0t60 0V180H0Z', fill: B.ground, opacity: .9 }));
+      else els.push(h('path', { key: 'gd', d: 'M0 ' + f(perchY + 14) + 'Q80 ' + f(perchY + 2) + ' 160 ' + f(perchY + 12) + 'T240 ' + f(perchY + 8) + 'V180H0Z', fill: B.ground, opacity: .9 }));
+      return els;
+    }
+
+    // Depth for the portrait: a sun (or moon) glow in the upper right, a second pale ridge, horizon haze and a few habitat details
+    // (reeds, grass blades, water sparkle, snow flecks). Light comes from the upper right, matching the bird's rim light below.
+    function backdrop(sp, id, B, perchY) {
+      var hab = sp.hab || 'wood', night = hab === 'night', rnd = rng(hash((sp.id || sp.name || 'x') + 'bg')), i, x, y, els = [];
+      var glow = night ? 'rgba(190,205,255,.6)' : hab === 'dusk' ? 'rgba(255,208,140,.9)' : 'rgba(255,255,238,.85)';
+      els.push(h('defs', { key: 'bgd' },
+        h('radialGradient', { id: id + '-sun', cx: .5, cy: .5, r: .5 }, h('stop', { offset: 0, stopColor: glow }), h('stop', { offset: 1, stopColor: glow, stopOpacity: 0 })),
+        h('linearGradient', { id: id + '-haze', x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#fff', stopOpacity: 0 }), h('stop', { offset: .62, stopColor: '#fff', stopOpacity: night ? .1 : .36 }), h('stop', { offset: 1, stopColor: '#fff', stopOpacity: 0 }))));
+      els.push(h('circle', { key: 'sun', cx: 196, cy: 32, r: 78, fill: 'url(#' + id + '-sun)' }));
+      if (night) els.push(h('circle', { key: 'moon', cx: 196, cy: 31, r: 8, fill: '#f3efd9', opacity: .95 }));
+      els.push(h('path', { key: 'far2', d: 'M0 ' + f(perchY - 24) + 'Q46 ' + f(perchY - 54) + ' 104 ' + f(perchY - 30) + 'T240 ' + f(perchY - 42) + 'V180H0Z', fill: B.far, opacity: .32 }));
+      els = els.concat(backdropBase(sp, id, B, perchY));
+      els.push(h('rect', { key: 'haze', x: 0, y: f(perchY - 36), width: 240, height: 58, fill: 'url(#' + id + '-haze)' }));
+      if (hab === 'marsh' || hab === 'shore') {
+        [7, 17, 28, 212, 223, 234].forEach(function(rx, k) {
+          var top = perchY - 26 - rnd() * 26, lean = (rx < 120 ? 1 : -1) * (2 + rnd() * 4);
+          els.push(h('path', { key: 'rd' + k, d: 'M' + rx + ' ' + f(perchY + 12) + 'Q' + f(rx + lean * .3) + ' ' + f(perchY - 8) + ' ' + f(rx + lean) + ' ' + f(top), stroke: hab === 'marsh' ? '#6f8a4e' : '#9a8f6a', strokeWidth: 1.7, fill: 'none', strokeLinecap: 'round', opacity: .8 }));
+          if (hab === 'marsh' && k % 2 === 0) els.push(h('ellipse', { key: 'ct' + k, cx: f(rx + lean), cy: f(top + 5), rx: 1.9, ry: 6.2, fill: '#6b4a32', opacity: .9 }));
+        });
+      }
+      if (hab === 'wood' || hab === 'open' || hab === 'dusk' || hab === 'tundra' || hab === 'desert') {
+        var blade = shade(B.ground, hab === 'desert' ? -.2 : -.3);
+        for (i = 0; i < 34; i++) { x = i * 7.2 + rnd() * 5; y = 8 + rnd() * 11; els.push(h('path', { key: 'gb' + i, d: 'M' + f(x) + ' 182q' + f(1.2 + rnd() * 2) + ' ' + f(-y * .5) + ' ' + f((rnd() - .5) * 5) + ' ' + f(-y), stroke: blade, strokeWidth: 1.3, fill: 'none', strokeLinecap: 'round', opacity: .55 })); }
+      }
+      if (hab === 'sea' || hab === 'water') {
+        for (i = 0; i < 9; i++) { x = 10 + rnd() * 215; y = perchY + 14 + rnd() * (172 - perchY - 14); els.push(h('path', { key: 'sp' + i, d: 'M' + f(x) + ' ' + f(y) + 'h' + f(5 + rnd() * 9), stroke: 'rgba(255,255,255,.6)', strokeWidth: 1.2, strokeLinecap: 'round' })); }
+      }
+      if (hab === 'snow') {
+        for (i = 0; i < 22; i++) els.push(h('circle', { key: 'sn' + i, cx: f(rnd() * 240), cy: f(rnd() * 150), r: f(.7 + rnd() * .8), fill: '#fff', opacity: .75 }));
+      }
+      return els;
+    }
+    // A lighting filter for the bird group: soft drop shadow (light from the upper right), a pale rim along the lit edges and a
+    // darker rim along the shaded edges. Every edge band is clipped back inside the bird's own alpha, so nothing spills onto the sky.
+    function liteFilter(fid) {
+      return h('filter', { id: fid, x: '-8%', y: '-8%', width: '116%', height: '124%', colorInterpolationFilters: 'sRGB' },
+        h('feGaussianBlur', { in: 'SourceAlpha', stdDeviation: 2.4, result: 'blur' }),
+        h('feOffset', { in: 'blur', dx: -1.4, dy: 3.4, result: 'off' }),
+        h('feFlood', { floodColor: '#1c1410', floodOpacity: .27, result: 'fl' }),
+        h('feComposite', { in: 'fl', in2: 'off', operator: 'in', result: 'drop' }),
+        h('feOffset', { in: 'SourceAlpha', dx: -1.7, dy: 2.1, result: 'o1' }),
+        h('feComposite', { in: 'SourceAlpha', in2: 'o1', operator: 'out', result: 'e1' }),
+        h('feGaussianBlur', { in: 'e1', stdDeviation: .7, result: 'e1b' }),
+        h('feFlood', { floodColor: '#ffffff', floodOpacity: .5, result: 'f2' }),
+        h('feComposite', { in: 'f2', in2: 'e1b', operator: 'in', result: 'rim0' }),
+        h('feComposite', { in: 'rim0', in2: 'SourceAlpha', operator: 'in', result: 'rim' }),
+        h('feOffset', { in: 'SourceAlpha', dx: 1.9, dy: -2.6, result: 'o2' }),
+        h('feComposite', { in: 'SourceAlpha', in2: 'o2', operator: 'out', result: 'e2' }),
+        h('feGaussianBlur', { in: 'e2', stdDeviation: 1, result: 'e2b' }),
+        h('feFlood', { floodColor: '#0b0806', floodOpacity: .26, result: 'f3' }),
+        h('feComposite', { in: 'f3', in2: 'e2b', operator: 'in', result: 'sh0' }),
+        h('feComposite', { in: 'sh0', in2: 'SourceAlpha', operator: 'in', result: 'shade' }),
+        h('feMerge', null, h('feMergeNode', { in: 'drop' }), h('feMergeNode', { in: 'SourceGraphic' }), h('feMergeNode', { in: 'shade' }), h('feMergeNode', { in: 'rim' })));
+    }
+
+    function plate(sp, o) {
+      o = o || {};
+      var id = 'bp' + (++uid) + (o.id ? '-' + String(o.id).replace(/[^a-z0-9]/gi, '') : '');
+      var c = colors(sp);
+      var arch = ARCH[sp.a || 'passerine'] || passerine;
+      var R = arch(sp, c, { id: id });
+      var xs = R.ext.map(function(p) { return p[0]; }), ys = R.ext.map(function(p) { return p[1]; });
+      var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+      var W = 240, H = 180, boxW = R.flying ? 210 : 196, boxH = o.tall ? 146 : 128;
+      var s = Math.min(boxW / (x1 - x0), boxH / (y1 - y0), 1.9);
+      var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      var tx = 120 - cx * s, ty = (o.baseline || 92) - cy * s;
+      var B = BACKDROPS[sp.hab || 'wood'] || BACKDROPS.wood;
+      var gId = id + '-sky';
+      var fx = 120 * s + tx, fy = 150 * s + ty;
+      var kind = R.perch || sp.perch || 'twig';
+      var perchY = R.flying ? 150 : fy;
+      if (o.silhouette) {
+        // Silhouette mode: the same drawn bird, flattened to one ink colour on paper, with a plain perch. A colour-matrix
+        // filter keeps the alpha channel and sets every RGB to the ink, so shading and marks vanish and only the outline is left.
+        var inkId = id + '-ink', perch = [];
+        if (!R.flying) {
+          if (kind === 'trunk') perch.push(h('rect', { key: 'tk', x: fx - 4 * s + 3 * s, y: -4, width: 40 * s, height: 190 }));
+          else if (kind === 'twig') perch.push(h('path', { key: 'tw', d: 'M18 ' + f(fy + 2) + 'Q120 ' + f(fy - 3) + ' 222 ' + f(fy - 8), stroke: '#000', strokeWidth: (R.perchW || 4.2), strokeLinecap: 'round', fill: 'none' }));
+          else perch.push(h('path', { key: 'gl', d: 'M14 ' + f(fy + 2) + 'H226', stroke: '#000', strokeWidth: 3, strokeLinecap: 'round', fill: 'none' }));
+        }
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: o.className || 'bird-plate', role: o.decorative ? undefined : 'img', 'aria-hidden': o.decorative ? 'true' : undefined, 'aria-label': o.decorative ? undefined : (o.label || 'Silhouette of a bird'), focusable: 'false', preserveAspectRatio: 'xMidYMid meet', style: o.style },
+          h('defs', null,
+            h('linearGradient', { id: gId, x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: '#fff7df' }), h('stop', { offset: 1, stopColor: '#ffe2ae' })),
+            h('filter', { id: inkId, x: '-5%', y: '-5%', width: '110%', height: '110%', colorInterpolationFilters: 'sRGB' }, h('feColorMatrix', { type: 'matrix', values: '0 0 0 0 0.118  0 0 0 0 0.161  0 0 0 0 0.231  0 0 0 8 0' })),
+            R.defs),
+          h('rect', { width: W, height: H, rx: 10, fill: 'url(#' + gId + ')' }),
+          h('g', { filter: 'url(#' + inkId + ')' }, perch, h('g', { transform: 'translate(' + f(tx) + ' ' + f(ty) + ') scale(' + f(s) + ')' }, R.g)));
+      }
+      return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: o.className || 'bird-plate', role: o.decorative ? undefined : 'img', 'aria-hidden': o.decorative ? 'true' : undefined, 'aria-label': o.decorative ? undefined : (o.label || sp.name || 'Bird illustration'), focusable: 'false', preserveAspectRatio: 'xMidYMid meet', style: o.style },
+        h('defs', null, h('linearGradient', { id: gId, x1: 0, y1: 0, x2: 0, y2: 1 }, h('stop', { offset: 0, stopColor: B.sky[0] }), h('stop', { offset: 1, stopColor: B.sky[1] })), liteFilter(id + '-lite'), R.defs),
+        h('rect', { width: W, height: H, rx: 10, fill: 'url(#' + gId + ')' }),
+        backdrop(sp, id, B, perchY),
+        perchEls(kind, R.perchW, fx, fy, s, B, sp),
+        h('g', { filter: 'url(#' + id + '-lite)' }, h('g', { transform: 'translate(' + f(tx) + ' ' + f(ty) + ') scale(' + f(s) + ')' }, R.g)));
+    }
+
+    return { plate: plate, smooth: smooth, mix: mix, shade: shade, hash: hash, rng: rng, ARCH: ARCH, BACKDROPS: BACKDROPS, colors: colors };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // SPECIES ENCYCLOPEDIA — range zones (schematic). Each zone is one or more [lon,lat] polygons.
+  // Land zones are clipped to the Natural Earth land mask when drawn; marine zones (m:1) are not.
+  // ══════════════════════════════════════════════════════════════════════
+  var ENC_ZONES = {
+    'ak': { n: 'Alaska and the Yukon', p: [[[-169,72],[-141,70.5],[-123,69.5],[-123,60],[-130,54.5],[-141,58],[-150,57],[-165,53],[-169,60]]] },
+    'arctic-ca': { n: 'Arctic tundra of northern Canada', p: [[[-125,78],[-70,83.5],[-60,70],[-62,60],[-78,58.5],[-93,58.5],[-95,63],[-110,66],[-125,68.5],[-141,69.7]]] },
+    'boreal-ca': { n: 'Canadian boreal forest', p: [[[-140,66],[-125,66],[-110,64],[-95,59],[-80,55],[-72,57],[-62,58],[-58,54],[-53,52],[-53,47],[-66,47],[-78,46],[-90,48],[-95,50],[-105,53],[-115,54],[-125,54],[-132,58],[-140,60]]] },
+    'pnw': { n: 'Pacific Northwest and coast', p: [[[-136,59],[-122,52],[-121.5,42],[-125,42],[-125,49],[-132,55]]] },
+    'ca-pacific': { n: 'California and Baja California', p: [[[-124.5,42],[-119.5,42],[-114.5,34.5],[-114.7,32],[-109.8,22.8],[-112.5,24],[-116.5,28.5],[-117.5,32.5],[-120,34.2],[-124,40]]] },
+    'intermountain': { n: 'Rocky Mountains and Great Basin', p: [[[-121,49],[-104,49],[-104,37],[-109,37],[-114,35],[-121,40]]] },
+    'plains': { n: 'Great Plains and prairies', p: [[[-114,54],[-98,54],[-96,49],[-96.5,36],[-98.5,29],[-103,29],[-104,37],[-104.5,49],[-111,49],[-114,50]]] },
+    'southwest': { n: 'Desert Southwest', p: [[[-114,37],[-104,37],[-103,31.5],[-106.5,31.5],[-111,31.3],[-114.7,32.7]]] },
+    'midwest': { n: 'Great Lakes and Midwest', p: [[[-97,49],[-84,48],[-82,45],[-82,41.5],[-84.5,38.5],[-91,36.5],[-97,36.5]]] },
+    'northeast': { n: 'Northeast and Maritimes', p: [[[-80,45],[-74,45.1],[-71.5,45.1],[-69,47.5],[-67.8,47.1],[-66.5,45.5],[-60,46.2],[-59.8,45.5],[-65,43.5],[-67,44.7],[-70.2,42.8],[-70,41.6],[-73.7,40.8],[-76,42],[-79,42.5]]] },
+    'mid-atlantic': { n: 'Mid-Atlantic and Appalachians', p: [[[-80,42],[-74,40.7],[-75.5,38],[-75.5,36.5],[-79,35],[-83,35.5],[-84,38],[-80.5,40.5]]] },
+    'southeast': { n: 'Southeastern United States', p: [[[-92,36.5],[-84,36.5],[-76,36.5],[-75.7,35],[-81,31],[-80,25.2],[-82.5,26],[-85,29.7],[-89,30.2],[-91,31],[-94,33]]] },
+    'gulf': { n: 'Gulf Coast and Texas', p: [[[-106.5,32],[-100,34.5],[-94,33.5],[-91,30.5],[-85,30.5],[-83,29],[-85.5,29.8],[-90,29],[-94,29.3],[-97.2,27.5],[-97.4,25.9],[-100,26.5],[-103,28.8],[-106,31.7]]] },
+    'mexico': { n: 'Mexico', p: [[[-117,32.5],[-109,31.3],[-106.5,31.8],[-100,28],[-97.5,26],[-97.7,22],[-94,18],[-91,18.5],[-90.5,21],[-87,21.5],[-87.5,18],[-92,14.5],[-96,15.8],[-105,19.5],[-109.5,24],[-112,29.5],[-115,31.5]]] },
+    'central-am': { n: 'Central America', p: [[[-92,18],[-87.5,18.5],[-83,15],[-82,10],[-77.5,8.5],[-80,7.2],[-84,8.5],[-91.5,14]]] },
+    'caribbean': { n: 'West Indies', p: [[[-85,23.5],[-72,28],[-60,18],[-61,10],[-67,10.5],[-77,12],[-85,19]]] },
+    'greenland': { n: 'Greenland', p: [[[-73,78],[-20,83.5],[-18,72],[-43,59.7],[-55,66],[-68,76]]] },
+    'sa-north': { n: 'Northern South America', p: [[[-78,12.5],[-61,10.8],[-51,4.5],[-52,2],[-60,0.5],[-70,-2],[-75,-4],[-78,1],[-77,8]]] },
+    'amazon': { n: 'Amazon basin', p: [[[-75,-5],[-70,-1],[-60,0],[-50,-2],[-48,-8],[-55,-14],[-62,-12],[-70,-12],[-73,-9]]] },
+    'andes': { n: 'Andes', p: [[[-80,2],[-81,-6],[-76,-14],[-72,-18],[-71.5,-32],[-74,-42],[-75,-52],[-68,-52],[-70,-40],[-67,-30],[-66,-20],[-67,-14],[-72,-4],[-75,3]]] },
+    'sa-south': { n: 'Southern South America', p: [[[-70,-20],[-58,-20],[-48,-25],[-52,-34],[-57,-36],[-62,-41],[-66,-47],[-68,-55],[-74,-52],[-72,-40],[-71,-32]]] },
+    'iceland': { n: 'Iceland', p: [[[-24.5,66.5],[-13,66.5],[-13,63.2],[-24.5,63.2]]] },
+    'europe-w': { n: 'Western Europe and British Isles', p: [[[-11,59],[-1,59],[4,53],[9,54.5],[10,48],[7,43.5],[3,42.5],[-2,43.3],[-4.5,48],[-5.5,50],[-10.5,53]]] },
+    'europe-n': { n: 'Scandinavia and the Baltic', p: [[[4.5,71],[31,71],[31,60],[28,57],[22,55],[12,54.5],[11,58],[5,58.5]]] },
+    'europe-s': { n: 'Mediterranean Europe', p: [[[-9.5,43.7],[3,42.5],[8,44.5],[13,46],[20,45],[28,43],[28,36],[22,35.5],[15.5,37.5],[11,37.5],[7,38],[2,36.5],[-6,36],[-9.5,37]]] },
+    'russia': { n: 'Western Russia', p: [[[28,70],[60,70],[60,47],[48,45],[38,44.5],[30,46],[24,50],[24,56],[28,60]]] },
+    'siberia': { n: 'Siberia and the Russian Far East', p: [[[60,75],[180,70],[180,62],[170,60],[142,46],[130,43],[120,50],[100,50],[80,52],[60,56]]] },
+    'central-asia': { n: 'Central Asia', p: [[[47,47],[80,50],[88,48],[88,40],[73,35.5],[60,35.5],[53,37.5],[47,42]]] },
+    'middle-east': { n: 'Middle East and Arabia', p: [[[26,36],[44,42],[56,38],[61,25],[58,17],[44,12.5],[35,28],[33,31]]] },
+    'east-asia': { n: 'China, Mongolia and Korea', p: [[[88,50],[120,50],[135,48],[131,43],[125,38],[121,31],[122,24],[108,21],[100,22],[98,28],[92,28],[80,36],[88,42]]] },
+    'japan': { n: 'Japan', p: [[[129.5,31],[146,45.5],[142,45.5],[137,37],[130,34]]] },
+    'south-asia': { n: 'South Asia', p: [[[61,25],[68,35],[80,36],[97,28],[92,22],[88,21],[80,15],[77.5,8],[73,15],[68,23]]] },
+    'se-asia': { n: 'Southeast Asia and Indonesia', p: [[[92,22],[109,23],[122,18],[127,8],[120,-1],[126,-9],[106,-8.5],[98,3],[98,16]]] },
+    'africa-n': { n: 'North Africa and the Sahel', p: [[[-17,35.5],[10,37.5],[34,31.5],[37,22],[33,16],[14,13],[-17,13]]] },
+    'africa-w-c': { n: 'West and Central Africa', p: [[[-17,13],[14,13],[14,2],[10,-5],[13,-12],[26,-12],[30,5],[26,12],[2,5],[-8,4.5]]] },
+    'africa-e': { n: 'East Africa', p: [[[24,12],[43,12.5],[51,11.5],[41,-5],[39,-12],[28,-12],[27,0]]] },
+    'africa-s': { n: 'Southern Africa', p: [[[11,-17],[40,-12],[40,-26],[33,-27],[27,-34],[18,-35],[14,-28]]] },
+    'madagascar': { n: 'Madagascar', p: [[[43.2,-12.5],[50.5,-14],[48,-25.5],[44,-25],[43.5,-17]]] },
+    'australia': { n: 'Australia', p: [[[113,-22],[130,-11],[142,-10.5],[153,-26],[150,-37],[141,-38.5],[130,-32],[114,-35]]] },
+    'new-zealand': { n: 'New Zealand', p: [[[166,-46.5],[174,-35],[178.5,-37.5],[172,-47.5]]] },
+    'pacific-is': { n: 'Pacific islands', p: [[[-161,18.5],[-154.5,18.5],[-154.5,22.5],[-161,22.5]], [[-178,-10],[-140,-10],[-140,-25],[-178,-25]]] },
+    'atl-n': { n: 'North Atlantic Ocean', m: 1, p: [[[-76,62],[-12,62],[-12,28],[-78,28]]] },
+    'atl-s': { n: 'South Atlantic Ocean', m: 1, p: [[[-52,-4],[10,-4],[10,-55],[-60,-55],[-60,-4]]] },
+    'pac-n': { n: 'North Pacific Ocean', m: 1, p: [[[140,58],[180,58],[180,10],[140,10]], [[-180,58],[-130,58],[-130,10],[-180,10]]] },
+    'pac-s': { n: 'South and tropical Pacific', m: 1, p: [[[150,10],[180,10],[180,-50],[150,-50]], [[-180,10],[-75,10],[-75,-55],[-180,-55]]] },
+    'indian': { n: 'Indian Ocean', m: 1, p: [[[35,20],[100,20],[115,-35],[35,-40]]] },
+    'arctic-sea': { n: 'Arctic Ocean and nearby seas', m: 1, p: [[[-180,66],[180,66],[180,85],[-180,85]]] },
+    'southern': { n: 'Southern Ocean', m: 1, p: [[[-180,-55],[180,-55],[180,-70],[-180,-70]]] }
+  };
+  var ENC_RANGE_KINDS = [
+    { k: 'resident', n: 'Year-round', c: '#2f9e6b' },
+    { k: 'breeding', n: 'Breeding season', c: '#e8912a' },
+    { k: 'winter', n: 'Winter (nonbreeding)', c: '#3b82c4' },
+    { k: 'passage', n: 'Migration stopovers', c: '#8b5cc8' }
+  ];
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // SPECIES ENCYCLOPEDIA — shared UI core (styles, range map, entry sheet, gallery).
+  // T('key','English') and F(text, {..}) are expanded to literal __alloT / __alloFill calls at build time.
+  // ══════════════════════════════════════════════════════════════════════
+  var ENC_CSS = [
+    '.enc-root{--enc-bg:#f8fafc;--enc-nav:rgba(248,250,252,.96);--enc-card:#fff;--enc-card2:#f1f5f9;--enc-ink:#1e293b;--enc-muted:#475569;--enc-line:#cbd5e1;--enc-acc:#0f766e;--enc-acc-ink:#fff;--enc-soft:#ccfbf1;--enc-ocean:#d4e6f3;--enc-land:#ece6d2;--enc-grat:rgba(30,41,59,.16);--enc-shadow:0 1px 3px rgba(15,23,42,.14);color:var(--enc-ink);font:15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1120px;margin:0 auto;padding:18px 16px 40px;box-sizing:border-box}',
+    '.enc-root[data-theme="dark"]{--enc-bg:transparent;--enc-nav:rgba(15,23,42,.96);--enc-card:rgba(30,41,59,.74);--enc-card2:rgba(15,23,42,.65);--enc-ink:#e2e8f0;--enc-muted:#cbd5e1;--enc-line:rgba(148,163,184,.38);--enc-acc:#fbbf24;--enc-acc-ink:#1c1917;--enc-soft:rgba(120,53,15,.55);--enc-ocean:#10253a;--enc-land:#33444f;--enc-grat:rgba(226,232,240,.16);--enc-shadow:0 1px 3px rgba(0,0,0,.5)}',
+    '.enc-root *{box-sizing:border-box}',
+    '.enc-root h2,.enc-root h3,.enc-root p,.enc-root ul,.enc-root ol,.enc-root dl,.enc-root dd{margin:0;padding:0}',
+    '.enc-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
+    '.enc-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 18px;margin-bottom:12px}',
+    '.enc-title{font-size:22px;font-weight:800;letter-spacing:-.01em}',
+    '.enc-sub{color:var(--enc-muted);font-size:14px;max-width:62ch}',
+    '.enc-toolbar{display:grid;gap:10px;margin:10px 0 14px}',
+    '.enc-search{width:100%;max-width:520px;padding:10px 12px;border:1px solid var(--enc-line);border-radius:10px;background:var(--enc-card);color:var(--enc-ink);font:inherit}',
+    '.enc-chips{display:flex;flex-wrap:wrap;gap:6px}',
+    '.enc-chip,.enc-btn,.enc-navbtn{font:600 13px/1.2 inherit;font-family:inherit;padding:8px 12px;border:1px solid var(--enc-line);border-radius:999px;background:var(--enc-card);color:var(--enc-ink);cursor:pointer;min-height:36px}',
+    '.enc-chip[aria-pressed="true"]{background:var(--enc-acc);color:var(--enc-acc-ink);border-color:var(--enc-acc)}',
+    '.enc-btn{border-radius:10px;font-weight:700}',
+    '.enc-btn.enc-primary{background:var(--enc-acc);color:var(--enc-acc-ink);border-color:var(--enc-acc)}',
+    '.enc-chip:hover,.enc-btn:hover,.enc-navbtn:hover{border-color:var(--enc-acc)}',
+    '.enc-root button:focus-visible,.enc-root input:focus-visible,.enc-root [tabindex]:focus-visible{outline:3px solid var(--enc-acc);outline-offset:2px}',
+    '.enc-count{color:var(--enc-muted);font-size:13px}',
+    '.enc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}',
+    '.enc-thumb{display:flex;flex-direction:column;text-align:left;padding:0;border:1px solid var(--enc-line);border-radius:12px;background:var(--enc-card);color:var(--enc-ink);cursor:pointer;overflow:hidden;font:inherit;box-shadow:var(--enc-shadow)}',
+    '.enc-thumb:hover{border-color:var(--enc-acc)}',
+    '.enc-thumb svg{display:block;width:100%;height:auto;aspect-ratio:4/3}',
+    '.enc-thumb-body{padding:8px 10px 10px;display:grid;gap:1px}',
+    '.enc-thumb-name{font-weight:700;font-size:14px;line-height:1.25}',
+    '.enc-thumb-sci{font-size:12px;font-style:italic;color:var(--enc-muted)}',
+    '.enc-thumb-grp{font-size:11px;color:var(--enc-muted);margin-top:2px}',
+    '.enc-more{display:flex;justify-content:center;margin:16px 0 0}',
+    '.enc-empty{padding:18px;border:1px dashed var(--enc-line);border-radius:12px;color:var(--enc-muted)}',
+    '.enc-bar-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}',
+    '.enc-hero{display:grid;grid-template-columns:minmax(260px,5fr) 6fr;gap:18px;align-items:start;background:var(--enc-card);border:1px solid var(--enc-line);border-radius:16px;padding:14px;box-shadow:var(--enc-shadow)}',
+    '.enc-hero-art svg{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:12px}',
+    '.enc-kicker{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--enc-muted)}',
+    '.enc-name{font-size:30px;line-height:1.1;font-weight:850;letter-spacing:-.02em;margin:4px 0 2px}',
+    '.enc-sci{font-style:italic;color:var(--enc-muted);font-size:16px}',
+    '.enc-badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}',
+    '.enc-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:700;color:#fff;background:#475569}',
+    '.enc-badge.s-LC{background:#166534}.enc-badge.s-NT{background:#4d7c0f}.enc-badge.s-VU{background:#b45309}.enc-badge.s-EN{background:#c2410c}.enc-badge.s-CR{background:#b91c1c}.enc-badge.s-DD{background:#475569}',
+    '.enc-badge.enc-plain{background:var(--enc-card2);color:var(--enc-ink);border:1px solid var(--enc-line)}',
+    '.enc-blurb{font-size:16.5px;line-height:1.55;margin:6px 0 12px}',
+    '.enc-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
+    '.enc-fact{background:var(--enc-card2);border:1px solid var(--enc-line);border-radius:10px;padding:8px 10px}',
+    '.enc-fact dt{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--enc-muted)}',
+    '.enc-fact dd{font-weight:700;font-size:15px}',
+    '.enc-scale{margin-top:12px;display:grid;gap:6px}',
+    '.enc-scale-row{display:grid;grid-template-columns:minmax(120px,170px) 1fr auto;gap:8px;align-items:center;font-size:13px}',
+    '.enc-track{height:12px;border-radius:999px;background:var(--enc-card2);border:1px solid var(--enc-line);overflow:hidden}',
+    '.enc-track>span{display:block;height:100%;border-radius:999px;background:var(--enc-acc)}',
+    '.enc-track.enc-ref>span{background:var(--enc-muted)}',
+    '.enc-note{font-size:13px;color:var(--enc-muted)}',
+    '.enc-nav{position:sticky;top:0;z-index:4;display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;margin:12px 0 4px;background:var(--enc-nav)}',
+    '.enc-navbtn{padding:6px 11px;font-size:12.5px}',
+    '.enc-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:10px}',
+    '.enc-card{background:var(--enc-card);border:1px solid var(--enc-line);border-radius:14px;padding:14px 16px;box-shadow:var(--enc-shadow);scroll-margin-top:64px}',
+    '.enc-card.enc-wide{grid-column:1/-1}',
+    '.enc-card h3{font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-.01em}',
+    '.enc-card p+p{margin-top:8px}',
+    '.enc-dl{display:grid;gap:8px}',
+    '.enc-dl dt{font-weight:800;font-size:13.5px}',
+    '.enc-dl dd{margin:0}',
+    '.enc-list{list-style:none;display:grid;gap:8px}',
+    '.enc-list li{padding-left:14px;position:relative}',
+    '.enc-list li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--enc-acc)}',
+    '.enc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}',
+    '.enc-tag{padding:3px 10px;border-radius:999px;background:var(--enc-soft);color:var(--enc-ink);font-size:12.5px;font-weight:600;border:1px solid var(--enc-line)}',
+    '.enc-callout{background:var(--enc-soft);border:1px solid var(--enc-line);border-radius:12px;padding:12px 14px}',
+    '.enc-map{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--enc-line)}',
+    '.enc-ocean{fill:var(--enc-ocean)}.enc-land{fill:var(--enc-land);stroke:var(--enc-grat);stroke-width:.4}',
+    '.enc-grat{stroke:var(--enc-grat);stroke-width:.4;fill:none}.enc-gratl{fill:var(--enc-muted);font:600 6px system-ui,sans-serif}',
+    '.enc-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0 6px;font-size:13px}',
+    '.enc-legend span{display:inline-flex;align-items:center;gap:6px}',
+    '.enc-sw{display:inline-block;width:18px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.35)}',
+    '.enc-zones{list-style:none;display:grid;gap:3px;font-size:13.5px}',
+    '.enc-months{list-style:none;display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:92px;margin:8px 0 2px}',
+    '.enc-months li{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--enc-muted)}',
+    '.enc-months li>i{display:block;width:100%;max-width:26px;border-radius:4px 4px 0 0;background:var(--enc-acc);font-style:normal}',
+    '.enc-months li>i[data-v="0"]{background:var(--enc-card2);border:1px solid var(--enc-line)}',
+    '.enc-gauges{display:grid;gap:7px;margin-top:6px}',
+    '.enc-gauge{display:grid;grid-template-columns:minmax(110px,150px) 1fr auto;gap:8px;align-items:center;font-size:13px}',
+    '.enc-foot{margin-top:16px;font-size:12.5px;color:var(--enc-muted)}',
+    '@media(max-width:760px){.enc-hero{grid-template-columns:1fr}.enc-cols{grid-template-columns:1fr}.enc-name{font-size:25px}.enc-scale-row,.enc-gauge{grid-template-columns:1fr auto}.enc-scale-row .enc-track,.enc-gauge .enc-track{grid-column:1/-1;order:3}}',
+    '@media(forced-colors:active){.enc-chip[aria-pressed="true"],.enc-btn.enc-primary{outline:2px solid Highlight}.enc-track>span{background:Highlight}.enc-badge{border:1px solid CanvasText}}',
+    '@media(prefers-reduced-motion:no-preference){.enc-thumb,.enc-chip,.enc-btn{transition:border-color .15s}}',
+    '.enc-cmp{--enc-a:#0f766e;--enc-b:#6d28d9}',
+    '.enc-root[data-theme="dark"] .enc-cmp{--enc-a:#5eead4;--enc-b:#c4b5fd}',
+    '.enc-cmp-pick{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:end;margin:8px 0 12px}',
+    '.enc-cmp-sel{display:grid;gap:4px;min-width:0}',
+    '.enc-cmp-sel label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--enc-muted)}',
+    '.enc-select{width:100%;padding:9px 10px;border:1px solid var(--enc-line);border-radius:10px;background:var(--enc-card);color:var(--enc-ink);font:inherit;min-height:40px}',
+    '.enc-cmp-heroes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}',
+    '.enc-cmp-hero{background:var(--enc-card);border:1px solid var(--enc-line);border-top:5px solid var(--enc-a);border-radius:14px;padding:12px;box-shadow:var(--enc-shadow);min-width:0}',
+    '.enc-cmp-hero.b{border-top-color:var(--enc-b)}',
+    '.enc-cmp-hero svg{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:10px}',
+    '.enc-cmp-name{font-size:21px;font-weight:850;line-height:1.15;margin-top:2px}',
+    '.enc-cmp-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}',
+    '.enc-cmp-col{min-width:0}',
+    '.enc-cmp-cap{display:flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;margin-bottom:6px}',
+    '.enc-dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--enc-a);flex:none}',
+    '.enc-cmp-col.b .enc-dot{background:var(--enc-b)}',
+    '.enc-track.enc-ta>span{background:var(--enc-a)}.enc-track.enc-tb>span{background:var(--enc-b)}',
+    '.enc-cmp-bars{display:grid;gap:6px;margin-top:10px}',
+    '.enc-mini{padding:4px 9px;font-size:12px;min-height:30px;margin-left:8px}',
+    '.enc-cmp-links{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}',
+    '@media(max-width:760px){.enc-cmp-heroes,.enc-cmp-cols,.enc-cmp-pick{grid-template-columns:1fr}.enc-cmp-pick .enc-btn{justify-self:start}}',
+    '.enc-root{--enc-ok-bg:#d1fae5;--enc-ok-ink:#064e3b;--enc-ok-bd:#047857;--enc-bad-bg:#ffe4e6;--enc-bad-ink:#881337;--enc-bad-bd:#be123c}',
+    '.enc-root[data-theme="dark"]{--enc-ok-bg:rgba(6,78,59,.8);--enc-ok-ink:#d1fae5;--enc-ok-bd:#34d399;--enc-bad-bg:rgba(136,19,55,.75);--enc-bad-ink:#ffe4e6;--enc-bad-bd:#fb7185}',
+    '.enc-modes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}',
+    '.enc-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}',
+    '.enc-filter{display:grid;gap:4px;min-width:0}',
+    '.enc-filter label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--enc-muted)}',
+    '.enc-filter .enc-select{min-width:170px;width:auto}',
+    '.enc-filter-btn{align-self:flex-end;min-height:40px}',
+    '.enc-thumb-st{justify-self:start;margin-top:5px;padding:2px 8px;font-size:11px}',
+    '.enc-qz{display:grid;gap:12px;margin-top:10px}',
+    '.enc-qz-top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 14px}',
+    '.enc-qz-title{font-size:19px;font-weight:800}',
+    '.enc-qz-score{font-size:14px;font-weight:700;color:var(--enc-muted)}',
+    '.enc-qz-body{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}',
+    '.enc-qz-art{min-width:0}',
+    '.enc-qz-art svg{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:12px}',
+    '.enc-qz-mystery{display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;border-radius:12px;border:2px dashed var(--enc-line);background:var(--enc-card2);font-size:84px;font-weight:900;color:var(--enc-acc)}',
+    '.enc-qz-main{display:grid;gap:12px;min-width:0}',
+    '.enc-clues{list-style:none;display:grid;gap:8px}',
+    '.enc-clues li{display:grid;gap:2px;padding:10px 12px;border:1px solid var(--enc-line);border-left:5px solid var(--enc-acc);border-radius:10px;background:var(--enc-card)}',
+    '.enc-clues strong{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--enc-muted)}',
+    '.enc-qz-main>.enc-btn{justify-self:start}',
+    '.enc-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
+    '.enc-choice{padding:12px;border:2px solid var(--enc-line);border-radius:10px;background:var(--enc-card);color:var(--enc-ink);font:700 15px/1.25 inherit;font-family:inherit;cursor:pointer;min-height:48px;text-align:left}',
+    '.enc-choice:hover{border-color:var(--enc-acc)}',
+    '.enc-choice[aria-disabled="true"]{cursor:default}',
+    '.enc-choice.is-right{background:var(--enc-ok-bg);color:var(--enc-ok-ink);border-color:var(--enc-ok-bd)}',
+    '.enc-choice.is-wrong{background:var(--enc-bad-bg);color:var(--enc-bad-ink);border-color:var(--enc-bad-bd)}',
+    '.enc-qz-fb{display:grid;gap:8px;padding:12px 14px;border-radius:10px;border:2px solid var(--enc-line)}',
+    '.enc-qz-fb:empty{padding:0;border:0}',
+    '.enc-qz-fb.is-right{background:var(--enc-ok-bg);color:var(--enc-ok-ink);border-color:var(--enc-ok-bd)}',
+    '.enc-qz-fb.is-wrong{background:var(--enc-bad-bg);color:var(--enc-bad-ink);border-color:var(--enc-bad-bd)}',
+    '.enc-qz-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}',
+    '.enc-qz-pool{max-width:340px}',
+    '.enc-qz-pool .enc-select{min-width:240px}',
+    '.enc-root{--enc-sz-hi:#c2410c}.enc-root[data-theme="dark"]{--enc-sz-hi:#5eead4}',
+    '.enc-lay{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;min-height:34px;border:1px solid var(--enc-line);border-radius:999px;background:var(--enc-card);color:var(--enc-ink);font:600 13px/1.2 inherit;font-family:inherit;cursor:pointer}',
+    '.enc-lay[aria-pressed="false"]{border-style:dashed;color:var(--enc-muted)}.enc-lay[aria-pressed="false"] .enc-sw{opacity:.35}.enc-lay:hover{border-color:var(--enc-acc)}',
+    '.enc-near{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}.enc-near .enc-mini{margin-left:0}',
+    '.enc-sz-title{font-size:19px;font-weight:800;margin-top:6px}',
+    '.enc-sz{display:grid;grid-template-columns:minmax(0,560px) minmax(250px,1fr);gap:16px;align-items:start;margin-top:10px}',
+    '.enc-sz-plot{min-width:0;border-radius:12px}',
+    '.enc-sz-svg{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--enc-line);background:var(--enc-card);cursor:crosshair;touch-action:manipulation}',
+    '.enc-sz-bg{fill:var(--enc-card2)}.enc-sz-grid{stroke:var(--enc-grat);stroke-width:.6;fill:none}',
+    '.enc-sz-tick{fill:var(--enc-muted);font:600 10.5px system-ui,sans-serif}',
+    '.enc-sz-ref{stroke:var(--enc-muted);stroke-width:.8;stroke-dasharray:3 3;opacity:.7;fill:none}',
+    '.enc-sz-reft,.enc-sz-name{paint-order:stroke;stroke:var(--enc-card2);stroke-linejoin:round}',
+    '.enc-sz-reft{fill:var(--enc-muted);font:600 9.5px system-ui,sans-serif;stroke-width:3px}',
+    '.enc-sz-name{fill:var(--enc-ink);font:800 12px system-ui,sans-serif;stroke-width:4px}',
+    '.enc-sz-dot{fill:var(--enc-acc);fill-opacity:.8;stroke:var(--enc-card2);stroke-width:.8}',
+    '.enc-sz-dot.is-dim{fill-opacity:.25}',
+    '.enc-sz-dot.is-hi{fill:var(--enc-sz-hi);fill-opacity:1;stroke:var(--enc-ink);stroke-width:1}',
+    '.enc-sz-dot.is-sel{fill:var(--enc-ink);fill-opacity:1;stroke:var(--enc-acc);stroke-width:2.4}',
+    '.enc-sz-cross{stroke:var(--enc-ink);stroke-width:.9;stroke-dasharray:2 3;fill:none}',
+    '.enc-sz-side{display:grid;gap:12px;min-width:0}',
+    '.enc-sz-card{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);gap:12px;align-items:start;background:var(--enc-card);border:1px solid var(--enc-line);border-radius:14px;padding:12px;box-shadow:var(--enc-shadow)}',
+    '.enc-sz-card.enc-sz-empty{grid-template-columns:1fr}',
+    '.enc-sz-card-art svg{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:10px}',
+    '.enc-sz-card-body{display:grid;gap:6px;min-width:0;justify-items:start}',
+    '.enc-sz-card-name{font-size:20px;font-weight:850;line-height:1.15}',
+    '.enc-today{display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr);gap:16px;align-items:center;background:var(--enc-card);border:1px solid var(--enc-line);border-left:6px solid var(--enc-acc);border-radius:14px;padding:12px;box-shadow:var(--enc-shadow);margin:8px 0 14px}',
+    '.enc-today-art svg{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:10px}',
+    '.enc-today-body{display:grid;gap:6px;justify-items:start;min-width:0}.enc-today-body .enc-badges{margin:2px 0}',
+    '.enc-today-name{font-size:22px;font-weight:850;line-height:1.15}',
+    '@media(forced-colors:active){.enc-sz-dot{fill:CanvasText}.enc-sz-dot.is-hi{fill:Highlight}.enc-sz-dot.is-sel{fill:Highlight;stroke:CanvasText}.enc-lay[aria-pressed="true"]{outline:2px solid Highlight}}',
+    '@media(max-width:900px){.enc-sz{grid-template-columns:1fr}}',
+    '@media(max-width:760px){.enc-today{grid-template-columns:104px minmax(0,1fr);gap:10px}.enc-today-name{font-size:18px}.enc-today-blurb{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:1.45}.enc-sz-card{grid-template-columns:1fr}.enc-sz-card-art{max-width:200px}}',
+    '@media(max-width:760px){.enc-qz-body,.enc-choices{grid-template-columns:1fr}.enc-filter .enc-select{min-width:140px}.enc-qz-pool{max-width:none}.enc-qz-pool,.enc-qz-pool .enc-select{width:100%}.enc-qz-art.is-mystery{display:none}.enc-qz-art{max-width:300px;width:100%;margin:0 auto}}'
+  ].join('\n');
+  function encInjectCss() {
+    if (typeof document === 'undefined' || document.getElementById('allo-enc-css')) return;
+    var s = document.createElement('style'); s.id = 'allo-enc-css'; s.textContent = ENC_CSS; document.head.appendChild(s);
+  }
+
+  // ---------- helpers ----------
+  function encF(n) { return Math.round(n * 10) / 10; }
+  function encReduceMotion() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+  function encTrendMark(t) { return t === 'increasing' ? '↗' : t === 'declining' ? '↘' : t === 'stable' ? '→' : '?'; }
+  var ENC_LAND_BOX = null;
+  function encLandBoxes() {
+    if (ENC_LAND_BOX) return ENC_LAND_BOX;
+    ENC_LAND_BOX = ENC_WORLD_LAND.map(function(r) { var x0 = 999, x1 = -999, y0 = 999, y1 = -999; r.forEach(function(p) { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; }); return [x0, y0, x1, y1]; });
+    return ENC_LAND_BOX;
+  }
+  function encMapView(ids) {
+    var x0 = 999, x1 = -999, y0 = 999, y1 = -999;
+    ids.forEach(function(id) { ENC_ZONES[id].p.forEach(function(poly) { poly.forEach(function(p) { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; }); }); });
+    if (x0 > x1) { x0 = -180; x1 = 180; y0 = -60; y1 = 80; }
+    var asp = 400 / 220, padX = (x1 - x0) * .1 + 2, padY = (y1 - y0) * .12 + 2;
+    x0 -= padX; x1 += padX; y0 -= padY; y1 += padY;
+    var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, w = Math.max(x1 - x0, 44), hgt = Math.max(y1 - y0, 24);
+    if (w / hgt < asp) w = hgt * asp; else hgt = w / asp;
+    if (w > 360) { w = 360; hgt = w / asp; }
+    var lon0 = cx - w / 2, lat1 = cy + hgt / 2;
+    if (lon0 < -180) lon0 = -180; if (lon0 + w > 180) lon0 = 180 - w;
+    if (lat1 > 86) lat1 = 86; if (lat1 - hgt < -86) lat1 = -86 + hgt;
+    return { lon0: lon0, lon1: lon0 + w, lat1: lat1, lat0: lat1 - hgt };
+  }
+  var ENC_P_INST = null;
+  function encPlates(hh) { return ENC_P_INST || (ENC_P_INST = BirdPlates(hh)); }
+  var ENC_PLATE_CACHE = {};
+  function encMatch(E, q) {
+    if (!q) return true;
+    if (!E._hay) E._hay = [E.name, E.sci, E.family, E.group, E.habitat, E.blurb, (E.identify || []).map(function(p) { return p[0] + ' ' + p[1]; }).join(' '), (E.foods || []).join(' ')].join(' ').toLowerCase();
+    var toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+    for (var i = 0; i < toks.length; i++) if (E._hay.indexOf(toks[i]) < 0) return false;
+    return true;
+  }
+  // props: entries, groups, q, group, page, idp, f, mode, st, toggles, maineMonths, onQ, onGroup, onPage, onOpen, onF, onMode, onSt
+  var RAPTOR_ENC_GROUPS = ["Falcons & caracaras","Eagles","Hawks, kites & harriers","Vultures & condors","Owls"];
+  var RAPTOR_ENC = [
+    {"id":"kestrel","name":"American Kestrel","sci":"Falco sparverius","family":"Falconidae","group":"Falcons & caracaras","simId":"kestrel","length":"8.7–12 in","wingspan":"20–24 in","weight":"2.8–5.8 oz","lengthCm":25,"wingspanCm":57,"massG":120,"lifespan":"Most wild kestrels live only a few years; a few banded birds have passed 10 years, and captive birds live longer.","blurb":"North America’s smallest falcon is about the size of a jay, with a rusty back, a bobbing tail and, in males, blue-gray wings. It hovers over fields hunting grasshoppers and voles, but its numbers have fallen across much of the continent.","identify":[["Two face stripes","Two black vertical bars on a pale face, one below the eye and one at the rear of the cheek, make an unmistakable mask."],["Rusty back and tail","Both sexes have a rufous back; the tail is rusty with a black band near the tip in males and narrow dark bars in females."],["Male and female wings","Males have slate-blue wings with black spots; females have rufous wings with dark bars. The sexes differ from fledging on."],["Tail-bobbing perch","Often perches upright on wires and dead snags, pumping its tail up and down as it scans the ground."],["False eyes","Two black spots on the back of the head look like eyes and may discourage attacks from behind."]],"lookalikes":[["Merlin","Chunkier and darker, with heavy streaks and no rusty back; it lacks the bold double face stripes and rarely hovers."],["Sharp-shinned Hawk","A bird-hunting hawk with short rounded wings and a long tail; it has no face stripes and does not hover over fields."]],"voice":"A high, ringing killy-killy-killy or klee-klee-klee, usually four to six quick notes, given when excited, alarmed or near the nest. Mates also trade a long whining call during courtship and food deliveries and a soft chitter. Chicks give raspy, buzzy begging cries.","habitat":"Open country with short vegetation and perches: farm fields, hayfields, pastures, meadows, grasslands, airports, road edges and wide powerline corridors. Old trees with cavities, or nest boxes, at field edges are the key; very little forest is used.","range":"From Alaska and Canada across the United States and Mexico to Central and South America, plus the Caribbean, the most widespread falcon in the Americas. Northern birds migrate south; those in the southern states and tropics stay year-round.","diet":"In summer: grasshoppers, crickets, beetles, dragonflies and other large insects, plus voles, mice, lizards and small birds such as sparrows. In winter, when insects vanish, it turns more to rodents and birds. A kestrel hunts from a perch or by hovering, then drops or dives and carries its catch to a perch. Extra food is sometimes cached in grass or crevices.","foods":["grasshoppers","voles","small birds","lizards"],"nesting":{"site":"Tree cavities such as old woodpecker holes, crevices in cliffs or buildings, and nest boxes on poles at field edges.","nest":"No nest is built; eggs lie on a bed of wood chips or debris in the cavity or box.","eggs":"Usually 4–5, white to cream, finely speckled with brown or gray.","incubation":"About 28–30 days, mostly by the female while the male brings her food.","young":"Chicks fledge at about 28–31 days. Both parents feed them, and the young stay close for a few weeks after leaving."},"behavior":"Kestrels watch for prey from wires, fence posts and dead branches, bobbing their tails as they scan. Where there is no perch they hover 30 to 60 feet up, using the wind to hold still and keeping the head almost motionless. Males court by diving and delivering food. Starlings and House Sparrows compete with them for nest holes. In winter, females tend to hold the open fields while males work more wooded edges. Pairs are usually faithful through a season, and the male does most of the hunting for the family during nesting.","migration":"A partial migrant. Birds in Canada and the northern states leave in fall, traveling by day along coasts and ridges, with the main movement from September into October. In many areas males tend to winter closer to the breeding grounds than females do. In the southern states and tropics kestrels stay year-round, and spring birds return in March and April.","status":{"iucn":"LC","trend":"declining","text":"Globally common, but North American counts show a long decline of roughly half since the mid-1960s, especially in the Northeast. Suspected causes include loss of nest cavities and open farmland, fewer insects, and hawks that prey on kestrels; the cause is still under study. Nest boxes on poles near open fields, hedgerows and grassland conservation help."},"maine":{"season":"Summer breeder and migrant; few in winter","months":"112333333211","text":"Kestrels nest in open farmland and fields near the coast and inland, though far fewer than a few decades ago. Fall migrants pass along the coast and ridges in September and early October. A handful winter in southern Maine on open fields and wires. Look for them on roadside wires over hayfields."},"wow":["A typical kestrel weighs about the same as five AA batteries, yet it is a full falcon with the same hunting equipment as a peregrine.","A hovering kestrel keeps its head almost perfectly still while its body and wings shift in the wind, holding its eyes on the ground below.","Volunteers across the Americas monitor thousands of kestrel nest boxes for the American Kestrel Partnership, helping scientists work out why the species is declining."],"nameNote":"“Kestrel” probably comes from an Old French word for a rattle, perhaps echoing its call. Sparverius is Latin for “of sparrows,” and until the early 1980s this bird was officially called the Sparrow Hawk.","tryThis":"On a drive or walk beside open fields in fall or winter, scan wires, posts and dead branches for a small, upright falcon. Count kestrels per 10 miles, and note male or female, perch height and whether it hovers. Repeat monthly, watching any nest box only from far away.","zones":{"breeding":["ak","boreal-ca","northeast","midwest","plains","intermountain","pnw"],"resident":["ca-pacific","southwest","mid-atlantic","southeast","gulf","mexico","central-am","caribbean","sa-north","amazon","andes","sa-south"],"winter":["southeast","gulf","mexico","central-am","caribbean"],"passage":["mid-atlantic"]},"flight":"Long, narrow, pointed wings and a long tail. Flight is buoyant, with quick shallow wingbeats and short glides. Unlike most falcons, a kestrel often hovers, flapping fast with its tail fanned to hold position over a field.","hunting":"Hunts from a perch or by hovering and scanning the field for movement. When it spots a grasshopper, vole or small bird, it drops or dives feet-first. Insects are snatched from the ground or the air and eaten on the wing or on a perch. Small mammals and birds are killed with a bite to the back of the neck. Extra food is stored in caches and retrieved later.","senses":"Excellent eyesight lets it spot an insect or vole from far off. Its eyes have deep foveae, and the head stays still while hovering. As in other falcons, a notch on the upper bill helps sever the neck bones of prey. Studies of the related European Kestrel suggested ultraviolet vision, but later work has questioned whether it helps find voles.","ages":"Kestrels show adult colors soon after leaving the nest, so even young birds can be sexed. Juveniles are slightly more streaked on the chest and have fine differences in the face. They can breed at one year of age.","sexNote":"Unusual among raptors, the sexes differ in color: males have blue-gray wings, females rusty barred wings. Females are only slightly larger.","plate":{"a":"raptor","hab":"open","len":0.8,"bh":0.78,"tl":0.95,"prim":1.3,"tailTip":"rd","rot":52,"bl":0.65,"m":["malar","earSpot","whiteCheek","spotBreast"],"hd":0.95,"c":{"back":"#c2683a","under":"#efe0c6","wing":"#7c8fa0","tail":"#bf5d31","crown":"#7c8fa0","cheek":"#f4ece0","throat":"#f4ece0","mark":"#3a2c24","light":"#f4ece0","dark":"#23201d","bill":"#8b9298","cere":"#e8c23e","iris":"#2a1f14","leg":"#e8c23e"},"line":0.1}},
+    {"id":"crestedCaracara","name":"Crested Caracara","sci":"Caracara cheriway","family":"Falconidae","group":"Falcons & caracaras","simId":null,"length":"19–25 in","wingspan":"47–50 in","weight":"1.7–3.5 lb","lengthCm":56,"wingspanCm":122,"massG":1200,"lifespan":"Not well documented in the wild; adults on stable territories probably live ten years or more.","blurb":"A long-legged falcon that behaves like a hawk or vulture: it strides across fields, eats roadkill and chases vultures for their meals. A black cap, a bare orange face and white wing-tip patches make it easy to pick out.","identify":[["Black cap and crest","A shaggy black crown, often raised as a crest, sits above a face of bare orange-red or yellow skin."],["White neck and breast","Creamy white neck and upper breast with fine barring, giving way to a solid black belly."],["White wing windows","In flight the dark wings show bold white patches near the tips, plus a white tail with a black band at the end."],["Long yellow legs","Very long legs for a falcon; it often stands tall on the ground and walks or runs."],["Heavy hooked bill","A big, bluish bill with colored skin at its base; the bare face can change from yellow toward orange-red."]],"lookalikes":[["Black Vulture","Also has pale wing-tip patches, but a short tail, a bare gray head and a flap-and-glide flight; the caracara has a long tail, crest and white neck."],["Turkey Vulture","Holds its two-toned wings in a V and rocks as it soars, with a tiny red head; the caracara flies with steady, rowing wingbeats."]],"voice":"Fairly quiet. A dry, rattling cackle, something like krrruk, is given with the head thrown back until it nearly touches the back, in courtship and at the nest. Alarm brings a harsh, growling bark. Chicks beg with raspy peeps.","habitat":"Flat, open country with scattered trees: ranchland and dry prairie in Florida, brush country in Texas, desert scrub in Arizona and open land across tropical Latin America. Often found along roads, field edges and cattle pastures.","range":"Resident from the southern United States (Florida, Texas, southern Arizona) through Mexico and Central America to northern South America. A similar caracara of southern South America is now usually treated as a separate species.","diet":"A scavenger and opportunist. Roadkill and carcasses are staples, but it also catches insects, frogs, snakes, lizards, small mammals and young birds. It walks and runs over the ground, digs for grubs, follows plows and grass fires for fleeing prey, and harasses vultures into dropping their food.","foods":["carrion","insects","reptiles","small mammals"],"nesting":{"site":"The tops of cabbage palms, live oaks, mesquite or saguaros, often 15–50 feet up, in open country.","nest":"A bulky cup of sticks, vines and weeds, lined with softer material and added to over the years.","eggs":"Usually 2–3, pinkish-buff to cream with heavy chocolate-brown blotches.","incubation":"About 28–32 days, with both parents taking turns.","young":"Chicks fledge at roughly eight weeks, and the young stay with their parents for months afterward."},"behavior":"Caracaras are bold, curious birds often seen in pairs. They walk and run on the ground more than almost any other raptor. At carcasses they dominate vultures, and they sometimes chase a vulture until it drops or coughs up its meal. Pairs stay together for years and defend a nesting territory. In display, mates throw their heads back and rattle. In Florida they depend on working cattle ranches, and they often tolerate vehicles on roads but are wary of people at the nest.","migration":"Mostly resident. Adults stay on or near their territories all year. Young birds wander widely after leaving the nest, and some stray north or east of the usual range, with occasional reports far from where the species normally lives.","status":{"iucn":"LC","trend":"stable","text":"Overall the Crested Caracara is common in much of Latin America and secure globally. In the United States the Florida population is listed as Threatened under the Endangered Species Act because ranchland and native prairie have been converted to farms, citrus and housing. Texas numbers appear stable to rising. Protecting working cattle ranches, native prairie and nest palms helps."},"maine":null,"wow":["Caracaras are falcons that spend much of their time walking, chasing prey on foot like a small chicken-sized hawk with a long neck.","They harass vultures in the air and at carcasses, sometimes forcing a Black or Turkey Vulture to give up food it has already swallowed.","DNA studies place caracaras inside the falcon family, showing that a scavenging, ground-walking lifestyle evolved from falcon ancestors."],"nameNote":"“Caracara” is believed to come from a South American Indigenous word (Tupi or Guarani) imitating the bird’s rattling call. Older sources call it Caracara plancus, from Latin for “flat-footed,” so look for both names.","tryThis":"If you travel to Florida, Texas or Arizona, scan pastures, fence posts and roadsides from a car window. Note whether the bird walks on the ground and which other scavengers it feeds beside. Practice telling Crested Caracara, Black Vulture and Turkey Vulture by silhouette.","zones":{"breeding":[],"resident":["southeast","gulf","southwest","mexico","central-am","sa-north"],"winter":[],"passage":[]},"flight":"Broad wings with pale patches near the tips, a long tail and an extended neck. Flight is steady, with rowing, fairly stiff wingbeats, often low. It glides and soars less than vultures do and may follow a flock of vultures.","hunting":"Opportunistic. It looks for carcasses from the air, a perch or while walking fields. It feeds on carrion at roadkill, steals food from vultures, and takes live prey by running it down or surprising it. Typical live prey includes insects, frogs, snakes, lizards, rodents and nestling birds. It often feeds beside vultures and other scavengers and can dominate them.","senses":"Sharp eyesight is the main sense. It spots carcasses and moving prey from a perch or while flying low, and watches circling vultures, which often point to a meal. Unlike the Turkey Vulture, it is not known to find carrion by smell.","ages":"Juveniles are browner and duller, with buff streaks instead of bars on the neck and breast and a pale pinkish-gray or yellowish bare face instead of the adult’s orange-red. They gain adult plumage over about two to three years.","sexNote":"Males and females look alike. Females are slightly larger on average.","plate":{"a":"raptor","hab":"desert","len":1.1,"bh":1,"tl":1,"prim":0.9,"tailTip":"rd","rot":58,"bl":1.15,"m":["barBelly","tailBars"],"hd":1,"leg":1.9,"bd":1.3,"crest":"long","c":{"back":"#2a2220","under":"#2a2220","wing":"#241c1a","tail":"#e8e2d6","crown":"#1c1816","crest":"#1c1816","face":"#e8683a","throat":"#f1efe8","breast":"#e8e2d6","bill":"#b8c4cc","cere":"#e8683a","mark":"#2a2220","tailMark":"#2a2220","light":"#f1efe8","dark":"#1c1816","leg":"#f0c030","iris":"#4a3320"},"line":0.1}},
+    {"id":"gyrfalcon","name":"Gyrfalcon","sci":"Falco rusticolus","family":"Falconidae","group":"Falcons & caracaras","simId":"gyrfalcon","length":"20–25 in","wingspan":"43–63 in","weight":"1.8–4.6 lb","lengthCm":58,"wingspanCm":130,"massG":1500,"lifespan":"Wild lifespan is poorly known, but adults on good territories likely survive many years; captive gyrfalcons have lived well over a decade.","blurb":"The largest falcon on Earth is a bird of the Arctic, built like a hunting jet: heavy-chested, long-winged and able to run down ptarmigan across open tundra. In Maine it is a rare and prized winter visitor.","identify":[["Big, bulky falcon","About the size of a Red-tailed Hawk, with a deep chest, broad shoulders and a long tail."],["Broad-based wings","Wings are wide at the base and taper to pointed tips, blunter than a peregrine’s; the tail is longer than a peregrine’s."],["Weak face pattern","No bold black moustache like a peregrine’s; at most a thin dark line or a faint smudge below the eye."],["Three color forms","White birds are mostly white with fine dark spots, gray birds are the most common, and dark birds are chocolate brown."],["Streaked young birds","Young gyrfalcons are heavily streaked below with a bluish-gray cere (the bare skin at the bill base); adults show finer barring."]],"lookalikes":[["Peregrine Falcon","Smaller, with a bold black moustache and sharply pointed wings; the gyrfalcon is bulkier with a longer tail and no strong helmet."],["American Goshawk","A forest hawk with short rounded wings, a long tail and a pale eyebrow; the gyrfalcon’s wings are longer and pointed."],["Snowy Owl","A white gyrfalcon on a distant perch can fool you: a Snowy Owl has a round head and yellow eyes and flies on slow, deep beats."]],"voice":"Usually silent except near the nest, where adults give a loud, hoarse, rasping kak-kak-kak-kak, slower and deeper than a peregrine’s, plus a drawn-out scream in alarm. Chicks and fledglings beg with shrill, wailing cries.","habitat":"Open Arctic and subarctic tundra, rocky river canyons, mountains and coastal cliffs where ledges or old stick nests stand near plenty of ptarmigan and seabirds. Wandering birds in winter use open coasts, farmland, airports and marshes.","range":"Circumpolar: breeds across northern Alaska, Canada, Greenland, Iceland, Scandinavia and northern Russia. Many adults stay in the Arctic all winter, while young birds and some adults drift south to southern Canada, the northern U.S., Europe and Central Asia.","diet":"In the Arctic mostly ptarmigan, plus ground squirrels, lemmings, hares, ducks, gulls and seabirds such as murres. A gyrfalcon takes prey in a fast, low chase or a short dive, killing with a strike and a bite to the neck. Its nesting success rises and falls with ptarmigan and lemming numbers. Wintering far south, it hunts ducks, gulls and pigeons.","foods":["ptarmigan","ducks","ground squirrels","seabirds"],"nesting":{"site":"Cliff ledges, usually overlooking tundra or sea, often in the old stick nest of a raven, Golden Eagle or Rough-legged Hawk.","nest":"Builds little or nothing itself; it reuses another bird’s bulky stick nest or lays in a bare scrape.","eggs":"Usually 3–4 (up to 7), creamy white with reddish-brown speckles.","incubation":"About 35 days. The female sits almost all the time while the male hunts for both.","young":"Chicks fledge at about 7 weeks, and the parents keep feeding them for several weeks more as they learn to hunt."},"behavior":"Gyrfalcons nest very early, laying eggs while snow still covers the tundra, so females need a male who can hunt well in the cold. Pairs return to the same cliff year after year and often use several nests in rotation. They hunt by low, fast flights along ridges and river bluffs to surprise prey, or by long, determined chases across open ground. They sometimes share cliffs with ravens and Peregrine Falcons. In winter, young birds roam widely and often settle for weeks near a good supply of ducks or gulls.","migration":"Mostly resident or short-distance migrants. Adults in the far north often stay near their territories, while most young birds move south in autumn, some reaching the northern United States and northern Europe. Birds that reach Maine and New England usually come from Arctic Canada or Greenland, mostly arriving from November to March.","status":{"iucn":"LC","trend":"stable","text":"Gyrfalcons are widespread across the Arctic, but their remote range makes them hard to count, and local numbers swing with ptarmigan cycles. Possible risks include warming that changes tundra prey and brings competing raptors north, disturbance at nests, illegal taking for falconry and collisions with towers and turbines. Protecting nest cliffs and leaving nests undisturbed are the key steps."},"maine":{"season":"Rare winter visitor","months":"111000000011","text":"A rare and exciting find, with only a few reports in most winters. Look for large falcons around open coast, airports, farmland and landfills from November to March, often on a distant post watching gulls and ducks. Most Maine birds are gray or dark; white ones are rarer still. Check recent eBird reports before you go."},"wow":["Gyrfalcons start nesting in the dead of Arctic winter, incubating eggs in temperatures that would kill the eggs of most birds if left uncovered.","A gyrfalcon can run down a ptarmigan in a long, level chase across open tundra, relying on endurance as much as on a dive.","In medieval Europe, rank decided which falcon you could fly: a 15th-century guide to falconry assigned the gyrfalcon to a king."],"nameNote":"The “gyr” in the name has uncertain origins; it may come from an old Norse or Germanic word, and sources disagree. Rusticolus is Latin for “country dweller,” from rus (country) and colere (to inhabit).","tryThis":"Learn the silhouette before the bird shows up: draw a gyrfalcon, a peregrine and a Red-tailed Hawk side by side, noting wing shape and tail length. Then scan open coasts in winter and watch for flocks of ducks or gulls that suddenly bunch and flush.","zones":{"breeding":[],"resident":["ak","arctic-ca","greenland","iceland","europe-n","siberia"],"winter":["boreal-ca","northeast","midwest","plains","europe-w","russia","central-asia","east-asia"],"passage":[]},"flight":"Broad-based, pointed wings and a long tail, between a peregrine’s and a goshawk’s in shape. Flight is powerful: steady, deep beats low over the ground with long glides, rarely hovering. It can accelerate quickly and sustain a long tail chase, and in a stoop it dives with wings folded back.","hunting":"A gyrfalcon hunts by low, fast surprise flights along slopes, riverbeds and cliffs, or by a long chase across open ground, preferring to strike prey in open air or on the ground. Ptarmigan are the main target; it also takes ducks, gulls, seabirds, hares and ground squirrels. It strikes with its feet and often finishes with a bite to the neck. A pair may take many ptarmigan around the nest.","senses":"Eyesight is superb, with large eyes and two foveae. Like other falcons, the upper bill has a tooth-shaped notch used on prey. Dense feathering and a heavy body help it hold heat in Arctic cold. Hearing is good, but hunting is led by the eyes.","ages":"Juveniles are brown or gray-brown above and heavily streaked below, with bluish cere and legs; adults are paler, with barring or spots and yellow soft parts. White-morph young are white with dark streaks. Adult plumage arrives after the first molt, and breeding begins at two or three years.","sexNote":"Females are noticeably larger, often 30 to 50 percent heavier than males. The sexes look alike.","plate":{"a":"raptor","hab":"tundra","len":1.15,"bh":1.05,"tl":1,"prim":1.5,"tailTip":"rd","rot":52,"bl":0.85,"m":["streakBreast","malar","whiteCheek","tailBars"],"hd":1,"c":{"back":"#8e949a","under":"#eceae4","wing":"#7f868c","tail":"#8a9096","crown":"#8e949a","cheek":"#f1efe9","mark":"#4a5058","tailMark":"#5a6068","light":"#f1efe9","dark":"#3a4046","bill":"#9aa3aa","cere":"#e6d070","iris":"#2a1f14"},"line":0.15}},
+    {"id":"mauritiusKestrel","name":"Mauritius Kestrel","sci":"Falco punctatus","family":"Falconidae","group":"Falcons & caracaras","simId":null,"length":"9–11 in","wingspan":"16–20 in","weight":"5.5–7.5 oz","lengthCm":25,"wingspanCm":45,"massG":185,"lifespan":"Not well documented; like other small kestrels, adults likely live several years in the wild.","blurb":"In 1974 only four Mauritius Kestrels were known to be alive, making it among the rarest birds on Earth. Captive breeding and hands-on nest management brought back hundreds, one of the most famous rescues in conservation.","identify":[["Short, rounded wings","Compared with most kestrels, its wings are short and rounded and its tail fairly long, built for dashing through forest."],["Spotted below","Pale underparts are densely marked with dark spots and streaks; the name punctatus means “spotted.”"],["Brown upperparts","Rich brown above with darker spots and bars, a camouflaged pattern for perching among branches."],["Island forest bird","Found only on Mauritius, in forest and gorges, not in open fields like most kestrels."],["Yellow legs and cere","Bright yellow legs and bare skin at the base of the bill contrast with a dark eye."]],"lookalikes":[["Eurasian Kestrel","Hovers over open country on longer, pointed wings with a plainer rufous back; the Mauritius Kestrel is a forest bird with rounder wings and heavily spotted underparts."],["American Kestrel","Well known to North American birders, it hovers over fields and shows two bold face stripes; the Mauritius Kestrel usually hunts from a perch and lacks the bold face stripes."]],"voice":"A rapid, rattling series such as kik-kik-kik or ki-ki-ki, used as an alarm and territory call near the nest, with softer chittering and whining notes traded between mates. Chicks give begging cries. It is usually quieter away from the nest.","habitat":"Native evergreen forest, especially wet upland forest, gorges and cliff country in the southwest of the island, with cliff crevices and tree cavities for nests. It also uses forest edge and plantations near native forest.","range":"Found only on the island of Mauritius in the Indian Ocean, east of Madagascar. By the 1970s it survived in just a small patch of southwestern forest. Captive-bred birds released in the 1980s and 1990s re-established it in other forest areas.","diet":"Mostly day geckos, plus large insects, other lizards and occasionally small birds. It hunts by sitting still on a branch or cliff edge inside the forest, then dashing out to snatch a gecko from a trunk or branch. Unlike open-country kestrels it spends little time hovering, relying on cover and surprise instead.","foods":["day geckos","insects","small birds"],"nesting":{"site":"Holes and ledges in cliffs and rock faces and cavities in tall native trees; recovery teams also provided nest boxes.","nest":"No nest material; eggs are laid on the floor of the cavity or box.","eggs":"Usually 3–4, creamy with reddish-brown speckles.","incubation":"About four weeks. The female sits most of the time and the male hunts for her.","young":"Chicks fledge after roughly six weeks, and parents feed them for a few weeks more."},"behavior":"Mauritius Kestrels are patient perch hunters. A bird sits motionless on a branch or cliff ledge scanning for lizards, then dashes out with sudden acceleration and snatches prey from the bark. Pairs defend a territory around the nest site and are usually seen alone or in pairs. Having evolved on an island with few predators, the species was extremely vulnerable when rats, cats, mongooses and monkeys were introduced, and these animals still raid nests. Most birds stay near their home territories throughout the year.","migration":"Non-migratory. The entire species lives on a single small island about 40 miles long. Adults stay on or near their territories all year, and young birds disperse only short distances from where they hatched.","status":{"iucn":"VU","trend":"stable","text":"From four wild birds in 1974 the population grew to several hundred, thanks to captive breeding, release, predator control, supplementary feeding and nest boxes. It is still vulnerable because it lives on one small island, and cyclones, introduced predators, habitat loss and poisons can set it back. Protecting native forest and continued monitoring are essential."},"maine":null,"wow":["Conservationists used a clever trick: by removing a pair’s first clutch, they induced the pair to lay a second, doubling the number of chicks without hurting the wild birds.","The Mauritius Kestrel shared its island with the dodo. The dodo vanished in the 1600s, but the kestrel hung on in remote gorges and was saved only with intensive effort.","Its short, rounded wings are an adaptation for chasing geckos through trees, quite different from the hovering style of field-hunting kestrels."],"nameNote":"Dutch sailors named Mauritius in 1598 after Prince Maurice of Nassau. “Kestrel” is an Old French word probably related to rattling, and punctatus is Latin for “spotted.”","tryThis":"Use a map and ruler to measure how long and wide Mauritius is, then compare it with your county. Then watch for a local perch-hunting bird such as a kestrel or shrike, and time how long it sits still before dashing out, as a Mauritius Kestrel does.","zones":{"breeding":[],"resident":["indian"],"winter":[],"passage":[]},"flight":"Short, rounded wings and a fairly long tail suit twisty flight among trees. It flies in quick bursts of rapid wingbeats followed by short glides and can climb steeply up cliff faces. It hovers less than open-country kestrels do.","hunting":"An ambush hunter. It sits still on a branch or cliff ledge inside the forest, then launches a dash toward a gecko on a trunk or branch and snatches it with its feet. It also takes large insects and sometimes small birds. Compared with open-country kestrels it hovers little and instead uses cover and surprise, hunting in the forest canopy and along gorge edges.","senses":"Sharp eyesight spots well-camouflaged geckos on bark and rock. Like other falcons, it has a tooth-shaped notch on the upper bill that helps kill small prey quickly.","ages":"Detailed age plumages are not well documented; young birds look much like adults but are usually duller and more streaked. They can breed from about one to two years old.","sexNote":"Females are larger than males, roughly a fifth to a quarter heavier, and are generally more heavily marked.","plate":{"a":"raptor","hab":"wood","len":0.8,"bh":0.85,"tl":0.9,"prim":0.75,"tailTip":"rd","rot":52,"bl":0.7,"m":["spotBreast","malar","tailBars"],"hd":1,"c":{"back":"#9a5f3a","under":"#e8d9bc","wing":"#8a5232","tail":"#8a5a3a","crown":"#7a4e32","cheek":"#e8d9bc","mark":"#5a3a28","tailMark":"#4a3020","light":"#efe3c6","dark":"#2c2018","bill":"#8d949b","cere":"#e8c23e","iris":"#2a1f14","leg":"#e8c23e"},"line":0.1}},
+    {"id":"merlin","name":"Merlin","sci":"Falco columbarius","family":"Falconidae","group":"Falcons & caracaras","simId":"merlin","length":"9–13 in","wingspan":"20–27 in","weight":"5–10 oz","lengthCm":28,"wingspanCm":62,"massG":200,"lifespan":"Most wild merlins live only a few years; a few banded birds have passed 10 years.","blurb":"A compact, pigeon-sized falcon that ambushes songbirds and shorebirds in low, flat-out chases. Once an uncommon nester in the Northeast, it has spread into spruce groves, parks and towns across northern North America.","identify":[["Stocky, compact build","A chunky chest, thick-based pointed wings and a fairly long tail make it look like a small, muscular falcon."],["Faint face pattern","Only a smudgy moustache and a weak pale eyebrow; no bold black helmet like a peregrine’s."],["Banded tail","A dark tail crossed by several pale bands, a useful mark on a perched or flying bird."],["Streaked underparts","Heavy dark streaks on a buff or whitish chest and belly rather than the fine bars of an adult peregrine."],["Slate-blue males","Males of the eastern form are slate-blue above with rusty-streaked underparts; females and young are brown."]],"lookalikes":[["American Kestrel","Has two bold black face stripes, a rusty back or tail and often hovers; a merlin looks plain, dark and streaked, and rarely hovers."],["Peregrine Falcon","Much larger, with a bold black helmet and a finely barred belly; the merlin is about pigeon-sized and heavily streaked."],["Sharp-shinned Hawk","Has short rounded wings, a long square tail and a flap-and-glide flight; the merlin’s wings are pointed and its beats are whippy and fast."]],"voice":"A rapid, shrill ki-ki-ki-ki-ki or kek-kek-kek, loudest near the nest when a pair is alarmed or a mate arrives with food. Females and young also give a whining, chittering call. Away from the breeding territory merlins are mostly silent, so a sharp rattle from a spruce top can reveal a nest area.","habitat":"Edges of northern forest, spruce bog, burns, prairie groves, parks and shorelines. It likes open ground for hunting beside clumps of conifers for nesting. In winter it patrols coasts, farmland, marshes and town parks wherever small birds flock.","range":"Breeds across the northern forests of North America, Europe and Asia, with a growing number nesting in towns on the Canadian prairies and in the Northeast. North American birds winter from the southern United States through Central and northern South America.","diet":"Mostly small birds such as sparrows, warblers, waxwings, larks and shorebirds, usually caught in a short, hard chase over open ground. During fall migration and in summer, big dragonflies and other insects make up a surprising share. A merlin usually plucks its prey before eating, and it may take birds nearly its own weight.","foods":["songbirds","shorebirds","dragonflies"],"nesting":{"site":"Usually an old stick nest of a crow, raven or hawk in a conifer; occasionally a cliff ledge, a tree cavity, or the ground.","nest":"Merlins build nothing, or add only a little lining to another bird’s old nest.","eggs":"Typically 4–5 (range 2–6), pale cream to buff, heavily blotched with reddish brown.","incubation":"About 28–32 days, mostly by the female while the male hunts and brings food.","young":"Chicks fledge in about 25–35 days, and parents keep feeding them for several weeks while they learn to chase."},"behavior":"Merlins are fast, bold ambush hunters. A bird sits on a dead treetop or post, then bursts into a low, rapid attack, using hedgerows, buildings and trees to hide its approach. If the first rush fails it may chase one bird for a long time, climbing above it and diving again. Near the nest, even small merlins dive at crows, hawks and people while shrieking. Outside the breeding season they usually roost and hunt alone. Because they build no nest of their own, the supply of old crow and hawk nests matters to them.","migration":"Northern breeders migrate. The main southward passage along the Atlantic coast runs from late August to October, often low and fast, following songbird flocks. A few merlins winter as far north as the Northeast and southern Canada, especially in towns where small birds are plentiful.","status":{"iucn":"LC","trend":"increasing","text":"Merlins suffered eggshell thinning from DDT in the 1900s, but numbers have recovered in many regions, and the species has expanded into cities and prairie towns. North American counts suggest a stable to rising population. Remaining concerns include loss of nest trees, window strikes and poisons in prey. Keeping old crow-nest groves and mature conifer stands in towns helps."},"maine":{"season":"Migrant, scattered breeder, few in winter","months":"111222223321","text":"Fall is the best time: from September to mid-October merlins stream along the coast, hunting migrating songbirds and dragonflies. A modest number breed, mostly in the north and east and in some towns. A few stay through winter on the coast and around feeders. Check coastal headlands and hawkwatches in fall."},"wow":["Migrating merlins often catch large dragonflies in their feet and eat them in flight, a handy snack for a fast flier on a long trip.","Merlins began nesting in prairie cities such as Saskatoon in the late 1900s and now thrive among planted spruces, using old crow and magpie nests.","Despite the name, there is no link to the wizard Merlin. The bird’s name comes from Old French, and the wizard’s from the Welsh Myrddin."],"nameNote":"“Merlin” comes from Old French esmerillon, a small falcon. Until the early 1970s the bird was commonly called the Pigeon Hawk, and columbarius is Latin for “of doves.”","tryThis":"In September or October, spend an hour at a coastal headland or field edge. Watch for a small, fast falcon cutting low, and note how songbirds freeze or dive into cover. Record the direction, height and any prey you see.","zones":{"breeding":["ak","arctic-ca","boreal-ca","northeast","midwest","plains","intermountain","europe-n","iceland","russia","siberia","central-asia"],"resident":["pnw"],"winter":["southeast","gulf","mexico","central-am","caribbean","sa-north","amazon","europe-s","middle-east","east-asia","japan","south-asia"],"passage":["mid-atlantic","gulf"]},"flight":"Pointed, swept wings, a thick body and a long tail. Flight is fast, direct and low, with quick, powerful, whippy beats and sudden twists. Unlike a kestrel it seldom hovers, and unlike a peregrine it rarely soars high; it relies on speed and surprise close to the ground.","hunting":"The merlin sits on a high perch or flies low along a field edge, then dashes at a flock of small birds, trying to catch one before it reaches cover. If the target dodges, it may chase for a long stretch, climbing above its prey and diving down until the quarry tires. It kills with its feet and a bite to the neck and usually plucks the meal. Many chases fail, so it tries again and again. Dragonflies are snatched in the talons and eaten on the wing.","senses":"Large eyes give keen, wide-ranging vision, and falcons see motion and detail far better than people do. The upper bill has a tooth-shaped notch (the tomial tooth) used to snap the neck of prey. A merlin can pick one small bird out of a swirling flock.","ages":"Young merlins look like adult females: brown above with streaked buff underparts. Males of the common eastern form turn blue-gray above after their first molt, at about a year old, while females stay brown. Most nest first at one or two years old.","sexNote":"Females are larger, by roughly a quarter or more in weight. Males of the eastern form are bluish above; females are brown.","plate":{"a":"raptor","hab":"wood","len":0.82,"bh":0.85,"tl":0.95,"prim":1.4,"tailTip":"rd","rot":50,"bl":0.7,"m":["streakBreast","streakFlank","tailBars","supercilium"],"hd":0.95,"c":{"back":"#58606a","under":"#e0cfb0","wing":"#4a525c","tail":"#4e5660","crown":"#4a525c","mark":"#6a4a30","tailMark":"#e8e2d6","light":"#e8dcc6","dark":"#2c2e32","bill":"#8d949b","cere":"#e8c23e","iris":"#2a1f14"},"line":0.15}},
+    {"id":"peregrine","name":"Peregrine Falcon","sci":"Falco peregrinus","family":"Falconidae","group":"Falcons & caracaras","simId":"peregrine","length":"13–23 in","wingspan":"29–47 in","weight":"1.1–3.3 lb","lengthCm":46,"wingspanCm":100,"massG":950,"lifespan":"Wild peregrines that survive the risky first year often live 5 to 10 years, and some individuals have passed 15 years.","blurb":"The fastest animal on Earth: in its hunting dive, called a stoop, a peregrine can top 200 miles per hour. DDT nearly erased it from the eastern United States, yet today it nests on bridges and skyscrapers, including in Maine.","identify":[["Dark helmet","A slate-black cap runs down the cheek as a bold wedge (the “moustache”) against a clean white throat and cheek."],["Anchor shape in flight","Long, pointed, swept-back wings and a fairly short tail give a gliding peregrine a streamlined, anchor-like outline."],["Barred belly","Adults are blue-gray above and pale below, with fine dark bars on the belly and flanks and often a pinkish or buff wash on the chest."],["Streaky youngsters","Juveniles are brown above and heavily streaked, not barred, below, with a dimmer version of the adult face pattern."],["Yellow soft parts","The bare skin at the base of the bill, the eye ring and the feet are bright yellow in adults, framing a dark eye."]],"lookalikes":[["Merlin","Pigeon-sized, with only a faint face pattern and a boldly banded tail; a peregrine is crow-sized and wears the strong dark helmet."],["Gyrfalcon","Bulkier, with broader wings, a longer tail and a slower, heavier flight; it lacks the sharp black moustache of a peregrine."],["Cooper’s Hawk","Has short, rounded wings and a long rounded tail and flaps then glides; a peregrine’s wings are long and pointed, its tail short."]],"voice":"Near a nest ledge it screams a harsh, rasping kak-kak-kak-kak or kek-kek-kek, a fast, hard-edged alarm and territory call. Mates swap a drawn-out wailing eechip or “eeyuh” when one arrives with food. Away from the nest, peregrines are usually quiet.","habitat":"Cliffs and sea cliffs for nesting, plus city versions: skyscraper ledges, bridge girders, smokestacks and quarry walls. Hunting grounds are open: coasts, estuaries, marshes, farmland and river valleys where birds gather.","range":"Found on every continent except Antarctica, one of the most widespread birds on the planet. Arctic breeders travel to Central and South America for winter; birds in milder regions, including many city pairs, stay all year.","diet":"Almost entirely birds caught in the air: pigeons, ducks, shorebirds, jays, flickers and songbirds, from tiny warblers up to birds nearly its own weight. A peregrine usually sights prey from a high perch or while soaring, then stoops and strikes. It plucks its meal at a favorite post, leaving a drift of feathers. Bats and big insects are taken now and then.","foods":["pigeons","ducks","shorebirds","songbirds"],"nesting":{"site":"Ledges and scrapes on cliffs; in cities, building ledges, bridges and nest boxes. The same site is often used for many years.","nest":"No stick nest: just a shallow scrape in gravel or soil on a ledge, shaped by the birds’ bodies and feet.","eggs":"Usually 3–4 (sometimes 2–5), cream to pale buff, thickly spotted and blotched with reddish brown.","incubation":"About 32–35 days. Both parents sit, the female more, while the male brings food.","young":"Chicks fledge at about 5–6 weeks and stay near the nest for several weeks more while parents feed them and teach them to hunt."},"behavior":"Peregrines are fiercely territorial. In courtship a pair soars together, dives at each other and passes prey from foot to foot in mid-air. Pairs often keep one cliff or ledge for many years. Early in the nesting season the male does most of the hunting while the female guards the eggs and chicks, and later both hunt. A nesting bird dives at crows, gulls, eagles and even people who come too close. City peregrines sometimes hunt after dark under artificial light, catching migrating songbirds overhead.","migration":"Highly variable. Arctic-nesting peregrines travel thousands of miles, many to Central and South America, and pass along coasts in fall. Birds farther south, including many in the Northeast, migrate short distances or stay all year. Fall movements peak in September and October at coastal hawkwatches.","status":{"iucn":"LC","trend":"increasing","text":"DDT thinned eggshells until chicks could not hatch, and by the 1960s peregrines had vanished from the eastern United States. A DDT ban, captive breeding and “hacking” (raising chicks at a safe site until they fly) brought them back, and the U.S. removed them from the endangered list in 1999. Risks today include collisions with glass and wires, illegal shooting and new chemicals. Leaving nest ledges undisturbed and protecting cliffs help."},"maine":{"season":"Breeder and migrant; some stay all year","months":"112222223321","text":"A recovering nester on coastal and inland cliffs and on tall structures. Birds are easiest to see around nest sites from March to July and along the coast during fall migration. Some winter near open water and city pigeons. Nest cliffs may be closed in spring, so respect signs. Check current Maine and federal lists for its status."},"wow":["Dive-trained falcons carrying speed recorders have been clocked at roughly 240 miles per hour (about 390 km/h), the fastest speed ever measured for any animal.","Falconers helped save the species: their skill at raising and releasing young falcons made the recovery programs of the 1970s possible.","Some peregrines in big cities have learned to hunt at night, snatching songbirds that migrate through the glow of skyscraper lights."],"nameNote":"Peregrine comes from Latin for “wanderer” or “pilgrim.” A traditional explanation is that medieval falconers caught wild young birds as they passed through, since nests on remote cliffs were so hard to find.","tryThis":"From a long distance with binoculars, watch a tall building, bridge or cliff in spring. Scan ledges and antennas for a still, crow-sized bird with a dark helmet, and note whether pigeons suddenly scatter. Never approach nest sites or climb to look.","zones":{"breeding":["ak","arctic-ca","greenland","boreal-ca","northeast","midwest","intermountain","pnw","siberia","europe-n","russia","central-asia","east-asia"],"resident":["ca-pacific","southwest","mid-atlantic","mexico","europe-w","europe-s","japan","south-asia","se-asia","africa-s","australia","andes","sa-south"],"winter":["gulf","southeast","caribbean","central-am","sa-north","amazon","africa-w-c","africa-e","middle-east"],"passage":["mid-atlantic","gulf"]},"flight":"Long, pointed, swept-back wings and a short tail. Level flight is steady and quick, with stiff, deep wingbeats. In a stoop the wings fold back into a teardrop shape. Peregrines soar on rising air less often than hawks do, but they often climb high above their prey before diving.","hunting":"Mostly hunts birds in open air. The classic attack is the stoop: from a soaring height or a perch the falcon folds its wings and dives, then strikes with a clenched foot, often knocking the prey senseless or killing it at once. It also makes level chases and surprise attacks from cover. Success per attempt is often well under half, so a peregrine may try many times to make a kill. Prey is carried to a plucking post.","senses":"Eyesight is superb, with two foveae (spots of sharpest vision) in each eye, one aimed forward and one sideways for tracking. A see-through third eyelid sweeps the eye clean. The bill has a notch, the tomial tooth, that helps break the neck of prey. Hearing is good, but sight leads the hunt.","ages":"Young birds are brown above and heavily streaked below, with a duller face. After their first full molt, at about a year old, they look much like adults, blue-gray above with barred underparts. Most start breeding at two or three years old, a few at one.","sexNote":"Females are noticeably larger, about a third heavier. The male is called a tiercel, from an old word for “third.” Plumage is nearly identical.","plate":{"a":"raptor","hab":"rock","len":0.96,"bh":0.9,"tl":0.95,"prim":1.7,"tailTip":"rd","rot":50,"bl":0.8,"m":["capLow","malar","whiteCheek","barBelly","tailBars"],"hd":0.95,"tailW":0.8,"c":{"back":"#5b6b7a","under":"#ece4d4","wing":"#4e5d6b","tail":"#566574","crown":"#23272d","face":"#23272d","cheek":"#f2eee4","throat":"#f4efe4","mark":"#3c4650","tailMark":"#2c353d","light":"#f4efe4","dark":"#1c1f24","bill":"#8d949b","cere":"#e8c23e","iris":"#2a1f14"},"line":0.2}},
+    {"id":"prairieFalcon","name":"Prairie Falcon","sci":"Falco mexicanus","family":"Falconidae","group":"Falcons & caracaras","simId":null,"length":"15–19 in","wingspan":"35–44 in","weight":"0.9–2.3 lb","lengthCm":43,"wingspanCm":100,"massG":750,"lifespan":"Poorly documented in the wild; adults likely live five to ten years, and captive birds have lived much longer.","blurb":"A sandy-brown falcon of the dry West, built for speed over open ground. It sweeps low across sagebrush and grassland to snatch ground squirrels and larks, and dark patches under its wings give it away when it banks.","identify":[["Dark wing-pits","The “armpits” (axillaries) form a black triangle at the base of the underwing and show in flight, the best field mark."],["Pale sandy back","Back and wings are pale brown with light edges, much paler than a peregrine’s slate-blue."],["Thin moustache","A narrow, short dark moustache stripe on a pale cheek, far weaker than a peregrine’s black wedge."],["Spotted underparts","Whitish below with brown spots and streaks, heavier on the flanks and belly."],["Pointed wings","Long, pointed wings with a medium-long tail; flight is fast and low, with stiff, shallow beats."]],"lookalikes":[["Peregrine Falcon","Darker blue-gray above with a bold black helmet and no black wing-pits; a peregrine’s underwing looks evenly barred."],["Merlin","Smaller and darker brown, with a banded tail and no dark wing-pits; a merlin is also much less pale overall."]],"voice":"Mostly silent away from the nest. At the nest or when alarmed it gives a loud, rasping kik-kik-kik-kik or kee-kee-kee, harsher than a kestrel’s, and a whining wail passes between mates. Chicks give a shrill, begging peep.","habitat":"Dry, open country: sagebrush steppe, grassland, desert scrub and canyon country, plus mountain meadows in late summer. It needs cliffs or rock outcrops for nesting and open ground with plenty of ground squirrels or small birds.","range":"Western North America, from southern Canada (Alberta, Saskatchewan and British Columbia) through the Great Basin and Great Plains to northern Mexico. Northern birds drift south in winter, and strays sometimes wander east to the central plains.","diet":"Ground squirrels in spring and summer, along with Horned Larks, Western Meadowlarks and other grassland birds, plus lizards, large insects and sometimes small snakes and rabbits. A Prairie Falcon flies fast and low over open ground, rising over a ridge to surprise prey, or ambushes from a perch, killing with a bite to the neck. In winter it takes more birds.","foods":["ground squirrels","larks","meadowlarks","lizards"],"nesting":{"site":"Cliff ledges, potholes and crevices in rock faces and canyon walls; occasionally an old raven or hawk nest.","nest":"A scrape in gravel or dirt on a ledge, usually without sticks, or an old raven or eagle nest reused.","eggs":"Usually 4–5 (up to 6), white to cream, speckled and blotched with brown.","incubation":"About 30–32 days, mostly by the female while the male brings food.","young":"Chicks fledge at about 5–6 weeks, and parents feed them for a month or more while they learn to hunt."},"behavior":"Prairie Falcons are lone, long-range hunters that may travel several miles from the nest cliff to feeding fields. They are daring, diving at eagles and ravens that come near the nest. Where cliffs are plentiful, several pairs nest within a short distance of each other. In late summer birds sometimes leave lowland nesting areas for higher mountain meadows and follow ground squirrels uphill, then drift south. They tolerate people poorly near the nest, so keep your distance from cliff sites in spring.","migration":"A partial migrant. Many birds stay on territory in mild regions. Northern and high-elevation birds move south and to lower ground in fall, and some use mountain meadows in late summer before leaving. Wintering birds spread across the Great Plains, the desert Southwest and Mexico; strays rarely reach the Midwest and a few turn up in the East.","status":{"iucn":"LC","trend":"stable","text":"Prairie Falcons remain fairly common in the dry West but face habitat change: sagebrush and grassland lost to farms, development, wildfire, invasive cheatgrass and energy sites. Ground squirrel poisoning, pesticides in prey, collisions, nest disturbance and illegal shooting have all been problems. Protecting rangeland and cliffs and limiting poisons help."},"maine":null,"wow":["Idaho’s Snake River Birds of Prey National Conservation Area holds one of the densest concentrations of nesting Prairie Falcons and other raptors known in North America.","In dry years when ground squirrel numbers crash, many Prairie Falcon pairs skip nesting or lose their chicks, a direct link between the food supply and the next generation."],"nameNote":"“Prairie” describes its open-country habitat, though it favors dry sagebrush and desert more than tall-grass prairie. The Latin mexicanus means “of Mexico,” a nod to where early scientific specimens came from.","tryThis":"If you live in or visit the West, scan cliffs near open sage or grassland from a safe distance. Watch for a pale falcon that flushes larks, and look for the black wing-pits when it banks. Anywhere, compare photos of a Prairie Falcon’s and a peregrine’s underwings.","zones":{"breeding":["boreal-ca","plains","intermountain"],"resident":["southwest","ca-pacific","mexico"],"winter":["plains","gulf","mexico","southwest"],"passage":[]},"flight":"Long, pointed wings and a medium-long tail. It flies with fast, stiff, shallow wingbeats low over the ground and glides on level wings. It rarely soars high except in rising air, and it banks sharply along ridges, flashing the dark wing-pits.","hunting":"Prairie Falcons are open-country sprinters. They fly fast and low, using ridge crests, fence lines and cliffs to surprise ground squirrels or flocks of larks. They also ambush from a perch or make a high stoop on birds in the open. Prey is usually killed with a bite at the neck, then carried to a feeding perch. They cover large areas and may travel miles from nest to hunting ground.","senses":"Large, forward-facing eyes give sharp vision for spotting a ground squirrel or lark across open ground. As in all falcons, a tooth-shaped notch on the upper bill helps sever the spinal cord of small prey. The dark streak below the eye may reduce glare, something like the eye black worn by ballplayers.","ages":"Juveniles are browner above, with streaks rather than spots on the belly and fine buff edging on the back feathers; adults are paler brown with spotted underparts. They gain adult looks after the first molt, at about a year old. Breeding usually starts at two years.","sexNote":"Females are much larger, often 30 to 50 percent heavier than males. The plumage of the sexes is nearly the same.","plate":{"a":"raptor","hab":"desert","len":1,"bh":0.95,"tl":0.95,"prim":1.6,"tailTip":"rd","rot":52,"bl":0.8,"m":["spotBreast","malar","whiteCheek","tailBars"],"hd":0.98,"c":{"back":"#a8896a","under":"#efe6d6","wing":"#957757","tail":"#9a7e60","crown":"#7a5f45","cheek":"#f0e8d8","throat":"#f4efe4","mark":"#6a5038","tailMark":"#6a5038","light":"#f4efe4","dark":"#3a2c20","bill":"#8d949b","cere":"#e8c23e","iris":"#2a1f14"},"line":0.15}},
+    {"id":"baldEagle","name":"Bald Eagle","sci":"Haliaeetus leucocephalus","family":"Accipitridae","group":"Eagles","simId":"baldEagle","length":"28–38 in","wingspan":"5.8–7.5 ft","weight":"6.5–14 lb","lengthCm":86,"wingspanCm":205,"massG":4500,"lifespan":"Wild eagles commonly live 15 to 25 years; a few banded birds have lived 30 years or more.","blurb":"The national bird of the United States is a fish-eating giant with a seven-foot wingspan. Maine had only a few dozen nests when DDT was in use; now more than 700 pairs nest here, and eagles are a familiar sight on rivers, lakes and the coast.","identify":[["White head and tail","Adults have a pure white head and tail against a dark brown body, with a huge yellow bill and pale eye; this look takes about five years to reach."],["Mottled young birds","Young eagles are mostly dark brown with messy white blotches on the belly and under the wings, and a dark bill that turns yellow with age."],["Flat-winged soaring","Soars with wings held flat like a board, with long fingered tips; a Golden Eagle holds its wings in a slight V."],["Big head and bill","The head and heavy bill project far in front of the wings, about as far as the tail extends behind."],["Bare lower legs","Feathers stop above the yellow feet, leaving the lower leg bare; a Golden Eagle’s legs are feathered to the toes."]],"lookalikes":[["Golden Eagle","Has feathered legs, a golden-brown nape, a smaller head and wings raised in a shallow V; a young golden shows crisp white tail and wing patches instead of mottling."],["Osprey","Smaller, with a white underside, a dark eye stripe and bent, gull-like wings; bald eagles are larger and flat-winged."],["Turkey Vulture","Holds its wings in a V and teeters in the air, with a tiny head; an eagle’s wings are flat and its head is large."]],"voice":"Disappointingly weak for such a big bird: a high, thin, chittering series like kleek-kik-ik-ik-ik, with squeaky whistles. Pairs call together at the nest. It is not the fierce scream heard in movies, which is usually a Red-tailed Hawk dubbed in.","habitat":"Large open water with big trees nearby: coasts, estuaries, big lakes, rivers and reservoirs. Nests are in the tallest trees, often pines, with a clear view. In winter eagles gather where water stays open, such as below dams, on tidal flats and in harbors.","range":"Found only in North America: nests from Alaska and Canada south to Mexico and Florida, with the biggest numbers along coasts, the Great Lakes and large rivers. Northern birds move south in winter to open water; southern birds often stay year-round.","diet":"Mostly fish, snatched near the surface with its feet, but also waterfowl, gulls, small mammals and carrion such as deer carcasses in winter. Eagles often steal fish from Ospreys, chasing them until they drop their catch. In winter many gather at dams and open water, feeding on stunned or dead fish and weakened ducks.","foods":["fish","waterfowl","carrion","gulls"],"nesting":{"site":"The fork of a large live tree, often a white pine in Maine, near water, usually 50–100 feet up; sometimes a cliff or tower.","nest":"A huge stick platform, 4–6 feet across, added to each year; old nests can weigh well over a ton.","eggs":"1–3, dull white; two is typical.","incubation":"About 35 days, shared by both parents; the eggs hatch days apart.","young":"Chicks fledge at about 10–12 weeks, and the parents keep feeding them near the nest for several weeks more."},"behavior":"Pairs often stay together for years and reuse the same nest. In courtship an eagle pair may lock talons and tumble through the air in a cartwheel before letting go. Eagles are patient perch hunters and bold thieves, stealing from Ospreys, gulls and each other. In winter, dozens may roost together in sheltered trees near feeding areas. Young birds wander widely in their first years. Adults are very sensitive to disturbance at the nest, and boats or construction close by can cause nesting to fail.","migration":"A partial migrant. Where water freezes eagles move south or to the coast, and where it stays open they stay. Many adults in Maine remain in the state year-round, while eagles from farther north may join them in winter along the coast and big rivers. Fall movements run from September to November and spring return from February to April.","status":{"iucn":"LC","trend":"increasing","text":"DDT thinned eggshells, and by 1963 only 417 nesting pairs were counted in the lower 48 states. After DDT was banned in 1972 and the species was protected, eagles rebounded, and the U.S. removed them from the endangered list in 2007. Lead poisoning from ammunition fragments and fishing tackle, collisions and wind turbines remain risks. Eagles are still protected by law."},"maine":{"season":"Year-round resident","months":"333333333333","text":"Common and widespread along the coast, big rivers and lakes, with more than 700 nesting pairs statewide in recent surveys. Winter concentrates eagles on open water, below dams and at harbors and river mouths. In spring eagles gather where alewives run upriver. Watch from a distance; nests are protected by law."},"wow":["A Florida nest examined in the 1960s was about 9.5 feet wide and 20 feet deep and weighed roughly two tons, among the largest bird nests ever recorded.","In courtship, paired eagles fly high, lock their talons and spiral toward the ground in a cartwheel, letting go just before they hit the ground.","The bald eagle has appeared on the Great Seal of the United States since 1782."],"nameNote":"“Bald” has nothing to do with missing feathers. It comes from an older sense of the word meaning “white-marked,” as in a piebald horse. Haliaeetus is Greek for “sea eagle,” and leucocephalus means “white-headed.”","tryThis":"In winter, visit an open stretch of river or harbor and scan trees with binoculars for a big dark shape with a white head. Count eagles and note ages: white-headed adults versus mottled youngsters. Stay several hundred feet from any nest, and keep a time log of activity.","zones":{"breeding":["ak","boreal-ca","midwest","plains","intermountain","gulf"],"resident":["pnw","northeast","mid-atlantic","southeast","ca-pacific"],"winter":["intermountain","plains","midwest","southwest","gulf","mexico"],"passage":[]},"flight":"Very broad, long, flat wings with fingered tips and a short wedge-shaped tail. It soars on rising air and ridge lift with wings held flat, and flaps with slow, powerful, deep beats. It glides long distances, and when hunting it flies low over water.","hunting":"Often a patient perch hunter. An eagle watches from a tree or soars, then swoops to snatch a fish from just below the surface with its talons; it cannot dive deep and does not usually submerge. It also takes ducks, geese, gulls and rabbits, scavenges carcasses and robs Ospreys and other eagles. Stolen and found food often outweighs what it catches itself, especially in winter.","senses":"An eagle’s eyes are about as large as a person’s but packed with far more vision cells and have two foveae, giving it several times more detail than we see. A bony brow ridge shades the eye and gives the fierce look. Hearing is good; sense of smell is weak.","ages":"Bald Eagles take about five years to get the white head and tail. First-year birds are mostly dark brown; over the next years they gain messy white mottling on the belly and under the wings. By year four or five the head and tail turn white, the bill yellow and the eye pale.","sexNote":"Females are larger than males, often about a quarter heavier, but the sexes look alike and are hard to tell apart in the field.","plate":{"a":"raptor","hab":"water","len":1.18,"bh":1.12,"tl":0.9,"prim":1,"tailTip":"rd","rot":58,"bl":1.3,"m":["hoodFull","brow"],"hd":1.05,"bd":1.35,"tailAng":16,"c":{"back":"#4a3524","under":"#4f3a28","wing":"#3d2b1d","tail":"#f4f1e8","hood":"#f6f3ea","bill":"#eab93c","cere":"#eab93c","iris":"#f0d060","light":"#f6f3ea","dark":"#2a1d12","mark":"#3a2a1c","leg":"#eab93c","pants":"#3e2d1f"},"line":0.15}},
+    {"id":"goldenEagle","name":"Golden Eagle","sci":"Aquila chrysaetos","family":"Accipitridae","group":"Eagles","simId":"goldenEagle","length":"26–35 in","wingspan":"6–7.5 ft","weight":"6–14 lb","lengthCm":80,"wingspanCm":210,"massG":4200,"lifespan":"Wild golden eagles often live 15 to 25 years; the oldest banded wild birds have passed 30 years.","blurb":"A dark, powerful eagle of mountains and open country that hunts rabbits, ground squirrels and grouse with speed and strength. People have hunted alongside it for centuries, and in the East it remains a rare and special sighting.","identify":[["Golden nape","A rich brown body with a golden-buff wash on the back of the head and neck, most obvious in good light."],["Feathered legs","Feathers cover the legs down to the toes, like boots, unlike the bare lower legs of a Bald Eagle."],["Small head, long tail","The head projects less than a Bald Eagle’s, and the tail is long; wings widen toward the body."],["Slight V when soaring","Holds its wings in a shallow upward V (dihedral) when soaring; a Bald Eagle’s wings are flat."],["White flashes in the young","Young birds show clean white patches at the base of the flight feathers and a white tail with a broad dark tip, fading over four or five years."]],"lookalikes":[["Bald Eagle","Immature balds are mottled with white and have bare yellow legs and a huge pale bill; a golden eagle is more evenly dark with feathered legs and a smaller bill."],["Turkey Vulture","Has a tiny naked red head and silvery two-toned wings that rock in a V; a golden eagle is heavy-bodied and steadier."],["Red-tailed Hawk","Much smaller, with a short broad red-brown tail and rounded wings; a golden eagle is far larger with a longer tail."]],"voice":"A rather quiet species. Adults sometimes give thin, high whistles, a short yelping kya or a sharp keek, usually near the nest or at a food delivery, and young birds beg with squeals. Do not expect the movie scream, which is a Red-tailed Hawk.","habitat":"Open and semi-open country with cliffs or big trees: mountains, canyons, tundra, sagebrush plains, deserts, and rugged ridges and clearings in the East. It needs open land to hunt rabbits, squirrels and grouse and cliffs for a nest.","range":"Across the Northern Hemisphere: western North America and Alaska, northern and eastern Canada, mountains of Europe, North Africa and much of Asia. In the East a small population nests in eastern Canada and winters in the Appalachians.","diet":"Rabbits, hares, ground squirrels and marmots are staples, along with grouse, ptarmigan and other birds, and sometimes young deer, foxes and carrion. A golden eagle hunts by soaring or by contour-hugging flight, surprising prey from a low glide or with a steep dive. In winter it feeds heavily on carrion such as road-killed deer.","foods":["rabbits","ground squirrels","grouse","carrion"],"nesting":{"site":"Cliff ledges or large trees, often with a wide view of open country; in the East, usually in remote northern forest.","nest":"A huge stick platform used and rebuilt over many years; big nests can be 6 feet or more across.","eggs":"Usually 1–3, most often 2, white to cream with brown blotches.","incubation":"About 41–45 days. The female does most of the sitting and the male brings food.","young":"Chicks fledge at about 9–11 weeks. The older chick often dominates, and the younger may not survive."},"behavior":"Golden Eagles are strongly territorial. Pairs often keep more than one nest and rotate their use. In courtship they perform roller-coaster flights, climbing and diving in long undulations. Some pairs hunt cooperatively, with one flushing prey toward the other. In winter they gather near carrion, and young birds roam widely. They are shy and easily disturbed at the nest, so a quiet distance is best.","migration":"Western and southern birds are mostly resident. Those from northern Canada and Alaska migrate south, often along mountain ridges. The eastern population nests in northeastern Canada, passes through in fall, and winters in the Appalachians and other open hill country. The peak of fall passage is in October and November.","status":{"iucn":"LC","trend":"stable","text":"Worldwide a species of Least Concern. In North America golden eagles are protected by federal law, and the eastern birds number only a few thousand. Threats include lead poisoning from carcasses, collisions with wind turbines, electrocution on power lines and habitat loss. Lead-free ammunition, raptor-safe power lines and careful siting of turbines help."},"maine":{"season":"Rare migrant and winter visitor","months":"111100001111","text":"Rare. Most reports are of single birds passing mountain ridges or open country in fall, especially October and November, with a few in spring and winter near deer carcasses. Many reports turn out to be immature Bald Eagles, so look for feathered legs and the white patches on a young golden. Check recent reports before you go."},"wow":["In Kazakhstan and Mongolia, falconers called berkutchi fly female golden eagles, traditionally releasing them back into the wild after about ten years.","Camera traps at bait stations and GPS tags revealed that a few thousand golden eagles from eastern Canada winter in the Appalachians, a population long overlooked.","The eagle on Mexico’s flag and coat of arms is traditionally identified as a golden eagle."],"nameNote":"“Golden” refers to the gold-tinted feathers of the nape and crown. Aquila is Latin for “eagle,” and chrysaetos is Greek for “gold eagle,” so the scientific name literally means “eagle gold-eagle.”","tryThis":"At a fall hawkwatch or open overlook, practice telling big soaring raptors apart with a checklist: head size, legs feathered or bare, wing posture, white patches. Keep a log of each bird’s features. Never approach nests.","zones":{"breeding":["ak","arctic-ca","boreal-ca","intermountain","pnw","ca-pacific","southwest","plains","mexico","europe-w","europe-n","europe-s","russia","siberia","central-asia","east-asia","middle-east","africa-n","japan","south-asia"],"resident":[],"winter":["northeast","mid-atlantic","midwest","southeast"],"passage":["northeast","mid-atlantic"]},"flight":"Long, broad wings with a bulging rear edge and a long, squarish tail. It soars with wings in a shallow V, tilting slightly, and glides powerfully for long distances; flapping is slow and deep. Hunting flights hug the contours of hills and ridges and end in a burst of speed or a steep dive.","hunting":"Hunts by low, fast contour flight along slopes and ridges to surprise prey, by soaring and then a long diving attack, or by watching from a perch. It kills with its feet: the strong hind talon, about two inches long, pierces vital organs. Typical prey includes rabbits, hares, ground squirrels, marmots and grouse. Pairs sometimes hunt together, and scavenging is common in winter.","senses":"Eyesight is acute, several times sharper than a person’s, so a golden eagle can spot a rabbit from far away. A bony brow shades the eyes. Hearing is ordinary, and smell is not used to find food.","ages":"Juveniles have white patches at the wing base and a white tail base with a dark band, which fade with each molt over about four to five years. Adults are uniformly dark brown with the golden nape and a gray-brown banded tail. Breeding begins at around four or five years.","sexNote":"Females are about a quarter larger than males. The sexes otherwise look alike.","plate":{"a":"raptor","hab":"rock","len":1.18,"bh":1.1,"tl":1,"prim":1.1,"tailTip":"rd","rot":58,"bl":1.2,"m":["brow","pantsLong","tailBars"],"bd":1.3,"tailAng":16,"c":{"back":"#5a4330","under":"#5a4330","wing":"#4a3626","tail":"#6a5a4a","nape":"#c79a4e","bill":"#2c2a28","cere":"#e0b83a","iris":"#7a4a1a","mark":"#473524","tailMark":"#3a2a1c","light":"#e9d9b8","dark":"#241a12","leg":"#e0b83a","pants":"#7c5a3a","cov":"#8a6a44"},"line":0.15}},
+    {"id":"harpyEagle","name":"Harpy Eagle","sci":"Harpia harpyja","family":"Accipitridae","group":"Eagles","simId":"harpyEagle","length":"35–41 in","wingspan":"5.8–7.3 ft","weight":"9–20 lb","lengthCm":98,"wingspanCm":205,"massG":7500,"lifespan":"Wild lifespan is not well known but is probably 25 to 35 years; captive birds have lived well over 30 years.","blurb":"A rainforest giant with hind talons as long as a grizzly bear’s claws, the Harpy Eagle plucks sloths and monkeys from the canopy. A pair raises just one chick every two to three years, so protecting its forest is the only way to keep it.","identify":[["Double crest","A two-pronged crest of dark feathers on a pale gray head that rises when the bird is excited or alarmed."],["Black chest band","A broad black band across the upper chest sits between a pale gray head and white belly, above a slate-gray back."],["Massive feet","Enormous yellow feet with thick black talons, the hind talons longest, thicker than a person’s thumb."],["Facial ruff","A ring of stiff feathers around the face, a bit like an owl’s, that can be spread or tightened."],["Short, broad wings","Wide, rounded wings and a long tail suit fast flight through the forest rather than long soaring."]],"lookalikes":[["Crested Eagle","Slimmer and smaller, with a long, drooping crest and uniform gray-brown plumage; the harpy has a black chest band and a double crest."],["Ornate Hawk-Eagle","Much smaller, with a rufous neck and barred belly; a harpy is far bulkier and bears a black chest band."]],"voice":"Usually silent. Near a nest, adults have been recorded giving weak, wispy wails and whistles, rapid chirps and occasionally a louder scream; chicks call with thin begging whistles. Because it sits quietly in the canopy much of the day, it is rarely heard.","habitat":"Lowland tropical rainforest with giant emergent trees. Undisturbed forest is best, with a continuous canopy and plenty of sloths and monkeys. It sometimes uses forest edges and patches but rarely leaves forest.","range":"From southern Mexico through Central America to northern Argentina, once more widespread. Today it lives mostly in large blocks of intact forest such as the Amazon, the Guianas and the Darién, and has vanished from much of Central America.","diet":"Sloths and monkeys (howler, capuchin, spider) make up much of the diet, along with coatis, porcupines, opossums, macaws, curassows and large snakes or lizards. It hunts by dropping from a high perch or flying quickly through the canopy, seizing prey with its feet and killing with a crushing grip. One big kill can feed an eagle and its chick for days.","foods":["sloths","monkeys","coatis","macaws"],"nesting":{"site":"The crown of a giant emergent rainforest tree, such as a kapok or Brazil nut, often 100 feet or more above the ground.","nest":"A massive platform of sticks and branches, 4–5 feet across, lined with leaves and used year after year.","eggs":"One or two white eggs; usually only one chick is raised.","incubation":"About 56 days. Mostly the female sits, and the male brings food.","young":"The chick fledges at about 5–6 months and depends on its parents for a year or more, so pairs breed only every 2–3 years."},"behavior":"Harpy Eagles are patient sit-and-wait hunters. They perch in the canopy scanning and listening, moving by short hops and glides. Pairs mate for life and maintain the same nest for years. The female does most of the brooding while the male brings prey. A pair needs a large stretch of forest to feed itself and a growing chick. They are shy and rarely approach people in intact forest, but they are sometimes shot. Because of the long breeding cycle, a lost bird is hard to replace.","migration":"Non-migratory. Adults stay in the same home range year-round. Young birds eventually move off from the parents’ territory after their long dependence, though how far they travel is not well known.","status":{"iucn":"VU","trend":"declining","text":"Deforestation for farms, logging, mining and cattle ranching is the main threat, along with shooting by people who fear for livestock or want a trophy. Slow breeding makes recovery hard. The Peregrine Fund and local groups protect nest trees, work with communities and track birds. Protecting large forest blocks is the key to the species’ future."},"maine":null,"wow":["Its hind talons can reach about five inches (12 cm) in length, comparable to a grizzly bear’s claws.","A successful pair raises only one chick every two to three years, so over a 30-year life it may fledge fewer than a dozen young.","Panama made the Harpy Eagle its national bird in 2002, and a conservation program there studies and protects nesting pairs."],"nameNote":"Named for the harpies of Greek myth, fierce winged spirits that snatched things away. The name fits the bird’s fearsome talons and wild look. Harpia is the genus, and harpyja is the same word in another spelling.","tryThis":"You probably will not see one, but you can measure it: tape a 6.5-foot wingspan on the floor and mark a 5-inch talon on paper. Then fold two paper gliders, one with long narrow wings and one short and broad, and fly them through chairs to see which turns better.","zones":{"breeding":[],"resident":["mexico","central-am","sa-north","amazon","sa-south"],"winter":[],"passage":[]},"flight":"Short, broad, rounded wings and a long tail make it agile among tree trunks, able to jink through the canopy at speed. It soars over the forest on warm air but mostly makes quick direct flights. A typical attack is a swift, steep dive from the perch through branches.","hunting":"Harpy Eagles are ambush predators. Perched high in the canopy, they scan for a sloth or monkey, then shoot through the branches and seize it with their giant feet. The crushing grip, with long talons that pierce, kills very quickly. Prey is often carried to a perch and eaten over many hours or a day or more.","senses":"Sharp eyes with a wide field of view help it spot a motionless sloth among leaves. Its facial disc of stiff feathers, like an owl’s, may help channel sound to its ears. The bird can tilt and spread the ruff. Smell is not important.","ages":"Chicks hatch in white down. Young birds have pale gray-white heads and underparts and a short crest above a dark gray back. Over about four to five years they darken, gaining the black chest band, the gray head and the full double crest.","sexNote":"Females are much larger, up to about 1.5 to 2 times heavier than males. The sexes look alike.","plate":{"a":"raptor","hab":"wood","len":1.25,"bh":1.2,"tl":1.35,"prim":0.65,"tailTip":"rd","rot":60,"bl":1.2,"m":["hoodFull","tailBars","brow"],"hd":1.1,"bd":1.35,"crest":"long","c":{"back":"#3a3d42","under":"#f1efe8","wing":"#2e3136","tail":"#3a3d42","hood":"#9aa0a6","crest":"#4a4d52","breast":"#1c1c1f","bill":"#2a2c30","cere":"#8a8f94","iris":"#d8d8d0","mark":"#2e3136","tailMark":"#8a9096","light":"#f1efe8","dark":"#1c1c1f","leg":"#e8d27a","pants":"#e8e6e0"},"line":0.1}},
+    {"id":"philippineEagle","name":"Philippine Eagle","sci":"Pithecophaga jefferyi","family":"Accipitridae","group":"Eagles","simId":null,"length":"31–40 in","wingspan":"6–6.6 ft","weight":"9–18 lb","lengthCm":95,"wingspanCm":195,"massG":6000,"lifespan":"Not well known in the wild; captive eagles have lived 30 years or more.","blurb":"One of the largest and rarest eagles in the world: a shaggy-crested giant found only in the rainforests of the Philippines. It hunts flying lemurs, monkeys and hornbills, and only a few hundred pairs remain.","identify":[["Shaggy crest","A mane of long, narrow, creamy-brown feathers around the nape that bristles like a lion’s when the bird is excited."],["Huge arched bill","A tall, deep, bluish bill, strongly arched, with a pale blue-gray eye set above it."],["Brown above, white below","Dark brown back and wings contrast with clean white to creamy underparts and underwing coverts."],["Heavy yellow legs","Thick yellow legs end in massive black talons."],["Broad rounded wings","Short, broad wings and a long tail suit dodging through trees."]],"lookalikes":[["Harpy Eagle","Another forest giant, but South American: it has a black chest band and a gray head; the Philippine Eagle has the shaggy mane crest and a huge bill."],["Philippine Hawk-Eagle","A much smaller local eagle with streaked underparts and a short, pointed crest; the Philippine Eagle is far larger and bulkier."]],"voice":"Surprisingly high-pitched for a giant: a thin, whistling or mewing scream, often repeated, and short yelps. Adults call when pairs meet, in soaring displays and when the nest is approached; the chick gives a thin peeping call.","habitat":"Primary rainforest from the lowlands up into mossy mountain forest, especially dipterocarp forest, on steep land with huge trees for nesting. It needs large unbroken tracts of forest and rarely uses heavily logged areas.","range":"Found only in the Philippines, on four large islands: Luzon, Samar, Leyte and Mindanao, with Mindanao holding the largest share. Its range shrank as lowland forest was cleared, and the birds now live mostly in remaining mountain forest.","diet":"It hunts what lives in the canopy: Philippine flying lemurs (colugos), palm civets, monkeys, flying squirrels, fruit bats, hornbills and other large birds, snakes and monitor lizards. It perches still or flies slowly through the trees, then drops on prey and kills with its powerful feet. Early reports of it eating only monkeys gave it the name “monkey-eating eagle.”","foods":["flying lemurs","monkeys","hornbills","snakes","civets"],"nesting":{"site":"The crown of the biggest emergent trees, 60–100 feet or more up, in unbroken forest.","nest":"A huge platform of sticks and branches, lined with leaves and reused year after year.","eggs":"One white egg, laid about every other year.","incubation":"About 58–60 days. Both parents take turns, with the female sitting more.","young":"The chick fledges at around 4–5 months and stays dependent on its parents for up to a year or more."},"behavior":"Pairs mate for life and defend a large territory of forest. They spend much time perched in the canopy scanning, then travel in short glides. In display, pairs soar high above the forest, calling. One chick every other year is the key to its slow recovery. The birds are shy and sensitive to disturbance, especially at the nest. Shooting and snaring remain a danger, and pairs need large blocks of forest to feed a growing chick.","migration":"Non-migratory. Pairs keep their forest territories all year. Young birds eventually leave to look for a territory of their own, though how far they range is not well known.","status":{"iucn":"CR","trend":"declining","text":"Critically Endangered: probably only a few hundred pairs remain. Loss of lowland forest to logging, farming and mining is the main threat, and shooting, trapping and snares also kill eagles. Slow breeding, one chick every two years, makes losses costly. The Philippine Eagle Foundation breeds, rescues and releases birds, works with communities and guards nests."},"maine":null,"wow":["The crest of narrow feathers can be raised into a mane, and with its huge bluish bill the eagle looks almost like a lion’s head.","The first Philippine Eagle bred in captivity hatched in 1992 and was named Pag-asa, “hope,” a landmark for the conservation program.","Once called the monkey-eating eagle, it was renamed in the 1970s and made the national bird of the Philippines in 1995."],"nameNote":"Pithecophaga means “monkey eater” in Greek, from early reports that it lived on monkeys. Scientists later found that it eats many other animals, and the bird was renamed the Philippine Eagle.","tryThis":"You will not see one outside the Philippines, but you can take its measure: tape a 6.5-foot wingspan on the floor and check it against your arm span. Group its menu by where each animal lives, canopy, trunk or ground, and think about why short broad wings suit that hunting.","zones":{"breeding":[],"resident":["se-asia"],"winter":[],"passage":[]},"flight":"Short, broad, rounded wings and a long tail make it a fast, agile flier in the forest. It makes quick, steep glides between trees and soars over the forest on warm mornings, flapping with slow, deep beats.","hunting":"Hunts from a perch or by slow flight through the canopy, scanning and listening for prey. When it sees or hears a flying lemur, civet or monkey, it dashes through the branches and seizes it with its huge feet; the grip, with long talons, kills quickly. It tears larger prey on a perch and may eat over many hours.","senses":"Large eyes give sharp vision for spotting hidden animals in dense foliage. The feathers around the face may help gather sound, and hearing is believed to help locate prey calls. The bill is built for tearing flesh.","ages":"Chicks hatch in white down. Young eagles have paler underparts and a less developed crest, and they gradually gain adult plumage over several years. First breeding comes only after a number of years.","sexNote":"Females are larger and heavier than males, by roughly a fifth to a quarter. The sexes look alike.","plate":{"a":"raptor","hab":"wood","len":1.2,"bh":1.12,"tl":1.2,"prim":0.75,"tailTip":"rd","rot":58,"bl":1.3,"m":["hoodFull","tailBars","brow"],"hd":1.15,"bd":1.8,"crest":"long","c":{"back":"#6a5238","under":"#f1e6cf","wing":"#5a4430","tail":"#6a5238","hood":"#ecdcb8","crest":"#e8d6b0","face":"#4a3a2a","bill":"#8aa0b4","cere":"#8aa0b4","iris":"#8ab0c0","mark":"#4a3826","tailMark":"#3a2a1c","light":"#f1e6cf","dark":"#2a2018","leg":"#e8d27a","pants":"#f1e6cf"},"line":0.1}},
+    {"id":"stellersSeaEagle","name":"Steller's Sea Eagle","sci":"Haliaeetus pelagicus","family":"Accipitridae","group":"Eagles","simId":null,"length":"33–41 in","wingspan":"6.4–8.2 ft","weight":"11–20 lb","lengthCm":95,"wingspanCm":225,"massG":6700,"lifespan":"Poorly documented in the wild; captive birds have lived into their 20s.","blurb":"A heavyweight eagle of the Russian Pacific coast, with a huge golden-orange bill and bold white shoulders, tail and thighs. It gathers by the hundreds at salmon rivers, and its winter flocks on Hokkaido’s drift ice are a great raptor spectacle.","identify":[["Enormous orange bill","A deep, tall, bright yellow-orange bill, among the biggest of any eagle, shaped like a parrot’s."],["White on black","A blackish-brown body with a white forehead, shoulders, thighs and rump stands out even at a distance."],["Wedge-shaped white tail","A long wedge-shaped tail, pure white in adults, trails behind the body in flight."],["Broad, long wings","Very broad, long wings with white leading-edge patches and a heavy-looking flight."],["Brown youngsters","Young birds are brown with pale streaks and a dark bill that turns yellow-orange as they age."]],"lookalikes":[["White-tailed Eagle","Smaller, with a plain brown body and no white shoulders or thighs, and a shorter tail and smaller pale bill."],["Bald Eagle","Adults have a white head and tail on a dark brown body but no white shoulders; Steller’s is bulkier, with a far larger bill."]],"voice":"Deep, hoarse and barking, often delivered in a chorus: a repeated, croaky kyow-kyow-kyow or rah-rah-rah, like a big dog or a raven. Winter gatherings at feeding sites can be noisy. Young birds beg with higher, wailing calls.","habitat":"Coasts, river mouths and sea ice, with tall trees such as birch, poplar and larch, or sea cliffs, for nesting. Salmon rivers are important. In winter it uses ice edges, harbors and the coasts of northern Japan.","range":"Breeds in the Russian Far East: Kamchatka, the Okhotsk coast, Sakhalin and the lower Amur. In winter many move south to Hokkaido in northern Japan and the Kuril Islands, with fewer to Korea and northeastern China. Rare strays have reached Alaska and farther east.","diet":"Fish are the base: salmon in the breeding season and late autumn, plus pollock, cod and other fish. It also takes seabirds, ducks and hares, and scavenges carrion such as seals and deer. In winter it picks up fish thrown from boats and fishing ports. It steals food from other eagles and hunts from a perch or in low flight over water.","foods":["salmon","fish","seabirds","carrion"],"nesting":{"site":"Tall old trees such as birch, poplar and larch near the sea or rivers, high in a branch fork; sometimes cliffs.","nest":"A giant stick platform added to each year; some nests grow very large and are reused for decades.","eggs":"Typically 2 (1–3), white; often only one or two chicks survive.","incubation":"About 38–45 days, shared by the pair with the female doing most of the sitting.","young":"Chicks fledge at about 10 weeks, and the parents keep feeding them for weeks more."},"behavior":"Steller’s Sea Eagles breed in widely spaced pairs along the coast but gather in large numbers where food is abundant. In late summer and fall hundreds may gather on salmon-spawning rivers in Kamchatka. In winter on Hokkaido, large flocks gather with White-tailed Eagles on drift ice near fisheries. Pairs reuse nest trees, so the loss of old trees to logging is a serious problem. Wintering birds roost together near feeding areas.","migration":"A partial migrant. Birds from the Okhotsk coast winter mainly on Hokkaido, arriving around December, and in the southern Kuril Islands; others winter in Korea, and young birds wander widely. Birds from Kamchatka partly stay near the coast. Spring return begins in February and March.","status":{"iucn":"VU","trend":"declining","text":"Only a few thousand birds remain. Threats include logging of nest forests, oil and gas development, lead poisoning from bullet fragments in deer carcasses, pollution, overfishing of salmon and collisions with turbines. Japan banned lead ammunition for deer hunting in Hokkaido, which helped. Protecting nest forest and salmon runs is essential."},"maine":null,"wow":["It is among the heaviest eagles, with a big female weighing as much as 20 pounds, and its deep orange bill is the largest of any eagle.","On the winter drift ice off Hokkaido, hundreds of Steller’s and White-tailed Eagles gather to pick up fish, a spectacle that draws birders from around the world.","In the early 2020s a lone wandering Steller’s Sea Eagle strayed thousands of miles from Asia to northeastern North America, drawing birders from across the continent."],"nameNote":"Named for the German naturalist Georg Wilhelm Steller, who explored the North Pacific on Vitus Bering’s 1741–42 expedition and described its wildlife. The bird was formally described later, and pelagicus is Latin for “of the sea.”","tryThis":"Use a tape measure and chalk to mark each eagle’s wingspan on a hallway or parking lot: Steller’s about 7 feet, Bald about 6.5 feet, Harpy about 6.5 feet. Stand with arms spread to compare, then trace and compare their bill sizes in photographs.","zones":{"breeding":["siberia"],"resident":[],"winter":["japan","east-asia"],"passage":[]},"flight":"Very large, broad wings and a long wedge-shaped tail. Flight is heavy, with deep, slow beats, but it glides and soars on flat wings. The bulky head and bill project well forward, and flight looks labored beside smaller eagles but is steady when soaring over coasts.","hunting":"Hunts by watching from a perch at the river’s edge or soaring, then swooping to grab salmon or other fish from shallow water. It also takes waterbirds and hares, scavenges carcasses and steals from other eagles. When salmon runs end it shifts to other prey, and wintering birds catch fish at ice edges or pick up fish discarded by fisheries.","senses":"Very keen eyesight, as in other sea eagles, with eyes set under a prominent brow. Spiny pads on the feet help grip slippery fish. The bill is strongly arched and deep for tearing flesh.","ages":"Immatures are dark brown with pale streaking and a mix of brown and white tail feathers, with a grayish-dark bill. Each molt adds more white and the bill turns yellow-orange. Full adult plumage takes about four to five years.","sexNote":"Females are larger and heavier than males, often by a quarter or more. The sexes look alike.","plate":{"a":"raptor","hab":"snow","len":1.3,"bh":1.2,"tl":0.75,"prim":1,"tailTip":"pt","rot":58,"bl":1.45,"m":["wingPatch","brow"],"hd":1.08,"bd":1.75,"tailAng":16,"c":{"back":"#2a2624","under":"#2e2a28","wing":"#242020","tail":"#f4f1e8","bill":"#f0a020","cere":"#f0a020","iris":"#e8c850","patch":"#f6f3ea","light":"#f6f3ea","dark":"#1a1614","mark":"#3a3430","leg":"#eab93c","pants":"#f6f3ea","crown":"#f4f1e8"},"line":0.15}},
+    {"id":"whiteTailedEagle","name":"White-tailed Eagle","sci":"Haliaeetus albicilla","family":"Accipitridae","group":"Eagles","simId":null,"length":"26–37 in","wingspan":"6.2–8.2 ft","weight":"6.8–16 lb","lengthCm":82,"wingspanCm":220,"massG":5000,"lifespan":"Wild birds can live more than 20 years, and captive birds longer.","blurb":"Europe’s largest eagle has wings so broad and rectangular that it is nicknamed the “flying barn door.” It fishes and scavenges along coasts and lakes, and after being wiped out in much of its range, it is again flying over Scotland and Ireland.","identify":[["Barn-door wings","Extremely broad, long, rectangular wings with deeply splayed fingers look plank-like when the eagle soars."],["Short white wedge tail","An adult’s tail is short, wedge-shaped and pure white, visible from far away."],["Pale head and bill","Adults have a buff, pale-brown head and neck and a heavy yellow bill against a dark brown body."],["Dark young birds","Young eagles are dark brown with a dark bill and a mottled tail, taking about five years to gain the white tail."],["Big head projection","A large head and heavy bill project well forward of the wings, with a rather long neck."]],"lookalikes":[["Golden Eagle","Lacks a white tail and has a smaller head, a longer tail and wings held in a V; it flies on narrower wings."],["Bald Eagle","The American sea eagle has a white head as well as a white tail in adults; a white-tailed eagle’s head is buff-brown, and the two do not normally overlap."]],"voice":"Loud but not musical: a yelping, barking series like kyi-kyi-kyi-kyi or a deeper krick-krick-krick, mostly at the nest, in courtship and in territory defense. Pairs often call together. Young birds beg with shrill, screaming calls.","habitat":"Coasts, sea cliffs, fjords, estuaries, large lakes and big river valleys and wetlands, with tall trees or cliffs for nests. In the north it follows fish-rich shores and inland lakes; in winter it favors open water and coasts.","range":"Breeds across northern Eurasia from Greenland, Iceland, Scotland and Norway through the Baltic, Russia and Central Asia to the Pacific. Birds from cold regions winter on milder coasts and river valleys, reaching the Mediterranean, the Middle East and eastern Asia.","diet":"Fish are a staple, taken from the surface by swooping with the talons, along with waterfowl, gulls, seabirds, hares and carrion. In the north it scavenges seal carcasses and stranded fish and may rob other birds of food. It hunts in a slow, low flight over water, and in winter carrion becomes a big part of the diet.","foods":["fish","waterbirds","carrion","hares"],"nesting":{"site":"Big trees, often pines, or sea cliffs, or the ground on islands and remote shores, usually near water.","nest":"A bulky pile of sticks lined with grass and greenery, rebuilt each year and up to about 6 feet across.","eggs":"Usually 2 (1–3), white and unmarked.","incubation":"About 38 days, shared by both parents with the female sitting more.","young":"Chicks fledge at about 10–11 weeks, and the parents keep feeding them for several weeks more."},"behavior":"White-tailed Eagles pair for life, reuse nests and put on striking displays, soaring and grappling talons together. They snatch fish with a dip-and-grab at the surface and spend long hours perched. In winter several dozen may gather at feeding sites and roost together. They steal food from gulls and ravens. Because they live near coasts and farms, they were once shot and poisoned heavily, and nest sites still need protection from disturbance.","migration":"A partial migrant. In mild coastal places such as the coast of Norway, Scotland and Ireland, adults stay put all year. Birds from colder or continental regions such as Scandinavia’s interior and Russia move to ice-free coasts and rivers in winter, and young birds wander the farthest.","status":{"iucn":"LC","trend":"increasing","text":"A European conservation success. Persecution and pollution (DDT and PCBs) wiped the species out in parts of its range by the early 1900s and crashed the Baltic population in the 1960s and 1970s. Protection, banned chemicals, winter feeding and reintroductions, including in Scotland, Ireland and southern England, have brought a recovery. Threats are lead in carcasses, poisoning and shooting, and turbines."},"maine":null,"wow":["Scotland’s reintroduction began in 1975, when young eagles from Norway were released on the island of Rum; within decades dozens of pairs were nesting on the west coast.","At a Norwegian wind farm, a test found that painting one blade of each turbine black reduced bird deaths by roughly 70 percent, a cheap fix for eagles.","Like Ospreys and other fish-eating eagles, it has rough, spiny pads on its toes to grip slippery fish."],"nameNote":"It is named for the adult’s pure white tail; albicilla is Latin for “white-tailed.” In Britain and Ireland it has also been called the sea eagle or erne, an Old English word for eagle.","tryThis":"If you visit coastal Europe, look for a huge, flat-winged bird with a white tail over water. At home, practice with Bald Eagles: sketch the wing shape and tail of each age, then compare rectangular versus triangular wings on the big soaring birds you see.","zones":{"breeding":["greenland","russia","siberia","central-asia","europe-s"],"resident":["iceland","europe-n","europe-w"],"winter":["europe-s","middle-east","east-asia","japan","central-asia"],"passage":[]},"flight":"Very broad, long, rectangular wings with deeply splayed fingers and a short wedge-shaped tail. It flies with slow, heavy, deep wingbeats and then glides on flat wings. It soars on thermals over land and glides low over water when hunting.","hunting":"Hunts mostly from a perch or in slow, low flight over water, swooping to snatch fish near the surface with its feet. It also attacks flocks of ducks, geese and gulls, singling out one bird, and eats much carrion, including dead fish, leftovers at seabird colonies and carcasses of sheep. It often steals food from other birds, and pairs sometimes hunt together.","senses":"Eyesight is sharp for spotting fish near the surface from a perch or in flight. Spiny soles on its toes help it grip fish. Hearing is ordinary, and smell is not important.","ages":"Immatures are dark brown with a dark bill and a mottled brown-and-white tail; each year they get paler on the head, body and tail. The pure white tail and yellow bill come at about five years. Pairs begin breeding at around five or six years.","sexNote":"Females are noticeably larger and heavier than males. The sexes look alike.","plate":{"a":"raptor","hab":"water","len":1.2,"bh":1.1,"tl":0.65,"prim":1,"tailTip":"pt","rot":58,"bl":1.3,"m":["hoodFull","brow"],"hd":1.05,"bd":1.45,"tailAng":16,"c":{"back":"#6a5844","under":"#6f5c46","wing":"#5a4936","tail":"#f4f1e8","hood":"#b9a688","bill":"#eab93c","cere":"#eab93c","iris":"#d8b04a","light":"#f6f3ea","dark":"#2a1d12","mark":"#3a2a1c","leg":"#eab93c","pants":"#5a4936"},"line":0.15}},
+    {"id":"broadWinged","name":"Broad-winged Hawk","sci":"Buteo platypterus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"13–17 in","wingspan":"32–39 in","weight":"10–18 oz","lengthCm":38,"wingspanCm":89,"massG":400,"lifespan":"Typically up to about a decade in the wild; banded birds have reached their teens.","blurb":"A crow-sized forest hawk that seems to vanish all summer, then fills the sky in September when thousands spiral south together in swirling flocks called kettles.","identify":[["Banded tail","Adults show a broad white band (or two) alternating with broad black bands across the tail, bolder and simpler than the fine bars of most hawks."],["Compact shape","About crow-sized and stocky, with a short tail and fairly pointed wings for a buteo, so it looks neater and smaller-headed than a Red-tail."],["Rusty-barred chest","Light-morph adults show a chest and belly barred with reddish brown, which fades to pale on the lower belly."],["Pale underwing","From below, flying birds show whitish wings edged with a clean dark border, which stands out even at a great distance."],["Streaked juvenile","Young birds are brown above and pale below with dark streaks, and their tail has several narrow dark bars rather than bold white bands."]],"lookalikes":[["Red-shouldered Hawk","Larger and longer-tailed, with an orange chest, many narrow white tail bands and pale wingtip crescents. It calls with a loud scream, not a thin whistle."],["Red-tailed Hawk","Much bulkier, with wider wings, a belly band and a red or finely barred tail. Broad-wings circle in flocks in fall; red-tails are usually seen alone."]],"voice":"A thin, high, piercing whistle, “pee-heeeeee,” with a short first note and a long, slightly falling second note. It is given from a perch or in flight to claim territory or to sound alarm, and young birds beg with similar whistles. The sound is so high and light that many people take it for a songbird or a Blue Jay mimic.","habitat":"Large tracts of mature deciduous or mixed forest, usually with small clearings, ponds or streams nearby. It likes tall trees with open space beneath for watching from inside the woods. In migration it follows ridges, coasts and valleys where rising air helps it glide.","range":"Breeds across eastern North America from the Canadian prairie provinces and Maritimes to the Gulf Coast. Nearly all winter in Central America and northern South America, from southern Mexico to Brazil and Peru, with a few in Florida and south Texas. Separate island forms live year-round in the Caribbean.","diet":"Mostly small animals found in or near woods: frogs, toads, snakes, salamanders, chipmunks, mice, voles, big insects and sometimes small birds. It sits quietly on a mid-level branch and drops on prey seen below, so it is more patient than fast. In migration it eats little, living on stored fat.","foods":["frogs and toads","snakes","chipmunks","mice and voles","large insects"],"nesting":{"site":"In a fork of a deciduous or pine tree in big woods, often near water or a small clearing, at a moderate height.","nest":"A small, shallow platform of sticks about the size of a crow’s nest, lined with bark, moss and fresh green leaves. A new one is often built each year.","eggs":"Usually 2 or 3 eggs, dull white with brown or lilac blotches; some are heavily marked.","incubation":"About 28 to 31 days. The female does most of the sitting while the male brings her food.","young":"Chicks leave the nest at about 5 to 6 weeks and are fed by both parents for a few weeks more."},"behavior":"In summer the Broad-winged Hawk is shy and quiet, hunting from a perch deep in the woods; its piercing whistle often gives it away. Pairs perform soaring and diving displays above the canopy in spring. In fall its habits change completely: birds that nested alone gather into flocks, and on a good day hundreds or thousands rise in a kettle, a spiral of hawks circling up on a thermal (a rising column of warm air), then peel off and glide to the next one.","migration":"A true long-distance migrant, traveling thousands of miles to the tropics. Maine birds leave in September, peaking around mid-month, usually on north winds behind a cold front, flying by day and gliding from thermal to thermal. Flocks funnel through Texas, Mexico and Panama, where tens of thousands can pass in a day. The return begins in April.","status":{"iucn":"LC","trend":"stable","text":"Least Concern, with a large and fairly steady population. Because it needs big, unbroken forest to nest, forest fragmentation and development are the main concerns, along with tropical forest loss where it winters and collisions during migration. Long-term counts at hawkwatches help track its numbers. Protecting large forest blocks helps."},"maine":{"season":"Summer breeder; passes in September","months":"000222223100","text":"A common but hard-to-see nester in woods across the state from late April to September. The best chance of seeing one is during migration: mid-September flights over hilltop hawkwatches such as Cadillac Mountain can reach hundreds or thousands in a day, and spring flights pass Bradbury Mountain."},"wow":["On migration, Broad-winged Hawks may eat almost nothing for much of the trip, spending stored body fat as they glide thousands of miles to the tropics.","On a good September day at a Northeast hawkwatch, the flight can reach thousands, and the birds seem to come from nowhere as a clear sky fills with spirals.","By gliding from thermal to thermal, a Broad-winged Hawk uses very little muscle power on a trip to South America, which is why it times its flights for sunny days with rising air."],"nameNote":"The name describes the wide wings; platypterus comes from Greek words for “broad” or “flat” (platys) and “wing” (pteron). A hawk with wide, flat-held wings glides well, which suits a bird that spends its fall riding warm air south.","tryThis":"Visit a hawkwatch site in mid-September on a clear day after a cold front, or watch the sky from a hill at midday. Scan with binoculars for a swirl of small hawks rising in a spiral. Count in tens, note the time and wind direction, and compare days to see how weather changes the flight.","zones":{"breeding":["boreal-ca","northeast","midwest","mid-atlantic","southeast"],"resident":["caribbean"],"winter":["central-am","sa-north","amazon"],"passage":["gulf","mexico"]},"flight":"Broad but fairly pointed wings and a short tail suit soaring. It circles on thermals with wings flat, glides in long straight lines to the next thermal, and flaps little. In woods it flies with quick wingbeats and short glides.","hunting":"A patient perch-hunter. It sits motionless in the shaded mid-canopy, watching the forest floor and clearings, then drops or glides down with feet outstretched onto frogs, snakes, small mammals or big insects. Many of its catches are small or slow, so each one gives modest food, and parents must make many catches a day to feed their young.","senses":"Excellent eyesight lets it pick out a still frog or snake in dim forest light from a distant perch; the eyes are set forward for judging distance. It also listens: rustling in leaves can give away a chipmunk or mouse. Its piercing whistle carries far through woods.","ages":"Juveniles are brown above with dark streaks on pale underparts and a tail with several thin dark bars. Adults have rusty-barred undersides and the bold black-and-white tail. Birds look adult by their second year and probably first breed at about 2 years old.","sexNote":"Females are a little larger and heavier than males, but the two sexes have almost identical plumage.","plate":{"a":"raptor","hab":"wood","len":0.88,"bh":0.92,"tl":0.8,"prim":0.85,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","barBelly","tailBars"],"c":{"back":"#6a5240","under":"#f1eadb","wing":"#5a4432","tail":"#4a3c30","crown":"#5a4632","mark":"#a8603a","tailMark":"#f1eadb","light":"#f1eadb","dark":"#2d2118","bill":"#6f7378","cere":"#e0c24a","iris":"#5a3a1a","pants":"#f1eadb"},"line":0.05}},
+    {"id":"coopersHawk","name":"Cooper's Hawk","sci":"Astur cooperii","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"coopersHawk","length":"14–20 in","wingspan":"24–35 in","weight":"8–24 oz","lengthCm":42,"wingspanCm":79,"massG":450,"lifespan":"Many live 6 to 12 years in the wild; the oldest banded birds lived well into their teens.","blurb":"The backyard hawk: a blue-gray, orange-barred bird that bursts out of a hedge to snatch a dove at the feeder. Once shot as a pest, it now nests in city parks.","identify":[["Dark cap, pale nape","A dark gray cap contrasts with a paler nape, giving a hooded look. Adults have red to orange eyes; young birds have yellow eyes."],["Orange-barred chest","Adults are blue-gray above with a warm orange-brown barring across the chest and belly."],["Long rounded tail","A long tail with three or four dark bands and a rounded, white-tipped end acts as a rudder when the bird twists through branches."],["Big head, broad shoulders","In flight, the head projects well past the front edge of the wings and the chest looks full, giving a long, cross-shaped outline."],["Streaked juvenile","Young birds are brown above with thin streaks on a creamy chest and belly, and the tail has a pale tip."]],"lookalikes":[["Sharp-shinned Hawk","Smaller, with a small rounded head that does not poke past the wings, thin legs, and a squarer tail tip; a large female sharp-shin is close in size to a small male Cooper’s."],["Northern Goshawk","Larger and bulkier, with a bold white eyebrow, gray rather than orange barring in adults, and a tail that looks less rounded."]],"voice":"A fast, harsh “kek-kek-kek-kek” or “cak-cak-cak,” often ten or twenty notes long, given near the nest or when the hawk is alarmed. Pairs also use wailing calls in courtship, and young birds beg with loud, whining cries. Away from nests they are usually silent.","habitat":"Woodland, forest edge, wooded river valleys, and increasingly suburbs, parks and cities with tall trees and bird feeders. It needs trees for nesting and thick cover for ambushes, but it handles a surprising amount of human activity.","range":"Breeds across the lower 48 states and southern Canada into northern Mexico. Southern birds are year-round residents. Northern birds migrate south in fall to the southern United States, Mexico and Central America.","diet":"Mostly medium-sized birds: doves, pigeons, starlings, robins, jays and flickers. It also takes chipmunks, squirrels, mice and bats. It usually hunts by ambush, using hedges and buildings as cover, then races after its target in a surprise chase. In some places it catches many pigeons, and it often visits bird feeders.","foods":["doves and pigeons","robins and jays","starlings","chipmunks","squirrels"],"nesting":{"site":"In a fork or on a stout branch near the trunk of a tall tree, often a pine or oak with a clear approach; sometimes in city parks.","nest":"A platform of sticks about two feet across, lined with bark flakes and fresh green twigs; pairs may build anew each year or reuse an old nest.","eggs":"Usually 3 to 5 pale bluish-white eggs, often becoming stained brown.","incubation":"About 30 to 36 days, mostly by the female while the male hunts for both.","young":"Chicks fledge at about 4 to 5 weeks; parents feed them for several more weeks while they learn to hunt near the nest."},"behavior":"Cooper’s Hawks are stealth hunters that are also bold. A bird will perch quietly in a tree near a feeder and wait for a chance to dash across; most attacks fail, and songbirds usually react with alarm calls and freeze. In late winter pairs perform flights with slow wingbeats and fluffed white undertail feathers. The male does most of the hunting while the female incubates and broods, and he passes food to her at the nest.","migration":"Partly migratory. Birds from Canada and the northern states head south in fall, many following ridges and coasts, and peak at Maine hawkwatches in September and October. Many in southern Maine stay all winter near feeders. Spring migrants move north in March and April.","status":{"iucn":"LC","trend":"increasing","text":"Least Concern and increasing. Cooper’s Hawks were shot as “chicken hawks” and hit hard by DDT in the mid-1900s, then recovered after legal protection and the DDT ban, and moved into towns and cities. Threats today include window collisions, vehicles, and trichomonosis, a disease picked up from infected doves and pigeons."},"maine":{"season":"Year-round in the south; breeder and migrant statewide","months":"222222223322","text":"Fairly common in southern and coastal Maine all year, especially near feeders in winter; elsewhere mainly a spring-to-fall breeder in woods and edges. Migrants peak at coastal and mountain hawkwatches in September and October."},"wow":["Cooper’s Hawks sometimes hold captured birds underwater until they drown, a behavior seen in several studies.","A century ago, bounties and shooting made Cooper’s Hawks scarce in many states; legal protection and the end of DDT use let them recover so well that they now nest in city parks and suburbs."],"nameNote":"Charles Lucien Bonaparte named this hawk in the 1820s for William Cooper, an early American naturalist and a founder of New York’s Lyceum of Natural History. For many years the genus was Accipiter, a Latin word for hawk; the current checklist places it in Astur.","tryThis":"Watch a feeder for 20 minutes at a time over several days. Record when small birds suddenly freeze or flee and whether a hawk appears. Count birds before and after, and note where they shelter (dense shrub, near the house). Don’t chase the hawk off, and keep feeders clean and placed away from windows.","zones":{"breeding":["boreal-ca","northeast","midwest","plains","intermountain","pnw"],"resident":["mid-atlantic","southeast","gulf","southwest","ca-pacific"],"winter":["mexico","central-am"],"passage":[]},"flight":"Short, rounded wings and a long tail. It flies with a steady rhythm of several quick, stiff flaps followed by a glide. In a chase it twists through branches, steering with the tail. When soaring, its wings are held out flat or pushed forward at the wrist, with the long tail fanned.","hunting":"Ambush is its main tactic. A Cooper’s Hawk uses buildings, hedges or trees as cover, then flies low and fast to surprise birds at feeders, in fields or at the forest edge. It seizes prey with its feet and kills by squeezing, sometimes holding it underwater or against the ground. Many chases fail; it may rest and try again from a new perch.","senses":"Sharp vision and quick reactions help it pick out and follow a single fleeing bird against a busy background. The eyes face forward and hold a deep fovea (a pit of sharpest vision) for fine detail. Hearing also helps it notice alarm calls.","ages":"Juveniles are brown above with fine, thin streaks on a creamy chest and belly, and have yellow eyes. Adults are blue-gray above with orange barring below and red-orange eyes. The change comes in the second summer. Some birds even nest at one year old while still in brown juvenile feathers.","sexNote":"Females are larger, often about half again as heavy as males, and the two sexes look alike in plumage.","plate":{"a":"raptor","hab":"wood","len":0.95,"bh":0.88,"tl":1.55,"prim":0.55,"tailTip":"rd","rot":56,"bl":0.8,"m":["brow","barBelly","tailBars","tailTip"],"hd":0.92,"tailW":0.8,"c":{"back":"#5e6b75","under":"#efe6da","wing":"#515e68","tail":"#56626c","crown":"#3a444c","mark":"#b3643a","tailMark":"#2c353d","light":"#f2ece0","dark":"#26292d","bill":"#6e7479","cere":"#d9c34a","iris":"#c8452a","leg":"#e3bd3a","pants":"#efe0cc"},"line":0.12}},
+    {"id":"ferruginousHawk","name":"Ferruginous Hawk","sci":"Buteo regalis","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"22–27 in","wingspan":"52–60 in","weight":"2.0–4.5 lb","lengthCm":61,"wingspanCm":140,"massG":1450,"lifespan":"Poorly known; many probably live a decade or more, and banded birds have reached their teens.","blurb":"North America’s biggest hawk, a pale prairie bird with rusty leggings and a wide-mouthed look. It watches for prairie dogs and jackrabbits from mounds, poles and the ground itself.","identify":[["Rusty leggings","Light-morph birds have rusty-red feathers on the thighs that form a dark V against the white belly when the bird soars overhead."],["Pale head and body","The head, chest and belly are whitish and the back is rusty brown, giving a two-toned, frosty look."],["Pale wingtip patches","From above, the outer wing shows large pale panels near the tips, and the tail is white or pale rusty, so a flying bird flashes light."],["Wide gape","The mouth line extends back beneath the eye, giving the face a broad, grinning look; the bill itself looks small for such a big bird."],["Feathered legs","The legs are feathered to the toes, as on a Rough-legged Hawk, a feature useful on cold open plains."]],"lookalikes":[["Rough-legged Hawk","Has a dark belly patch, dark wrist patches and a white tail with a dark band; it lacks the rusty leggings and the pale upper-wing panels."],["Red-tailed Hawk","Pale prairie red-tails are smaller, have a belly band and lack the rusty V of leggings; the Ferruginous looks bigger-headed, with a wide gape."],["Swainson’s Hawk","Has a dark bib on the chest and long, pointed wings with a two-tone underwing; the Ferruginous is heavier and has a pale body."]],"voice":"Not very vocal away from the nest. Near the nest it gives a harsh, falling scream, “kree-ah,” and when excited a series of gull-like squeals and cackles. A pair will call loudly at an intruder; birds on the winter grounds are mostly silent.","habitat":"Treeless to sparsely wooded open country: shortgrass and mixed-grass prairie, sagebrush flats, badlands, and the edges of deserts and dry farmland. It avoids forest and relies on prairie dog towns and ground squirrel colonies for food.","range":"Breeds in the northern Great Plains and Great Basin, from the southern Canadian prairies south to Colorado, Utah, Nevada and northern New Mexico. Winters in the southwestern United States, the southern Plains and Texas, and northern Mexico.","diet":"Mostly mammals: prairie dogs, ground squirrels, jackrabbits, cottontails, pocket gophers and mice, along with some snakes, lizards, grasshoppers and birds. It hunts from a mound, pole or the ground, soars over burrows, or waits by a burrow like a cat at a mouse hole. It is the buteo most dependent on ground-dwelling mammals.","foods":["prairie dogs","ground squirrels","jackrabbits","cottontails","gophers"],"nesting":{"site":"On an isolated tree, cliff ledge, rock outcrop, earth mound, power pole or tower; sometimes on the ground in treeless country.","nest":"A large heap of sticks, sometimes with cow chips, bones and other debris, lined with grass and fine bark.","eggs":"Usually 2 to 4 eggs, white or pale cream with brown and lilac spots.","incubation":"About 28 to 33 days, mainly by the female, with the male bringing food.","young":"Young fledge at about 6 to 7 weeks old; in years when jackrabbits are scarce, fewer chicks survive."},"behavior":"The Ferruginous Hawk spends much time on the ground or on low perches like fence posts, mounds and poles, and it walks and runs after prey more than most hawks do. It is shy around people, and pairs disturbed at the nest may abandon it. In windy weather it hangs into the wind over a field, and in winter several birds may gather at prairie dog towns. Soaring courtship flights include steep dives by the male.","migration":"Partly migratory. Northern birds head south in fall to winter on the southern Plains, the Southwest and northern Mexico, returning to the breeding grounds in March and April; some southern breeders are year-round residents. Movements follow food supplies, so individuals may wander widely. It is a very rare wanderer east of the Plains.","status":{"iucn":"LC","trend":"stable","text":"Least Concern, but conservation worries are real: plowing of native prairie, energy development, prairie dog control and disturbance at nests have reduced nesting success in places, and some states and provinces give it special protection. Protecting rangeland, keeping prairie dog colonies and giving nests space all help."},"maine":null,"wow":["It is the largest hawk in North America, with a wingspan of about four to five feet, and its legs are feathered right down to the toes.","In treeless country it nests on the ground, on haystacks, on power poles and on special platforms built for it.","How many chicks a pair raises tracks the jackrabbit cycle: in years when rabbits are abundant, nests succeed far more often."],"nameNote":"Ferruginous comes from the Latin ferrugo, meaning “iron rust,” for the rusty-red color of the back and legs. The species name regalis is Latin for “royal,” a nod to its large size and pale, majestic look.","tryThis":"If you visit the Great Plains or the West, scan fence posts, mounds and utility poles from a car or lookout on public roads and note which perches large hawks use. Count perch heights and compare with a Maine route. Stay far from nests: disturbed Ferruginous Hawks may abandon them.","zones":{"breeding":["plains","intermountain"],"resident":[],"winter":["southwest","gulf","mexico","ca-pacific"],"passage":[]},"flight":"Very large, long wings and a fairly short tail. It soars with a shallow V and a slight upward tilt, and flaps with deep, heavy beats. On windy days it kites, and the pale upperwing patches flash. It lifts off from the ground heavily.","hunting":"Ferruginous Hawks hunt in three main ways: perching on mounds and poles, soaring or kiting over prey colonies, and waiting or walking at burrow entrances. A strike is a quick dash and grab, and the hawk often takes a prairie dog, ground squirrel or young jackrabbit rather than something it must chase far. It often carries food to a nearby mound to eat.","senses":"Keen eyesight, typical of big hawks, lets it spot a ground squirrel moving across open prairie from a great distance. Its eyes face forward, which helps it judge the final strike. It likely also uses hearing near burrows, where prey squeaks and shuffles.","ages":"Young birds are whitish below with little or no rusty color on the legs, and the back is brown with pale edges. The rusty leggings and the richer rust-red back develop over about 2 to 3 years.","sexNote":"Females are noticeably larger than males, often by about a fifth to a third in weight; the plumage is similar.","plate":{"a":"raptor","hab":"desert","len":1.22,"bh":1.1,"tl":0.9,"prim":1.1,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","pantsLong"],"hd":1.05,"c":{"back":"#a8603a","under":"#f4efe6","wing":"#8a4e30","tail":"#e8cfb8","crown":"#e0d2b8","face":"#ecdfc8","mark":"#8a4a2a","light":"#f6efe0","dark":"#3a2418","bill":"#6f7378","cere":"#e8d070","iris":"#6a4a2a","pants":"#b5532a"},"line":0.05}},
+    {"id":"harrissHawk","name":"Harris's Hawk","sci":"Parabuteo unicinctus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"18–26 in","wingspan":"41–47 in","weight":"1.1–2.6 lb","lengthCm":54,"wingspanCm":110,"massG":850,"lifespan":"About a decade in the wild is typical; falconry birds in good care can live 20 years or more.","blurb":"The pack hunter of the desert: Harris’s Hawks hunt in family groups, flush rabbits, and even stack up on one another’s backs to see farther. It is the most social hawk in North America.","identify":[["Chestnut shoulders and thighs","A dark brown body with bright chestnut-red patches on the shoulders and 'leggings'; the red shows well in flight and on a perched bird."],["White tail base and tip","The long black tail has a clean white base and a narrow white tip, a bold flash when the bird flies away."],["Long yellow legs","Long yellow legs and feet, built for perching on cactus and mesquite, stand out on a dark bird; the face has yellow skin as well."],["Lanky, dark shape","A dark body, broad wings and a long tail give it a long-legged, lanky look compared with chunky buteos."],["Streaked juvenile","Young birds are streaked with pale buff on the underparts and have a barred tail, with little of the adult’s chestnut."]],"lookalikes":[["Common Black Hawk","Also dark with a white tail band, but it has a single broad white band across the middle of the tail, no chestnut, a yellow-orange face and waterside habits."],["Zone-tailed Hawk","All dark with narrow pale tail bands and long wings; it flies like a Turkey Vulture, wobbling in a V, and has no chestnut shoulders."]],"voice":"A harsh, rasping scream or wheeze, “raaah,” and a low, growling cackle given by group members near the nest or when excited. Family groups chatter to one another, and alarm calls are loud and rough. Away from the nest it is not very vocal.","habitat":"Dry open scrub: mesquite and saguaro desert, thorn-scrub, brushland, savanna with scattered trees, riverside woods and open ranchland. It needs perches for hunting and uses tall cacti, mesquite and power poles.","range":"Lives year-round in desert and scrub from southern Arizona, New Mexico and Texas through Mexico and parts of South America, down to Chile and central Argentina. Escaped falconry birds turn up well outside this range.","diet":"Rabbits, especially cottontails and jackrabbits, make up much of the diet, along with quail, doves, ground squirrels, lizards, large insects and rodents. Group hunting lets the hawks take prey bigger than a lone hawk could handle: some birds flush the quarry while others cut off its escape. Prey is shared, with a pecking order deciding who eats first.","foods":["rabbits","quail","ground squirrels","lizards","large insects"],"nesting":{"site":"In a saguaro, mesquite, palo verde or other desert tree, or on a power pole, usually low to moderately high above the ground.","nest":"A platform of sticks, roots and grass, lined with finer material; pairs often reuse and add to the nest.","eggs":"Usually 2 to 4 eggs, white or bluish white, sometimes faintly spotted.","incubation":"About 31 to 36 days, mostly by the female; other group members may bring food.","young":"Young fledge at about 5 to 7 weeks; the whole group helps feed them, and a pair may raise two broods in one year."},"behavior":"Harris’s Hawks live in groups of two to seven birds, usually a breeding pair plus helpers, often grown offspring and sometimes unrelated adults. The group hunts as a team and shares the catch, with the big female at the top of the pecking order. At rest, birds sometimes backstack, perching three or more high with one on top of another’s back, apparently to reach a better lookout or a warm spot.","migration":"Resident. Harris’s Hawks do not migrate; they defend a home range all year, though young birds disperse and individuals may wander in dry years or after prey crashes. They are not expected in Maine, and any seen outside the Southwest is likely an escaped falconry bird.","status":{"iucn":"LC","trend":"stable","text":"Least Concern and widespread, though local declines have occurred where desert scrub, mesquite groves and riverside trees were cleared for development. Electrocution on power poles is a hazard, and disturbed nests may fail. Captive breeding supplies falconers, which eases pressure on wild birds; wild take is regulated."},"maine":null,"wow":["Harris’s Hawks hunt in teams: one flushes a rabbit while others wait ahead or take turns chasing it, and group hunts tend to succeed more often than hunts by lone hawks.","Birds sometimes backstack, standing three or more high on one another’s backs, a behavior almost never seen in other hawks.","Because they are social and trainable, they are one of the most popular hawks in modern falconry."],"nameNote":"John James Audubon named it in 1837 for Edward Harris, a farmer, friend and patron who joined him on expeditions. The genus name Parabuteo means “near the buteos,” and unicinctus means “one-banded,” from the white band on the tail.","tryThis":"Attend a live-raptor or falconry program at a nature center or wildlife park, where Harris’s Hawks are often flown by trained handlers. Watch how the bird follows the handler, chooses perches and scans the ground, and ask about its group behavior. Never approach a wild raptor.","zones":{"breeding":[],"resident":["southwest","gulf","mexico","sa-north","andes","sa-south"],"winter":[],"passage":[]},"flight":"Long, broad wings and a long tail. It flies with quick flaps and glides on level wings at low heights, but it also soars well over deserts on thermals. The long tail lets it twist among branches and chase prey around obstacles.","hunting":"Teams hunt together: one bird flushes a rabbit from cover while others wait ahead, take turns in the chase or cut off the escape. Lone birds also still-hunt from a perch or soar over scrub, then drop onto prey and grab it with strong feet. Group hunting allows them to take larger prey, such as jackrabbits, and the catch is shared, with dominant birds usually eating first.","senses":"Sharp daytime eyesight, with forward-facing eyes for judging distance, lets it spot a rabbit or lizard from a high perch. Because it hunts in teams, a bird watches its group mates as well as the quarry.","ages":"Juveniles are brown, streaked pale buff below, with a barred tail and a white tip; the chestnut shoulders and thighs are weak or missing at first. Adult plumage develops in about 2 to 3 years, and many birds stay in the group as helpers before breeding.","sexNote":"Females are noticeably larger than males, often about a third heavier; plumage is the same in both sexes.","plate":{"a":"raptor","hab":"desert","len":1,"bh":1.05,"tl":1.3,"prim":0.9,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","wingPatch","tailBars"],"leg":1.5,"c":{"back":"#3e2d22","under":"#4a382c","wing":"#34271e","tail":"#2a2018","crown":"#3e2d22","patch":"#a8452a","mark":"#2a2018","tailMark":"#f4efe6","light":"#f4efe6","dark":"#1c1410","bill":"#2a2a2c","cere":"#f0c828","iris":"#5a3a1a","leg":"#f0c828","pants":"#a8452a"},"line":0.05}},
+    {"id":"missKite","name":"Mississippi Kite","sci":"Ictinia mississippiensis","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"missKite","length":"12–15 in","wingspan":"30–36 in","weight":"8–14 oz","lengthCm":34,"wingspanCm":85,"massG":300,"lifespan":"Not well documented; wild birds likely live several years to about a decade.","blurb":"A gray, falcon-winged kite that eats cicadas and dragonflies on the wing, never landing to chew. Its range is spreading, and an occasional spring bird overshoots as far as Maine.","identify":[["Pale gray head","The head and neck are lighter, almost silvery gray, and contrast with the darker body; the eyes are red."],["Black, unbarred tail","Adults have a plain black tail with no bands, squared off or slightly notched at the end."],["Pale inner wing patch","From above, a pale gray patch on the inner part of the wing contrasts with the black wingtips and tail."],["Long, pointed wings","Slender, falcon-like wings and a streamlined body make it look graceful and swallow-like in flight."],["Streaked, banded juvenile","Young birds are streaked reddish-brown below and have a tail crossed by pale bands, unlike the plain black tail of adults."]],"lookalikes":[["Peregrine Falcon","Larger and heavier, with a dark hood and moustache, barred underparts, and fast, powerful wingbeats rather than buoyant gliding. A kite’s face is plain gray."],["Northern Harrier","A gray male harrier shows a white rump patch and glides in a V close to the ground, while the kite soars high with a plain black tail."]],"voice":"A thin, high, two-part whistle, “phee-phew,” the second note falling, given by perched and flying birds to advertise territory and to sound alarm. Near the nest, birds give a series of shrill, repeated “kee-kee-kee” calls when people or predators come close. Kites are usually quiet away from the nest.","habitat":"On the Great Plains it nests in shelterbelts, cottonwood river groves and farm windbreaks; in the Southeast it uses bottomland forest and swamps; in many towns it uses parks, golf courses and neighborhoods with tall trees. It needs tall nest trees and open airspace full of flying insects.","range":"Breeds across the southern Great Plains and the Southeast, with a growing foothold in the Southwest and mid-Atlantic and occasional nesting farther north. Almost all winter in South America, from Bolivia and Paraguay south to northern Argentina. Spring overshoots reach the Northeast.","diet":"Mostly big flying insects: cicadas, dragonflies, grasshoppers and beetles caught in midair with the feet and eaten while still flying. It also takes frogs, lizards, small snakes and the occasional small bird or bat. Kites follow mowers and cicada emergences, and they hunt in groups over lawns and fields, picking insects from treetops as well.","foods":["cicadas","dragonflies","grasshoppers","beetles","small reptiles"],"nesting":{"site":"In the fork of a tall tree, often a cottonwood, elm or pine, well above the ground, in shelterbelts, river groves or town parks.","nest":"A small, flimsy-looking platform of twigs lined with fresh green leaves; nests are often grouped in a loose colony.","eggs":"Usually 1 or 2 bluish-white eggs, unmarked or faintly spotted.","incubation":"About 29 to 31 days, shared by both parents.","young":"Young fledge at about 30 to 35 days; parents feed them mostly insects, and the young stay near the nest area for weeks."},"behavior":"Mississippi Kites are social and aerial. They nest in loose groups and often hunt and roost together. Pairs defend the nest by diving, with sharp calls, at predators and sometimes at passersby, which in some towns has prompted warning signs. Adults eat, drink and bathe on the wing, skimming water in low passes. In late summer they gather in flocks before heading south.","migration":"A long-distance migrant, leaving the United States in August and September for the grasslands of southern South America and returning in April and May. Flocks travel through Mexico and Central America. Each spring, a few young birds overshoot their range and appear in the Northeast, including Maine, mostly in late spring.","status":{"iucn":"LC","trend":"increasing","text":"Least Concern and increasing. Numbers fell in the early 1900s when riverside forests were cleared, then rebounded as farmers planted shelterbelts and as towns grew tall trees and lawns full of insects. Threats include loss of mature trees, pesticide use that reduces insect prey, and shooting or nest disturbance. Protecting nest groves helps."},"maine":{"season":"Rare spring visitor","months":"000011100000","text":"A rare wanderer from the south, usually a young bird in late May or June, with a few records at other times. Watch for a slender gray kite hawking insects over a field or marsh, and check any report against current records."},"wow":["A Mississippi Kite can catch a dragonfly with its feet, lift it to its bill, and eat it while still flying, so a meal takes only seconds and the bird never lands.","In some southern towns, parent kites are so protective that they dive at joggers and walkers near the nest, and parks put up warning signs."],"nameNote":"The Mississippi Kite is named for the Mississippi River valley, where early naturalists first collected it for science. Ictinia is from the Greek iktinos, an old word for a kite.","tryThis":"On a warm summer evening, watch swallows and Common Nighthawks hunting insects over a field or pond. Notice how they turn, glide and catch prey without landing. A Mississippi Kite does the same with bigger insects. Count how many catches you see in two minutes.","zones":{"breeding":["plains","gulf","southeast","southwest","mid-atlantic"],"resident":[],"winter":["sa-south"],"passage":["mexico","central-am","sa-north"]},"flight":"Long, slender, pointed wings and a long, squarish tail. It flies lightly, gliding and wheeling with quick turns, and can alter course in a flash to snatch an insect or hang briefly into the wind. At a distance it can look like a very large swallow.","hunting":"An aerial insect-catcher. It circles over fields, rivers and towns, scanning the air, then swoops and grabs insects in its feet, lifts them to its bill and eats without landing. It also snatches insects from treetops and takes small vertebrates from branches or the ground. Kites gather at cicada emergences and over mowed fields.","senses":"Excellent eyesight lets it track small, fast insects against the sky, and its forward-facing eyes judge distance for a midair grab. Hearing is useful for alarm calls and for keeping in touch with others in its group.","ages":"Juveniles are streaked and rust-colored below with a banded tail, and look quite different from the plain gray adults. Young birds take about two years to reach full adult plumage, though some breed before then.","sexNote":"The sexes look nearly alike; females are slightly larger than males.","plate":{"a":"raptor","hab":"open","len":0.9,"bh":0.88,"tl":1.15,"prim":1.5,"tailTip":"sq","rot":52,"bl":0.7,"m":["hoodFull","wingPatch"],"hd":0.95,"c":{"back":"#8f98a0","under":"#aab2b9","wing":"#7e8890","tail":"#1c1c1f","hood":"#c4cbd1","iris":"#c8322e","patch":"#b5654a","bill":"#3a3a3c","cere":"#3a3a3c","light":"#dfe4e8","dark":"#1c1c1f","mark":"#1c1c1f","leg":"#e8a090"},"line":0.15}},
+    {"id":"northernGoshawk","name":"Northern Goshawk","sci":"Astur atricapillus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"northernGoshawk","length":"18–26 in","wingspan":"40–46 in","weight":"1.4–3.0 lb","lengthCm":56,"wingspanCm":108,"massG":1000,"lifespan":"Often several years to about a decade in the wild; individuals have lived longer, especially in captivity.","blurb":"A fierce forest hawk with a white eyebrow and a red eye that dives at anyone near its nest. Under the current AOS checklist, North American birds are the American Goshawk (Astur atricapillus).","identify":[["White eyebrow","A broad white stripe above the eye, bordered by a dark cap and dark eye-line, gives adults a stern, masked look. The eye is red in adults."],["Slate-gray back","Adults are blue-gray above and darkest on the crown, and pale gray below with fine, close barring that looks hazy from a distance."],["Long, banded tail","A long gray tail with a few darker bands and a pale tip, plus fluffy white feathers under the tail that spread in display."],["Heavy, broad build","Big and barrel-chested, with broad-based wings and a thick neck, much bulkier than a Cooper’s Hawk."],["Streaked juvenile","Young birds are brown above with coarse brown streaks on a buff underside, a pale eyebrow, and a yellow eye that darkens to red with age."]],"lookalikes":[["Cooper’s Hawk","Smaller, with a dark cap over a paler nape, no bold white eyebrow, orange barring on adults and a rounder tail. A goshawk is bulkier and gray below."],["Peregrine Falcon","Also slate-gray above, but it has a dark hood and moustache, pointed wings and fast, stiff wingbeats; the goshawk has a white eyebrow, rounded wings and a long tail."]],"voice":"Mostly silent away from nests. Near the nest, adults give a loud, harsh cackle, “kak-kak-kak-kak-kak,” that rises in pitch and speed, and a wailing “kree-ah” in alarm or courtship. The call carries far through the forest and warns that you are too close to the nest.","habitat":"Mature and old forests, whether conifer, hardwood or mixed, with tall trees, fairly open space beneath and clearings or streams nearby. In winter it also hunts in woodlots, farm edges and even suburbs, wherever prey is plentiful.","range":"Broadly defined, it breeds in forests across the Northern Hemisphere. North American birds (American Goshawk) nest across Alaska and Canada, south through New England, the Great Lakes and the western mountains into Mexico, while Old World birds nest across Europe and Asia. Northern birds may move south in winter.","diet":"Grouse, hares and squirrels are mainstays in North America, along with jays, crows, pigeons, woodpeckers and ducks. It can take prey as big as a hare or a Ruffed Grouse, and kills by squeezing with powerful feet. In winter, when prey is scarce, birds may haunt feeders or farm fields.","foods":["grouse","snowshoe hares","squirrels","jays and crows","pigeons"],"nesting":{"site":"In a big tree, conifer or hardwood, with open flight space beneath, usually in a fork close to the trunk.","nest":"A large bowl of sticks lined with bark flakes and fresh conifer sprigs; pairs keep alternate nests and add to them each year.","eggs":"Usually 2 to 4 eggs, bluish white and plain, becoming stained brown.","incubation":"About 28 to 32 days, mostly by the female, while the male hunts and delivers food.","young":"Young fledge at about 5 to 6 weeks old and stay near the nest area for several weeks more while the adults feed them."},"behavior":"Goshawks are among the boldest nest defenders in the forest. Adults attack intruders, including hikers and researchers, with hard, fast dives that can draw blood. In spring, pairs soar over the nest area and fluff their white undertail feathers. Away from the nest they are solitary, secretive and territorial. Falconers prize them and fear them for their strength and high-strung temper.","migration":"Mostly resident or a short-distance wanderer. In some winters, especially when snowshoe hare and grouse populations crash in the north, goshawks move south in an irruption, appearing at hawkwatches in fall and at feeders in towns. Young birds usually move farther than adults; some always remain near home.","status":{"iucn":"LC","trend":"unknown","text":"Least Concern worldwide. Goshawks are hard to count in big forests, so trends are unclear and differ by region. Logging of mature forest near nests is the main concern. Leaving big nest trees and buffers around active nests helps. Check current Maine and federal lists for any special listing."},"maine":{"season":"Year-round resident; local and uncommon","months":"112211111221","text":"Uncommon and hard to find in Maine’s mature northern and western forests all year, and occasionally near feeders in winter. A few appear at fall hawkwatches, and some years bring more birds south. If you meet an angry goshawk near a nest, leave quietly."},"wow":["A goshawk will dive at people who come near its nest, and some researchers who climb to nests wear helmets or head protection.","A goshawk’s eye color is an age clock: yellow in young birds, then orange, then deep red in older adults.","It is the subject of two famous books: T. H. White’s 1951 “The Goshawk” and Helen Macdonald’s 2014 memoir “H Is for Hawk,” about training a goshawk."],"nameNote":"Goshawk comes from Old English for “goose hawk,” a bird strong enough to take large prey. The AOS now treats North American birds as the American Goshawk (Astur atricapillus, “black-haired,” for its dark cap) and Old World birds as the Eurasian Goshawk (Astur gentilis).","tryThis":"In winter, look for plucking sites: a log or stump with a ring of feathers where a hawk ate a bird. Photograph it from a distance without touching it, and note the feather type and surroundings. Many predators leave such piles, so consider what else could have done it. Never search near nests in spring.","zones":{"breeding":[],"resident":["ak","boreal-ca","pnw","ca-pacific","intermountain","southwest","mexico","midwest","northeast","mid-atlantic","europe-w","europe-n","europe-s","russia","siberia","central-asia","east-asia","japan"],"winter":[],"passage":[]},"flight":"Broad, rounded wings and a long tail let it twist between trunks at speed. It usually flaps strongly several times and then glides, and it soars on flat wings above the canopy in spring display. Its flight looks heavier and more powerful than that of smaller accipiters.","hunting":"Goshawks hunt from a perch or while cruising low through the trees, then burst into a fast, twisting chase through branches. They will follow prey on the ground or into thickets, and strikes often succeed where other hawks would turn away. Prey is killed by squeezing with strong talons. Many chases fail, but a very varied menu keeps it fed.","senses":"Keen eyesight lets it track a fleeing grouse through cluttered woods; its eyes face forward and are large for its head. It also hears well and can locate calling birds in dense forest.","ages":"Juveniles are brown above and buff below with bold streaks and a yellow eye; they molt into slate-gray adult plumage with fine barring during their second year, and the eye darkens from yellow to orange to deep red over several years. First nesting is usually at 2 or 3 years of age.","sexNote":"Females are noticeably larger than males, often by about a quarter to a third in weight, but the plumage is similar.","plate":{"a":"raptor","hab":"wood","len":1.2,"bh":1.1,"tl":1.5,"prim":0.6,"tailTip":"rd","rot":56,"bl":0.9,"m":["supercilium","eyeline","barBelly","tailBars"],"hd":1,"c":{"back":"#5f6b78","under":"#d8d8d6","wing":"#525e6a","tail":"#56626c","crown":"#2c3238","mark":"#5a6068","tailMark":"#2c3238","light":"#f2eee6","dark":"#26292d","bill":"#6e7479","cere":"#d9c34a","iris":"#b8322c","pants":"#d8d8d6","leg":"#e3bd3a"},"line":0.1}},
+    {"id":"northernHarrier","name":"Northern Harrier","sci":"Circus hudsonius","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"16–20 in","wingspan":"38–48 in","weight":"10–26 oz","lengthCm":47,"wingspanCm":108,"massG":440,"lifespan":"Often a few years to about a decade in the wild; the oldest banded birds have lived into their teens.","blurb":"A slim, owl-faced hawk that glides inches above marsh and meadow, tilting on V-shaped wings. It finds prey by sound as much as by sight, and the gray males are nicknamed “gray ghosts.”","identify":[["White rump patch","A bright white patch at the base of the tail shows from far away and is the quickest mark in every plumage."],["V-shaped wings","Long wings are held in a shallow V as the bird glides low over the ground, rocking from side to side."],["Owl-like face","A flat, round facial disc of stiff feathers surrounds the eyes and looks owl-like even in flight."],["Gray male","Adult males are pale gray above and white below with black wingtips, and look almost ghostly over a field."],["Brown female and young","Females are brown above with streaked buff underparts; juveniles are warm cinnamon-orange below with little streaking."]],"lookalikes":[["Rough-legged Hawk","Also has white at the tail base, but it is heavier with a dark belly patch and dark wrist marks, hovers high in the air and flaps with slow, deep beats."],["Short-eared Owl","Flies low over the same fields at dusk with floppy, moth-like wingbeats, buffy wing patches and a streaked chest; a harrier is more elegant, with a white rump and long tail."]],"voice":"Usually quiet. Near the nest it gives a fast, dry “kek-kek-kek-kek” in alarm or courtship, and females give a high, thin, whistled scream when begging for food from the male. In winter harriers are almost silent.","habitat":"Open, wet or grassy country: salt and freshwater marshes, wet meadows, tundra, grasslands, hayfields, bogs and blueberry barrens. It needs low, thick vegetation for nesting on the ground and open space for hunting.","range":"Breeds across Alaska and Canada and the northern and central United States. Winters from the southern edge of its breeding range through the United States to Mexico, Central America, the Caribbean and northern South America. It is the North American counterpart of the Eurasian Hen Harrier.","diet":"Mostly small mammals, especially voles, with songbirds, frogs, snakes and big insects added. A harrier cruises low and slowly, listens and watches, then pounces. Small birds such as sparrows and meadowlarks are taken in bursts, and in winter a harrier will occasionally eat carrion.","foods":["voles","mice","small songbirds","frogs","large insects"],"nesting":{"site":"On the ground in thick marsh grass, sedge or shrubs, often on a slight rise.","nest":"A flat platform of sticks, reeds and grass, built mostly by the female; it is thin but sturdy and hidden by surrounding stems.","eggs":"Usually 4 to 6 bluish-white eggs, sometimes with faint brown spots.","incubation":"About 30 to 32 days, nearly all by the female while the male brings food.","young":"Chicks leave the nest at about 4 to 5 weeks but cannot fly well for another week or two; the male hands off food in midair."},"behavior":"Harriers are low, graceful hunters and quiet birds, but their courtship is dramatic. In spring, males perform sky-dances, repeated roller-coaster dives and climbs above the nest area, calling as they go. The male delivers food in the air, dropping it while the female flips over to catch it with her feet. Some males mate with two or more females. In winter, harriers roost together on the ground in groups.","migration":"Partly migratory. Northern birds leave their nesting grounds in September and October and move south, passing hawkwatches and following coasts and fields. In Maine, many head to the Mid-Atlantic and farther south, while some remain near coastal marshes all winter. Return flights happen in March and April.","status":{"iucn":"LC","trend":"declining","text":"Least Concern globally, but numbers have fallen across much of North America as marshes, wet meadows and grasslands are drained, plowed or built over, and as early mowing destroys ground nests. Some states list the harrier as threatened or of special concern; check current Maine and federal lists. Protecting large open wetlands and delaying hay cutting until chicks fledge help."},"maine":{"season":"Local breeder; fall migrant; a few winter on the coast","months":"112222223321","text":"A local breeder in coastal marshes, blueberry barrens and some inland wetlands, and a regular migrant in September and October. Look for a low, rocking flight over salt marshes and open fields; a few remain on the southern coast in winter."},"wow":["A harrier’s flat, owl-like face works like a satellite dish for sound, helping it find voles hidden in grass by hearing alone.","In the air, the male drops a food item and the female rolls onto her back below him and snatches it out of the sky with her feet.","For decades the American bird was lumped with the Hen Harrier of Eurasia; in 2017 the AOS split them into two species."],"nameNote":"Harrier comes from “harry,” to raid or pester, for a bird that harries its prey; this bird was long called the Marsh Hawk. Circus is from Greek kirkos, “circle,” for its circling flight; hudsonius means “of Hudson Bay,” where the species was first described.","tryThis":"At dawn or late afternoon, visit a marsh, hayfield or other open area where harriers are reported and watch for a bird flying low. Sketch its wing shape and the white rump, and notice how it tilts and turns. Stay on public paths; ground nesters in spring are easily disturbed.","zones":{"breeding":["ak","boreal-ca","plains","midwest","northeast","intermountain","pnw"],"resident":[],"winter":["mid-atlantic","southeast","gulf","southwest","ca-pacific","mexico","central-am","caribbean","sa-north"],"passage":[]},"flight":"Long wings and a long tail suit slow, buoyant flight. It glides low over marsh and field with wings held in a V, rocking side to side with light flaps. It can turn and drop quickly on prey, and the white rump patch flashes at each turn.","hunting":"A harrier quarters, flying back and forth low over a field a few feet above the ground, listening and watching. When it hears or sees a vole, it pauses, drops with legs outstretched and grabs it. Owl-like hearing helps it find prey hidden in thick grass. Many attempts fail, so a harrier covers a great deal of ground each day. Voles are the staple; small birds are taken in bursts.","senses":"The facial disc of stiff feathers funnels sound toward the ears, much as an owl’s does, so a harrier can find voles in thick grass by sound alone. Its eyesight is also sharp. This pairing of hearing and sight is unusual among daytime hawks.","ages":"Juveniles of both sexes are brown above and warm cinnamon-orange below, with little streaking. Young males molt into gray plumage during their second year, while females stay brown. Most birds first breed at about 2 years old, though some breed earlier.","sexNote":"One of the clearest plumage differences between the sexes in any North American raptor: adult males are pale gray and white, females are brown and streaked. Females are also larger, often by a third or more.","plate":{"a":"raptor","hab":"marsh","len":1,"bh":0.88,"tl":1.5,"prim":1.6,"tailTip":"rd","rot":48,"bl":0.65,"m":["disc","tipsBlackWing","tailBars"],"hd":1,"leg":1.6,"c":{"back":"#8f99a3","under":"#f4f2ee","wing":"#7e8892","tail":"#8a949e","rump":"#f6f4ee","crown":"#8f99a3","mark":"#3a4650","tailMark":"#5a646e","light":"#f6f4ee","dark":"#26292d","bill":"#2a2c30","cere":"#e0c24a","iris":"#e8d27a","leg":"#e8c23e","pants":"#f4f2ee"},"line":0.1}},
+    {"id":"osprey","name":"Osprey","sci":"Pandion haliaetus","family":"Pandionidae","group":"Hawks, kites & harriers","simId":"osprey","length":"21–26 in","wingspan":"59–71 in","weight":"3.0–4.4 lb","lengthCm":58,"wingspanCm":165,"massG":1600,"lifespan":"Often 7 to 15 years in the wild; the oldest banded Ospreys have lived around 25 years.","blurb":"A fish-eating hawk that hovers, folds its wings and crashes feet-first into the water. Almost nothing else with feathers is so completely built for catching live fish, and Maine’s coast is full of its nests.","identify":[["Dark eye stripe","A white head crossed by a broad dark brown stripe through the eye, like a bandit mask, is easy to see from below and in profile."],["White underparts","Mostly white below, with a brown necklace band across the chest (especially on females) and dark patches at the wrist under the wings."],["Crooked wings","In flight the long wings bend sharply at the wrist, forming a gull-like angle that makes the silhouette easy to learn."],["Yellow eyes","Adults have yellow eyes with a black hooked bill; young birds have orange-red eyes and pale-edged back feathers."],["Hovering and diving","It hangs briefly over water, then plunges feet-first with a splash, behavior shown by few other raptors."]],"lookalikes":[["Bald Eagle","Much bigger and heavier, with flat-held wings, a massive head and bill, and a white head and tail only on adults; immatures are mottled brown and white without a clean dark eye stripe."],["Herring Gull","A big white-and-gray gull also flies with bent wings, but it has a thick yellow bill, a gray back and black wingtips with white spots, and it does not plunge feet-first."]],"voice":"A series of loud, clear, whistled notes, “cheep-cheep-cheep” or “kyew-kyew-kyew,” that rise in pitch and speed when the bird is alarmed at an intruder near the nest. Males give a long chirping call in courtship flights. The sound is thin and piping compared with a Red-tail’s scream.","habitat":"Always near water that holds fish: coastal bays and estuaries, rivers, lakes, ponds and reservoirs. It needs a high perch or nest site such as a dead tree, pole, channel marker or man-made platform, and it tolerates people.","range":"Nearly worldwide. Breeds across North America, Europe and northern Asia, and lives year-round along tropical and Australian coasts. North American birds winter in the Caribbean, Central and South America; European and Asian birds winter in Africa and southern Asia. It is found on every continent except Antarctica.","diet":"Almost entirely live fish, usually a pound or less, such as alewives, menhaden, flounder, perch and suckers. It spots them from 30 to over 100 ft up, hovers, then dives feet-first and often submerges briefly. It carries the fish headfirst to reduce wind drag and eats it on a favorite perch.","foods":["alewives","menhaden","flounder","perch","suckers"],"nesting":{"site":"On top of a dead tree, channel marker, utility pole or cell tower, or on a man-made platform, usually near water.","nest":"A huge pile of sticks, sod, seaweed and debris, added to each year until it is several feet across and deep.","eggs":"Usually 2 or 3 eggs (range 1 to 4), creamy white with heavy reddish-brown blotches.","incubation":"About 36 to 42 days, mostly by the female while the male brings her fish.","young":"Young fledge at about 7 to 8 weeks and are fed fish by the female, who tears off bites until they can feed themselves."},"behavior":"Ospreys return to the same nest year after year, and a pair may add to it for decades. Courtship features a sky-dance: the male flies in dramatic undulating loops carrying a fish or stick, calling as he goes. Small birds such as House Sparrows, starlings and grackles sometimes nest in the sides of the huge nest, unbothered. In the nest, older chicks often take more food than younger ones.","migration":"Maine ospreys return in late March and April and leave from late August to October. Satellite tags show many fly south over the ocean to the Caribbean, Central America and northern South America, some crossing large stretches of open sea. Young birds travel alone and often stay on the wintering grounds for a year or two before returning.","status":{"iucn":"LC","trend":"increasing","text":"Least Concern, and a conservation success: DDT thinned eggshells and crashed Atlantic coast populations before the ban in the early 1970s. Numbers rebounded, helped by nest platforms in places like Maine. Today, threats include entanglement in fishing line, contaminants, loss of nest sites and shoreline development."},"maine":{"season":"Summer breeder","months":"001333333210","text":"Common along the coast and on large lakes and rivers from April to September. Nests sit on poles, channel markers and dead trees, and many are on man-made platforms. Look for a bird hovering over bays and rivers, or for a nest with a bird standing guard."},"wow":["An Osprey’s outer toe can swing backward, so it grips a fish with two toes in front and two behind, and rough spiny scales on its foot pads help it hold slippery fish.","Its giant nest becomes a small neighborhood: sparrows, starlings and grackles sometimes raise their own families in the sides.","Satellite tags have shown ospreys making long flights across open ocean, a trip with no place to land and rest."],"nameNote":"Osprey likely comes from Latin ossifraga, “bone-breaker,” a name first used for another large bird. Its older nickname is “fish hawk.” Pandion is the name of a king in Greek myth, and haliaetus is Greek for “sea eagle.”","tryThis":"At a coast, river or lake in summer, watch an Osprey with binoculars from a safe distance. Time how long it hovers, note whether it dives feet-first, and count dives per hour that end with a fish. Stay well back from nests, at least the length of a football field.","zones":{"breeding":["ak","boreal-ca","pnw","intermountain","ca-pacific","midwest","northeast","mid-atlantic","southeast","gulf","europe-w","europe-n","europe-s","russia","siberia","japan"],"resident":["australia","se-asia","mexico","middle-east"],"winter":["caribbean","central-am","sa-north","amazon","sa-south","africa-w-c","africa-e","africa-s","south-asia"],"passage":[]},"flight":"Long, narrow wings bent at the wrist and a short tail. Ospreys flap with slow, deep beats, glide on arched wings and soar on thermals. When fishing, one flies 30 to 100 ft over water and hovers on rapid wingbeats before the dive. Carrying a fish, it holds it headfirst along its body.","hunting":"An Osprey cruises over water looking for fish near the surface. When it sees one it often hovers, then folds back its wings and plunges feet-first, sometimes going fully under. The feet swing forward at impact; the reversible outer toe and spiny foot pads clamp onto the fish, and a strong wingbeat lifts the bird from the water. Success varies greatly with water clarity, wind and fish supply.","senses":"Very sharp eyesight lets it spot fish just below the surface from high above, and it hunts best in clear water with little glare. Its nostrils can close to keep water out when it dives.","ages":"Juveniles have orange-red eyes, buff-tipped feathers that make the back look scaly, and a streaked chest. Adults have yellow eyes and a cleaner pattern. Birds take about 3 years to reach full maturity, and most begin breeding at 3 to 4 years old.","sexNote":"Females are slightly larger and heavier than males and usually show a heavier speckled necklace across the chest; males have a cleaner white chest.","plate":{"a":"raptor","hab":"water","len":1.05,"bh":0.95,"tl":0.9,"prim":1.1,"tailTip":"rd","rot":60,"bl":0.9,"m":["hoodFull","eyeline","tailBars"],"c":{"back":"#4b3a2b","under":"#f5f1e8","wing":"#3f3125","tail":"#5a4a3a","crown":"#f5f1e8","throat":"#f5f1e8","hood":"#f5f1e8","bill":"#2a2a2c","cere":"#7a8088","iris":"#e9c03c","mark":"#3d2f24","tailMark":"#2a2018","light":"#f6f2e9","dark":"#2a2118","leg":"#9aa3ab"},"line":0}},
+    {"id":"redShouldered","name":"Red-shouldered Hawk","sci":"Buteo lineatus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"17–24 in","wingspan":"37–44 in","weight":"17–27 oz","lengthCm":51,"wingspanCm":102,"massG":600,"lifespan":"Wild birds commonly live about 10 years; banded birds have lived into their late teens.","blurb":"A noisy forest hawk of wooded swamps and river valleys, with orange-barred underparts and a loud, ringing “kee-ah” call. Blue Jays copy that call so well that listeners are often fooled.","identify":[["Orange-barred chest","The breast and belly are barred with warm rusty-orange, and a rusty patch shows at the bend of the wing, easiest to see on a perched bird."],["Checkered wings","The upper wing is dark and neatly spotted with white, giving a checkerboard look on a perched bird when the wings are folded."],["Banded tail","The dark tail is crossed by several narrow white bands, thinner and more numerous than the bands on a Broad-winged Hawk’s tail."],["Wingtip windows","In flight, pale crescent-shaped patches near the wingtips show up from both above and below, a mark few other hawks share."],["Slim build","It looks longer-tailed and more slender than a Red-tail, and it perches and hunts inside woods rather than on open poles."]],"lookalikes":[["Red-tailed Hawk","Bulkier, with a pale chest crossed by a belly band and an unbanded rusty tail on adults. It favors open fields and poles rather than wet woods."],["Broad-winged Hawk","Smaller and plainer below, with one or two broad white tail bands and a thin whistle, not a ringing scream."],["Cooper’s Hawk","Has similar orange barring but a long rounded tail, a dark cap and quick flap-and-glide flight, and it lacks the pale wingtip crescents."]],"voice":"A loud, ringing scream, “kee-ah, kee-ah, kee-ah,” repeated six to twenty times, with each note dropping in pitch. Pairs call from perches and while circling over their territory, and both adults scream when something threatens the nest. Blue Jays imitate it well, but a jay’s version is wobbly and often followed by its own gurgles and whistles.","habitat":"Moist, mature woods near water: bottomland forest, wooded swamps, river valleys and tall woods near ponds. It also nests in suburbs and parks if big trees and a wet spot are nearby. Western birds live in California’s stream groves and oak woods.","range":"Breeds from southeastern Canada and New England south to Florida and eastern Mexico, west to the edge of the Great Plains, plus a separate population along the California coast into Baja. Southern birds stay all year; northern birds move south to the southern states.","diet":"Frogs, toads, salamanders, snakes and crayfish are staples, along with chipmunks, mice, voles, small birds and big insects. It watches from a low perch inside the woods, then drops onto prey on the ground or at the water’s edge. Compared with a Red-tail, it eats more cold-blooded animals and hunts in shadier, wetter places.","foods":["frogs","snakes","crayfish","chipmunks and mice","small birds"],"nesting":{"site":"In the main fork of a large tree in damp woods, well above the ground and often within sight of water.","nest":"A bulky bowl of sticks, lined with bark strips, moss and green leaves. Pairs often reuse and rebuild the same nest for many years.","eggs":"Usually 3 eggs, though 2 to 5 occur; whitish to pale blue-white with brown and lilac blotches.","incubation":"About 33 days; the female does most of the sitting while the male brings food.","young":"Young leave the nest at about 5 to 6 weeks but depend on their parents for weeks longer, learning to hunt near the nest."},"behavior":"This is one of the most vocal hawks. In late winter a pair circles over its territory, calling, and the male may tumble and dive in display. Pairs defend a territory fiercely and may return to the same nest year after year. Away from the nest it spends hours perched quietly at a woodland edge or over a stream, watching the ground. Crows are its constant pests, mobbing it loudly, and a Great Horned Owl may take over its nest or prey on its young.","migration":"Partly migratory. Birds in the Southeast and on the Pacific coast stay all year, while those in the Great Lakes, northern Appalachians and New England mostly move south for winter. They migrate by day, singly or in small groups, rather than in the big flocks of Broad-winged Hawks, and they peak later, in October and November.","status":{"iucn":"LC","trend":"increasing","text":"Least Concern. Numbers fell in the 1800s and early 1900s as eastern forests were cleared and wetlands drained, and have partly recovered as woods matured and shooting stopped. The hawk is now spreading in the Northeast. Loss and draining of wooded wetlands, car collisions and rodent poison remain concerns. Protecting big trees near wetlands helps."},"maine":{"season":"Uncommon local breeder; mostly absent in winter","months":"111222222111","text":"Uncommon and local, mainly in southern and western Maine, nesting in mature woods beside wetlands and rivers; numbers are slowly increasing. Most leave by late fall, though a few linger or winter near open water. Listen for the ringing call in spring."},"wow":["Blue Jays imitate the Red-shouldered Hawk’s scream so well that even experienced birders are fooled until they spot the jay.","In California, these hawks have moved into suburbs; birds there are a separate subspecies with richer reddish underparts than eastern birds.","Frogs, snakes and crayfish make up much of its menu, a diet that ties the hawk to healthy wet woods."],"nameNote":"The “red shoulder” is a patch of rusty feathers at the bend of the wing, easiest to see on a perched bird. The species name lineatus is Latin for “lined” or “striped,” referring to the fine barring on the breast.","tryThis":"On a spring morning, walk a quiet trail beside a stream or wooded swamp and listen for a ringing “kee-ah” repeated many times. If you hear one, look for a Blue Jay, which can make a very similar sound, and note the jay’s wobbly quality. Stay on the trail and far from any nest.","zones":{"breeding":["northeast","midwest"],"resident":["mid-atlantic","southeast","gulf","ca-pacific"],"winter":[],"passage":[]},"flight":"A medium-sized soaring hawk with a longer tail than a Red-tail. In open sky it circles with flat wings; in the woods it flaps in quick, stiff bursts and then glides, often low among the trees. The pale crescents near its wingtips flash as it turns.","hunting":"Mostly perch-and-pounce inside woods and at wet edges. The hawk sits still on a low limb, spots a frog, snake or chipmunk, and drops onto it with outstretched feet; the talons kill it. It often hunts near streams and pond edges, where frogs and crayfish are easy to find, and may take small birds by a quick dash through the trees. Most catches are small, so it must hunt often.","senses":"Eyesight is keen, with eyes set forward for judging distance when it drops onto prey. In shady woods it probably also uses hearing to track small animals rustling in the leaf litter. Like other hawks, it sees color and fine detail much better than a person can.","ages":"Young birds are brown above and creamy below with dark streaks or teardrop spots, and their tail has many narrow pale bands. The warm orange barring of adults appears gradually over the first two years. Most birds first breed at about 2 years old.","sexNote":"Females are somewhat larger than males, but the two sexes look alike.","plate":{"a":"raptor","hab":"wood","len":1,"bh":1.05,"tl":1,"prim":0.85,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","barBelly","tailBars","wingSpots"],"c":{"back":"#5a4a3c","under":"#c98a58","wing":"#4e4034","tail":"#2c2a2a","crown":"#6a5a48","mark":"#f1e8d8","tailMark":"#f1e8d8","light":"#f1e8d8","dark":"#2d2118","bill":"#6f7378","cere":"#e0c24a","iris":"#5a3a1a","patch":"#b5603a","pants":"#c98a58"},"line":0.05}},
+    {"id":"redTail","name":"Red-tailed Hawk","sci":"Buteo jamaicensis","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"redTail","length":"17–26 in","wingspan":"43–57 in","weight":"1.5–3.2 lb","lengthCm":56,"wingspanCm":125,"massG":1100,"lifespan":"Often 10 to 15 years in the wild; the oldest banded birds have lived past 25 years.","blurb":"The hawk most people have actually seen: a bulky, broad-winged bird on a highway pole or circling over a field. Adults wear a brick-red tail, and the hoarse scream they give is the sound movies dub over eagles.","identify":[["Brick-red tail","Adults have a rusty-red tail, often with a thin dark band near the tip; from below it looks pale pinkish. Young birds have a brown tail crossed by many thin dark bars."],["Belly band","A belt of dark streaks across the lower belly stands out against a paler chest. It is the most useful mark on light-colored birds, perched or soaring."],["Dark wing edge","On the underside of the wing, a dark bar runs along the front edge from shoulder to wrist (the patagium, a fold of skin) and shows even from far below."],["Broad, blunt shape","Wide, rounded wings with fingered tips and a short, fanned tail give it a heavy, bulky outline that is easy to learn."],["White V on the back","Pale edges on the shoulder feathers (scapulars) often make a white V or a pair of suspenders when the bird is seen from behind."]],"lookalikes":[["Red-shouldered Hawk","Smaller and slimmer, with a black tail crossed by narrow white bands, an orange-barred chest, and pale crescent windows near the wingtips. It lacks the belly band."],["Rough-legged Hawk","A winter visitor with a white tail base ending in a dark band, a big dark belly patch, and dark wrist marks. It also hovers in place far more often."],["Broad-winged Hawk","Noticeably smaller and more compact, with a boldly black-and-white banded tail and a thin whistle instead of a scream."]],"voice":"The famous call is a hoarse, raspy scream, “kee-eeeer,” that lasts two or three seconds and slides downward. Soaring pairs use it to claim territory, and perched birds give it when alarmed. Movies dub this call over eagles, because a Bald Eagle’s real voice is a thin, weak-sounding chitter. Nestlings peep, then beg with shrill whines.","habitat":"Open and semi-open country with scattered trees: farm fields, meadows, marsh edges, roadsides, parks and clearings in woods. It needs high perches for watching and open ground for hunting, so it also thrives in deserts and cities.","range":"Breeds from Alaska and across Canada south through the United States and Mexico to Panama and the West Indies. Northern and mountain birds move south in winter; those in the middle and southern latitudes usually stay all year. It is the most widespread large hawk in North America.","diet":"Mostly small and medium mammals: voles, mice, rabbits, ground squirrels and tree squirrels. It also takes snakes, pheasants, starlings and other birds, and eats roadkill and other carrion, especially in winter. Most kills begin with a long watch from a perch; the hawk then glides down and seizes prey with its feet. In wind it may hang in the air over a field to scan.","foods":["voles and mice","rabbits","squirrels","snakes","carrion"],"nesting":{"site":"High in a big tree at a field or woodland edge, often on a limb near the trunk; also cliff ledges, billboards, towers and tall city buildings.","nest":"A bulky platform of sticks lined with bark strips, green sprigs and grass. A pair may keep several nests and add fresh material each spring.","eggs":"Usually 2 or 3 eggs, dull white and often blotched with brown or lilac; some are plain.","incubation":"About 28 to 35 days, shared by both parents, though the female sits most of the time.","young":"Chicks fledge at about 6 to 7 weeks and stay near the nest for weeks more. Both parents bring food; the male does most of the early hunting."},"behavior":"Red-tails often hold the same territory for years, and pairs frequently stay together season after season. In spring a pair performs a sky dance: circling high, the male dives and climbs steeply, and the two may lock talons and tumble. Away from the nest a red-tail spends most of the day perched, watching, and moving to a new post when nothing turns up. Crows, blackbirds and jays mob it noisily, and in cities it may sit on lamp posts and building ledges. Pale and dark forms (morphs) exist, and Harlan’s Hawk of the Northwest is a very dark variety.","migration":"Partly migratory. Birds from Alaska and Canada head south in fall, while pairs in Maine and farther south often stay all winter if there is open ground and prey. Migrants travel in a broad stream by day, riding rising air. In Maine the main flights pass hawkwatches from late September through November and again in March and April.","status":{"iucn":"LC","trend":"increasing","text":"Least Concern worldwide, with North American counts rising over recent decades, helped by open habitat, roadside hunting perches and legal protection from shooting. Hazards include rodent poisons passed up the food chain, lead from ammunition in carrion, car and window collisions, and wind turbines. Leaving field edges and big nest trees alone helps."},"maine":{"season":"Year-round resident","months":"223333333332","text":"Common in farmland, fields and along highways in southern and central Maine, and thinner in the big northern forests. Some stay all winter near open fields. Migrants stream past hawkwatches such as Bradbury Mountain in spring and Cadillac Mountain in fall."},"wow":["In many films, the scream that plays when an eagle appears is a Red-tailed Hawk’s voice, because the Bald Eagle’s real call sounds weak and chattery.","A Red-tail named Pale Male built a nest on a Fifth Avenue apartment building in New York City in the 1990s and raised young there for many years while crowds watched through telescopes.","A perched hawk can rest on a pole or branch for hours without tiring its grip, because the tendons that close the toes tighten automatically whenever the legs bend."],"nameNote":"The tail is red only on adults; young birds have brown tails. Buteo is the Latin word for a kind of hawk or buzzard, and jamaicensis means “of Jamaica,” because the first specimen described for science, in the 1700s, came from that island.","tryThis":"As a passenger on a highway or country road on a sunny day, count hawks sitting on poles, trees and fences. For each, note the perch type and what lies below it (field, median, woods). Compare a field route with a wooded route. Never stop on a road shoulder; use binoculars only from safe pull-offs.","zones":{"breeding":["ak","boreal-ca"],"resident":["pnw","ca-pacific","intermountain","plains","southwest","midwest","northeast","mid-atlantic","southeast","gulf","mexico","central-am","caribbean"],"winter":[],"passage":[]},"flight":"Broad, rounded wings and a short, wide tail make it a master of soaring. It circles on thermals (rising columns of warm air) with wings held in a shallow V, flapping little, and it can hang nearly motionless in a stiff headwind over a field, a style called kiting.","hunting":"Most hunts are sit-and-wait. The hawk watches from a pole or branch, then drops in a long glide and grabs the prey with its feet; the strong talons do the killing, and it often begins feeding at once. It also hunts on the wing, kiting or soaring over fields, and will chase prey on the ground. Many strikes miss, especially against fast prey, so patience matters more than speed. Voles, rabbits and squirrels make up most of its diet in Maine.","senses":"Its eyes are far sharper than ours and face forward for judging distance; each has two foveas (spots of sharpest vision). A hawk can spot a mouse in a field from a high perch. Hearing is good, but it is not specialized the way an owl’s is.","ages":"Young birds have a brown tail with many fine bars, pale yellowish eyes and a streaked belly; adults have dark brown eyes and the red tail. The tail turns red during the bird’s second year of life. Full adult plumage is reached at about 2 years, and most birds begin nesting at 2 or 3.","sexNote":"Females are larger than males, often by about a fifth to a quarter in weight, but the sexes have the same plumage.","plate":{"a":"raptor","hab":"open","len":1.05,"bh":1.05,"tl":0.85,"prim":0.9,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","bellyBand","scapularStreaks"],"c":{"back":"#6e4f36","under":"#efe4d0","wing":"#5b4129","tail":"#b6542a","mark":"#4e3a29","light":"#f4ead8","dark":"#2d2118","bill":"#6f7378","cere":"#e0c24a","iris":"#5a3a1a","pants":"#d9c7a8","crown":"#5f452f","throat":"#f1e6d0"},"line":0.05}},
+    {"id":"roughLeg","name":"Rough-legged Hawk","sci":"Buteo lagopus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"roughLeg","length":"18–24 in","wingspan":"47–59 in","weight":"1.5–3.5 lb","lengthCm":53,"wingspanCm":135,"massG":1000,"lifespan":"Probably around a decade in the wild, though survival varies with the lemming cycle; long-lived individuals are poorly documented.","blurb":"An Arctic nester that spends winter in Maine’s open fields and coastal marshes. It hovers like a giant kestrel and wears feathers all the way down its legs, like warm trousers.","identify":[["Dark belly patch","Light-morph birds have a pale chest and a large dark patch across the belly, boldest on young birds and females."],["White tail base","From above or below, the tail is white near the body with one or more dark bands near the tip, flashing like a signal as the bird turns."],["Dark wrist patches","On the underside of the wing, a black patch sits at the bend (the wrist) and stands out on the pale wing from far away."],["Hovering flight","It regularly hangs in place on beating wings over a field, which few other large hawks do for long."],["Feathered legs","The legs are covered in feathers to the toes, giving a trousered look when perched, though this mark is hard to see from afar."],["Dark morph","Some birds are sooty brown almost all over, but still show pale flight feathers, a pale tail base and the dark tail band."]],"lookalikes":[["Red-tailed Hawk","Adults have a rusty tail and a belly band of streaks rather than a solid dark patch, and they do not hover for long."],["Northern Harrier","Slimmer, with only a white rump patch, a long tail, wings held in a V low over the ground and an owl-like face."]],"voice":"Mostly silent in Maine in winter. On the Arctic nesting grounds it gives a squealing, cat-like “kee-aah” or a mewing whistle, shorter and thinner than a Red-tail’s scream, mainly when an intruder comes near the nest or during courtship. Young birds give high, whining begging calls.","habitat":"Nests on arctic and subarctic tundra, taiga edges, river bluffs and rocky outcrops. In winter it uses open country such as farm fields, hayfields, salt marshes, dunes, airports and grasslands where small mammals are easy to see.","range":"Circumpolar: nests across the northern edge of North America, Scandinavia and northern Russia. Winters in southern Canada and the northern and central United States, and across central Europe and temperate Asia. Numbers vary with the supply of lemmings and voles.","diet":"Voles and lemmings are the main foods in the Arctic, along with ground squirrels, ptarmigan chicks and small birds. In winter it takes mice and voles from fields and marshes, and will eat rabbits, small birds and carrion. It hunts by hovering, kiting and watching from perches, then drops onto prey with its feet.","foods":["voles and lemmings","mice","ground squirrels","small birds","carrion"],"nesting":{"site":"On cliff ledges, river bluffs and rocky outcrops on tundra and taiga; in the far north it sometimes uses trees or the ground.","nest":"A big heap of sticks lined with grass, moss and feathers, often reused over many years.","eggs":"Usually 3 to 5 eggs, whitish with brown blotches; clutch size tracks the supply of lemmings.","incubation":"About 28 to 31 days, mostly by the female while the male feeds her.","young":"Chicks fledge at roughly 5 to 6 weeks; both parents feed them, and more young are raised in lemming-rich years."},"behavior":"Rough-legged Hawks are quiet, rather tame birds in winter, often sitting for long periods on a fence post, hay bale or low tree. Individuals appear to defend a hunting area against other hawks, though several may gather where food is rich. On the Arctic nest a pair is bold in defense. Because the Arctic summer is short, nesting moves fast: eggs are laid in late spring and young must fledge by late summer.","migration":"A long-distance migrant that leaves the Arctic in September and October. In Maine the first birds usually appear in October or November and stay until March or April, when they head north again. The number reaching Maine varies from year to year with breeding success and food supplies.","status":{"iucn":"LC","trend":"stable","text":"Least Concern globally, with a large Arctic range that makes counts difficult; numbers rise and fall with the lemming cycle. Warming and changing snow cover in the Arctic and northern development could affect nesting, while wintering birds face vehicle collisions and, in some areas, shooting or poisoning. Preserving open fields in winter helps."},"maine":{"season":"Winter visitor","months":"221100000012","text":"An uncommon winter visitor, usually from late October or November through March, to open fields, salt marshes, blueberry barrens, airports and farmland, especially near the coast. Numbers change from year to year. Scan hovering or perched hawks at field edges."},"wow":["Feathers cover its legs to the toes, like insulated trousers, an adaptation to Arctic cold; the species name lagopus means “hare-footed.”","Unlike most big hawks, it can hover like a kestrel, flapping steadily into the wind to hold still above one spot while it scans the ground.","How many young a pair raises depends on lemming numbers; in poor lemming years many pairs may not nest at all."],"nameNote":"Lagopus is Greek for “hare-foot” (lagos, hare; pous, foot), a name for the feather-covered legs that look as hairy as a hare’s. “Rough-legged” says the same thing. In Europe this species is called the Rough-legged Buzzard.","tryThis":"On a cold winter day, visit an open field or salt marsh and scan the sky and fence posts for a hawk with white at the tail base. Watch from a safe distance as it hovers; time how long it holds still, and note the wind direction. Stay on public roads and trails, and keep back from birds.","zones":{"breeding":["arctic-ca","ak","europe-n","russia","siberia"],"resident":[],"winter":["plains","midwest","northeast","mid-atlantic","intermountain","pnw","boreal-ca","europe-w","central-asia","east-asia","japan"],"passage":[]},"flight":"Long, broad wings and a long tail for a buteo. It flies with slow, deep, rather floppy wingbeats, soars with wings raised in a shallow V, and often hovers on beating wings with its tail fanned and feet dangling.","hunting":"Hovering is its signature. A hawk hangs over a field, wings beating steadily into the wind, then closes its wings and drops onto a vole or mouse. It also kites in wind, watches from a post, or soars over marsh. Small mammals make up almost all its prey; it seldom chases birds. Strikes often miss, and a bird may hover many times before it makes a catch.","senses":"Excellent daytime eyesight lets it pick out small mammals moving in grass from a hover or high perch. Its eyes face forward for judging distance. Its hearing is good but not specialized; vision does most of the work in its open habitat.","ages":"Juveniles of the light morph have a bold, blackish belly patch and a white tail base ending in a single broad band; adult males often show several tail bands, while females keep one wide band. Birds reach adult plumage within a couple of years and breed at about 2 years old.","sexNote":"Females are larger than males, and adult plumage differs a little: males usually show several dark tail bands, females one broad band.","plate":{"a":"raptor","hab":"tundra","len":1.08,"bh":1.05,"tl":0.85,"prim":1.1,"tailTip":"rd","rot":56,"bl":0.8,"m":["brow","bellyPatch","pantsLong","tailBars","streakBreast"],"c":{"back":"#7a6652","under":"#f1ece0","wing":"#5a4a3a","tail":"#f1ece0","crown":"#d9cfbc","face":"#d9cfbc","mark":"#3a2c22","tailMark":"#3a2c22","light":"#f4ead8","dark":"#2d2118","bill":"#3a3a3a","cere":"#e0c24a","iris":"#6a4a2a","pants":"#e8dcc6"},"line":0.05}},
+    {"id":"sharpShin","name":"Sharp-shinned Hawk","sci":"Accipiter striatus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"sharpShin","length":"9–14 in","wingspan":"17–23 in","weight":"3–8 oz","lengthCm":28,"wingspanCm":52,"massG":130,"lifespan":"Often only a few years in the wild; some banded birds have lived about 10 years or more.","blurb":"The smallest hawk at feeders: a jay-sized bird with a small head, long thin legs and a squared tail. It darts through brush after sparrows and warblers, and floods the sky at fall hawkwatches.","identify":[["Small head","The small, rounded head hardly projects past the front of the wings in flight, while a Cooper’s Hawk has a bigger head that sticks out."],["Square-tipped tail","The long, banded tail typically looks square or slightly notched at the end, without the rounded, white-edged look of a Cooper’s tail."],["Pencil-thin legs","The legs look as thin as pencils, unlike the thicker legs of a Cooper’s Hawk, and show well when it perches."],["Rusty-barred underparts","Adults are blue-gray above, with orange-red barring on the breast and belly and red eyes."],["Flap-flap-glide","In flight, quick stiff wingbeats are followed by a short glide, and the wings are often pushed forward at the wrist, making the head look tiny."]],"lookalikes":[["Cooper’s Hawk","Larger, with a big head sticking past the wings, a rounder tail tip with a wide white edge, and thicker legs. Sizes overlap, so a female sharp-shin can match a male Cooper’s."],["American Kestrel","A falcon with pointed wings, a rusty tail and back, and a bold face pattern; it hovers and bobs its tail on a perch, which a sharp-shin does not."],["Merlin","A compact falcon with pointed wings, a streaked chest and fast, direct flight rather than the flap-and-glide of a sharp-shin."]],"voice":"A rapid, thin, high “kik-kik-kik-kik-kik” or “kee-kee-kee,” sometimes ten or twenty notes long, given near the nest or in alarm. The voice is higher and weaker than a Cooper’s. Away from nesting areas, sharp-shins are mostly silent, which is why many people never hear one.","habitat":"Dense conifer and mixed forest for nesting, usually near streams or openings. In migration it follows ridges, shorelines and river valleys; in winter it hunts in woods, thickets and backyards with bird feeders.","range":"Breeds from Alaska and Canada south through the northern and western United States and the mountains of Mexico; island forms live in the Caribbean. Most northern breeders migrate to the southern United States, Mexico and Central America, while some stay farther north if food is available.","diet":"Mostly small birds such as sparrows, juncos, finches, chickadees, warblers and thrushes, with an occasional mouse, bat or large insect. Large females can take robin- to flicker-sized prey. It hunts by sudden dashes from cover, so close that the target barely has time to react.","foods":["sparrows","juncos and finches","chickadees","warblers","small songbirds"],"nesting":{"site":"Usually in dense conifers such as spruce or fir, close to the trunk and well above the ground.","nest":"A small platform of sticks lined with bark flakes, hidden in a dense stand of evergreens; the nest is often new each year.","eggs":"Typically 4 or 5 white or bluish-white eggs, heavily blotched with brown.","incubation":"About 30 to 35 days, nearly all by the female while the male brings food.","young":"Chicks fledge at about 3.5 to 4 weeks; the male hunts and drops off food, and the female tears it up for the young."},"behavior":"Sharp-shinned Hawks are secretive near the nest and quiet in migration, yet they are fierce. A hunting bird flies low and hidden, then flips over a hedge or around a building to surprise a feeder flock. Birds return to plucking posts, where they strip feathers from prey. In fall, thousands may pass hawkwatches by riding the north winds that follow a cold front, often flying low along ridges and shorelines.","migration":"Many northern birds migrate south in fall: in Maine the main passage runs from mid-September through October, with a smaller return in April. They travel by day, using ridges and coastlines, flapping and gliding rather than soaring in big flocks. Some stay for the winter if feeders offer food; others reach Mexico or Central America.","status":{"iucn":"LC","trend":"stable","text":"Least Concern. Numbers fell sharply in the 20th century from shooting and DDT, then recovered after protection and the pesticide ban. Migration counts in the eastern United States have varied by site and decade, and scientists are still working out why. Window collisions are a major danger, and keeping dense evergreen groves helps."},"maine":{"season":"Breeder and migrant; rare in winter","months":"112322223321","text":"An uncommon but widespread nester in Maine’s evergreen forests, and the commonest small hawk at fall hawkwatches from mid-September through October. In winter a few visit feeders, mostly in southern Maine."},"wow":["A male Sharp-shinned Hawk weighs little more than a Blue Jay, yet he hunts birds that nearly match his own size.","Hawk Mountain Sanctuary in Pennsylvania began in 1934 to stop the shooting of migrating hawks, and sharp-shins were among those targeted.","A female may outweigh her mate by two-thirds, so large that a pair hunts different prey and rarely competes."],"nameNote":"The name describes the lower legs, or shins, which are thin and have a sharp ridge along the front edge. Striatus is Latin for “streaked,” for the streaked chest of young birds. Hawkwatchers sometimes call them “sharpies.”","tryThis":"At a fall hawkwatch or ridge, practice sorting small hawks by silhouette: for each distant hawk, note head size, tail tip and wing posture, and give your best guess among Sharp-shinned, Cooper’s and unknown. Compare with the counter’s call. Accuracy builds quickly with practice.","zones":{"breeding":["ak","boreal-ca","pnw","northeast","midwest","intermountain","mid-atlantic","southwest"],"resident":["caribbean","ca-pacific"],"winter":["southeast","gulf","mexico","central-am","plains"],"passage":[]},"flight":"Short, rounded wings and a long tail used as a rudder. It flies with quick, stiff flaps followed by a glide, flapping faster than a Cooper’s Hawk does. When soaring, the wings look flat with the wrists pushed forward and the head barely visible.","hunting":"An ambush specialist. It flies low along hedgerows and woodland edges, using cover to approach, then bursts out to catch small birds in the air or in thick cover. Its long legs and toes reach into foliage to grab prey. The prey is usually carried to a plucking post, where the hawk strips off the feathers before eating.","senses":"Large forward-facing eyes give sharp, fast vision that can track a darting sparrow through a tangle of twigs. Hearing helps it find birds that give alarm calls in dense cover. Quick reaction matters more than distance vision for this hawk.","ages":"Young birds are brown above with heavy brown streaks on a creamy chest and a yellow eye. Adults are blue-gray above with rusty barring below and a red eye. Birds look adult after their first full molt in their second summer, and many breed at 1 or 2 years old.","sexNote":"The female is much larger than the male, often about two-thirds heavier; plumage is similar. A large female can rival a small male Cooper’s Hawk in size.","plate":{"a":"raptor","hab":"wood","len":0.8,"bh":0.82,"tl":1.4,"prim":0.5,"tailTip":"sq","rot":56,"bl":0.65,"m":["brow","barBelly","tailBars","tailTip"],"hd":0.85,"tailW":0.8,"leg":1.2,"c":{"back":"#5e6b75","under":"#efe6da","wing":"#515e68","tail":"#56626c","crown":"#3a444c","mark":"#b3643a","tailMark":"#2c353d","light":"#f2ece0","dark":"#26292d","bill":"#5a6068","cere":"#d9c34a","iris":"#c8452a","leg":"#e3bd3a","pants":"#efe0cc"},"line":0.12}},
+    {"id":"swainsons","name":"Swainson's Hawk","sci":"Buteo swainsoni","family":"Accipitridae","group":"Hawks, kites & harriers","simId":"swainsons","length":"17–22 in","wingspan":"47–56 in","weight":"21–46 oz","lengthCm":50,"wingspanCm":130,"massG":900,"lifespan":"Many live a decade or more in the wild; some banded birds have reached their late teens.","blurb":"A slim hawk of the prairies that makes one of the longest journeys of any hawk, flying from western Canada and the plains to Argentina, where it swaps small mammals for grasshoppers.","identify":[["Two-tone underwing","From below, the wing lining is pale and contrasts with dark flight feathers along the back edge, a pattern that shows well on soaring birds."],["Dark chest bib","Light-morph adults have a dark brown chest like a bib, set against a white throat and a pale belly."],["Long, pointed wings","The wings are longer and narrower than a Red-tail’s, tilt upward in a shallow V when soaring, and reach the tail tip when the bird is perched."],["Tail pattern","The gray-brown tail is crossed by many thin dark bars with a wider dark band at the tip, and a pale patch sits just above the tail base."],["Color morphs","Dark and reddish morphs are common in the West; dark birds are chocolate-brown with paler flight feathers, and the tail pattern stays the same."]],"lookalikes":[["Red-tailed Hawk","Broader and heavier, with rounded wings held flat when soaring, a belly band, and a rusty tail in adults. It lacks the dark bib and two-tone wing."],["Turkey Vulture","Also soars with wings in a V, but it is bigger, with a tiny bare red head, dark body and silvery rear wing, and it teeters unsteadily; a Swainson’s has a feathered head and hooked bill."]],"voice":"A thin, high, drawn-out scream, “kree-eeee,” that is weaker and more plaintive than a Red-tail’s hoarse call. Birds give it when an intruder nears the nest and during courtship; shorter, softer calls pass between mates at feeding times. Away from nesting areas Swainson’s Hawks are mostly silent.","habitat":"Open grassland, prairie, sagebrush, pastures and farmland (especially alfalfa and wheat) with scattered trees, shelterbelts or utility poles for nests and perches. In winter it uses the open pampas and farmland of South America.","range":"Breeds across western North America, from the Canadian prairies and interior western Canada south to northern Mexico and east to the Great Plains. Almost the whole population winters in southern South America, mainly the pampas of Argentina, with small numbers in Florida, south Texas and California.","diet":"On the breeding grounds it eats ground squirrels, gophers, voles, rabbits, small birds and many insects, taking prey from perches, in flight or from the ground. On migration and in winter it turns almost entirely to insects, especially grasshoppers and dragonflies, sometimes in flocks that follow tractors, mowers and grass fires.","foods":["ground squirrels","voles","rabbits","grasshoppers","dragonflies"],"nesting":{"site":"A solitary tree, shelterbelt row or utility structure in open country, often only 10 to 40 ft above ground.","nest":"A broad stick platform lined with fresh green leaves, grass and fine bark; often reused and added to each year.","eggs":"Usually 2 eggs, sometimes 1 to 4, pale bluish or greenish white and often unmarked or lightly spotted.","incubation":"About 34 days, mostly by the female while the male brings food and guards the nest.","young":"Young fledge at about 5 to 7 weeks old and are fed by both parents; the pair raises one brood a year."},"behavior":"Swainson’s Hawks are bold defenders of their nests, but away from the nest they are far more social than most hawks. In late summer family groups join others in loose flocks, and on migration and in winter they roost together in the hundreds or thousands, sleeping in trees or on the ground and heading out together each morning to feed on swarms of grasshoppers. In summer they often walk on the ground to catch insects.","migration":"One of the longest migrations of any hawk, a round trip of well over 10,000 miles. Fall flights leave the plains in late August and September, funnel through Mexico and Central America in huge kettles, and reach Argentina by about November. They return north in March and April through Texas and Mexico. They are rare visitors in the Northeast.","status":{"iucn":"LC","trend":"stable","text":"Least Concern, with a large population in the West that has been fairly steady in recent decades. In the mid-1990s a pesticide sprayed on Argentine grasshoppers killed many thousands of hawks before the chemical was withdrawn and numbers recovered. Loss of native grassland and nest trees, and pesticide use on the wintering grounds, remain the main worries."},"maine":{"season":"Rare fall vagrant","months":"000000001110","text":"A very rare visitor from the West, with only a few records in Maine, mostly young birds in autumn among migrating hawks on the coast or at hawkwatches. Look for a hawk with a dark chest and two-toned underwings, and check any report against current records."},"wow":["Its diet flips between continents: a hunter of ground squirrels and voles in summer, but almost a pure insect-eater in Argentina, where flocks chase grasshopper swarms.","Counters at Mexican and Central American bottlenecks have recorded Swainson’s Hawks by the tens of thousands in a single day as the whole population squeezes through the narrow land bridge.","In the mid-1990s a farm pesticide killed many thousands of Swainson’s Hawks in Argentina; once biologists found the cause, its use was restricted, a case study in how migrants depend on protection on two continents."],"nameNote":"The species honors William Swainson, an English naturalist and bird illustrator of the early 1800s who described many New World birds. Charles Lucien Bonaparte named it for him in the 1830s. In Argentina it is called the aguilucho langostero, the locust hawk.","tryThis":"Soaring birds hold their wings in distinct postures. On a sunny day, watch soaring Turkey Vultures, Red-tails and other hawks and sketch their wings from below: V-shaped, flat or bent? Then compare with pictures of a Swainson’s Hawk, whose V-shaped wings and two-toned underwings you can learn to spot.","zones":{"breeding":["boreal-ca","plains","intermountain","southwest","ca-pacific"],"resident":[],"winter":["sa-south"],"passage":["gulf","mexico","central-am","sa-north"]},"flight":"Long, pointed wings for a buteo are held in a shallow V as it soars, tipping side to side like a vulture. It glides for hours on thermals with little effort, and its slender build allows lighter, more agile flight than a Red-tail’s.","hunting":"In the breeding season it watches from perches or soars over fields, then dives onto ground squirrels, voles and rabbits, often taking young animals. It also catches insects: grasshoppers, dragonflies and beetles, either by walking on the ground or by snatching them from the air, sometimes joining crowds of hawks behind tractors or fires. On the winter grounds, insects make up nearly all of its diet.","senses":"Sharp daytime vision lets it spot a ground squirrel from high in the air or a grasshopper swarm from far away. Its forward-facing eyes judge distance for a dive. Like other hawks it hears well, but vision is its main hunting sense.","ages":"Young birds have streaked or spotted buff underparts and a pale face with a dark line from the bill down the cheek. Adults gain the dark chest bib and plain belly after a couple of years. Breeding begins at about 2 to 3 years of age.","sexNote":"Plumage is very similar in the two sexes; females average a little larger and heavier than males.","plate":{"a":"raptor","hab":"open","len":1.05,"bh":1.05,"tl":0.9,"prim":1.3,"tailTip":"rd","rot":56,"bl":0.95,"m":["brow","barBelly","tailBars"],"c":{"back":"#5a4636","under":"#f1ece0","wing":"#4a382a","tail":"#6a5a4a","crown":"#5a4636","throat":"#f1ece0","breast":"#6a4a38","mark":"#4e3a29","tailMark":"#3a2a1c","light":"#f4ead8","dark":"#2d2118","bill":"#6f7378","cere":"#e0c24a","iris":"#5a3a1a","pants":"#e8dcc6"},"line":0.05}},
+    {"id":"swallowTailedKite","name":"Swallow-tailed Kite","sci":"Elanoides forficatus","family":"Accipitridae","group":"Hawks, kites & harriers","simId":null,"length":"20–26 in","wingspan":"47–51 in","weight":"12–21 oz","lengthCm":58,"wingspanCm":125,"massG":450,"lifespan":"Not well documented; many probably live around a decade.","blurb":"A black-and-white acrobat with a deeply forked tail like a barn swallow’s. It plucks lizards and insects from treetops on the wing, drinks by skimming water, and rarely lands to do either.","identify":[["Deeply forked tail","A long tail split into two slender points, like scissors, is held closed or spread and twisted while turning."],["Black and white pattern","A pure white head, neck and underparts contrast with glossy black wings, back and tail, which look dramatic against a blue sky."],["Black flight feathers","From below, the wing linings are white while the flight feathers are black, producing a black edge beneath the white."],["Long, pointed wings","Slender, pointed wings with a falcon-like profile; the bird glides and swoops with little flapping."],["Always in the air","It is usually seen in the air, circling above the treetops, and it rarely perches where you can see it."]],"lookalikes":[["Mississippi Kite","Gray rather than black and white, with a plain, unforked black tail and no white underparts; it is smaller and stockier."],["Magnificent Frigatebird","A seabird with an angled, M-shaped wing outline and a forked tail but a dark body (males all black, females white-chested); the kite is white below with a white head."]],"voice":"A high, shrill, whistled series, “klee-klee-klee-klee” or “pee-pee-pee,” often rising in intensity. Pairs and groups call while circling over the nest, and young birds beg with similar whistles. Away from the nest the birds are mostly quiet.","habitat":"Forested wetlands and river swamps, pine flatwoods, and tall woods bordering marsh, with some of the tallest trees for nests and open air or fields for feeding. In the tropics it also uses lowland forest and wet clearings.","range":"Breeds in the southeastern United States, from South Carolina and Florida west to Louisiana and a little of Texas, and in tropical forest from Mexico to northern Argentina. U.S. birds winter in South America, mainly east of the Andes. Wanderers sometimes show up far north in spring.","diet":"Mostly large flying insects: dragonflies, wasps, beetles and cicadas, along with tree frogs, lizards, small snakes and nestling birds plucked from nests. It hunts by gliding over the treetops and swooping to snatch prey from the foliage or the air, usually eating on the wing. It sometimes tears into wasp nests for the grubs.","foods":["dragonflies","wasps","tree frogs","lizards","nestling birds"],"nesting":{"site":"Very high, in the crown of one of the tallest trees, such as a pine or cypress, usually near water or open marsh.","nest":"A small, flimsy-looking cup of sticks lined with Spanish moss, lichens and pine needles; the kite snaps off dead twigs from treetops in flight.","eggs":"Usually 2 eggs, white with brown blotches.","incubation":"About 28 days, shared by both parents.","young":"Young fledge at about 5 to 6 weeks, are fed by both parents, and may join groups of kites before leaving on migration."},"behavior":"Swallow-tailed Kites are social and nearly always airborne. Pairs nest in loose neighborhoods, and groups circle overhead to give shrill calls when an intruder nears. The birds drink and bathe by skimming low over water and dipping, and they eat food on the wing, holding it in a foot while flying. They break twigs for nests from treetops while flying, without landing. Before migration, they gather in roosts of dozens to hundreds, near wetlands.","migration":"A long-distance migrant. U.S. birds arrive in the Southeast in February and March, nest, and leave from July to September, heading through the Caribbean and Central America to South America, where they spend the winter. Some start early, soon after the young fledge. Rare individuals wander far north of the nesting range.","status":{"iucn":"LC","trend":"stable","text":"Least Concern. Once nesting as far north as the upper Midwest, it declined sharply after the 1880s as forests were cut and birds were shot, and it is now rebounding locally in the Southeast but uses only a fraction of its former range. Threats include loss of tall nest trees and swamp forests, pesticides and power-line collisions."},"maine":null,"wow":["It almost never lands to eat or drink: it plucks prey from treetops, eats on the wing, and drinks by skimming the water’s surface.","A kite builds its nest by snapping dead twigs from treetops with its feet as it flies past, without landing.","Historically it bred as far north as Minnesota and Wisconsin; today most U.S. birds nest in a few southeastern states."],"nameNote":"Swallow-tailed describes the long forked tail, like a barn swallow’s. Elanoides means “like an Elanus,” a group of small kites; forficatus is Latin for “scissor-shaped” (from forfex, scissors), referring to the tail.","tryThis":"View photos of a Swallow-tailed Kite, Osprey, Bald Eagle and Magnificent Frigatebird, and sketch each one’s silhouette. Note wing shape, tail shape and head size. Then try identifying unlabeled silhouettes. If you ever visit Florida or the Gulf coast, practice by scanning the treetops from a boardwalk.","zones":{"breeding":["southeast","gulf"],"resident":["mexico","central-am","sa-north"],"winter":["amazon","sa-south"],"passage":["caribbean"]},"flight":"Long pointed wings and an extra-long forked tail make it one of the most graceful fliers of any raptor. It glides, wheels and dives with barely a flap, twisting its tail like a rudder to change direction in a flash.","hunting":"It cruises low over the treetops, watching for movement, then dips to snatch insects, lizards, snakes or nestlings from foliage or even from nests, or catches dragonflies in midair. Prey is gripped with the feet and transferred to the bill while flying. It often hunts in groups over wet forest.","senses":"Sharp vision, with forward-facing eyes for accurate midair grabs, lets it spot a lizard or tree frog on a leaf from above. Group members often watch each other, and when one bird finds a swarm of insects, others quickly join it.","ages":"Juveniles resemble adults but have shorter tail forks and small buff or white speckles on the head and wings. They gain a full adult look in a year or two, and first breed at about 2 years of age.","sexNote":"The sexes look alike, though females average slightly larger and heavier.","plate":{"a":"raptor","hab":"open","len":0.92,"bh":0.85,"tl":2,"prim":1.6,"tailTip":"fk","rot":52,"bl":0.65,"m":["hoodFull"],"hd":0.95,"c":{"back":"#1c1f24","under":"#f6f4ee","wing":"#1a1d22","tail":"#1a1d22","crown":"#f6f4ee","hood":"#f6f4ee","bill":"#2a2a2c","cere":"#2a2a2c","iris":"#8a2a22","light":"#f6f4ee","dark":"#1a1d22","mark":"#1a1d22","leg":"#9aa3ab"},"line":0}},
+    {"id":"blackVulture","name":"Black Vulture","sci":"Coragyps atratus","family":"Cathartidae","group":"Vultures & condors","simId":null,"length":"22–29 in","wingspan":"4.4–5.5 ft","weight":"2.2–4.3 lb","lengthCm":64,"wingspanCm":150,"massG":1650,"lifespan":"Wild birds commonly reach 10 years or more; captive birds have lived into their 20s.","blurb":"A short-tailed, jet-black vulture that has been pushing north from the Southeast for decades. Black Vultures live in tight family groups, flap their way across the sky and follow the better-sniffing Turkey Vulture to a meal.","identify":[["Black from head to toe","The whole body is black, with bare, wrinkled gray skin on the head and neck."],["Pale wing-tip patches","From below, the outer flight feathers show a silvery-white patch near each wing tip."],["Short, squared tail","The tail is so short it barely extends past the trailing edge of the wings."],["Flap-flap-glide","Frequent quick flaps followed by short glides, with wings held flat rather than in a V."],["Stocky and compact","Broader, shorter wings than a Turkey Vulture’s and a chunkier look overall."]],"lookalikes":[["Turkey Vulture","Has longer, narrower wings held in a V, two-toned wings and a long tail; adults show a red head."],["Crested Caracara","Also shows pale wing-tip patches, but has a crest, a white neck, long legs and a long tail; it ranges only in the southern U.S. and farther south."]],"voice":"Mostly silent. It gives hisses, low grunts and guttural growls; at a carcass, adults hiss and grunt in squabbles. Chicks hiss and wheeze, and a hiss from a nest warns off intruders.","habitat":"Open and wooded country near people: farmland, pastures, landfills, forest edges, roadsides and suburbs. It nests in hollow logs, caves and abandoned buildings in woods and thickets and roosts communally in tall trees and towers.","range":"Resident from the southeastern and south-central United States, Mexico and Central America through much of South America to central Chile and Argentina. Northward expansion has brought birds into the Ohio Valley, the Mid-Atlantic and southern New England, and a few reach Maine.","diet":"Mostly carrion such as dead livestock, deer, roadkill, fish and landfill food. It has a weak sense of smell, so it often finds carcasses by watching Turkey Vultures and other scavengers. Unlike its cousin it sometimes kills helpless live animals, such as newborn calves, lambs and piglets, which causes conflict with ranchers. It also eats eggs.","foods":["carrion","roadkill","landfill scraps"],"nesting":{"site":"Hidden spots on the ground: hollow logs and stumps, caves, rock crevices, thickets and abandoned buildings.","nest":"No nest is built; the eggs lie on bare ground or debris.","eggs":"Usually 2, pale gray-green to bluish white, sometimes lightly marked.","incubation":"About five to six weeks, shared by both parents.","young":"Chicks fledge after roughly 10–11 weeks, and both parents feed them by regurgitation. Families stay together afterward."},"behavior":"Black Vultures are the most social of the vultures. They live in extended family groups, roost together and keep lifelong bonds. At a carcass they push aside Turkey Vultures and other birds through numbers and assertiveness. Their wings are shorter and heavier than a Turkey Vulture’s, so they flap more and need strong thermals. They rest with wings open to warm or dry. Chicks defend the nest with hissing and may vomit at intruders.","migration":"Mostly non-migratory in the South; birds stay near their roosts year-round. At the northern edge of the range, some individuals move short distances south in hard winters, and young birds wander widely, which is how they turn up beyond the usual range. As winters warm, more stay north.","status":{"iucn":"LC","trend":"increasing","text":"Black Vultures are expanding north in the eastern United States and increasing in many areas. Their growth has caused conflict with livestock producers, who can apply for federal permits to remove problem vultures. Hazards include poisoned carcasses, lead from bullets, collisions and persecution. Lead-free ammunition and leaving roosts and nests alone help."},"maine":{"season":"Rare visitor, mostly spring to fall","months":"001111111100","text":"A rare but increasing visitor, mostly seen in southern Maine from spring through fall, sometimes mixed in with Turkey Vultures. Most reports are single birds or small groups. Check recent eBird reports, and look closely at any dark vulture with a short tail and pale wing tips."},"wow":["A Black Vulture cannot smell as well as a Turkey Vulture, so it follows them, then often drives them off the carcass they found.","Its bare head and neck are easier to keep clean while feeding inside a carcass, and bare skin also helps shed heat.","Black Vultures are among the faster-spreading birds of the eastern United States, moving north into Pennsylvania, New Jersey and southern New England in recent decades."],"nameNote":"Coragyps joins Greek words for raven (korax) and vulture (gyps), and atratus is Latin for “clothed in black,” as if dressed in mourning. In Mexico the bird is called zopilote, from the Nahuatl word tzopilotl.","tryThis":"Practice telling vultures apart: on a warm day note whether the wings are held flat or in a V, whether the bird rocks or flaps often, its tail length and its wing-tip color. Tally ten birds in a table. Do not approach roosts or nests.","zones":{"breeding":["midwest"],"resident":["southeast","gulf","mid-atlantic","southwest","mexico","central-am","sa-north","amazon","andes","sa-south"],"winter":[],"passage":[]},"flight":"Broad, short wings and a short, squared tail, held flat or slightly raised. It flaps steadily between short glides and soars less gracefully than a Turkey Vulture. Wingbeats are quick and stiff-looking.","hunting":"Mostly a scavenger. It finds food by sight, following other vultures, scanning roads and fields from the air and watching for gatherings. It feeds in groups, using numbers to push other scavengers away. It sometimes takes newborn livestock or weak animals and eats eggs. It tears with its hooked bill, since its feet are weak.","senses":"Excellent eyesight. Its sense of smell is poor compared with a Turkey Vulture’s, so it relies on watching other scavengers and the ground below.","ages":"Chicks hatch in pale buff down with a dark head. Juveniles look like adults but have a smoother, slightly fuzzier head, and the wrinkled adult skin develops with age. Adult appearance comes after a year or two.","sexNote":"The sexes look alike and are nearly the same size. Mated pairs stay close together.","plate":{"a":"raptor","hab":"open","len":1.05,"bh":1,"tl":0.7,"prim":0.8,"tailTip":"rd","rot":50,"bl":0.8,"m":["hoodFull","hoodNeck","wingPatch"],"hd":0.7,"neckLong":true,"c":{"back":"#26262a","under":"#2a2a2e","wing":"#1f1f22","tail":"#1f1f22","hood":"#4a4a4c","bill":"#d8d0c0","cere":"#4a4a4c","iris":"#3a2a20","light":"#a8a8ac","dark":"#1a1a1c","mark":"#1a1a1c","leg":"#b8b4aa","pants":"#2a2a2e","patch":"#aeb0b4"},"line":0.1}},
+    {"id":"condor","name":"California Condor","sci":"Gymnogyps californianus","family":"Cathartidae","group":"Vultures & condors","simId":"condor","length":"43–55 in","wingspan":"8.5–9.8 ft","weight":"16–31 lb","lengthCm":120,"wingspanCm":290,"massG":9500,"lifespan":"Can live 60 years or more in captivity; wild birds are thought to live many decades.","blurb":"No North American land bird has wider wings: a California Condor spans nine feet or more. In 1987 the last wild condors were captured, leaving only 22 in the world, all in captivity. A heroic breeding and release program has lifted the count above 500, but the birds still need constant care.","identify":[["Nine-foot wings","Huge, flat-held wings nearly 10 feet across with long fingered tips, so big the bird looks like a small plane."],["White wing triangles","From below, adults show broad white triangular wing linings bordered in black; from above the bird looks all black."],["Bare orange head","Adults have a bare yellow-orange to reddish head and neck; juveniles’ heads are dark gray to black."],["Black neck ruff","A ruffle of black feathers forms a collar at the base of the neck."],["Numbered wing tags","Many wild birds wear numbered color tags on the wings, and some carry GPS transmitters."]],"lookalikes":[["Turkey Vulture","Smaller, with a two-toned wing that has a silvery rear edge, held in a V; condors hold their wings flat and show the white triangle."],["Golden Eagle","Has a feathered head, a much smaller wingspan and a longer tail; a condor’s bare head and huge size give it away."]],"voice":"Mostly silent. Adults hiss, grunt, snort and wheeze, especially at the nest or when competing at a carcass; chicks wheeze and hiss. Condors communicate chiefly with posture: spread wings, bobbing heads and flushing bare skin on the head.","habitat":"Rugged mountain country with cliffs for nesting and roosting, open grassland or oak savanna and ridges for foraging, and strong air currents for soaring. Nests in caves, rock crevices and big old tree cavities. Birds visit the sea coast and canyons.","range":"Wild condors live in three main regions: California (from Big Sur and Pinnacles to the inland mountains, plus redwood country), Arizona and southern Utah around the Grand Canyon and Vermilion Cliffs, and Baja California in Mexico. They once ranged across much of western North America.","diet":"Strictly a scavenger of big carcasses: deer, cattle, sheep, elk, sea lions and washed-up whales, and ground squirrels or rabbits when nothing larger is around. Condors find food by sight, glide for miles and watch other scavengers. A single big meal can feed a condor for several days, and chicks eat regurgitated food.","foods":["deer carcasses","cattle","sea mammals","ground squirrels"],"nesting":{"site":"Caves, crevices and ledges in cliffs, and large cavities in giant trees such as redwoods and sequoias, in remote country.","nest":"No nest is built; the egg lies on bare rock, gravel or debris on the cave floor.","eggs":"One pale blue-white egg, laid every other year, or every year if the first is lost.","incubation":"About 56–58 days, with both parents taking turns.","young":"The chick fledges at about 5–6 months and depends on its parents for a year or more, so pairs usually breed every second year."},"behavior":"Condors are long-range soaring specialists and may cover more than 100 miles in a day searching for carcasses. They gather at carcasses and roost together. Young birds are curious and sometimes land near people or buildings, which can be dangerous for them. Pair bonds are long, and adults display with head bobbing and spread wings. In captive programs, chicks are fed by hand puppets shaped like adult condors so they do not become used to people.","migration":"Not migratory, but wide-ranging. Birds make long daily flights, and some travel seasonally between feeding areas hundreds of miles apart. Young birds roam the widest.","status":{"iucn":"CR","trend":"increasing","text":"In the 1980s lead poisoning, DDT, shooting and habitat loss pushed condors to the brink, and in 1987 the last wild birds were captured. Captive breeding and release rebuilt the population to more than 500 birds, over half flying free. Lead from bullet fragments in carcasses remains the main threat, and California requires lead-free hunting ammunition. Power lines, trash and fire also kill."},"maine":null,"wow":["In 2021, scientists reported two condor chicks hatched from unfertilized eggs, a rare “virgin birth” called parthenogenesis, confirmed by DNA tests showing no father.","A nine-and-a-half-foot wingspan is wider than a standard door is tall (6 feet 8 inches).","Condors were reintroduced starting in 1992 in California and 1996 in Arizona, and the Yurok Tribe has helped bring them back to northern California’s redwood country."],"nameNote":"“Condor” comes from Quechua kuntur, the Andean name for the related Andean Condor. Gymnogyps combines Greek words for “naked” and “vulture” after the bare head, and californianus means “of California.”","tryThis":"Mark 9.5 feet on a wall or floor with tape and stand with arms out to compare. Add marks for the Bald Eagle (about 7 feet), Turkey Vulture (about 6 feet) and Peregrine (about 3.5 feet). Draw a scaled chart to see how much larger a condor is.","zones":{"breeding":[],"resident":["ca-pacific","southwest","mexico","intermountain"],"winter":[],"passage":[]},"flight":"Huge, long, broad wings with deeply fingered tips, held flat. It soars on thermals and ridge winds for hours, flapping rarely and slowly. Takeoffs can be heavy and need a ledge or a breeze. Between lifts it glides for many miles.","hunting":"Not a predator. It cruises high and slowly, searching for carcasses by sight and watching the movements of other scavengers. At a carcass the biggest, dominant birds feed first. Its weak feet and bill cannot open tough hides, so it prefers carcasses that are already open, and it feeds with other condors and hisses over the best spots.","senses":"Eyesight is the main sense, excellent for spotting carcasses from high above. Unlike Turkey Vultures, condors are not known to rely on smell. The bare head keeps feathers clean during feeding, and the skin flushes with excitement.","ages":"Chicks have gray down. Fledglings have black heads and dull dark skin; the head turns pink and then yellow-orange at about five to six years, when they reach adulthood. Juveniles’ wing linings are mottled gray and become white as they mature. Breeding begins at about six years.","sexNote":"Males and females look alike. Males are on average slightly larger and heavier, unlike most raptors.","plate":{"a":"raptor","hab":"rock","len":1.45,"bh":1.2,"tl":0.9,"prim":1,"tailTip":"rd","rot":52,"bl":1,"m":["hoodFull","hoodNeck","wingPatch"],"hd":0.75,"neckLong":true,"bd":1.1,"c":{"back":"#1f1f22","under":"#26262a","wing":"#17171a","tail":"#17171a","hood":"#e0824a","bill":"#f0e6d0","cere":"#e0824a","iris":"#8a3a28","light":"#f4f1e8","dark":"#111","mark":"#111","leg":"#d8a09a","pants":"#26262a","patch":"#f1efe8"},"line":0.1}},
+    {"id":"kingVulture","name":"King Vulture","sci":"Sarcoramphus papa","family":"Cathartidae","group":"Vultures & condors","simId":null,"length":"26–32 in","wingspan":"4.5–6.5 ft","weight":"6–10 lb","lengthCm":75,"wingspanCm":185,"massG":3500,"lifespan":"Wild lifespan is unknown; captive birds have lived 30 years or more.","blurb":"The rainbow-headed king of the vultures has a creamy white body and a head of orange, yellow, purple and blue skin. It rules carcasses in tropical forest, tearing open hides so smaller vultures can feed.","identify":[["Rainbow head","A bare head and neck in a patchwork of orange, yellow, red, purple and bluish skin, topped by a fleshy orange knob on the bill."],["Black and white body","A creamy white body, shoulders and underwings contrast with black flight feathers and a black tail."],["Pale eye","Adults have a whitish eye ringed in red."],["Gray-black ruff","A fluffy gray-black ruff of feathers encircles the lower neck."],["Dark juveniles","Young birds are dark brownish-black with a gray-black head, turning white over about four years."]],"lookalikes":[["Wood Stork","From afar also looks white with black wing edges, but a stork has a long neck, long legs and a long bill, and flies with its neck stretched out."],["Lesser Yellow-headed Vulture","Smaller, with a dark brown body and a yellowish head, not white."]],"voice":"Mostly silent. It makes soft grunts, croaks and hisses at carcasses, and its wingbeats at takeoff can be heard clearly. Adults and chicks hiss when threatened.","habitat":"Lowland tropical forest, from humid evergreen rainforest to forest edge and wooded savanna, usually in large unbroken forest. It soars above the canopy and roosts in tall trees.","range":"From southern Mexico through Central America to northern Argentina, east of the Andes in South America; most common in the Amazon and the Guianas. It has disappeared from forest cleared for farms and ranches.","diet":"Carrion of all kinds: dead mammals, fish, reptiles and large birds. A strong bill can slice open tough hides, letting smaller vultures feed. It finds carcasses by sight and by following vultures with a better sense of smell, then dominates the feeding. Tough skin and soft parts are eaten first.","foods":["carrion","dead fish","reptile carcasses"],"nesting":{"site":"On the ground in a hollow log, rotting stump or tree cavity in forest, hidden from above.","nest":"No nest is built; the egg lies on debris inside the hollow.","eggs":"One white egg.","incubation":"About eight weeks, shared by both parents.","young":"The single chick fledges after roughly three months and is fed by the adults for months more."},"behavior":"King Vultures dominate carcasses: other vultures step back while they feed. Their bills open hides, so smaller vultures profit from their presence, making kings important partners in a mixed group of scavengers. They soar above forest and roost in tall trees, often alone or in pairs, while small groups gather at carcasses. Adults sun themselves with wings spread. They are shy and rarely allow close approach, and the bare, colorful head skin is thought to serve in display.","migration":"Mostly non-migratory. Adults stay in the same home range year-round. Young birds wander farther as they search for territories, and local movements follow weather and food. Little is known about long-distance movements.","status":{"iucn":"LC","trend":"declining","text":"Still widespread but thinly spread, and numbers are slowly declining because of deforestation, hunting and poisoning. It needs large areas of forest and a supply of carcasses from wild animals, so loss of large mammals reduces its food. Protecting forest and curbing the use of poisoned baits in livestock areas help."},"maine":null,"wow":["The colors of its bare head and neck are thought to play a role in signaling and display, making it one of the most colorful scavengers on Earth.","Its strong, hooked bill can slice open tough hides, so smaller vultures often follow a king to carcasses they could not open themselves.","The Aztec calendar included a vulture day sign, cozcacuauhtli, that scholars link to the King Vulture."],"nameNote":"Named “king” for its dominance and splendor, since other vultures yield to it. Sarcoramphus means “flesh bill” in Greek, for the fleshy knob on its bill, and papa is Latin for “father” or “pope,” probably a nod to its regal look.","tryThis":"Over 20 minutes at a bird feeder, record each time one bird makes another leave, then make a who-beats-whom chart. You will see a dominance order, like the King Vulture’s at a carcass, where the largest, strongest bird feeds first.","zones":{"breeding":[],"resident":["mexico","central-am","sa-north","amazon","sa-south"],"winter":[],"passage":[]},"flight":"Very large, broad wings with fingered tips; it soars high on flat wings with little flapping. Flapping is slow and heavy, and wingbeats are noisy. The tail is short, and from afar the white body and black wing edges can look like a stork.","hunting":"Not a hunter; a scavenger. It soars over the forest watching for carcasses and for gatherings of smaller vultures, and follows vultures that find carrion by smell beneath the canopy. Once at a carcass, King Vultures tear open the hide, dominate the feeding and eat the soft parts, then let others in.","senses":"Vision is key. It probably has a weaker sense of smell than the Turkey Vulture and its relatives, so it follows them to carrion. Its colorful head may also help in communication.","ages":"Chicks hatch in white down. Juveniles are dark brownish-black with a gray-black head, and they gradually turn white over about four years, with the adult head colors developing during that time.","sexNote":"Males and females look alike and are about the same size, so the sexes are hard to tell apart in the field.","plate":{"a":"raptor","hab":"wood","len":1.15,"bh":1,"tl":0.8,"prim":1,"tailTip":"rd","rot":50,"bl":0.9,"m":["hoodFull","hoodNeck"],"hd":0.75,"neckLong":true,"bd":1,"c":{"back":"#f4f0e6","under":"#f4f0e6","wing":"#1c1c1f","tail":"#1c1c1f","hood":"#e8802a","face":"#7a4a8a","bill":"#e86a2a","cere":"#d8321f","iris":"#f0f0e8","light":"#f4f0e6","dark":"#1c1c1f","mark":"#1c1c1f","leg":"#8a8a88","pants":"#f4f0e6"},"line":0.1}},
+    {"id":"turkeyVulture","name":"Turkey Vulture","sci":"Cathartes aura","family":"Cathartidae","group":"Vultures & condors","simId":"turkeyVulture","length":"25–32 in","wingspan":"5.2–6 ft","weight":"2.2–4.4 lb","lengthCm":67,"wingspanCm":175,"massG":1500,"lifespan":"Wild birds often live 10 years or more; captive birds have lived 30 years or longer.","blurb":"A tilting, wobbling soarer that can find a hidden carcass by smell, a rare gift among birds. The Turkey Vulture has spread north as winters warm, and it is now a regular summer sight over southern Maine.","identify":[["Red bare head","Adults have a small, bare red head and a pale ivory bill, a bit like a wild turkey’s head."],["Two-toned wings","From below, the dark wing linings and body contrast with silvery-gray flight feathers along the rear edge."],["V-shaped soaring","Holds its wings in a shallow V and rocks from side to side, flapping rarely."],["Tiny head, long tail","A very small head and a relatively long, rounded tail that reaches well past the wings."],["Gray-headed juveniles","Young birds have a gray-black head and dark bill; the head turns red as they mature."]],"lookalikes":[["Black Vulture","Shorter wings and tail, a black head and white patches at the wing tips; it flaps several times between short glides and holds its wings flat."],["Golden Eagle","Has a larger head, feathered legs and steady flat or slightly raised wings; it does not rock side to side."],["Bald Eagle","Flat wings, a huge head and bill, and a white head and tail on adults; a Turkey Vulture’s wings form a V."]],"voice":"Nearly silent. It hisses when threatened or crowded at a carcass and gives low grunts and soft whines in courtship or near the nest. Chicks hiss and wheeze. It has no true song, and seldom makes a sound in flight.","habitat":"Open and semi-open country: farmland, pastures, highway corridors, forest edges, ridges and towns, wherever roadkill and carrion occur. It roosts in groups on cliffs, tall trees and towers and nests in rock caves, hollow logs or thickets.","range":"From southern Canada through the United States, Mexico and Central and South America to the southern tip of South America, plus parts of the Caribbean. Northern birds migrate south; those in the southern states and tropics stay all year. Its range has moved steadily north in recent decades.","diet":"Carrion almost always, from deer, raccoons and fish to roadkill, usually fresh to moderately ripe. It finds food by sight and also by smell: it can detect the odor of a carcass hidden under tree cover. It does not kill living animals and has weak feet, so it tears flesh with its hooked bill. Black Vultures often bully it away from the meal.","foods":["carrion","roadkill","dead fish"],"nesting":{"site":"On bare ground in caves, rock crevices, hollow logs or stumps, thickets or old buildings, in a dark, sheltered spot.","nest":"No nest is built; eggs lie on bare soil, leaf litter or debris.","eggs":"Usually 2, creamy white with brown blotches at the larger end.","incubation":"About 38–41 days, shared by both parents.","young":"Chicks fledge at about 9–10 weeks, and both parents feed them by regurgitating food."},"behavior":"Turkey Vultures save energy by riding rising warm air (thermals) for hours with almost no wingbeats. They roost together at night, often alongside Black Vultures, and in the morning perch with wings spread to warm and dry. On hot days they cool themselves by excreting on their legs. When threatened, a vulture hisses and may vomit on the intruder. Flocks soaring together are called a kettle. At a carcass the larger Black Vultures usually take the lead.","migration":"Northern birds are migratory. Maine’s vultures leave in September and October and return from late March, traveling in large flocks (kettles) on thermals along ridges and coasts by day. Many birds in the southern United States and Latin America stay year-round. More birds overwinter farther north each decade.","status":{"iucn":"LC","trend":"increasing","text":"Populations have grown for decades, helped by abundant roadkill and deer carcasses and milder winters. Dangers remain: lead poisoning from ammunition fragments, poisoned carcasses, collisions with vehicles and towers, and persecution because of its reputation. Turkey Vultures are protected in the United States. Lead-free ammunition and leaving roosts undisturbed help."},"maine":{"season":"Spring-to-fall resident, mostly in the south and along the coast","months":"001233333210","text":"Arrives in late March and April and is a regular sight over southern Maine and the coast from May to September, still spreading north and east. A few linger into winter in the south. Watch over open fields, ridges and roadsides on warm, sunny days when thermals rise."},"wow":["In the 1820s John James Audubon tested vultures with a hidden carcass and concluded they used sight alone; only experiments in the 1960s showed Turkey Vultures can smell their food.","A Turkey Vulture can find a carcass lying under a forest canopy using smell alone, while many other vultures must wait for it to lead the way.","Gut acids and bacteria let vultures eat rotten meat that would sicken most animals, including food contaminated with toxins such as botulism."],"nameNote":"“Turkey” refers to the bare red head, which looks like a wild turkey’s. Cathartes comes from a Greek word meaning “purifier,” for its job cleaning up carrion. In much of the U.S. it is called a “buzzard,” a name that in Britain belongs to a hawk.","tryThis":"On a warm, sunny day find an open ridge or field and scan the sky for a bird that holds its wings in a V and rocks. Time how long it flies without flapping and count its wingbeats, then compare with a crow. Note where lift forms, such as over dark pavement or fields.","zones":{"breeding":["boreal-ca","pnw","intermountain","plains","midwest","northeast"],"resident":["ca-pacific","southwest","gulf","southeast","mid-atlantic","mexico","central-am","caribbean","sa-north","amazon","andes","sa-south"],"winter":["gulf","southeast","mexico","central-am","sa-north","amazon"],"passage":["mid-atlantic","gulf","central-am"]},"flight":"Long, broad wings held in a shallow V, with a long tail. It flies low and slowly, tilting side to side, and rarely flaps; it soars on thermals and slope lift with wings spread and fingered tips. The low wing loading lets it stay up on weak lift.","hunting":"Not a hunter. It cruises low, from a few dozen feet up to hundreds, scanning the ground with eyes and nose and gliding slowly. When it detects the smell of ripe carrion, it follows the odor to the source and lands. It often arrives at a carcass before other scavengers. It tears flesh with its hooked bill because its feet are weak, and it feeds beside other vultures.","senses":"Unusual among birds, it has a keen sense of smell, supported by large smell-processing regions in the brain, and it can follow the faint odor of fresh carcasses. Eyesight is also excellent, which lets it watch other scavengers.","ages":"Chicks are covered in white down. Juveniles have a gray-black head and dark bill, and the head turns red over their first year or two. Adult appearance comes within a couple of years.","sexNote":"Males and females look alike and are nearly the same size, so the sexes cannot be told apart in the field.","plate":{"a":"raptor","hab":"open","len":1.15,"bh":1,"tl":1,"prim":1,"tailTip":"rd","rot":50,"bl":0.8,"m":["hoodFull","hoodNeck"],"hd":0.7,"neckLong":true,"tailW":0.9,"c":{"back":"#3a332d","under":"#403830","wing":"#2f2a25","tail":"#2f2a25","hood":"#c24a3b","bill":"#efe8d4","cere":"#c24a3b","iris":"#3a2a20","light":"#f4ead8","dark":"#26211c","mark":"#2b251f","leg":"#d9a9a0","pants":"#38312b"},"line":0.1}},
+    {"id":"barnOwl","name":"Barn Owl","sci":"Tyto alba","family":"Tytonidae","group":"Owls","simId":null,"length":"12.5–16 in","wingspan":"39–49 in","weight":"14–25 oz","lengthCm":36,"wingspanCm":108,"massG":500,"lifespan":"Most live only a few years in the wild; the oldest known banded bird lived past 30.","blurb":"The Barn Owl’s heart-shaped white face is a living sound dish. It can catch a mouse in total darkness by hearing alone, and it lives on every continent except Antarctica, but in Maine it is a rare visitor.","identify":[["Heart-shaped face","A white, heart-shaped facial disc with a dark rim and no ear tufts gives a flat, mask-like look."],["Pale body, golden back","White to buff underparts, with a golden-tan back and wings dusted with gray and fine dark and white speckles."],["Dark eyes","Small, dark eyes in the pale face; most large owls here have yellow eyes."],["Long, pale legs","Long legs with sparse whitish feathers dangle behind the body in flight."],["Ghostly in flight","In flight the pale underwings and body flash against the night sky, and the wings look long and rounded."]],"lookalikes":[["Snowy Owl","Larger, heavier and barred, with yellow eyes and a round face rather than a heart; seen in open country by day in winter."],["Short-eared Owl","Buff and streaked, with dark eye patches around yellow eyes; it flies low and floppy over fields, and its face looks round, not heart-shaped."]],"voice":"Barn Owls do not hoot. The usual call is a long, rasping, hissing scream, “shreeee,” lasting about two seconds, given in flight or from a perch to claim territory and call a mate. Nesting adults hiss, click and snap their bills, and nestlings make hissing and snoring sounds. Heard at night, the scream can sound like a ghost.","habitat":"Open, rodent-rich country: farmland, hayfields, grasslands, marshes and field edges, with roosts in barns, silos, steeples, old buildings, hollow trees or cliff ledges. It avoids dense forest and regions with deep, lasting snow.","range":"Found on every continent except Antarctica, mainly in warm and temperate regions. In North America it lives from the Pacific coast and Southwest across the South and Midwest to the Mid-Atlantic, with scattered pairs farther north. Some experts split the world’s Barn Owls into several species.","diet":"Small mammals make up almost the whole diet: voles, mice, rats, shrews and gophers, with a few small birds, bats, frogs and insects. It hunts at night, flying low and slowly over fields, then drops feet-first on prey it has located by sound. Prey is swallowed whole, and the bones come up in a smooth, blackish pellet that can be taken apart in a classroom.","foods":["voles","mice","rats","shrews","small birds"],"nesting":{"site":"Dark cavities: barn lofts, silos, church steeples, hollow trees, cliff holes and nest boxes put up by farmers and conservationists.","nest":"No nest is built; eggs lie on a bed of shredded pellets in the cavity.","eggs":"Usually 4–7 white eggs, with as few as 2 and up to a dozen in rodent boom years; laid every two or three days.","incubation":"About 30 days, by the female, who is fed by the male. Eggs hatch on different days, so chicks vary in size.","young":"Chicks fly at about 8–10 weeks; the largest are fed first, so in lean years only the oldest chicks may survive."},"behavior":"Barn Owls are strictly nocturnal and spend the day hidden in a dark roost. They are usually seen alone or in pairs. In display, pairs flutter together in the air. When threatened, a Barn Owl spreads its wings, hisses, sways its head and may even flop on its back and strike with its feet. The slim body carries little fat, so long cold spells and deep snow can kill many of them. In places with plenty of rodents they may nest almost year-round.","migration":"Mostly resident. Young birds disperse widely, sometimes hundreds of miles, and northern birds shift south or die in hard winters. In the Northeast many records are wandering birds in fall and winter.","status":{"iucn":"LC","trend":"stable","text":"Globally widespread and common, so rated Least Concern. Regionally it has declined: grasslands and old barns disappear, rodent poison kills owls, cars hit many that hunt road edges, and harsh winters thin numbers. Some US states list it as threatened or endangered. Nest boxes, grassland protection and avoiding rat poison all help."},"maine":{"season":"Rare visitor","months":"111000000111","text":"A rare, irregular visitor at the very northern edge of its range: a few reports in some years, mostly from southern and coastal Maine and mostly in fall and winter. Deep snow makes survival hard, so most do not stay. Report any sighting to local birding networks and do not disturb a roosting bird."},"wow":["A Barn Owl can catch prey in complete darkness using only sound. Lab tests with captive owls found they strike within a few degrees of a rustling target, and their two ears are tuned differently, one better for sounds from above and the other from below.","Barn Owl pellets are a gift to science teachers. In some places, old pellet piles in caves and barns also let ecologists study which small mammals lived nearby over hundreds or thousands of years.","Farmers in many countries put up Barn Owl nest boxes for natural pest control, because a nesting family can eat hundreds of rodents in a season."],"nameNote":"Called the Barn Owl because it often roosts and nests in barns. Tyto comes from a Greek word for an owl, and alba is Latin for white. Old country names include Monkey-faced Owl and Church Owl.","tryThis":"You may never see a Barn Owl in Maine, but you can study one. Take apart a Barn Owl pellet from a science supplier with tweezers, sort the bones, and use a chart to identify what the owl ate. Count skulls to work out how many small animals made up one meal. Wash your hands afterward.","zones":{"breeding":[],"resident":["ca-pacific","pnw","intermountain","southwest","plains","midwest","northeast","mid-atlantic","southeast","gulf","mexico","central-am","caribbean","sa-north","amazon","andes","sa-south","europe-w","europe-s","africa-n","africa-w-c","africa-e","africa-s","madagascar","middle-east","south-asia","se-asia","australia","pacific-is"],"winter":[],"passage":[]},"flight":"Long, rounded wings and a light body make for a buoyant, wavering flight, often a few feet above the ground. It glides, hovers briefly over a target, then drops. Soft, comb-edged feathers make its flight nearly silent.","hunting":"It quarters (flies back and forth in lines) low over fields at night, listening for the rustle of rodents. Once it locates a sound it hangs briefly, swings its feet forward and drops feet-first on the prey. The talons kill by squeezing and piercing, and small prey is swallowed whole. Hearing is so precise that it can succeed in complete darkness.","senses":"The heart-shaped facial disc works like a sound dish, funneling noise to ears that are tuned slightly differently, so the owl can pinpoint a sound’s direction and its height. Its eyes are small and dark but sensitive in dim light.","ages":"Chicks hatch in short white down and are fluffy and white for several weeks. Juveniles look much like adults once their first feathers are grown. Many breed at 1 year old when food is plentiful, though others wait longer.","sexNote":"Females are slightly larger and usually have more dark speckles on the chest, while males tend to be whiter below.","plate":{"a":"owl","hab":"dusk","len":0.95,"bh":1,"hd":1,"tufts":0,"c":{"back":"#c9a46a","under":"#f6f1e6","disc":"#f8f3ea","rim":"#c9a46a","mark":"#7a6a58","light":"#fbf8f0","dark":"#2a2018","eyeDark":true,"bill":"#e8dcc0"},"m":["heart","spotBreast","wingSpots"]}},
+    {"id":"barred","name":"Barred Owl","sci":"Strix varia","family":"Strigidae","group":"Owls","simId":"barred","length":"17–20 in","wingspan":"39–43 in","weight":"16–37 oz","lengthCm":46,"wingspanCm":105,"massG":700,"lifespan":"Around 10 years in the wild; at least one banded bird lived to about 24.","blurb":"The owl that asks “Who cooks for you?” is the one most Mainers hear first. Dark-eyed, round-headed and bold, it calls in daylight, wades after crayfish, and has spread across the continent.","identify":[["Dark brown eyes","Large, nearly black eyes; most big owls here have yellow eyes, so this is the fastest mark."],["Round, tuftless head","A smooth, rounded head with no ear tufts and a pale facial disc ringed by fine concentric lines."],["Bars, then streaks","Horizontal brown bars across the upper chest change to vertical streaks down the belly."],["Mottled back","Brown back and wings spotted and barred with white, which blends well with bark."],["Yellow bill","A pale yellow bill set between the dark eyes, giving a soft, wide-eyed expression."]],"lookalikes":[["Great Gray Owl","Much larger, with a huge gray face, small bright yellow eyes and bold streaks, not bars, on the chest; only a rare visitor to Maine."],["Great Horned Owl","Has ear tufts, yellow eyes and a deeper, shorter hoot pattern; a bulkier bird."]],"voice":"The song is a hooted phrase of eight or nine notes, “who cooks for you, who cooks for you-all,” ending in a long falling note. Pairs also break into wild duets of cackles, whoops and gurgles called caterwauling, which can sound like monkeys fighting. Calls claim territory and keep mates in touch, and can come in broad daylight on cloudy days.","habitat":"Mature forests with big trees: hardwood and mixed woods, river bottoms, cedar and red maple swamps, and large wooded neighborhoods. It does best near water and in woods with old trees that have hollows for nesting.","range":"Resident from Nova Scotia west across southern Canada to British Columbia, and from the northern states south to the Gulf Coast and Florida. Since the early 1900s it has spread west, reaching the Pacific Northwest and northern California.","diet":"Voles, mice, shrews, chipmunks and squirrels are staples, plus rabbits, small birds, frogs, salamanders, snakes, crayfish and fish. It hunts from a low perch, dropping onto prey, and will wade in shallow water or snatch fish at the surface. Prey is swallowed whole or torn up. Hunting is mostly at night, dawn and dusk, but it also hunts by day.","foods":["small mammals","frogs","crayfish","small birds","fish"],"nesting":{"site":"Natural cavities in large trees, broken-topped snags, and sometimes old hawk, crow or squirrel nests; big nest boxes also work.","nest":"No material is added; eggs lie on wood chips and debris in the cavity, or on the sticks of an old nest.","eggs":"Usually 2–3 rounded white eggs, sometimes up to 5; laid in March or April in the Northeast.","incubation":"About 28–33 days, by the female, who is fed by the male.","young":"Chicks leave the nest at roughly 4–5 weeks, climbing branches before they can fly; parents feed them for months."},"behavior":"Barred Owls are strongly territorial and stay put year-round; a pair may use the same patch of woods for many years. They roost by day in dense conifers or against a trunk, but they are much more willing than most owls to call and hunt in daylight, especially under cloud or in deep woods. Courting pairs duet loudly. Great Horned Owls, which kill and eat Barred Owls, are a main danger, so Barred Owls tend to favor deeper, wetter forest.","migration":"Not a true migrant. Adults stay on territory all year; young birds disperse in autumn, sometimes dozens of miles. In deep snow a few turn up at roadsides or feeders, hunting voles or mice.","status":{"iucn":"LC","trend":"increasing","text":"Barred Owls have increased and spread over the last century, perhaps helped by maturing forest, planted trees and fire suppression. In the West they outcompete and sometimes interbreed with the threatened Northern Spotted Owl, so wildlife agencies now remove Barred Owls in some areas, a debated tactic. In the East the main concern is loss of large old trees with nesting holes."},"maine":{"season":"Year-round resident","months":"333333333333","text":"One of Maine’s most frequently heard owls, in forests, swamps and wooded neighborhoods statewide. Listen after dark in late winter and early spring, when pairs are most vocal. You may also see one in daylight near a road or forest edge, especially in winter, perched low and looking back at you."},"wow":["Barred Owls have been seen wading into shallow water and diving to catch fish and crayfish, an unusual menu for an owl.","Over about a century this owl crossed the continent: once an eastern bird, it now lives in the Pacific Northwest, one of the biggest range expansions of any North American owl.","Barred Owls and Northern Spotted Owls have interbred in the West; the rare hybrids are nicknamed “Sparred Owls.”"],"nameNote":"Named for the dark bars across its chest. Strix is an old Latin word for an owl, and varia means “varied,” for its mottled plumage. Older country names include Hoot Owl and Eight-hooter, both from the call.","tryThis":"On a late winter evening, stand quietly near a mature woodlot or swamp edge and listen for 20 minutes after dark. Write down how many notes each phrase has and whether a second owl answers. In daylight, look for white droppings and pellets at the base of a favorite roost tree, but keep your distance.","zones":{"breeding":[],"resident":["boreal-ca","pnw","ca-pacific","intermountain","plains","midwest","northeast","mid-atlantic","southeast","gulf"],"winter":[],"passage":[]},"flight":"Rounded wings and a fairly long tail give it a heavy-bodied, floppy-winged look. Flight is a few slow flaps and a glide, low through the trees, and nearly silent because of soft, fringed feathers. It slips through dense woods that would stop a bigger hawk.","hunting":"It sits still on a low branch, watching and listening, then drops silently onto prey. It also flies slowly through the forest or hovers briefly before diving. Voles, mice and shrews are the core of the diet, with frogs, crayfish, small birds and fish for variety. Prey is killed by the feet, with a bite to the neck for larger animals, and owls often strike and miss.","senses":"Large dark eyes see well in dim forest light. Hearing is the main hunting tool: the facial disc gathers sound, and the owl can strike a mouse hidden in leaf litter by sound alone. Smell is weak.","ages":"Nestlings wear white down; “branchers” (young that have left the nest but cannot fly well) are fluffy gray-buff with a dark face mask. By their first fall young owls look like adults. Breeding usually begins at about 2 years old.","sexNote":"Females are larger and heavier than males, often by a fifth or more. The sexes look alike, though a female’s voice is usually a little higher.","plate":{"a":"owl","hab":"wood","len":1.05,"bh":1.05,"hd":1.05,"tufts":0,"c":{"back":"#7a6650","under":"#e6dcc6","disc":"#cdbfa6","rim":"#6a5a46","mark":"#6a4f38","light":"#f4efe4","dark":"#201710","eyeDark":true,"bill":"#e0c35a"},"m":["streakBreast","wingSpots","ruff","capStreaks"]}},
+    {"id":"borealOwl","name":"Boreal Owl","sci":"Aegolius funereus","family":"Strigidae","group":"Owls","simId":null,"length":"8–11 in","wingspan":"21–24 in","weight":"3–8 oz","lengthCm":25,"wingspanCm":57,"massG":130,"lifespan":"Most live a few years; a few banded birds have lived well past 10.","blurb":"A wide-eyed, startled-looking owl of northern spruce forests, the Boreal Owl is one of the hardest owls to see in Maine. It hunts voles in deep forest by sound alone, and most people meet it as a rare winter surprise.","identify":[["Big, square head","A large, flat-topped head with a pale, rounded facial disc framed by a dark border, giving a surprised look."],["White-spotted forehead","The forehead and crown are speckled with small white spots, not streaks."],["Yellowish bill","The bill is pale yellow-horn, not black as in the Northern Saw-whet Owl."],["Brown back, blotchy underparts","A rich brown back with white spots, and brown blotchy streaks on a white chest and belly."],["High-set yellow eyes","Yellow eyes set high in the facial disc, with whitish eyebrows that add to the wide-eyed look."]],"lookalikes":[["Northern Saw-whet Owl","Smaller, with a black bill, a forehead streaked rather than spotted, and reddish streaks below; much more likely to be found in Maine."],["Northern Hawk Owl","A daytime owl that perches on treetops, with a long tail, barred underparts and a smaller, flatter face."]],"voice":"The male’s song is a rapid, soft, whistled “po-po-po-po-po-po” series, lasting two or three seconds and repeating after a pause, like a ball bouncing to a stop. He sings at night in late winter and spring to claim a territory and attract a mate. Alarmed owls hiss and rasp, and young birds give begging notes.","habitat":"Dense boreal forest of spruce and fir mixed with aspen, with old trees for nest holes and openings such as bogs or clear-cuts for hunting. In the Rockies it lives in high-elevation spruce-fir forest. In winter it roosts in dense conifers.","range":"Circumpolar. It lives across the boreal forest of Alaska and Canada, in high spruce-fir forests of the Rocky Mountains, and across northern Europe (where it is called Tengmalm’s Owl) and Asia. Some move south and east in winters when voles are scarce.","diet":"Mostly voles, along with mice, shrews, small birds and some insects. It hunts at night from a perch in dense forest, listening, then pouncing. In winter it stores extra prey in cavities, and long-term studies in Finland show its breeding follows the vole cycle. Prey is swallowed whole or in pieces.","foods":["voles","mice","shrews","small birds"],"nesting":{"site":"Old woodpecker holes, especially those made by Pileated Woodpeckers, and nest boxes in parts of Europe.","nest":"No lining is added; eggs rest on wood chips and debris inside the cavity.","eggs":"Usually 3–6 white eggs, with more in good vole years; laid from March to May.","incubation":"About 26–32 days, by the female; the male brings food and often guards the nest from a nearby perch.","young":"Chicks leave the nest at about 4–5 weeks, and the parents feed them for several weeks afterward."},"behavior":"Boreal Owls are strictly nocturnal and well hidden by day in dense conifers, where they sit close to the trunk and may let people approach, which is why they should be left alone. Males sing from forest openings for weeks before breeding. They are nomadic: where vole numbers are high they nest, and in lean years they move on. Studies in Finland found that in vole boom years some males mate with two females, and females sometimes leave the brood to the male.","migration":"Mostly resident or nomadic. In most winters Boreal Owls stay in their northern forests, but when voles crash a few move south and east, bringing the owl to places like the northern Great Lakes and New England. Winter records in Maine are very rare.","status":{"iucn":"LC","trend":"unknown","text":"Rated Least Concern because the range is huge, but the owl is hard to survey and trends are poorly known across much of North America. Threats include logging of large old trees with woodpecker holes, climate-driven changes to the boreal forest, and loss of mountain forest. In Europe, nest boxes boost local numbers. Check current Maine and federal lists for legal status."},"maine":{"season":"Very rare winter visitor","months":"111100000011","text":"Maine is at the southern edge of its range, and records are very scarce and irregular, usually from northern spruce-fir forest in winter or early spring. Most people would find one by hearing a singing male on a calm late-winter night. Do not seek out a roosting bird, and report any sighting to local birding networks."},"wow":["The ear openings sit at different heights on its skull, so each ear hears a sound slightly differently, helping it find voles in the dark.","In Europe, where it is called Tengmalm’s Owl, long-term studies show it follows voles across the landscape, nesting in good numbers in boom years and skipping breeding when voles crash.","It cannot dig its own nest hole, so it depends on cavities made by woodpeckers: big old trees decide where this owl can nest."],"nameNote":"Boreal means “northern,” for the northern forests it lives in. Aegolius is an old Greek name for a kind of owl, and funereus is Latin for “funeral,” because people long took the calls of night birds as omens of death. In Europe it honors the Swedish naturalist Peter Gustaf Tengmalm.","tryThis":"If you hike northern forests on a calm late-winter night with an experienced guide, stop at an opening and listen for 10 minutes for a rapid, whistled series of notes. Compare what you hear with free recordings at home, and note the time and temperature. Never play recordings in the field, and never approach a roosting owl.","zones":{"breeding":[],"resident":["ak","boreal-ca","intermountain","europe-n","russia","siberia","central-asia","east-asia"],"winter":["northeast","midwest"],"passage":[]},"flight":"Short, broad, rounded wings and a medium tail give a quick, direct flight with brisk wingbeats and short glides. It is maneuverable between trees and, thanks to soft feathers, nearly silent.","hunting":"It sits on a perch in dense forest in the dark, listening and watching, then drops on prey with its feet. Voles caught under leaf litter or snow are located by sound. The talons squeeze and pierce, and prey is swallowed whole or in pieces. In winter it stores extra kills in cavities. It hunts along forest edges, in clearings and along bogs.","senses":"The wide, flat facial disc catches faint sounds, and the ear openings sit at different heights on the skull, so the owl can work out both the direction and the height of a sound. Its large eyes help it see in dim forest light.","ages":"Fledglings are chocolate brown with pale eyebrows and spots, a very different look from the paler adults. They molt into adult-like plumage in their first fall. Birds often start breeding at about 1 or 2 years old.","sexNote":"Females are markedly larger than males, a quarter or more heavier. The plumage is much the same in both sexes.","plate":{"a":"owl","hab":"snow","len":0.75,"bh":0.78,"hd":1.12,"tufts":0,"c":{"back":"#7a6048","under":"#efe8da","disc":"#efe9dc","rim":"#2a2018","mark":"#7a6048","light":"#f6f1e6","dark":"#201710","iris":"#f0d040","bill":"#e0d8a8"},"m":["capSpots","streakBreast","wingSpots","browDark"]}},
+    {"id":"easternScreechOwl","name":"Eastern Screech-Owl","sci":"Megascops asio","family":"Strigidae","group":"Owls","simId":null,"length":"6–10 in","wingspan":"18–24 in","weight":"4–9 oz","lengthCm":21,"wingspanCm":51,"massG":170,"lifespan":"Often just a few years in the wild; the oldest known banded birds lived about 13–14 years.","blurb":"A pocket-sized hunter that is either gray or red depending on its genes, with a trembling whinny that is nothing like a screech. By day it sits in a tree hole looking like a broken branch.","identify":[["Ear tufts","Short feather tufts that the bird can raise or lay flat; flattened, the head looks round and smooth."],["Gray or red morph","Birds are either gray or reddish-brown (a morph is a color form), with the same pattern; siblings can be different colors."],["Bark-like pattern","Streaks and thin cross-bars on the chest and belly break up the body outline and match tree bark."],["Yellow eyes, pale bill","Bright yellow eyes and a pale greenish-yellow bill; the facial disc is edged with a dark rim."],["Small, big-headed shape","About the size of a robin or a bit smaller, with a big head, a short tail and short, rounded wings."]],"lookalikes":[["Northern Saw-whet Owl","Smaller still, with no ear tufts, a white V between the eyes and reddish streaking below; usually in dense conifers."],["Long-eared Owl","Much taller and slimmer, with long upright tufts and orange eyes; lives in dense thickets and conifers."]],"voice":"Two songs, neither one a true screech. The whinny is a quavering, horse-like call that slides down in pitch. The trill is a quiet, even-pitched purr that lasts a few seconds. Both are used between mates and to announce a territory, mostly at dusk and night. Alarmed owls bark, hiss and snap their bills.","habitat":"Woodlots, streamside trees, orchards, parks and suburban yards with older trees that have natural holes or nest boxes. It prefers deciduous and mixed woods near open ground and is less common in dense evergreen forest.","range":"Resident in eastern North America, from southern Canada and New England south to the Gulf Coast, Florida and northeastern Mexico, and west to the edge of the Great Plains, where it meets the Western Screech-Owl.","diet":"A flexible hunter: insects such as moths, beetles and crickets, earthworms, crayfish, and small mammals, birds, frogs and lizards. It waits on a low perch and pounces, or snatches insects near lights. Extra kills are stored in cavities. In winter it relies more on mice and small birds, including roosting songbirds, and may hunt around feeders at night.","foods":["insects","small mammals","small birds","earthworms","crayfish"],"nesting":{"site":"Natural tree cavities, old woodpecker holes and nest boxes, usually well above the ground, in woods or backyards.","nest":"Adds no nest material; eggs lie on wood chips or on feathers, leaves and prey remains.","eggs":"Usually 4–5 white, nearly round eggs, with a range of 2–6; laid in April and early May in the Northeast.","incubation":"About 26–30 days, by the female, who is fed by the male at the cavity.","young":"Chicks leave the cavity at about 4 weeks and are fed by their parents for several weeks more."},"behavior":"Eastern Screech-Owls live in pairs that may stay together for years and often reuse the same cavity. By day a roosting bird sits at a hole entrance, squeezed up tall and thin with eyes slitted and tufts raised, blending with the bark; this pose is often spoiled when songbirds find it and mob it. Birds sunbathe at the entrance in the afternoon. At night they hunt and call. Fierce for their size, they defend nests against squirrels, hawks and even people.","migration":"Not a migrant. Adults stay on a small territory all year, and young birds scatter a few miles in autumn. Cold northern winters hit the northern edge of the range hard, so the species is more common in milder lowlands and near the coast.","status":{"iucn":"LC","trend":"stable","text":"Common and widespread across the East, though small, nocturnal owls are hard to count. Losing old trees with cavities and cutting hedgerows and woodlots hurts them; cars, window strikes and rodent poison take many. Nest boxes help, and backyards with dead trees left standing give them places to roost and nest."},"maine":{"season":"Uncommon year-round resident","months":"111111111111","text":"A local, quiet resident of southern and coastal Maine and much scarcer farther north. Most are found by ear on mild, calm nights from late winter into spring, or by checking nest boxes and tree holes from a distance. Both red and gray birds occur here."},"wow":["Color is inherited: red and gray siblings can hatch in the same nest, and some broods are mixed.","In Texas, researchers found screech-owls bringing live blind snakes (tiny, worm-like snakes) into the nest, where the snakes eat insect pests; owlets in such nests did better.","A roosting screech-owl compresses its body, narrows its eyes and raises its tufts to look like a broken stub, and the pose is convincing enough to fool many passersby."],"nameNote":"A misleading name: this owl does not screech. Early settlers likened its quavering calls to the screech of the Old World owls they knew. Asio is an old Latin name for an eared owl.","tryThis":"On a mild evening in late winter or spring, visit a wooded park or neighborhood with mature trees and listen after dark. Describe each call in your notes as a trill or a whinny, with the time and temperature. By day, scan tree holes from far away with binoculars for a round face at an entrance. Never tap trees or play recordings to draw owls out.","zones":{"breeding":[],"resident":["northeast","mid-atlantic","southeast","gulf","midwest","plains","mexico"],"winter":[],"passage":[]},"flight":"Short, rounded wings and a short tail make for a nimble, quick flight through trees. Wingbeats are rapid with short glides, and long swoops from a perch to the ground. Soft feathers keep it quiet.","hunting":"Mostly a perch hunter. It sits still in dim light, watching and listening, then drops or flies out a short distance to grab a moth, beetle, mouse or sleeping sparrow in its feet. It will chase insects around porch lights and walk on the ground after earthworms. Small prey is swallowed whole; larger prey is carried to a perch and torn up.","senses":"Big yellow eyes gather light for night hunting, and sharp hearing helps it find insects and mice. The ear tufts are not used for hearing. The eyes are fixed in their sockets, so the head swivels to look around.","ages":"Hatchlings are white down, replaced by fluffy gray juvenile feathers with a barred pattern and dark face mask. Young birds are fully feathered when they leave the nest and look like adults by fall, in the same color morph as in the nest. They usually first breed at about 1 year old.","sexNote":"Females are somewhat larger and heavier than males. The sexes look alike, and both can be either the gray or the red morph.","plate":{"a":"owl","hab":"wood","len":0.7,"bh":0.72,"hd":0.82,"tufts":1,"c":{"back":"#8a8378","under":"#d8d0c0","disc":"#bdb6a8","rim":"#4a4238","mark":"#4a4238","light":"#efe9dc","dark":"#241f1a","iris":"#f0c224","bill":"#c8c0a0"},"m":["streakBreast","herring","wingSpots","browDark"]}},
+    {"id":"greatGrayOwl","name":"Great Gray Owl","sci":"Strix nebulosa","family":"Strigidae","group":"Owls","simId":null,"length":"24–33 in","wingspan":"54–60 in","weight":"1.5–3.6 lb","lengthCm":72,"wingspanCm":145,"massG":1150,"lifespan":"Roughly 10 years or more in the wild; exact longevity records are sparse.","blurb":"The “Phantom of the North” looks enormous, the longest owl in North America with a wingspan near five feet, yet most of that bulk is feathers. It hears voles under deep snow and plunges in headfirst.","identify":[["Giant facial disc","A huge, round, pale gray face marked with many fine concentric rings, like ripples spreading in water."],["Small yellow eyes","Surprisingly small, bright yellow eyes set close together, which look tiny against the huge disc."],["Black and white bow tie","A black chin spot bordered by two white crescents forms a bow-tie shape below the bill."],["Smoky gray plumage","Mottled gray and white overall, with bold dark streaks (not bars) down the belly; no ear tufts."],["Long tail, round head","A long tail and a big, rounded head, perched upright and tall."]],"lookalikes":[["Barred Owl","Smaller, with dark eyes, a brown wash and horizontal bars on the chest; far more common in Maine."],["Great Horned Owl","Has ear tufts, a rusty or tawny face and a deep, stuttering hoot; the Great Gray has no tufts and a gray face."]],"voice":"Mostly silent. The male’s song is a run of deep, soft, muffled “whoo” notes that fade toward the end. It is far quieter than a Great Horned Owl’s hoot but carries well on still nights. Females and young give higher, sharper calls; alarmed owls give barks and whistles. Songs claim territory and keep mates in touch.","habitat":"Northern forests of spruce, fir, pine and aspen broken by bogs, meadows, burns and clearings where it can hunt voles. It needs big old trees or abandoned nests for breeding and open ground within easy flying distance.","range":"Circumpolar. Breeds across the boreal forest of Alaska and Canada, in the northern Rockies and a small Sierra Nevada population in California, and across northern Europe and Russia into Siberia. In winters when voles crash, some move south into the northern United States.","diet":"Almost entirely small rodents, especially voles, plus pocket gophers and mice and occasionally shrews, squirrels and birds. It hunts from a low perch or while flying slowly, listening for movement. For prey under snow it hovers, then plunges feet-first through the snow or crust, sometimes a foot or more deep. An owl may eat several voles in a night.","foods":["voles","pocket gophers","mice","shrews"],"nesting":{"site":"Large old stick nests of hawks or ravens, broken-topped dead trees, or artificial nest platforms, in tall trees near an opening.","nest":"Builds none of its own; it uses what is there, adding little or no lining.","eggs":"Usually 2–5 white eggs, more in years with many voles; laid from March to May depending on region.","incubation":"About 28–36 days, by the female, who is fed by the male.","young":"Chicks leave the nest at about 3–4 weeks, climbing among branches before they can fly; parents feed them for months."},"behavior":"A calm bird that often seems to ignore people, but it can attack fiercely if a nest is approached. It hunts at dawn, dusk and night, but is also active by day, especially in winter, when you may find one perched on a roadside post or fence. In poor vole years it does not hold a fixed territory and roams instead, a habit called irruptive nomadism. It roosts in dense conifers. Hunting along roads makes it a victim of car strikes.","migration":"Mostly resident or nomadic. In most winters birds stay in the north, but when voles crash a wave of owls moves south and east, occasionally reaching northern Maine, southern Ontario, the northern Great Lakes and New England. Movements usually occur in late fall and winter, with return flights in spring.","status":{"iucn":"LC","trend":"stable","text":"A wide range and a large total population make it Least Concern, but remote forests make it hard to count. Threats include logging of the big old trees and snags it nests in, wildfire and climate change shifting its habitat, collisions with cars while hunting road edges, and rodent poison. A small isolated group in California’s Sierra Nevada is protected by state law."},"maine":{"season":"Rare irruptive winter visitor","months":"111100000011","text":"A rare treat. Great Gray Owls show up in northern and western Maine in some irruption winters and, more rarely, farther south; most reports come from December to March. Look at fields, bogs and roadsides in daylight, and keep your distance, because a hungry owl that flushes loses precious energy. Check Maine birding alerts."},"wow":["It is the longest owl in North America but not the heaviest: the huge look comes from thick feathers, and a Great Horned Owl or Snowy Owl often weighs more.","It can detect a vole tunneling beneath deep snow, hover, then dive and break through the crust.","Biologists have built artificial nest platforms in many places, and Great Gray Owls readily use them, which has made it possible to study the nesting of a bird that usually hides high in the forest."],"nameNote":"“Great” for its size and “gray” for its smoky plumage. Strix is an old Latin word for an owl, and nebulosa is Latin for “cloudy” or “misty,” which fits its hazy coloring. It is also called the “Phantom of the North” for how well it vanishes into the forest.","tryThis":"Practice owl-search skills on any owl, using Great Gray habits as a guide. At dawn or dusk, scan fence posts, low branches and snags along field and bog edges for a tall, upright shape, and note whether the head is tilted down to listen. Observe from far away and never walk toward the bird.","zones":{"breeding":[],"resident":["ak","boreal-ca","pnw","intermountain","midwest","ca-pacific","europe-n","russia","siberia"],"winter":["northeast"],"passage":[]},"flight":"Long, broad wings and a long tail give a floating, buoyant flight with slow, deep wingbeats and long glides. Fringed feather edges make flight almost silent. It flies low across clearings and can hover before plunging.","hunting":"It watches and listens from a low perch such as a post or branch, or flies slowly over a meadow. The owl locates a vole by sound, sometimes hovering to fix its position. It then drops feet-first, plunging through snow, grass or crust to seize the prey with its talons. Voles and gophers make up most of the diet. Prey is swallowed whole or in a few bites.","senses":"The largest facial disc of any North American owl funnels faint sounds to the ears hidden under the feathers, and the owl can pinpoint a vole by sound under snow. Its small yellow eyes are sharp in dim light but are not the main hunting tool.","ages":"Nestlings wear white or buff down that turns gray; recently fledged young are fluffy, with a less distinct face pattern. By their first winter they look much like adults. Breeding probably begins at 2 or 3 years, and plumage gives few clues to age after the first year.","sexNote":"Females are noticeably larger and heavier than males. The sexes look alike in plumage.","plate":{"a":"owl","hab":"wood","len":1.15,"bh":1.1,"hd":1.3,"tufts":0,"eyeS":0.7,"c":{"back":"#7f8084","under":"#c9c8c3","disc":"#b9b8b2","rim":"#4a4a4e","mark":"#5a5a5e","light":"#f1f0ec","dark":"#201f1f","iris":"#f0d040","bill":"#e0d890"},"m":["barBelly","chinWhite","ruff","wingSpots"]}},
+    {"id":"greatHorned","name":"Great Horned Owl","sci":"Bubo virginianus","family":"Strigidae","group":"Owls","simId":"greatHorned","length":"18–25 in","wingspan":"40–57 in","weight":"2–5.5 lb","lengthCm":54,"wingspanCm":125,"massG":1450,"lifespan":"Often 5–15 years in the wild; the oldest known banded bird was about 28 years old.","blurb":"North America’s most widespread owl starts nesting while snow is still deep, hoots from suburban rooftops, and hunts almost anything that moves, from beetles to skunks to other owls.","identify":[["Ear tufts","Two upright feather tufts look like horns. They are not ears; they help break up the outline and may signal mood."],["Yellow eyes, rimmed face","Big yellow eyes sit in a dish-shaped facial disc (the flat face that funnels sound) bordered by a dark rim; the disc is rusty in most eastern birds."],["White throat patch","A white bib shows under the chin and puffs out when the owl hoots."],["Barred underparts","Fine dark cross-bars on a buff or gray chest and belly, with a mottled brown-and-gray back."],["Heavy, upright build","A thick-bodied owl about as tall as a Red-tailed Hawk but stockier, with a broad head and a short neck."]],"lookalikes":[["Long-eared Owl","Much slimmer, with orange eyes and tufts set close together near the middle of the forehead; crow-sized and usually found at winter roosts."],["Barred Owl","No ear tufts, a rounded head and dark brown eyes; its call is a rhythmic “who cooks for you,” not a deep, ragged series of hoots."]],"voice":"The male’s song is a deep, stuttering series of four to six hoots, written “hoo, h’HOO, hoo, hoo.” The female answers in a higher voice, and pairs often duet. Hoots claim territory and bind the pair, most often from December to March. Alarmed or angry owls bark, hiss and snap their bills; young owls give a harsh, rasping scream.","habitat":"Extremely adaptable: forests, woodlots, swamps, farm edges, cliffs, deserts and city parks. It needs trees or ledges for roosting and nesting, plus open ground or forest edges to hunt over.","range":"Resident from the Arctic treeline of Alaska and Canada south through the lower 48 states, Mexico and Central America and on into South America. It is missing from the treeless high Arctic. Only the northernmost birds drift south in hard winters.","diet":"Prey runs from beetles and frogs to rabbits, hares, rats, skunks, ducks, grouse and even other owls and hawks; mammals and birds make up most meals. It watches and listens from a perch, then glides in without a sound. Prey is swallowed whole or in big chunks, and fur and bones are coughed up later as a pellet (a compact oval wad). In winter it may stash a kill.","foods":["rabbits and hares","rodents","skunks","birds","other owls"],"nesting":{"site":"Builds no nest of its own; takes over old stick nests of hawks, crows or herons, or uses tree cavities, cliff ledges and broken stumps.","nest":"A bare, messy platform; the female may add a little shredded bark or her own feathers.","eggs":"Usually 2–3 nearly round, dull white eggs, sometimes 1 or 4; laid in mid-winter in Maine, as early as late January.","incubation":"About 30–37 days. The female sits tight through snow and subzero cold while the male brings food.","young":"Chicks climb onto branches at about 6–7 weeks, fly by about 9–10 weeks, and are fed by their parents into the fall."},"behavior":"Great Horned Owls are mostly solitary and stay put year-round. A pair holds the same territory for years and advertises it by hooting at dusk and dawn. By day they roost in dense conifers or against a trunk, where bark-colored feathers hide them; crows often give them away by mobbing them with loud scolding. In courtship, birds bow, bob their heads and puff out the white throat while hooting. At night the owl hunts from a perch, but it will sometimes walk on the ground after prey. Adults defend nests fiercely against intruders, including people.","migration":"Mostly a year-round resident that stays on its territory. Young birds scatter in their first fall, and some northern Canadian owls move south in winters when hares and grouse are scarce, but there is no regular migration.","status":{"iucn":"LC","trend":"stable","text":"Abundant, with a huge range, and able to live beside people. Owls are hard to count, but surveys show no dramatic continent-wide change. The main human-caused dangers are cars, collisions with wires and fences, and rat and mouse poison that builds up in the food chain. Protecting big old trees and avoiding rodenticides (poisons for rodents) both help."},"maine":{"season":"Year-round resident","months":"333222222233","text":"Found statewide, from deep woods to suburban towns. The best time to find one is a calm night from December to March, when pairs are hooting. Nesting starts so early that a female may already be sitting in an old hawk or crow nest in late winter. Roosting birds are sometimes found at dusk or flushed by crows."},"wow":["Its toes lock shut by tendon action with no muscle effort, and biologists estimate it takes about 28 pounds of force to pry a clenched foot open.","Great Horned Owls and crows are old enemies: crows mob roosting owls by day, and owls raid crow nests and roosts by night. A crowd of angry crows often points to a hidden owl.","Because owls swallow prey whole and cough up pellets, scientists can read the menu from the bones inside: one pellet can hold the skull of every animal an owl ate in a night."],"nameNote":"The “horns” are tufts of feathers. Bubo is the Latin word for an eagle owl or horned owl, and virginianus means “of Virginia,” the place where the first specimen studied by European naturalists was collected.","tryThis":"On a calm evening from December to March, stand at the edge of a woodlot 20 minutes after sunset and listen for 15 minutes. Count the hoots, note whether a lower voice and a higher one answer each other, and record the time and weather. Never play recordings to call owls in, and never approach a nest.","zones":{"breeding":[],"resident":["ak","boreal-ca","pnw","ca-pacific","intermountain","plains","southwest","midwest","northeast","mid-atlantic","southeast","gulf","mexico","central-am","sa-north","andes","sa-south"],"winter":[],"passage":[]},"flight":"Broad, rounded wings and a fairly short tail give a bulky silhouette. Flight is steady flapping with short glides, usually low and direct. Soft feather surfaces and a fringed leading edge on the outer wing feathers muffle sound, so the approach is nearly silent.","hunting":"Mostly a perch hunter. It scans from a branch, post or pole at dusk and through the night, then glides down on silent wings. The feet do the killing: talons squeeze and pierce, and a bite to the neck finishes larger prey. It takes animals from beetle size to rabbits and geese, and it often eats other raptors, including smaller owls and roosting hawks. Many strikes miss, and success depends on weather and prey numbers.","senses":"Huge, forward-facing eyes are packed with light-sensing cells and fixed in tube-shaped sockets, so the owl turns its whole head, up to about 270 degrees. The facial disc funnels sound to ears hidden under feathers, and tiny timing differences between the two ears pinpoint a rustle. Smell is weak.","ages":"Chicks hatch in white down and soon grow buff fluff with a dark face mask; short ear tufts show once they start branching (climbing around in trees). By fall, young owls look much like adults but are paler and fuzzier about the head. Most begin breeding at about 2 years old.","sexNote":"Females are noticeably larger and heavier than males, often by 20 percent or more, and have a higher-pitched voice. Plumage is the same in both sexes.","plate":{"a":"owl","hab":"night","len":1.05,"bh":1,"hd":1,"tufts":2,"c":{"back":"#6b5a48","under":"#d8c7a6","disc":"#c98a54","rim":"#3a2c22","mark":"#4a3a2c","light":"#f1ece0","dark":"#241a12","iris":"#f2c42a","bill":"#2b2b2a"},"m":["barBelly","chinWhite","ruff","browDark","capSpots"]}},
+    {"id":"longEaredOwl","name":"Long-eared Owl","sci":"Asio otus","family":"Strigidae","group":"Owls","simId":null,"length":"13–16 in","wingspan":"35–39 in","weight":"8–15 oz","lengthCm":37,"wingspanCm":93,"massG":280,"lifespan":"Many live only a few years; the oldest known banded bird reached about 27.","blurb":"The Long-eared Owl is a master of disappearing. By day it freezes against a trunk, stretches as thin as a branch and raises its tall tufts; by night it hunts voles over open fields. In winter several may share one roost.","identify":[["Tall ear tufts","Long, upright tufts set close together near the middle of the forehead; they lie flat when the bird relaxes."],["Orange eyes","Deep orange to reddish eyes in a rusty facial disc; most owls here have yellow eyes."],["White facial marks","Pale lines between and above the eyes form a whitish X against the rusty face."],["Streaks and bars","Dark vertical streaks down the belly, crossed by fine bars, on a buff to gray-brown body."],["Slender, tall posture","A slender owl that can compress itself into a stick-like shape, with a narrow head and a long body."]],"lookalikes":[["Great Horned Owl","Much larger, with widely spaced tufts, yellow eyes, a white throat patch and barred underparts, and a deep, thick hoot."],["Short-eared Owl","Open-country owl with tiny tufts that rarely show, yellow eyes with black patches, and buff plumage; hunts in daylight and roosts on the ground."]],"voice":"Mostly silent outside the breeding season. The male’s song is a low, soft, steady “oo… oo… oo,” one note every two to four seconds, sometimes for long stretches at night. Females answer with a nasal call. Young owls beg with a squeaky “creaking gate” sound that carries far. Alarm calls are barks and hisses, and displaying males clap their wings.","habitat":"A bird of edges: dense conifers, willow and thorn thickets or cedar groves for roosting and nesting, beside grassland, hayfields, marsh or farmland for hunting. In winter it roosts in dense evergreen groves and thickets, sometimes in groups.","range":"Found across the Northern Hemisphere. It breeds across southern Canada and the northern United States, and south in the western mountains; it also lives across Europe and Asia and in North Africa. Northern birds move south in winter.","diet":"Voles are the staple, plus mice, shrews, pocket gophers and sometimes small birds and bats. It hunts at night, flying low and slowly over fields and clearings, or hovering and pouncing. In winter, roosting owls may take sparrows and other small birds. Prey is swallowed whole, and pellets and white droppings pile up under roosts, which is how researchers find them.","foods":["voles","mice","shrews","small birds"],"nesting":{"site":"Old stick nests of crows, ravens, magpies or hawks, squirrel nests, and sometimes hollows or the ground, usually in dense trees.","nest":"Adds little or nothing to the old nest it takes over.","eggs":"Usually 3–5 white, rounded eggs; as few as 2 or as many as 8 in vole boom years.","incubation":"About 25–30 days, by the female; the male brings food and keeps watch.","young":"Chicks climb out of the nest at about 3–4 weeks, before they can fly, and fly at about 5 weeks."},"behavior":"The Long-eared Owl is secretive, silent and easy to miss. By day it sits pressed against a trunk, body stretched thin, ear tufts erect and eyes narrowed to slits, so it looks like a broken branch. From autumn through winter, several to dozens may roost together in a thicket or grove and shift their roosts when disturbed. A nesting parent may flap on the ground as if injured to lure predators away. In courtship the male flies in circles over the nest and claps his wings.","migration":"Partly migratory. Northern birds head south in autumn, often moving at night, while many in the northern United States stay for winter. Movements follow food, and numbers shift from year to year. Migrants are sometimes netted at banding stations in fall.","status":{"iucn":"LC","trend":"unknown","text":"Common enough across its huge range to be Least Concern, but it is secretive and nocturnal, so population trends are hard to measure. Some regions report declines. Threats include loss of grasslands and thicket roosts, collisions with cars, and rodent poison. Check current Maine and federal lists for legal status."},"maine":{"season":"Uncommon year-round resident","months":"111111111111","text":"Secretive and thinly spread across the state. A few breed, and a handful of winter roosts turn up in dense conifers, thickets or cedar groves near open fields. Fall migrants are sometimes found at banding stations. Because disturbance can make owls leave, roosts are best kept quiet; if you find one, watch from far away."},"wow":["A Long-eared Owl can compress its feathers and stretch tall so its body looks like a stub of branch. The tufts, which are not ears, add to the disguise.","In winter, dozens of Long-eared Owls have been found sharing a single thicket roost, all sitting silently in the same few trees.","A parent defending a nest may flop on the ground and flap a wing as if it were injured, a trick more often described for shorebirds than for owls."],"nameNote":"Named for its tall feather tufts, which are not ears at all; the real ears are hidden at the sides of the head. Asio is an old Latin name for an eared owl, and otus comes from a Greek word for a horned or eared owl.","tryThis":"In winter, walk the edge of a dense evergreen grove or thicket beside an open field in daylight and scan the ground for white splashes and pellets beneath the branches. Stay out of the grove and look from outside with binoculars. If you see an owl, back away quietly and keep the location private.","zones":{"breeding":["boreal-ca","plains","midwest","northeast","intermountain","pnw","europe-n","russia","siberia","central-asia"],"resident":["ca-pacific","southwest","europe-w","europe-s","east-asia","africa-n"],"winter":["mid-atlantic","southeast","gulf","mexico","south-asia","middle-east"],"passage":[]},"flight":"Long, rounded wings and a slim body give a light, buoyant, moth-like flight with slow, deep wingbeats and glides. Soft, fringed feather edges make it silent. In display the male flies in circles and claps his wings.","hunting":"It hunts at night over open ground, flying slowly a few feet up and listening for rustling, then dropping feet-first on prey; it also hunts from perches. Voles are caught by sound in grass and under snow. The long talons squeeze and pierce, and small prey is swallowed whole. By day it stays hidden in dense cover, which protects it from mobbing crows and other predators.","senses":"Its orange eyes are tuned for dim light. The ear tufts do not hear; the real ear openings, hidden at the sides of the head, are large, and the rusty facial disc funnels faint sounds to them. It can track small movements in grass and leaf litter in the dark.","ages":"Fledged young are downy, with a dark face mask and a pale gray-buff body, and look much like adults by their first fall. Most breed by their first or second spring, and plumage changes little after that.","sexNote":"Females are slightly larger and heavier, and tend to be darker and richer in color; males are paler. Both sexes have ear tufts.","plate":{"a":"owl","hab":"wood","len":0.9,"bh":1,"hd":0.95,"tufts":2,"c":{"back":"#8a7258","under":"#d9c19a","disc":"#c98a54","rim":"#5a4630","mark":"#4a3a2a","light":"#f1ece0","dark":"#241a12","iris":"#e8932a","bill":"#2b2b2a"},"m":["streakBreast","herring","browDark","capStreaks"]}},
+    {"id":"northernSawWhetOwl","name":"Northern Saw-whet Owl","sci":"Aegolius acadicus","family":"Strigidae","group":"Owls","simId":null,"length":"7–8.5 in","wingspan":"16.5–18.5 in","weight":"2.3–5.3 oz","lengthCm":19,"wingspanCm":44,"massG":85,"lifespan":"Most live only a few years; the oldest banded birds have lived about 10 years or a little more.","blurb":"Big-eyed and big-headed, the Northern Saw-whet Owl is Maine’s smallest owl, a robin-sized night hunter that sings a patient, whistled toot all night in spring. In fall, banders catch these secretive migrants after dark.","identify":[["Big, round head","A large, smooth, flat-topped head with no ear tufts, on a small, short-tailed body."],["White V between the eyes","Bright yellow eyes with white eyebrows that meet in a V between them, on a pale face."],["Streaks below","Broad reddish-brown streaks on a white chest and belly; the back is chocolate brown with white spots."],["Juvenile’s chocolate look","Young birds in late summer and fall are plain chocolate brown above, with a tawny belly and bold white eyebrows."],["Black bill, tiny size","A black bill and a body only about 7–8 inches long, much smaller than most owls people know."]],"lookalikes":[["Eastern Screech-Owl","Has ear tufts, a larger body and a trilling or whinnying voice; the Saw-whet is smaller, with a round head and a monotone toot."],["Boreal Owl","Slightly larger, with a yellowish bill, a forehead spotted with white, and a dark border to the facial disc; mostly in northern spruce-fir forest."]],"voice":"The male’s advertising song is a steady string of high, whistled “too-too-too” notes, about two a second, that can go on for minutes or hours on spring nights. Another call is a rasping “skiew,” and alarm calls are sharp raspy notes. Songs mark territory and attract mates; birds are most vocal in March and April.","habitat":"Dense coniferous and mixed forest, cedar and spruce swamps, and thick tangles near streams. It nests in old woodpecker holes and roosts in dense evergreens or vine tangles, often lower than head height.","range":"Breeds across southern Canada and the northern United States, south through the western mountains and into the highlands of Mexico. Many northern birds move south in fall, so winter owls turn up through the Mid-Atlantic, the South and the Midwest.","diet":"Mostly deer mice and voles, plus shrews, small birds and, in warm months, insects. It hunts at night from a low perch, listening, then pouncing. In winter it caches extra mice in tree holes, and it may warm a frozen mouse by sitting on it to thaw it. Prey is swallowed whole or in pieces.","foods":["deer mice","voles","shrews","small birds","insects"],"nesting":{"site":"Old woodpecker holes, especially those of Northern Flickers and Pileated Woodpeckers, and nest boxes, in woods near streams or swamps.","nest":"No lining is added; eggs rest on the cavity floor on wood dust and feathers.","eggs":"Usually 5–6 white eggs, with a range of 4–7; laid in April or May in Maine.","incubation":"About 27–29 days, by the female; the male brings food.","young":"Chicks leave the cavity at about 4–5 weeks, and the parents feed them for several weeks more."},"behavior":"Saw-whets are nocturnal and surprisingly calm by day, when they sit motionless in dense evergreen cover or a vine tangle, sometimes only a few feet up. That calm is camouflage, not tameness, and a close approach can make them leave a good roost. Males call for long stretches on spring nights. The skull is asymmetrical, with ear openings at different heights, which helps them find prey by sound. In fall they migrate quietly at night.","migration":"Partly migratory and irruptive. Many leave the north in fall, with peak movement in October and early November, traveling by night along coasts and ridges. Females and young are likelier to migrate than adult males. Numbers vary each year with food and weather, and some owls stay all winter.","status":{"iucn":"LC","trend":"unknown","text":"A common owl in suitable forest, but secretive and hard to count, so long-term trends are poorly known and may shift from year to year. Threats include loss of old forest with woodpecker holes, collisions with cars and windows, and rodent poison. Nest boxes and leaving dead trees standing help."},"maine":{"season":"Year-round resident and fall migrant","months":"112221111221","text":"A secretive breeder in Maine’s forests and a regular fall migrant, but rarely seen. Listen on calm nights in March and April for the steady tooting song. In October and early November, volunteers at banding stations catch migrants, and some stations hold public viewing nights. If you find a daytime roost, keep your distance and keep the spot private."},"wow":["Banding has shown that saw-whets are far more common than sightings suggest: on a good fall night, a banding station can net dozens of migrants.","In winter a saw-whet stores extra mice in tree holes, and it can warm a frozen mouse by sitting on it, like incubating an egg.","Its skull is asymmetrical: one ear opening sits higher than the other, so each ear hears a rustle slightly differently, which helps the owl pinpoint prey in the dark."],"nameNote":"Thought to come from the owl’s raspy “skiew” call, which early listeners compared to a saw being sharpened on a whetstone, though no one is sure. Aegolius is an old Greek name for a kind of owl, and acadicus refers to Acadia, the old name for the Canadian Maritime region.","tryThis":"On a calm, mild evening in March or April, stand beside a conifer woods or cedar swamp and listen for an unbroken string of toots. Count the toots in 10 seconds and note the time. In October, ask about public viewing nights at a banding station. Do not play recordings of the call, because disturbing nesting owls can lower nesting success.","zones":{"breeding":["boreal-ca","pnw","ak","intermountain","midwest","northeast","ca-pacific","mid-atlantic","plains"],"resident":["southwest","mexico"],"winter":["mid-atlantic","southeast","gulf","midwest","plains"],"passage":["northeast"]},"flight":"Short, broad, rounded wings and a short tail give a fast, direct, moth-like flight with fluttery wingbeats, quick turns and brief glides. It threads through thick woods easily. Soft feather edges keep the flight silent.","hunting":"It sits low in dense cover, listening and watching, then drops on prey with its feet. Its asymmetrical ears let it pin down rustles at night. Prey is killed by a bite and a squeeze of the talons, and mice and voles are swallowed whole or in pieces. Extra kills are stored for later. It hunts along edges and in forest clearings.","senses":"Large yellow eyes work well in dim light. Hearing is the key sense: its ear openings sit at different heights on its skull, which helps it find the height as well as the direction of a sound, and the facial disc channels sound toward the ears, so it can locate prey by sound in low light.","ages":"Fledglings are chocolate brown on the head and back with a tawny belly and white eyebrows that form a bold V, very different from the white-streaked adults. They molt into adult-like plumage during their first fall. Most first breed at about 1 year old.","sexNote":"Females are noticeably larger and heavier than males. The sexes look alike.","plate":{"a":"owl","hab":"wood","len":0.62,"bh":0.62,"hd":0.7,"tufts":0,"eyeS":1.15,"c":{"back":"#7b5d43","under":"#f0e8d6","disc":"#e8dcc4","rim":"#7b5d43","mark":"#9a5a30","light":"#f6f1e6","dark":"#201710","iris":"#f0c224","bill":"#2b2b2a"},"m":["streakBreast","wingSpots","browDark"]}},
+    {"id":"shortEaredOwl","name":"Short-eared Owl","sci":"Asio flammeus","family":"Strigidae","group":"Owls","simId":null,"length":"13–17 in","wingspan":"33–41 in","weight":"7–17 oz","lengthCm":38,"wingspanCm":94,"massG":330,"lifespan":"Most live a few years in the wild; the oldest known banded bird reached about 13.","blurb":"Short-eared Owls fly like giant, floppy moths over fields and marshes, hunting at dusk and in daylight. Males clap their wings in a sky-dance courtship, and the birds nest on the ground. Watching one quarter low over a field is a winter thrill.","identify":[["Dark eye patches","Yellow eyes ringed by black patches in a pale face, giving a fierce, staring look."],["Tiny ear tufts","Very short tufts that are rarely visible, unlike the tall tufts of a Long-eared Owl."],["Streaked buff chest","Buff and tawny with dark vertical streaks on the chest that fade on the belly."],["Wing patches in flight","Black patches at the wrist on the underside of each wing, and pale buff patches near the wing tips above."],["Floppy, low flight","Long wings beat in a loose, buoyant, moth-like rhythm a few feet above the ground."]],"lookalikes":[["Long-eared Owl","Tall ear tufts, orange eyes and a slimmer, forest-edge life; roosts upright in thickets, not on the ground."],["Northern Harrier","Both fly low over fields, but the harrier has a long tail, a white rump patch, narrower wings and a hawk’s face rather than a big round owl head."]],"voice":"Mostly silent in winter. In courtship the male gives a rapid, hollow, hooting “boo-boo-boo-boo” series while flying, along with wing claps. Both sexes give a raspy, wheezy bark, “kee-yow,” when alarmed or squabbling near the nest. Young owls beg with hissing, rasping calls.","habitat":"Open country with low vegetation: grasslands, salt and freshwater marshes, tundra, dunes, hayfields and airport edges. It needs wide-open space with enough cover to roost and nest on the ground, and a steady supply of voles.","range":"One of the most widespread owls, found on every continent except Australia and Antarctica. It breeds in North America, Europe and Asia, in parts of South America and on islands from the Caribbean to Hawaii. Northern birds move south in winter.","diet":"Voles are the main prey, along with mice, shrews and sometimes small birds, even shorebirds or seabirds. It hunts at dusk, at dawn and often by day, quartering low over open ground and dropping on prey. Local vole booms bring many owls, and when voles crash the owls go elsewhere. Pellets are coughed up at roosts.","foods":["voles","mice","shrews","small birds"],"nesting":{"site":"A hollow on the ground in tall grass, marsh edge or low brush, often hidden by a clump of vegetation.","nest":"A scrape in the ground, scratched out by the female and lined with grass and some feathers.","eggs":"Usually 4–7 white eggs, up to 12 or more in vole boom years; laid in spring.","incubation":"About 24–29 days, by the female, while the male hunts and brings food.","young":"Chicks walk away from the nest at about 2 weeks and fly at about 4–5 weeks; the parents feed them on the ground."},"behavior":"Short-eared Owls are among the most visible owls because they hunt by day. In courtship a male climbs high, hovers, then dives while clapping his wings under his body. They roost on the ground in tall grass, sometimes in groups of a dozen or more in winter, and wander nomadically, settling wherever voles are plentiful. Nesting owls may use a broken-wing display to lure away predators. Gulls, crows and harriers may harass them.","migration":"Highly nomadic and partly migratory. Northern birds move south in autumn, often reaching the Northeast from late October, and return to breeding grounds in March or April. Movements follow vole numbers, so counts at a given site vary widely from year to year.","status":{"iucn":"LC","trend":"declining","text":"The global range is large, so it is rated Least Concern, but many regional populations have dropped sharply, and North American counts have fallen by about half or more in recent decades. The main cause is loss and fragmentation of grassland, marsh and farmland. Other dangers are collisions with vehicles and aircraft, and rodent poison. Late hay-cutting and large protected fields help."},"maine":{"season":"Uncommon migrant and winter visitor; rare local breeder","months":"222111101222","text":"Look in open coastal marshes, dunes, airport grasslands and big fields in southern and midcoast Maine from late October through March, especially around dusk. Scarborough Marsh is a known area. A few may still breed locally. It is a species of conservation concern in Maine (check current state and federal lists), so give them room."},"wow":["In courtship the male performs a sky-dance: he climbs high, hovers, then dives while clapping his wings, a display you can both see and hear from a distance.","It is one of the most widely distributed owls on Earth. A Hawaiian population, called the pueo, is revered by many Native Hawaiian families as a guardian spirit.","Because the nest is on the ground, chicks leave it on foot at about two weeks, long before they can fly, and hide in the grass while the parents feed them."],"nameNote":"Its “ears” are tiny tufts of feathers that rarely show, much shorter than the Long-eared Owl’s. Asio is an old Latin name for an eared owl, and flammeus is Latin for “flame-colored,” for the fiery tawny plumage.","tryThis":"At dusk on a winter day, choose a safe spot at the edge of an open marsh or grassland where owls are known to hunt, and scan low over the grass. Watch how an owl flaps and glides compared with a Northern Harrier. Record the time, wind and weather, and stay on the trail or road.","zones":{"breeding":["ak","arctic-ca","boreal-ca","pnw","intermountain","plains","midwest","northeast","europe-w","europe-n","iceland","russia","siberia","central-asia","east-asia"],"resident":["pacific-is","caribbean","andes","sa-south"],"winter":["ca-pacific","southwest","mid-atlantic","southeast","gulf","mexico","europe-s","africa-n","middle-east","south-asia","japan"],"passage":[]},"flight":"Long wings and a short tail give a slow, buoyant, bat-like or moth-like flight with loose, uneven flaps and glides on raised wings. It flies low, usually a few feet over the grass, and hovers briefly above prey. Soft feathers keep it quiet.","hunting":"A quartering hunter: it flies slowly back and forth a few feet above open ground, listening and watching for voles. It hovers, then drops feet-first into the grass. It sometimes hunts from a low post. Most hunting is at dusk, dawn and on cloudy days, but also at night. Prey is killed with the talons and swallowed whole. It will also chase small birds.","senses":"Sharp hearing and eyes tuned for low light. The dark patches around the eyes may help cut glare, and the facial disc funnels sound so the owl can locate rodents beneath grass or snow.","ages":"Chicks hatch with buff-white down, then darker buff down and a dark face mask. Juveniles are tawnier and have a darker face, and by autumn they look much like adults. They can breed at 1 year, especially when voles are plentiful.","sexNote":"Females are a bit larger and heavier, and are often darker and more heavily marked below than males, but the sexes are close in appearance.","plate":{"a":"owl","hab":"open","len":0.98,"bh":0.98,"hd":1,"tufts":1,"c":{"back":"#9a7a52","under":"#e6d4ae","disc":"#e3d3b0","rim":"#6a5a46","mark":"#4a3a2a","light":"#f1e8d0","dark":"#201710","iris":"#f2c42a","bill":"#2b2b2a"},"m":["streakBreast","eyeSurround","wingSpots"]}},
+    {"id":"snowyOwl","name":"Snowy Owl","sci":"Bubo scandiacus","family":"Strigidae","group":"Owls","simId":"snowyOwl","length":"20–28 in","wingspan":"49–59 in","weight":"3.5–6.5 lb","lengthCm":61,"wingspanCm":140,"massG":2000,"lifespan":"Often around 10 years in the wild; some captive birds have lived well past 20.","blurb":"A tundra ghost that turns up on Maine beaches, the Snowy Owl is the heaviest owl in North America. It hunts in daylight, sits on dunes and rooftops, and moves south in unpredictable waves called irruptions.","identify":[["White plumage, dark bars","Adult males can be nearly pure white; females and young are white with heavy dark-brown bars and spots."],["Round head, no tufts","A smooth, rounded head with tiny ear tufts that are almost never visible."],["Bright yellow eyes","Intense yellow eyes with black pupils; the black bill is mostly hidden by feathers."],["Feathered feet","Feathers cover the legs and toes down to the claws, like fur-lined boots."],["Big, bulky shape","A large, round, heavy owl, bulkier than a Great Horned Owl, usually sitting low in the open."]],"lookalikes":[["Short-eared Owl","Smaller and buff-brown rather than white, with dark patches around yellow eyes and a floppy, moth-like flight over fields and marshes."],["Great Horned Owl","Pale northern birds can look gray-white at a distance, but the ear tufts, gray or rusty face and barred underparts separate it quickly."]],"voice":"Mostly quiet on its wintering grounds. In the Arctic breeding season the male gives deep, booming hoots in a series that carry far across open tundra. Alarmed birds bark, cackle, hiss and snap the bill. Females and chicks give whistles and soft mewing notes near the nest.","habitat":"Breeds on open Arctic tundra with raised mounds for lookouts. In winter it seeks the nearest thing to tundra: dunes, beaches, salt marshes, farm fields, airport grass, frozen lakes and rooftops, always with a wide view and few trees.","range":"Circumpolar. It breeds on the Arctic tundra of Alaska, Canada, Greenland, Scandinavia and Russia, shifting its nest sites each year to follow lemmings. Many stay in the Arctic in winter, while others reach southern Canada, the northern United States and northern Eurasia.","diet":"On the tundra it relies on lemmings (small, chubby rodents), eating several a day, plus voles, ptarmigan and ducks. Wintering birds in the Northeast take mice, voles and rabbits, and especially waterbirds such as ducks, grebes and gulls, often watching from a jetty or dune. Prey is swallowed whole or in big pieces and pellets come up later. Hungry owls hunt by day and by night.","foods":["lemmings","voles","ducks","ptarmigan","rabbits"],"nesting":{"site":"A hollow on a raised, snow-free mound or ridge in open tundra, chosen for its view and its drainage.","nest":"A shallow scrape pressed into the ground by the female’s body and feet, with little or no lining.","eggs":"3–11 white eggs, with the largest clutches when lemmings are plentiful; in very poor years many owls skip nesting.","incubation":"About 31–33 days by the female while the male hunts and brings food. Eggs are laid days apart, so chicks differ in size.","young":"Chicks leave the nest on foot at roughly 2–4 weeks and fly at about 6–7 weeks; both parents feed and fiercely defend them."},"behavior":"Snowy Owls are active day and night and very watchful. On the tundra a nesting pair attacks foxes, gulls, jaegers and even larger animals that come near the nest. Away from nests they are solitary and often return to the same lookout, such as a dune crest, rock, post or airport light, for days. In the south the owls favor open ground and may sit on rooftops near towns. Some birds are wary and fly off when approached, while others seem tame, but even calm owls burn precious energy when flushed.","migration":"Snowy Owls are nomads and irruptive migrants. Many adults stay in the Arctic all year, some wintering on sea ice, but in some winters large numbers of mostly young birds move south. Researchers link such irruptions to a very successful breeding summer, when a boom in lemmings feeds many chicks. In Maine, owls usually arrive in November and leave in March or April.","status":{"iucn":"VU","trend":"declining","text":"The IUCN lists the Snowy Owl as Vulnerable because the global population appears to be shrinking, though counting owls across vast tundra is hard. Warming is changing tundra and lemming cycles. In winter owls die in collisions with vehicles, aircraft, wires and buildings, and from rodent poison. Giving wintering owls space and not flushing them helps; some airports trap and relocate them."},"maine":{"season":"Irregular winter visitor","months":"222100000112","text":"Most winters at least a few Snowy Owls reach the Maine coast, and in big irruption years there can be many. Look in open places: beaches, dunes, salt marshes, fields and airport edges in southern and midcoast Maine, and sometimes inland on big fields and frozen lakes. Scarborough Marsh, Biddeford Pool and Reid State Park are well-known areas. Keep your distance and never flush the bird."},"wow":["Feathers cover even its feet and toes, and its plumage is among the thickest of any owl. That insulation lets it sit through Arctic winter gales.","A Snowy Owl may eat several lemmings in a day, and its nesting success rises and falls with the lemming cycle: in a boom year it can lay up to about a dozen eggs, and in a bust year it may not nest.","Satellite and GPS tracking has shown that some Snowy Owls spend winter far out on Arctic sea ice, hunting seabirds and ducks at openings in the ice, and that individuals can wander thousands of miles."],"nameNote":"Named for its snow-white plumage. Bubo is Latin for a horned owl or eagle owl, and scandiacus means “of Scandinavia,” where early specimens were collected. Older field guides gave it its own genus, Nyctea, until DNA work placed it among the Bubo owls.","tryThis":"On a winter outing to an open coast, scan dunes, jetties and fields with binoculars for a pale lump. If you find one, stay back far enough that it does not look at you or change what it is doing, and watch for 15 minutes. Note its perch, which way it faces, and how barred it is, then guess whether it is a young bird, a female or an older male.","zones":{"breeding":["arctic-ca","ak","greenland","siberia","russia","europe-n"],"resident":[],"winter":["boreal-ca","plains","midwest","northeast","mid-atlantic","pnw","intermountain","europe-n","russia","east-asia","arctic-sea"],"passage":[]},"flight":"Long, broad wings and a stout body give powerful, steady flight with deep wingbeats. It flies low and direct over open ground, glides, and can hover briefly before a pounce. It is fast enough to chase and catch ducks in the air.","hunting":"A sit-and-wait hunter. It watches from a mound, rock or post, then flies low and pounces, or hovers briefly over a target. Lemmings and voles are the main tundra prey. In winter it takes mice and rabbits and chases waterbirds, even catching ducks on or over open water. Talons grip and kill, and small prey is swallowed whole. Hunting by day is normal for this owl.","senses":"Yellow eyes work in the bright glare of the Arctic summer, where the sun may never set, as well as in dim winter light. The facial disc funnels sound to ears hidden in the feathers, and good hearing probably helps it find rodents beneath snow.","ages":"Chicks hatch in white down that turns gray-brown. Young owls are heavily barred dark brown on white, and females keep some barring for life. Males lighten with age, and old males may be almost pure white. Most birds first breed at about 2 years old.","sexNote":"Females are larger and heavier than males and more heavily barred. Adult males are whiter, though young males look much like females.","plate":{"a":"owl","hab":"snow","len":1.1,"bh":1.05,"hd":1,"tufts":0,"c":{"back":"#f1efe9","under":"#f6f4ee","disc":"#fbfaf6","rim":"#d9d5ca","mark":"#6a5f55","light":"#ffffff","dark":"#241a12","iris":"#f2c42a","bill":"#2b2b2a","crownC":"#f3f1ea"},"m":["barBelly","wingSpots","capSpots"]}}
+  ];
+
 
   var MIGRATION = {
     overview: 'Every fall, ~5 million raptors funnel through the Western Hemisphere\'s migration corridors. Sites like Hawk Mountain (PA), Cape May (NJ), Veracruz (Mexico), Eilat (Israel), and Batumi (Georgia) sit at geographic bottlenecks where soaring raptors converge — and where standardized counts have built the longest continuous wildlife datasets in conservation history. A broad-winged hawk hatched in Maine in July may winter in Bolivia, fly through the Veracruz River of Raptors in late September with 4 million companions, and never flap its wings for hundreds of miles — riding thermals + ridge lift from cold front to cold front.',
@@ -12452,7 +13622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'threats', label: __alloT('stem.raptorhunt.threats_database', 'Threats Database'), icon: '⚠️' },
         { id: 'experts', label: __alloT('stem.raptorhunt.expert_spotlights', 'Expert Spotlights'), icon: '🧑‍🔬' },
         { id: 'scenarios', label: __alloT('stem.raptorhunt.field_scenarios', 'Field Scenarios'), icon: '🌲' },
-        { id: 'species20', label: __alloT('stem.raptorhunt.species_20_deep_profiles', 'Species 20-Deep Profiles'), icon: '🐦' },
+        { id: 'species20', label: __alloT('stem.raptorhunt.species_encyclopedia', 'Species Encyclopedia'), icon: '📚' },
         { id: 'comparative', label: __alloT('stem.raptorhunt.comparative_anatomy', 'Comparative Anatomy'), icon: '⚖' },
         { id: 'mythbusters', label: __alloT('stem.raptorhunt.raptor_mythbusters', 'Raptor Mythbusters'), icon: '💥' },
         { id: 'pioneers', label: __alloT('stem.raptorhunt.research_stations', 'Research Stations'), icon: '🔬' },
@@ -14211,11 +15381,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
               )
             ),
-            h('div', { className: 'flex gap-2 pt-2' },
+            h('div', { className: 'flex flex-wrap gap-2 pt-2' },
               h('button', {
                 onClick: function() { setRH({ activeSection: 'hunt' }); },
                 className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-red-600 to-orange-700 text-white hover:from-red-700 hover:to-orange-700 transition-all',
-                'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_hunt_as', 'Hunt as {value1}'), { value1: sp.name })}, '🎯 Hunt as ' + sp.name + ' →')
+                'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_hunt_as', 'Hunt as {value1}'), { value1: sp.name })}, '🎯 Hunt as ' + sp.name + ' →'),
+              encFindBySim(sp.id) && h('button', { type: 'button', onClick: function() { setRH({ activeSection: 'species20', encId: encFindBySim(sp.id).id }); }, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-white hover:bg-slate-600 border border-slate-500 transition-all' }, __alloT('stem.raptorhunt.enc_open_entry_r', '📚 Read the encyclopedia entry →'))
             )
           ),
 
@@ -14337,6 +15508,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // Gameplay threshold shared by the rule text and prey-alert check.
       var SILENT_STRIKE_ALERT_RANGE_M = 48;
       var HIGH_STOOP_MIN_MPH = 180;
+      // Cross the Desert: thermals in the order they are met, then the oasis. Heading starts along +z.
+      var DESERT_THERMALS = [{ x: -120, z: -170 }, { x: 130, z: -60 }, { x: -110, z: 70 }, { x: 110, z: 180 }];
+      var DESERT_OASIS = { x: 0, z: 290 };
+      var DESERT_THERMAL_RADIUS_M = 34, DESERT_THERMAL_TOP_M = 175, DESERT_OASIS_REACH_M = 36, DESERT_AIR_SINK_MPS = 1.4;
+      // Encyclopedia page for each hunt, shown before the flight. Facts are kept general on purpose; numbers appear only where a source was checked.
+      var HUNT_MODE_GUIDES = {
+        open: {
+          tag: __alloT('stem.raptorhunt.mode_tag_open', "Search from the air with no time limit."),
+          represents: 'Active search hunting. The bird flies over its range, scanning for prey, then chases or dives when it finds some. Searching covers far more ground than waiting, but it can cost more energy.',
+          when: 'Any time of year a raptor needs food. Peregrines often circle high and watch below, then dive. Hawks and falcons usually hunt by day, and most owls hunt at dusk or at night.',
+          notice: 'Watch calories and stamina as you fly. Gliding costs less than flapping, so a long search has a real price.',
+          simplified: 'Catches count at once, and the prey fades after a few seconds. A real falcon often takes a catch to a plucking perch, and it may eat heavy prey where it falls. Small prey is drawn larger while carried so you can see it, and prey and terrain are game placements, not a real habitat.',
+          sources: 'Young People\'s Trust for the Environment, peregrine factsheet. Published models comparing active search with sit-and-wait hunting.'
+        },
+        perchHunt: {
+          tag: __alloT('stem.raptorhunt.mode_tag_perch', "Wait on a lookout, then launch when prey appears."),
+          represents: 'Sit-and-wait hunting. The bird saves energy by watching from a perch and flies only when it spots a target. It costs less than searching in flight, but it can take longer, and the bird depends on prey coming into view.',
+          when: 'All year, and especially useful when energy is short, such as in cold weather or when prey is scarce. Red-tailed Hawks and American Kestrels often hunt from perches, and Great Horned Owls do it at night.',
+          notice: 'Scan before you commit. Launch when a target is close enough to reach, because each flight spends energy that waiting saved.',
+          simplified: 'You can return to the lookout with one button instead of flying back. Lookout heights are design values, not measurements, and this mode models scanning by sight only, although owls also hunt by sound.',
+          sources: 'National Park Service and Cornell Lab life histories. Winter foraging studies of raptors in the Journal of Raptor Research.'
+        },
+        flightTrail: {
+          tag: __alloT('stem.raptorhunt.mode_tag_trail', "Practice flying through rings, with no prey to chase."),
+          represents: 'Learning to fly. For weeks after leaving the nest, young raptors build endurance and control. Young falcons chase one another and try mock food passes, and their parents start passing food in the air. The rings stand in for that practice.',
+          when: 'In the weeks after young birds leave the nest, usually in summer. In one Montana study of Red-tailed Hawks, flight endurance improved over the first three weeks, and parents were still feeding the young at least 34 days after they left the nest. Fledglings often stay in the home area for about six to eight weeks before moving on.',
+          notice: 'Steer early and make small corrections. A centered pass scores more than a wide one, and the same gentle corrections line up prey later. Score 7 or more out of 10 to move up a grade.',
+          simplified: 'Wild birds have no rings, points, or grades. You fly with an adult bird\'s skill and body from the start, while a real fledgling is clumsier and still growing. Nothing hunts you or feeds you here.',
+          sources: 'Johnson (1973), Post-Fledging Activity of the Red-Tailed Hawk, Raptor Research. Cornell Lab of Ornithology, Fledge Watch. National Park Service, View from the Aerie. Birds Outside My Window, Flying Lessons.'
+        },
+        feedChicks: {
+          tag: __alloT('stem.raptorhunt.mode_tag_feed', "Catch prey and carry it home to a hungry nest."),
+          represents: 'Provisioning. During nesting, adults have to feed themselves and their young, so every catch means a flight home. The trip costs time and energy, and a heavy load slows the bird down.',
+          when: 'Only in the breeding season. For many North American raptors that means spring and early summer, although timing varies by species. In Red-tailed Hawks the male does most of the hunting while the female incubates and in the early nestling stage, and the female tears food into small pieces for the chicks. Young red-tails leave the nest at about six weeks.',
+          notice: 'Your calories count only when food reaches the nest. You fly slower while carrying, and a crash loses the prey, so plan your route home.',
+          simplified: 'You play one parent, and you deliver by flying close rather than landing. Small prey is drawn larger while carried so you can see it. Real nests vary a lot: peregrines use bare ledges, while American Kestrels and many owls use cavities or old nests. The calorie goal is a game number, not a measured need.',
+          sources: 'New Hampshire PBS NatureWorks and Outdoor Alabama, Red-tailed Hawk accounts.'
+        },
+        windHover: {
+          tag: __alloT('stem.raptorhunt.mode_tag_hover', "Hold still over a field by flying into the wind."),
+          represents: 'Flight-hunting. A kestrel flies into the wind at the same speed the wind is blowing, so it moves through the air but stays over one spot on the ground. Its head stays almost perfectly fixed while it searches the grass below.',
+          when: 'By day in open country with a useful breeze. Common Kestrels in the Netherlands did most of their flight-hunting in winds of about 4 to 12 meters per second, and rain, fog, or calmer and stronger winds got in the way. American Kestrels hover too, but in one Missouri study they spent about 63 percent of their time hunting from perches and about 7 percent hovering.',
+          notice: 'Face the wind and your ground speed falls to almost nothing while your airspeed stays up. That is the whole trick. It is also expensive. Measured in free-living Common Kestrels, this kind of flight cost about 16 times the resting rate, yet it caught about 2 to 5 small mammals an hour against fewer than 1 from a perch. Glide on when a spot is empty.',
+          simplified: 'A vole appears after a few seconds of holding still, which stands in for a long, careful search. Real searches are less certain. The runways are a game map. A 1995 study suggested kestrels could see vole urine trails in ultraviolet light, but a 2013 study measured the urine and found it unlikely to be a reliable signal, so this sim shows no glowing trails. Hover here also holds your height for you.',
+          sources: 'Rijnsdorp, Daan, and Dijkstra (1981); Masman, Daan, and Dijkstra (1988); Masman and Klaassen (1987); Videler and Groenewold (1991); American Kestrel time budgets, Journal of Raptor Research (1987); Viitala and others (1995); Lind and others (2013).'
+        },
+        fishDive: {
+          tag: __alloT('stem.raptorhunt.mode_tag_fishdive', "Hover over the water, then plunge in feet first."),
+          represents: 'The Osprey plunge. An Osprey flies over open water looking for fish near the surface, often hovers for a moment, then dives. It swings its feet forward just before it hits and usually goes only a short way under. Spiny scales on its feet and a reversible outer toe help it hold a slippery fish.',
+          when: 'By day wherever fish swim near the surface of lakes, rivers, and coasts. Fish make up nearly all of an Osprey\'s diet, so this one behavior feeds the bird and its young.',
+          notice: 'A faster, steeper entry goes deeper, so a high dive can reach fish a slow one cannot. Fly low and the fish notice you and slip deeper. A miss costs energy and a hard climb out of the water. After a catch, watch the bird turn the fish head first, which is thought to make it easier to carry.',
+          simplified: 'Real Ospreys have no aim ring or fish marker. Fish are drawn larger than life, and the depth rule is a game rule. Field studies differ widely on how many dives succeed, from about a quarter to about four in five, depending on the bird, the weather, and the water. Your score is a game result, not a measurement.',
+          sources: 'Arkansas Game and Fish Commission, Flying Fisherman; Northern Woodlands, An Osprey Takes the Plunge; Avian Report, Osprey Feeding, citing Machmer and Ydenberg (1990).'
+        },
+        fishThief: {
+          tag: __alloT('stem.raptorhunt.mode_tag_thief', "Chase an Osprey until it drops its fish."),
+          represents: 'Kleptoparasitism, which means stealing food another animal caught. A Bald Eagle chases an Osprey that is carrying a fish, turning with it again and again, until the smaller bird lets the fish go. The eagle then catches it in the air or picks it off the water.',
+          when: 'Wherever both species fish the same water. Bald Eagles catch plenty of their own fish and also eat carrion, but many observers have watched them rob Ospreys, and some researchers think this pressure may affect where Ospreys nest.',
+          notice: 'A heavy eagle cannot out-turn an Osprey, so stay close behind and a little above it rather than trying to match every turn. A falling fish speeds up quickly, so get under it early. Bald Eagles do not plunge in like Ospreys, so snatch the fish from the surface as you skim past.',
+          simplified: 'The pressure meter is a game rule. A real Osprey drops its fish for reasons nobody can measure in a single chase, and sometimes it keeps the fish. The Osprey here always catches another fish so the mission can continue. Real chases can also happen far from water.',
+          sources: 'Cornell Lab of Ornithology, All About Birds, Bald Eagle life history; Buffalo Bill Center of the West, Kleptoparasites: the pirates of the bird world; Points in Focus Photography, Bald Eagle kleptoparasitism field guide.'
+        },
+        crossDesert: {
+          tag: __alloT('stem.raptorhunt.mode_tag_desert', "Hop from thermal to thermal to reach an oasis."),
+          represents: 'Soaring migration. A Swainson\'s Hawk climbs in a rising column of warm air, glides to the next one while slowly losing height, and repeats. It travels on stored fat and hardly stops to feed, so saving energy matters more than catching prey.',
+          when: 'Twice a year, in spring and fall. Swainson\'s Hawks make a round trip of about 20,000 km between North and South America. Thermals form over warm land, so soaring migrants usually avoid crossing open water, and many funnel through the narrow land bridge of Central America.',
+          notice: 'Outside a thermal you sink. Climb high enough to reach the next one, because flapping burns energy far faster than gliding. A catch adds energy, but a detour costs time. Landing ends this crossing.',
+          simplified: 'Four minutes and about a kilometer stand in for days of real travel, and the sinking air is stronger than usual so the choice shows quickly. The dunes, thermal positions, and oasis are a game map, not a real route.',
+          sources: 'Smithsonian Migratory Bird Center, Swainson\'s Hawk species profile and Bird of the Cowboys and Gauchos.'
+        },
+        silentStrike: {
+          tag: __alloT('stem.raptorhunt.mode_tag_silent', "Hunt close to prey without being heard."),
+          represents: 'Quiet flight. Owl wings have a comb on the leading edge, velvet on the surface, and a fringe on the trailing edge. Together these are linked to very quiet flight, although scientists are still working out exactly how each one helps.',
+          when: 'Mostly at dusk and at night, all year. Most owls hunt in low light, and quiet flight helps them approach prey that could otherwise hear them coming.',
+          notice: 'The pale rings stand for rustling you can hear. They appear only while you glide, because flapping drowns them out. Inside the alert range, keep gliding. One loud approach ends the mission.',
+          simplified: 'The alert range is a fixed game rule, and it does not compute real sound levels. Real owls can also fly quietly while flapping. In experiments, Barn Owls found mice by sound alone, but only after they had first been able to see the area. The rings are a picture of hearing, not what an owl sees.',
+          sources: 'Audubon, The Silent Flight of Owls, Explained. Knowable Magazine, How Owls Fly Without Making a Sound. British Trust for Ornithology, Owl Hearing.'
+        },
+        thermalKettle: {
+          tag: __alloT('stem.raptorhunt.mode_tag_thermal', "Climb on rising warm air without flapping."),
+          represents: 'Soaring on thermals. Sun-heated ground sends up columns of warm air, and a bird that circles inside one climbs with very little effort. It then glides to the next column, often miles away.',
+          when: 'On sunny days, and most famously on migration. Broad-winged Hawk migration in the northeastern United States peaks in mid-September, when the sun is still strong enough to make good thermals. Birds gathered in one thermal form a group called a kettle.',
+          notice: 'Look for the circling hawks. Studies of vultures show soaring birds use each other\'s circling to find rising air, and hawks in a kettle may do the same. Hold a gentle circle, and do not pull up to flap, because that ends this mission.',
+          simplified: 'One thermal stands still all flight, and the other hawks simply circle in it. Real kettles can hold many hawks, and thermals shift and fade through the day.',
+          sources: 'Brandywine Conservancy, September Spectacle. Northern Woodlands, Watching the Hawks Pass By. Williams and others (2018), Journal of the Royal Society Interface.'
+        },
+        avoidPredator: {
+          tag: __alloT('stem.raptorhunt.mode_tag_evade', "Hunt while a bigger raptor is hunting you."),
+          represents: 'Predators hunted by predators. Smaller raptors are prey for larger ones, so a small hawk or falcon has to find food and stay alert at the same time.',
+          when: 'All year, wherever large and small raptors share an area. In one long-term study in Kielder Forest, England, raptors rose from 2% to 8% of Northern Goshawk diet as goshawk numbers grew, and kestrels were the most common victims.',
+          notice: 'You cannot outrun the goshawk, so watch its arrow. When it lunges, turn hard: a smaller bird can turn tighter, and a fast attacker can overshoot. When it breaks off, hunt.',
+          simplified: 'The goshawk follows simple chase rules, always knows where you are, and gives up after a set time. A real encounter depends on cover and surprise, and who wins a turning contest depends on the two birds\' speed and size.',
+          sources: 'Hoy and others (2017), Journal of Avian Biology. Hedenström and Rosén (2001), Behavioral Ecology.'
+        },
+        highStoop: {
+          tag: __alloT('stem.raptorhunt.mode_tag_stoop', "Dive from great height and time a fast catch."),
+          represents: 'The stoop. A falcon folds its wings and dives, trading height for speed. The strike is often a blow from the talons, delivered in the air.',
+          when: 'Whenever a falcon hunting from height spots prey, most often birds in flight. Peregrines are the best known for it, and estimates of their top speed vary from source to source.',
+          notice: 'Height becomes speed. Build speed early, then make small corrections, because large ones are hard at this pace. Speed is not only about arriving first. In a 2018 computer model, faster dives gave falcons larger forces for turning and helped them catch agile prey, but only with very precise steering.',
+          simplified: 'This mission asks for a set speed to count the catch. Real stoops do not all reach top speed, and the falcon may catch the prey in the air or pick it up after it falls.',
+          sources: 'Young People\'s Trust for the Environment, peregrine factsheet; Mills and others (2018).'
+        }
+      };
       var MISSIONS = [
         {
           id: 'open',
@@ -14353,33 +15627,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           successText: 'Free hunt — no win condition. Track your stats in the achievement panel.'
         },
         {
+          id: 'perchHunt',
+          recommendedSpecies: 'redTail',
+          name: __alloT('stem.raptorhunt.perch_hunt', "Perch Hunt"),
+          icon: '\uD83E\uDEB5',
+          difficulty: 'Open',
+          intro: __alloT('stem.raptorhunt.mode_perch_intro', "Start on a lookout. Scan for prey, then launch when something comes within reach."),
+          objective: 'Hunt from the lookout as long as you want. Scan, launch, strike, then return to the lookout.',
+          timeLimit: 0,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Sit-and-wait hunting saves energy but can take longer than searching in flight.',
+          successText: 'Perch Hunt has no win condition. Track your stats in the achievement panel.'
+        },
+        {
+          id: 'flightTrail',
+          name: __alloT('stem.raptorhunt.flight_trail_name', "Flight Trail"),
+          icon: '\uD83E\uDEB6',
+          difficulty: 'Practice',
+          intro: __alloT('stem.raptorhunt.mode_trail_intro', "Fly through the rings. Score 7 or more to move up a grade."),
+          objective: 'Fly through five rings. Centered passes score 2 points and wide passes score 1. Score 7 or more to move up a grade.',
+          timeLimit: 0,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Young raptors spend weeks after leaving the nest building flight control before they can feed themselves.',
+          successText: 'Flight Trail has no win condition. Try the next grade when you are ready.'
+        },
+        {
           id: 'feedChicks',
+          recommendedSpecies: 'redTail',
           name: __alloT('stem.raptorhunt.feed_the_chicks', 'Feed the Chicks'),
           icon: '🐣',
           difficulty: 'Easy',
           intro: __alloT('stem.raptorhunt.your_nest_holds_2_hungry_chicks_they_n', 'Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.'),
-          objective: 'Catch enough prey to deliver 400 kcal total in 4 minutes. Eating restores YOUR energy too.',
+          objective: 'Catch prey and carry it to the nest. Make at least 3 deliveries and bring 400 kcal within 4 minutes. You keep about a quarter of each delivery for yourself.',
           timeLimit: 240,
           calorieGoal: 400,
+          minDeliveries: 3,
           forbidden: [],
           required: [],
-          pedagogy: 'Parental care energy demand. Real raptors hunt 6-12 prey per day during chick-rearing — most catches must be net-positive (calories gained > calories burned hunting). This mission teaches the energy-budget tradeoff that drives nest success vs failure.',
-          successText: 'Chicks survive the day. They\'ll need food again tomorrow. Real raptor parents do this for 8-12 weeks straight.'
+          pedagogy: 'Parental care energy demand. Every catch means a flight home, so each one has to be worth the trip.',
+          successText: 'The chicks are fed for now. Young Red-tailed Hawks stay in the nest for about six weeks, so the work goes on.'
+        },
+        {
+          id: 'windHover',
+          recommendedSpecies: 'kestrel',
+          name: __alloT('stem.raptorhunt.wind_hover', 'Wind Hover'),
+          icon: '🌬',
+          difficulty: 'Medium',
+          intro: __alloT('stem.raptorhunt.mode_hover_intro', "Face the wind and hover over the grass runways until a vole moves. Hovering burns energy fast."),
+          objective: 'Catch 3 voles within 3 minutes. Face the wind and hold Pull up to hover over a runway patch. A catch empties that patch, so move on to the next one.',
+          timeLimit: 180,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Relative motion. Ground speed is airspeed combined with wind, so a bird flying into the wind at wind speed stays over one spot.',
+          successText: 'Three voles. You matched the wind, held still, and paid for it in energy, which is the trade a hovering kestrel makes.'
+        },
+        {
+          id: 'fishDive',
+          recommendedSpecies: 'osprey',
+          name: __alloT('stem.raptorhunt.fish_dive', 'Fish Dive'),
+          icon: '🐟',
+          difficulty: 'Medium',
+          intro: __alloT('stem.raptorhunt.mode_fishdive_intro', "Line up the ring over a fish, then dive. The bird plunges in feet first."),
+          objective: 'Catch 3 fish within 4 minutes. Hold Pull up to hover, line up the white ring with a fish, then hold Dive. Stay high, because low flight scares the fish deeper.',
+          timeLimit: 240,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Projectile thinking and trade-offs. Where a dive lands depends on height, speed, and wind, and a deeper reach costs a higher, longer dive.',
+          successText: 'Three fish. Ospreys vary a lot in how many dives succeed, and wind, tide, and practice all play a part.'
+        },
+        {
+          id: 'fishThief',
+          recommendedSpecies: 'baldEagle',
+          name: __alloT('stem.raptorhunt.fish_thief', 'Fish Thief'),
+          icon: '🎣',
+          difficulty: 'Hard',
+          intro: __alloT('stem.raptorhunt.mode_thief_intro', "Stay close behind an Osprey until it drops its fish, then catch the fish before it is lost."),
+          objective: 'Steal 2 fish within 4 minutes. Stay close behind and a little above the Osprey until it drops its catch, then Strike to catch the fish in the air or snatch it off the water.',
+          timeLimit: 240,
+          calorieGoal: 0,
+          forbidden: [],
+          required: [],
+          pedagogy: 'Competition between species and the trade-off between catching food and stealing it. Falling objects also speed up, so the catch is a timing problem.',
+          successText: 'Two stolen fish. Bald Eagles are famous for this, but they also hunt and scavenge for most of what they eat.'
         },
         {
           id: 'crossDesert',
-          recommendedSpecies: 'redTail',
+          recommendedSpecies: 'swainsons',
           name: __alloT('stem.raptorhunt.cross_the_desert', 'Cross the Desert'),
           icon: '🏜',
           difficulty: 'Medium',
-          intro: __alloT('stem.raptorhunt.a_6_minute_migration_crossing_sparse_p', 'A 6-minute migration crossing. Sparse prey, headwinds, no time to dawdle.'),
-          objective: 'Stay airborne for 6 minutes and catch at least 1 prey to refuel. Landing or running out of energy ends the crossing.',
-          timeLimit: 360,
+          intro: __alloT('stem.raptorhunt.mode_desert_intro', "Climb in each thermal, glide to the next, and reach the oasis. The air sinks between thermals."),
+          objective: 'Reach the oasis within 4 minutes. Climb in the thermals and glide between them. Landing or running out of energy ends the crossing.',
+          timeLimit: 240,
           calorieGoal: 0,
           forbidden: [],
           required: ['stayAirborne'],
-          pedagogy: 'Migration energy budgets. Swainson\'s hawks fly 14,000 miles round-trip and lose 20-30% body mass crossing the Atacama desert. Picking when to flap vs glide is the difference between making it + dying mid-flight.',
-          successText: 'You crossed. Real migrants do this twice a year, for life.'
+          pedagogy: 'Migration energy budgets. Soaring migrants climb in thermals and glide between them, spending little energy and feeding little along the way.',
+          successText: 'You crossed. Real migrants do this twice a year, over thousands of kilometers.'
         },
         {
           id: 'silentStrike',
@@ -14419,7 +15769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           icon: '👁',
           difficulty: 'Hard',
           intro: __alloT('stem.raptorhunt.a_larger_raptor_is_hunting_you_survive', 'A larger raptor is hunting YOU. Survive 4 minutes + catch your own prey while keeping distance.'),
-          objective: 'Survive 4 minutes (don\'t let goshawk close to < 30m) + catch 2 prey. Goshawk closes when you\'re slow.',
+          objective: 'Survive 4 minutes and catch 2 prey. The goshawk is faster than you, but its lunge hardly turns, so turn hard when it lunges. It tires and breaks off, which is your chance to hunt.',
           timeLimit: 240,
           calorieGoal: 0,
           forbidden: [],
@@ -14445,13 +15795,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       ];
       function missionRouteLabelsFor(missionDef) {
         var id = missionDef && missionDef.id;
-        if (id === 'feedChicks') return [['scan', 'Scan'], ['align', 'Align'], ['strike', 'Strike'], ['reset', 'Reset']];
-        if (id === 'crossDesert') return [['plan', 'Plan'], ['glide', 'Glide'], ['refuel', 'Refuel'], ['cross', 'Cross']];
+        if (id === 'feedChicks') return [['scan', 'Scan'], ['catch', 'Catch'], ['carry', 'Carry'], ['feed', 'Feed']];
+        if (id === 'perchHunt') return [['watch', 'Watch'], ['launch', 'Launch'], ['strike', 'Strike'], ['return', 'Return']];
+        if (id === 'flightTrail') return [['steer', 'Steer'], ['center', 'Center'], ['score', 'Score'], ['grade', 'Grade']];
+        if (id === 'windHover') return [['face', 'Face wind'], ['still', 'Hold still'], ['spot', 'Spot'], ['strike', 'Strike']];
+        if (id === 'fishDive') return [['search', 'Search'], ['line', 'Line up'], ['plunge', 'Plunge'], ['carry', 'Carry']];
+        if (id === 'fishThief') return [['chase', 'Chase'], ['press', 'Press'], ['catch', 'Catch'], ['carry', 'Carry']];
+        if (id === 'crossDesert') return [['glide', 'Glide'], ['climb', 'Climb'], ['next', 'Next lift'], ['oasis', 'Oasis']];
         if (id === 'silentStrike') return [['listen', 'Listen'], ['glide', 'Glide'], ['strike', 'Strike'], ['quiet', 'Quiet']];
         if (id === 'thermalKettle') return [['locate', 'Locate'], ['circle', 'Circle'], ['climb', 'Climb'], ['exit', 'Exit']];
         if (id === 'avoidPredator') return [['scan', 'Scan'], ['evade', 'Evade'], ['strike', 'Strike'], ['survive', 'Survive']];
         if (id === 'highStoop') return [['climb', 'Climb'], ['dive', 'Dive'], ['align', 'Align'], ['strike', 'Strike']];
         return [['scan', 'Scan'], ['align', 'Align'], ['strike', 'Strike'], ['reset', 'Reset']];
+      }
+      // The hunt picker and the encyclopedia page for the selected hunt, shown before the flight starts.
+      function renderHuntModePicker(selectedMission) {
+        var guide = HUNT_MODE_GUIDES[selectedMission.id] || HUNT_MODE_GUIDES.open;
+        return h('div', { className: 'mb-3' },
+          h('fieldset', { className: 'rh-mode-fieldset', 'data-raptor-mission-select': 'true' },
+            h('legend', { className: 'rh-mode-legend' }, __alloT('stem.raptorhunt.mode_choose_legend', "Choose a hunt")),
+            h('div', { className: 'rh-mode-picker' },
+              MISSIONS.map(function(item) {
+                var selected = item.id === selectedMission.id;
+                var itemGuide = HUNT_MODE_GUIDES[item.id] || {};
+                return h('label', { key: item.id, className: 'rh-mode-card', 'data-raptor-mode-card': item.id, 'data-selected': selected ? 'true' : 'false' },
+                  h('input', {
+                    type: 'radio',
+                    name: 'rh-hunt-mode',
+                    value: item.id,
+                    checked: selected,
+                    onChange: function() {
+                      var nextPatch = { activeMission: item.id };
+                      if (item.recommendedSpecies) nextPatch.selectedSpecies = item.recommendedSpecies;
+                      setRH(nextPatch);
+                      rhAnnounce(item.name + ' selected. Read about it below, then start when ready.');
+                    }
+                  }),
+                  h('span', { className: 'rh-mode-name' }, h('span', { 'aria-hidden': 'true' }, item.icon + ' '), item.name, selected ? h('span', { className: 'rh-mode-check', 'aria-hidden': 'true' }, ' \u2713') : null),
+                  h('span', { className: 'rh-mode-tag' }, itemGuide.tag),
+                  h('span', { className: 'rh-mode-level' }, item.difficulty)
+                );
+              })
+            )
+          ),
+          h('article', { className: 'rh-mode-guide', 'data-raptor-mode-guide': selectedMission.id, 'aria-labelledby': 'rh-mode-guide-title' },
+            h('h4', { id: 'rh-mode-guide-title', className: 'rh-mode-guide-title' }, h('span', { 'aria-hidden': 'true' }, selectedMission.icon + ' '), selectedMission.name),
+            h('div', { className: 'rh-mode-guide-grid' },
+              h('section', null, h('h5', null, __alloT('stem.raptorhunt.mode_head_represents', "What this represents")), h('p', null, guide.represents)),
+              h('section', null, h('h5', null, __alloT('stem.raptorhunt.mode_head_when', "When it happens in the wild")), h('p', null, guide.when)),
+              h('section', null, h('h5', null, __alloT('stem.raptorhunt.mode_head_notice', "What to notice")), h('p', null, guide.notice)),
+              h('section', null, h('h5', null, __alloT('stem.raptorhunt.mode_head_simplified', "What the simulation simplifies")), h('p', null, guide.simplified))
+            ),
+            h('p', { className: 'rh-mode-sources' }, __alloT('stem.raptorhunt.mode_head_sources', "Sources") + ': ' + guide.sources)
+          )
+        );
       }
       function renderHunt() {
         var allStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
@@ -14495,7 +15892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var readoutState = flightResolved ? simUI.missionState : simUI.paused ? 'paused' : readoutTargetState;
         var readoutStateLabel = flightResolved ? (simUI.missionState === 'success' ? 'Mission complete' : 'Mission ended') : simUI.paused ? 'Paused' : readoutTargetLabel;
         var readoutCards = [
-          ['Status', flightResolved ? readoutStateLabel : simUI.paused ? 'Paused' : ({ perched: 'Perched', landed: 'Landed', stunned: 'Stunned', glide: 'Gliding', climb: 'Climbing', thermal: 'In thermal', descent: 'Descending', dive: 'Stooping', 'pull-up': 'Pulling up' })[simUI.flightState] || (simUI.ready ? 'Airborne' : 'Preparing'), simUI.missionState === 'active' ? 'Live mission' : 'Review run', 'status'],
+          ['Status', flightResolved ? readoutStateLabel : simUI.paused ? 'Paused' : ({ perched: 'Perched', landed: 'Landed', stunned: 'Stunned', glide: 'Gliding', climb: 'Climbing', thermal: 'In thermal', descent: 'Descending', dive: 'Stooping', hover: 'Hovering', 'pull-up': 'Pulling up' })[simUI.flightState] || (simUI.ready ? 'Airborne' : 'Preparing'), simUI.missionState === 'active' ? 'Live mission' : 'Review run', 'status'],
           [thermalFlight ? 'Lift' : 'Target', readoutTargetLabel, flightResolved ? (thermalFlight ? 'Last guidance before flight ended' : 'Last target before flight ended') : simUI.targetHint || (thermalFlight ? 'Glide toward the rising-air rings' : 'Scan ahead for prey'), 'target'],
           ['Strike', strikeButtonState || (readoutTargetState === 'ready' ? 'Ready' : 'Line up prey'), strikeHelp || (controlLabel('strike') ? controlLabel('strike') + ' key / Strike' : 'Use the Strike button'), 'strike'],
           ['Camera', simUI.camera === 'fp' ? 'First person' : 'Chase view', simUI.zoom ? 'Acuity zoom on' : 'Wide field', 'camera'],
@@ -14660,7 +16057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap mb-3' },
               h('div', null,
                 h('h3', { id: 'rh-flight-setup-title', className: 'text-base font-bold text-amber-200' }, 'Flight setup'),
-                h('div', { className: 'text-xs text-slate-300 mt-1' }, 'Choose a raptor and mission, review the objective, then start when you are ready.')
+                h('div', { className: 'text-xs text-slate-300 mt-1' }, 'Choose a hunt, read what it represents, pick a raptor, then start when you are ready.')
               ),
               h('div', { className: 'flex gap-2 text-xs flex-wrap' },
                 h('span', { className: 'px-2 py-1 rounded bg-emerald-950/70 border border-emerald-500/60 text-emerald-100' }, 'Catches ' + allStats.catches),
@@ -14668,7 +16065,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('span', { className: 'px-2 py-1 rounded bg-amber-950/70 border border-amber-400/60 text-amber-100' }, 'Best ' + allStats.bestRun)
               )
             ),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+            renderHuntModePicker(mission),
+            h('div', { className: 'grid grid-cols-1 gap-3' },
               h('label', { className: 'block text-xs font-bold text-amber-100' },
                 h('span', { className: 'block mb-1' }, 'Raptor'),
                 h('select', {
@@ -14683,26 +16081,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 },
                   SPECIES.map(function(item) {
                     return h('option', { key: item.id, value: item.id }, item.name + ' - ' + item.stoopMph + ' mph stoop');
-                  })
-                )
-              ),
-              h('label', { className: 'block text-xs font-bold text-cyan-100' },
-                h('span', { className: 'block mb-1' }, 'Mission'),
-                h('select', {
-                  value: activeMission,
-                  onChange: function(event) {
-                    var nextMission = MISSIONS.filter(function(item) { return item.id === event.target.value; })[0] || MISSIONS[0];
-                    var nextPatch = { activeMission: nextMission.id };
-                    if (nextMission.recommendedSpecies) nextPatch.selectedSpecies = nextMission.recommendedSpecies;
-                    setRH(nextPatch);
-                    rhAnnounce(nextMission.name + ' selected. Start when ready.');
-                  },
-                  className: 'w-full px-3 py-2 rounded-lg bg-slate-950 text-slate-50 border border-slate-500 text-sm',
-                  'data-raptor-mission-select': 'true',
-                  'aria-label': __alloT('stem.raptorhunt.a11y_raptor_flight_mission', 'Raptor flight mission')
-                },
-                  MISSIONS.map(function(item) {
-                    return h('option', { key: item.id, value: item.id }, item.name + ' - ' + item.difficulty);
                   })
                 )
               )
@@ -14743,12 +16121,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 mission.intro && h('div', { className: 'text-xs text-amber-100/80 mt-2 leading-relaxed' }, mission.intro)
               ),
               h('details', { className: 'bg-slate-950/65 border border-cyan-500/50 rounded-lg p-3 text-xs text-slate-200 lg:max-w-sm' },
-                h('summary', { className: 'font-bold text-cyan-200 cursor-pointer' }, 'Controls and science'),
+                h('summary', { className: 'font-bold text-cyan-200 cursor-pointer' }, 'Controls'),
                 h('div', { id: 'rh-flight-instructions', className: 'mt-2 leading-relaxed' },
                   h('div', { className: 'font-mono text-amber-200 mb-1' }, raptorSchemeBindings(activeScheme).slice(0, 6).map(function(row) { return row.keys.join('/') + ' ' + row.label.toLowerCase(); }).join(' - ')),
                   h('div', { className: 'font-mono text-amber-200 mb-2' }, raptorSchemeBindings(activeScheme).slice(6).map(function(row) { return row.keys[0] + ' ' + row.label.toLowerCase(); }).join(' - ') + ' - change presets in Settings'),
-                  h('div', { className: 'text-slate-300 mb-1', 'data-raptor-click-strike-hint': 'true' }, 'Click or tap prey within reach to strike. Pressing Strike a moment early still counts: the talons stay out for about half a second.'),
-                  h('div', { className: 'text-slate-300' }, mission.pedagogy)
+                  h('div', { className: 'text-slate-300 mb-1', 'data-raptor-click-strike-hint': 'true' }, 'Click or tap prey within reach to strike. Pressing Strike a moment early still counts: the talons stay out for about half a second.')
                 )
               )
             ),
@@ -15503,6 +16880,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return;
         }
         var mission = missionConfig || MISSIONS[0];
+        // The crossing is flown over desert whichever bird flies it.
+        if (mission.id === 'crossDesert') species = Object.assign({}, species, { biome: 'desert' });
+        if (mission.id === 'windHover') species = Object.assign({}, species, { biome: 'grassland' });
+        if (mission.id === 'fishDive' || mission.id === 'fishThief') species = Object.assign({}, species, { biome: 'lake' });
         var notifyUI = typeof onUIState === 'function' ? onUIState : function() {};
         var disposed = false;
         var graphicsQuality = /^(low|balanced|high)$/.test(qualitySetting || '') ? qualitySetting : 'balanced';
@@ -15518,7 +16899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var H = canvasEl.clientHeight || 500;
 
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(70, W / H, 0.5, 2000);
+        var camera = new THREE.PerspectiveCamera(70, W / H, 0.5, mission.id === 'highStoop' || mission.id === 'thermalKettle' ? 9000 : 2000);
         var renderer;
         try {
           renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
@@ -15616,7 +16997,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           'urban-cliff':   { sky: 0xbfdbfe, fog: 0xe0e7ff, ground: 0x6b7280 },
           // NEW v0.19 biomes
           'tundra':        { sky: 0xc7d2fe, fog: 0xe2e8f0, ground: 0xf1f5f9 },  // pale blue sky, white-ish ground (snow)
-          'forest':        { sky: 0x9bc7f2, fog: 0xd9f99d, ground: 0x166534 }   // temperate forest, green ground
+          'forest':        { sky: 0x9bc7f2, fog: 0xd9f99d, ground: 0x166534 },  // temperate forest, green ground
+          'desert':        { sky: 0x9cc4e6, fog: 0xecdcc0, ground: 0xc6a163 }
         };
         var bc = biomeColors[species.biome] || biomeColors.grassland;
         // ─── NEW v0.26: Proper sky gradient dome (zenith → horizon) ───
@@ -16067,6 +17449,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           height += Math.sin(localX * 0.05 + 1.7) * Math.cos(localY * 0.06 + 0.8) * 3;
           height += Math.sin(localX * 0.13) * Math.cos(localY * 0.11) * 0.8;
           if (species.biome === 'mountain') height *= 2.5;
+          if (species.biome === 'desert') {
+            // Long dune ridges, steeper on one side, on broad swells. The oasis sits in a flat hollow.
+            var duneWave = Math.sin(localX * 0.031 + localY * 0.012 + Math.sin(localY * 0.009) * 2);
+            height = height * 0.45 + Math.pow(duneWave * 0.5 + 0.5, 2.2) * 15 - 3;
+            var oasisDistance = Math.hypot(localX - DESERT_OASIS.x, localY + DESERT_OASIS.z);
+            if (oasisDistance < 95) { var oasisBlend = Math.max(0, (oasisDistance - 38) / 57); oasisBlend = oasisBlend * oasisBlend * (3 - 2 * oasisBlend); height = height * oasisBlend + 0.4 * (1 - oasisBlend); }
+          }
           if (species.biome === 'cliff' || species.biome === 'urban-cliff') {
             // Escarpment: a winding edge, an eased 35 m rise with ledges, then the old plateau fall-off.
             var escarpmentEdge = -50 + Math.sin(localY * 0.021) * 12 + Math.sin(localY * 0.063 + 1.4) * 5;
@@ -16137,12 +17526,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Broad soil/grass/rock bands complement fine grain without extra draws.
         var terrainColors = new Float32Array(tPos.length);
         var terrainShade = new THREE.Color();
-        var rockTint = new THREE.Color(species.biome === 'tundra' ? 0xa5b4c4 : 0x82766a).convertSRGBToLinear();
+        var rockTint = new THREE.Color(species.biome === 'tundra' ? 0xa5b4c4 : species.biome === 'desert' ? 0xb07d4f : 0x82766a).convertSRGBToLinear();
         // Snow reads by shadow, not by hue. A hollow in a snowfield is lit by sky
         // alone, which is why its shadows are blue-grey rather than merely darker.
         var snowShadowTint = new THREE.Color(0x93a9c6).convertSRGBToLinear();
         var isSnowGround = species.biome === 'tundra';
-        var meadowTint = new THREE.Color(species.biome === 'cliff' || species.biome === 'mountain' ? 0x637048 : 0x7a8850).convertSRGBToLinear();
+        var meadowTint = new THREE.Color(species.biome === 'desert' ? 0xdcc08a : species.biome === 'cliff' || species.biome === 'mountain' ? 0x637048 : 0x7a8850).convertSRGBToLinear();
         var groundTint = new THREE.Color(bc.ground).convertSRGBToLinear();
         var sandTint = new THREE.Color(0xc6af7b).convertSRGBToLinear();
         for (var groundVertex = 0; groundVertex < tPos.length; groundVertex += 3) {
@@ -16164,6 +17553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           terrainShade.lerp(rockTint, Math.min(0.9, slope * 4 + Math.max(0, terrainY - 14) * 0.022));
           if (species.biome === 'lake') terrainShade.lerp(sandTint, Math.max(0, 1 - Math.abs(terrainY + 1.5) / 4));
+          if (species.biome === 'desert') terrainShade.multiplyScalar(0.66 + Math.max(0, Math.min(1, (terrainY + 3) / 15)) * 0.46);
           terrainShade.multiplyScalar(0.85 + patch * 0.30);
           terrainColors[groundVertex] = terrainShade.r;
           terrainColors[groundVertex + 1] = terrainShade.g;
@@ -16185,11 +17575,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             species.biome === 'rainforest' ? 0x166534 :
                             species.biome === 'forest-night' ? 0x1e1b4b :
                             0x475569;
+        if (species.biome === 'desert') mountainColor = 0xa8704a;
         // Distance washes a ridge toward the sky, so the far ring is the paler of the two.
         var biomeTempC = raptorBiomeClimate(species.biome).tempC;
         var snowLineHeight = raptorSnowLineHeight(biomeTempC);
         // Eroded height fields form connected ridges and saddles rather than cone silhouettes.
         // The snow overlay samples the identical parent surface, then clips below its snow line.
+        // The heightfield is square, so its flat outer corners showed as pale slabs round a rock. Push them under the ground.
+        function sinkMountainSkirt(geometry) {
+          var p=geometry.attributes.position,r=geometry.parameters.radius;
+          for(var i=0;i<p.count;i++) p.setY(i,p.getY(i)-Math.max(0,Math.hypot(p.getX(i),p.getZ(i))/r-0.96)*r*1.2);
+          geometry.computeVertexNormals();
+          return geometry;
+        }
         function sculptMountainGeometry(geometry, seed, skewHeight) {
           var localHeight=geometry.parameters.height || 1;
           var height=skewHeight || localHeight;
@@ -16347,6 +17745,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return (1 - u) * bHeight + (u + v - 1) * cHeight + (1 - v) * dHeight;
         }
 
+        // The plain under high flights, and the colour the apron fades to so no square world edge shows from above.
+        var farGroundMissions=mission.id==='highStoop'||mission.id==='thermalKettle';
+        var farGroundTint=new THREE.Color(0,0,0),farPatchTexture=null,horizonHaze=null;
+        for(var tintIndex=0;tintIndex<terrainColors.length;tintIndex+=3){farGroundTint.r+=terrainColors[tintIndex];farGroundTint.g+=terrainColors[tintIndex+1];farGroundTint.b+=terrainColors[tintIndex+2];}
+        farGroundTint.multiplyScalar(3/terrainColors.length);
+        if(farGroundMissions){
+          var farPlainGeometry=new THREE.PlaneGeometry(18000,18000,110,110);farPlainGeometry.rotateX(-Math.PI/2);
+          var farPlainPositions=farPlainGeometry.attributes.position,farPlainColors=new Float32Array(farPlainPositions.count*3),farPlainShade=new THREE.Color();
+          for(var farIndex=0;farIndex<farPlainPositions.count;farIndex++){
+            var farX=farPlainPositions.getX(farIndex),farZ=farPlainPositions.getZ(farIndex);
+            farPlainPositions.setY(farIndex,Math.max(Math.abs(farX),Math.abs(farZ))<1500?-80:-36);
+            var farPatch=Math.sin(farX*0.0021+Math.cos(farZ*0.0013)*2)*Math.cos(farZ*0.0017+farX*0.0006);
+            var farField=Math.sin(farX*0.0071+1.3)*Math.sin(farZ*0.0063+0.4);
+            var farCentreFade=Math.min(1,Math.max(0,(Math.hypot(farX,farZ)-2300)/1500));
+            farPlainShade.copy(farGroundTint).multiplyScalar(1+(farPatch*0.2+farField*0.08)*farCentreFade);
+            farPlainColors[farIndex*3]=farPlainShade.r;farPlainColors[farIndex*3+1]=farPlainShade.g;farPlainColors[farIndex*3+2]=farPlainShade.b;
+          }
+          farPlainGeometry.setAttribute('color',new THREE.BufferAttribute(farPlainColors,3));farPlainGeometry.computeVertexNormals();
+          // A patchwork of fields, woods, a river and a few tracks, about 18 m to a pixel. Its own seed, so scene randomness is untouched.
+          var patchCanvas=document.createElement('canvas');patchCanvas.width=patchCanvas.height=1024;var patchCtx=patchCanvas.getContext('2d');
+          var patchSeed=11;function patchRandom(){var v=Math.sin(patchSeed++*78.233)*43758.5453;return v-Math.floor(v);}
+          function patchTone(r,g,b){return 'rgb('+Math.round(r*255)+','+Math.round(g*255)+','+Math.round(b*255)+')';}
+          patchCtx.fillStyle=patchTone(0.9,0.92,0.86);patchCtx.fillRect(0,0,1024,1024);
+          for(var row=0;row<64;row++)for(var col=0;col<64;col++){
+            var pick=patchRandom(),fx=col*16+(patchRandom()-0.5)*5,fy=row*16+(patchRandom()-0.5)*5,fw=10+patchRandom()*14,fh=10+patchRandom()*14;
+            patchCtx.fillStyle=pick<0.16?patchTone(0.7,0.82,0.62):pick<0.36?patchTone(1,0.95,0.7):pick<0.56?patchTone(0.8,0.94,0.7):pick<0.72?patchTone(0.86,0.74,0.6):pick<0.86?patchTone(0.92,0.9,0.78):patchTone(0.74,0.84,0.66);
+            patchCtx.save();patchCtx.translate(fx+fw/2,fy+fh/2);patchCtx.rotate((patchRandom()-0.5)*0.25);patchCtx.fillRect(-fw/2,-fh/2,fw,fh);patchCtx.restore();
+          }
+          patchCtx.fillStyle=patchTone(0.56,0.66,0.52);
+          for(var wood=0;wood<60;wood++){var wx=patchRandom()*1024,wy=patchRandom()*1024,clump=4+Math.floor(patchRandom()*7);for(var tree=0;tree<clump;tree++){var cr=2+patchRandom()*5;patchCtx.beginPath();patchCtx.ellipse(wx+(patchRandom()-0.5)*18,wy+(patchRandom()-0.5)*18,cr,cr*(0.6+patchRandom()*0.5),patchRandom()*3,0,Math.PI*2);patchCtx.fill();}}
+          patchCtx.lineCap='round';patchCtx.strokeStyle=patchTone(1,0.98,0.92);patchCtx.lineWidth=1.4;
+          for(var track=0;track<9;track++){patchCtx.beginPath();var tx=patchRandom()*1024,ty=0;patchCtx.moveTo(tx,ty);for(var seg=0;seg<12;seg++){tx+=(patchRandom()-0.5)*90;ty+=90;patchCtx.lineTo(tx,ty);}patchCtx.stroke();}
+          patchCtx.strokeStyle=patchTone(0.55,0.66,0.78);patchCtx.lineWidth=3.2;patchCtx.beginPath();var rx=0,ry=300+patchRandom()*300;patchCtx.moveTo(rx,ry);
+          for(var bend=0;bend<26;bend++){rx+=40;ry+=Math.sin(bend*0.9)*38+(patchRandom()-0.5)*30;patchCtx.lineTo(rx,ry);}patchCtx.stroke();
+          // The flight area sits in the middle of the plain; fade the patchwork to plain grass around it so its edge is soft.
+          var patchCentre=patchCtx.createRadialGradient(512,512,0,512,512,215);patchCentre.addColorStop(0,patchTone(0.87,0.87,0.87));patchCentre.addColorStop(0.62,patchTone(0.87,0.87,0.87));patchCentre.addColorStop(1,'rgba(222,222,222,0)');patchCtx.fillStyle=patchCentre;patchCtx.fillRect(296,296,432,432);
+          farPatchTexture=new THREE.CanvasTexture(patchCanvas);farPatchTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+          // The texture averages about 0.87, so the tint is lifted to keep the plain's overall colour.
+          for(var liftIndex=0;liftIndex<farPlainColors.length;liftIndex++)farPlainColors[liftIndex]=Math.min(1,farPlainColors[liftIndex]*1.15);
+          farPlainGeometry.attributes.color.needsUpdate=true;
+          var farPlainMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,map:farPatchTexture});detailLandscapeMaterial(farPlainMaterial,false);
+          var farPlainCompile=farPlainMaterial.onBeforeCompile;
+          farPlainMaterial.onBeforeCompile=function(shader){farPlainCompile(shader);shader.fragmentShader=shader.fragmentShader.replace('vec2 groundUV=vRhWorld.xz','#include <map_fragment>\nvec2 groundUV=vRhWorld.xz');};
+          var farPlain=new THREE.Mesh(farPlainGeometry,farPlainMaterial);farPlain.name='raptor-far-plain';scene.add(farPlain);
+          // Horizon haze: fog colour over only the ground that is already past the fog distance, blending up into the sky,
+          // so the far edge of the plain never shows as a line. Nearer hills and peaks draw in front of it.
+          horizonHaze=new THREE.Mesh(new THREE.SphereGeometry(870,48,24),new THREE.ShaderMaterial({
+            uniforms:{hazeColor:{value:new THREE.Color()},lowSin:{value:0.1}},
+            vertexShader:'varying vec3 vRhDir;void main(){vRhDir=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+            fragmentShader:'uniform vec3 hazeColor;uniform float lowSin;varying vec3 vRhDir;void main(){float e=vRhDir.y;float a=smoothstep(-lowSin-0.012,-lowSin+0.012,e)*(1.0-smoothstep(0.0,0.05,e));if(a<0.003)discard;gl_FragColor=vec4(hazeColor,a);}',
+            side:THREE.BackSide,transparent:true,depthWrite:false,fog:false}));
+          horizonHaze.name='raptor-horizon-haze';horizonHaze.frustumCulled=false;scene.add(horizonHaze);
+        }
         var apronPositions=[],apronColors=[],apronIndices=[];
         var apronRings=8,apronSideVertices=terrainSegs+1;
         for(var apronSide=0;apronSide<4;apronSide++) {
@@ -16360,7 +17811,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var edgeHeight=terrainHeightAt(bx,bz),height=edgeHeight*(1-blend)-32*blend;
               apronPositions.push(ax*distance,height,az*distance);
               var edgeIndex=(Math.round((bx+terrainHalfSize)/terrainCellSize)+terrainGridStride*Math.round((bz+terrainHalfSize)/terrainCellSize))*3;
-              apronColors.push(terrainColors[edgeIndex],terrainColors[edgeIndex+1],terrainColors[edgeIndex+2]);
+              var apronFade=farGroundMissions?blend:0;
+              apronColors.push(terrainColors[edgeIndex]+(farGroundTint.r-terrainColors[edgeIndex])*apronFade,terrainColors[edgeIndex+1]+(farGroundTint.g-terrainColors[edgeIndex+1])*apronFade,terrainColors[edgeIndex+2]+(farGroundTint.b-terrainColors[edgeIndex+2])*apronFade);
               if(apronRing<apronRings&&apronStep<terrainSegs) {
                 var a=sideBase+apronRing*apronSideVertices+apronStep,b=a+apronSideVertices;
                 apronIndices.push(a,b+1,b,a,a+1,b+1);
@@ -16432,6 +17884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         finishRaptorBarkMaterial(landmarkBarkMaterial);
         finishRaptorBarkMaterial(landmarkSnagMaterial);
         landmarkFoliageMaterial.color.convertSRGBToLinear();
+        if (species.biome === 'desert') landmarkMaterial.color.setHex(0xb07d4f).convertSRGBToLinear();
         var landmarkCount = graphicsQuality === 'high' ? 6 : graphicsQuality === 'low' ? 3 : 4;
         var landmarkMode = species.biome === 'mountain' || species.biome === 'cliff' || species.biome === 'urban-cliff'
           ? 'peaks'
@@ -16531,7 +17984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var outcropIce = landmarkMode === 'ice';
             var outcropRadius = landmarkHeight * (outcropIce ? 0.55 : 0.75) + Math.random() * landmarkHeight * (outcropIce ? 0.25 : 0.35);
             var outcropHeight = landmarkHeight * (outcropIce ? 0.7 : 0.8);
-            var outcrop = new THREE.Mesh(sculptMountainGeometry(new THREE.ConeGeometry(outcropRadius, outcropHeight, 22, 8), landmarkIndex * 2.7), landmarkMaterial);
+            var outcrop = new THREE.Mesh(sinkMountainSkirt(sculptMountainGeometry(new THREE.ConeGeometry(outcropRadius, outcropHeight, 22, 8), landmarkIndex * 2.7)), landmarkMaterial);
             outcrop.position.y = outcropHeight * 0.5;
             outcrop.rotation.y = Math.random() * Math.PI;
             landmark.add(outcrop);
@@ -16556,7 +18009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               new THREE.ConeGeometry(landmarkHeight * (landmarkMode === 'ice' ? 0.28 : 0.42) + Math.random() * landmarkHeight * 0.22, landmarkHeight, landmarkMode === 'ice' ? 5 : 28, 12),
               landmarkMode === 'ice' ? landmarkAccentMaterial : landmarkMaterial
             );
-            if (landmarkMode !== 'ice') landmarkRock.geometry = sculptMountainGeometry(landmarkRock.geometry, landmarkIndex * 2.7);
+            if (landmarkMode !== 'ice') landmarkRock.geometry = sinkMountainSkirt(sculptMountainGeometry(landmarkRock.geometry, landmarkIndex * 2.7));
             landmarkRock.position.y = landmarkHeight * 0.5;
             landmarkRock.rotation.y = Math.random() * Math.PI;
             landmark.add(landmarkRock);
@@ -16812,6 +18265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         species.biome === 'boreal-forest' ? 140 :
                         species.biome === 'forest' ? 110 :
                         species.biome === 'tundra' ? 4 :
+                        species.biome === 'desert' ? 6 :
                         species.biome === 'mountain' ? 30 :
                         species.biome === 'grassland' ? 25 : 50;
         var treePlacements = [[], [], []];
@@ -16823,6 +18277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var treeHeight = 8 + Math.random() * 14;
           if (species.biome === 'rainforest') treeHeight = 20 + Math.random() * 20;
           if (species.biome === 'mountain') treeHeight = 5 + Math.random() * 5;
+          if (species.biome === 'desert') treeHeight = 3 + Math.random() * 3;
           var treeType = Math.floor(Math.random() * 3);
           if (species.biome === 'boreal-forest' || species.biome === 'tundra') treeType = Math.random() < 0.85 ? 0 : 2;
           if (species.biome === 'rainforest') treeType = 1;
@@ -16932,7 +18387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         trunkInstances.receiveShadow = true;
         scene.add(trunkInstances);
 
-        var foliageBaseColor = species.biome === 'tundra' ? 0xcbd5e1 :
+        var foliageBaseColor = species.biome === 'desert' ? 0x7c8456 : species.biome === 'tundra' ? 0xcbd5e1 :
                                species.biome === 'forest-night' ? 0x14532d :
                                species.biome === 'rainforest' ? 0x14532d :
                                species.biome === 'boreal-forest' ? 0x064e3b :
@@ -17078,7 +18533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var texture=new THREE.CanvasTexture(canvas);texture.encoding=THREE.sRGBEncoding;
           texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
         }
-        function canopyCards(broadleaf) {
+        function canopyCards(broadleaf, shrub) {
           var positions=[],uvs=[],indices=[],normals=[];
           function addCard(points,u0,u1) {
             var base=positions.length/3;
@@ -17088,7 +18543,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           for(var card=0;card<3;card++) {
             var angle=card*Math.PI/3,c=Math.cos(angle),sn=Math.sin(angle);
-            if(broadleaf) addCard([[-c,-0.5,-sn],[c,-0.5,sn],[c,0.5,sn],[-c,0.5,-sn]]);
+            if(shrub){
+              // Upright cards plus six that fan out from the root, so a bush has height from any angle.
+              addCard([[-c,-0.5,-sn],[c,-0.5,sn],[c*0.8,0.5,sn*0.8],[-c*0.8,0.5,-sn*0.8]]);
+              [0,1].forEach(function(side){var fan=angle+side*Math.PI,fc=Math.cos(fan),fs=Math.sin(fan),wx=-fs*0.5,wz=fc*0.5;addCard([[wx*0.5,-0.5,wz*0.5],[-wx*0.5,-0.5,-wz*0.5],[fc*0.95-wx,0.32,fs*0.95-wz],[fc*0.95+wx,0.32,fs*0.95+wz]]);});
+            }
+            else if(broadleaf) addCard([[-c,-0.5,-sn],[c,-0.5,sn],[c,0.5,sn],[-c,0.5,-sn]]);
             else {
               function boughPoint(x,top) {
                 var bow=(1-x*x)*0.24;
@@ -17100,7 +18560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }
             }
           }
-          addCard([[-0.9,-0.08,-0.9],[0.9,0.08,-0.9],[0.9,0.16,0.9],[-0.9,0,0.9]]);
+          if(!shrub)addCard([[-0.9,-0.08,-0.9],[0.9,0.08,-0.9],[0.9,0.16,0.9],[-0.9,0,0.9]]);
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
           geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setIndex(indices);return geometry;
         }
@@ -17178,16 +18638,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
 
-        var groundCoverCount = graphicsQuality === 'high' ? 360 : graphicsQuality === 'low' ? 100 : 240;
-        var groundRockMaterial = new THREE.MeshStandardMaterial({ color: 0x79736b, roughness: 1, flatShading: true });
+        var groundCoverCount = Math.round((graphicsQuality === 'high' ? 360 : graphicsQuality === 'low' ? 100 : 240) * (species.biome === 'desert' ? 0.35 : 1));
+        var groundRockMaterial = new THREE.MeshStandardMaterial({ color: species.biome === 'desert' ? 0x9c7450 : 0x79736b, roughness: 1, flatShading: true });
         groundRockMaterial.color.convertSRGBToLinear();
         detailLandscapeMaterial(groundRockMaterial,true);
         var groundRocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), groundRockMaterial, groundCoverCount);
         groundRocks.name = 'raptor-ground-rocks';
-        var scrubMaterial = new THREE.MeshStandardMaterial({ color: species.biome === 'tundra' ? 0xb5bca1 : 0x65744b, map: leafCanopy, alphaTest: 0.36, side: THREE.DoubleSide, roughness: 1 });
+        var scrubMaterial = new THREE.MeshStandardMaterial({ color: species.biome === 'desert' ? 0x8a8a5c : species.biome === 'tundra' ? 0xb5bca1 : 0x65744b, map: leafCanopy, alphaTest: 0.36, side: THREE.DoubleSide, roughness: 1 });
         scrubMaterial.color.convertSRGBToLinear();
         applyVegetationWind(scrubMaterial,'shrub');
-        var groundScrub = new THREE.InstancedMesh(canopyCards(true), scrubMaterial, groundCoverCount);
+        var groundScrub = new THREE.InstancedMesh(canopyCards(true, true), scrubMaterial, groundCoverCount);
         groundScrub.name = 'raptor-ground-scrub';
         var coverDummy = new THREE.Object3D(), coverPlaced = 0;
         for (var coverIndex = 0; coverIndex < groundCoverCount; coverIndex++) {
@@ -17228,7 +18688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
         }
-        var grassInstanceCount = species.biome==='tundra' ? 0 : graphicsQuality==='high' ? 2800 : graphicsQuality==='low' ? 700 : 1600;
+        var grassInstanceCount = species.biome==='tundra' ? 0 : species.biome==='desert' ? (graphicsQuality==='low' ? 70 : 220) : graphicsQuality==='high' ? 2800 : graphicsQuality==='low' ? 700 : 1600;
         var grassPlaced=0;
         if(grassInstanceCount) {
           var grassGeometry=createMeadowClumpGeometry(graphicsQuality==='low'?7:graphicsQuality==='high'?13:10);
@@ -17253,7 +18713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             coverDummy.rotation.set(0,sceneryRandom()*Math.PI*2,0);
             meadowNormal.set(-slopeX,1,-slopeZ).normalize();meadowTilt.setFromUnitVectors(meadowUp,meadowNormal);coverDummy.quaternion.premultiply(meadowTilt);coverDummy.updateMatrix();
             grassMesh.setMatrixAt(grassPlaced,coverDummy.matrix);
-            var shade=0.78+sceneryRandom()*0.24;grassMesh.setColorAt(grassPlaced,new THREE.Color(shade,shade,shade*0.95));grassPlaced++;
+            var shade=0.78+sceneryRandom()*0.24;grassMesh.setColorAt(grassPlaced,species.biome==='desert'?new THREE.Color(shade*1.5,shade*1.15,shade*0.6):new THREE.Color(shade,shade,shade*0.95));grassPlaced++;
           }
           grassMesh.count=grassPlaced;scene.add(grassMesh);
         }
@@ -17362,7 +18822,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // No needle spires: keep every peak broader than it is tall.
           mtHeight = Math.min(mtHeight, mtWidth * 0.82);
           var mt = new THREE.Mesh(
-            sculptMountainGeometry(new THREE.ConeGeometry(mtWidth, mtHeight, graphicsQuality === 'low' ? 20 : 36, 16), mti * 1.7),
+            sinkMountainSkirt(sculptMountainGeometry(new THREE.ConeGeometry(mtWidth, mtHeight, graphicsQuality === 'low' ? 20 : 36, 16), mti * 1.7)),
             mti % 2 ? nearMountainMaterial : farMountainMaterial
           );
           mt.position.set(Math.cos(mtTheta) * mtRadius, mtHeight * 0.4, Math.sin(mtTheta) * mtRadius);
@@ -18051,7 +19511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           kestrel: {height:5,kind:'snag',note:'American Kestrels scan from perches and pounce; they also hunt while hovering.'},
           greatHorned: {height:6,kind:'snag',note:'Great Horned Owls watch from perches, usually at night. This practice models visual scanning; hearing also matters.'},
           peregrine: {height:18,kind:'ledge',note:'Peregrines may watch from high perches or search in flight before pursuing birds.'}
-        }[species.id] || null;
+        }[species.id] || (mission.id==='perchHunt'?{height:8,kind:'snag',note:'Many raptors watch from a perch between flights, some far more often than others.'}:null);
         function practicePerchCrossing(before,after,perch,speed) {
           if(!perch || speed>18 || before.y<perch.y+1.5 || after.y>=perch.y+1.5)return null;
           var t=(before.y-perch.y-1.5)/(before.y-after.y);
@@ -19191,7 +20651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           leafGeo.setAttribute('position', new THREE.BufferAttribute(leafPos, 3));
           particleSystem = new THREE.Points(leafGeo, new THREE.PointsMaterial({ color: species.biome === 'rainforest' ? 0x84cc16 : 0xea580c, size: 0.7, transparent: true, opacity: 0.75, depthWrite: false }));
           scene.add(particleSystem);
-        } else if (species.biome === 'mountain' || species.biome === 'grassland') {
+        } else if (species.biome === 'mountain' || species.biome === 'grassland' || species.biome === 'desert') {
           // Dust motes / pollen
           var dustCount = Math.max(40, Math.round(150 * qualityProfile.particles));
           var dustGeo = new THREE.BufferGeometry();
@@ -19204,7 +20664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             particleData.velocities.push({ vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.05, vz: (Math.random() - 0.5) * 0.15 });
           }
           dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-          particleSystem = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xfde68a, size: 0.4, transparent: true, opacity: 0.5, depthWrite: false }));
+          particleSystem = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xfde68a, size: 0.7, map: raptorShadowTexture, transparent: true, opacity: 0.5, depthWrite: false }));
           scene.add(particleSystem);
         }
 
@@ -19233,7 +20693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         scene.add(speedLines);
 
         // ─── Prey spawn ───
-        var preyList = SPECIES_PREY[species.id] || ['rodent'];
+        var preyList = mission.id === 'crossDesert' ? ['rodent', 'snake'] : mission.id === 'windHover' ? ['rodent'] : mission.id === 'fishDive' || mission.id === 'fishThief' ? ['fish'] : (SPECIES_PREY[species.id] || ['rodent']);
         var motionNow = 0; // Simulation time excludes paused and suspended frames.
         var preyMeshes = [];
         function preyKindFor(preyData) {
@@ -20619,7 +22079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var pd = PREY[preyId];
           if (!pd) return null;
           // Spawn closer to give student visible prey within scan range
-          var radius = 80 + Math.random() * 220;  // 80-300m (was 250-450m)
+          var radius = mission.id === 'perchHunt' ? 40 + Math.random() * 110 : 80 + Math.random() * 220;  // 80-300m (was 250-450m)
           var theta = Math.random() * Math.PI * 2;
           var px = Math.cos(theta) * radius;
           var pz = Math.sin(theta) * radius;
@@ -20631,10 +22091,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               var sc = 80 / rd2;
               px = px * sc; pz = pz * sc;
             }
+            // A plunge reaches the surface layer anywhere on the open water, not only round one ring.
+            if (mission.id === 'fishDive') { var fishAngle = Math.random() * Math.PI * 2, fishRange = 15 + Math.random() * 85; px = Math.cos(fishAngle) * fishRange; pz = Math.sin(fishAngle) * fishRange; }
             // Fish swim UNDER the water in lake biome — eagles/ospreys spot them
             // from above as dark shapes near the surface. Waterfowl + duck stay on top.
             if (pd.id === 'fish' && species.biome === 'lake') {
               py = -3.5 - Math.random() * 2.5;  // 3.5-6m below water surface
+              if (mission.id === 'fishDive') py = -1.85 - Math.random() * 0.6;  // near the surface, within a plunge
+              else py = -1.85 - ((-3.5 - py) / 2.5) * 0.6;  // the same draw, mapped into the top metre
             } else {
               py = species.biome === 'lake' ? -1.4 : py;
             }
@@ -20718,7 +22182,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if(preyVisual.insect)preyVisual.insect.phase=spawnedPrey.bobPhase;
           return spawnedPrey;
         }
-        for (var pi = 0; pi < 12; pi++) {
+        for (var pi = 0; pi < (mission.id === 'flightTrail' || mission.id === 'windHover' || mission.id === 'fishThief' ? 0 : mission.id === 'crossDesert' ? 4 : mission.id === 'fishDive' ? 8 : 12); pi++) {
           var spawned = spawnPrey();
           if (spawned) preyMeshes.push(spawned);
         }
@@ -20820,9 +22284,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var windDriftZ = 0;        // ─── NEW v0.30: Time-of-day cycle (visual + gameplay) ───
         // dayPhase 0-1: 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk
         var dayPhase = species.biome === 'forest-night' ? 0.0 : (species.id === 'kestrel' || species.id === 'snowyOwl' ? 0.35 : 0.5);
+        if (mission.id === 'flightTrail') weather.windSpeed = Math.min(2, weather.windSpeed);
+        if (mission.id === 'crossDesert') { weather.windDir = 0; weather.windSpeed = Math.min(3, weather.windSpeed); weather.cloudCover = Math.min(0.2, weather.cloudCover); }
+        if (mission.id === 'windHover') { weather.windSpeed = 7.5; weather.cloudCover = Math.min(0.45, weather.cloudCover); }
+        if (mission.id === 'fishThief') { weather.windSpeed = Math.min(4, weather.windSpeed); weather.cloudCover = Math.min(0.45, weather.cloudCover); }
+        if (mission.id === 'fishDive') { weather.windSpeed = 5; weather.cloudCover = Math.min(0.45, weather.cloudCover); }
         var dayCycleSpeed = 0.0025;  // % per second — full day = ~400 seconds
-        var nightSkyColor = new THREE.Color(0x07111f);
-        var nightFogColor = new THREE.Color(0x111827);
+        var nightSkyColor = new THREE.Color(0x101f3b);
+        var nightFogColor = new THREE.Color(0x1d2c48);
         var daySkyColor = new THREE.Color(bc.sky);
         var dayFogColor = new THREE.Color(bc.fog);
         var twilightColor = new THREE.Color(0xf97316);
@@ -20848,7 +22317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // r128 blends fog AFTER tone mapping and sRGB encoding. Match the sky's
         // horizon in that output space rather than sending a linear biome swatch.
         function atmosphereFogColor(target,day,twilight,cloud,exposure,elevation) {
-          var r=0.007+(0.48-0.007)*day,g=0.014+(0.64-0.014)*day,b=0.031+(0.73-0.031)*day;
+          var r=0.02+(0.48-0.02)*day,g=0.036+(0.64-0.036)*day,b=0.08+(0.73-0.08)*day;
           var dusk=twilight*0.65;r+=(0.68-r)*dusk;g+=(0.22-g)*dusk;b+=(0.07-b)*dusk;
           // The sky's exponential height gradient, sampled without sun-disc glare.
           var horizonWeight=Math.exp(-Math.max(0,elevation || 0)*10);
@@ -20878,7 +22347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.background.copy(skyFrameColor);
           // Fog color is resolved below, after this frame's exposure is known.
           scene.fog.near = 85 - visualCloudCover * 30;
-          var highStoopFogBoost = mission.id === 'highStoop' ? 900 : 0;
+          var highStoopFogBoost = mission.id === 'highStoop' ? 900 : mission.id === 'crossDesert' || mission.id === 'thermalKettle' ? 650 : 0;
           scene.fog.far = 720 + highStoopFogBoost - visualCloudCover * 150;
           renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12);
           atmosphereFogColor(scene.fog.color,daylight,twilight,visualCloudCover,renderer.toneMappingExposure);
@@ -20888,8 +22357,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           skyAtmosphere.twilight.value = twilight;
           skyTintColor.copy(skyFrameColor);
           skyDome.material.color.copy(skyTintColor);
-          ambient.intensity = (0.14 + daylight * 0.25) * (0.92 + visualCloudCover * 0.08);
-          skyFill.intensity = (0.16 + daylight * 0.26) * (0.95 + visualCloudCover * 0.12);
+          ambient.intensity = (0.14 + daylight * 0.25 + moonlight * 0.34) * (0.92 + visualCloudCover * 0.08);
+          skyFill.intensity = (0.16 + daylight * 0.26 + moonlight * 0.42) * (0.95 + visualCloudCover * 0.12);
           rimLight.intensity = (0.18 + daylight * 0.22 + twilight * 0.22) * cloudShade;
           rimLight.color.setHex(twilight > 0.25 ? 0xfdba74 : (daylight < 0.25 ? 0xa5b4fc : 0xffedd5));
           sun.intensity = daylight * 1.42 * cloudShade;
@@ -20900,7 +22369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // An origin-relative position alternates the lighting direction at the shadow cadence.
           sun.position.copy(sun.target.position).addScaledVector(sunDir,350);
           moonGlow.position.copy(moonDir).multiplyScalar(150);
-          moonGlow.intensity = moonlight * 0.34 * cloudShade;
+          moonGlow.intensity = moonlight * 1.05 * cloudShade;
           sunSprite.material.opacity = Math.max(0, (daylight + twilight * 0.38) * cloudShade);
           moonSprite.material.opacity = Math.max(0, moonlight * 0.86 * cloudShade);
           if (lakeSheen) {
@@ -20927,6 +22396,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // high-stoop view feel expansive without removing atmospheric depth.
           scene.fog.far += altitudeRatio * 170;
           scene.fog.near = Math.max(22, scene.fog.near - altitudeRatio * 7);
+          // Haze is a layer near the ground, so looking down from high up looks through less of it.
+          var fogLift = Math.max(0, altitudeAboveGround - 120);
+          scene.fog.near += fogLift * (1.6 - visualCloudCover * 0.8);
+          scene.fog.far += fogLift * (9 - visualCloudCover * 5);
+          if (camera.far > 2000) scene.fog.far = Math.min(scene.fog.far, camera.far - 500);
         }
 
         // ─── NEW v0.30: Web Audio sound synthesis (no external files) ───
@@ -21000,7 +22474,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             try { g.disconnect(); } catch (gainDisconnectError) {}
             osc._rhGain = null;
           };
-          if (callType === 'strike') {
+          if (callType === 'goshawk') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(1350, now2);
+            g.gain.setValueAtTime(0.0001, now2);
+            for (var kak = 0; kak < 4; kak++) {
+              var kakAt = now2 + kak * 0.16;
+              g.gain.setValueAtTime(0.16, kakAt);
+              g.gain.exponentialRampToValueAtTime(0.002, kakAt + 0.11);
+              osc.frequency.setValueAtTime(1350 - kak * 40, kakAt);
+            }
+            osc.start(now2); osc.stop(now2 + 0.72);
+          } else if (callType === 'strike') {
             // Sharp impact: pitched-down noise burst
             osc.type = 'square';
             osc.frequency.setValueAtTime(800, now2);
@@ -21094,7 +22579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
 
         // ─── State + Physics ───
-        var startY = mission.id === 'highStoop' ? 1050 : mission.id === 'thermalKettle' ? 90 : 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
+        var startY = mission.id === 'highStoop' ? 1050 : mission.id === 'thermalKettle' ? 90 : mission.id === 'crossDesert' ? 95 : mission.id === 'windHover' ? 48 : mission.id === 'fishDive' ? 42 : mission.id === 'fishThief' ? 52 : 30 + (species.biome === 'cliff' || species.biome === 'mountain' ? 30 : 0);
         var missionCeiling = mission.id === 'highStoop' ? 1250 : mission.id === 'thermalKettle' ? 650 : 500;
         // NEW v0.29: Daily energy budget per species. Real raptors need ~7-15% of body mass per day in calories.
         // 1 kg fresh meat ≈ 1300 kcal. Average raptor needs ~120 kcal/kg/day.
@@ -21123,7 +22608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         //   stooping ≈ 20 kcal/min ≈ 0.33 kcal/s (moderate — drag-limited)
         var crashRecoveryDuration = 3;
         var raptor = {
-          x: 0, y: startY, z: 80,
+          x: 0, y: startY, z: mission.id === 'flightTrail' ? -230 : mission.id === 'crossDesert' ? -300 : mission.id === 'windHover' ? -90 : mission.id === 'fishDive' || mission.id === 'fishThief' ? -95 : mission.id === 'thermalKettle' ? -50 : mission.id === 'avoidPredator' || mission.id === 'silentStrike' ? -180 : 80,
           yaw: Math.PI, pitch: mission.id === 'highStoop' ? -0.18 : 0,
           speed: 10,
           maxLevel: species.maxLevelMph * 0.447,
@@ -21954,7 +23439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           prey.mesh.updateMatrixWorld(true);
           carriedPreyBounds.setFromObject(prey.visual);
           carriedPreyBounds.getSize(carriedPreySize); carriedPreyBounds.getCenter(carriedPreyCenter);
-          var carryScale = Math.min(1, 0.68 / Math.max(0.01, carriedPreySize.x, carriedPreySize.y, carriedPreySize.z));
+          var carryScale = Math.min(1.8, 0.68 / Math.max(0.01, carriedPreySize.x, carriedPreySize.y, carriedPreySize.z));
           var anchor = {x:-carriedPreyCenter.x*carryScale,y:-0.33-carriedPreyBounds.max.y*carryScale,z:0.12-carriedPreyCenter.z*carryScale};
           prey.mesh.scale.setScalar(carryScale);
           prey.mesh.position.set(anchor.x,anchor.y-(_rmFX?0:0.06),anchor.z+(_rmFX?0:0.08));
@@ -21978,7 +23463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (motionNow >= carriedPrey.until) { clearCarriedPrey(); return; }
           carriedPrey.grip=Math.max(carriedPrey.grip,raptorCarryGrip(motionNow-carriedPrey.startedAt,_rmFX,simPaused));
           raptorFeet.forEach(function(foot){var extension=foot.morphTargetInfluences[0]+foot.morphTargetInfluences[1];foot.morphTargetInfluences[0]=extension*(1-carriedPrey.grip);foot.morphTargetInfluences[1]=extension*carriedPrey.grip;});
-          var fade = raptorCarryOpacity(motionNow-carriedPrey.startedAt,_rmFX);
+          var fade = raptorCarryOpacity(motionNow-carriedPrey.startedAt,_rmFX,carriedPrey.durationMs);
           // Retain solid surface occlusion until the existing final fade begins.
           carriedPrey.materials.forEach(function(entry) {
             var material=entry.material,transparent=fade<1?true:entry.transparent,depthWrite=fade<1?false:entry.depthWrite;
@@ -22184,32 +23669,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(thermalGroup);
         }
 
-        var hunterGroup = null;
+        // Cross the Desert: dust columns over hot ground, and the oasis. Scenery owned and disposed by this scene.
+        var desertColumns = [], desertNext = 0, desertReached = false, desertOasis = null;
+        if (mission.id === 'crossDesert') {
+          DESERT_THERMALS.forEach(function(spot, index) {
+            var column = new THREE.Group();column.name = 'desert-thermal-' + index;
+            column.position.set(spot.x, terrainHeightAt(spot.x, spot.z), spot.z);
+            var veil = new THREE.Mesh(new THREE.CylinderGeometry(DESERT_THERMAL_RADIUS_M, 5, DESERT_THERMAL_TOP_M, 28, 1, true), new THREE.MeshBasicMaterial({ color: 0xe9cf9f, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide }));
+            softenVeilEdges(veil.material);veil.position.y = DESERT_THERMAL_TOP_M / 2;column.add(veil);
+            var rings = [];
+            for (var ringStep = 0; ringStep < 5; ringStep++) {
+              var ringHeight = 30 + ringStep * 32, ringRadius = 5 + (DESERT_THERMAL_RADIUS_M - 5) * ringHeight / DESERT_THERMAL_TOP_M;
+              var band = new THREE.Mesh(new THREE.TorusGeometry(ringRadius, 0.5, 6, 44), new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.5, depthWrite: false }));
+              band.rotation.x = Math.PI / 2;band.position.y = ringHeight;column.add(band);rings.push(band);
+            }
+            scene.add(column);
+            desertColumns.push({ group: column, veil: veil, rings: rings, x: spot.x, z: spot.z });
+          });
+          var oasisY = terrainHeightAt(DESERT_OASIS.x, DESERT_OASIS.z);
+          desertOasis = new THREE.Group();desertOasis.name = 'desert-oasis';desertOasis.position.set(DESERT_OASIS.x, oasisY, DESERT_OASIS.z);
+          var oasisGreen = new THREE.MeshStandardMaterial({ color: 0x5e7f3a, roughness: 1 });oasisGreen.color.convertSRGBToLinear();
+          var oasisWater = new THREE.MeshStandardMaterial({ color: 0x2f7f94, roughness: 0.25, metalness: 0.1 });oasisWater.color.convertSRGBToLinear();
+          var palmBark = new THREE.MeshStandardMaterial({ color: 0x6d5438, roughness: 1 });palmBark.color.convertSRGBToLinear();
+          var palmLeaf = new THREE.MeshStandardMaterial({ color: 0x4c7a33, roughness: 0.9, side: THREE.DoubleSide });palmLeaf.color.convertSRGBToLinear();
+          var bank = new THREE.Mesh(new THREE.CircleGeometry(44, 40), oasisGreen);bank.rotation.x = -Math.PI / 2;bank.position.y = 0.5;desertOasis.add(bank);
+          var pool = new THREE.Mesh(new THREE.CircleGeometry(24, 40), oasisWater);pool.rotation.x = -Math.PI / 2;pool.position.y = 0.7;pool.scale.set(1, 0.72, 1);desertOasis.add(pool);
+          for (var palmIndex = 0; palmIndex < 9; palmIndex++) {
+            var palmAngle = palmIndex * 2.4, palmRadius = 28 + (palmIndex % 3) * 5, palmHeight = 9 + (palmIndex % 4) * 1.6;
+            var palm = new THREE.Group();palm.position.set(Math.cos(palmAngle) * palmRadius, 0.4, Math.sin(palmAngle) * palmRadius * 0.85);
+            var palmTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.48, palmHeight, 7), palmBark);palmTrunk.position.y = palmHeight / 2;palmTrunk.rotation.z = (palmIndex % 2 ? 1 : -1) * 0.07;palm.add(palmTrunk);
+            for (var frond = 0; frond < 6; frond++) {
+              var leaf = new THREE.Mesh(new THREE.ConeGeometry(0.75, 5, 4), palmLeaf);leaf.scale.z = 0.16;
+              var frondPivot = new THREE.Group();frondPivot.position.y = palmHeight;frondPivot.rotation.y = frond * Math.PI / 3;
+              leaf.position.set(0, 0, 2.3);leaf.rotation.x = Math.PI / 2 + 0.42;frondPivot.add(leaf);palm.add(frondPivot);
+            }
+            desertOasis.add(palm);
+          }
+          var oasisMarker = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 110, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0x5eead4, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+          oasisMarker.position.y = 56;oasisMarker.name = 'desert-oasis-marker';desertOasis.add(oasisMarker);
+          scene.add(desertOasis);
+        }
+        function desertTarget() { return desertNext < desertColumns.length ? desertColumns[desertNext] : DESERT_OASIS; }
+        function desertOasisDistance() { return Math.hypot(DESERT_OASIS.x - raptor.x, DESERT_OASIS.z - raptor.z); }
+        function desertNavigation() {
+          var goal = desertTarget(), dx = goal.x - raptor.x, dz = goal.z - raptor.z, across = Math.hypot(dx, dz);
+          var bearing = Math.atan2(dx, -dz) - raptor.yaw;bearing = Math.atan2(Math.sin(bearing), Math.cos(bearing));
+          var correction = Math.abs(bearing) < 0.14 ? null : bearing < 0 ? 'turnLeft' : 'turnRight';
+          var distance = '~' + Math.max(5, Math.round(across / 5) * 5) + ' m';
+          var steer = correction ? (correction === 'turnLeft' ? 'turn left' : 'turn right') + (controlKeyLabel(correction) ? ' (' + controlKeyLabel(correction) + ')' : '') : 'glide straight';
+          var height = raptor.y - terrainHeightAt(raptor.x, raptor.z);
+          var hint = thermalActive ? (height < DESERT_THERMAL_TOP_M - 12 ? 'IN LIFT - circle to climb · ' + Math.round(height) + ' / ' + DESERT_THERMAL_TOP_M + ' m' : 'TOP OF THE LIFT - glide on') : (desertNext < desertColumns.length ? 'NEXT THERMAL - ' : 'OASIS - ') + steer + ' · ' + distance;
+          return { distance: thermalActive ? 'In lift' : distance, hint: hint };
+        }
+        // Lift inside a column, tapering to nothing at its top. Hot desert air sinks between columns.
+        function updateDesertAir(dt, diveKey, pullUpKey) {
+          var height = raptor.y - terrainHeightAt(raptor.x, raptor.z);
+          for (var columnIndex = 0; columnIndex < desertColumns.length; columnIndex++) {
+            var column = desertColumns[columnIndex];
+            var inside = Math.hypot(column.x - raptor.x, column.z - raptor.z) <= DESERT_THERMAL_RADIUS_M;
+            if (inside && !raptor.landed && !raptor.crashed) {
+              thermalActive = true;
+              if (columnIndex >= desertNext) desertNext = columnIndex + 1;
+              if (!diveKey && height < DESERT_THERMAL_TOP_M) {
+                raptor.y += (3.5 + weather.thermalQuality * 3.5) * Math.min(1, (DESERT_THERMAL_TOP_M - height) / 25) * dt;
+                raptor.stamina = Math.min(raptor.staminaMax, raptor.stamina + 10 * dt);
+              }
+            }
+            var isNext = columnIndex === desertNext || (inside && columnIndex === desertNext - 1);
+            column.veil.material.opacity = isNext ? 0.2 : 0.07;
+            for (var bandIndex = 0; bandIndex < column.rings.length; bandIndex++) {
+              column.rings[bandIndex].material.opacity = isNext ? 0.72 : 0.14;
+              if (!_rmFX) column.rings[bandIndex].rotation.z = motionNow * 0.0006 + bandIndex;
+            }
+          }
+          if (!thermalActive && !diveKey && !pullUpKey && !raptor.landed && !raptor.crashed) raptor.y -= DESERT_AIR_SINK_MPS * dt;
+          if (!desertReached && !raptor.landed && !raptor.crashed && desertOasisDistance() <= DESERT_OASIS_REACH_M) desertReached = true;
+          if (desertOasis) desertOasis.children[desertOasis.children.length - 1].material.opacity = desertNext >= desertColumns.length ? 0.72 : 0.42;
+        }
+
+        // A simple flying raptor seen from a distance: faces +z, wings hinge at the shoulder. Colors are per bird.
+        function buildFlyingRaptor(colors) {
+          function mat(hex, double) { var m = new THREE.MeshStandardMaterial({ color: hex, roughness: 0.85, side: double ? THREE.DoubleSide : THREE.FrontSide }); m.color.convertSRGBToLinear(); return m; }
+          var back = mat(colors.back, true), belly = mat(colors.belly), tailMat = mat(colors.tail, true), dark = mat(0x26221e);
+          var root = new THREE.Group();
+          var torso = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 9), back);torso.scale.set(0.82, 0.74, 1.9);root.add(torso);
+          var under = new THREE.Mesh(new THREE.SphereGeometry(0.39, 12, 9), belly);under.scale.set(0.78, 0.68, 1.75);under.position.y = -0.09;root.add(under);
+          var head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 9), back);head.position.set(0, 0.1, 0.78);root.add(head);
+          var beak = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.2, 7), dark);beak.rotation.x = Math.PI / 2 + 0.3;beak.position.set(0, 0.04, 1.03);root.add(beak);
+          [-1, 1].forEach(function(side) {
+            var eye = new THREE.Mesh(new THREE.SphereGeometry(0.052, 8, 6), new THREE.MeshBasicMaterial({ color: colors.eye }));eye.position.set(side * 0.2, 0.17, 0.87);root.add(eye);
+          });
+          var tailGeometry = new THREE.BufferGeometry();
+          tailGeometry.setAttribute('position', new THREE.Float32BufferAttribute([-0.13, 0, -0.55, 0.13, 0, -0.55, 0.3, 0, -1.9, -0.3, 0, -1.9], 3));
+          tailGeometry.setIndex([0, 1, 2, 0, 2, 3]);tailGeometry.computeVertexNormals();
+          root.add(new THREE.Mesh(tailGeometry, tailMat));
+          function wing(side) {
+            var pivot = new THREE.Group();pivot.position.set(side * 0.28, 0.08, 0.1);
+            var s = colors.span;
+            // Inner arm, outer hand, and three spread primaries at the tip.
+            var v = [0, 0, 0.42, s * 0.48, 0.05, 0.5, s * 0.5, 0, -0.5, 0, 0, -0.52, s * 0.48, 0.05, 0.5, s * 0.86, 0.05, 0.3, s * 0.82, 0, -0.32, s * 0.5, 0, -0.5, s * 0.86, 0.05, 0.3, s, 0, 0.26, s * 0.84, 0, 0.1, s * 0.84, 0, 0.1, s, 0, 0.02, s * 0.83, 0, -0.1, s * 0.83, 0, -0.1, s * 0.98, 0, -0.22, s * 0.82, 0, -0.32];
+            for (var i = 0; i < v.length; i += 3) v[i] *= side;
+            var geometry = new THREE.BufferGeometry();geometry.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+            geometry.setIndex([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);geometry.computeVertexNormals();
+            pivot.add(new THREE.Mesh(geometry, back));root.add(pivot);return pivot;
+          }
+          return { root: root, left: wing(-1), right: wing(1) };
+        }
+        var kettleBirds = [];
+        if (mission.id === 'thermalKettle') {
+          var kettleGroup = new THREE.Group();kettleGroup.name = 'mission-kettle-hawks';
+          for (var kettleIndex = 0; kettleIndex < 7; kettleIndex++) {
+            var kettleBird = buildFlyingRaptor({ back: 0x5b4330, belly: 0xd6c5a2, tail: 0x8b5a33, eye: 0x1a1612, span: 2.5 });
+            kettleBird.left.rotation.z = -0.12;kettleBird.right.rotation.z = 0.12;
+            kettleBird.root.scale.setScalar(1.7);kettleGroup.add(kettleBird.root);
+            kettleBirds.push({ root: kettleBird.root, phase: kettleIndex * 0.9, radius: 16 + (kettleIndex % 3) * 6, height: 62 + kettleIndex * 34, direction: kettleIndex % 2 ? 1 : -1 });
+          }
+          scene.add(kettleGroup);
+        }
+        function updateKettleBirds() {
+          var groundY = thermalGroup.position.y;
+          kettleBirds.forEach(function(bird) {
+            var turn = bird.phase + (_rmFX ? 0 : motionNow * 0.00042 * bird.direction);
+            var rise = _rmFX ? 0 : (motionNow * 0.0035 + bird.phase * 30) % 240;
+            var x = thermalOrigin.x + Math.cos(turn) * bird.radius, z = thermalOrigin.z + Math.sin(turn) * bird.radius, y = groundY + bird.height + rise;
+            bird.root.position.set(x, y, z);
+            bird.root.lookAt(x - Math.sin(turn) * bird.direction, y, z + Math.cos(turn) * bird.direction);
+            bird.root.rotateZ(-0.3 * bird.direction);
+          });
+        }
+
+        var hunterGroup = null, hunterWings = null, hunterCue = null, hunterCueArrow = null, hunterCueText = null, hunterAlarmed = false;
+        // The goshawk is faster than the player but heavier, so it turns wider. It tires and breaks off, then comes back.
+        var hunterChase = { heading: Math.PI, speed: 14, closeSeconds: 0, restUntil: 0, resting: false, lunge: 0, recover: 0 };
         if (mission.id === 'avoidPredator') {
           hunterGroup = new THREE.Group();
           hunterGroup.name = 'mission-pursuing-goshawk';
-          var hunterMaterial = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8, side: THREE.DoubleSide });
-          var hunterBody = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8), hunterMaterial);
-          hunterBody.scale.set(0.7, 0.65, 1.7);
-          hunterGroup.add(hunterBody);
-          var hunterWingGeometry = new THREE.BufferGeometry();
-          hunterWingGeometry.setAttribute('position', new THREE.Float32BufferAttribute([
-            0, 0, 0.25, -4.2, 0, -0.2, -2.5, 0, -1.1,
-            0, 0, 0.25, 4.2, 0, -0.2, 2.5, 0, -1.1
-          ], 3));
-          hunterWingGeometry.setIndex([0, 1, 2, 3, 4, 5]);
-          hunterWingGeometry.computeVertexNormals();
-          hunterGroup.add(new THREE.Mesh(hunterWingGeometry, hunterMaterial));
-          var hunterEye = new THREE.Mesh(
-            new THREE.SphereGeometry(0.11, 8, 6),
-            new THREE.MeshBasicMaterial({ color: 0xf87171 })
-          );
-          hunterEye.position.set(0, 0.12, 0.72);
-          hunterGroup.add(hunterEye);
+          // Adult Northern Goshawk: slate back, pale underparts, red eye, long tail.
+          var hunterBird = buildFlyingRaptor({ back: 0x4b5763, belly: 0xc9c7bd, tail: 0x5a646e, eye: 0xdc2626, span: 2.3 });
+          hunterBird.root.scale.setScalar(1.45);hunterGroup.add(hunterBird.root);hunterWings = hunterBird;
           hunterGroup.position.set(raptor.x, raptor.y + 15, raptor.z - 125);
           scene.add(hunterGroup);
         }
 
+        function updateHunterCue() {
+          if (!hunterCue) return;
+          var away = Math.atan2(hunterGroup.position.x - raptor.x, -(hunterGroup.position.z - raptor.z)) - raptor.yaw;
+          hunterCueArrow.style.transform = 'rotate(' + Math.round(away * 180 / Math.PI) + 'deg)';
+          var state = hunterChase.resting ? 'resting' : hunterChase.lunge > 0 ? 'near' : hunterDistance < 70 ? 'closing' : 'far';
+          var label = hunterChase.resting ? 'Goshawk breaking off · hunt now' : hunterChase.lunge > 0 ? 'Goshawk lunging · TURN NOW' : 'Goshawk ' + Math.round(hunterDistance) + ' m';
+          if (hunterCue.dataset.hunterState !== state) hunterCue.dataset.hunterState = state;
+          if (hunterCueText.textContent !== label) hunterCueText.textContent = label;
+        }
         // ─── Input ───
         var keys = {};
         var heldFlightInputs = Object.create(null);
@@ -22330,7 +23940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (!flightStateEl) return;
           var stateChanged = nextState !== lastFlightState || flightStateEl.dataset.flightState !== nextState;
           if (!stateChanged && nextState !== 'stunned') return;
-          var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused', focus: 'Focus · slowed' };
+          var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', hover: 'Hover', 'pull-up': 'Pull-up', perched: 'Perched', landed: 'Landed', stunned: 'Stunned', paused: 'Paused', focus: 'Focus · slowed' };
           var stateLabel = labels[nextState] || nextState;
           if (nextState === 'stunned' && missionOutcome === 'active') {
             var recoveryRemaining = Math.max(0, raptor.crashTimer || 0);
@@ -22442,6 +24052,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             return rows;
           }
           if (landed) { add('pullUp', raptor.crashed ? 'Take off once recovered' : 'Take off', true); addPair('turnLeft', 'turnRight', 'Look around'); addPair('pitchUp','pitchDown','Scan up / down'); add('zoom','Acuity zoom'); return rows; }
+          if (mission.id === 'fishDive' || (mission.id === 'windHover' && !preyMeshes.length)) {
+            addPair('turnLeft', 'turnRight', 'Turn', Math.abs(hoverWindError()) > 0.3 && !hoverActive);
+            add('pullUp', 'Hold to hover', !hoverActive);
+            add('dive', 'Hold to dive', mission.id === 'fishDive');
+            addPair('altUp', 'altDown', 'Trim altitude');
+            add('pause', 'Pause');
+            return rows;
+          }
           if(practiceTrail && practiceTrail.active){addPair('turnLeft','turnRight','Turn',true);addPair('pitchUp','pitchDown','Pitch');addPair('altUp','altDown','Trim altitude');return rows;}
           if ((!tutorialSignal || tutorialSignal === 'strike') && lastStrikeStage !== 'approach') {
             if (lastStrikeStage === 'window') { add('strike', 'Strike now', true); add('pullUp', 'Abort'); }
@@ -23529,12 +25147,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         flightMarker.setAttribute('aria-hidden', 'true');
         hudParent2.appendChild(flightMarker);
 
-        var missionUsesHuntCycle = mission.id === 'open' || mission.id === 'feedChicks';
+        var missionUsesHuntCycle = mission.id === 'open' || mission.id === 'feedChicks' || mission.id === 'perchHunt';
         var missionPanel = document.createElement('div');
         missionPanel.className = 'rh-flight-mission-hud';
         missionPanel.setAttribute('data-raptor-mission-progress', mission.id);
         missionPanel.setAttribute('role', 'group');
-        missionPanel.setAttribute('aria-label', mission.id === 'open' ? 'Free Hunt progress' : 'Mission progress');
+        missionPanel.setAttribute('aria-label', mission.id === 'open' ? 'Free Hunt progress' : mission.id === 'perchHunt' ? 'Perch Hunt progress' : mission.id === 'flightTrail' ? 'Flight Trail progress' : 'Mission progress');
         var missionProgressEl = document.createElement('span');
         missionProgressEl.className = 'rh-flight-mission-progress';
         missionPanel.appendChild(missionProgressEl);
@@ -23630,7 +25248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (shell && shell.dataset.raptorCompactFullscreen !== String(compactFullscreen)) shell.dataset.raptorCompactFullscreen = String(compactFullscreen);
           if (shell && shell.dataset.raptorShortFullscreen !== String(shortFullscreen)) shell.dataset.raptorShortFullscreen = String(shortFullscreen);
           var aux = compactFullscreen && shell ? shell.querySelector('[data-raptor-aux-controls]') : null;
-          [keyGuide, flightWindEl, flightHeadingEl, flightAttitudeEl, practiceButton, perchButton].forEach(function(node) {
+          [keyGuide, flightWindEl, flightHeadingEl, flightAttitudeEl, perchButton].forEach(function(node) {
             if (node && node.parentElement !== (aux || hudParent2)) (aux || hudParent2).appendChild(node);
           });
           if (telemetryStrip && telemetryStrip.parentElement !== (aux && shortFullscreen ? aux : hudParent2)) (aux && shortFullscreen ? aux : hudParent2).appendChild(telemetryStrip);
@@ -23680,7 +25298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               mission.id === 'thermalKettle' ? finalAltitudeM + ' m lift' :
               mission.id === 'highStoop' ? Math.round(runMaxSpeed * 2.237) + ' mph stoop' :
               mission.id === 'avoidPredator' ? missionCatches + ' catches · ' + missionAlerts + ' alerts' :
-              mission.id === 'crossDesert' ? missionCatches + ' refuel' : runCatches + ' catches',
+              mission.id === 'fishThief' ? missionCatches + ' stolen · ' + thiefDrops + (thiefDrops === 1 ? ' drop' : ' drops') : mission.id === 'windHover' ? Math.round(hoverTotalSeconds) + ' s hovering' : mission.id === 'fishDive' ? missionCatches + ' of ' + fishDives + (fishDives === 1 ? ' dive' : ' dives') : mission.id === 'crossDesert' ? (desertReached ? 'Reached the oasis' : Math.round(desertOasisDistance()) + ' m short') : mission.id === 'flightTrail' ? (practiceTrail.bestScore === null ? 'No trail finished' : 'Best trail ' + practiceTrail.bestScore + ' / 10') : runCatches + ' catches',
             alerts: missionAlerts,
             caloriesDelivered: Math.round(missionCalories),
             signature: flightSignature,
@@ -23739,9 +25357,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function missionProgressText() {
           if (missionOutcome !== 'active') return missionOutcomeText;
-          if (mission.id === 'open') return missionCatches + (missionCatches === 1 ? ' catch' : ' catches') + ' this flight';
-          if (mission.id === 'feedChicks') return Math.round(missionCalories) + ' / ' + mission.calorieGoal + ' kcal delivered';
-          if (mission.id === 'crossDesert') return (missionCatches > 0 ? 'Refuel secured' : 'Find a refuel catch') + ' · ' + missionTimeRemainingText() + ' left';
+          if (mission.id === 'flightTrail') return practiceTrail.bestScore === null ? 'No trail finished yet' : 'Best ' + practiceTrail.bestScore + ' / 10';
+          if ((mission.id === 'open' || mission.id === 'perchHunt')) return missionCatches + (missionCatches === 1 ? ' catch' : ' catches') + ' this flight';
+          if (mission.id === 'feedChicks') return Math.round(missionCalories) + ' / ' + mission.calorieGoal + ' kcal · ' + nestDeliveries + ' / ' + mission.minDeliveries + ' trips';
+          if (mission.id === 'fishThief') return missionCatches + ' / 2 fish stolen · ' + missionTimeRemainingText() + ' left';
+          if (mission.id === 'windHover') return missionCatches + ' / 3 voles · ' + missionTimeRemainingText() + ' left';
+          if (mission.id === 'fishDive') return missionCatches + ' / 3 fish · ' + fishDives + (fishDives === 1 ? ' dive · ' : ' dives · ') + missionTimeRemainingText() + ' left';
+          if (mission.id === 'crossDesert') return Math.round(desertOasisDistance()) + ' m to the oasis · ' + missionTimeRemainingText() + ' left';
           if (mission.id === 'silentStrike') return missionCatches + ' / 3 silent catches - ' + missionAlerts + ' alerts';
           if (mission.id === 'thermalKettle') return Math.max(0, Math.round(raptor.y - terrainHeightAt(raptor.x, raptor.z))) + ' / 500m - ' + (thermalActive ? 'inside lift' : 'find the thermal rings');
           if (mission.id === 'avoidPredator') {
@@ -23751,10 +25373,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return Math.max(0, Math.ceil((mission.timeLimit || 0) - missionElapsed)) + 's remaining';
         }
         function missionProgressRatio() {
-          if (mission.id === 'open') return null;
+          if ((mission.id === 'open' || mission.id === 'perchHunt' || mission.id === 'flightTrail')) return null;
           if (missionOutcome === 'success') return 1;
-          if (mission.id === 'feedChicks') return Math.min(1, missionCalories / Math.max(1, mission.calorieGoal));
-          if (mission.id === 'crossDesert') return Math.min(1, Math.min(1, missionElapsed / Math.max(1, mission.timeLimit)) * 0.65 + (missionCatches > 0 ? 0.35 : 0));
+          if (mission.id === 'feedChicks') return Math.min(1, missionCalories / Math.max(1, mission.calorieGoal)) * 0.5 + Math.min(1, nestDeliveries / mission.minDeliveries) * 0.5;
+          if (mission.id === 'fishThief') return Math.min(1, missionCatches / 2);
+          if (mission.id === 'windHover' || mission.id === 'fishDive') return Math.min(1, missionCatches / 3);
+          if (mission.id === 'crossDesert') return Math.max(0, Math.min(1, 1 - desertOasisDistance() / 590));
           if (mission.id === 'silentStrike') return Math.min(1, missionCatches / 3);
           if (mission.id === 'thermalKettle') return Math.min(1, Math.max(0, raptor.y - terrainHeightAt(raptor.x, raptor.z)) / 500);
           if (mission.id === 'avoidPredator') return Math.min(1, Math.min(1, missionElapsed / Math.max(1, mission.timeLimit)) * 0.35 + Math.min(1, missionCatches / 2) * 0.65);
@@ -23765,7 +25389,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (missionOutcome === 'success') return 'Mission complete';
           if (missionOutcome === 'failed') return 'Run ended';
           if (mission.id === 'feedChicks') return 'Calories delivered';
-          if (mission.id === 'crossDesert') return 'Refuel + endurance';
+          if (mission.id === 'fishThief') return 'Fish stolen';
+          if (mission.id === 'windHover') return 'Voles caught';
+          if (mission.id === 'fishDive') return 'Fish caught';
+          if (mission.id === 'crossDesert') return 'Distance to the oasis';
           if (mission.id === 'silentStrike') return 'Quiet catches';
           if (mission.id === 'thermalKettle') return 'Altitude gained';
           if (mission.id === 'avoidPredator') return 'Survival + catches';
@@ -23790,7 +25417,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return { phase: 0, title: 'Find your next target', tip: 'Turn slowly and look for prey.' };
         }
         function currentFreeHuntStage() {
-          return freeHuntStage(lastTargetState, raptor.landed, raptor.crashed, lastStrikeStage);
+          var stage = freeHuntStage(lastTargetState, raptor.landed, raptor.crashed, lastStrikeStage);
+          if (mission.id === 'feedChicks') {
+            if (carriedPrey && carriedPrey.toNest) return { phase: 2, title: 'Carry it to the nest', tip: raptor.landed ? 'Take off, then follow the nest bearing.' : 'Follow the nest bearing. ' + Math.round(carriedPrey.kcal || 0) + ' kcal in your talons.' };
+            if (motionNow < nestFedUntil) return { phase: 3, title: 'Chicks fed', tip: 'Head out for the next catch · ' + (missionCalories < mission.calorieGoal ? Math.ceil(mission.calorieGoal - missionCalories) + ' kcal to go.' : Math.max(0, mission.minDeliveries - nestDeliveries) + ' more ' + (mission.minDeliveries - nestDeliveries === 1 ? 'trip' : 'trips') + ' to go.') };
+            return { phase: stage.phase >= 2 ? (stage.phase === 3 ? 0 : 1) : stage.phase, title: stage.title, tip: stage.tip };
+          }
+          if (carriedPrey && lastTargetState === 'hit') {
+            var insect = !!carriedPrey.prey.animation.insect;
+            return { phase: stage.phase, title: stage.title, tip: insect ? 'Eaten on the wing, as some small falcons and kites do.' : mission.id === 'perchHunt' ? 'Carrying your catch. Return to the lookout when you are ready.' : 'Carrying your catch. A real raptor often takes it to a perch to pluck; Free Hunt skips that trip.' };
+          }
+          return stage;
         }
         function missionPhaseText() {
           if (missionUsesHuntCycle) {
@@ -23810,7 +25447,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (missionOutcome === 'success') return missionRouteItems.length;
           // The hunt cycle repeats; the calorie meter tracks the provisioning goal.
           if (missionUsesHuntCycle) return currentFreeHuntStage().phase;
-          if (mission.id === 'crossDesert') return missionCatches > 0 ? 3 : raptor.calories < raptor.caloriesMax * 0.65 ? 2 : lastTargetState === 'ready' || lastTargetState === 'close' ? 1 : 0;
+          if (mission.id === 'flightTrail') return practiceTrail.complete ? 3 : practiceTrail.index > 0 ? 2 : practiceTrail.active ? 1 : 0;
+          if (mission.id === 'fishThief') return carriedPrey ? 3 : preyMeshes.length ? 2 : thiefDistance < THIEF_PRESS_M ? 1 : 0;
+          if (mission.id === 'windHover') return preyMeshes.length ? (lastStrikeStage !== 'approach' ? 3 : 2) : hoverActive && raptor.groundSpeed < HOVER_STILL_MPS ? 1 : 0;
+          if (mission.id === 'fishDive') return carriedPrey ? 3 : plunge || raptor.diving ? 2 : hoverActive ? 1 : 0;
+          if (mission.id === 'crossDesert') return desertNext >= desertColumns.length ? 3 : thermalActive ? 1 : desertNext > 0 ? 2 : 0;
           if (mission.id === 'silentStrike') return missionCatches >= 3 ? 3 : missionCatches > 0 ? 2 : missionAlerts > 0 ? 1 : lastTargetState === 'ready' || lastTargetState === 'close' ? 2 : 0;
           if (mission.id === 'thermalKettle') return raptor.y - terrainHeightAt(raptor.x, raptor.z) >= 500 ? 3 : thermalActive ? 2 : flightRecorder.some(function(event) { return event && event.kind === 'thermal' && event.label === FLIGHT_EVENT_ENTERED_THERMAL; }) ? 1 : 0;
           if (mission.id === 'avoidPredator') return hunterDistance < 70 ? 1 : missionCatches >= 2 ? 3 : missionCatches > 0 || lastTargetState === 'ready' ? 2 : 0;
@@ -23833,12 +25474,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var boundaryAction = boundaryReturnAction();
           if (boundaryAction) return 'Flight area edge · ' + (boundaryAction === 'inward' ? 'keep heading toward center' :
             (controlKeyLabel(boundaryAction) ? 'turn ' : 'drag ') + (boundaryAction === 'turnLeft' ? 'left' : 'right') + ' toward center');
-          if (mission.id === 'open') return currentFreeHuntStage().tip;
-          if (mission.id === 'feedChicks') {
-            if (lastTargetState === 'hit' && !raptor.landed && !raptor.crashed) return 'Catch credited automatically · ' + Math.max(0, Math.ceil(mission.calorieGoal - missionCalories)) + ' kcal to go.';
-            return currentFreeHuntStage().tip;
-          }
-          if (mission.id === 'crossDesert') return missionCatches > 0 ? 'Stay airborne · glide to conserve energy' : 'Catch prey to refuel · landing ends this mission';
+          if ((mission.id === 'open' || mission.id === 'perchHunt') || mission.id === 'feedChicks') return currentFreeHuntStage().tip;
+          if (mission.id === 'flightTrail') return raptor.landed || raptor.crashed ? 'Take off to keep flying the trail' : 'Fly the next trail when you are ready.';
+          if (mission.id === 'fishThief') return carriedPrey ? 'Climb away with the fish' : preyMeshes.length ? 'Catch the falling fish, or snatch it off the water' : 'Stay close behind and a little above the Osprey';
+          if (mission.id === 'windHover') return preyMeshes.length ? 'A vole is moving ahead. Drop on it before it goes under the grass' : 'Fly to an untouched runway patch, face the wind, and hover';
+          if (mission.id === 'fishDive') return carriedPrey ? 'Climb away with the fish, then look for the next one' : 'Stay high, line up the white ring with a fish, then dive';
+          if (mission.id === 'crossDesert') return thermalActive ? 'Circle in the lift until you can reach the next thermal' : desertNext < desertColumns.length ? 'Glide to thermal ' + (desertNext + 1) + ' of ' + desertColumns.length + ' · landing ends this crossing' : 'Glide to the oasis · landing ends this crossing';
           if (mission.id === 'silentStrike') return 'Inside ' + SILENT_STRIKE_ALERT_RANGE_M + ' m: release ' + (controlKeyLabel('pullUp') || 'Pull up') + ' and glide';
           if (mission.id === 'thermalKettle') {
             if (raptor.landed || raptor.crashed) return 'Grounded · restart this flight to try again';
@@ -23846,8 +25487,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           if (mission.id === 'avoidPredator') {
             var hunterRange = isFinite(hunterDistance) ? Math.round(hunterDistance) + ' m away' : 'approaching';
-            if (hunterDistance < 70) return 'Hunter ' + hunterRange + ' · change altitude now';
-            return (missionCatches >= 2 ? 'Catches secured · ' : 'Keep hunting · ') + 'hunter ' + hunterRange + '. Keep beyond 30 m.';
+            if (hunterChase.resting) return 'The goshawk is breaking off · hunt now';
+            if (hunterChase.lunge > 0) return 'It is lunging · turn hard now';
+            if (hunterDistance < 70) return 'Hunter ' + hunterRange + ' · turn hard when it lunges';
+            return (missionCatches >= 2 ? 'Catches secured · ' : 'Keep hunting · ') + 'hunter ' + hunterRange + '.';
           }
           if (mission.id === 'highStoop') {
             if (raptor.landed || raptor.crashed) return 'Grounded · regain height before another dive';
@@ -23862,7 +25505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function updateMissionHud() {
           updateMissionClock();
           if (mission.id === 'highStoop') missionPanel.dataset.stoopReadiness = missionOutcome !== 'active' ? missionOutcome : !highStoopQualifyingDive() ? 'build' : lastTargetState === 'ready' && strikeReady ? 'ready' : 'align';
-          var progressText = mission.id === 'open' ? 'Free Hunt · ' + missionProgressText() : mission.name + ': ' + missionProgressText();
+          var progressText = mission.id === 'open' ? 'Free Hunt · ' + missionProgressText() : mission.id === 'perchHunt' ? 'Perch Hunt · ' + missionProgressText() : mission.id === 'flightTrail' ? 'Flight Trail · ' + missionProgressText() : mission.name + ': ' + missionProgressText();
           if (missionUsesHuntCycle) missionPanel.dataset.huntStep = missionOutcome === 'active' ? ['scan', 'align', 'strike', 'reset'][currentFreeHuntStage().phase] : missionOutcome;
           var focusText = missionFocusText();
           var boundaryAction = boundaryReturnAction();
@@ -23899,8 +25542,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           updateMissionRoute();
         }
         function evaluateMission() {
-          if (missionOutcome !== 'active' || mission.id === 'open') return;
-          if (mission.id === 'feedChicks' && missionCalories >= mission.calorieGoal) {
+          if (missionOutcome !== 'active' || (mission.id === 'open' || mission.id === 'perchHunt' || mission.id === 'flightTrail')) return;
+          if (mission.id === 'feedChicks' && missionCalories >= mission.calorieGoal && nestDeliveries >= mission.minDeliveries) {
             finishMission(true, mission.successText);
           } else if (mission.id === 'silentStrike') {
             if (missionAlerts > 0) finishMission(false, 'Prey heard the approach. Glide before the next attempt.');
@@ -23909,16 +25552,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             finishMission(true, mission.successText);
           } else if (mission.id === 'avoidPredator') {
             // Catches do not end the survival period; resolve success at the deadline below.
-            if (hunterDistance < 30) finishMission(false, 'The goshawk closed inside 30m.');
+            if (hunterDistance < 6) finishMission(false, 'The goshawk caught you. Turn hard as soon as it lunges.');
+          } else if (mission.id === 'windHover' || mission.id === 'fishDive') {
+            if (missionCatches >= 3) finishMission(true, mission.successText);
+          } else if (mission.id === 'fishThief') {
+            if (missionCatches >= 2) finishMission(true, mission.successText);
           } else if (mission.id === 'crossDesert') {
-            if (raptor.calories <= 0) finishMission(false, 'Energy ran out before the crossing ended. Catch prey earlier to refuel.');
-            else if (missionGroundContact || raptor.landed || raptor.crashed) finishMission(false, 'The crossing ended on the ground. Stay airborne for the full 6 minutes.');
+            if (missionGroundContact || raptor.landed || raptor.crashed) finishMission(false, 'The crossing ended on the ground. Climb in each thermal before you glide on.');
+            else if (raptor.calories <= 0) finishMission(false, 'Energy ran out before the crossing ended. Flapping burns far more than gliding.');
+            else if (desertReached) finishMission(true, mission.successText);
           }
           if (missionOutcome === 'active' && mission.timeLimit > 0 && missionElapsed >= mission.timeLimit) {
             if (mission.id === 'crossDesert') {
-              finishMission(missionCatches >= 1, missionCatches >= 1 ? mission.successText : 'The crossing ended without a refuel catch.');
+              finishMission(false, 'Time ran out before you reached the oasis.');
             } else if (mission.id === 'avoidPredator') {
-              finishMission(missionCatches >= 2 && hunterDistance >= 30, missionCatches >= 2 ? mission.successText : 'Survival required two catches while keeping distance.');
+              finishMission(missionCatches >= 2 && hunterDistance >= 6, missionCatches >= 2 ? mission.successText : 'Survival required two catches while keeping distance.');
             } else {
               finishMission(false, 'Time expired before the objective was complete.');
             }
@@ -24194,7 +25842,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptorPosition: { x: raptor.x, y: raptor.y, z: raptor.z },
             perched: !!activePerch,
             practicePerch: practicePerch ? {x:practicePerch.x,y:practicePerch.y,z:practicePerch.z,radius:practicePerch.radius,kind:perchProfile.kind} : null,
-            perchAvailable: !!perchProfile && mission.id==='open',
+            perchAvailable: !!perchProfile && (mission.id==='open'||mission.id==='perchHunt'),
+            carryingToNest: !!(carriedPrey&&carriedPrey.toNest),
+            nest: nestSite?{x:nestSite.group.position.x,y:nestTopY(),z:nestSite.group.position.z,kind:nestSite.kind}:null,
+            nestDeliveries: nestDeliveries,
+            missionCaloriesCounted: missionCalories,
             calories: raptor.calories, stamina: raptor.stamina, missionCatches: missionCatches,
             targetCanStrike: !!(snapshotTarget && snapshotTarget.canStrike),
             targetState: lastTargetState,
@@ -24251,7 +25903,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             practiceTrailPassed: practiceTrail.passed,
             practiceTrailScore: practiceTrail.score,
             practiceTrailBestScore: practiceTrail.bestScore,
+            missionOutcome: missionOutcome,
+            hunterDistance: hunterDistance,
+            hunterResting: hunterChase.resting,
+            hunterLunging: hunterChase.lunge > 0,
+            hearingRingsVisible: hearingVisible,
+            kettleBirdCount: kettleBirds.length,
+            desertNext: desertNext,
+            desertThermals: desertColumns.map(function(column) { return { x: column.x, z: column.z }; }),
+            desertOasisDistance: mission.id === 'crossDesert' ? desertOasisDistance() : null,
+            hoverActive: hoverActive, hoverStillSeconds: hoverStillSeconds, hoverBestStill: hoverBestStill, hoverTotalSeconds: hoverTotalSeconds, hoverScan: hoverScan,
+            hoverWindError: hoverMission ? hoverWindError() : null, volePatches: mission.id === 'windHover' ? VOLE_PATCHES.map(function(patch) { return { x: patch.x, z: patch.z, spent: patch.spent }; }) : null,
+            fishDives: fishDives, plunging: !!plunge,
+            thief: mission.id === 'fishThief' ? { x: thiefOsprey.position.x, y: thiefOsprey.position.y, z: thiefOsprey.position.z, heading: thief.heading, pressure: thief.pressure, phase: thief.phase, fishState: thiefFishState(), drops: thiefDrops, distance: thiefDistance, fish: (thiefDropped || thiefFish) ? { x: (thiefDropped ? thiefDropped.fish : thiefFish).mesh.position.x, y: (thiefDropped ? thiefDropped.fish : thiefFish).mesh.position.y, z: (thiefDropped ? thiefDropped.fish : thiefFish).mesh.position.z } : null } : null, plungeAim: mission.id === 'fishDive' ? plungeAimPoint() : null,
             practiceTrailAttempts: practiceTrail.attempts,
+            practiceTrailGrade: practiceTrail.grade,
             practiceNextGate: practiceTrail.active ? Object.assign({},practiceTrail.gates[practiceTrail.index]) : null,
             distantGroundVertices: terrainApron.geometry.attributes.position.count,
             lakeSurfaceVertices: lake ? lake.geometry.attributes.position.count : 0,
@@ -24478,7 +26144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           airflowAttribute.needsUpdate = true;
           airflowFadeAttribute.needsUpdate=true;
-          airflowMaterial.opacity = Math.min(0.30, 0.08 + speedRatio * 0.20 + weather.windSpeed * 0.003);
+          airflowMaterial.opacity = Math.min(0.30, 0.08 + speedRatio * 0.20 + weather.windSpeed * 0.003) * (1 - starVisibility * 0.72);
           airflowMaterial.color.setHex(raptor.diving ? 0xfde68a : 0xe0f2fe);
           airflowLines.visible = true;
         }
@@ -24636,11 +26302,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ? (dx * forward.x + dy * forward.y + dz * forward.z) / distance
             : 1;
           var reach = 5 + (raptor.diving ? 2 : 0);
+          var yawToPrey = Math.atan2(dx, -dz) - raptor.yaw;
           return {
             prey: prey,
             index: index,
             distance: distance,
             verticalOffset: dy,
+            yawMiss: Math.hypot(dx, dz) < 0.001 ? 0 : Math.abs(Math.atan2(Math.sin(yawToPrey), Math.cos(yawToPrey))),
             correction: targetSteeringCorrection(dx, dy, dz, raptor.yaw, raptor.pitch, lastTargetCorrection),
             dot: dot,
             reach: reach,
@@ -24711,6 +26379,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function strike(preferredPrey) {
           if(simPaused || raptor.landed || raptor.crashed || activePerch)return;
           markTutorialSignal('strike');
+          if (mission.id === 'fishDive') { rhAnnounce('An Osprey catches fish by plunging in feet first. Hold dive over the fish.'); return; }
+          if (carriedPrey && carriedPrey.toNest) { rhAnnounce('Talons full. Carry this catch to the nest first.'); return; }
           if (!strikeReady) return;
           strikeReady = false;
           talonThrow.active = true;
@@ -24849,7 +26519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function updateRaptorFocus(targetInfo, realDt) {
           var candidate = null;
           if (focusSlowmoEnabled && missionOutcome === 'active' && !raptor.landed && !raptor.crashed && !activePerch &&
-              !practiceTrail.active && mission.id !== 'thermalKettle') candidate = targetInfo || acquireTarget();
+              !practiceTrail.active && mission.id !== 'thermalKettle' && mission.id !== 'fishDive') candidate = targetInfo || acquireTarget();
           if (!focusEpisode.active && focusEpisode.prey &&
               (!candidate || candidate.prey !== focusEpisode.prey || candidate.distance > 45)) {
             focusEpisode.prey = null;
@@ -24901,6 +26571,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Publish the fresh pooled slot even when this catch freezes the mission.
           updateCatchFx(0);
           beginCarriedPrey(caught,simPaused);
+          var catchToNest = mission.id === 'feedChicks' && !!nestSite;
+          carriedPrey.toNest = catchToNest;
+          carriedPrey.durationMs = catchToNest ? 1e9 : RAPTOR_CARRY_MS;
+          carriedPrey.until = motionNow + carriedPrey.durationMs;
           preyMeshes.splice(hitIdx, 1);
           runCatches++;
           missionCatches += 1;
@@ -24929,14 +26603,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var preyBodyMassKg = Math.max(0.01, Math.pow(caught.data.sizeM, 2.5) * 27.3);
           var preyMassKg = preyBodyMassKg * 0.65;
           var caloriesGained = Math.min(preyMassKg * 1300, species.massKg * 0.3 * 1300);
-          missionCalories += caloriesGained;
-          raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
-          raptor.starving = false;
+          if (catchToNest) {
+            carriedPrey.kcal = caloriesGained;
+            carriedPrey.loadSpeed = Math.max(0.72, species.massKg / (species.massKg + preyBodyMassKg * 0.5));
+          } else {
+            missionCalories += caloriesGained;
+            raptor.calories = Math.min(raptor.caloriesMax * 1.5, raptor.calories + caloriesGained);
+            raptor.starving = false;
+          }
           lastCatchPreyBodyKg = Math.round(preyBodyMassKg * 1000) / 1000;
           lastCatchPreyMassKg = Math.round(preyMassKg * 1000) / 1000;
           lastCatchCalories = Math.round(caloriesGained);
           lastCatchCapped = (preyMassKg * 1300) > (species.massKg * 0.3 * 1300);
-          var catchFeedback = 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
+          var catchFeedback = catchToNest ? 'CATCH - ' + caught.data.label + ' · ' + Math.round(caloriesGained) + ' kcal for the nest' : 'CATCH - ' + caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal';
           recordFlightEvent('catch', 'Catch secured', caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal');
           beginStrikeFeedback('hit', catchFeedback, now, mission.id === 'highStoop' && !highStoopQualifyingDive() ? 'Catch counted, but High Stoop needs a catch while diving at ' + HIGH_STOOP_MIN_MPH + ' mph or faster. Build another approach.' : 'Glide to conserve energy, then scan for the next target.');
           rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
@@ -24951,6 +26630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             return Object.assign({}, prev, { huntStats: allStats });
           });
           queueFlightAction(function() {
+            if (mission.id === 'windHover' || mission.id === 'fishThief') return;
             var newPrey = spawnPrey();
             if (newPrey) preyMeshes.push(newPrey);
           }, 1500);
@@ -25274,18 +26954,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var lastPublishedFps = 0;
         var lastFlightState = 'glide';
         var lastWindDisplay = '';
-        var practiceTrail={active:false,complete:false,index:0,passed:0,centered:0,score:0,bestScore:null,attempts:0,gates:[],meshes:[],feedback:'',feedbackUntil:0};
-        var practiceButton=null,practiceHud=null,practiceProgress=null,practiceHint=null,practiceFeedback=null,practiceScore=null,practicePips=[],practiceResult=null,practiceBest=null,practiceCoach=null,practiceRetry=null,practiceDismiss=null;
-        function buildPracticeTrail(origin,yaw,sampleHeight,ceiling) {
+        var practiceTrail={active:false,complete:false,index:0,passed:0,centered:0,score:0,bestScore:null,attempts:0,grade:0,nextGrade:0,gates:[],meshes:[],feedback:'',feedbackUntil:0};
+        // Grade 0 keeps the original gentle course. Later grades add sharper turns, wider spacing and bigger height changes.
+        function trailGradeName(grade){return grade===2?__alloT('stem.raptorhunt.trail_grade_2',"Adult"):grade===1?__alloT('stem.raptorhunt.trail_grade_1',"Juvenile"):__alloT('stem.raptorhunt.trail_grade_0',"Fledgling");}
+        var practiceHud=null,practiceProgress=null,practiceHint=null,practiceFeedback=null,practiceScore=null,practicePips=[],practiceResult=null,practiceBest=null,practiceCoach=null,practiceRetry=null,practiceDismiss=null;
+        function buildPracticeTrail(origin,yaw,sampleHeight,ceiling,grade) {
+          var TRAIL_GRADES=[{gap:85,turn:0.14,turnRate:0.85,rise:4,riseRate:0.65},{gap:95,turn:0.42,turnRate:1.9,rise:12,riseRate:1.1},{gap:105,turn:0.62,turnRate:2.3,rise:20,riseRate:1.5}];
+          var course=TRAIL_GRADES[grade||0];
           var gates=[],x=origin.x,z=origin.z,heading=yaw;
           for(var i=0;i<5;i++) {
-            if(Math.max(Math.abs(x),Math.abs(z))>235) heading=Math.atan2(-x,z);
-            else heading+=Math.sin(i*0.85)*0.12;
-            var nx=Math.max(-315,Math.min(315,x+Math.sin(heading)*48)),nz=Math.max(-315,Math.min(315,z-Math.cos(heading)*48));
+            if(Math.max(Math.abs(x),Math.abs(z))>235){var trailHome=Math.atan2(-x,z),trailBack=Math.atan2(Math.sin(trailHome-heading),Math.cos(trailHome-heading));heading+=Math.max(-0.75,Math.min(0.75,trailBack));}
+            else heading+=Math.sin(i*course.turnRate)*course.turn;
+            var nx=Math.max(-315,Math.min(315,x+Math.sin(heading)*course.gap)),nz=Math.max(-315,Math.min(315,z-Math.cos(heading)*course.gap));
             var ground=-Infinity;
             for(var sample=0;sample<=8;sample++)ground=Math.max(ground,sampleHeight(x+(nx-x)*sample/8,z+(nz-z)*sample/8));
             var length=Math.hypot(nx-x,nz-z);
-            gates.push({x:nx,y:Math.max(Math.min(origin.y+Math.sin((i+1)*0.65)*4,Number.isFinite(ceiling)?ceiling-12:Infinity),ground+28),z:nz,nx:(nx-x)/length,nz:(nz-z)/length,radius:11,finishedAt:-Infinity,hit:false});
+            gates.push({x:nx,y:Math.max(Math.min(origin.y+Math.sin((i+1)*course.riseRate)*course.rise,Number.isFinite(ceiling)?ceiling-12:Infinity),ground+28),z:nz,nx:(nx-x)/length,nz:(nz-z)/length,radius:11,finishedAt:-Infinity,hit:false});
             x=nx;z=nz;
           }
           return gates;
@@ -25352,12 +27036,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
           practiceHud.hidden=!practiceTrail.active && !practiceTrail.complete;
           practiceHud.dataset.complete=String(practiceTrail.complete);
+          practiceHud.dataset.trailGrade=String(practiceTrail.grade);
           practiceHud.dataset.trailState = practiceTrail.complete ? 'complete' : !practiceTrail.active ? 'idle' : simPaused ? 'paused' : raptor.crashed ? 'recovering' : raptor.landed ? 'grounded' : 'flying';
           hudParent.dataset.raptorTrailResult=String(practiceTrail.complete);
           practiceResult.hidden=!practiceTrail.complete;
           var showFeedback=practiceTrail.active && !simPaused && !raptor.landed && !raptor.crashed && motionNow<practiceTrail.feedbackUntil;
           practiceFeedback.hidden=!showFeedback;
-          practiceFeedback.textContent=showFeedback?(practiceTrail.index===0?__alloT('stem.raptorhunt.trail_center_tip','Aim inside the small circle for +2'):practiceTrail.feedback):'';
+          practiceFeedback.textContent=showFeedback?(practiceTrail.index===0?(practiceTrail.grade>0?trailGradeName(practiceTrail.grade)+' '+__alloT('stem.raptorhunt.trail_grade_tip',"trail · sharper turns and bigger climbs"):__alloT('stem.raptorhunt.trail_center_tip','Aim inside the small circle for +2')):practiceTrail.feedback):'';
           practiceFeedback.dataset.feedbackTone=practiceTrail.index===0?'intro':practiceTrail.gates[practiceTrail.index-1].hit?'passed':'missed';
           practiceRetry.disabled=simPaused || raptor.landed || raptor.crashed;
           practiceRetry.title=simPaused?'Resume flight to fly another trail':raptor.landed || raptor.crashed?'Take off to fly another trail':'';
@@ -25367,6 +27052,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             practiceProgress.textContent=__alloT('stem.raptorhunt.trail_finished','Trail finished')+' · '+practiceTrail.passed+' / 5';
             practiceHint.textContent=practiceTrail.centered+' '+__alloT('stem.raptorhunt.trail_centered','centered')+' · '+(5-practiceTrail.passed)+' missed';
             practiceCoach.textContent=practiceTrail.passed<5?'Next try: turn toward the next ring early, then make small corrections.':practiceTrail.centered<5?'Next try: aim through the small inner circle. Each centered pass earns 2 points.':'All five centered. Try using the same gentle corrections to line up prey.';
+            if(mission.id==='flightTrail'){
+              var promoted=practiceTrail.nextGrade>practiceTrail.grade;
+              practiceCoach.textContent=trailGradeName(practiceTrail.grade)+' '+__alloT('stem.raptorhunt.trail_word',"trail")+': '+practiceTrail.score+' / 10. '+(promoted?__alloT('stem.raptorhunt.trail_moved_up',"You moved up. The next trail has sharper turns and bigger climbs."):practiceTrail.grade===2&&practiceTrail.score>=7?__alloT('stem.raptorhunt.trail_top_grade',"That is the top grade. Try for all five centered, or try a hunt."):__alloT('stem.raptorhunt.trail_need_seven',"Score 7 or more to move up.")+' '+practiceCoach.textContent);
+              practiceRetry.textContent=promoted?__alloT('stem.raptorhunt.trail_next_grade',"Next trail:")+' '+trailGradeName(practiceTrail.nextGrade):'Fly trail again';
+            }
           } else if(practiceTrail.active) {
             var next=practiceTrail.gates[practiceTrail.index];
             updatePracticeDistance(next);
@@ -25378,26 +27068,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
         function togglePracticeTrail() {
-          if(mission.id!=='open' || simPaused)return;
+          if((mission.id!=='open'&&mission.id!=='flightTrail') || simPaused)return;
           if(!practiceTrail.active && (raptor.landed || raptor.crashed)){rhAnnounce('Take off before starting the flight trail.');return;}
           if(practiceTrail.active) {
             practiceTrail.active=false;practiceTrail.complete=false;
             practiceTrail.meshes.forEach(function(mesh){mesh.group.visible=false;});
           } else {
             ensurePracticeMeshes();practiceTrail.active=true;practiceTrail.complete=false;practiceTrail.index=practiceTrail.passed=practiceTrail.centered=practiceTrail.score=0;
-            practiceTrail.gates=buildPracticeTrail(raptor,raptor.yaw,terrainHeightAt,missionCeiling);
+            practiceTrail.grade=practiceTrail.nextGrade;
+            practiceTrail.gates=buildPracticeTrail(raptor,raptor.yaw,terrainHeightAt,missionCeiling,practiceTrail.grade);
             practiceTrail.feedback=__alloT('stem.raptorhunt.trail_intro','Fly through the golden rings. Centered passes earn 2 points.');practiceTrail.feedbackUntil=motionNow+3500;
             practiceTrail.gates.forEach(function(gate,i){var mesh=practiceTrail.meshes[i];mesh.group.position.set(gate.x,gate.y,gate.z);mesh.group.lookAt(gate.x+gate.nx,gate.y,gate.z+gate.nz);mesh.group.scale.setScalar(1);});
           }
           hudParent.dataset.raptorFlightTrail=String(practiceTrail.active);
-          practiceButton.setAttribute('aria-pressed',String(practiceTrail.active));
-          practiceButton.textContent=practiceTrail.active?__alloT('stem.raptorhunt.trail_stop','Stop trail'):__alloT('stem.raptorhunt.flight_trail','Flight trail');
           refreshKeyGuide(true);updatePracticeHud();updateTargetFeedback(motionNow, false);rhAnnounce(practiceTrail.active?practiceTrail.feedback:__alloT('stem.raptorhunt.trail_stopped','Flight trail stopped. Free flight continues.'));
         }
         function dismissPracticeResult() {
           practiceTrail.complete=false;
           practiceTrail.meshes.forEach(function(mesh){mesh.group.visible=false;});
-          practiceButton.textContent=__alloT('stem.raptorhunt.flight_trail','Flight trail');
           updatePracticeHud();
         }
         var perchButton=null,perchHud=null,perchHint=null;
@@ -25442,7 +27130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.add(group);
         }
         function startPerchedPractice() {
-          if(!perchProfile || mission.id!=='open' || simPaused || raptor.crashed)return;
+          if(!perchProfile || (mission.id!=='open'&&mission.id!=='perchHunt') || simPaused || raptor.crashed)return;
           if(practiceTrail.active)togglePracticeTrail();
           if(practiceTrail.complete)dismissPracticeResult();
           ensurePracticePerch();clearHeldInputs();clearTouchdownFx();
@@ -25456,11 +27144,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce('At the lookout. Scan for prey. '+takeoffControlHint()+'.');
         }
         function updatePerchHud() {
-          if(!perchButton)return;
-          var state=String(!!activePerch),disabled=simPaused||raptor.crashed||!!activePerch,label=activePerch?'At lookout':'Perched practice';
+          if(!perchHud)return;
+          var state=String(!!activePerch),disabled=simPaused||raptor.crashed||!!activePerch,label=activePerch?'At lookout':'Return to lookout';
           if(hudParent.dataset.raptorPerched!==state)hudParent.dataset.raptorPerched=state;
-          if(perchButton.disabled!==disabled)perchButton.disabled=disabled;
-          if(perchButton.textContent!==label)perchButton.textContent=label;
+          if(perchButton&&perchButton.disabled!==disabled)perchButton.disabled=disabled;
+          if(perchButton&&perchButton.textContent!==label)perchButton.textContent=label;
           if(perchHud.hidden!==!activePerch)perchHud.hidden=!activePerch;
           var scanKeys = raptorKeyPair(controlScheme, 'pitchUp', 'pitchDown');
           var lookKeys = raptorKeyPair(controlScheme, 'turnLeft', 'turnRight');
@@ -25485,8 +27173,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if(practiceTrail.index===practiceTrail.gates.length) {
               practiceTrail.active=false;practiceTrail.complete=true;practiceTrail.attempts++;
               practiceTrail.bestScore=Math.max(practiceTrail.bestScore===null?0:practiceTrail.bestScore,practiceTrail.score);
+              if(mission.id==='flightTrail'&&practiceTrail.score>=7&&practiceTrail.grade<2)practiceTrail.nextGrade=practiceTrail.grade+1;
               hudParent.dataset.raptorFlightTrail='false';
-              practiceButton.setAttribute('aria-pressed','false');practiceButton.textContent=__alloT('stem.raptorhunt.trail_again','Fly another trail');
               recordFlightEvent('trail',__alloT('stem.raptorhunt.trail_finished','Trail finished'),practiceTrail.passed+' / 5 · '+practiceTrail.centered+' '+__alloT('stem.raptorhunt.trail_centered','centered'));
               rhAnnounce(__alloT('stem.raptorhunt.trail_finished','Trail finished')+'. '+practiceTrail.passed+' / 5. '+practiceTrail.score+' '+__alloT('stem.raptorhunt.trail_points','points'));
             } else rhAnnounce(practiceTrail.feedback);
@@ -25515,11 +27203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             mesh.halo.material.opacity=celebrating?0.15*(1-age/550):0.07+proximity*0.07;
           });
         }
-        if(mission.id==='open') {
-          practiceButton=document.createElement('button');practiceButton.type='button';practiceButton.className='rh-practice-toggle';
-          practiceButton.setAttribute('aria-label',__alloT('stem.raptorhunt.flight_trail','Flight trail'));practiceButton.setAttribute('aria-pressed','false');
-          practiceButton.textContent=__alloT('stem.raptorhunt.flight_trail','Flight trail');
-          practiceButton.onclick=function(event){togglePracticeTrail();if(event.detail>0)canvasEl.focus({preventScroll:true});};hudParent.appendChild(practiceButton);
+        if(mission.id==='open'||mission.id==='flightTrail') {
           practiceHud=document.createElement('div');practiceHud.className='rh-practice-hud';practiceHud.hidden=true;
           practiceHud.setAttribute('role','group');practiceHud.setAttribute('aria-label',__alloT('stem.raptorhunt.trail_progress','Flight trail progress'));
           practiceProgress=document.createElement('strong');practiceHint=document.createElement('span');practiceHint.className='rh-practice-hint';
@@ -25535,20 +27219,459 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var practiceActions=document.createElement('div');practiceActions.className='rh-practice-actions';
           practiceRetry=document.createElement('button');practiceRetry.type='button';practiceRetry.textContent='Fly trail again';
           practiceRetry.onclick=function(){togglePracticeTrail();canvasEl.focus({preventScroll:true});};
-          practiceDismiss=document.createElement('button');practiceDismiss.type='button';practiceDismiss.textContent='Return to hunt';
+          practiceDismiss=document.createElement('button');practiceDismiss.type='button';practiceDismiss.textContent='Return to hunt';if(mission.id==='flightTrail')practiceDismiss.hidden=true;
           practiceDismiss.onclick=function(){dismissPracticeResult();canvasEl.focus({preventScroll:true});rhAnnounce('Trail result closed. Scan for prey to practice your approach.');};
           practiceActions.appendChild(practiceRetry);practiceActions.appendChild(practiceDismiss);practiceResult.appendChild(practiceActions);
           practiceHud.appendChild(practiceResult);hudParent.appendChild(practiceHud);
         }
 
-        if(mission.id==='open' && perchProfile) {
-          perchButton=document.createElement('button');perchButton.type='button';perchButton.className='rh-practice-toggle rh-perch-toggle';
-          perchButton.textContent='Perched practice';perchButton.title='Move to a lookout to practice scanning and launching. '+perchProfile.note;
-          perchButton.onclick=function(event){startPerchedPractice();if(event.detail>0)canvasEl.focus({preventScroll:true});};hudParent.appendChild(perchButton);
+        if((mission.id==='open'||mission.id==='perchHunt') && perchProfile) {
+          if(mission.id==='perchHunt'){
+            perchButton=document.createElement('button');perchButton.type='button';perchButton.className='rh-practice-toggle rh-perch-toggle';perchButton.style.bottom='12px';
+            perchButton.textContent='At lookout';perchButton.title='Go back to the lookout. '+perchProfile.note;
+            perchButton.onclick=function(event){startPerchedPractice();if(event.detail>0)canvasEl.focus({preventScroll:true});};hudParent.appendChild(perchButton);
+          }
           perchHud=document.createElement('div');perchHud.className='rh-perch-hud';perchHud.hidden=true;
           var perchTitle=document.createElement('strong');perchTitle.textContent='Watch from the lookout';perchHud.appendChild(perchTitle);
           var perchNote=document.createElement('span');perchNote.textContent=perchProfile.note;perchHud.appendChild(perchNote);
+          if(mission.id==='perchHunt'){var perchSaving=document.createElement('span');perchSaving.className='rh-perch-saving';perchSaving.textContent=__alloT('stem.raptorhunt.perch_saving',"In this sim, waiting burns about 5 times less energy than cruising.");perchHud.appendChild(perchSaving);}
           perchHint=document.createElement('span');perchHint.className='rh-perch-keys';perchHud.appendChild(perchHint);hudParent.appendChild(perchHud);
+        }
+        // Feed the Chicks: the nest, its chicks and a marker. Scenery owned and disposed by this scene.
+        var NEST_REACH_M=18,NEST_VERTICAL_M=26,nestSite=null,nestMeal=null,nestFedUntil=0,nestDeliveries=0;
+        // Wind Hover and Fish Dive. Hovering is the sim's own wind model: airspeed is set to the headwind, and the
+        // full wind drift already applied to every bird cancels it. A bird not facing the wind still gets carried.
+        var hoverMission=mission.id==='windHover'||mission.id==='fishDive',hoverCapable=hoverMission&&species.massKg<=3;
+        var HOVER_STILL_MPS=2,hoverActive=false,hoverStillSeconds=0,hoverBestStill=0,hoverTotalSeconds=0,hoverScan=0,hoverEmptySpot=false,hoverCue=null,hoverCueArrow=null,hoverCueText=null,hoverCueState='';
+        var VOLE_PATCHES=[{x:-70,z:-20},{x:90,z:40},{x:-40,z:130},{x:120,z:-120},{x:-150,z:-140}],VOLE_PATCH_RADIUS_M=38,VOLE_LIFETIME_MS=25000,voleRunwayTexture=null,liveVolePatch=null,hoverCatchesSeen=0;
+        var skimNoted=false,plungeAimFrameDt=1/60,FISH_WATER_Y=-1.5,FISH_PLUNGE_REACH_M=3.6,plunge=null,plungeRiseUntil=0,fishDives=0,fishTarget=null,plungeAimRing=null,fishMarkerRing=null;
+        function softenVeilEdges(material){
+          // Fade the veil where its surface turns edge-on, so a column has no hard straight outline.
+          material.onBeforeCompile=function(shader){
+            shader.vertexShader='varying vec3 vRhVeilN;varying vec3 vRhVeilV;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vRhVeilN=normalMatrix*normal;vRhVeilV=-(modelViewMatrix*vec4(position,1.0)).xyz;');
+            shader.fragmentShader='varying vec3 vRhVeilN;varying vec3 vRhVeilV;\n'+shader.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\n gl_FragColor.a*=pow(abs(dot(normalize(vRhVeilN),normalize(vRhVeilV))),1.8);');
+          };
+        }
+        function hoverHeadwind(){var wind=weather.windSpeed*(1+Math.sin(weather.gustPhase*0.4)*0.4);return -wind*Math.cos(raptor.yaw-weather.windDir);}
+        function hoverWindError(){var upwind=weather.windDir+Math.PI;return Math.atan2(Math.sin(upwind-raptor.yaw),Math.cos(upwind-raptor.yaw));}
+        function turnWords(bearing){var side=bearing<0?'turnLeft':'turnRight',label=controlKeyLabel(side);return (bearing<0?'turn left':'turn right')+(label?' ('+label+')':'');}
+        function buildVoleRunways(){
+          var canvas=document.createElement('canvas');canvas.width=canvas.height=512;var ctx=canvas.getContext('2d');
+          // A worn, flattened patch of grass crossed by narrow wandering paths. Its own seed, so scene randomness is untouched.
+          var runwaySeed=1;function runwayRandom(){var v=Math.sin(runwaySeed++*12.9898)*43758.5453;return v-Math.floor(v);}
+          ctx.fillStyle='rgba(150,128,66,0.5)';ctx.fillRect(0,0,512,512);
+          ctx.lineCap='round';ctx.lineJoin='round';
+          for(var trail=0;trail<30;trail++){
+            var tx=runwayRandom()*512,ty=runwayRandom()*512,th=runwayRandom()*Math.PI*2,steps=12+Math.floor(runwayRandom()*22);
+            ctx.beginPath();ctx.moveTo(tx,ty);
+            for(var seg=0;seg<steps;seg++){th+=(runwayRandom()-0.5)*1.15;tx+=Math.cos(th)*13;ty+=Math.sin(th)*13;ctx.lineTo(tx,ty);}
+            ctx.strokeStyle='rgba(58,42,20,0.9)';ctx.lineWidth=4+runwayRandom()*2.5;ctx.stroke();
+          }
+          ctx.globalCompositeOperation='destination-in';
+          var fade=ctx.createRadialGradient(256,256,120,256,256,254);fade.addColorStop(0,'rgba(0,0,0,1)');fade.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=fade;ctx.fillRect(0,0,512,512);
+          voleRunwayTexture=new THREE.CanvasTexture(canvas);
+          var group=new THREE.Group();group.name='vole-runways';
+          VOLE_PATCHES.forEach(function(patch,index){
+            var size=VOLE_PATCH_RADIUS_M*2,geo=new THREE.PlaneGeometry(size,size,14,14);geo.rotateX(-Math.PI/2);geo.rotateY(index*1.3);
+            var pos=geo.attributes.position;
+            for(var i=0;i<pos.count;i++)pos.setY(i,terrainHeightAt(patch.x+pos.getX(i),patch.z+pos.getZ(i))+0.45);
+            pos.needsUpdate=true;
+            var mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:voleRunwayTexture,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
+            mesh.position.set(patch.x,0,patch.z);mesh.frustumCulled=false;group.add(mesh);
+            patch.spent=false;
+          });
+          scene.add(group);
+        }
+        function voleCovers(patch){return Math.hypot(patch.x-raptor.x,patch.z-raptor.z)<=VOLE_PATCH_RADIUS_M+6;}
+        function nearestVolePatch(){
+          var best=null,bestD=Infinity;
+          VOLE_PATCHES.forEach(function(patch){if(patch.spent)return;var d=Math.hypot(patch.x-raptor.x,patch.z-raptor.z);if(d<bestD){bestD=d;best=patch;}});
+          return best;
+        }
+        function spawnVoleAhead(patch){
+          var vole=spawnPrey();if(!vole)return;
+          // Ahead of the bird, about where a dive from this height comes down.
+          var height=Math.max(10,raptor.y-terrainHeightAt(raptor.x,raptor.z)),along=Math.max(14,Math.min(46,height*0.72)),angle=raptor.yaw+(Math.random()-0.5)*0.7;
+          var vx=raptor.x+Math.sin(angle)*along,vz=raptor.z-Math.cos(angle)*along;
+          vole.mesh.position.set(vx,terrainHeightAt(vx,vz)+vole.groundClearance,vz);
+          vole.data=Object.assign({},vole.data,{label:__alloT('stem.raptorhunt.vole_label',"Meadow Vole")});
+          vole.spawnedAt=motionNow;vole.volePatch=patch;preyMeshes.push(vole);liveVolePatch=patch;
+          rhAnnounce('A vole moved in the grass ahead.');
+          energyEventLog.push({msg:'Vole spotted ahead',t:motionNow,color:'#a3e635'});
+        }
+        function plungeAimPoint(){
+          // The dive's own equations, run forward: pitch eases to the dive angle, gravity adds speed, wind carries the bird.
+          var x=raptor.x,y=raptor.y,z=raptor.z,pitch=raptor.pitch,speed=Math.max(raptor.speed,6),top=Math.max(1,raptor.stoopMax),phase=weather.gustPhase,floor=-0.8-1.2*plungeAimFrameDt;
+          for(var i=0;i<120&&y>FISH_WATER_Y+1;i++){
+            phase+=0.05;var gustWind=weather.windSpeed*(1+Math.sin(phase*0.4)*0.4),windX=Math.sin(weather.windDir)*gustWind,windZ=-Math.cos(weather.windDir)*gustWind;
+            pitch=Math.max(floor,Math.max(-0.8,pitch)-0.06);var fraction=Math.min(1,speed/top);
+            speed=Math.min(top,speed+9.81*Math.max(0.25,-Math.sin(pitch))*(1-fraction*fraction)*0.05);
+            x+=(Math.sin(raptor.yaw)*speed*Math.cos(pitch)+windX)*0.05;z+=(-Math.cos(raptor.yaw)*speed*Math.cos(pitch)+windZ)*0.05;y+=Math.sin(pitch)*speed*0.05;
+          }
+          return {x:x,z:z};
+        }
+        function pickFishTarget(aim){
+          var best=null,bestD=Infinity;
+          preyMeshes.forEach(function(prey){if(prey.animation.kind!=='fish')return;var d=Math.hypot(prey.mesh.position.x-aim.x,prey.mesh.position.z-aim.z);if(d<bestD){bestD=d;best=prey;}});
+          return {prey:best,distance:bestD};
+        }
+        function fishNavigation(){
+          if(plunge)return {distance:'',hint:'PLUNGE - feet first'};
+          if(carriedPrey)return {distance:'',hint:'CAUGHT - fish turned head first, climb away'};
+          if(raptor.diving)return {distance:'',hint:'DIVING - steer the white ring onto the fish'};
+          if(raptor.y-FISH_WATER_Y<14)return {distance:'',hint:'TOO LOW - the fish can see you, climb with '+(controlKeyLabel('altUp')||'trim')};
+          var aim=plungeAimPoint(),pick=pickFishTarget(aim);
+          if(!pick.prey)return {distance:'',hint:'SEARCH - watch the water for fish'};
+          var dx=pick.prey.mesh.position.x-raptor.x,dz=pick.prey.mesh.position.z-raptor.z,bearing=Math.atan2(dx,-dz)-raptor.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+          var range='~'+Math.max(5,Math.round(Math.hypot(dx,dz)/5)*5)+' m';
+          if(pick.distance<FISH_PLUNGE_REACH_M+0.6)return {distance:range,hint:'DIVE NOW - hold '+(controlKeyLabel('dive')||'Dive')};
+          return {distance:range,hint:'FISH - '+(Math.abs(bearing)<0.14?'line up the white ring':turnWords(bearing))+' · '+range};
+        }
+        function voleNavigation(){
+          var patch=nearestVolePatch();
+          if(!patch)return {distance:'',hint:'SEARCH - no runways left'};
+          if(voleCovers(patch))return {distance:'',hint:hoverActive?'SEARCHING - stay still and watch the grass':'HOVER - face the wind and hold '+(controlKeyLabel('pullUp')||'Pull up')};
+          var dx=patch.x-raptor.x,dz=patch.z-raptor.z,bearing=Math.atan2(dx,-dz)-raptor.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+          var range='~'+Math.max(5,Math.round(Math.hypot(dx,dz)/5)*5)+' m';
+          return {distance:range,hint:'RUNWAYS - '+(Math.abs(bearing)<0.14?'ahead':turnWords(bearing))+' · '+range};
+        }
+        function beginPlunge(kind){
+          var entry=raptor.speed,reach=Math.min(1.3,0.3+entry*0.035),hit=-1,hitD=Infinity,tooDeep=false;
+          preyMeshes.forEach(function(prey,index){
+            if(prey.animation.kind!=='fish')return;
+            var across=Math.hypot(prey.mesh.position.x-raptor.x,prey.mesh.position.z-raptor.z),depth=FISH_WATER_Y-prey.mesh.position.y;
+            if(across<=FISH_PLUNGE_REACH_M&&depth>reach)tooDeep=true;
+            if(across<=FISH_PLUNGE_REACH_M&&depth<=reach&&across<hitD){hit=index;hitD=across;}
+          });
+          if(kind==='splash'){
+            raptor.y=FISH_WATER_Y+0.3;raptor.speed=0;raptor.pitch=0;plunge={until:motionNow+1400};raptor.stamina=Math.max(0,raptor.stamina-20);
+            spawnCatchFx(raptor.x,FISH_WATER_Y,raptor.z,0xb7e7ef,'water-surface','fish');
+            beginStrikeFeedback('miss','SPLASH - snatch fish from the surface instead',motionNow,'Skim just above the water and Strike as you pass the fish.');
+            rhAnnounce(species.id==='baldEagle'?'Splash. Bald Eagles snatch fish from the surface rather than diving in.':'Splash. Only Ospreys plunge in feet first; other raptors snatch from the surface.');recordFlightEvent('warning','Hit the water','Snatch from the surface instead');
+            return;
+          }
+          fishDives++;
+          raptor.y=FISH_WATER_Y+0.3;raptor.speed=0;raptor.pitch=0;
+          plunge={until:motionNow+1100};
+          if(hit>=0){
+            catchPrey(hit,motionNow,{x:raptor.x,y:FISH_WATER_Y,z:raptor.z});
+          }else{
+            spawnCatchFx(raptor.x,FISH_WATER_Y,raptor.z,0xb7e7ef,'water-surface','fish');
+            raptor.stamina=Math.max(0,raptor.stamina-15);
+            recordFlightEvent('miss','Empty plunge',tooDeep?'The fish was deeper than this entry could reach':'No fish within reach of the talons');
+            beginStrikeFeedback('miss',tooDeep?'TOO DEEP - this entry was too slow to reach the fish':'MISSED - no fish in the talons',motionNow,tooDeep?'A higher dive enters faster and reaches deeper.':mission.id==='fishDive'?'Line up the white ring with a fish before you dive.':'Dive steeply right over a fish.');
+            rhAnnounce(tooDeep?'Too deep. A higher, faster dive reaches deeper.':'Missed. No fish in the talons.');
+            playSpeciesCall('strike');
+          }
+        }
+        function updatePlungeContact(startX,startY,startZ,grounded,dt){
+          if(species.biome!=='lake'||grounded)return;
+          var lakeBed=terrainHeightAt(raptor.x,raptor.z);
+          if(!plunge&&raptor.y-1<=FISH_WATER_Y&&lakeBed<FISH_WATER_Y-0.2&&!simPaused){
+            // A steep entry plunges (Osprey) or splashes (every other raptor). A shallow pass skims the surface and loses speed.
+            var steepEntry=raptor.diving||raptor.pitch<-0.35,stalled=raptor.speed<4,deepWater=lakeBed<FISH_WATER_Y-2.2;
+            if(deepWater&&(mission.id==='fishDive'||(species.id==='osprey'&&steepEntry)))beginPlunge('plunge');
+            else if(steepEntry||stalled)beginPlunge('splash');
+            else{
+              raptor.y=FISH_WATER_Y+1;if(raptor.pitch<0.04)raptor.pitch=0.04;
+              raptor.speed*=Math.exp(-0.9*(dt||0));
+              if(!skimNoted){skimNoted=true;rhAnnounce('Skimming the water. Strike as you pass a fish, or climb.');energyEventLog.push({msg:'Skimming the water',t:motionNow,color:'#93c5fd'});}
+            }
+          }else if(raptor.y-1>FISH_WATER_Y+3)skimNoted=false;
+          if(!plunge)return;
+          // Under the surface the water holds the bird in place until it hauls itself out.
+          raptor.x=startX;raptor.z=startZ;raptor.y=FISH_WATER_Y+0.3;raptor.speed=0;raptor.groundSpeed=0;raptor.pitch=0;
+          if(motionNow>=plunge.until){
+            plunge=null;plungeRiseUntil=motionNow+1900;
+            raptor.y=FISH_WATER_Y+0.9;raptor.speed=raptor.maxLevel*0.5;raptor.pitch=0.5;
+          }
+        }
+        function updateHoverCue(){
+          if(!hoverCue)return;
+          var error=hoverWindError(),degrees=Math.round(Math.abs(error)*180/Math.PI),state='far',label;
+          hoverCueArrow.style.transform='rotate('+Math.round(error*180/Math.PI)+'deg)';
+          if(raptor.landed||raptor.crashed)label='On the ground · take off to hunt';
+          else if(plunge||raptor.diving||carriedPrey||motionNow<plungeRiseUntil||(mission.id==='windHover'&&preyMeshes.length&&!hoverActive)||(mission.id==='fishDive'&&!hoverActive&&!keys[' '])){hoverCue.style.display='none';return;}
+          else if(!hoverCapable)label='Too heavy to hover · try a Kestrel or Osprey';
+          else if(raptor.exhausted)label='Too tired to hover · glide to recover';
+          else if(Math.abs(error)>0.3)label='Face the wind · '+turnWords(error)+' '+degrees+'°';
+          else if(!hoverActive)label='Facing the wind · hold '+(controlKeyLabel('pullUp')||'Pull up')+' to hover';
+          else if(raptor.groundSpeed>=HOVER_STILL_MPS)label='Drifting '+raptor.groundSpeed.toFixed(1)+' m/s · '+turnWords(error);
+          else{
+            state='resting';
+            label=mission.id==='fishDive'?'Holding still · line up the ring':hoverEmptySpot?'Holding still · nothing moving here, try a runway':'Holding still · searching '+Math.round(hoverScan*100)+'%';
+          }
+          hoverCue.style.display='';
+          if(hoverCueState!==state){
+            if(state==='resting')rhAnnounce(mission.id==='fishDive'?'Holding still over the water.':'Holding still. Searching the grass.');
+            hoverCueState=state;hoverCue.dataset.hunterState=state;
+          }
+          if(hoverCueText.textContent!==label)hoverCueText.textContent=label;
+        }
+        function updateHoverMission(dt){
+          if(!hoverMission)return;
+          if(dt>0)plungeAimFrameDt+=(Math.min(0.1,dt)-plungeAimFrameDt)*0.2;
+          var still=hoverActive&&raptor.groundSpeed<HOVER_STILL_MPS;
+          hoverStillSeconds=still?hoverStillSeconds+dt:Math.max(0,hoverStillSeconds-dt*2);
+          hoverBestStill=Math.max(hoverBestStill,hoverStillSeconds);
+          if(hoverActive)hoverTotalSeconds+=dt;
+          if(mission.id==='windHover'){
+            if(missionCatches>hoverCatchesSeen){hoverCatchesSeen=missionCatches;if(liveVolePatch)liveVolePatch.spent=true;liveVolePatch=null;hoverScan=0;}
+            var alive=preyMeshes.length>0,patch=nearestVolePatch(),over=!!patch&&voleCovers(patch);
+            if(!alive&&liveVolePatch)liveVolePatch=null;
+            hoverEmptySpot=still&&!over&&hoverScan>=1;
+            if(still&&!alive&&missionOutcome==='active'){
+              hoverScan=Math.min(1,hoverScan+dt/(over?2.4:5));
+              if(hoverScan>=1&&over){hoverScan=0;spawnVoleAhead(patch);}
+            }else if(!still)hoverScan=Math.max(0,hoverScan-dt*0.5);
+          }
+          if(mission.id==='fishDive'){
+            // An Osprey lines its fish up head first. The fish model faces +z and the bird faces -z.
+            if(carriedPrey&&carriedPrey.prey.visual){var fishYaw=carriedPrey.prey.visual.rotation.y,fishTurn=Math.atan2(Math.sin(Math.PI-fishYaw),Math.cos(Math.PI-fishYaw));carriedPrey.prey.visual.rotation.y=_rmFX?Math.PI:fishYaw+fishTurn*dampingAlpha(5,dt);}
+            var aim=plungeAimPoint(),pick=pickFishTarget(aim),overWater=terrainHeightAt(aim.x,aim.z)<FISH_WATER_Y-2.2,flying=!raptor.landed&&!raptor.crashed&&!plunge&&!carriedPrey&&motionNow>=plungeRiseUntil;
+            fishTarget=pick.prey;
+            plungeAimRing.visible=flying&&overWater;
+            if(plungeAimRing.visible){plungeAimRing.position.set(aim.x,FISH_WATER_Y+0.2,aim.z);plungeAimRing.material.color.setHex(pick.distance<FISH_PLUNGE_REACH_M+0.6?0x86efac:0xf8fafc);}
+            fishMarkerRing.visible=flying&&!!pick.prey;
+            if(fishMarkerRing.visible)fishMarkerRing.position.set(pick.prey.mesh.position.x,FISH_WATER_Y+0.2,pick.prey.mesh.position.z);
+          }
+          var scanning=!raptor.landed&&!raptor.crashed&&!raptor.diving&&!carriedPrey&&!plunge&&motionNow>=plungeRiseUntil;
+          scanCameraTarget=!scanning?0:mission.id==='fishDive'?9:hoverActive?5.5:0;
+          updateHoverCue();
+        }
+        if(hoverMission){
+          hoverCue=document.createElement('div');hoverCue.className='rh-hunter-cue rh-hover-cue';hoverCue.setAttribute('aria-hidden','true');hoverCue.dataset.hunterState='far';
+          hoverCueArrow=document.createElement('span');hoverCueArrow.className='rh-hunter-arrow';hoverCueArrow.textContent='\u2191';
+          hoverCueText=document.createElement('span');hoverCue.appendChild(hoverCueArrow);hoverCue.appendChild(hoverCueText);hudParent.appendChild(hoverCue);
+          if(mission.id==='windHover')buildVoleRunways();
+          if(mission.id==='fishDive'){
+            plungeAimRing=new THREE.Mesh(new THREE.RingGeometry(FISH_PLUNGE_REACH_M-0.6,FISH_PLUNGE_REACH_M,36),new THREE.MeshBasicMaterial({color:0xf8fafc,transparent:true,opacity:0.95,depthWrite:false,depthTest:false,side:THREE.DoubleSide,fog:false}));plungeAimRing.renderOrder=30;
+            plungeAimRing.rotation.x=-Math.PI/2;plungeAimRing.name='plunge-aim-ring';scene.add(plungeAimRing);
+            fishMarkerRing=new THREE.Mesh(new THREE.RingGeometry(1.5,1.95,28),new THREE.MeshBasicMaterial({color:0xfbbf24,transparent:true,opacity:0.9,depthWrite:false,depthTest:false,side:THREE.DoubleSide,fog:false}));fishMarkerRing.renderOrder=30;
+            fishMarkerRing.rotation.x=-Math.PI/2;fishMarkerRing.name='fish-marker-ring';scene.add(fishMarkerRing);
+          }
+        }
+        // Fish Thief. The Osprey carries a real prey object; while it holds it the fish is not in preyMeshes, so nothing can target it.
+        // Once dropped, the fish joins preyMeshes as a scripted prey, so the ordinary lock, Strike and catch code takes it.
+        var thiefDropped=null,thiefOsprey=null,thiefWings=null,thiefFish=null,thiefDrops=0,thiefCue=null,thiefCueArrow=null,thiefCueText=null,thiefCueState='',thiefDistance=999;
+        var thief={heading:Math.PI,speed:10.5,pressure:0,phase:'carry',until:0,waypoint:{x:0,z:40},jink:0};
+        var THIEF_PRESS_M=16,THIEF_PRESS_SECONDS=3.2,THIEF_LAKE_RADIUS_M=78;
+        function thiefNewFish(){
+          var fish=spawnPrey();if(!fish)return null;
+          fish.scripted=true;fish.surfaceMode='scripted';fish.data=Object.assign({},fish.data,{label:__alloT('stem.raptorhunt.thief_fish_label',"Osprey's fish")});fish.vx=fish.vy=fish.vz=0;fish.flightHeight=0;
+          return fish;
+        }
+        function thiefRemoveFish(fish){
+          if(!fish)return;var index=preyMeshes.indexOf(fish);if(index>=0)preyMeshes.splice(index,1);
+          scene.remove(fish.mesh);fish.mesh.traverse(function(o){if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){m.dispose();});}});
+        }
+        function thiefPickWaypoint(){var a=Math.random()*Math.PI*2,r=25+Math.random()*60;thief.waypoint={x:Math.cos(a)*r,z:Math.sin(a)*r};}
+        function updateThiefOsprey(dt){
+          if(!thiefOsprey)return;
+          var o=thiefOsprey.position,dx=raptor.x-o.x,dy=raptor.y-o.y,dz=raptor.z-o.z;
+          thiefDistance=Math.sqrt(dx*dx+dy*dy+dz*dz);
+          var carrying=thief.phase==='carry',wanted,turnRate=0.6,speed=10.5,targetY=40;
+          if(thief.phase==='carry'&&thiefDistance<36){
+            // Evade: turn away from the eagle with a weaving jink, and climb. A laden Osprey is slower than an eagle in a dive.
+            thief.jink+=dt;wanted=Math.atan2(-dx,dz)+Math.sin(thief.jink*1.7)*0.7;turnRate=1.35;speed=Math.max(11,raptor.maxLevel*0.68);targetY=Math.min(75,o.y+8);
+          }else if(thief.phase==='fishing'){
+            wanted=Math.atan2(thief.waypoint.x-o.x,-(thief.waypoint.z-o.z));turnRate=0.9;speed=9;
+            var toSpot=Math.hypot(thief.waypoint.x-o.x,thief.waypoint.z-o.z);targetY=toSpot<26?FISH_WATER_Y+0.4:20;if(toSpot<26)speed=7.5;
+            if(o.y<FISH_WATER_Y+1.2&&motionNow>=thief.until){
+              spawnCatchFx(o.x,FISH_WATER_Y,o.z,0xb7e7ef,'water-surface','fish');
+              thiefFish=thiefNewFish();thief.phase='carry';thief.pressure=0;thiefPickWaypoint();
+              rhAnnounce('The Osprey caught another fish.');energyEventLog.push({msg:'The Osprey caught another fish',t:motionNow,color:'#93c5fd'});
+            }
+          }else{
+            if(Math.hypot(thief.waypoint.x-o.x,thief.waypoint.z-o.z)<14)thiefPickWaypoint();
+            wanted=Math.atan2(thief.waypoint.x-o.x,-(thief.waypoint.z-o.z));
+          }
+          if(Math.hypot(o.x,o.z)>THIEF_LAKE_RADIUS_M){wanted=Math.atan2(-o.x,o.z);turnRate=Math.max(turnRate,1);}
+          var turn=Math.atan2(Math.sin(wanted-thief.heading),Math.cos(wanted-thief.heading));
+          thief.heading+=Math.max(-turnRate*dt,Math.min(turnRate*dt,turn));
+          thief.speed+=(speed-thief.speed)*dampingAlpha(2,dt);
+          o.x+=(Math.sin(thief.heading)*thief.speed+windDriftX)*dt;o.z+=(-Math.cos(thief.heading)*thief.speed+windDriftZ)*dt;
+          o.y+=Math.max(-7,Math.min(4,targetY-o.y))*dt;
+          thiefOsprey.lookAt(o.x+Math.sin(thief.heading),o.y,o.z-Math.cos(thief.heading));
+          if(thiefWings&&!_rmFX){var flap=Math.sin(motionNow*(carrying?0.016:0.011))*(carrying?0.5:0.32);thiefWings.left.rotation.z=-flap;thiefWings.right.rotation.z=flap;}
+          // Pressure builds only while the eagle stays close and not below the Osprey.
+          if(carrying&&thiefFish){
+            if(thiefDistance<THIEF_PRESS_M&&dy>-3&&missionOutcome==='active')thief.pressure=Math.min(1,thief.pressure+dt/THIEF_PRESS_SECONDS);
+            else thief.pressure=Math.max(0,thief.pressure-dt*0.35);
+            thiefFish.mesh.position.set(o.x,o.y-1.1,o.z);thiefFish.mesh.rotation.set(0,Math.PI-thief.heading,0);
+            if(thief.pressure>=1){
+              thief.phase='fishing';thief.until=motionNow+9000;thief.pressure=0;thiefDrops++;thiefPickWaypoint();
+              thiefFish.vx=Math.sin(thief.heading)*thief.speed+windDriftX;thiefFish.vz=-Math.cos(thief.heading)*thief.speed+windDriftZ;thiefFish.vy=0;
+              thiefDropped={fish:thiefFish,state:'falling',floatUntil:0};preyMeshes.push(thiefFish);thiefFish=null;
+              rhAnnounce('The Osprey dropped its fish. Catch it before it is lost.');
+              energyEventLog.push({msg:'The Osprey dropped its fish',t:motionNow,color:'#fbbf24'});recordFlightEvent('flight','Osprey dropped its fish','The chase pressure made it let go');
+            }
+          }
+          // A dropped fish falls with drag, floats briefly, then sinks out of reach.
+          if(thiefDropped){
+            var drop=thiefDropped,df=drop.fish;
+            if(preyMeshes.indexOf(df)<0){thiefDropped=null;}
+            else if(drop.state==='falling'){
+              df.vy-=9.81*dt;var drag=Math.exp(-0.7*dt);df.vx*=drag;df.vy*=drag;df.vz*=drag;
+              var fp=df.mesh.position;fp.x+=df.vx*dt;fp.y+=df.vy*dt;fp.z+=df.vz*dt;
+              if(!_rmFX)df.mesh.rotation.x+=5*dt;
+              var floor=terrainHeightAt(fp.x,fp.z);
+              if(fp.y<=Math.max(FISH_WATER_Y,floor)){
+                fp.y=Math.max(FISH_WATER_Y,floor);df.vx=df.vy=df.vz=0;df.mesh.rotation.x=0;
+                if(floor<FISH_WATER_Y){drop.state='floating';drop.floatUntil=motionNow+5000;spawnCatchFx(fp.x,FISH_WATER_Y,fp.z,0xb7e7ef,'water-surface','fish');rhAnnounce('The fish hit the water. Snatch it before it sinks.');}
+                else{thiefRemoveFish(df);thiefDropped=null;rhAnnounce('The fish fell on the shore and was lost.');}
+              }
+            }else if(drop.state==='floating'&&motionNow>=drop.floatUntil){
+              thiefRemoveFish(df);thiefDropped=null;
+              rhAnnounce('The fish sank out of reach.');energyEventLog.push({msg:'The fish sank out of reach',t:motionNow,color:'#fca5a5'});
+            }
+          }
+          updateThiefCue(dx,dz);
+        }
+        function thiefFishState(){return thiefDropped?thiefDropped.state:thiefFish?'carried':'none';}
+        function thiefNavigation(){
+          if(!thiefOsprey)return {distance:'',hint:''};
+          var o=thiefOsprey.position,bearing=Math.atan2(o.x-raptor.x,-(o.z-raptor.z))-raptor.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+          var range='~'+Math.max(5,Math.round(thiefDistance/5)*5)+' m';
+          if(carriedPrey)return {distance:'',hint:'STOLEN - climb away with the fish'};
+          if(thief.phase!=='carry')return {distance:range,hint:'WAIT - the Osprey is fishing again · '+range};
+          if(thiefDistance<THIEF_PRESS_M)return {distance:range,hint:raptor.y<o.y-3?'CLIMB - press from above, not below':'PRESS - stay close behind it'};
+          return {distance:range,hint:'OSPREY - '+(Math.abs(bearing)<0.14?'ahead':turnWords(bearing))+(raptor.y<o.y?' · climb above it':'')+' · '+range};
+        }
+        function updateThiefCue(dx,dz){
+          if(!thiefCue)return;
+          var o=thiefOsprey.position,fishState=thiefFishState(),target=thiefDropped?thiefDropped.fish.mesh.position:o;
+          var toward=Math.atan2(target.x-raptor.x,-(target.z-raptor.z))-raptor.yaw;
+          thiefCueArrow.style.transform='rotate('+Math.round(toward*180/Math.PI)+'deg)';
+          var state=thiefDropped?'near':thief.phase==='carry'&&thiefDistance<THIEF_PRESS_M?'resting':'far';
+          var label=fishState==='falling'?'FISH FALLING · get under it and Strike':fishState==='floating'?'Fish on the water · skim low and Strike':thief.phase!=='carry'?'Osprey is fishing again':thiefDistance<THIEF_PRESS_M?'Pressing the Osprey · '+Math.round(thief.pressure*100)+'%':'Osprey '+Math.round(thiefDistance)+' m · carrying a fish';
+          if(thiefCueState!==state){thiefCueState=state;thiefCue.dataset.hunterState=state;}
+          if(thiefCueText.textContent!==label)thiefCueText.textContent=label;
+        }
+        if(mission.id==='fishThief'){
+          thiefOsprey=new THREE.Group();thiefOsprey.name='mission-osprey-with-fish';
+          // Osprey: dark brown back, white underparts, yellow eye, long narrow wings.
+          var thiefBird=buildFlyingRaptor({back:0x4a3b2e,belly:0xf4f1ea,tail:0x5a4a3a,eye:0xfacc15,span:2.7});
+          thiefBird.root.scale.setScalar(1.4);thiefOsprey.add(thiefBird.root);thiefWings=thiefBird;
+          thiefOsprey.position.set(0,40,10);scene.add(thiefOsprey);
+          thiefFish=thiefNewFish();thiefPickWaypoint();
+          thiefCue=document.createElement('div');thiefCue.className='rh-hunter-cue rh-thief-cue';thiefCue.setAttribute('aria-hidden','true');thiefCue.dataset.hunterState='far';
+          thiefCueArrow=document.createElement('span');thiefCueArrow.className='rh-hunter-arrow';thiefCueArrow.textContent='\u2191';
+          thiefCueText=document.createElement('span');thiefCue.appendChild(thiefCueArrow);thiefCue.appendChild(thiefCueText);hudParent.appendChild(thiefCue);
+        }
+        var modeStartDone=false;
+        if(mission.id==='avoidPredator'){
+          // Decorative: the same news is announced to screen readers when it changes.
+          hunterCue=document.createElement('div');hunterCue.className='rh-hunter-cue';hunterCue.setAttribute('aria-hidden','true');
+          hunterCueArrow=document.createElement('span');hunterCueArrow.className='rh-hunter-arrow';hunterCueArrow.textContent='\u2191';
+          hunterCueText=document.createElement('span');hunterCue.appendChild(hunterCueArrow);hunterCue.appendChild(hunterCueText);hudParent.appendChild(hunterCue);
+        }
+        // Silent Strike: pale rings stand for rustling the owl can hear. Flapping drowns them out.
+        var hearingRings=[],hearingVisible=false;
+        if(mission.id==='silentStrike'){
+          for(var hearingIndex=0;hearingIndex<4;hearingIndex++){
+            var hearingRing=new THREE.Mesh(new THREE.RingGeometry(0.86,1,44),new THREE.MeshBasicMaterial({color:0xcfeaff,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,fog:false}));
+            hearingRing.rotation.x=-Math.PI/2;hearingRing.name='raptor-hearing-ring-'+hearingIndex;hearingRing.visible=false;scene.add(hearingRing);hearingRings.push(hearingRing);
+          }
+        }
+        function updateHearingRings(flapping) {
+          if(!hearingRings.length)return;
+          var heard=flapping||raptor.landed||raptor.crashed?[]:preyMeshes.map(function(item){var at=item.mesh.position;return {at:at,range:Math.hypot(at.x-raptor.x,at.z-raptor.z)};}).filter(function(item){return item.range<190;}).sort(function(a,b){return a.range-b.range;}).slice(0,hearingRings.length);
+          hearingVisible=heard.length>0;
+          hearingRings.forEach(function(ring,index){
+            var item=heard[index];ring.visible=!!item;if(!item)return;
+            var stage=_rmFX?0.45:((motionNow*0.00085+index*0.31)%1);
+            ring.position.set(item.at.x,item.at.y+0.8,item.at.z);ring.scale.setScalar(2+stage*11);
+            ring.material.opacity=(1-stage)*0.85*Math.min(1,(190-item.range)/40);
+          });
+        }
+        function buildNest() {
+          var nx=0,nz=240,base=terrainHeightAt(nx,nz);
+          for(var spot=0;spot<16 && base<1;spot++){var ang=spot*0.7,dist=170+spot*12;nx=Math.sin(ang)*dist;nz=80+Math.cos(ang)*dist;base=terrainHeightAt(nx,nz);}
+          var ledge=species.id==='peregrine'||species.id==='gyrfalcon',height=ledge?20:15;
+          var group=new THREE.Group();group.name='raptor-nest';group.position.set(nx,base,nz);
+          var bark=new THREE.MeshStandardMaterial({color:ledge?0x70736b:0x5d4f42,roughness:0.98});
+          var sticks=new THREE.MeshStandardMaterial({color:ledge?0x8d8676:0x6b533a,roughness:1});
+          var down=new THREE.MeshStandardMaterial({color:0xf1ece0,roughness:1});
+          var darkSticks=new THREE.MeshStandardMaterial({color:0x4a3626,roughness:1});darkSticks.color.convertSRGBToLinear();
+          var gape=new THREE.MeshStandardMaterial({color:0xd97706,roughness:0.7});
+          [bark,sticks,down,gape].forEach(function(m){m.color.convertSRGBToLinear();});
+          var trunk=new THREE.Mesh(new THREE.CylinderGeometry(ledge?2.4:0.9,ledge?5:1.5,height,ledge?7:11,1),bark);
+          trunk.position.y=height/2;trunk.castShadow=trunk.receiveShadow=true;group.add(trunk);
+          var bowl=new THREE.Mesh(new THREE.TorusGeometry(ledge?2.2:1.9,ledge?0.28:0.62,8,18),sticks);
+          bowl.rotation.x=Math.PI/2;bowl.position.y=height+0.2;bowl.castShadow=true;group.add(bowl);
+          var floor=new THREE.Mesh(new THREE.CylinderGeometry(ledge?2.6:1.8,ledge?2.6:1.6,0.3,16),sticks);floor.position.y=height;group.add(floor);
+          if(!ledge)for(var b=0;b<40;b++){
+            var stick=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.14,2.2+(b%4)*0.35,5),b%3?darkSticks:sticks),a=b*2.4;
+            var rimR=1.75+(b%3)*0.26;stick.position.set(Math.cos(a)*rimR,height+(b%5)*0.17-0.1,Math.sin(a)*rimR);stick.rotation.set((b%4-1.5)*0.14,Math.PI/2-a,Math.PI/2);stick.castShadow=true;group.add(stick);
+          }
+          var chicks=[];
+          [-0.65,0.65].forEach(function(side,i){
+            var chick=new THREE.Group();chick.position.set(side,height+0.45,i?0.25:-0.2);
+            var body=new THREE.Mesh(new THREE.SphereGeometry(0.46,12,10),down);chick.add(body);
+            var head=new THREE.Group();head.position.y=0.5;
+            var skull=new THREE.Mesh(new THREE.SphereGeometry(0.28,12,10),down);head.add(skull);
+            var beak=new THREE.Mesh(new THREE.ConeGeometry(0.11,0.26,8),gape);beak.rotation.x=Math.PI/2;beak.position.set(0,0,-0.3);head.add(beak);
+            chick.add(head);group.add(chick);chicks.push(head);
+          });
+          var marker=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,70,12,1,true),new THREE.MeshBasicMaterial({color:0xfbbf24,transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide,fog:false}));
+          marker.position.y=height+39;marker.name='raptor-nest-marker';group.add(marker);
+          scene.add(group);
+          nestSite={group:group,height:height,kind:ledge?'ledge':'sticks',chicks:chicks,marker:marker};
+        }
+        if(mission.id==='feedChicks')buildNest();
+        function nestTopY(){return nestSite.group.position.y+nestSite.height;}
+        function nestHorizontalDistance(){return Math.hypot(nestSite.group.position.x-raptor.x,nestSite.group.position.z-raptor.z);}
+        function nestNavigation() {
+          var dx=nestSite.group.position.x-raptor.x,dz=nestSite.group.position.z-raptor.z,across=Math.hypot(dx,dz);
+          var bearing=Math.atan2(dx,-dz)-raptor.yaw;bearing=Math.atan2(Math.sin(bearing),Math.cos(bearing));
+          var correction=Math.abs(bearing)<0.14?null:bearing<0?'turnLeft':'turnRight';
+          var distance='~'+Math.max(5,Math.round(across/5)*5)+' m';
+          var overhead=across<60 && raptor.y>nestTopY()+NEST_VERTICAL_M;
+          var step=overhead?'fly lower':correction?(correction==='turnLeft'?'turn left':'turn right')+(controlKeyLabel(correction)?' ('+controlKeyLabel(correction)+')':''):'nest ahead';
+          return {distance:distance,hint:'DELIVER - '+step+' · '+distance};
+        }
+        function deliverToNest() {
+          var carried=carriedPrey,root=carried.prey.mesh,kcal=carried.kcal||0;
+          if(carried.feet)carried.feet.forEach(function(foot){foot.morphTargetInfluences[0]+=foot.morphTargetInfluences[1];foot.morphTargetInfluences[1]=0;});
+          carried.feet=null;
+          if(root.parent)root.parent.remove(root);
+          root.position.set(0,nestSite.height+0.25,0.1);root.rotation.set(0,0,0);nestSite.group.add(root);
+          nestMeal={record:carried,until:motionNow+4000};carriedPrey=null;
+          missionCalories+=kcal;nestDeliveries++;nestFedUntil=motionNow+3500;
+          // Parents eat too; this mission gives the adult about a quarter of each delivery.
+          raptor.calories=Math.min(raptor.caloriesMax*1.5,raptor.calories+kcal*0.25);raptor.starving=false;
+          var message='DELIVERED - '+carried.prey.data.label+' · +'+Math.round(kcal)+' kcal';
+          beginStrikeFeedback('hit',message,motionNow,'The chicks are eating. Head out for the next catch.');
+          recordFlightEvent('delivery','Food delivered',carried.prey.data.label+' · +'+Math.round(kcal)+' kcal');
+          rhAnnounce(message);
+          paintFlightResourceTelemetry();evaluateMission();updateMissionHud();updateTargetFeedback(motionNow,false);
+        }
+        function updateNest(dt) {
+          dt=dt||0;
+          if(nestMeal&&motionNow>=nestMeal.until&&!carriedPrey){carriedPrey=nestMeal.record;nestMeal=null;clearCarriedPrey();}
+          if(!nestSite)return;
+          var carrying=!!(carriedPrey&&carriedPrey.toNest),across=nestHorizontalDistance();
+          nestSite.marker.material.opacity=carrying?0.6:0.28;
+          var begging=!_rmFX&&(across<80||!!nestMeal);
+          // Fed chicks fill out over the mission, so the deliveries show on the nest.
+          var chickGrowth=1+0.4*Math.min(1,missionCalories/Math.max(1,mission.calorieGoal));
+          nestSite.chicks.forEach(function(head){var body=head.parent,next=body.scale.x+(chickGrowth-body.scale.x)*(_rmFX?1:dampingAlpha(1.2,dt));body.scale.setScalar(next);});
+          nestSite.chicks.forEach(function(head,i){head.rotation.x=begging?-0.55+Math.sin(motionNow*0.012+i*2)*0.28:-0.1;});
+          if(carrying&&!raptor.crashed&&across<=NEST_REACH_M&&Math.abs(raptor.y-nestTopY())<=NEST_VERTICAL_M&&missionOutcome==='active')deliverToNest();
+        }
+        // Legs trail slightly; the camera sits level with or under the tail so the fan cannot hide the catch.
+        function updateCarryPose(dt) {
+          var target=carriedPrey&&!raptor.landed?-0.3:0;
+          talonGroup.rotation.x=_rmFX?target:talonGroup.rotation.x+(target-talonGroup.rotation.x)*dampingAlpha(10,dt);
+        }
+        function updateModeStart() {
+          if(modeStartDone)return;
+          modeStartDone=true;
+          if(mission.id==='perchHunt')startPerchedPractice();
+          else if(mission.id==='flightTrail')togglePracticeTrail();
+          else if(nestSite)rhAnnounce('Your nest is marked by a tall amber column. Catch prey, then carry it home.');
         }
         layoutMissionPanel();
         var lastHudPaint = 0;
@@ -25586,6 +27709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
         }
         // Share the same framing and ground clearance for live flight and paused view changes.
+        var scanCameraLift = 0, scanCameraTarget = 0;
         function updateFlightCamera(dt, diveKey, visualTurnRate, strikeEnvelope, snap) {
           lastCameraDive = diveKey; lastCameraTurn = visualTurnRate; lastCameraStrike = strikeEnvelope;
           // ── Camera follow: chase (3rd person) OR first-person (from head) ──
@@ -25622,10 +27746,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ? strikeEnvelope * (strikeFeedback.kind === 'hit' ? 0.65 : -0.25)
               : 0;
             var diveCameraDistance = Math.min(10.8, currentChaseDistance + 1.2);
-            smoothedChaseDistance += ((diveKey ? diveCameraDistance : currentChaseDistance) - smoothedChaseDistance) * (snap ? 1 : dampingAlpha(6, dt));
-            smoothedChaseHeight += ((diveKey ? Math.max(1.5, currentChaseHeight * 0.68) : currentChaseHeight) - smoothedChaseHeight) * (snap ? 1 : dampingAlpha(6, dt));
+            var carryAge = carriedPrey ? motionNow - carriedPrey.startedAt : -1;
+            var carryDistance = currentChaseDistance * (_rmFX ? 1 : carryAge < 0 ? 1 : carryAge < 2400 ? 0.46 : 0.68);
+            smoothedChaseDistance += ((diveKey ? diveCameraDistance : carriedPrey ? carryDistance : currentChaseDistance) - smoothedChaseDistance) * (snap ? 1 : dampingAlpha(6, dt));
+            smoothedChaseHeight += ((diveKey ? Math.max(1.5, currentChaseHeight * 0.68) : carriedPrey ? (carryAge >= 0 && carryAge < 2400 && !_rmFX ? -0.42 : 0.1) : currentChaseHeight) - smoothedChaseHeight) * (snap ? 1 : dampingAlpha(6, dt));
             var camDist = smoothedChaseDistance - impactCameraPush;
-            var camHeight = smoothedChaseHeight;
+            scanCameraLift += (scanCameraTarget - scanCameraLift) * (snap ? 1 : dampingAlpha(3, dt));
+            var camHeight = smoothedChaseHeight + scanCameraLift;
             var camTargetX = raptor.x - flightForward.x * camDist;
             var camTargetY = raptor.y - flightForward.y * camDist + camHeight;
             var camTargetZ = raptor.z - flightForward.z * camDist;
@@ -25704,7 +27831,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Distance and bearing follow the active objective, including paused target changes.
         function updateNavigationReadout(targetInfo, targetDistanceDisplay) {
           var nextPracticeGate = practiceTrail.active ? practiceTrail.gates[practiceTrail.index] : null;
-          var navigationLabel = nextPracticeGate ? 'Ring ' + (practiceTrail.index + 1) : mission.id === 'thermalKettle' ? 'Lift' : 'Target';
+          var navigationToNest = !!(carriedPrey && carriedPrey.toNest && nestSite);
+          var navigationDesert = mission.id === 'crossDesert' && !targetInfo ? desertTarget() : null;
+          var navigationLabel = nextPracticeGate ? 'Ring ' + (practiceTrail.index + 1) : navigationToNest ? 'Nest' : navigationDesert ? (navigationDesert === DESERT_OASIS ? 'Oasis' : 'Lift') : mission.id === 'thermalKettle' ? 'Lift' : 'Target';
           var navigationDistance = nextPracticeGate ? updatePracticeDistance(nextPracticeGate) : targetDistanceDisplay;
           if (telemetryTargetLabel.textContent !== navigationLabel) telemetryTargetLabel.textContent = navigationLabel;
           if (telemetryTarget.textContent !== navigationDistance) telemetryTarget.textContent = navigationDistance;
@@ -25716,7 +27845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var targetBearingText = '—';
           var headingState = 'none';
           var targetRelativeBearing = null;
-          var headingTarget = nextPracticeGate || (mission.id === 'thermalKettle' ? thermalOrigin : targetInfo && targetInfo.prey && targetInfo.prey.mesh ? targetInfo.prey.mesh.position : null);
+          var headingTarget = nextPracticeGate || navigationDesert || (navigationToNest ? nestSite.group.position : mission.id === 'thermalKettle' ? thermalOrigin : targetInfo && targetInfo.prey && targetInfo.prey.mesh ? targetInfo.prey.mesh.position : null);
           if (headingTarget) {
             var targetDx = headingTarget.x - raptor.x;
             var targetDz = headingTarget.z - raptor.z;
@@ -25726,7 +27855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             targetBearingText = (targetRelativeRounded < -1 ? 'L ' : targetRelativeRounded > 1 ? 'R ' : 'A ') + Math.abs(targetRelativeRounded) + '°';
             headingState = Math.abs(targetRelativeRounded) <= 8 ? 'aligned' : targetRelativeRounded < 0 ? 'left' : 'right';
           }
-          var headingDisplay = headingCompass + ' ' + Math.round(headingDegrees).toString().padStart(3, '0') + (nextPracticeGate ? '° · RING ' + (practiceTrail.index + 1) + ' ' : mission.id === 'thermalKettle' ? '° · LIFT ' : '° · TGT ') + targetBearingText;
+          var headingDisplay = headingCompass + ' ' + Math.round(headingDegrees).toString().padStart(3, '0') + (nextPracticeGate ? '° · RING ' + (practiceTrail.index + 1) + ' ' : navigationToNest ? '° · NEST ' : navigationDesert ? (navigationDesert === DESERT_OASIS ? '° · OASIS ' : '° · LIFT ') : mission.id === 'thermalKettle' ? '° · LIFT ' : '° · TGT ') + targetBearingText;
           if (flightHeadingEl.textContent !== headingDisplay || flightHeadingEl.dataset.headingState !== headingState) {
             flightHeadingEl.textContent = headingDisplay;
             flightHeadingEl.dataset.headingState = headingState;
@@ -25739,7 +27868,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Stable attention within this species' field of view, released immediately on occlusion.
           var soaring = mission.id === 'thermalKettle';
           var liftNavigation = soaring ? thermalNavigation() : null;
-          var targetInfo = targetLockOn && !soaring ? acquireTarget(true) : null;
+          var delivering = !!(carriedPrey && carriedPrey.toNest);
+          var nestNav = delivering ? nestNavigation() : null;
+          var targetInfo = targetLockOn && !soaring && !delivering ? acquireTarget(true) : null;
+          // The crossing's route leads unless prey is close enough to be worth a look.
+          if (!delivering && mission.id === 'fishDive' && !raptor.landed && !raptor.crashed) { delivering = true; nestNav = fishNavigation(); targetInfo = null; }
+          if (!delivering && mission.id === 'fishThief' && !raptor.landed && !raptor.crashed && !preyMeshes.length) { delivering = true; nestNav = thiefNavigation(); targetInfo = null; }
+          if (!delivering && mission.id === 'windHover' && !raptor.landed && !raptor.crashed && !targetInfo) { delivering = true; nestNav = voleNavigation(); }
+          if (!delivering && mission.id === 'crossDesert' && !raptor.landed && !raptor.crashed && (!targetInfo || targetInfo.distance > 55)) { delivering = true; nestNav = desertNavigation(); targetInfo = null; }
           var nextStrikeStage = raptorStrikeStage(targetInfo, targetInfo ? talonThrowReach(targetInfo) : 0, strikeReady, talonThrow.active,
             !(raptor.landed || raptor.crashed || activePerch || soaring || targetProbe || !targetLockOn), talonThrowWindow(targetInfo));
           var strikeStageChanged = nextStrikeStage !== lastStrikeStage;
@@ -25752,17 +27888,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ? Math.max(0, Math.min(1, 1 - targetInfo.distance / 300))
             : 0;
           if (targetInfo && recordProgress) markTutorialSignal('target');
-          var targetDistanceDisplay = soaring ? (thermalActive ? 'In lift' : liftNavigation.distance) : targetInfo ? targetRangeLabel(targetInfo.distance) : targetLockOn ? 'None' : 'Off';
+          var targetDistanceDisplay = delivering ? nestNav.distance : soaring ? (thermalActive ? 'In lift' : liftNavigation.distance) : targetInfo ? targetRangeLabel(targetInfo.distance) : targetLockOn ? 'None' : 'Off';
           // All target readouts use the same acquisition sample; only change DOM text when needed.
           updateNavigationReadout(targetInfo, targetDistanceDisplay);
           // Positioned to stoop: prey meaningfully below, roughly ahead, and not
           // already diving. verticalOffset is prey-minus-bird, so below is negative.
-          var _stoopReady = !!(targetInfo && !raptor.landed && !raptor.crashed && !raptor.diving
-            && targetInfo.verticalOffset < -8
-            && targetInfo.dot >= 0.45
-            && targetInfo.correction !== 'turnLeft' && targetInfo.correction !== 'turnRight');
+          // Entered from a level approach; once shown it holds through the dive it asks for, with a
+          // wider exit than entry so a line held near a threshold does not chatter.
+          var _wasStoop = lastTargetState === 'stoop';
+          var _stoopReady = !!(targetInfo && !raptor.landed && !raptor.crashed && (_wasStoop || !raptor.diving)
+            && targetInfo.verticalOffset < (_wasStoop ? -5 : -8)
+            && targetInfo.dot >= (_wasStoop ? 0.38 : 0.45)
+            && (_wasStoop ? targetInfo.yawMiss < 0.35 : targetInfo.correction !== 'turnLeft' && targetInfo.correction !== 'turnRight'));
           var nextTargetState = soaring ? (thermalActive ? 'lift' : 'soar') :
-            strikeFeedbackActive ? strikeFeedback.kind : !targetLockOn ? 'off' :
+            strikeFeedbackActive ? strikeFeedback.kind : delivering ? 'deliver' : !targetLockOn ? 'off' :
             !targetInfo ? 'search' :
             activePerch || raptor.landed ? 'watch' :
             targetInfo.canStrike && !strikeReady ? 'recovering' :
@@ -25813,6 +27952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var _alignPct = Math.round(nextTargetAlign * 100);
           var earlyStrikeWindow = nextStrikeStage === 'window';
           var nextTargetHint = soaring ? liftNavigation.hint : nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
+            nextTargetState === 'deliver' ? nestNav.hint :
             nextTargetState === 'watch' ? 'WATCH - prey '+targetDistanceDisplay+' · '+takeoffControlHint() :
             nextTargetState === 'off' ? 'Target assist is off' :
             nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
@@ -25845,6 +27985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }
               targetPatch.targetAnnouncement = soaring ? (thermalActive ? 'Rising air found. Circle inside the rings to climb.' : 'Glide toward the rising-air rings. Use the lift bearing to turn toward them.') : nextTargetState === 'hit' || nextTargetState === 'miss'
                 ? nextTargetHint
+                : nextTargetState === 'deliver' ? (mission.id === 'crossDesert' || mission.id === 'windHover' || mission.id === 'fishDive' || mission.id === 'fishThief' ? '' : 'Carrying your catch. ') + nestNav.hint
                 : nextTargetState === 'watch' ? 'Prey spotted from the lookout. Take off to pursue.'
                 : nextTargetState === 'ready' ? 'Target ready. Press Strike.'
                 : nextTargetState === 'recovering' ? 'Strike recovering. Scan for the next target.'
@@ -26048,22 +28189,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           smoothFlightAxis(pitchAxis,pitchInput,pitchInput===0?26:18,steerDt);
           raptor.pitch=Math.max(-0.8,Math.min(0.8,raptor.pitch+pitchAxis.integral*0.8));
           if (keys['q']) raptor.y -= 8 * dt;
-          if (keys['e'] && mission.id !== 'thermalKettle') raptor.y += 8 * dt;
+          if (keys['e'] && mission.id !== 'thermalKettle' && mission.id !== 'crossDesert') raptor.y += 8 * dt;
 
           var restScanPitch=raptor.pitch;
           var diveKey = !!keys['shift'] && !wasLanded && !wasCrashed && motionNow >= catchPullOutUntil;
           var pullUpKey = !!keys[' '];
+          if (plunge || motionNow < plungeRiseUntil) { pullUpKey = true; diveKey = false; }
           if (mission.id === 'thermalKettle' && pullUpKey) {
             finishMission(false, 'Pull-up flapping is not allowed in this mission. Turn into the rings and glide to climb.');
             return;
           }
           raptor.diving = diveKey;
           raptor.pullingUp = pullUpKey;
+          hoverActive = hoverCapable && pullUpKey && !diveKey && !wasLanded && !wasCrashed && !plunge && motionNow >= plungeRiseUntil && !raptor.exhausted && motionNow >= catchPullOutUntil;
 
           var targetSpeed;
           if (diveKey) {
             targetSpeed = raptor.stoopMax;
             raptor.pitch = Math.max(raptor.pitch - 1.2 * steerDt, -1.0);
+          } else if (hoverActive) {
+            targetSpeed = Math.max(1.5, Math.min(raptor.maxLevel, hoverHeadwind()));
+            raptor.pitch += (0.12 - raptor.pitch) * dampingAlpha(6, dt);
           } else if (pullUpKey) {
             targetSpeed = Math.max(8, raptor.maxLevel * 0.5);
             // Pulling out of a dive is limited by the load the bird can carry, not by a
@@ -26083,6 +28229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               raptor.pitch = raptorSettlePitch(raptor.pitch, raptor.speed, raptor.y - terrainHeightAt(raptor.x, raptor.z) - 1.5, dt);
             }
           }
+          if (carriedPrey && carriedPrey.toNest && !diveKey) targetSpeed *= carriedPrey.loadSpeed || 1;
           if (motionNow < catchPullOutUntil && !wasLanded && !wasCrashed && raptor.pitch < 0.15) {
             // Carrying prey, the bird pulls out at its own G limit, as in the pull-up above.
             raptor.pitch = Math.min(0.15, raptor.pitch + Math.min(1.5, (Math.max(1.5, Math.min(30, raptor.maxG || 5)) * 9.81) / Math.max(8, raptor.speed)) * dt);
@@ -26122,6 +28269,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (diveKey) {
             burnPerSecPerKg = 0.33;  // stooping = moderate
             staminaBurn = 0;
+          } else if (hoverActive) {
+            burnPerSecPerKg = 1.0;   // the same flapping cost, paced so a hover can last about 16 seconds
+            staminaBurn = 6;
           } else if (pullUpKey || raptor.speed < raptor.maxLevel * 0.55) {
             burnPerSecPerKg = 1.0;   // flapping = high
             staminaBurn = 18;        // stamina drains fast when flapping
@@ -26174,8 +28324,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           weather.changeTimer -= dt;
           if (weather.changeTimer <= 0) {
             // Slowly drift weather params
-            weather.windDir += (Math.random() - 0.5) * 0.4;
+            if (mission.id !== 'crossDesert') weather.windDir += (Math.random() - 0.5) * 0.4;
             weather.windSpeed = Math.max(1, Math.min(15, weather.windSpeed + (Math.random() - 0.5) * 2));
+            if (mission.id === 'flightTrail' || mission.id === 'crossDesert') weather.windSpeed = Math.min(3, weather.windSpeed);
+            if (mission.id === 'windHover') weather.windSpeed = Math.max(5, Math.min(9, weather.windSpeed));
+            if (mission.id === 'fishDive') weather.windSpeed = Math.max(3.5, Math.min(6.5, weather.windSpeed));
+            if (mission.id === 'fishThief') weather.windSpeed = Math.min(4, weather.windSpeed);
             weather.cloudCover = Math.max(0.05, Math.min(0.95, weather.cloudCover + (Math.random() - 0.5) * 0.15));
             // Atmosphere and thermal strength ease toward the new weather below.
             weather.changeTimer = 40 + Math.random() * 60;
@@ -26238,6 +28392,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               raptor.y += (5 + weather.thermalQuality * 5) * dt;
               raptor.stamina = Math.min(raptor.staminaMax, raptor.stamina + 10 * dt);
             }
+          } else if (mission.id === 'crossDesert') {
+            updateDesertAir(dt, diveKey, pullUpKey);
           } else if (!diveKey && !pullUpKey && raptor.y < 100 && raptor.y > 5) {
             raptor.y += weather.thermalQuality * 0.4 * dt;
           }
@@ -26274,14 +28430,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           raptor.groundSpeed = Math.sqrt((groundVelX * groundVelX) + (groundVelZ * groundVelZ));
           raptor.windEffect = raptor.groundSpeed - horizSpeed;
           var verticalFlightSpeed = Math.sin(raptor.pitch) * raptor.speed;
-          if (mission.id === 'thermalKettle' && !thermalActive && verticalFlightSpeed > 0) {
+          if (hoverActive) verticalFlightSpeed = 0;
+          if ((mission.id === 'thermalKettle' || (mission.id === 'crossDesert' && !pullUpKey)) && !thermalActive && verticalFlightSpeed > 0) {
             verticalFlightSpeed = 0;
           }
           raptor.y += verticalFlightSpeed * dt;
           if (!diveKey && !pullUpKey) {
             raptor.y -= glideSinkRate * dt;
           }
-          if (pullUpKey) {
+          if (pullUpKey && !hoverActive) {
             raptor.speed = Math.max(8, raptor.speed - gravity * 0.5 * dt);
           }
 
@@ -26323,11 +28480,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var detectionR = 40 + (raptor.isOwl ? -16 : 0); // owls are silent, harder to detect
           for (var pi3 = 0; pi3 < preyMeshes.length; pi3++) {
             var pm2 = preyMeshes[pi3];
+            if (pm2.scripted) continue;
             var pdx = pm2.mesh.position.x - raptor.x;
             var pdy = pm2.mesh.position.y - raptor.y;
             var pdz = pm2.mesh.position.z - raptor.z;
             var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);   // true distance, for detection
-            var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale;
+            var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale * ((mission.id === 'windHover' || mission.id === 'fishDive') ? 0.35 : 1);
+            if (mission.id === 'fishDive' && pm2.animation.kind === 'fish' && pd3 < preyDetectionRadius && !pm2.alerted) { pm2.alerted = true; pm2.fleeBoost = 2.0; }
             if (preyReactsToApproach(pm2.data,pm2.animation.kind,pd3,preyDetectionRadius)) {
               if (!pm2.alerted && pm2.escapeProfile.seekCover) {
                 pm2.coverTarget = nearestPreyCoverTarget(pm2.mesh.position.x, pm2.mesh.position.z);
@@ -26365,6 +28524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               pm2.fleeBoost = Math.max(1, pm2.fleeBoost - 0.5 * dt);
               // Calm down by true distance too, or a bird climbing straight up from a
               // prey keeps it alerted from half a kilometre overhead.
+              if ((mission.id === 'windHover' || mission.id === 'fishDive') && pd3 > 30) { pm2.alerted = false; pm2.fleeBoost = 1; pm2.coverTarget = null; }
               if (pd3 > 80) {
                 pm2.alerted = false;
                 pm2.fleeBoost = 1;
@@ -26398,7 +28558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
             var flightTarget = pm2.alerted ? Math.max(0, pm2.escapeProfile.climb) : 0;
             pm2.flightHeight += (flightTarget - pm2.flightHeight) * dampingAlpha(4, dt);
-            var depthTarget = pm2.alerted && pm2.animation.kind === 'fish' ? -2.5 : 0;
+            var depthTarget = pm2.alerted && pm2.animation.kind === 'fish' ? (mission.id === 'fishDive' ? -0.3 : -2.5) : 0;
             pm2.depthOffset += (depthTarget - pm2.depthOffset) * dampingAlpha(3, dt);
             if (pm2.surfaceMode === 'subsurface') {
               var fishTargetY = pm2.waterY + pm2.depthOffset;
@@ -26477,7 +28637,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if(pm2.animation.slither){advanceSnakeSlither(pm2.animation.slither,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX);applySnakePreySurface(pm2);}
             }
             // Despawn ancient prey
-            if (motionNow - pm2.spawnedAt > 60000) {
+            if (motionNow - pm2.spawnedAt > (mission.id === 'windHover' ? VOLE_LIFETIME_MS : 60000)) {
+              if (pm2.volePatch) { rhAnnounce('The vole went back under the grass.'); energyEventLog.push({ msg: 'The vole went back under the grass', t: motionNow, color: '#fbbf24' }); }
               scene.remove(pm2.mesh);
               if(pm2.animation.sharedBird)releaseSharedWoodlandPrey(pm2);
               pm2.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
@@ -26509,6 +28670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             return;
           }
 
+          updatePlungeContact(frameStartX, frameStartY, frameStartZ, wasLanded || wasCrashed, dt);
           // Hard floor and mission-aware ceiling.
           // Perched birds cannot slide under wind and the cruise accelerator.
           if (wasLanded || wasCrashed) {
@@ -26562,6 +28724,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               energyEventLog.push({ kind: 'ground-contact', msg: '💥 CRASH — stunned ~3s', t: motionNow, color: '#fca5a5' });
               raptor.crashed = true;
               raptor.crashTimer = crashRecoveryDuration;
+              if (carriedPrey && carriedPrey.toNest) {
+                clearCarriedPrey();
+                energyEventLog.push({ kind: 'ground-contact', msg: 'Catch lost in the crash', t: motionNow, color: '#fca5a5' });
+                rhAnnounce('The catch was lost in the crash.');
+              }
               raptor.y = minY;
               raptor.speed = 0;
               raptor.pitch = 0;
@@ -26599,16 +28766,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var hunterDz = raptor.z - hunterGroup.position.z;
             hunterDistance = Math.sqrt(hunterDx * hunterDx + hunterDy * hunterDy + hunterDz * hunterDz);
             if (hunterDistance > 0.001) {
-              var hunterSpeed = Math.max(13, raptor.speed * 0.9 + 3);
-              var hunterStep = Math.min(hunterDistance, hunterSpeed * dt);
-              hunterGroup.position.x += hunterDx / hunterDistance * hunterStep;
-              hunterGroup.position.y += hunterDy / hunterDistance * hunterStep;
-              hunterGroup.position.z += hunterDz / hunterDistance * hunterStep;
-              hunterGroup.lookAt(raptor.x, raptor.y, raptor.z);
-              hunterDistance -= hunterStep;
+              if (hunterChase.resting && motionNow >= hunterChase.restUntil) { hunterChase.resting = false; hunterChase.closeSeconds = 0; rhAnnounce('The goshawk is coming back.'); }
+              var hunterWanted = Math.atan2(hunterDx, -hunterDz) + (hunterChase.resting ? Math.PI : 0);
+              var hunterTurn = Math.atan2(Math.sin(hunterWanted - hunterChase.heading), Math.cos(hunterWanted - hunterChase.heading));
+              if (hunterChase.lunge > 0) { hunterChase.lunge = Math.max(0, hunterChase.lunge - dt); if (hunterChase.lunge === 0) hunterChase.recover = 3.5; }
+              else if (hunterChase.recover > 0) hunterChase.recover = Math.max(0, hunterChase.recover - dt);
+              else if (!hunterChase.resting && hunterDistance < 40) { hunterChase.lunge = 3.6; rhAnnounce('The goshawk is lunging. Turn hard now.'); playSpeciesCall('goshawk'); }
+              // A chase bends with the prey; a lunge is committed and hardly turns, so a sharp turn makes it overshoot.
+              var hunterTurnRate = hunterChase.lunge > 0 ? 0.25 : 0.9;
+              hunterChase.heading += Math.max(-hunterTurnRate * dt, Math.min(hunterTurnRate * dt, hunterTurn));
+              var hunterTargetSpeed = hunterChase.resting ? 11 : hunterChase.lunge > 0 ? raptor.speed * 1.7 : hunterChase.recover > 0 ? raptor.speed * 0.85 : Math.max(15, raptor.speed * 1.2);
+              hunterChase.speed += (hunterTargetSpeed - hunterChase.speed) * dampingAlpha(hunterChase.lunge > 0 ? 6 : 1.5, dt);
+              // It flies in the same air as the player, so the wind carries both.
+              hunterGroup.position.x += (Math.sin(hunterChase.heading) * hunterChase.speed + windDriftX) * dt;
+              hunterGroup.position.z += (-Math.cos(hunterChase.heading) * hunterChase.speed + windDriftZ) * dt;
+              var hunterClimb = hunterChase.resting ? 3 : Math.max(-9, Math.min(9, hunterDy));
+              hunterGroup.position.y = Math.max(terrainHeightAt(hunterGroup.position.x, hunterGroup.position.z) + 3, hunterGroup.position.y + hunterClimb * dt);
+              hunterGroup.lookAt(hunterGroup.position.x + Math.sin(hunterChase.heading), hunterGroup.position.y, hunterGroup.position.z - Math.cos(hunterChase.heading));
+              hunterDistance = Math.hypot(raptor.x - hunterGroup.position.x, raptor.y - hunterGroup.position.y, raptor.z - hunterGroup.position.z);
+              if (hunterWings && !_rmFX) { var hunterFlap = hunterChase.lunge > 0 ? -0.5 : Math.sin(motionNow * (hunterChase.resting ? 0.006 : 0.014)) * (hunterChase.resting ? 0.14 : 0.42); hunterWings.left.rotation.z = -hunterFlap; hunterWings.right.rotation.z = hunterFlap; }
+              if (!hunterChase.resting && hunterDistance < 70) {
+                hunterChase.closeSeconds += dt;
+                if (hunterChase.closeSeconds > 24) { hunterChase.resting = true; hunterChase.restUntil = motionNow + 22000; rhAnnounce('The goshawk is breaking off. Hunt now.'); recordFlightEvent('flight', 'Goshawk broke off', 'You stayed out of reach'); }
+              }
+              if (!hunterChase.resting && hunterDistance < 70 && !hunterAlarmed) { hunterAlarmed = true; rhAnnounce('Goshawk closing. Turn hard when it lunges.'); }
+              if (hunterDistance > 90) hunterAlarmed = false;
+              updateHunterCue();
             }
           }
 
+          updateThiefOsprey(dt);
+          updateHearingRings(pullUpKey);
+          if (kettleBirds.length) updateKettleBirds();
           updatePracticeTrail(frameStartX,frameStartY,frameStartZ);
           // Record the actual integrated step, including contact/edge constraints.
           // This is presentation-only: these values never feed flight or scoring.
@@ -26650,6 +28839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var visualTurnRate = visualYawDelta / Math.max(dt, 0.001);
           var bankTarget = Math.max(-0.32, Math.min(0.32, visualTurnRate * 0.18));
           raptor.visualBank += (bankTarget - raptor.visualBank) * dampingAlpha(8, dt);
+          if (mission.id === 'fishDive' && plunge) raptor.visualBank = 0;
           // Compose heading before local pitch and bank so climbs stay nose-up through turns.
           raptorGroup.rotation.set(
             raptor.landed || raptor.crashed ? 0 : -raptor.pitch * 0.6,
@@ -26658,12 +28848,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             'YXZ'
           );
           if (body.material.emissiveIntensity !== undefined) body.material.emissiveIntensity = raptorReadability;
-          if (wingMat.emissiveIntensity !== undefined) wingMat.emissiveIntensity = raptorReadability * 0.92;
-          if (fingerMat && fingerMat.emissiveIntensity !== undefined) fingerMat.emissiveIntensity = raptorReadability * 0.78;
+          if (wingMat.emissiveIntensity !== undefined) wingMat.emissiveIntensity = raptorReadability * 0.92 + (camera.position.y < raptorGroup.position.y ? 0.34 : 0);
+          if (fingerMat && fingerMat.emissiveIntensity !== undefined) fingerMat.emissiveIntensity = raptorReadability * 0.78 + (camera.position.y < raptorGroup.position.y ? 0.3 : 0);
           if (tail.material.emissiveIntensity !== undefined) tail.material.emissiveIntensity = raptorReadability * 0.84;
           // ── NEW v0.24: Realistic flight cycle (mostly glide, periodic flap bursts) ──
           updateRaptorWingPose(wingPose, flightAnimationProfile, motionNow,
-            pullUpKey || (keys.e && mission.id !== 'thermalKettle') || raptor.speed < raptor.maxLevel * 0.55, diveKey,
+            pullUpKey || (keys.e && mission.id !== 'thermalKettle' && mission.id !== 'crossDesert') || raptor.speed < raptor.maxLevel * 0.55, diveKey,
             raptor.landed || raptor.crashed, _rmFX, dt);
           // Small asymmetric dihedral makes the silhouette respond to a turn.
           // It follows the damped bank, so input events never snap individual wings.
@@ -26700,7 +28890,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ? evaluatePreyTarget(lastTrackerTargetInfo.prey,preyMeshes.indexOf(lastTrackerTargetInfo.prey)) : null;
           var talonPreparation = strikeReady ? raptorTalonPreparation(preparationTarget,preyClosingSpeed(preparationTarget)) : 0;
           var talonStrikeAmount = raptor.landed || raptor.crashed ? 0 : carriedPrey ? 1 : _rmFX ? 0 : talonThrow.active ? 1 : Math.max(talonPreparation,strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0);
-          updateCarriedPrey(dt);
+          updateCarriedPrey(dt);updateCarryPose(dt);updateNest(dt);updateModeStart();updateHoverMission(dt);
+          // Feet swing forward just before the water.
+          if(mission.id==='fishDive'&&raptor.diving&&raptor.y-FISH_WATER_Y<16&&!_rmFX)talonStrikeAmount=1;
           strikeFootExtension+=(talonStrikeAmount-strikeFootExtension)*dampingAlpha(20,dt);
           var footExtension=wingPose.fold+(1-wingPose.fold)*strikeFootExtension;
           var talonGrip=carriedPrey?carriedPrey.grip:0;
@@ -26774,6 +28966,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
           }
           distantTerrainGroup.position.set(0, 0, 0);
+          if (horizonHaze) {
+            horizonHaze.position.copy(camera.position);
+            horizonHaze.material.uniforms.hazeColor.value.copy(scene.fog.color);
+            var hazeHeight = Math.max(1, camera.position.y + 36);
+            horizonHaze.material.uniforms.lowSin.value = Math.sin(Math.atan(hazeHeight / Math.max(200, scene.fog.far)));
+          }
           sunSprite.position.copy(camera.position).addScaledVector(sunDir, sunDistance);
           moonSprite.position.copy(camera.position).addScaledVector(moonDir, moonDistance);
 
@@ -26873,7 +29071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
 
           // Maintain spawn count
-          if (preyMeshes.length < 10 && motionNow - lastSpawn > 2500) {
+          if (mission.id !== 'flightTrail' && mission.id !== 'windHover' && mission.id !== 'fishThief' && preyMeshes.length < (mission.id === 'crossDesert' ? 3 : mission.id === 'fishDive' ? 6 : 10) && motionNow - lastSpawn > 2500) {
             lastSpawn = motionNow;
             var fresh = spawnPrey();
             if (fresh) preyMeshes.push(fresh);
@@ -26930,12 +29128,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               if (mission.id === 'thermalKettle') refreshKeyGuide();
               recordFlightEvent('thermal', thermalActive ? FLIGHT_EVENT_ENTERED_THERMAL : 'Left thermal', thermalActive ? 'Circle to trade lift for altitude' : 'Search for the next lift column');
             }
-            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : focusEpisode.active ? 'focus' : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e && mission.id !== 'thermalKettle' ? 'climb' : keys.q ? 'descent' : 'glide';
+            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? (activePerch?'perched':'landed') : focusEpisode.active ? 'focus' : hoverActive ? 'hover' : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e && mission.id !== 'thermalKettle' && mission.id !== 'crossDesert' ? 'climb' : keys.q ? 'descent' : 'glide';
             updateFlightState(nextFlightState);
             updateMissionHud();
             var mph = (raptor.speed * 2.237).toFixed(0);
-            var alt = (raptor.y - groundY).toFixed(0);
-            var altitudeAboveGround = Math.max(0, raptor.y - groundY);
+            var alt = (species.biome === 'lake' ? Math.max(0, raptor.y - Math.max(groundY, -1.5)) : raptor.y - groundY).toFixed(0);
+            var altitudeAboveGround = Math.max(0, raptor.y - (species.biome === 'lake' ? Math.max(groundY, -1.5) : groundY));
             // Use the same terrain datum for both the reading and the available height.
             var altitudeRatio = Math.max(0, Math.min(1, altitudeAboveGround / Math.max(1, missionCeiling - groundY)));
             var altitudePercent = Math.round(altitudeRatio * 100);
@@ -27030,6 +29228,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             msgEl.textContent = ev.msg;
             eventLogEl.appendChild(msgEl);
           });
+          if (eventLogEl.childNodes.length) {
+            var eventStageRect = hudParent.getBoundingClientRect(), eventClearTop = 64;
+            ['.rh-flight-target-cue', '.rh-flight-lock-meters'].forEach(function(selector) {
+              var cueEl = hudParent.querySelector(selector);
+              if (!cueEl || !cueEl.offsetParent) return;
+              var cueRect = cueEl.getBoundingClientRect();
+              var centred = cueRect.right > eventStageRect.left + eventStageRect.width * 0.3 && cueRect.left < eventStageRect.left + eventStageRect.width * 0.7;
+              if (cueRect.height && centred) eventClearTop = Math.max(eventClearTop, cueRect.bottom - eventStageRect.top + 6);
+            });
+            var eventTopPx = Math.round(eventClearTop) + 'px';
+            if (eventLogEl.style.top !== eventTopPx) eventLogEl.style.top = eventTopPx;
+          }
           }
           paintPracticeTrail();
           applyFlightOverlayVisibility(true);
@@ -27215,7 +29425,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           studySilhouetteMaterials.forEach(function(material) { material.dispose(); }); studySilhouetteMaterials.clear();
           scene.remove(studyFill); scene.remove(studyFill.target);
           pauseResume.onclick=pauseView.onclick=pauseZoom.onclick=pauseCard.onkeydown=null;
-          if(practiceButton)practiceButton.onclick=null;
           if(practiceRetry)practiceRetry.onclick=null;
           if(practiceDismiss)practiceDismiss.onclick=null;
           if(perchButton)perchButton.onclick=null;
@@ -27236,11 +29445,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             flightHeadingEl,
             flightAttitudeEl,
             flightAltitudeGauge,
-            practiceButton, practiceHud, perchButton, perchHud
+            practiceHud, perchButton, perchHud, hunterCue, hoverCue, thiefCue
           ].forEach(function(node) {
             if (node && node.parentElement) node.parentElement.removeChild(node);
           });
 
+          if (voleRunwayTexture) voleRunwayTexture.dispose();
+          if (farPatchTexture) farPatchTexture.dispose();
           if (windNode) {
             try { windNode.stop(); } catch (windStopError) {}
             try { windNode.disconnect(); } catch (windDisconnectError) {}
@@ -27277,6 +29488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             });
             if (material.dispose) material.dispose();
           }
+          if (nestMeal) { clearCarriedPrey(); carriedPrey = nestMeal.record; nestMeal = null; }
           clearCarriedPrey();
           preyMeshes.forEach(function(prey){if(prey.animation.sharedBird)releaseSharedWoodlandPrey(prey);});
           scene.remove(strikeFxPoints);
@@ -28867,133 +31079,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: FIELD ID
       // ────────────────────────────────────────────────────────
       function renderFieldId() {
-        // Inline SVG silhouettes for each of the 8 groups
-        // viewBox 240x110; bird body roughly centered + facing right
-        function silhouetteSvg(id) {
-          var common = { viewBox: '0 0 240 110', style: { width: '100%', height: 'auto', maxHeight: '110px' }, 'aria-hidden': 'true' };
-          var fill = '#fde047';
-          if (id === 'falcon') {
-            // Long pointed swept wings
-            return h('svg', common,
-              h('path', { d: 'M 30 55 Q 60 30 90 50 L 120 53 L 150 50 Q 180 30 210 55 L 200 58 Q 175 55 150 60 L 120 60 L 90 60 Q 65 55 40 58 Z', fill: fill }),
-              // Body
-              h('ellipse', { cx: 120, cy: 56, rx: 14, ry: 5, fill: '#facc15' }),
-              // Tail
-              h('path', { d: 'M 108 58 L 90 70 L 100 65 L 110 70 Z', fill: '#fde047' }),
-              // Head
-              h('circle', { cx: 138, cy: 55, r: 4, fill: '#facc15' })
-            );
-          }
-          if (id === 'eagle') {
-            // Long broad wings with finger slots
-            return h('svg', common,
-              // Wing left
-              h('path', { d: 'M 30 55 Q 60 35 90 50 L 90 60 Q 60 55 30 60 Z', fill: fill }),
-              h('path', { d: 'M 20 50 L 32 56 L 18 58 Z', fill: fill }),
-              h('path', { d: 'M 18 55 L 30 58 L 16 62 Z', fill: fill }),
-              h('path', { d: 'M 22 60 L 32 60 L 22 65 Z', fill: fill }),
-              // Wing right
-              h('path', { d: 'M 150 50 Q 180 35 210 55 L 210 60 Q 180 55 150 60 Z', fill: fill }),
-              h('path', { d: 'M 220 50 L 208 56 L 222 58 Z', fill: fill }),
-              h('path', { d: 'M 222 55 L 210 58 L 224 62 Z', fill: fill }),
-              h('path', { d: 'M 218 60 L 208 60 L 218 65 Z', fill: fill }),
-              // Body
-              h('ellipse', { cx: 120, cy: 56, rx: 18, ry: 6, fill: '#facc15' }),
-              // Tail (fan)
-              h('path', { d: 'M 105 60 L 90 78 L 100 70 L 105 76 L 110 72 L 120 78 Z', fill: '#fde047' }),
-              // Head
-              h('circle', { cx: 142, cy: 55, r: 5, fill: '#facc15' })
-            );
-          }
-          if (id === 'buteo') {
-            // Broad rounded wings, fan tail
-            return h('svg', common,
-              h('path', { d: 'M 40 55 Q 60 40 90 52 L 90 60 Q 60 58 40 60 Z', fill: fill }),
-              h('path', { d: 'M 150 52 Q 180 40 200 55 L 200 60 Q 180 58 150 60 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 58, rx: 17, ry: 6, fill: '#facc15' }),
-              // Wide fan tail
-              h('path', { d: 'M 105 62 L 90 80 L 100 73 L 105 78 L 115 72 L 120 78 Z', fill: '#fde047' }),
-              h('circle', { cx: 140, cy: 56, r: 5, fill: '#facc15' })
-            );
-          }
-          if (id === 'accipiter') {
-            // Short broad wings + LONG tail
-            return h('svg', common,
-              h('path', { d: 'M 60 55 Q 75 45 95 52 L 95 62 Q 75 60 60 62 Z', fill: fill }),
-              h('path', { d: 'M 145 52 Q 165 45 180 55 L 180 62 Q 165 60 145 62 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 58, rx: 15, ry: 5, fill: '#facc15' }),
-              // Very long banded tail
-              h('rect', { x: 80, y: 60, width: 30, height: 6, fill: '#facc15' }),
-              h('line', { x1: 88, y1: 60, x2: 88, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
-              h('line', { x1: 96, y1: 60, x2: 96, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
-              h('line', { x1: 104, y1: 60, x2: 104, y2: 66, stroke: '#a16207', strokeWidth: 1 }),
-              h('circle', { cx: 138, cy: 56, r: 4, fill: '#facc15' })
-            );
-          }
-          if (id === 'harrier') {
-            // Long narrow wings raised in dihedral V
-            return h('svg', common,
-              h('path', { d: 'M 25 60 L 95 48 L 95 56 L 35 64 Z', fill: fill }),
-              h('path', { d: 'M 145 48 L 215 60 L 205 64 L 145 56 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 56, rx: 13, ry: 4, fill: '#facc15' }),
-              h('rect', { x: 105, y: 58, width: 12, height: 4, fill: '#facc15' }),
-              h('rect', { x: 105, y: 56, width: 4, height: 8, fill: '#fff', opacity: 0.85 }), // white rump patch
-              h('circle', { cx: 134, cy: 54, r: 4, fill: '#facc15' })
-            );
-          }
-          if (id === 'kite') {
-            // Long narrow wings + forked tail
-            return h('svg', common,
-              h('path', { d: 'M 30 55 Q 60 40 95 50 L 95 58 Q 60 56 30 58 Z', fill: fill }),
-              h('path', { d: 'M 145 50 Q 180 40 210 55 L 210 58 Q 180 56 145 58 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 55, rx: 13, ry: 4, fill: '#facc15' }),
-              // Forked tail
-              h('polygon', { points: '108,57 88,68 96,62 95,75 100,65 105,72 108,63', fill: '#facc15' }),
-              h('circle', { cx: 136, cy: 53, r: 4, fill: '#facc15' })
-            );
-          }
-          if (id === 'osprey') {
-            // Distinctive M-shape — kinked wings
-            return h('svg', common,
-              h('path', { d: 'M 25 55 L 55 38 L 85 55 L 95 53 L 95 60 L 85 62 L 55 47 L 32 62 Z', fill: fill }),
-              h('path', { d: 'M 155 53 L 185 38 L 215 55 L 208 62 L 185 47 L 155 60 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 56, rx: 13, ry: 4, fill: '#facc15' }),
-              h('rect', { x: 108, y: 58, width: 10, height: 4, fill: '#facc15' }),
-              h('circle', { cx: 138, cy: 54, r: 4, fill: '#facc15' })
-            );
-          }
-          if (id === 'owl') {
-            // Broad rounded wings, big round head
-            return h('svg', common,
-              h('path', { d: 'M 35 60 Q 65 40 95 53 L 95 65 Q 65 65 35 65 Z', fill: fill }),
-              h('path', { d: 'M 145 53 Q 175 40 205 60 L 205 65 Q 175 65 145 65 Z', fill: fill }),
-              h('ellipse', { cx: 120, cy: 58, rx: 16, ry: 6, fill: '#facc15' }),
-              // Big round head
-              h('circle', { cx: 138, cy: 52, r: 8, fill: '#facc15' }),
-              // Ear tufts
-              h('path', { d: 'M 132 45 L 130 38 L 134 45 Z', fill: '#facc15' }),
-              h('path', { d: 'M 144 45 L 146 38 L 142 45 Z', fill: '#facc15' }),
-              // Short tail
-              h('path', { d: 'M 108 62 L 100 70 L 116 70 L 115 64 Z', fill: '#fde047' })
-            );
-          }
-          return null;
-        }
+        // Silhouettes come from the shared generator (rhSilSvg): one row of numbers per group, wings mirrored.
+        function silhouetteSvg(id) { return rhSilSvg(id, '#fde047'); }
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-yellow-900/40 to-amber-900/40 border border-yellow-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-yellow-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.field_identification_wing_shape_flight', '🔍 Field Identification: Wing Shape + Flight Pattern')),
             h('div', { className: 'text-sm text-yellow-100/90 leading-relaxed' }, __alloT('stem.raptorhunt.you_almost_never_get_a_clear_close_up_', 'You almost never get a clear close-up of a raptor in the wild. Field ID works on '), h('span', { className: 'font-bold' }, __alloT('stem.raptorhunt.gestalt_silhouette_flight_pattern_beha', 'gestalt — silhouette + flight pattern + behavior')), __alloT('stem.raptorhunt.color_comes_last_learn_the_8_silhouett', '. Color comes last. Learn the 8 silhouette groups below and you can ID 90% of North American raptors at a quarter mile.'))
           ),
-          // Silhouette cards (now with inline SVGs!)
+          rhFieldLineup(),
+          // Silhouette cards
           h('div', { className: 'space-y-3' },
             FIELD_ID.silhouettes.map(function(s, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
+              return h('div', { key: i, id: 'rh-fid-' + s.id, tabIndex: -1, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
                 h('div', { className: 'flex items-start gap-4 mb-2' },
                   // Silhouette SVG (left)
                   h('div', {
                     className: 'flex-shrink-0 bg-slate-900/60 rounded-lg border border-slate-700/60 p-2',
-                    style: { width: '140px' }
+                    style: { width: '230px', maxWidth: '45%' }
                   },
                     silhouetteSvg(s.id) || h('div', { className: 'text-xs text-slate-500 text-center py-4' }, '(silhouette)')
                   ),
@@ -37061,76 +39164,882 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
-      // RENDER: SPECIES 20-DEEP PROFILES (v0.43)
+      // RENDER: SPECIES ENCYCLOPEDIA (replaces the 20-profile list)
       // ────────────────────────────────────────────────────────
-      function renderSpecies20() {
-        var spIdx = rh.species20Idx == null ? 0 : rh.species20Idx;
-        function setSpIdx(i) { setRH({ species20Idx: i }); }
-        var sp = SPECIES_PROFILES.species[spIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🐦'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.species_profile_library', 'Species Profile Library')),
-                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, SPECIES_PROFILES.intro)
-              )
-            )
-          ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            SPECIES_PROFILES.species.map(function(s, i) {
-              var sel = spIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setSpIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-700 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, s.name.split(' (')[0]);
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, sp.name),
-            h('div', { className: 'grid md:grid-cols-2 gap-2' },
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.wingspan_2', '📏 Wingspan')),
-                h('div', { className: 'text-cyan-100/90 font-mono' }, sp.wingspan)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.mass_2', '🏋 Mass')),
-                h('div', { className: 'text-purple-100/90 font-mono' }, sp.mass)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.range', '🌍 Range')),
-                h('div', { className: 'text-emerald-100/90' }, sp.range)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.habitat_2', '🌳 Habitat')),
-                h('div', { className: 'text-blue-100/90' }, sp.habitat)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.diet_2', '🍖 Diet')),
-                h('div', { className: 'text-rose-100/90' }, sp.diet)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.breeding_2', '🐣 Breeding')),
-                h('div', { className: 'text-yellow-100/90' }, sp.breeding)
-              )
-            ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.conservation_status', '🛡 Conservation Status')),
-              h('div', { className: 'text-emerald-100/90' }, sp.conservationStatus)
-            ),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.fun_fact', '🎯 Fun Fact')),
-              h('div', { className: 'text-amber-100/90' }, sp.funFact)
-            ),
-            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.did_you_know', '🔬 Did You Know?')),
-              h('div', { className: 'text-purple-100/90 leading-relaxed' }, sp.didYouKnow)
-            )
-          )
-        );
+      function encStatusName(code) {
+        var names = {
+          LC: __alloT('stem.raptorhunt.enc_iucn_lc', 'Least Concern'), NT: __alloT('stem.raptorhunt.enc_iucn_nt', 'Near Threatened'), VU: __alloT('stem.raptorhunt.enc_iucn_vu', 'Vulnerable'),
+          EN: __alloT('stem.raptorhunt.enc_iucn_en', 'Endangered'), CR: __alloT('stem.raptorhunt.enc_iucn_cr', 'Critically Endangered'), DD: __alloT('stem.raptorhunt.enc_iucn_dd', 'Data Deficient')
+        };
+        return names[code] || code;
       }
+      function encTrendName(t) {
+        return t === 'increasing' ? __alloT('stem.raptorhunt.enc_trend_up', 'Population increasing') : t === 'declining' ? __alloT('stem.raptorhunt.enc_trend_down', 'Population declining') : t === 'stable' ? __alloT('stem.raptorhunt.enc_trend_stable', 'Population stable') : __alloT('stem.raptorhunt.enc_trend_unknown', 'Trend unknown');
+      }
+      function encMassCompare(g) {
+        var refs = [[5, __alloT('stem.raptorhunt.enc_ref_nickel', 'a US nickel')], [23, __alloT('stem.raptorhunt.enc_ref_aa', 'an AA battery')], [113, __alloT('stem.raptorhunt.enc_ref_butter', 'a stick of butter')], [454, __alloT('stem.raptorhunt.enc_ref_sugar', 'a 1-pound bag of sugar')], [3800, __alloT('stem.raptorhunt.enc_ref_milk', 'a gallon of milk')], [6350, __alloT('stem.raptorhunt.enc_ref_bowling', 'a bowling ball')]];
+        var best = refs[0];
+        for (var i = 0; i < refs.length; i++) { if (g / refs[i][0] >= 1) best = refs[i]; }
+        var ratio = g / best[0];
+        return __alloFill(__alloT('stem.raptorhunt.enc_mass_compare', 'About {n}× the weight of {object} ({grams} g)'), { n: ratio >= 10 ? Math.round(ratio) : encF(ratio), object: best[1], grams: best[0] });
+      }
+
+      // ---------- range map ----------
+      function encRangeMap(h, entry, o) {
+        o = o || {};
+        var Z = entry.zones || {}, ids = [], kinds = [];
+        ENC_RANGE_KINDS.forEach(function(k) { var l = (Z[k.k] || []).filter(function(id) { return ENC_ZONES[id]; }); if (l.length) { kinds.push({ k: k, ids: l }); l.forEach(function(id) { if (ids.indexOf(id) < 0) ids.push(id); }); } });
+        var v = encMapView(ids), W = 400, H = 220, k = W / (v.lon1 - v.lon0);
+        // The view is fitted to every layer, so hiding one never makes the map jump.
+        var hide = o.hide || {};
+        kinds = kinds.filter(function(q) { return !hide[q.k.k]; });
+        function X(lon) { return ((lon - v.lon0) * k).toFixed(1); }
+        function Y(lat) { return ((v.lat1 - lat) * k).toFixed(1); }
+        var boxes = encLandBoxes(), landD = '';
+        ENC_WORLD_LAND.forEach(function(ring, i) { var b = boxes[i]; if (b[2] < v.lon0 || b[0] > v.lon1 || b[3] < v.lat0 || b[1] > v.lat1) return; landD += 'M' + ring.map(function(p) { return X(p[0]) + ' ' + Y(p[1]); }).join('L') + 'Z'; });
+        function zoneD(list) { var d = ''; list.forEach(function(id) { ENC_ZONES[id].p.forEach(function(poly) { d += 'M' + poly.map(function(p) { return X(p[0]) + ' ' + Y(p[1]); }).join('L') + 'Z'; }); }); return d; }
+        var step = (v.lon1 - v.lon0) <= 70 ? 10 : (v.lon1 - v.lon0) <= 150 ? 20 : 30, grat = [], i, t;
+        for (t = Math.ceil(v.lon0 / step) * step; t <= v.lon1; t += step) grat.push(h('g', { key: 'gx' + t }, h('path', { className: 'enc-grat', d: 'M' + X(t) + ' 0V' + H }), h('text', { className: 'enc-gratl', x: Number(X(t)) + 2, y: H - 3 }, Math.abs(t) + '°' + (t < 0 ? 'W' : t > 0 ? 'E' : ''))));
+        for (t = Math.ceil(v.lat0 / step) * step; t <= v.lat1; t += step) grat.push(h('g', { key: 'gy' + t }, h('path', { className: 'enc-grat', d: 'M0 ' + Y(t) + 'H' + W }), h('text', { className: 'enc-gratl', x: 3, y: Number(Y(t)) - 2 }, Math.abs(t) + '°' + (t < 0 ? 'S' : t > 0 ? 'N' : ''))));
+        var uid = 'encm' + (entry.id || 'x') + (o.uid || '');
+        var layers = [], marineLayers = [];
+        var order = ['winter', 'passage', 'breeding', 'resident'];
+        order.forEach(function(kn) {
+          var kk = kinds.filter(function(q) { return q.k.k === kn; })[0]; if (!kk) return;
+          var fill = kn === 'winter' ? 'url(#' + uid + 'w)' : kn === 'passage' ? 'url(#' + uid + 'p)' : kk.k.c;
+          var land = kk.ids.filter(function(id) { return !ENC_ZONES[id].m; }), sea = kk.ids.filter(function(id) { return ENC_ZONES[id].m; });
+          if (sea.length) marineLayers.push(h('path', { key: 'm' + kn, d: zoneD(sea), fill: fill, opacity: .8 }));
+          if (land.length) layers.push(h('path', { key: 'l' + kn, d: zoneD(land), fill: fill, opacity: .88 }));
+        });
+        var star = o.star ? (function() { var sx = Number(X(o.star[0])), sy = Number(Y(o.star[1])); return h('path', { key: 'star', d: 'M' + sx + ' ' + (sy - 6) + 'l1.8 3.9 4.2 .5 -3.1 2.9 .9 4.2 -3.8-2.1 -3.8 2.1 .9-4.2 -3.1-2.9 4.2-.5z', fill: '#fde047', stroke: '#1e293b', strokeWidth: .8 }); })() : null;
+        var summary = kinds.map(function(q) { return q.k.n + ': ' + q.ids.map(function(id) { return ENC_ZONES[id].n; }).join(', '); }).join('. ');
+        return h('svg', { className: 'enc-map', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': __alloFill(__alloT('stem.raptorhunt.enc_map_label', 'Schematic range map for {name}. {summary}'), { name: entry.name, summary: summary }), focusable: 'false' },
+          h('defs', null,
+            h('clipPath', { id: uid + 'c' }, h('path', { d: landD, clipRule: 'evenodd' })),
+            h('pattern', { id: uid + 'w', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, h('rect', { width: 6, height: 6, fill: '#a9c8e8' }), h('rect', { width: 2.6, height: 6, fill: '#1d4f8a' })),
+            h('pattern', { id: uid + 'p', width: 6, height: 6, patternUnits: 'userSpaceOnUse' }, h('rect', { width: 6, height: 6, fill: '#d9c8f0' }), h('circle', { cx: 3, cy: 3, r: 1.7, fill: '#6b3fb0' }))),
+          h('rect', { className: 'enc-ocean', width: W, height: H }),
+          h('g', null, grat),
+          h('g', null, marineLayers),
+          h('path', { className: 'enc-land', d: landD, fillRule: 'evenodd' }),
+          h('g', { clipPath: 'url(#' + uid + 'c)' }, layers),
+          star);
+      }
+      // o: { hide: {kind: true}, onHide(next) }. With onHide, the legend entries become buttons that show or hide that layer.
+      function encLegend(h, entry, o) {
+        o = o || {};
+        var Z = entry.zones || {}, out = [], hide = o.hide || {};
+        ENC_RANGE_KINDS.forEach(function(k) {
+          if (!(Z[k.k] || []).some(function(id) { return ENC_ZONES[id]; })) return;
+          var st = k.k === 'winter' ? { background: 'repeating-linear-gradient(45deg,#1d4f8a 0 2px,#a9c8e8 2px 5px)' } : k.k === 'passage' ? { backgroundColor: '#d9c8f0', backgroundImage: 'radial-gradient(#6b3fb0 1.6px,transparent 1.8px)', backgroundSize: '6px 6px' } : { background: k.c };
+          var label = k.k === 'resident' ? __alloT('stem.raptorhunt.enc_k_resident', 'Year-round') : k.k === 'breeding' ? __alloT('stem.raptorhunt.enc_k_breeding', 'Breeding season') : k.k === 'winter' ? __alloT('stem.raptorhunt.enc_k_winter', 'Winter (nonbreeding)') : __alloT('stem.raptorhunt.enc_k_passage', 'Migration stopovers');
+          out.push({ k: k.k, st: st, label: label });
+        });
+        var toggles = !!o.onHide && out.length > 1;
+        var items = out.map(function(x) {
+          var sw = h('i', { className: 'enc-sw', style: x.st, 'aria-hidden': 'true' });
+          if (!toggles) return h('span', { key: x.k }, sw, x.label);
+          var on = !hide[x.k];
+          return h('button', { key: x.k, type: 'button', className: 'enc-lay' + (on ? '' : ' is-off'), 'aria-pressed': on, onClick: function() { var nx = Object.assign({}, hide); nx[x.k] = on; o.onHide(nx); } }, sw, x.label);
+        });
+        if (!toggles) return h('div', { className: 'enc-legend' }, items);
+        return h('div', null,
+          h('div', { className: 'enc-legend', role: 'group', 'aria-label': __alloT('stem.raptorhunt.enc_lay_group', 'Layers shown on the map') }, items),
+          h('p', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_lay_note', 'Tap a layer to hide it or bring it back. Pressed means it is on the map.')));
+      }
+      function encZoneList(h, entry) {
+        var Z = entry.zones || {}, rows = [];
+        ENC_RANGE_KINDS.forEach(function(k) {
+          var l = (Z[k.k] || []).filter(function(id) { return ENC_ZONES[id]; });
+          if (!l.length) return;
+          var label = k.k === 'resident' ? __alloT('stem.raptorhunt.enc_k_resident', 'Year-round') : k.k === 'breeding' ? __alloT('stem.raptorhunt.enc_k_breeding', 'Breeding season') : k.k === 'winter' ? __alloT('stem.raptorhunt.enc_k_winter', 'Winter (nonbreeding)') : __alloT('stem.raptorhunt.enc_k_passage', 'Migration stopovers');
+          rows.push(h('li', { key: k.k }, h('strong', null, label + ': '), l.map(function(id) { return ENC_ZONES[id].n; }).join(', ')));
+        });
+        return h('ul', { className: 'enc-zones' }, rows);
+      }
+      function encMonths(h, months, label) {
+        var names = [__alloT('stem.raptorhunt.enc_m1', 'Jan'), __alloT('stem.raptorhunt.enc_m2', 'Feb'), __alloT('stem.raptorhunt.enc_m3', 'Mar'), __alloT('stem.raptorhunt.enc_m4', 'Apr'), __alloT('stem.raptorhunt.enc_m5', 'May'), __alloT('stem.raptorhunt.enc_m6', 'Jun'), __alloT('stem.raptorhunt.enc_m7', 'Jul'), __alloT('stem.raptorhunt.enc_m8', 'Aug'), __alloT('stem.raptorhunt.enc_m9', 'Sep'), __alloT('stem.raptorhunt.enc_m10', 'Oct'), __alloT('stem.raptorhunt.enc_m11', 'Nov'), __alloT('stem.raptorhunt.enc_m12', 'Dec')];
+        var lv = [__alloT('stem.raptorhunt.enc_lv0', 'not expected'), __alloT('stem.raptorhunt.enc_lv1', 'rare'), __alloT('stem.raptorhunt.enc_lv2', 'fairly common'), __alloT('stem.raptorhunt.enc_lv3', 'common')];
+        return h('ol', { className: 'enc-months', 'aria-label': label },
+          names.map(function(n, i) {
+            var v = Number(months.charAt(i)) || 0;
+            return h('li', { key: i }, h('i', { 'data-v': v, style: { height: (v === 0 ? 6 : 14 + v * 24) + '%' }, 'aria-hidden': 'true' }), h('span', { 'aria-hidden': 'true' }, n.charAt(0)), h('span', { className: 'enc-sr' }, n + ': ' + lv[v]));
+          }));
+      }
+
+      // ---------- plate (species portrait) ----------
+      function encPlate(h, P, entry, o) {
+        o = o || {};
+        var key = (entry.id || entry.name) + '|' + (o.decorative ? 'd' : 'i') + '|' + (o.uid || '');
+        if (ENC_PLATE_CACHE[key]) return ENC_PLATE_CACHE[key];
+        var spec = entry.plate || { a: 'passerine' };
+        spec.id = spec.id || entry.id || entry.name; spec.name = spec.name || entry.name;
+        var marks = (entry.identify || []).slice(0, 3).map(function(p) { return p[0]; }).join(', ');
+        var label = __alloFill(__alloT('stem.raptorhunt.enc_plate_label', '{name}: stylized field-mark illustration. Key marks: {marks}.'), { name: entry.name, marks: marks });
+        var el = P.plate(spec, { id: (entry.id || 'x') + (o.uid || ''), decorative: !!o.decorative, label: label, tall: !!(spec.tall) });
+        ENC_PLATE_CACHE[key] = el;
+        return el;
+      }
+
+      // ---------- entry sheet ----------
+      function encSection(h, E, id, title, body, cls) {
+        return h('section', { key: id, id: 'enc-' + E.id + '-' + id, className: 'enc-card' + (cls ? ' ' + cls : ''), tabIndex: -1, 'aria-labelledby': 'enc-' + E.id + '-' + id + '-h' },
+          h('h3', { id: 'enc-' + E.id + '-' + id + '-h' }, title), body);
+      }
+      function encSheet(h, P, E, o) {
+        o = o || {};
+        var st = E.status || {}, secs = [], navs = [];
+        function add(id, label, body, cls) { navs.push([id, label]); secs.push(encSection(h, E, id, label, body, cls)); }
+        // look-alikes + identification
+        add('id', __alloT('stem.raptorhunt.enc_s_id', 'How to identify'), h('div', null,
+          h('dl', { className: 'enc-dl' }, (E.identify || []).map(function(p, i) { return h('div', { key: i }, h('dt', null, p[0]), h('dd', null, p[1])); })),
+          (E.lookalikes && E.lookalikes.length) ? h('div', { style: { marginTop: 12 } }, h('p', { className: 'enc-kicker' }, __alloT('stem.raptorhunt.enc_lookalikes', 'Easily confused with')),
+            h('ul', { className: 'enc-list', style: { marginTop: 6 } }, E.lookalikes.map(function(p, i) {
+              var t = o.findEntry ? o.findEntry(p[0]) : null;
+              return h('li', { key: i }, h('strong', null, p[0] + ': '), p[1],
+                (t && o.onCompare) ? h('button', { type: 'button', className: 'enc-btn enc-mini', onClick: function() { o.onCompare(E, t); }, 'aria-label': __alloFill(__alloT('stem.raptorhunt.enc_cmp_aria', 'Compare {a} with {b} side by side'), { a: E.name, b: t.name }) }, __alloFill(__alloT('stem.raptorhunt.enc_cmp_with', '⇄ Compare with {name}'), { name: t.name })) : null);
+            }))) : null));
+        add('voice', __alloT('stem.raptorhunt.enc_s_voice', 'Voice'), h('p', null, E.voice));
+        add('range', __alloT('stem.raptorhunt.enc_s_range', 'Habitat and range'), h('div', null,
+          h('p', null, E.habitat), h('p', null, E.range),
+          h('div', { style: { marginTop: 10 } }, encRangeMap(h, E, { star: o.mapStar, uid: o.uid, hide: o.hide }), encLegend(h, E, { hide: o.hide, onHide: o.onHide }), encZoneList(h, E),
+            h('p', { className: 'enc-note', style: { marginTop: 6 } }, __alloT('stem.raptorhunt.enc_map_note', 'Schematic map: shaded regions are approximate, not exact range boundaries.')))), 'enc-wide');
+        add('food', o.huntLabel || __alloT('stem.raptorhunt.enc_s_food', 'Food and feeding'), h('div', null, h('p', null, E.diet), E.hunting ? h('p', null, E.hunting) : null,
+          h('div', { className: 'enc-tags' }, (E.foods || []).map(function(f, i) { return h('span', { key: i, className: 'enc-tag' }, f); }))));
+        var n = E.nesting || {};
+        add('nest', __alloT('stem.raptorhunt.enc_s_nest', 'Nesting and young'), h('dl', { className: 'enc-dl' },
+          h('div', { key: 's' }, h('dt', null, __alloT('stem.raptorhunt.enc_n_site', 'Where')), h('dd', null, n.site)),
+          h('div', { key: 'n' }, h('dt', null, __alloT('stem.raptorhunt.enc_n_nest', 'The nest')), h('dd', null, n.nest)),
+          h('div', { key: 'e' }, h('dt', null, __alloT('stem.raptorhunt.enc_n_eggs', 'Eggs')), h('dd', null, n.eggs)),
+          h('div', { key: 'i' }, h('dt', null, __alloT('stem.raptorhunt.enc_n_inc', 'Incubation')), h('dd', null, n.incubation)),
+          h('div', { key: 'y' }, h('dt', null, __alloT('stem.raptorhunt.enc_n_young', 'Young')), h('dd', null, n.young))));
+        add('behavior', __alloT('stem.raptorhunt.enc_s_behavior', 'Behavior'), h('p', null, E.behavior));
+        if (E.flight) add('flight', __alloT('stem.raptorhunt.enc_s_flight', 'Flight and senses'), h('div', null, h('p', null, E.flight), E.senses ? h('p', null, E.senses) : null));
+        add('migration', __alloT('stem.raptorhunt.enc_s_migration', 'Migration'), h('p', null, E.migration));
+        if (E.ages) add('ages', __alloT('stem.raptorhunt.enc_s_ages', 'Ages and sexes'), h('div', null, h('p', null, E.ages), E.sexNote ? h('p', null, E.sexNote) : null));
+        add('status', __alloT('stem.raptorhunt.enc_s_status', 'Conservation'), h('div', null,
+          h('div', { className: 'enc-badges' }, h('span', { className: 'enc-badge s-' + st.iucn }, 'IUCN: ' + encStatusName(st.iucn)), h('span', { className: 'enc-badge enc-plain' }, encTrendMark(st.trend) + ' ' + encTrendName(st.trend))),
+          h('p', null, st.text)));
+        if (E.maine && o.showMaine !== false) add('maine', __alloT('stem.raptorhunt.enc_s_maine', 'In Maine'), h('div', null,
+          h('p', null, h('strong', null, E.maine.season + '. ')), encMonths(h, E.maine.months, __alloT('stem.raptorhunt.enc_maine_months', 'Chance of finding it in Maine, by month')), h('p', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_months_note', 'Taller bars mean a better chance of finding it that month.')), h('p', { style: { marginTop: 8 } }, E.maine.text)));
+        add('wow', __alloT('stem.raptorhunt.enc_s_wow', 'Amazing facts'), h('div', null, h('ul', { className: 'enc-list' }, (E.wow || []).map(function(w, i) { return h('li', { key: i }, w); })),
+          h('p', { style: { marginTop: 10 } }, h('strong', null, __alloT('stem.raptorhunt.enc_name_story', 'Name story: ')), E.nameNote)));
+        add('try', __alloT('stem.raptorhunt.enc_s_try', 'Try this'), h('div', { className: 'enc-callout' }, E.tryThis), 'enc-wide');
+
+        var near = (o.list && o.onOpen) ? encSizeNear(o.list, E, 3) : [];
+        var sizeBars = (function() {
+          var human = 170, span = E.wingspanCm || 0, max = Math.max(human, span) * 1.05;
+          return h('div', { className: 'enc-scale' },
+            h('div', { className: 'enc-scale-row' }, h('span', null, __alloT('stem.raptorhunt.enc_scale_you', 'Your outstretched arms')), h('div', { className: 'enc-track enc-ref', 'aria-hidden': 'true' }, h('span', { style: { width: (human / max * 100) + '%' } })), h('span', null, human + ' cm')),
+            h('div', { className: 'enc-scale-row' }, h('span', null, __alloT('stem.raptorhunt.enc_scale_bird', 'This bird’s wingspan')), h('div', { className: 'enc-track', 'aria-hidden': 'true' }, h('span', { style: { width: Math.max(1.5, span / max * 100) + '%' } })), h('span', null, Math.round(span) + ' cm')),
+            h('p', { className: 'enc-note' }, encMassCompare(E.massG || 0)),
+            near.length ? h('div', { className: 'enc-near' }, h('span', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_sz_near', 'Close in size') + ':'),
+              near.map(function(N) { return h('button', { key: N.id, type: 'button', className: 'enc-chip enc-mini', onClick: function() { o.onOpen(N.id); }, 'aria-label': __alloFill(__alloT('stem.raptorhunt.enc_qz_read', 'Read the {name} entry'), { name: N.name }) }, N.name); })) : null);
+        })();
+        function jump(id) {
+          var el = typeof document !== 'undefined' ? document.getElementById('enc-' + E.id + '-' + id) : null;
+          if (!el) return;
+          try { el.scrollIntoView({ behavior: encReduceMotion() ? 'auto' : 'smooth', block: 'start' }); } catch (e) { el.scrollIntoView(); }
+          try { el.focus({ preventScroll: true }); } catch (e2) { /* ignore */ }
+        }
+        return h('article', { className: 'enc-sheet', 'aria-labelledby': 'enc-' + E.id + '-title' },
+          h('header', { className: 'enc-hero' },
+            h('div', { className: 'enc-hero-art' }, encPlate(h, P, E, { uid: o.uid }), h('p', { className: 'enc-note', style: { marginTop: 6 } }, __alloT('stem.raptorhunt.enc_plate_note', 'Stylized field-mark illustration, not a photograph.'))),
+            h('div', null,
+              h('p', { className: 'enc-kicker' }, E.group + ' · ' + E.family),
+              h('h2', { className: 'enc-name', id: 'enc-' + E.id + '-title' }, E.name),
+              h('p', { className: 'enc-sci' }, E.sci),
+              h('div', { className: 'enc-badges' }, h('span', { className: 'enc-badge s-' + st.iucn }, encStatusName(st.iucn)), h('span', { className: 'enc-badge enc-plain' }, encTrendMark(st.trend) + ' ' + encTrendName(st.trend)), E.maine ? h('span', { className: 'enc-badge enc-plain' }, E.maine.season) : null),
+              h('p', { className: 'enc-blurb' }, E.blurb),
+              h('dl', { className: 'enc-facts' },
+                h('div', { className: 'enc-fact' }, h('dt', null, __alloT('stem.raptorhunt.enc_f_length', 'Length')), h('dd', null, E.length)),
+                h('div', { className: 'enc-fact' }, h('dt', null, __alloT('stem.raptorhunt.enc_f_span', 'Wingspan')), h('dd', null, E.wingspan)),
+                h('div', { className: 'enc-fact' }, h('dt', null, __alloT('stem.raptorhunt.enc_f_weight', 'Weight')), h('dd', null, E.weight)),
+                h('div', { className: 'enc-fact' }, h('dt', null, __alloT('stem.raptorhunt.enc_f_life', 'Lifespan')), h('dd', null, E.lifespan))),
+              sizeBars)),
+          o.afterHero || null,
+          h('nav', { className: 'enc-nav', 'aria-label': __alloT('stem.raptorhunt.enc_nav_label', 'Jump to a section') }, navs.map(function(p) { return h('button', { key: p[0], type: 'button', className: 'enc-navbtn', onClick: function() { jump(p[0]); } }, p[1]); })),
+          h('div', { className: 'enc-cols' }, secs),
+          h('p', { className: 'enc-foot' }, __alloT('stem.raptorhunt.enc_foot', 'Entries are compiled from standard ornithology references (such as Birds of the World, All About Birds and state wildlife agencies) for classroom use. Facts and listings change, so check current sources before relying on them.')));
+      }
+
+      // ---------- gallery filters and sort ----------
+      function encRisk(E) { var c = (E.status || {}).iucn; return c === 'CR' ? 5 : c === 'EN' ? 4 : c === 'VU' ? 3 : c === 'NT' ? 2 : c === 'LC' ? 1 : 0; }
+      function encMonthNames() { return [__alloT('stem.raptorhunt.enc_m1', 'Jan'), __alloT('stem.raptorhunt.enc_m2', 'Feb'), __alloT('stem.raptorhunt.enc_m3', 'Mar'), __alloT('stem.raptorhunt.enc_m4', 'Apr'), __alloT('stem.raptorhunt.enc_m5', 'May'), __alloT('stem.raptorhunt.enc_m6', 'Jun'), __alloT('stem.raptorhunt.enc_m7', 'Jul'), __alloT('stem.raptorhunt.enc_m8', 'Aug'), __alloT('stem.raptorhunt.enc_m9', 'Sep'), __alloT('stem.raptorhunt.enc_m10', 'Oct'), __alloT('stem.raptorhunt.enc_m11', 'Nov'), __alloT('stem.raptorhunt.enc_m12', 'Dec')]; }
+      function encMonthLevel(E, m) { return E.maine ? Number(E.maine.months.charAt(m)) || 0 : 0; }
+      function encMonthOf(f) { return (f.month == null || f.month === 'any' || f.month === '') ? -1 : Number(f.month); }
+      function encFiltersOn(f) {
+        f = f || {};
+        return !!((f.status && f.status !== 'any') || encMonthOf(f) >= 0 || (f.sort && f.sort !== 'default') || Object.keys(f.tog || {}).some(function(k) { return f.tog[k]; }));
+      }
+      function encApplyFilters(entries, o) {
+        var f = o.f || {}, m = encMonthOf(f), toggles = o.toggles || [], out = [];
+        entries.forEach(function(E, i) {
+          if (o.group !== 'all' && E.group !== o.group) return;
+          if (!encMatch(E, o.q)) return;
+          var r = encRisk(E);
+          if (f.status === 'risk' && r < 3) return;
+          if (f.status === 'watch' && r < 2) return;
+          if (f.status === 'lc' && r !== 1) return;
+          if (m >= 0 && encMonthLevel(E, m) < 2) return;
+          for (var t = 0; t < toggles.length; t++) if ((f.tog || {})[toggles[t].id] && !toggles[t].test(E)) return;
+          out.push({ E: E, i: i });
+        });
+        var sort = f.sort || 'default';
+        out.sort(function(a, b) {
+          var d = 0;
+          if (sort === 'az') d = a.E.name < b.E.name ? -1 : a.E.name > b.E.name ? 1 : 0;
+          else if (sort === 'big') d = (b.E.massG || 0) - (a.E.massG || 0);
+          else if (sort === 'small') d = (a.E.massG || 0) - (b.E.massG || 0);
+          else if (sort === 'wing') d = (b.E.wingspanCm || 0) - (a.E.wingspanCm || 0);
+          else if (sort === 'risk') d = encRisk(b.E) - encRisk(a.E);
+          else if (m >= 0) d = encMonthLevel(b.E, m) - encMonthLevel(a.E, m);
+          return d || a.i - b.i;
+        });
+        return out.map(function(x) { return x.E; });
+      }
+      // props: { idp, f, onF(patch), maineMonths, toggles }
+      function encFilterBar(h, props) {
+        var f = props.f || {}, idp = props.idp, mn = encMonthNames(), toggles = props.toggles || [];
+        function field(key, label, value, opts, onPick) {
+          var id = idp + '-f-' + key;
+          return h('div', { key: key, className: 'enc-filter' }, h('label', { htmlFor: id }, label),
+            h('select', { id: id, className: 'enc-select', value: value, onChange: function(e) { onPick(e.target.value); } },
+              opts.map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); })));
+        }
+        var kids = [
+          field('status', __alloT('stem.raptorhunt.enc_flt_status', 'Conservation status'), f.status || 'any', [['any', __alloT('stem.raptorhunt.enc_fs_any', 'Any status')], ['risk', __alloT('stem.raptorhunt.enc_fs_risk', 'Threatened (VU, EN, CR)')], ['watch', __alloT('stem.raptorhunt.enc_fs_watch', 'Near threatened or worse')], ['lc', __alloT('stem.raptorhunt.enc_fs_lc', 'Least concern')]], function(v) { props.onF({ status: v }); })
+        ];
+        if (props.maineMonths !== false) {
+          kids.push(field('month', __alloT('stem.raptorhunt.enc_flt_month', 'Likely in Maine in'), encMonthOf(f) < 0 ? 'any' : String(encMonthOf(f)), [['any', __alloT('stem.raptorhunt.enc_fm_any', 'Any month')]].concat(mn.map(function(n, i) { return [String(i), n]; })), function(v) { props.onF({ month: v }); }));
+          kids.push(h('button', { key: 'now', type: 'button', className: 'enc-btn enc-filter-btn', onClick: function() { props.onF({ month: String(new Date().getMonth()) }); } }, __alloT('stem.raptorhunt.enc_flt_now', 'This month')));
+        }
+        kids.push(field('sort', __alloT('stem.raptorhunt.enc_flt_sort', 'Sort by'), f.sort || 'default', [['default', __alloT('stem.raptorhunt.enc_fo_default', 'Family groups')], ['az', __alloT('stem.raptorhunt.enc_fo_az', 'Name, A to Z')], ['big', __alloT('stem.raptorhunt.enc_fo_big', 'Heaviest first')], ['small', __alloT('stem.raptorhunt.enc_fo_small', 'Lightest first')], ['wing', __alloT('stem.raptorhunt.enc_fo_wing', 'Widest wingspan first')], ['risk', __alloT('stem.raptorhunt.enc_fo_risk', 'Most at risk first')]], function(v) { props.onF({ sort: v }); }));
+        toggles.forEach(function(t) {
+          var on = !!(f.tog || {})[t.id];
+          kids.push(h('button', { key: 't-' + t.id, type: 'button', className: 'enc-chip enc-filter-btn', 'aria-pressed': on, onClick: function() { var nt = Object.assign({}, f.tog || {}); nt[t.id] = !on; props.onF({ tog: nt }); } }, t.label));
+        });
+        if (encFiltersOn(f)) kids.push(h('button', { key: 'clear', type: 'button', className: 'enc-btn enc-filter-btn', onClick: function() { props.onF({ status: 'any', month: 'any', sort: 'default', tog: {} }); } }, __alloT('stem.raptorhunt.enc_flt_clear', 'Clear filters')));
+        return h('div', { className: 'enc-filters' }, kids);
+      }
+
+      // ---------- mystery species quiz ----------
+      function encQzWords(s) {
+        var t = String(s || '').toLowerCase(), o = ' ';
+        for (var i = 0; i < t.length; i++) { var c = t.charAt(i); o += (c >= 'a' && c <= 'z') ? c : (c === "'" || t.charCodeAt(i) === 8217) ? '' : ' '; }
+        return o + ' ';
+      }
+      // Name words shared by three or more species ("American", "Northern", "Hawk") say nothing about which one it is.
+      function encQzGeneric(list) {
+        if (list._qzGen) return list._qzGen;
+        var cnt = {}, g = {};
+        list.forEach(function(E) { var seen = {}; encQzWords(E.name).split(' ').forEach(function(t) { if (t && !seen[t]) { seen[t] = 1; cnt[t] = (cnt[t] || 0) + 1; } }); });
+        Object.keys(cnt).forEach(function(t) { if (cnt[t] >= 3) g[t] = 1; });
+        list._qzGen = g;
+        return g;
+      }
+      function encFirstSentence(s) {
+        s = String(s || '');
+        for (var i = 0; i < s.length - 1; i++) { var c = s.charAt(i); if ((c === '.' || c === '!' || c === '?') && s.charAt(i + 1) === ' ') return s.slice(0, i + 1); }
+        return s;
+      }
+      // Up to four clues, easiest to hardest to use, none of which names the species. Null when the entry cannot make a fair set.
+      function encQzOk(list, E) {
+        if (E._qzN === undefined) E._qzN = encClues(list, E).length;
+        return E._qzN >= 4;
+      }
+      function encClues(list, E) {
+        var gen = encQzGeneric(list), words = encQzWords(E.name).split(' ').concat(encQzWords(E.sci).split(' ')), toks = words.filter(function(t) { return t.length >= 4 && !gen[t]; });
+        function leaks(txt) { var w = encQzWords(txt); for (var i = 0; i < toks.length; i++) if (w.indexOf(' ' + toks[i]) >= 0) return true; return false; }
+        var marks = (E.identify || []).filter(function(p) { return !leaks(p[0] + ' ' + p[1]); });
+        var home = encFirstSentence(E.habitat), call = encFirstSentence(E.voice), out = [];
+        out.push({ k: 'size', label: __alloT('stem.raptorhunt.enc_qz_c_size', 'Size and home'), text: __alloFill(__alloT('stem.raptorhunt.enc_qz_size', 'About {len} long, with a {span} wingspan.'), { len: E.length, span: E.wingspan }) + (home && !leaks(home) ? ' ' + home : '') });
+        if (marks[0]) out.push({ k: 'mark', label: marks[0][0], text: marks[0][1] });
+        if (call.length >= 30 && !leaks(call)) out.push({ k: 'voice', label: __alloT('stem.raptorhunt.enc_qz_c_voice', 'Voice'), text: call });
+        if (marks[1]) out.push({ k: 'mark', label: marks[1][0], text: marks[1][1] });
+        if (marks[2]) out.push({ k: 'mark', label: marks[2][0], text: marks[2][1] });
+        if (E.maine && E.maine.season && !leaks(E.maine.season)) out.push({ k: 'maine', label: __alloT('stem.raptorhunt.enc_qz_c_maine', 'In Maine'), text: E.maine.season });
+        return out;
+      }
+      function encQzRank(id, seed) { var x = seed * 7919 + 13; for (var i = 0; i < id.length; i++) x = (x * 31 + id.charCodeAt(i)) % 1000003; return x; }
+      // o: { list, group, idp, st, onSt(patch), onOpen(id) }
+      function encQuiz(h, P, o) {
+        var st = o.st || {}, n = st.n || 0, shown = Math.min(4, Math.max(1, st.shown || 1)), answered = st.answered || null;
+        var pool = o.list.filter(function(E) { return (o.group === 'all' || E.group === o.group) && encQzOk(o.list, E); });
+        if (!pool.length) pool = o.list.filter(function(E) { return encQzOk(o.list, E); });
+        // One fixed order, so a question never changes between renders and a class can walk through the same set.
+        var order = pool.slice().sort(function(a, b) { return encQzRank(a.id, 20261105) - encQzRank(b.id, 20261105); });
+        var cur = order[n % order.length], clues = encClues(o.list, cur).slice(0, 4);
+        var partners = encPartners(o.list, cur).filter(function(x) { return x.id !== cur.id; });
+        var near = partners.slice(0, 2);
+        var fam = o.list.filter(function(x) { return x.id !== cur.id && near.indexOf(x) < 0 && x.family === cur.family; }).sort(function(a, b) { return encQzRank(a.id, n + 1) - encQzRank(b.id, n + 1); });
+        var grp = o.list.filter(function(x) { return x.id !== cur.id && near.indexOf(x) < 0 && fam.indexOf(x) < 0 && x.group === cur.group; }).sort(function(a, b) { return encQzRank(a.id, n + 2) - encQzRank(b.id, n + 2); });
+        var rest = o.list.filter(function(x) { return x.id !== cur.id && near.indexOf(x) < 0 && fam.indexOf(x) < 0 && grp.indexOf(x) < 0; }).sort(function(a, b) { return encQzRank(a.id, n + 3) - encQzRank(b.id, n + 3); });
+        var choices = [cur].concat(near.concat(fam, grp, rest).slice(0, 3)).sort(function(a, b) { return encQzRank(a.id, n + 101) - encQzRank(b.id, n + 101); });
+        var picked = answered ? choices.filter(function(c) { return c.id === answered; })[0] : null, ok = !!answered && answered === cur.id;
+        var pts = Math.max(1, 5 - shown), right = st.right || 0, tries = st.tries || 0, score = st.score || 0;
+        function refocus() { setTimeout(function() { var el = document.getElementById(o.idp + '-qz-q'); if (el && el.focus) { try { el.focus(); } catch (e) { /* ignore */ } } }, 60); }
+        function answer(id) {
+          if (answered) return;
+          o.onSt({ answered: id, tries: tries + 1, right: right + (id === cur.id ? 1 : 0), score: score + (id === cur.id ? pts : 0), last: id === cur.id ? pts : 0 });
+        }
+        var tellHit = picked && !ok ? (cur.lookalikes || []).filter(function(p) { return encNorm(p[0]) === encNorm(picked.name); })[0] || (picked.lookalikes || []).filter(function(p) { return encNorm(p[0]) === encNorm(cur.name); })[0] : null;
+        return h('div', { className: 'enc-qz' },
+          h('div', { className: 'enc-qz-top' },
+            h('h3', { id: o.idp + '-qz-q', tabIndex: -1, className: 'enc-qz-title' }, __alloFill(o.raptor ? __alloT('stem.raptorhunt.enc_qz_q_r', 'Mystery raptor {n}') : __alloT('stem.raptorhunt.enc_qz_q', 'Mystery bird {n}'), { n: n + 1 })),
+            h('p', { className: 'enc-qz-score' }, __alloFill(__alloT('stem.raptorhunt.enc_qz_score', '{right} of {tries} right · {score} points'), { right: right, tries: tries, score: score }))),
+          h('p', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_qz_intro', 'Read the clues, then pick the species. You start with one clue. Each extra clue you ask for is worth one point less.')),
+          h('div', { className: 'enc-qz-body' },
+            h('div', { className: 'enc-qz-art' + (answered ? '' : ' is-mystery') },
+              answered ? h('div', null, encPlate(h, P, cur, { uid: 'qz' }), h('p', { className: 'enc-note', style: { marginTop: 6, textAlign: 'center' } }, cur.name))
+                : h('div', { className: 'enc-qz-mystery', 'aria-hidden': 'true' }, h('span', null, '?'))),
+            h('div', { className: 'enc-qz-main' },
+              h('ol', { className: 'enc-clues', 'aria-live': 'polite', 'aria-label': __alloT('stem.raptorhunt.enc_qz_clues', 'Clues') },
+                clues.slice(0, shown).map(function(c, i) { return h('li', { key: i }, h('strong', null, c.label), h('span', null, c.text)); })),
+              !answered && shown < 4 ? h('button', { type: 'button', className: 'enc-btn', onClick: function() { o.onSt({ shown: shown + 1 }); } }, __alloFill(__alloT('stem.raptorhunt.enc_qz_more', 'Another clue ({n} left)'), { n: 4 - shown })) : null,
+              h('div', { className: 'enc-choices', role: 'group', 'aria-label': __alloT('stem.raptorhunt.enc_qz_choices', 'Which species is it?') },
+                choices.map(function(c) {
+                  var right1 = !!answered && c.id === cur.id, wrong1 = !!answered && c.id === answered && c.id !== cur.id;
+                  return h('button', { key: c.id, type: 'button', className: 'enc-choice' + (right1 ? ' is-right' : wrong1 ? ' is-wrong' : ''), 'data-qz-choice': c.id, 'aria-disabled': answered ? 'true' : undefined, onClick: function() { answer(c.id); } }, (right1 ? '✓ ' : wrong1 ? '✗ ' : '') + c.name);
+                })),
+              h('div', { role: 'status', className: 'enc-qz-fb' + (answered ? (ok ? ' is-right' : ' is-wrong') : '') },
+                answered ? h('div', null,
+                  h('p', null, ok ? __alloFill(__alloT('stem.raptorhunt.enc_qz_ok', '✓ Correct! It is the {name} ({sci}). You earned {pts} points.'), { name: cur.name, sci: cur.sci, pts: st.last || 0 })
+                    : __alloFill(__alloT('stem.raptorhunt.enc_qz_no', '✗ Not the {pick}. It is the {name} ({sci}).'), { pick: picked ? picked.name : '', name: cur.name, sci: cur.sci })),
+                  tellHit ? h('p', null, h('strong', null, __alloT('stem.raptorhunt.enc_qz_tell', 'How to tell them apart: ')), tellHit[1]) : null,
+                  h('p', null, cur.blurb),
+                  h('div', { className: 'enc-qz-acts' },
+                    h('button', { type: 'button', className: 'enc-btn enc-primary', onClick: function() { o.onSt({ n: n + 1, shown: 1, answered: null, last: 0 }); refocus(); } }, o.raptor ? __alloT('stem.raptorhunt.enc_qz_next_r', 'Next mystery raptor →') : __alloT('stem.raptorhunt.enc_qz_next', 'Next mystery bird →')),
+                    h('button', { type: 'button', className: 'enc-btn', onClick: function() { o.onOpen(cur.id); } }, __alloFill(__alloT('stem.raptorhunt.enc_qz_read', 'Read the {name} entry'), { name: cur.name })))) : null))));
+      }
+
+      // ---------- size map (wingspan against weight, both on log scales) ----------
+      function encLog(v) { return Math.log(v) / Math.LN10; }
+      // Distance between two species on the size map, with both axes scaled to the same span (wings about 1.3 decades, weight about 3.5).
+      function encSizeDist(a, b) { var dx = (encLog(a.wingspanCm) - encLog(b.wingspanCm)) / 1.34, dy = (encLog(a.massG) - encLog(b.massG)) / 3.5; return Math.sqrt(dx * dx + dy * dy); }
+      function encSizeNear(list, E, n) {
+        return list.filter(function(X) { return X.id !== E.id && X.wingspanCm > 0 && X.massG > 0; })
+          .map(function(X) { return { X: X, d: encSizeDist(X, E) }; })
+          .sort(function(a, b) { return a.d - b.d; }).slice(0, n).map(function(r) { return r.X; });
+      }
+      // o: { list, groups, idp, st, onSt(patch), onOpen(id), raptor }. State keys used in st: szSel (entry id), szHi (group name).
+      function encSizeMap(h, P, o) {
+        var list = o.list.filter(function(E) { return E.wingspanCm > 0 && E.massG > 0; }), st = o.st || {}, n = list.length;
+        if (!n) return null;
+        var W = 360, H = 300, ML = 46, MR = 10, MT = 12, MB = 40, PW = W - ML - MR, PH = H - MT - MB;
+        var minS = Infinity, maxS = 0, minM = Infinity, maxM = 0;
+        list.forEach(function(E) { minS = Math.min(minS, E.wingspanCm); maxS = Math.max(maxS, E.wingspanCm); minM = Math.min(minM, E.massG); maxM = Math.max(maxM, E.massG); });
+        var X0 = encLog(minS) - .1, X1 = encLog(maxS) + .1, Y0 = encLog(minM) - .15, Y1 = encLog(maxM) + .15;
+        function X(v) { return ML + (encLog(v) - X0) / (X1 - X0) * PW; }
+        function Y(v) { return MT + (1 - (encLog(v) - Y0) / (Y1 - Y0)) * PH; }
+        var pts = list.map(function(E) { return { E: E, x: X(E.wingspanCm), y: Y(E.massG) }; });
+        function tie(a, b) { return a.E.id < b.E.id ? -1 : 1; }
+        var byMass = pts.slice().sort(function(a, b) { return a.E.massG - b.E.massG || tie(a, b); });
+        var byWing = pts.slice().sort(function(a, b) { return b.E.wingspanCm - a.E.wingspanCm || tie(a, b); });
+        var selP = null; pts.forEach(function(p) { if (p.E.id === st.szSel) selP = p; });
+        var hi = (st.szHi && st.szHi !== 'all') ? st.szHi : null;
+        function choose(p) { if (p) o.onSt({ szSel: p.E.id }); }
+
+        // keyboard: arrows move to the nearest species in that direction (up is heavier, right is wider)
+        function onKey(e) {
+          var k = e.key, dir = k === 'ArrowRight' ? 'r' : k === 'ArrowLeft' ? 'l' : k === 'ArrowUp' ? 'u' : k === 'ArrowDown' ? 'd' : null;
+          if (dir) {
+            e.preventDefault();
+            if (!selP) { choose(byMass[Math.floor(n / 2)]); return; }
+            var best = null, bc = 1e9, horiz = dir === 'r' || dir === 'l';
+            pts.forEach(function(p) {
+              if (p === selP) return;
+              var dx = p.x - selP.x, dy = p.y - selP.y, ok = dir === 'r' ? dx > .5 : dir === 'l' ? dx < -.5 : dir === 'u' ? dy < -.5 : dy > .5;
+              if (!ok) return;
+              var c = (horiz ? Math.abs(dx) : Math.abs(dy)) + 2.2 * (horiz ? Math.abs(dy) : Math.abs(dx));
+              if (c < bc) { bc = c; best = p; }
+            });
+            choose(best);
+          } else if (k === 'Home') { e.preventDefault(); choose(byMass[0]); }
+          else if (k === 'End') { e.preventDefault(); choose(byMass[n - 1]); }
+          else if ((k === 'Enter' || k === ' ') && selP && e.target === e.currentTarget) { e.preventDefault(); o.onOpen(selP.E.id); }
+        }
+        function onPick(e) {
+          var r = e.currentTarget.getBoundingClientRect(); if (!r.width || !r.height) return;
+          var px = (e.clientX - r.left) / r.width * W, py = (e.clientY - r.top) / r.height * H, best = null, bd = 18 * 18;
+          pts.forEach(function(p) { var d = (p.x - px) * (p.x - px) + (p.y - py) * (p.y - py); if (d < bd) { bd = d; best = p; } });
+          choose(best);
+        }
+
+        // axes, gridlines and everyday reference lines
+        var grid = [], xt = [10, 20, 50, 100, 200, 500].filter(function(v) { return encLog(v) >= X0 && encLog(v) <= X1; });
+        xt.forEach(function(v) {
+          grid.push(h('path', { key: 'gx' + v, className: 'enc-sz-grid', d: 'M' + X(v).toFixed(1) + ' ' + MT + 'V' + (MT + PH) }));
+          grid.push(h('text', { key: 'tx' + v, className: 'enc-sz-tick', x: X(v).toFixed(1), y: MT + PH + 14, textAnchor: 'middle' }, v));
+        });
+        [[3, '3 g'], [10, '10 g'], [30, '30 g'], [100, '100 g'], [300, '300 g'], [1000, '1 kg'], [3000, '3 kg'], [10000, '10 kg']].filter(function(t) { return encLog(t[0]) >= Y0 && encLog(t[0]) <= Y1; }).forEach(function(t) {
+          grid.push(h('path', { key: 'gy' + t[0], className: 'enc-sz-grid', d: 'M' + ML + ' ' + Y(t[0]).toFixed(1) + 'H' + (ML + PW) }));
+          grid.push(h('text', { key: 'ty' + t[0], className: 'enc-sz-tick', x: ML - 5, y: (Y(t[0]) + 3.5).toFixed(1), textAnchor: 'end' }, t[1]));
+        });
+        var refs = [[5, __alloT('stem.raptorhunt.enc_ref_nickel', 'a US nickel')], [23, __alloT('stem.raptorhunt.enc_ref_aa', 'an AA battery')], [113, __alloT('stem.raptorhunt.enc_ref_butter', 'a stick of butter')], [454, __alloT('stem.raptorhunt.enc_ref_sugar', 'a 1-pound bag of sugar')], [3800, __alloT('stem.raptorhunt.enc_ref_milk', 'a gallon of milk')], [6350, __alloT('stem.raptorhunt.enc_ref_bowling', 'a bowling ball')]];
+        var refEls = refs.filter(function(r) { return encLog(r[0]) > Y0 + .05 && encLog(r[0]) < Y1 - .05; }).map(function(r) {
+          var left = r[0] >= 100, y = Y(r[0]);
+          return h('g', { key: 'rf' + r[0] },
+            h('path', { className: 'enc-sz-ref', d: 'M' + ML + ' ' + y.toFixed(1) + 'H' + (ML + PW) }),
+            h('text', { className: 'enc-sz-reft', x: left ? ML + 4 : ML + PW - 3, y: (y - 3).toFixed(1), textAnchor: left ? 'start' : 'end' }, r[1]));
+        });
+        var armsEl = (encLog(170) > X0 && encLog(170) < X1) ? h('g', { key: 'arms' },
+          h('path', { className: 'enc-sz-ref', d: 'M' + X(170).toFixed(1) + ' ' + MT + 'V' + (MT + PH) }),
+          h('text', { className: 'enc-sz-reft', x: (X(170) - 4).toFixed(1), y: MT + 11, textAnchor: 'end' }, __alloT('stem.raptorhunt.enc_scale_you', 'Your outstretched arms'))) : null;
+
+        var back = [], front = [];
+        pts.forEach(function(p) {
+          if (p === selP) return;
+          var on = hi && p.E.group === hi;
+          (on ? front : back).push(h('circle', { key: p.E.id, cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: on ? 4.8 : 3.3, className: 'enc-sz-dot' + (hi ? (on ? ' is-hi' : ' is-dim') : '') }));
+        });
+        var selEls = null;
+        if (selP) {
+          var flip = selP.x > W * .55;
+          selEls = h('g', { key: 'sel' },
+            h('path', { className: 'enc-sz-cross', d: 'M' + selP.x.toFixed(1) + ' ' + selP.y.toFixed(1) + 'V' + (MT + PH) + 'M' + selP.x.toFixed(1) + ' ' + selP.y.toFixed(1) + 'H' + ML }),
+            h('circle', { cx: selP.x.toFixed(1), cy: selP.y.toFixed(1), r: 6.5, className: 'enc-sz-dot is-sel' }),
+            h('text', { className: 'enc-sz-name', x: (selP.x + (flip ? -10 : 10)).toFixed(1), y: Math.max(MT + 12, selP.y - 9).toFixed(1), textAnchor: flip ? 'end' : 'start' }, selP.E.name));
+        }
+        var plot = h('div', { className: 'enc-sz-plot', tabIndex: 0, role: 'group', onKeyDown: onKey,
+          'aria-label': __alloFill(__alloT('stem.raptorhunt.enc_sz_region', 'Size map of {n} species. Use the arrow keys to move to a neighbouring species, Home and End for the lightest and heaviest, and Enter to read its entry.'), { n: n }) },
+          h('svg', { className: 'enc-sz-svg', viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false', onClick: onPick },
+            h('rect', { className: 'enc-sz-bg', x: ML, y: MT, width: PW, height: PH }),
+            h('g', null, grid), h('g', null, refEls), armsEl,
+            h('text', { className: 'enc-sz-tick', x: ML + PW / 2, y: H - 4, textAnchor: 'middle' }, __alloT('stem.raptorhunt.enc_sz_xlab', 'Wingspan (cm)')),
+            h('text', { className: 'enc-sz-tick', transform: 'translate(11 ' + (MT + PH / 2) + ') rotate(-90)', textAnchor: 'middle' }, __alloT('stem.raptorhunt.enc_sz_ylab', 'Weight')),
+            h('g', null, back), h('g', null, front), selEls));
+
+        // the readout beside (or under) the map
+        var readout;
+        if (selP) {
+          var E = selP.E, ri = byMass.indexOf(selP), near = encSizeNear(list, E, 3);
+          var rank = ri === 0 ? __alloFill(__alloT('stem.raptorhunt.enc_sz_lightest_of', 'The lightest of the {n} species here'), { n: n }) : ri === n - 1 ? __alloFill(__alloT('stem.raptorhunt.enc_sz_heaviest_of', 'The heaviest of the {n} species here'), { n: n }) : __alloFill(__alloT('stem.raptorhunt.enc_sz_rank', 'Heavier than {pct}% of the {n} species here'), { pct: Math.round(ri / (n - 1) * 100), n: n });
+          readout = h('div', { className: 'enc-sz-card' },
+            h('div', { className: 'enc-sz-card-art' }, encPlate(h, P, E, { decorative: true, uid: 'sz' })),
+            h('div', { className: 'enc-sz-card-body' },
+              h('h3', { className: 'enc-sz-card-name' }, E.name),
+              h('p', { className: 'enc-sci' }, E.sci),
+              h('p', null, h('strong', null, __alloT('stem.raptorhunt.enc_f_span', 'Wingspan') + ': '), E.wingspan, ' · ', h('strong', null, __alloT('stem.raptorhunt.enc_f_weight', 'Weight') + ': '), E.weight),
+              h('p', { className: 'enc-note' }, rank),
+              h('div', { className: 'enc-near' }, h('span', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_sz_near', 'Close in size') + ':'),
+                near.map(function(N) { return h('button', { key: N.id, type: 'button', className: 'enc-chip enc-mini', onClick: function() { o.onSt({ szSel: N.id }); } }, N.name); })),
+              h('div', { className: 'enc-qz-acts' },
+                h('button', { type: 'button', className: 'enc-btn', disabled: ri === 0, onClick: function() { choose(byMass[ri - 1]); } }, __alloT('stem.raptorhunt.enc_sz_lighter', '▼ Next lighter')),
+                h('button', { type: 'button', className: 'enc-btn', disabled: ri === n - 1, onClick: function() { choose(byMass[ri + 1]); } }, __alloT('stem.raptorhunt.enc_sz_heavier', '▲ Next heavier')),
+                h('button', { type: 'button', className: 'enc-btn enc-primary', onClick: function() { o.onOpen(E.id); } }, __alloFill(__alloT('stem.raptorhunt.enc_qz_read', 'Read the {name} entry'), { name: E.name })))));
+        } else {
+          readout = h('div', { className: 'enc-sz-card enc-sz-empty' }, h('div', { className: 'enc-sz-card-body' },
+            h('p', null, __alloT('stem.raptorhunt.enc_sz_prompt', 'Tap a dot, or use the arrow keys, to meet a species. Or start with one of these:')),
+            h('div', { className: 'enc-qz-acts' },
+              h('button', { type: 'button', className: 'enc-btn', onClick: function() { choose(byMass[0]); } }, __alloT('stem.raptorhunt.enc_sz_pick_light', 'The lightest')),
+              h('button', { type: 'button', className: 'enc-btn', onClick: function() { choose(byWing[0]); } }, __alloT('stem.raptorhunt.enc_sz_pick_wide', 'The widest wings')),
+              h('button', { type: 'button', className: 'enc-btn', onClick: function() { choose(byMass[n - 1]); } }, __alloT('stem.raptorhunt.enc_sz_pick_heavy', 'The heaviest')))));
+        }
+        var live = h('p', { className: 'enc-sr', role: 'status' }, selP ? __alloFill(__alloT('stem.raptorhunt.enc_sz_live', '{name}. Wingspan {span}. Weight {weight}.'), { name: selP.E.name, span: selP.E.wingspan, weight: selP.E.weight }) : '');
+        return h('div', { className: 'enc-szwrap' },
+          h('h3', { className: 'enc-sz-title' }, __alloT('stem.raptorhunt.enc_sz_title', 'Size map: wingspan against weight')),
+          h('p', { className: 'enc-sub' }, __alloT('stem.raptorhunt.enc_sz_intro', 'Every dot is one species. Further right means wider wings, higher up means heavier. Both scales multiply instead of add, so a hummingbird and a swan fit on one chart.')),
+          h('div', { className: 'enc-sz' },
+            plot,
+            h('div', { className: 'enc-sz-side' }, readout,
+              h('div', { className: 'enc-filter' }, h('label', { htmlFor: o.idp + '-sz-hi' }, __alloT('stem.raptorhunt.enc_sz_hi', 'Highlight a group')),
+                h('select', { id: o.idp + '-sz-hi', className: 'enc-select', value: hi || 'all', onChange: function(e) { o.onSt({ szHi: e.target.value }); } },
+                  [['all', __alloT('stem.raptorhunt.enc_sz_hi_none', 'No highlight')]].concat(o.groups.map(function(g) { return [g, g]; })).map(function(g) { return h('option', { key: g[0], value: g[0] }, g[1]); }))),
+              h('p', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_sz_alt', 'Prefer a list? Switch to Browse species and sort by heaviest or widest.')), live)));
+      }
+
+      // ---------- species of the day ----------
+      function encGcd(a, b) { return b ? encGcd(b, a % b) : a; }
+      // One species per local calendar day. A stride coprime with the list length visits every species before any repeats.
+      // month (0-11) limits the pool to species likely in Maine that month; -1 means the whole list.
+      function encPick(list, date, month) {
+        var pool = list;
+        if (month >= 0) { var inSeason = list.filter(function(E) { return encMonthLevel(E, month) >= 2; }); if (inSeason.length >= 5) pool = inSeason; }
+        if (!pool.length) return null;
+        var order = pool.slice().sort(function(a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; }), N = order.length;
+        var day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000), step = 1;
+        for (var s = Math.round(N * 0.618); s > 1; s--) { if (encGcd(s, N) === 1) { step = s; break; } }
+        return order[((day * step) % N + N) % N];
+      }
+      // o: { list, idp, raptor, onOpen(id), month, date }
+      function encToday(h, P, o) {
+        var E = encPick(o.list, o.date || new Date(), o.month == null ? -1 : o.month);
+        if (!E) return null;
+        var mn = encMonthNames(), lv = [__alloT('stem.raptorhunt.enc_lv0', 'not expected'), __alloT('stem.raptorhunt.enc_lv1', 'rare'), __alloT('stem.raptorhunt.enc_lv2', 'fairly common'), __alloT('stem.raptorhunt.enc_lv3', 'common')];
+        var hid = o.idp + '-today-h', st = E.status || {};
+        return h('section', { className: 'enc-today', 'aria-labelledby': hid },
+          h('div', { className: 'enc-today-art' }, encPlate(h, P, E, { decorative: true, uid: 'td' })),
+          h('div', { className: 'enc-today-body' },
+            h('p', { className: 'enc-kicker' }, o.raptor ? __alloT('stem.raptorhunt.enc_today_r', 'Raptor of the day') : __alloT('stem.raptorhunt.enc_today_b', 'Bird of the day')),
+            h('h3', { className: 'enc-today-name', id: hid }, E.name),
+            h('p', { className: 'enc-sci' }, E.sci),
+            h('p', { className: 'enc-today-blurb' }, E.blurb),
+            h('div', { className: 'enc-badges' }, h('span', { className: 'enc-badge s-' + st.iucn }, encStatusName(st.iucn)),
+              o.month >= 0 ? h('span', { className: 'enc-badge enc-plain' }, __alloFill(__alloT('stem.raptorhunt.enc_today_why', 'Maine in {month}: {level}'), { month: mn[o.month], level: lv[encMonthLevel(E, o.month)] })) : null),
+            h('button', { type: 'button', className: 'enc-btn enc-primary', 'aria-describedby': hid, onClick: function() { o.onOpen(E.id); } }, __alloT('stem.raptorhunt.enc_today_open', 'Read today’s entry →'))));
+      }
+
+      // ---------- browser (toolbar + gallery) ----------
+      function encBrowser(h, P, props) {
+        var f = props.f || {}, quiz = props.mode === 'quiz', m = encMonthOf(f), mn = encMonthNames(), lv = [__alloT('stem.raptorhunt.enc_lv0', 'not expected'), __alloT('stem.raptorhunt.enc_lv1', 'rare'), __alloT('stem.raptorhunt.enc_lv2', 'fairly common'), __alloT('stem.raptorhunt.enc_lv3', 'common')];
+        var list = encApplyFilters(props.entries, { f: f, group: props.group, q: props.q, toggles: props.toggles });
+        var shown = list.slice(0, props.page * 24);
+        var modes = h('div', { className: 'enc-modes', role: 'group', 'aria-label': __alloT('stem.raptorhunt.enc_mode_label2', 'Gallery view') },
+          [['browse', __alloT('stem.raptorhunt.enc_mode_browse', 'Browse species')], ['sizes', __alloT('stem.raptorhunt.enc_mode_sizes', '📏 Size map')], ['quiz', props.raptor ? __alloT('stem.raptorhunt.enc_mode_quiz_r', '🎯 Mystery raptor quiz') : __alloT('stem.raptorhunt.enc_mode_quiz', '🎯 Mystery bird quiz')]].map(function(x) {
+            return h('button', { key: x[0], type: 'button', className: 'enc-chip', 'data-enc-mode': x[0], 'aria-pressed': (props.mode || 'browse') === x[0], onClick: function() { props.onMode(x[0]); } }, x[1]);
+          }));
+        var chips = h('div', { className: 'enc-chips', role: 'group', 'aria-label': __alloT('stem.raptorhunt.enc_filter_label', 'Filter by group') },
+          [['all', __alloT('stem.raptorhunt.enc_all', 'All')]].concat(props.groups.map(function(g) { return [g, g]; })).map(function(g) {
+            return h('button', { key: g[0], type: 'button', className: 'enc-chip', 'aria-pressed': props.group === g[0], onClick: function() { props.onGroup(g[0]); if (quiz) props.onSt({ n: 0, shown: 1, answered: null, right: 0, tries: 0, score: 0, last: 0 }); } }, g[1]);
+          }));
+        // In quiz mode the group filter is one dropdown, so the question starts near the top of a phone screen.
+        var pool = h('div', { className: 'enc-filter enc-qz-pool' }, h('label', { htmlFor: props.idp + '-qz-grp' }, __alloT('stem.raptorhunt.enc_qz_pool', 'Quiz me on')),
+          h('select', { id: props.idp + '-qz-grp', className: 'enc-select', value: props.group, onChange: function(e) { props.onGroup(e.target.value); props.onSt({ n: 0, shown: 1, answered: null, right: 0, tries: 0, score: 0, last: 0 }); } },
+            [['all', __alloT('stem.raptorhunt.enc_qz_all', 'All species')]].concat(props.groups.map(function(g) { return [g, g]; })).map(function(g) { return h('option', { key: g[0], value: g[0] }, g[1]); })));
+        if (quiz) return h('div', null, modes, h('div', { className: 'enc-toolbar' }, pool),
+          encQuiz(h, P, { list: props.entries, group: props.group, idp: props.idp, st: props.st, onSt: props.onSt, onOpen: props.onOpen, raptor: props.raptor }));
+        if (props.mode === 'sizes') return h('div', null, modes,
+          encSizeMap(h, P, { list: props.entries, groups: props.groups, idp: props.idp, st: props.st, onSt: props.onSt, onOpen: props.onOpen, raptor: props.raptor }));
+        var today = (!props.q && props.group === 'all' && !encFiltersOn(f)) ? encToday(h, P, { list: props.entries, idp: props.idp, raptor: props.raptor, onOpen: props.onOpen, month: props.maineMonths !== false ? new Date().getMonth() : -1 }) : null;
+        return h('div', null,
+          modes,
+          today,
+          h('div', { className: 'enc-toolbar' },
+            h('div', null, h('label', { htmlFor: props.idp + '-q', className: 'enc-sr' }, __alloT('stem.raptorhunt.enc_search_label', 'Search species')),
+              h('input', { id: props.idp + '-q', type: 'search', className: 'enc-search', value: props.q, placeholder: __alloT('stem.raptorhunt.enc_search_ph', 'Search by name, family, habitat or field mark'), onChange: function(e) { props.onQ(e.target.value); } })),
+            chips,
+            props.onF ? encFilterBar(h, { idp: props.idp, f: f, onF: props.onF, maineMonths: props.maineMonths, toggles: props.toggles }) : null,
+            h('p', { className: 'enc-count', role: 'status' }, __alloFill(__alloT('stem.raptorhunt.enc_count', '{shown} of {total} species'), { shown: Math.min(shown.length, list.length), total: list.length }))),
+          list.length === 0 ? h('div', { className: 'enc-empty' }, __alloT('stem.raptorhunt.enc_none', 'No species match. Try a shorter search or choose All.')) :
+            h('ul', { className: 'enc-grid', style: { listStyle: 'none', margin: 0, padding: 0 } }, shown.map(function(E) {
+              var r = encRisk(E), iu = (E.status || {}).iucn;
+              return h('li', { key: E.id }, h('button', { type: 'button', className: 'enc-thumb', style: { width: '100%' }, 'aria-label': E.name + ', ' + E.sci + (r >= 2 ? ', ' + encStatusName(iu) : '') + (m >= 0 ? ', ' + mn[m] + ': ' + lv[encMonthLevel(E, m)] : ''), onClick: function() { props.onOpen(E.id); } },
+                encPlate(h, P, E, { decorative: true, uid: 't' }),
+                h('span', { className: 'enc-thumb-body' }, h('span', { className: 'enc-thumb-name' }, E.name), h('span', { className: 'enc-thumb-sci' }, E.sci), h('span', { className: 'enc-thumb-grp' }, E.group),
+                  m >= 0 ? h('span', { className: 'enc-thumb-grp' }, mn[m] + ': ' + lv[encMonthLevel(E, m)]) : null,
+                  r >= 2 ? h('span', { className: 'enc-badge enc-thumb-st s-' + iu }, encStatusName(iu)) : null)));
+            })),
+          shown.length < list.length ? h('div', { className: 'enc-more' }, h('button', { type: 'button', className: 'enc-btn', onClick: function() { props.onPage(props.page + 1); } }, __alloFill(__alloT('stem.raptorhunt.enc_more', 'Show more ({n} left)'), { n: list.length - shown.length }))) : null);
+      }
+
+      // ---------- compare two species ----------
+      function encNorm(s) {
+        var t = String(s || '').toLowerCase().split('(')[0], o = '';
+        for (var i = 0; i < t.length; i++) { var c = t.charAt(i); if (c >= 'a' && c <= 'z') o += c; }
+        return o;
+      }
+      // The entry a look-alike name points at, or null.
+      function encLookup(list, name) {
+        var k = encNorm(name);
+        if (!k) return null;
+        for (var i = 0; i < list.length; i++) if (encNorm(list[i].name) === k) return list[i];
+        return null;
+      }
+      // Species the field guides set against this one: its own look-alikes that have an entry, plus entries that list it.
+      function encPartners(list, E) {
+        var out = [], seen = {}, me = encNorm(E.name);
+        function add(x) { if (x && x.id !== E.id && !seen[x.id]) { seen[x.id] = 1; out.push(x); } }
+        (E.lookalikes || []).forEach(function(p) { add(encLookup(list, p[0])); });
+        list.forEach(function(x) { (x.lookalikes || []).forEach(function(p) { if (encNorm(p[0]) === me) add(x); }); });
+        return out;
+      }
+      function encCmpRatio(a, b, A, B, what) {
+        var hi = a >= b ? A : B, lo = a >= b ? B : A, r = Math.max(a, b) / (Math.min(a, b) || 1);
+        if (r < 1.12) return __alloFill(what === 'len' ? __alloT('stem.raptorhunt.enc_cmp_same_len', '{a} and {b} are about the same length.') : what === 'span' ? __alloT('stem.raptorhunt.enc_cmp_same_span', '{a} and {b} have about the same wingspan.') : __alloT('stem.raptorhunt.enc_cmp_same_wt', '{a} and {b} weigh about the same.'), { a: A.name, b: B.name });
+        var t = what === 'len' ? __alloT('stem.raptorhunt.enc_cmp_longer', '{big} is about {n}× as long as {small}.') : what === 'span' ? __alloT('stem.raptorhunt.enc_cmp_wider', '{big} has about {n}× the wingspan of {small}.') : __alloT('stem.raptorhunt.enc_cmp_heavier', '{big} is about {n}× as heavy as {small}.');
+        return __alloFill(t, { big: hi.name, small: lo.name, n: r >= 10 ? Math.round(r) : encF(r) });
+      }
+      function encCmpBars(h, title, a, b, unit, A, B, note) {
+        var max = Math.max(a, b, 1) * 1.05;
+        function row(E, v, side) {
+          return h('div', { key: side, className: 'enc-scale-row' }, h('span', null, E.name),
+            h('div', { className: 'enc-track enc-t' + side, 'aria-hidden': 'true' }, h('span', { style: { width: Math.max(1.5, v / max * 100) + '%' } })),
+            h('span', null, encF(v) + ' ' + unit));
+        }
+        return h('div', { className: 'enc-cmp-bars' }, h('p', { className: 'enc-kicker' }, title), row(A, a, 'a'), row(B, b, 'b'), note ? h('p', { className: 'enc-note' }, note) : null);
+      }
+      function encCmpRow(h, id, title, A, B, aBody, bBody) {
+        return h('section', { key: id, className: 'enc-card enc-wide', 'aria-labelledby': 'enc-cmp-' + id },
+          h('h3', { id: 'enc-cmp-' + id }, title),
+          h('div', { className: 'enc-cmp-cols' },
+            h('div', { className: 'enc-cmp-col a' }, h('p', { className: 'enc-cmp-cap' }, h('i', { className: 'enc-dot', 'aria-hidden': 'true' }), A.name), aBody),
+            h('div', { className: 'enc-cmp-col b' }, h('p', { className: 'enc-cmp-cap' }, h('i', { className: 'enc-dot', 'aria-hidden': 'true' }), B.name), bBody)));
+      }
+      // Two native selects (grouped by family of birds) and a swap button.
+      function encCmpPicker(h, list, groups, A, B, o) {
+        function sel(side, cur, other, onPick) {
+          var id = o.idp + '-' + side;
+          return h('div', { key: side, className: 'enc-cmp-sel ' + side },
+            h('label', { htmlFor: id }, side === 'a' ? __alloT('stem.raptorhunt.enc_cmp_first', 'First species') : __alloT('stem.raptorhunt.enc_cmp_second', 'Second species')),
+            h('select', { id: id, className: 'enc-select', value: cur.id, onChange: function(e) { onPick(e.target.value); } },
+              groups.map(function(g) {
+                return h('optgroup', { key: g, label: g }, list.filter(function(x) { return x.group === g; }).map(function(x) { return h('option', { key: x.id, value: x.id, disabled: x.id === other.id }, x.name); }));
+              })));
+        }
+        return h('div', { className: 'enc-cmp-pick' }, sel('a', A, B, o.onA),
+          h('button', { type: 'button', className: 'enc-btn', onClick: o.onSwap, 'aria-label': __alloT('stem.raptorhunt.enc_cmp_swap_aria', 'Swap the two species') }, __alloT('stem.raptorhunt.enc_cmp_swap', '⇄ Swap')),
+          sel('b', B, A, o.onB));
+      }
+      // o: { list, onOpen(id), extra(A, B) }
+      function encCompare(h, P, A, B, o) {
+        o = o || {};
+        var list = o.list || [];
+        function hero(E, side) {
+          var st = E.status || {};
+          return h('article', { key: side, className: 'enc-cmp-hero ' + side, 'aria-labelledby': 'enc-cmp-name-' + side },
+            encPlate(h, P, E, { uid: 'c' + side }),
+            h('p', { className: 'enc-kicker', style: { marginTop: 8 } }, E.group + ' · ' + E.family),
+            h('h3', { className: 'enc-cmp-name', id: 'enc-cmp-name-' + side }, E.name),
+            h('p', { className: 'enc-sci' }, E.sci),
+            h('div', { className: 'enc-badges' }, h('span', { className: 'enc-badge s-' + st.iucn }, encStatusName(st.iucn)), h('span', { className: 'enc-badge enc-plain' }, encTrendMark(st.trend) + ' ' + encTrendName(st.trend))),
+            h('p', { className: 'enc-note', style: { marginBottom: 8 } }, E.blurb),
+            h('button', { type: 'button', className: 'enc-btn', onClick: function() { o.onOpen(E.id); } }, __alloFill(__alloT('stem.raptorhunt.enc_cmp_read', 'Read the full {name} entry →'), { name: E.name })));
+        }
+        function tell(from, to) {
+          var hit = (from.lookalikes || []).filter(function(p) { return encNorm(p[0]) === encNorm(to.name); })[0];
+          return hit ? h('li', { key: from.id }, h('strong', null, __alloFill(__alloT('stem.raptorhunt.enc_cmp_tell_from', 'The {from} entry says about the {to}: '), { from: from.name, to: to.name })), hit[1]) : null;
+        }
+        var tells = [tell(A, B), tell(B, A)].filter(Boolean);
+        var relation = A.family === B.family ? __alloFill(__alloT('stem.raptorhunt.enc_cmp_same_family', 'Both belong to the family {family}.'), { family: A.family }) : __alloFill(__alloT('stem.raptorhunt.enc_cmp_diff_family', '{a} is in the family {fa}; {b} is in the family {fb}.'), { a: A.name, fa: A.family, b: B.name, fb: B.family });
+        function marks(E) { return h('dl', { className: 'enc-dl' }, (E.identify || []).map(function(p, i) { return h('div', { key: i }, h('dt', null, p[0]), h('dd', null, p[1])); })); }
+        function status(E) { var st = E.status || {}; return h('div', null, h('div', { className: 'enc-badges' }, h('span', { className: 'enc-badge s-' + st.iucn }, 'IUCN: ' + encStatusName(st.iucn)), h('span', { className: 'enc-badge enc-plain' }, encTrendMark(st.trend) + ' ' + encTrendName(st.trend))), h('p', null, st.text)); }
+        function mapOf(E, side) { return h('div', null, encRangeMap(h, E, { uid: 'cmp' + side }), encLegend(h, E), encZoneList(h, E)); }
+        function monthsOf(E) { return h('div', null, h('p', null, h('strong', null, E.maine.season + '. ')), encMonths(h, E.maine.months, __alloFill(__alloT('stem.raptorhunt.enc_cmp_months_for', 'Chance of finding {name} in Maine, by month'), { name: E.name }))); }
+        var rows = [
+          encCmpRow(h, 'marks', __alloT('stem.raptorhunt.enc_cmp_marks', 'Field marks'), A, B, marks(A), marks(B)),
+          encCmpRow(h, 'voice', __alloT('stem.raptorhunt.enc_s_voice', 'Voice'), A, B, h('p', null, A.voice), h('p', null, B.voice)),
+          encCmpRow(h, 'habitat', __alloT('stem.raptorhunt.enc_cmp_habitat', 'Habitat'), A, B, h('p', null, A.habitat), h('p', null, B.habitat)),
+          encCmpRow(h, 'food', __alloT('stem.raptorhunt.enc_cmp_food', 'What it eats'), A, B, h('p', null, A.diet), h('p', null, B.diet)),
+          encCmpRow(h, 'nest', __alloT('stem.raptorhunt.enc_cmp_nest', 'Where it nests'), A, B, h('p', null, (A.nesting || {}).site), h('p', null, (B.nesting || {}).site)),
+          encCmpRow(h, 'migration', __alloT('stem.raptorhunt.enc_s_migration', 'Migration'), A, B, h('p', null, A.migration), h('p', null, B.migration)),
+          encCmpRow(h, 'range', __alloT('stem.raptorhunt.enc_cmp_range', 'Range maps'), A, B, mapOf(A, 'a'), mapOf(B, 'b'))
+        ];
+        if (A.maine && B.maine && o.showMaine !== false) rows.push(encCmpRow(h, 'maine', __alloT('stem.raptorhunt.enc_s_maine', 'In Maine'), A, B, monthsOf(A), monthsOf(B)));
+        rows.push(encCmpRow(h, 'status', __alloT('stem.raptorhunt.enc_s_status', 'Conservation'), A, B, status(A), status(B)));
+        return h('div', { className: 'enc-cmp' },
+          h('div', { className: 'enc-cmp-heroes' }, hero(A, 'a'), hero(B, 'b')),
+          h('section', { className: 'enc-card enc-wide', 'aria-labelledby': 'enc-cmp-size', style: { marginBottom: 14 } },
+            h('h3', { id: 'enc-cmp-size' }, __alloT('stem.raptorhunt.enc_cmp_size', 'Size at a glance')),
+            h('p', null, relation),
+            encCmpBars(h, __alloT('stem.raptorhunt.enc_f_length', 'Length'), A.lengthCm || 0, B.lengthCm || 0, 'cm', A, B, encCmpRatio(A.lengthCm || 0, B.lengthCm || 0, A, B, 'len')),
+            encCmpBars(h, __alloT('stem.raptorhunt.enc_f_span', 'Wingspan'), A.wingspanCm || 0, B.wingspanCm || 0, 'cm', A, B, encCmpRatio(A.wingspanCm || 0, B.wingspanCm || 0, A, B, 'span')),
+            encCmpBars(h, __alloT('stem.raptorhunt.enc_f_weight', 'Weight'), A.massG || 0, B.massG || 0, 'g', A, B, encCmpRatio(A.massG || 0, B.massG || 0, A, B, 'wt'))),
+          h('section', { className: 'enc-card enc-wide', 'aria-labelledby': 'enc-cmp-tell', style: { marginBottom: 14 } },
+            h('h3', { id: 'enc-cmp-tell' }, __alloT('stem.raptorhunt.enc_cmp_tell', 'How to tell them apart')),
+            tells.length ? h('ul', { className: 'enc-list' }, tells) : h('p', null, __alloT('stem.raptorhunt.enc_cmp_tell_none', 'Neither entry lists the other as a look-alike. Compare size, bill, tail, colour pattern and habitat in the sections below.'))),
+          o.extra ? o.extra(A, B) : null,
+          h('div', { style: { display: 'grid', gap: 14 } }, rows),
+          h('p', { className: 'enc-foot' }, __alloT('stem.raptorhunt.enc_cmp_foot', 'Stylized illustrations and approximate range maps. Look in the field guides and recordings before relying on any single mark.')));
+      }
+
+      // ══════════ SPECIES ENCYCLOPEDIA (Raptor Lab) ══════════
+      var ENC_P = encPlates(h);
+      function encFindR(key) {
+        for (var i = 0; i < RAPTOR_ENC.length; i++) if (RAPTOR_ENC[i].id === key || RAPTOR_ENC[i].name === key) return RAPTOR_ENC[i];
+        return null;
+      }
+      // Classic raptor look-alike pairs (only those whose two species both have an entry).
+      var ENC_CMP_PAIRS_R = [['peregrine', 'merlin'], ['coopersHawk', 'sharpShin'], ['baldEagle', 'goldenEagle'], ['turkeyVulture', 'blackVulture'], ['peregrine', 'gyrfalcon'], ['kestrel', 'merlin'], ['barnOwl', 'greatHorned'], ['osprey', 'baldEagle']]
+        .filter(function(p) { return !!encFindR(p[0]) && !!encFindR(p[1]); });
+      function encRPickPartner(A) {
+        var p = encPartners(RAPTOR_ENC, A)[0];
+        return p || encFindR(A.id === 'merlin' ? 'peregrine' : 'merlin');
+      }
+      function openCompareR(a, b) {
+        var A = a || encFindR('peregrine'), B = (b && b.id !== A.id) ? b : encRPickPartner(A);
+        setRH({ encCmpA: A.id, encCmpB: B.id, encId: null });
+        setTimeout(function() { var el = document.getElementById('enc-root-r'); if (el && el.scrollIntoView) { try { el.scrollIntoView({ block: 'start' }); } catch (e) { /* ignore */ } } }, 40);
+      }
+      // Under the shared comparison: the simulator's flight numbers, when both raptors are flyable.
+      function raptorCmpExtra(A, B) {
+        var sa = A.simId ? findSpecies(A.simId) : null, sb = B.simId ? findSpecies(B.simId) : null;
+        if (!(sa && sa.id === A.simId && sb && sb.id === B.simId)) return h('p', { className: 'enc-note', style: { marginBottom: 14 } }, __alloT('stem.raptorhunt.enc_cmp_sim_none', 'Flight numbers appear here when both raptors are flyable species in the simulator.'));
+        var gdefs = [
+          ['maxLevelMph', __alloT('stem.raptorhunt.max_level_speed_mph', 'Max level speed (mph)')],
+          ['stoopMph', __alloT('stem.raptorhunt.stoop_speed_mph', 'Stoop speed (mph)')],
+          ['wingLoading', __alloT('stem.raptorhunt.wing_loading_kg_m', 'Wing loading (kg/m²)')],
+          ['talonForcePsi', __alloT('stem.raptorhunt.talon_grip_psi', 'Talon grip (psi)')],
+          ['visualAcuityX', __alloT('stem.raptorhunt.visual_acuity_human', 'Visual acuity (× human)')]
+        ];
+        return h('section', { className: 'enc-card enc-wide', 'aria-labelledby': 'enc-cmp-sim', style: { marginBottom: 14 } },
+          h('h3', { id: 'enc-cmp-sim' }, __alloT('stem.raptorhunt.enc_cmp_sim', 'Flight numbers in the simulator')),
+          gdefs.map(function(g) { return h('div', { key: g[0] }, encCmpBars(h, g[1], sa[g[0]], sb[g[0]], '', A, B, '')); }));
+      }
+      function renderSpecies20() {
+        encInjectCss();
+        var openId = rh.encId || null, q = rh.encQ || '', grp = rh.encGroup || 'all', pg = rh.encPage || 1;
+        var cur = openId ? encFindR(openId) : null;
+        function scrollTop() {
+          setTimeout(function() { var el = document.getElementById('enc-root-r'); if (el && el.scrollIntoView) { try { el.scrollIntoView({ block: 'start' }); } catch (e) { /* ignore */ } } }, 40);
+        }
+        function open(id) {
+          setRH({ encId: id });
+          var e = encFindR(id);
+          if (e) rhAnnounce(__alloFill(__alloT('stem.raptorhunt.enc_sr_open', 'Showing {name}'), { name: e.name }));
+          scrollTop();
+        }
+        function close() { setRH({ encId: null }); scrollTop(); }
+        var idx = cur ? RAPTOR_ENC.indexOf(cur) : -1;
+        var prev = idx > 0 ? RAPTOR_ENC[idx - 1] : null;
+        var next = idx >= 0 && idx < RAPTOR_ENC.length - 1 ? RAPTOR_ENC[idx + 1] : null;
+        var afterHero = null;
+        if (cur) {
+          var simSp = cur.simId ? findSpecies(cur.simId) : null;
+          if (simSp && simSp.id === cur.simId) {
+            var gdefs = [
+              ['maxLevelMph', __alloT('stem.raptorhunt.max_level_speed_mph', 'Max level speed (mph)')],
+              ['stoopMph', __alloT('stem.raptorhunt.stoop_speed_mph', 'Stoop speed (mph)')],
+              ['wingLoading', __alloT('stem.raptorhunt.wing_loading_kg_m', 'Wing loading (kg/m²)')],
+              ['talonForcePsi', __alloT('stem.raptorhunt.talon_grip_psi', 'Talon grip (psi)')],
+              ['visualAcuityX', __alloT('stem.raptorhunt.visual_acuity_human', 'Visual acuity (× human)')]
+            ];
+            afterHero = h('section', { className: 'enc-card enc-wide', style: { marginTop: 14 }, 'aria-labelledby': 'enc-sim-h' },
+              h('h3', { id: 'enc-sim-h' }, __alloT('stem.raptorhunt.enc_sim_title', 'Flight numbers in the simulator')),
+              h('p', { className: 'enc-note' }, __alloT('stem.raptorhunt.enc_sim_note', 'Compared with the other flyable raptors. Longer bars mean a bigger number.')),
+              h('div', { className: 'enc-gauges' }, gdefs.map(function(g) {
+                var mn = Infinity, mx = -Infinity;
+                SPECIES.forEach(function(s) { if (s[g[0]] < mn) mn = s[g[0]]; if (s[g[0]] > mx) mx = s[g[0]]; });
+                var pct = Math.max(6, (simSp[g[0]] - mn) / ((mx - mn) || 1) * 100);
+                return h('div', { key: g[0], className: 'enc-gauge' }, h('span', null, g[1]), h('div', { className: 'enc-track', 'aria-hidden': 'true' }, h('span', { style: { width: pct + '%' } })), h('strong', null, String(simSp[g[0]])));
+              })),
+              h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'enc-btn enc-primary', onClick: function() { setRH({ selectedSpecies: cur.simId, activeSection: 'hunt' }); } }, __alloFill(__alloT('stem.raptorhunt.enc_fly_as', 'Fly as {name} →'), { name: cur.name })),
+                h('button', { type: 'button', className: 'enc-btn', onClick: function() { setRH({ selectedSpecies: cur.simId, activeSection: 'roster' }); } }, __alloT('stem.raptorhunt.enc_see_roster', 'See it in the roster'))));
+          } else {
+            afterHero = h('p', { className: 'enc-note', style: { marginTop: 10 } }, __alloT('stem.raptorhunt.enc_ref_only', 'Reference entry: this raptor is not one of the flyable species in the simulator.'));
+          }
+        }
+        var cmpA = rh.encCmpA ? encFindR(rh.encCmpA) : null;
+        if (cmpA) {
+          var cmpB = encFindR(rh.encCmpB) || encRPickPartner(cmpA);
+          if (cmpB.id === cmpA.id) cmpB = encRPickPartner(cmpA);
+          var setPairR = function(a, b) { setRH({ encCmpA: a.id, encCmpB: b.id }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.enc_cmp_sr', 'Comparing {a} and {b}'), { a: a.name, b: b.name })); };
+          var partnersR = encPartners(RAPTOR_ENC, cmpA).slice(0, 10);
+          return h('div', { className: 'enc-root', id: 'enc-root-r', 'data-theme': 'dark' },
+            h('div', { className: 'enc-head' }, h('div', null,
+              h('h2', { className: 'enc-title' }, __alloT('stem.raptorhunt.enc_cmp_heading', 'Which one is it?')),
+              h('p', { className: 'enc-sub' }, __alloT('stem.raptorhunt.enc_cmp_intro', 'Real birding is comparison. Pick any two species to line up their size, field marks, voice, habitat, range and status. Species that the field guides confuse are one tap away.')))),
+            h('div', { className: 'enc-bar-top' },
+              h('button', { type: 'button', className: 'enc-btn', onClick: function() { setRH({ encCmpA: null, encCmpB: null }); scrollTop(); } }, __alloT('stem.raptorhunt.enc_cmp_to_gallery', '← All species'))),
+            encCmpPicker(h, RAPTOR_ENC, RAPTOR_ENC_GROUPS, cmpA, cmpB, {
+              idp: 'enc-cmp-r',
+              onA: function(id) { var a = encFindR(id); setPairR(a, a.id === cmpB.id ? encRPickPartner(a) : cmpB); },
+              onB: function(id) { setPairR(cmpA, encFindR(id)); },
+              onSwap: function() { setPairR(cmpB, cmpA); }
+            }),
+            partnersR.length ? h('div', null,
+              h('p', { className: 'enc-kicker' }, __alloFill(__alloT('stem.raptorhunt.enc_cmp_partners', 'Often confused with the {name}'), { name: cmpA.name })),
+              h('div', { className: 'enc-cmp-links', role: 'group', 'aria-label': __alloFill(__alloT('stem.raptorhunt.enc_cmp_partners_aria', 'Species to compare with the {name}'), { name: cmpA.name }) },
+                partnersR.map(function(p) { return h('button', { key: p.id, type: 'button', className: 'enc-chip', 'aria-pressed': p.id === cmpB.id, onClick: function() { setPairR(cmpA, p); } }, p.name); }))) : null,
+            ENC_CMP_PAIRS_R.length ? h('div', null,
+              h('p', { className: 'enc-kicker' }, __alloT('stem.raptorhunt.enc_cmp_classics', 'Classic look-alike pairs')),
+              h('div', { className: 'enc-cmp-links', role: 'group', 'aria-label': __alloT('stem.raptorhunt.enc_cmp_classics_aria', 'Classic pairs to compare') },
+                ENC_CMP_PAIRS_R.map(function(p) {
+                  var a = encFindR(p[0]), b = encFindR(p[1]);
+                  return h('button', { key: p[0] + p[1], type: 'button', className: 'enc-chip', 'aria-pressed': cmpA.id === a.id && cmpB.id === b.id, onClick: function() { setPairR(a, b); } }, a.name + ' · ' + b.name);
+                }))) : null,
+            encCompare(h, ENC_P, cmpA, cmpB, { list: RAPTOR_ENC, showMaine: false, onOpen: function(id) { setRH({ encCmpA: null, encCmpB: null, encId: id }); scrollTop(); }, extra: raptorCmpExtra }));
+        }
+        return h('div', { className: 'enc-root', id: 'enc-root-r', 'data-theme': 'dark' },
+          !cur ? h('div', null,
+            h('div', { className: 'enc-head' }, h('div', null,
+              h('h2', { className: 'enc-title' }, __alloT('stem.raptorhunt.enc_heading_r', 'Raptor Encyclopedia')),
+              h('p', { className: 'enc-sub' }, __alloFill(__alloT('stem.raptorhunt.enc_intro_r', '{n} raptors, from the 20 flyable species to world-famous relatives. Each entry has a field-mark plate, range map, hunting, nesting, senses and conservation. Pick one to read.'), { n: RAPTOR_ENC.length }))), h('button', { type: 'button', className: 'enc-btn', onClick: function() { openCompareR(null, null); } }, __alloT('stem.raptorhunt.enc_cmp_open_r', '⇄ Compare two raptors'))),
+            encBrowser(h, ENC_P, { entries: RAPTOR_ENC, groups: RAPTOR_ENC_GROUPS, q: q, group: grp, page: pg, idp: 'enc-r', onQ: function(v) { setRH({ encQ: v, encPage: 1 }); }, onGroup: function(g) { setRH({ encGroup: g, encPage: 1 }); }, onPage: function(p) { setRH({ encPage: p }); }, onOpen: open,
+              maineMonths: false, raptor: true, toggles: [{ id: 'fly', label: __alloT('stem.raptorhunt.enc_flt_fly', 'Flyable in the simulator'), test: function(E) { return !!E.simId; } }],
+              f: rh.encF || {}, onF: function(p) { setRH({ encF: Object.assign({}, rh.encF || {}, p), encPage: 1 }); },
+              mode: rh.encMode || 'browse', onMode: function(v) { setRH({ encMode: v }); }, st: rh.encQz || {}, onSt: function(p) { setRH({ encQz: Object.assign({}, rh.encQz || {}, p) }); } }))
+          : h('div', null,
+            h('div', { className: 'enc-bar-top' },
+              h('button', { type: 'button', className: 'enc-btn', onClick: close }, __alloT('stem.raptorhunt.enc_back', '← All species')),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'enc-btn', onClick: function() { openCompareR(cur, null); } }, __alloT('stem.raptorhunt.enc_cmp_open', '⇄ Compare…')),
+                prev ? h('button', { type: 'button', className: 'enc-btn', onClick: function() { open(prev.id); } }, '← ' + prev.name) : null,
+                next ? h('button', { type: 'button', className: 'enc-btn', onClick: function() { open(next.id); } }, next.name + ' →') : null)),
+            encSheet(h, ENC_P, cur, { showMaine: false, uid: 'r', afterHero: afterHero, huntLabel: __alloT('stem.raptorhunt.enc_s_hunt', 'Hunting and diet'), findEntry: function(n) { return encLookup(RAPTOR_ENC, n); }, onCompare: openCompareR, hide: rh.encLay || {}, onHide: function(v) { setRH({ encLay: v }); }, list: RAPTOR_ENC, onOpen: open })));
+      }
+
+      // ══════════ FIELD ID SILHOUETTES + ROSTER LINK (Raptor Lab) ══════════
+      // One generator, one row of numbers per group: wing, body, tail, head. The left wing is authored once and
+      // mirrored so the halves cannot drift. Seen from below, head up, tail down: the view you get from the ground.
+      var RH_SIL = {
+        // Pointed, swept-back wings, medium narrow tail.
+        falcon: { wing: 'M139 90 C120 78 92 66 58 56 C62 74 76 92 100 102 C114 108 128 110 140 108 Z',
+          bodyW: 15, bodyTop: 78, tailTop: 114, tail: 'square', tailW: 8, tailLen: 26, head: [77, 9, 5] },
+        // Long plank wings with deep fingers, short broad tail, big projecting head.
+        eagle: { wing: 'M138 92 C110 84 74 82 34 86 L20 92 L38 95 L22 100 L40 103 L26 109 L46 110 C82 112 112 110 139 106 Z',
+          bodyW: 17, bodyTop: 76, tailTop: 120, tail: 'fan', tailW: 12, tailLen: 18, head: [71, 11, 7] },
+        // Broad rounded wings, wide fanned tail: round and chunky.
+        buteo: { wing: 'M137 90 C112 78 78 76 50 86 C40 90 38 98 46 104 C74 114 110 112 138 108 Z',
+          bodyW: 18, bodyTop: 78, tailTop: 116, tail: 'fan', tailW: 15, tailLen: 22, head: [76, 12, 6] },
+        // Short rounded wings, very long tail: a flying cross.
+        accipiter: { wing: 'M138 90 C118 80 92 80 72 90 C64 94 64 100 72 104 C94 112 118 110 139 106 Z',
+          bodyW: 15, bodyTop: 76, tailTop: 112, tail: 'long', tailW: 9, tailLen: 46, head: [76, 9.5, 6] },
+        // Long, narrow, rounded-tip wings and a long narrow tail on a slim body.
+        harrier: { wing: 'M139 95 C112 86 78 80 36 74 C26 74 20 79 24 84 C30 90 50 94 70 97 C96 102 118 106 139 108 Z',
+          bodyW: 12, bodyTop: 80, tailTop: 112, tail: 'long', tailW: 7, tailLen: 44, head: [78, 8, 5] },
+        // Long, narrow, pointed wings and a deeply forked tail.
+        kite: { wing: 'M139 92 C118 84 90 72 56 62 C44 59 34 61 28 65 C46 78 78 92 104 100 C120 105 132 106 140 106 Z',
+          bodyW: 12, bodyTop: 82, tailTop: 112, tail: 'fork', tailW: 9, tailLen: 40, head: [79, 8, 5] },
+        // The kink at the wrist, a flat M from below, is the whole osprey mark.
+        osprey: { wing: 'M139 92 C122 84 108 78 88 76 C74 88 58 96 30 100 L52 106 C76 106 98 102 118 98 C128 96 134 94 140 104 Z',
+          bodyW: 14, bodyTop: 78, tailTop: 116, tail: 'square', tailW: 8, tailLen: 17, head: [74, 10, 6] },
+        // Broad rounded wings, short tail, and a head so big it merges with the body: a flying pillow.
+        owl: { wing: 'M138 90 C112 76 76 74 48 86 C38 91 38 102 48 107 C76 118 112 114 139 108 Z',
+          bodyW: 21, bodyTop: 74, tailTop: 116, tail: 'fan', tailW: 13, tailLen: 12, head: [75, 17, 0] }
+      };
+      function rhMirrorX(d, axis) {
+        var out = '', tok = '', idx = 0, s = String(d) + ' ';
+        for (var i = 0; i < s.length; i++) {
+          var c = s.charAt(i);
+          if ('-.0123456789'.indexOf(c) >= 0) { tok += c; continue; }
+          if (tok) { out += (idx % 2 === 0) ? String(Number((axis - Number(tok)).toFixed(2))) : tok; idx++; tok = ''; }
+          out += c;
+        }
+        return out.slice(0, out.length - 1);
+      }
+      // Body and tail as ONE tapered outline, never two shapes stacked (stacked, they read as a post with a bar).
+      function rhSilBodyTail(p) {
+        var w = p.bodyW, top = p.bodyTop, tt = p.tailTop, tw = p.tailW, len = p.tailLen, bot = tt + len;
+        var d = 'M' + (150 - w * 0.5) + ' ' + top + ' C' + (150 - w) + ' ' + (top + (tt - top) * 0.3) + ' ' + (150 - w * 0.92) + ' ' + (tt - 5) + ' ' + (150 - tw) + ' ' + tt;
+        if (p.tail === 'fork') d += ' L' + (150 - tw * 1.2) + ' ' + bot + ' L150 ' + (tt + len * 0.45) + ' L' + (150 + tw * 1.2) + ' ' + bot + ' L' + (150 + tw) + ' ' + tt;
+        else if (p.tail === 'fan') d += ' L' + (150 - tw * 1.45) + ' ' + bot + ' Q150 ' + (bot + 7) + ' ' + (150 + tw * 1.45) + ' ' + bot + ' L' + (150 + tw) + ' ' + tt;
+        else d += ' L' + (150 - tw) + ' ' + bot + ' L' + (150 + tw) + ' ' + bot + ' L' + (150 + tw) + ' ' + tt;
+        return d + ' C' + (150 + w * 0.92) + ' ' + (tt - 5) + ' ' + (150 + w) + ' ' + (top + (tt - top) * 0.3) + ' ' + (150 + w * 0.5) + ' ' + top + ' Z';
+      }
+      function rhSilSvg(id, fill) {
+        var p = RH_SIL[id];
+        if (!p) return null;
+        var cy = p.head[0], r = p.head[1], parts = [
+          h('path', { key: 'wl', d: p.wing }),
+          h('path', { key: 'wr', d: rhMirrorX(p.wing, 300) }),
+          h('path', { key: 'bd', d: rhSilBodyTail(p) }),
+          h('ellipse', { key: 'hd', cx: 150, cy: cy, rx: r, ry: r * 1.05 })
+        ];
+        // Seen from below with the head up, the bill is a short foreshortened tip above the skull.
+        if (p.head[2]) parts.push(h('polygon', { key: 'bl', points: (150 - r * 0.32).toFixed(1) + ',' + (cy - r * 0.75).toFixed(1) + ' 150,' + (cy - r - p.head[2]).toFixed(1) + ' ' + (150 + r * 0.32).toFixed(1) + ',' + (cy - r * 0.75).toFixed(1) }));
+        return h('svg', { viewBox: '10 36 280 150', 'aria-hidden': 'true', focusable: 'false', 'data-rh-sil': id, style: { width: '100%', height: 'auto', display: 'block' } }, h('g', { fill: fill }, parts));
+      }
+      // All eight groups at one scale, side by side: the comparison the cards below cannot make.
+      function rhFieldLineup() {
+        return h('section', { 'aria-labelledby': 'rh-fid-lineup-h', className: 'bg-slate-900/50 border border-slate-700/50 rounded-xl p-4' },
+          h('h3', { id: 'rh-fid-lineup-h', className: 'text-sm font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.fid_lineup_title', '🔍 Eight shapes, one scale')),
+          h('p', { className: 'text-xs text-slate-300 mb-3' }, __alloT('stem.raptorhunt.fid_lineup_note', 'Seen from below, head up. At a distance you read the outline: how wide the wings are, how their tips end, how long the tail is and how far the head sticks out. Pick a shape to jump to its card.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 } },
+            FIELD_ID.silhouettes.map(function(s) {
+              return h('button', { key: s.id, type: 'button', 'data-rh-fid-jump': s.id, 'aria-label': __alloFill(__alloT('stem.raptorhunt.fid_jump', 'Jump to {name}'), { name: s.label }),
+                onClick: function() { var el = document.getElementById('rh-fid-' + s.id); if (el) { try { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) { el.scrollIntoView(); } if (el.focus) el.focus({ preventScroll: true }); } },
+                style: { background: '#0f172a', border: '1px solid #475569', borderRadius: 10, padding: '8px 8px 6px', cursor: 'pointer', color: '#fde68a', fontWeight: 700, fontSize: 12, textAlign: 'center' } },
+                rhSilSvg(s.id, '#fde047'),
+                h('span', { style: { display: 'block', marginTop: 4 } }, s.label.split(' (')[0]));
+            })));
+      }
+      function encFindBySim(simId) {
+        for (var i = 0; i < RAPTOR_ENC.length; i++) if (RAPTOR_ENC[i].simId === simId) return RAPTOR_ENC[i];
+        return null;
+      }
+
 
       // ────────────────────────────────────────────────────────
       // RENDER: COMPARATIVE ANATOMY (v0.43)

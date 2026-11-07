@@ -185,11 +185,18 @@ describe('reef-health model', () => {
     for (const dhw of [0, 2, 4]) expect(X.heatMortality(dhw, 'tolerant')).toBe(0);
     expect(X.heatMortality(16, 'tolerant')).toBeCloseTo(0.5, 6);
     expect(X.heatMortality(20, 'tolerant')).toBeCloseTo(0.8, 6);
-    for (const curve of ['sensitive', 'tolerant']) {
+    for (const curve of ['sensitive', 'typical', 'tolerant']) {
       let prev = 0;
       for (let dhw = 0; dhw <= 24; dhw += 0.5) { const m = X.heatMortality(dhw, curve); expect(m).toBeGreaterThanOrEqual(prev); expect(m).toBeLessThan(1); prev = m; }
     }
-    for (let dhw = 1; dhw <= 20; dhw++) expect(X.heatMortality(dhw, 'sensitive')).toBeGreaterThanOrEqual(X.heatMortality(dhw, 'tolerant'));
+    // The typical reef lies between the two sourced curves at every heat level.
+    for (let dhw = 1; dhw <= 24; dhw += 0.5) {
+      expect(X.heatMortality(dhw, 'sensitive'), 'dhw ' + dhw).toBeGreaterThanOrEqual(X.heatMortality(dhw, 'typical'));
+      expect(X.heatMortality(dhw, 'typical'), 'dhw ' + dhw).toBeGreaterThanOrEqual(X.heatMortality(dhw, 'tolerant'));
+    }
+    // Unknown or missing values fall back to the default curve.
+    expect(X.heatMortality(9)).toBe(X.heatMortality(9, 'typical'));
+    expect(X.heatMortality(9, 'bogus')).toBe(X.heatMortality(9, 'typical'));
     expect(X.bleachedShare(8)).toBeGreaterThan(X.bleachedShare(4));
     expect(X.bleachedShare(0)).toBe(0);
   });
@@ -214,8 +221,32 @@ describe('reef-health model', () => {
     }
   });
 
-  it('defaults to the mixed reef and keeps the heat-sensitive reef one switch away', () => {
-    for (const s of X.SCENARIOS) expect(X.scenarioSettings(s.id).sensitivity).toBe('tolerant');
+  it('defaults to the typical reef and keeps the heat-tough and heat-sensitive reefs one switch away', () => {
+    for (const s of X.SCENARIOS) expect(X.scenarioSettings(s.id).sensitivity).toBe('typical');
+  });
+
+  it('the default recent pattern loses coral about as fast as the world did from 2009 to 2018', () => {
+    // GCRMN 2020: about 14% of the world's coral was lost from 2009 to 2018.
+    const med = (v) => v.sort((a, b) => a - b)[Math.floor(v.length / 2)];
+    const y10 = [], y30 = [];
+    let lower = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const rows = X.runScenario(X.scenarioSettings('recent'), seed);
+      y10.push(rows[10].coral / rows[0].coral); y30.push(rows[30].coral);
+      if (rows[30].coral < rows[0].coral) lower++;
+    }
+    expect(1 - med(y10)).toBeGreaterThan(0.08);
+    expect(1 - med(y10)).toBeLessThan(0.2);
+    expect(lower).toBeGreaterThanOrEqual(12);
+    expect(med(y30)).toBeLessThan(0.4);
+  });
+
+  it('with the same heatwaves, losing the grazing fish lets seaweed take the reef', () => {
+    const med = (v) => v.sort((a, b) => a - b)[Math.floor(v.length / 2)];
+    const end = (s) => med([1, 2, 3, 4, 5, 6, 7, 8, 9].map((seed) => { const r = X.runScenario(s, seed); return r[30].coral; }));
+    const fished = end(Object.assign(X.scenarioSettings('recent'), { herbivores: 'low' }));
+    const protectedReef = end(X.scenarioSettings('reserve'));
+    expect(protectedReef - fished).toBeGreaterThan(0.1);
   });
 
   it('stabilizing a rubble field turns rubble into ground and brings coral back far faster than doing nothing', () => {

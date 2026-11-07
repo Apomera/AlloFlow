@@ -286,22 +286,218 @@ describe('analysis report languages preserve the selected source', () => {
     expect(container.textContent).toContain('The original explanation.');
   });
 
-  it('presents optional language-labeled companions and suppresses same-language or equal-text copies', () => {
+  it('offers prepared passage languages as a toggle: the original stays selected; same-language or equal-text copies are left out', () => {
     const props = makeProps({ sourceTranslations: {
       Spanish: 'El zorro salta sobre el perro perezoso.', English: 'A needless second English passage.',
       French: '  The fox jupms\n over the lazy dog.  ', Malformed: { text: 'Not a string.' },
     } });
     render(props);
-    const companions = container.querySelectorAll('[data-source-translation]');
-    expect(companions).toHaveLength(1);
-    expect(companions[0].querySelector('summary').textContent).toBe('Translated passage · Spanish');
-    expect(companions[0].open).toBe(false);
+    const versions = () => [...container.querySelectorAll('[data-passage-language]')];
+    expect(versions().map(button => button.textContent)).toEqual(['Spanish']);
+    expect(container.querySelector('[data-passage-original]').getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('[data-passage-original]').textContent).toBe('Original · English');
     expect(container.textContent).not.toContain('needless second');
-    act(() => companions[0].querySelector('summary').click());
-    expect(companions[0].open).toBe(true);
+    expect(container.textContent).not.toContain('El zorro');
+    expect(container.textContent.match(/The fox jupms over the lazy dog\./g)).toHaveLength(1);
+    act(() => versions()[0].click());
+    expect(versions()[0].getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('[data-passage-shown="Spanish"]').textContent).toBe('El zorro salta sobre el perro perezoso.');
+    expect(container.textContent).toContain('Translated passage · Spanish');
+    expect(container.textContent).not.toContain('output.common_original');
+    expect(container.textContent).not.toContain('The fox jupms over the lazy dog.');
+    act(() => container.querySelector('[data-passage-original]').click());
+    expect(container.textContent.match(/The fox jupms over the lazy dog\./g)).toHaveLength(1);
     expect(props.setInputText).not.toHaveBeenCalled();
     expect(props.onUpdateResource).not.toHaveBeenCalled();
-    expect(container.textContent.match(/The fox jupms over the lazy dog\./g)).toHaveLength(1);
+  });
+
+  it("puts this device's app language first among prepared versions, and students cannot add languages", () => {
+    const props = makeProps({ sourceTranslations: { French: 'Le renard saute.', Spanish: 'El zorro salta sobre el perro perezoso.' } },
+      { isTeacherMode: false, currentUiLanguage: 'Spanish', onTranslatePassage: vi.fn(), selectedLanguages: ['Vietnamese'] });
+    render(props);
+    expect([...container.querySelectorAll('[data-passage-language]')].map(button => button.textContent)).toEqual(['Spanish', 'French']);
+    expect(container.querySelector('[data-passage-original]').getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('[data-add-passage-language]')).toBeNull();
+  });
+
+  it('lets a teacher add a class language through the passage translator and saves only that version', async () => {
+    const translated = { Vietnamese: 'Con cáo nhảy qua con chó lười.' };
+    const onTranslatePassage = vi.fn(async (item) => ({ ...item, data: { ...item.data, sourceTranslations: { ...item.data.sourceTranslations, ...translated } } }));
+    const props = makeProps({}, { onTranslatePassage, outputLanguage: 'Spanish', selectedLanguages: ['Vietnamese', 'spanish'], currentUiLanguage: 'English' });
+    render(props);
+    // Spanish already exists and English is the source language.
+    expect([...container.querySelectorAll('[data-add-passage-language]')].map(button => button.dataset.addPassageLanguage)).toEqual(['Vietnamese']);
+    await act(async () => container.querySelector('[data-add-passage-language="Vietnamese"]').click());
+    expect(onTranslatePassage).toHaveBeenCalledWith(props.generatedContent, 'Vietnamese');
+    expect(props.onUpdateResource).toHaveBeenCalledTimes(1);
+    const [id, updater] = props.onUpdateResource.mock.calls[0];
+    expect(id).toBe('analysis-a');
+    const latest = { ...props.generatedContent, data: { ...props.generatedContent.data, concepts: ['A concurrent saved change'] } };
+    const saved = updater(latest);
+    expect(saved.data.concepts).toEqual(['A concurrent saved change']);
+    expect(saved.data.sourceTranslations).toEqual({ Spanish: 'El zorro salta sobre el perro perezoso.', Vietnamese: 'Con cáo nhảy qua con chó lười.' });
+    expect(saved.data.reportTranslations).toBe(latest.data.reportTranslations);
+    expect(updater({ ...latest, id: 'analysis-b' })).toEqual({ ...latest, id: 'analysis-b' });
+    // A translation of the old wording is not saved onto an edited passage.
+    const edited = { ...latest, data: { ...latest.data, originalText: 'A concurrent saved edit.' } };
+    expect(updater(edited)).toBe(edited);
+  });
+
+  it('reports a failed or same-language passage translation without saving anything', async () => {
+    const failing = makeProps({}, { onTranslatePassage: vi.fn(async () => { throw new Error('model down'); }), selectedLanguages: ['Vietnamese'] });
+    render(failing);
+    await act(async () => container.querySelector('[data-add-passage-language="Vietnamese"]').click());
+    expect(failing.addToast).toHaveBeenCalledWith('The Vietnamese passage did not finish. Try again.', 'error');
+    expect(failing.onUpdateResource).not.toHaveBeenCalled();
+    expect(container.querySelector('[data-add-passage-language="Vietnamese"]').disabled).toBe(false);
+    act(() => root.unmount()); container.remove(); root = null; container = null;
+    const same = makeProps({}, { onTranslatePassage: vi.fn(async item => item), selectedLanguages: ['Vietnamese'] });
+    render(same);
+    await act(async () => container.querySelector('[data-add-passage-language="Vietnamese"]').click());
+    expect(same.addToast).toHaveBeenCalledWith('The passage is already in Vietnamese.', 'info');
+    expect(same.onUpdateResource).not.toHaveBeenCalled();
+  });
+
+  // An edit removes the passage versions (they no longer match the text); the host lists their languages.
+  const editedProps = (overrides = {}, data = {}) => makeProps({ sourceTranslations: {}, passageVersionsToRefresh: ['Spanish', 'Vietnamese'], analysisNeedsRecheck: true, ...data },
+    { onTranslatePassage: vi.fn(async (item, language) => ({ ...item, data: { ...item.data, sourceTranslations: { [language]: language + ' passage.' } } })),
+      outputLanguage: 'Spanish', selectedLanguages: ['Vietnamese', 'French'], ...overrides });
+  const applyAll = (props, item) => props.onUpdateResource.mock.calls.reduce((current, [, updater]) => updater(current), item);
+
+  it('after an edit, tells the teacher which passage versions were removed and updates them all against the unchanged text', async () => {
+    const props = editedProps();
+    render(props);
+    expect(container.querySelector('[data-passage-refresh]').textContent).toContain('Your edit removed the passage in Spanish, Vietnamese.');
+    expect(container.querySelector('[data-add-passage-language]')).toBeNull();
+    await act(async () => container.querySelector('[data-refresh-passage-versions]').click());
+    expect(props.onTranslatePassage.mock.calls.map(call => call[1])).toEqual(['Spanish', 'Vietnamese']);
+    const saved = applyAll(props, props.generatedContent);
+    expect(saved.data.sourceTranslations).toEqual({ Spanish: 'Spanish passage.', Vietnamese: 'Vietnamese passage.' });
+    expect(saved.data).not.toHaveProperty('passageVersionsToRefresh');
+    expect(saved.data.analysisNeedsRecheck).toBe(true);
+    const moved = { ...props.generatedContent, data: { ...props.generatedContent.data, originalText: 'Edited again meanwhile.' } };
+    expect(applyAll(props, moved)).toBe(moved);
+  });
+
+  it('keeps a failed language listed, can be dismissed, never reaches students and is not offered twice', async () => {
+    const props = editedProps({ onTranslatePassage: vi.fn(async (item, language) => {
+      if (language === 'Vietnamese') throw new Error('model down');
+      return { ...item, data: { ...item.data, sourceTranslations: { [language]: 'Pasaje.' } } };
+    }) });
+    render(props);
+    await act(async () => container.querySelector('[data-refresh-passage-versions]').click());
+    expect(props.addToast).toHaveBeenCalledWith('The Vietnamese passage did not finish. Try again.', 'error');
+    const saved = applyAll(props, props.generatedContent);
+    expect(saved.data.sourceTranslations).toEqual({ Spanish: 'Pasaje.' });
+    expect(saved.data.passageVersionsToRefresh).toEqual(['Vietnamese']);
+    act(() => root.unmount()); container.remove(); root = null; container = null;
+    // Rechecked: the notice stays for Vietnamese, and Vietnamese is not also offered as a new language.
+    const rechecked = editedProps({}, { analysisNeedsRecheck: undefined, sourceTranslations: { Spanish: 'Pasaje.' }, passageVersionsToRefresh: ['Vietnamese'] });
+    render(rechecked);
+    expect(container.querySelector('[data-passage-refresh]').textContent).toContain('in Vietnamese.');
+    expect([...container.querySelectorAll('[data-add-passage-language]')].map(button => button.dataset.addPassageLanguage)).toEqual(['French']);
+    act(() => container.querySelector('[data-dismiss-passage-refresh]').click());
+    const dismissed = applyAll(rechecked, rechecked.generatedContent);
+    expect(dismissed.data).not.toHaveProperty('passageVersionsToRefresh');
+    expect(dismissed.data.sourceTranslations).toEqual({ Spanish: 'Pasaje.' });
+    act(() => root.unmount()); container.remove(); root = null; container = null;
+    render(editedProps({ isTeacherMode: false, onTranslatePassage: null }));
+    expect(container.querySelector('[data-passage-refresh]')).toBeNull();
+  });
+
+  it("names languages by their own name and the app language's name, and keeps the saved English keys", async () => {
+    const extras = readFileSync(resolve(process.cwd(), 'module_scope_extras_source.jsx'), 'utf8');
+    const from = extras.indexOf('const getSpeechLangCode = ');
+    const getSpeechLangCode = new Function(extras.slice(from, extras.indexOf('const languageToTTSCode', from)) + '\nreturn getSpeechLangCode;')();
+    const before = { extras: window.AlloModules.ModuleScopeExtras, pipeline: window.AlloModules.TextPipelineHelpers, flag: window.AlloModules.TextPipelineHelpersModule };
+    try {
+      window.AlloModules.ModuleScopeExtras = { getSpeechLangCode };
+      delete window.AlloModules.TextPipelineHelpersModule;
+      new Function(readFileSync(resolve(process.cwd(), process.env.ALLO_PIPELINE_CANDIDATE || 'text_pipeline_helpers_module.js'), 'utf8'))();
+      const spanishApp = { currentUiLanguage: 'Spanish', selectedLanguages: ['Vietnamese'] };
+      const teacher = editedProps({ ...spanishApp, onTranslatePassage: vi.fn(async () => { throw new Error('model down'); }) }, { sourceTranslations: { Spanish: 'El zorro salta.' } });
+      render(teacher);
+      expect(container.querySelector('[data-passage-refresh]').textContent).toContain('Your edit removed the passage in vietnamita.');
+      await act(async () => container.querySelector('[data-refresh-passage-versions]').click());
+      expect(teacher.addToast).toHaveBeenCalledWith('The vietnamita passage did not finish. Try again.', 'error');
+      act(() => root.unmount()); container.remove(); root = null; container = null;
+      const student = makeProps({ sourceTranslations: { Spanish: 'El zorro salta.', Vietnamese: 'Con cáo nhảy.' } }, { ...spanishApp, isTeacherMode: false });
+      render(student);
+      expect(container.querySelector('[data-passage-original]').textContent).toBe('Original · English · Inglés');
+      const versions = [...container.querySelectorAll('[data-passage-language]')];
+      expect(versions.map(button => [button.dataset.passageLanguage, button.textContent])).toEqual([['Spanish', 'Español'], ['Vietnamese', 'Tiếng Việt · Vietnamita']]);
+      expect(versions[1].querySelector('span').getAttribute('lang')).toBe('vi');
+      act(() => versions[1].click());
+      expect(container.textContent).toContain('Translated passage · Tiếng Việt · Vietnamita');
+    } finally {
+      window.AlloModules.ModuleScopeExtras = before.extras;
+      window.AlloModules.TextPipelineHelpers = before.pipeline;
+      window.AlloModules.TextPipelineHelpersModule = before.flag;
+    }
+  });
+
+  it('downloads audio of the version on screen, in its language', () => {
+    const props = makeProps();
+    render(props);
+    act(() => container.querySelector('[data-passage-language="Spanish"]').click());
+    act(() => buttons().find(button => button.dataset.helpKey === 'analysis_download_audio').click());
+    expect(props.handleDownloadAudio).toHaveBeenLastCalledWith('El zorro salta sobre el perro perezoso.', 'passage-spanish', 'dl-analysis-source', 'Spanish');
+    act(() => container.querySelector('[data-passage-original]').click());
+    act(() => buttons().find(button => button.dataset.helpKey === 'analysis_download_audio').click());
+    expect(props.handleDownloadAudio).toHaveBeenLastCalledWith('The fox jupms over the lazy dog.', 'original-source-text', 'dl-analysis-source');
+  });
+
+  it('opens Read with supports in the version on screen, for teachers and students', () => {
+    for (const isTeacherMode of [true, false]) {
+      const props = makeProps({}, { isTeacherMode, onReadOriginal: vi.fn() });
+      render(props);
+      const read = () => container.querySelector('[data-read-original]');
+      act(() => read().click());
+      expect(props.onReadOriginal).toHaveBeenLastCalledWith(props.generatedContent);
+      expect(read().textContent).toBe('Read with supports');
+      act(() => container.querySelector('[data-passage-language="Spanish"]').click());
+      expect(read().dataset.readLanguage).toBe('Spanish');
+      expect(read().textContent).toBe('Read with supports · Spanish');
+      act(() => read().click());
+      expect(props.onReadOriginal).toHaveBeenLastCalledWith(props.generatedContent, { language: 'Spanish' });
+      act(() => container.querySelector('[data-passage-original]').click());
+      act(() => read().click());
+      expect(props.onReadOriginal).toHaveBeenLastCalledWith(props.generatedContent);
+      act(() => root.unmount()); root = null;
+    }
+  });
+
+  it('uses a serif font that stacks Vietnamese marks only when the passage needs it', () => {
+    const passage = () => container.querySelector('[data-passage-languages]').parentElement;
+    render(makeProps());
+    expect(passage().style.fontFamily).toBe('');
+    act(() => container.querySelector('[data-passage-language="Spanish"]').click());
+    expect(passage().style.fontFamily).toBe('');
+    act(() => root.unmount()); root = null;
+    render(makeProps({ sourceTranslations: { Vietnamese: 'Con cáo nhảy qua con chó lười trên đất.' } }));
+    expect(passage().style.fontFamily).toBe('');
+    act(() => container.querySelector('[data-passage-language="Vietnamese"]').click());
+    expect(passage().style.fontFamily).toMatch(/^ui-serif, Cambria, "Times New Roman"/);
+    expect(passage().style.fontFamily).not.toMatch(/^[^,]*Georgia/);
+    act(() => root.unmount()); root = null;
+    // Decomposed marks (base letter + two combining marks) need it too.
+    render(makeProps({ originalText: 'Da\u0302\u0301t.', rawEnglishText: 'Da\u0302\u0301t.', sourceLanguage: 'Vietnamese', sourceTranslations: {} }));
+    expect(container.querySelector('.font-serif').style.fontFamily).toContain('Cambria');
+    act(() => root.unmount()); root = null;
+    render(makeProps({ originalText: 'Đất nước.', rawEnglishText: 'Đất nước.', sourceLanguage: 'Vietnamese', sourceTranslations: {} }, { isEditingAnalysis: true }));
+    expect(container.querySelector('textarea.font-serif').style.fontFamily).toContain('Cambria');
+  });
+
+  it('opens the report in the app language when that view exists, and translates the fixed rating and grade labels', () => {
+    const labels = { 'analysis.rating_high': 'Alta', 'input.level_options.g5': '5.º grado' };
+    render(makeProps({}, { currentUiLanguage: 'Spanish', t: key => labels[key] || key }));
+    expect(container.querySelector('[aria-label="Report language"]').value).toBe('Spanish');
+    expect(container.textContent).toContain('5.º grado');
+    expect(container.textContent).not.toContain('5th Grade');
+    expect(container.textContent).toContain('AI rating: Alta');
+    act(() => root.unmount()); container.remove(); root = null; container = null;
+    render(makeProps({ displayReportLanguage: 'English' }, { currentUiLanguage: 'Spanish', t: key => labels[key] || key }));
+    expect(container.querySelector('[aria-label="Report language"]').value).toBe('English');
   });
 
   it('keeps correction prompts, editing and audio bound to the original with companions present', async () => {
@@ -336,7 +532,7 @@ describe('analysis report languages preserve the selected source', () => {
     expect(container.querySelector('[data-analysis-report-language]')).toBeNull();
     expect(container.textContent).not.toContain('Ortografía: jupms');
     expect(container.textContent).toContain('The fox jupms over the lazy dog.');
-    expect(container.querySelector('[data-source-translation="Spanish"]')).not.toBeNull();
+    expect(container.querySelector('[data-passage-language="Spanish"]')).not.toBeNull();
   });
 });
 

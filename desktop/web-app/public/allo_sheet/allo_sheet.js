@@ -144,8 +144,7 @@
       // host is no longer deployed to (the 2026-07-09 production-path cleanup
       // moved serving to the CDN) and still answers with a frozen pre-migration
       // bundle, so trusting it meant a months-old app copy could drive this
-      // bridge. The prismflow-911fe Firebase PROJECT remains the active backend
-      // (auth/Firestore); that is unrelated to which web origins we trust.
+      // bridge. Prismflow must stay offline; districts run their own Firebase.
       return parsed.origin === 'https://alloflow-cdn.pages.dev';
     } catch (_) {
       return false;

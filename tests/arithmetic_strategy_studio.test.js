@@ -276,15 +276,18 @@ describe('Arithmetic Strategy Studio', () => {
   });
 
   it('requires an explicit division remainder, including an explicit zero', () => {
+    // 2026-11-03 deep pass: 42 / 6 is a basic division fact, so it no longer
+    // asks for an estimate (review enhancement 2). The inputs are now the
+    // quotient and the remainder; the remainder gate itself is unchanged.
     loadTool(FILE, ID);
     document.body.innerHTML = renderTool(ID, {
       _arithmeticStudio: { tab: 'practice', operation: 'divide', level: 1, answerInput: '7', estimateInput: '7' },
     });
     let inputs = [...document.querySelectorAll('input[type="number"]')];
     let check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
-    expect(inputs.map((input) => input.value)).toEqual(['7', '7', '']);
-    expect(inputs[2].required).toBe(true);
-    expect(inputs[2].getAttribute('aria-required')).toBe('true');
+    expect(inputs.map((input) => input.value)).toEqual(['7', '']);
+    expect(inputs[1].required).toBe(true);
+    expect(inputs[1].getAttribute('aria-required')).toBe('true');
     expect(check.disabled).toBe(true);
 
     document.body.innerHTML = renderTool(ID, {
@@ -292,7 +295,7 @@ describe('Arithmetic Strategy Studio', () => {
     });
     inputs = [...document.querySelectorAll('input[type="number"]')];
     check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
-    expect(inputs[2].value).toBe('0');
+    expect(inputs[1].value).toBe('0');
     expect(check.disabled).toBe(false);
   });
 
@@ -324,6 +327,11 @@ describe('Arithmetic Strategy Studio', () => {
     await React.act(async () => { root.render(React.createElement(App)); });
     const inputs = [...document.querySelectorAll('input[type="number"]')];
     await enterNumber(inputs[0], '5');
+    // 2026-11-03 deep pass (review C): the clamp now happens when the student
+    // leaves the box, so typing 50 over 9 no longer destroys the second number
+    // at the first keystroke.
+    expect(latest._arithmeticStudio).toMatchObject({ a: 5, b: 9 });
+    await React.act(async () => { inputs[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true })); });
     expect(latest._arithmeticStudio).toMatchObject({ a: 5, b: 5 });
     const addition = [...document.querySelectorAll('button')].find((button) => button.textContent.includes('Addition'));
     await React.act(async () => { addition.click(); });
@@ -378,12 +386,13 @@ describe('Arithmetic Strategy Studio', () => {
   it('renders truthful zero models without invalid numeric styles', () => {
     loadTool(FILE, ID);
     for (const [a, b] of [[0, 7], [7, 0]]) {
-      const html = renderTool(ID, { _arithmeticStudio: { operation: 'multiply', a, b } });
+      // Stage E (2026-11-04): the product shows once the exact result is opened.
+      const html = renderTool(ID, { _arithmeticStudio: { operation: 'multiply', a, b, learnRevealSig: `multiply:${a}:${b}` } });
       expect(html).toContain('Zero-product model');
       expect(html).toContain('Product: 0');
       expect(html).not.toContain('rows of 1 dots');
     }
-    const division = renderTool(ID, { _arithmeticStudio: { operation: 'divide', a: 0, b: 6 } });
+    const division = renderTool(ID, { _arithmeticStudio: { operation: 'divide', a: 0, b: 6, learnRevealSig: 'divide:0:6' } });
     expect(division).toContain('0 complete groups of 6');
     expect(division).not.toMatch(/NaN|Infinity/);
   });
@@ -565,7 +574,8 @@ describe('Arithmetic Strategy Studio', () => {
     const root = ReactDOMClient.createRoot(document.getElementById('root'));
     await React.act(async () => { root.render(React.createElement(App)); });
     let tabs = [...document.querySelectorAll('[role="tab"]')];
-    expect(tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1, -1]);
+    // Stage B (2026-11-03) added Mental math, Bar models and Decimals tabs: 7 in all.
+    expect(tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1]);
     expect(tabs[0].getAttribute('aria-controls')).toBe('arithmetic-studio-panel');
     tabs[0].focus();
     await React.act(async () => { tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); });
@@ -574,8 +584,8 @@ describe('Arithmetic Strategy Studio', () => {
     expect(document.activeElement).toBe(tabs[1]);
     await React.act(async () => { tabs[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true })); });
     tabs = [...document.querySelectorAll('[role="tab"]')];
-    expect(tabs[3].getAttribute('aria-selected')).toBe('true');
-    expect(document.querySelector('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe(tabs[3].id);
+    expect(tabs[6].getAttribute('aria-selected')).toBe('true');
+    expect(document.querySelector('[role="tabpanel"]').getAttribute('aria-labelledby')).toBe(tabs[6].id);
     await React.act(async () => { root.unmount(); });
   });
 

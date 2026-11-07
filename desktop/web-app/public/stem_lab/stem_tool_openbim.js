@@ -611,7 +611,11 @@
       var stage = state.stage || 'brief';
       var arch = architectureSummary(ctx.toolData && ctx.toolData.archStudio && ctx.toolData.archStudio.blocks);
       var readiness = proposal ? analyzePlan(proposal) : null;
-      var aiAvailable = typeof ctx.generateText === 'function' || typeof ctx.callGemini === 'function';
+      // Student AI-off: decide on ctx.aiAvailable + ctx.callGemini (generateText can outlive a
+      // withheld callGemini); when off, the rules-based planner is the only path shown.
+      var _bimAiFn = ctx.callGemini, _bimAiOk = false;
+      try { _bimAiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _bimAiFn) : !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); } catch (_) {}
+      var aiAvailable = ctx.aiAvailable !== false && typeof _bimAiFn === 'function' && !_bimAiFn._alloQrBlocked && (!!ctx.isTeacherMode || _bimAiOk);
       var announce = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function () {};
       var toast = typeof ctx.addToast === 'function' ? ctx.addToast : function () {};
       // ★--allo-stem-surface DOES NOT EXIST. Only nine --allo-stem-* variables are

@@ -29,6 +29,8 @@ const useGuard = new Function('React', 'live', 'flags', `
   ${host.slice(factoryStart, factoryEnd)}
   return function useStudentAiGuard() {
     const studentAiFeaturesHidden = flags.hidden;
+    const learnerHasNoAiBackend = !!flags.noBackend;
+    const studentProjectSettings = flags.settings || {};
     ${host.slice(effectStart, effectEnd)}
     return { callGemini, callGeminiSingleAttempt, callGeminiVision, callGeminiImageEdit };
   };
@@ -38,10 +40,10 @@ let cleanup;
 beforeEach(() => { delete window.__alloStudentAiDisabled; });
 afterEach(() => { cleanup?.(); cleanup = null; ['callGemini', 'callGeminiVision', 'callGeminiImageEdit'].forEach((n) => { delete window[n]; }); delete window.__alloStudentAiDisabled; });
 
-function mount(initialHidden) {
+function mount(initialHidden, extraFlags = {}) {
   const live = { text: vi.fn(async () => 'text'), vision: vi.fn(async () => 'vision'), imageEdit: vi.fn(async () => 'edit') };
   window.callGemini = live.text; window.callGeminiVision = live.vision; window.callGeminiImageEdit = live.imageEdit;
-  const flags = { hidden: initialHidden };
+  const flags = { hidden: initialHidden, ...extraFlags };
   const hook = useGuard(React, live, flags);
   let latest = null;
   function Harness() { latest = hook(); return null; }
@@ -54,6 +56,16 @@ function mount(initialHidden) {
 }
 
 describe('in-app student AI guard', () => {
+  it('names the missing connection, not a teacher policy, when a learner device has no AI backend', async () => {
+    mount(true, { noBackend: true });
+    await expect(window.callGemini('prompt')).rejects.toMatchObject({ code: 'allo-qr-ai-disabled', message: 'AI features need an AI connection on this device.' });
+  });
+
+  it('keeps the teacher-policy message when the project hides student AI on a connected device too', async () => {
+    mount(true, { noBackend: true, settings: { hideStudentAiFeatures: true } });
+    await expect(window.callGemini('prompt')).rejects.toMatchObject({ message: 'AI features are turned off for students in this project.' });
+  });
+
   it('leaves everything alone while the flag is off', () => {
     const view = mount(false);
     expect(window.callGemini).toBe(view.live.text);
@@ -119,7 +131,7 @@ describe('callImagen honours the in-app flag', () => {
 describe('modules treat a blocked AI function as absent', () => {
   it('view_renderers offers Concept Map / Memory Palace AI only through the blocked-aware helper', () => {
     const src = readFileSync('view_renderers_source.jsx', 'utf8');
-    expect(src).toContain("return typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && window.__alloStudentAiDisabled !== true;");
+    expect(src).toContain("try { return typeof window.callGemini === 'function' && _alloAiUsableKind('text', window.callGemini); } catch (_) { return false; }");
     // every former inline check now goes through the helper (the helper body is the one remaining literal)
     expect(src.match(/typeof window\.callGemini [!=]== 'function'/g)?.length).toBe(1);
     expect(src.match(/_alloRuntimeAiAvailable\(\)/g)?.length).toBeGreaterThanOrEqual(20);
@@ -128,8 +140,19 @@ describe('modules treat a blocked AI function as absent', () => {
 
   it('the STEM Lab hands tools null instead of a blocked function, and withholds the raw client', () => {
     const lab = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    expect(lab).toContain("callGemini: typeof callGemini === 'function' && !callGemini._alloQrBlocked ? callGemini : null,");
-    expect(lab).toContain("ai: (typeof callGemini === 'function' && callGemini._alloQrBlocked) ? null : (ai || null),");
+    // One blocked/policy-aware answer per kind gates every derived ctx fn.
+    for (const line of [
+      "return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);",
+      "var _stemAiText = _stemAiUsable('text', callGemini);",
+      'callGemini: _stemAiText ? callGemini : null,',
+      'ai: _stemAiText ? (ai || null) : null,',
+      'generateText: !_stemAiText',
+      'aiChat: _stemAiText ? function(prompt, cb) {',
+      'callImagen: _stemAiImages ? callImagen : null,',
+      'callGeminiVision: _stemAiVision ? callGeminiVision : null,',
+      'callGeminiImageEdit: _stemAiImageEdit ? callGeminiImageEdit : null,',
+      'if (!_stemAiText) return;',
+    ]) expect(lab.includes(line), line).toBe(true);
     expect(readFileSync('desktop/web-app/public/stem_lab/stem_lab_module.js', 'utf8')).toBe(lab);
   });
 });
@@ -177,7 +200,7 @@ describe('student-reachable lazy tools get null AI callbacks when hidden', () =>
       // No raw pass-through of any AI function remains in the block.
       expect(block, key).not.toMatch(/(?<![\w.:?])(callGemini|callImagen|callGeminiVision|callGeminiImageEdit),/);
       expect(block, key).not.toMatch(/:\s*(callGemini|callImagen|callGeminiVision|callGeminiImageEdit)[,\s]/);
-      expect(block, key).toMatch(/studentAiFeaturesHidden \? null : call(Gemini|Imagen)/);
+      expect(block, key).toMatch(/studentAiFeaturesHidden( \|\| !aiCapability\.text)? \? null : call(Gemini|Imagen)|!studentAiFeaturesHidden && \(isTeacherMode \|\| /);
     }
   });
 });

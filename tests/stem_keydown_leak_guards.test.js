@@ -18,7 +18,9 @@ const pub = (f) => fs.readFileSync('desktop/web-app/public/stem_lab/' + f, 'utf8
 
 const GUARDED = [
   { file: 'stem_tool_multtable.js', guard: "[data-multtable-command]", marker: 'data-multtable-command' },
-  { file: 'stem_tool_areamodel.js', guard: "[data-areamodel-root]", marker: 'data-areamodel-root' },
+  // stem_tool_areamodel.js removed its window keydown handler on 2026-11-03 (no
+  // single-letter shortcuts remain), so there is no handler left to guard. The
+  // catalog sweep below still fails if a new unguarded one appears.
   { file: 'stem_tool_coordgrid.js', guard: "[data-coordinate-theme]", marker: 'data-coordinate-theme' },
   { file: 'stem_tool_volume.js', guard: "[data-volume-root]", marker: 'data-volume-root' },
   { file: 'stem_tool_fractions.js', guard: "[data-fractions-root]", marker: 'data-fractions-root' },

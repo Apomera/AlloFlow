@@ -13,6 +13,13 @@
  * Icons: read from window globals (each falls back to noop). Avoids tight
  * coupling to the parent app's lucide-react imports.
  */
+// Student AI-off: host-blocked fns are truthy; ask the host (old-host fallback).
+function _aiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
 const _headerUseFocusTrap = (typeof window !== 'undefined' && window.__alloHooks && window.__alloHooks.useFocusTrap) || function(){};
 
 // ── Popover escape hatch ──────────────────────────────────────────────────────
@@ -356,7 +363,7 @@ function HeaderBar(props) {
         if (resolved && typeof resolved.available === 'boolean') return resolved;
       }
       // Compatibility with an older host that supplied only the audio bridge.
-      return { available: typeof window.callGeminiAudio === 'function', reason: 'bridge-only' };
+      return { available: _aiUsable('audio', window.callGeminiAudio), reason: 'bridge-only' };
     } catch (_) {
       return { available: false, reason: 'configuration-unavailable' };
     }
@@ -364,8 +371,11 @@ function HeaderBar(props) {
   const canConfigureGeminiAudio = !_isCanvasEnv
     && typeof setShowAIBackendModal === 'function'
     && (isTeacherMode || !!window.__alloStudentAiSetupAllowed);
+  const voiceLocalOnly = !!(window.AlloFlowVoice && typeof window.AlloFlowVoice.isLocalSpeechOnly === 'function' && window.AlloFlowVoice.isLocalSpeechOnly());
   const voiceInputDescriptions = {
-    auto: 'Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.',
+    auto: voiceLocalOnly
+      ? 'Uses on-device Whisper after you download it in Speech setup. Audio stays on this device.'
+      : 'Uses prepared on-device Whisper when available, otherwise browser speech. If browser speech is unavailable, it can prepare local Whisper. Auto never uploads microphone audio to Gemini.',
     whisper: 'Private on-device transcription. The speech model may download before the first listening session.',
     webspeech: 'Uses this browser\'s speech service. The browser may send audio to its provider.',
     gemini: 'Sends each completed spoken turn to Gemini for cloud transcription. Requires internet access and a configured Gemini key.',
@@ -408,7 +418,7 @@ function HeaderBar(props) {
   const suggestPollTimes = async () => {
     const ask = String(pollAsk || '').trim();
     if (!ask || pollAiBusy) return;
-    if (typeof window.callGemini !== 'function') {
+    if (!_aiUsable('text', window.callGemini)) {
       if (typeof addToast === 'function') addToast(t('header.assistant_unavailable_type_options') || 'The assistant is not available right now. You can still type the options yourself.', 'info');
       return;
     }
@@ -638,7 +648,10 @@ function HeaderBar(props) {
       || (/Macintosh/.test(ua) && typeof window.navigator?.maxTouchPoints === 'number' && window.navigator.maxTouchPoints > 1);
     return { ok: true, isIOS };
   }, [t]);
-  const canUseKokoroVoicePicker = kokoroCapability.ok;
+  // Student AI off: no cloud voice (and no voice download) for this learner;
+  // read-aloud uses the device voice, so it is the only spoken-output choice.
+  const studentDeviceVoiceOnly = !isTeacherMode && typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
+  const canUseKokoroVoicePicker = kokoroCapability.ok && !studentDeviceVoiceOnly;
   let speechProvider = 'auto';
   try { speechProvider = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch (_) {}
   // Choosing a Kokoro voice, or "Get the voice", IS the consent to download it.
@@ -675,6 +688,17 @@ function HeaderBar(props) {
     Promise.resolve(check()).then(saved => { if (live) setKokoroSavedOnDevice(!!saved); }, () => { if (live) setKokoroSavedOnDevice(null); });
     return () => { live = false; };
   }, [showVoiceSettings, selectedVoice]);
+  // Student AI off: a Kokoro voice already on this device reads locally, so
+  // it stays offered; one that would need the 88 MB download is not.
+  const studentOnDeviceKokoro = studentDeviceVoiceOnly && kokoroCapability.ok && (!!window._kokoroTTS?.ready || kokoroSavedOnDevice === true);
+  const studentVoiceValue = studentOnDeviceKokoro && KOKORO_VOICES.some(v => v.id === selectedVoice) ? selectedVoice : 'browser';
+  const renderStudentOnDeviceGroup = () => (
+    <optgroup label={'🎤 ' + (window._kokoroTTS?.ready ? (t('header.voice_kokoro_ready_group') || 'On-device voice (Kokoro): ready, works offline') : (t('header.voice_kokoro_group') || 'On-device voice (Kokoro)'))}>
+      {KOKORO_VOICES.map(v => (
+        <option key={v.id} value={v.id}>{v.label}</option>
+      ))}
+    </optgroup>
+  );
   // Called, never mounted as <Component/>, so these cannot create a new
   // component identity on each render.
   const renderKokoroVoiceGroup = () => {
@@ -1438,17 +1462,22 @@ function HeaderBar(props) {
                                                 <select
                                                     id="header-voice-input-engine"
                                                     aria-describedby="header-voice-input-engine-help"
-                                                    value={voiceInputEngine}
+                                                    value={voiceInputEngine === 'webspeech' && voiceLocalOnly ? 'auto' : voiceInputEngine}
                                                     onChange={(event) => chooseVoiceInputEngine(event.target.value)}
                                                     className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
                                                 >
                                                     <option value="auto">{t('header.voice_engine_auto') || 'Auto (private-first)'}</option>
                                                     <option value="whisper">{t('header.voice_engine_whisper') || 'On-device Whisper'}</option>
-                                                    <option value="webspeech">{t('header.voice_engine_webspeech') || 'Browser speech service'}</option>
+                                                    {!voiceLocalOnly && <option value="webspeech">{t('header.voice_engine_webspeech') || 'Browser speech service'}</option>}
                                                     <option value="gemini">{t('header.voice_engine_gemini') || 'Gemini cloud transcription'}</option>
                                                     <option value="off">{t('header.voice_engine_off') || 'Off'}</option>
                                                 </select>
-                                                <p id="header-voice-input-engine-help" className={`mt-1 text-[11px] leading-tight ${_skin.label}`}>{voiceInputDescriptions[voiceInputEngine]}</p>
+                                                <p id="header-voice-input-engine-help" className={`mt-1 text-[11px] leading-tight ${_skin.label}`}>{voiceInputDescriptions[voiceInputEngine === 'webspeech' && voiceLocalOnly ? 'auto' : voiceInputEngine]}</p>
+                                                {window.__alloSpeechSetupHost === true && (
+                                                  <button type="button" onClick={() => { handleSetShowVoiceSettingsToFalse(); window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup')); }} className={`mt-2 w-full rounded-md border px-2 py-1 text-[11px] font-bold ${_skin.field}`}>
+                                                    {t('speech_setup.open') || 'Speech setup: download, size, mic test'}
+                                                  </button>
+                                                )}
                                                 {voiceInputEngine === 'gemini' && !geminiAudioCapability.available && (
                                                   <div role="status" aria-live="polite" className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
                                                     <p className={`text-[11px] font-bold leading-tight ${_skin.noteHead}`}>
@@ -1472,7 +1501,7 @@ function HeaderBar(props) {
                                             <div>
                                                 <label htmlFor="header-spoken-output-voice" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
                                                 <select id="header-spoken-output-voice"
-                                                    value={selectedVoice}
+                                                    value={studentDeviceVoiceOnly ? studentVoiceValue : selectedVoice}
                                                     onChange={(e) => {
                                                       const voice = e.target.value;
                                                       if (voice === '__kokoro_unavailable') return;
@@ -1482,7 +1511,12 @@ function HeaderBar(props) {
                                                     data-help-key="header_settings_voice_select"
                                                     className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
                                                 >
-                                                    {_isCanvasEnv ? (
+                                                    {studentDeviceVoiceOnly ? (
+                                                        <>
+                                                            {studentOnDeviceKokoro && renderStudentOnDeviceGroup()}
+                                                            {renderDeviceVoiceGroup()}
+                                                        </>
+                                                    ) : _isCanvasEnv ? (
                                                         <>
                                                             <optgroup label={'✨ ' + (t('header.voice_cloud_group') || 'Cloud voice (Gemini): most natural, needs the internet')}>
                                                                 {GEMINI_VOICES.slice(0, 15).map(v => (
@@ -1516,7 +1550,7 @@ function HeaderBar(props) {
                                                         </>
                                                     )}
                                                 </select>
-                                                {/^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
+                                                {!studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
                                                   <p role="status" className={`mt-2 text-xs ${_skin.label}`}>
                                                     {speechProvider === 'browser'
                                                       ? (t('header.kokoro_browser_provider') || 'The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro.')
@@ -1550,7 +1584,7 @@ function HeaderBar(props) {
                                                     When Gemini refuses a sentence or exhausts retries, fall back to the
                                                     system voice instead of skipping. Enabled by default, with an explicit
                                                     opt-out saved alongside the provider settings. */}
-                                                <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
+                                                {!studentDeviceVoiceOnly && <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
                                                     <label className="flex items-start gap-2 cursor-pointer">
                                                         <input
                                                             type="checkbox"
@@ -1574,7 +1608,7 @@ function HeaderBar(props) {
                                                             <span className="opacity-80">{t('header.browser_tts_fallback_desc') || 'Read refused/failed sentences with the system voice instead of skipping.'}</span>
                                                         </span>
                                                     </label>
-                                                </div>
+                                                </div>}
                                                 {/* ── Non-English Language TTS Indicator ── */}
                                                 {/* Shown on every surface, not only Canvas: the language cascade is
                                                     the same everywhere and a teacher working in Spanish on the web
@@ -1586,7 +1620,7 @@ function HeaderBar(props) {
                                                     2026-08-16, seven of those table entries pointed at models that
                                                     do not exist at all, Spanish among them. Report the three states
                                                     separately instead. */}
-                                                {leveledTextLanguage && leveledTextLanguage !== 'English' && (
+                                                {!studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== 'English' && (
                                                     <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`}>
                                                         <div className={`text-[11px] uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
                                                         <div className={`text-[11px] ${_skin.noteBody} mt-0.5`}>

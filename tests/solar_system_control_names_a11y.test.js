@@ -48,7 +48,7 @@ describe('Solar System control accessible names', () => {
     const markup = renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.earth',
+        selectedPlanet: 'Earth',
         showJournal: true,
       },
     });
@@ -185,7 +185,7 @@ describe('Solar System control accessible names', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.earth',
+        selectedPlanet: 'Earth',
         viewTab: 'overview',
         paused: true,
       },
@@ -197,7 +197,7 @@ describe('Solar System control accessible names', () => {
     const worldButtons = [...(picker?.querySelectorAll('button') || [])];
     expect(worldButtons).toHaveLength(9);
     expect(worldButtons.filter((button) => button.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
-    expect(worldButtons.find((button) => button.getAttribute('aria-pressed') === 'true')?.textContent).toContain('stem.solar_sys.earth');
+    expect(worldButtons.find((button) => button.getAttribute('aria-pressed') === 'true')?.textContent).toContain('Earth');
     expect(picker?.querySelector('.solar-canvas-world-name')).not.toBeNull();
 
     const controls = document.querySelector('[data-solarsystem-canvas-controls]');
@@ -221,7 +221,7 @@ describe('Solar System control accessible names', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.pluto',
+        selectedPlanet: 'Pluto',
         viewTab: 'overview',
         paused: true,
       },
@@ -249,7 +249,7 @@ describe('Solar System control accessible names', () => {
     const renderSurface = (surfaceExplore) => renderTool('solarSystem', {
       solarSystem: {
         tutorialDismissed: true,
-        selectedPlanet: 'stem.solar_sys.earth',
+        selectedPlanet: 'Earth',
         viewTab: 'surface',
         surfaceExplore,
         paused: true,

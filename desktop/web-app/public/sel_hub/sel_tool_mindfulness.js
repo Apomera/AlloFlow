@@ -5631,7 +5631,7 @@ var VISUAL_ANCHORS = [
     { id: 'streak_3',         icon: '\uD83D\uDD25',       name: 'Streak Starter',       desc: 'Practice 3 days in a row' },
     { id: 'streak_7',         icon: '\u2B50',             name: 'Mindful Week',         desc: 'Practice 7 days in a row' },
     { id: 'total_10',         icon: '\uD83E\uDDE0',       name: 'Dedicated Practitioner', desc: 'Complete 10 total mindfulness practices' },
-    { id: 'ai_coach',         icon: '\u2728',             name: 'Inner Guide',          desc: 'Get a reflection from the AI mindfulness coach' },
+    { id: 'ai_coach',         icon: '\u2728',             name: 'Inner Guide',          desc: 'Get a reflection from the AI mindfulness coach', aiOnly: true },
     { id: 'meditation_5',     icon: '\uD83E\uDDD8\u200D\u2640\uFE0F', name: 'Meditation Master', desc: 'Complete 5 guided meditation scripts' },
     { id: 'mindful_mover',    icon: '\uD83D\uDEB6',       name: 'Mindful Mover',        desc: 'Complete 3 mindful movement exercises' },
     { id: 'streak_7_new',     icon: '\uD83D\uDD25',       name: '7-Day Streak',         desc: 'Practice mindfulness 7 days in a row' },
@@ -21895,6 +21895,7 @@ var VISUAL_ANCHORS = [
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
+      var _minAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var band = ctx.gradeBand || 'elementary';
 
@@ -22023,6 +22024,8 @@ var VISUAL_ANCHORS = [
 
       // Badge state
       var earnedBadges     = d.earnedBadges || {};
+      // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
+      var shownBadges = BADGES.filter(function(b) { return _minAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup   = d.showBadgePopup || null;
       // Hand focus back where it came from when the badge dialog closes. Without
       // this the dialog just unmounts and focus falls to the body, dropping a
@@ -22159,10 +22162,10 @@ var VISUAL_ANCHORS = [
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
-        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
+        }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
       );
 
       // ══════════════════════════════════════════════════════════
@@ -22475,9 +22478,9 @@ var VISUAL_ANCHORS = [
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _minFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _minFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
-              BADGES.map(function(badge) {
+              shownBadges.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _minBg('#1e293b'), border: '1px ' + (earned ? 'solid ' : 'dashed ') + (earned ? '#8b5cf6' : _minBg('#334155')) }

@@ -392,7 +392,7 @@ for (const file of files) {
         aiLoading: true, aiRequestId: 77, aiRequestBuildSignature: signature,
         aiAdvice: retainedAdvice, aiAdviceBuildSignature: signature,
         earnedBadges,
-      } }));
+      } }, { callGemini: () => Promise.resolve('') }));
       const panel = host.querySelector('[role="region"][aria-label="AI Architect advice"]');
       const progress = panel?.querySelector('[role="status"][aria-live="polite"]');
 

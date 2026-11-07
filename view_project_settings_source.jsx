@@ -448,11 +448,22 @@ function ProjectSettingsView(props) {
                 {renderFeatureToggle(
                   'proj-allow-student-byok-ai',
                   'allowStudentByokAi',
-                  tx('project_settings.allow_student_byok_ai', 'Allow students to connect their own AI provider'),
-                  tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. Enable only when school or district policy permits student-managed provider accounts and charges. Students must verify their own session-only key; your API key is never shared.'),
+                  tx('project_settings.allow_student_byok_ai_adults', 'Allow adult students (18+) to connect their own AI provider'),
+                  tx('project_settings.allow_student_byok_ai_adults_desc', 'QR and Class Mailbox links stay AI-off by default. Google Gemini API terms require users to be 18 or older, and other providers set their own conditions for minors, so AlloFlow limits this to adult education and college classes. Students must verify their own session-only key; your API key is never shared.'),
                   false
                 )}
               </div>
+              {studentProjectSettings.allowStudentByokAi === true && (
+                <div className='sm:col-span-2'>
+                  {renderFeatureToggle(
+                    'proj-student-byok-adults-confirmed',
+                    'studentByokAdultsConfirmed',
+                    tx('project_settings.student_byok_adults_confirmed', 'I confirm every student using this project is 18 or older'),
+                    tx('project_settings.student_byok_adults_confirmed_desc', 'Required. Until this is checked, student links stay AI-off.'),
+                    false
+                  )}
+                </div>
+              )}
               {renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true)}
               {renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true)}
               {renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true)}
@@ -535,6 +546,10 @@ function ProjectSettingsView(props) {
                 <div className="mt-3">
                   {renderFeatureToggle('proj-adventure-enabled', 'adventureEnabled', tx('project_settings.enable_adventure', 'Include Adventure in this assignment'), tx('project_settings.enable_adventure_desc', 'Off hides the Adventure panel from students. Use this when the lesson has no adventure.'), true)}
                 </div>
+                {/* Student author mode (no AI): a learner writes a branching story that rides their hand-in. */}
+                {studentProjectSettings.adventureEnabled !== false && <div className="mt-3">
+                  {renderFeatureToggle('proj-allow-student-stories', 'allowStudentStories', tx('project_settings.allow_student_stories', 'Students can write their own adventure'), tx('project_settings.allow_student_stories_desc', 'Students write a branching story with choices and hand it in. Works without AI.'), true)}
+                </div>}
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {renderPermissionToggle('proj-perm-difficulty', 'allowDifficultySwitch', t('project_settings.perm_difficulty'), tx('project_settings.perm_difficulty_desc', 'Change the challenge level.'), true)}
                   {renderPermissionToggle('proj-perm-mode', 'allowModeSwitch', t('project_settings.perm_mode'), tx('project_settings.perm_mode_desc', 'Choose how responses are entered.'), false)}

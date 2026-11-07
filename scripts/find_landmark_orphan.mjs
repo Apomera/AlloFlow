@@ -3,7 +3,7 @@
 // contained by a landmark — drives the axe-core `region` rule violation.
 import { chromium } from 'playwright';
 
-const URL = process.argv[2] || 'https://prismflow-911fe.web.app';
+const URL = process.argv[2] || 'https://alloflow-cdn.pages.dev/app/';
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext();
 const page = await ctx.newPage();

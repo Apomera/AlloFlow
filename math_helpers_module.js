@@ -9,6 +9,19 @@ if (window.AlloModules && window.AlloModules.MathHelpersModule) { console.log('[
 // requests (or awarding XP twice). Keep the small request/award ledgers outside
 // React and key them to the resource problem for the lifetime of this module.
 const _mathCheckInFlight = new Set();
+// Student AI-off: a null, host-blocked or policy-off fn is unusable. Hints then
+// come from the problem's authored steps (the final step is held back when
+// there are several, matching the AI rule of stopping before the answer).
+function _mathAiUsable(kind, fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+}
+const _mathAuthoredHints = (steps) => {
+  const texts = (Array.isArray(steps) ? steps : []).map(step => step && typeof step === 'object' ? String(step.explanation || step.latex || '').trim() : '').filter(Boolean);
+  return (texts.length > 1 ? texts.slice(0, -1) : texts).slice(0, 3).map(text => text.slice(0, 1000));
+};
 const _mathHintInFlight = new Set();
 const _mathEditInFlight = new Set();
 const _mathXpAwardedKeys = new Set();
@@ -1000,6 +1013,14 @@ const _handleGetMathHintCore = async (resourceId, problemIdx, question, correctA
     }
     setMathHintData(prev => _withHintEntry(prev, resourceId, problemIdx, latest => ({ ...latest, loading: true })));
     try {
+        let cleanHint = '';
+        if (deps.aiHintsOn === false) {
+            cleanHint = _mathAuthoredHints(steps)[existing.count] || '';
+            if (!cleanHint) {
+                setMathHintData(prev => _withHintEntry(prev, resourceId, problemIdx, latest => ({ ...latest, loading: false })));
+                return;
+            }
+        } else {
         const hintLevel = existing.count + 1;
         const prevHints = existing.hints.map((h, i) => `Hint ${i + 1}: ${h}`).join('\n');
         const studentWork = _safeMathText(_ownMathValue(_ownMathValue(studentResponses, resourceId), problemIdx), 4000);
@@ -1016,8 +1037,9 @@ Give HINT #${hintLevel} of 3 (progressive difficulty):
 Return ONLY JSON: {"hint": "<the hint as one plain-text paragraph, no markdown>"}. Keep it under 2 sentences. Be encouraging.`;
         const hintText = await callGemini(prompt, true);
         if (typeof hintText !== 'string') throw new Error('Hint response was not text');
-        const cleanHint = _decodeMathHintText(hintText);
+        cleanHint = _decodeMathHintText(hintText);
         if (!cleanHint) throw new Error('Hint response was empty');
+        }
         const deliveredCount = Math.min(3, existing.count + 1);
         setMathHintData(prev => _withHintEntry(prev, resourceId, problemIdx, latest => {
             if (latest.count >= 3) return { ...latest, loading: false };
@@ -1081,6 +1103,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         setMathHintData: guardedSetMathHintData,
         addToast: guardedToast,
         warnLog: (...args) => _safeMathWarn(safeDeps.warnLog, ...args),
+        aiHintsOn: _mathAiUsable('text', safeDeps.callGemini),
         callGemini: (prompt, jsonMode) => _callMathAi(safeDeps.callGemini, prompt, jsonMode, safeDeps)
       }
     );

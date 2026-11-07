@@ -367,29 +367,24 @@ function useAiTextAvailable() {
 function createPathFork() {
   const SKIP_KEY = "allo_path_fork_skip";
   let settled = false;
-  const say = (t, key, fallback) => {
-    let value;
+  const say = (value, fallback) => typeof value === "string" && value && !/^[\w-]+(\.[\w-]+)+$/.test(value) ? value : fallback;
+  const noText = () => "";
+  const toast = (value, fallback) => {
     try {
-      value = typeof t === "function" ? t(key) : "";
-    } catch (_) {
-    }
-    return typeof value === "string" && value && value !== key ? value : fallback;
-  };
-  const toast = (t, key, fallback) => {
-    try {
-      if (typeof window.__alloAddToast === "function") window.__alloAddToast(say(t, key, fallback), "info");
+      if (typeof window.__alloAddToast === "function") window.__alloAddToast(say(value, fallback), "info");
     } catch (_) {
     }
   };
   const quickStart = () => typeof window !== "undefined" && typeof window.__alloOpenQuickStart === "function" ? window.__alloOpenQuickStart : null;
   const takeGuidedPath = (t) => {
+    if (typeof t !== "function") t = noText;
     const open = quickStart();
     if (!open) return;
     try {
       open();
     } catch (_) {
     }
-    toast(t, "sidebar.path_fork_toast_guided", "Back on the guided path. There and back again.");
+    toast(t("sidebar.path_fork_toast_guided"), "Back on the guided path. There and back again.");
   };
   const wanted = () => {
     if (settled || !quickStart()) return false;
@@ -400,6 +395,7 @@ function createPathFork() {
     }
   };
   function Dialog({ t, onGuided, onLessTraveled, onCancel }) {
+    if (typeof t !== "function") t = noText;
     const [remember, setRemember] = React.useState(false);
     const boxRef = React.useRef(null);
     const restoreFocus = React.useRef(true);
@@ -456,9 +452,9 @@ function createPathFork() {
           "aria-describedby": id + "-body",
           className: "w-full max-w-md rounded-2xl border border-slate-300 bg-white p-5 text-slate-900 shadow-xl"
         },
-        /* @__PURE__ */ React.createElement("h2", { id: id + "-title", className: "m-0 text-lg font-bold" }, say(t, "sidebar.path_fork_title", "Two roads diverged in a wood")),
-        /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-0.5 text-xs italic text-slate-700" }, say(t, "sidebar.path_fork_attribution", "Robert Frost, \u201CThe Road Not Taken\u201D")),
-        /* @__PURE__ */ React.createElement("p", { id: id + "-body", className: "mb-4 mt-3 text-sm leading-relaxed" }, say(t, "sidebar.path_fork_body", "Most lessons start from a passage, and Guided Quick Start walks you through it. You can also start from a topic, a word list, or a blank page. Those starts are experimental, so check the facts before you share.")),
+        /* @__PURE__ */ React.createElement("h2", { id: id + "-title", className: "m-0 text-lg font-bold" }, say(t("sidebar.path_fork_title"), "Two roads diverged in a wood")),
+        /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-0.5 text-xs italic text-slate-700" }, say(t("sidebar.path_fork_attribution"), "Robert Frost, \u201CThe Road Not Taken\u201D")),
+        /* @__PURE__ */ React.createElement("p", { id: id + "-body", className: "mb-4 mt-3 text-sm leading-relaxed" }, say(t("sidebar.path_fork_body"), "Most lessons start from a passage, and Guided Quick Start walks you through it. You can also start from a topic, a word list, or a blank page. Those starts are experimental, so check the facts before you share.")),
         /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -470,7 +466,7 @@ function createPathFork() {
             },
             className: action + " border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800"
           },
-          say(t, "sidebar.path_fork_guided", "Take the guided path (recommended)")
+          say(t("sidebar.path_fork_guided"), "Take the guided path (recommended)")
         ), /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -479,22 +475,24 @@ function createPathFork() {
             onClick: () => onLessTraveled(remember),
             className: action + " border-slate-400 bg-white text-slate-900 hover:bg-slate-100"
           },
-          say(t, "sidebar.path_fork_less_traveled", "Take the one less traveled by")
+          say(t("sidebar.path_fork_less_traveled"), "Take the one less traveled by")
         )),
-        /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: remember, onChange: (event) => setRemember(event.target.checked), className: "h-5 w-5" }), say(t, "sidebar.path_fork_remember", "Don\u2019t ask me again")), /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-2 text-sm" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: remember, onChange: (event) => setRemember(event.target.checked), className: "h-5 w-5" }), say(t("sidebar.path_fork_remember"), "Don\u2019t ask me again")), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: onCancel,
             className: "min-h-11 rounded-lg px-3 text-sm font-semibold text-slate-800 underline underline-offset-2 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
           },
-          say(t, "sidebar.path_fork_not_now", "Not now")
+          say(t("sidebar.path_fork_not_now"), "Not now")
         ))
       )
     );
-    return window.ReactDOM && window.ReactDOM.createPortal ? window.ReactDOM.createPortal(dialog, document.body) : dialog;
+    const host = document.querySelector(".theme-dark, .theme-contrast, .theme-light") || document.body;
+    return window.ReactDOM && window.ReactDOM.createPortal ? window.ReactDOM.createPortal(dialog, host) : dialog;
   }
   function useFork(t) {
+    if (typeof t !== "function") t = noText;
     const [pending, setPending] = React.useState(null);
     const settle = (remember) => {
       settled = true;
@@ -523,15 +521,16 @@ function createPathFork() {
           const next = pending;
           settle(remember);
           next();
-          toast(t, "sidebar.path_fork_toast_less_traveled", "Experimental start is on. Not all those who wander are lost.");
+          toast(t("sidebar.path_fork_toast_less_traveled"), "Experimental start is on. Not all those who wander are lost.");
         }
       }
     ) : null;
     return [request, dialog];
   }
   function Note({ t, onBack }) {
+    if (typeof t !== "function") t = noText;
     const canGoBack = !!quickStart();
-    return /* @__PURE__ */ React.createElement("p", { "data-path-less-traveled": true, className: "m-0 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, say(t, "sidebar.path_fork_badge", "The path less traveled \xB7 experimental")), canGoBack && /* @__PURE__ */ React.createElement(React.Fragment, null, " \xB7 ", /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("p", { "data-path-less-traveled": true, className: "m-0 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, say(t("sidebar.path_fork_badge"), "The path less traveled \xB7 experimental")), canGoBack && /* @__PURE__ */ React.createElement(React.Fragment, null, " \xB7 ", /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -542,13 +541,36 @@ function createPathFork() {
         },
         className: "min-h-[24px] font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
       },
-      say(t, "sidebar.path_fork_back", "Back to the guided path")
+      say(t("sidebar.path_fork_back"), "Back to the guided path")
     )));
   }
   return { useFork, Note };
 }
 const PathFork = createPathFork();
-function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
+const sourceStartRequests = /* @__PURE__ */ (() => {
+  let pending = null;
+  const listeners = /* @__PURE__ */ new Set();
+  return {
+    request(mode, options = {}) {
+      if (!["topic", "word-list", "blank"].includes(mode)) return false;
+      const topic = typeof options.topic === "string" ? options.topic.replace(/\s+/g, " ").trim().slice(0, 300) : "";
+      pending = { mode, topic };
+      listeners.forEach((listener) => listener());
+      return true;
+    },
+    take() {
+      const next = pending;
+      pending = null;
+      return next;
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    }
+  };
+})();
+if (typeof window !== "undefined") window.__alloRequestSourceStart = (mode, options) => sourceStartRequests.request(mode, options || {});
+function OtherWaysToStart({ t, onStartFromTopic, onStartFromWordList, onStartBlank, busy, framed }) {
   const aiTextAvailable = useAiTextAvailable();
   const [open, setOpen] = React.useState(false);
   const [topicOpen, setTopicOpen] = React.useState(false);
@@ -556,8 +578,9 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
   const topicId = "start-topic-" + (React.useId ? React.useId().replace(/[^\w-]/g, "") : "field");
   const [requestFork, forkDialog] = PathFork.useFork(t);
   const canTopic = typeof onStartFromTopic === "function" && aiTextAvailable;
+  const canWords = typeof onStartFromWordList === "function" && aiTextAvailable;
   const canBlank = typeof onStartBlank === "function";
-  if (!canTopic && !canBlank) return null;
+  if (!canTopic && !canWords && !canBlank) return null;
   const action = "min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1";
   const link = "min-h-[24px] text-xs font-semibold text-sky-900 underline underline-offset-2 hover:text-sky-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500";
   const blankButton = canBlank ? /* @__PURE__ */ React.createElement(
@@ -597,17 +620,51 @@ function OtherWaysToStart({ t, onStartFromTopic, onStartBlank, busy, framed }) {
       className: action + " mt-2 bg-sky-700 text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
     },
     t("sidebar.needs_source_topic_create") || "Create from topic"
-  ))), blankButton));
+  ))), canWords && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "sidebar_start_word_list", disabled: !!busy, onClick: () => onStartFromWordList(), className: link + " block disabled:cursor-not-allowed disabled:opacity-60" }, t("sidebar.start_word_list") || "From a word list (experimental)"), blankButton));
   return framed ? /* @__PURE__ */ React.createElement("div", { "data-help-key": "sidebar_other_ways_to_start", className: "border-b border-sky-200 bg-sky-50 px-3.5 py-2 text-xs text-sky-950" }, body, forkDialog) : /* @__PURE__ */ React.createElement("div", { "data-help-key": "sidebar_other_ways_to_start", className: "mt-2 border-t border-sky-200 pt-2" }, body, forkDialog);
 }
-function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
+function mergeSuggestedTerms(existing, raw, limit) {
+  const text = String(raw == null ? "" : raw).trim();
+  let list;
+  try {
+    const start = text.search(/[[{]/);
+    const parsed = JSON.parse(start >= 0 ? text.slice(start, Math.max(text.lastIndexOf("]"), text.lastIndexOf("}")) + 1) : text);
+    list = Array.isArray(parsed) ? parsed : Array.isArray(parsed && parsed.terms) ? parsed.terms : [];
+  } catch (_) {
+    list = text.split(/\r?\n/).filter((line) => !/[{}[\]"]/.test(line));
+  }
+  const seen = new Set(existing.map((term) => term.toLowerCase()));
+  const out = [];
+  for (const item of list) {
+    const term = String(typeof item === "string" ? item : item && (item.term || item.word) || "").replace(/^\s*(?:[-*•]|\d+[.)])\s+/, "").replace(/\s+/g, " ").trim();
+    if (!term || term.length > 160 || seen.has(term.toLowerCase())) continue;
+    seen.add(term.toLowerCase());
+    out.push(term);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = "" }) {
   const aiAvailable = useAiTextAvailable();
+  const [suggesting, setSuggesting] = React.useState(false);
+  const [suggestNote, setSuggestNote] = React.useState("");
+  const wordsRef = React.useRef(null);
+  const suggestRef = React.useRef(null);
+  const focusAfterSuggest = React.useRef(null);
+  const [suggestDone, setSuggestDone] = React.useState(0);
+  React.useEffect(() => {
+    if (!suggestDone || !focusAfterSuggest.current) return;
+    const target = focusAfterSuggest.current.current;
+    focusAfterSuggest.current = null;
+    if (target) target.focus();
+  }, [suggestDone]);
   const [mode, setMode] = React.useState("");
   const [topic, setTopic] = React.useState("");
   const [topicType, setTopicType] = React.useState("anchor-chart");
   const [wordList, setWordList] = React.useState("");
   const [termLanguage, setTermLanguage] = React.useState("English");
   const [blankType, setBlankType] = React.useState("quiz");
+  const [wordType, setWordType] = React.useState("glossary");
   const [submitting, setSubmitting] = React.useState(false);
   const [requestError, setRequestError] = React.useState("");
   const pending = React.useRef(false);
@@ -615,14 +672,9 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const uid = React.useId();
   const [requestFork, forkDialog] = PathFork.useFork(t);
   const id = "source-start-" + uid.replace(/[^\w-]/g, "");
-  const say = (key, fallback, values = {}) => {
-    const fullKey = "source_start." + key;
-    let value;
-    try {
-      value = typeof t === "function" ? t(fullKey, values) : "";
-    } catch (_) {
-    }
-    const text = typeof value === "string" && value && value !== fullKey ? value : fallback;
+  if (typeof t !== "function") t = () => "";
+  const say = (value, fallback, values = {}) => {
+    const text = typeof value === "string" && value && !/^[\w-]+(\.[\w-]+)+$/.test(value) ? value : fallback;
     return text.replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
   };
   React.useEffect(() => {
@@ -631,42 +683,115 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       mounted.current = false;
     };
   }, []);
+  const panelRef = React.useRef(null);
+  const focusField = React.useRef(false);
+  const [requestCount, setRequestCount] = React.useState(0);
+  React.useEffect(() => {
+    if (!mode || !focusField.current) return;
+    const target = focusField.current;
+    focusField.current = false;
+    const panel = panelRef.current;
+    const suggest = target === "suggest" && panel && panel.querySelector("[data-source-word-suggest-run]:not([disabled])");
+    const first = suggest || panel && panel.querySelector(mode === "word-list" ? "textarea" : "input, textarea, select");
+    if (first) first.focus();
+    try {
+      if (panel && panel.scrollIntoView) panel.scrollIntoView({ block: "nearest" });
+    } catch (_) {
+    }
+  }, [mode, requestCount]);
+  React.useEffect(() => {
+    const consume = () => {
+      const requested = sourceStartRequests.take();
+      if (!requested || pending.current) return;
+      if (requested.topic) {
+        setTopic(requested.topic);
+        setSuggestNote("");
+      }
+      focusField.current = requested.topic && requested.mode === "word-list" ? "suggest" : true;
+      setMode(requested.mode);
+      setRequestError("");
+      setRequestCount((count) => count + 1);
+    };
+    consume();
+    return sourceStartRequests.subscribe(consume);
+  }, []);
   const topicTypes = [
-    ["anchor-chart", say("anchor_chart", "Anchor Chart")],
-    ["concept-sort", say("concept_sort", "Concept Sort")],
-    ["persona", say("persona", "Interview candidates")]
+    ["anchor-chart", say(t("source_start.anchor_chart"), "Anchor Chart")],
+    ["concept-sort", say(t("source_start.concept_sort"), "Concept Sort")],
+    ["persona", say(t("source_start.persona"), "Interview candidates")],
+    ["timeline", say(t("source_start.timeline"), "Sequence Builder")]
   ];
   const blankTypes = [
-    ["quiz", say("quiz", "Assess")],
-    ["glossary", say("glossary", "Glossary")],
-    ["timeline", say("timeline", "Sequence Builder")],
-    ["concept-sort", say("concept_sort", "Concept Sort")],
-    ["anchor-chart", say("anchor_chart", "Anchor Chart")]
+    ["quiz", say(t("source_start.quiz"), "Assess")],
+    ["glossary", say(t("source_start.glossary"), "Glossary")],
+    ["timeline", say(t("source_start.timeline"), "Sequence Builder")],
+    ["concept-sort", say(t("source_start.concept_sort"), "Concept Sort")],
+    ["anchor-chart", say(t("source_start.anchor_chart"), "Anchor Chart")]
   ].filter(([type]) => typeof window !== "undefined" && Array.isArray(window.__alloBlankStartTypes) && window.__alloBlankStartTypes.includes(type));
   const selectedBlankType = blankTypes.some(([type]) => type === blankType) ? blankType : blankTypes[0]?.[0] || "";
   const terms = wordList.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
   const duplicateTerms = new Set(terms).size !== terms.length;
   let validation = "";
   if (mode === "topic") {
-    if (!topic.trim()) validation = say("topic_required", "Enter a topic.");
-    else if (topic.length > 300) validation = say("topic_limit", "Use no more than 300 characters for the topic.");
-    else if (!topicTypes.some(([type]) => type === topicType)) validation = say("choose_resource", "Choose a supported resource.");
+    if (!topic.trim()) validation = say(t("source_start.topic_required"), "Enter a topic.");
+    else if (topic.length > 300) validation = say(t("source_start.topic_limit"), "Use no more than 300 characters for the topic.");
+    else if (!topicTypes.some(([type]) => type === topicType)) validation = say(t("source_start.choose_resource"), "Choose a supported resource.");
   } else if (mode === "word-list") {
-    if (!terms.length) validation = say("words_required", "Enter at least one term or phrase.");
-    else if (wordList.length > 6e3) validation = say("words_total_limit", "Keep the complete list within 6,000 characters.");
-    else if (terms.length > 40) validation = say("words_count_limit", "Use no more than 40 terms or phrases.");
-    else if (terms.some((term) => term.length > 160)) validation = say("words_entry_limit", "Keep each term or phrase within 160 characters.");
-    else if (duplicateTerms) validation = say("words_duplicate", "Remove repeated entries. Each exact term or phrase should appear once.");
-    else if (!termLanguage.trim() || termLanguage.trim().length > 120) validation = say("words_language_required", "Enter the language of this word list.");
+    if (!terms.length) validation = say(t("source_start.words_required"), "Enter at least one term or phrase.");
+    else if (wordList.length > 6e3) validation = say(t("source_start.words_total_limit"), "Keep the complete list within 6,000 characters.");
+    else if (terms.length > 40) validation = say(t("source_start.words_count_limit"), "Use no more than 40 terms or phrases.");
+    else if (terms.some((term) => term.length > 160)) validation = say(t("source_start.words_entry_limit"), "Keep each term or phrase within 160 characters.");
+    else if (duplicateTerms) validation = say(t("source_start.words_duplicate"), "Remove repeated entries. Each exact term or phrase should appear once.");
+    else if (!termLanguage.trim() || termLanguage.trim().length > 120) validation = say(t("source_start.words_language_required"), "Enter the language of this word list.");
   } else if (mode === "blank" && !selectedBlankType) {
-    validation = say("blank_unavailable", "Blank resources are still loading. Try again shortly.");
+    validation = say(t("source_start.blank_unavailable"), "Blank resources are still loading. Try again shortly.");
   }
-  const blocked = !!busy || submitting;
+  const blocked = !!busy || submitting || suggesting;
   const needsAi = mode === "topic" || mode === "word-list";
+  const resolveWordAi = () => typeof window !== "undefined" && typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked ? window.callGemini : null;
+  const wordAi = resolveWordAi();
+  const wordTopic = aiAvailable && wordAi ? topic.replace(/\s+/g, " ").trim().slice(0, 300) : "";
+  const suggestRoom = Math.min(12, 40 - terms.length);
+  const suggestWords = async () => {
+    const subject = topic.replace(/\s+/g, " ").trim().slice(0, 300);
+    const ai = resolveWordAi();
+    if (!subject || !ai || !aiAvailable || suggestRoom < 1 || pending.current || blocked) return;
+    pending.current = true;
+    setSuggesting(true);
+    setSuggestNote("");
+    setRequestError("");
+    const language = termLanguage.trim() || "English";
+    const prompt = `List up to ${suggestRoom} key vocabulary terms that ${gradeLevel ? gradeLevel + " " : ""}students should learn for the topic ${JSON.stringify(subject)}.
+Write every term in ${JSON.stringify(language)}. Use single words or short phrases that are really used when teaching this topic, most important first.
+No definitions, numbering, or explanations.${terms.length ? " Do not repeat any term already on the list: " + JSON.stringify(terms) + "." : ""}
+Return only JSON: {"terms": ["term"]}`;
+    let added = null;
+    try {
+      added = mergeSuggestedTerms(terms, await ai(prompt, true), suggestRoom);
+    } catch (_) {
+      added = null;
+    }
+    pending.current = false;
+    if (!mounted.current) return;
+    if (added && added.length) {
+      setWordList((previous) => {
+        const base = previous.replace(/\s+$/, "");
+        return (base ? base + "\n" : "") + added.join("\n");
+      });
+      setSuggestNote(say(t("source_start.suggest_added", { count: added.length }), "Added {count} suggested words to your list. Edit or remove any before you create.", { count: added.length }));
+      focusAfterSuggest.current = wordsRef;
+    } else {
+      setSuggestNote(added ? say(t("source_start.suggest_none"), "No new words came back. Try a more specific topic.") : say(t("source_start.suggest_failed"), "Words could not be suggested. Your list is unchanged; try again."));
+      focusAfterSuggest.current = suggestRef;
+    }
+    setSuggesting(false);
+    setSuggestDone((count) => count + 1);
+  };
   const showValidation = !!validation && (mode === "blank" || (mode === "topic" ? !!topic.length : !!wordList.length));
   const choose = (value) => {
     if (blocked) return;
     const apply = () => {
+      focusField.current = !!value;
       setMode(value);
       setRequestError("");
     };
@@ -676,15 +801,15 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const submit = async (event) => {
     event.preventDefault();
     if (pending.current || blocked || !mode || validation || needsAi && !aiAvailable || typeof handleGenerate !== "function") return;
-    const type = mode === "topic" ? topicType : mode === "word-list" ? "glossary" : selectedBlankType;
-    const seed = mode === "topic" ? { kind: "topic", text: topic.trim() } : mode === "word-list" ? { kind: "word-list", terms: [...terms], termLanguage: termLanguage.trim() } : { kind: "blank" };
+    const type = mode === "topic" ? topicType : mode === "word-list" ? wordType : selectedBlankType;
+    const seed = mode === "topic" ? { kind: "topic", text: topic.trim() } : mode === "word-list" ? { kind: "word-list", terms: [...terms], termLanguage: termLanguage.trim(), ...wordTopic ? { topic: wordTopic } : {} } : { kind: "blank" };
     pending.current = true;
     setSubmitting(true);
     setRequestError("");
     try {
       await handleGenerate(type, null, false, null, { seed, rethrowErrors: true });
     } catch (_) {
-      if (mounted.current) setRequestError(say("request_failed", "The resource could not be created. Your entries are kept; try again."));
+      if (mounted.current) setRequestError(say(t("source_start.request_failed"), "The resource could not be created. Your entries are kept; try again."));
     } finally {
       pending.current = false;
       if (mounted.current) setSubmitting(false);
@@ -693,10 +818,10 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
   const actionClass = "inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
   const fieldClass = "mt-1 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600";
   const helpIds = [id + "-help", showValidation && id + "-validation"].filter(Boolean).join(" ");
-  return /* @__PURE__ */ React.createElement("section", { "data-source-start-chooser": true, "aria-labelledby": id + "-title", className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-title", className: "m-0 text-sm font-bold" }, say("title", "Start without a passage")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 mt-1 text-xs leading-relaxed text-slate-700" }, say("preserve_source", "Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": say("choose_start", "Choose a starting point"), className: "flex flex-wrap gap-2" }, [
-    ["topic", say("topic", "Topic")],
-    ["word-list", say("word_list", "Word list")],
-    ["blank", say("blank", "Blank resource")]
+  return /* @__PURE__ */ React.createElement("section", { "data-source-start-chooser": true, "aria-labelledby": id + "-title", className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-title", className: "m-0 text-sm font-bold" }, say(t("source_start.title"), "Start without a passage")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 mt-1 text-xs leading-relaxed text-slate-700" }, say(t("source_start.preserve_source"), "Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": say(t("source_start.choose_start"), "Choose a starting point"), className: "flex flex-wrap gap-2" }, [
+    ["topic", say(t("source_start.topic"), "From a topic")],
+    ["word-list", say(t("source_start.word_list"), "From a word list")],
+    ["blank", say(t("source_start.blank"), "Blank resource")]
   ].map(([value, label]) => /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -710,7 +835,7 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       className: actionClass + (mode === value ? " border-indigo-700 bg-indigo-700 text-white" : " border-sky-300 bg-white text-sky-900 hover:bg-sky-100")
     },
     label
-  ))), /* @__PURE__ */ React.createElement("div", { id: id + "-panel" }, mode && /* @__PURE__ */ React.createElement("form", { onSubmit: submit, className: "mt-3 space-y-3 border-t border-sky-200 pt-3" }, /* @__PURE__ */ React.createElement(PathFork.Note, { t, onBack: () => choose("") }), mode === "topic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-topic" }, say("topic_label", "Topic"), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { id: id + "-panel", ref: panelRef }, mode && /* @__PURE__ */ React.createElement("form", { onSubmit: submit, className: "mt-3 space-y-3 border-t border-sky-200 pt-3" }, /* @__PURE__ */ React.createElement(PathFork.Note, { t, onBack: () => choose("") }), mode === "topic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-topic" }, say(t("source_start.topic_label"), "Topic"), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: id + "-topic",
@@ -726,7 +851,7 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       },
       className: fieldClass
     }
-  )), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-topic-resource" }, say("resource_label", "Resource to create"), /* @__PURE__ */ React.createElement("select", { id: id + "-topic-resource", value: topicType, disabled: blocked, onChange: (event) => setTopicType(event.target.value), className: fieldClass }, topicTypes.map(([type, label]) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, label)))), /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say("topic_help", "Experimental: this uses the topic alone, without checking against your passage. Review the facts before sharing."))), mode === "word-list" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-word-language" }, say("words_language", "Language of this word list"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-topic-resource" }, say(t("source_start.resource_label"), "Resource to create"), /* @__PURE__ */ React.createElement("select", { id: id + "-topic-resource", value: topicType, disabled: blocked, onChange: (event) => setTopicType(event.target.value), className: fieldClass }, topicTypes.map(([type, label]) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, label)))), /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say(t("source_start.topic_help"), "Experimental: AI writes this from the topic alone, with no passage to check it against. Review the facts before sharing."))), mode === "word-list" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-word-language" }, say(t("source_start.words_language"), "Language of this word list"), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: id + "-word-language",
@@ -743,10 +868,11 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       },
       className: fieldClass
     }
-  )), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-words" }, say("words_label", "Terms or phrases, one per line"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-words" }, say(t("source_start.words_label"), "Terms or phrases, one per line"), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       id: id + "-words",
+      ref: wordsRef,
       rows: 5,
       value: wordList,
       disabled: blocked,
@@ -755,10 +881,45 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       onChange: (event) => {
         setWordList(event.target.value);
         setRequestError("");
+        setSuggestNote("");
       },
       className: fieldClass + " resize-y"
     }
-  )), /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say("words_help", "Use one language per list. Create a glossary from up to 40 exact terms or phrases, 160 characters each, and 6,000 characters total. Definitions follow glossary language settings and need your review.")), /* @__PURE__ */ React.createElement("p", { className: "m-0 text-xs text-slate-700" }, say("words_count", "{count}/40 entries \xB7 {characters}/6,000 characters", { count: terms.length, characters: wordList.length }))), mode === "blank" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-blank-resource" }, say("blank_resource_label", "Resource to fill in yourself"), /* @__PURE__ */ React.createElement("select", { id: id + "-blank-resource", value: selectedBlankType, disabled: blocked || !blankTypes.length, "aria-describedby": helpIds, onChange: (event) => setBlankType(event.target.value), className: fieldClass }, !blankTypes.length && /* @__PURE__ */ React.createElement("option", { value: "" }, say("blank_loading", "Blank resources are loading")), blankTypes.map(([type, label]) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, label)))), /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say("blank_help", "Open an empty draft and fill it in by hand. No AI is needed. Complete the draft before sharing."))), needsAi && !aiAvailable && /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 text-xs leading-relaxed text-amber-900" }, say("ai_needed", "Connect AI to create from a topic or word list. You can still start a blank resource.")), showValidation && /* @__PURE__ */ React.createElement("p", { id: id + "-validation", role: "status", className: "m-0 text-xs leading-relaxed text-red-800" }, validation), requestError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "m-0 text-xs leading-relaxed text-red-800" }, requestError), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+  )), aiAvailable && wordAi && /* @__PURE__ */ React.createElement("div", { "data-source-word-suggest": true, className: "rounded-lg border border-sky-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-word-suggest" }, say(t("source_start.suggest_label"), "Need ideas? Suggest words for a topic"), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: id + "-word-suggest",
+      "data-source-word-suggest-topic": true,
+      type: "text",
+      value: topic,
+      maxLength: 300,
+      disabled: blocked,
+      "aria-describedby": id + "-word-suggest-help",
+      onChange: (event) => {
+        setTopic(event.target.value);
+        setSuggestNote("");
+      },
+      onKeyDown: (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          suggestWords();
+        }
+      },
+      className: fieldClass
+    }
+  )), /* @__PURE__ */ React.createElement("p", { id: id + "-word-suggest-help", className: "m-0 mt-1 text-xs leading-relaxed text-slate-700" }, suggestRoom < 1 ? say(t("source_start.suggest_full"), "Your list already has 40 entries.") : say(t("source_start.suggest_help"), "AI adds up to 12 words to the end of your list. Nothing is created until you choose Create.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      ref: suggestRef,
+      "data-source-word-suggest-run": true,
+      disabled: blocked || !topic.trim() || suggestRoom < 1,
+      "aria-busy": suggesting || void 0,
+      onClick: suggestWords,
+      className: actionClass + " mt-2 border-sky-300 bg-white text-sky-900 hover:bg-sky-100"
+    },
+    suggesting ? say(t("source_start.suggesting"), "Suggesting\u2026") : say(t("source_start.suggest_run"), "Suggest words")
+  ), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "m-0 mt-1 text-xs leading-relaxed text-slate-700" }, suggestNote)), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-word-resource" }, say(t("source_start.resource_label"), "Resource to create"), /* @__PURE__ */ React.createElement("select", { id: id + "-word-resource", "data-source-word-resource": true, value: wordType, disabled: blocked, onChange: (event) => setWordType(event.target.value), className: fieldClass }, /* @__PURE__ */ React.createElement("option", { value: "glossary" }, say(t("source_start.glossary"), "Glossary")), /* @__PURE__ */ React.createElement("option", { value: "concept-sort" }, say(t("source_start.concept_sort"), "Concept Sort")), /* @__PURE__ */ React.createElement("option", { value: "sentence-frames" }, say(t("source_start.scaffolds"), "Writing Scaffolds")))), wordType === "sentence-frames" ? /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say(t("source_start.words_help_scaffolds"), "Use one language per list, up to 40 terms. AI writes prompts that use up to 12 of your words, exactly as you wrote them. Every word goes in the word bank. Check them before sharing.")) : wordType === "concept-sort" ? /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say(t("source_start.words_help_sort"), "Use one language per list, up to 40 terms. Each term becomes one card, exactly as you wrote it. AI suggests 2 or 3 categories; check them before sharing.")) : /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say(t("source_start.words_help"), "Use one language per list. Create a glossary from up to 40 exact terms or phrases, 160 characters each, and 6,000 characters total. Definitions follow glossary language settings and need your review.")), /* @__PURE__ */ React.createElement("p", { className: "m-0 text-xs text-slate-700" }, say(t("source_start.words_count", { count: terms.length, characters: wordList.length }), "{count}/40 entries \xB7 {characters}/6,000 characters", { count: terms.length, characters: wordList.length }))), mode === "blank" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold", htmlFor: id + "-blank-resource" }, say(t("source_start.blank_resource_label"), "Resource to fill in yourself"), /* @__PURE__ */ React.createElement("select", { id: id + "-blank-resource", value: selectedBlankType, disabled: blocked || !blankTypes.length, "aria-describedby": helpIds, onChange: (event) => setBlankType(event.target.value), className: fieldClass }, !blankTypes.length && /* @__PURE__ */ React.createElement("option", { value: "" }, say(t("source_start.blank_loading"), "Blank resources are loading")), blankTypes.map(([type, label]) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, label)))), /* @__PURE__ */ React.createElement("p", { id: id + "-help", className: "m-0 text-xs leading-relaxed text-slate-700" }, say(t("source_start.blank_help"), "Open an empty draft and fill it in by hand. No AI is needed. Complete the draft before sharing."))), needsAi && !aiAvailable && /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 text-xs leading-relaxed text-amber-900" }, say(t("source_start.ai_needed"), "Connect AI to create from a topic or word list. You can still start a blank resource.")), showValidation && /* @__PURE__ */ React.createElement("p", { id: id + "-validation", role: "status", className: "m-0 text-xs leading-relaxed text-red-800" }, validation), requestError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "m-0 text-xs leading-relaxed text-red-800" }, requestError), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "submit",
@@ -766,10 +927,10 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false }) {
       "aria-busy": submitting || void 0,
       className: actionClass + " border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800"
     },
-    submitting ? say("creating", "Creating\u2026") : mode === "topic" ? say("create_topic", "Create from topic") : mode === "word-list" ? say("create_glossary", "Create glossary") : say("create_blank", "Open blank draft")
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, onClick: () => choose(""), className: actionClass + " border-slate-400 bg-white text-slate-800 hover:bg-slate-100" }, say("cancel", "Cancel"))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "m-0 text-xs text-slate-700" }, submitting ? say("creating_status", "Creating the resource. Your current source is kept.") : ""))), forkDialog);
+    submitting ? say(t("source_start.creating"), "Creating\u2026") : mode === "topic" ? say(t("source_start.create_topic"), "Create from topic") : mode === "word-list" ? wordType === "sentence-frames" ? say(t("source_start.create_scaffolds"), "Create writing scaffolds") : wordType === "concept-sort" ? say(t("source_start.create_concept_sort"), "Create concept sort") : say(t("source_start.create_glossary"), "Create glossary") : say(t("source_start.create_blank"), "Open blank draft")
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, onClick: () => choose(""), className: actionClass + " border-slate-400 bg-white text-slate-800 hover:bg-slate-100" }, say(t("source_start.cancel"), "Cancel"))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "m-0 text-xs text-slate-700" }, submitting ? say(t("source_start.creating_status"), "Creating the resource. Your current source is kept.") : ""))), forkDialog);
 }
-function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, busy }) {
+function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartFromWordList, onStartBlank, busy }) {
   const openQuickStart = typeof window !== "undefined" && typeof window.__alloOpenQuickStart === "function" ? window.__alloOpenQuickStart : null;
   const action = "min-h-[36px] rounded-lg px-3 py-1.5 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1";
   return /* @__PURE__ */ React.createElement("div", { role: "note", "data-help-key": "sidebar_source_needed_notice", className: "border-b border-sky-200 bg-sky-50 px-3.5 py-2.5 text-xs text-sky-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, t("sidebar.needs_source") || "This tool builds from source material."), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5" }, t("sidebar.needs_source_hint") || "Add a text, file, or link first. Then Generate turns on here."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "sidebar_source_needed_add", onClick: onAddSource, className: action + " bg-sky-700 text-white hover:bg-sky-800" }, t("sidebar.needs_source_add") || "Add source material"), openQuickStart && /* @__PURE__ */ React.createElement(
@@ -786,7 +947,7 @@ function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartBlank, bu
       className: action + " border border-sky-300 bg-white text-sky-900 hover:bg-sky-100"
     },
     t("sidebar.needs_source_quick_start") || "Guided Quick Start"
-  )), /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, onStartFromTopic, onStartBlank, busy }));
+  )), /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, onStartFromTopic, onStartFromWordList, onStartBlank, busy }));
 }
 function AiSetupNotice({ t }) {
   return /* @__PURE__ */ React.createElement(
@@ -838,6 +999,7 @@ const UNIVERSAL_GRADE_CHOICES = [
 ];
 const SIDEBAR_PANEL_UI = Object.freeze({
   settingsSurface: "border-b border-slate-200/80 bg-slate-50/70 p-3.5 flex flex-col gap-3.5",
+  settingsGroup: "space-y-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm",
   label: "block mb-1.5 text-[11px] font-semibold leading-4 tracking-wide text-slate-700",
   control: "w-full min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
   textarea: "w-full min-h-20 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm leading-relaxed text-slate-800 shadow-sm transition-colors transition-shadow motion-reduce:transition-none duration-200 placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-indigo-500 focus-visible:ring-4 focus-visible:ring-indigo-500/20 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none",
@@ -1320,6 +1482,7 @@ function UniversalSettingsPanel(props) {
     studentInterests.length > 0 ? studentInterests.length + " " + (t("universal.summary_interests") || "interests") : null,
     dokLevel ? dokLevel.split(":")[0] : null
   ].filter(Boolean);
+  const diffRunCount = Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades);
   return /* @__PURE__ */ React.createElement("div", { id: "tour-universal-settings", "data-help-key": "tool_universal_settings", className: "mb-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1330,7 +1493,7 @@ function UniversalSettingsPanel(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to most resources you generate" : summaryBits.join(" \xB7 "))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
-  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, t("universal.scope_note") || "These steer what AlloFlow writes for you."), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1354,7 +1517,22 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "universal-output-language", className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: languageText("help_mode.wizard_dok_select", "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis).") })), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection"),
+      "data-help-key": "simplified_dok",
+      value: dokLevel,
+      onChange: (e) => setDokLevel(e.target.value),
+      className: SIDEBAR_PANEL_UI.control
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
+    /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
+  ))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "universal-output-language", className: SIDEBAR_PANEL_UI.label }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "universal-output-language",
@@ -1366,7 +1544,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "__app__" }, languageText("universal.output_use_app", "Use app language ({language})", { language: appLanguage })),
     outputLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang === "English" ? t("languages.english") : lang)),
     /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, languageText("universal.all_generation_languages", "App and added languages ({count})", { count: allLanguages.length }))
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, languageText("universal.additional_languages", "Additional languages")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, languageText("universal.report_language_note", "Teacher reports, like the source check, use the app language.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, languageText("universal.additional_languages", "Additional languages")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1407,7 +1585,7 @@ function UniversalSettingsPanel(props) {
       "aria-label": languageText("universal.remove_added_language", "Remove {language} from added languages", { language: lang })
     },
     /* @__PURE__ */ React.createElement(X, { size: 12 })
-  )))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, languageText("universal.language_limit_hint", "{count}/4 added languages. App language is available automatically.", { count: extraLanguages.length })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, languageText("universal.languages_new_resources", "Changes apply to new resources. Saved resources keep their languages."))), showTranslationControl && /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_translations" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label, htmlFor: "universal-translations-select" }, t("universal.translations") || "Translations"), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, languageText("universal.language_limit_hint", "{count}/4 added languages. App language is available automatically.", { count: extraLanguages.length }), " ", languageText("universal.languages_new_resources", "Changes apply to new resources. Saved resources keep their languages."))), showTranslationControl && /* @__PURE__ */ React.createElement("div", { className: "mt-3", "data-help-key": "universal_translations" }, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label, htmlFor: "universal-translations-select" }, t("universal.translations") || "Translations"), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "universal-translations-select",
@@ -1418,28 +1596,13 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, translationAutoTarget ? (t("universal.translations_auto") || "Automatic ({language})").replace("{language}", translationAutoTarget) : t("universal.translations_auto_plain") || "Automatic"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, t("universal.translations_none") || "None"),
     translationChoices.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1" }, allOutputLanguages ? languageText("universal.translations_all_hint", "Applies to each output language. Matching languages do not add a second version.") : translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a version in {target}.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "simplified_dok",
-      value: dokLevel,
-      onChange: (e) => setDokLevel(e.target.value),
-      className: SIDEBAR_PANEL_UI.control
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
-    /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " ", t("standards.target_standard_label") || "Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, allOutputLanguages ? languageText("universal.translations_all_hint", "Applies to each output language. Matching languages do not add a second version.") : translationPolicy.enabled ? (t("universal.translations_on_hint") || "Resources in {output} will also include a version in {target}.").replace("{output}", leveledTextLanguage).replace("{target}", translationPolicy.target) : (t("universal.translations_off_hint") || "Resources will be in {output} only, with no second-language version.").replace("{output}", leveledTextLanguage))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup, "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " ", t("standards.target_standard_label") || "Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       "aria-pressed": standardMode === "ai",
       onClick: handleSetStandardModeToAi,
-      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
+      className: `min-h-8 px-2.5 text-xs font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-50 hover:text-indigo-700"}`
     },
     t("standards.mode_ai_match") || "AI Match"
   ), /* @__PURE__ */ React.createElement(
@@ -1448,7 +1611,7 @@ function UniversalSettingsPanel(props) {
       type: "button",
       "aria-pressed": standardMode === "manual",
       onClick: handleSetStandardModeToManual,
-      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
+      className: `min-h-8 px-2.5 text-xs font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:bg-slate-50 hover:text-indigo-700"}`
     },
     t("standards.mode_manual") || "Manual"
   ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
@@ -1556,7 +1719,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, candidate.code),
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry.")))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry."))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1566,7 +1729,7 @@ function UniversalSettingsPanel(props) {
       title: t("common.remove_standard")
     },
     /* @__PURE__ */ React.createElement(X, { size: 10 })
-  )))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} mt-2 flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  ))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_interest_input"),
@@ -1587,7 +1750,7 @@ function UniversalSettingsPanel(props) {
       className: SIDEBAR_PANEL_UI.iconButton
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests")))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests")))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_emojis"),
@@ -1597,7 +1760,7 @@ function UniversalSettingsPanel(props) {
       onChange: (e) => setUseEmojis(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("simplified.diff_label"),
@@ -1610,7 +1773,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "2" }, t("simplified.diff_options.two")),
     /* @__PURE__ */ React.createElement("option", { value: "Both" }, t("simplified.diff_options.both")),
     /* @__PURE__ */ React.createElement("option", { value: "Custom" }, t("universal.diff_custom") || "Custom \u2014 pick exact grades")
-  ), differentiationRange === "Custom" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, t("universal.diff_custom_hint") || "Pick any mix. Your target grade is always included."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_GRADE_CHOICES.map((g) => {
+  ), differentiationRange === "Custom" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[11px] leading-relaxed text-slate-500" }, t("universal.diff_custom_hint") || "Pick any mix. Your target grade is always included."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_GRADE_CHOICES.map((g) => {
     const on = g === gradeLevel || (differentiationCustomGrades || []).includes(g);
     const locked = g === gradeLevel;
     return /* @__PURE__ */ React.createElement(
@@ -1624,11 +1787,11 @@ function UniversalSettingsPanel(props) {
         onClick: () => setDifferentiationCustomGrades(
           on ? (differentiationCustomGrades || []).filter((x) => x !== g) : [...differentiationCustomGrades || [], g]
         ),
-        className: `px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-indigo-100 text-indigo-800 border-indigo-300" : "bg-white text-slate-600 border-slate-300 hover:border-indigo-300"} ${locked ? "cursor-default opacity-80" : ""}`
+        className: `min-h-8 px-2.5 rounded-lg text-xs font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-indigo-100 text-indigo-800 border-indigo-300" : "bg-white text-slate-600 border-slate-300 hover:border-indigo-300"} ${locked ? "cursor-default opacity-80" : ""}`
       },
       g.replace(" Grade", "").replace("Kindergarten", "K")
     );
-  }))), differentiationRange !== "None" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, t("universal.diff_types_hint") || "Generate a differentiated set for:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
+  }))), differentiationRange !== "None" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1.5 text-[11px] leading-relaxed text-slate-500" }, t("universal.diff_types_hint") || "Generate a differentiated set for:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
     const on = (differentiationTypes || []).includes(id);
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1639,11 +1802,11 @@ function UniversalSettingsPanel(props) {
         onClick: () => setDifferentiationTypes(
           on ? (differentiationTypes || []).filter((x) => x !== id) : [...differentiationTypes || [], id]
         ),
-        className: `px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-white text-slate-600 border-slate-300 hover:border-emerald-300"}`
+        className: `min-h-8 px-2.5 rounded-lg text-xs font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-white text-slate-600 border-slate-300 hover:border-emerald-300"}`
       },
       universalToolLabel(id, t)
     );
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle), /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+  })), diffRunCount > 1 && /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[11px] leading-relaxed text-amber-800" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(diffRunCount)))))), /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsGroup }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "universal_image_style" }, window.AlloModules?.AiImageGenerationToggle && React.createElement(window.AlloModules.AiImageGenerationToggle), /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} flex items-center gap-1` }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("universal.image_style") || "Default image style",
@@ -2466,6 +2629,23 @@ const SourceRecord = {
     if (typeof finder === "function") return finder(history, text);
     return (Array.isArray(history) ? history : []).slice().reverse().find((item) => item && item.type === "analysis" && !item.error && item.data?.analysisNeedsRecheck !== true && !SourceRecord.incomplete(item) && item.data?.originalText === text && !/^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(item.status || "")) || null;
   },
+  // Close rewording is the same passage; a different passage keeps its own report.
+  sameSource(a, b) {
+    const tokens = (value) => new Set(String(value || "").toLowerCase().match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]|[\p{L}\p{M}\p{N}]+/gu) || []);
+    const left = tokens(a), right = tokens(b);
+    if (!left.size || !right.size) return false;
+    let shared = 0;
+    left.forEach((word) => {
+      if (right.has(word)) shared += 1;
+    });
+    return shared / Math.max(left.size, right.size) >= 0.6;
+  },
+  // The latest report that an edit of this text should update.
+  priorCheck(history, text, unitId) {
+    const inUnit = (item) => !unitId || unitId === "all" || String(item.unitId || "uncategorized") === String(unitId);
+    const reports = (Array.isArray(history) ? history : []).filter((item) => item?.type === "analysis" && !item.error && typeof item.data?.originalText === "string" && item.data.originalText !== text && item.instructionalText?.form !== "adapted" && inUnit(item));
+    return reports.slice(-5).reverse().find((item) => SourceRecord.sameSource(item.data.originalText, text)) || null;
+  },
   summary(item, say) {
     if (!item || !item.data) return "";
     const tr = typeof say === "function" ? say : (key, fallback) => fallback;
@@ -2514,7 +2694,10 @@ function SourceView(props) {
     setSourceTopic,
     handleSpeak,
     isPlaying,
-    playingContentId
+    playingContentId,
+    sourceCheckText,
+    onSourceCheckChange,
+    activeUnitId
   } = props;
   const say = (key, fallback) => {
     try {
@@ -2535,7 +2718,7 @@ function SourceView(props) {
   const [refineInstruction, setRefineInstruction] = React.useState("");
   const [refining, setRefining] = React.useState(false);
   const editorRef = React.useRef(null);
-  const readOnly = status === "in-use" && !editing;
+  const checkLineRef = React.useRef(null);
   React.useEffect(() => {
     if (focusRequest && editorRef.current) editorRef.current.focus();
   }, [focusRequest]);
@@ -2547,7 +2730,12 @@ function SourceView(props) {
   const incomplete = !check && (Array.isArray(history) ? history : []).slice().reverse().find((item) => item?.type === "analysis" && item.data?.originalText === text && SourceRecord.incomplete(item));
   const partial = incomplete && window.AlloModules?.GenerationMatrix?.getSourceAnalysisCoverage?.(incomplete);
   const runForText = checkRun?.text === text;
-  const checkState = check ? "done" : runForText && checkRun.state === "running" ? "running" : partial && !partial.complete ? "partial" : incomplete || runForText ? "failed" : aiReady ? "none" : "unavailable";
+  const editedReport = !check && !incomplete ? (Array.isArray(history) ? history : []).slice().reverse().find((item) => item?.type === "analysis" && item.data?.originalText === text && item.data.analysisNeedsRecheck === true) : null;
+  const priorReport = React.useMemo(() => check || incomplete || editedReport ? null : SourceRecord.priorCheck(history, text, activeUnitId), [history, text, activeUnitId]);
+  const changedReport = editedReport || priorReport;
+  const checkBusy = sourceCheckText === text || runForText && checkRun.state === "running";
+  const readOnly = checkBusy || status === "in-use" && !editing;
+  const checkState = checkBusy ? "running" : check ? "done" : partial && !partial.complete ? "partial" : incomplete || runForText ? "failed" : !aiReady ? "unavailable" : changedReport ? "changed" : "none";
   const latestSource = React.useRef(text);
   latestSource.current = text;
   const checkRequest = React.useRef(null);
@@ -2556,19 +2744,25 @@ function SourceView(props) {
   }, []);
   const runCheck = async (value, openResult = false) => {
     const target = typeof value === "string" ? value : text;
-    if (!target.trim() || typeof handleGenerate !== "function" || checkRequest.current?.text === target) return;
+    if (!target.trim() || typeof handleGenerate !== "function" || checkRequest.current?.text === target || isProcessing) return;
     const request = { text: target };
+    let failure = "";
     checkRequest.current = request;
     setCheckRun({ text: target, state: "running" });
+    if (typeof onSourceCheckChange === "function") onSourceCheckChange(target);
+    if (checkLineRef.current) checkLineRef.current.focus({ preventScroll: true });
     try {
-      const result = incomplete && typeof onRecheckAnalysis === "function" ? await onRecheckAnalysis(incomplete) : await handleGenerate("analysis", null, false, target, { selectedReadingSourceId: "__input__", stayOnView: true }, false);
+      const canRecheck = typeof onRecheckAnalysis === "function";
+      const result = canRecheck && (incomplete || editedReport) ? await onRecheckAnalysis(incomplete || editedReport, { inlineFailure: true }) : canRecheck && (check || priorReport) ? await onRecheckAnalysis(check || priorReport, { inlineFailure: true, replace: true, text: target }) : await handleGenerate("analysis", null, false, target, { selectedReadingSourceId: "__input__", stayOnView: true, inlineFailure: true }, false);
+      failure = typeof result?.failureMessage === "string" ? result.failureMessage : "";
       if (openResult && checkRequest.current === request && latestSource.current === target && result?.type === "analysis" && result.data?.originalText === target && typeof openAnalysis === "function") openAnalysis(result);
     } catch (_) {
     } finally {
       if (checkRequest.current === request) {
         checkRequest.current = null;
-        setCheckRun({ text: target, state: "finished" });
+        setCheckRun({ text: target, state: "finished", failure });
       }
+      if (typeof onSourceCheckChange === "function") onSourceCheckChange(null);
     }
   };
   const useSource = () => {
@@ -2654,7 +2848,7 @@ function SourceView(props) {
     }
   };
   const statusLine = status === "empty" ? say("source_view.status_empty", "Paste or type your text below. It stays a draft until you use it.") : status === "in-use" ? fill(say("source_view.status_in_use", "In use \xB7 version {version} \xB7 {words} words."), { version: inUse ? inUse.version : 1, words }) : inUse ? fill(say("source_view.status_next", "Editing version {next} \xB7 {words} words. Resources keep using version {version} until you use this version."), { next: inUse.version + 1, version: inUse.version, words }) : fill(say("source_view.status_draft", "Draft \xB7 {words} words. Resources use it once you press Use this source or make a resource."), { words });
-  const checkLine = checkState === "done" ? SourceRecord.summary(check, say) || say("source_view.check_done", "Checked.") : checkState === "running" ? say("source_view.check_running", "Checking your source\u2026") : checkState === "partial" ? say("analysis.partial", "Partial analysis") : checkState === "failed" && incomplete ? say("analysis.incomplete", "Analysis incomplete") : checkState === "failed" ? say("source_view.check_failed", "The source check didn\u2019t finish.") : checkState === "unavailable" ? say("source_view.check_unavailable", "The source check needs AI, which isn\u2019t set up here.") : say("source_view.check_none", "Not checked yet.");
+  const checkLine = checkState === "done" ? SourceRecord.summary(check, say) || say("source_view.check_done", "Checked.") : checkState === "running" ? say("source_view.check_running", "Checking your source\u2026") : checkState === "partial" ? say("analysis.partial", "Partial analysis") : checkState === "failed" && incomplete ? say("analysis.incomplete", "Analysis incomplete") : checkState === "failed" ? say("source_view.check_failed", "The source check didn\u2019t finish.") : checkState === "changed" ? say("analysis.recheck_reason", "The source text changed. Run the analysis again to check its concepts, accuracy and reading demands.") : checkState === "unavailable" ? say("source_view.check_unavailable", "The source check needs AI, which isn\u2019t set up here.") : say("source_view.check_none", "Not checked yet.");
   const reviewTitle = replacement && replacement.reason === "refine" ? say("source_view.review_refine_title", "A suggested rewrite is ready") : say("sidebar.source_review_title", "A new passage is ready");
   const reviewBody = !replacement ? "" : replacement.reason === "refine" ? say("source_view.review_refine", "Your text has not changed. Review the suggestion below.") : replacement.reason === "edited" ? say("sidebar.source_review_edited", "Your source text changed while AI was writing, so it was not replaced. Review the new passage below.") : say("sidebar.source_review_unconfirmed", "You already have source text, so the new passage was not put in automatically. Review it below.");
   const pending = sourceRecord && typeof sourceRecord.pending === "string";
@@ -2664,9 +2858,9 @@ function SourceView(props) {
     const language = check && check.data && typeof check.data.sourceLanguage === "string" && check.data.sourceLanguage.trim() ? check.data.sourceLanguage : null;
     handleSpeak(text, "source-view", 0, false, language);
   };
-  return /* @__PURE__ */ React.createElement("section", { "data-source-view": true, "data-source-status": status, "aria-labelledby": "source-view-title", className: "mx-auto w-full max-w-3xl space-y-4 text-left" }, /* @__PURE__ */ React.createElement("header", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("h2", { id: "source-view-title", className: "text-xl font-black text-slate-900" }, say("source_view.title", "Your source")), /* @__PURE__ */ React.createElement("p", { id: "source-view-status", "data-source-status-line": true, role: "status", className: "text-sm text-slate-700" }, statusLine), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, status === "draft" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-use": true, "data-help-key": "source_view_use", onClick: useSource, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, inUse ? say("source_view.use_version", "Use this version") : say("source_view.use", "Use this source")), status === "draft" && aiReady && /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-11 items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-skip-check": true, checked: skipCheck, onChange: (event) => setSkipCheck(event.target.checked) }), say("source_view.skip_check", "Skip the source check")), status === "draft" && inUse && !(replacement && replacement.status === "replaced" && replacement.previous === inUse.text) && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-discard": true, onClick: discardChanges, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, fill(say("source_view.discard", "Discard changes (back to version {version})"), { version: inUse.version })), status === "in-use" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-make-resources": true, onClick: () => {
+  return /* @__PURE__ */ React.createElement("section", { "data-source-view": true, "data-source-status": status, "aria-labelledby": "source-view-title", className: "mx-auto w-full max-w-3xl space-y-4 text-left" }, /* @__PURE__ */ React.createElement("header", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("h2", { id: "source-view-title", className: "text-xl font-black text-slate-900" }, say("source_view.title", "Your source")), /* @__PURE__ */ React.createElement("p", { id: "source-view-status", "data-source-status-line": true, role: "status", className: "text-sm text-slate-700" }, statusLine), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, status === "draft" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-use": true, "data-help-key": "source_view_use", onClick: useSource, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, inUse ? say("source_view.use_version", "Use this version") : say("source_view.use", "Use this source")), status === "draft" && aiReady && /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-11 items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-skip-check": true, checked: skipCheck, onChange: (event) => setSkipCheck(event.target.checked) }), say("source_view.skip_check", "Skip the source check")), status === "draft" && inUse && !(replacement && replacement.status === "replaced" && replacement.previous === inUse.text) && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-discard": true, disabled: checkBusy, onClick: discardChanges, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60" }, fill(say("source_view.discard", "Discard changes (back to version {version})"), { version: inUse.version })), status === "in-use" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-make-resources": true, onClick: () => {
     if (typeof onShowResources === "function") onShowResources();
-  }, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, say("source_view.make_resources", "Make resources")), typeof handleSpeak === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-read-aloud": true, "aria-pressed": reading, onClick: readAloud, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, reading ? say("source_view.stop_reading", "Stop reading") : say("source_view.read_aloud", "Read aloud")))), readOnly ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { "data-source-readonly": true, "aria-describedby": "source-view-status", className: "max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-900" }, text), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit": true, onClick: () => setEditing(true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, say("source_view.edit", "Edit source"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { role: "toolbar", "aria-label": say("source_view.format_toolbar", "Formatting"), className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "bold", onClick: () => format("bold"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.bold", "Bold")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "italic", onClick: () => format("italic"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.italic", "Italic")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "highlight", onClick: () => format("highlight"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.highlight", "Highlight")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "h2", onClick: () => format("h2"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("source_view.heading", "Heading")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "list", onClick: () => format("list"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.list", "List"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+  }, className: "min-h-11 rounded-lg bg-indigo-700 px-4 text-sm font-bold text-white hover:bg-indigo-800" }, say("source_view.make_resources", "Make resources")), typeof handleSpeak === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-read-aloud": true, "aria-pressed": reading, onClick: readAloud, className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50" }, reading ? say("source_view.stop_reading", "Stop reading") : say("source_view.read_aloud", "Read aloud")))), readOnly ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { "data-source-readonly": true, "aria-describedby": "source-view-status", className: "max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-900" }, text), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-edit": true, disabled: checkBusy, onClick: () => setEditing(true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 text-sm font-bold text-slate-800 hover:bg-slate-50 disabled:opacity-60" }, say("source_view.edit", "Edit source"))) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { role: "toolbar", "aria-label": say("source_view.format_toolbar", "Formatting"), className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "bold", onClick: () => format("bold"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.bold", "Bold")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "italic", onClick: () => format("italic"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.italic", "Italic")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "highlight", onClick: () => format("highlight"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.highlight", "Highlight")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "h2", onClick: () => format("h2"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("source_view.heading", "Heading")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-format": "list", onClick: () => format("list"), className: "min-h-11 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50" }, say("formatting.list", "List"))), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
       "data-allo-textundo": "input",
@@ -2683,7 +2877,7 @@ function SourceView(props) {
       "data-help-key": "input_area",
       className: "h-[50vh] min-h-[240px] w-full resize-y rounded-xl border border-slate-400 p-4 text-sm leading-relaxed focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : text && !isCanvas ? say("status.saved_device", "Saved on this device") : null))), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { "data-source-check-state": checkState, role: "status", className: "mt-2 text-slate-800" }, checkLine), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-2" }, (check || partial) && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check || incomplete), className: "min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800" }, partial ? say("analysis.view_partial", "View partial analysis") : say("source_view.check_details", "View analyzed source material")), aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text, true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60" }, checkState === "done" ? say("source_view.check_again", "Analyze again") : checkState === "partial" ? partial.legacy ? say("analysis.check_all_sections", "Check all sections") : say("analysis.check_remaining", "Check remaining sections") : checkState === "failed" ? say("source_view.check_retry", "Retry") : say("source_view.check_run", "Analyze source material")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : text && !isCanvas ? say("status.saved_device", "Saved on this device") : null))), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { ref: checkLineRef, tabIndex: -1, "data-source-check-state": checkState, role: "status", className: "mt-2 text-slate-800 focus:outline-none" }, checkLine), checkBusy && !!isProcessing && !!generationStep && /* @__PURE__ */ React.createElement("p", { "data-source-check-step": true, className: "mt-1 text-xs text-slate-600" }, generationStep), !checkBusy && runForText && !!checkRun.failure && /* @__PURE__ */ React.createElement("p", { "data-source-check-failure": true, role: "alert", className: "mt-1 text-red-800" }, checkRun.failure), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-2" }, (check || partial) && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check || incomplete), className: "min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800" }, partial ? say("analysis.view_partial", "View partial analysis") : say("source_view.check_details", "View analyzed source material")), aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text, true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60" }, checkState === "done" ? say("source_view.check_again", "Analyze again") : checkState === "partial" ? partial.legacy ? say("analysis.check_all_sections", "Check all sections") : say("analysis.check_remaining", "Check remaining sections") : checkState === "failed" ? say("source_view.check_retry", "Retry") : checkState === "changed" ? say("analysis.recheck_action", "Recheck edited source") : say("source_view.check_run", "Analyze source material")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       suggestRewrite();
@@ -4787,6 +4981,10 @@ function GeneratorActionsView(props) {
       }
     }, 60);
   };
+  const openWordListStart = () => {
+    if (typeof setExpandedTools === "function") setExpandedTools((prev) => prev.includes("source-input") ? prev : [...prev, "source-input"]);
+    sourceStartRequests.request("word-list");
+  };
   return /* @__PURE__ */ React.createElement("div", { id: "tour-generator-actions", "data-help-key": "generator_actions", className: "grid min-w-0 grid-cols-1 gap-4" }, /* @__PURE__ */ React.createElement("style", null, `
               ${hiddenToolCatalogSelector ? `${hiddenToolCatalogSelector}{display:none!important;}` : ""}
               #tour-generator-actions > :where([id^="tour-tool-"],[id^="ui-tool-"]) {
@@ -4916,7 +5114,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Globe2, { size: 16 }), " ", isParentMode ? t("glossary.word_helper") : t("sidebar.tool_glossary")),
     expandedTools.includes("glossary") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("glossary") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("glossary") ? () => startBlank("glossary") : void 0 }), expandedTools.includes("glossary") && hasSourceOrAnalysis && canStartBlank("glossary") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("glossary") }), expandedTools.includes("glossary") && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
+  ), expandedTools.includes("glossary") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("glossary") ? () => startBlank("glossary") : void 0, onStartFromWordList: isTeacherMode ? openWordListStart : void 0 }), expandedTools.includes("glossary") && hasSourceOrAnalysis && canStartBlank("glossary") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("glossary") }), expandedTools.includes("glossary") && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
     expandedTools,
     InfoTooltip,
     autoRemoveWords,
@@ -5285,7 +5483,7 @@ function GeneratorActionsView(props) {
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(ListOrdered2, { size: 16 }), " ", t("timeline.title")),
     expandedTools.includes("timeline") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("timeline") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartBlank: canStartBlank("timeline") ? () => startBlank("timeline") : void 0 }), expandedTools.includes("timeline") && hasSourceOrAnalysis && canStartBlank("timeline") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("timeline") }), expandedTools.includes("timeline") && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
+  ), expandedTools.includes("timeline") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput, busy: isProcessing, onStartFromTopic: (topic) => handleGenerate("timeline", null, false, null, { seed: { kind: "topic", text: topic } }), onStartBlank: canStartBlank("timeline") ? () => startBlank("timeline") : void 0 }), expandedTools.includes("timeline") && hasSourceOrAnalysis && canStartBlank("timeline") && /* @__PURE__ */ React.createElement(OtherWaysToStart, { t, framed: true, busy: isProcessing, onStartBlank: () => startBlank("timeline") }), expandedTools.includes("timeline") && window.AlloModules && window.AlloModules.TimelinePanel && React.createElement(window.AlloModules.TimelinePanel, {
     expandedTools,
     TIMELINE_MODE_DEFINITIONS,
     handleGenerate,
@@ -6168,7 +6366,7 @@ function SourceInputShellView(props) {
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"),
     t("input.actions.books_short") || "Books"
-  ))), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), expandedTools.includes("source-input") && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "m-3" }, /* @__PURE__ */ React.createElement(SourceStartingPointChooser, { t, handleGenerate, busy: isProcessing || isExtracting || isGeneratingSource })), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
+  ))), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), expandedTools.includes("source-input") && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "m-3" }, /* @__PURE__ */ React.createElement(SourceStartingPointChooser, { t, handleGenerate, gradeLevel, busy: isProcessing || isExtracting || isGeneratingSource })), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

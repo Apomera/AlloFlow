@@ -225,7 +225,10 @@ describe('Area Model representation and submission integrity', () => {
     const host = await mount(App);
     await React.act(async () => { buttonWithText(host, 'Ask').click(); });
     expect(callGemini).toHaveBeenCalledTimes(1);
-    expect(callGemini.mock.calls[0][0]).toContain('factors 31 and 12 (product 372)');
+    // Since 2026-11-03 an OPEN challenge's product is withheld from the tutor
+    // prompt too (it used to read "(product 372)", which the AI could repeat).
+    expect(callGemini.mock.calls[0][0]).toContain('factors 31 and 12');
+    expect(callGemini.mock.calls[0][0]).not.toContain('372');
   });
 
   it('classifies the actual area-equals-perimeter case', () => {
