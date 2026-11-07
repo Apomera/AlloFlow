@@ -35,6 +35,41 @@ import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomTok
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as _fbGetAppCheckToken } from 'firebase/app-check';
 import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, runTransaction as _fbRunTransaction, limit as _fbLimit } from 'firebase/firestore';
 
+// A blank page hides the error; after 12 s show what failed instead.
+(() => {
+  if (typeof window === 'undefined' || window.__alloBootDiag) return;
+  const diag = window.__alloBootDiag = { errors: [], started: Date.now(), evaluated: false, rendered: false };
+  const note = (kind, e) => { try { if (diag.errors.length < 12) diag.errors.push(kind + ': ' + String((e && (e.stack || e.message)) || e).slice(0, 1500)); } catch (_) {} };
+  window.addEventListener('error', (ev) => note('error', ev.error || ev.message));
+  window.addEventListener('unhandledrejection', (ev) => note('promise', ev.reason));
+  const show = () => {
+    try {
+      if (!document.body || document.getElementById('allo-boot-diag')) return;
+      if ((document.body.innerText || '').trim().length > 40) return;
+      const yes = (v) => (v ? 'yes' : 'no');
+      const lines = [
+        'AlloFlow could not start. Please send a screenshot of this box.',
+        '',
+        'File read to the end: ' + yes(diag.evaluated) + '   App began rendering: ' + yes(diag.rendered),
+        'Seconds since start: ' + Math.round((Date.now() - diag.started) / 1000),
+        'Host: ' + location.hostname + '   Canvas config: ' + yes(typeof __firebase_config !== 'undefined'),
+        'React ' + (React && React.version) + '   ReactDOM.createRoot: ' + typeof (ReactDOM && ReactDOM.createRoot) + '   ReactDOM.render: ' + typeof (ReactDOM && ReactDOM.render),
+        'Root element: ' + yes(document.getElementById('root')) + '   Browser: ' + navigator.userAgent,
+        '',
+        diag.errors.length ? 'Errors:' : 'No errors were caught.'
+      ].concat(diag.errors);
+      const box = document.createElement('div');
+      box.id = 'allo-boot-diag';
+      box.setAttribute('role', 'alert');
+      box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;overflow:auto;background:#fff;color:#111;padding:24px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word';
+      box.textContent = lines.join('\n');
+      document.body.appendChild(box);
+    } catch (_) {}
+  };
+  setTimeout(show, 12000);
+  setTimeout(show, 30000);
+})();
+
 // BEGIN ALLOFLOW_OPTIONAL_BROWSER_DELIVERY_POLICY
 // This policy and its fixed vendor records are embedded in the trusted host.
 // A response, caller, or downloaded manifest cannot add approved code.
@@ -49584,7 +49619,6 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     };
                     setHistory(prev => [...prev, item]);
                 },
-                t,
             })}
         </CDNModuleGate>
         <CDNModuleGate moduleKey="TestPrepHub" isOpen={isTestPrepHubOpen} onClose={() => setIsTestPrepHubOpen(false)} icon={'\uD83E\uDDED'} displayName="Test Prep Hub" t={t}>
@@ -50484,6 +50518,7 @@ function App() {
   );
 }
 export default function WrappedApp() {
+  if (typeof window !== 'undefined' && window.__alloBootDiag) window.__alloBootDiag.rendered = true;
   return (
     <AlloFlowErrorBoundary>
       <App />
@@ -50497,8 +50532,9 @@ if (typeof __firebase_config !== 'undefined') {
       const _rootId = _alloLifecycleNextId('root');
       const _previousRoot = _alloLifecycleState.roots.get(container) || null;
       _alloLifecycleRecord('root creation requested', { rootId: _rootId, previousRootId: _previousRoot,
-        api: ReactDOM.createRoot ? 'createRoot' : 'render' });
-      if (ReactDOM.createRoot) {
+        api: ReactDOM.createRoot ? 'createRoot' : ReactDOM.render ? 'render' : 'react-dom/client' });
+      // React 19 has no ReactDOM.render and keeps createRoot in react-dom/client.
+      const _alloRenderWith = (createRootFn) => {
          const originalConsoleError = console.error;
          console.error = (...args) => {
            if (typeof args[0] === 'string' && args[0].includes('You are calling ReactDOMClient.createRoot()')) {
@@ -50506,13 +50542,20 @@ if (typeof __firebase_config !== 'undefined') {
            }
            originalConsoleError(...args);
          };
-         const root = ReactDOM.createRoot(container);
+         const root = createRootFn(container);
          _alloLifecycleState.roots.set(container, _rootId);
          _alloLifecycleRecord('root created', { rootId: _rootId, previousRootId: _previousRoot });
          root.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)));
-      } else {
+      };
+      if (typeof ReactDOM.createRoot === 'function') {
+         _alloRenderWith((node) => ReactDOM.createRoot(node));
+      } else if (typeof ReactDOM.render === 'function') {
          _alloLifecycleState.roots.set(container, _rootId);
          ReactDOM.render(React.createElement(AlloFlowErrorBoundary, null, React.createElement(App)), container);
+      } else {
+         import('react-dom/client').then((client) => {
+            if (client && typeof client.createRoot === 'function') _alloRenderWith(client.createRoot);
+         }).catch((error) => { try { console.warn('[AlloFlow] react-dom/client unavailable; the host renders the default export', error); } catch (_) {} });
       }
     };
     // Canvas localStorage hydration gate (2026-07-14): boot-time useState
@@ -50553,3 +50596,4 @@ function PersonaWorkspaceView(props) {
 }
 
 //
+if (typeof window !== 'undefined' && window.__alloBootDiag) window.__alloBootDiag.evaluated = true;
