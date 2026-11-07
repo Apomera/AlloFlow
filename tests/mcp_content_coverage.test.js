@@ -162,3 +162,18 @@ it('a math font text layer that repeats each glyph is not text (HB44 "VV mmmmmm"
  expect(P.assessSourceCoverage({sourceText:'Mississippi sells cookies',outputHtml:'<p>sells cookies</p>',method:'pdfjs'}).missingWords.map(w=>w.word)).toEqual(['mississippi']);
  expect(P.assessSourceCoverage({sourceText:'buzz zzzz',outputHtml:'<p>buzz zzzz</p>',method:'pdfjs'})).toMatchObject({missingTokens:0,sourceTokens:2}); // printed in the output: still counted
 });
+it('matches an Arabic word whose tanween sits before or after the alef (2026-11-07, Portland letter)',()=>{
+ // Page: "مذهلاً" (lam, alef, fathatan); HTML: "مذهلًا" (lam, fathatan, alef). Same on the page.
+ expect(P.assessSourceCoverage({sourceText:'شريكا مجتمعيا \u0645\u0630\u0647\u0644\u0627\u064B للعائلات',outputHtml:'<p>شريكا مجتمعيا \u0645\u0630\u0647\u0644\u064B\u0627 للعائلات</p>',method:'text'})).toMatchObject({status:'matched',missingTokens:0});
+ // A real letter lost is still caught: "دعمهه" printed, "دعمه" in the HTML.
+ expect(P.assessSourceCoverage({sourceText:'رعاية الطفل و \u062F\u0639\u0645\u0647\u0647 للعائلات',outputHtml:'<p>رعاية الطفل و \u062F\u0639\u0645\u0647 للعائلات</p>',method:'text'})).toMatchObject({status:'review_required',missingTokens:1});
+});
+it('credits Word\'s second-level "o" bullet only where "o" is never a word in the output (2026-11-07, NIST CSF)',()=>{
+ const src='GOVERN (GV)\no Organizational Context is understood\no Risk Management Strategy is established\no Roles and Responsibilities are assigned';
+ const ul='<ul><li>Organizational Context is understood</li><li>Risk Management Strategy is established</li><li>Roles and Responsibilities are assigned</li></ul>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:'<p>GOVERN (GV)</p>'+ul,method:'text'})).toMatchObject({status:'matched',missingTokens:0});
+ // Spanish: "o" is a word in the output, so the bullet "o" cannot be told apart and stays counted (cautious); with no "o" word left in the
+ // output, one is credited to the single list item and the dropped word is still counted.
+ expect(P.assessSourceCoverage({sourceText:'Elija uno o dos libros\no Primer libro',outputHtml:'<p>Elija uno o dos libros</p><ul><li>Primer libro</li></ul>',method:'text'}).missingTokens).toBe(1);
+ expect(P.assessSourceCoverage({sourceText:'Elija uno o dos libros\no Primer libro',outputHtml:'<p>Elija uno dos libros</p><ul><li>Primer libro</li></ul>',method:'text'}).missingTokens).toBe(1); // one credited as the item's bullet, the dropped word still counted
+});

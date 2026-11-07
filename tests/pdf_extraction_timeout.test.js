@@ -46,8 +46,13 @@ describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
 
   it('the PRIMARY digital-text extraction (extractPdfTextDeterministic) awaits are wrapped', () => {
     // hot path: awaited before any AI call; a wedged pdf.js worker here hangs the whole run
-    expect(src).toContain("await _withTimeout(window.pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise, 60000, 'pdf.js getDocument (text layer)')");
-    expect(src).toContain("await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p)");
+    // (2026-11-07) _patient = _withTimeout, then one more bounded wait for the SAME call, capped at 3 min per document.
+    expect(src).toContain("try { return await _withTimeout(work, ms, label); }");
+    expect(src).toContain("const _patience = { left: 180000 };");
+    expect(src).toContain("const more = Math.min(120000, _patience.left)");
+    expect(src).toContain("await _patient(window.pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise, 60000, 'pdf.js getDocument (text layer)')");
+    expect(src).toContain("await _patient(pdf.getPage(p), 30000, 'getPage (text layer) p' + p)");
+    expect(src).toContain("await _patient(page.getTextContent({ includeMarkedContent: true }), 30000, 'getTextContent (text layer) p' + p)");
     expect(src).toContain("await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p)");
   });
 

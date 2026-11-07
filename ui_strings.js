@@ -10731,6 +10731,14 @@
       "withdrawn": "Confirmation withdrawn.",
       "failed": "The confirmation could not be recorded."
     },
+    "auto_answers": {
+      "settled_heading": "Standing questions settled",
+      "answered_by_link_check": "answered by AlloFlow's link check",
+      "answered_by_footer_check": "answered by AlloFlow's footer check",
+      "footer_answer": "This reminder points only at the footer AlloFlow adds to every document (the date and the original file name), not at the document's own words.",
+      "link_answer": "Every link in this document is a plain web link, and the document has no scripts, event handlers, embedded frames or changed tab order, so the browser handles each download and the keyboard cannot get stuck on the page. What opens after a download is outside this document.",
+      "own_style_answer": "This reminder points at AlloFlow's own accessibility styling (the keyboard focus outline), which shows focus with an outline and a shadow, not colour alone. Places where the document itself uses colour to carry meaning are checked separately."
+    },
     "unavailable": {
       "title": "Audit Unavailable",
       "body": "The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.",

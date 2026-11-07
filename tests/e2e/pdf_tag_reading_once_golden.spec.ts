@@ -9,11 +9,10 @@
 // screen reader does: a structure element with /ActualText is read as that text; otherwise each
 // MCID it owns is read as the page text pdf.js finds inside it.
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const ROOT = path.resolve(__dirname, '../..');
-const VENDOR = path.join(ROOT, 'desktop/mcp/vendor');
 
 const html = (reworded: string) => `<!DOCTYPE html><html lang="en"><head><title>Letter</title></head><body><main>
 <h1>Letter to families</h1>
@@ -27,15 +26,8 @@ const html = (reworded: string) => `<!DOCTYPE html><html lang="en"><head><title>
 </main></body></html>`;
 
 async function boot(page) {
-  await page.route('https://alloflow.test/**', (route) => {
-    const u = new URL(route.request().url());
-    if (u.pathname.startsWith('/vendor/')) return route.fulfill({ body: fs.readFileSync(path.join(VENDOR, u.pathname.slice(8))), contentType: 'application/javascript' });
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
-  });
-  await page.goto('https://alloflow.test/boot');
-  for (const f of ['pdfjs.min.js', 'pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js']) await page.addScriptTag({ path: path.join(VENDOR, f) });
+  await bootDocumentRuntime(page);
   for (const f of ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_validator_module.js']) await page.addScriptTag({ path: path.join(ROOT, f) });
-  await page.evaluate(() => { (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://alloflow.test/vendor/pdf.worker.min.js'; });
 }
 
 // Tag the generated fixture with the given HTML; return what a screen reader reads.

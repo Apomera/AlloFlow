@@ -159,7 +159,8 @@ describe('_alloOrderTextItems — multi-column repair', () => {
   });
 
   it('wiring: the extractor routes items through _alloOrderTextItems and discloses columns', () => {
-    expect(dp).toMatch(/const _ordered = _alloOrderTextItems\(tc\.items \|\| \[\], \{\}\)/);
+    // (2026-11-03) in the page's displayed frame: a /Rotate page's items are turned upright first
+    expect(dp).toMatch(/const _ordered = _alloOrderTextItems\(_alloUprightTextItems\(tc\.items \|\| \[\], page\), \{\}\)/);
     expect(dp).toMatch(/pages\.push\(\{ pageNum: p, text: pageText, columns: _ordered\.applied \? _ordered\.columns : 1 \}\)/);
     expect(dp).toMatch(/multi-column layout detected/);
   });

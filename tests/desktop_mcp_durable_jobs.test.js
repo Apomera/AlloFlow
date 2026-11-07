@@ -376,7 +376,7 @@ describe('desktop MCP durable-job source contracts', () => {
     expect(validate).toContain('manifest.compatibility.optionsSha256 !== compatibility.optionsSha256');
     expect(validate).toContain('manifest.compatibility.engineSha256 !== compatibility.engineSha256');
     expect(validate).toContain("relative.startsWith('..' + path.sep)");
-    expect(validate).toContain('verifiedReportBytes = fs.readFileSync(resolved);');
+    expect(validate).toContain('verifiedReportBytes = authorizedReadFileSync(resolved);');
     expect(validate).toContain('digest = sha256Bytes(verifiedReportBytes);');
     expect(validate).toContain('const summary = JSON.parse(verifiedReportBytes.toString');
     expect(validate).toContain('stat.ctimeMs !== statAfter.ctimeMs');

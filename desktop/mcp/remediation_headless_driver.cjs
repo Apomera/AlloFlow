@@ -2177,9 +2177,13 @@ function createDriver(options) {
           }
         }
         const coverageExtraction = cur?._sourceCoverageExtraction || sourceCoverageExtraction();
-        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:coverageExtraction.pageErrors,lowConfidencePages:coverageExtraction.lowConfidencePages,pageRange});
+        // figureText (2026-11-07): words printed inside described charts and maps, which the figures stand for.
+        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:coverageExtraction.pageErrors,lowConfidencePages:coverageExtraction.lowConfidencePages,pageRange,figureText:Array.isArray(window.__alloFigureText)?window.__alloFigureText:null});
         let verdict = null;
-        let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null;
+        let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null, taggedPdfReadingNotes = [];
+        // (2026-11-05, Aaron) A coverage hold still builds the PDF, kept aside: every other gate below still applies, and
+        // only a person's confirmation can release it (pdf_release_held_tagged_pdf), with no costly re-run.
+        let coverageHold = false, correctionsHold = false, taggedPdfHeld = null, taggedPdfHeldUnavailable = null;
         let activeContentDetected = false;
         let activeContentScanVerified = false;
         if (wantTaggedPdf) {
@@ -2229,7 +2233,7 @@ function createDriver(options) {
             activeContentScanVerified = true;
             activeContentDetected = activeScan.any;
             if (activeContentDetected) throw new Error('active_content_requires_review');
-            if(contentCoverage.reviewRequired)throw Error('content_coverage_requires_review');
+            coverageHold = !!contentCoverage.reviewRequired;
             taggedPdfExportMode = 'original_layout';
             let artifactVerdict = null, releaseGate = null;
             try {
@@ -2241,7 +2245,9 @@ function createDriver(options) {
               if (typeof pipeline.taggedPdfReleaseGate === 'function') releaseGate = pipeline.taggedPdfReleaseGate(cur, { targetScore });
             } catch (_) { verdict = null; artifactVerdict = null; releaseGate = null; }
             if (!artifactVerdict) throw new Error('distribution_verdict_unavailable');
-            if (artifactVerdict.level === 'review' && !(releaseGate && releaseGate.ok === true)) {
+            // (2026-11-05) Nothing open but a corrected number: built and kept aside for a person, like a coverage hold.
+            correctionsHold = !!(releaseGate && releaseGate.code === 'scan_corrections_need_person');
+            if (artifactVerdict.level === 'review' && !(releaseGate && releaseGate.ok === true) && !correctionsHold) {
               throw new Error('distribution_review_required');
             }
             progress('tag', 'building tagged PDF');
@@ -2278,14 +2284,28 @@ function createDriver(options) {
               for (let i = 0; i < outBytes.length; i += CH) ob += String.fromCharCode.apply(null, Array.from(outBytes.subarray(i, i + CH)));
               taggedPdfB64 = btoa(ob);
               verdict = artifactVerdict;
+              // Advisory, from the saved bytes: never part of the verdict or the delivery decision above.
+              const _rn = tagged && tagged.postExportValidator && tagged.postExportValidator.readingNotes;
+              if (Array.isArray(_rn)) taggedPdfReadingNotes = _rn.map((n) => String((n && n.detail) || '')).filter(Boolean);
+              if (coverageHold || correctionsHold) {
+                taggedPdfHeld = { b64: taggedPdfB64, exportMode: taggedPdfExportMode, delivery: taggedPdfDelivery, readingNotes: taggedPdfReadingNotes };
+                taggedPdfB64 = null; taggedPdfReadingNotes = [];
+              }
             } else {
               // keep WHY (which byte check failed) so a report can say it, not just "unverified"
-              const _why = delivery && delivery.reason ? String(delivery.reason).replace(/\s+/g, ' ').slice(0, 400) : '';
+              // (2026-11-06) The same document can pass on a rerun when a page could not be read in time: the report must not say a rerun is pointless.
+              const _slow = tagged && tagged.summary && tagged.summary.segmentProbeSlowPages;
+              const _why = (delivery && delivery.reason ? String(delivery.reason).replace(/\s+/g, ' ').slice(0, 400) : '') + (Array.isArray(_slow) && _slow.length ? '; page text read timed out' : '');
               taggedPdfError = outBytes && outBytes.length
                 ? 'tagged_pdf_delivery_unverified' + (taggedPdfDelivery.code ? ' (' + taggedPdfDelivery.code + (_why ? ': ' + _why : '') + ')' : '')
                 : 'createTaggedPdf returned no bytes';
             }
           } catch (e) { taggedPdfError = (e && e.message) || String(e); }
+          // The hold stays the reported reason, as before; a failed build or another gate is why nothing can be released.
+          if (coverageHold || correctionsHold) {
+            if (!taggedPdfHeld) taggedPdfHeldUnavailable = taggedPdfError || 'no tagged PDF was built';
+            taggedPdfError = coverageHold ? 'content_coverage_requires_review' : 'scan_corrections_require_review'; taggedPdfDelivery = null; taggedPdfExportMode = null;
+          }
         }
         if (!verdict) { try { verdict = pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { verdict = null; } }
         if(contentCoverage.reviewRequired)verdict={...(verdict||{}),level:'review',review:[...(verdict?.review||[]),'Source content coverage requires review'],cautions:verdict?.cautions||[]};
@@ -2318,7 +2338,8 @@ function createDriver(options) {
               reason: ((r) => (r.length > 600 ? r.slice(0, 600).replace(/\s+\S*$/, '') + '…' : r))(String((d && d.reason) || '')), skipReason: d && d.skipReason ? String(d.skipReason).slice(0, 80) : null,
             })),
           } : null,
-          fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
+          // caution and the correction list travel too (2026-11-05, trust): the report cannot offer a release without them.
+          fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400), ...(n.caution === true ? { caution: true } : {}), ...(Array.isArray(n.corrections) ? { corrections: n.corrections.slice(0, 300), correctionCount: n.correctionCount } : {}) })),
           // (2026-10-28) How to decide each judgment call this run leaves to a person (remediation_decision_guides.js,
           // shipped inside the pipeline module): plain data, so the Node side and MCP clients can show it.
           decisionGuides: (() => {
@@ -2372,7 +2393,8 @@ function createDriver(options) {
             sliced: !!(audit && audit._slicedAudit),
           },
           accessibleHtml: (cur && cur.accessibleHtml) || null,
-          taggedPdfB64, taggedPdfError, taggedPdfDelivery, taggedPdfExportMode,
+          taggedPdfB64, taggedPdfError, taggedPdfDelivery, taggedPdfExportMode, taggedPdfReadingNotes,
+          taggedPdfHeld, taggedPdfHeldUnavailable,
           activeContentScanVerified, activeContentDetected,
           stats: stats ? { apiCalls: stats.apiCalls, visionCalls: stats.visionCalls, retries: stats.retries, recoveredRetries: stats.recoveredRetries, authThrottles: stats.authThrottles, terminalFailures: stats.terminalFailures } : null,
         };

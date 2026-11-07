@@ -7,9 +7,9 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const ROOT = path.resolve(__dirname, '../..');
-const VENDOR = path.join(ROOT, 'desktop/mcp/vendor');
 const DOCS = [
   { name: 'Spanish family letter', pdf: 'C:/tmp/remediation_corpus/new/pps-childcare-letter-es-2020-12.pdf', html: path.join(ROOT, 'runs/2026-09-22-keyless-pilot/pps-childcare-letter-es/output/pps-childcare-letter-es-2020-12-accessible.html'), lang: 'es' },
   { name: 'ED parent guide', pdf: path.join(ROOT, 'mcp-testing/corpus/born-digital/ed-parent-guide-idea.pdf'), html: path.join(ROOT, 'mcp-testing/refinement-study/private/calibration-2026-09-12/primary/ed-parent-guide-idea-accessible.html'), lang: 'en' },
@@ -23,18 +23,10 @@ test.describe.configure({ timeout: 600_000 });
 for (const d of DOCS) {
   test(d.name + ' earns the PDF/UA declaration', async ({ page }) => {
     test.skip(!fs.existsSync(d.pdf) || !fs.existsSync(d.html), 'corpus files not on this machine');
-    await page.route('https://alloflow.test/**', (route) => {
-      const u = new URL(route.request().url());
-      if (u.pathname.startsWith('/vendor/')) return route.fulfill({ body: fs.readFileSync(path.join(VENDOR, u.pathname.slice(8))), contentType: 'application/javascript' });
-      return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
-    });
-    await page.goto('https://alloflow.test/boot');
-    for (const f of ['pdfjs.min.js', 'pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js']) await page.addScriptTag({ path: path.join(VENDOR, f) });
+    await bootDocumentRuntime(page);
     for (const f of ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_validator_module.js']) await page.addScriptTag({ path: path.join(ROOT, f) });
     const r = await page.evaluate(async ({ pdfB64, html, lang, title }) => {
       const W: any = window;
-      W.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://alloflow.test/vendor/pdf.worker.min.js';
-      W.__alloflowRuntimeAssets = { pdfjsWorker: 'https://alloflow.test/vendor/pdf.worker.min.js' };
       const bytes = Uint8Array.from(atob(pdfB64), (c) => c.charCodeAt(0));
       const p = W.AlloModules.createDocPipeline({ callGemini: async () => 'OK', callGeminiVision: async () => '{}', callImagen: async () => null, addToast: () => {}, t: (k: string) => k, isRtlLang: (l: string) => /^(ar|he|fa|ur|ps)/.test(l || ''), updateExportPreview: () => {}, getDefaultTitle: () => title, state: {} });
       const tagged = await p.createTaggedPdf(bytes, { accessibleHtml: html, isScanned: false }, { title, lang, modDate: '2026-10-18T00:00:00Z' });

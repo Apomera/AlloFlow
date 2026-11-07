@@ -153,7 +153,7 @@ describe('R1 — distribution verdict (BEHAVIORAL, the real fn)', () => {
 const _fs = dp.indexOf('const htmlToPlainText = (html) => {');
 const _fe = dp.indexOf('// acceptFixedHtmlDetailed: strict guard', _fs);
 const { _recomputeContentFidelity } = new Function(
-  '_numericFidelityLosses', '_computeStructuralFidelityNotes', '_alloListMarkerNumbers', '_alloAxisSeriesHint', '_alloFolioNumbers',
+  '_numericFidelityLosses', '_computeStructuralFidelityNotes', '_alloListMarkerNumbers', '_alloAxisSeriesHint', '_alloFolioNumbers', '_alloAxisScaleNumbers', '_alloRepeatedRunNumbers', '_alloFurnitureNumbers', '_alloFigureTextNumbers',
   dp.slice(_fs, _fe) + '\nreturn { _recomputeContentFidelity };'
 )(
   // real-shaped stubs: the REAL fns are module-scope; here we verify the PLUMBING (kind mapping,
@@ -162,7 +162,11 @@ const { _recomputeContentFidelity } = new Function(
   (src, html) => /table/i.test(src) && !/<table/i.test(html) ? [{ kind: 'tables', msg: 'Tables: lost' }] : [],
   () => '', // list-number credits (2026-10-27): none in these fixtures
   () => '', // chart-axis hint (2026-10-27): no series here
-  () => '' // page-folio credits (2026-10-28): no page map here
+  () => '', // page-folio credits (2026-10-28): no page map here
+  () => '', // axis-scale credits (2026-11-03): no chart here
+  () => '', // repeated-run credits (2026-11-05): no repeated rows here
+  () => '', // removed page-furniture numbers (2026-11-07): none here
+  () => '' // text inside figures (2026-11-07): none here
 );
 
 describe('#6-ext — per-round recompute carries numeric + structural warnings (BEHAVIORAL)', () => {
@@ -182,7 +186,7 @@ describe('#6-ext — per-round recompute carries numeric + structural warnings (
     expect(r.fidelityNotes.some((n) => n.kind === 'tables')).toBe(true);
   });
   it('wiring: the host REPLACES recomputable kinds and carries run-scoped kinds forward', () => {
-    expect(dp).toContain('const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };');
+    expect(dp).toContain('const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, tablesFlattened: 1, refusal: 1, placement: 1, numeric: 1 };');
     expect(dp).toContain('recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS,');
     // #6-full (2026-07-16): the replace-recomputable/carry-run-scoped merge moved VERBATIM into
     // the canonical reducer (which uses the module constant directly); the host delegates.

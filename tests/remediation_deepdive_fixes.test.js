@@ -128,7 +128,7 @@ describe('Fix Remaining recomputes and filters the SAME set', () => {
 
   it('the view lane passes both the baseline and its own kind set', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
-    expect(view).toContain('_docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null)');
+    expect(view).toContain('_docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, (_srcLinks || _srcTables) ? Object.assign({}, _srcLinks ? { links: _srcLinks } : {}, _srcTables ? { tables: _srcTables } : {}) : null)');
     expect(view).toContain('_docPipeline.mergeFidelityNotes(_fixRemainingSource.fidelityNotes, _notes, _laneKinds)');
   });
 });

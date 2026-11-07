@@ -246,10 +246,10 @@ describe('chart-data table caption', () => {
 });
 
 // ── 8. an AI "not an issue" settles only the elements the model was shown ────────────────────────
-const applyTriage = new Function(sliceBetween(PIPE, "var _ALLO_AI_SETTLED_REMINDERS = ['style_color_misuse'];", '\n// ── LaTeX → spoken English', F) + '\nreturn _alloApplyReminderTriage;')();
+const applyTriage = new Function(sliceBetween(PIPE, "var _ALLO_AI_SETTLED_REMINDERS = ['style_color_misuse',", '\n// ── LaTeX → spoken English', F) + '\nreturn _alloApplyReminderTriage;')();
 describe('reminder triage covers what was shown', () => {
   const ea = (nodes) => ({ failViolations: 0, potentialViolations: 1, manualViolations: 0, potentialFindings: [{ id: 'style_color_misuse', nodes, description: 'd' }], manualFindings: [] });
-  const tri = (nodesShown) => ({ dispositions: [Object.assign({ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: 'Only focus styles.' }, nodesShown == null ? {} : { nodesShown })] });
+  const tri = (nodesShown) => ({ dispositions: [Object.assign({ key: 'equalAccess|potential|style_color_misuse', action: 'not-an-issue', reason: 'Only the focus styles use colour.' }, nodesShown == null ? {} : { nodesShown })] });
   it('a one-node finding judged not-an-issue is acknowledged (older dispositions count as one shown)', () => {
     expect(applyTriage(ea(1), tri(null)).acknowledgedByAiReview).toHaveLength(1);
     expect(applyTriage(ea(1), tri(1)).potentialViolations).toBe(0);
@@ -257,7 +257,7 @@ describe('reminder triage covers what was shown', () => {
   it('a three-node finding is acknowledged only when the model saw all three', () => {
     expect(applyTriage(ea(3), tri(1)).potentialViolations).toBe(1);
     expect(applyTriage(ea(3), tri(1)).acknowledgedByAiReview).toBeUndefined();
-    expect(applyTriage(ea(3), tri(3)).acknowledgedByAiReview[0].reason).toBe('Only focus styles.');
+    expect(applyTriage(ea(3), tri(3)).acknowledgedByAiReview[0].reason).toBe('Only the focus styles use colour.');
   });
 });
 
@@ -364,7 +364,7 @@ describe('interleaved exact linking', () => {
   it('a text-drawing form repeated on 2+ pages is wrapped as /Artifact (running header), one on a single page is not', () => {
     expect(PIPE.includes('for (const [k, s] of _tfPages) if (s.size >= 2) _repeatedTextForms.add(k);')).toBe(true);
     expect(PIPE.includes("if (furnitureForms.has(name)) { if (inArtifact) return m; furnitureWrapped++; return '/Artifact BMC\\n' + m + '\\nEMC'; }")).toBe(true);
-    expect(PIPE.includes('{ repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts }')).toBe(true);
+    expect(PIPE.includes('{ repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts, releaseArtifactProse: _releaseArtifactProse, crops: _cropsByPage.get(pi + 1) || null, proseFormFirst: _proseFormFirst }')).toBe(true);
   });
   it('AI-made chart data and image transcripts are left out of the tagged PDF', () => {
     expect(PIPE.includes("if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext')) {")).toBe(true);
@@ -449,21 +449,36 @@ const segLib = new Function(sliceBetween(PIPE, 'const _stage4_maskStrings = (s) 
 const artLib = new Function(sliceBetween(PIPE, '  const _stage6b_normalizeArtifactText', '  // _stage4_tryWrapPage — orchestrates', F) + '\nreturn _stage6b_detectArtifactHashes;')();
 const seg = (stream, opts) => segLib(Uint8Array.from(stream, (c) => c.charCodeAt(0)), opts).map((g) => stream.slice(g.btStart, g.etEnd));
 describe('run-in headings and running-header detection', () => {
-  const line = 'BT /F2 12 Tf 72 700 Td (Integrated Pest Management) Tj /F1 12 Tf (M.S.A.D. #49 has developed) Tj 0 -14 Td (a plan) Tj ET';
+  // notifications draws the heading with its trailing space: "(Integrated Pest Management )Tj /TT6 1 Tf ... Tm [(M.S.A.D.)..."
+  const line = 'BT /F2 12 Tf 72 700 Td (Integrated Pest Management ) Tj /F1 12 Tf (M.S.A.D. #49 has developed) Tj 0 -14 Td (a plan) Tj ET';
   it('splitFont starts a new segment where the font NAME changes on one line (notifications)', () => {
-    expect(seg(line, { fine: true, splitFont: true })).toEqual(['(Integrated Pest Management) Tj', '(M.S.A.D. #49 has developed) Tj', '(a plan) Tj']);
+    expect(seg(line, { fine: true, splitFont: true })).toEqual(['(Integrated Pest Management ) Tj', '(M.S.A.D. #49 has developed) Tj', '(a plan) Tj']);
   });
   it('without splitFont (right-to-left documents, or no probe) the line stays one segment', () => {
-    expect(seg(line, { fine: true })).toEqual(['(Integrated Pest Management) Tj /F1 12 Tf (M.S.A.D. #49 has developed) Tj', '(a plan) Tj']);
+    expect(seg(line, { fine: true })).toEqual(['(Integrated Pest Management ) Tj /F1 12 Tf (M.S.A.D. #49 has developed) Tj', '(a plan) Tj']);
     expect(seg(line, { splitFont: true })).toEqual([line]); // coarse mode ignores it
+  });
+  // (2026-11-03) IRS 1040 prints its year "(20)Tj /T1_3 1 Tf (25)Tj": split, the title read "20" + "25" and orphaned.
+  it('a font change INSIDE a word (no pen move, letter/digit on both sides) does not split', () => {
+    expect(seg('BT /T1_2 1 Tf 20 0 0 20 298 748 Tm (20)Tj /T1_3 1 Tf (25)Tj ET', { fine: true, splitFont: true })).toEqual(['(20)Tj /T1_3 1 Tf (25)Tj']);
+    expect(seg('BT /F1 12 Tf 72 700 Td [(Mail)] TJ /F2 12 Tf [(ing address)] TJ ET', { fine: true, splitFont: true })).toEqual(['[(Mail)] TJ /F2 12 Tf [(ing address)] TJ']);
+  });
+  it('but does split when the pen moves, a space or colon sits at the change, or the next array opens with a gap', () => {
+    const two = (s) => seg(s, { fine: true, splitFont: true }).length;
+    expect(two('BT /F1 12 Tf 72 700 Td (Plan)Tj /F2 12 Tf 30 0 Td (The course)Tj ET')).toBe(2);
+    expect(two('BT /F1 12 Tf 72 700 Td (Plan:)Tj /F2 12 Tf (The course)Tj ET')).toBe(2);
+    expect(two('BT /F1 12 Tf 72 700 Td (Plan)Tj /F2 12 Tf ( The course)Tj ET')).toBe(2);
+    expect(two('BT /F1 12 Tf 72 700 Td (Plan)Tj /F2 12 Tf [-250 (The course)] TJ ET')).toBe(2);
+    expect(two('BT /F1 12 Tf 72 700 Td [(Plan) -250] TJ /F2 12 Tf (The course)Tj ET')).toBe(2);
+    expect(two('BT /F1 12 Tf 72 700 Td <0041>Tj /F2 12 Tf <0042>Tj ET')).toBe(2); // hex strings: cannot tell, split as before
   });
   it('re-selecting the SAME font, or a size change only, does not split', () => {
     expect(seg('BT /F1 12 Tf 72 700 Td (one) Tj /F1 14 Tf (two) Tj ET', { fine: true, splitFont: true })).toEqual(['(one) Tj /F1 14 Tf (two) Tj']);
   });
   it('createTaggedPdf turns it off for right-to-left languages and passes it to the probe and the page step', () => {
     expect(PIPE.includes("const _splitFont = !/^(ar|he|iw|fa|ur|ps|yi|dv|sd|ug|ckb|syr)(-|$)/i.test(lang);")).toBe(true);
-    expect(PIPE.includes('_stage4_probeSegmentTexts(_srcBytes.slice(), { splitFont: _splitFont })')).toBe(true);
-    expect(PIPE.includes('{ repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts }')).toBe(true);
+    expect(PIPE.includes('_stage4_probeSegmentTexts(_srcBytes.slice(), { splitFont: _splitFont, slowPages: _probeSlowPages })')).toBe(true);
+    expect(PIPE.includes('{ repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts, releaseArtifactProse: _releaseArtifactProse, crops: _cropsByPage.get(pi + 1) || null, proseFormFirst: _proseFormFirst }')).toBe(true);
   });
   const it_ = (str, y) => ({ str, y });
   const pages = (n, extra) => Array.from({ length: n }, (_, p) => [it_('Page ' + (p + 1) + ' Agenda', 760), it_('of', 400), it_('and', 300), it_('body ' + p, 500), it_('footer text', 40)].concat(extra || []));
@@ -559,10 +574,11 @@ describe('one line for one coverage cause in the connector', () => {
 });
 describe('a table header row repeated on every page', () => {
   it('stays content on its first page (TH text or a whole-word part of one; TD by exact text)', () => {
-    expect(PIPE.includes("const _partOfTh = (n) => _tdTexts.has(n) || _thTexts.some((t) => t === n || (' ' + t + ' ').indexOf(' ' + n + ' ') !== -1);")).toBe(true);
+    // (2026-11-03) and a whole-word part (12+ chars) of a prose leaf: tests/e2e/pdf_repeated_footnote_form.spec.ts
+    expect(PIPE.includes("const _partOfTh = (n) => _tdTexts.has(n) || _thTexts.some((t) => t === n || (' ' + t + ' ').indexOf(' ' + n + ' ') !== -1)\n")).toBe(true);
     expect(PIPE.includes("const _keptHere = !!(s4opts && s4opts.keepFirstArtifacts && norm && s4opts.keepFirstArtifacts.get(norm) === pi);")).toBe(true);
     expect(PIPE.includes('(hasArtifacts && norm && artifactHashSet.has(norm) && !_keptHere)')).toBe(true);
-    expect(PIPE.includes('keepFirstArtifacts: _keepFirstArtifacts }')).toBe(true);
+    expect(PIPE.includes('keepFirstArtifacts: _keepFirstArtifacts, releaseArtifactProse: _releaseArtifactProse, crops: _cropsByPage.get(pi + 1) || null, proseFormFirst: _proseFormFirst }')).toBe(true);
   });
 });
 
@@ -651,8 +667,11 @@ describe('numeric fidelity credits the numbers a list draws', () => {
   });
   it('is added on both numeric checks', () => {
     // (2026-10-28) followed by the page-folio credit (tests/remediation_page_range_slice.test.js)
-    expect(PIPE.includes("_numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)) + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)) + ' ' + _alloFolioNumbers(")).toBe(true);
-    expect(PIPE.includes("_numericFidelityLosses(_srcRaw, htmlToPlainText(_finalForIntegrity) + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity) + ' ' + _alloFolioNumbers(")).toBe(true);
+    // (2026-11-03) the output text is a named local now (the axis-scale credit reads it too)
+    expect(PIPE.includes("const _outPlainR = htmlToPlainText(_stripSinks(html));")).toBe(true);
+    expect(PIPE.includes("_numericFidelityLosses(sourceText, _outPlainR + ' ' + _alloListMarkerNumbers(sourceText, _stripSinks(html)) + ' ' + _alloFolioNumbers(")).toBe(true);
+    expect(PIPE.includes("const _outPlainV = htmlToPlainText(_finalForIntegrity);")).toBe(true);
+    expect(PIPE.includes("_numericFidelityLosses(_srcRaw, _outPlainV + ' ' + _alloListMarkerNumbers(_srcRaw, _finalForIntegrity) + ' ' + _alloFolioNumbers(")).toBe(true);
   });
 });
 
@@ -725,7 +744,9 @@ describe('tagged PDF: repeated labels and link placement', () => {
   it('a picture the source marks as decoration stays its artifact; its figure leaves the tag tree in draw order (complaint, veraPDF 7.1-2)', () => {
     expect(PIPE.includes('const _artSpans = _stage4_scanMarks(s0).artifactSpans;')).toBe(true); // images too, not only forms
     expect(PIPE.includes("if (inArtifact) { imageBlockInfo.push({ artifact: true, xref: imgRefs.get(name) || '' }); return m; }")).toBe(true);
-    expect(PIPE.includes('mcidCount: contentMcid + imageBlocks.filter((b) => !b.artifact).length')).toBe(true);
+    // (2026-11-04) one parent entry per MCID (a vector-crop figure owns several); an artifact picture has none
+    expect(PIPE.includes('mcidCount: _parentByMcid.length')).toBe(true);
+    expect(PIPE.includes("if (info.artifact) { imageBlocks.push({ artifact: true, xref: info.xref }); continue; } // the source's own artifact: no element")).toBe(true);
     expect(PIPE.includes('withArtifacts.some((d) => d.artifact) && figureLeaves.length === withArtifacts.length')).toBe(true);
   });
   it('a top-level leaf left out of the tag tree also leaves structElemRefs (which re-attaches top-level elements later)', () => {
@@ -762,13 +783,16 @@ describe('tagged PDF: repeated labels and link placement', () => {
   });
   it('a sub-line label may match its printed letter alone, between its neighbours (irs1040 "35b Routing number")', () => {
     expect(PIPE.includes("const _subLine = /^\\d{1,3}[a-z][a-z]{3,}/.test(tKey) ? tKey.replace(/^\\d{1,3}/, '') : null;")).toBe(true);
-    expect(PIPE.includes('|| (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null);')).toBe(true);
+    expect(PIPE.includes('|| (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null)')).toBe(true);
+    // (2026-11-03) then a named link's printed address (behaviour: e2e pdf_tagged_rules_and_named_links)
+    expect(PIPE.includes('|| (_urlRun && (_urlRun[_urlRun.length - 1] < hi || (blockStream[hi] && String(blockStream[hi].pageRef) === String(blockStream[_urlRun[0]].pageRef))) ? { start: _urlRun[0], end: _urlRun[_urlRun.length - 1] } : null);')).toBe(true);
   });
   it('child-find: exact printed text wins inside the reworded pass; a footer matching only claimed text is off the page', () => {
     // exact-first over ADJACENT free blocks, starting after the last linked leaf in the forward rounds
     expect(PIPE.includes("const _exact = _exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null;")).toBe(true);
     // words printed nowhere -> the rest counts only in unclaimed text
-    expect(PIPE.includes('if (lw.length === 1 ? uni.has(lw[0]) : (missing ? longestRunFree(lw) : longestRun(lw)) >= need) continue;')).toBe(true);
+    // (2026-11-04) part of the one "printed" test, which must also hold near the leaf (e2e pdf_vector_chart_and_picture_table_figures)
+    expect(PIPE.includes('|| (lw.length === 1 ? uni.has(lw[0]) : (missing ? longestRunFree(lw) : longestRun(lw)) >= need)')).toBe(true);
   });
   it('child-find: field appearances drawn with an unembedded font are redrawn BEFORE Stage 7 decides what is unrepairable', () => {
     const redraw = PIPE.indexOf("if (bad) { try { _acroFormForSave.markFieldAsDirty(field.ref); _redrawn++; } catch (_) {} }");
@@ -776,7 +800,7 @@ describe('tagged PDF: repeated labels and link placement', () => {
     const save = PIPE.indexOf('const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false, updateFieldAppearances: !_fieldAppearancesDrawn });');
     expect(redraw > 0 && redraw < stage7 && stage7 < save).toBe(true);
     // annotation appearance fonts are repair candidates; the form's default resources are not
-    expect(PIPE.includes("for (const s of streams) if (s && s.dict && typeof s.dict.get === 'function') _addFontsFrom(s.dict.get(PDFName.of('Resources')));")).toBe(true);
+    expect(PIPE.includes("for (const s of streams) if (s && s.dict && typeof s.dict.get === 'function') _addFontsFrom(s.dict.get(PDFName.of('Resources')), 0, s);")).toBe(true);
     expect(PIPE.includes("_addFontsFrom(af.get(PDFName.of('DR')))")).toBe(false);
   });
   it('child-find: an artifact or unmarked copy of text the page already prints is read once (overlay)', () => {
@@ -795,7 +819,7 @@ describe('tagged PDF: repeated labels and link placement', () => {
     expect(PIPE.includes('const hit = _alloBetweenNeighboursRun(blockStream, _bnFree, tKey, lo, hi,')).toBe(true);
     expect(PIPE.includes('(_host = _alloLinkHostPlan(_alloLinkedLeafBlocks, String(page.ref), lk, _lnkHostUsed))')).toBe(true);
     // an unplaced link keeps the old document-level placement
-    expect(PIPE.includes('if (_host) _lnkPlaced.push({ host: _host, linkElemRef, linkElemDict, objrDict });\n            else linkAnnotElemRefs.push(linkElemRef);')).toBe(true);
+    expect(PIPE.includes('if (_host) _lnkPlaced.push({ host: _host, linkElemRef, linkElemDict, objrDict, uri, pi, parentAt: parentTreeNums.length + 1, more: [] });\n            else linkAnnotElemRefs.push(linkElemRef);')).toBe(true);
   });
 });
 
@@ -806,7 +830,7 @@ const queue = (pdfFixResult) => new Function('pdfFixResult', '_reviewFindingsLiv
 describe('review queue in the app', () => {
   it('shows an acknowledged reminder as a queue item (its triage verdict carries the AI reason)', () => {
     const src = queue({ axeAudit: { incomplete: [] }, secondEngineAudit: { potentialFindings: [{ id: 'text_quoted_correctly', description: 'q', nodes: 1 }], manualFindings: [],
-      acknowledgedByAiReview: [{ id: 'style_color_misuse', description: 'Verify color', nodes: 1, bucket: 'potential', reason: 'Only focus styles.' }, { id: 'x_manual', description: 'm', nodes: 2, bucket: 'manual' }] } });
+      acknowledgedByAiReview: [{ id: 'style_color_misuse', description: 'Verify color', nodes: 1, bucket: 'potential', reason: 'Only the focus styles use colour.' }, { id: 'x_manual', description: 'm', nodes: 2, bucket: 'manual' }] } });
     expect(src.findings.map((f) => f.engine + '|' + f.bucket + '|' + f.id)).toEqual(['equalAccess|potential|text_quoted_correctly', 'equalAccess|potential|style_color_misuse', 'equalAccess|manual|x_manual']);
   });
   it('the queue labels a not-an-issue verdict with the AI reason (translated label)', () => {

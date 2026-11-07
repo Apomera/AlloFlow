@@ -266,10 +266,10 @@ function getDriver() {
 
 async function validatePdfUaLocally(filePath, onProgress, signal) {
   try {
-    const result = await getDriver().validatePdfUaCli({
+    const result = await Verification.retryValidatorTimeoutOnce(() => getDriver().validatePdfUaCli({
       filePath, onProgress, onLog: onProgress, signal,
       timeoutMs: 300000, maxBytes: MAX_PDF_BYTES,
-    });
+    }), onProgress, signal);
     return {
       validator: 'veraPDF CLI',
       validatorVersion: result.validatorVersion || undefined,
@@ -2841,6 +2841,12 @@ function safeTaggedPdfExportMode(value) {
   return TAGGED_PDF_EXPORT_MODES.has(value) ? value : null;
 }
 
+// Page-authored text can appear in a note (a quoted heading), so it stays bounded plain text. Advisory only.
+function safeTaggedPdfReadingNotes(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 8).filter((x) => typeof x === 'string' && x.trim()).map((x) => x.slice(0, 400));
+}
+
 function safeAuditCoverage(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return {
@@ -2924,6 +2930,33 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   } else if (opts.validateUa) {
     pdfUa = { skipped: out.taggedPdfB64 ? 'tagged PDF not written' : 'no tagged PDF (office input or tagged_pdf: false)' };
   }
+  // (2026-11-05) A coverage hold keeps its finished PDF aside under a name that says so, checked now, so a person's
+  // confirmation can release these exact bytes (pdf_release_held_tagged_pdf). It is not files.taggedPdf.
+  let heldTaggedPdf = null;
+  const heldRaw = Verification.isPersonReleasableHold(out.taggedPdfError) && out.taggedPdfHeld && typeof out.taggedPdfHeld.b64 === 'string'
+    ? Buffer.from(out.taggedPdfHeld.b64, 'base64') : null;
+  if (heldRaw && heldRaw.length > 5 && heldRaw.subarray(0, 5).toString('latin1') === '%PDF-'
+    && out.taggedPdfHeld.delivery && out.taggedPdfHeld.delivery.ok === true) {
+    files.heldTaggedPdf = claimOutputPath(outDir, stem + '-tagged-held-for-review.pdf');
+    atomicWriteBytes(files.heldTaggedPdf, heldRaw, 0o600, true);
+    let heldValidation;
+    if (opts.validateUa) {
+      try {
+        heldValidation = await withPdfUaSlot(signal, onLog, () => validatePdfUaLocally(files.heldTaggedPdf, onLog, signal));
+      } catch (e) {
+        if (signal && signal.aborted) throw e;
+        heldValidation = { error: (e && e.message) || String(e) };
+      }
+    }
+    const heldSha256 = await sha256File(files.heldTaggedPdf);
+    heldTaggedPdf = {
+      sha256: heldSha256, bytes: heldRaw.length,
+      delivery: safeTaggedPdfDelivery(out.taggedPdfHeld.delivery),
+      exportMode: safeTaggedPdfExportMode(out.taggedPdfHeld.exportMode),
+      readingNotes: safeTaggedPdfReadingNotes(out.taggedPdfHeld.readingNotes),
+      pdfUa: Verification.pdfUaEvidence(heldValidation, { requested: !!opts.validateUa, hasPdf: true, sha256: heldSha256, bytes: heldRaw.length }),
+    };
+  }
   const summary = {
     input: filePath,
     files,
@@ -2953,6 +2986,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     remainingEqualAccessFailures: boundedEvidenceCount(out.remainingEqualAccessFailures),
     taggedPdfDelivery: safeTaggedPdfDelivery(out.taggedPdfDelivery),
     taggedPdfExportMode: safeTaggedPdfExportMode(out.taggedPdfExportMode),
+    taggedPdfReadingNotes: safeTaggedPdfReadingNotes(out.taggedPdfReadingNotes),
     activeContentScanVerified: safeEvidenceBoolean(out.activeContentScanVerified),
     activeContentDetected: safeEvidenceBoolean(out.activeContentDetected),
     auditCoverage: safeAuditCoverage(out.auditCoverage),
@@ -2975,6 +3009,11 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     }
   } catch (_) {}
   Verification.applyPdfDeliveryEvidence(summary, pdfEvidence);
+  if (Verification.isPersonReleasableHold(out.taggedPdfError)) {
+    if (heldTaggedPdf) summary.heldTaggedPdf = heldTaggedPdf;
+    else if (out.taggedPdfHeldUnavailable) summary.heldTaggedPdfUnavailable = String(out.taggedPdfHeldUnavailable).slice(0, 600);
+    summary.coverageRelease = Verification.coverageReleaseStatus(summary);
+  }
   summary.deliveryExplanation = Verification.explainDelivery(summary);
   if (files.taggedPdf && pdfEvidence.status !== 'passed') {
     const reviewPath = claimOutputPath(outDir, stem + '-tagged-review-required.pdf');
@@ -3355,6 +3394,23 @@ const TOOLS = [
     },
     annotations: { title: 'Validate PDF/UA-1 conformance', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
   },
+  {
+    name: 'pdf_release_held_tagged_pdf',
+    title: 'Release a tagged PDF a person has confirmed',
+    description: "Release a tagged PDF that a run held because some words could not be matched between the original and the accessible version, or because a scan correction involves a number. Call this ONLY after a real person has said they checked every word in the report's coverageRelease.wordsToConfirm and every correction in coverageRelease.correctionsToConfirm against the original and nothing is lost or changed. Never call it on your own judgment, and never to make a run look finished: show the person the list and ask. It releases the exact held file without re-running, records the person's name in the report, and leaves a caution on the verdict. It refuses if the source, HTML or held PDF changed, if the list differs from the code, or if the hold is one a person cannot settle (unread pages, more than a tenth of the words unmatched, a list that is not complete, a PDF that did not pass veraPDF, or another check still blocking).",
+    inputSchema: {
+      type: 'object',
+      required: ['report_path', 'confirmed_by', 'coverage_fingerprint'],
+      properties: {
+        report_path: { type: 'string', description: 'Absolute path to the run\'s <name>-remediation-report.json' },
+        confirmed_by: { type: 'string', minLength: 2, maxLength: 200, description: 'Name or role of the person who checked the words, as they gave it. Never your own name or a model name.' },
+        coverage_fingerprint: { type: 'string', pattern: '^[a-f0-9]{16}$', description: 'coverageRelease.fingerprint from that report: ties the confirmation to the exact word list shown.' },
+        note: { type: 'string', maxLength: 1000, description: 'Optional: what the person said about the words.' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Release a tagged PDF a person has confirmed', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  },
   (() => {
     const REMEDIATE_OPTION_PROPS = {
       effort: { type: 'string', enum: ['standard', 'thorough'], description: 'Thorough enables 3 fix passes, 1 polish pass, bounded auto-continue and independent PDF/UA validation. Explicit options override the preset.' },
@@ -3719,7 +3775,8 @@ const S_AUDIT = obj({
 });
 const S_REMEDIATE = obj({
   input: S_STR,
-  files: obj({ accessibleHtml: S_STR, taggedPdf: S_STR, report: S_STR, completionManifest: S_STR }),
+  files: obj({ accessibleHtml: S_STR, taggedPdf: S_STR, heldTaggedPdf: S_STR, report: S_STR, completionManifest: S_STR }),
+  heldTaggedPdf: {}, heldTaggedPdfUnavailable: S_STR, coverageRelease: {},
   resources: { type: 'array', items: obj({ role: S_STR, label: S_STR, uri: S_STR, path: S_STR, mimeType: S_STR }, ['role', 'uri']) },
   verdict: strictObj({
     level: { type: 'string', enum: ['ready', 'caution', 'review'] },
@@ -3743,6 +3800,7 @@ const S_REMEDIATE = obj({
     },
   }, ['ok', 'code'], true),
   taggedPdfExportMode: { type: ['string', 'null'], enum: ['original_layout', 'clean_rebuild', null] },
+  taggedPdfReadingNotes: { type: 'array', items: S_STR, description: 'Things in the delivered tagged PDF\'s tag tree a person should look at (several top-level headings, steps back to an earlier page, stray fragments, undescribed pictures). Advisory: they never change the verdict or hold the PDF. Also listed under deliveryExplanation.quickChecks.' },
   activeContentScanVerified: S_NULLABLE_BOOL,
   activeContentDetected: S_NULLABLE_BOOL,
   auditCoverage: strictObj({
@@ -3910,6 +3968,10 @@ const OUTPUT_SCHEMAS = {
     inputSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
     inputBytes: S_NUM, validatedAt: S_STR, validationDurationMs: S_NUM, note: S_STR,
   }, ['compliant', 'inputSha256', 'inputBytes', 'validatedAt']),
+  pdf_release_held_tagged_pdf: obj({
+    released: S_BOOL, alreadyReleased: S_BOOL, code: S_STR, message: S_STR, taggedPdf: S_STR, report: S_STR,
+    verdict: {}, deliveryStatus: S_STR, confirmedBy: S_STR, deliveryExplanation: {},
+  }, ['released']),
   pdf_remediate: S_REMEDIATE,
   pdf_remediate_start: S_JOB_START,
   pdf_batch_audit_start: S_JOB_START,
@@ -4724,6 +4786,50 @@ const TOOL_HANDLERS = {
     }, result);
   },
 
+  async pdf_release_held_tagged_pdf(args) {
+    assertAllowedKeys(args, ['report_path', 'confirmed_by', 'coverage_fingerprint', 'note'], 'arguments');
+    const refuse = (code, message) => ({ released: false, code, message });
+    if (typeof args.report_path !== 'string' || !path.isAbsolute(args.report_path) || !/-remediation-report(-\d+)?\.json$/i.test(args.report_path)) {
+      throw new Error('report_path must be the absolute path of a <name>-remediation-report.json');
+    }
+    const confirmedBy = typeof args.confirmed_by === 'string' ? args.confirmed_by.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim() : '';
+    if (confirmedBy.length < 2 || confirmedBy.length > 200) throw new Error('confirmed_by must name the person who checked the words (2-200 characters)');
+    if (typeof args.coverage_fingerprint !== 'string' || !/^[a-f0-9]{16}$/.test(args.coverage_fingerprint)) throw new Error('coverage_fingerprint must be coverageRelease.fingerprint from the report');
+    const note = typeof args.note === 'string' ? args.note.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 1000) : '';
+    const reportPath = enforceAllowedRoot(path.resolve(args.report_path), 'report');
+    if (!fs.existsSync(reportPath) || fs.statSync(reportPath).size > 8 * 1024 * 1024) return refuse('report-unreadable', 'The report could not be read.');
+    let report;
+    try { report = JSON.parse(authorizedReadFileSync(reportPath, 'utf8')); } catch (_) { return refuse('report-unreadable', 'The report could not be read.'); }
+    if (!isPlainObject(report) || !isPlainObject(report.files) || path.resolve(String(report.files.report || '')) !== reportPath) return refuse('report-changed', 'This is not the report the run wrote.');
+    const status = (r) => ({ verdict: r.verdict, deliveryStatus: r.deliveryStatus, deliveryExplanation: r.deliveryExplanation });
+    const done = report.contentCoverage && report.contentCoverage.personConfirmation;
+    if (done) return { released: true, alreadyReleased: true, taggedPdf: report.files.taggedPdf, report: reportPath, confirmedBy: done.confirmedBy, ...status(report) };
+    const eligibility = Verification.coverageReleaseStatus(report);
+    if (!eligibility.eligible) return refuse(eligibility.code, eligibility.message);
+    if (eligibility.fingerprint !== args.coverage_fingerprint) return refuse('fingerprint-mismatch', 'That code does not match the word list in this report. Show the person the current list and ask again.');
+    const outDir = path.dirname(reportPath);
+    const heldPath = enforceAllowedRoot(path.resolve(String(report.files.heldTaggedPdf)), 'held PDF');
+    const htmlPath = enforceAllowedRoot(path.resolve(String(report.files.accessibleHtml || '')), 'accessible HTML');
+    const sourcePath = enforceAllowedRoot(path.resolve(String(report.input || '')), 'source file');
+    if (path.dirname(heldPath) !== outDir || !report.files.completionManifest) return refuse('report-changed', 'The report does not match the files beside it.');
+    // Tampering or an edit after the check sends the person back to look again. The manifest binds source and report.
+    let manifest = null;
+    try { manifest = JSON.parse(authorizedReadFileSync(report.files.completionManifest, 'utf8')); } catch (_) {}
+    const compatibility = manifest && manifest.compatibility ? { inputSha256: report.contentCoverage.sourceSha256, optionsSha256: manifest.compatibility.optionsSha256, engineSha256: manifest.compatibility.engineSha256 } : null;
+    if (!compatibility || !await validateCompletionManifest(path.resolve(report.files.completionManifest), sourcePath, outDir, compatibility)) return refuse('files-changed', 'The original or the report changed after this run, so the confirmation no longer applies. Run the document again.');
+    if (!fs.existsSync(htmlPath) || await sha256File(htmlPath) !== report.contentCoverage.htmlSha256) return refuse('files-changed', 'The accessible version changed after the words were listed, so the confirmation no longer applies. Run the document again.');
+    if (!fs.existsSync(heldPath) || await sha256File(heldPath) !== report.heldTaggedPdf.sha256) return refuse('files-changed', 'The held PDF is missing or changed, so it cannot be released. Run the document again.');
+    const heldBytes = authorizedReadFileSync(heldPath);
+    const pdfPath = claimOutputPath(outDir, path.basename(heldPath).replace(/-tagged-held-for-review(-\d+)?\.pdf$/i, '-tagged.pdf'));
+    atomicWriteBytes(pdfPath, heldBytes, 0o600, true);
+    if (await sha256File(pdfPath) !== report.heldTaggedPdf.sha256) throw new Error('The released PDF did not read back identically.');
+    const released = Verification.applyCoverageRelease(report, { confirmedBy, note, at: new Date().toISOString(), taggedPdfPath: pdfPath });
+    atomicWriteJson(reportPath, released, 0o600, true);
+    await writeCompletionManifest(sourcePath, outDir, released, compatibility, manifest.attempt);
+    fs.unlinkSync(heldPath);
+    return { released: true, alreadyReleased: false, taggedPdf: pdfPath, report: reportPath, confirmedBy, ...status(released) };
+  },
+
   async pdf_remediate(args, ctx) {
     assertAllowedKeys(args, ['file_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);
@@ -5494,6 +5600,8 @@ function startHttpTransport(port) {
     if (req.method !== 'POST') { res.writeHead(405); res.end('method not allowed'); return; }
     let body = '';
     let tooLarge = false;
+    // A letter whose UTF-8 bytes straddle two packets became two U+FFFD with `body += chunk` (2026-11-07).
+    req.setEncoding('utf8');
     req.on('data', (chunk) => { if (tooLarge) return; body += chunk; if (body.length > MAX_LINE_CHARS) { tooLarge = true; res.writeHead(413); res.end('payload too large'); req.destroy(); } });
     req.on('end', async () => {
       if (tooLarge) return;

@@ -7,24 +7,16 @@
 //    font dict; a Type0 program lives on its descendant CIDFont, a Type3 font draws with procedures).
 // The REAL createTaggedPdf runs in Chromium; the substitute fonts come from the CDN (skips when offline).
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const ROOT = path.resolve(__dirname, '../..');
-const VENDOR = path.join(ROOT, 'desktop/mcp/vendor');
 
 async function boot(page) {
-  await page.route('https://alloflow.test/**', (route) => {
-    const u = new URL(route.request().url());
-    if (u.pathname.startsWith('/vendor/')) return route.fulfill({ body: fs.readFileSync(path.join(VENDOR, u.pathname.slice(8))), contentType: 'application/javascript' });
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
-  });
-  await page.goto('https://alloflow.test/boot');
-  for (const f of ['pdfjs.min.js', 'pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js']) await page.addScriptTag({ path: path.join(VENDOR, f) });
+  await bootDocumentRuntime(page);
   for (const f of ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_validator_module.js']) await page.addScriptTag({ path: path.join(ROOT, f) });
   await page.evaluate(() => {
     const W: any = window;
-    W.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://alloflow.test/vendor/pdf.worker.min.js';
     W.__tag = async (bytes: Uint8Array) => {
       const pipeline = W.AlloModules.createDocPipeline({ callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null, addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => 'Doc', state: {} });
       const tagged = await pipeline.createTaggedPdf(bytes, { accessibleHtml: '<!DOCTYPE html><html lang="en"><head><title>Doc</title></head><body><main><p>Times text for families.</p></main></body></html>' }, { title: 'Doc', lang: 'en' });

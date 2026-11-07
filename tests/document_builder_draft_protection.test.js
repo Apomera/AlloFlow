@@ -17,8 +17,9 @@ function callback(name, bindings) {
 }
 function hostCapture(bindings) {
   const start = hostSource.indexOf('  const _captureBuilderDraft =');
-  const end = hostSource.indexOf('  const getBuilderGuidedDeliveryContext =', start);
-  return new Function(...Object.keys(bindings), hostSource.slice(start, end) + ';return _captureBuilderDraft;')(...Object.values(bindings));
+  // Up to the function's own closing line: what the host declares after it (hooks included) is not part of this test.
+  const close = /\r?\n  \};\r?\n/.exec(hostSource.slice(start));
+  return new Function(...Object.keys(bindings), hostSource.slice(start, start + close.index + close[0].length) + 'return _captureBuilderDraft;')(...Object.values(bindings));
 }
 function doc(html) { const d = document.implementation.createHTMLDocument('Lesson'); d.body.innerHTML = html; return d; }
 function html(body) { return '<!doctype html><html><head><title>Lesson</title></head><body>' + body + '</body></html>'; }

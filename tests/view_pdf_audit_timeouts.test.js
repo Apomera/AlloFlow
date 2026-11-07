@@ -34,7 +34,7 @@ describe('anti-drift: Compare PDF-preview no longer leaks the pdf.js doc + is bo
     expect(audit).toMatch(/try \{ doc\.destroy\(\); \} catch \(_\) \{\} if \(_cmpPdfDoc === doc\) _cmpPdfDoc = null;/);  // completion
   });
   it('bounds getDocument / getPage / render with _withTimeout', () => {
-    expect(audit).toMatch(/_withTimeout\(pdfjs\.getDocument\(\{ data: _b64ToBytes\(b64\) \}\)\.promise, 30000, 'Compare getDocument'\)/);
+    expect(audit).toMatch(/_withTimeout\(pdfjs\.getDocument\(\{ data: _b64ToBytes\(b64\), isEvalSupported: false \}\)\.promise, 30000, 'Compare getDocument'\)/);
     expect(audit).toMatch(/_withTimeout\(doc\.getPage\(n\), 30000, 'Compare getPage '/);
     expect(audit).toMatch(/_withTimeout\(page\.render\([\s\S]{0,80}\)\.promise, 30000, 'Compare render '/);
   });

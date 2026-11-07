@@ -155,7 +155,7 @@ describe('a page\'s own printed number is not a lost value', () => {
     expect(folios(null)).toBe('');
   });
   it('both numeric checks add it to the output side', () => {
-    expect((PIPE.match(/ \+ ' ' \+ _alloFolioNumbers\(typeof window !== 'undefined' \? window\.__lastGroundTruthPageMap : null\)\);/g) || []).length).toBe(2);
+    expect((PIPE.match(/ \+ ' ' \+ _alloFolioNumbers\(typeof window !== 'undefined' \? window\.__lastGroundTruthPageMap : null\)/g) || []).length).toBe(2);
   });
 });
 describe('decorative figure slots need no picture', () => {

@@ -19,8 +19,10 @@ const errLog = fs.createWriteStream(path.join(work, 'server.err.log'));
 child.stderr.pipe(errLog);
 let buffer = '', nextId = 1;
 const waiting = new Map();
+// Decode across chunks: per-chunk toString split a letter's UTF-8 bytes into two U+FFFD (Urdu prompt, 2026-11-07).
+child.stdout.setEncoding('utf8');
 child.stdout.on('data', chunk => {
-  buffer += chunk.toString('utf8');
+  buffer += chunk;
   let nl;
   while ((nl = buffer.indexOf(String.fromCharCode(10))) >= 0) {
     const line = buffer.slice(0, nl); buffer = buffer.slice(nl + 1);

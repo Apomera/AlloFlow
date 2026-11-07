@@ -107,6 +107,7 @@ function buildManifest() {
     { name: 'remediation_setup', description: 'One-time Chromium download via Playwright. Idempotent; needs no API key.' },
     { name: 'pdf_audit', description: 'Accessibility audit of a local PDF/DOCX/PPTX: score, issues, scanned detection, language.' },
     { name: 'pdf_validate_ua', description: 'Independent PDF/UA-1 (ISO 14289-1) validation via veraPDF. Needs no API key.' },
+    { name: 'pdf_release_held_tagged_pdf', description: 'Release a held tagged PDF after a real person has checked every listed word. Needs no API key.' },
     { name: 'pdf_remediate', description: 'Full remediation (synchronous): accessible HTML + tagged PDF + honesty-checked verdict.' },
     { name: 'pdf_remediate_start', description: 'Start a remediation as a background job; returns a job id immediately.' },
     { name: 'pdf_batch_audit_start', description: 'Background job auditing a whole folder into one triage scoreboard (JSON + CSV). The cheap pass before remediating.' },

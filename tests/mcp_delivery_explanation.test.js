@@ -20,7 +20,42 @@ const withPdf = (extra) => Object.assign({
   taggedPdfDelivery: { ok: true, code: 'verified' },
 }, extra);
 
+describe('deliveryExplanation (2026-11-07 fresh-run wording)', () => {
+  const GEN = 'WCAG verification is review-required; review the engine coverage and unresolved evidence before distribution';
+  it('names the AI review\'s finding when it is what holds the document (Persian: "see the review findings" pointed at nothing)', () => {
+    const e = Verification.explainDelivery({ deliveryStatus: 'review-required', taggedPdfError: 'distribution_review_required', verdictReasons: { review: [GEN] },
+      verification: { ai: { issues: [{ ruleId: 'other', severity: 'minor', issue: 'A small thing.' }, { ruleId: 'reading-order', severity: 'critical', issue: 'Page numbers sit inside sentences.', location: 'در محیطی' }] } } });
+    expect(e.needsAPerson[0]).toBe('The AI review found (critical): Page numbers sit inside sentences. Near: "در محیطی".');
+    expect(e.needsAPerson.join(' ')).not.toMatch(/see the review findings/);
+    expect(e.headline).toMatch(/Separately, 2 findings need a person/);
+  });
+  // The count leaves out the merged coverage line, which is labelled as the tagged-PDF item's own (2026-11-02 design).
+  it('says plainly when no PDF exists to release (nist-cyber: "held back", then "nothing could be kept aside")', () => {
+    const e = Verification.explainDelivery({ deliveryStatus: 'review-required', taggedPdfError: 'content_coverage_requires_review',
+      verdictReasons: { review: [GEN, 'content fidelity needs a human check (possible loss or changed values)', 'Source content coverage requires review'] },
+      contentCoverage: { missingWords: [{ word: 'rmfs', count: 1 }] }, coverageRelease: { eligible: false, code: 'no-held-pdf', message: 'No tagged PDF could be kept aside for release (distribution_review_required), so confirming the words alone will not produce one.' },
+      verification: { ai: { issues: [{ severity: 'moderate', issue: 'Garbled characters.' }] } } });
+    expect(e.needsAPerson.filter((x) => !/listed with the tagged-PDF item below/.test(x)).length).toBe(Number((/Separately, (\d+) finding/.exec(e.headline) || [])[1]));
+    const item = e.items.find((i) => i.code === 'content_coverage_requires_review');
+    expect(item.meaning).toMatch(/another check \(named above\) also stopped the tagged PDF, so none was made/);
+    expect(item.meaning).not.toMatch(/held back/);
+    expect(item.nextStep).toMatch(/^Deal with the items named above first/);
+  });
+});
+
 describe('deliveryExplanation', () => {
+  // 2026-11-06: fda and childfind5 lost a page read and passed on a rerun; "running again gives the same result" was wrong there.
+  it('asks for a rerun when a page could not be read in time, and only then', () => {
+    const explain = (why) => Verification.explainDelivery({ verificationState: 'complete-for-tested-scope', taggedPdfError: 'tagged_pdf_delivery_unverified (validator-failed: ' + why + ')' }).items[0];
+    const busy = explain('No orphaned semantic leaves; page text read timed out');
+    expect(busy.meaning).toMatch(/could not read every page in time/);
+    expect(busy.nextStep).toMatch(/^Run the document again/);
+    expect(busy.nextStep).not.toMatch(/gives the same result/);
+    const steady = explain('No orphaned semantic leaves');
+    expect(steady.nextStep).toMatch(/Running again gives the same result/);
+    expect(DRIVER).toContain("'; page text read timed out'");
+  });
+
   it('names a run that did not request veraPDF as not-requested, not unavailable', () => {
     const s = withPdf();
     Verification.applyPdfDeliveryEvidence(s, Verification.pdfUaEvidence(null, { hasPdf: true, requested: false }));
@@ -187,7 +222,8 @@ describe('deliveryExplanation', () => {
   });
 
   it('is written onto every report', () => {
-    expect(SERVER).toMatch(/applyPdfDeliveryEvidence\(summary, pdfEvidence\);\s*summary\.deliveryExplanation = Verification\.explainDelivery\(summary\);/);
+    // Only the coverage-release data may sit between them: the explanation must read the final evidence (2026-11-05).
+    expect(SERVER).toMatch(/applyPdfDeliveryEvidence\(summary, pdfEvidence\);\s*if \(Verification\.isPersonReleasableHold\(out\.taggedPdfError\)\) \{[^}]*\}\s*summary\.deliveryExplanation = Verification\.explainDelivery\(summary\);/);
   });
 });
 

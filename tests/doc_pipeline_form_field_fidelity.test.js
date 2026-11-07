@@ -56,6 +56,21 @@ describe('form-field loss is reported, not swallowed', () => {
     expect(n.msg).toMatch(/field label/);
   });
 
+  // (2026-11-05, keyless childfind5) As a review item it held back the tagged PDF it recommends, which keeps every field.
+  it('is a disclosure, not a review item that withholds the tagged PDF', () => {
+    const n = find(notesFor('t', '<main></main>', { formFields: { fields: 60, widgets: 62, withAccessibleName: 52 } }), 'formFields');
+    expect(n.caution).toBe(true);
+  });
+
+  it('says how many fields a screen reader cannot name, only when some are labelled and some are not', () => {
+    const some = find(notesFor('t', '<main></main>', { formFields: { fields: 60, widgets: 62, withAccessibleName: 52 } }), 'formFields');
+    expect(some.msg).toMatch(/8 field\(s\) have no label of their own/);
+    const all = find(notesFor('t', '<main></main>', { formFields: { fields: 60, widgets: 62, withAccessibleName: 60 } }), 'formFields');
+    expect(all.msg).not.toMatch(/no label of their own/);
+    const none = find(notesFor('t', '<main></main>', { formFields: { fields: 4, widgets: 4, withAccessibleName: 0 } }), 'formFields');
+    expect(none.msg).not.toMatch(/no label of their own/);
+  });
+
   it('omits the label clause when the source supplied none', () => {
     const n = find(notesFor('t', '<main></main>', { formFields: { fields: 4, widgets: 4, withAccessibleName: 0 } }), 'formFields');
     expect(n.msg).toContain('4 field(s)');

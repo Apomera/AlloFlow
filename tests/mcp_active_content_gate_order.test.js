@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 import { sliceBetween } from './helpers/anchored_slice.js';
 
 const SRC = readFileSync(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'), 'utf8');
-const body = sliceBetween(SRC, 'const activeScan = cur && cur.activeContent;', 'if(contentCoverage.reviewRequired)', { file: 'remediation_headless_driver.cjs', includeStart: true });
+const body = sliceBetween(SRC, 'const activeScan = cur && cur.activeContent;', 'coverageHold = !!contentCoverage.reviewRequired;', { file: 'remediation_headless_driver.cjs', includeStart: true });
 const gate = new Function('cur', 'let activeContentDetected = false, activeContentScanVerified = false;\ntry {\n' + body
   + '\nreturn { ok: true, activeContentDetected, activeContentScanVerified };\n} catch (e) { return { error: e.message, activeContentDetected, activeContentScanVerified }; }');
 const scan = (o) => ({ activeContent: Object.assign({ schema: 1, complete: true, pageScanFailures: 0, unexaminedStructures: 0, any: false, findings: [], externalLinks: 3 }, o) });

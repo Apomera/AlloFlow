@@ -127,7 +127,7 @@ describe('B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carri
   it('the Fix Remaining handler sweeps THIS run and commits fidelityNotes/fidelityLimited (WARN-only)', () => {
     // Now also receives the source links, so link loss is part of the fidelity
     // comparison rather than a separate afterthought.
-    expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml, _srcLinks/);
+    expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml, \(_srcLinks \|\| _srcTables\)/);
     expect(vp).toMatch(/_docPipeline\.numericFidelityLosses\(_srcRaw, _outText\)/);
     expect(vp).toMatch(/_docPipeline\.checkReadingOrderPreserved\(prevSnapshot\.html, bestHtml\)/);
     // Harness repair (2026-07-09): M22 added the coverage<90 half so the header chip can't

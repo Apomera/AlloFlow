@@ -7,6 +7,13 @@ import {resolve} from 'node:path';
 const require=createRequire(import.meta.url);
 const V=require(process.env.ALLO_VERIFICATION_MODULE?resolve(process.env.ALLO_VERIFICATION_MODULE):'../desktop/mcp/remediation_verification.cjs');
 const page=(body)=>'<!doctype html><html lang="en"><head><style>/* a11y-focus-visible */ a:focus-visible{outline:2px solid #ffffff}</style></head><body><main>'+body+'</main></body></html>';
+it('a quick check names the text whether the engine quotes it in single or double quotes (keyless so, 11-05)',()=>{
+ const out=V.explainDelivery({files:{},deliveryStatus:'complete',verdictReasons:{review:[],cautions:[]},verification:{equalAccess:{acknowledgedByAiReview:[
+  {id:'text_quoted_correctly',nodes:1,description:'If the following text is a quotation, mark it as a <q> or <blockquote> element: "Xavier Botana, Superintendent"',reason:'A signature line, not a quotation of anyone.'},
+  {id:'text_block_heading',nodes:1,description:"Confirm this text 'Closing Notes' is used as a heading and if so, modify",reason:'A sign-off line, not a heading for what follows.'}]}}});
+ expect(out.quickChecks.join(' | ')).toMatch(/Check whether "Xavier Botana, Superintendent" is a quotation/);
+ expect(out.quickChecks.join(' | ')).toMatch(/Check whether "Closing Notes" is a heading/);
+});
 it('quotes the document text that relies on colour, and a printed colour key',()=>{
  const cues=V.colourMeaningCues(page('<p>When you review the calendar, Wednesdays are shaded in blue and marked with an asterisk (*) to indicate early release.</p>'
   +'<figure><figcaption>Key to the September 2026 calendar</figcaption><dl><dt>light orange (peach) shaded row, date 7</dt><dd>7 Labor Day</dd></dl></figure>'));

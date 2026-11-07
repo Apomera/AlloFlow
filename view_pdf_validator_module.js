@@ -17,7 +17,8 @@
 //
 // HAND-MAINTAINED — no build script. Update in lockstep with the CLI version
 // (dev-tools/demo/exported_pdf_validator.cjs) if you change the rule set, so
-// the CLI and in-Canvas versions stay aligned.
+// the CLI and in-Canvas versions stay aligned. (Exception: the reading notes below are
+// advisory, in-Canvas only; the CLI has no equivalent.)
 
 (function () {
   'use strict';
@@ -32,7 +33,7 @@
   var CONTAINER_ROLES = ['Document','Part','Article','Sect','Section','Div','NonStruct','Private','Table','TR','TBody','THead','TFoot','L','LI'];
 
   // ── Walk the StructTreeRoot once, collecting per-element facts ──
-  function walkStructTree(stRoot, ctx, PDFLib) {
+  function walkStructTree(stRoot, ctx, PDFLib, pageIndex) {
     var PDFName = PDFLib.PDFName;
     var PDFArray = PDFLib.PDFArray;
     var PDFDict = PDFLib.PDFDict;
@@ -62,7 +63,7 @@
       }
       var role = String(S).replace(/^\//, '');
       var K = obj.get(nm('K'));
-      var hasContent = false, hasChild = false;
+      var hasContent = false, hasChild = false, pgRef = null;
       if (K != null) {
         var kr = resolve(K);
         var items;
@@ -78,7 +79,7 @@
           else if (it instanceof PDFDict) {
             var t = it.get(nm('Type'));
             var ts = t ? String(t) : '';
-            if (ts === '/MCR' || ts === '/OBJR') hasContent = true;
+            if (ts === '/MCR' || ts === '/OBJR') { hasContent = true; if (ts === '/MCR' && !pgRef) pgRef = it.get(nm('Pg')); }
             else if (it.get(nm('S'))) hasChild = true;
             else hasContent = true;
           }
@@ -104,13 +105,18 @@
         for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
       }
       var _myIdx = elems.length;
+      var altObj = obj.get(nm('Alt')), altText = '';
+      try { altText = altObj ? (typeof altObj.decodeText === 'function' ? altObj.decodeText() : String(altObj)) : ''; } catch (_) { altText = ''; }
+      var _pgKey = String(pgRef || obj.get(nm('Pg')) || '');
       elems.push({
         role: role,
         parentRole: parentRole || '',
         hasK: K != null,
         hasContent: hasContent,
         hasChild: hasChild,
-        hasAlt: !!obj.get(nm('Alt')),
+        hasAlt: !!altObj,
+        altText: altText,
+        page: pageIndex && pageIndex.has(_pgKey) ? pageIndex.get(_pgKey) : null,
         hasActualText: !!atObj,
         actualText: atText,
         hasA: !!aObj,
@@ -138,6 +144,37 @@
     if (e.role !== 'Lbl') return false;
     var t = String(e.actualText || '').replace(/^[(/]|\)$/g, '').trim();
     return /^(["'•◦▪‣·*–-]|\d{1,3}[.)])$/.test(t);
+  }
+
+  // ── Reading notes (2026-11-04, RSU 57 budget_v5) ── veraPDF and every rule below passed a tagged PDF whose tree read
+  // on past its last section: bullets decoded as "u", page numbers, axis ticks, a second H1. These are things a person
+  // should look at, from the tree alone. They are NOTES: status 'warn', never counted as a failure, so they cannot
+  // change a verdict or hold a PDF. `elems` in tree order (page: 1-based or null). Returns [{ id, count, detail }].
+  var READ_ROLES = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1, LBody: 1, Figure: 1, TH: 1, TD: 1 };
+  var FRAGMENT_ROLES = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1 };
+  var PLACEHOLDER_ALT = 'Image (description unavailable)';
+  function readingNotes(elems) {
+    var notes = [];
+    var quote = function (s, n) { var t = String(s || '').replace(/\s+/g, ' ').trim(); return '"' + (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t) + '"'; };
+    var label = function (e) { var t = e.role === 'Figure' ? e.altText : e.actualText; return t ? ' at ' + quote(t, 50) : ''; }; // a text form's paragraph stores no text
+    var h1 = elems.filter(function (e) { return e.role === 'H1'; });
+    if (h1.length > 1) notes.push({ id: 'several-h1', count: h1.length, detail: 'The tagged PDF has ' + h1.length + ' top-level headings (' + h1.slice(0, 3).map(function (e) { return quote(e.actualText, 40); }).join(', ') + (h1.length > 3 ? ', …' : '') + '). A document usually has one: a screen reader user may take a later one for a new document.' });
+    var seq = elems.filter(function (e) { return READ_ROLES[e.role] && e.hasContent && e.page != null; });
+    var back = [];
+    for (var i = 1; i < seq.length; i++) if (seq[i].page < seq[i - 1].page) back.push({ from: seq[i - 1].page, to: seq[i].page, at: seq[i] });
+    if (back.length) notes.push({ id: 'goes-back', count: back.length, detail: 'A screen reader goes back to an earlier page ' + back.length + (back.length === 1 ? ' time' : ' times') + ' in the tagged PDF: from page ' + back[0].from + ' to page ' + back[0].to + label(back[0].at) + (back.length > 1 ? ', and more' : '') + '. Moved footnotes can do this; check that it reads in a sensible order.' });
+    var frags = elems.filter(function (e) {
+      if (!FRAGMENT_ROLES[e.role] || !e.hasContent) return false;
+      var t = String(e.actualText || '').trim();
+      return /^[A-Za-z]$/.test(t) || /^[^\p{L}\p{N}\s]{1,3}$/u.test(t) || /^\d{1,4}$/.test(t);
+    });
+    if (frags.length) notes.push({ id: 'stray-fragments', count: frags.length, detail: frags.length + ' tiny ' + (frags.length === 1 ? 'piece' : 'pieces') + ' of text ' + (frags.length === 1 ? 'is' : 'are') + ' read on ' + (frags.length === 1 ? 'its' : 'their') + ' own in the tagged PDF (' + frags.slice(0, 4).map(function (e) { return quote(e.actualText, 8); }).join(', ') + (frags.length > 4 ? ', …' : '') + '): often bullets or page numbers that should be page decoration.' });
+    var ph = elems.filter(function (e) { return e.role === 'Figure' && e.altText === PLACEHOLDER_ALT; });
+    if (ph.length) {
+      var pgs = ph.map(function (e) { return e.page; }).filter(function (p, n, a) { return p != null && a.indexOf(p) === n; });
+      notes.push({ id: 'placeholder-alt', count: ph.length, detail: ph.length + (ph.length === 1 ? ' picture' : ' pictures') + ' in the tagged PDF ' + (ph.length === 1 ? 'has' : 'have') + ' no description and ' + (ph.length === 1 ? 'reads' : 'read') + ' "' + PLACEHOLDER_ALT + '"' + (pgs.length ? ' (page' + (pgs.length === 1 ? ' ' : 's ') + pgs.slice(0, 6).join(', ') + (pgs.length > 6 ? ', …' : '') + ')' : '') + '.' });
+    }
+    return notes;
   }
 
   // ── Main validator: takes PDF bytes (Uint8Array), returns a structured report ──
@@ -268,7 +305,9 @@
     var uaDeclaredInXmp = xmpText.indexOf('<pdfuaid:part>1</pdfuaid:part>') !== -1;
 
     // Walk the structure tree.
-    var elems = stRoot ? walkStructTree(stRoot, ctx, PDFLib) : [];
+    var _pageIndex = new Map();
+    for (var _pi = 0; _pi < pages.length; _pi++) _pageIndex.set(String(pages[_pi].ref), _pi + 1);
+    var elems = stRoot ? walkStructTree(stRoot, ctx, PDFLib, _pageIndex) : [];
     var leaves = elems.filter(function (e) { return LEAF_ROLES.indexOf(e.role) >= 0; });
     var containers = elems.filter(function (e) { return CONTAINER_ROLES.indexOf(e.role) >= 0; });
     var markerLblCount = leaves.filter(isMarkerLbl).length;
@@ -348,6 +387,11 @@
     checks.push({ rule: 'Content marking & MCID reachability (§7.1, §7.2)', status: 'warn',
       detail: 'Not verified here — this self-check does not parse page content streams. Run the independent veraPDF validation to confirm every content operator is marked /Artifact or tagged with a reachable MCID (the scanned-PDF gap).' });
 
+    // Notes only: 'warn' is not counted below, so these never change summary.overall or delivery.
+    var _readingNotes = [];
+    try { _readingNotes = readingNotes(elems); } catch (_) { _readingNotes = []; }
+    _readingNotes.forEach(function (n) { checks.push({ rule: 'Reading order note (a person should look)', status: 'warn', detail: n.detail }); });
+
     var passCount = checks.filter(function (c) { return c.status === 'pass'; }).length;
     var failCount = checks.filter(function (c) { return c.status === 'fail'; }).length;
 
@@ -393,6 +437,7 @@
         figuresWithAlt: figures.filter(function (e) { return e.hasAlt; }).length,
         figuresLinked: figures.filter(function (e) { return e.hasContent; }).length,
       },
+      readingNotes: _readingNotes,
       checks: checks,
       summary: {
         pass: passCount,
@@ -405,6 +450,7 @@
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.PdfValidator = {
     validateExportedPdfBytes: validateExportedPdfBytes,
+    readingNotes: readingNotes,
   };
   try { console.log('[PdfValidator] Loaded — window.AlloModules.PdfValidator.validateExportedPdfBytes(bytes)'); } catch (_) {}
 })();

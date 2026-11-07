@@ -5517,6 +5517,10 @@ function PdfAuditView(props) {
                               } else if (postExportValidator && postExportValidator.error) {
                                 _rpt.push({ tone: 'info', text: 'Byte-level validation could not run (' + postExportValidator.error + ') — rely on the structure self-check and verify externally in PAC 2024.' });
                               }
+                              // Advisory notes on how the saved tag tree reads (validator readingNotes): never a failure.
+                              if (postExportValidator && Array.isArray(postExportValidator.readingNotes)) {
+                                postExportValidator.readingNotes.slice(0, 5).forEach((n) => { if (n && n.detail) _rpt.push({ tone: 'warn', text: 'Reading order note: ' + n.detail }); });
+                              }
                               if (summary && typeof summary.reachableLeaves === 'number' && summary.reachableLeaves > 0) {
                                 const _linked = summary.reachableLeaves - (summary.orphanedLeaves || 0);
                                 _rpt.push(summary.uaDeclared
@@ -11529,7 +11533,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 // comparing it against a slice's output is a guaranteed false warning.
                                 const _sliceRun = !!(pdfPageRange && (pdfPageRange.start || pdfPageRange.end));
                                 const _srcLinks = (!_sliceRun && typeof _docPipeline.sourceLinkCount === 'function') ? _docPipeline.sourceLinkCount() : null;
-                                const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, _srcLinks ? { links: _srcLinks } : null);
+                                // 'tablesFlattened' is recomputed here too: without its baseline, the merge below would delete the note.
+                                const _srcTables = (!_sliceRun && typeof _docPipeline.sourceTableBaseline === 'function') ? _docPipeline.sourceTableBaseline() : null;
+                                const _sf = _docPipeline.computeStructuralFidelityNotes(_srcRaw, bestHtml, (_srcLinks || _srcTables) ? Object.assign({}, _srcLinks ? { links: _srcLinks } : {}, _srcTables ? { tables: _srcTables } : {}) : null);
                                 if (Array.isArray(_sf)) _sf.forEach(n => _notes.push(n));
                               }
                               if (_srcRaw && _outText && _docPipeline && typeof _docPipeline.numericFidelityLosses === 'function') {
@@ -13443,9 +13449,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         )}
                         {(_rfSheetAnswered.length > 0 || _rfSheetConfirmed.length > 0) && (
                           <div data-stylesheet-settled className="rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] text-emerald-950 space-y-1">
-                            <p className="font-bold">{t('pdf_audit.sheet_review.settled_heading') || 'Stylesheet questions settled'}</p>
+                            <p className="font-bold">{_rfSheetAnswered.some((f) => f.answeredBy === 'alloflow-link-check' || f.answeredBy === 'alloflow-own-footer-check') ?(t('pdf_audit.auto_answers.settled_heading') || 'Standing questions settled') : (t('pdf_audit.sheet_review.settled_heading') || 'Stylesheet questions settled')}</p>
                             {_rfSheetAnswered.map((f) => (
-                              <p key={'answered-' + f.id}>✓ <span className="font-mono">{f.id}</span>: {t('pdf_audit.sheet_review.answered_by_check') || 'answered by AlloFlow\'s stylesheet check'}. {t('pdf_audit.sheet_review.contrast_answer') || f.answer}</p>
+                              <p key={'answered-' + f.id}>✓ <span className="font-mono">{f.id}</span>: {f.answeredBy === 'alloflow-link-check' ? (t('pdf_audit.auto_answers.answered_by_link_check') || 'answered by AlloFlow\'s link check') : f.answeredBy === 'alloflow-own-footer-check' ? (t('pdf_audit.auto_answers.answered_by_footer_check') || 'answered by AlloFlow\'s footer check') : (t('pdf_audit.sheet_review.answered_by_check') || 'answered by AlloFlow\'s stylesheet check')}. {f.answeredBy === 'alloflow-link-check' ? (t('pdf_audit.auto_answers.link_answer') || f.answer) : f.answeredBy === 'alloflow-own-footer-check' ? (t('pdf_audit.auto_answers.footer_answer') || f.answer) : f.answeredBy === 'alloflow-own-style-check' ? (t('pdf_audit.auto_answers.own_style_answer') || f.answer) : (t('pdf_audit.sheet_review.contrast_answer') || f.answer)}</p>
                             ))}
                             {_rfSheetConfirmed.map((f) => (
                               <div key={'confirmed-' + f.id} className="flex items-start gap-2">

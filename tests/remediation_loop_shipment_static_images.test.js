@@ -195,8 +195,15 @@ describe('figure slots pair with images by what they describe; wrong pictures ar
     expect(dropAt(html, []).html).toBe(html);
   });
   it('a legend caption claims only its best-matching image, never the calendar it explains (newsletter run 3)', () => {
-    const claimsCode = sliceBetween(source, 'var _alloLegendImageClaims = function (legendTexts, imageTexts) {', '\n};', { ...FILE, includeEnd: true });
+    const claimsCode = sliceBetween(source, 'var _alloLegendImageClaims = function (legendTexts, imageTexts, minOverlap) {', '\n};', { ...FILE, includeEnd: true });
     const claims = new Function(overlapCode + claimsCode + '\nreturn _alloLegendImageClaims;')();
+    // (2026-11-03) a picture its description calls a table needs less overlap: budget's per-pupil table (caption +
+    // headers) shared 0.52 of its words with its picture's description and was shown twice
+    const perPupil = ['Per pupil total operating costs, state average compared with RSU 57 Year STATE AVERAGE RSU 57 2013-14 2023-24'];
+    const pictured = ['Picture of a table (no text layer) comparing per pupil total operating costs: columns blank, STATE AVERAGE (over a faint map of Maine), RSU 57 (over a district map)'];
+    expect(claims(perPupil, pictured)).toEqual([false]);
+    expect(claims(perPupil, pictured, () => 0.4)).toEqual([true]);
+    expect(source.includes("(j) => (/\\b(table|spreadsheet)\\b/i.test(String((extractedImages[j] || {}).description || '')) ? 0.4 : 0.6)) : [];"), 'table pictures get 0.4').toBe(true);
     const images = [
       'MSAD 52 banner with school logos',
       'August 2026 calendar month grid with dated school events',
@@ -308,10 +315,10 @@ describe('OCR markup is not printed source text', () => {
     expect(source.includes("' word run(s) of the scan\\'s searchable text were taken from the second OCR reading"), 'old garbled note gone').toBe(false);
   });
   it('an OCR-correction note with no digit involved is a caution, not a review item (Aaron, 2026-10-25)', () => {
-    expect(source.includes("var note = function (from, to) { if (/\\d/.test(String(from)) || /\\d/.test(String(to))) stats.digitChanges++;"), 'every correction counted for digits').toBe(true);
-    expect(source.includes('digitChanges: _aligned.stats.digitChanges || 0 });'), 'carried per page').toBe(true);
+    expect(source.includes("var note = function (from, to) { var dig = /\\d/.test(String(from)) || /\\d/.test(String(to)); if (dig) stats.digitChanges++;"), 'every correction counted for digits').toBe(true);
+    expect(source.includes('digitChanges: _aligned.stats.digitChanges || 0, corrections: _aligned.stats.corrections, correctionCount: _aligned.stats.correctionCount });'), 'carried per page').toBe(true);
     expect(source.includes("const _vaDigits = _va.reduce((a, e) => a + (e && Number.isFinite(e.digitChanges) ? e.digitChanges : 1), 0);"), 'old records without the count stay review').toBe(true);
-    expect(source.includes("_structuralFidelityNotes.push({ kind: 'ocrVisionAlignment', caution: _vaDigits === 0,"), 'caution only when no digit changed').toBe(true);
+    expect(source.includes("_structuralFidelityNotes.push({ kind: 'ocrVisionAlignment', corrections: _vaAll, correctionCount: _vaCount, caution: _vaDigits === 0,"), 'caution only when no digit changed').toBe(true);
     expect(source.includes('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.some((n) => !(n && n.caution === true));'), 'caution notes are not a concern').toBe(true);
     expect(source.includes("if (kinds.ocrVisionAlignment) cautions.push("), 'still disclosed as a caution').toBe(true);
     expect(source.includes('hand out the tagged PDF if learners need to answer'), 'form caution no longer promises a PDF').toBe(false);
@@ -583,7 +590,7 @@ describe('option B: a generic Equal Access reminder the AI review settled stops 
   const triage = (action, key = 'equalAccess|potential|style_color_misuse') => ({ dispositions: [{ key, action, reason: 'The style block only draws a focus ring.' }] });
   it('moves only an allowlisted reminder the AI judged not an issue, disclosed with its reason, and rescores', () => {
     const out = apply(ea(), { dispositions: [triage('not-an-issue').dispositions[0], { key: 'equalAccess|potential|text_sensory_misuse', action: 'not-an-issue', reason: 'x' }] });
-    expect(out.potentialFindings.map((f) => f.id)).toEqual(['text_sensory_misuse']); // not on the allowlist: still review
+    expect(out.potentialFindings.map((f) => f.id)).toEqual(['text_sensory_misuse']); // a bare verdict with no reason: still review (2026-11-04)
     expect(out.potentialViolations).toBe(1);
     expect(out.reviewFindingCount).toBe(1);
     expect(out.score).toBe(98);
@@ -689,8 +696,9 @@ describe('SIE 515 syllabus: name the unmatched words; a bracketed raised ordinal
     const r = run('alpha beta gamma beta delta', '<p>alpha delta</p>');
     expect(r.missingWords).toEqual([{ word: 'beta', count: 2 }, { word: 'gamma', count: 1 }]);
     expect(run('alpha', '<p>alpha</p>').missingWords).toEqual([]);
-    const many = run(Array.from({ length: 40 }, (_, i) => 'w' + i).join(' '), '<p>x</p>');
-    expect(many.missingWords).toHaveLength(25);
+    // (2026-11-05) A person releasing a held PDF must see every word, so the list is far longer than the 25 a report quotes.
+    const many = run(Array.from({ length: 240 }, (_, i) => 'w' + i).join(' '), '<p>x</p>');
+    expect(many.missingWords).toHaveLength(200);
   });
   it('the report names those words instead of token offsets, and does not suggest running again', () => {
     const out = V.explainDelivery({ files: {}, taggedPdfError: 'content_coverage_requires_review', contentCoverage: { missingWords: [{ word: 'rd', count: 1 }, { word: '3', count: 2 }] } });

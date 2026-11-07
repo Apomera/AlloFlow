@@ -141,7 +141,26 @@ function kokoroVoiceIds(assetsRoot) {
 }
 // Runs in the existing remediation browser. This is a conservative lexical
 // retention check, not a semantic equivalence or accessibility certificate.
-function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange}) {
+function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange,figureText}) {
+  // (2026-11-07) Arabic vowel and tanween marks are optional and their order around a letter varies: the Portland letter
+  // prints "مذهلاً", the HTML has "مذهلًا" (same on the page), but as word breaks the marks split them differently and the
+  // word was listed as missing. Compare without them.
+  {const _am=/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g;sourceText=String(sourceText||'').replace(_am,'');outputHtml=String(outputHtml||'').replace(_am,'');if(Array.isArray(pages))pages=pages.map(p=>p&&typeof p.text==='string'?{...p,text:p.text.replace(_am,'')}:p);}
+  // (2026-11-07) Words printed inside described charts and maps (figureText: the pipeline's figure crop rectangles on
+  // the source pages). The figure and its description stand for them: NCES, 244 of 264 "missing" words were map labels,
+  // scales and legends. One source copy of each goes; one the text layer glued to its neighbours ("80,00070,000")
+  // goes as that glued run. Counted in figureWordsCredited, so the report can say so.
+  let figureWordsCredited=0;
+  if(Array.isArray(figureText)&&figureText.length){sourceText=String(sourceText||'');
+    const fEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const fDrop=t=>{if(!t)return false;const re=new RegExp('(^|\\s)'+fEsc(t)+'(?=\\s|$)','u');if(!re.test(sourceText))return false;sourceText=sourceText.replace(re,(m,s)=>s+' ');return true;};
+    for(const f of figureText){const it=(f&&Array.isArray(f.items)?f.items:[]).map(x=>String(x).normalize('NFKC').trim()).filter(x=>x&&x.split(/\s+/).length<=4).slice(0,5000); // labels only: a line of prose a loose crop reaches is never credited
+      for(let i=0;i<it.length;){
+        // the glued run first: dropping a lone copy elsewhere would leave the glued word behind
+        let k=Math.min(6,it.length-i);for(;k>=2;k--)if(fDrop(it.slice(i,i+k).join('')))break;
+        if(k>=2){figureWordsCredited+=k;i+=k;continue;}
+        for(const w of it[i].split(/\s+/))if(fDrop(w))figureWordsCredited++;
+        i++;}}}
   // An OCR transcript is markdown: table cell pipes and divider rows are layout, not printed text, and
   // never reach the HTML (284 of 292 "missing" tokens on the 1954 scan, 2026-10-20). Born-digital text is untouched.
   if(/ocr|tesseract/i.test(String(method||'')))sourceText=String(sourceText||'').replace(/^[ \t]*\|?[ \t]*:?-{3,}:?(?:[ \t]*\|[ \t]*:?-{3,}:?)*[ \t]*\|?[ \t]*$/gm,' ').replace(/\|/g,' ');
@@ -155,12 +174,32 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // that 3+ pages (and 60% of them) end or start with, a page number aside, are one passage: keep one
   // copy. Runs before the word mending below, which would change the text it searches for.
   const pageNumDropped=new Set(); // pages whose own number the word rule already dropped
+  // (2026-11-03, budget slides: 20 "missing" words, all harmless; the tagged PDF stayed held.) Coverage counts
+  // occurrences, so which copy of a word goes does not matter. Three narrow rules: (1) here, (2)-(3) after the
+  // page-number rule below.
+  const _esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const _dropRun=toks=>{const re=new RegExp('(^|\\s)'+toks.map(_esc).join('\\s+')+'(?=\\s|$)','u');if(!re.test(sourceText))return false;sourceText=sourceText.replace(re,(m,s)=>s+' ');return true;};
+  // (1) An axis scale: 6+ consecutive numbers on a page in even steps (14.5 14 13.5 ... 0) whose two end values the
+  // output states ("from 0 to 14.5 in steps of 0.5") is the chart's scale, which the output described. First: the
+  // page-number rule's removal of the first "10" anywhere would break the run.
+  {sourceText=String(sourceText||'').normalize('NFKC');
+    const outNums=new Set((String(outputHtml||'').replace(/<[^>]*>/g,' ').match(/-?\d[\d,]*(?:\.\d+)?/g)||[]).map(x=>Number(x.replace(/,/g,''))));
+    const val=t=>{const v=String(t).replace(/^\$/,'').replace(/[,%]/g,'');return /^-?\d+(?:\.\d+)?$/.test(v)?Number(v):null;};
+    const texts=Array.isArray(pages)&&pages.length?pages.map(p=>String(p&&p.text||'')):[sourceText];
+    texts.forEach(t=>{const w=t.normalize('NFKC').split(/\s+/).filter(Boolean);for(let i=0;i<w.length;){let j=i+1;const a=val(w[i]);if(a===null){i++;continue;}
+      const st=j<w.length&&val(w[j])!==null?val(w[j])-a:0;
+      while(st&&j<w.length&&val(w[j])!==null&&Math.abs(val(w[j])-val(w[j-1])-st)<1e-9)j++;
+      if(st&&j-i>=6&&outNums.has(a)&&outNums.has(val(w[j-1])))_dropRun(w.slice(i,j));
+      i=Math.max(i+1,j-1);}});}
   if(Array.isArray(pages)&&pages.length>1){
     sourceText=String(sourceText||'').normalize('NFKC');
     // A dash glued to a page number is its own word: "Page 2\u2014Dear Colleague" (OSEP letter, 2026-10-26).
     const unglue=t=>{let m=/^(\d{1,4})([\u2013\u2014-])(\p{L}.*)$/u.exec(t);if(m)return [m[1],m[2],m[3]];m=/^(.*\p{L})([\u2013\u2014])(\d{1,4})$/u.exec(t);return m?[m[1],m[2],m[3]]:[t];};
     const pw=pages.map(p=>String(p&&p.text||'').normalize('NFKC').split(/\s+/).filter(Boolean).flatMap(unglue));
-    const pageNo=t=>/^[-\u2013\u2014(]?\d{1,4}[-\u2013\u2014)]?$/.test(t);
+    // (2026-11-07) A page number in Arabic-Indic or Devanagari digits is a page number too (Persian UDHR: \u0662..\u0661\u0661 were 10
+    // "missing" words after the pipeline removed them as page furniture). Compared in ASCII; removed as printed.
+    const asc=t=>String(t||'').replace(/[\u0660-\u0669\u06f0-\u06f9\u0966-\u096f]/g,d=>{const c=d.charCodeAt(0);return String(c-(c>=0x966?0x966:c>=0x6F0?0x6F0:0x660));});
+    const pageNo=t=>/^[-\u2013\u2014(]?\d{1,4}[-\u2013\u2014)]?$/.test(asc(t));
     const isDash=t=>/^[-\u2013\u2014]$/.test(t||'');
     const minPages=Math.max(3,Math.ceil(pw.length*0.6));
     // A 2-page document: a run BOTH pages share counts when it has 4+ words, as in the line rule below. Its pages
@@ -221,11 +260,26 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // earlier removal would break. The line rule below skips pages handled here.
     // A page's number glued to its first word, a capitalised heading ("2GROSS INCOME", "3GENERAL": 1913 scan,
     // 2026-11-02), counts too: only the number goes.
+    // (2026-11-07) The printed number may run behind the physical page by one offset (front matter: NIST CSF prints
+    // "1" on a later page); the best-supported offset is used, 0 on a tie.
+    let pageShift=0;
     for(const fromEnd of [true,false]){
-      const hits=pw.map((w,i)=>{const t=fromEnd?w[w.length-1]:w[0];const num=Number(pages[i]&&pages[i].pageNum)||i+1;if(t===undefined)return null;if(new RegExp('^[-\\u2013\\u2014(]?'+num+'[-\\u2013\\u2014)]?$').test(t))return [t,''];return !fromEnd&&new RegExp('^'+num+'\\p{Lu}{2}','u').test(t)?[t,t.slice(String(num).length)]:null;});
+      const off=new Map();
+      pw.forEach((w,i)=>{const m=/^[-–—(]?(\d{1,4})[-–—)]?$/.exec(asc((fromEnd?w[w.length-1]:w[0])||''));if(m){const c=Number(m[1])-(Number(pages[i]&&pages[i].pageNum)||i+1);off.set(c,(off.get(c)||0)+1);}});
+      let shift=0,sn=off.get(0)||0;for(const [c,n] of off)if(n>sn){shift=c;sn=n;}
+      const hits=pw.map((w,i)=>{const t=fromEnd?w[w.length-1]:w[0];const num=(Number(pages[i]&&pages[i].pageNum)||i+1)+shift;if(t===undefined)return null;if(new RegExp('^[-\\u2013\\u2014(]?'+num+'[-\\u2013\\u2014)]?$').test(asc(t)))return [t,''];return !fromEnd&&new RegExp('^'+num+'\\p{Lu}{2}','u').test(t)?[t,t.slice(String(num).length)]:null;});
       if(hits.filter(Boolean).length<minPages)continue;
+      pageShift=shift;
       hits.forEach((h,i)=>{if(!h||pageNumDropped.has(i))return;const re=new RegExp('(^|\\s)'+h[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?=\\s|$)');if(re.test(sourceText)){sourceText=sourceText.replace(re,(m,s)=>s+h[1]);pageNumDropped.add(i);}});
     }
+    // (2) A slide number the text layer reads mid-page ("the total valuation 11 percentage"): when the pages are
+    // numbered (most carry their number first or last, rule above), a page whose number was not found there loses
+    // one standalone copy of it.
+    if(pageNumDropped.size>=minPages)pw.forEach((w,i)=>{if(pageNumDropped.has(i))return;const num=String((Number(pages[i]&&pages[i].pageNum)||i+1)+pageShift);if(Number(num)<1)return;if(w.includes(num)&&_dropRun([num]))pageNumDropped.add(i);});
+    // (3) A slide title printed again on the next page ("Budget Development Process" on pages 3 and 4): the 2-12
+    // words that BEGIN two consecutive pages, capitalised and followed by different text, are one title.
+    for(let i=1;i<pw.length;i++){const a=pw[i-1],b=pw[i];let n=0;while(n<12&&n<a.length&&n<b.length&&a[n].toLowerCase()===b[n].toLowerCase())n++;
+      if(n>=2&&n<12&&/^\p{Lu}/u.test(b[0])&&n<b.length&&n<a.length)_dropRun(b.slice(0,n));}
   }
   // A running header or footer printed on every page is one passage, written once in reading order
   // (2026-10-25: a 58-word footer on both pages of a 2-page activity held the PDF at recall 0.81).
@@ -373,7 +427,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // One apostrophe: a modifier-letter or curly apostrophe in the text layer ("donʼt") must match the
   // output's straight or curly one (2026-10-25 newsletter). Built from code points on purpose.
   const apostrophes=new RegExp('['+String.fromCharCode(0x2BC,0x2018,0x2019,0x60,0xB4)+']','g');
-  const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(apostrophes,"'").replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').replace(/(\p{L}\p{M}*)\s+(?=\p{M})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment.replace(/^_+|_+$/g,''):part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
+  // (2026-11-05) A hyphen left hanging before a number is the same hyphen: "Birth- 11" against "Birth-11" held fda's PDF over one "-".
+  // Never before a list marker: "Yea- Nay- 2. Election" gained tokens and shifted the marker credits (agenda5 held on 61 "words").
+  const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(apostrophes,"'").replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').replace(/([\p{L}\p{N}])-\s+(?=\p{N}+(?![\p{N}.)]))/gu,'$1-').replace(/(\p{L}\p{M}*)\s+(?=\p{M})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment.replace(/^_+|_+$/g,''):part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
   const doc=new DOMParser().parseFromString(outputHtml||'','text/html');
   // Synthetic labels may match only positively identified source list markers,
   // never ordinary numeric prose. Keep these credits outside the text token pool.
@@ -405,8 +461,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // A Wingdings bullet reaches the text layer as a plain letter ("u" = arrow on PowerPoint slides; RSU 57
   // budget: 45 "missing" u's): credited the same way, only for a letter that is never a word in the output.
   // Check marks and stars serve as bullets too ("✅ Buy school supplies", "★ Monday": newsletter, 2026-11-02). Not
-  // arrows: a form's "▶" points at a box (IRS 1040 instructions).
-  {let li=doc.querySelectorAll('li').length;if(li){const outLow=' '+String(doc.body.textContent||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ')+' ';const wing=['u','l','n','q','v','Ø','ü','§'].filter(c=>outLow.indexOf(' '+c.toLowerCase()+' ')===-1).join('');const cls='\\u2022\\u2023\\u2043\\u2219\\u25A0\\u25A1\\u25AA\\u25AB\\u25CB\\u25CF\\u25E6\\uF0A7\\uF0B7\\u2605\\u2606\\u2705\\u2611\\u2713\\u2714'+wing;sourceText=String(sourceText||'').replace(new RegExp('(^|\\s)['+cls+']\\uFE0F?(?=\\s|$)','g'),(m,s)=>li-->0?s+' ':m);}}
+  // arrows: a form's "▶" points at a box (IRS 1040 instructions). Word's second-level bullet is a Courier "o" (NIST CSF:
+  // 106 of 112 "missing" words, 2026-11-07); in Spanish or Portuguese "o" is a word in the output, so it is not credited.
+  {let li=doc.querySelectorAll('li').length;if(li){const outLow=' '+String(doc.body.textContent||'').toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ')+' ';const wing=['u','l','n','q','v','o','Ø','ü','§'].filter(c=>outLow.indexOf(' '+c.toLowerCase()+' ')===-1).join('');const cls='\\u2022\\u2023\\u2043\\u2219\\u25A0\\u25A1\\u25AA\\u25AB\\u25CB\\u25CF\\u25E6\\uF0A7\\uF0B7\\u2605\\u2606\\u2705\\u2611\\u2713\\u2714'+wing;sourceText=String(sourceText||'').replace(new RegExp('(^|\\s)['+cls+']\\uFE0F?(?=\\s|$)','g'),(m,s)=>li-->0?s+' ':m);}}
   if(!customListNumbering){
     const normalize=text=>String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase().replace(/\s+/g,' ').trim();
     const sourceNormalized=normalize(sourceText),candidates=[];
@@ -515,13 +572,13 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // teacher (SIE 515 syllabus: 4 "missing" tokens, all a raised "2nd"/"3rd", 2026-10-26). Up to 25 distinct.
   const missingWordCounts=new Map();
   // Bounded chunks give callers source locations even when extraction flattened paragraphs.
-  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(let offset=0;offset<Math.min(40,source.length-at);offset++){if(!miss[at+offset])continue;const token=source[at+offset];{missing++;if(missingWordCounts.size<25||missingWordCounts.has(token))missingWordCounts.set(token,(missingWordCounts.get(token)||0)+1);}}
+  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(let offset=0;offset<Math.min(40,source.length-at);offset++){if(!miss[at+offset])continue;const token=source[at+offset];{missing++;if(missingWordCounts.size<200||missingWordCounts.has(token))missingWordCounts.set(token,(missingWordCounts.get(token)||0)+1);}}
     missingTokens+=missing;if(missing)missingPassageCount++;if(missing&&missingPassages.length<50)missingPassages.push({sourceUnit,startToken:at,expectedTokens:Math.min(40,source.length-at),missingTokens:missing});
   }
   const pageList=Array.isArray(pages)?pages:null;
   const pageIds=items=>Array.isArray(items)?items.slice(0,100).map(item=>typeof item==='number'?item:item?.pageNum??item?.page??null).filter(value=>Number.isSafeInteger(value)&&value>0):[];
   const extraction={method:method||'unknown',pagesExamined:pageList?pageList.length:null,emptyPageCandidates:pageList?pageList.filter(page=>!String(page?.text||'').trim()).length:null,pageErrorCount:Array.isArray(pageErrors)?pageErrors.length:null,lowConfidencePageCount:Array.isArray(lowConfidencePages)?lowConfidencePages.length:null,errorPages:pageIds(pageErrors),lowConfidencePages:pageIds(lowConfidencePages)};
   const reviewRequired=!source.length||missingTokens>0||(extraction.pageErrorCount||0)>0||(extraction.lowConfidencePageCount||0)>0;
-  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
+  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),...(figureWordsCredited?{figureWordsCredited}:{}),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
 }
 module.exports={assessSourceCoverage,LABELS,normalizeLanguage,voiceCatalog,selectVoice,planDocument,routePlan,kokoroVoiceIds};

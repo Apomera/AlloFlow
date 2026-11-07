@@ -13,23 +13,15 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const ROOT = path.resolve(__dirname, '../..');
-const VENDOR = path.join(ROOT, 'desktop/mcp/vendor');
 
 async function boot(page) {
-  await page.route('https://alloflow.test/**', (route) => {
-    const u = new URL(route.request().url());
-    if (u.pathname.startsWith('/vendor/')) return route.fulfill({ body: fs.readFileSync(path.join(VENDOR, u.pathname.slice(8))), contentType: 'application/javascript' });
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
-  });
-  await page.goto('https://alloflow.test/boot');
-  for (const f of ['pdfjs.min.js', 'pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js']) await page.addScriptTag({ path: path.join(VENDOR, f) });
+  await bootDocumentRuntime(page);
   for (const f of ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_validator_module.js']) await page.addScriptTag({ path: path.join(ROOT, f) });
   await page.evaluate(() => {
     const W: any = window;
-    W.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://alloflow.test/vendor/pdf.worker.min.js';
-    W.__alloflowRuntimeAssets = { pdfjsWorker: 'https://alloflow.test/vendor/pdf.worker.min.js' };
     W.__pipe = W.AlloModules.createDocPipeline({ callGemini: async () => 'OK', callGeminiVision: async () => '{}', callImagen: async () => null, addToast: () => {}, t: (k: string) => k, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => 'D', state: {}, publishSourceTelemetry: false });
     // Per page: /StructParents present? marked content (an MCID) in the content stream?
     W.__pageFacts = async (bytes: Uint8Array) => {

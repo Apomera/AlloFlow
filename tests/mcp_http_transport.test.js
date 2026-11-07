@@ -43,6 +43,16 @@ it('rejects missing or wrong tokens, foreign origins and unknown paths, and acce
  expect((await post(port,ping,{token:null,path:'/mcp/'+TOKEN})).status).toBe(200);
  expect((await post(port,'{not json',{})).status).toBe(400);
 },90000);
+// (2026-11-07) The body was built with `body += chunk` and no encoding: a letter whose UTF-8 bytes straddle two packets
+// became two U+FFFD (an Urdu "ف" in a keyless run's prompt, through a driver with the same pattern). Send a body cut
+// in the middle of a two-byte letter, in two writes, and expect the id echoed back intact.
+it('keeps a multi-byte letter that is split across two packets of the request body',async()=>{
+ const s=startHttpServer();const port=await s.port;const id='ہر فرد اور معاشرے';
+ const buf=Buffer.from(JSON.stringify({jsonrpc:'2.0',id,method:'ping'}),'utf8');const cut=buf.indexOf(Buffer.from('ف','utf8'))+1;
+ const r=await new Promise((res,rej)=>{const req=http.request({host:'127.0.0.1',port,path:'/mcp',method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json, text/event-stream',Authorization:'Bearer '+TOKEN,'Content-Length':buf.length}},x=>{let b='';x.setEncoding('utf8');x.on('data',d=>b+=d);x.on('end',()=>res(JSON.parse(b)));});
+  req.on('error',rej);req.write(buf.subarray(0,cut));setTimeout(()=>req.end(buf.subarray(cut)),300);});
+ expect(r.id).toBe(id);
+},90000);
 it('refuses a non-loopback bind unless explicitly allowed',async()=>{
  const s=startHttpServer({ALLOFLOW_MCP_HTTP_HOST:'0.0.0.0'});
  await new Promise(r=>setTimeout(r,4000));

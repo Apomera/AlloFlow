@@ -7,24 +7,16 @@
 //  - a short leaf the order-bound scan missed links to its ONLY exact match in unclaimed page text.
 // The REAL createTaggedPdf runs in Chromium (offline vendor bundle).
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
 import * as path from 'path';
+import { bootDocumentRuntime } from './helpers/document_runtime_host';
 
 const ROOT = path.resolve(__dirname, '../..');
-const VENDOR = path.join(ROOT, 'desktop/mcp/vendor');
 // 1x1 grey PNG
 const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNgAAAAAgABSK+kcQAAAABJRU5ErkJggg==';
 
 async function boot(page) {
-  await page.route('https://alloflow.test/**', (route) => {
-    const u = new URL(route.request().url());
-    if (u.pathname.startsWith('/vendor/')) return route.fulfill({ body: fs.readFileSync(path.join(VENDOR, u.pathname.slice(8))), contentType: 'application/javascript' });
-    return route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' });
-  });
-  await page.goto('https://alloflow.test/boot');
-  for (const f of ['pdfjs.min.js', 'pdf-lib.min.js', 'pako.min.js', 'fontkit.umd.min.js']) await page.addScriptTag({ path: path.join(VENDOR, f) });
+  await bootDocumentRuntime(page);
   for (const f of ['accessibility_evidence_module.js', 'verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_validator_module.js']) await page.addScriptTag({ path: path.join(ROOT, f) });
-  await page.evaluate(() => { (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://alloflow.test/vendor/pdf.worker.min.js'; });
 }
 
 // Tag a one-page PDF drawing `lines` (and an image when png is given) with `html`; return the tree's leaves.
