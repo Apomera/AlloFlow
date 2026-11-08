@@ -7,12 +7,16 @@ const ROOT = path.resolve(__dirname, '..');
 
 // These suites use node:test, not Vitest. Keep emulator tests on their own lane.
 const NATIVE_TESTS = Object.freeze([
+  'allopack_quiz_immediate_save.test.cjs',
+  'allopack_student_file_roundtrip.test.cjs',
   'blueprint_action_diagnostics.test.cjs',
   'blueprint_module_preflight.test.cjs',
   'catalog_import_completion.test.cjs',
   'check_secrets_security.test.cjs',
   'lan_roster_authorization.test.cjs',
   'lesson_deep_link_host.test.cjs',
+  'local_image_manager_20261102.test.cjs',
+  'local_image_proxy_20261102.test.cjs',
   'mcp_ace_browser_security.test.cjs',
   'mcp_artifact_source_bytes.test.cjs',
   'mcp_bundle_audit_security.test.cjs',
@@ -22,6 +26,8 @@ const NATIVE_TESTS = Object.freeze([
   'npm_audit_reporting.test.cjs',
   'project_response_restore.test.cjs',
   'runtime_graph_engine_adapters.test.cjs',
+  'security_assessment_reports_20261102.test.cjs',
+  'security_sana_image_connection_20261102.test.cjs',
 ]);
 const EXTERNAL_TESTS = Object.freeze([
   'firebase_mailbox_image_rules.test.cjs',

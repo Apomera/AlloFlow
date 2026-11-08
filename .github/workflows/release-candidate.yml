@@ -1,0 +1,109 @@
+name: Verified release candidate
+
+# Produces reviewable bytes and provenance. This workflow never publishes a site,
+# changes a branch, or receives website/deployment credentials.
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact 40-character SHA already passing verify and security-safeguards
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test exact candidate
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/heads/')
+    runs-on: windows-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Require the selected immutable source
+        shell: pwsh
+        env:
+          EXPECTED_SOURCE: ${{ inputs.source_sha }}
+        run: |
+          if ($env:EXPECTED_SOURCE -cnotmatch '^[a-f0-9]{40}$' -or $env:EXPECTED_SOURCE -cne $env:GITHUB_SHA) { throw 'Select the workflow ref for the exact reviewed source SHA.' }
+          git config --global core.longpaths true
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Require existing exact-SHA CI success
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node dev-tools/security_release_candidate.cjs check-ci --sha=$env:GITHUB_SHA
+      - name: Install locked verification dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install locked web build dependencies
+        run: npm ci --prefix desktop/web-app --no-audit --no-fund
+      - name: Install the fixture browser
+        run: npx --no-install playwright install chromium
+      - name: Install pinned EPUBCheck fixtures
+        run: node desktop/mcp/fetch_epubcheck.cjs
+      - name: Generate the synthetic remediation PDF fixture
+        run: node dev-tools/make_remediation_e2e_fixture.cjs
+      - name: Generate the candidate source modules
+        run: node build.js --mode=prod --force
+      - name: Build the complete Cloudflare public tree including app
+        env:
+          GENERATE_SOURCEMAP: 'false'
+          DISABLE_ESLINT_PLUGIN: 'true'
+          CI: 'false'
+        run: npm run build --prefix desktop/web-app
+      - name: Check final generated sources
+        env:
+          ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
+          TZ: America/New_York
+        run: npm run verify:gate
+      - name: Check final native regressions
+        run: npm run test:native
+      - name: Check all blocking unit tests
+        env:
+          TZ: America/New_York
+        run: node dev-tools/run_unit_shard.cjs
+      - name: Check final browser delivery
+        run: npx --no-install vitest run tests/browser_delivery_integrity.test.js tests/browser_release_publication.test.js tests/browser_release_cache_security.test.js tests/service_worker_release_identity.test.js tests/security_release_candidate_20261101.test.js --maxWorkers=1
+      - name: Check actual release transitions
+        run: node dev-tools/check_app_update_browser.cjs
+      - name: Package exhaustive Cloudflare Pages candidate and recheck CI provenance
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node dev-tools/security_release_candidate.cjs create --output=$env:RUNNER_TEMP/alloflow-release-candidate
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: alloflow-release-candidate-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/alloflow-release-candidate/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 3
+
+  # No source checkout, shell execution, dependencies, or publishing credentials
+  # in the job allowed to sign. It only signs the manifest built above.
+  attest:
+    name: Attest exact candidate
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'Apomera/AlloFlow' && startsWith(github.ref, 'refs/heads/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: alloflow-release-candidate-${{ github.sha }}-${{ github.run_attempt }}
+          path: release-candidate
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: release-candidate/manifest.json
