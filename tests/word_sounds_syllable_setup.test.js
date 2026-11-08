@@ -355,7 +355,8 @@ describe('Studio review queue and reusable approvals', () => {
     button('Confirm and next').focus();
     await act(async () => button('Confirm and next').click());
     expect(container.querySelector('legend').textContent).toBe('unknownword');
-    expect(document.activeElement).toBe(button('Listen to whole word'));
+    // 2026-11-08: "Confirm and next" also plays the next word, so its listen control reads "Stop word preview" here.
+    expect(document.activeElement).toBe(container.querySelector('[data-syllable-count-listen]'));
     expect(container.textContent).toContain('Needs attention only (1)');
     expect(saved.fire.count).toBe(1);
     await checked('Needs attention only', false);

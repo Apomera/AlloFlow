@@ -3405,7 +3405,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         };
     }
 
-    function WordSoundsSyllableCountReview({ word, language, resolution, audioContext, audioProfile, recordedTask, onSave, previewWord, translate, onNext, allowRemember = false, onRepairRecording, onUseWithoutRecording, draft, onDraftChange }) {
+    function WordSoundsSyllableCountReview({ word, language, resolution, audioContext, audioProfile, recordedTask, onSave, previewWord, translate, onNext, allowRemember = false, onRepairRecording, onUseWithoutRecording, draft, onDraftChange, autoListen = false }) {
         const tr = (key, fallback, params) => translate(key, fallback, params);
         const currentAudioContext = audioContext || WS_CORE.createSyllableCountAudioContext({ language });
         const draftKey = wordSoundsSyllableCountDraftKey(word, language, resolution, currentAudioContext, recordedTask);
@@ -3482,6 +3482,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 await clip.play();
             } catch (_) { failure(); }
         };
+        // Reached with "Confirm and next": play once, straight away. Confirming still waits for the clip to finish.
+        const autoListened = React.useRef(false);
+        React.useEffect(() => {
+            if (!autoListen || autoListened.current || !previewWord) return;
+            autoListened.current = true;
+            hearWord();
+        }, [autoListen]);
         const validCount = Number.isInteger(Number(count)) && Number(count) >= 1 && Number(count) <= 12;
         const recordingNeedsCountReview = resolution.reason === 'count_recording_review_required';
         const recordingCountDiffers = validCount && Number(count) !== resolution.recordedCount;
@@ -3561,6 +3568,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const requestedFocus = React.useRef(null);
         const [repairWord, setRepairWord] = React.useState(null);
         const repairRef = React.useRef(null);
+        // The word reached by "Confirm and next" plays at once; Next word and Previous word do not play.
+        const [autoListenWord, setAutoListenWord] = React.useState(null);
         const entries = words.map(word => ({ word, resolution: resolveWord(word) }));
         const attention = entries.filter(entry => !entry.resolution.supported);
         const visible = attentionOnly ? attention : entries;
@@ -3590,20 +3599,22 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 : queueRef.current?.querySelector('[data-syllable-count-complete]');
             target?.focus();
         });
-        const next = () => {
+        const next = (afterConfirm = false) => {
             setRepairWord(null);
             pendingFocus.current = current?.word || null;
             const remaining = visible.filter(entry => entry.word !== current?.word);
-            setActiveWord((visible[index + 1] || remaining[0] || visible[0])?.word || '');
+            const target = (visible[index + 1] || remaining[0] || visible[0])?.word || '';
+            setActiveWord(target);
+            setAutoListenWord(afterConfirm === true && target !== current?.word ? target : null);
         };
         if (!isOpen) return null;
         return <div ref={queueRef}>
             <label className="flex items-center gap-2 my-3 text-sm font-semibold"><input type="checkbox" checked={attentionOnly} onChange={event => { setRepairWord(null); setAttentionOnly(event.target.checked); }} />{tr('word_sounds.count_attention_filter', 'Needs attention only ({count})', { count: attention.length })}</label>
             {current ? <>
                 <div className="flex items-center gap-3 my-2">
-                    <button type="button" disabled={index === 0} onClick={() => { setRepairWord(null); pendingFocus.current = current.word; setActiveWord(visible[index - 1].word); }} className="min-h-11 border rounded-lg px-3 disabled:opacity-50">{tr('word_sounds.count_previous', 'Previous word')}</button>
+                    <button type="button" disabled={index === 0} onClick={() => { setRepairWord(null); setAutoListenWord(null); pendingFocus.current = current.word; setActiveWord(visible[index - 1].word); }} className="min-h-11 border rounded-lg px-3 disabled:opacity-50">{tr('word_sounds.count_previous', 'Previous word')}</button>
                     <p role="status" className="text-sm">{tr('word_sounds.count_queue_position', '{position} of {total}', { position: index + 1, total: visible.length })}</p>
-                    <button type="button" disabled={index >= visible.length - 1} onClick={next} className="min-h-11 border rounded-lg px-3 disabled:opacity-50">{tr('word_sounds.count_next', 'Next word')}</button>
+                    <button type="button" disabled={index >= visible.length - 1} onClick={() => next()} className="min-h-11 border rounded-lg px-3 disabled:opacity-50">{tr('word_sounds.count_next', 'Next word')}</button>
                 </div>
                 <WordSoundsSyllableCountReview key={current.word} word={current.word} language={contextFor(current.word).language}
                     resolution={current.resolution} audioContext={contextFor(current.word)} audioProfile={profileFor?.(current.word)} recordedTask={recordedFor?.(current.word)} translate={translate} previewWord={previewWord}
@@ -3618,7 +3629,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                         const result = onSave(current.word, task, options);
                         if (result !== false && attentionOnly) pendingFocus.current = current.word;
                         return result;
-                    }} onNext={next} />
+                    }} onNext={() => next(true)} autoListen={autoListenWord === current.word} />
             </> : <p data-syllable-count-complete tabIndex={-1} role="status" className="text-sm my-3">{tr('word_sounds.count_queue_clear', 'No selected words need count review. Clear the filter to inspect any word.')}</p>}
             {repairWord && repairWord === current?.word && <div ref={repairRef} className="my-3">
                 <WordSoundsSyllableRecordingEditor key={repairWord} word={repairWord} language={contextFor(repairWord).language} board={recordedFor?.(repairWord)} translate={translate}
@@ -3754,6 +3765,16 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
     // The host owns this session so approved work survives leaving setup.
     // Unfinished editor drafts remain governed by the explicit discard choice.
     const WS_LESSON_MASTERY_THRESHOLD = 3;
+    const WS_LESSON_MASTERY_CHOICES = [2, 3, 4];
+    // The usual teaching sequence: larger sound units before smaller ones (rhyme, syllables, onset-rime, single
+    // sounds, then changing sounds), then letters, spelling and reading. Unknown ids keep their place at the end.
+    const WS_RECOMMENDED_LESSON_ORDER = ['rhyming', 'syllable_counting', 'syllable_blending', 'word_families', 'isolation', 'sound_sort', 'blending',
+        'segmentation', 'counting', 'manipulation', 'letter_tracing', 'mapping', 'missing_letter', 'word_scramble', 'spelling_bee', 'orthography',
+        'decoding', 'read_sentence', 'sentence_match', 'read_passage'];
+    const wsRecommendedLessonOrder = (order) => [...order].sort((a, b) => {
+        const rank = (id) => { const at = WS_RECOMMENDED_LESSON_ORDER.indexOf(id); return at < 0 ? WS_RECOMMENDED_LESSON_ORDER.length : at; };
+        return rank(a) - rank(b);
+    });
     // A reopened saved lesson starts from its own plan, not a blank one.
     function restoreSavedLessonPlan(saved, defaults) {
         const next = { ...defaults };
@@ -4096,6 +4117,25 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         ]));
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
+        const [orderBeforeRecommended, setOrderBeforeRecommended] = React.useState(null);
+        const recommendedLessonOrder = wsRecommendedLessonOrder(lessonPlanOrder);
+        const lessonOrderIsRecommended = recommendedLessonOrder.every((id, i) => id === lessonPlanOrder[i]);
+        // Any later reorder replaces the remembered order, so Undo never undoes the teacher's own moves.
+        React.useEffect(() => { if (orderBeforeRecommended && !lessonOrderIsRecommended) setOrderBeforeRecommended(null); }, [lessonPlanOrder]);
+        const applyRecommendedLessonOrder = () => {
+            if (lessonOrderIsRecommended) return;
+            setOrderBeforeRecommended(lessonPlanOrder);
+            setLessonPlanOrder(recommendedLessonOrder);
+            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_done', 'Activities are in the recommended order.'));
+        };
+        const undoRecommendedLessonOrder = () => {
+            if (!orderBeforeRecommended) return;
+            setLessonPlanOrder(orderBeforeRecommended);
+            setOrderBeforeRecommended(null);
+            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_undone', 'Your previous order is back.'));
+        };
+        const [masteryThreshold, setMasteryThreshold] = useSetupState('masteryThreshold', () =>
+            WS_LESSON_MASTERY_CHOICES.includes(Number(preparedLessonPlan?.masteryThreshold)) ? Number(preparedLessonPlan.masteryThreshold) : WS_LESSON_MASTERY_THRESHOLD);
         const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
             const fromIndex = lessonPlanOrder.indexOf(activityId);
             const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
@@ -5748,7 +5788,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              }
              const lessonPlanConfig = useLessonPlan ? {
                  masteryMode: 'consecutive',
-                 masteryThreshold: WS_LESSON_MASTERY_THRESHOLD,
+                 masteryThreshold,
                  activities: enabledActivities,
                  order: lessonPlanOrder.filter(lessonPlanActivityOn),
                  totalItems: sequence.length,
@@ -6069,10 +6109,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     <p className="text-xs text-slate-600 mt-2">{tf('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
                                 </div>
                                 <div className="mt-3">
-                                    <div className={`bg-white p-4 rounded-xl border ${includeLessonPlan ? 'opacity-50 cursor-not-allowed border-slate-200' : orthoSessionGoal > 0 ? 'border-indigo-300 bg-indigo-50/30' : 'border-slate-200'} shadow-sm`}>
+                                    <div className={`p-4 rounded-xl border shadow-sm ${includeLessonPlan ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50' : orthoSessionGoal > 0 ? 'bg-white border-indigo-300 bg-indigo-50/30' : 'bg-white border-slate-200'}`}>
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-bold text-slate-700">{tf('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>{orthoSessionGoal || 'Off'}</span>
+                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>{orthoSessionGoal || tf('word_sounds.ortho_off', 'Off')}</span>
                                         </div>
                                         <input aria-label={t('common.spelling_session_goal_slider')}
                                             type="range" min="0" max="100" step="5"
@@ -6083,7 +6123,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         />
                                         <p className="text-xs text-slate-600 mt-2">
                                             {includeLessonPlan
-                                                ? '⚠️ Controlled by Lesson Plan mode'
+                                                ? tf('word_sounds.ortho_controlled_by_plan', 'Set by the lesson plan below.')
                                                 : orthoSessionGoal > 0
                                                     ? t('word_sounds.ortho_activity_hint_on', `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`)
                                                     : tf('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
@@ -6206,7 +6246,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     <span className="text-xl">🎙️</span>
                                     <span className="flex-1 min-w-0">
                                         <span className="block font-bold text-violet-700 text-sm">{tf('word_sounds.voice_pack_cta', 'Record your own sounds')}</span>
-                                        <span className="block text-[11px] text-slate-500">{tf('word_sounds.voice_pack_cta_hint', 'Use your voice for the phoneme bank (Orton-Gillingham)')}</span>
+                                        <span className="block text-[11px] text-slate-600">{tf('word_sounds.voice_pack_cta_hint', 'Use your voice for the phoneme bank (Orton-Gillingham)')}</span>
                                     </span>
                                 </button>
                             </div>
@@ -6400,7 +6440,20 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     {includeLessonPlan && (
                                         <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order">
                                             <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
-                                            <p className="text-xs text-slate-600" data-ws-lesson-minimum-note="true">{tf('word_sounds.lesson_plan_min_note', 'Each number is a minimum, and an activity stops at about double that at most. In between, it keeps going until the child gets {streak} in a row right on the first try, using different words. Missed words may come back at the end, and the session goal can end it sooner.', { streak: WS_LESSON_MASTERY_THRESHOLD })}</p>
+                                            <div className="flex flex-wrap items-center gap-2" data-ws-recommended-order="true">
+                                                <button type="button" onClick={applyRecommendedLessonOrder} disabled={lessonOrderIsRecommended}
+                                                    className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60">
+                                                    {lessonOrderIsRecommended ? tf('word_sounds.lesson_plan_recommended_active', 'In the recommended order') : tf('word_sounds.lesson_plan_recommended_order', 'Use recommended order')}</button>
+                                                {orderBeforeRecommended && <button type="button" onClick={undoRecommendedLessonOrder} className="min-h-11 rounded-lg px-3 py-1.5 text-sm font-semibold text-indigo-800 underline underline-offset-2">{tf('word_sounds.lesson_plan_recommended_undo', 'Undo')}</button>}
+                                            </div>
+                                            <p className="text-xs text-slate-600">{tf('word_sounds.lesson_plan_recommended_help', 'Recommended: rhyme and syllables first, then single sounds, then letters, spelling and reading.')}</p>
+                                            <label className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700" data-ws-mastery-threshold="true">
+                                                {tf('word_sounds.lesson_plan_mastery_label', 'Move on after')}
+                                                <select value={masteryThreshold} onChange={(e) => setMasteryThreshold(Number(e.target.value))} className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-sm font-normal">
+                                                    {WS_LESSON_MASTERY_CHOICES.map((n) => <option key={n} value={n}>{tf('word_sounds.lesson_plan_mastery_option', '{n} right in a row', { n })}</option>)}
+                                                </select>
+                                            </label>
+                                            <p className="text-xs text-slate-600" data-ws-lesson-minimum-note="true">{tf('word_sounds.lesson_plan_min_note', 'Each number is a minimum, and an activity stops at about double that at most. In between, it keeps going until the child gets {streak} in a row right on the first try, using different words. Missed words may come back at the end, and the session goal can end it sooner.', { streak: masteryThreshold })}</p>
                                             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
                                             {!soundSwapAvailable && <p className="text-xs text-slate-600" data-ws-sound-swap-hidden="true">{tf('word_sounds.sound_swap_hidden_note', 'Sound Swap is hidden: none of the selected words has a checked one-sound change.')}</p>}
                                             {lessonPlanOrder.map((actId, activityIndex) => {
@@ -6487,7 +6540,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                             className="min-w-0 flex-1 accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
                                                         />
                                                         <span className="shrink-0 whitespace-nowrap text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" data-ws-lesson-item-range="true">
-                                                            {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: lessonPlan[activity.id].count, max: WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, WS_LESSON_MASTERY_THRESHOLD) })}
+                                                            {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: lessonPlan[activity.id].count, max: WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, masteryThreshold) })}
                                                         </span>
                                                         </div>
                                                     )}

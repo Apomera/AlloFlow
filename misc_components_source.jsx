@@ -1528,7 +1528,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             )}
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 block">{t('word_sounds.rhyme_options')}</label>
+                                            <label className="text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block">{t('word_sounds.rhyme_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <div className="flex items-center gap-1">
                                                     <input aria-label={t('common.rhyme_time_options')}
@@ -1595,7 +1595,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             </div>
                                         <div>
-                                            <label className="text-xs font-bold text-violet-500 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
+                                            <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <span className="flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
                                                         <span className="min-w-0 break-words">{word.targetWord || word.word}</span>
@@ -1699,7 +1699,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         })()}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
-                                                <label className="text-xs font-bold text-amber-600 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
+                                                <label className="text-xs font-bold text-amber-700 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
                                                 {word.manipulationTask?.type && (
                                                     <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
                                                         {word.manipulationTask.type}
@@ -1850,7 +1850,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             </div>
                                         </div>
                                         <div className="mt-4 pt-4 border-t border-slate-200">
-                                            <label className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
+                                            <label className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2 block flex items-center gap-2">
                                                 <ImageIcon size={12} /> {t('word_sounds.word_image_label') || 'Word Image'}
                                             </label>
                                             <div className="flex items-start gap-4">
