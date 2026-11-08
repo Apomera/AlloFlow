@@ -201,6 +201,7 @@ describe('the fork in the Source panel chooser (shipped module)', () => {
     mounts.push({ root, el });
     act(() => root.render(React.createElement(api.SourceInputShellView, props)));
     const chooser = el.querySelector('[data-source-start-chooser]');
+    click(chooser.querySelector('[data-source-start-toggle]')); // a passage is in the box, so the choices start folded
     click(byText(chooser, 'From a topic'));
     expect(dialog()).toBeTruthy();
     expect(chooser.querySelector('form'), 'no form before the choice').toBeNull();
@@ -235,6 +236,18 @@ describe('the glossary tool opens the Source panel on "From a word list"', () =>
     click(byText(dialog(), LESS));
     click(el.querySelector('[data-help-key="sidebar_start_word_list"]'));
     expect(dialog(), 'the fork was answered in the tool').toBeNull();
+    expect(chooserHost.querySelector('[data-source-word-language]')).toBeTruthy();
+    expect(document.activeElement).toBe(chooserHost.querySelector('form textarea'));
+  });
+
+  it('also opens the word-list form when a passage folded the chooser away', () => {
+    const { OtherWaysToStart, SourceStartingPointChooser, sourceStartRequests } = build();
+    const chooserHost = mount(SourceStartingPointChooser, { ...chooserProps, hasSource: true });
+    expect(chooserHost.querySelector('form'), 'folded before the request').toBeNull();
+    const el = mount(OtherWaysToStart, { onStartFromWordList: () => sourceStartRequests.request('word-list') });
+    click(toggle(el));
+    click(byText(dialog(), LESS));
+    click(el.querySelector('[data-help-key="sidebar_start_word_list"]'));
     expect(chooserHost.querySelector('[data-source-word-language]')).toBeTruthy();
     expect(document.activeElement).toBe(chooserHost.querySelector('form textarea'));
   });

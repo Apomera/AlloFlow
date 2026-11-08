@@ -11,7 +11,7 @@ new Function('window', readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_l
 describe('animal encyclopedia evidence and anatomical details', () => {
   it('resolves every animal entry citation and retains a complete account', () => {
     const animals = X.SPECIES_META.filter(m => !['coral', 'structure'].includes(m.group));
-    expect(animals).toHaveLength(77);
+    expect(animals).toHaveLength(83);
     for (const { id, scientific } of animals) {
       expect(scientific, id).toBeTruthy();
       for (const key of ['habitat', 'diet', 'behavior', 'observe']) expect(profiles[id][key]?.length, id + ' ' + key).toBeGreaterThan(20);

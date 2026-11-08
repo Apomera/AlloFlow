@@ -257,11 +257,17 @@ function pumpFixture(classes = new Set()) {
 }
 
 describe('current module-loading and concealed-workspace interaction', () => {
-  it.each(['alloflow-workspace-concealed', 'alloflow-launchpad-active'])('parks the actual background queue with %s and resumes when the class clears', async className => {
+  it.each(['alloflow-workspace-concealed'])('parks the actual background queue with %s and resumes when the class clears', async className => {
     const f = pumpFixture(new Set([className])); await vi.advanceTimersByTimeAsync(10000);
     expect(f.loads).toHaveLength(0); expect(f.queue).toHaveLength(7);
     f.classes.delete(className); await vi.advanceTimersByTimeAsync(2000);
     expect(f.loads).toHaveLength(7); expect(f.queue).toHaveLength(0);
+  });
+  it('trickles the background queue behind the launch pad, at most two at a time', async () => {
+    const f = pumpFixture(new Set(['alloflow-launchpad-active'])); await vi.advanceTimersByTimeAsync(1400);
+    expect(f.loads).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(100); expect(f.loads.length).toBeGreaterThan(0); expect(f.loads.length).toBeLessThanOrEqual(2);
+    await vi.advanceTimersByTimeAsync(10000); expect(f.loads).toHaveLength(7); expect(f.queue).toHaveLength(0);
   });
   it('bounds continuous keyboard input starvation and permits background progress after eight seconds', async () => {
     const f = pumpFixture();

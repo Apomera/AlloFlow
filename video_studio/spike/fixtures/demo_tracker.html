@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Progress Tracker (demo)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; width:1280px; height:720px; font:20px/1.4 "Segoe UI", Arial, sans-serif; background:#f1f5f9; color:#0f172a; overflow:hidden; }
+  header { height:64px; background:#1e3a8a; color:#fff; display:flex; align-items:center; padding:0 28px; font-size:24px; font-weight:700; }
+  header small { margin-left:auto; font-weight:400; font-size:16px; opacity:.9; }
+  #banner { height:56px; background:#16a34a; color:#fff; font-weight:700; display:none; align-items:center; padding:0 28px; font-size:22px; }
+  #banner.on { display:flex; }
+  main { display:flex; gap:28px; padding:24px 28px; }
+  .card { background:#fff; border:1px solid #cbd5e1; border-radius:12px; padding:20px; }
+  #left { width:380px; } #right { flex:1; }
+  h2 { margin:0 0 12px; font-size:20px; }
+  .stu { display:block; width:100%; text-align:left; font:inherit; padding:12px 14px; margin:8px 0; border:2px solid #94a3b8; border-radius:10px; background:#fff; color:#0f172a; }
+  .stu.sel { border-color:#1d4ed8; background:#dbeafe; font-weight:700; }
+  label { display:block; margin:16px 0 6px; font-weight:600; }
+  input { font:inherit; width:100%; padding:10px 12px; border:2px solid #64748b; border-radius:10px; }
+  #save { margin-top:18px; font:inherit; font-weight:700; padding:12px 22px; border:0; border-radius:10px; background:#1d4ed8; color:#fff; }
+  #chart { display:flex; align-items:flex-end; gap:22px; height:300px; border-bottom:3px solid #334155; padding:0 12px; }
+  .bar { width:70px; background:#60a5fa; text-align:center; color:#0f172a; font-weight:700; padding-top:4px; }
+  .bar.new { background:#16a34a; color:#fff; }
+  .lbl { display:flex; gap:22px; padding:6px 12px; } .lbl span { width:70px; text-align:center; font-size:16px; color:#334155; }
+</style>
+</head>
+<body>
+<header>Progress Tracker <small>DEMO DATA - fictional students</small></header>
+<div id="banner" role="status">Score saved for&nbsp;<span id="who"></span></div>
+<main>
+  <section id="left" class="card" aria-label="Choose student">
+    <h2>1. Choose a student</h2>
+    <button class="stu" id="sa">Student A</button>
+    <button class="stu" id="sb">Student B</button>
+    <button class="stu" id="sc">Student C</button>
+    <label for="score">2. Weekly score (words per minute)</label>
+    <input id="score" inputmode="numeric" autocomplete="off">
+    <button id="save">3. Save score</button>
+  </section>
+  <section id="right" class="card" aria-label="Progress chart">
+    <h2>Weekly progress</h2>
+    <div id="chart"></div>
+    <div class="lbl" id="lbl"></div>
+  </section>
+</main>
+<script>
+  var data = [28, 31, 30, 36];
+  function draw(newVal) {
+    var vals = newVal == null ? data : data.concat([newVal]);
+    document.getElementById('chart').innerHTML = vals.map(function (v, i) {
+      return '<div class="bar' + (i === 4 ? ' new' : '') + '" style="height:' + Math.round(v * 5.2) + 'px">' + v + '</div>';
+    }).join('');
+    document.getElementById('lbl').innerHTML = vals.map(function (_, i) { return '<span>Wk ' + (i + 1) + '</span>'; }).join('');
+  }
+  draw(null);
+  var chosen = '';
+  ['sa', 'sb', 'sc'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function () {
+      ['sa', 'sb', 'sc'].forEach(function (o) { document.getElementById(o).classList.remove('sel'); });
+      this.classList.add('sel'); chosen = this.textContent;
+    });
+  });
+  document.getElementById('save').addEventListener('click', function () {
+    var v = parseInt(document.getElementById('score').value, 10);
+    if (!chosen || !isFinite(v)) return;
+    document.getElementById('who').textContent = chosen;
+    document.getElementById('banner').classList.add('on');
+    draw(v);
+  });
+</script>
+</body>
+</html>

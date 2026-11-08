@@ -2948,6 +2948,39 @@
           onLoad: function () { setState('ok'); }, onError: function () { setState('bad'); } })));
   }
 
+  // Lane sc16: stills of the tool's own dive reef (reef_3d_explore.js, rendered offline) over
+  // some page scenes, as Hr15HeroArt does for the hero. The drawing stays under each picture:
+  // it shows while the picture loads, if it fails, and in the contrast theme, which downloads
+  // nothing. Only scenes the dive really draws; none of these pages asks the student to judge them.
+  // The Reef Stars scenes and the calm-ocean card keep their drawings, which say it more clearly.
+  // [1x width, height, object-position]; the 2x file is twice as wide and tall.
+  var SC16_PICS = {
+    why: [640, 356, '50% 50%'],
+    regrow: [440, 200, '50% 50%'], fish: [440, 200, '50% 50%'], turtle: [440, 200, '50% 50%'],
+    'card-garden': [720, 300, '50% 50%'], 'card-reserves': [720, 300, '50% 50%'], 'card-structures': [720, 300, '50% 62%']
+  };
+  var SC16_SIZES = { why: '(max-width: 760px) calc(100vw - 100px), 540px', hope: '(max-width: 640px) 72px, 252px', card: '710px' };
+  var SC16_CSS = '[data-coralreef-root] .pg-art>.sc16-pic{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}'
+    + '[data-coralreef-root] .pg-art>.sc16-pic[data-sc16-pic=ok]{opacity:1}'
+    + '@media(prefers-reduced-motion:reduce){[data-coralreef-root] .pg-art>.sc16-pic{transition:none}}'
+    + '@media(forced-colors:active){[data-coralreef-root] .sc16-pic{display:none}}'
+    + '[data-coralreef-root][data-theme=contrast] .sc16-pic{display:none}';
+  function sc16File(id, w) { return companionUrl('assets/coralreef/scene_' + id + '_' + w + '.webp'); }
+  function Sc16Img(props) {
+    var h = props.h, st = props.React.useState('wait'), p = SC16_PICS[props.id];
+    if (st[0] === 'bad') return null;
+    var one = sc16File(props.id, p[0]), two = sc16File(props.id, p[0] * 2);
+    return h('img', { className: 'sc16-pic', 'data-sc16-pic': st[0], src: one, srcSet: one + ' ' + p[0] + 'w, ' + two + ' ' + (p[0] * 2) + 'w', sizes: props.sizes,
+      width: p[0], height: p[1], alt: '', loading: 'lazy', decoding: 'async', draggable: false, style: { objectPosition: p[2] },
+      onLoad: function () { st[1]('ok'); }, onError: function () { st[1]('bad'); } });
+  }
+  // art is the span pgScene made; the picture goes inside it, over the drawing.
+  function sc16Art(env, art, sizes) {
+    var id = art && art.props['data-pg-art'];
+    if (!id || !SC16_PICS[id] || env.theme === 'contrast') return art;
+    return env.React.cloneElement(art, { 'data-sc16': id }, art.props.children, env.h(Sc16Img, { h: env.h, React: env.React, id: id, sizes: sizes }));
+  }
+
   // Lane jr11: an old or damaged saved log must not crash Compare or Results. A log with nothing
   // wrong keeps its own object, so saved state is untouched and memos still hold.
   function jr11GoodEntry(e) {
@@ -3467,6 +3500,7 @@
       h('style', null, W2_HUB_CSS),
       h('style', null, SV_HUB_CSS),
       h('style', null, PG_CSS),
+      h('style', null, SC16_CSS),
       h('section', { className: 'cr-hero', 'aria-labelledby': 'cr-welcome-title' },
         h(Hr15HeroArt, { env: env }),
         h('div', { className: 'cr-hero-copy' },
@@ -3491,10 +3525,10 @@
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.hub_why_title', 'Why survey a reef?')),
         h('div', { className: 'pg-why' }, h('div', null,
         h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.hub_why_1', 'Coral reefs change from year to year. Volunteers and scientists check on them by swimming along a measuring tape and writing down what is underneath it and which fish swim nearby. Those numbers show whether a reef is healthy, bleaching, or being taken over by seaweed.')),
-        h('p', { style: { margin: 0 } }, __alloT('stem.coralreef.w2_hub_why_2', 'In this lab you dive a reef and learn to recognize the animals that live there, survey reefs with the same two methods the monitors use, and compare reefs with evidence. Then you investigate why reefs bleach, grow and fill with seaweed, and use a model to see what heatwaves, fishing, runoff and restoration could do to a reef over 30 years. The survey reefs are fictional teaching sites.'))), pgWhyArt(h, svUid))),
+        h('p', { style: { margin: 0 } }, __alloT('stem.coralreef.w2_hub_why_2', 'In this lab you dive a reef and learn to recognize the animals that live there, survey reefs with the same two methods the monitors use, and compare reefs with evidence. Then you investigate why reefs bleach, grow and fill with seaweed, and use a model to see what heatwaves, fishing, runoff and restoration could do to a reef over 30 years. The survey reefs are fictional teaching sites.'))), sc16Art(env, pgWhyArt(h, svUid), SC16_SIZES.why))),
       h('section', { style: cardStyle(P, { borderColor: P.good }) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.hope_title', 'Reasons for hope')),
-        h('ul', { className: 'pg-hope' }, hopeFacts(__alloT).map(function (t, i) { return h('li', { key: i }, pgHopeArt(h, svUid, PG_HOPE_IDS[i]), h('span', { className: 'pg-hope-text' }, t)); })),
+        h('ul', { className: 'pg-hope' }, hopeFacts(__alloT).map(function (t, i) { return h('li', { key: i }, sc16Art(env, pgHopeArt(h, svUid, PG_HOPE_IDS[i]), SC16_SIZES.hope), h('span', { className: 'pg-hope-text' }, t)); })),
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
           h('button', { type: 'button', style: btnStyle(P, true), onClick: function () { env.set({ diveSiteId: 'restoration' }); env.go('explore'); } }, __alloT('stem.coralreef.hope_dive', 'Dive a restoration site')),
           h('button', { type: 'button', style: btnStyle(P, false), onClick: function () { env.set({ model: scenarioSettings('rubble'), mdlView: 'scenarios' }); env.go('model'); } }, __alloT('stem.coralreef.hope_model', 'Model a restoration')),
@@ -11451,9 +11485,9 @@
   // adding a fourth investigation would take "done" away from students who finished
   // the other three, and the Start page promises three.
   var FW_ROWS = [
-    { id: 'top', ids: ['whitetip_reef_shark', 'blacktip_reef_shark', 'peacock_grouper', 'giant_moray', 'blackfin_barracuda', 'bluefin_trevally'] },
-    { id: 'mid', ids: ['humphead_wrasse', 'titan_triggerfish', 'clown_triggerfish', 'porcupinefish', 'giant_triton', 'harlequin_shrimp', 'cleaner_wrasse', 'parasites'] },
-    { id: 'grazers', ids: ['parrotfish', 'bumphead_parrotfish', 'long_spined_urchin', 'green_turtle', 'dusky_farmerfish', 'crown_of_thorns', 'drupella_snail', 'pincushion_sea_star'] },
+    { id: 'top', ids: ['whitetip_reef_shark', 'blacktip_reef_shark', 'peacock_grouper', 'leopard_coral_grouper', 'giant_moray', 'blackfin_barracuda', 'bluefin_trevally'] },
+    { id: 'mid', ids: ['humphead_wrasse', 'titan_triggerfish', 'clown_triggerfish', 'porcupinefish', 'giant_triton', 'harlequin_shrimp', 'blue_ringed_octopus', 'cleaner_wrasse', 'parasites'] },
+    { id: 'grazers', ids: ['parrotfish', 'bumphead_parrotfish', 'foxface_rabbitfish', 'long_spined_urchin', 'green_turtle', 'dusky_farmerfish', 'crown_of_thorns', 'drupella_snail', 'pincushion_sea_star'] },
     { id: 'small', ids: ['anthias', 'blue_green_chromis', 'blue_tang', 'reef_manta', 'sea_cucumber', 'blue_sea_star', 'reef_fishes', 'small_animals'] },
     { id: 'base', ids: ['algae', 'farm_turf', 'plankton', 'polyps', 'detritus'] }
   ];
@@ -11482,6 +11516,8 @@
     fwLink('blackfin_barracuda', 'reef_fishes', 'eats', ['dx-fishbase-blackfin_barracuda']),
     fwLink('bluefin_trevally', 'reef_fishes', 'eats', ['dx-fishbase-bluefin_trevally']),
     fwLink('bluefin_trevally', 'small_animals', 'eats', ['dx-fishbase-bluefin_trevally']),
+    fwLink('leopard_coral_grouper', 'reef_fishes', 'eats', ['dx-fishbase-leopard_coral_grouper']),
+    fwLink('leopard_coral_grouper', 'small_animals', 'eats', ['dx-fishbase-leopard_coral_grouper']),
     // Hunters of slower animals
     fwLink('humphead_wrasse', 'crown_of_thorns', 'eats', ['dx-fw-cowan2017']),
     fwLink('humphead_wrasse', 'long_spined_urchin', 'eats', ['dx-am-humphead-form'], { scope: 'kind' }),
@@ -11502,6 +11538,7 @@
     fwLink('giant_triton', 'long_spined_urchin', 'eats', ['dx-bose-giant_triton'], { scope: 'kind' }),
     fwLink('harlequin_shrimp', 'blue_sea_star', 'eats', ['dx-waikiki-harlequin_shrimp']),
     fwLink('harlequin_shrimp', 'crown_of_thorns', 'eats', ['dx-fw-cowan2017']),
+    fwLink('blue_ringed_octopus', 'small_animals', 'eats', ['dx-am-blue_ringed_octopus'], { scope: 'kind' }),
     fwLink('cleaner_wrasse', 'parasites', 'eats', ['dx-cleaner-rates-study', 'fishaus-labroides']),
     // Eaters of seaweed and coral
     fwLink('parrotfish', 'algae', 'eats', ['dx-foa-parrotfish']),
@@ -11510,6 +11547,8 @@
     fwLink('long_spined_urchin', 'algae', 'eats', ['dx-wa-diadema']),
     fwLink('green_turtle', 'algae', 'eats', ['dx-noaa-green_turtle'], { note: 'turtle_seagrass' }),
     fwLink('dusky_farmerfish', 'detritus', 'eats', ['dx-fishbase-dusky_farmerfish', 'dx-foa-dusky_farmerfish']),
+    fwLink('foxface_rabbitfish', 'algae', 'eats', ['dx-diet-foxface_rabbitfish', 'dx-fishbase-foxface_rabbitfish']),
+    fwLink('foxface_rabbitfish', 'detritus', 'eats', ['dx-diet-foxface_rabbitfish']),
     fwLink('crown_of_thorns', 'polyps', 'eats', ['dx-cots-life-stages', 'nps-cots']),
     fwLink('drupella_snail', 'polyps', 'eats', ['dx-hku-drupella_snail', 'dx-slb-drupella_snail']),
     fwLink('pincushion_sea_star', 'polyps', 'eats', ['dx-glynn-pincushion_sea_star', 'dx-slb-pincushion_sea_star']),
@@ -12392,7 +12431,7 @@
           return h('section', { key: c.id, className: 'cr-help-card', 'data-help': c.id, style: cardStyle(P, { borderColor: c.id === 'biorock' || c.id === 'structures' || c.id === 'fragile' ? P.border : P.good }) },
             h('h4', Object.assign({ style: Object.assign(h3Style(P), { fontSize: 17 }) }, nv8Target(c.id)), c.title),
             h('div', { className: 'cr-sci-row pg-card-row' },
-              h('div', { className: 'cr-sci-text pg-text' }, c.body.map(function (p, i) { return h('p', { key: i, style: { margin: i ? '8px 0 0' : 0 } }, p); }), pgCardArt(h, pgUid, c.id)),
+              h('div', { className: 'cr-sci-text pg-text' }, c.body.map(function (p, i) { return h('p', { key: i, style: { margin: i ? '8px 0 0' : 0 } }, p); }), sc16Art(env, pgCardArt(h, pgUid, c.id), SC16_SIZES.card)),
               helpFigs[c.id] ? h('figure', { className: 'cr-sci-fig' }, helpFigs[c.id]) : null));
         }),
         h('div', { key: 'pg13-lk', className: 'pg13-help-end', style: { margin: '0 0 16px' } }, sciLabLinks(env, [{ key: 'm', model: 'rubble', label: D.model }, { key: 'd', dive: 'restoration', label: D.dive }]))
@@ -12403,6 +12442,7 @@
       h('style', null, LANE_CSS_C),
       h('style', null, PG_CSS),
       h('style', null, PG_CSS_CARDS),
+      h('style', null, SC16_CSS),
       h('style', null, NV8_CSS),
       h('section', { style: cardStyle(P, { paddingBottom: 14 }) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.sciLab_title', 'Reef science lab')),
@@ -14465,6 +14505,10 @@
     {"id":"bluefin_trevally","group":"fish","scientific":"Caranx melampygus","iucn":"LC","iucnYear":2015,"lookalikes":["blackfin_barracuda"]},
     {"id":"blacktip_reef_shark","group":"fish","scientific":"Carcharhinus melanopterus","iucn":"VU","iucnYear":2020,"lookalikes":["whitetip_reef_shark"]},
     {"id":"dusky_farmerfish","group":"fish","scientific":"Stegastes nigricans","iucn":"LC","iucnYear":2021,"lookalikes":["blue_green_chromis"]},
+    {"id":"foxface_rabbitfish","group":"fish","scientific":"Siganus vulpinus","iucn":"LC","iucnYear":2015,"lookalikes":[]},
+    {"id":"leopard_coral_grouper","group":"fish","scientific":"Plectropomus leopardus","iucn":"LC","iucnYear":2016,"lookalikes":["peacock_grouper"]},
+    {"id":"dash_and_dot_goatfish","group":"fish","scientific":"Parupeneus barberinus","iucn":"LC","iucnYear":2015,"lookalikes":[]},
+    {"id":"sixbar_wrasse","group":"fish","scientific":"Thalassoma hardwicke","iucn":"LC","iucnYear":2008,"lookalikes":[]},
     {"id":"bigfin_reef_squid","group":"invertebrate","scientific":"Sepioteuthis lessoniana (species complex)","iucn":"DD","iucnYear":2014,"lookalikes":["broadclub_cuttlefish","day_octopus"]},
     { id: 'goldmouth_sea_squirt', group: 'invertebrate', scientific: 'Polycarpa aurata', iucn: 'NE', iucnYear: null, lookalikes: ['barrel_sponge', 'orange_cup_coral'] },
     { id: 'feather_duster_worm', group: 'invertebrate', scientific: 'Sabellastarte spectabilis', iucn: 'NE', iucnYear: null, lookalikes: ['christmas_tree_worm', 'bennetts_feather_star'] },
@@ -14479,6 +14523,10 @@
     { id: 'blue_coral', group: 'coral', scientific: 'Heliopora coerulea', iucn: 'LC', iucnYear: 2023, lookalikes: ['fire_coral', 'boulder_coral'] },
     { id: 'pipe_organ_coral', group: 'coral', scientific: 'Tubipora musica', iucn: 'LC', iucnYear: 2023, lookalikes: ['soft_coral', 'orange_cup_coral'] },
     { id: 'birdsnest_coral', group: 'coral', scientific: 'Seriatopora hystrix', iucn: 'VU', iucnYear: 2023, lookalikes: ['cauliflower_coral', 'staghorn_coral'] },
+    { id: 'blue_ringed_octopus', group: 'invertebrate', scientific: 'Hapalochlaena lunulata', iucn: 'LC', iucnYear: 2014, lookalikes: ['day_octopus', 'broadclub_cuttlefish'] },
+    { id: 'bedfords_flatworm', group: 'invertebrate', scientific: 'Pseudobiceros bedfordi', iucn: 'NE', iucnYear: null, lookalikes: ['nudibranch', 'spanish_dancer'] },
+    { id: 'galaxy_coral', group: 'coral', scientific: 'Galaxea fascicularis', iucn: 'LC', iucnYear: 2023, lookalikes: ['flowerpot_coral', 'boulder_coral'] },
+    { id: 'finger_coral', group: 'coral', scientific: 'Porites cylindrica', iucn: 'LC', iucnYear: 2023, lookalikes: ['boulder_coral', 'staghorn_coral'] },
   ];
   function speciesText(__alloT) {
     return {
@@ -14513,6 +14561,34 @@
           __alloT('stem.coralreef.sp_birdsnest_coral_mark4', 'Usually pink, sometimes cream, blue or green')],
         role: __alloT('stem.coralreef.sp_birdsnest_coral_role', 'A stony coral and reef builder with algae partners in its tissue. Its tiny polyp cups, called corallites, sit in rows along each branch.'),
         fact: __alloT('stem.coralreef.sp_birdsnest_coral_fact', 'It is common on shallow reef flats and can form wide stands. Like most corals in its family, it bleaches easily in a heatwave, and the IUCN lists it as Vulnerable.') },
+      blue_ringed_octopus: { name: __alloT('stem.coralreef.sp_blue_ringed_octopus_name', 'Greater blue-ringed octopus'),
+        marks: [__alloT('stem.coralreef.sp_blue_ringed_octopus_mark1', 'A small octopus: its body is about 5 cm long, and arms and all reach about 10 to 12 cm'),
+          __alloT('stem.coralreef.sp_blue_ringed_octopus_mark2', 'About 60 blue rings cover its body, head and arms'),
+          __alloT('stem.coralreef.sp_blue_ringed_octopus_mark3', 'Each ring has a dark border that makes the blue stand out'),
+          __alloT('stem.coralreef.sp_blue_ringed_octopus_mark4', 'Brownish skin; the rings flash bright blue when it is disturbed')],
+        role: __alloT('stem.coralreef.sp_blue_ringed_octopus_role', 'A small hunter of crabs and other small animals. Its bright rings are a warning that it is venomous: look, and never touch.'),
+        fact: __alloT('stem.coralreef.sp_blue_ringed_octopus_fact', 'Its venom holds tetrodotoxin, a nerve toxin that is dangerous to people. Blue-ringed octopuses are shy and usually dart for cover, and they may bite if someone picks one up. Watch from a distance and keep your hands to yourself.') },
+      bedfords_flatworm: { name: __alloT('stem.coralreef.sp_bedfords_flatworm_name', "Bedford's flatworm (Persian carpet flatworm)"),
+        marks: [__alloT('stem.coralreef.sp_bedfords_flatworm_mark1', 'A very thin, flat, oval body, only about 1 mm thick, up to about 10 cm long'),
+          __alloT('stem.coralreef.sp_bedfords_flatworm_mark2', 'Dark brown to black, with rose-pink stripes and tiny pale dots'),
+          __alloT('stem.coralreef.sp_bedfords_flatworm_mark3', "Two upright 'horns' at the front are only folds of the body edge"),
+          __alloT('stem.coralreef.sp_bedfords_flatworm_mark4', 'Ruffled edges and no tuft of gills on its back')],
+        role: __alloT('stem.coralreef.sp_bedfords_flatworm_role', 'A small hunter that mainly eats sea squirts, and some small crustaceans.'),
+        fact: __alloT('stem.coralreef.sp_bedfords_flatworm_fact', 'It looks like a sea slug, but it is a flatworm, not a mollusc at all. To tell them apart, look for gills: many sea slugs carry a tuft of gills on the back, and a flatworm has none.') },
+      galaxy_coral: { name: __alloT('stem.coralreef.sp_galaxy_coral_name', 'Galaxy coral'),
+        marks: [__alloT('stem.coralreef.sp_galaxy_coral_mark1', 'A low dome or cushion; big colonies grow into mounds or columns over 5 m across'),
+          __alloT('stem.coralreef.sp_galaxy_coral_mark2', 'Separate round cups stand up from the surface, most less than 1 cm across'),
+          __alloT('stem.coralreef.sp_galaxy_coral_mark3', 'Thin blades called septa reach the centre of each cup and stick up above its rim, like a star'),
+          __alloT('stem.coralreef.sp_galaxy_coral_mark4', 'Green, grey, red or brown, often with white tentacle tips or septa of another colour')],
+        role: __alloT('stem.coralreef.sp_galaxy_coral_role', 'A stony coral and reef builder with algae partners in its tissue. Its tentacles are usually out during the day.'),
+        fact: __alloT('stem.coralreef.sp_galaxy_coral_fact', 'Corals fight for space. When another coral touches it, a galaxy coral can grow sweeper tentacles, up to 30 times longer than its feeding tentacles, that sting and damage the neighbour.') },
+      finger_coral: { name: __alloT('stem.coralreef.sp_finger_coral_name', 'Finger coral (yellow finger coral)'),
+        marks: [__alloT('stem.coralreef.sp_finger_coral_mark1', 'Smooth, round, finger-like branches, sometimes rising from a crust at the base'),
+          __alloT('stem.coralreef.sp_finger_coral_mark2', 'The polyp cups are tiny, less than 2 mm, and so shallow that the branches look smooth'),
+          __alloT('stem.coralreef.sp_finger_coral_mark3', 'Usually cream, yellow, blue or green'),
+          __alloT('stem.coralreef.sp_finger_coral_mark4', 'Can cover wide patches of lagoons and back reefs')],
+        role: __alloT('stem.coralreef.sp_finger_coral_role', 'A stony coral and reef builder with algae partners in its tissue. It is in the same genus, Porites, as the boulder coral.'),
+        fact: __alloT('stem.coralreef.sp_finger_coral_fact', 'Most Porites corals grow into massive mounds, but this one grows branches. Shape alone cannot tell you the genus: the tiny, crowded cups are the same as on a boulder coral.') },
       goldmouth_sea_squirt: { name: __alloT('stem.coralreef.sp_goldmouth_sea_squirt_name', 'Gold-mouth sea squirt'),
         marks: [__alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark1', 'An upright, vase-like body stays attached at its base'),
           __alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark2', 'Two separate openings, called siphons, project from the top and side'),
@@ -15073,6 +15149,22 @@
         marks: [__alloT("stem.coralreef.sp_dusky_farmerfish_mark1", "A small brown damselfish, darker on top of the head and the nape, fading to tan on the lower head and chest"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark2", "A darker patch on the body under the rear of the back fin"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark3", "A male courting or guarding eggs shows a broad white bar across the middle of the body"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark4", "Young fish are yellowish to orange brown")],
         role: __alloT("stem.coralreef.sp_dusky_farmerfish_role", "A farmer: it guards a patch of turf algae on dead branching coral, weeds out algae it cannot digest and chases away fish that come to graze."),
         fact: __alloT("stem.coralreef.sp_dusky_farmerfish_fact", "A fish about the size of your hand can decide which seaweed grows. In Okinawa, Japan, one kind of red alga grew only inside these farms. When scientists kept the farmers out, other algae took over the patch within about two weeks.") },
+      foxface_rabbitfish: { name: __alloT("stem.coralreef.sp_foxface_rabbitfish_name", "Foxface rabbitfish"),
+        marks: [__alloT("stem.coralreef.sp_foxface_rabbitfish_mark1", "A bright yellow body, with a white head and a white front part of the body"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark2", "A black band runs from the mouth through the eye up to the start of the back fin"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark3", "A black patch on the chest narrows as it runs up to just above the side fin"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark4", "Stout, sharp spines stand in the back fin and the fin under the tail, and they are venomous")],
+        role: __alloT("stem.coralreef.sp_foxface_rabbitfish_role", "A grazer that picks a mix of algae, cyanobacteria and detritus from crevices and dead coral."),
+        fact: __alloT("stem.coralreef.sp_foxface_rabbitfish_fact", "Foxface rabbitfish usually live in pairs, and the partners take turns standing guard. While one feeds head down in a crevice, the other hangs head up in the water above it and watches for danger. Then they swap.") },
+      leopard_coral_grouper: { name: __alloT("stem.coralreef.sp_leopard_coral_grouper_name", "Leopard coral grouper (common coral trout)"),
+        marks: [__alloT("stem.coralreef.sp_leopard_coral_grouper_mark1", "A red, orange, olive or brown body covered in many small, round, bright blue spots"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark2", "The blue spots on the head are small and round, not long dashes"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark3", "A blue ring around the eye, which may be broken into pieces"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark4", "A long body and a square-cut tail fin with a narrow white rear edge")],
+        role: __alloT("stem.coralreef.sp_leopard_coral_grouper_role", "A top predator: adults hunt mainly other fish, and young ones also eat crustaceans and squid."),
+        fact: __alloT("stem.coralreef.sp_leopard_coral_grouper_fact", "On the Great Barrier Reef this is the most important fish for fishing boats. About ten years after more of the reef was closed to fishing, scientists found more and bigger coral trout on the protected reefs than on fished reefs, and the fished reefs had not lost theirs.") },
+      dash_and_dot_goatfish: { name: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_name", "Dash-and-dot goatfish"),
+        marks: [__alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark1", "A pale, whitish body with a dark stripe from the mouth through the eye along the upper side"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark2", "A large black spot, bigger than the eye, at the base of the tail"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark3", "Yellowish above the dark stripe"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark4", "Two long feelers called barbels under the chin, tucked away when not in use")],
+        role: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_role", "A sand sifter: it pushes its chin barbels into sand and rubble to find buried worms, crabs, shrimps and small clams."),
+        fact: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_fact", "It finds food it cannot see. The two barbels under its chin carry chemical sense organs, which work a little like taste and smell, so the fish can sweep them through the sand and find buried animals.") },
+      sixbar_wrasse: { name: __alloT("stem.coralreef.sp_sixbar_wrasse_name", "Sixbar wrasse"),
+        marks: [__alloT("stem.coralreef.sp_sixbar_wrasse_mark1", "Six dark, wedge-shaped bars on the upper side, each shorter than the one in front"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark2", "A pale green body"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark3", "Broad pink bands spread out from the eye across the head"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark4", "Long, pointed side fins that it flaps like wings to swim")],
+        role: __alloT("stem.coralreef.sp_sixbar_wrasse_role", "A small, busy predator that picks crustaceans, fish eggs, small fishes and tiny shelled foraminiferans from the reef and the open water."),
+        fact: __alloT("stem.coralreef.sp_sixbar_wrasse_fact", "Wrasses in its group, Thalassoma, swim mostly by flapping their side fins like wings. Winged fins are good for fast swimming in moving water, and on the most wave-swept reef edges Thalassoma wrasses can be up to 15 times more common than any other wrasse.") },
       bigfin_reef_squid: { name: __alloT("stem.coralreef.sp_bigfin_reef_squid_name", "Bigfin reef squid"),
         marks: [__alloT("stem.coralreef.sp_bigfin_reef_squid_mark1", "A long, muscular mantle tapers toward the rear of the body"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark2", "Broad, rounded side fins run almost the full mantle length and are widest toward the rear"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark3", "Eight arms surround the mouth, with two longer feeding tentacles ending in wider clubs"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark4", "Large eyes sit beside the head; skin markings can shift from dark bands to nearly transparent")],
         role: __alloT("stem.coralreef.sp_bigfin_reef_squid_role", "An active coastal predator that catches fish, prawns and other small crustaceans."),
@@ -15163,6 +15255,8 @@
     orange_cup_coral: [3, 0.15], banded_sea_krait: [1, 0.25],
     white_spotted_hermit_crab: [2, 0.15], longfin_bannerfish: [3, 0.5], bigfin_reef_squid: [2, 0.2],
     goldmouth_sea_squirt: [1, 0.15], feather_duster_worm: [1, 0.2],
+    foxface_rabbitfish: [2, 0.6], leopard_coral_grouper: [1, 0.5], dash_and_dot_goatfish: [1, 0.1], sixbar_wrasse: [1, 0.4],
+    blue_ringed_octopus: [1, 0.3], bedfords_flatworm: [1, 0.3], galaxy_coral: [1, 1], finger_coral: [2, 1],
     drupella_snail: [1, 0.9], pincushion_sea_star: [1, 0.6], spanish_dancer: [1, 0.2], banded_coral_shrimp: [2, 0.3],
     blacktip_reef_shark: [1, 0.3], dusky_farmerfish: [2, 0.3],
     bubble_coral: [1, 1], hammer_coral: [1, 1], flowerpot_coral: [2, 1],
@@ -17725,6 +17819,21 @@
         text: __alloT('stem.coralreef.ag_coral_text', 'A coral polyp is a small animal with tentacles around its mouth. In a stony coral, each polyp sits in a hard limestone skeleton. Corals belong to Cnidaria, the group of animals with specialized stinging cells used to capture food.'),
         source: { title: 'University of Hawaiʻi: Phylum Cnidaria', url: 'https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-cnidaria' }
       },
+      bedfords_flatworm: {
+        label: __alloT('stem.coralreef.ag_flatworm_label', 'Flatworm: not a sea slug'),
+        text: __alloT('stem.coralreef.ag_flatworm_text', 'This animal belongs to the flatworms, Platyhelminthes, in the order of polyclad flatworms. Sea slugs such as nudibranchs belong to a different animal group, the molluscs, with snails, clams and octopuses. Bright colours make the two look alike, but their bodies are built differently.'),
+        source: { title: 'WoRMS: Pseudobiceros bedfordi', url: 'https://www.marinespecies.org/aphia.php?p=taxdetails&id=484019' }
+      },
+      galaxy_coral: {
+        label: __alloT('stem.coralreef.ag_coral_label', 'Cnidarian: a stony coral'),
+        text: __alloT('stem.coralreef.ag_coral_text', 'A coral polyp is a small animal with tentacles around its mouth. In a stony coral, each polyp sits in a hard limestone skeleton. Corals belong to Cnidaria, the group of animals with specialized stinging cells used to capture food.'),
+        source: { title: 'University of Hawaiʻi: Phylum Cnidaria', url: 'https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-cnidaria' }
+      },
+      finger_coral: {
+        label: __alloT('stem.coralreef.ag_coral_label', 'Cnidarian: a stony coral'),
+        text: __alloT('stem.coralreef.ag_coral_text', 'A coral polyp is a small animal with tentacles around its mouth. In a stony coral, each polyp sits in a hard limestone skeleton. Corals belong to Cnidaria, the group of animals with specialized stinging cells used to capture food.'),
+        source: { title: 'University of Hawaiʻi: Phylum Cnidaria', url: 'https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-cnidaria' }
+      },
       giant_clam: {
         label: __alloT('stem.coralreef.ag_clam_label', 'Mollusc: a bivalve'),
         text: __alloT('stem.coralreef.ag_clam_text', 'A bivalve is a mollusc with two hinged shell halves. The clam\'s living body includes a soft mantle that makes the shell. Clams share the wider mollusc group with snails, slugs and octopuses, despite their very different shapes.'),
@@ -17762,6 +17871,30 @@
         behavior: __alloT('stem.coralreef.dx_birdsnest_coral_behavior', 'Colonies grow up to about 30 cm across. The branches are only 2 to 5 mm thick; they fork often and sometimes fuse together, and they break easily.'),
         observe: __alloT('stem.coralreef.dx_birdsnest_coral_observe', 'Compare the needle-sharp branch tips with the blunt, knobbly branches of cauliflower coral. A bleached colony turns white. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
         sources: ['dx-worms-birdsnest_coral', 'dx-iucn-birdsnest_coral', 'dx-cotw-birdsnest_coral', 'dx-slb-birdsnest_coral', 'dx-bleaching-taxa-2000', 'dx-noaa-coral-algae'] },
+      blue_ringed_octopus: {
+        habitat: __alloT('stem.coralreef.dx_blue_ringed_octopus_habitat', 'Shallow Indo-West Pacific seas, on the bottom from the shore to about 20 m deep (SeaLifeBase).'),
+        diet: __alloT('stem.coralreef.dx_blue_ringed_octopus_diet', 'Blue-ringed octopuses use their venom to kill prey such as crabs and small fishes. The toxin is strongest in the salivary glands.'),
+        behavior: __alloT('stem.coralreef.dx_blue_ringed_octopus_behavior', 'When disturbed, it flashes about 60 blue rings as a warning. Each ring holds layers that reflect blue-green light, with dark pigment around it; muscles uncover the rings in a quick flash. In this species, the toxin was found in the salivary glands, the body and the ink, but not in the arms.'),
+        observe: __alloT('stem.coralreef.dx_blue_ringed_octopus_observe', 'Count a few rings and find the dark border round each one. In the model the rings brighten now and then, as a disturbed octopus flashes them. Compare the day octopus: it is many times bigger and changes colour to blend in, not to warn. On a real dive, never touch an octopus.'),
+        sources: ['dx-worms-blue_ringed_octopus', 'dx-iucn-blue_ringed_octopus', 'dx-slb-blue_ringed_octopus', 'dx-mathger-blue_ringed_octopus', 'dx-ttx-blue_ringed_octopus', 'dx-am-blue_ringed_octopus'] },
+      bedfords_flatworm: {
+        habitat: __alloT('stem.coralreef.dx_bedfords_flatworm_habitat', 'Indo-West Pacific reefs, lagoons and bays, among rocks and crevices. Sightings include the Great Barrier Reef, Papua New Guinea, Indonesia and Guam.'),
+        diet: __alloT('stem.coralreef.dx_bedfords_flatworm_diet', 'Mainly sea squirts, plus small crustaceans. It glides over its food and pushes out its throat, called a pharynx, which releases digestive juices.'),
+        behavior: __alloT('stem.coralreef.dx_bedfords_flatworm_behavior', 'Mostly active at night, hiding in dark crevices by day. It glides along the bottom on tiny hairs called cilia, and can swim by rippling its ruffled edges.'),
+        observe: __alloT('stem.coralreef.dx_bedfords_flatworm_observe', "Look at the two 'horns' at the front: they are rolled-up edges of the body, not rhinophores. Then look for gills. Compare the nudibranch and the Spanish dancer, which both carry gills on the back. Colour alone can fool you, because many flatworms look like sea slugs."),
+        sources: ['dx-worms-bedfords_flatworm', 'dx-adw-bedfords_flatworm', 'dx-ssf-flatworms', 'dx-calacademy-flatworm', 'dx-slb-bedfords_flatworm'] },
+      galaxy_coral: {
+        habitat: __alloT('stem.coralreef.dx_galaxy_coral_habitat', 'Indo-Pacific reefs from Egypt to Japan, Australia and Tahiti, about 3 to 25 m deep, in places sheltered from strong waves. It can dominate reefs close to shore.'),
+        diet: __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+        behavior: __alloT('stem.coralreef.dx_galaxy_coral_behavior', 'It has two kinds of tentacles. Short catch tentacles take food; sweeper tentacles grow over days to weeks after another coral touches it, carry different stinging cells and venom, and damage the rival coral.'),
+        observe: __alloT('stem.coralreef.dx_galaxy_coral_observe', 'The model draws the cups about twice their real size. Pick one cup and find the blade-like septa standing above its rim. Compare the boulder coral, whose tiny cups sit flat in a smooth surface. A bleached colony turns white. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
+        sources: ['dx-worms-galaxy_coral', 'dx-iucn-galaxy_coral', 'dx-cotw-galaxy_coral', 'dx-slb-galaxy_coral', 'dx-clode-galaxy_coral', 'dx-sweeper-galaxy_coral', 'dx-noaa-coral-algae', 'dx-reefcheck-hc-builders'] },
+      finger_coral: {
+        habitat: __alloT('stem.coralreef.dx_finger_coral_habitat', 'Western Central Pacific reefs, from the surface to about 48 m deep. It is common and can be the main coral in lagoons and on back reef margins.'),
+        diet: __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+        behavior: __alloT('stem.coralreef.dx_finger_coral_behavior', 'Its polyps are less than 2 mm across and packed tightly together. Some colonies are both male and female; they release eggs and sperm through the mouth, and the larvae drift before they settle.'),
+        observe: __alloT('stem.coralreef.dx_finger_coral_observe', 'Compare the smooth fingers with the knobbly branches of cauliflower coral and the antler-like branches of staghorn coral. Then compare its tiny cups with the boulder coral, a relative in the same genus. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
+        sources: ['dx-worms-finger_coral', 'dx-iucn-finger_coral', 'dx-cotw-finger_coral', 'dx-slb-finger_coral', 'dx-naturalis-porites', 'dx-noaa-coral-algae', 'dx-reefcheck-hc-builders'] },
       goldmouth_sea_squirt: {
         habitat: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_habitat', 'Indo-West Pacific reefs, fixed to hard surfaces. SeaLifeBase lists records from about 3 to 20 m deep; this is a reported range, not a strict boundary.'),
         diet: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_diet', 'Tiny plankton and suspended organic particles. Water enters one siphon, food is trapped inside the filtering pharynx, and water leaves through the other.'),
@@ -18356,6 +18489,26 @@
         behavior: __alloT("stem.coralreef.dx_dusky_farmerfish_behavior", "Each fish defends a small territory of turf algae. It weeds out tough algae it cannot digest and chases off fishes that come near, including grazers and coral-eating butterflyfishes. Its crop grows better inside the farm, and corals growing inside the territory are protected from fish that would bite them."),
         observe: __alloT("stem.coralreef.dx_dusky_farmerfish_observe", "Watch one patch of rock for a while. The farmerfish stays low over its turf and darts out at a grazing fish that comes near, then swims back home. Compare the blue-green chromis, another damselfish, which hovers in groups above branching coral and picks plankton from the water."),
         sources: ["dx-worms-dusky_farmerfish","dx-foa-dusky_farmerfish","dx-fishbase-dusky_farmerfish","dx-weeding-dusky_farmerfish","dx-exclusion-dusky_farmerfish","dx-mutualism-dusky_farmerfish","dx-geography-dusky_farmerfish","dx-defence-dusky_farmerfish"] },
+      foxface_rabbitfish: { habitat: __alloT("stem.coralreef.dx_foxface_rabbitfish_habitat", "Lagoons and seaward reefs with rich coral growth in the tropical western Pacific, from the Philippines and Indonesia to the Great Barrier Reef and east to Kiribati, about 1 to 30 m deep. It often lives among staghorn corals."),
+        diet: __alloT("stem.coralreef.dx_foxface_rabbitfish_diet", "A mixed grazer. On the northern Great Barrier Reef its gut held many kinds of algae, cyanobacteria, detritus and sediment, and a study at Lizard Island found it eats mostly cyanobacteria. Young fish graze algae growing at the bases of dead coral branches."),
+        behavior: __alloT("stem.coralreef.dx_foxface_rabbitfish_behavior", "Adults live alone or, more often, in pairs: at Lizard Island about 80 out of every 100 adults were in pairs. Partners take turns: one keeps watch, head up in the water, while the other feeds in a crevice, and fish in pairs reach deeper into crevices than fish alone. Young fish sometimes gather in large schools among Acropora corals. Its stout fin spines are venomous and can give a very painful sting."),
+        observe: __alloT("stem.coralreef.dx_foxface_rabbitfish_observe", "Look among branching coral for two yellow fish together. Use Side to follow the black band from the mouth through the eye, then find the black chest patch and the row of stout spines along the back. On a real reef, watch a pair for a while: one often hangs head up above the reef while the other feeds, then they swap. Never touch one: the fin spines sting."),
+        sources: ["dx-worms-foxface_rabbitfish","dx-foa-foxface_rabbitfish","dx-fishbase-foxface_rabbitfish","dx-diet-foxface_rabbitfish","dx-vigilance-foxface_rabbitfish"] },
+      leopard_coral_grouper: { habitat: __alloT("stem.coralreef.dx_leopard_coral_grouper_habitat", "Coral-rich lagoon reefs and mid-shelf reefs of the western Pacific, from Western Australia to Fiji and north to southern Japan, about 3 to 100 m deep. Young fish live on shallow reefs, often around coral rubble."),
+        diet: __alloT("stem.coralreef.dx_leopard_coral_grouper_diet", "Adults eat mainly fish. Young fish eat small fishes, crustaceans and squid."),
+        behavior: __alloT("stem.coralreef.dx_leopard_coral_grouper_behavior", "Usually alone. It swims slowly near schools of small fish or rests still on coral heads and under ledges, and it is inactive at night. It can change colour quickly and often looks blotchy when hunting. Around the new moon many gather at spawning sites on a reef, and their eggs float just under the surface."),
+        observe: __alloT("stem.coralreef.dx_leopard_coral_grouper_observe", "Look beside coral heads for a long red fish dotted with blue. Use Side to check that the spots on the head are small and round, then find the blue ring around the eye and the white edge of the tail. Compare the peacock grouper: a darker brown body with dark-edged blue spots, often with pale bars near the tail."),
+        sources: ["dx-worms-leopard_coral_grouper","dx-foa-leopard_coral_grouper","dx-fishbase-leopard_coral_grouper","dx-reserves-leopard_coral_grouper","dx-foa-peacock_grouper","dx-stri-grouper-spots"] },
+      dash_and_dot_goatfish: { habitat: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_habitat", "Large patches of sand, and sand and rubble on reef flats, lagoons and seaward reefs, across the tropical Indo-Pacific from East Africa to the central Pacific, from about 1 m down to 100 m. Young fish gather in small groups, often with other kinds of fish, over sparse seagrass."),
+        diet: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_diet", "Animals that live in the sand. In one study of stomachs, crabs made up the most food, then polychaete worms, then small clams, shrimps and other small invertebrates. It feeds by day."),
+        behavior: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_behavior", "By day it forages alone or in small groups, probing sand and rubble with its barbels. At night it rests alone on the bottom. When the barbels are not in use, it tucks them away under its gill covers."),
+        observe: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_observe", "Scan open sand beside the reef for a pale fish swimming slowly near the bottom. Use Side to find the two barbels under the chin, the dark stripe through the eye and the separate black spot at the base of the tail: the dash and the dot."),
+        sources: ["dx-worms-dash_and_dot_goatfish","dx-foa-dash_and_dot_goatfish","dx-fishbase-dash_and_dot_goatfish","dx-am-dash_and_dot_goatfish"] },
+      sixbar_wrasse: { habitat: __alloT("stem.coralreef.dx_sixbar_wrasse_habitat", "Shallow lagoons and seaward reefs, slopes and drop-offs across the tropical Indo-Pacific, from East Africa to the central Pacific, down to about 15 m."),
+        diet: __alloT("stem.coralreef.dx_sixbar_wrasse_diet", "Crustaceans from the reef and from the plankton, fish eggs, small fishes and foraminiferans, tiny single-celled living things with shells."),
+        behavior: __alloT("stem.coralreef.dx_sixbar_wrasse_behavior", "Lives alone or in small, loose groups and keeps on the move. It starts life as a female, and some females later change into males, which are brighter. Fish pair off to spawn."),
+        observe: __alloT("stem.coralreef.dx_sixbar_wrasse_observe", "Watch its side fins: they beat up and down like wings, while the body stays fairly straight. Use Side to count the dark bars along its back, each one shorter than the one in front, and find the pink bands around the eye."),
+        sources: ["dx-worms-sixbar_wrasse","dx-foa-sixbar_wrasse","dx-fishbase-sixbar_wrasse","dx-swim-sixbar_wrasse","dx-waves-sixbar_wrasse"] },
       bigfin_reef_squid: { habitat: __alloT("stem.coralreef.dx_bigfin_reef_squid_habitat", "Warm coastal waters across the Indo-Pacific, including coral reefs, seagrass meadows and sandy areas, from the surface to about 100 m. Introduced populations also occur in the Mediterranean."),
         diet: __alloT("stem.coralreef.dx_bigfin_reef_squid_diet", "Mainly fish and prawns, with other crustaceans such as crabs and mantis shrimps."),
         behavior: __alloT("stem.coralreef.dx_bigfin_reef_squid_behavior", "Can gather in groups of similar-sized animals. Rippling fins and gentle water jets help it hover; stronger mantle contractions drive rapid jet swimming."),
@@ -18451,6 +18604,28 @@
       { id: 'dx-iucn-birdsnest_coral', text: 'Cowburn, B., Nuñez Lendo, C.I., Luzon, K., Johnson, J., Dellisanti, W. & Lewis, C. (2024). Seriatopora hystrix. The IUCN Red List of Threatened Species 2024: e.T133390A165864447. Global category: Vulnerable (assessed 2023).', url: 'https://www.iucnredlist.org/species/133390/165864447', urlLabel: 'iucnredlist.org' },
       { id: 'dx-cotw-birdsnest_coral', text: 'Corals of the World. Seriatopora hystrix: extensive stands; thin branches tapered to a needle-like point; pink, less commonly cream, blue or green; shallow reefs, especially intertidal reef flats; common.', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/seriatopora-hystrix/', urlLabel: 'coralsoftheworld.org' },
       { id: 'dx-slb-birdsnest_coral', text: 'SeaLifeBase. Seriatopora hystrix, thin birdsnest coral: fragile, weedy colonies up to 30 cm with branches 0.2 to 0.5 cm thick that fork and fuse; corallites in rows; dense thickets at about 6 to 20 m; IUCN Vulnerable assessed 27 October 2023 (accessed November 2026).', url: 'https://sealifebase.se/summary/speciessummary.php?id=45642', urlLabel: 'sealifebase.se' },
+      { id: 'dx-worms-blue_ringed_octopus', text: 'WoRMS. Hapalochlaena lunulata (Quoy & Gaimard, 1832): accepted name, AphiaID 342333, Octopoda, Octopodidae (accessed November 2026).', url: 'https://www.marinespecies.org/aphia.php?p=taxdetails&id=342333', urlLabel: 'marinespecies.org' },
+      { id: 'dx-iucn-blue_ringed_octopus', text: 'Allcock, L., Taite, M. & Allen, G. (2018). Hapalochlaena lunulata. The IUCN Red List of Threatened Species 2018: e.T163293A994503. Global category: Least Concern (assessed 29 July 2014, as quoted by SeaLifeBase).', url: 'https://www.iucnredlist.org/species/163293/994503', urlLabel: 'iucnredlist.org' },
+      { id: 'dx-slb-blue_ringed_octopus', text: 'SeaLifeBase. Hapalochlaena lunulata, greater blue-ringed octopus: Indo-West Pacific, benthic, 0 to 20 m; maximum length 12 cm, mantle length 5 cm; the colour pattern advertises strong toxicity, and direct handling should be avoided; IUCN Least Concern assessed 29 July 2014 (accessed November 2026).', url: 'https://www.sealifebase.se/summary/Hapalochlaena-lunulata.html', urlLabel: 'sealifebase.se' },
+      { id: 'dx-mathger-blue_ringed_octopus', text: 'Mäthger, L.M., Bell, G.R., Kuzirian, A.M., Allen, J.J. & Hanlon, R.T. (2012). How does the blue-ringed octopus (Hapalochlaena lunulata) flash its blue rings? Journal of Experimental Biology 215: 3752-3757. When disturbed it flashes about 60 iridescent blue rings as a warning; multilayer reflectors give blue-green light, dark chromatophores sit beneath and around each ring, and muscles under direct nerve control expose the rings.', url: 'https://doi.org/10.1242/jeb.076869', urlLabel: 'doi.org' },
+      { id: 'dx-ttx-blue_ringed_octopus', text: 'Williams, B.L. & Caldwell, R.L. (2009). Intra-organismal distribution of tetrodotoxin in two species of blue-ringed octopuses (Hapalochlaena fasciata and H. lunulata). Toxicon 54: 345-353. In H. lunulata, tetrodotoxin was found in the posterior salivary glands (highest), the mantle and the ink, but not in the arms.', url: 'https://doi.org/10.1016/j.toxicon.2009.05.019', urlLabel: 'doi.org' },
+      { id: 'dx-am-blue_ringed_octopus', text: 'Australian Museum. Blue-lined Octopus (Hapalochlaena fasciata), a close relative: blue-ringed octopuses use powerful venom, tetrodotoxin, to kill prey of crabs and small fishes; they usually dart for cover, may bite only when picked up, and the blue markings appear as a warning when disturbed.', url: 'https://australian.museum/learn/animals/molluscs/blue-lined-octopus/', urlLabel: 'australian.museum' },
+      { id: 'dx-worms-bedfords_flatworm', text: 'WoRMS. Pseudobiceros bedfordi (Laidlaw, 1903): accepted name, AphiaID 484019, Platyhelminthes, Polycladida, Pseudocerotidae (accessed November 2026).', url: 'https://www.marinespecies.org/aphia.php?p=taxdetails&id=484019', urlLabel: 'marinespecies.org' },
+      { id: 'dx-adw-bedfords_flatworm', text: 'Animal Diversity Web (University of Michigan). Pseudobiceros bedfordi: 8 to 10 cm long and about 1 mm thick; black, brown and rose-pink stripes with tiny white dots; pseudotentacles are folds of the front margin; ruffled edges used for swimming; mainly eats ascidians and some small crustaceans, using an extruded pharynx; mostly nocturnal; Indo-West Pacific bays, lagoons and reefs.', url: 'https://animaldiversity.org/accounts/Pseudobiceros_bedfordi/', urlLabel: 'animaldiversity.org' },
+      { id: 'dx-ssf-flatworms', text: 'Rudman, W.B. (1998). Flatworms. Sea Slug Forum, Australian Museum. Polyclad flatworms are Platyhelminthes, not related to sea slugs or other molluscs; they glide on cilia and can swim by throwing the sides of the body into waves.', url: 'http://www.seaslugforum.net/factsheet/flatworm', urlLabel: 'seaslugforum.net' },
+      { id: 'dx-calacademy-flatworm', text: 'Knutson, V. (2012). Nudibranch imposters. California Academy of Sciences. To tell a flatworm from a nudibranch, first look for gills, then check whether the rhinophore-like points are just rolled-up edges of the body.', url: 'https://calacademy.org/blogs/project-lab/nudibranch-imposters', urlLabel: 'calacademy.org' },
+      { id: 'dx-slb-bedfords_flatworm', text: 'SeaLifeBase. Pseudobiceros bedfordi: reef-associated, tropical Pacific; IUCN Not Evaluated (Red List version 2025-2) (accessed November 2026).', url: 'https://www.sealifebase.se/summary/Pseudobiceros-bedfordi.html', urlLabel: 'sealifebase.se' },
+      { id: 'dx-worms-galaxy_coral', text: 'WoRMS. Galaxea fascicularis (Linnaeus, 1767): accepted name, AphiaID 207366, Scleractinia, Euphylliidae (accessed November 2026).', url: 'https://www.marinespecies.org/aphia.php?p=taxdetails&id=207366', urlLabel: 'marinespecies.org' },
+      { id: 'dx-iucn-galaxy_coral', text: 'IUCN Red List of Threatened Species 2024: Galaxea fascicularis, e.T133662A166001042. Global category: Least Concern (assessed 27 October 2023, as quoted by SeaLifeBase). An older 2008 assessment listed it as Near Threatened.', url: 'https://www.iucnredlist.org/species/133662/166001042', urlLabel: 'iucnredlist.org' },
+      { id: 'dx-cotw-galaxy_coral', text: 'Corals of the World. Galaxea fascicularis: low domes or cushions, large colonies over 5 m across; corallites of mixed sizes, mostly under 10 mm, with many septa reaching the centre; tentacles usually out by day, often white-tipped; green, grey, red or brown; sheltered reefs; common and can dominate inshore fringing reefs.', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/galaxea-fascicularis/', urlLabel: 'coralsoftheworld.org' },
+      { id: 'dx-slb-galaxy_coral', text: 'SeaLifeBase. Galaxea fascicularis, galaxy coral: Indo-Pacific from Egypt to Tahiti and Japan to Australia; 3 to 25 m; cushions, low domes or irregular colonies; IUCN Least Concern assessed 27 October 2023 (accessed November 2026).', url: 'https://www.sealifebase.se/summary/Galaxea-fascicularis.html', urlLabel: 'sealifebase.se' },
+      { id: 'dx-clode-galaxy_coral', text: 'Clode, P.L. & Marshall, A.T. (2003). Skeletal microstructure of Galaxea fascicularis exsert septa: a high-resolution SEM study. Biological Bulletin 204: 146-154. Exsert septa rise above the corallite wall and are a main site of skeleton growth.', url: 'https://doi.org/10.2307/1543550', urlLabel: 'doi.org' },
+      { id: 'dx-sweeper-galaxy_coral', text: 'Yosef, O., Popovits, Y., Malik, A., Ofek-Lalzer, M., Mass, T. & Sher, D. (2020). A tentacle for every occasion: comparing the hunting tentacles and sweeper tentacles, used for territorial competition, in the coral Galaxea fascicularis. BMC Genomics 21: 548. Sweeper tentacles can be up to 30 times longer than catch tentacles, form days to weeks after contact with competitors, carry different stinging cells and venom, and cause lesions on rivals.', url: 'https://doi.org/10.1186/s12864-020-06952-w', urlLabel: 'doi.org' },
+      { id: 'dx-worms-finger_coral', text: 'WoRMS. Porites cylindrica Dana, 1846: accepted name, AphiaID 207229, Scleractinia, Poritidae (accessed November 2026).', url: 'https://www.marinespecies.org/aphia.php?p=taxdetails&id=207229', urlLabel: 'marinespecies.org' },
+      { id: 'dx-iucn-finger_coral', text: 'IUCN Red List of Threatened Species 2024: Porites cylindrica, e.T133496A165919505. Global category: Least Concern (assessed 26 October 2023, as quoted by SeaLifeBase). An older 2008 assessment listed it as Near Threatened.', url: 'https://www.iucnredlist.org/species/133496/165919505', urlLabel: 'iucnredlist.org' },
+      { id: 'dx-cotw-finger_coral', text: 'Corals of the World. Porites cylindrica: branching colonies, sometimes with an encrusting base; shallow corallites give a smooth surface; usually cream, yellow, blue or green; may dominate lagoons and back reef margins; common.', url: 'https://www.coralsoftheworld.org/species_factsheets/species_factsheet_summary/porites-cylindrica/', urlLabel: 'coralsoftheworld.org' },
+      { id: 'dx-slb-finger_coral', text: 'SeaLifeBase. Porites cylindrica, yellow finger coral: Western Central Pacific, 0 to 48 m; some colonies hermaphroditic, gametes spawned through the mouth, free-swimming planula larvae; IUCN Least Concern assessed 26 October 2023 (accessed November 2026).', url: 'https://www.sealifebase.se/summary/Porites-cylindrica.html', urlLabel: 'sealifebase.se' },
+      { id: 'dx-naturalis-porites', text: 'Naturalis Biodiversity Center. Reef Corals of the Indo-Malayan Seas: genus Porites. Most species massive, some forming very large boulders; others grow upward branches or columns from an encrusting base; polyps (corallites) small, less than 2 mm, immersed and densely packed.', url: 'https://indo-malayan-reef-corals.linnaeus.naturalis.nl/linnaeus_ng/app/views/species/taxon.php?id=27717', urlLabel: 'naturalis.nl' },
       { id: 'dx-worms-goldmouth_sea_squirt', text: 'WoRMS. Polycarpa aurata (Quoy & Gaimard, 1834), accepted name and classification, AphiaID 251001 (accessed October 2026).', url: 'https://www.marinespecies.org/aphia.php?id=251001&p=taxdetails', urlLabel: 'marinespecies.org' },
       { id: 'dx-hawaii-tunicates', text: 'University of Hawaii at Manoa. Exploring Our Fluid Earth: Phylum Chordata. Tunicate anatomy, feeding and life cycle; illustrated Polycarpa aurata.', url: 'https://manoa.hawaii.edu/exploringourfluidearth/biological/invertebrates/phylum-chordata', urlLabel: 'manoa.hawaii.edu' },
       { id: 'dx-morph-goldmouth_sea_squirt', text: 'Herwin et al. (2026). Molecular Analysis and Activities of Bioactive Compounds from Symbiont Bacteria Isolates Polycarpa aurata. Traditional Medicine Journal 31(1):123-139. Page 132 documents the identified animal\'s shape, two siphons and colour variation.', url: 'https://journal.ugm.ac.id/TradMedJ/article/viewFile/105930/43949', urlLabel: 'journal.ugm.ac.id' },
@@ -19564,6 +19739,24 @@
       {"id":"dx-fw-fishbase-moray","text":"Froese, R. and Pauly, D. (eds.). FishBase: Gymnothorax javanicus, giant moray. Feeds primarily on fishes and occasionally on crustaceans (accessed November 2026).","url":"https://www.fishbase.se/summary/Gymnothorax-javanicus.html","urlLabel":"fishbase.se"},
       {"id":"dx-geography-dusky_farmerfish","text":"Hata, H., Watanabe, K. and Kato, M. (2010). Geographic variation in the damselfish-red alga cultivation mutualism in the Indo-West Pacific. BMC Evolutionary Biology 10: 185. The fish intensively defends its territory against herbivores, chases invading fishes out and weeds out indigestible algae across its range.","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC2905425/","urlLabel":"pmc.ncbi.nlm.nih.gov"},
       {"id":"dx-defence-dusky_farmerfish","text":"Gochfeld, D.J. (2010). Territorial damselfishes facilitate survival of corals by providing an associational defense against predators. Marine Ecology Progress Series 398: 137-148. At Moorea and Guam, fishes approaching Stegastes nigricans and S. lividus territories, including coral-feeding butterflyfishes, were vigorously chased, and corals inside territories were protected from predators.","url":"https://doi.org/10.3354/meps08302","urlLabel":"doi.org"},
+      {"id":"dx-worms-foxface_rabbitfish","text":"WoRMS (2026). Siganus vulpinus (Schlegel & Muller, 1845). Accepted name, AphiaID 273929, family Siganidae (accessed November 2026).","url":"https://www.marinespecies.org/aphia.php?p=taxdetails&id=273929","urlLabel":"marinespecies.org"},
+      {"id":"dx-foa-foxface_rabbitfish","text":"Bray, D.J. (2018). Fishes of Australia: Foxface, Siganus vulpinus. Bright yellow with the head and front body white, a black band from the mouth through the eye to the dorsal-fin origin, a black breast patch tapering up to the pectoral base; stout, venomous fin spines that may cause a very painful sting; lagoons and seaward reefs with rich coral, often in pairs among staghorn corals; depth 1-30 m (accessed November 2026).","url":"https://fishesofaustralia.net.au/home/species/1890","urlLabel":"fishesofaustralia.net.au"},
+      {"id":"dx-fishbase-foxface_rabbitfish","text":"Froese, R. and Pauly, D. (eds.). FishBase: Siganus vulpinus, Foxface. Coral-rich lagoon and seaward reefs of the western Pacific, often among staghorn corals, singly or in pairs; juveniles and subadults sometimes school among Acropora and feed on algae at the bases of dead coral branches; venomous spines; global IUCN Least Concern assessment dated 12 March 2015 (accessed November 2026).","url":"https://www.fishbase.se/summary/Siganus-vulpinus.html","urlLabel":"fishbase.se"},
+      {"id":"dx-diet-foxface_rabbitfish","text":"Hoey, A.S., Brandl, S.J. and Bellwood, D.R. (2013). Diet and cross-shelf distribution of rabbitfishes (f. Siganidae) on the northern Great Barrier Reef: implications for ecosystem function. Coral Reefs 32(4): 973-984. S. vulpinus was a mixed feeder of diverse algal material, cyanobacteria, detritus and sediment.","url":"https://doi.org/10.1007/s00338-013-1043-z","urlLabel":"doi.org"},
+      {"id":"dx-vigilance-foxface_rabbitfish","text":"Brandl, S.J. and Bellwood, D.R. (2015). Coordinated vigilance provides evidence for direct reciprocity in coral reef fishes. Scientific Reports 5: 14556. At Lizard Island about 80% of adult S. vulpinus were in pairs; one partner holds an upright watch position in the water while the other feeds in crevices, partners swap roles, and paired fish feed deeper in crevices; S. vulpinus feeds mainly on cyanobacteria.","url":"https://doi.org/10.1038/srep14556","urlLabel":"doi.org"},
+      {"id":"dx-worms-leopard_coral_grouper","text":"WoRMS (2026). Plectropomus leopardus (Lacepede, 1802). Accepted name, AphiaID 218261, family Epinephelidae (accessed November 2026).","url":"https://www.marinespecies.org/aphia.php?p=taxdetails&id=218261","urlLabel":"marinespecies.org"},
+      {"id":"dx-foa-leopard_coral_grouper","text":"Bray, D.J. (2023). Fishes of Australia: Common Coral Trout, Plectropomus leopardus. Olive green to reddish brown or orange-red with regularly spaced bright blue spots, a blue ring around the eye that may be broken up, spots absent below; small rounded spots on the head (the Barcheek Coral Trout has some elongate spots); changes colour rapidly and often looks mottled when hunting; swims slowly near schools of small fishes or rests on coral outcrops; spawning aggregations around the new moon (accessed November 2026).","url":"https://fishesofaustralia.net.au/home/species/4518","urlLabel":"fishesofaustralia.net.au"},
+      {"id":"dx-fishbase-leopard_coral_grouper","text":"Froese, R. and Pauly, D. (eds.). FishBase: Plectropomus leopardus, Leopard coral grouper. Elongate body, numerous blue spots on a red, grey, olive or brown background, truncate to slightly emarginate tail with a narrow white rear margin; coral-rich lagoon and mid-shelf reefs, 3-100 m; solitary, hides under ledges and is inactive at night; adults eat mainly fish, juveniles small fishes, crustaceans and squid; several spawning aggregations on a reef around the new moon, eggs float just below the surface; global IUCN Least Concern assessment dated 20 November 2016 (accessed November 2026).","url":"https://www.fishbase.se/summary/Plectropomus-leopardus.html","urlLabel":"fishbase.se"},
+      {"id":"dx-reserves-leopard_coral_grouper","text":"Emslie, M.J., Logan, M., Williamson, D.H., et al. (2015). Expectations and outcomes of reserve network performance following re-zoning of the Great Barrier Reef Marine Park. Current Biology 25(8): 983-992. Coral trout density, length and biomass were consistently greater in no-take reserves than on fished reefs, with no sign that shifted fishing reduced coral trout on fished reefs; the publisher's release calls coral trout the most commercially important fishery species in the area.","url":"https://doi.org/10.1016/j.cub.2015.01.073","urlLabel":"doi.org"},
+      {"id":"dx-worms-dash_and_dot_goatfish","text":"WoRMS (2026). Parupeneus barberinus (Lacepede, 1801). Accepted name, AphiaID 218660, family Mullidae (accessed November 2026).","url":"https://www.marinespecies.org/aphia.php?p=taxdetails&id=218660","urlLabel":"marinespecies.org"},
+      {"id":"dx-foa-dash_and_dot_goatfish","text":"Bray, D.J. (2025). Fishes of Australia: Dot-and-dash Goatfish, Parupeneus barberinus. Moderately elongate with long chin barbels; sand and rubble near reefs and seagrass beds; probes with its barbels for polychaete worms, crustaceans and small molluscs (accessed November 2026).","url":"https://fishesofaustralia.net.au/home/species/586","urlLabel":"fishesofaustralia.net.au"},
+      {"id":"dx-fishbase-dash_and_dot_goatfish","text":"Froese, R. and Pauly, D. (eds.). FishBase: Parupeneus barberinus, Dash-and-dot goatfish. Whitish, with a dark stripe from the upper lip through the eye, yellowish above it, and a black spot larger than the eye at the midbase of the tail; large sand patches and sand and rubble of reef flats, lagoons and seaward reefs, 0-100 m; stomachs held crabs, polychaete worms, small bivalves and shrimps; feeds by day; global IUCN Least Concern assessment dated 11 March 2015 (accessed November 2026).","url":"https://www.fishbase.se/summary/Parupeneus-barberinus.html","urlLabel":"fishbase.se"},
+      {"id":"dx-am-dash_and_dot_goatfish","text":"McGrouther, M. (2021). Australian Museum: Dot-and-dash Goatfish, Parupeneus barberinus. Pale body with a dark stripe from the mouth through the eye and a large black spot on the caudal peduncle; forages by day in groups, solitary and resting on the bottom at night; probes sand with barbels that contain chemosensory organs and are tucked under the gill covers when not in use; 1-100 m.","url":"https://australian.museum/learn/animals/fishes/parupeneus-barberinus-lacpde-1801/","urlLabel":"australian.museum"},
+      {"id":"dx-worms-sixbar_wrasse","text":"WoRMS (2026). Thalassoma hardwicke (Bennett, 1830). Accepted name, AphiaID 212217, family Labridae (accessed November 2026).","url":"https://www.marinespecies.org/aphia.php?p=taxdetails&id=212217","urlLabel":"marinespecies.org"},
+      {"id":"dx-foa-sixbar_wrasse","text":"Bray, D.J. (2023). Fishes of Australia: Sixbar Wrasse, Thalassoma hardwicke. Six elongated wedge-shaped black bars that become progressively shorter toward the tail and broad pink bands radiating from the eye; males brighter than females; shallow lagoon and seaward reefs, slopes and drop-offs to about 15 m; eats crustaceans, fish eggs, small fishes and foraminiferans; a protogynous hermaphrodite (accessed November 2026).","url":"https://fishesofaustralia.net.au/home/species/284","urlLabel":"fishesofaustralia.net.au"},
+      {"id":"dx-fishbase-sixbar_wrasse","text":"Froese, R. and Pauly, D. (eds.). FishBase: Thalassoma hardwicke, Sixbar wrasse. Pale green with six dark bars, the last two as saddles, pink bands radiating from the eye in large adults; small, loose groups; benthic and planktonic crustaceans, small fishes and foraminiferans; distinct pairing in breeding; 0-15 m; global IUCN Least Concern assessment dated 12 June 2008 (accessed November 2026).","url":"https://www.fishbase.se/summary/Thalassoma-hardwicke.html","urlLabel":"fishbase.se"},
+      {"id":"dx-swim-sixbar_wrasse","text":"Fulton, C.J., Bellwood, D.R. and Wainwright, P.C. (2005). Wave energy and swimming performance shape coral reef fish assemblages. Proceedings of the Royal Society B 272: 827-832. Wrasses, damselfishes and surgeonfishes swim with their pectoral fins; tapered, high aspect ratio fins give faster swimming and dominate wave-swept reef habitats.","url":"https://doi.org/10.1098/rspb.2004.3029","urlLabel":"doi.org"},
+      {"id":"dx-waves-sixbar_wrasse","text":"Fulton, C.J., Wainwright, P.C., Hoey, A.S. and Bellwood, D.R. (2017). Global ecological success of Thalassoma fishes in extreme coral reef habitats. Ecology and Evolution 7(1): 466-472. Thalassoma wrasses dominate extreme wave-swept reef habitats, at up to 15 times the abundance of any other wrasse, helped by a winged pectoral fin for efficient swimming in fast-moving water.","url":"https://doi.org/10.1002/ece3.2624","urlLabel":"doi.org"},
       {"id":"dx-worms-bigfin_reef_squid","text":"MolluscaBase eds. (2026). MolluscaBase / WoRMS: Sepioteuthis lessoniana R. P. Lesson, 1831. Accepted name, AphiaID 220317.","url":"https://www.marinespecies.org/aphia.php?p=taxdetails&id=220317","urlLabel":"marinespecies.org"},
       {"id":"dx-am-bigfin_reef_squid","text":"Runck, A. (2021). Australian Museum: Bigfin Reef Squid. Fin outline, variable colour, diet, habitat and groups of similar-sized animals.","url":"https://australian.museum/learn/animals/molluscs/bigfin-reef-squid-sepioteuthis-lessoniana-lesson-1830/","urlLabel":"australian.museum"},
       {"id":"dx-fao-bigfin_reef_squid","text":"Jereb, P. and Roper, C.F.E. (eds.) (2010). Cephalopods of the World, volume 2. FAO Species Catalogue for Fishery Purposes 4(2), pp. 95-97: Sepioteuthis lessoniana anatomy, mantle dimensions, range and unresolved species complex.","url":"https://www.fao.org/4/i1920e/i1920e03.pdf","urlLabel":"fao.org"},
@@ -20118,6 +20311,7 @@
       { id: 'study_long_swimmers', label: __alloT("stem.coralreef.dx_study_long_swimmers", "Long swimmers: snakes and eels"), ids: ['banded_sea_krait', 'giant_moray', 'ribbon_eel'], help: __alloT("stem.coralreef.dx_study_long_swimmers_help", "Compare the head, body markings, and fins or paddle-shaped tail of three long swimmers. Answer choices stay within this study.") },
       { id: 'study_crustaceans', label: __alloT("stem.coralreef.dx_study_crustaceans", "Crustaceans: claws and shelter"), ids: ['white_spotted_hermit_crab', 'porcelain_anemone_crab', 'peacock_mantis_shrimp'], help: __alloT("stem.coralreef.dx_study_crustaceans_help", "Compare the claws, walking legs, and body outline of three crustaceans. Notice which animal carries a borrowed shell. Answer choices stay within this study.") },
       { id: 'study_reef_builders', label: __alloT("stem.coralreef.dx_study_reef_builders", "Reef builders that are not stony corals"), ids: ['fire_coral', 'blue_coral', 'pipe_organ_coral'], help: __alloT("stem.coralreef.dx_study_reef_builders_help", "Compare fused plates, flattened lobes with a blue skeleton, and a mound of red pipes. All three build reef, but none is a stony coral. Answer choices stay within this study.") },
+      { id: 'study_coral_cups', label: __alloT("stem.coralreef.dx_study_coral_cups", "Stony corals: cups and shapes"), ids: ['galaxy_coral', 'finger_coral', 'boulder_coral'], help: __alloT("stem.coralreef.dx_study_coral_cups_help", "Compare raised, star-shaped cups with tiny, flat cups, and a mound with fingers. Two of these corals share a genus but grow in different shapes. Answer choices stay within this study.") },
       { id: 'study_banners', label: __alloT("stem.coralreef.dx_study_banners", "Banners and bands"), ids: ['longfin_bannerfish', 'moorish_idol', 'threadfin_butterflyfish'], help: __alloT("stem.coralreef.dx_study_banners_help", "Compare the snout, dark bands, and trailing dorsal fin of three reef fish. Look at more than the long white streamer. Answer choices stay within this study.") },
       { id: 'study_cephalopods', label: __alloT("stem.coralreef.dx_study_cephalopods", "Cephalopods: fins and arms"), ids: ['bigfin_reef_squid', 'broadclub_cuttlefish', 'day_octopus'], help: __alloT("stem.coralreef.dx_study_cephalopods_help", "Compare the body outline, fins, and arrangement of arms in a squid, a cuttlefish, and an octopus. Their colors can change. Answer choices stay within this study.") }
     ];
@@ -22188,7 +22382,7 @@
   // the profiles. These are learning collections, not exhaustive classifications.
   function marineGuideRoleCollections(__alloT) {
     return [
-      { id: 'grazers', label: __alloT('stem.coralreef.dr_grazers', 'Algae and seagrass grazers'), ids: ['parrotfish', 'green_turtle', 'long_spined_urchin'] },
+      { id: 'grazers', label: __alloT('stem.coralreef.dr_grazers', 'Algae and seagrass grazers'), ids: ['parrotfish', 'green_turtle', 'long_spined_urchin', 'foxface_rabbitfish'] },
       { id: 'cleaners', label: __alloT('stem.coralreef.dr_cleaners', 'Cleaners'), ids: ['cleaner_wrasse', 'cleaner_shrimp'] },
       { id: 'coral_eaters', label: __alloT('stem.coralreef.dr_coral_eaters', 'Coral eaters'), ids: ['crown_of_thorns', 'drupella_snail', 'pincushion_sea_star'] },
       { id: 'plankton', label: __alloT('stem.coralreef.dr_plankton', 'Plankton feeders'), ids: ['blue_tang', 'anthias', 'blue_green_chromis', 'reef_manta', 'christmas_tree_worm', 'sea_fan', 'goldmouth_sea_squirt', 'feather_duster_worm'] }

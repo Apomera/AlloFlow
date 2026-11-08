@@ -1696,6 +1696,23 @@ const consumePendingUnitPathNode = (now = Date.now()) => {
   };
 };
 
+// Lesson parts. A teacher's choice (item.lessonPhase) wins; 'none' means "no part".
+// Otherwise the resource type decides, matching the roles the plan's inventory gives them.
+const LESSON_PHASES = ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
+const LESSON_PHASE_TYPES = {
+  hook: ['image', 'adventure', 'persona'],
+  directInstruction: ['analysis', 'simplified', 'glossary', 'anchor-chart', 'note-taking', 'word-sounds'],
+  guidedPractice: ['outline', 'brainstorm', 'timeline', 'concept-sort', 'dbq', 'faq', 'memory-aid'],
+  independentPractice: ['sentence-frames', 'math', 'storyforge-config', 'applied-challenge'],
+  closure: ['quiz', 'stem-assessment']
+};
+const lessonPhaseFor = (item) => {
+  const type = item && typeof item.type === 'string' ? item.type : '';
+  const automatic = LESSON_PHASES.find(phase => LESSON_PHASE_TYPES[phase].includes(type)) || null;
+  const chosen = item && (LESSON_PHASES.includes(item.lessonPhase) || item.lessonPhase === 'none') ? item.lessonPhase : null;
+  return { phase: chosen ? (chosen === 'none' ? null : chosen) : automatic, automatic, chosen };
+};
+
 const capturePlanningInputs = (options = {}) => {
   const { context = '', segments = [], suppliedContext = context, mode = 'teacher', route = 'sidebar',
     local = false, inventoryText = '', inventory = [], inventorySupplied = false, inventoryTraced = true } = options;
@@ -1991,6 +2008,9 @@ window.AlloModules.UtilsPure = {
   criterionRollupStat,
   resolveUnitPathContext,
   capturePlanningInputs,
+  LESSON_PHASES,
+  LESSON_PHASE_TYPES,
+  lessonPhaseFor,
   consumePendingUnitPathNode,
   resolvePlanOutputLanguage,
   ALLO_ALL_SELECTED_LANGUAGES,

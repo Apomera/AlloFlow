@@ -269,6 +269,124 @@ function PlanningInputsSummary(props) {
     className: "text-sm text-slate-700"
   }, label('local', 'Only the context excerpt supplied to the local model is listed. No asset inventory was supplied.'))));
 }
+
+// Resources in the plan's unit that its recorded inventory never listed, i.e. made or
+// added after it. Worked out on every render and never saved into the plan, so teacher
+// edits stay untouched and a deleted resource simply drops out.
+const _LESSON_PLAN_PHASE_TYPES = {
+  hook: ['image', 'adventure', 'persona'],
+  directInstruction: ['analysis', 'simplified', 'glossary', 'anchor-chart', 'note-taking', 'word-sounds'],
+  guidedPractice: ['outline', 'brainstorm', 'timeline', 'concept-sort', 'dbq', 'faq', 'memory-aid'],
+  independentPractice: ['sentence-frames', 'math', 'storyforge-config', 'applied-challenge'],
+  closure: ['quiz', 'stem-assessment']
+};
+function _lessonPlanUnit(value) {
+  const unit = value == null ? '' : String(value).trim();
+  return !unit || unit === 'all' || unit === 'uncategorized' ? null : unit;
+}
+function _lessonPlanAddedResources(plan, history) {
+  const record = plan && plan.config && plan.config.generationInputs;
+  if (!record || record.version !== 1 || record.mode !== 'teacher' || record.inventoryStatus !== 'recorded' || !Array.isArray(record.inventory) || !Array.isArray(record.summaries)) return null;
+  const known = new Set(record.inventory.concat(record.summaries).map(item => item && item.id != null ? String(item.id) : '').filter(Boolean));
+  const unit = _lessonPlanUnit(plan.unitId != null ? plan.unitId : plan.config.unitId);
+  const items = Array.isArray(history) ? history.filter(Boolean) : [];
+  const counts = {};
+  items.forEach(item => {
+    if (item.id != null) counts[String(item.id)] = (counts[String(item.id)] || 0) + 1;
+  });
+  const seen = new Set();
+  // UtilsPure also honours a teacher's own choice of lesson part; the table is its fallback copy.
+  const shared = window.AlloModules && window.AlloModules.UtilsPure && window.AlloModules.UtilsPure.lessonPhaseFor;
+  const phaseOf = item => typeof shared === 'function' ? shared(item).phase : Object.keys(_LESSON_PLAN_PHASE_TYPES).find(phase => _LESSON_PLAN_PHASE_TYPES[phase].includes(item.type));
+  return items.filter(item => {
+    if (item.id == null || typeof item.type !== 'string' || item._fullPackPlannedArtifact) return false;
+    const id = String(item.id);
+    if (id === String(plan.id) || known.has(id) || seen.has(id)) return false;
+    if (['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(item.type) || item.type.indexOf('submission') !== -1) return false;
+    if (_lessonPlanUnit(item.unitId != null ? item.unitId : item.config && item.config.unitId) !== unit) return false;
+    seen.add(id);
+    return true;
+  }).map(item => ({
+    id: String(item.id),
+    type: item.type,
+    title: _lessonPlanText(item.title).trim(),
+    openable: counts[String(item.id)] === 1,
+    phase: phaseOf(item) || 'other'
+  }));
+}
+function LessonPlanAddedList(props) {
+  const {
+    items,
+    onOpen,
+    tl
+  } = props;
+  return /*#__PURE__*/React.createElement("ul", {
+    className: "mt-1 space-y-1"
+  }, items.map(item => {
+    const title = item.title || tl('lesson_plan.added_untitled', 'Untitled resource');
+    return /*#__PURE__*/React.createElement("li", {
+      key: item.id,
+      className: "flex min-w-0 flex-wrap items-center justify-between gap-2 text-sm text-slate-800"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0 flex-1 basis-40 break-words"
+    }, title), item.openable && typeof onOpen === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => onOpen(item.id),
+      "aria-label": tl('lesson_plan.added_open', 'Open') + ': ' + title,
+      className: "min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-1 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, tl('lesson_plan.added_open', 'Open')));
+  }));
+}
+function LessonPlanAddedPhase(props) {
+  return /*#__PURE__*/React.createElement("div", {
+    "data-plan-added-phase": props.phase,
+    className: "mt-3 rounded-lg border border-dashed border-amber-500 bg-amber-50 p-2 no-print"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-amber-950"
+  }, props.tl('lesson_plan.added_heading', 'Added after this plan')), /*#__PURE__*/React.createElement(LessonPlanAddedList, {
+    items: props.items,
+    onOpen: props.onOpen,
+    tl: props.tl
+  }));
+}
+function LessonPlanAddedNotice(props) {
+  const {
+    items,
+    tl
+  } = props;
+  const other = items.filter(item => item.phase === 'other');
+  const titles = items.map(item => item.title || tl('lesson_plan.added_untitled', 'Untitled resource')).join(', ');
+  return /*#__PURE__*/React.createElement("section", {
+    "data-plan-added-resources": true,
+    "aria-label": tl('lesson_plan.added_heading', 'Added after this plan'),
+    className: "mb-4 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 no-print"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold"
+  }, items.length === 1 ? tl('lesson_plan.added_one', 'One resource was made after this plan:') : tl('lesson_plan.added_many', '{count} resources were made after this plan:').replace('{count}', items.length), " ", /*#__PURE__*/React.createElement("span", {
+    className: "font-normal"
+  }, titles)), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1"
+  }, tl('lesson_plan.added_note', 'They are listed under the matching parts of the plan below. The plan text has not changed.')), other.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold"
+  }, tl('lesson_plan.added_other', 'Other resources')), /*#__PURE__*/React.createElement(LessonPlanAddedList, {
+    items: other,
+    onOpen: props.onOpen,
+    tl: tl
+  })), props.canUpdate ? /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-plan-update": true,
+    onClick: props.onUpdate,
+    disabled: !!props.isProcessing,
+    className: "min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+  }, tl('lesson_plan.update_plan', 'Make an updated plan')), /*#__PURE__*/React.createElement("span", null, tl('lesson_plan.update_plan_note', 'Writes a new plan that includes these resources. This plan stays in your history.'))) : props.otherUnit ? /*#__PURE__*/React.createElement("p", {
+    className: "mt-2"
+  }, tl('lesson_plan.update_plan_other_unit', 'To make an updated plan, open this plan’s unit first.')) : null);
+}
+LessonPlanView.addedResources = _lessonPlanAddedResources;
 function LessonPlanListEditor({
   field,
   value,
@@ -729,6 +847,21 @@ function LessonPlanView(props) {
     return audienceView ? null : _lessonPlanWovenScript(generatedContent);
   }, [generatedContent, audienceView, props.teachingScriptLoadState]);
   var showWoven = !!woven && !isEditingLessonPlan && _scriptInPlan[0];
+  var added = React.useMemo(function () {
+    return audienceView ? null : _lessonPlanAddedResources(generatedContent, history);
+  }, [generatedContent, props.history, audienceView]);
+  var openAdded = typeof props.onOpenPlanningResource === 'function' ? props.onOpenPlanningResource : null;
+  var planUnit = _lessonPlanUnit(generatedContent.unitId != null ? generatedContent.unitId : generatedContent.config && generatedContent.config.unitId);
+  var sameUnit = planUnit === _lessonPlanUnit(props.activeUnitId);
+  var addedFor = phase => {
+    const items = !isEditingLessonPlan && added ? added.filter(item => item.phase === phase) : [];
+    return items.length ? /*#__PURE__*/React.createElement(LessonPlanAddedPhase, {
+      phase: phase,
+      items: items,
+      onOpen: openAdded,
+      tl: tl
+    }) : null;
+  };
   var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, {
     ...fieldProps,
     artifact: generatedContent,
@@ -804,6 +937,14 @@ function LessonPlanView(props) {
     t: t,
     BilingualFieldRenderer: BilingualFieldRenderer,
     normalizeMaterialItem: normalizeMaterialItem
+  }), !audienceView && added && added.length > 0 && /*#__PURE__*/React.createElement(LessonPlanAddedNotice, {
+    items: added,
+    onOpen: openAdded,
+    tl: tl,
+    canUpdate: sameUnit && typeof props.onUpdateLessonPlan === 'function',
+    otherUnit: !sameUnit,
+    onUpdate: props.onUpdateLessonPlan,
+    isProcessing: props.isProcessing
   }), woven && !isEditingLessonPlan && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800 no-print",
     "data-plan-script-woven": true
@@ -915,7 +1056,7 @@ function LessonPlanView(props) {
     woven: woven,
     phase: "hook",
     t: t
-  }))), successCriteria.some(item => item != null && (isEditingLessonPlan || _lessonPlanCriterionText(item).trim())) && (() => {
+  }), addedFor('hook'))), successCriteria.some(item => item != null && (isEditingLessonPlan || _lessonPlanCriterionText(item).trim())) && (() => {
     // Success criteria: derived from the exit ticket generated before this
     // plan (each id IS that quiz's concept label) or from the objectives.
     // The live quiz controls roll class results up by the same ids and
@@ -1003,7 +1144,7 @@ function LessonPlanView(props) {
     woven: woven,
     phase: "directInstruction",
     t: t
-  })), /*#__PURE__*/React.createElement("div", {
+  }), addedFor('directInstruction')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-2 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
@@ -1024,7 +1165,7 @@ function LessonPlanView(props) {
     woven: woven,
     phase: "guidedPractice",
     t: t
-  })), /*#__PURE__*/React.createElement("div", {
+  }), addedFor('guidedPractice')), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
@@ -1043,7 +1184,7 @@ function LessonPlanView(props) {
     woven: woven,
     phase: "independentPractice",
     t: t
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), addedFor('independentPractice'))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
@@ -1062,7 +1203,7 @@ function LessonPlanView(props) {
     woven: woven,
     phase: "closure",
     t: t
-  })), showWoven && woven.other.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }), addedFor('closure')), showWoven && woven.other.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100",
     "data-plan-script-other": true
   }, /*#__PURE__*/React.createElement("h4", {

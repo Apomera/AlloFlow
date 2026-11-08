@@ -4908,12 +4908,18 @@ let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
 if (typeof window !== 'undefined') {
   window.__clearAlloTtsCacheForWord = function(word) {
-    if (!word || typeof word !== 'string') return 0;
-    const needle = word.trim().toLowerCase() + '__';
+    const all = word == null || word === '';
+    if (!all && typeof word !== 'string') return 0;
+    const target = all ? '' : word.trim().toLowerCase();
+    const matches = (key) => {
+      if (all) return true;
+      if (key.toLowerCase().startsWith(target + '__')) return true;
+      try { const parts = JSON.parse(key); return Array.isArray(parts) && String(parts[0] || '').trim().toLowerCase() === target; } catch (_) { return false; }
+    };
     let cleared = 0;
     try {
       for (const key of Array.from(globalTtsUrlCache.keys())) {
-        if (typeof key === 'string' && key.toLowerCase().startsWith(needle)) {
+        if (typeof key === 'string' && matches(key)) {
           const url = globalTtsUrlCache.get(key);
           if (url && typeof url === 'string' && url.startsWith('blob:')) {
             try { URL.revokeObjectURL(url); } catch (e) { /* noop */ }
@@ -16652,7 +16658,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=ad9e6322704b81b2f4a266e64ca70e315119c2c3');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=1a43bca7');
-    loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=75ed0a6c');
+    loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=4cc0ceab');
     loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=935647dc');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=ad9e6322704b81b2f4a266e64ca70e315119c2c3');
@@ -16732,6 +16738,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       var slowBackground = !!(connection && (connection.saveData || /(^|-)2g$/.test(String(connection.effectiveType || ''))));
       var markInteraction = function() { pauseUntil = performance.now() + 3000; };
+      var bootPending = function() {
+        if (typeof __alloBootCriticalModules === 'undefined') return false;
+        var pending = false;
+        __alloBootCriticalModules.forEach(function(name) { var e = __alloModuleRegistry[name]; if (e && e.status === 'pending') pending = true; });
+        return pending;
+      };
       window.addEventListener('pointerdown', markInteraction, { passive: true, capture: true });
       window.addEventListener('keydown', markInteraction, { passive: true, capture: true });
 
@@ -16751,14 +16763,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       var pump = function(deadline) {
         if (!__alloDeferredModuleQueue.length) return;
         if (!ordered) { ordered = true; __alloDeferredModuleQueue.sort(function(a, b) { return rankOf(a) - rankOf(b); }); }
-        // The launch path is its own surface: behind it only the first-action tier
-        // loads, one at a time and never under input. Nothing loads in a hidden tab.
+        // Behind the launch pad everything trickles, tier first: one at a time, never
+        // under input; Data Saver keeps it to the tier. Nothing loads in a hidden tab.
         // A user-opened feature still promotes its own module immediately.
         var body = document.body;
         var launchPad = !!body && body.classList.contains('alloflow-launchpad-active');
         var workspaceConcealed = !body || launchPad || body.classList.contains('alloflow-workspace-concealed');
         var head = launchPad ? nextLive() : null;
-        var trickle = !!head && head.name in firstActionRank;
+        var widen = launchPad && !slowBackground && !bootPending();
+        var trickle = !!head && (head.name in firstActionRank || widen);
         if (document.hidden || (workspaceConcealed && !trickle)) { schedule(300); return; }
         var inputPending = navigator.scheduling && typeof navigator.scheduling.isInputPending === 'function'
           && navigator.scheduling.isInputPending();
@@ -16787,7 +16800,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         }
         // Data Saver / 2G keeps the single-file cooldown, and so does a pump that
         // is only running because continuous input has starved it.
-        var budget = (trickle || blocked || slowBackground) ? 1 : PUMP_PARALLEL;
+        var budget = (blocked || slowBackground) ? 1 : trickle ? (widen ? 2 : 1) : PUMP_PARALLEL;
         var available = Math.max(0, budget - inFlight);
         // Idle callbacks can keep arriving on time with <=10ms remaining. In
         // that case didTimeout never becomes true, so waiting for a larger
@@ -16806,7 +16819,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         while (available > 0 && __alloDeferredModuleQueue.length
           && (forceIdleProgress || deadline.didTimeout || deadline.timeRemaining() > 10)) {
           var nextHead = trickle ? nextLive() : null;
-          if (trickle && !(nextHead && nextHead.name in firstActionRank)) break;
+          if (trickle && !widen && !(nextHead && nextHead.name in firstActionRank)) break;
           var queued = __alloDeferredModuleQueue.shift();
           if (__alloDeferredModuleNames[queued.name] !== queued) continue;
           delete __alloDeferredModuleNames[queued.name];
@@ -16815,11 +16828,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           idleStarvedSince = 0;
           available--;
         }
-        schedule(trickle ? 600 : slowBackground ? 1200 : (available > 0 ? 180 : 360));
+        schedule(trickle ? (widen ? 300 : 600) : slowBackground ? 1200 : (available > 0 ? 180 : 360));
       };
 
-      // The first attempt waits for startup; pump() then loads only the first-action
-      // tier until the person leaves the splash/launch pad for the workspace.
+      // The first attempt waits for startup; the launch pad trickles, and the
+      // workspace drains the rest at the full budget.
       setTimeout(function() { schedule(0); }, 1400);
     })();
     // -- STEAM Lab / SEL Hub / AlloHaven plugin lazy-loading (May 11 2026) --
@@ -25980,6 +25993,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                 if (item.sourceInstructionalText) serializedItem.sourceInstructionalText = item.sourceInstructionalText;
                 if (item.sourceFamilyId) serializedItem.sourceFamilyId = item.sourceFamilyId;
                 if (item.inputArtifactId) serializedItem.inputArtifactId = item.inputArtifactId;
+                if (item.lessonPhase) serializedItem.lessonPhase = item.lessonPhase;
                 const supportSource = stripImages && typeof window.stripReadingSupportPictures === 'function' ? window.stripReadingSupportPictures(item) : item;
                 if (supportSource.readingSupports) serializedItem.readingSupports = supportSource.readingSupports;
                 if (supportSource.adaptedReadingSupports) serializedItem.adaptedReadingSupports = supportSource.adaptedReadingSupports;
@@ -30330,6 +30344,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setGeneratedContent(apply);
     return options.returnUpdated ? apply(artifact) : true;
   }, [setHistory, setGeneratedContent]);
+  const handleSetLessonPhase = (item, phase) => {
+    if (!item || item.id == null) return;
+    onUpdateResource(item.id, current => {
+      const { lessonPhase, ...rest } = current;
+      return phase ? { ...rest, lessonPhase: phase } : rest;
+    }, { instanceId: getArtifactInstanceId(item) || '' });
+  };
   const handleNoteUpdate = useCallback((key, value) => {
     if (!generatedContent || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(generatedContent.type)) return;
     const resourceId = generatedContent.id;
@@ -41532,7 +41553,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       focusGuidedTarget, focusMode, fullPackRun, generatedContent, getDefaultTitle, getFilteredHistory, gradeLevel, guidedActiveSteps,
       guidedCompletedIds, guidedCreatedHistoryIds, guidedMode, guidedStep, handleApplyLessonTemplate, handleApproveFullPack, handleAutoFillToggle, handleClearHistory,
       handleCloseStudentEntry, handleCloseSubmitModal, handleCloudToggleClick, handleCopyBlueprintActionDiagnostics, handleExecuteBlueprint, handleExitGuidedMode, handleExport, handleGenerate, handleGenerateBrainstormRubric,
-      handleGenerateSource, handleGuidedSkip, handleNextTourStep, handleOpenSchoolRewards, handleOpenSchoolRewardsPortal, handlePlanFullPack, handlePrevTourStep, handleRebuildBlueprintStep,
+      handleGenerateSource, handleGuidedSkip, handleNextTourStep, handleOpenSchoolRewards, handleOpenSchoolRewardsPortal, handleOpenWordSounds, handlePlanFullPack, handlePrevTourStep, handleRebuildBlueprintStep,
       handleResetScaffolds, handleRestoreView, handleReturnToStart, handleSendUDLMessage, handleSetActiveViewToDashboard, handleSetActiveViewToPersona, handleSetGlossaryFilterToAcademic, handleSetGlossaryFilterToAll,
       handleSetGlossaryFilterToDomain, handleSetIsBingoGameToTrue, handleSetIsCrosswordGameToTrue, handleSetIsMatchingGameToTrue, handleSetIsMemoryGameToTrue, handleSetIsProjectSettingsOpenToTrue, handleSetIsStudentBingoGameToTrue, handleSetIsTranslateModalOpenToTrue,
       handleSetIsWordScrambleGameToTrue, handleSetIsZenModeToFalse, handleSetIsZenModeToTrue, handleSetRunTourToFalse, handleSetShowGroupModalToTrue, handleSetShowSaveModalToFalse, handleSetShowStudyTimerModalToTrue, handleSetShowSubmitModalToTrue,
@@ -42625,8 +42646,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       ['TextPipelineHelpers', 'TextUtilityHelpers', 'PhaseKHelpers', 'PromptsLibrary', 'GenerationHelpers', 'CmapHandlers', 'MiscHandlers', 'PureHelpers'].map(k => [k + 'Module', k, true])
     ), 'the generator').then(() => {
       const interactive = !args[2] && (args[5] !== false || (args[0] === 'memory-aid' && args[4]?.memoryAidPreviewOnly));
-      if (interactive && sourceScope && ['history', 'inputText', 'activeUnitId', 'activeView', 'isTeacherMode']
-        .some(key => generationSourceChoiceContextRef.current?.[key] !== sourceScope[key])) return;
+      const now = generationSourceChoiceContextRef.current;
+      const ids = list => (Array.isArray(list) ? list : []).map(item => item && item.id).join('\n');
+      const sameHistory = now?.history === sourceScope?.history || (typeof args[3] === 'string' && ids(now?.history) === ids(sourceScope?.history));
+      if (interactive && sourceScope && (!sameHistory || ['inputText', 'activeUnitId', 'activeView', 'isTeacherMode']
+        .some(key => now?.[key] !== sourceScope[key]))) return;
       return _alloRunGenerate(...args);
     }, () => {});
   };
@@ -45141,7 +45165,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               </div>
             )}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab onQuickAddGroup={handleQuickAddRosterGroup} defaultGrade={gradeLevel} defaultLanguage={leveledTextLanguage} gradeOptions={quickGroupGradeOptions} languageOptions={quickGroupLanguageOptions} handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleMoveAllToUnit={handleMoveAllToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} sourceRecord={sourceRecord} units={units} />}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleMoveAllToUnit={handleMoveAllToUnit} handleRestoreView={handleOpenHistoryResource} pendingHistoryResource={pendingHistoryResource} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} sourceRecord={sourceRecord} units={units} onSetLessonPhase={isTeacherMode ? handleSetLessonPhase : null} />}
           </div>
         </div>
         {isWide && !isFullscreen && !isZenMode && (
@@ -46019,6 +46043,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 {isTeacherMode && generatedContent && activeView === generatedContent.type && generatedContent.lessonPath?.seed?.kind === 'topic' && (
                     <div role="note" data-help-key="topic_seed_notice" className="mb-4 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
                         {t('common.topic_seed_notice', { topic: generatedContent.lessonPath.seed.text || '' }) || ('Made from the topic "' + (generatedContent.lessonPath.seed.text || '') + '", not from source material. Check the facts before sharing.')}
+                        {String(inputText || '').trim() && <span data-seed-source-unused className="block mt-1 text-xs">{t('common.seed_source_unused') || 'Any passage in your source box was not used.'}</span>}
                         <span data-path-less-traveled className="block mt-1 text-xs italic font-semibold">{t('sidebar.path_fork_badge') || 'The path less traveled · experimental'}</span>
                         {renderSeedFactCheck(generatedContent)}
                         {(() => {
@@ -46052,6 +46077,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     <div role="note" data-help-key="word_list_seed_notice" className="mb-4 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
                         {generatedContent.type === 'sentence-frames' ? (t('common.word_list_scaffolds_notice') || 'Made from your word list, not from source material. Check the prompts before sharing.') : generatedContent.type === 'concept-sort' ? (t('common.word_list_sort_notice') || 'Made from your word list, not from source material. Check the categories before sharing.') : (t('common.word_list_seed_notice') || 'Made from your word list, not from source material. Check the definitions before sharing.')}
                         {generatedContent.lessonPath.seed.topic && <span data-seed-topic className="block mt-1 text-xs">{t('common.word_list_topic', { topic: generatedContent.lessonPath.seed.topic }) || ('Words for the topic "' + generatedContent.lessonPath.seed.topic + '"')}</span>}
+                        {String(inputText || '').trim() && <span data-seed-source-unused className="block mt-1 text-xs">{t('common.seed_source_unused') || 'Any passage in your source box was not used.'}</span>}
                         <span data-path-less-traveled className="block mt-1 text-xs italic font-semibold">{t('sidebar.path_fork_badge') || 'The path less traveled · experimental'}</span>
                         {renderSeedFactCheck(generatedContent)}
                         {generatedContent.type === 'sentence-frames' && (() => {
@@ -46839,6 +46865,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                         const matches = history.filter(item => item && String(item.id) === String(id));
                         if (matches.length === 1) handleRestoreView(matches[0]);
                     } : null,
+                    onUpdateLessonPlan: isTeacherMode && !isIndependentMode && !isParentMode ? () => handleGenerateLessonPlan(true) : null,
+                    activeUnitId, isProcessing,
                     isEditingLessonPlan, history, isGeneratingExtensionGuide,
                     progressionData, isGeneratingProgression,
                     setActiveStation, setStemLabTool, setShowStemLab, setStemLabTab,

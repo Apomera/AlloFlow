@@ -1800,6 +1800,11 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
+<div class="mb-3 flex justify-center">
+<button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
+<span class="lucide-icon" data-icon="Volume2">
+</span>Hear the instructions</button>
+</div>
 <div class="flex flex-col items-center gap-5 p-4">
 <p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Drag the picture onto the word, or tap the picture</p>
 <div class="text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors border-slate-400 text-slate-800">cat</div>
@@ -2224,6 +2229,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <button class="px-8 py-3 rounded-xl font-bold bg-violet-600 text-white shadow-lg hover:scale-105 transition-transform">Check ✓</button>
 </div>
 </div>
+<button type="button" data-ws-skip-trace="true" class="min-h-11 px-3 text-sm text-slate-700 underline hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">Skip this letter (not traced)</button>
 </div>
 </div>
 </div>
@@ -2879,7 +2885,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <form class="w-full max-w-lg relative group">
 <div class="relative rounded-2xl transition-all ">
-<input aria-label="common.drag_letters_here" type="text" placeholder="_ _ _" class="w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
+<input aria-label="Spell the word" data-ws-spell-input="true" type="text" placeholder="_ _ _" class="w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
                                 border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100
                             " autoComplete="off" autoCorrect="off" autoCapitalize="none" spellcheck="false" value=""/>
 </div>
@@ -2894,9 +2900,9 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <div draggable="true" role="button" tabindex="0" aria-disabled="false" aria-label="W" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">w</div>
 <div draggable="true" role="button" tabindex="0" aria-disabled="false" aria-label="C" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">c</div>
 </div>
-<p class="text-center text-slate-600 text-sm mt-4 font-medium">Drag letters to spell the word, or click to hear them!</p>
+<p class="text-center text-slate-600 text-sm mt-4 font-medium">Tap or drag letters to spell the word, or type it.</p>
 </div>
-<button aria-label="common.next" disabled="" class="px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 bg-slate-100 text-slate-600 cursor-not-allowed">Check Spelling <span class="lucide-icon" data-icon="ChevronRight">
+<button aria-label="Check Spelling" disabled="" class="px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 bg-slate-100 text-slate-600 cursor-not-allowed">Check Spelling <span class="lucide-icon" data-icon="ChevronRight">
 </span>
 </button>
 </div>
@@ -3091,6 +3097,11 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 </div>
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
+</div>
+<div class="mb-3 flex justify-center">
+<button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
+<span class="lucide-icon" data-icon="Volume2">
+</span>Hear the instructions</button>
 </div>
 <div class="flex flex-col items-center gap-5 p-4">
 <p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Read the story. Which word finishes it?</p>
@@ -3288,6 +3299,11 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 </div>
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
+</div>
+<div class="mb-3 flex justify-center">
+<button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
+<span class="lucide-icon" data-icon="Volume2">
+</span>Hear the instructions</button>
 </div>
 <div class="flex flex-col items-center gap-5 p-4">
 <p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Read the sentence. Which word finishes it?</p>
@@ -3925,6 +3941,11 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
+<div class="mb-3 flex justify-center">
+<button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
+<span class="lucide-icon" data-icon="Volume2">
+</span>Hear the instructions</button>
+</div>
 <div class="flex flex-col items-center gap-5 p-4">
 <p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Read the sentence. Match the pictures to it.</p>
 <p class="text-slate-500 text-sm font-semibold italic">Picture the Sentence needs at least two words in this pack.</p>
@@ -4154,7 +4175,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 </div>
 </div>
-<div class="flex flex-wrap justify-center gap-3">
+<div class="flex flex-wrap justify-center gap-3" data-ws-word-bank="true">
 </div>
 </div>
 </div>
@@ -4351,6 +4372,35 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
 </div>
 <input aria-label="common.enter_user_answer" type="text" inputMode="text" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellcheck="false" placeholder="common.placeholder_type_the_word" maxLength="3" class="w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-600 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" autofocus="" value=""/>
+<div role="group" aria-label="Letter keys" data-ws-letter-keys="true" class="flex max-w-md flex-wrap justify-center gap-1">
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">a</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">b</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">c</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">d</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">e</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">f</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">g</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">h</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">i</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">j</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">k</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">l</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">m</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">n</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">o</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">p</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">q</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">r</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">s</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">t</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">u</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">v</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">w</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">x</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">y</button>
+<button type="button" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">z</button>
+<button type="button" aria-label="Delete the last letter" disabled="" class="min-h-11 min-w-11 rounded-lg border-2 border-amber-300 bg-white text-lg font-bold text-amber-900 hover:bg-amber-50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">⌫</button>
+</div>
 <button aria-label="Check Spelling" disabled="" class="px-8 py-3 rounded-xl font-bold shadow-lg transition-all bg-slate-200 text-slate-600 cursor-not-allowed">Check Spelling ✓</button>
 <p class="text-sm text-slate-700 text-center max-w-sm">Listen, then type the letters to spell the word. Spoken words are not scored as spelling.</p>
 <div class="flex gap-4 text-sm">
@@ -5010,7 +5060,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 </div>
 </div>
-<div class="flex flex-wrap justify-center gap-3">
+<div class="flex flex-wrap justify-center gap-3" data-ws-word-bank="true">
 </div>
 </div>
 </div>

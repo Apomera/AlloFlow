@@ -56,6 +56,8 @@ async function importSet(context, value) {
   const { win, doc } = context, file = doc.querySelector('input[type=file]');
   Object.defineProperty(file, 'files', { configurable: true, value: [{ size: 2000, text: async () => JSON.stringify(value) }] });
   file.dispatchEvent(new win.Event('change', { bubbles: true })); await tick();
+  // Unsaved edits ask first (allowWordSetOpen); these tests discard them.
+  const discard = button(doc, 'Open without saving'); if (discard) { discard.click(); await tick(); }
   expect(doc.querySelector('.awp-status').textContent).toBe('Word set opened.');
 }
 function press(win, key) {

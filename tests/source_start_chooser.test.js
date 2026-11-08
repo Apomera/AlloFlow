@@ -66,18 +66,21 @@ function fixture(extra = {}) {
   };
 }
 
-function mount(extra = {}) {
+// With a passage in the box the choices start folded; most tests open them first, as a teacher would.
+function mount(extra = {}, { unfold = true } = {}) {
   const el = document.createElement('div'); document.body.appendChild(el);
   const root = createRoot(el);
   const m = { el, root, props: fixture(extra) };
   m.render = patch => { m.props = { ...m.props, ...patch }; act(() => root.render(React.createElement(api.SourceInputShellView, m.props))); };
   m.render({});
   mounts.push(m);
+  const toggle = el.querySelector('[data-source-start-toggle]');
+  if (unfold && toggle) act(() => toggle.click());
   return m;
 }
 
 const chooser = m => m.el.querySelector('[data-source-start-chooser]');
-const buttons = m => [...chooser(m).querySelectorAll('button')];
+const buttons = m => [...chooser(m).querySelectorAll('button:not([data-source-start-toggle])')];
 function button(m, text) {
   const found = buttons(m).find(node => node.textContent.trim() === text);
   expect(found, 'missing chooser button: ' + text).toBeTruthy();
@@ -111,7 +114,7 @@ describe('additive source starting points in the compiled source shell', () => {
     expect(buttons(m).map(node => node.textContent.trim())).toEqual(['From a topic', 'From a word list', 'Blank resource']);
     expect(buttons(m).every(node => node.getAttribute('aria-pressed') === 'false')).toBe(true);
     expect(chooser(m).querySelector('form')).toBeNull();
-    expect(chooser(m).textContent).toContain('Your current source stays as it is');
+    expect(chooser(m).textContent).toContain('Your passage is not used for these, and it stays as it is.');
     expect(m.props.handleGenerate).not.toHaveBeenCalled();
     expect(m.el.querySelector('[data-source-change]'), 'the existing Change source action is retained').toBeTruthy();
     expect(m.el.querySelector('[data-source-summary]')?.textContent).toContain('version 7');
@@ -327,7 +330,7 @@ describe('source version attribution for independent starts', () => {
 describe('the chooser is translatable', () => {
   it('shows a language pack value when one exists, and English when the key is missing or echoed', () => {
     const packs = { 'source_start.title': 'Empezar sin un texto', 'source_start.topic': 'Desde un tema' };
-    const m = mount({ t: key => packs[key] });
+    const m = mount({ t: key => packs[key], inputText: '' }); // the empty-box title
     expect(chooser(m).querySelector('h3').textContent).toBe('Empezar sin un texto');
     expect(buttons(m).map(node => node.textContent.trim())).toEqual(['Desde un tema', 'From a word list', 'Blank resource']);
   });
@@ -500,5 +503,51 @@ describe('another view can open the word-list start with a topic ready to sugges
     expect(chooser(m).querySelector('form')).toBeNull();
     act(() => { window.__alloRequestSourceStart('word-list', { topic: 'y'.repeat(400) }); });
     expect(field(m, '[data-source-word-suggest-topic]').value).toHaveLength(300);
+  });
+});
+
+describe('with a passage entered, these options make something separate and start folded', () => {
+  const toggle = m => m.el.querySelector('[data-source-start-toggle]');
+  const choices = m => [...chooser(m).querySelectorAll('button')].filter(node => ['From a topic', 'From a word list', 'Blank resource'].includes(node.textContent.trim()));
+
+  it('says the passage is not used, and shows the choices only after "Show these options"', () => {
+    const m = mount({}, { unfold: false });
+    expect(chooser(m).querySelector('h3').textContent).toBe('Make something separate from this passage');
+    expect(chooser(m).textContent).toContain('Your passage is not used for these, and it stays as it is.');
+    expect(choices(m)).toHaveLength(0);
+    expect(toggle(m).textContent).toBe('Show these options');
+    expect(toggle(m).getAttribute('aria-expanded')).toBe('false');
+    act(() => toggle(m).click());
+    expect(choices(m)).toHaveLength(3);
+    expect(toggle(m).getAttribute('aria-expanded')).toBe('true');
+    expect(chooser(m).querySelector('#' + toggle(m).getAttribute('aria-controls'))).toBeTruthy();
+    act(() => toggle(m).click());
+    expect(toggle(m).textContent).toBe('Show these options');
+    expect(choices(m)).toHaveLength(0);
+    expect(m.props.handleGenerate).not.toHaveBeenCalled();
+    sourceUntouched(m);
+  });
+
+  it('without a passage it keeps the old title, no fold button, and the choices in view', () => {
+    for (const inputText of ['', '   \n  ']) {
+      const m = mount({ inputText }, { unfold: false });
+      expect(chooser(m).querySelector('h3').textContent).toBe('Start without a passage');
+      expect(toggle(m)).toBeNull();
+      expect(choices(m)).toHaveLength(3);
+    }
+  });
+
+  it('a request from another tool opens its form even while folded', () => {
+    const m = mount({}, { unfold: false });
+    act(() => { window.__alloRequestSourceStart('word-list'); });
+    expect(document.activeElement, 'the word list opened and took focus').toBe(field(m, 'textarea'));
+    expect(toggle(m), 'no fold button while a form is open').toBeNull();
+  });
+
+  it('uses language-pack wording when it exists', () => {
+    const pack = { 'source_start.separate_title': 'Crear algo aparte', 'source_start.show_options': 'Mostrar opciones' };
+    const m = mount({ t: key => pack[key] || key }, { unfold: false });
+    expect(chooser(m).querySelector('h3').textContent).toBe('Crear algo aparte');
+    expect(toggle(m).textContent).toBe('Mostrar opciones');
   });
 });

@@ -54,10 +54,13 @@ const lastDoc = () => new DOMParser().parseFromString(written[written.length - 1
 const teacherSession = { isTeacherMode: true, allowRuntimeAi: true, callGemini: async () => '', callTTS: async () => null, callImagen: async () => null };
 async function openChooser(extra = {}) {
   const mounted = await mount({ ...teacherSession, words: words(), ...extra });
-  const opener = openButton(mounted.host);
-  if (!opener) throw Error('Print materials button missing');
+  // 2026-11-07: Print materials is an item in the Print & share menu; dialogs hand focus back to the menu button.
+  const opener = mounted.host.querySelector('[data-ws-share-open]');
+  const item = openButton(mounted.host);
+  if (!opener || !item) throw Error('Print materials menu item missing');
   opener.focus();
   await click(opener);
+  await click(item);
   await settle(10);
   return { ...mounted, opener, dialog: dialogOf(mounted.host) };
 }
@@ -227,9 +230,12 @@ describe('sound boxes', () => {
     await click(printButton(dialog, 'boxes'));
     const [big, seven, short] = [...lastDoc().querySelectorAll('.ws-print-row')];
     expect(big.querySelectorAll('.ws-print-box').length).toBe(12);
-    expect(big.querySelector('.ws-print-box').style.width).toBe('0.45in');
-    expect(seven.querySelector('.ws-print-box').style.height).toBe('0.77in');
-    expect(short.querySelector('.ws-print-box').getAttribute('style')).toBeNull();
+    // 2026-11-07: boxes share the room beside the picture by CSS (fixed inline widths still wrapped
+    // 7+ boxes under the picture on paper); they stay square and the row never wraps.
+    for (const row of [big, seven, short]) expect(row.querySelector('.ws-print-box').getAttribute('style')).toBeNull();
+    const css = lastDoc().querySelector('style').textContent;
+    expect(css).toContain('.ws-print-row{display:flex;align-items:center;gap:20px}');
+    expect(css).toContain('.ws-print-box{flex:0 1 0.85in;width:0.85in;min-width:0;aspect-ratio:1/1;');
     expect(Number.parseInt(big.querySelector('.ws-print-cue-word').style.fontSize, 10)).toBeLessThan(20);
     expect(short.querySelector('.ws-print-cue-word').style.fontSize).toBe('30px');
   });

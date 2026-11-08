@@ -182,13 +182,13 @@ describe('deferred module pump', () => {
       .toBeLessThan(12);
   });
 
-  it('stays parked behind the launch pad and in a hidden tab', () => {
-    // These two hard stops are what make a wider budget safe: nothing loads while the person is
-    // still on the launch pad, or while the tab is in the background.
+  it('keeps at most two in flight behind the launch pad and stays parked in a hidden tab', () => {
+    // These limits are what make a wider budget safe: the launch pad gets at most two scripts in
+    // flight, and nothing loads while the tab is in the background.
     const concealed = makeHarness({ bodyClasses: ['alloflow-launchpad-active'] });
     concealed.enqueue(10);
     concealed.runUntil(10000);
-    expect(concealed.dispatched, 'modules loaded behind the launch pad').toEqual([]);
+    expect(concealed.dispatched, 'behind the launch pad the in-flight limit is two').toHaveLength(2);
 
     const hidden = makeHarness({ hidden: true });
     hidden.enqueue(10);
@@ -248,7 +248,7 @@ describe('deferred module pump', () => {
     const concealed = makeHarness({ bodyClasses: ['alloflow-launchpad-active'], idleBudgetMs: 8 });
     concealed.enqueue(6);
     concealed.runUntil(60000);
-    expect(concealed.dispatched).toEqual([]);
+    expect(concealed.dispatched).toHaveLength(2);
 
     const pending = makeHarness({ idleBudgetMs: 8 });
     pending.enqueue(6);

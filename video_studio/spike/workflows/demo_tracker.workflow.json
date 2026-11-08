@@ -1,0 +1,41 @@
+{
+  "version": "workflow-1",
+  "title": "Recording a progress monitoring score",
+  "viewport": { "width": 1280, "height": 720 },
+  "start": { "url": "../fixtures/demo_tracker.html", "waitFor": "#sb" },
+  "intro": { "label": "Recording a progress monitoring score", "text": "This short video shows the three steps." },
+  "steps": [
+    {
+      "id": "choose-student",
+      "label": "Choose the student",
+      "anchor": "#sb",
+      "action": { "kind": "click", "selector": "#sb" },
+      "narration": {
+        "action": "Select Student B from the list.",
+        "success": "Student B is now selected."
+      }
+    },
+    {
+      "id": "enter-score",
+      "label": "Enter the score",
+      "anchor": "#score",
+      "action": { "kind": "type", "selector": "#score", "text": "47" },
+      "narration": {
+        "action": "Type this week's score in the box.",
+        "success": "The score appears in the box."
+      }
+    },
+    {
+      "id": "save-score",
+      "label": "Save the score",
+      "anchor": "#save",
+      "action": { "kind": "click", "selector": "#save" },
+      "pauseAfter": 1.2,
+      "narration": {
+        "action": "Select Save.",
+        "success": "A banner confirms the save, and a new green bar joins the chart."
+      }
+    }
+  ],
+  "outro": { "label": "That's it", "text": "Practice with a demo student before you use real data." }
+}

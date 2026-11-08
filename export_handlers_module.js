@@ -322,6 +322,87 @@
     linkText: 'Download project backup'
   });
 
+  // The document font (e.g. OpenDyslexic, Lexend) is a web rule in the page,
+  // so offline students silently lost it and every open contacted Google or
+  // jsDelivr. For the HTML download, swap the marked rule for the font files
+  // themselves, keeping only the character subsets the document uses. Any
+  // failure leaves the page exactly as it was (the font then loads online).
+  const ALLO_DOC_FONT_OPEN = '/* alloflow-document-font */';
+  const ALLO_DOC_FONT_CLOSE = '/* /alloflow-document-font */';
+  const ALLO_DOC_FONT_MAX_BYTES = 1536 * 1024;
+  const _alloFontHosts = /^https:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net)\//;
+  const _alloUnicodeRangeHits = (range, codepoints) => {
+    if (!range) return true;
+    return range.split(',').some((part) => {
+      const m = /U\+([0-9A-F?]+)(?:-([0-9A-F]+))?/i.exec(part.trim());
+      if (!m) return false;
+      const lo = parseInt(m[1].replace(/\?/g, '0'), 16);
+      const hi = m[2] ? parseInt(m[2], 16) : (m[1].includes('?') ? parseInt(m[1].replace(/\?/g, 'F'), 16) : lo);
+      for (const cp of codepoints) if (cp >= lo && cp <= hi) return true;
+      return false;
+    });
+  };
+  const _alloBytesToBase64 = (bytes) => {
+    let out = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(out);
+  };
+  const _alloEmbedDocumentFont = async (html, options = {}) => {
+    const source = String(html || '');
+    const start = source.indexOf(ALLO_DOC_FONT_OPEN);
+    const end = start < 0 ? -1 : source.indexOf(ALLO_DOC_FONT_CLOSE, start);
+    if (start < 0 || end < 0) return { html: source, embedded: false, reason: 'none' };
+    const fetchImpl = options.fetch || (typeof fetch === 'function' ? fetch.bind(typeof window !== 'undefined' ? window : globalThis) : null);
+    if (!fetchImpl) return { html: source, embedded: false, reason: 'no-fetch' };
+    const timeoutMs = Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : 15000;
+    const get = async (url, kind) => {
+      if (!_alloFontHosts.test(url)) throw new Error('unexpected font host');
+      const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+      const timer = ctl ? setTimeout(() => ctl.abort(), timeoutMs) : null;
+      try {
+        const res = await fetchImpl(url, ctl ? { signal: ctl.signal } : undefined);
+        if (!res || !res.ok) throw new Error('font request failed');
+        return kind === 'text' ? await res.text() : new Uint8Array(await res.arrayBuffer());
+      } finally { if (timer) clearTimeout(timer); }
+    };
+    try {
+      let rule = source.slice(start + ALLO_DOC_FONT_OPEN.length, end).trim();
+      const imp = /@import\s+url\(['"]?([^'")]+)['"]?\)\s*;?/i.exec(rule);
+      if (imp) rule = await get(imp[1], 'text');
+      // Characters the page actually shows (markup and script are ASCII anyway).
+      const codepoints = new Set();
+      for (const ch of source) codepoints.add(ch.codePointAt(0));
+      const faces = rule.match(/@font-face\s*\{[^}]*\}/gi) || [];
+      const wanted = faces.filter((face) => _alloUnicodeRangeHits((/unicode-range\s*:\s*([^;}]+)/i.exec(face) || [])[1], codepoints));
+      if (!wanted.length) throw new Error('no font faces');
+      let total = 0;
+      const embeddedFaces = [];
+      for (const face of wanted) {
+        let next = face;
+        const urls = Array.from(face.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi)).map((m) => m[1]);
+        for (const url of urls) {
+          const bytes = await get(url, 'bytes');
+          total += bytes.length;
+          if (total > ALLO_DOC_FONT_MAX_BYTES) throw new Error('fonts too large');
+          const mime = /\.woff2(?:$|\?)/i.test(url) ? 'font/woff2' : /\.woff(?:$|\?)/i.test(url) ? 'font/woff' : /\.ttf(?:$|\?)/i.test(url) ? 'font/ttf' : 'font/woff2';
+          next = next.split(url).join('data:' + mime + ';base64,' + _alloBytesToBase64(bytes));
+        }
+        embeddedFaces.push(next.replace(/\s+/g, ' '));
+      }
+      const replacement = '/* alloflow-document-font: embedded */ ' + embeddedFaces.join(' ');
+      return { html: source.slice(0, start) + replacement + source.slice(end + ALLO_DOC_FONT_CLOSE.length), embedded: true, bytes: total, faces: embeddedFaces.length };
+    } catch (error) {
+      return { html: source, embedded: false, reason: (error && error.message) || 'failed' };
+    }
+  };
+  const _alloEmbedFontForDownload = async (html, addToast) => {
+    const result = await _alloEmbedDocumentFont(html);
+    if (!result.embedded && result.reason !== 'none' && addToast) {
+      addToast('The chosen font could not be saved inside the file, so it will only show when the page is opened online.', 'info');
+    }
+    return result.html;
+  };
+
   // ── executeExportFromPreview ─────────────────────────────────────
   // Orchestrates an export driven by the preview iframe. If the iframe
   // has substantive edited content, that wins; otherwise we regenerate
@@ -1300,7 +1381,13 @@
   // Split an edited Builder preview into a student-safe copy and a clearly
   // marked teacher copy. DOM parsing is mandatory here: a regex fallback could
   // miss nested answer-key markup and silently leak it into the student file.
-  const _alloSeparateStudentTeacherHtml = (htmlContent) => {
+  const _alloSeparateStudentTeacherHtml = (htmlContent, t) => {
+    // The teacher copy's banner and title in the teacher's app language.
+    const say = (key, fallback) => {
+      let value = '';
+      try { value = typeof t === 'function' ? t(key) : ''; } catch (_) { value = ''; }
+      return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+    };
     if (typeof DOMParser === 'undefined') throw new Error('This browser cannot safely separate the student and teacher copies.');
     const parse = () => new DOMParser().parseFromString(String(htmlContent || ''), 'text/html');
     const serialize = (doc) => '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -1319,7 +1406,7 @@
     if (studentDoc.title) studentDoc.title = studentDoc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
 
     const teacherDoc = parse();
-    teacherDoc.title = 'TEACHER COPY — ' + (teacherDoc.title || 'AlloFlow resource');
+    teacherDoc.title = say('export.teacher_copy_title_prefix', 'TEACHER COPY — ') + (teacherDoc.title || 'AlloFlow resource');
     if (!teacherDoc.getElementById('alloflow-teacher-copy-css')) {
       const style = teacherDoc.createElement('style');
       style.id = 'alloflow-teacher-copy-css';
@@ -1330,7 +1417,7 @@
       const banner = teacherDoc.createElement('div');
       banner.className = 'alloflow-teacher-copy-banner';
       banner.setAttribute('role', 'note');
-      banner.textContent = 'TEACHER COPY — CONTAINS ANSWERS — DO NOT SHARE WITH STUDENTS';
+      banner.textContent = say('export.teacher_copy_banner', 'TEACHER COPY — CONTAINS ANSWERS — DO NOT SHARE WITH STUDENTS');
       teacherDoc.body.insertBefore(banner, teacherDoc.body.firstChild);
     }
     return { studentHtml: serialize(studentDoc), teacherHtml: serialize(teacherDoc) };
@@ -1392,7 +1479,7 @@
   // teacher cannot accidentally share one mixed student/answer-key ZIP.
   const _alloDownloadSeparatedStudentTeacher = async (options) => {
     const opts = options || {};
-    const copies = _alloSeparateStudentTeacherHtml(opts.htmlContent);
+    const copies = _alloSeparateStudentTeacherHtml(opts.htmlContent, opts.t);
     const htmlName = opts.htmlName || _alloExportFilename(opts.htmlContent, 'alloflow-export');
     const dateSuffix = new Date().toISOString().split('T')[0];
     const studentName = htmlName + '-STUDENT.html';
@@ -1591,6 +1678,7 @@
       _alloExportNotice((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error', addToast);
       return false;
     } else if (mode === 'html') {
+      htmlContent = await _alloEmbedFontForDownload(htmlContent, addToast);
       // Name files after the lesson (from its <title>) so a teacher's
       // downloads folder reads "photosynthesis.html" instead of N identical
       // "index.html" files.
@@ -1607,7 +1695,8 @@
             htmlContent: htmlContent,
             htmlName: _htmlName,
             history: history,
-            addToast: addToast
+            addToast: addToast,
+            t: t
           });
         } catch (copyError) {
           _alloExportNotice(copyError && copyError.message ? copyError.message : 'Could not safely separate student and teacher files.', 'error', addToast);
@@ -1755,6 +1844,7 @@
       // its source data — two files. Download them separately with distinct,
       // lesson-derived names so teachers never have to extract a zip. The old
       // readme.txt only described the zip's contents, so it's dropped here.
+      htmlContent = await _alloEmbedFontForDownload(htmlContent, addToast);
       const _htmlName = _alloExportFilename(htmlContent, (t ? t('export.filenames.html_pack') : 'alloflow-export'));
       if (exportConfig && exportConfig.assessmentMode === true) {
         try {
@@ -1776,7 +1866,8 @@
             htmlContent: htmlContent,
             htmlName: _htmlName,
             history: history,
-            addToast: addToast
+            addToast: addToast,
+            t: t
           });
           if (addToast) addToast('Student file ready. Keep the separately named TEACHER file or package private—it contains answers.', 'success');
           if (alloBotRef && alloBotRef.current && t) alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
@@ -3140,6 +3231,7 @@
     getSlidesPreviewHTML,
     summarizeResourceText,
     separateStudentTeacherHtml: _alloSeparateStudentTeacherHtml,
+    embedDocumentFont: _alloEmbedDocumentFont,
     sanitizeAssessmentStudentHtml: _alloSanitizeAssessmentStudentHtml,
     shouldSeparateStudentTeacher: _alloShouldSeparateStudentTeacher,
     downloadSeparatedStudentTeacher: _alloDownloadSeparatedStudentTeacher,

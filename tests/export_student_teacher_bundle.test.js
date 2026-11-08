@@ -278,6 +278,17 @@ describe('student and teacher HTML export bundle', () => {
     expect(revokeUrl).toHaveBeenCalledWith('blob:generic-2');
   });
 
+  it('writes the teacher-copy banner and title in the teacher\'s app language, English when untranslated', () => {
+    const source = '<!DOCTYPE html><html><head><title>Energía</title></head><body><main><p>Lectura</p><section class="teacher-view"><p>CLAVE</p></section></main></body></html>';
+    const es = { 'export.teacher_copy_title_prefix': 'COPIA DEL DOCENTE — ', 'export.teacher_copy_banner': 'COPIA DEL DOCENTE — CONTIENE RESPUESTAS' };
+    const translated = separateStudentTeacherHtml(source, (key) => es[key] || key);
+    const teacher = new DOMParser().parseFromString(translated.teacherHtml, 'text/html');
+    expect(teacher.title).toBe('COPIA DEL DOCENTE — Energía');
+    expect(teacher.querySelector('.alloflow-teacher-copy-banner').textContent).toBe('COPIA DEL DOCENTE — CONTIENE RESPUESTAS');
+    const english = new DOMParser().parseFromString(separateStudentTeacherHtml(source, (key) => key).teacherHtml, 'text/html');
+    expect(english.querySelector('.alloflow-teacher-copy-banner').textContent).toContain('DO NOT SHARE WITH STUDENTS');
+  });
+
   it('removes the pack profile (grade levels, teacher-only items) from the student copy only', () => {
     const profile = '<script type="application/json" id="alloflow-interactive-object-profile">{"resources":[{"title":"Key","instructionalText":{"form":"adapted","requestedGrade":3}}]}</script>';
     const source = '<!DOCTYPE html><html><head><title>Energy lesson</title>' + profile + '</head><body><main><p>Student reading</p>' +

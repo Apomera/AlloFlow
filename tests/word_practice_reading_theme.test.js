@@ -54,7 +54,7 @@ describe('presenter reading preferences', () => {
       expect((await inspect(stage.locator('.awp-word'))).bold).toBeGreaterThan(0);
       expect((await inspect(stage.locator('.awp-definition'))).text).toBe('Plants capture sunlight.');
       expect((await inspect(stage)).background).toBe('rgb(26, 26, 46)');
-      await page.locator('.awp-appearance-panel summary').click();
+      await page.locator('.awp-appearance-panel > summary').click();
       const player = page.locator('.awp-player');
       await player.getByLabel('Card font', { exact: true }).selectOption('georgia');
       await player.getByLabel('Card style', { exact: true }).selectOption('cream');

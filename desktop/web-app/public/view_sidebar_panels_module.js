@@ -644,7 +644,7 @@ function mergeSuggestedTerms(existing, raw, limit) {
   }
   return out;
 }
-function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = "" }) {
+function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = "", hasSource = false }) {
   const aiAvailable = useAiTextAvailable();
   const [suggesting, setSuggesting] = React.useState(false);
   const [suggestNote, setSuggestNote] = React.useState("");
@@ -652,6 +652,7 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLeve
   const suggestRef = React.useRef(null);
   const focusAfterSuggest = React.useRef(null);
   const [suggestDone, setSuggestDone] = React.useState(0);
+  const [showWithSource, setShowWithSource] = React.useState(false);
   React.useEffect(() => {
     if (!suggestDone || !focusAfterSuggest.current) return;
     const target = focusAfterSuggest.current.current;
@@ -818,7 +819,7 @@ Return only JSON: {"terms": ["term"]}`;
   const actionClass = "inline-flex min-h-11 min-w-0 items-center justify-center rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
   const fieldClass = "mt-1 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600";
   const helpIds = [id + "-help", showValidation && id + "-validation"].filter(Boolean).join(" ");
-  return /* @__PURE__ */ React.createElement("section", { "data-source-start-chooser": true, "aria-labelledby": id + "-title", className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-title", className: "m-0 text-sm font-bold" }, say(t("source_start.title"), "Start without a passage")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 mt-1 text-xs leading-relaxed text-slate-700" }, say(t("source_start.preserve_source"), "Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": say(t("source_start.choose_start"), "Choose a starting point"), className: "flex flex-wrap gap-2" }, [
+  return /* @__PURE__ */ React.createElement("section", { "data-source-start-chooser": true, "aria-labelledby": id + "-title", className: "rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900" }, /* @__PURE__ */ React.createElement("h3", { id: id + "-title", className: "m-0 text-sm font-bold" }, hasSource ? say(t("source_start.separate_title"), "Make something separate from this passage") : say(t("source_start.title"), "Start without a passage")), /* @__PURE__ */ React.createElement("p", { className: "mb-3 mt-1 text-xs leading-relaxed text-slate-700" }, hasSource ? say(t("source_start.separate_note"), "Create a resource from a topic, a word list, or a blank draft. Your passage is not used for these, and it stays as it is.") : say(t("source_start.preserve_source"), "Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.")), hasSource && !mode && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-start-toggle": true, "aria-expanded": showWithSource, "aria-controls": id + "-choices", onClick: () => setShowWithSource((open) => !open), className: actionClass + " border-sky-300 bg-white text-sky-900 hover:bg-sky-100" }, showWithSource ? say(t("source_start.hide_options"), "Hide these options") : say(t("source_start.show_options"), "Show these options")), (!hasSource || showWithSource || mode) && /* @__PURE__ */ React.createElement("div", { id: id + "-choices", className: hasSource ? "mt-3" : void 0 }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": say(t("source_start.choose_start"), "Choose a starting point"), className: "flex flex-wrap gap-2" }, [
     ["topic", say(t("source_start.topic"), "From a topic")],
     ["word-list", say(t("source_start.word_list"), "From a word list")],
     ["blank", say(t("source_start.blank"), "Blank resource")]
@@ -928,7 +929,7 @@ Return only JSON: {"terms": ["term"]}`;
       className: actionClass + " border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800"
     },
     submitting ? say(t("source_start.creating"), "Creating\u2026") : mode === "topic" ? say(t("source_start.create_topic"), "Create from topic") : mode === "word-list" ? wordType === "sentence-frames" ? say(t("source_start.create_scaffolds"), "Create writing scaffolds") : wordType === "concept-sort" ? say(t("source_start.create_concept_sort"), "Create concept sort") : say(t("source_start.create_glossary"), "Create glossary") : say(t("source_start.create_blank"), "Open blank draft")
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, onClick: () => choose(""), className: actionClass + " border-slate-400 bg-white text-slate-800 hover:bg-slate-100" }, say(t("source_start.cancel"), "Cancel"))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "m-0 text-xs text-slate-700" }, submitting ? say(t("source_start.creating_status"), "Creating the resource. Your current source is kept.") : ""))), forkDialog);
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: blocked, onClick: () => choose(""), className: actionClass + " border-slate-400 bg-white text-slate-800 hover:bg-slate-100" }, say(t("source_start.cancel"), "Cancel"))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "m-0 text-xs text-slate-700" }, submitting ? say(t("source_start.creating_status"), "Creating the resource. Your current source is kept.") : "")))), forkDialog);
 }
 function SourceNeededNotice({ t, onAddSource, onStartFromTopic, onStartFromWordList, onStartBlank, busy }) {
   const openQuickStart = typeof window !== "undefined" && typeof window.__alloOpenQuickStart === "function" ? window.__alloOpenQuickStart : null;
@@ -6125,36 +6126,10 @@ function SourceInputShellView(props) {
   const SourceOptions = collapseSources ? "div" : React.Fragment;
   const sourceActionGrid = "allo-source-action-grid";
   const moreSourcesProps = collapseSources ? { className: "col-span-full min-w-0", "data-help-key": "source_more_options" } : {};
-  return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement("style", null, ".allo-source-action-grid{display:grid;min-width:0;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))}.allo-source-action-grid>button,.allo-source-action-grid>label{min-height:44px;justify-content:center;text-align:center}"), /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-100 bg-slate-50 p-4" }, /* @__PURE__ */ React.createElement("h2", { id: "source-ready-title", tabIndex: -1, className: "m-0 text-sm font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": expandedTools.includes("source-input"), onClick: () => toggleTool("source-input"), className: "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg text-start hover:bg-indigo-50 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", isParentMode ? t("family_start.title") || "Start with your child's reading" : t("tools.source")), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, "aria-hidden": "true", className: "shrink-0" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, "aria-hidden": "true", className: "shrink-0" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 " + sourceActionGrid }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.upload_file"),
-      type: "file",
-      ref: fileInputRef,
-      onChange: handleSourceFileUpload,
-      className: "hidden",
-      accept: "image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
-    }
-  ), !showWaysIn ? /* @__PURE__ */ React.createElement(SourceChangeControl, { t, inputText, sourceRecord, setSourceReplacement }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      id: "tour-upload-source",
-      "aria-label": t("common.upload_file") || "Upload file",
-      onClick: () => fileInputRef.current.click(),
-      disabled: isExtracting || isGeneratingSource,
-      "aria-busy": isGeneratingSource,
-      className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm",
-      title: t("input.upload_tooltip")
-    },
-    isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw2, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Upload, { size: 12 }),
-    isExtracting ? t("input.actions.analyzing_short") : t("common.upload")
-  ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, collapseSources && /* @__PURE__ */ React.createElement("summary", { className: "flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More sources"), /* @__PURE__ */ React.createElement(SourceOptions, { ...collapseSources ? { className: "mt-2 " + sourceActionGrid } : {} }, /* @__PURE__ */ React.createElement("label", { className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.load_project_tooltip") || "Load a previously saved AlloFlow PDF project" }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.load_project") || "Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
-    const file = e.target.files?.[0];
+  const openPdfProjectFile = (file) => {
     if (!file) return;
     if (file.size > 64 * 1024 * 1024) {
       addToast("This project file is larger than the 64 MB browser safety limit.", "error");
-      e.target.value = "";
       return;
     }
     const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
@@ -6165,7 +6140,17 @@ function SourceInputShellView(props) {
       if (!_projectLoadIsCurrent()) return;
       try {
         const _savedProject = JSON.parse(ev.target.result);
-        if (!_savedProject.version || !_savedProject.accessibleHtml && !_savedProject.incomplete) {
+        const _crypto = window.AlloModules && window.AlloModules.AlloCrypto;
+        const _isLessonProject = Array.isArray(_savedProject) || _savedProject && Array.isArray(_savedProject.history) || !!(_crypto && typeof _crypto.isEncryptedEnvelope === "function" && _crypto.isEncryptedEnvelope(_savedProject));
+        if (_isLessonProject) {
+          const _say = (key, fallback) => {
+            const v = t(key);
+            return v && v !== key ? v : fallback;
+          };
+          addToast(_say("toasts.lesson_project_wrong_button", "This is a lesson project file. Open it from {tab}: choose {menu}, then {button}.").replace("{tab}", _say("sidebar.class_materials_tab", "Class & Materials")).replace("{menu}", _say("history.more_actions", "More")).replace("{button}", _say("history.load_project", "Load Project")), "info");
+          return;
+        }
+        if (!_savedProject || !_savedProject.version || !_savedProject.accessibleHtml && !_savedProject.incomplete) {
           addToast(t("toasts.not_valid_alloflow_project"), "error");
           return;
         }
@@ -6317,7 +6302,36 @@ function SourceInputShellView(props) {
     } catch (readError) {
       if (_projectLoadIsCurrent()) addToast(t("toasts.failed") + (readError?.message || "Unable to start reading project file"), "error");
     }
+  };
+  if (typeof window !== "undefined") window.__alloOpenPdfProjectFile = openPdfProjectFile;
+  return /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("source-input") ? void 0 : "none" }, id: "tour-input-panel", "data-help-key": "source_input", className: `bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === "input" ? "border-indigo-600 shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200"}` }, /* @__PURE__ */ React.createElement("style", null, ".allo-source-action-grid{display:grid;min-width:0;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))}.allo-source-action-grid>button,.allo-source-action-grid>label{min-height:44px;justify-content:center;text-align:center}"), /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-100 bg-slate-50 p-4" }, /* @__PURE__ */ React.createElement("h2", { id: "source-ready-title", tabIndex: -1, className: "m-0 text-sm font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": expandedTools.includes("source-input"), onClick: () => toggleTool("source-input"), className: "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg text-start hover:bg-indigo-50 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", isParentMode ? t("family_start.title") || "Start with your child's reading" : t("tools.source")), expandedTools.includes("source-input") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, "aria-hidden": "true", className: "shrink-0" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, "aria-hidden": "true", className: "shrink-0" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 " + sourceActionGrid }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("common.upload_file"),
+      type: "file",
+      ref: fileInputRef,
+      onChange: handleSourceFileUpload,
+      className: "hidden",
+      accept: "image/*,application/pdf,.docx,.pptx,.txt,.md,.markdown,.csv,.tsv,.json,.html,.xml,.xlsx,.xls,.xlsb,.ods,video/*,audio/*"
+    }
+  ), !showWaysIn ? /* @__PURE__ */ React.createElement(SourceChangeControl, { t, inputText, sourceRecord, setSourceReplacement }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      id: "tour-upload-source",
+      "aria-label": t("common.upload_file") || "Upload file",
+      onClick: () => fileInputRef.current.click(),
+      disabled: isExtracting || isGeneratingSource,
+      "aria-busy": isGeneratingSource,
+      className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm",
+      title: t("input.upload_tooltip")
+    },
+    isExtracting ? /* @__PURE__ */ React.createElement(RefreshCw2, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Upload, { size: 12 }),
+    isExtracting ? t("input.actions.analyzing_short") : t("common.upload")
+  ), /* @__PURE__ */ React.createElement(MoreSources, { ...moreSourcesProps }, collapseSources && /* @__PURE__ */ React.createElement("summary", { className: "flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700" }, /* @__PURE__ */ React.createElement(ChevronDown2, { size: 12, "aria-hidden": "true" }), t("input.actions.more_sources") || "More sources"), /* @__PURE__ */ React.createElement(SourceOptions, { ...collapseSources ? { className: "mt-2 " + sourceActionGrid } : {} }, /* @__PURE__ */ React.createElement("label", { "data-source-open-pdf-project": "true", className: "text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer", title: t("input.open_pdf_project_tooltip") || "Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials." }, /* @__PURE__ */ React.createElement(FileDown, { size: 12 }), " ", t("input.open_pdf_project") || "Open PDF project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+    const file = e.target.files?.[0];
     e.target.value = "";
+    openPdfProjectFile(file);
   } })), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -6366,7 +6380,7 @@ function SourceInputShellView(props) {
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D6}"),
     t("input.actions.books_short") || "Books"
-  ))), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), expandedTools.includes("source-input") && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "m-3" }, /* @__PURE__ */ React.createElement(SourceStartingPointChooser, { t, handleGenerate, gradeLevel, busy: isProcessing || isExtracting || isGeneratingSource })), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
+  ))), changeOpen && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-change-cancel": true, onClick: cancelChange, className: "text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium" }, headerText("sidebar.source_change_cancel", "Keep my source"))))), expandedTools.includes("source-input") && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "m-3" }, /* @__PURE__ */ React.createElement(SourceStartingPointChooser, { t, hasSource: !!(inputText && String(inputText).trim()), handleGenerate, gradeLevel, busy: isProcessing || isExtracting || isGeneratingSource })), /* @__PURE__ */ React.createElement(SourceShellWatch, { inputText, sourceStatus, sourceReplacement, setSourceReplacement, openSourceView }), expandedTools.includes("source-input") && videoTranscriptSourceContext && /* @__PURE__ */ React.createElement("div", { className: "mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800" }, /* @__PURE__ */ React.createElement(FileText2, { size: 13 }), "Video transcript loaded"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 truncate text-sm font-bold text-slate-800" }, videoTranscriptSourceContext.title), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.wordCount.toLocaleString(), " words"), videoTranscriptSourceContext.cueCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.cueCount.toLocaleString(), " caption lines"), videoTranscriptSourceContext.chapterCount > 0 && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.chapterCount, " chapters"), videoTranscriptSourceContext.durationLabel && /* @__PURE__ */ React.createElement("span", null, videoTranscriptSourceContext.durationLabel))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -8,6 +8,10 @@ export const POST_MERGE_PARTS = {
   "blue_coral": ["colony"],
   "pipe_organ_coral": ["colony"],
   "birdsnest_coral": ["colony"],
+  "blue_ringed_octopus": ["body-eyes-rings", "ringed-arms"],
+  "bedfords_flatworm": ["flat-body-pseudotentacles", "ruffled-margin"],
+  "galaxy_coral": ["colony"],
+  "finger_coral": ["colony"],
   "leaf_scorpionfish": [
     "leaf-body-and-fins"
   ],

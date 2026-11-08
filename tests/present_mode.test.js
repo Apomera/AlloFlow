@@ -280,17 +280,18 @@ describe('activities', () => {
     expect(p.querySelector('.ws-present-sentence').textContent).toBe('Un café au lait.');
   });
 
-  it('offers only whole-class activities; the rest are marked unavailable', async () => {
+  it('offers every activity that has ready items; one without is listed, not offered', async () => {
+    // 2026-11-07: the spelling activities and Letter Trace ("write it in the air") now project too.
     const { host } = await teacher();
     const drawer = await openDrawer(await present(host));
     const offered = [...drawer.querySelectorAll('[data-present-activity]')].map((b) => b.getAttribute('data-present-activity'));
-    for (const id of ['letter_tracing', 'spelling_bee', 'word_scramble', 'missing_letter', 'orthography', 'mapping', 'sentence_match']) {
-      expect(offered, id).not.toContain(id);
-      const row = drawer.querySelector(`[data-present-unavailable="${id}"]`);
-      expect(row.textContent, id).toContain('Not available while presenting');
-      expect(row.querySelector('button')).toBeNull();
-    }
-    for (const id of ['rhyming', 'counting', 'segmentation', 'blending', 'isolation', 'word_families', 'sound_sort', 'decoding']) expect(offered, id).toContain(id);
+    for (const id of ['rhyming', 'counting', 'segmentation', 'blending', 'isolation', 'word_families', 'sound_sort', 'decoding',
+      'letter_tracing', 'spelling_bee', 'word_scramble', 'missing_letter', 'orthography', 'mapping']) expect(offered, id).toContain(id);
+    // The fixture pack has no Picture the Sentence board.
+    const row = drawer.querySelector('[data-present-unavailable="sentence_match"]');
+    expect(row.textContent).toContain('No ready items in this word list');
+    expect(row.querySelector('button')).toBeNull();
+    expect(drawer.textContent, 'every activity can be presented').not.toContain('Not available while presenting');
   });
 
   it('switching activity starts at item 1 and shows that activity\'s prompt', async () => {

@@ -50,7 +50,7 @@ describe('Word Sounds setup keyboard navigation', () => {
       const oldScroll = await page.evaluate(() => document.activeElement.scrollTop);
       await page.getByLabel('Repetitions per word', { exact: true }).evaluate(input => { input.value = '4'; input.dispatchEvent(new Event('change', { bubbles: true })); });
       expect((await focused(page)).group).toBe('word_practice.review_missing_meanings');
-      expect(await page.evaluate(() => document.activeElement.scrollTop)).toBe(oldScroll);
+      expect(Math.abs(await page.evaluate(() => document.activeElement.scrollTop) - oldScroll), 'End-key scroll may settle 1 px later').toBeLessThanOrEqual(1);
       await page.getByLabel('Practice activity', { exact: true }).evaluate(input => { input.value = 'popup'; input.dispatchEvent(new Event('change', { bubbles: true })); });
       expect((await focused(page)).tag).toBe('SUMMARY');
       await page.keyboard.press('Tab'); expect((await focused(page)).group).toBe('word_practice.review_missing_audio');
@@ -64,19 +64,20 @@ describe('Word Sounds setup keyboard navigation', () => {
         document.documentElement.style.fontSize = '200%';
         AlloWordPracticeMedia.prepareAudio = (pack, context, progress) => {
           progress({ completed: 1, total: 2, word: 'Word 1' });
-          return new Promise((resolve, reject) => context.signal.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')), { once: true }));
+          // Like the real preparer: a stop with keepCompletedOnStop resolves with what is done.
+          return new Promise((resolve, reject) => context.signal.addEventListener('abort', () => context.keepCompletedOnStop ? resolve({ ...pack, audioStatus: { cancelled: true } }) : reject(new DOMException('Cancelled', 'AbortError')), { once: true }));
         };
       });
       await page.getByRole('button', { name: 'Prepare audio', exact: true }).click();
       const panel = page.locator('.awp-operation');
       expect(await panel.evaluate(el => getComputedStyle(el).position)).toBe('sticky');
-      const cancel = page.getByRole('button', { name: 'Cancel preparation', exact: true });
+      const cancel = page.getByRole('button', { name: 'Stop and keep completed audio', exact: true });
       await cancel.scrollIntoViewIfNeeded();
       expect(await cancel.isVisible()).toBe(true);
       await page.screenshot({ path: output + '/active-320-200percent.png' });
       await cancel.click();
       expect(await panel.evaluate(el => getComputedStyle(el).position)).toBe('static');
-      expect(await panel.textContent()).toContain('Preparation cancelled');
+      expect(await panel.textContent()).toContain('Preparation stopped. Completed recordings are kept.');
       const title = page.getByLabel('Practice title', { exact: true });
       await title.focus(); await title.scrollIntoViewIfNeeded();
       expect(await title.inputValue()).toBe('Plant words');

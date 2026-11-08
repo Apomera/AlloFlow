@@ -104,7 +104,7 @@ describe('word practice presenter', () => {
   it('announces card changes without disclosing an unrevealed spelling or sentence answer', async () => {
     ui.open({ words: ['ship', 'rain'], options: { repetitions: 1, shuffle: false, mode: 'spelling' } });
     button('Present').click(); await tick();
-    const announcement = win.document.querySelector('.awp-sr[role=status]');
+    const announcement = win.document.querySelector('p.awp-sr[role=status]');
     expect(announcement.textContent).toContain('Card 1 of 2');
     expect(announcement.textContent).not.toContain('ship');
     button('Reveal answer').click(); expect(announcement.textContent).toContain('ship');
@@ -112,8 +112,8 @@ describe('word practice presenter', () => {
     button('Close').click();
     ui.open({ words: [{ word: 'ship', sentenceActivity: { prompt: 'The ____ sails.', choices: ['ship', 'rain'], answer: 'ship' } }], options: { mode: 'sentence' } });
     button('Present').click(); await tick();
-    expect(win.document.querySelector('.awp-sr').textContent).toContain('The ____ sails.');
-    expect(win.document.querySelector('.awp-sr').textContent).not.toContain('ship');
+    expect(win.document.querySelector('p.awp-sr[role=status]').textContent).toContain('The ____ sails.');
+    expect(win.document.querySelector('p.awp-sr[role=status]').textContent).not.toContain('ship');
   });
 
   it('contains tab focus within the full screen player instead of the hidden dialog header', async () => {

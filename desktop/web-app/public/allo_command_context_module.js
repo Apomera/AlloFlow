@@ -159,6 +159,7 @@ function buildAlloCommandContext(deps) {
     handleNextTourStep,
     handleOpenSchoolRewards,
     handleOpenSchoolRewardsPortal,
+    handleOpenWordSounds,
     handlePlanFullPack,
     handlePrevTourStep,
     handleRebuildBlueprintStep,
@@ -1620,6 +1621,20 @@ function buildAlloCommandContext(deps) {
         } catch (_) {}
       }, 150);
     },
+    // Word Sounds with the teacher's goals waiting in Describe your goals (taken once by the setup screen).
+    openWordSounds: typeof handleOpenWordSounds === 'function' ? goal => {
+      setShowEducatorHub(false);
+      setShowLearningHub(false);
+      try {
+        window.__alloWordSoundsGoalSeed = typeof goal === 'string' && goal.trim() ? goal.trim().slice(0, 1500) : null;
+      } catch (_) {}
+      handleOpenWordSounds();
+      setTimeout(() => {
+        try {
+          window.dispatchEvent(new Event('alloflow:word-sounds-goal'));
+        } catch (_) {}
+      }, 0);
+    } : undefined,
     openFluencyMaze: () => {
       setShowEducatorHub(false);
       setShowLearningHub(false);

@@ -167,6 +167,83 @@ describe('the file', () => {
   });
 });
 
+// Real decoding and playback (sound bank WebM -> WAV in Chromium, played
+// through the real player): C:\tmp\mini_app_all\tests\e2e_portable_audio.cjs.
+describe('sounds that play on every device', () => {
+  // A stand-in Web Audio: "decodes" any clip to a 0.2 s ramp at 48 kHz and
+  // renders it at the requested rate, so the conversion path runs in jsdom.
+  function fakeAudio({ failOn = '' } = {}) {
+    const decoded = [];
+    class Ctx {
+      decodeAudioData(buffer, ok, fail) {
+        const text = new TextDecoder().decode(new Uint8Array(buffer));
+        decoded.push(text);
+        if (failOn && text.includes(failOn)) { const e = new Error('cannot decode'); if (fail) fail(e); return Promise.reject(e); }
+        const b = { duration: 0.2, sampleRate: 48000 };
+        if (ok) ok(b);
+        return Promise.resolve(b);
+      }
+      close() {}
+    }
+    class Offline {
+      constructor(channels, length, rate) { this.channels = channels; this.length = length; this.rate = rate; this.destination = {}; }
+      createBufferSource() { return { connect() {}, start() {} }; }
+      startRendering() {
+        const data = new Float32Array(this.length).map((_, i) => (i / this.length) * 2 - 1);
+        return Promise.resolve({ getChannelData: () => data, sampleRate: this.rate, numberOfChannels: this.channels });
+      }
+    }
+    return { AudioContext: Ctx, OfflineAudioContext: Offline, decoded };
+  }
+  const lessonWith = (audio) => ({ audio: { ...audio } });
+  const header = (uri) => {
+    const b = Buffer.from(uri.split(',')[1], 'base64');
+    return { riff: b.toString('latin1', 0, 4), wave: b.toString('latin1', 8, 12), channels: b.readUInt16LE(22), rate: b.readUInt32LE(24), bits: b.readUInt16LE(34), samples: b.readUInt32LE(40) / 2 };
+  };
+
+  it('turns WebM and other clips into 16-bit mono 22,050 Hz WAV, and leaves WAV and MP3 alone', async () => {
+    const wavClip = uri('keep');
+    const mp3Clip = 'data:audio/mpeg;base64,' + Buffer.from('ID3mp3').toString('base64');
+    const lesson = lessonWith({
+      a0: 'data:audio/webm;codecs=opus;base64,' + Buffer.from('webm-one').toString('base64'),
+      a1: wavClip,
+      a2: mp3Clip,
+      a3: 'data:audio/ogg;base64,' + Buffer.from('ogg-two').toString('base64'),
+    });
+    const fake = fakeAudio();
+    const progress = [];
+    const report = await TH.portableAudio(lesson, { ...fake, onProgress: (d, n) => progress.push([d, n]) });
+    expect(report).toEqual({ converted: 2, kept: 2, failed: [] });
+    expect(progress).toEqual([[1, 2], [2, 2]]);
+    expect(fake.decoded).toEqual(['webm-one', 'ogg-two']);
+    expect(lesson.audio.a1).toBe(wavClip);
+    expect(lesson.audio.a2).toBe(mp3Clip);
+    for (const id of ['a0', 'a3']) {
+      expect(lesson.audio[id]).toMatch(/^data:audio\/wav;base64,/);
+      expect(header(lesson.audio[id])).toEqual({ riff: 'RIFF', wave: 'WAVE', channels: 1, rate: 22050, bits: 16, samples: Math.ceil(0.2 * 22050) });
+    }
+  });
+
+  it('keeps a clip it cannot decode, and says which, instead of dropping the sound', async () => {
+    const bad = 'data:audio/webm;base64,' + Buffer.from('broken').toString('base64');
+    const lesson = lessonWith({ a0: bad, a1: 'data:audio/webm;base64,' + Buffer.from('fine').toString('base64') });
+    const report = await TH.portableAudio(lesson, fakeAudio({ failOn: 'broken' }));
+    expect(report).toEqual({ converted: 1, kept: 0, failed: ['a0'] });
+    expect(lesson.audio.a0).toBe(bad);
+    expect(lesson.audio.a1).toMatch(/^data:audio\/wav;/);
+    const none = lessonWith({ a0: bad });
+    expect(await TH.portableAudio(none, { AudioContext: null, OfflineAudioContext: null })).toEqual({ converted: 0, kept: 0, failed: ['a0'] });
+    expect(none.audio.a0).toBe(bad);
+  });
+
+  it('the teacher dialog converts before building, and names clips it could not convert', () => {
+    const at = moduleSource.indexOf('lib.portableAudio(built.lesson)');
+    expect(at).toBeGreaterThan(-1);
+    expect(at).toBeLessThan(moduleSource.indexOf('lib.buildHtml(built.lesson'));
+    expect(moduleSource).toContain('word_sounds.take_home_audio_not_converted');
+  });
+});
+
 describe('returned results', () => {
   const result = (extra = {}) => JSON.stringify({ kind: 'alloflow-take-home-result', schemaVersion: 2, lessonId: 'L1', learnerName: 'Ana', finishedAt: 'x',
     activityTitles: { isolation: 'Find Sounds' },
@@ -176,8 +253,9 @@ describe('returned results', () => {
   it('summarizes first tries, retries, misses and unfinished items, overall and per activity', () => {
     const parsed = TH.parseResult(result());
     expect(parsed.ok).toBe(true);
-    expect(parsed.result.summary).toEqual({ items: 4, done: 3, firstTry: 1, afterRetry: 1, missed: 1 });
-    expect(parsed.result.byActivity.isolation).toEqual({ items: 2, done: 2, firstTry: 1, afterRetry: 1, missed: 0 });
+    // practised: Letter Trace practice, counted apart and never scored (2026-11-07).
+    expect(parsed.result.summary).toEqual({ items: 4, done: 3, firstTry: 1, afterRetry: 1, missed: 1, practised: 0 });
+    expect(parsed.result.byActivity.isolation).toEqual({ items: 2, done: 2, firstTry: 1, afterRetry: 1, missed: 0, practised: 0 });
     // A title missing from the file falls back to the built-in activity's name.
     expect(parsed.result.activityTitles).toEqual({ isolation: 'Find Sounds', blending: 'Blend Sounds' });
     expect(TH.parseResult(result({ items: [{ activity: 'no_such', word: 'x' }] })).result.activityTitles).toEqual({ no_such: 'no_such' });

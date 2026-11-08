@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Intervention Log (demo)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; width:1280px; height:720px; background:#e5e7eb; font:20px/1.35 "Segoe UI", Arial, sans-serif; color:#111827; }
+  .page { position:absolute; left:140px; top:24px; width:1000px; height:672px; background:#fff; border:1px solid #9ca3af; box-shadow:0 6px 18px rgba(0,0,0,.25); padding:28px 40px; }
+  h1 { margin:0 0 4px; font-size:30px; } .sub { margin:0 0 16px; color:#4b5563; font-size:17px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:9px 12px; border:1px solid #9ca3af; text-align:left; }
+  th { background:#1e3a8a; color:#fff; }
+  tr.dip td { background:#fff7ed; }
+  .note { margin-top:16px; font-size:16px; color:#374151; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Intervention Log</h1>
+  <p class="sub">Demo document - fictional student, fictional data</p>
+  <table>
+    <thead><tr><th>Week</th><th>Date</th><th>Minutes</th><th>Score (wpm)</th><th>Goal line</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Sep 8</td><td>30</td><td>28</td><td>30</td></tr>
+      <tr><td>2</td><td>Sep 15</td><td>30</td><td>31</td><td>33</td></tr>
+      <tr><td>3</td><td>Sep 22</td><td>30</td><td>30</td><td>36</td></tr>
+      <tr id="row-week4" class="dip"><td>4</td><td>Sep 29</td><td>20</td><td>26</td><td>39</td></tr>
+      <tr><td>5</td><td>Oct 6</td><td>30</td><td>34</td><td>42</td></tr>
+      <tr><td>6</td><td>Oct 13</td><td>30</td><td>37</td><td>45</td></tr>
+      <tr><td>7</td><td>Oct 20</td><td>30</td><td>41</td><td>48</td></tr>
+      <tr><td>8</td><td>Oct 27</td><td>30</td><td>44</td><td>51</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Week 4 was a shortened session (20 minutes). Add a note when minutes change.</p>
+</div>
+</body>
+</html>

@@ -97,7 +97,7 @@ async function clickSound(sound) {
   expect(target).toBeTruthy();await act(async()=>target.click());
 }
 async function spellWord(word) {
-  const input=host.querySelector('input[aria-label="common.drag_letters_here"]');
+  const input=host.querySelector('input[data-ws-spell-input]');
   expect(input).toBeTruthy();
   await act(async()=>{
     Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,word);

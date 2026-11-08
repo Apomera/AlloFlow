@@ -12,10 +12,10 @@ const SOURCE = readFileSync(process.env.REEF3D_SPECIES_SOURCE || 'stem_lab/reef_
 
 const EXPECTED_IDS = {
   fish: ['clownfish', 'blue_tang', 'parrotfish', 'bumphead_parrotfish', 'moorish_idol', 'threadfin_butterflyfish', 'emperor_angelfish', 'anthias', 'blue_green_chromis', 'lionfish', 'peacock_grouper',
-    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish', 'blackfin_barracuda', 'titan_triggerfish', 'bluefin_trevally', 'blacktip_reef_shark', 'dusky_farmerfish'],
+    'humphead_wrasse', 'cleaner_wrasse', 'clown_triggerfish', 'porcupinefish', 'yellow_boxfish', 'giant_moray', 'whitetip_reef_shark', 'bluespotted_stingray', 'bluestripe_snapper', 'oriental_sweetlips', 'reef_manta', 'firefish', 'copperband_butterflyfish', 'spotted_garden_eel', 'banded_pipefish', 'yellow_longnose_butterflyfish', 'pajama_cardinalfish', 'banggai_cardinalfish', 'regal_angelfish', 'mandarin_dragonet', 'spotted_seahorse', 'ribbon_eel', 'leaf_scorpionfish', 'longnose_hawkfish', 'blackspotted_puffer', 'ocellated_eagle_ray', 'longfin_bannerfish', 'blackfin_barracuda', 'titan_triggerfish', 'bluefin_trevally', 'blacktip_reef_shark', 'dusky_farmerfish', 'foxface_rabbitfish', 'leopard_coral_grouper', 'dash_and_dot_goatfish', 'sixbar_wrasse'],
   reptile: ['green_turtle', 'hawksbill_turtle', 'banded_sea_krait'],
-  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm', 'drupella_snail', 'pincushion_sea_star', 'spanish_dancer', 'banded_coral_shrimp'],
-  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral'],
+  invertebrate: ['magnificent_anemone', 'giant_clam', 'crown_of_thorns', 'blue_sea_star', 'long_spined_urchin', 'nudibranch', 'cleaner_shrimp', 'christmas_tree_worm', 'day_octopus', 'sea_cucumber', 'sea_fan', 'barrel_sponge', 'soft_coral', 'giant_triton', 'blue_velvet_headshield_slug', 'harlequin_shrimp', 'bennetts_feather_star', 'peacock_mantis_shrimp', 'chocolate_chip_sea_star', 'porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish', 'textile_cone', 'white_spotted_hermit_crab', 'bigfin_reef_squid', 'goldmouth_sea_squirt', 'feather_duster_worm', 'drupella_snail', 'pincushion_sea_star', 'spanish_dancer', 'banded_coral_shrimp', 'blue_ringed_octopus', 'bedfords_flatworm'],
+  coral: ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'orange_cup_coral', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'galaxy_coral', 'finger_coral'],
   structure: ['reef_star', 'reef_ball', 'coral_tree_nursery']
 };
 const ALL = Object.values(EXPECTED_IDS).flat();
@@ -28,7 +28,7 @@ const ANEMONE_BUDGET = [2500, 8300];
 // for the magnified specimen view, while retaining only two draw calls.
 const FEATHER_DUSTER_BUDGET = [3000, 16000];
 // Corals, sponges and frames do not move; everything else must animate.
-const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral'];
+const STATIC = ['barrel_sponge', 'brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral', 'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'reef_star', 'reef_ball', 'acropora_humilis', 'acropora_millepora', 'acropora_clathrata', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'galaxy_coral', 'finger_coral'];
 
 function load() {
   const local = {};
@@ -156,7 +156,7 @@ describe('Reef3DSpecies contract', () => {
       expect(i.depthM[1], id).toBeGreaterThan(i.depthM[0]);
       // Published ecological ranges can extend beyond the simulation's dive
       // depths (Fishes of Australia: forceps fish 145 m, regal angelfish 80 m).
-      const depthCap = { blackfin_barracuda:100, bluefin_trevally:190, blacktip_reef_shark:75, longfin_bannerfish:75, bigfin_reef_squid:100, yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100, leaf_scorpionfish:135, longnose_hawkfish:100 }[id] || 60;
+      const depthCap = { leopard_coral_grouper:100, dash_and_dot_goatfish:100, blackfin_barracuda:100, bluefin_trevally:190, blacktip_reef_shark:75, longfin_bannerfish:75, bigfin_reef_squid:100, yellow_longnose_butterflyfish:145, regal_angelfish:80, peacock_mantis_shrimp:100, leaf_scorpionfish:135, longnose_hawkfish:100 }[id] || 60;
       expect(i.depthM[1], id).toBeLessThanOrEqual(depthCap);
       if (i.habit === 'school') { expect(i.schoolSize[0], id).toBeGreaterThanOrEqual(2); expect(i.schoolSize[1], id).toBeGreaterThan(i.schoolSize[0]); }
       else expect(i.schoolSize, id).toBeNull();

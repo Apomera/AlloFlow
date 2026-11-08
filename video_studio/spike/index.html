@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storyboard Render Spike</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg:#f8fafc; --fg:#0f172a; --muted:#475569; --card:#ffffff; --line:#cbd5e1; --accent:#1d4ed8; --ok:#047857; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --fg:#f1f5f9; --muted:#94a3b8; --card:#111c30; --line:#334155; --accent:#93c5fd; --ok:#34d399; --bad:#fca5a5; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; }
+  h1 { font-size:1.4rem; margin:8px 0; } h2 { font-size:1.05rem; margin:0 0 8px; }
+  button { font:inherit; padding:8px 14px; border-radius:8px; border:2px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; min-height:44px; }
+  @media (prefers-color-scheme: dark) { button { color:#0b1220; } }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:3px solid var(--fg); outline-offset:3px; }
+  label { margin-right:14px; white-space:nowrap; }
+  select { font:inherit; padding:6px; min-height:36px; }
+  table { border-collapse:collapse; width:100%; } th,td { text-align:left; padding:4px 8px; border-bottom:1px solid var(--line); }
+  pre { overflow:auto; max-height:320px; background:var(--bg); border:1px solid var(--line); padding:10px; border-radius:8px; font-size:.85rem; }
+  video { width:100%; max-width:960px; background:#000; border-radius:8px; }
+  .ok { color:var(--ok); font-weight:600; } .bad { color:var(--bad); font-weight:600; }
+  progress { width:100%; height:18px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Storyboard render spike</h1>
+  <p>Renders <code>sample_storyboard.json</code> to an MP4 in this page with WebCodecs (Mediabunny). Nothing is uploaded.</p>
+
+  <section aria-labelledby="h-support">
+    <h2 id="h-support">This browser</h2>
+    <div id="support" role="status">Probing…</div>
+  </section>
+
+  <section aria-labelledby="h-run">
+    <h2 id="h-run">Render</h2>
+    <p>
+      <label>Storyboard <select id="sb"><option value="sample_storyboard.json">sample_storyboard.json</option></select></label>
+      <label>Encoder <select id="hw"><option value="no-preference">no preference</option><option value="prefer-hardware">prefer hardware</option><option value="prefer-software">prefer software</option></select></label>
+      <label><input type="checkbox" id="soft" checked> soft caption track</label>
+    </p>
+    <p><button id="go" type="button">Render video</button> <button id="stop" type="button" disabled>Cancel</button></p>
+    <progress id="bar" max="100" value="0" aria-label="Render progress"></progress>
+    <p id="status" role="status" aria-live="polite">Ready.</p>
+  </section>
+
+  <section aria-labelledby="h-out" id="outsec" hidden>
+    <h2 id="h-out">Result</h2>
+    <video id="player" controls playsinline></video>
+    <p><a id="dl" download="spike_output.mp4">Download MP4</a> · <a id="dlvtt" download="spike_output.vtt">Download WebVTT</a></p>
+    <pre id="stats" tabindex="0" aria-label="Render statistics"></pre>
+  </section>
+</main>
+<script type="module">
+import { renderStoryboard, probeSupport } from './render.js';
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+let controller = null;
+
+function row(k, v, good) { return '<tr><th scope="row">' + k + '</th><td class="' + (good === true ? 'ok' : good === false ? 'bad' : '') + '">' + v + '</td></tr>'; }
+async function showSupport() {
+  const s = await probeSupport();
+  window.__support = s;
+  let h = '<table>' + row('WebCodecs', s.webcodecs ? 'yes' : 'NO', s.webcodecs) + row('Secure context', String(s.isSecureContext), s.isSecureContext)
+    + row('Cross-origin isolated', String(s.crossOriginIsolated) + ' (not needed)');
+  if (s.webcodecs) {
+    for (const c of Object.keys(s.video)) h += row('Encode video ' + c, String(s.video[c]), s.video[c] === true);
+    for (const c of Object.keys(s.audio)) h += row('Encode audio ' + c, String(s.audio[c]), s.audio[c] === true);
+    h += row('MP4 subtitle codecs', (s.mp4Subtitle || []).join(', ') || 'none');
+  }
+  $('support').innerHTML = h + '</table><p style="color:var(--muted);margin:6px 0 0">' + s.userAgent + '</p>';
+}
+
+async function run() {
+  const sbUrl = $('sb').value;
+  const sb = await (await fetch(sbUrl)).json();
+  controller = new AbortController();
+  $('go').disabled = true; $('stop').disabled = false; $('outsec').hidden = true;
+  $('status').textContent = 'Rendering…';
+  const started = performance.now();
+  try {
+    const res = await renderStoryboard(sb, {
+      baseUrl: new URL(sbUrl, location.href).href, hw: $('hw').value, softCaptions: $('soft').checked, signal: controller.signal,
+      bitrate: Number(params.get('bitrate')) || undefined, bitrateMode: params.get('mode') || undefined,
+      onProgress: p => { $('bar').value = Math.round((p.frame / p.total) * 100); $('status').textContent = 'Frame ' + p.frame + ' of ' + p.total; },
+    });
+    $('bar').value = 100;
+    const url = URL.createObjectURL(res.blob);
+    window.__spikeUrl = url;
+    $('player').src = url; $('dl').href = url;
+    $('dlvtt').href = URL.createObjectURL(new Blob([res.vtt], { type: 'text/vtt' }));
+    $('stats').textContent = JSON.stringify(res.stats, null, 2);
+    $('outsec').hidden = false;
+    $('status').textContent = 'Done in ' + ((performance.now() - started) / 1000).toFixed(1) + ' s (' + (res.blob.size / 1e6).toFixed(2) + ' MB).';
+    window.__spikeResult = { ok: true, stats: res.stats };
+  } catch (e) {
+    $('status').textContent = 'Failed: ' + e.message;
+    window.__spikeResult = { ok: false, error: String(e && e.stack || e) };
+  } finally {
+    $('go').disabled = false; $('stop').disabled = true; window.__spikeDone = true;
+  }
+}
+$('go').addEventListener('click', run);
+$('stop').addEventListener('click', () => controller && controller.abort());
+if (params.get('hw')) $('hw').value = params.get('hw');
+if (params.get('soft') === '0') $('soft').checked = false;
+showSupport().then(() => { window.__supportReady = true; if (params.get('autorun') === '1') run(); });
+</script>
+</body>
+</html>

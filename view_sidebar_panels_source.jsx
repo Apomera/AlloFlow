@@ -282,7 +282,7 @@ function mergeSuggestedTerms(existing, raw, limit) {
   return out;
 }
 
-function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = '' }) {
+function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLevel = '', hasSource = false }) {
   const aiAvailable = useAiTextAvailable();
   const [suggesting, setSuggesting] = React.useState(false);
   const [suggestNote, setSuggestNote] = React.useState('');
@@ -290,6 +290,8 @@ function SourceStartingPointChooser({ t, handleGenerate, busy = false, gradeLeve
   const suggestRef = React.useRef(null);
   const focusAfterSuggest = React.useRef(null);
   const [suggestDone, setSuggestDone] = React.useState(0);
+  // With a passage entered these make something separate, so they start folded away behind one button.
+  const [showWithSource, setShowWithSource] = React.useState(false);
   // After a suggestion the fields are enabled again: focus the list (words added) or the button (none).
   React.useEffect(() => {
     if (!suggestDone || !focusAfterSuggest.current) return;
@@ -449,8 +451,10 @@ Return only JSON: {"terms": ["term"]}`;
   const fieldClass = 'mt-1 w-full min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600';
   const helpIds = [id + '-help', showValidation && id + '-validation'].filter(Boolean).join(' ');
   return <section data-source-start-chooser aria-labelledby={id + '-title'} className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-slate-900">
-    <h3 id={id + '-title'} className="m-0 text-sm font-bold">{say(t('source_start.title'), 'Start without a passage')}</h3>
-    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{say(t('source_start.preserve_source'), 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
+    <h3 id={id + '-title'} className="m-0 text-sm font-bold">{hasSource ? say(t('source_start.separate_title'), 'Make something separate from this passage') : say(t('source_start.title'), 'Start without a passage')}</h3>
+    <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-700">{hasSource ? say(t('source_start.separate_note'), 'Create a resource from a topic, a word list, or a blank draft. Your passage is not used for these, and it stays as it is.') : say(t('source_start.preserve_source'), 'Create a resource from a topic, a word list, or a blank draft. Your current source stays as it is.')}</p>
+    {hasSource && !mode && <button type="button" data-source-start-toggle aria-expanded={showWithSource} aria-controls={id + '-choices'} onClick={() => setShowWithSource(open => !open)} className={actionClass + ' border-sky-300 bg-white text-sky-900 hover:bg-sky-100'}>{showWithSource ? say(t('source_start.hide_options'), 'Hide these options') : say(t('source_start.show_options'), 'Show these options')}</button>}
+    {(!hasSource || showWithSource || mode) && <div id={id + '-choices'} className={hasSource ? 'mt-3' : undefined}>
     <div role="group" aria-label={say(t('source_start.choose_start'), 'Choose a starting point')} className="flex flex-wrap gap-2">
       {[
         ['topic', say(t('source_start.topic'), 'From a topic')],
@@ -537,6 +541,7 @@ Return only JSON: {"terms": ["term"]}`;
         <p role="status" aria-live="polite" aria-atomic="true" className="m-0 text-xs text-slate-700">{submitting ? say(t('source_start.creating_status'), 'Creating the resource. Your current source is kept.') : ''}</p>
       </form>}
     </div>
+    </div>}
     {forkDialog}
   </section>;
 }
@@ -5442,6 +5447,164 @@ function SourceInputShellView(props) {
   const SourceOptions = collapseSources ? 'div' : React.Fragment;
   const sourceActionGrid = 'allo-source-action-grid';
   const moreSourcesProps = collapseSources ? { className: 'col-span-full min-w-0', 'data-help-key': 'source_more_options' } : {};
+  // Reopens saved PDF Accessibility work. Shared by the Open PDF project button and,
+  // through window.__alloOpenPdfProjectFile, the Educator tools Document accessibility card.
+  const openPdfProjectFile = (file) => {
+    if (!file) return;
+    if (file.size > 64 * 1024 * 1024) { addToast('This project file is larger than the 64 MB browser safety limit.', 'error'); return; }
+    const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
+    let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();
+    const _projectLoadIsCurrent = () => _projectLoadEpoch === pdfProjectLoadEpochRef.current
+      && isPdfDocumentIntakeCurrent(_projectDocumentEpoch);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      if (!_projectLoadIsCurrent()) return;
+      try {
+        const _savedProject = JSON.parse(ev.target.result);
+        // A lesson project (a resource list, { history: [...] }, or an encrypted
+        // save) is a valid file in the wrong place: say where it opens.
+        const _crypto = window.AlloModules && window.AlloModules.AlloCrypto;
+        const _isLessonProject = Array.isArray(_savedProject) || (_savedProject && Array.isArray(_savedProject.history))
+          || !!(_crypto && typeof _crypto.isEncryptedEnvelope === 'function' && _crypto.isEncryptedEnvelope(_savedProject));
+        if (_isLessonProject) {
+          const _say = (key, fallback) => { const v = t(key); return v && v !== key ? v : fallback; };
+          addToast(_say('toasts.lesson_project_wrong_button', 'This is a lesson project file. Open it from {tab}: choose {menu}, then {button}.')
+            .replace('{tab}', _say('sidebar.class_materials_tab', 'Class & Materials'))
+            .replace('{menu}', _say('history.more_actions', 'More'))
+            .replace('{button}', _say('history.load_project', 'Load Project')), 'info');
+          return;
+        }
+        if (!_savedProject || !_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+        // Ignore any serialized runtime snapshot. Rehydrate makes it live
+        // only when the persisted SHA-256 digest matches accessibleHtml.
+        const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
+        if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+        const _sanitizedImport = _projectSanitizer(_savedProject);
+        const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
+        if (!_projectLoadIsCurrent()) return;
+        if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+        _projectDocumentEpoch = startNewPdfAudit();
+        if (!_projectLoadIsCurrent()) return;
+        setPendingPdfBase64(project.pdfBase64 || null);
+        if (project.incomplete) {
+          const _resumeName = project.fileName || 'resumed-project.pdf';
+          const _resumeDigest = project.docKey || (project.auditResult && project.auditResult.documentDigest) || null;
+          setPendingPdfFile({
+            name: _resumeName,
+            size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0,
+            documentDigest: _resumeDigest,
+          });
+          try {
+            if (project.extractedText) window.__resumeExtractedText = { fileName: _resumeName, text: project.extractedText, docKey: _resumeDigest };
+          } catch (_) {}
+          setPdfAuditResult(project.auditResult
+            ? { ...project.auditResult, documentDigest: project.auditResult.documentDigest || _resumeDigest }
+            : {
+                documentDigest: _resumeDigest, score: null, scores: [], critical: [], serious: [], moderate: [], minor: [], passes: [],
+                summary: 'Resumed from an unfinished session; no numeric baseline is available yet.', pageCount: project.pageCount || 1,
+                hasSearchableText: true, hasImages: false, _resumeIncomplete: true,
+              });
+          setPdfFixResult(null);
+          if (project.extractedText) setInputText(project.extractedText);
+          if (Array.isArray(project.pageRange) && project.pageRange.length === 2) {
+            setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+          }
+          addToast('Resumed “' + _resumeName + '”. Click Make Accessible to finish' + (project.pdfBase64 ? '.' : ' after re-attaching the original PDF.'), 'success');
+          return;
+        }
+        const _derivedProjectVerification = deriveVerificationState({
+          ai: project.verificationAudit || null,
+          axe: project.axeAudit || null,
+          equalAccess: project.secondEngineAudit || null,
+          aiIncomplete: !!project._aiVerificationIncomplete,
+          pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
+        }) || {};
+        const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;
+        const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';
+        const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
+        const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
+        const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
+        const _loadedFidelityLimited = !!project.fidelityLimited;
+        const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
+          ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
+          : (_loadedRequiresManualReview ? 'accessibility' : null));
+        const _loadedExpertBase = (project._expertReviewBeforeVerification && typeof project._expertReviewBeforeVerification === 'object')
+          ? project._expertReviewBeforeVerification
+          : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
+        setPdfAuditResult({
+          score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
+          passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
+          hasSearchableText: true, hasImages: project.imageCount > 0,
+        });
+        const _loadedPdfFixResult = {
+          accessibleHtml: project.accessibleHtml,
+          documentDigest: project.documentDigest || project.docKey || null,
+          beforeScore: project.beforeScore, afterScore: project.afterScore,
+          axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
+          secondEngineAudit: project.secondEngineAudit || null,
+          verificationHtmlBinding: project.verificationHtmlBinding || null,
+          verificationCoverage: _loadedVerificationCoverage,
+          verificationState: _loadedVerificationState,
+          afterScoreVerified: _loadedAfterScoreVerified,
+          requiresManualReview: _loadedRequiresManualReview,
+          verificationReviewCount: Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : (Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0),
+          verificationReasons: Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : (Array.isArray(project.verificationReasons) ? project.verificationReasons : []),
+          _verificationExpertReview: _loadedRequiresManualReview || project._verificationExpertReview === true,
+          _expertReviewBeforeVerification: _loadedExpertBase,
+          _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
+          _scoreSource: project._scoreSource || null,
+          docStyle: project.docStyle || null, pageCount: project.pageCount,
+          imageCount: project.imageCount || 0, needsExpertReview: !!(project.needsExpertReview || _loadedRequiresManualReview || _loadedFidelityLimited),
+          // Restore the fields older project files didn't carry (fallbacks keep
+          // backward compatibility): reason-specific banner, integrity indicators,
+          // Diff inputs (so the Diff works on a loaded project), and stat badges.
+          expertReviewReason: _loadedExpertReason,
+          integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+          integrityWarning: project.integrityWarning || null,
+          fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+          fidelityLimited: project.fidelityLimited || false,
+          sourceText: project.sourceText || '', finalText: project.finalText || '',
+          htmlChars: project.htmlChars || project.accessibleHtml.length,
+          extractedChars: project.extractedChars || 0,
+          issuesFixed: project.issuesFixed || 0,
+          remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+          autoFixPasses: project.autoFixPasses || 0,
+          humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+          reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+          reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
+          // Audit 2026-06-13: this input-screen loader dropped the
+          // companion-lane + score-honesty + resume keys the two
+          // view-file loaders restore — so a project loaded via THIS
+          // button silently lost its translation, plain-language copy,
+          // audio-resume position, and showed an AI-only score even
+          // when the engine blended. Restored to parity.
+          _translation: project._translation || null,
+          _plainLanguage: project._plainLanguage || null,
+          _audioJobMeta: project._audioJobMeta || null,
+          _scoreIsBlended: !!project._scoreIsBlended,
+          chunkState: project.chunkState || null,
+        };
+        if (isLiveVerificationHtmlBound(project, project.accessibleHtml)) {
+          attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
+        }
+        setPdfFixResult(_loadedPdfFixResult);
+        setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0, documentDigest: project.documentDigest || project.docKey || null });
+        addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
+      } catch(err) {
+        if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + err.message, 'error');
+      }
+    };
+    reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (reader.error?.message || 'Unable to read project file'), 'error'); };
+    reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + 'Project file read was cancelled', 'info'); };
+    try {
+      reader.readAsText(file);
+    } catch (readError) {
+      if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (readError?.message || 'Unable to start reading project file'), 'error');
+    }
+  };
+  // These views stay hook-free, so the shared opener is registered on render.
+  // Everything it uses belongs to the host, so it still works after the panel closes.
+  if (typeof window !== 'undefined') window.__alloOpenPdfProjectFile = openPdfProjectFile;
   return (
 <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all motion-reduce:transition-none overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>
             <style>{'.allo-source-action-grid{display:grid;min-width:0;gap:.5rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))}.allo-source-action-grid>button,.allo-source-action-grid>label{min-height:44px;justify-content:center;text-align:center}'}</style>
@@ -5477,148 +5640,13 @@ function SourceInputShellView(props) {
                      <MoreSources {...moreSourcesProps}>
                      {collapseSources && <summary className="flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
                      <SourceOptions {...(collapseSources ? { className: 'mt-2 ' + sourceActionGrid } : {})}>
-                     <label className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.load_project_tooltip') || 'Load a previously saved AlloFlow PDF project'}>
-                        <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
+                     {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
+                     <label data-source-open-pdf-project="true" className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
+                        <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
-                          const file = e.target.files?.[0]; if (!file) return;
-                          if (file.size > 64 * 1024 * 1024) { addToast('This project file is larger than the 64 MB browser safety limit.', 'error'); e.target.value = ''; return; }
-                          const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
-                          let _projectDocumentEpoch = capturePdfDocumentIntakeEpoch();
-                          const _projectLoadIsCurrent = () => _projectLoadEpoch === pdfProjectLoadEpochRef.current
-                            && isPdfDocumentIntakeCurrent(_projectDocumentEpoch);
-                          const reader = new FileReader();
-                          reader.onload = async (ev) => {
-                            if (!_projectLoadIsCurrent()) return;
-                            try {
-                              const _savedProject = JSON.parse(ev.target.result);
-                              if (!_savedProject.version || (!_savedProject.accessibleHtml && !_savedProject.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
-                              // Ignore any serialized runtime snapshot. Rehydrate makes it live
-                              // only when the persisted SHA-256 digest matches accessibleHtml.
-                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
-                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
-                              const _sanitizedImport = _projectSanitizer(_savedProject);
-                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
-                              if (!_projectLoadIsCurrent()) return;
-                              if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
-                              _projectDocumentEpoch = startNewPdfAudit();
-                              if (!_projectLoadIsCurrent()) return;
-                              setPendingPdfBase64(project.pdfBase64 || null);
-                              if (project.incomplete) {
-                                const _resumeName = project.fileName || 'resumed-project.pdf';
-                                const _resumeDigest = project.docKey || (project.auditResult && project.auditResult.documentDigest) || null;
-                                setPendingPdfFile({
-                                  name: _resumeName,
-                                  size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0,
-                                  documentDigest: _resumeDigest,
-                                });
-                                try {
-                                  if (project.extractedText) window.__resumeExtractedText = { fileName: _resumeName, text: project.extractedText, docKey: _resumeDigest };
-                                } catch (_) {}
-                                setPdfAuditResult(project.auditResult
-                                  ? { ...project.auditResult, documentDigest: project.auditResult.documentDigest || _resumeDigest }
-                                  : {
-                                      documentDigest: _resumeDigest, score: null, scores: [], critical: [], serious: [], moderate: [], minor: [], passes: [],
-                                      summary: 'Resumed from an unfinished session; no numeric baseline is available yet.', pageCount: project.pageCount || 1,
-                                      hasSearchableText: true, hasImages: false, _resumeIncomplete: true,
-                                    });
-                                setPdfFixResult(null);
-                                if (project.extractedText) setInputText(project.extractedText);
-                                if (Array.isArray(project.pageRange) && project.pageRange.length === 2) {
-                                  setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
-                                }
-                                addToast('Resumed “' + _resumeName + '”. Click Make Accessible to finish' + (project.pdfBase64 ? '.' : ' after re-attaching the original PDF.'), 'success');
-                                return;
-                              }
-                              const _derivedProjectVerification = deriveVerificationState({
-                                ai: project.verificationAudit || null,
-                                axe: project.axeAudit || null,
-                                equalAccess: project.secondEngineAudit || null,
-                                aiIncomplete: !!project._aiVerificationIncomplete,
-                                pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
-                              }) || {};
-                              const _loadedVerificationCoverage = _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || project.verificationCoverage || null;
-                              const _loadedVerificationState = _derivedProjectVerification.verificationState || 'partial';
-                              const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
-                              const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
-                              const _loadedAfterScoreVerified = _derivedProjectVerification.afterScoreVerified === true && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
-                              const _loadedFidelityLimited = !!project.fidelityLimited;
-                              const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
-                                ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
-                                : (_loadedRequiresManualReview ? 'accessibility' : null));
-                              const _loadedExpertBase = (project._expertReviewBeforeVerification && typeof project._expertReviewBeforeVerification === 'object')
-                                ? project._expertReviewBeforeVerification
-                                : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
-                              setPdfAuditResult({
-                                score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
-                                passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
-                                hasSearchableText: true, hasImages: project.imageCount > 0,
-                              });
-                              const _loadedPdfFixResult = {
-                                accessibleHtml: project.accessibleHtml,
-                                documentDigest: project.documentDigest || project.docKey || null,
-                                beforeScore: project.beforeScore, afterScore: project.afterScore,
-                                axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
-                                secondEngineAudit: project.secondEngineAudit || null,
-                                verificationHtmlBinding: project.verificationHtmlBinding || null,
-                                verificationCoverage: _loadedVerificationCoverage,
-                                verificationState: _loadedVerificationState,
-                                afterScoreVerified: _loadedAfterScoreVerified,
-                                requiresManualReview: _loadedRequiresManualReview,
-                                verificationReviewCount: Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : (Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0),
-                                verificationReasons: Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : (Array.isArray(project.verificationReasons) ? project.verificationReasons : []),
-                                _verificationExpertReview: _loadedRequiresManualReview || project._verificationExpertReview === true,
-                                _expertReviewBeforeVerification: _loadedExpertBase,
-                                _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
-                                _scoreSource: project._scoreSource || null,
-                                docStyle: project.docStyle || null, pageCount: project.pageCount,
-                                imageCount: project.imageCount || 0, needsExpertReview: !!(project.needsExpertReview || _loadedRequiresManualReview || _loadedFidelityLimited),
-                                // Restore the fields older project files didn't carry (fallbacks keep
-                                // backward compatibility): reason-specific banner, integrity indicators,
-                                // Diff inputs (so the Diff works on a loaded project), and stat badges.
-                                expertReviewReason: _loadedExpertReason,
-                                integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-                                integrityWarning: project.integrityWarning || null,
-                                fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
-                                fidelityLimited: project.fidelityLimited || false,
-                                sourceText: project.sourceText || '', finalText: project.finalText || '',
-                                htmlChars: project.htmlChars || project.accessibleHtml.length,
-                                extractedChars: project.extractedChars || 0,
-                                issuesFixed: project.issuesFixed || 0,
-                                remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-                                autoFixPasses: project.autoFixPasses || 0,
-                                humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-                                reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
-                                reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
-                                // Audit 2026-06-13: this input-screen loader dropped the
-                                // companion-lane + score-honesty + resume keys the two
-                                // view-file loaders restore — so a project loaded via THIS
-                                // button silently lost its translation, plain-language copy,
-                                // audio-resume position, and showed an AI-only score even
-                                // when the engine blended. Restored to parity.
-                                _translation: project._translation || null,
-                                _plainLanguage: project._plainLanguage || null,
-                                _audioJobMeta: project._audioJobMeta || null,
-                                _scoreIsBlended: !!project._scoreIsBlended,
-                                chunkState: project.chunkState || null,
-                              };
-                              if (isLiveVerificationHtmlBound(project, project.accessibleHtml)) {
-                                attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
-                              }
-                              setPdfFixResult(_loadedPdfFixResult);
-                              setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession && project.multiSession.fileSize) || 0, documentDigest: project.documentDigest || project.docKey || null });
-                              addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
-                            } catch(err) {
-                              if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + err.message, 'error');
-                            }
-                          };
-                          reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (reader.error?.message || 'Unable to read project file'), 'error'); };
-                          reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + 'Project file read was cancelled', 'info'); };
-                          try {
-                            reader.readAsText(file);
-                          } catch (readError) {
-                            if (_projectLoadIsCurrent()) addToast(t('toasts.failed') + (readError?.message || 'Unable to start reading project file'), 'error');
-                          }
+                          const file = e.target.files?.[0];
                           e.target.value = '';
+                          openPdfProjectFile(file);
                         }} />
                      </label>
                      <button type="button"
@@ -5667,7 +5695,7 @@ function SourceInputShellView(props) {
                      </>}
                  </div>
             </div>
-            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} handleGenerate={handleGenerate} gradeLevel={gradeLevel} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
+            {expandedTools.includes('source-input') && isTeacherMode && <div className="m-3"><SourceStartingPointChooser t={t} hasSource={!!(inputText && String(inputText).trim())} handleGenerate={handleGenerate} gradeLevel={gradeLevel} busy={isProcessing || isExtracting || isGeneratingSource} /></div>}
             <SourceShellWatch inputText={inputText} sourceStatus={sourceStatus} sourceReplacement={sourceReplacement} setSourceReplacement={setSourceReplacement} openSourceView={openSourceView} />
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
             {expandedTools.includes('source-input') && videoTranscriptSourceContext && (

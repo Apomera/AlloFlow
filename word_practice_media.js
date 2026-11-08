@@ -941,5 +941,67 @@
     pptx.wordPracticeWarnings = [...warnings];
     return pptx;
   }
-  root.AlloWordPracticeMedia = { prepareAudio, buildPptx };
+  // The offline HTML player plays sounds with an <audio> element. The sound
+  // bank and browser recordings are WebM/Opus, which iPad and older Safari may
+  // not play, so the HTML download turns every other format into 16-bit mono
+  // 22,050 Hz WAV first (the high frequencies of /s/, /f/, /th/ survive).
+  // WAV is about three times larger, so conversion stops before the set's
+  // total audio limit; a clip that is left (or cannot be decoded) stays as it
+  // was and is counted, never dropped.
+  const EVERY_DEVICE_AUDIO = /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3)[;,]/i;
+  async function everyDeviceAudio(input, context = {}) {
+    const core = getCore(), pack = core.normalizeInput(input);
+    const Context = context.AudioContext || root.AudioContext || root.webkitAudioContext;
+    const Offline = context.OfflineAudioContext || root.OfflineAudioContext || root.webkitOfflineAudioContext;
+    const report = { converted: 0, failed: 0, kept: 0 };
+    // Every audio string the pack carries, with how often it appears.
+    const uses = new Map();
+    let total = 0;
+    const count = value => { if (typeof value === 'string' && value) { total += value.length; uses.set(value, (uses.get(value) || 0) + 1); } };
+    pack.items.forEach(item => { count(item.wordAudio); (item.phonemes || []).forEach(sound => count(sound.audio)); });
+    const budget = Math.floor(core.LIMITS.totalAudioChars * 0.95);
+    const replaced = new Map();
+    let audioContext = null;
+    try {
+      for (const [source, times] of uses) {
+        checkAbort(context);
+        if (EVERY_DEVICE_AUDIO.test(source) || !/^data:audio\//i.test(source)) continue;
+        try {
+          if (!Context || !Offline) throw new Error('This browser cannot convert audio.');
+          if (!audioContext) audioContext = new Context();
+          const buffer = await audioContext.decodeAudioData(dataBytes(source).buffer);
+          if (!(buffer.duration > 0) || buffer.duration > 60) throw new Error('Unusable clip.');
+          // Size known before rendering: base64 of a 44-byte header + 2 bytes a sample.
+          const samples = Math.max(1, Math.ceil(buffer.duration * 22050));
+          const expected = 'data:audio/wav;base64,'.length + Math.ceil((44 + samples * 2) / 3) * 4;
+          if (expected > core.LIMITS.audioChars || total + (expected - source.length) * times > budget) { report.kept++; continue; }
+          const offline = new Offline(1, samples, 22050);
+          const node = offline.createBufferSource();
+          node.buffer = buffer; node.connect(offline.destination); node.start(0);
+          const wav = pcmWav([await offline.startRendering()]);
+          const grown = (wav.length - source.length) * times;
+          if (wav.length > core.LIMITS.audioChars || total + grown > budget) { report.kept++; continue; }
+          total += grown;
+          replaced.set(source, wav);
+          report.converted++;
+        } catch (error) {
+          if (error && error.name === 'AbortError') throw error;
+          report.failed++;
+        }
+      }
+    } finally { if (audioContext && typeof audioContext.close === 'function') await audioContext.close().catch(() => {}); }
+    const swap = value => replaced.get(value) || value;
+    const items = pack.items.map(item => ({ ...item, wordAudio: swap(item.wordAudio), phonemes: (item.phonemes || []).map(sound => ({ ...sound, audio: swap(sound.audio) })) }));
+    return { pack: { ...pack, items }, ...report };
+  }
+  // True when a clip would be converted, so a set with only WAV/MP3 (or no
+  // sounds) still downloads at once, inside the click.
+  function needsEveryDeviceAudio(input) {
+    try {
+      const pack = getCore().normalizeInput(input);
+      const convertible = value => typeof value === 'string' && /^data:audio\//i.test(value) && !EVERY_DEVICE_AUDIO.test(value);
+      return pack.items.some(item => convertible(item.wordAudio) || (item.phonemes || []).some(sound => convertible(sound.audio)));
+    } catch (_) { return false; }
+  }
+  root.AlloWordPracticeMedia = { prepareAudio, buildPptx, everyDeviceAudio, needsEveryDeviceAudio };
 })(typeof window !== 'undefined' ? window : globalThis);

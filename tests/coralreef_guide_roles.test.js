@@ -25,7 +25,7 @@ async function mount() {
   await React.act(async () => root.render(React.createElement(Shell))); return t;
 }
 const featured = {
-  grazers: ['parrotfish', 'green_turtle', 'long_spined_urchin'],
+  grazers: ['parrotfish', 'green_turtle', 'long_spined_urchin', 'foxface_rabbitfish'],
   cleaners: ['cleaner_wrasse', 'cleaner_shrimp'],
   plankton: ['blue_tang', 'anthias', 'blue_green_chromis', 'reef_manta', 'christmas_tree_worm', 'sea_fan', 'goldmouth_sea_squirt', 'feather_duster_worm']
 };

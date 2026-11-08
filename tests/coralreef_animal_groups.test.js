@@ -3,7 +3,7 @@ import { loadTool, resetStemLab, renderTool } from './helpers/stem_widgets_smoke
 import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const ids = ['goldmouth_sea_squirt', 'feather_duster_worm', 'christmas_tree_worm', 'bennetts_feather_star',
-  'barrel_sponge', 'orange_cup_coral', 'magnificent_anemone', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'giant_clam'];
+  'barrel_sponge', 'orange_cup_coral', 'magnificent_anemone', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'bedfords_flatworm', 'galaxy_coral', 'finger_coral', 'giant_clam'];
 let X;
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};

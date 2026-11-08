@@ -1,6 +1,6 @@
 {
   "generated": "2026-09-13",
-  "count": 302,
+  "count": 303,
   "keys": [
     "t",
     "addToast",
@@ -61,6 +61,7 @@
     "openSourceUrl",
     "openSourceGenerator",
     "openMathFluency",
+    "openWordSounds",
     "openFluencyMaze",
     "openBrainstormActivity",
     "jumpToLatestLessonPlan",

@@ -289,6 +289,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   function applyEnvPreset(engine, presetKey) {
     var p = ENV_PRESETS[presetKey];
     if (!p || !engine) return;
+    engine._envPresetKey = presetKey;
     // Store target values for smooth transition
     engine._envTarget = {
       sky: p.sky.slice(), fog: p.fog.slice(),
@@ -7179,7 +7180,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
 
   function geometryGuidePalette(contrast) {
-    return contrast ? { ink: '#000000', cream: '#ffffff', sage: '#ffffff', amber: '#ffff00', soft: '#000000' }
+    // Contrast cards are #f2f2f2, not pure white: at full quality pure white crosses the bloom threshold and its glow
+    // washed the black text grey. Black on #f2f2f2 is still about 18.9:1.
+    return contrast ? { ink: '#000000', cream: '#f2f2f2', sage: '#f2f2f2', amber: '#ffff00', soft: '#000000' }
       : { ink: '#183a34', cream: '#f5eedb', sage: '#c7deca', amber: '#e5bd6b', soft: '#48665a' };
   }
 
@@ -9905,9 +9908,44 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // the ground to the horizon. Visual only: it is not in engine.blocks, so
         // building, measuring and the crosshair never see it, and it rides with the
         // camera so its edge is never reached.
+        // ── Cloud shadows on the distant landscape ──
+        // Soft shadow patches drift over the hills, the far meadow and its trees, as cloud shadows do. Only the landscape
+        // and the horizon plane read them: the lesson ground, where students count and measure, never has anything move
+        // across it. The same texture at a larger scale breaks up the far meadow's single flat green.
+        (function initCloudShadows() {
+          var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+          var g = cv.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 256, 256);
+          var seed = 4051; function rnd() { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; }
+          g.globalCompositeOperation = 'lighter';
+          for (var i = 0; i < 22; i++) {
+            var x = rnd() * 256, y = rnd() * 256, r = 26 + rnd() * 38;
+            for (var ox = -256; ox <= 256; ox += 256) for (var oy = -256; oy <= 256; oy += 256) {
+              var gr = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+              gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+              g.fillStyle = gr; g.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+            }
+          }
+          g.globalCompositeOperation = 'source-over';
+          var tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          engine._cloudShadow = { texture: tex, offset: { value: new THREE.Vector2(0, 0) }, strength: { value: 0 } };
+          engine.addCloudShadow = function(material, variation) {
+            var prior = material.onBeforeCompile, priorKey = material.customProgramCacheKey, cs = engine._cloudShadow;
+            material.onBeforeCompile = function(shader, renderer) {
+              if (prior) prior.call(this, shader, renderer);
+              shader.uniforms.gwCloudShadow = { value: cs.texture }; shader.uniforms.gwCloudOffset = cs.offset; shader.uniforms.gwCloudStrength = cs.strength;
+              shader.vertexShader = 'varying vec2 vGwCloudXZ;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nvGwCloudXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
+              shader.fragmentShader = 'uniform sampler2D gwCloudShadow;\nuniform vec2 gwCloudOffset;\nuniform float gwCloudStrength;\nvarying vec2 vGwCloudXZ;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\n' +
+                (variation ? 'diffuseColor.rgb *= 0.92 + 0.16 * texture2D(gwCloudShadow, vGwCloudXZ * 0.021 + vec2(0.37, 0.11)).g;\n' : '') +
+                'diffuseColor.rgb *= 1.0 - gwCloudStrength * smoothstep(0.42, 0.8, texture2D(gwCloudShadow, vGwCloudXZ * 0.0065 + gwCloudOffset).r);');
+            };
+            material.customProgramCacheKey = function() { return (priorKey ? priorKey.call(this) : '') + '|gw-cloud-shadow-v1' + (variation ? '-v' : ''); };
+            material.needsUpdate = true;
+          };
+        })();
         (function initHorizon() {
           var hg = new THREE.PlaneGeometry(600, 600);
           var hm = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0x496d46), roughness: 0.95, metalness: 0 });
+          if (engine.addCloudShadow) engine.addCloudShadow(hm, true);
           var horizon = new THREE.Mesh(hg, hm);
           horizon.rotation.x = -Math.PI / 2;
           horizon.position.y = -0.03;
@@ -9924,12 +9962,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           function smooth(value) { var v = Math.max(0, Math.min(1, value)); return v * v * (3 - 2 * v); }
           function color(hex) { return geometryWorldSrgbColor(THREE, hex); }
           function buffer() { return { positions: [], colors: [] }; }
+          // While a meadow tree's crowns are built, swayFrame holds its base and height, so each vertex records how far
+          // up the tree it sits (0 at the trunk, 1 at the tip). The canopy shader bends by that, so a tree sways from
+          // the top and never slides off its trunk.
+          var swayFrame = null;
           function triangle(out, a, b, c, tint) {
             var points = [a, b, c];
             for (var i = 0; i < 3; i++) {
               var p = points[i];
               out.positions.push(p[0], p[1], p[2]);
               out.colors.push(p.length > 3 ? p[3] : tint.r, p.length > 3 ? p[4] : tint.g, p.length > 3 ? p[5] : tint.b);
+              if (out.sway) out.sway.push(swayFrame ? Math.max(0, Math.min(1, (p[1] - swayFrame.y) / swayFrame.h)) : 0);
             }
           }
           function meshFrom(out, name, terrain, doubleSide) {
@@ -9956,6 +9999,17 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
             geometry.computeBoundingSphere();
             var material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, flatShading: !terrain, side: doubleSide ? THREE.DoubleSide : THREE.FrontSide });
+            if (out.sway && out.sway.length * 3 === out.positions.length) {
+              geometry.setAttribute('gwSway', new THREE.Float32BufferAttribute(out.sway, 1));
+              if (!engine._windUniform) engine._windUniform = { value: 0 };
+              var wind = engine._windUniform;
+              material.onBeforeCompile = function(shader) {
+                shader.uniforms.gwWind = wind;
+                shader.vertexShader = 'attribute float gwSway;\nuniform float gwWind;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat gwBend = gwSway * gwSway;\ntransformed.x += sin(gwWind + position.x * 0.35 + position.z * 0.27) * 0.16 * gwBend;\ntransformed.z += sin(gwWind * 0.8 + position.z * 0.31) * 0.1 * gwBend;');
+              };
+              material.customProgramCacheKey = function() { return 'gw-canopy-sway-v1'; };
+            }
+            if (engine.addCloudShadow) engine.addCloudShadow(material, false);
             var mesh = new THREE.Mesh(geometry, material);
             mesh.name = name; mesh.userData.gwLandscape = true;
             mesh.castShadow = false; mesh.receiveShadow = false;
@@ -10303,7 +10357,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }
               group.add(meshFrom(terrain, layer.name, true, false));
             });
-            var trunks = buffer(), foliage = buffer(), accents = buffer();
+            var trunks = buffer(), foliage = buffer(), accents = buffer(); foliage.sway = [];
             var bark = color(0x685744), leaves = [color(0x365d4b), color(0x456b52), color(0x52765c)], tips = color(0x6c8768);
             var groves = [{ u: 0.04, count: 4 }, { u: 0.22, count: 5 }, { u: 0.37, count: 3 }, { u: 0.58, count: 5 }, { u: 0.73, count: 4 }, { u: 0.90, count: 5 }], treeCount = 0;
             groves.forEach(function(grove, cluster) {
@@ -10314,9 +10368,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 var h = 4.4 + (Math.sin(seed * 1.13 + 0.6) * 0.5 + 0.5) * 3.7, radius = h * (0.24 + (t % 3) * 0.02), twist = seed * 0.73;
                 var leaf = leaves[(cluster + t) % 3];
                 trunk(trunks, p[0], p[1] - 0.25, p[2], h * 0.035, h * 0.77, bark, twist);
-                crown(foliage, p[0], p[1] + h * 0.14, p[2], radius, h * 0.55, leaf, twist, seed);
+                swayFrame = { y: p[1], h: h * 1.05 };
+            crown(foliage, p[0], p[1] + h * 0.14, p[2], radius, h * 0.55, leaf, twist, seed);
                 crown(foliage, p[0], p[1] + h * 0.40, p[2], radius * 0.74, h * 0.47, leaf.clone().lerp(tips, 0.09), twist + 0.24, seed + 2);
                 crown(foliage, p[0], p[1] + h * 0.65, p[2], radius * 0.45, h * 0.39, leaf.clone().lerp(tips, 0.2), twist - 0.13, seed + 4);
+            swayFrame = null;
                 treeCount++;
               }
             });
@@ -10711,6 +10767,37 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             group.name = 'gw-butterflies'; group.userData.gwSkyDecor = true; group.visible = false;
             engine.scene.add(group);
             engine._butterflies = { group: group, flies: flies, geometry: wingGeo, materials: mats, time: 0 };
+          })();
+          // Morning mist: three low sheets of soft haze at sunrise. They clear within a few blocks of the player, so the
+          // floor and the blocks being measured stay sharp, and fade out over the other times of day.
+          (function initMist() {
+            var rnd = seededRandom(2777), cv = document.createElement('canvas'); cv.width = cv.height = 256;
+            var g = cv.getContext('2d'); g.clearRect(0, 0, 256, 256);
+            for (var i = 0; i < 46; i++) {
+              var x = rnd() * 256, y = rnd() * 256, r = 26 + rnd() * 46;
+              for (var ox = -256; ox <= 256; ox += 256) for (var oy = -256; oy <= 256; oy += 256) {
+                var gr = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+                gr.addColorStop(0, 'rgba(255,255,255,0.34)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+                g.fillStyle = gr; g.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+              }
+            }
+            var tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(5, 5);
+            if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+            var group = new THREE.Group(), sheets = [], plane = new THREE.PlaneGeometry(150, 150);
+            [[0.35, 1], [0.85, 0.75], [1.4, 0.5]].forEach(function(layer, k) {
+              var m = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, color: 0xf4f1ea });
+              m.onBeforeCompile = function(shader) {
+                shader.fragmentShader = shader.fragmentShader.replace('#include <fog_fragment>', '#ifdef USE_FOG\ngl_FragColor.a *= smoothstep(5.0, 17.0, fogDepth);\n#endif\n#include <fog_fragment>');
+              };
+              m.customProgramCacheKey = function() { return 'gw-morning-mist-v1'; };
+              var sheet = new THREE.Mesh(plane, m);
+              sheet.rotation.x = -Math.PI / 2; sheet.userData = { lift: layer[0], strength: layer[1], gwDecorative: true };
+              sheet.raycast = function() {}; sheet.renderOrder = -0.6;
+              group.add(sheet); sheets.push(sheet);
+            });
+            group.name = 'gw-morning-mist'; group.userData.gwSkyDecor = true; group.visible = false;
+            engine.scene.add(group);
+            engine._mist = { group: group, sheets: sheets, texture: tex, geometry: plane, level: 0 };
           })();
         })();
 
@@ -11202,7 +11289,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           } else if (type === 'sand') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeSandTexture(), roughness: 0.95, metalness: 0.0 });
           } else if (type === 'water') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3, normalMap: makeBumpNormalTexture('water'), normalScale: new THREE.Vector2(0.35, 0.35) });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3, normalMap: makeBumpNormalTexture('water'), normalScale: new THREE.Vector2(0.35, 0.35), clearcoat: 0.7, clearcoatRoughness: 0.08, clearcoatNormalMap: makeBumpNormalTexture('water'), clearcoatNormalScale: new THREE.Vector2(0.6, 0.6) });
           } else if (type === 'ice') {
             mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.62, roughness: 0.06, metalness: 0.05, transmission: 0.5, thickness: 0.3, envMapIntensity: 1.2, normalMap: makeBumpNormalTexture('ice'), normalScale: new THREE.Vector2(0.25, 0.25) });
           } else if (type === 'stone') {
@@ -11561,6 +11648,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var material = new THREE.MeshLambertMaterial({ map: decorTexture(kind), alphaTest: 0.5, side: THREE.DoubleSide });
             material.onBeforeCompile = function(shader) {
               shader.uniforms.gwSway = sway;
+              // Both sides of a tuft are lit as its front: the back side's light is computed for a downward normal, so
+              // every tuft seen from behind went dark olive.
+              shader.fragmentShader = shader.fragmentShader.replace(/\(\s*gl_FrontFacing\s*\)\s*\?\s*vLightFront\s*:\s*vLightBack/g, 'vLightFront').replace(/\(\s*gl_FrontFacing\s*\)\s*\?\s*vIndirectFront\s*:\s*vIndirectBack/g, 'vIndirectFront');
               shader.vertexShader = 'uniform float gwSway;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec3 gwTuftBase = instanceMatrix[3].xyz;\ntransformed.xz += vec2(sin(gwSway + gwTuftBase.x * 1.7), cos(gwSway * 0.8 + gwTuftBase.z * 1.3)) * 0.035 * position.y / 0.3;\n#endif');
             };
             material.customProgramCacheKey = function() { return 'gw-meadow-decor-v1'; };
@@ -12341,11 +12431,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           mouth.scale.set(1.5, 0.45, 0.5);
           head.add(mouth);
           // Brows, a small nose and a touch of colour in the cheeks: enough for a face that reads warmly at a distance.
-          var browMat = new THREE.MeshBasicMaterial({ color: 0x3a2a24 });
+          var browMat = new THREE.MeshBasicMaterial({ color: 0x3a2a24 }), brows = [];
           [-1, 1].forEach(function(side) {
             var brow = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.016, 0.02), browMat);
             brow.position.set(side * 0.1, 0.125, 0.238); brow.rotation.z = side * -0.12;
-            head.add(brow);
+            head.add(brow); brows.push(brow);
             var cheek = new THREE.Mesh(new THREE.CircleGeometry(0.042, 14), new THREE.MeshBasicMaterial({ color: 0xf08a8a, transparent: true, opacity: 0.32, depthWrite: false }));
             cheek.position.set(side * 0.15, -0.05, 0.238); cheek.rotation.y = side * 0.57;
             head.add(cheek);
@@ -12357,7 +12447,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
           engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR,
-            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, _contactBlob: contactBlob, data: data });
+            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, _contactBlob: contactBlob, _brows: brows, data: data });
           geometryRefreshGuideSprites(engine, engine.npcs[engine.npcs.length - 1], engine.npcs.length - 1, geometryGuideContrast(engine));
         };
 
@@ -14037,6 +14127,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               if (!engine._hoverGlowMesh) {
                 // Pull the fill slightly forward in depth without expanding its geometry.
                 var hgMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.12,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+                // The fill brightens toward each face's edges and thins in the middle: a soft glow around the block, not a flat veil.
+                hgMat.onBeforeCompile=function(shader){
+                  shader.vertexShader='varying vec3 vGwHoverPos;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvGwHoverPos=position;');
+                  shader.fragmentShader='varying vec3 vGwHoverPos;\n'+shader.fragmentShader.replace('#include <alphamap_fragment>','#include <alphamap_fragment>\nvec3 gwGap=max(vec3(0.5)-abs(vGwHoverPos),vec3(0.0));\nfloat gwEdge=max(min(gwGap.x,gwGap.y),min(max(gwGap.x,gwGap.y),gwGap.z));\ndiffuseColor.a*=mix(0.6,1.9,1.0-smoothstep(0.0,0.16,gwEdge));');
+                };
+                hgMat.customProgramCacheKey=function(){return 'gw-hover-glow-v1';};
                 engine._hoverGlowMesh=new THREE.Mesh(hoverFill,hgMat);
                 engine._hoverGlowMesh.renderOrder=997;engine._hoverGlowMesh.matrixAutoUpdate=false;
                 engine._hoverGlowMesh.userData.gwDecorative=true;engine._hoverGlowMesh.raycast=function(){};
@@ -14607,6 +14703,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }
             }
 
+            // ── Talking: the mouth moves while its line is typing out, and the brows lift while the dialogue is open ──
+            if (npc._mouth) {
+              var npcTalking = engine._talkingNpc === i, npcTyping = npcTalking && engine._talkingTyping && ambientMotion;
+              npc._mouth.scale.y = npcTyping ? 0.45 + Math.abs(Math.sin(t * 15 + i)) * 0.75 : (npcTalking ? 0.62 : 0.45);
+              if (npc._brows) npc._brows.forEach(function(brow) { brow.position.y = npcTalking ? 0.138 : 0.125; });
+            }
             // ── Eye blink animation ──
             if (npc.eyeL && npc.eyeR) {
               var blinkCycle = (t * 0.7 + i * 2.3) % 4; // blink every ~4 seconds
@@ -15049,6 +15151,25 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               }
             }
             var lifeOn = engine._ambientMotionEnabled !== false && !(engine._renderProfile && engine._renderProfile.tier === 'saver');
+            if (engine._windUniform && engine._ambientMotionEnabled !== false) engine._windUniform.value += dt * 0.9;
+            if (engine._cloudShadow) {
+              engine._cloudShadow.strength.value = 0.17 * Math.max(0, Math.min(1, (sunI - 0.35) / 0.5));
+              if (engine._ambientMotionEnabled !== false) { engine._cloudShadow.offset.value.x += dt * 0.0032; engine._cloudShadow.offset.value.y += dt * 0.0016; }
+            }
+            if (engine._mist) {
+              var mi = engine._mist, mistWanted = engine._envPresetKey === 'sunrise' && !(engine._renderProfile && engine._renderProfile.tier === 'saver') ? 1 : 0;
+              mi.level += (mistWanted - mi.level) * Math.min(1, dt * 0.7);
+              mi.group.visible = mi.level > 0.01;
+              if (mi.group.visible) {
+                var floorY = engine._currentLesson && engine._currentLesson.ground ? engine._currentLesson.ground.y + 1 : 1;
+                mi.group.position.set(engine.camera.position.x, floorY, engine.camera.position.z);
+                if (engine._ambientMotionEnabled !== false) { mi.texture.offset.x += dt * 0.004; mi.texture.offset.y += dt * 0.0025; }
+                mi.sheets.forEach(function(sh) {
+                  sh.position.y = sh.userData.lift; sh.material.opacity = 0.42 * sh.userData.strength * mi.level;
+                  if (engine.scene.fog) sh.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite || sh.material.color, 0.6);
+                });
+              }
+            }
             if (engine._birds) {
               var bd = engine._birds; bd.group.visible = lifeOn && sunI > 0.45;
               if (bd.group.visible) {
@@ -15652,6 +15773,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             if (sheet.geometry) sheet.geometry.dispose();
           });
           engine._cloudPlaneHigh = null; engine._cloudTexHigh = null;
+          if (engine._cloudShadow) { engine._cloudShadow.texture.dispose(); engine._cloudShadow = null; }
+          if (engine._mist) { engine.scene.remove(engine._mist.group); engine._mist.sheets.forEach(function(sh) { sh.material.dispose(); }); engine._mist.texture.dispose(); engine._mist.geometry.dispose(); engine._mist = null; }
           if (engine._birds) { engine.scene.remove(engine._birds.group); engine._birds.geometry.dispose(); engine._birds.material.dispose(); engine._birds = null; }
           if (engine._butterflies) { engine.scene.remove(engine._butterflies.group); engine._butterflies.geometry.dispose(); engine._butterflies.materials.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); }); engine._butterflies = null; }
           if (engine._fireflies) { engine.scene.remove(engine._fireflies.points); engine._fireflies.points.geometry.dispose(); if (engine._fireflies.points.material.map) engine._fireflies.points.material.map.dispose(); engine._fireflies.points.material.dispose(); engine._fireflies = null; }
@@ -16260,6 +16383,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           return started ? seed : false;
         };
         engine._answeredRef = answeredNpcs;
+        engine._talkingNpc = showNpcDialog ? dialogNpcIdx : -1;
+        engine._talkingTyping = !!(showNpcDialog && npcTypewriterNpc === dialogNpcIdx && engine.npcs && engine.npcs[dialogNpcIdx] && npcTypewriterPos < String((engine.npcs[dialogNpcIdx].data || {}).dialogue || '').length);
         engine._worldActive = worldActive;
         engine._setPointerLocked = setPointerLocked;
          engine._setViewPreset = setViewPreset;

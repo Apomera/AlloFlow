@@ -1,0 +1,86 @@
+{
+  "version": "workflow-1",
+  "title": "AlloFlow text adaptation: source to reading view",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "start": {
+    "url": "https://alloflow-cdn.pages.dev/app/",
+    "waitFor": "text=Open the full workspace instead",
+    "setup": [
+      {
+        "kind": "click",
+        "selector": "text=Open the full workspace instead"
+      },
+      {
+        "kind": "waitFor",
+        "selector": "#tour-input-panel",
+        "state": "visible",
+        "timeoutMs": 60000
+      },
+      {
+        "kind": "waitFor",
+        "selector": "text=Loading tools",
+        "state": "hidden",
+        "timeoutMs": 150000
+      },
+      {
+        "kind": "wait",
+        "ms": 1500
+      }
+    ]
+  },
+  "intro": {
+    "label": "Adapting a text in AlloFlow",
+    "text": "This short video shows two steps: adding your source text, then opening it with reading supports."
+  },
+  "steps": [
+    {
+      "id": "source-input",
+      "fromGuided": "source-input",
+      "action": [
+        {
+          "kind": "click",
+          "selector": "text=Paste or type your own text"
+        },
+        {
+          "kind": "type",
+          "selector": "textarea:visible",
+          "delayMs": 28,
+          "text": "Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis. Chlorophyll captures light energy in the leaves."
+        },
+        {
+          "kind": "click",
+          "selector": "button:has-text(\"Use this source\")"
+        }
+      ],
+      "expect": [
+        "In use"
+      ],
+      "pauseAfter": 1
+    },
+    {
+      "id": "simplified",
+      "fromGuided": "simplified",
+      "action": [
+        {
+          "kind": "click",
+          "selector": "#ui-tool-simplified"
+        },
+        {
+          "kind": "click",
+          "selector": "button:has-text(\"Read original with supports\")"
+        }
+      ],
+      "expect": [
+        "Word meaning"
+      ],
+      "pauseAfter": 2
+    }
+  ],
+  "outro": {
+    "label": "That's it",
+    "text": "When you practice, use sample text, never student information."
+  }
+}

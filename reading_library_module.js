@@ -2967,18 +2967,67 @@
   }
 
   // Inline enlargement keeps the story and its controls in the same focus order.
+  // Two ways to look closer. Zoom (the default, and the way that needs no pointer) enlarges the whole picture to
+  // scroll around. The magnifying glass keeps the whole picture in view and shows a circle of detail under the
+  // pointer, under a finger (raised above it, so the finger does not hide it), or wherever the arrow keys move it.
+  // One slider sets the strength of whichever is on.
+  var READING_LENS_SIZE = 180;
   function ReadingIllustration(props) {
     var es = useState(false), expanded = es[0], setExpanded = es[1];
     var zs = useState(100), zoom = zs[0], setZoom = zs[1];
+    var ms = useState('zoom'), mode = ms[0], setMode = ms[1];
+    var ps = useState(250), power = ps[0], setPower = ps[1];
+    var ls = useState(null), lens = ls[0], setLens = ls[1];
     var fs = useState(false), failed = fs[0], setFailed = fs[1];
-    var toggleRef = useRef(null), viewportRef = useRef(null);
-    var collapse = function () { setExpanded(false); setZoom(100); if (toggleRef.current) toggleRef.current.focus(); };
+    var toggleRef = useRef(null), viewportRef = useRef(null), imgRef = useRef(null);
+    var collapse = function () { setExpanded(false); setZoom(100); setMode('zoom'); setLens(null); if (toggleRef.current) toggleRef.current.focus(); };
     useEffect(function () {
       if (viewportRef.current) { viewportRef.current.scrollTop = 0; viewportRef.current.scrollLeft = 0; }
-    }, [expanded, zoom]);
+    }, [expanded, zoom, mode]);
+    var lensOn = expanded && mode === 'lens';
+    var clamp01 = function (v) { return Math.max(0, Math.min(1, v)); };
+    // Pointer position as a fraction of the picture, so the glass follows the picture through any resize.
+    var placeLens = function (ev, touch) {
+      var img = imgRef.current; if (!img || !img.getBoundingClientRect) return;
+      var r = img.getBoundingClientRect(); if (!r.width || !r.height) return;
+      setLens({ x: clamp01((ev.clientX - r.left) / r.width), y: clamp01((ev.clientY - r.top) / r.height), touch: !!touch });
+    };
+    var lensView = null;
+    if (lensOn && lens && imgRef.current) {
+      var pic = imgRef.current, w = pic.clientWidth || pic.width || 0, h = pic.clientHeight || pic.height || 0, k = power / 100;
+      if (w && h) {
+        var size = Math.min(READING_LENS_SIZE, Math.max(96, Math.round(w * 0.45)));
+        var cx = lens.x * w, cy = lens.y * h, lift = lens.touch ? Math.round(size * 0.75) : 0;
+        var lensLeft = cx - size / 2, lensTop = cy - size / 2 - lift;
+        // Near the top there is no room above a finger: stand the glass beside it instead, inside the picture.
+        if (lens.touch && lensTop < 0) { lensTop = Math.max(0, Math.min(h - size, cy - size / 2)); lensLeft = lens.x > 0.5 ? cx - size * 1.35 : cx + size * 0.35; }
+        lensView = e('div', { 'aria-hidden': 'true', 'data-reading-magnifier': 'true', style: {
+          position: 'absolute', left: Math.round(lensLeft) + 'px', top: Math.round(lensTop) + 'px',
+          width: size + 'px', height: size + 'px', borderRadius: '50%', pointerEvents: 'none',
+          border: '3px solid #ffffff', boxShadow: '0 0 0 2px #1e293b, 0 8px 22px rgba(15,23,42,0.35)',
+          backgroundColor: '#ffffff', backgroundRepeat: 'no-repeat',
+          backgroundImage: 'url("' + String(props.src || '').replace(/"/g, '%22') + '")',
+          backgroundSize: Math.round(w * k) + 'px ' + Math.round(h * k) + 'px',
+          backgroundPosition: Math.round(size / 2 - cx * k) + 'px ' + Math.round(size / 2 - cy * k) + 'px' } });
+      }
+    }
     var buttonClass = 'rounded-lg border border-slate-300 bg-white text-slate-700 px-3 py-2 text-sm font-semibold';
-    return e('figure', { className: 'm-0 min-w-0', 'data-reading-picture-expanded': expanded ? 'true' : 'false', onKeyDown: function (ev) {
-      if (expanded && ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); collapse(); }
+    var modeButton = function (id, label) {
+      var active = mode === id;
+      return e('button', { type: 'button', className: buttonClass, 'aria-pressed': active ? 'true' : 'false', 'data-reading-picture-mode': id,
+        style: active ? { backgroundColor: '#1e293b', color: '#ffffff', borderColor: '#1e293b' } : undefined,
+        onClick: function () { setMode(id); setLens(null); } }, label);
+    };
+    var sliderValue = mode === 'lens' ? power : zoom;
+    return e('figure', { className: 'm-0 min-w-0', 'data-reading-picture-expanded': expanded ? 'true' : 'false', 'data-reading-picture-mode-active': expanded ? mode : undefined, onKeyDown: function (ev) {
+      if (expanded && ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); collapse(); return; }
+      if (lensOn && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(ev.key) !== -1 && ev.target === viewportRef.current) {
+        ev.preventDefault(); ev.stopPropagation();
+        var step = ev.shiftKey ? 0.15 : 0.05, from = lens || { x: 0.5, y: 0.5 };
+        setLens({ x: clamp01(from.x + (ev.key === 'ArrowRight' ? step : ev.key === 'ArrowLeft' ? -step : 0)),
+          y: clamp01(from.y + (ev.key === 'ArrowDown' ? step : ev.key === 'ArrowUp' ? -step : 0)), touch: false });
+        return;
+      }
       if (expanded && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(ev.key) !== -1) ev.stopPropagation();
     } },
       failed ? e('p', { role: 'status', className: 'text-center text-slate-600 p-3' },
@@ -2988,23 +3037,37 @@
             'aria-expanded': expanded, onClick: function () { if (expanded) collapse(); else setExpanded(true); }
           }, expanded ? tr('readinglib_picture_collapse', 'Return to page size') : tr('readinglib_picture_expand', 'Enlarge picture')),
           expanded ? e(React.Fragment, null,
+            e('div', { role: 'group', 'aria-label': tr('readinglib_picture_tool', 'How to look closer'), className: 'flex flex-wrap gap-1' },
+              modeButton('zoom', tr('readinglib_picture_mode_zoom', 'Zoom')),
+              modeButton('lens', tr('readinglib_picture_mode_lens', 'Magnifying glass'))),
             e('label', { className: 'flex flex-wrap items-center gap-2 text-sm text-slate-700' },
-              tr('readinglib_picture_zoom', 'Picture zoom'),
-              e('input', { type: 'range', min: 100, max: 300, step: 25, value: zoom,
-                'aria-valuetext': zoom + '%', onChange: function (ev) { setZoom(Number(ev.target.value)); } }),
-              e('span', null, zoom + '%')),
-            e('button', { type: 'button', className: buttonClass,
-              onClick: function () { setZoom(100); } }, tr('readinglib_picture_fit', 'Fit picture'))
+              mode === 'lens' ? tr('readinglib_picture_lens_power', 'Magnifier strength') : tr('readinglib_picture_zoom', 'Picture zoom'),
+              e('input', { type: 'range', min: mode === 'lens' ? 150 : 100, max: mode === 'lens' ? 400 : 300, step: 25, value: sliderValue,
+                'aria-valuetext': sliderValue + '%', onChange: function (ev) { var v = Number(ev.target.value); if (mode === 'lens') setPower(v); else setZoom(v); } }),
+              e('span', null, sliderValue + '%')),
+            mode === 'zoom' ? e('button', { type: 'button', className: buttonClass,
+              onClick: function () { setZoom(100); } }, tr('readinglib_picture_fit', 'Fit picture')) : null
           ) : null
         ),
         expanded ? e('p', { className: 'text-center text-xs text-slate-600 mb-2' },
-          tr('readinglib_picture_scroll_hint', 'Scroll to explore the enlarged picture. Press Escape here to return to page size.')) : null,
+          mode === 'lens'
+            ? tr('readinglib_picture_lens_hint', 'Move the pointer over the picture, or touch and drag. Arrow keys move the magnifying glass. Press Escape to return to page size.')
+            : tr('readinglib_picture_scroll_hint', 'Scroll to explore the enlarged picture. Press Escape here to return to page size.')) : null,
         e('div', { ref: viewportRef, tabIndex: expanded ? 0 : undefined, role: expanded ? 'region' : undefined,
-          'aria-label': expanded ? tr('readinglib_picture_view', 'Enlarged picture') : undefined,
-          style: { overflow: 'auto', maxHeight: expanded ? '72vh' : undefined, borderRadius: '0.75rem' } },
-          e('img', { src: props.src, alt: props.alt, loading: 'lazy', decoding: 'async', onError: function () { setFailed(true); },
-            style: { display: 'block', margin: '0 auto', width: expanded ? zoom + '%' : 'auto',
-              maxWidth: expanded ? 'none' : '100%', maxHeight: expanded ? 'none' : '48vh', borderRadius: '0.75rem' } })
+          'aria-label': expanded ? (mode === 'lens' ? tr('readinglib_picture_lens_view', 'Picture with magnifying glass') : tr('readinglib_picture_view', 'Enlarged picture')) : undefined,
+          onFocus: lensOn ? function (ev) { if (ev.target === viewportRef.current && !lens) setLens({ x: 0.5, y: 0.5, touch: false }); } : undefined,
+          style: { overflow: lensOn ? 'hidden' : 'auto', maxHeight: expanded ? '72vh' : undefined, borderRadius: '0.75rem' } },
+          e('div', { 'data-reading-picture-stage': 'true',
+            style: lensOn ? { position: 'relative', width: 'fit-content', maxWidth: '100%', margin: '0 auto', touchAction: 'none', cursor: 'crosshair' } : undefined,
+            onPointerMove: lensOn ? function (ev) { if (ev.pointerType === 'mouse' || ev.buttons) placeLens(ev, ev.pointerType !== 'mouse'); } : undefined,
+            onPointerDown: lensOn ? function (ev) { placeLens(ev, ev.pointerType !== 'mouse'); if (ev.pointerType !== 'mouse' && ev.currentTarget.setPointerCapture) { try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {} } } : undefined,
+            onPointerLeave: lensOn ? function (ev) { if (ev.pointerType === 'mouse') setLens(null); } : undefined },
+            e('img', { ref: imgRef, src: props.src, alt: props.alt, loading: 'lazy', decoding: 'async', onError: function () { setFailed(true); }, draggable: false,
+              style: { display: 'block', margin: '0 auto', borderRadius: '0.75rem',
+                width: expanded && !lensOn ? zoom + '%' : 'auto',
+                maxWidth: expanded && !lensOn ? 'none' : '100%',
+                maxHeight: expanded ? (lensOn ? '70vh' : 'none') : '48vh' } }),
+            lensView)
         )
       )
     );

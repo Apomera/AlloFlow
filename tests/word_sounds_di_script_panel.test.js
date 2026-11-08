@@ -141,8 +141,10 @@ describe('clicking it produces the script', () => {
     const buttons = [...dialog.querySelectorAll('button:not([disabled])')];
     const first = buttons[0];
     const last = buttons[buttons.length - 1];
-    expect(document.activeElement, 'opening the script should move focus into it').toBe(last);
+    // Focus lands on Close. Since 2026-11-07 the script's /sound/ links follow it, so Close is no longer last.
+    expect(document.activeElement, 'opening the script should move focus into it').toBe(dialog.querySelector('[data-dialog-initial-focus]'));
 
+    last.focus();
     act(() => {
       last.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
     });

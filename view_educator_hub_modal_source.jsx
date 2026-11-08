@@ -636,14 +636,16 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" disabled={!!pdfBatchIntakeProgress} data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.setAttribute('aria-label', t('educator_hub.pdf_upload_label') || 'Select PDF, DOCX, or PPTX files');
+                  input.setAttribute('aria-label', t('educator_hub.pdf_upload_or_project_label') || 'Select PDF, DOCX, or PPTX files, or a saved PDF project');
                   // PDF / DOCX / PPTX only. image/* was previously offered here but a lone image
                   // fell through to handleFileUpload's image branch — which OCRs into the
                   // lesson-generator text box, NOT the remediation pipeline (this card promises
                   // "audit & remediation"). The pipeline has no client-side image->document
                   // remediation path, so don't advertise it. (To remediate a photo of a document,
                   // save it into a PDF first — scanned PDFs get the full OCR + tag treatment.)
-                  input.accept = 'application/pdf,.pdf,.docx,.pptx';
+                  // A saved PDF project (.json) reopens earlier work here too, through the
+                  // same loader as Source Material's Open PDF project button.
+                  input.accept = 'application/pdf,.pdf,.docx,.pptx,.json,application/json';
                   input.multiple = true;
                   input.addEventListener('cancel', () => { input.value = ''; });
                   input.onchange = async (e) => {
@@ -653,6 +655,22 @@ function EducatorHubModal(props) {
                       // document trigger a later change event in every supported browser.
                       try { if (target) target.value = ''; } catch (_) {}
                       if (files.length === 0) return;
+
+                      const isProjectFile = (file) => /\.json$/i.test(String(file && file.name || '')) || String(file && file.type || '').toLowerCase() === 'application/json';
+                      if (files.some(isProjectFile)) {
+                          if (files.length > 1) {
+                              addToast(t('educator_hub.pdf_project_one_at_a_time') || 'Open one saved PDF project at a time, on its own.', 'warning');
+                              return;
+                          }
+                          const openProject = typeof window !== 'undefined' ? window.__alloOpenPdfProjectFile : null;
+                          if (typeof openProject !== 'function') {
+                              addToast(t('educator_hub.pdf_project_open_from_create') || 'To reopen saved PDF work, go to the Create tab, then Source Material, then Open PDF project.', 'info');
+                              return;
+                          }
+                          setShowEducatorHub(false);
+                          openProject(files[0]);
+                          return;
+                      }
 
                       // Single-document intake must use the host handler. It owns the shared
                       // selection epoch, hard reset, type validation, and initial audit launch.
@@ -843,6 +861,7 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.document_accessibility_title') || 'Document accessibility'}</h3>
                   <p className="text-xs text-teal-700 mt-1">{t('educator_hub.document_accessibility_desc') || 'Improve PDFs, Word documents, slides, spreadsheets, images, and web content. Review accessibility checks and export accessible formats.'}</p>
+                  <p className="text-xs text-teal-800 mt-1 font-semibold">{t('educator_hub.document_accessibility_resume') || 'To continue saved work, choose its PDF project file (.json).'}</p>
                 </div>
               </button>
 

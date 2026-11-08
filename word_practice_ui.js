@@ -1463,7 +1463,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     }
     function cancelOperation() {
       const run = operation; if (!run || run.stopping) return;
-      if (run.keepAudioOnStop) { run.stopping = true; run.controller.abort(); cancelButton.disabled = true; updateLabel(status, tx('word_practice.audio_stopping', 'Stopping preparation and keeping completed recordings…')); return; }
+      if (run.keepAudioOnStop) { run.stopping = true; run.controller.abort(); cancelButton.setAttribute('aria-disabled', 'true'); updateLabel(status, tx('word_practice.audio_stopping', 'Stopping preparation and keeping completed recordings…')); return; }
       run.controller.abort();
       updateLabel(status, tx('word_practice.preparation_cancelled', 'Preparation cancelled. Your words and settings are unchanged.'));
       finishOperation(run);
@@ -1471,7 +1471,7 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
     async function action(callback, opener) {
       if (busy || closed) return;
       const run = { controller: new root.AbortController(), opener: opener || doc.activeElement };
-      operation = run; status.textContent = ''; setBusy(true); cancelButton.disabled = false; updateLabel(cancelButton, tx('word_practice.cancel_preparation', 'Cancel preparation')); cancelButton.hidden = false; operationProgress.hidden = false; operationProgress.removeAttribute('value');
+      operation = run; status.textContent = ''; setBusy(true); cancelButton.disabled = false; cancelButton.removeAttribute('aria-disabled'); updateLabel(cancelButton, tx('word_practice.cancel_preparation', 'Cancel preparation')); cancelButton.hidden = false; operationProgress.hidden = false; operationProgress.removeAttribute('value');
       root.setTimeout(() => { if (isCurrentOperation(run) && (doc.activeElement === doc.body || doc.activeElement === run.opener)) cancelButton.focus(); }, 0);
       try { await callback(run); } catch (error) { if (isCurrentOperation(run) && error.name !== 'AbortError') updateLabel(status, error.message || tx('word_practice.action_failed', 'Unable to finish this action.')); }
       finally { finishOperation(run); }
@@ -1528,8 +1528,19 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
         ({ reader, fontMissing } = await readerStyles());
         if (!isCurrentOperation(run)) return;
       }
-      download(buildHtml(current, opts, undefined, labels, reader, uiLanguageName), 'text/html;charset=utf-8', '.html');
-      status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.') + (fontMissing ? ' ' + tx('word_practice.font_not_embedded', 'Your font could not be added to the file, so it uses the system font.') : '');
+      // Sounds go in as WAV so they also play on iPads and older Safari.
+      let fileInput = current, audioNote = '';
+      const media = root.AlloWordPracticeMedia;
+      if (opts.includeAudio !== false && media && typeof media.everyDeviceAudio === 'function' && typeof media.needsEveryDeviceAudio === 'function' && media.needsEveryDeviceAudio(current)) {
+        status.textContent = tx('word_practice.preparing_audio_every_device', 'Getting the sounds ready to play on every device…');
+        const audio = await media.everyDeviceAudio(current);
+        if (!isCurrentOperation(run)) return;
+        fileInput = audio.pack;
+        const left = audio.failed + audio.kept;
+        if (left) audioNote = ' ' + tx('word_practice.audio_not_converted', '{count} sound(s) could not be converted and may not play on iPads.', { count: left });
+      }
+      download(buildHtml(fileInput, opts, undefined, labels, reader, uiLanguageName), 'text/html;charset=utf-8', '.html');
+      status.textContent = tx('word_practice.html_downloaded', 'HTML downloaded. Open the file in a browser to practice offline.') + (fontMissing ? ' ' + tx('word_practice.font_not_embedded', 'Your font could not be added to the file, so it uses the system font.') : '') + audioNote;
     });
     actionButton(tx('word_practice.download_pptx', 'Download PowerPoint'), async run => {
       const current = ready(), opts = options();
@@ -1559,6 +1570,12 @@ PLAYER_STRINGS.push(['word_practice.touch_help', 'Touch screens: tap the card to
       const nextPack = core.normalizeInput(prepared);
       if (audioSnapshot(current) !== audioSnapshot(nextPack)) { preparedAudioRevision++; preparedAudioPending = true; }
       pack = nextPack; remember(pack); fill();
+      // The lesson that opened Word Practice keeps the word clips made here, so they are not made again.
+      if (typeof context.onSaveAudio === 'function') {
+        const clips = {};
+        pack.items.forEach(item => { if (item && item.word && core.safeAudio(item.wordAudio)) clips[item.word] = item.wordAudio; });
+        if (Object.keys(clips).length) { try { context.onSaveAudio(clips); } catch (_) { /* the lesson keeps working without them */ } }
+      }
       updateLabel(prepareAudioButton, audioStatus.cancelled ? tx('word_practice.continue_audio', 'Continue preparation') : tx('word_practice.prepare_audio', 'Prepare audio'));
       if (audioStatus.cancelled) { updateLabel(status, tx('word_practice.audio_stopped_kept', 'Preparation stopped. Completed recordings are kept. Continue preparation to fill the remaining gaps.')); return; }
       const counts = core.audioCoverage(pack);

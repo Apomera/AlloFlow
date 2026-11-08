@@ -9947,6 +9947,14 @@ var _alloRelatedClozeGlossary = function(historyItems, item) {
 var _docPipelinePdfWorkerAsset = null;
 var _docPipelinePdfWorkerPending = null;
 var createDocPipeline = function(deps) {
+  // The exported page's own text in the content language: 45 more languages
+  // than the inline _runtimeCopyCatalog, fetched in the background now so it
+  // is there by the time a teacher exports. Without it the catalog/English stand.
+  try {
+    if (typeof window !== 'undefined' && !(window.AlloModules && window.AlloModules.ExportRuntimeCopy) && typeof window.__alloLoadPlugin === 'function') {
+      window.__alloLoadPlugin('export_runtime_copy_module.js');
+    }
+  } catch (_) {}
   // ── Timeout + Retry utilities ──
   // Wraps any promise with a timeout — rejects with clear error if the promise doesn't settle in time.
   var _withTimeout = function(promise, ms, label) {
@@ -51695,9 +51703,9 @@ function projectStudentGuideData(data, mode) {
         if (items.length < 2) return '';  // single-resource exports don't need a TOC
         const tocTitle = isTeacher ? (t('export.teacher_toc') || 'Teacher Contents') : (t('export.toc') || 'Contents');
         return `
-          <nav class="alloflow-toc" aria-label="${tocTitle}" style="margin:0 0 36px;padding:22px 26px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;break-inside:avoid;page-break-inside:avoid;">
+          <nav class="alloflow-toc" aria-label="${_escAttr(tocTitle)}" style="margin:0 0 36px;padding:22px 26px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;break-inside:avoid;page-break-inside:avoid;">
             <h2 style="margin:0 0 14px;font-size:1.1rem;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;color:#1e293b;">
-              <span aria-hidden="true">📑</span>${tocTitle}
+              <span aria-hidden="true">📑</span>${_escTxt(tocTitle)}
             </h2>
             <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 20px;">
               ${items.map((item, i) => {
@@ -51819,9 +51827,13 @@ function projectStudentGuideData(data, mode) {
         : '';
       const _odFontFace = "@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }";
       const _exportGoogleFont = _useExportFont && (appFontEntry.googleFont || (/^andika-/.test(appFontEntry.id) ? (_fontOptions.find(f => f.id === 'andika') || {}).googleFont : null));
-      const exportFontImport = _exportGoogleFont
+      // The markers let the HTML download swap this rule for the font files
+      // themselves (export_handlers _alloEmbedDocumentFont), so the chosen
+      // font still shows offline. Print and preview keep the web rule.
+      const _docFontRule = _exportGoogleFont
         ? `@import url('https://fonts.googleapis.com/css2?family=${_exportGoogleFont}&display=swap');`
         : (_useExportFont && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
+      const exportFontImport = _docFontRule ? '/* alloflow-document-font */ ' + _docFontRule + ' /* /alloflow-document-font */' : '';
       // ── Reader-side font choices (2026-08-16) ────────────────────────────
       // The teacher's build-time font picker offers the full app catalog, but
       // the READER's picker inside the exported handout only ever
@@ -51920,12 +51932,12 @@ function projectStudentGuideData(data, mode) {
           const memoryTranslate = (key, fallback, params) => { const value = typeof t === 'function' ? t('memory_aid.' + key, params) : ''; return value && value !== 'memory_aid.' + key ? value : String(fallback).replace(/\{(\w+)\}/g, (_, name) => params && params[name] || ''); };
           const body = typeof renderMemoryPreset === 'function' ? historyItems.map(item => renderMemoryPreset(item.data, item.data.memoryAidExportPreset, memoryTranslate)).join('') : '<p>Open the Memory Aid in the app to prepare its print preview.</p>';
           const printSize = Math.max(12, Math.min(28, Number(cfg.fontSize) || 16));
-          return '<!doctype html><html lang="' + _documentLanguage + '" dir="' + (typeof isRtlLang === 'function' && isRtlLang(leveledTextLanguage || currentUiLanguage) ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Memory Aid</title><style>@page{margin:' + _printPageMargin + '}body{margin:24px;background:white;color:#0f172a;font-family:system-ui;font-size:' + printSize + 'px;line-height:1.5}img{max-width:100%}article{break-inside:avoid}h1,h2,h3{break-after:avoid}@media print{body{margin:0}*{print-color-adjust:exact}}</style></head><body><main>' + body + '</main></body></html>';
+          return '<!doctype html><html lang="' + _documentLanguage + '" dir="' + (typeof isRtlLang === 'function' && isRtlLang(leveledTextLanguage || currentUiLanguage) ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + _escTxt(memoryTranslate('export_memory_aid_fallback', 'Memory aid')) + '</title><style>@page{margin:' + _printPageMargin + '}body{margin:24px;background:white;color:#0f172a;font-family:system-ui;font-size:' + printSize + 'px;line-height:1.5}img{max-width:100%}article{break-inside:avoid}h1,h2,h3{break-after:avoid}@media print{body{margin:0}*{print-color-adjust:exact}}</style></head><body><main>' + body + '</main></body></html>';
       }
       if (historyItems.length && historyItems.every(item => item.type === 'applied-challenge' && ['task', 'response', 'teacher', 'paper'].includes(item.data?.appliedChallengeExportPreset))) {
           const render = window.AlloModules?.AppliedChallenge?.renderPreset;
           const body = cfg.includeAppliedChallenge === false ? '' : typeof render === 'function' ? historyItems.map(item => render(item.data, item.data.appliedChallengeExportPreset, t)).join('') : '<p>Open this challenge in the app to prepare the copy.</p>';
-          return '<!doctype html><html lang="' + _documentLanguage + '" dir="' + (typeof isRtlLang === 'function' && isRtlLang(leveledTextLanguage || currentUiLanguage) ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Applied Problem Solving</title><style>@page{size:' + (['letter','legal','a4'].includes(cfg.pageSize) ? cfg.pageSize : 'letter') + ' ' + (cfg.pageOrientation === 'landscape' ? 'landscape' : 'portrait') + ';margin:' + _printPageMargin + '}body{margin:24px;background:white;color:#17212e;font-family:' + exportFontFamily + ';font-size:' + Math.max(12, Math.min(28, Number(cfg.fontSize) || 16)) + 'px;line-height:1.5}h1,h2,h3{break-after:avoid}@media print{body{margin:0}}</style></head><body><main>' + body + '</main></body></html>';
+          return '<!doctype html><html lang="' + _documentLanguage + '" dir="' + (typeof isRtlLang === 'function' && isRtlLang(leveledTextLanguage || currentUiLanguage) ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + _escTxt((() => { const v = typeof t === 'function' ? t('applied_challenge.product_name') : ''; return v && v !== 'applied_challenge.product_name' ? v : 'Applied Problem Solving'; })()) + '</title><style>@page{size:' + (['letter','legal','a4'].includes(cfg.pageSize) ? cfg.pageSize : 'letter') + ' ' + (cfg.pageOrientation === 'landscape' ? 'landscape' : 'portrait') + ';margin:' + _printPageMargin + '}body{margin:24px;background:white;color:#17212e;font-family:' + exportFontFamily + ';font-size:' + Math.max(12, Math.min(28, Number(cfg.fontSize) || 16)) + 'px;line-height:1.5}h1,h2,h3{break-after:avoid}@media print{body{margin:0}}</style></head><body><main>' + body + '</main></body></html>';
       }
       const _runtimeCopyCatalog = {
         en: {
@@ -51972,7 +51984,25 @@ function projectStudentGuideData(data, mode) {
         }
       };
       const _runtimeLanguage = String(_documentLanguage || 'en').toLowerCase().split('-')[0];
-      const _runtimeCopy = { ..._runtimeCopyCatalog.en, ...(_runtimeCopyCatalog[_runtimeLanguage] || {}) };
+      // Exact tag first (zh-TW, fa-AF), then the base language; the inline catalog
+      // wins at the same level. Loaded entries must be plain text for known keys,
+      // because several are written into the page unescaped.
+      const _runtimeTag = String(_documentLanguage || 'en');
+      const _loadedCopy = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportRuntimeCopy && window.AlloModules.ExportRuntimeCopy.catalog) || {};
+      const _plainCopy = (entry) => {
+        const out = {};
+        if (!entry || typeof entry !== 'object') return out;
+        Object.keys(_runtimeCopyCatalog.en).forEach((key) => {
+          if (typeof entry[key] === 'string' && entry[key].trim() && !/[<>]/.test(entry[key])) out[key] = entry[key];
+        });
+        return out;
+      };
+      const _runtimeCopyEntry = _runtimeCopyCatalog[_runtimeTag] || _plainCopy(_loadedCopy[_runtimeTag]) || null;
+      const _runtimeCopy = {
+        ..._runtimeCopyCatalog.en,
+        ...(_runtimeCopyEntry && Object.keys(_runtimeCopyEntry).length ? _runtimeCopyEntry
+          : (_runtimeCopyCatalog[_runtimeLanguage] || _plainCopy(_loadedCopy[_runtimeLanguage]))),
+      };
       // Four independently mixed 32-bit lanes form a deterministic 128-bit
       // content identity. It is based on resource content, not rendered body
       // length or generation date, so unrelated equal-length exports cannot

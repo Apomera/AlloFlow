@@ -36,7 +36,7 @@ describe('Word Sounds appearance in the browser', () => {
       expect(await stage.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(previewColor);
       expect(await stage.locator('.awp-word').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Georgia');
       const before = await stage.locator('.awp-word').evaluate(el => parseFloat(getComputedStyle(el).fontSize));
-      await player.locator('.awp-appearance-panel summary').click();
+      await player.locator('.awp-appearance-panel > summary').click();
       await player.getByLabel('Card text size', { exact: true }).selectOption('1.4');
       expect(await stage.locator('.awp-word').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThan(before * 1.3);
       expect(await stage.locator('.awp-definition').textContent()).toBe('A plant part that catches sunlight.');
@@ -64,7 +64,7 @@ describe('Word Sounds appearance in the browser', () => {
       const html = await page.evaluate(() => AlloModules.WordPractice.buildHtml(fixture, { ...fixture.options, cardFont: 'georgia', cardTextScale: 1.4, cardTheme: 'mist' }, undefined, { appearance: 'مظهر البطاقة' }, { css: AlloModules.UIFontLibrary.readerExportCss({ fontFamily: 'Verdana,sans-serif', lineHeight: 1.8, letterSpacing: 0.05 }) }, 'Arabic'));
       await page.setContent(html);
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
-      const summary = page.locator('.awp-appearance-panel summary'); await summary.focus(); await page.keyboard.press('Space');
+      const summary = page.locator('.awp-appearance-panel > summary'); await summary.focus(); await page.keyboard.press('Space');
       expect(await page.locator('.awp-appearance-panel').getAttribute('open')).not.toBe(null);
       await page.getByRole('button', { name: 'Show meaning', exact: true }).click();
       const arabic = page.locator('.awp-stage .awp-translation[lang=ar]');
@@ -111,7 +111,7 @@ describe('Word Sounds appearance in the browser', () => {
       const font = controls.getByLabel('Card font', { exact: true }); await font.focus(); await font.selectOption('georgia');
       await controls.getByLabel('Card style', { exact: true }).selectOption('cream');
       expect(await preview.evaluate(node => node.querySelector('.awp-preview-definition') === window.previewPassage)).toBe(true);
-      expect(await preview.evaluate(node => node.scrollTop)).toBe(position);
+      expect(Math.abs(await preview.evaluate(node => node.scrollTop) - position), 'scroll anchoring may shift 1 px').toBeLessThanOrEqual(1);
       expect(await preview.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
       expect(await page.locator('.awp-dialog').evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
       await preview.scrollIntoViewIfNeeded(); await page.screenshot({ path: output + '/browsable-arabic-preview-320-200percent.png' });

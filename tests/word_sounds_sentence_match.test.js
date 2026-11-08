@@ -136,14 +136,16 @@ describe('the player treats the sentence as print', () => {
   });
 
   it('the tray only reveals when EVERY tile has its picture', () => {
-    const idx = MODULE.indexOf('case "sentence_match": {');
+    // The player's case (Present to class has its own case "sentence_match" earlier in the file).
+    const idx = MODULE.indexOf('case "sentence_match": {', MODULE.indexOf('// END WORD SOUNDS PRESENT MODE'));
     expect(idx).toBeGreaterThan(0);
     const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
     expect(block).toMatch(/smBoard\.tiles\.every\(\(w\) => smImgFor\(w\)\)/);
   });
 
   it('tap works wherever drag does, and a placed tile can be taken back', () => {
-    const idx = MODULE.indexOf('case "sentence_match": {');
+    // The player's case (Present to class has its own case "sentence_match" earlier in the file).
+    const idx = MODULE.indexOf('case "sentence_match": {', MODULE.indexOf('// END WORD SOUNDS PRESENT MODE'));
     const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
     expect(block).toMatch(/onClick: \(\) => smPlace\(w\)/);
     expect(block).toMatch(/onClick: \(\) => smClear\(i\)/);
@@ -154,7 +156,8 @@ describe('the player treats the sentence as print', () => {
     // A hard `disabled` drops focus to the body the moment a tile is placed,
     // stranding a keyboard user after their first pick. aria-disabled keeps
     // the button focusable; smPlace ignores used tiles.
-    const idx = MODULE.indexOf('case "sentence_match": {');
+    // The player's case (Present to class has its own case "sentence_match" earlier in the file).
+    const idx = MODULE.indexOf('case "sentence_match": {', MODULE.indexOf('// END WORD SOUNDS PRESENT MODE'));
     const block = MODULE.slice(idx, MODULE.indexOf('default:', idx));
     expect(block).toMatch(/"aria-disabled": used/);
     expect(block).not.toMatch(/\bdisabled: used/);

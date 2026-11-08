@@ -87,7 +87,8 @@ describe('activity sub-views keep their identity across parent renders', () => {
       await new Promise((r) => setTimeout(r, 20));
     });
 
-    expect(spellingInput(host).value).toBe('ca');
+    // 2026-11-07: a tapped tile also adds its letter (students who cannot drag or type can spell).
+    expect(spellingInput(host).value).toBe('ca' + tiles[0].getAttribute('aria-label').toLowerCase());
   });
 
   it('orthography: a typed spelling survives an unrelated parent prop change', async () => {

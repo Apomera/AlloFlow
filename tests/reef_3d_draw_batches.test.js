@@ -58,7 +58,8 @@ const CALLS = {
   pajama_cardinalfish: 2, banggai_cardinalfish: 2, giant_triton: 2, blue_velvet_headshield_slug: 2, regal_angelfish: 2,
   mandarin_dragonet: 2, harlequin_shrimp: 2, spotted_seahorse: 2, bennetts_feather_star: 2, peacock_mantis_shrimp: 2, ribbon_eel: 2,
   blackfin_barracuda: 2, titan_triggerfish: 2, bluefin_trevally: 2,
-  blacktip_reef_shark: 2, dusky_farmerfish: 2
+  blacktip_reef_shark: 2, dusky_farmerfish: 2,
+  foxface_rabbitfish: 2, leopard_coral_grouper: 2, dash_and_dot_goatfish: 2, sixbar_wrasse: 2
 };
 for (const [id, parts] of Object.entries(POST_MERGE_PARTS)) CALLS[id] = parts.length;
 const EXACT = { ...Object.fromEntries(Object.entries(POST_MERGE_PARTS).map(([id, parts]) => [id, parts.length])), reef_manta: 3, bluespotted_stingray: 3, green_turtle: 5, hawksbill_turtle: 5, day_octopus: 2 };
@@ -85,7 +86,7 @@ describe('J1 species batches: draw calls', () => {
       }
     }
     // Sixteen added specimens each use two draws per tier; the original limits stay fixed.
-    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 21 * 2 * TIERS.length + 5 * TIERS.length + Object.values(POST_MERGE_PARTS).reduce((n, parts) => n + parts.length, 0) * TIERS.length);
+    expect(total, 'all models and schools on both tiers').toBeLessThanOrEqual(226 + 25 * 2 * TIERS.length + 5 * TIERS.length + Object.values(POST_MERGE_PARTS).reduce((n, parts) => n + parts.length, 0) * TIERS.length);
   });
 });
 

@@ -494,6 +494,133 @@
     };
     return module.exports;
   })();
+  ADAPTERS["letter_tracing"] = (function () {
+    var module = { exports: {} };
+    // Take-home adapter: Letter Trace (letter_tracing).
+    // App source of truth (word_sounds_module.js):
+    //   board       activityItems.letter_tracing = { letter: word[0] } (setup), and the
+    //               player traces the word's first letter; a board copied from another
+    //               word is never used (the letter must be the word's first letter).
+    //   grading     none: letter_tracing is in WS_NON_GRADED_ACTIVITIES, so the file
+    //               records it as practice ("traced" or "skipped"), never right or wrong.
+    //   access      pointer events cover mouse, touch and pen; "Skip (not traced)" is the
+    //               path for a student who cannot trace (2026-11-07 parity audit).
+    module.exports = {
+      id: 'letter_tracing',
+      title: 'Letter Trace',
+      labels: {
+        letter_tracing_question: 'Trace the letter {letter} with your finger, a pen or the mouse.',
+        letter_tracing_canvas: 'Tracing area for the letter {letter}',
+        letter_tracing_done: 'I traced it',
+        letter_tracing_clear: 'Start again',
+        letter_tracing_skip: 'Skip (not traced)',
+        letter_tracing_more: 'Keep going. Trace over more of the letter.',
+        letter_tracing_stay: 'Stay on the letter. Press Start again and trace inside its shape.',
+        letter_tracing_traced: 'Nice tracing!',
+        letter_tracing_skipped: 'Skipped. That is fine.',
+      },
+      prepare: function (w, env) {
+        var word = String((w && (w.targetWord || w.word || w.term)) || '').trim();
+        var first = Array.from(word)[0] || '';
+        var board = w && w.activityItems && w.activityItems.letter_tracing;
+        var letter = String((board && board.letter) || first).trim();
+        if (!letter || !first || Array.from(letter).length !== 1 || letter.toLowerCase() !== first.toLowerCase()) return { missing: ['board'] };
+        // Tracing is visual: the spoken instruction and the word are helpful, not required.
+        var wordAudio = env.wordClip(word);
+        var prompt = env.bankClip('instructions', 'inst_letter_tracing');
+        var intro = [];
+        if (prompt) intro.push(prompt);
+        if (wordAudio) intro.push(wordAudio);
+        return { item: { target: letter.toLowerCase(), letter: letter, wordAudio: wordAudio, promptAudio: prompt,
+          introAudio: intro, answerAudio: wordAudio ? [wordAudio] : [] } };
+      },
+      render: function (item, ctx) {
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var size = 280;
+        var wrap = ctx.el('div', { style: 'position:relative;width:' + size + 'px;height:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;touch-action:none' });
+        var guide = doc.createElement('canvas');
+        var pen = doc.createElement('canvas');
+        [guide, pen].forEach(function (c) {
+          c.width = size; c.height = size;
+          c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none';
+          wrap.appendChild(c);
+        });
+        pen.setAttribute('role', 'img');
+        pen.setAttribute('aria-label', ctx.fmt(L.letter_tracing_canvas, { letter: item.letter }));
+        var font = 'bold ' + Math.round(size * 0.78) + 'px system-ui, sans-serif';
+        var paint = function (g, color) {
+          g.clearRect(0, 0, size, size);
+          g.fillStyle = color; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.fillText(item.letter, size / 2, size * 0.54);
+        };
+        var gg = guide.getContext ? guide.getContext('2d') : null;
+        var pg = pen.getContext ? pen.getContext('2d') : null;
+        if (gg) paint(gg, 'rgba(100,116,139,0.35)');
+        var drawing = false, last = null;
+        var at = function (e) {
+          var r = pen.getBoundingClientRect();
+          return { x: (e.clientX - r.left) * size / (r.width || size), y: (e.clientY - r.top) * size / (r.height || size) };
+        };
+        var line = function (a, b) {
+          if (!pg) return;
+          pg.strokeStyle = '#1d4ed8'; pg.lineWidth = size * 0.08; pg.lineCap = 'round'; pg.lineJoin = 'round';
+          pg.beginPath(); pg.moveTo(a.x, a.y); pg.lineTo(b.x, b.y); pg.stroke();
+        };
+        pen.addEventListener('pointerdown', function (e) {
+          if (ctx.isDone()) return;
+          drawing = true; last = at(e); line(last, last);
+          try { pen.setPointerCapture(e.pointerId); } catch (_) {}
+          e.preventDefault();
+        });
+        pen.addEventListener('pointermove', function (e) {
+          if (!drawing) return;
+          var p = at(e); line(last, p); last = p; e.preventDefault();
+        });
+        var stop = function () { drawing = false; last = null; };
+        pen.addEventListener('pointerup', stop);
+        pen.addEventListener('pointercancel', stop);
+        // How much of the letter the strokes cover, and how much ink lands well away from it
+        // (scribbling over the whole box is not tracing). Every 4th pixel is enough.
+        var measure = function () {
+          if (!gg || !pg) return { cover: 1, stray: 0 };
+          var mask = doc.createElement('canvas'); mask.width = size; mask.height = size;
+          var mg = mask.getContext('2d'); paint(mg, '#000');
+          var halo = doc.createElement('canvas'); halo.width = size; halo.height = size;
+          var hg = halo.getContext('2d'); paint(hg, '#000');
+          hg.lineWidth = size * 0.14; hg.lineJoin = 'round'; hg.strokeStyle = '#000'; hg.strokeText(item.letter, size / 2, size * 0.54);
+          var m = mg.getImageData(0, 0, size, size).data, hd = hg.getImageData(0, 0, size, size).data, p = pg.getImageData(0, 0, size, size).data;
+          var inside = 0, covered = 0, ink = 0, away = 0;
+          for (var i = 3; i < m.length; i += 16) {
+            if (m[i] > 128) { inside++; if (p[i] > 0) covered++; }
+            if (p[i] > 0) { ink++; if (hd[i] <= 128) away++; }
+          }
+          return { cover: inside ? covered / inside : 0, stray: ink ? away / ink : 0 };
+        };
+        var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite' });
+        var hear = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio || item.promptAudio); } }, text: ctx.L.hear_word });
+        var done = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () {
+          if (ctx.isDone()) return;
+          var m = measure();
+          if (m.stray > 0.5) { note.textContent = L.letter_tracing_stay; return; }
+          if (m.cover < 0.45) { note.textContent = L.letter_tracing_more; return; }
+          note.textContent = '';
+          ctx.practice('traced', L.letter_tracing_traced);
+        } }, text: L.letter_tracing_done });
+        var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; if (pg) pg.clearRect(0, 0, size, size); note.textContent = ''; } }, text: L.letter_tracing_clear });
+        var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.letter_tracing_question, { letter: item.letter }) }));
+        if (item.wordAudio || item.promptAudio) ctx.root.appendChild(ctx.el('div', { class: 'row' }, [hear]));
+        ctx.root.appendChild(wrap);
+        ctx.root.appendChild(note);
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [done, clear, skip]));
+        return {
+          reveal: function () { [done, clear, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); },
+        };
+      },
+    };
+    return module.exports;
+  })();
   ADAPTERS["manipulation"] = (function () {
     var module = { exports: {} };
     // Take-home adapter: Sound Swap (manipulation).
@@ -2247,6 +2374,8 @@
         spelling_bee_correct: 'Yes! That is how to spell {word}.',
         spelling_bee_missed: 'This is how to spell it: {word}. Listen.',
         spelling_bee_answer: 'The word is spelled: {word}',
+        spelling_bee_letter_keys: 'Letter keys',
+        spelling_bee_delete: 'Delete the last letter',
       },
       prepare: function (w, env) {
         var word = String(env.word || '').trim();
@@ -2349,6 +2478,18 @@
         ctx.root.appendChild(countLine);
         ctx.root.appendChild(ctx.el('label', { for: inputId, text: L.spelling_bee_input }));
         ctx.root.appendChild(input);
+        // On-screen letters for students without a keyboard (2026-11-07 parity audit). Typing still works.
+        var letterKeys = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (ch) {
+          return ctx.el('button', { type: 'button', style: 'min-width:44px;min-height:44px;font-weight:700', on: { click: function () {
+            if (ctx.isDone() || value().length >= (word.length || 20)) return;
+            input.value = value() + ch; lastSubmitted = null; draw();
+          } } }, [ch]);
+        });
+        var deleteKey = ctx.el('button', { type: 'button', 'aria-label': L.spelling_bee_delete, style: 'min-width:44px;min-height:44px', on: { click: function () {
+          if (ctx.isDone() || !value()) return;
+          input.value = value().slice(0, -1); lastSubmitted = null; draw();
+        } } }, ['⌫']);
+        ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey])));
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [checkBtn, firstBtn, moreBtn]));
         ctx.root.appendChild(answerLine);
         draw();
@@ -2356,7 +2497,7 @@
           reveal: function () {
             input.setAttribute('readonly', '');
             input.setAttribute('aria-readonly', 'true');
-            [checkBtn, firstBtn, moreBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+            [checkBtn, firstBtn, moreBtn, deleteKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
             answerLine.hidden = false;
           },
         };
@@ -3443,6 +3584,13 @@
       var handle = null;
       var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
+      var finishPractice = function () {
+        rec.done = true; rec.correct = false; rec.firstTry = false;
+        save();
+        if (handle && typeof handle.reveal === 'function') { try { handle.reveal(null); } catch (_) {} }
+        nextButton.hidden = false;
+        nextButton.focus();
+      };
       var finishItem = function (correct) {
         rec.done = true; rec.correct = correct; rec.firstTry = correct && rec.attempts === 1;
         save();
@@ -3458,6 +3606,15 @@
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
         isDone: function () { return rec.done; },
         attempts: function () { return rec.attempts; },
+        // Practice that is never scored (Letter Trace): 'traced' or 'skipped'.
+        practice: function (status, text) {
+          if (rec.done) return;
+          rec.attempts++;
+          rec.responses.push(status === 'skipped' ? 'skipped' : 'traced');
+          rec.practice = status === 'skipped' ? 'skipped' : 'traced';
+          feedback.className = 'status ok'; feedback.textContent = text || '';
+          finishPractice();
+        },
         // Grade one response. Returns 'correct', 'retry' (try again) or 'missed'
         // (attempts used up). The shell handles feedback, sounds and Next.
         answer: function (response, isCorrect, options) {
@@ -3490,7 +3647,7 @@
       ]);
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
       // Reopened on an answered item: show its outcome, do not ask again.
-      if (rec.done) finishItem(rec.correct);
+      if (rec.done) { if (rec.practice) finishPractice(); else finishItem(rec.correct); }
       else playAll(item.introAudio || []);
     };
 
@@ -3502,14 +3659,20 @@
         items: items.map(function (e, i) {
           var r = state.items[i];
           return { itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
-            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, supports: r.supports };
+            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, supports: r.supports,
+            practice: r.practice || null };
         }),
         summary: summarize(),
       };
     };
     var summarize = function () {
-      var s = { items: items.length, done: 0, firstTry: 0, afterRetry: 0, missed: 0 };
-      state.items.forEach(function (r) { if (!r.done) return; s.done++; if (r.firstTry) s.firstTry++; else if (r.correct) s.afterRetry++; else s.missed++; });
+      var s = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
+      state.items.forEach(function (r, i) {
+        // Practice items (Letter Trace) are counted apart and never scored.
+        if (r.practice || (items[i] && items[i].activity === 'letter_tracing')) { if (r.done) s.practised++; return; }
+        s.items++;
+        if (!r.done) return; s.done++; if (r.firstTry) s.firstTry++; else if (r.correct) s.afterRetry++; else s.missed++;
+      });
       return s;
     };
     // Mailbox send: the endpoint, pack capability (id + k) and chunked
@@ -3633,6 +3796,7 @@
       return { activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
         target: str(it && it.target).slice(0, 40), attempts: Math.max(0, Math.min(9, Number(it && it.attempts) || 0)),
         firstTry: !!(it && it.firstTry), correct: !!(it && it.correct), done: !!(it && it.done),
+        practice: it && (it.practice === 'traced' || it.practice === 'skipped') ? it.practice : null,
         responses: Array.isArray(it && it.responses) ? it.responses.slice(0, 6).map(function (r) { return str(r).slice(0, 80); }) : [],
         // Supports used (replays, hints): counts only, a bounded set of names.
         supports: (function (s) {
@@ -3644,10 +3808,13 @@
           return out;
         })(it && it.supports) };
     });
-    var summary = { items: items.length, done: 0, firstTry: 0, afterRetry: 0, missed: 0 };
+    var summary = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
     var byActivity = {};
     items.forEach(function (r) {
-      var a = byActivity[r.activity] || (byActivity[r.activity] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0 });
+      var a = byActivity[r.activity] || (byActivity[r.activity] = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 });
+      // Practice (Letter Trace) is reported, never scored.
+      if (r.practice || r.activity === 'letter_tracing') { if (r.done) { summary.practised++; a.practised++; } return; }
+      summary.items++;
       a.items++;
       if (!r.done) return;
       summary.done++; a.done++;
@@ -3662,6 +3829,82 @@
       learnerName: str(data.learnerName).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity } };
   }
 
+  // Every recorded sound in the shipped file as WAV. The sound bank and most
+  // browser recordings are WebM/Opus, which iPad and older Safari may not
+  // play; 16-bit mono WAV plays in every browser. 22,050 Hz keeps the high
+  // frequencies that tell /s/, /f/ and /th/ apart. Runs in the teacher's
+  // browser before buildHtml; a clip it cannot decode is kept as it was.
+  var PORTABLE_AUDIO = /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3)[;,]/i;
+  var PORTABLE_RATE = 22050;
+  function dataUriBytes(uri) {
+    var comma = uri.indexOf(',');
+    var meta = uri.slice(0, comma), body = uri.slice(comma + 1);
+    if (/;base64$/i.test(meta)) {
+      var bin = atob(body), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return bytes;
+    }
+    return new TextEncoder().encode(decodeURIComponent(body));
+  }
+  function wavDataUri(samples, rate) {
+    var bytes = new Uint8Array(44 + samples.length * 2), view = new DataView(bytes.buffer);
+    var tag = function (at, text) { for (var i = 0; i < text.length; i++) view.setUint8(at + i, text.charCodeAt(i)); };
+    tag(0, 'RIFF'); view.setUint32(4, bytes.length - 8, true); tag(8, 'WAVE'); tag(12, 'fmt ');
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, rate, true); view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    tag(36, 'data'); view.setUint32(40, samples.length * 2, true);
+    for (var s = 0; s < samples.length; s++) {
+      var v = Math.max(-1, Math.min(1, samples[s]));
+      view.setInt16(44 + s * 2, v < 0 ? v * 32768 : v * 32767, true);
+    }
+    var out = '';
+    for (var c = 0; c < bytes.length; c += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(c, c + 0x8000));
+    return 'data:audio/wav;base64,' + btoa(out);
+  }
+  function portableAudio(lesson, options) {
+    var opts = options || {};
+    var g = typeof window !== 'undefined' ? window : root;
+    var Ctx = opts.AudioContext || g.AudioContext || g.webkitAudioContext;
+    var Offline = opts.OfflineAudioContext || g.OfflineAudioContext || g.webkitOfflineAudioContext;
+    var report = { converted: 0, kept: 0, failed: [] };
+    var ids = Object.keys((lesson && lesson.audio) || {});
+    var todo = ids.filter(function (id) { return !PORTABLE_AUDIO.test(lesson.audio[id]); });
+    report.kept = ids.length - todo.length;
+    if (!todo.length) return Promise.resolve(report);
+    if (!Ctx || !Offline) { report.failed = todo.slice(); return Promise.resolve(report); }
+    var ctx;
+    try { ctx = new Ctx(); } catch (_) { report.failed = todo.slice(); return Promise.resolve(report); }
+    var done = 0;
+    var decode = function (bytes) {
+      return new Promise(function (resolve, reject) {
+        var p = ctx.decodeAudioData(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), resolve, reject);
+        if (p && p.then) p.then(resolve, reject);
+      });
+    };
+    var convert = function (id) {
+      return decode(dataUriBytes(lesson.audio[id])).then(function (buffer) {
+        if (!buffer || !(buffer.duration > 0) || buffer.duration > 60) throw new Error('bad clip');
+        var length = Math.max(1, Math.ceil(buffer.duration * PORTABLE_RATE));
+        var offline = new Offline(1, length, PORTABLE_RATE);
+        var source = offline.createBufferSource();
+        source.buffer = buffer; source.connect(offline.destination); source.start(0);
+        return new Promise(function (resolve, reject) {
+          var p = offline.startRendering();
+          if (p && p.then) p.then(resolve, reject);
+          else offline.oncomplete = function (e) { resolve(e.renderedBuffer); };
+        });
+      }).then(function (rendered) {
+        lesson.audio[id] = wavDataUri(rendered.getChannelData(0), PORTABLE_RATE);
+        report.converted++;
+      }, function () { report.failed.push(id); }).then(function () {
+        done++;
+        if (typeof opts.onProgress === 'function') { try { opts.onProgress(done, todo.length); } catch (_) {} }
+      });
+    };
+    return todo.reduce(function (chain, id) { return chain.then(function () { return convert(id); }); }, Promise.resolve())
+      .then(function () { try { if (ctx.close) ctx.close(); } catch (_) {} return report; });
+  }
+
   // Which activities this build can export, with their names (for the dialog).
   function activities(extra) {
     var all = Object.assign({}, ADAPTERS, extra || {});
@@ -3671,7 +3914,7 @@
   root.AlloWordSoundsTakeHome = {
     LESSON_SCHEMA: LESSON_SCHEMA, RESULT_KIND: RESULT_KIND, PLAYER: PLAYER, ORDINAL_KEYS: ORDINAL_KEYS, DEFAULT_LABELS: DEFAULT_LABELS,
     ADAPTERS: ADAPTERS, activities: activities,
-    lessonFromPack: lessonFromPack, buildHtml: buildHtml, parseResult: parseResult,
+    lessonFromPack: lessonFromPack, buildHtml: buildHtml, parseResult: parseResult, portableAudio: portableAudio,
     // v1 name kept for callers built against the first release.
     buildFindSoundsHtml: buildHtml,
     _shell: takeHomeShell,

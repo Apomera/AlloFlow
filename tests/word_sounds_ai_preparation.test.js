@@ -65,7 +65,8 @@ describe('generated analysis belongs to the selected word', () => {
   });
 });
 
-const markup = section('<div className={`p-3 rounded-xl border-2 transition-all ${includeAI', '\n                            </div>\n                            <div className="space-y-3');
+// The AI topic card alone; the Describe your goals card (2026-11-07) follows it and has its own test.
+const markup = section('<div className={`p-3 rounded-xl border-2 transition-all ${includeAI', '\n                                {goalAiUsable && <div');
 const hostCode = transformSync(`return function Host({callGemini,capture,language='en',gradeLevel='K',range={min:1,max:4},authoringSession}) {
   const [includeAI,setIncludeAI]=React.useState(true), [aiTopic,setAiTopic]=React.useState('Ocean');
   const aiSuggestions=useTopic({enabled:includeAI,topic:aiTopic,language,gradeLevel,syllableRange:range,callGemini,warnLog:()=>{},authoringSession});

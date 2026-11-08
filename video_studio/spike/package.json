@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Spike only: ES-module marker + local TTS (kokoro-js, Apache-2.0) for the tutorial compile tool.",
+  "dependencies": {
+    "kokoro-js": "1.2.1"
+  }
+}

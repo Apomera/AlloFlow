@@ -78,9 +78,10 @@ function fontSizes(css) {
 function px(value, root, vw) {
   const clamp = /^clamp\((.+)\)$/.exec(value.trim());
   if (clamp) { const [lo, mid, hi] = clamp[1].split(',').map((v) => px(v, root, vw)); return Math.min(Math.max(mid, lo), hi); }
-  const n = /^(-?[\d.]+)(px|rem|vw)$/.exec(value.trim());
+  const n = /^(-?[\d.]+)(px|r?em|vw)$/.exec(value.trim());
   if (!n) throw new Error('cannot resolve font size ' + value);
-  return Number(n[1]) * (n[2] === 'px' ? 1 : n[2] === 'rem' ? root : vw / 100);
+  // em is relative to a parent that is itself sized in rem, so it scales with the root.
+  return Number(n[1]) * (n[2] === 'px' ? 1 : n[2] === 'vw' ? vw / 100 : root);
 }
 // The look before this change, at a 16 px root.
 const PX_BEFORE = {

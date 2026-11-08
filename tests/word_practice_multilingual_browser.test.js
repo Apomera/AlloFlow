@@ -38,7 +38,8 @@ describe.each(['presenter', 'offline'])('multilingual sounds and keyboard focus 
       await player.getByRole('button', { name: 'Show word', exact: true }).focus(); await page.keyboard.press('Enter');
       expect(await stage.evaluate(node => node === document.activeElement)).toBe(true);
       await player.getByRole('button', { name: 'Next', exact: true }).focus(); await page.keyboard.press('Enter');
-      expect(await stage.evaluate(node => node === document.activeElement)).toBe(true);
+      // On the last card Next becomes Finish round and keeps focus.
+      expect(await player.getByRole('button', { name: 'Finish round', exact: true }).evaluate(node => node === document.activeElement)).toBe(true);
       await ordered(page.locator('.awp-phonemes'), 'rtl');
       await page.setViewportSize({ width: 320, height: 900 }); await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
       await stage.focus(); await stage.scrollIntoViewIfNeeded();

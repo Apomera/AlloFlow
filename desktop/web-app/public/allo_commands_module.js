@@ -562,6 +562,11 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_outline: { requires: ["source"], produces: ["outline"] },
   find_reading: { params: ["topic", "grade", "language", "source", "format", "raw"] },
   open_stem_tool: { params: ["tool", "query", "raw"] },
+  open_word_sounds: {
+    params: ["goal"],
+    paramSchema: { goal: { type: "string", required: false, maxLength: 1500, aliases: ["goals", "topic", "request"], labelKey: "cmd.param_goal", label: "Lesson goals" } },
+    reason: "Opens Word Sounds setup with the goals filled in for the teacher to review; it generates nothing by itself."
+  },
   send_teacher_signal: {
     demoSafe: false,
     interaction: "external",
@@ -1084,6 +1089,13 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_fluency_maze", icon: "\u{1F3AF}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openFluencyMaze === "function", label: t("cmd.open_fluency_maze", "Open the Fluency Maze"), aliases: ["fluency maze", "math maze", "maze", "math maze game", "fluency game"], hint: t("cmd.open_fluency_maze_hint", "A maze students solve by answering math facts"), run: (c) => {
       c.openFluencyMaze();
       return t("cmd.open_fluency_maze_done", "Fluency Maze opened in the Math tool.");
+    } },
+    // 2026-11-07: Word Sounds had no command. Teachers can say their goals ("make phonics words for short a");
+    // they land in Describe your goals and nothing is generated until the teacher asks and reviews.
+    { id: "open_word_sounds", icon: "\u{1F524}", roles: ["teacher"], when: (c) => typeof c.openWordSounds === "function", label: t("cmd.open_word_sounds", "Open Word Sounds"), aliases: ["word sounds", "phonics", "phonics words", "phonics lesson", "phonemic awareness", "sound practice", "decodable words", "word sounds lesson"], hint: t("cmd.open_word_sounds_hint", "Phonics and sound practice. Tell me your goals and I will fill them in for you to review."), run: (c, params) => {
+      const goal = params && typeof params.goal === "string" ? params.goal.trim().slice(0, 1500) : "";
+      c.openWordSounds(goal);
+      return goal ? t("cmd.open_word_sounds_goal_done", "Opened Word Sounds with your goals in Describe your goals. Press Suggest a lesson, then review it before using it.") : t("cmd.open_word_sounds_done", "Opened Word Sounds.");
     } },
     // X6 2026-08-17: doors for the six surfaces that joined the coverage
     // baseline on 2026-08-16. Same shape as the W3 math-fluency pair above:
@@ -3843,6 +3855,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     // Keep this narrow: content questions and explicit wizard navigation keep their own routes.
     { id: "create_lesson", re: /^(?:(?:can|could|would)\s+you\s+(?:please\s+)?)?help\s+me\s+(?:to\s+)?(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
     { id: "create_lesson", re: /^(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
+    // "make phonics words for short a with my first graders": the whole request becomes the goals.
+    { id: "open_word_sounds", re: /^(?:(?:can|could|would)\s+you\s+(?:please\s+)?)?(?:make|build|plan|create|find|give\s+me|suggest)\s+(?:me\s+)?(?:a\s+|some\s+)?(?:phonics|word\s+sounds|phonemic\s+awareness|decodable|word\s+family)\s+(?:words?|word\s+lists?|lesson|practice|activities)\b.*$/i, params: (m) => ({ goal: m[0].trim() }) },
     { id: "rebuild_lesson_step", re: /^(?:rebuild|regenerate|redo|retry)\s+(?:lesson\s+)?step\s+(\d+)\s*[.!]?$/i, params: (m) => ({ step: Number(m[1]) }) },
     { id: "apply_lesson_template", re: /^(?:use|apply|load)\s+(?:the\s+)?(?:lesson\s+)?template\s+["“]?(.+?)["”]?\s*[.!]?$/i, params: (m) => ({ name: m[1].trim() }) },
     { id: "set_grade_level", re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
@@ -6700,7 +6714,8 @@ const CMD_GROUP = {
   // W3 (C5): Math Fluency's palette entries. 'tools' rather than 'create',
   // because these open an existing instrument rather than generating a resource.
   open_math_fluency: "tools",
-  open_fluency_maze: "tools"
+  open_fluency_maze: "tools",
+  open_word_sounds: "tools"
 };
 const CMD_CONTEXT = {
   pipeline_score: ["pipeline"],

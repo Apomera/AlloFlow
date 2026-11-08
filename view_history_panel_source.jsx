@@ -301,6 +301,41 @@ const HISTORY_PANEL_THEME_CSS = `
     #tour-history-panel,
     #tour-history-panel * { transition-duration: 0.01ms !important; }
   }
+
+  /* Lesson parts: a thin stripe plus a labelled chip, so colour never carries meaning alone. */
+  #tour-history-panel.allo-premium-history {
+    --rp-phase-hook: #fb7185; --rp-phase-hook-ink: #9f1239; --rp-phase-hook-tint: #fff1f2; --rp-phase-hook-edge: #fecdd3;
+    --rp-phase-directInstruction: #38bdf8; --rp-phase-directInstruction-ink: #075985; --rp-phase-directInstruction-tint: #f0f9ff; --rp-phase-directInstruction-edge: #bae6fd;
+    --rp-phase-guidedPractice: #34d399; --rp-phase-guidedPractice-ink: #065f46; --rp-phase-guidedPractice-tint: #ecfdf5; --rp-phase-guidedPractice-edge: #a7f3d0;
+    --rp-phase-independentPractice: #fb923c; --rp-phase-independentPractice-ink: #9a3412; --rp-phase-independentPractice-tint: #fff7ed; --rp-phase-independentPractice-edge: #fed7aa;
+    --rp-phase-closure: #e879f9; --rp-phase-closure-ink: #86198f; --rp-phase-closure-tint: #fdf4ff; --rp-phase-closure-edge: #f5d0fe;
+  }
+  #tour-history-panel[data-history-theme="dark"] {
+    --rp-phase-hook-ink: #fda4af; --rp-phase-hook-tint: rgba(136, 19, 55, 0.35); --rp-phase-hook-edge: #be123c;
+    --rp-phase-directInstruction-ink: #7dd3fc; --rp-phase-directInstruction-tint: rgba(12, 74, 110, 0.40); --rp-phase-directInstruction-edge: #0369a1;
+    --rp-phase-guidedPractice-ink: #6ee7b7; --rp-phase-guidedPractice-tint: rgba(6, 78, 59, 0.42); --rp-phase-guidedPractice-edge: #047857;
+    --rp-phase-independentPractice-ink: #fdba74; --rp-phase-independentPractice-tint: rgba(124, 45, 18, 0.38); --rp-phase-independentPractice-edge: #c2410c;
+    --rp-phase-closure-ink: #f0abfc; --rp-phase-closure-tint: rgba(112, 26, 117, 0.36); --rp-phase-closure-edge: #a21caf;
+  }
+  #tour-history-panel[data-history-theme="contrast"] {
+    --rp-phase-hook: #ff6699; --rp-phase-hook-ink: #ff6699; --rp-phase-hook-tint: #000000; --rp-phase-hook-edge: #ff6699;
+    --rp-phase-directInstruction: #00ccff; --rp-phase-directInstruction-ink: #00ccff; --rp-phase-directInstruction-tint: #000000; --rp-phase-directInstruction-edge: #00ccff;
+    --rp-phase-guidedPractice: #00ff00; --rp-phase-guidedPractice-ink: #00ff00; --rp-phase-guidedPractice-tint: #000000; --rp-phase-guidedPractice-edge: #00ff00;
+    --rp-phase-independentPractice: #ffaa00; --rp-phase-independentPractice-ink: #ffaa00; --rp-phase-independentPractice-tint: #000000; --rp-phase-independentPractice-edge: #ffaa00;
+    --rp-phase-closure: #ff66ff; --rp-phase-closure-ink: #ff66ff; --rp-phase-closure-tint: #000000; --rp-phase-closure-edge: #ff66ff;
+  }
+  #tour-history-panel [data-lesson-phase="hook"] { --rp-phase: var(--rp-phase-hook); --rp-phase-ink: var(--rp-phase-hook-ink); --rp-phase-tint: var(--rp-phase-hook-tint); --rp-phase-edge: var(--rp-phase-hook-edge); }
+  #tour-history-panel [data-lesson-phase="directInstruction"] { --rp-phase: var(--rp-phase-directInstruction); --rp-phase-ink: var(--rp-phase-directInstruction-ink); --rp-phase-tint: var(--rp-phase-directInstruction-tint); --rp-phase-edge: var(--rp-phase-directInstruction-edge); }
+  #tour-history-panel [data-lesson-phase="guidedPractice"] { --rp-phase: var(--rp-phase-guidedPractice); --rp-phase-ink: var(--rp-phase-guidedPractice-ink); --rp-phase-tint: var(--rp-phase-guidedPractice-tint); --rp-phase-edge: var(--rp-phase-guidedPractice-edge); }
+  #tour-history-panel [data-lesson-phase="independentPractice"] { --rp-phase: var(--rp-phase-independentPractice); --rp-phase-ink: var(--rp-phase-independentPractice-ink); --rp-phase-tint: var(--rp-phase-independentPractice-tint); --rp-phase-edge: var(--rp-phase-independentPractice-edge); }
+  #tour-history-panel [data-lesson-phase="closure"] { --rp-phase: var(--rp-phase-closure); --rp-phase-ink: var(--rp-phase-closure-ink); --rp-phase-tint: var(--rp-phase-closure-tint); --rp-phase-edge: var(--rp-phase-closure-edge); }
+  #tour-history-panel .rp-phase-row,
+  #tour-history-panel .rp-phase-row[data-lesson-phase]:hover { border-left-color: var(--rp-phase) !important; }
+  #tour-history-panel .rp-phase-chip { color: var(--rp-phase-ink) !important; background-color: var(--rp-phase-tint) !important; border-color: var(--rp-phase-edge) !important; }
+  @media (forced-colors: active) {
+    #tour-history-panel .rp-phase-row { border-left-color: CanvasText !important; }
+    #tour-history-panel .rp-phase-chip { color: CanvasText !important; background-color: Canvas !important; border-color: CanvasText !important; }
+  }
 `;
 function HistoryPanel(props) {
   const noop = () => null;
@@ -575,6 +610,28 @@ function HistoryPanel(props) {
   const resourceUiText = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
   const [resourceSearch, setResourceSearch] = React.useState('');
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState('all');
+  // Lesson parts are a teacher planning aid: colours on by default, remembered per browser.
+  const canShowLessonParts = !!isTeacherMode && !isIndependentMode && !isParentMode;
+  const [lessonPartColors, setLessonPartColors] = React.useState(() => {
+    try { return window.localStorage.getItem('alloflow_history_phase_colors') !== 'off'; } catch (_) { return true; }
+  });
+  const changeLessonPartColors = on => {
+    setLessonPartColors(on);
+    try { window.localStorage.setItem('alloflow_history_phase_colors', on ? 'on' : 'off'); } catch (_) {}
+  };
+  const lessonPartLabel = phase => resourceUiText('lesson_headers.teacher.' + phase, { hook: 'Hook / Engagement', directInstruction: 'Direct Instruction',
+    guidedPractice: 'Guided Practice', independentPractice: 'Independent Practice', closure: 'Closure & Assessment' }[phase] || phase);
+  const lessonPartOf = item => {
+    try {
+      const api = window.AlloModules && window.AlloModules.UtilsPure;
+      if (api && typeof api.lessonPhaseFor === 'function') return api.lessonPhaseFor(item);
+    } catch (_) {}
+    return { phase: null, automatic: null, chosen: null };
+  };
+  const lessonPartPhases = (() => {
+    try { const list = window.AlloModules.UtilsPure.LESSON_PHASES; return Array.isArray(list) ? list : []; } catch (_) { return []; }
+  })();
+  const canChooseLessonPart = canShowLessonParts && typeof props.onSetLessonPhase === 'function' && lessonPartPhases.length > 0;
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
   // Bulk filing. An older host without handleMoveAllToUnit also ignores the
   // create-unit option, so both controls stay hidden there.
@@ -1250,6 +1307,12 @@ function HistoryPanel(props) {
                                     <option key={type} value={type}>{getResourceTypeLabel(type)}</option>
                                 ))}
                             </select>
+                            {canShowLessonParts && (
+                                <label className="flex min-h-11 items-center gap-2 px-1 text-xs font-semibold text-slate-700">
+                                    <input type="checkbox" data-history-lesson-part-colors checked={lessonPartColors} onChange={(e) => changeLessonPartColors(e.target.checked)} className="h-4 w-4" />
+                                    {resourceUiText('history.lesson_part_colors', 'Lesson part colors')}
+                                </label>
+                            )}
                             {isResourceFilterActive && (
                                 <button type="button" onClick={clearResourceFilters} className="min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50">{t('history.clear_filters')}</button>
                             )}
@@ -1529,6 +1592,9 @@ function HistoryPanel(props) {
                                 && publicHistoryIdCounts.get(itemPublicId) === 1
                                 && getSafePublicArtifactId(generatedContent) === itemPublicId)
                         );
+                        const itemLessonPart = canShowLessonParts ? lessonPartOf(item) : { phase: null, automatic: null, chosen: null };
+                        const itemPhase = lessonPartColors ? itemLessonPart.phase : null;
+                        const itemPhaseLabel = itemPhase ? lessonPartLabel(itemPhase) : '';
                         const isOpening = item === pendingHistoryResource;
                         const openLabel = t('common.open') || 'Open';
                         const currentLabel = t('launch_pad.current_language') || 'Current';
@@ -1538,10 +1604,11 @@ function HistoryPanel(props) {
                         <div
                             key={itemInstanceId}
                             role="listitem"
+                            data-lesson-phase={itemPhase || undefined}
                             onDragEnter={(e) => canReorderResources && handleDragEnter(e, itemInstanceId)}
                             onDragOver={(e) => canReorderResources && e.preventDefault()}
                             onDragEnd={handleDragEnd}
-                            className={`group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? 'border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5' : 'border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70'} ${isSyncMode ? 'cursor-not-allowed opacity-60' : 'cursor-default'}`}
+                            className={`group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? 'border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5' : `border-slate-200 ${itemPhase ? 'rp-phase-row' : 'border-l-transparent'} bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70`} ${isSyncMode ? 'cursor-not-allowed opacity-60' : 'cursor-default'}`}
                         >
                             <div className="flex flex-wrap items-stretch gap-2 w-full">
                                 {isOrganizing && <button
@@ -1606,7 +1673,7 @@ function HistoryPanel(props) {
                                             }}
                                             style={{ flexBasis: '10rem' }}
                                             className={`min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? 'cursor-default bg-indigo-50/80 text-slate-900' : 'hover:bg-slate-100 text-slate-800'} aria-disabled:opacity-60`}
-                                            aria-label={(isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`) + (itemOlderSourceLabel ? `. ${itemOlderSourceLabel}` : '')}
+                                            aria-label={(isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`) + (itemPhaseLabel ? `. ${resourceUiText('history.lesson_part', 'Lesson part')}: ${itemPhaseLabel}` : '') + (itemOlderSourceLabel ? `. ${itemOlderSourceLabel}` : '')}
                                             aria-current={isCurrent ? 'page' : undefined}
                                             aria-busy={isOpening || undefined}
                                             aria-disabled={isSyncMode || isCurrent}
@@ -1620,6 +1687,11 @@ function HistoryPanel(props) {
                                                     <span className={`rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? 'border-indigo-200 bg-white text-indigo-700' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
                                                         {itemTypeLabel}
                                                     </span>
+                                                    {itemPhase && (
+                                                        <span data-history-lesson-part data-lesson-phase={itemPhase} className="rp-phase-chip rounded-full border px-2 py-0.5 font-semibold">
+                                                            {itemPhaseLabel}
+                                                        </span>
+                                                    )}
                                                     {itemTextBadge && (
                                                         <span className={`rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}`}>
                                                             {itemTextBadge.label}
@@ -1696,6 +1768,20 @@ function HistoryPanel(props) {
                                     className="min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">
                                     {t('actions.rename') || 'Rename'}
                                 </button>
+                                {canChooseLessonPart && (
+                                    <label className="flex min-h-11 items-center gap-1 px-1 text-xs font-semibold text-slate-700">
+                                        {resourceUiText('history.lesson_part', 'Lesson part')}
+                                        <select data-history-lesson-part-select value={itemLessonPart.chosen || 'auto'}
+                                            onChange={(e) => props.onSetLessonPhase(item, e.target.value === 'auto' ? null : e.target.value)}
+                                            className="min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                                            <option value="auto">{itemLessonPart.automatic
+                                                ? resourceUiText('history.lesson_part_auto', 'Automatic: {part}').replace('{part}', lessonPartLabel(itemLessonPart.automatic))
+                                                : resourceUiText('history.lesson_part_auto_none', 'Automatic: none')}</option>
+                                            {lessonPartPhases.map(phase => <option key={phase} value={phase}>{lessonPartLabel(phase)}</option>)}
+                                            <option value="none">{resourceUiText('history.lesson_part_none', 'No lesson part')}</option>
+                                        </select>
+                                    </label>
+                                )}
                                 <div className="flex flex-wrap items-center gap-1 relative">
                                     {isOrganizing && <><button
                                         type="button"

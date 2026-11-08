@@ -15,23 +15,31 @@ beforeEach(() => {
 afterEach(() => dom.window.close());
 
 describe('word practice cancellable preparation', () => {
-  it('cancels audio preparation without losing edits and rejects late results from an older run', async () => {
+  it('stops audio preparation without losing edits, keeps completed audio and rejects late results from an older run', async () => {
     const runs = [];
     win.AlloWordPracticeMedia = { prepareAudio(pack, context, progress) { return new Promise(resolve => runs.push({ pack, context, progress, resolve })); } };
     ui.open({ words: ['ship', 'rain'] });
     field('Practice title').value = 'My edited title'; field('Words (one per line)').value = 'ship\nsun'; field('Repetitions per word').value = '5';
     button('Prepare audio').focus(); button('Prepare audio').click(); await tick();
-    expect(win.document.activeElement).toBe(button('Cancel preparation'));
+    // Audio preparation stops and keeps completed clips (keepCompletedOnStop) instead of cancelling.
+    const stop = button('Stop and keep completed audio');
+    expect(win.document.activeElement).toBe(stop);
     runs[0].progress({ completed: 1, total: 2, word: 'ship' });
     const status = win.document.querySelector('.awp-status');
     expect(status.textContent).toContain('1 of 2'); expect(status.closest('[aria-busy="true"]')).toBe(null);
     expect(win.document.querySelector('progress').value).toBe(1);
-    button('Cancel preparation').click();
-    expect(runs[0].context.signal.aborted).toBe(true); expect(win.document.activeElement).toBe(button('Prepare audio'));
+    stop.click();
+    expect(runs[0].context.signal.aborted).toBe(true); expect(runs[0].context.keepCompletedOnStop).toBe(true);
+    // Kept focusable (aria-disabled) so keyboard focus stays in the dialog (2026-11-07).
+    expect(stop.getAttribute('aria-disabled')).toBe('true'); expect(status.textContent).toContain('Stopping preparation');
+    runs[0].progress({ completed: 2, total: 2, word: 'OLD' }); expect(status.textContent).not.toContain('OLD');
+    runs[0].resolve({ ...runs[0].pack, audioStatus: { cancelled: true } }); await tick();
+    expect(status.textContent).toContain('Preparation stopped. Completed recordings are kept.');
+    expect(win.document.activeElement).toBe(button('Continue preparation'));
     expect(field('Practice title').value).toBe('My edited title'); expect(field('Words (one per line)').value).toBe('ship\nsun'); expect(field('Repetitions per word').value).toBe('5');
-    button('Prepare audio').click(); runs[1].progress({ completed: 1, total: 2, word: 'sun' });
+    button('Continue preparation').click(); runs[1].progress({ completed: 1, total: 2, word: 'sun' });
     runs[0].progress({ completed: 2, total: 2, word: 'OLD' }); runs[0].resolve({ words: ['obsolete'] }); await tick();
-    expect(status.textContent).toContain('sun'); expect(field('Words (one per line)').disabled).toBe(true); expect(button('Cancel preparation').hidden).toBe(false);
+    expect(status.textContent).toContain('sun'); expect(field('Words (one per line)').disabled).toBe(true); expect(button('Stop and keep completed audio').hidden).toBe(false);
     runs[1].resolve(runs[1].pack); await tick();
     expect(field('Words (one per line)').disabled).toBe(false); expect(field('Words (one per line)').value).toBe('ship\nsun');
   });

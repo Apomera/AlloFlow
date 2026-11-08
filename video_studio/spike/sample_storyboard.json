@@ -1,0 +1,182 @@
+{
+ "version": 0,
+ "width": 1280,
+ "height": 720,
+ "fps": 30,
+ "assets": {
+  "screen": "assets/screen.webm",
+  "events": "assets/events.json",
+  "page": "assets/handout.png",
+  "beep": "assets/beep.wav",
+  "n1": "assets/n1.wav",
+  "n2": "assets/n2.wav",
+  "n3": "assets/n3.wav",
+  "n4": "assets/n4.wav",
+  "n5": "assets/n5.wav",
+  "n6": "assets/n6.wav",
+  "n7": "assets/n7.wav"
+ },
+ "clips": [
+  {
+   "track": "title",
+   "start": 0,
+   "end": 3.684,
+   "text": "Recording a progress monitoring score",
+   "sub": "Demo data only - fictional students"
+  },
+  {
+   "track": "screen",
+   "start": 3.684,
+   "end": 15.804,
+   "asset": "screen",
+   "srcStart": 0,
+   "events": "events",
+   "camera": "auto-from-events"
+  },
+  {
+   "track": "document",
+   "start": 15.804,
+   "end": 24.734,
+   "asset": "page",
+   "camera": [
+    {
+     "t": 0,
+     "x": 0.5,
+     "y": 0.5,
+     "scale": 1
+    },
+    {
+     "t": 2.826,
+     "x": 0.5,
+     "y": 0.5,
+     "scale": 1
+    },
+    {
+     "t": 4.026,
+     "x": 0.5381,
+     "y": 0.4777,
+     "scale": 2.1
+    },
+    {
+     "t": 7.93,
+     "x": 0.5381,
+     "y": 0.4777,
+     "scale": 2.1
+    },
+    {
+     "t": 8.93,
+     "x": 0.5,
+     "y": 0.5,
+     "scale": 1
+    }
+   ]
+  },
+  {
+   "track": "highlight",
+   "anchor": "document",
+   "start": 19.83,
+   "end": 24.134,
+   "rect": [
+    0.3676,
+    0.4457,
+    0.341,
+    0.0639
+   ],
+   "label": "Shorter session"
+  },
+  {
+   "track": "title",
+   "start": 24.734,
+   "end": 30.243,
+   "text": "Practice with a demo student first",
+   "sub": "Then try it with your own caseload"
+  },
+  {
+   "track": "caption",
+   "start": 0.3,
+   "end": 3.234,
+   "text": "Let's record a progress monitoring score."
+  },
+  {
+   "track": "caption",
+   "start": 4.634,
+   "end": 7.318,
+   "text": "First, choose the student."
+  },
+  {
+   "track": "caption",
+   "start": 7.888,
+   "end": 10.422,
+   "text": "Next, type the score."
+  },
+  {
+   "track": "caption",
+   "start": 10.99,
+   "end": 15.091,
+   "text": "Then select Save. A new bar appears in the chart."
+  },
+  {
+   "track": "caption",
+   "start": 16.304,
+   "end": 18.78,
+   "text": "Now check the intervention log."
+  },
+  {
+   "track": "caption",
+   "start": 19.03,
+   "end": 22.784,
+   "text": "Week four was a shorter session, so the score dipped."
+  },
+  {
+   "track": "caption",
+   "start": 25.234,
+   "end": 29.293,
+   "text": "That's it. Practice with a demo student first."
+  }
+ ],
+ "audio": [
+  {
+   "asset": "n1",
+   "start": 0.3
+  },
+  {
+   "asset": "n2",
+   "start": 4.634
+  },
+  {
+   "asset": "n3",
+   "start": 7.888
+  },
+  {
+   "asset": "n4",
+   "start": 10.99
+  },
+  {
+   "asset": "n5",
+   "start": 16.304
+  },
+  {
+   "asset": "n6",
+   "start": 19.03
+  },
+  {
+   "asset": "n7",
+   "start": 25.234
+  },
+  {
+   "asset": "beep",
+   "start": 3.684,
+   "gain": 0.5
+  },
+  {
+   "asset": "beep",
+   "start": 15.804,
+   "gain": 0.5
+  },
+  {
+   "asset": "beep",
+   "start": 24.734,
+   "gain": 0.5
+  }
+ ]
+}

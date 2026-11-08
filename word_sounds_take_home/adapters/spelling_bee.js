@@ -32,6 +32,8 @@ module.exports = {
     spelling_bee_correct: 'Yes! That is how to spell {word}.',
     spelling_bee_missed: 'This is how to spell it: {word}. Listen.',
     spelling_bee_answer: 'The word is spelled: {word}',
+    spelling_bee_letter_keys: 'Letter keys',
+    spelling_bee_delete: 'Delete the last letter',
   },
   prepare: function (w, env) {
     var word = String(env.word || '').trim();
@@ -134,6 +136,18 @@ module.exports = {
     ctx.root.appendChild(countLine);
     ctx.root.appendChild(ctx.el('label', { for: inputId, text: L.spelling_bee_input }));
     ctx.root.appendChild(input);
+    // On-screen letters for students without a keyboard (2026-11-07 parity audit). Typing still works.
+    var letterKeys = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (ch) {
+      return ctx.el('button', { type: 'button', style: 'min-width:44px;min-height:44px;font-weight:700', on: { click: function () {
+        if (ctx.isDone() || value().length >= (word.length || 20)) return;
+        input.value = value() + ch; lastSubmitted = null; draw();
+      } } }, [ch]);
+    });
+    var deleteKey = ctx.el('button', { type: 'button', 'aria-label': L.spelling_bee_delete, style: 'min-width:44px;min-height:44px', on: { click: function () {
+      if (ctx.isDone() || !value()) return;
+      input.value = value().slice(0, -1); lastSubmitted = null; draw();
+    } } }, ['⌫']);
+    ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey])));
     ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [checkBtn, firstBtn, moreBtn]));
     ctx.root.appendChild(answerLine);
     draw();
@@ -141,7 +155,7 @@ module.exports = {
       reveal: function () {
         input.setAttribute('readonly', '');
         input.setAttribute('aria-readonly', 'true');
-        [checkBtn, firstBtn, moreBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+        [checkBtn, firstBtn, moreBtn, deleteKey].concat(letterKeys).forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
         answerLine.hidden = false;
       },
     };

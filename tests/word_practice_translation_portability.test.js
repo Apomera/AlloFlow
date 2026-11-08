@@ -129,7 +129,7 @@ describe.each(Object.keys(sources))('Word Practice translated content portabilit
     expect(passages.map(node => [node.textContent, node.lang, node.dir])).toEqual([
       ['Feuille: Une partie de la plante.', 'fr', 'ltr'], ['جزء من النبات.', 'ar', 'rtl']
     ]);
-    expect(doc.querySelector('.awp-sr').textContent).toContain('Une partie de la plante.');
+    expect(doc.querySelector('p.awp-sr[role=status]').textContent).toContain('Une partie de la plante.');
     expect(doc.querySelector('.awp-card').textContent).not.toContain('[object Object]');
   });
 

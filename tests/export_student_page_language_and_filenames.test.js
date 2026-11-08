@@ -80,6 +80,35 @@ describe('saved-work file names', () => {
   });
 });
 
+describe('small page fixes', () => {
+  it('escapes a translated contents title in both the label and the heading', () => {
+    const local = window.AlloModules.createDocPipeline({
+      callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, t: key => (key === 'export.toc' ? 'Contents "A" <b>' : key), isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', getState: () => state,
+    });
+    const two = [{ type: 'simplified', id: 'a', title: 'One', data: 'Text' }, { type: 'simplified', id: 'b', title: 'Two', data: 'More' }];
+    const doc = new JSDOM(local.generateFullPackHTML(two, 'Lesson', false, {}, {})).window.document;
+    const nav = doc.querySelector('nav.alloflow-toc');
+    expect(nav.getAttribute('aria-label')).toBe('Contents "A" <b>');
+    expect(nav.querySelector('h2 b')).toBeNull();
+    expect(nav.querySelector('h2').textContent).toContain('Contents "A" <b>');
+  });
+
+  it('gives the Memory Aid and Applied Challenge print pages a translated title', () => {
+    const local = window.AlloModules.createDocPipeline({
+      callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, isRtlLang: () => false,
+      t: key => ({ 'memory_aid.export_memory_aid_fallback': 'Ayuda de memoria', 'applied_challenge.product_name': 'Resolución aplicada' })[key] || key,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document', getState: () => state,
+    });
+    const memory = local.generateFullPackHTML([{ type: 'memory-aid', id: 'm', title: 'M', data: { memoryAidExportPreset: 'study' } }], 'Lesson', false, {}, {});
+    expect(new JSDOM(memory).window.document.title).toBe('Ayuda de memoria');
+    const applied = local.generateFullPackHTML([{ type: 'applied-challenge', id: 'c', title: 'C', data: { appliedChallengeExportPreset: 'task' } }], 'Lesson', false, {}, {});
+    expect(new JSDOM(applied).window.document.title).toBe('Resolución aplicada');
+  });
+});
+
 describe('Class Mailbox send from the student page', () => {
   it('limits each part so a hung request reaches the download fallback', () => {
     const html = pipeline.generateFullPackHTML(history, 'Lesson', false, {}, { classPublicJwk: { kty: 'RSA', n: 'test', e: 'AQAB' } });

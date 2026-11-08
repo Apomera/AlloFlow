@@ -1610,6 +1610,8 @@ function sanitizeWordSoundsAudioProvenance(value) {
     {
         let remainingAudioChars = 6 * 1024 * 1024;
         let remainingAudioItems = 512;
+        // The same clip under the same key in both layouts is charged once.
+        const chargedAudio = new Map();
         const omittedAudioKeys = new Set();
         const safeTtsKey = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240);
         const recordOmittedTtsKey = (key, omittedKeys) => {
@@ -1627,8 +1629,9 @@ function sanitizeWordSoundsAudioProvenance(value) {
                 const asset = dataAudio ? { mime: dataAudio[1], base64: dataAudio[2] } : rawAsset;
                 const mime = asset && typeof asset === 'object' && !Array.isArray(asset) ? String(asset.mime || '').trim().toLowerCase() : '';
                 const base64 = asset && typeof asset.base64 === 'string' ? asset.base64.replace(/\s+/g, '') : '';
+                const charged = chargedAudio.get(key) === base64;
                 if (!/^audio\/[a-z0-9.+-]{1,48}$/i.test(mime)
-                    || !base64 || base64.length > 512 * 1024 || base64.length > remainingAudioChars || remainingAudioItems <= 0
+                    || !base64 || base64.length > 512 * 1024 || !charged && (base64.length > remainingAudioChars || remainingAudioItems <= 0)
                     || !/^[a-z0-9+/]+={0,2}$/i.test(base64) || base64.length % 4 === 1
                     || (base64.includes('=') && base64.length % 4 !== 0)) {
                     recordOmittedTtsKey(key, omittedKeys);
@@ -1640,8 +1643,11 @@ function sanitizeWordSoundsAudioProvenance(value) {
                 }
                 const provenance = sanitizeWordSoundsAudioProvenance(asset.provenance);
                 safeAssets[key] = { mime, base64, ...(provenance ? { provenance } : {}) };
-                remainingAudioChars -= base64.length;
-                remainingAudioItems -= 1;
+                if (!charged) {
+                    chargedAudio.set(key, base64);
+                    remainingAudioChars -= base64.length;
+                    remainingAudioItems -= 1;
+                }
             }
             return Object.keys(safeAssets).length > 0 ? safeAssets : null;
         };

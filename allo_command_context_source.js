@@ -96,7 +96,7 @@ function buildAlloCommandContext(deps) {
     gradeLevel, guidedActiveSteps, guidedCompletedIds, guidedCreatedHistoryIds, guidedMode, guidedStep,
     handleApplyLessonTemplate, handleApproveFullPack, handleAutoFillToggle, handleClearHistory, handleCloseStudentEntry, handleCloseSubmitModal,
     handleCloudToggleClick, handleCopyBlueprintActionDiagnostics, handleExecuteBlueprint, handleExitGuidedMode, handleExport, handleGenerate, handleGenerateBrainstormRubric,
-    handleGenerateSource, handleGuidedSkip, handleNextTourStep, handleOpenSchoolRewards, handleOpenSchoolRewardsPortal, handlePlanFullPack,
+    handleGenerateSource, handleGuidedSkip, handleNextTourStep, handleOpenSchoolRewards, handleOpenSchoolRewardsPortal, handleOpenWordSounds, handlePlanFullPack,
     handlePrevTourStep, handleRebuildBlueprintStep, handleResetScaffolds, handleRestoreView, handleReturnToStart, handleSendUDLMessage,
     handleSetActiveViewToDashboard, handleSetActiveViewToPersona, handleSetGlossaryFilterToAcademic, handleSetGlossaryFilterToAll, handleSetGlossaryFilterToDomain, handleSetIsBingoGameToTrue,
     handleSetIsCrosswordGameToTrue, handleSetIsMatchingGameToTrue, handleSetIsMemoryGameToTrue, handleSetIsProjectSettingsOpenToTrue, handleSetIsStudentBingoGameToTrue, handleSetIsTranslateModalOpenToTrue,
@@ -1080,6 +1080,13 @@ function buildAlloCommandContext(deps) {
           try { document.getElementById('tour-tool-math')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
         }, 150);
       },
+      // Word Sounds with the teacher's goals waiting in Describe your goals (taken once by the setup screen).
+      openWordSounds: typeof handleOpenWordSounds === 'function' ? (goal) => {
+        setShowEducatorHub(false); setShowLearningHub(false);
+        try { window.__alloWordSoundsGoalSeed = typeof goal === 'string' && goal.trim() ? goal.trim().slice(0, 1500) : null; } catch (_) {}
+        handleOpenWordSounds();
+        setTimeout(() => { try { window.dispatchEvent(new Event('alloflow:word-sounds-goal')); } catch (_) {} }, 0);
+      } : undefined,
       openFluencyMaze: () => {
         setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create');
         setMathMode('Fluency Maze');

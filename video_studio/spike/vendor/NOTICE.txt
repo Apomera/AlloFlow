@@ -1,0 +1,2 @@
+Mediabunny 1.65.2 (MPL-2.0) - https://github.com/Vanilagy/mediabunny
+Unmodified dist/bundles/mediabunny.min.mjs from the npm package. Spike use only.

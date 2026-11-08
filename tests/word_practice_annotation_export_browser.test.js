@@ -70,7 +70,7 @@ describe('Present & Export full annotation suite',()=>{
       offline=await browser.newPage(); await offline.setContent(html);
       expect(await offline.locator('.awp-card').innerText()).not.toMatch(/radio/i);
       expect(await offline.locator('.awp-card img').getAttribute('alt')).toBe('A ____ with two dials');
-      expect(await offline.locator('.awp-player .awp-sr').textContent()).not.toMatch(/radio/i);
+      expect(await offline.locator('.awp-player p.awp-sr[role=status]').textContent()).not.toMatch(/radio/i);
       await offline.getByRole('button',{name:'Annotate',exact:true}).click();
       await offline.getByRole('button',{name:'Toggle annotation list'}).click();
       const list=offline.getByRole('list',{name:'Annotations',exact:true});

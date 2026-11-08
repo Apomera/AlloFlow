@@ -8,7 +8,7 @@ describe('Acropora encounters and species references',()=>{
   it('resolves each living entry to a substantive account and its bibliography',()=>{
     const x=toolExports(), translate=(k,v)=>v, profiles=x.marineProfiles(translate), tx=x.speciesText(translate);
     const living=x.SPECIES_META.filter(row=>row.group!=='structure');
-    expect(living).toHaveLength(95);
+    expect(living).toHaveLength(103);
     for(const {id,scientific} of living){
       expect(scientific,id).toBeTruthy();
       for(const text of [tx[id].role,tx[id].fact,...['habitat','diet','behavior','observe'].map(k=>profiles[id][k])]) expect(text.length,id).toBeGreaterThan(12);
@@ -24,7 +24,7 @@ describe('Acropora encounters and species references',()=>{
 
   it.each(['real',null])('places and locates three stationary, distinct colonies with catalog %s',species=>{
     const site=toolSite('healthy');
-    expect(site.population.reduce((n,row)=>n+row.count,0)).toBe(258);
+    expect(site.population.reduce((n,row)=>n+row.count,0)).toBe(268);
     const population=site.population.filter(row=>corals.includes(row.id));
     expect(population.map(row=>row.count)).toEqual([1,1,1]);
     const errors=[];

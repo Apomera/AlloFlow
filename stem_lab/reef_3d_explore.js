@@ -150,10 +150,13 @@
     blackfin_barracuda: ['fish', 'school', 0.8, 1, 100, 8, 24], titan_triggerfish: ['fish', 'solitary', 0.6, 1, 50],
     bluefin_trevally: ['fish', 'solitary', 0.6, 1, 190],
     blacktip_reef_shark: ['fish', 'solitary', 1.3, 0, 75], dusky_farmerfish: ['fish', 'hover', 0.12, 1, 12],
+    foxface_rabbitfish: ['fish', 'pair', 0.2, 1, 30], leopard_coral_grouper: ['fish', 'solitary', 0.45, 3, 100],
+    dash_and_dot_goatfish: ['fish', 'solitary', 0.3, 1, 100], sixbar_wrasse: ['fish', 'solitary', 0.15, 0, 15],
     bigfin_reef_squid: ['invertebrate', 'hover', 0.40, 0, 100],
     goldmouth_sea_squirt: ['invertebrate', 'sessile', 0.12, 3, 20],
     drupella_snail: ['invertebrate', 'bottom', 0.035, 0, 30], pincushion_sea_star: ['invertebrate', 'bottom', 0.25, 0, 30],
     spanish_dancer: ['invertebrate', 'bottom', 0.30, 1, 50], banded_coral_shrimp: ['invertebrate', 'crevice', 0.06, 1, 60],
+    blue_ringed_octopus: ['invertebrate', 'bottom', 0.12, 0, 20], bedfords_flatworm: ['invertebrate', 'bottom', 0.085, 1, 20], galaxy_coral: ['coral', 'sessile', 0.3, 3, 25], finger_coral: ['coral', 'sessile', 0.4, 0, 48],
     feather_duster_worm: ['invertebrate', 'sessile', 0.16, 3, 16]
   };
   var SPECIAL = {
@@ -169,9 +172,16 @@
     // coral shrimp keep a cleaning station as a pair; a Spanish dancer crawls and
     // now and then swims a short loop over the reef.
     pincushion_sea_star: 'cots', banded_coral_shrimp: 'cleaner', spanish_dancer: 'dancer',
+    // A blue-ringed octopus keeps to a den at the rubble edge; Bedford's flatworm,
+    // mostly active at night, rests flat on the reef by day.
+    blue_ringed_octopus: 'den', bedfords_flatworm: 'fixed',
     // A blacktip reef shark keeps swimming along the shallow reef flat and gives the
     // diver a wide berth; a dusky farmerfish holds its turf patch and darts at grazers.
     blacktip_reef_shark: 'patrol', dusky_farmerfish: 'farm',
+    // A coral trout keeps slowly round one coral head; a goatfish searches a small patch
+    // of open sand close over the bottom (the cuttlefish's low, surface-following
+    // route); a sixbar wrasse ranges widely along the wave-swept reef crest.
+    leopard_coral_grouper: 'hover', dash_and_dot_goatfish: 'cuttle', sixbar_wrasse: 'roam',
     ocellated_eagle_ray: 'eagle', bigfin_reef_squid: 'squid', broadclub_cuttlefish: 'cuttle', blackspotted_puffer: 'puffer', banded_sea_krait: 'krait'
   };
   // A client's poses at a cleaning station: [pitch, roll] (head up, head down, tilted).
@@ -198,7 +208,9 @@
     white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel',
     blackfin_barracuda: 'channel', titan_triggerfish: 'rubbleEdge', bluefin_trevally: 'slope',
     drupella_snail: 'garden', pincushion_sea_star: 'garden', spanish_dancer: 'reef', banded_coral_shrimp: 'bommieSide',
+    blue_ringed_octopus: 'rubbleEdge', bedfords_flatworm: 'reef', galaxy_coral: 'garden', finger_coral: 'flat',
     blacktip_reef_shark: 'flat', dusky_farmerfish: 'bommie',
+    foxface_rabbitfish: 'garden', leopard_coral_grouper: 'bommieSide', dash_and_dot_goatfish: 'sand', sixbar_wrasse: 'crest',
     goldmouth_sea_squirt: 'shadedShoulder', feather_duster_worm: 'rockShoulder'
   };
   function speciesInfo(Species, id) {
@@ -3739,6 +3751,7 @@
       if (o.speciesId === 'banded_coral_shrimp') return 0.0005;
       if (o.speciesId === 'drupella_snail' || o.speciesId === 'pincushion_sea_star') return 0.004;
       if (o.speciesId === 'nudibranch' || o.speciesId === 'cleaner_shrimp' || o.speciesId === 'harlequin_shrimp') return 0.0005;
+    if (o.speciesId === 'blue_ringed_octopus' || o.speciesId === 'bedfords_flatworm') return 0.0005;
       // A two-centimetre burial hides most of these small real specimens.
       return o.speciesId === 'porcelain_anemone_crab' || o.speciesId === 'white_spotted_hermit_crab' || o.speciesId === 'varicose_phyllidia' || o.speciesId === 'textile_cone' || o.speciesId === 'orange_cup_coral' || o.speciesId === 'bubble_coral' || o.speciesId === 'goldmouth_sea_squirt' || o.speciesId === 'feather_duster_worm' ? 0.002 : 0.02;
     }
@@ -3752,7 +3765,7 @@
       return rock && (!floor || rock.point.y > floor.point.y + 0.15) ? rock : null;
     }
     function matchSmallSubstrate(o) {
-      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm' && o.speciesId !== 'banded_coral_shrimp' && o.speciesId !== 'drupella_snail')) return;
+      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm' && o.speciesId !== 'banded_coral_shrimp' && o.speciesId !== 'drupella_snail' && o.speciesId !== 'blue_ringed_octopus' && o.speciesId !== 'bedfords_flatworm')) return;
       // The rock's rendered triangles can lie centimetres above its smooth
       // analytic placement surface. Match these centimetre-sized animals to
       // the actual supporting face once, so their feet and bodies remain above

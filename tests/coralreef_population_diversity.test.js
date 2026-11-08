@@ -5,9 +5,9 @@ import vm from 'node:vm';
 const NEW_SPECIES = ['porcelain_anemone_crab', 'varicose_phyllidia', 'broadclub_cuttlefish',
   'blackspotted_puffer', 'ocellated_eagle_ray', 'textile_cone', 'orange_cup_coral',
   'banded_sea_krait', 'white_spotted_hermit_crab', 'longfin_bannerfish', 'bigfin_reef_squid',
-  'goldmouth_sea_squirt', 'feather_duster_worm', 'drupella_snail', 'pincushion_sea_star', 'spanish_dancer', 'banded_coral_shrimp', 'blacktip_reef_shark', 'dusky_farmerfish', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'blackfin_barracuda', 'titan_triggerfish', 'bluefin_trevally', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora'];
+  'goldmouth_sea_squirt', 'feather_duster_worm', 'foxface_rabbitfish', 'leopard_coral_grouper', 'dash_and_dot_goatfish', 'sixbar_wrasse', 'blue_ringed_octopus', 'bedfords_flatworm', 'galaxy_coral', 'finger_coral', 'drupella_snail', 'pincushion_sea_star', 'spanish_dancer', 'banded_coral_shrimp', 'blacktip_reef_shark', 'dusky_farmerfish', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'blackfin_barracuda', 'titan_triggerfish', 'bluefin_trevally', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora'];
 const PHOTOSYNTHETIC_CORALS = ['brain_coral', 'staghorn_coral', 'table_coral', 'mushroom_coral',
-  'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral'];
+  'boulder_coral', 'cauliflower_coral', 'foliose_coral', 'acropora_clathrata', 'acropora_humilis', 'acropora_millepora', 'bubble_coral', 'hammer_coral', 'flowerpot_coral', 'fire_coral', 'blue_coral', 'pipe_organ_coral', 'birdsnest_coral', 'galaxy_coral', 'finger_coral'];
 let X, Species;
 const count = (population, id) => population.find(entry => entry.id === id)?.count || 0;
 const total = population => population.reduce((sum, entry) => sum + entry.count, 0);
@@ -50,9 +50,9 @@ describe('explicit reef population diversity', () => {
       expect(count(healthy, id), id).toBeGreaterThanOrEqual(1);
       expect(count(healthy, id), id).toBeLessThanOrEqual(3);
     }
-    expect(NEW_SPECIES.reduce((sum, id) => sum + count(healthy, id), 0)).toBe(45);
+    expect(NEW_SPECIES.reduce((sum, id) => sum + count(healthy, id), 0)).toBe(55);
     expect(total(healthy.filter(entry => !NEW_SPECIES.includes(entry.id)))).toBe(213);
-    expect(total(healthy)).toBeLessThanOrEqual(258);
+    expect(total(healthy)).toBeLessThanOrEqual(268);
   });
 
   it('keeps all four sites and a model-derived dive deterministic, unique, bounded, and free of implicit restoration units', () => {
@@ -66,7 +66,7 @@ describe('explicit reef population diversity', () => {
       expect(X.populationFor(location), location.id).toEqual(population);
       expect(new Set(population.map(entry => entry.id)).size, location.id).toBe(population.length);
       expect(total(population), location.id).toBeGreaterThan(20);
-      expect(total(population), location.id).toBeLessThanOrEqual(258);
+      expect(total(population), location.id).toBeLessThanOrEqual(268);
       for (const entry of population) {
         expect(Number.isInteger(entry.count), entry.id).toBe(true);
         expect(entry.count, entry.id).toBeGreaterThan(0);
@@ -86,7 +86,7 @@ describe('explicit reef population diversity', () => {
     for (const id of ['crown_of_thorns', 'long_spined_urchin']) expect(count(damaged, id), id).toBeGreaterThan(count(healthy, id));
     expect(count(damaged, 'broadclub_cuttlefish')).toBe(0);
     const coralTotal = population => PHOTOSYNTHETIC_CORALS.reduce((sum, id) => sum + count(population, id), 0);
-    expect(coralTotal(healthy)).toBe(62); expect(coralTotal(damaged)).toBe(5);
+    expect(coralTotal(healthy)).toBe(65); expect(coralTotal(damaged)).toBe(5);
   });
 
   it('keeps nonphotosynthetic orange cup coral distinct from live-coral-dependent colonies and bleaching states', () => {

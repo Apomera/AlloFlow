@@ -34,7 +34,7 @@ function makePump(options) {
   let order = 0;
   const env = {
     performance: { now: () => clock },
-    navigator: {},
+    navigator: settings.navigator || {},
     document: {
       get hidden() { return !!settings.hidden; },
       body: { classList: { contains: (name) => (settings.classes || new Set()).has(name) } },
@@ -44,6 +44,7 @@ function makePump(options) {
     __alloDeferredModuleQueue: queue,
     __alloDeferredModuleNames: names,
     __alloModuleRegistry: registry,
+    __alloBootCriticalModules: settings.bootCritical || new Set(),
     __alloLoadModuleNow: (name) => { dispatched.push(name); registry[name] = { status: 'pending' }; },
   };
   const keys = Object.keys(env);
@@ -93,14 +94,40 @@ describe('first-action modules load first', () => {
     }
   });
 
-  it('behind the launch pad, only the tier loads, one at a time', () => {
+  it('behind the launch pad, the tier loads first, then the rest at most two at a time', () => {
+    // Time spent reading the launch pad is idle time; using it means fewer waits after a door opens.
     const pump = makePump({ classes: LAUNCH_PAD });
     pump.enqueue(SOURCE_ORDER);
     let maxInFlight = 0;
     pump.runUntil(20000, () => { maxInFlight = Math.max(maxInFlight, pump.inFlight()); if (pump.inFlight()) pump.settle(); });
-    expect(pump.dispatched.sort(), 'the tier did not load behind the launch pad, or something else did')
+    expect(pump.dispatched.slice(0, 4).sort(), 'the first-action tier did not go first behind the launch pad')
       .toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
-    expect(maxInFlight, 'behind the launch pad the trickle is one module at a time').toBe(1);
+    expect(pump.dispatched.length, 'the rest of the queue did not load behind the launch pad').toBe(SOURCE_ORDER.length);
+    expect(maxInFlight, 'behind the launch pad no more than two modules load at once').toBeLessThanOrEqual(2);
+  });
+
+  it('while a boot-critical module is still loading, the launch pad keeps to the tier, one at a time', () => {
+    // Background loading must not compete with the app's own start.
+    const pump = makePump({ classes: LAUNCH_PAD, bootCritical: new Set(['AlloData']) });
+    pump.registry.AlloData = { status: 'pending' };
+    pump.enqueue(SOURCE_ORDER);
+    let maxInFlight = 0;
+    const settleDispatched = () => { for (const name of pump.dispatched) pump.registry[name].status = 'loaded'; };
+    pump.runUntil(20000, () => { maxInFlight = Math.max(maxInFlight, pump.dispatched.filter((n) => pump.registry[n].status === 'pending').length); settleDispatched(); });
+    expect(pump.dispatched.slice().sort(), 'more than the tier loaded while the app was still starting')
+      .toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
+    expect(maxInFlight).toBe(1);
+    pump.registry.AlloData.status = 'loaded';
+    pump.runUntil(60000, settleDispatched);
+    expect(pump.dispatched.length, 'the rest did not follow once start-up finished').toBe(SOURCE_ORDER.length);
+  });
+
+  it('on Data Saver, only the tier loads behind the launch pad', () => {
+    const pump = makePump({ classes: LAUNCH_PAD, navigator: { connection: { saveData: true } } });
+    pump.enqueue(SOURCE_ORDER);
+    pump.runUntil(20000, () => { if (pump.inFlight()) pump.settle(); });
+    expect(pump.dispatched.sort(), 'Data Saver loaded more than the first-action tier behind the launch pad')
+      .toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
   });
 
   it('behind the launch pad, input stops the trickle outright', () => {
