@@ -52,7 +52,8 @@ describe('the printed sheet', () => {
     expect(items[0].querySelector('.ws-ws-prompt').textContent).toBe('Which word rhymes with cat?');
     expect([...items[0].querySelectorAll('.ws-ws-choice')].map((c) => c.textContent)).toEqual(['hat', 'dog', 'sun', 'bed']);
     expect(items[0].querySelector('.ws-ws-cue img').getAttribute('alt'), 'the picture is the given word, never the answer').toBe('cat');
-    expect([...doc.querySelectorAll('.ws-ws-key li')].map((li) => li.textContent)).toEqual(['hat', 'cat']);
+    // 2026-11-08: each key line names its word first, so a teacher can read the key aloud.
+    expect([...doc.querySelectorAll('.ws-ws-key li')].map((li) => li.textContent)).toEqual(['cat — hat', 'hat — cat']);
     expect(doc.querySelector('[data-ws-edit]')).toBeTruthy();
   });
   it('Blend Sounds: no picture to give the word away, and the key says which sounds to read', async () => {

@@ -216,14 +216,15 @@ describe('switching activity from the top bar', () => {
     const firstDisabled = options.findIndex((o) => o.disabled);
     expect(options.slice(firstDisabled).every((o) => o.disabled), 'ready activities come first').toBe(true);
     expect(options.find((o) => o.value === 'sentence_match').disabled).toBe(true);
-    expect(options.find((o) => o.value === 'sentence_match').textContent).toContain('No ready items');
+    // Short suffix (2026-11-08): the long one made the menu as wide as the screen. The drawer keeps the full sentence.
+    expect(options.find((o) => o.value === 'sentence_match').textContent).toBe('Picture the Sentence (not ready)');
   });
   it('one choice jumps to item 1 of that activity without opening Teacher controls', async () => {
     const p = await present({ activity: 'rhyming' });
     await key(p, 'ArrowRight');
     await pick(switcher(p), 'isolation');
     expect(itemLabel(p)).toBe('Item 1 of 2');
-    expect(prompt(p)).toBe('What is the first sound in cat?');
+    expect(prompt(p)).toBe('What is the first sound you hear?');
     expect(p.querySelector('#ws-present-drawer')).toBeNull();
   });
   it('arrow keys on the menu stay with the menu', async () => {

@@ -366,7 +366,7 @@
               });
               if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
             } } }, [v]);
-          var box = ctx.el('li', { class: 'choice', style: 'padding:6px' }, [button]);
+          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
           cards.push({ box: box, button: button, value: v });
           list.appendChild(box);
         });
@@ -470,7 +470,7 @@
           cards.push({ box: box, pick: pick, right: right });
           list.appendChild(box);
         });
-        ctx.root.appendChild(ctx.el('p', { text: ctx.L.decoding_prompt }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
         // The printed word, as the app shows it (CSS capitalize).
         ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
         if (item.prompt) {
@@ -1088,7 +1088,7 @@
           var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: letter.toUpperCase() }),
             style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
             on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [letter.toUpperCase()]);
-          var box = ctx.el('li', { class: 'choice', style: 'padding:6px' }, [button]);
+          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
           cards.push({ box: box, button: button, letter: letter });
           list.appendChild(box);
         });
@@ -1130,7 +1130,7 @@
     //               unchanged answer is not resubmitted; then checkAnswer(ans, word)
     //               (~17060, soundAnswerMatches on lowercased strings = equality for
     //               whole words). Default budget: 2 presentations (1 retry).
-    //   audio       inst_orthography bank clip (INST_KEY_MAP ~16446) and the word.
+    //   audio       inst_spelling_bee bank clip ("listen to the word and spell it") and the word.
     module.exports = {
       id: 'orthography',
       title: 'Sight & Spell',
@@ -1154,7 +1154,7 @@
         var missing = [];
         var wordAudio = env.wordClip(word);
         if (!wordAudio) missing.push('word');
-        var prompt = env.bankClip('instructions', 'inst_orthography');
+        var prompt = env.bankClip('instructions', 'inst_spelling_bee');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
         // The app's tile bank is a-z. A letter of this word outside a-z is added so
@@ -1329,7 +1329,7 @@
           if (line.text != null) node = ctx.el('p', { style: 'margin:6px 0;padding:2px 6px;border-radius:8px', text: line.text });
           else {
             var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
-              ctx.el('span', { 'aria-hidden': 'true', text: '____' }), ctx.el('span', { class: 'sr', text: ctx.L.read_passage_blank })]);
+              ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_passage_blank })]);
             blanks.push({ node: blank, answer: line.answer });
             node = ctx.el('p', { style: 'margin:6px 0;padding:2px 6px;border-radius:8px;white-space:pre-wrap' }, [line.before, blank, line.after]);
           }
@@ -1337,7 +1337,7 @@
           storyBox.appendChild(node);
         });
         var after = ctx.el('div', { class: 'row' });
-        ctx.root.appendChild(ctx.el('p', { text: ctx.L.read_passage_prompt }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_passage_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : ctx.L.read_passage_matching_practice }));
         if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }) }));
         else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
@@ -1505,9 +1505,9 @@
         var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
         var picture = ctx.image(item.picture);
         var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
-          ctx.el('span', { 'aria-hidden': 'true', text: '____' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
+          ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
         var after = ctx.el('div', { class: 'row' });
-        ctx.root.appendChild(ctx.el('p', { text: ctx.L.read_sentence_prompt }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
         if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
         else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
@@ -2088,7 +2088,7 @@
           slotRow.appendChild(ctx.el('li', {}, [b]));
         });
         drawSlots(false);
-        ctx.root.appendChild(ctx.el('p', { text: ctx.L.sentence_match_prompt }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem', text: item.sentence }));
         if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
@@ -2138,8 +2138,8 @@
       labels: {
         sound_sort_heading_first: 'Starts with {sound}',
         sound_sort_heading_last: 'Ends with {sound}',
-        sound_sort_heading_first_hidden: 'Starts with /…/',
-        sound_sort_heading_last_hidden: 'Ends with /…/',
+        sound_sort_heading_first_hidden: 'Starts with the sound you hear',
+        sound_sort_heading_last_hidden: 'Ends with the sound you hear',
         sound_sort_instruction: 'Tap each word to hear it. Find the ones that match!',
         sound_sort_instruction_letters: 'Find all words that match: {family}',
         sound_sort_found: '{found} of {total} found',
@@ -3456,9 +3456,9 @@
     'button{font:inherit;min-height:48px;min-width:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer}',
     'button.primary{background:var(--accent);color:var(--accent-ink)}button:disabled,button[aria-disabled=true]{opacity:.55;cursor:not-allowed}',
     'button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}',
-    ':focus-visible{outline:3px solid var(--focus);outline-offset:3px}',
+    ':focus-visible{outline:3px solid var(--focus);outline-offset:3px}h2[tabindex="-1"]:focus{outline:none}',
     '.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;list-style:none;padding:0;margin:16px 0}',
-    '.choice{border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}.choice.tried{border-style:dashed}.choice.right{border-color:var(--ok);background:var(--ok-bg)}',
+    '.choice{border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}.choice.tried{border-style:dashed}.choice.right{border-color:var(--ok);background:var(--ok-bg)}.choice.solo{border-color:transparent}.choice.solo.tried{border-color:var(--line)}.choice.solo.right{border-color:var(--ok)}',
     '.slots{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0}.slot{min-width:64px;min-height:64px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}',
     '.picture{max-width:160px;max-height:160px;border-radius:12px}',
     '.letters{font-size:1.5rem;font-weight:700}.status{min-height:1.5em;margin:12px 0;padding:8px 12px;border-radius:10px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
@@ -3538,11 +3538,12 @@
         return chain.then(function () { return mine === screenId && id ? play(id) : false; });
       }, Promise.resolve(true));
     };
-    var screen = function (heading, nodes) {
+    var screen = function (heading, nodes, hideHeading) {
       screenId++;
       stop();
       main.textContent = '';
-      var h = el('h2', { tabindex: '-1', text: heading });
+      // hideHeading: the page title already shows it; screen readers still hear it.
+      var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
       main.appendChild(h);
       nodes.forEach(function (n) { if (n) main.appendChild(n); });
       h.focus();
@@ -3570,7 +3571,7 @@
           el('label', { for: 'learner-name', text: L.name_label }), nameInput,
           el('div', { class: 'row', style: 'margin-top:16px' }, buttons),
         ]),
-      ]);
+      ], true);
     };
 
     var renderItem = function () {

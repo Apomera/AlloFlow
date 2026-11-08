@@ -80,7 +80,8 @@ describe('review readiness follows the selected activities', () => {
   it('retains relevant mixed-lesson warnings without offering audio repair for a missing rhyme', async () => {
     const regenerateAudio = vi.fn();
     await mount({ activitySequence: ['rhyming', 'manipulation'], onRegenerateWord: regenerateAudio, onRegenerateManipulationTask: vi.fn() });
-    expect(gap('rhyme').textContent).toContain('board is built on-device');
+    // 2026-11-08 wording: says what happens and what the teacher can do.
+    expect(gap('rhyme').textContent).toContain('Student devices will pick one');
     expect(gap('rhyme').querySelector('button')).toBeNull();
     expect(gap('task').querySelector('button').textContent).toContain('Build tasks');
     expect(gap('images')).toBeNull();

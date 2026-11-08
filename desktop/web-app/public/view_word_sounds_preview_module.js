@@ -2336,7 +2336,7 @@
     MAX_CLIP_CHARS = 512 * 1024;
   var INST = {
     decoding: 'decoding',
-    orthography: 'inst_orthography',
+    orthography: 'inst_spelling_bee',
     spelling_bee: 'inst_spelling_bee',
     word_scramble: 'inst_word_scramble',
     missing_letter: 'inst_missing_letter',

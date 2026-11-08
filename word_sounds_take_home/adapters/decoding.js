@@ -81,7 +81,7 @@ module.exports = {
       cards.push({ box: box, pick: pick, right: right });
       list.appendChild(box);
     });
-    ctx.root.appendChild(ctx.el('p', { text: ctx.L.decoding_prompt }));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
     // The printed word, as the app shows it (CSS capitalize).
     ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
     if (item.prompt) {

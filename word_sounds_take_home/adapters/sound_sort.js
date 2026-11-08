@@ -22,8 +22,8 @@ module.exports = {
   labels: {
     sound_sort_heading_first: 'Starts with {sound}',
     sound_sort_heading_last: 'Ends with {sound}',
-    sound_sort_heading_first_hidden: 'Starts with /…/',
-    sound_sort_heading_last_hidden: 'Ends with /…/',
+    sound_sort_heading_first_hidden: 'Starts with the sound you hear',
+    sound_sort_heading_last_hidden: 'Ends with the sound you hear',
     sound_sort_instruction: 'Tap each word to hear it. Find the ones that match!',
     sound_sort_instruction_letters: 'Find all words that match: {family}',
     sound_sort_found: '{found} of {total} found',

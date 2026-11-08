@@ -425,7 +425,8 @@ const createTTS = (deps) => {
                 return err;
             };
             try {
-                const taskResult = await (async () => {
+                // bare: the retry after Gemini read the word framing aloud (see the length check below).
+                const attempt = async (bare) => {
             const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;
             const url = baseUrl;
             const decodeBase64 = (base64) => {
@@ -439,7 +440,8 @@ const createTTS = (deps) => {
             // was pointlessly retried. Normalize; empty text fails fast, non-retryable.
             text = (text == null ? '' : String(text));
             if (!text.trim()) throw new Error('TTS Empty Text');
-            let promptText = text.length <= 2 ? `Say the sound: ${text}` : (text.length <= 5 ? `Please say the word: ${text}` : text);
+            const framedWord = !bare && text.length > 2 && text.length <= 5;
+            let promptText = bare ? text : text.length <= 2 ? `Say the sound: ${text}` : (framedWord ? `Please say the word: ${text}` : text);
             promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
             promptText = promptText.replace(/^\s*[-*•]\s+/gm, '');
             // Strip markdown emphasis markers — Gemini TTS reads them literally
@@ -551,13 +553,28 @@ const createTTS = (deps) => {
               }
               const bytes = decodeBase64(base64Audio);
               if (!bytes.length || bytes.length % 2) throw new Error("Invalid Gemini PCM audio payload");
+              // 16-bit mono PCM at 24 kHz: a short word with its silences stays well under 1.45 s; the
+              // framing read aloud ("please say the word theme") runs longer.
+              if (framedWord && bytes.length / 48000 > 1.45) {
+                  const readAloud = new Error("Gemini read the word framing aloud");
+                  readAloud.wordFramingRead = true;
+                  throw readAloud;
+              }
               _noteGeminiSuccess();
               return { bytes, base64: base64Audio };
             } catch (err) {
               console.warn("[TTS] Gemini TTS Fetch Error:", _ttsDiagnosticCode(err));
               throw err;
             }
-                })();
+                };
+                let taskResult;
+                try {
+                    taskResult = await attempt(false);
+                } catch (framingError) {
+                    if (!framingError || !framingError.wordFramingRead) throw framingError;
+                    _ttsTrace('fetch:word-framing-retry', { chars: text.length });
+                    taskResult = await attempt(true);
+                }
                 _ttsTrace('fetch:ok', { ms: Date.now() - taskStartedAt, voice: safeVoice });
                 return taskResult;
             } catch (taskError) {

@@ -288,8 +288,10 @@ describe('activities', () => {
     for (const id of ['rhyming', 'counting', 'segmentation', 'blending', 'isolation', 'word_families', 'sound_sort', 'decoding',
       'letter_tracing', 'spelling_bee', 'word_scramble', 'missing_letter', 'orthography', 'mapping']) expect(offered, id).toContain(id);
     // The fixture pack has no Picture the Sentence board.
+    // 2026-11-08: unavailable activities are small chips under one shared reason line.
     const row = drawer.querySelector('[data-present-unavailable="sentence_match"]');
-    expect(row.textContent).toContain('No ready items in this word list');
+    expect(row.textContent).toBe('Picture the Sentence');
+    expect(row.closest('div').textContent).toContain('No ready items in this word list');
     expect(row.querySelector('button')).toBeNull();
     expect(drawer.textContent, 'every activity can be presented').not.toContain('Not available while presenting');
   });
@@ -300,9 +302,11 @@ describe('activities', () => {
     await key(p, 'ArrowRight');
     await click((await openDrawer(p)).querySelector('[data-present-activity="isolation"]'));
     expect(itemLabel(p)).toBe('Item 1 of 2');
-    expect(prompt(p)).toBe('What is the first sound in cat?');
+    // The projected prompt never shows the word (2026-11-08): readers would read off the answer. Play says it.
+    expect(prompt(p)).toBe('What is the first sound you hear?');
+    expect(p.textContent).not.toMatch(/cat/);
     await key(p, 'ArrowRight');
-    expect(prompt(p)).toBe('What is the last sound in hat?');
+    expect(prompt(p)).toBe('What is the last sound you hear?');
     await key(p, 'r');
     expect(p.querySelector('[data-present-answer]').textContent).toContain('/t/');
   });
@@ -312,7 +316,7 @@ describe('activities', () => {
     const p = await present(host);
     await click((await openDrawer(p)).querySelector('[data-present-activity="segmentation"]'));
     await click(drawerToggle(p));
-    expect(prompt(p)).toBe('Say each sound in cat.');
+    expect(prompt(p)).toBe('Say each sound you hear.');
     expect(p.textContent).not.toContain('/k/');
     await key(p, 'r');
     expect(p.textContent).toContain('/k//a//t/');

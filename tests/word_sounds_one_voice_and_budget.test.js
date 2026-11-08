@@ -21,10 +21,11 @@ describe('one voice per lesson', () => {
     expect(wsLessonVoice([{ targetWord: 'cat' }])).toBeNull();
     expect(wsLessonVoice([])).toBeNull();
   });
-  it('applies to teachers only, and to an on-device Kokoro voice only once Kokoro is ready', () => {
+  it('applies to teachers only, and never swaps a Kokoro choice for a cloud voice', () => {
     expect(MODULE).toContain('selectedVoice: hostSelectedVoice,');
-    expect(MODULE).toContain('const selectedVoice = isTeacherMode && lessonVoice && (!/^(af_|am_|bf_|bm_)/i.test(lessonVoice) ||');
-    expect(MODULE).toContain('window._kokoroTTS && window._kokoroTTS.ready)) ? lessonVoice : hostSelectedVoice;');
+    expect(MODULE).toContain('const selectedVoice = isTeacherMode && lessonVoice && !hostVoiceIsKokoro ? lessonVoice : hostSelectedVoice;');
+    // A clip made in another voice (a cloud fallback) is never saved into the lesson.
+    expect(MODULE).toContain('if (profile.voice && wanted && profile.voice !== wanted) return;');
     // Repair and the review inventory read selectedVoice, so they follow the lesson voice too.
     expect(MODULE).toContain('resolveWordSoundsReplacement(row.text, selectedVoice, wordSoundsLanguage, callTTS, clipController.signal)');
   });

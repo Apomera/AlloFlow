@@ -138,7 +138,7 @@ module.exports = {
       slotRow.appendChild(ctx.el('li', {}, [b]));
     });
     drawSlots(false);
-    ctx.root.appendChild(ctx.el('p', { text: ctx.L.sentence_match_prompt }));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
     ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem', text: item.sentence }));
     if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [

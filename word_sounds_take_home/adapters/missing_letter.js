@@ -99,7 +99,7 @@ module.exports = {
       var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: letter.toUpperCase() }),
         style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
         on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [letter.toUpperCase()]);
-      var box = ctx.el('li', { class: 'choice', style: 'padding:6px' }, [button]);
+      var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
       cards.push({ box: box, button: button, letter: letter });
       list.appendChild(box);
     });

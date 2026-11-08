@@ -52,7 +52,7 @@ module.exports = {
           });
           if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
         } } }, [v]);
-      var box = ctx.el('li', { class: 'choice', style: 'padding:6px' }, [button]);
+      var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
       cards.push({ box: box, button: button, value: v });
       list.appendChild(box);
     });

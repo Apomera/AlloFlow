@@ -77,7 +77,7 @@ describe('real teacher rhyme edits carry reviewed authority through delivery',()
     let row=current.words[0];
     expect(row.activityItems.rhyming).toMatchObject({targetWord:'banana',answer:'bandana',teacherEdited:true,supported:true});
     expect(row.rhymePronunciation).toBeUndefined();expect(row._rhymeRejectedAnswer).toBeUndefined();
-    const choices=correct().parentElement.querySelectorAll('input[aria-label="common.enter_d"]');
+    const choices=correct().closest('.grid').querySelectorAll('input[aria-label="common.enter_d"]');
     await change(choices[0],'hat');
     row=current.words[0];
     expect(row.activityItems.rhyming.options).toEqual(['bandana','hat','sun']);
@@ -94,12 +94,12 @@ describe('real teacher rhyme edits carry reviewed authority through delivery',()
   it('keeps blank answer/choice edits visible but unplayable until the teacher completes them',async()=>{
     await mount();await change(correct(),' bandana ');
     expect(correct().value).toBe(' bandana ');
-    const add=[...correct().parentElement.querySelectorAll('button')].find(button=>button.textContent==='word_sounds.add_distractor');
+    const add=[...correct().closest('.grid').querySelectorAll('button')].find(button=>button.textContent==='word_sounds.add_distractor');
     await act(async()=>add.click());
     expect(current.words[0].rhymeDistractors).toEqual(['cat','sun','']);
     expect(current.words[0].activityItems.rhyming).toMatchObject({teacherEdited:true,supported:false});
     expect(installRuntime(current.words[0]).review).toBe(true);
-    const choices=correct().parentElement.querySelectorAll('input[aria-label="common.enter_d"]');
+    const choices=correct().closest('.grid').querySelectorAll('input[aria-label="common.enter_d"]');
     await change(choices[2],'moon');
     expect(current.words[0].activityItems.rhyming).toMatchObject({supported:true,options:['bandana','cat','sun','moon']});
     await change(correct(),'');

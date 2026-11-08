@@ -9,7 +9,7 @@
 //               unchanged answer is not resubmitted; then checkAnswer(ans, word)
 //               (~17060, soundAnswerMatches on lowercased strings = equality for
 //               whole words). Default budget: 2 presentations (1 retry).
-//   audio       inst_orthography bank clip (INST_KEY_MAP ~16446) and the word.
+//   audio       inst_spelling_bee bank clip ("listen to the word and spell it") and the word.
 module.exports = {
   id: 'orthography',
   title: 'Sight & Spell',
@@ -33,7 +33,7 @@ module.exports = {
     var missing = [];
     var wordAudio = env.wordClip(word);
     if (!wordAudio) missing.push('word');
-    var prompt = env.bankClip('instructions', 'inst_orthography');
+    var prompt = env.bankClip('instructions', 'inst_spelling_bee');
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
     // The app's tile bank is a-z. A letter of this word outside a-z is added so

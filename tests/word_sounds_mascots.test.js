@@ -1,5 +1,6 @@
 // Shared mascots (2026-11-07): allo_mascots_module.js carries the Typing Lab's characters on their own, and
 // Word Sounds uses them to cheer a right answer (Present to class on Reveal; the practice "correct" message).
+// They are off until a teacher picks one (2026-11-08).
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -16,6 +17,7 @@ async function present(extra = {}) {
   await settle(40);
   return presenter(host);
 }
+const choose = (mascot) => window.localStorage.setItem('allo_ws_present_look', JSON.stringify({ mascot }));
 const choice = (p, value) => p.querySelector('[data-present-choice="' + value + '"]');
 
 beforeAll(() => { loadModal(); fullscreenGrants(); });
@@ -55,7 +57,16 @@ describe('the shared mascots file', () => {
 });
 
 describe('Present to class', () => {
+  it('shows no mascot until the teacher picks one', async () => {
+    const p = await present();
+    await click(choice(p, 'hat'));
+    await key(p, 'r');
+    expect(p.querySelector('[data-present-cheer]')).toBeNull();
+    await click(p.querySelector('[aria-controls="ws-present-drawer"]'));
+    expect(p.querySelector('[data-present-mascot]').value).toBe('off');
+  });
   it('cheers on Reveal when the class chose the right answer', async () => {
+    choose('pip');
     const p = await present();
     await click(choice(p, 'hat'));
     await key(p, 'r');
@@ -101,7 +112,13 @@ describe('practice', () => {
     await settle(30);
     return host;
   };
+  it('a right-answer message keeps the party popper while no mascot is picked', async () => {
+    const host = await answerRight({ disableAnimations: false });
+    expect(host.querySelector('[data-ws-feedback-mascot]')).toBeNull();
+    expect(host.textContent).toContain('🎉');
+  });
   it('the mascot takes the place of the party popper in a right-answer message', async () => {
+    choose('pip');
     const host = await answerRight({ disableAnimations: false });
     const mascot = host.querySelector('[data-ws-feedback-mascot]');
     expect(mascot).toBeTruthy();
@@ -109,6 +126,7 @@ describe('practice', () => {
     expect(mascot.parentElement.textContent).not.toContain('🎉');
   });
   it('is not shown when animations are turned off', async () => {
+    choose('pip');
     const host = await answerRight({ disableAnimations: true });
     expect(host.querySelector('[data-ws-feedback-mascot]')).toBeNull();
   });

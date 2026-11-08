@@ -94,9 +94,9 @@ module.exports = {
     var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
     var picture = ctx.image(item.picture);
     var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
-      ctx.el('span', { 'aria-hidden': 'true', text: '____' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
+      ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
     var after = ctx.el('div', { class: 'row' });
-    ctx.root.appendChild(ctx.el('p', { text: ctx.L.read_sentence_prompt }));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
     if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
     else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
