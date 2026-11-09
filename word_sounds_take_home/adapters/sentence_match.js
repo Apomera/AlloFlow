@@ -86,7 +86,7 @@ module.exports = {
       slotButtons.forEach(function (b, i) {
         var word = slots[i];
         b.textContent = '';
-        b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-right:6px', text: String(i + 1) }));
+        b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
         b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
         b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
         if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');

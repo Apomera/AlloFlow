@@ -4587,7 +4587,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       }
     }
     const SyllableBlendingView = React.memo(({
-      data, isLoading, highlightedSyllableIndex, highlightedOptionIndex,
+      wordDir, data, isLoading, highlightedSyllableIndex, highlightedOptionIndex,
       showLetterHints, onPlayAudio, onPlaySyllables, isEditing,
       onUpdateOption, isAudioBusy, canAnswer, optionImages, onCheckAnswer, t, ts,
     }) => {
@@ -4598,7 +4598,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       return React.createElement("div", { className: "flex flex-col gap-5" },
         React.createElement("div", { className: "bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col gap-3" },
           React.createElement("p", { className: "text-center font-semibold text-sky-700" }, ts("word_sounds.syllable_blending_prompt") || "Listen to the syllables and blend them together"),
-          React.createElement("div", { className: "flex flex-wrap justify-center gap-2", "aria-hidden": !showLetterHints },
+          React.createElement("div", { dir: wordDir, className: "flex flex-wrap justify-center gap-2", "aria-hidden": !showLetterHints },
             ...data.syllables.map((syllable, i) => React.createElement("div", {
               key: i,
               className: "px-4 py-2 rounded-xl text-xl font-bold " + (highlightedSyllableIndex === i ? "bg-sky-700 text-white scale-110" : "bg-white border-2 border-sky-200 text-sky-700"),
@@ -5139,7 +5139,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           values.join('').trim().normalize('NFC').toLowerCase() === spelling) || null;
     };
     const SoundMappingView = React.memo(
-      ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, t, ts, isMountedRef, playSound, submissionLockRef, advanceEpochRef, answerEpoch, answerDisabled }) => {
+      ({ wordDir, data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, t, ts, isMountedRef, playSound, submissionLockRef, advanceEpochRef, answerEpoch, answerDisabled }) => {
         const [slots, setSlots] = React.useState(
           new Array(data.graphemes?.length || 0).fill(null),
         );
@@ -5197,7 +5197,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           { className: "flex flex-col items-center gap-8" },
           /*#__PURE__*/ React.createElement(
             "div",
-            { className: "flex justify-center gap-4 mb-4" },
+            { dir: wordDir, className: "flex justify-center gap-4 mb-4" },
             slots.map((slot, i) =>
               /*#__PURE__*/ React.createElement(
               "button",
@@ -5916,15 +5916,15 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       "#ws-di-print{max-width:760px;margin:0 auto}",
       "h1{font-size:24px;font-weight:900;margin:0}",
       "h2{font-size:18px;font-weight:900;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:12px}",
-      "p{margin:4px 0}ul{margin:8px 0 0;padding-left:20px;list-style:disc}ol{margin:12px 0 0;padding-left:0;list-style:none}li{margin:2px 0}",
-      "table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;padding:4px 12px 4px 0;border-bottom:2px solid #cbd5e1}",
-      "td{padding:4px 12px 4px 0;border-bottom:1px solid #e2e8f0;vertical-align:top}",
+      "p{margin:4px 0}ul{margin:8px 0 0;padding-inline-start:20px;list-style:disc}ol{margin:12px 0 0;padding-inline-start:0;list-style:none}li{margin:2px 0}",
+      "table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:start;padding-block:4px;padding-inline:0 12px;border-bottom:2px solid #cbd5e1}",
+      "td{padding-block:4px;padding-inline:0 12px;border-bottom:1px solid #e2e8f0;vertical-align:top}",
       "section{margin-top:24px;padding-top:16px;border-top:2px solid #e2e8f0}",
       // Sections may split across pages (keeping each whole left pages a third empty); headings stay with their text.
       "h2{break-after:avoid;page-break-after:avoid}li,tr,.border-l-4{break-inside:avoid;page-break-inside:avoid}",
       ".print-bar button[aria-pressed=true]{background:#1e1b4b}.ws-editing [data-ws-edit]{outline:2px dashed #4338ca;outline-offset:2px;cursor:text}",
       ".border-2{border:2px solid #cbd5e1;border-radius:8px;padding:16px;background:#f8fafc;margin-top:16px}",
-      ".border-l-4{border-left:4px solid #818cf8;padding-left:12px;margin-top:12px}",
+      ".border-l-4{border-inline-start:4px solid #818cf8;padding-inline-start:12px;margin-top:12px}",
       ".font-black{font-weight:900}.font-bold{font-weight:700}.font-semibold{font-weight:600}.italic{font-style:italic}",
       ".text-sm{font-size:14px}.text-xs{font-size:13px}",
       ".uppercase{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;color:#475569}",
@@ -5959,7 +5959,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       } catch (_) { return false; }
     };
     const WS_DI_SOUND_TOKEN = /(\/[\p{L}_]{1,5}\/)/u;
-    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, onPrint, copyState, ts, dialogRef, onDialogKeyDown, onPlaySound, onEditSound }) => {
+    const WS_DI_DELIVERY_MODES = ["app", "present", "paper", "oral", "mixed"];
+    const WS_DI_DELIVERY_STORE = "allo_ws_di_delivery";
+    const WS_DI_DELIVERY_LABELS = { app: "In the app", present: "With Present to class", paper: "On paper", oral: "Out loud only", mixed: "Mixed" };
+    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, onPrint, copyState, ts, dialogRef, onDialogKeyDown, onPlaySound, onEditSound, delivery, onDelivery }) => {
       const label = (key, fallback) => {
         try { return (ts && ts(key)) || fallback; } catch (_) { return fallback; }
       };
@@ -6046,6 +6049,22 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             { className: "font-bold text-slate-800" },
             label("word_sounds.di_script_title", "Lesson script"),
           ),
+          typeof onDelivery === "function" ? /*#__PURE__*/ React.createElement(
+            "label",
+            { className: "flex items-center gap-2 text-sm font-semibold text-slate-700" },
+            label("word_sounds.di_delivery_label", "Students work"),
+            /*#__PURE__*/ React.createElement(
+              "select",
+              {
+                value: WS_DI_DELIVERY_MODES.includes(delivery) ? delivery : "app",
+                onChange: (event) => onDelivery(event.target.value),
+                "data-ws-di-delivery": "true",
+                className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+              },
+              WS_DI_DELIVERY_MODES.map((mode) => /*#__PURE__*/ React.createElement("option", { key: mode, value: mode },
+                label("word_sounds.di_delivery_" + mode, WS_DI_DELIVERY_LABELS[mode]))),
+            ),
+          ) : null,
           /*#__PURE__*/ React.createElement(
             "div",
             { className: "flex items-center gap-2" },
@@ -6872,7 +6891,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       return items;
     };
     // "Present offline": a single page that needs nothing but a browser. The player is plain script.
-    const WS_PRESENT_OFFLINE_PLAYER = "(function () {\n  var data = JSON.parse(document.getElementById('ws-data').textContent);\n  var S = data.strings, acts = data.activities, clips = data.clips, pics = data.images;\n  var a = 0, i = 0, revealed = false, picked = [], finished = false, token = 0;\n  var $ = function (id) { return document.getElementById(id); };\n  var el = function (tag, attrs, kids) {\n    var n = document.createElement(tag);\n    Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') n.textContent = attrs[k]; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); });\n    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });\n    return n;\n  };\n  var fill = function (s, p) { return String(s).replace(/\\{\\{?(\\w+)\\}?\\}/g, function (m, k) { return p && p[k] != null ? p[k] : m; }); };\n  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };\n  var playOne = function (step) {\n    return new Promise(function (resolve) {\n      var src = step.clip && clips[step.clip];\n      if (src) { var au = new Audio(src); au.playbackRate = data.speed || 1; au.onended = resolve; au.onerror = resolve; au.play().catch(resolve); return; }\n      if (step.text && !/^\\/.*\\/$/.test(step.text) && window.speechSynthesis) {\n        var u = new SpeechSynthesisUtterance(step.text); u.lang = data.lang || 'en'; u.rate = data.speed || 1; u.onend = resolve; u.onerror = resolve;\n        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); return;\n      }\n      resolve();\n    });\n  };\n  var play = function (steps) {\n    var mine = ++token;\n    (steps || []).reduce(function (p, s, n) { return p.then(function () { if (mine !== token) return; return playOne(s).then(function () { if (n < steps.length - 1 && mine === token) return wait(data.gap * 1000); }); }); }, Promise.resolve());\n  };\n  var act = function () { return acts[a]; };\n  var item = function () { return act().items[Math.min(i, act().items.length - 1)]; };\n  var isRight = function (v) { return item().correct.some(function (c) { return c.toLowerCase() === String(v).toLowerCase(); }); };\n  var img = function (id, alt, cls) { return id && pics[id] ? el('img', { src: pics[id], alt: alt || '', class: cls || '' }) : null; };\n  var boxes = function (vals, count, plain) { return el('div', { class: 'row' }, Array.apply(null, Array(count)).map(function (_, k) { return el('span', { class: 'box', text: vals && vals[k] ? (plain ? vals[k] : '/' + vals[k] + '/') : '' }); })); };\n  var display = function (it) {\n    var d = it.display; if (!d) return null;\n    if (d.kind === 'sounds' || d.kind === 'parts') return el('div', { class: 'row' }, d.steps.map(function (s, k) { return el('button', { class: 'soft', onclick: function () { play([s]); }, text: fill(d.kind === 'sounds' ? S.sound : S.part, { n: k + 1 }) }); }));\n    if (d.kind === 'boxes') return boxes(revealed ? it.answer.sounds : null, d.count);\n    if (d.kind === 'letters') return boxes(revealed ? it.answer.letters : null, d.count, true);\n    if (d.kind === 'word') return el('p', { class: 'word', text: d.text });\n    if (d.kind === 'blank_word') return el('p', { class: 'word', text: d.letters.map(function (l, k) { return k === d.hidden && !revealed ? '_' : l; }).join('') });\n    if (d.kind === 'tiles') return el('div', { class: 'row' }, d.tiles.map(function (t) { return el('span', { class: 'box', text: t }); }));\n    if (d.kind === 'map') return el('div', { class: 'row' }, d.sounds.map(function (s, k) { return el('div', { class: 'col' }, [el('button', { class: 'soft', text: '/' + s + '/', onclick: function () { play([{ text: '/' + s + '/', clip: d.clips && d.clips[k] }]); } }), el('span', { class: 'box', text: revealed ? d.letters[k] : '' })]); }));\n    if (d.kind === 'text') return el('p', { class: 'text' }, d.parts.map(function (p) { return p.text != null ? document.createTextNode(p.text + ' ') : el('span', {}, [document.createTextNode(p.before + ' '), el('b', { class: revealed ? 'filled' : '', text: revealed ? (p.answer || it.word) : '______' }), document.createTextNode(' ' + p.after + ' ')]); }));\n    return null;\n  };\n  var render = function () {\n    var stage = $('stage'); stage.innerHTML = '';\n    $('act').value = String(a);\n    var it = item(), n = Math.min(i, act().items.length - 1);\n    $('count').textContent = fill(S.itemOf, { n: n + 1, total: act().items.length });\n    $('reveal').disabled = finished; $('reveal').textContent = revealed ? S.playAnswer : S.reveal;\n    $('play').hidden = finished || !it.audio.length;\n    if (finished) {\n      var next = acts[a + 1];\n      stage.appendChild(el('h2', { text: fill(S.done, { activity: act().label }) }));\n      stage.appendChild(el('div', { class: 'row' }, [\n        next ? el('button', { class: 'accent big', text: fill(S.nextActivity, { activity: next.label }), onclick: function () { go2(a + 1); } }) : null,\n        el('button', { class: 'plain big', text: S.again, onclick: function () { finished = false; i = 0; fresh(); } })]));\n      $('status').textContent = fill(S.done, { activity: act().label });\n      return;\n    }\n    stage.appendChild(el('h2', { text: it.prompt }));\n    var shown = display(it); if (shown) stage.appendChild(shown);\n    if (it.choices.length) stage.appendChild(el('div', { class: 'row', role: 'group', 'aria-label': S.choices }, it.choices.map(function (c) {\n      var right = revealed && isRight(c.value), on = picked.indexOf(c.value) >= 0;\n      return el('button', { class: 'choice' + (right ? ' right' : on ? ' picked' : ''), 'aria-pressed': String(on), onclick: function () {\n        picked = it.multi ? (on ? picked.filter(function (v) { return v !== c.value; }) : picked.concat(c.value)) : (on ? [] : [c.value]); render();\n      } }, [c.image ? img(c.image, c.label, 'pic') : document.createTextNode(c.label), right ? el('span', { text: ' ✓' }) : null]);\n    })));\n    if (revealed) {\n      var ans = el('div', { class: 'answer' }, [img(it.answer.image, fill(S.pictureOf, { word: /^[\\p{L}\\p{M}'’ -]+$/u.test(String(it.answer.label || '')) ? it.answer.label : it.word || it.answer.label }), 'apic'),\n        it.answer.sounds && (!it.display || it.display.kind !== 'boxes') ? boxes(it.answer.sounds, it.answer.sounds.length) : null,\n        el('p', { class: 'alabel', text: it.answer.label }), it.answer.parts && it.answer.parts.length ? el('p', { class: 'muted', text: it.answer.parts.join(' · ') }) : null]);\n      stage.appendChild(ans);\n    }\n  };\n  var fresh = function () { revealed = false; picked = []; render(); var it = item(); $('status').textContent = fill(S.itemOf, { n: i + 1, total: act().items.length }); if (!finished) play(it.audio); };\n  var go = function (d) {\n    if (finished) { if (d < 0) { finished = false; render(); } else if (acts[a + 1]) go2(a + 1); return; }\n    if (d > 0 && i >= act().items.length - 1) { finished = true; token++; render(); return; }\n    var t = Math.max(0, Math.min(act().items.length - 1, i + d)); if (t === i) return; i = t; fresh();\n  };\n  var go2 = function (k) { a = k; i = 0; finished = false; fresh(); };\n  var reveal = function () { if (finished) return; revealed = true; render(); $('status').textContent = fill(S.answerIs, { answer: item().answer.label }); play(item().answer.audio); };\n  acts.forEach(function (x, k) { $('act').appendChild(el('option', { value: String(k), text: x.label })); });\n  $('act').addEventListener('change', function (e) { go2(Number(e.target.value)); });\n  $('prev').addEventListener('click', function () { go(-1); });\n  $('next').addEventListener('click', function () { go(1); });\n  $('reveal').addEventListener('click', reveal);\n  $('play').addEventListener('click', function () { play(item().audio); });\n  document.addEventListener('keydown', function (e) {\n    var t = e.target; if (t && t.closest && t.closest('select, input, textarea')) return;\n    var space = e.key === ' ' || e.key === 'Spacebar';\n    if (t && t.closest && (space || e.key === 'Enter') && t.closest('button')) return;\n    if (e.key === 'ArrowRight' || e.key === 'PageDown' || space) { e.preventDefault(); go(1); }\n    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }\n    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); reveal(); }\n  });\n  fresh();\n})();\n";
+    const WS_PRESENT_OFFLINE_PLAYER = "(function () {\n  var data = JSON.parse(document.getElementById('ws-data').textContent);\n  var S = data.strings, acts = data.activities, clips = data.clips, pics = data.images;\n  var a = 0, i = 0, revealed = false, picked = [], finished = false, token = 0;\n  var $ = function (id) { return document.getElementById(id); };\n  var el = function (tag, attrs, kids) {\n    var n = document.createElement(tag);\n    Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') n.textContent = attrs[k]; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); });\n    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });\n    return n;\n  };\n  var fill = function (s, p) { return String(s).replace(/\\{\\{?(\\w+)\\}?\\}/g, function (m, k) { return p && p[k] != null ? p[k] : m; }); };\n  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };\n  var playOne = function (step) {\n    return new Promise(function (resolve) {\n      var src = step.clip && clips[step.clip];\n      if (src) { var au = new Audio(src); au.playbackRate = data.speed || 1; au.onended = resolve; au.onerror = resolve; au.play().catch(resolve); return; }\n      if (step.text && !/^\\/.*\\/$/.test(step.text) && window.speechSynthesis) {\n        var u = new SpeechSynthesisUtterance(step.text); u.lang = data.lang || 'en'; u.rate = data.speed || 1; u.onend = resolve; u.onerror = resolve;\n        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); return;\n      }\n      resolve();\n    });\n  };\n  var play = function (steps) {\n    var mine = ++token;\n    (steps || []).reduce(function (p, s, n) { return p.then(function () { if (mine !== token) return; return playOne(s).then(function () { if (n < steps.length - 1 && mine === token) return wait(data.gap * 1000); }); }); }, Promise.resolve());\n  };\n  var act = function () { return acts[a]; };\n  var item = function () { return act().items[Math.min(i, act().items.length - 1)]; };\n  var isRight = function (v) { return item().correct.some(function (c) { return c.toLowerCase() === String(v).toLowerCase(); }); };\n  var img = function (id, alt, cls) { return id && pics[id] ? el('img', { src: pics[id], alt: alt || '', class: cls || '' }) : null; };\n  var boxes = function (vals, count, plain) { return el('div', { class: 'row' }, Array.apply(null, Array(count)).map(function (_, k) { return el('span', { class: 'box', text: vals && vals[k] ? (plain ? vals[k] : '/' + vals[k] + '/') : '' }); })); };\n  var display = function (it) {\n    var d = it.display; if (!d) return null;\n    if (d.kind === 'sounds' || d.kind === 'parts') return el('div', { class: 'row' }, d.steps.map(function (s, k) { return el('button', { class: 'soft', onclick: function () { play([s]); }, text: fill(d.kind === 'sounds' ? S.sound : S.part, { n: k + 1 }) }); }));\n    if (d.kind === 'boxes') return boxes(revealed ? it.answer.sounds : null, d.count);\n    if (d.kind === 'letters') return boxes(revealed ? it.answer.letters : null, d.count, true);\n    if (d.kind === 'word') return el('p', { class: 'word', text: d.text });\n    if (d.kind === 'blank_word') return el('p', { class: 'word', text: d.letters.map(function (l, k) { return k === d.hidden && !revealed ? '_' : l; }).join('') });\n    if (d.kind === 'tiles') return el('div', { class: 'row' }, d.tiles.map(function (t) { return el('span', { class: 'box', text: t }); }));\n    if (d.kind === 'map') return el('div', { class: 'row' }, d.sounds.map(function (s, k) { return el('div', { class: 'col' }, [el('button', { class: 'soft', text: '/' + s + '/', onclick: function () { play([{ text: '/' + s + '/', clip: d.clips && d.clips[k] }]); } }), el('span', { class: 'box', text: revealed ? d.letters[k] : '' })]); }));\n    if (d.kind === 'text') return el('p', { class: 'text' }, d.parts.map(function (p) { return p.text != null ? document.createTextNode(p.text + ' ') : el('span', {}, [document.createTextNode(p.before + ' '), el('b', { class: revealed ? 'filled' : '', text: revealed ? (p.answer || it.word) : '______' }), document.createTextNode(' ' + p.after + ' ')]); }));\n    return null;\n  };\n  var paint = function () {\n    var stage = $('stage'); stage.innerHTML = '';\n    $('act').value = String(a);\n    var it = item(), n = Math.min(i, act().items.length - 1);\n    $('count').textContent = fill(S.itemOf, { n: n + 1, total: act().items.length });\n    $('reveal').disabled = finished; $('reveal').textContent = revealed ? S.playAnswer : S.reveal;\n    $('play').hidden = finished || !it.audio.length;\n    if (finished) {\n      var next = acts[a + 1];\n      stage.appendChild(el('h2', { text: fill(S.done, { activity: act().label }) }));\n      stage.appendChild(el('div', { class: 'row' }, [\n        next ? el('button', { class: 'accent big', text: fill(S.nextActivity, { activity: next.label }), onclick: function () { go2(a + 1); } }) : null,\n        el('button', { class: 'plain big', text: S.again, onclick: function () { finished = false; i = 0; fresh(); } })]));\n      $('status').textContent = fill(S.done, { activity: act().label });\n      return;\n    }\n    stage.appendChild(el('h2', { text: it.prompt }));\n    var shown = display(it); if (shown) stage.appendChild(shown);\n    if (it.choices.length) stage.appendChild(el('div', { class: 'row', role: 'group', 'aria-label': S.choices }, it.choices.map(function (c, ci) {\n      var right = revealed && isRight(c.value), on = picked.indexOf(c.value) >= 0;\n      return el('button', { class: 'choice' + (right ? ' right' : on ? ' picked' : ''), 'aria-pressed': String(on), 'data-k': 'c' + ci, onclick: function () {\n        picked = it.multi ? (on ? picked.filter(function (v) { return v !== c.value; }) : picked.concat(c.value)) : (on ? [] : [c.value]); render();\n      } }, [c.image ? img(c.image, c.label, 'pic') : document.createTextNode(c.label), right ? el('span', { text: ' ✓' }) : null]);\n    })));\n    if (revealed) {\n      var ans = el('div', { class: 'answer' }, [img(it.answer.image, fill(S.pictureOf, { word: /^[\\p{L}\\p{M}'’ -]+$/u.test(String(it.answer.label || '')) ? it.answer.label : it.word || it.answer.label }), 'apic'),\n        it.answer.sounds && (!it.display || it.display.kind !== 'boxes') ? boxes(it.answer.sounds, it.answer.sounds.length) : null,\n        el('p', { class: 'alabel', text: it.answer.label }), it.answer.parts && it.answer.parts.length ? el('p', { class: 'muted', text: it.answer.parts.join(' · ') }) : null]);\n      stage.appendChild(ans);\n    }\n  };\n  var render = function () {\n    var stage = $('stage'), had = document.activeElement, keep = had && had !== stage && stage.contains(had) ? had.getAttribute('data-k') || '-' : null;\n    paint();\n    if (keep == null) return;\n    var back = [].filter.call(stage.querySelectorAll('[data-k]'), function (b) { return b.getAttribute('data-k') === keep; })[0] || stage.querySelector('h2');\n    if (back) { if (back.tagName === 'H2') back.setAttribute('tabindex', '-1'); back.focus(); }\n  };\n  var fresh = function () { revealed = false; picked = []; render(); var it = item(); $('status').textContent = fill(S.itemOf, { n: i + 1, total: act().items.length }); if (!finished) play(it.audio); };\n  var go = function (d) {\n    if (finished) { if (d < 0) { finished = false; render(); } else if (acts[a + 1]) go2(a + 1); return; }\n    if (d > 0 && i >= act().items.length - 1) { finished = true; token++; render(); return; }\n    var t = Math.max(0, Math.min(act().items.length - 1, i + d)); if (t === i) return; i = t; fresh();\n  };\n  var go2 = function (k) { a = k; i = 0; finished = false; fresh(); };\n  var reveal = function () { if (finished) return; revealed = true; render(); $('status').textContent = fill(S.answerIs, { answer: item().answer.label }); play(item().answer.audio); };\n  acts.forEach(function (x, k) { $('act').appendChild(el('option', { value: String(k), text: x.label })); });\n  $('act').addEventListener('change', function (e) { go2(Number(e.target.value)); });\n  $('prev').addEventListener('click', function () { go(-1); });\n  $('next').addEventListener('click', function () { go(1); });\n  $('reveal').addEventListener('click', reveal);\n  $('play').addEventListener('click', function () { play(item().audio); });\n  document.addEventListener('keydown', function (e) {\n    var t = e.target; if (t && t.closest && t.closest('select, input, textarea')) return;\n    var space = e.key === ' ' || e.key === 'Spacebar';\n    if (t && t.closest && (space || e.key === 'Enter') && t.closest('button')) return;\n    if (e.key === 'ArrowRight' || e.key === 'PageDown' || space) { e.preventDefault(); go(1); }\n    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }\n    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); reveal(); }\n  });\n  fresh();\n})();\n";
     const wsPresentOfflineHtml = ({ title, lang, dir, palette, fontFamily, payload, chrome }) => {
       const esc = (value) => String(value == null ? "" : value).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
       const vars = Object.keys(palette).map((name) => "--" + name + ":" + palette[name]).join(";");
@@ -7461,6 +7480,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".ws-print-cue{flex:0 0 1.5in;width:1.5in;min-height:0.9in;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center}",
       ".ws-print-cue img{max-width:1.4in;max-height:1in;object-fit:contain}",
       ".ws-print-cue-word{font-size:30px;max-width:100%;overflow-wrap:anywhere}",
+      ".ws-print-cue-blank{display:block;width:1.2in;height:0.8in;box-sizing:border-box;border:2px dashed #000;border-radius:12px}",
+      ".ws-print-teacher ol{font-size:22px;font-weight:700;padding-inline-start:40px}",
       ".ws-print-boxes{display:flex;align-items:flex-start;flex:1 1 auto;min-width:0}",
       ".ws-print-box{flex:0 1 0.85in;width:0.85in;min-width:0;aspect-ratio:1/1;box-sizing:border-box;border:3px solid #000}",
       ".ws-print-box+.ws-print-box{margin-inline-start:-3px}",
@@ -7601,16 +7622,19 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const px = Math.max(14, Math.round(Math.min(30, 240 / Math.max(1, [...word].length))));
       return fit ? fit(word, px, 144, Infinity) : px;
     };
-    // A row shows its picture; the word is printed when the teacher asks for
-    // it, or when there is no picture to stand in for it. Long words get
-    // smaller type, and more than six boxes shrink to share 5.4in.
+    // A row shows its picture; the word is printed only when the teacher asks.
+    // A row with no picture gets a blank cue (a printed word would give the
+    // sounds away), and a teacher page lists every word by row number. Long
+    // words get smaller type, and more than six boxes shrink to share 5.4in.
     const wsPrintBoxes =(entries, showWord, wordAttrs, text, fit) =>
       "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1>" + wsPrintNameLine(text.name) + "<p data-ws-edit>" + wsPrintEsc(text.directions) + "</p>" +
       '<ol class="ws-print-rows">' + entries.map((e) =>
         '<li><div class="ws-print-row"' + wordAttrs + '><div class="ws-print-cue">' + wsPrintImg(e) +
-        (showWord || !e.image ? '<span class="ws-print-cue-word" data-ws-edit spellcheck="false" style="font-size:' + wsPrintCueSize(e.word, fit) +
-          'px">' + wsPrintEsc(e.word) + "</span>" : "") +
-        '</div><div class="ws-print-boxes">' + '<span class="ws-print-box"></span>'.repeat(e.sounds) + "</div></div></li>").join("") + "</ol>";
+        (showWord ? '<span class="ws-print-cue-word" data-ws-edit spellcheck="false" style="font-size:' + wsPrintCueSize(e.word, fit) +
+          'px">' + wsPrintEsc(e.word) + "</span>" : e.image ? "" : '<span class="ws-print-cue-blank"></span>') +
+        '</div><div class="ws-print-boxes">' + '<span class="ws-print-box"></span>'.repeat(e.sounds) + "</div></div></li>").join("") + "</ol>" +
+      (showWord ? "" : '<section class="ws-ws-key ws-print-teacher"><h2 data-ws-edit>' + wsPrintEsc(text.keyTitle) + "</h2>" +
+        (entries.some((e) => !e.image) ? "<p data-ws-edit>" + wsPrintEsc(text.keyNote) + "</p>" : "") + "<ol" + wordAttrs + ">" + entries.map((e) => "<li>" + wsPrintEsc(e.word) + (e.image ? "" : " *") + "</li>").join("") + "</ol></section>");
     const wsPrintHome = (entries, wordAttrs, text) =>
       '<div class="ws-print-letter">' + wsPrintNameLine(text.name) + "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1><p data-ws-edit>" + wsPrintEsc(text.greeting) +
       "</p><p data-ws-edit>" + wsPrintEsc(text.intro) + '</p><ul class="ws-print-words' + (entries.length > 24 ? " ws-print-words-dense" : "") + '"' + wordAttrs + ">" +
@@ -7618,6 +7642,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       "</ul><h2 data-ws-edit>" + wsPrintEsc(text.tryHeading) + "</h2><ol>" + text.activities.map((a) => "<li data-ws-edit>" + wsPrintEsc(a) + "</li>").join("") +
       "</ol><p data-ws-edit>" + wsPrintEsc(text.thanks) + "</p></div>";
     // One worksheet from Present to class items. Pictures appear only where they do not give the answer away.
+    // Take-home supports that give away part of the answer (replays only repeat audio).
+    const WS_TAKE_HOME_ANSWER_HELP = ["wordShown", "spelling_first_letter", "spelling_vowels", "spelling_more_letters"];
+    const wsTakeHomeHelped = (item) => !!(item && item.supports && WS_TAKE_HOME_ANSWER_HELP.some((name) => item.supports[name] > 0));
     const WS_WORKSHEET_CUE = ["isolation", "segmentation", "counting", "syllable_counting", "mapping", "spelling_bee", "missing_letter", "letter_tracing", "orthography", "word_scramble", "rhyming"];
     const wsPrintWorksheet = (items, wordAttrs, text, picture, withKey) => {
       const esc = wsPrintEsc;
@@ -9038,6 +9065,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [diScript, setDiScript] = React.useState(null);
       const [voicePackSound, setVoicePackSound] = React.useState(null);
       const [diScriptState, setDiScriptState] = React.useState("idle");
+      // How students answer in the script (app, present, paper, oral, mixed); remembered on this device.
+      const [diDelivery, setDiDelivery] = React.useState(() => {
+        try { const saved = window.localStorage.getItem(WS_DI_DELIVERY_STORE); return WS_DI_DELIVERY_MODES.includes(saved) ? saved : "app"; } catch (_) { return "app"; }
+      });
+      const diAnalysisRef = React.useRef(null);
       const [diCopyState, setDiCopyState] = React.useState("idle");
       // The parent summary text, shown only after every copy path failed.
       const [parentSummaryFallback, setParentSummaryFallback] = React.useState(null);
@@ -9084,7 +9116,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             voice: selectedVoice,
             grade: (runtimeSessionConfig && runtimeSessionConfig.probeGrade) || "",
           });
-          setDiScript(DI.buildLessonScript(analysis, lessonPlanConfig, { translate: ts }));
+          diAnalysisRef.current = analysis;
+          setDiScript(DI.buildLessonScript(analysis, lessonPlanConfig, { translate: ts, delivery: diDelivery }));
           setDiCopyState("idle");
           setDiScriptState("idle");
         } catch (e) {
@@ -9094,7 +9127,21 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         }
       // `ts` is declared further down this component, so the deps name `t`
       // (ts changes only with t); a dep on ts itself would hit its TDZ.
-      }, [preloadedWords, lessonPlanConfig, wordSoundsLanguage, selectedVoice, runtimeSessionConfig, addToast, t]);
+      }, [preloadedWords, lessonPlanConfig, wordSoundsLanguage, selectedVoice, runtimeSessionConfig, addToast, t, diDelivery]);
+      // A new delivery choice rewrites the open script from the same word analysis.
+      const handleDiDelivery = React.useCallback((mode) => {
+        if (!WS_DI_DELIVERY_MODES.includes(mode)) return;
+        setDiDelivery(mode);
+        try { window.localStorage.setItem(WS_DI_DELIVERY_STORE, mode); } catch (_) {}
+        const DI = window.AlloWordSoundsDI;
+        if (!DI || !diAnalysisRef.current) return;
+        try {
+          setDiScript(DI.buildLessonScript(diAnalysisRef.current, lessonPlanConfig, { translate: ts, delivery: mode }));
+          setDiCopyState("idle");
+        } catch (e) {
+          debugLog("[WS] DI script rebuild failed:", e?.message || e);
+        }
+      }, [lessonPlanConfig, t]);
       const handleCopyDiScript = React.useCallback(async () => {
         let text = "";
         try {
@@ -11685,6 +11732,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           rtl: RTL.has(primary),
         };
       }, [wordSoundsLanguage]);
+      // Direction of the lesson WORDS (not the interface): sound boxes and letters follow it.
+      const wsWordDir = wsLangCaps.rtl ? "rtl" : "ltr";
       const wsActivityAvailableForLang = React.useCallback(
         (activityId) => {
           const prepared = runtimeSessionConfig.preparedActivities;
@@ -19971,6 +20020,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     className:
                       "flex justify-center gap-3 flex-wrap min-h-[100px] p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 transition-colors",
                     onDragOver: handleDragOver,
+                    dir: wsWordDir,
                   },
                   elkoninBoxes.map((chip, i) => {
                     const isError = segmentationErrors.includes(i);
@@ -20213,6 +20263,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       /*#__PURE__*/ React.createElement(
                     "div",
                     {
+                      dir: wsWordDir,
                       className: "flex flex-wrap gap-2 justify-center mt-2",
                     },
                     (wordSoundsPhonemes?.phonemes || []).map((p, idx) =>
@@ -20495,6 +20546,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               { className: "space-y-4" },
               renderPrompt(),
               /*#__PURE__*/ React.createElement(SoundMappingView, {
+                wordDir: wsWordDir,
                 key: JSON.stringify([advanceEpochRef.current, currentWordIndex, currentWordSoundsWord]),
                 submissionLockRef,
                 advanceEpochRef,
@@ -20596,7 +20648,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { className: "flex gap-2 justify-center flex-wrap" },
+                { dir: wsWordDir, className: "flex gap-2 justify-center flex-wrap" },
                 currentWordSoundsWord?.split("").map((letter, idx) => {
                   const hasInput = userAnswer?.[idx];
                   const isCorrect =
@@ -20639,7 +20691,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 }),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { role: "group", "aria-label": ts("word_sounds.letter_keys") || "Letter keys", "data-ws-letter-keys": "true", className: "flex max-w-md flex-wrap justify-center gap-1" },
+                { dir: wsWordDir, role: "group", "aria-label": ts("word_sounds.letter_keys") || "Letter keys", "data-ws-letter-keys": "true", className: "flex max-w-md flex-wrap justify-center gap-1" },
                 wsLetterKeys(wordSoundsLanguage, preloadedWords).map((letter) => /*#__PURE__*/ React.createElement(
                   "button",
                   {
@@ -20798,7 +20850,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { className: "flex gap-1 justify-center" },
+                { dir: wsWordDir, className: "flex gap-1 justify-center" },
                 currentWordSoundsWord
                   ?.split("")
                   .map((_, idx) =>
@@ -20914,7 +20966,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { className: "flex gap-1 justify-center flex-wrap" },
+                { dir: wsWordDir, className: "flex gap-1 justify-center flex-wrap" },
                 currentWordSoundsWord
                   ?.split("")
                   .map((letter, idx) =>
@@ -21028,6 +21080,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "div",
               { className: "flex flex-col gap-4" },
               /*#__PURE__*/ React.createElement(SyllableBlendingView, {
+                wordDir: wsWordDir,
                 data: syllableData,
                 isLoading: isGeneratingSyllable && !syllableData,
                 highlightedSyllableIndex: highlightedSyllableIndex,
@@ -21867,7 +21920,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement(
                       "div",
-                      { className: "flex flex-col items-start gap-3 max-w-xl text-2xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-5" },
+                      { dir: wsWordDir, className: "flex flex-col items-start gap-3 max-w-xl text-2xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-5" },
                       ...rpBoard.parts.map((p, i) => p.text
                         ? /*#__PURE__*/ React.createElement("div", { key: "rp-line-" + i, className: "transition-colors rounded-lg" + (readPassageReadingLine === i ? " bg-violet-100 px-2 -mx-2" : "") }, p.text)
                         : /*#__PURE__*/ React.createElement(
@@ -21961,11 +22014,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         ? (ts("word_sounds.sentence_review_required") || "A teacher needs to provide and review a sentence for this word. Choose another activity.")
                         : (ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")))
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
-                    /*#__PURE__*/ React.createElement("p", { className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),
+                    /*#__PURE__*/ React.createElement("p", { dir: wsWordDir, className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),
                     smBoard.sequence.length > 1 && /*#__PURE__*/ React.createElement("p", { className: "text-xs text-slate-500 font-semibold" }, ts("word_sounds.sentence_match_order_hint") || "Place the pictures in the order they appear"),
                     /*#__PURE__*/ React.createElement(
                       "div",
-                      { className: "flex justify-center gap-4" },
+                      { dir: wsWordDir, className: "flex justify-center gap-4" },
                       ...smBoard.sequence.map((_, i) => {
                         const placed = sentenceMatchSlots[i];
                         const img = placed ? smImgFor(placed) : null;
@@ -22496,6 +22549,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const value = ts(playerKeyPrefix + key);
           if (value) labels[key] = value;
         });
+        // Ordinal words for "What is the {position} sound…" (word_sounds.take_home_player_ordinal_1..12); all or none.
+        const ordinals = Array.from({ length: 12 }, (_, i) => ts(playerKeyPrefix + "ordinal_" + (i + 1)));
+        if (ordinals.every(Boolean)) labels.ordinals = ordinals;
+        // The file's language and direction follow the app's interface language, as the printouts do.
+        try {
+          const docEl = document.documentElement;
+          if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/.test(docEl.lang || "")) labels.lang = docEl.lang;
+          if (docEl.dir === "rtl" || docEl.dir === "ltr") labels.dir = docEl.dir;
+        } catch (_) {}
         // Sounds go in as WAV so they also play on iPads and older Safari,
         // which may not play the WebM recordings the app stores.
         let audioNote = "";
@@ -22562,7 +22624,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         } else if (kind === "boxes") {
           title = printTr("word_sounds.print_boxes_heading", "Sound boxes");
           body = wsPrintBoxes(entries, printShowWord, wordAttrs, { title, name,
-            directions: printTr("word_sounds.print_boxes_directions", "Say the word slowly. Push one counter into a box for each sound you hear.") }, fit);
+            directions: printTr("word_sounds.print_boxes_directions", "Say the word slowly. Push one counter into a box for each sound you hear."),
+            keyTitle: printTr("word_sounds.print_boxes_key_title", "For the teacher: the words in row order"),
+            keyNote: printTr("word_sounds.print_boxes_key_note", "Rows marked * have no picture. Say those words aloud: the student hears them only from you.") }, fit);
         } else if (kind === "worksheet") {
           const activityId = worksheetActivity;
           const items = activityId ? wsPresentItems(activityId, preloadedWords, presentItemOptions) : [];
@@ -22600,7 +22664,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           "</button><span>" + wsPrintEsc(printTr("word_sounds.di_script_print_hint", "If the print dialog does not open, press Ctrl+P (or Cmd+P on a Mac).")) + "</span>" +
           (kind === "boxes" && printSkipped ? "<span>" + wsPrintEsc(printSkippedNote) + "</span>" : "") + wsPrintEditTools({
             edit: printTr("word_sounds.print_edit_text", "Edit text"), done: printTr("word_sounds.print_edit_done", "Done editing"),
-            hint: printTr("word_sounds.print_edit_hint", "Click any text to change it. Changes print, but they are not saved in the lesson."),
+            hint: printTr("word_sounds.print_edit_hint_outlined", "Click outlined text to change it. Changes print, but they are not saved in the lesson, and the answer key does not change with them."),
             how: printTr("word_sounds.print_edit_how", "To change any text first, close the print dialog, choose Edit text, then Print."),
           }) + "</div>";
         if (wsPrintOpen(wsPrintDocument({ title, docAttrs, bar, body, head, css }), !!(head || face.css))) {
@@ -22613,6 +22677,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       };
       const renderTakeHome = () => {
         const h = React.createElement;
+        const helpMark = printTr("word_sounds.take_home_results_help_mark", "(help)");
         const action = "mt-3 min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
         const section = "rounded-xl border-2 border-slate-200 p-4";
         const ready = takeHomeReady;
@@ -22718,11 +22783,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       h("td", { className: "py-1 pr-2" }, String(r.summary.afterRetry)),
                       h("td", { className: "py-1 pr-2" }, String(r.summary.missed) + (r.summary.done < r.summary.items ? " " + printTr("word_sounds.take_home_unfinished", "({count} not done)", { count: r.summary.items - r.summary.done }) : "")),
                       h("td", { className: "py-1" }, Object.keys(r.byActivity || {}).map((id) => (r.activityTitles && r.activityTitles[id] || id) + ": " +
-                        r.items.filter((item) => item.activity === id).map((item) => item.word + " " + (!item.done ? "–" : item.practice === "traced" ? "✎" : item.practice === "skipped" ? "↷" : item.firstTry ? "✓" : item.correct ? "↻" : "✗")).join(", ")).join("; ")));
+                        r.items.filter((item) => item.activity === id).map((item) => item.word + " " + (!item.done ? "–" : item.practice === "traced" ? "✎" : item.practice === "skipped" ? "↷" : item.firstTry ? "✓" : item.correct ? "↻" : "✗") + (wsTakeHomeHelped(item) ? " " + helpMark : "")).join(", ")).join("; ")));
                   }))),
                 goodRows.length > 0 && h("p", { className: "mt-1 text-xs text-slate-600" },
                   printTr("word_sounds.take_home_results_key", "✓ right first time, ↻ right after a retry, ✗ missed, – not done."),
-                  goodRows.some((row) => row.result.summary && row.result.summary.practised) ? " " + printTr("word_sounds.take_home_results_key_practice", "✎ traced, ↷ skipped: Letter Trace practice, not scored.") : ""),
+                  goodRows.some((row) => row.result.summary && row.result.summary.practised) ? " " + printTr("word_sounds.take_home_results_key_practice", "✎ traced, ↷ skipped: Letter Trace practice, not scored.") : "",
+                  goodRows.some((row) => (row.result.items || []).some(wsTakeHomeHelped)) ? " " + printTr("word_sounds.take_home_results_key_help", "{mark}: the student showed the word or used a spelling hint on that item.", { mark: helpMark }) : ""),
                 badRows.length > 0 && h("ul", { className: "mt-2 text-sm text-red-800" }, badRows.map((row) => h("li", { key: row.id },
                   printTr("word_sounds.take_home_bad_file", "{file} is not a Word Sounds results file.", { file: row.name })))))),
             takeHomeStatus && h("p", { role: "status", className: "mt-3 min-h-[1.25rem] text-sm font-semibold text-slate-700" }, takeHomeStatus)));
@@ -22770,7 +22836,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 h("h3", { id: "ws-print-boxes-heading", className: "font-bold" }, printTr("word_sounds.print_boxes_heading", "Sound boxes")),
                 h("p", { className: "text-sm text-slate-600" }, printTr("word_sounds.print_boxes_desc", "The picture for each word, with one empty box for each sound in it.")),
                 h("label", { className: control },
-                  h("input", { type: "checkbox", checked: printShowWord, onChange: (event) => setPrintShowWord(event.target.checked),
+                  h("input", { type: "checkbox", "data-ws-print-show-word": "true", checked: printShowWord, onChange: (event) => setPrintShowWord(event.target.checked),
                     className: "h-5 w-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
                   printTr("word_sounds.print_boxes_show_word", "Show the word")),
                 printSkipped ? h("p", { id: "ws-print-boxes-note", className: "mt-2 text-sm font-semibold text-amber-800" },
@@ -23357,6 +23423,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             onClose: closeDiScript,
             onPlaySound: (sound) => handleAudio("/" + sound + "/"),
             onEditSound: typeof VoicePackEditor === "function" && isTeacherMode ? (sound) => setVoicePackSound(sound) : null,
+            delivery: diDelivery,
+            onDelivery: handleDiDelivery,
           }),
           voicePackSound != null && typeof VoicePackEditor === "function"
             ? /*#__PURE__*/ React.createElement(VoicePackEditor, { onClose: () => setVoicePackSound(null), t, focusKey: voicePackSound })
@@ -23417,6 +23485,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         };
         const unsavedSyllableWords = showUnsavedSyllableStart ? pendingSyllableEdits() : [];
         return /*#__PURE__*/ React.createElement(WordSoundsReviewPanel, {
+          wordDir: wsWordDir,
           ts: ts,
           teacherSpokenWords: preloadedWords.filter(isTeacherSpokenWord).map(item => item.targetWord || item.word || item.term),
           syllableReviewRequest: syllableReviewRequest,

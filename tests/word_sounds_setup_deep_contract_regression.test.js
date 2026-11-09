@@ -68,11 +68,13 @@ describe('Word Sounds setup word handling', () => {
   it('accepts spaces, tabs, newlines, and commas and deduplicates case-insensitively', () => {
     const preview = sliceBetween(
       setupSource,
-      'const previewList = React.useMemo',
+      // Since 2026-11-08 the list is built by collectPreviewWords, which the goal preview also runs.
+      'const collectPreviewWords =',
       'const toggleSelection =',
     );
 
-    expect(preview).toContain('customText.split(/[\\s,]+/)');
+    expect(preview).toContain('customValue.split(/[\\s,]+/)');
+    expect(preview).toContain('collectPreviewWords(customText, includeCustom, withinSyllableRange)');
     expect(preview).toContain('word.toLocaleLowerCase()');
     expect(preview).toContain('seenWords.has(key)');
   });

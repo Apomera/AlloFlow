@@ -2561,10 +2561,30 @@ const WS_CORE = createWordSoundsCore();
    * When it is absent (Quick Practice), the script still builds. It just covers
    * the whole word set with the default activity emphasis rather than a plan.
    */
+  // How the students answer during the "Your turn" blocks. Not every class has a device per child,
+  // so the script's instruction and materials follow the teacher's choice.
+  var DELIVERY_MODES = ['app', 'present', 'paper', 'oral', 'mixed'];
+  var DELIVERY_WORK = {
+    app: 'The child works in the app. You watch and score, you do not prompt unless there is an error.',
+    present: 'Show the activity with Present to class. The group answers together, or one child at a time. You score each answer, then reveal it. Prompt only after an error.',
+    paper: 'The child answers on the printed sheet. Watch each answer as it is written and score it. Correct an error right away, before the next item.',
+    oral: 'Read each item aloud. The child answers aloud: no screen or paper. You score each answer and prompt only after an error.',
+    mixed: 'Use what you have for this activity: the app, Present to class, a printed sheet, or your voice alone. You watch and score, and prompt only after an error.'
+  };
+  var DELIVERY_MATERIALS = {
+    app: 'The device running Word Sounds, with this pack loaded.',
+    present: 'A projector or large screen showing Present to class, with this pack loaded.',
+    paper: 'A printed worksheet or sound boxes for these words (Print & share), a pencil, and counters for the sound boxes.',
+    oral: 'No screen or paper. You read every item aloud; counters or fingers help when counting sounds.',
+    mixed: 'For each activity, whichever you use: the device, Present to class, or a printed sheet.'
+  };
+
   function buildLessonScript(analysis, plan, opts) {
     opts = opts || {};
     // opts.translate(key, params) is the host's ts(): '' on a miss.
     var say = typeof opts.translate === 'function' ? opts.translate : null;
+    // opts.delivery: how the students answer (DELIVERY_MODES); 'app' when absent or unknown.
+    var delivery = DELIVERY_WORK.hasOwnProperty(opts.delivery) ? opts.delivery : 'app';
     var mastery = Math.max(1, Number(plan && plan.masteryThreshold) || 3);
     var activities = (plan && Array.isArray(plan.activities) && plan.activities.length)
       ? plan.activities.filter(function (a) { return a && a.id; })
@@ -2701,7 +2721,7 @@ const WS_CORE = createWordSoundsCore();
         strand: STRAND_LABEL[info.strand],
         intent: info.teaches,
         teacherDoes: [
-          'The child works in the app. You watch and score, you do not prompt unless there is an error.',
+          DELIVERY_WORK[delivery],
           info.watchFor ? 'Watch for: ' + info.watchFor : ''
         ].filter(Boolean),
         // Scripted from the first word this activity actually gets, so the
@@ -2748,7 +2768,7 @@ const WS_CORE = createWordSoundsCore();
 
     var totalMinutes = sections.reduce(function (sum, s) { return sum + (s.minutes || 0); }, 0);
 
-    return {
+    var script = {
       version: VERSION,
       generatedFrom: {
         wordCount: analysis.wordCount,
@@ -2769,8 +2789,8 @@ const WS_CORE = createWordSoundsCore();
       estimatedMinutes: totalMinutes,
       materials: [
         'The word list in this script, on the table or on the board.',
-        'The device running Word Sounds, with this pack loaded.',
-        planned ? 'The lesson plan you built, in this order.' : 'Quick Practice mode.',
+        DELIVERY_MATERIALS[delivery],
+        planned ? 'The lesson plan you built, in this order.' : delivery === 'app' || delivery === 'present' ? 'Quick Practice mode.' : 'The words in the word list, in order.',
         'Somewhere to mark which items were missed. The correction procedure depends on you remembering them.'
       ],
       sections: sections,
@@ -2799,6 +2819,9 @@ const WS_CORE = createWordSoundsCore();
         [(say && say('word_sounds.di_caveat_generated')) || 'This script is generated from the word list. It is a starting point for your planning, not a curriculum, and it has not been reviewed by anyone but you.']
       )
     };
+    // Only a non-default delivery is recorded, so the default script stays byte-identical.
+    if (delivery !== 'app') script.delivery = delivery;
+    return script;
   }
 
   // ──────────────────────────────────────────────────────────────────────
@@ -2875,6 +2898,7 @@ const WS_CORE = createWordSoundsCore();
     supportsLanguage: supportsLanguage,
     analyzeWordSet: analyzeWordSet,
     buildLessonScript: buildLessonScript,
+    DELIVERY_MODES: DELIVERY_MODES,
     scriptToText: scriptToText,
     presenterLines: presenterLines,
     ACTIVITY_SKILLS: ACTIVITY_SKILLS,

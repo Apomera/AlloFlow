@@ -138,7 +138,9 @@ describe('clicking it produces the script', () => {
     expect(title?.textContent).toContain('Direct Instruction lesson script');
 
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
-    const buttons = [...dialog.querySelectorAll('button:not([disabled])')];
+    // Since 2026-11-08 the "Students work" select (data-ws-di-delivery) is the first control.
+    const buttons = [...dialog.querySelectorAll('button:not([disabled]), select:not([disabled])')];
+    expect(buttons[0].hasAttribute('data-ws-di-delivery')).toBe(true);
     const first = buttons[0];
     const last = buttons[buttons.length - 1];
     // Focus lands on Close. Since 2026-11-07 the script's /sound/ links follow it, so Close is no longer last.

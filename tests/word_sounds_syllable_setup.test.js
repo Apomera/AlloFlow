@@ -49,7 +49,7 @@ describe('Studio counting-bank selection', () => {
     const code = between('const previewWordsKey =', 'const normalizePackKey =');
     const Host = new Function('React', 'chooseWordSoundsPreviewWords', `return function Host({words,ready}) {
       const [selectedWords,setSelectedWords]=React.useState(new Set());
-      const selectionControl=React.useRef({manual:false,inputsKey:null});
+      const selectionControl=React.useRef({manual:false,inputsKey:null}),goalSelectionRef=React.useRef(null);
       const previewList=words,selectionInputsKey='same-source',wordCount=4,includeSyllableCountWords=true,syllableCountingSelected=true,syllableRange={min:1,max:4};
       const selectedIndices=new Set(words.map((word,index)=>selectedWords.has(word)?index:-1).filter(index=>index>=0));
       const WS_CORE={syllableCountWords:()=>words};

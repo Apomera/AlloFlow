@@ -270,6 +270,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
 
 const WordSoundsReviewPanel = ({
     preloadedWords,
+    wordDir,
     teacherSpokenWords,
     packMaintenance,
     onUpdateWord,
@@ -1397,6 +1398,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </button>
                                             </div>
                                             <div
+                                                dir={wordDir || 'ltr'}
                                                 className={`flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 rounded-lg border-2 border-dashed transition-colors motion-reduce:transition-none ${draggedPhoneme ? 'border-pink-300 bg-pink-50' : 'border-transparent'}`}
                                                 onDragOver={(e) => e.preventDefault()}
                                                 onDrop={(e) => handleDrop(e, idx)}

@@ -18,7 +18,7 @@ const componentCode = transformSync(between('function WordSoundsSyllableCountRev
   plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false,
 }).code;
 const lifted = new Function('React', 'WS_CORE', 'WordSoundsSyllableRecordingEditor', 'let wordSoundsSyllableEditorPlayback = null;' +
-  between('function wordSoundsSyllableDraftBoardIdentity(', '// Conservative, optional edits') + componentCode + between('    function parseWordSoundsAiSyllableCounts(', '    function useWordSoundsGoalPlan(') +
+  between('function wordSoundsSyllableDraftBoardIdentity(', '// Conservative, optional edits') + componentCode + between('    function parseWordSoundsAiSyllableCounts(', '    function wordSoundsPlannerPrompt(') +
   ';return {Review:WordSoundsSyllableCountReview,parse:parseWordSoundsAiSyllableCounts};')(React, core, () => null);
 const translate = (_key, fallback, params = {}) => Object.entries(params).reduce((text, [key, value]) => text.replaceAll('{' + key + '}', String(value)), fallback);
 const audioAsset = { mime: 'audio/wav', base64: 'UklGRklYVFVSRQ==' };

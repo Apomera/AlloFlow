@@ -2036,7 +2036,7 @@
           slotButtons.forEach(function (b, i) {
             var word = slots[i];
             b.textContent = '';
-            b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-right:6px', text: String(i + 1) }));
+            b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
             b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
             b.setAttribute('aria-label', word ? ctx.fmt(ctx.L.sentence_match_slot_filled, { n: i + 1, word: word }) : ctx.fmt(ctx.L.sentence_match_slot_empty, { n: i + 1 }));
             if (!word || ctx.isDone()) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
@@ -3774,7 +3774,9 @@
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
     var connect = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url) ? ' https://script.google.com https://script.googleusercontent.com' : '';
     var csp = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (connect ? '; connect-src' + connect : '');
-    return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"><head><meta charset="utf-8">'
+    // dir comes from the app (labels.dir) so Arabic, Farsi, Urdu, Hebrew... files read right to left.
+    var dir = labels.dir === 'rtl' || labels.dir === 'ltr' ? ' dir="' + labels.dir + '"' : '';
+    return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"' + dir + '><head><meta charset="utf-8">'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'

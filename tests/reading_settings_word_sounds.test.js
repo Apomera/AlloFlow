@@ -344,6 +344,8 @@ describe('Use my reading settings on the printouts', () => {
       expect(px * [...word].length * (0.5 * 1.05 + 0.1), word + ' fits the card width (jsdom has no font metrics: 0.5em a letter)').toBeLessThanOrEqual(323);
       if (card.querySelector('img')) expect(px * 1.1, word + ' fits beside its picture').toBeLessThanOrEqual(276 * 0.42 - 10);
     }
+    // fish has no picture: its cue word prints only with Show the word on.
+    await click(host.querySelector('[data-ws-print-show-word]'));
     await click(host.querySelector('[data-ws-print="boxes"]'));
     expect(sizes(doc(), '.ws-print-cue-word').fish, 'a short cue word grows past its 30px default').toBeGreaterThan(40);
     for (const cue of doc().querySelectorAll('.ws-print-cue-word')) {
@@ -376,6 +378,7 @@ describe('Use my reading settings on the printouts', () => {
     expect(sizes(doc(), '.ws-print-word')).toEqual({ fish: cardPx });
     const italic = variant !== 'regular';
     expect(doc().querySelector('style').textContent.includes('font-style:italic')).toBe(italic);
+    await click(host.querySelector('[data-ws-print-show-word]'));
     await click(host.querySelector('[data-ws-print="boxes"]'));
     expect(sizes(doc(), '.ws-print-cue-word')).toEqual({ fish: cuePx });
     // The synthetic italic ink spans 800px at 100px, beyond its 500px advance.
