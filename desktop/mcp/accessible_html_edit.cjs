@@ -101,6 +101,16 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
       item = Object.assign({ id: idByEl.get(el) }, item);
       // (2026-11-09) internal: the whole text, for matching a PDF comment to its element (pdf_read_annotations)
       if (p.fullText === true) item.full = clip(textOf(el), 5000);
+      // (2026-11-09) internal: where a figure's picture was cropped from the page (fractions, origin top-left), so a PDF
+      // comment placed on the picture can be matched to it.
+      if (p.fullText === true && item.kind === 'image') {
+        const fig = el.closest('figure');
+        let c = null, n;
+        const a1 = fig && fig.getAttribute('data-allo-source-crop'), a2 = fig && fig.getAttribute('data-crop');
+        if (a1) { n = a1.trim().split(/ +/).map(Number); if (n.length === 5 && n.every(isFinite)) c = { page: n[0], x0: n[1], y0: n[2], x1: n[3], y1: n[4] }; }
+        else if (a2) { try { n = JSON.parse(a2); } catch (_) { n = null; } if (n && n.canvasW > 0 && n.canvasH > 0) c = { page: n.page, x0: n.x / n.canvasW, y0: n.y / n.canvasH, x1: (n.x + n.w) / n.canvasW, y1: (n.y + n.h) / n.canvasH }; }
+        if (c && c.page >= 1 && c.x1 > c.x0 && c.y1 > c.y0) item.crop = c;
+      }
       counts[item.kind] = (counts[item.kind] || 0) + 1;
       if (!(wanted.has(item.kind) || (wanted.has('language') && item.lang))) continue;
       if (needle) {
@@ -122,7 +132,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
   const results = [];
   const warnings = [];
   let failed = 0;
-  let removedWords = 0;
+  let removedWords = 0, addedWords = 0;
   const wordsBefore = wordsIn(body);
 
   const copyInto = (from, to) => { for (const a of Array.from(from.attributes)) to.setAttribute(a.name, a.value); while (from.firstChild) to.appendChild(from.firstChild); };
@@ -244,6 +254,66 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         removedWords += w;
         el.remove();
         summary = 'Removed the ' + was + ' (' + w + ' word' + (w === 1 ? '' : 's') + ')';
+      } else if (op.op === 'set_table_caption') {
+        // (2026-11-09) The one place words are ADDED: a caption names the table for a screen reader. Hidden visually unless
+        // "visible" is true, as the pipeline's own captions are, and counted in words.added.
+        const el = target(op.id);
+        if (tag(el) !== 'TABLE') throw new Error('that is a ' + kindName(el) + ', not a table');
+        if (typeof op.text !== 'string' || !op.text.trim()) throw new Error('"text" (the caption) is needed');
+        if (op.text.length > 300) throw new Error('"text" is longer than 300 characters. A caption is a short title for the table');
+        if (op.visible !== undefined && typeof op.visible !== 'boolean') throw new Error('"visible" must be true or false');
+        let cap = Array.from(el.children).find((c) => tag(c) === 'CAPTION');
+        const had = cap ? textOf(cap) : '';
+        if (cap) removedWords += wordsIn(cap); else { cap = doc.createElement('caption'); el.insertBefore(cap, el.firstChild); }
+        cap.textContent = op.text.replace(/\s+/g, ' ').trim();
+        if (op.visible === true) { cap.classList.remove('sr-only'); if (!cap.getAttribute('class')) cap.removeAttribute('class'); } else cap.classList.add('sr-only');
+        addedWords += wordsIn(cap);
+        summary = (had ? 'Changed the table caption from "' + clip(had, 60) + '" to "' : 'Gave the table the caption "') + clip(op.text, 80) + '"' + (op.visible === true ? '' : ' (read by screen readers, not shown)');
+      } else if (op.op === 'set_title') {
+        if (typeof op.text !== 'string' || !op.text.trim()) throw new Error('"text" (the document title) is needed');
+        if (op.text.length > 200) throw new Error('"text" is longer than 200 characters');
+        let head = doc.head;
+        if (!head) { head = doc.createElement('head'); root.insertBefore(head, root.firstChild); }
+        let t = head.querySelector('title');
+        const had = t ? textOf(t) : '';
+        if (!t) { t = doc.createElement('title'); head.appendChild(t); }
+        const next = op.text.replace(/\s+/g, ' ').trim();
+        if (had === next) { changed = false; summary = 'The document title was already "' + clip(next, 80) + '" (no change)'; }
+        else { t.textContent = next; summary = 'Set the document title to "' + clip(next, 80) + '"' + (had ? ' (it was "' + clip(had, 60) + '")' : ''); }
+      } else if (op.op === 'make_list') {
+        if (!Array.isArray(op.ids) || op.ids.length < 1 || op.ids.length > 200) throw new Error('"ids" must list 1 to 200 paragraph ids, in order');
+        if (op.ordered !== undefined && typeof op.ordered !== 'boolean') throw new Error('"ordered" must be true or false');
+        if (op.strip_markers !== undefined && typeof op.strip_markers !== 'boolean') throw new Error('"strip_markers" must be true or false');
+        const els = op.ids.map(target);
+        els.forEach((el, k) => {
+          if (tag(el) !== 'P') throw new Error('element ' + op.ids[k] + ' is a ' + kindName(el) + '; only paragraphs can become list items');
+          if (k > 0 && els[k - 1].nextElementSibling !== el) throw new Error('the paragraphs must follow one another directly, in the order given (' + op.ids[k - 1] + ' is not followed by ' + op.ids[k] + ')');
+        });
+        const list = doc.createElement(op.ordered === true ? 'ol' : 'ul');
+        els[0].before(list);
+        const marker = /^\s*(?:[•●○▪◦‣⁃·*–—-]|\(?\d{1,3}[.)]|\(?[A-Za-z][.)])\s+/;
+        let stripped = 0;
+        els.forEach((el) => {
+          if (op.strip_markers === true) {
+            const first = doc.createTreeWalker(el, 4).nextNode();
+            if (first && marker.test(first.nodeValue)) { const before = words(first.nodeValue); first.nodeValue = first.nodeValue.replace(marker, ''); stripped += before - words(first.nodeValue); }
+          }
+          const li = retag(el, 'li');
+          list.appendChild(li);
+        });
+        removedWords += stripped;
+        summary = 'Made ' + els.length + ' paragraph' + (els.length === 1 ? '' : 's') + ' into ' + (op.ordered === true ? 'a numbered' : 'a bulleted') + ' list, starting "' + clip(textOf(list.firstElementChild), 50) + '"'
+          + (stripped ? ' (' + stripped + ' typed bullet or number marker' + (stripped === 1 ? '' : 's') + ' removed)' : '');
+      } else if (op.op === 'list_to_paragraphs') {
+        const el = target(op.id);
+        if (!/^(?:UL|OL)$/.test(tag(el))) throw new Error('that is a ' + kindName(el) + ', not a list');
+        const lis = Array.from(el.children);
+        if (!lis.length || lis.some((c) => tag(c) !== 'LI')) throw new Error('that list has something other than list items directly inside it');
+        if (lis.some((li) => li.querySelector('ul,ol,table,p,h1,h2,h3,h4,h5,h6'))) throw new Error('an item of that list holds another list, a table or a block; only a simple list can become paragraphs');
+        const firstText = clip(textOf(lis[0]), 50);
+        lis.forEach((li) => { el.before(retag(li, 'p')); });
+        el.remove();
+        summary = 'Changed a list of ' + lis.length + ' item' + (lis.length === 1 ? '' : 's') + ' into ' + (lis.length === 1 ? 'a paragraph' : 'paragraphs') + ', starting "' + firstText + '"';
       } else {
         throw new Error('unknown operation "' + String(op.op) + '"');
       }
@@ -257,21 +327,25 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
   if (failed) return { ok: false, results, applied: 0, failed };
   const wordsAfter = wordsIn(body);
   // The safety net behind "never changes the words": only delete_element may take words away, and nothing adds any.
-  if (wordsAfter !== wordsBefore - removedWords) throw new Error('accessible_html_text_changed: the edit would have changed the document text (' + wordsBefore + ' words before, ' + wordsAfter + ' after, ' + removedWords + ' removed on purpose). Nothing was written');
+  if (wordsAfter !== wordsBefore - removedWords + addedWords) throw new Error('accessible_html_text_changed: the edit would have changed the document text (' + wordsBefore + ' words before, ' + wordsAfter + ' after, ' + removedWords + ' removed on purpose). Nothing was written');
   return {
     ok: true, html: '<!DOCTYPE html>\n' + root.outerHTML + '\n', results, applied: results.filter((r) => r.changed).length, failed: 0,
-    words: { before: wordsBefore, after: wordsAfter, removed: removedWords }, headingSkips: headingSkips(), warnings,
+    words: { before: wordsBefore, after: wordsAfter, removed: removedWords, ...(addedWords ? { added: addedWords } : {}) }, headingSkips: headingSkips(), warnings,
   };
 }
 
 module.exports = {
   accessibleHtmlTool,
-  OPERATION_NAMES: Object.freeze(['set_heading_level', 'make_paragraph', 'set_alt_text', 'set_table_header', 'set_language', 'move_element', 'delete_element']),
+  OPERATION_NAMES: Object.freeze(['set_heading_level', 'make_paragraph', 'set_alt_text', 'set_table_header', 'set_table_caption', 'set_title', 'set_language', 'make_list', 'list_to_paragraphs', 'move_element', 'delete_element']),
   OPERATION_KEYS: Object.freeze({
     set_heading_level: ['op', 'id', 'level'],
     make_paragraph: ['op', 'id'],
     set_alt_text: ['op', 'id', 'alt', 'decorative'],
     set_table_header: ['op', 'id', 'first_row', 'first_column'],
+    set_table_caption: ['op', 'id', 'text', 'visible'],
+    set_title: ['op', 'text'],
+    make_list: ['op', 'ids', 'ordered', 'strip_markers'],
+    list_to_paragraphs: ['op', 'id'],
     set_language: ['op', 'id', 'lang'],
     move_element: ['op', 'id', 'before_id', 'after_id'],
     delete_element: ['op', 'id', 'allow_large'],

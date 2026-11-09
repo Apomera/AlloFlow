@@ -228,4 +228,26 @@ describe('pdf_finalize_edited_html: the real tagger (needs Chromium; veraPDF nee
     const text = r.error ? r.error.message : (r.result.isError ? r.result.content[0].text : JSON.stringify(r.result.structuredContent));
     expect(text).toMatch(/finalize_scanned_needs_reading: this PDF is a scan\. .*Pass report_path/);
   }));
+
+  // 2026-11-09: the same finalize as a background job, for documents that outlast a client's request timeout.
+  it('runs as a background job with the same result', needsChromium(async () => {
+    const pdf = join(tmp, 'guide7.pdf'); await makePdf(pdf);
+    const edited = join(tmp, 'guide7.html'); writeFileSync(edited, html({ precipitation: 'h3' }));
+    const start = (await call('pdf_finalize_edited_html_start', { file_path: pdf, edited_html_path: edited, confirmed_by: 'Ms. Rivera', validate_ua: false })).structuredContent;
+    expect(start.jobId).toBeTruthy();
+    let st;
+    for (let i = 0; i < 120; i++) {
+      st = (await call('remediation_job_status', { job_id: start.jobId })).structuredContent;
+      if (st.status !== 'queued' && st.status !== 'running') break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    expect(st.status).toBe('completed');
+    const res = (await call('remediation_job_result', { job_id: start.jobId })).structuredContent.result;
+    expect(res.files.taggedPdf).toContain('guide7-reviewed-tagged');
+    expect(res.personEdit.confirmedBy).toBe('Ms. Rivera');
+    expect(await roleCounts(res.files.taggedPdf)).toMatchObject({ H1: 1, H2: 2, H3: 1 });
+    // bad arguments are refused before a job is made
+    const bad = await request('tools/call', { name: 'pdf_finalize_edited_html_start', arguments: { file_path: pdf, edited_html_path: edited, confirmed_by: 'x' } });
+    expect(bad.error ? bad.error.message : bad.result.content[0].text).toContain('confirmed_by');
+  }));
 });

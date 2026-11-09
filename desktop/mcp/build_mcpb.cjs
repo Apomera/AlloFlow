@@ -111,6 +111,7 @@ function buildManifest() {
     { name: 'outline_accessible_html', description: 'List the headings, images, tables and landmarks of an accessible HTML file with ids, so a person can say what to change. No API key.' },
     { name: 'edit_accessible_html', description: 'Change heading levels, alt text, table headers, language, reading order or delete a leftover page number, as the person asked. Never rewords. No API key.' },
     { name: 'pdf_read_annotations', description: 'List the comments a person left on a PDF (highlights, notes, text boxes) with the words they mark and the HTML element they point at. No API key.' },
+    { name: 'pdf_finalize_edited_html_start', description: 'The same finalize as a background job, for long documents. No API key.' },
     { name: 'pdf_finalize_edited_html', description: 'Build the tagged PDF from the original and an accessible version a person edited and approved. Needs no API key.' },
     { name: 'pdf_remediate', description: 'Full remediation (synchronous): accessible HTML + tagged PDF + honesty-checked verdict.' },
     { name: 'pdf_remediate_start', description: 'Start a remediation as a background job; returns a job id immediately.' },

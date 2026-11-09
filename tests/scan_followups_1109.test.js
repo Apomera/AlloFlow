@@ -101,3 +101,36 @@ describe('the fix-pass toast tells a skipped re-audit from a failed one', () => 
     expect(block).toContain('AI verification unavailable');
   });
 });
+
+// Library club scan (2026-11-09): folio 2 of a two-page scan "leaked" into AlloFlow's own footer ("(2 pages)") and the
+// false finding withheld the tagged PDF.
+describe('the stray-page-number check ignores the footer AlloFlow writes itself', () => {
+  it('strips the generated footer before looking for a leaked folio, and only that footer', () => {
+    expect(SRC).toContain("const _outPlainF = htmlToPlainText(String(_finalForIntegrity || '').replace(/<footer");
+    const line = SRC.split('\n').find((l) => l.includes('const _outPlainF = htmlToPlainText(String(_finalForIntegrity'));
+    const strip = new Function('htmlToPlainText', '_finalForIntegrity', line + '\nreturn _outPlainF;');
+    const plain = (h) => h.replace(/<[^>]+>/g, ' ');
+    const own = '<main><p>Members read for twenty minutes.</p></main><footer role="contentinfo" style="x"><p>Prepared with AlloFlow accessibility tools on November 9, 2026.</p><p>Original file: scan.pdf (2 pages)</p></footer>';
+    expect(strip(plain, own)).not.toContain('2 pages');
+    expect(strip(plain, own)).toContain('twenty minutes');
+    const theirs = '<main><p>Text</p></main><footer role="contentinfo"><p>District office, room 2</p></footer>';
+    expect(strip(plain, theirs)).toContain('room 2');
+  });
+});
+
+// Library club scan (2026-11-09): removing "Page 1" and "Page 2" was a REVIEW item and withheld the tagged PDF.
+describe('removed page-edge lines that are only page numbers are a caution', () => {
+  const line = SRC.split('\n').find((l) => l.includes('const _selOnlyNumbers = _sel.every('));
+  const only = (list) => new Function('_sel', line + '\nreturn _selOnlyNumbers;')(list);
+  it('page labels and bare numbers: caution', () => {
+    expect(only(['Page 1', 'Page 2'])).toBe(true);
+    expect(only(['- 3 -', '4', 'iv', 'Page 5 of 9', 'p. 12'])).toBe(true);
+  });
+  it('a line with real words stays a review item', () => {
+    expect(only(['Page 1', 'Chapter 3'])).toBe(false);
+    expect(only(['Riverside Library Club'])).toBe(false);
+  });
+  it('the note carries the flag', () => {
+    expect(SRC).toContain("_structuralFidelityNotes.push({ kind: 'pageEdge', ...(_selOnlyNumbers ? { caution: true } : {}), msg:");
+  });
+});

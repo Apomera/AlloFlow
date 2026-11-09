@@ -217,7 +217,8 @@ describe('edit operations', () => {
     expect(edit('<body><p> </p></body>', [{ op: 'set_heading_level', id: 'e1', level: 2 }]).results[0].error).toMatch(/no text/);
   });
   it('has no operation that can change words: every operation preserves the word count except delete_element', () => {
-    expect(OPERATION_NAMES).toEqual(Object.keys(OPERATION_KEYS));
+    expect(OPERATION_NAMES.slice().sort()).toEqual(Object.keys(OPERATION_KEYS).sort());
+    expect(OPERATION_NAMES).not.toContain('replace_text'); // set_table_caption is the only operation that adds words
     expect(OPERATION_NAMES).not.toContain('set_text');
     const before = words(DOC);
     const out = edit(DOC, [
@@ -240,5 +241,56 @@ describe('edit operations', () => {
     expect(out.html.startsWith('<!DOCTYPE html>\n<html lang="en-GB">')).toBe(true);
     expect(out.html).toContain('<title>Water Cycle Guide</title>');
     expect(out.html).toContain('<main id="main-content">');
+  });
+
+  // 2026-11-09: what reviewers asked for that needed a hand edit before.
+  it('gives a table a caption (the one operation that adds words), hidden visually unless asked, and replaces an old one', () => {
+    const id = idOf(DOC, 'Stage | Where');
+    const out = edit(DOC, [{ op: 'set_table_caption', id, text: 'Where each stage happens' }]);
+    expect(out.ok).toBe(true);
+    const cap = parse(out.html).querySelector('table > caption');
+    expect(cap.textContent).toBe('Where each stage happens');
+    expect(cap.className).toBe('sr-only');
+    expect(parse(out.html).querySelector('table').firstElementChild.tagName).toBe('CAPTION');
+    expect(out.words).toEqual({ before: words(DOC), after: words(DOC) + 4, removed: 0, added: 4 });
+    const tid = outline(out.html).items.find((i) => i.kind === 'table').id;
+    const again = edit(out.html, [{ op: 'set_table_caption', id: tid, text: 'Stages', visible: true }]);
+    expect(parse(again.html).querySelectorAll('caption')).toHaveLength(1);
+    expect(parse(again.html).querySelector('caption').hasAttribute('class')).toBe(false);
+    expect(again.words).toMatchObject({ removed: 4, added: 1 });
+    expect(again.results[0].summary).toBe('Changed the table caption from "Where each stage happens" to "Stages"');
+    expect(edit(DOC, [{ op: 'set_table_caption', id, text: ' ' }]).ok).toBe(false);
+    expect(edit(DOC, [{ op: 'set_table_caption', id: idOf(DOC, 'Evaporation'), text: 'x' }]).results[0].error).toContain('not a table');
+  });
+  it('sets the document title without touching the body words', () => {
+    const out = edit(DOC, [{ op: 'set_title', text: 'The Water Cycle: A Guide' }]);
+    expect(parse(out.html).title).toBe('The Water Cycle: A Guide');
+    expect(out.words).toEqual({ before: words(DOC), after: words(DOC), removed: 0 });
+    expect(edit(DOC, [{ op: 'set_title', text: 'Water Cycle Guide' }]).results[0].changed).toBe(false);
+    expect(edit(DOC, [{ op: 'set_title', text: '' }]).ok).toBe(false);
+  });
+  it('turns consecutive paragraphs into a list, optionally removing typed bullets, and back again', () => {
+    const html = '<body><p>Bring:</p><p>• clean cups</p><p>- seed packets</p><p>3. a trowel</p><p>After</p></body>';
+    const o = outline(html, { kinds: ['paragraph'] });
+    const ids = o.items.slice(1, 4).map((i) => i.id);
+    const out = edit(html, [{ op: 'make_list', ids, strip_markers: true }]);
+    expect(out.ok).toBe(true);
+    const d = parse(out.html);
+    expect(Array.from(d.querySelectorAll('ul > li')).map((l) => l.textContent)).toEqual(['clean cups', 'seed packets', 'a trowel']);
+    expect(Array.from(d.body.children).map((e) => e.tagName)).toEqual(['P', 'UL', 'P']);
+    expect(out.words).toMatchObject({ removed: 3 });
+    const kept = edit(html, [{ op: 'make_list', ids, ordered: true }]);
+    expect(parse(kept.html).querySelector('ol > li').textContent).toBe('• clean cups');
+    expect(kept.words.removed).toBe(0);
+    // not consecutive, or not paragraphs: refused
+    expect(edit(html, [{ op: 'make_list', ids: [o.items[0].id, o.items[2].id] }]).results[0].error).toContain('must follow one another directly');
+    expect(edit('<body><h2>A</h2></body>', [{ op: 'make_list', ids: ['e1'] }]).results[0].error).toContain('only paragraphs');
+    // and back
+    const listId = outline(out.html, { kinds: ['list-item'] }).items.length;
+    expect(listId).toBe(3);
+    const back = edit(out.html, [{ op: 'list_to_paragraphs', id: 'e2' }]); // e1 = "Bring:", e2 = the list
+    expect(Array.from(parse(back.html).body.children).map((e) => e.tagName)).toEqual(['P', 'P', 'P', 'P', 'P']);
+    expect(back.words.removed).toBe(0);
+    expect(edit('<body><ul><li>a<ul><li>b</li></ul></li></ul></body>', [{ op: 'list_to_paragraphs', id: 'e1' }]).results[0].error).toContain('only a simple list');
   });
 });

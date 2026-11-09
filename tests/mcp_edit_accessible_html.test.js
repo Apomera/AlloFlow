@@ -139,7 +139,7 @@ describe('outline_accessible_html and edit_accessible_html: registration and arg
     expect(editTool.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false, openWorldHint: false });
     // no operation can reword text: the schema offers none
     expect(editTool.inputSchema.properties.operations.items.properties.op.enum).toEqual(
-      ['set_heading_level', 'make_paragraph', 'set_alt_text', 'set_table_header', 'set_language', 'move_element', 'delete_element']);
+      ['set_heading_level', 'make_paragraph', 'set_alt_text', 'set_table_header', 'set_table_caption', 'set_title', 'set_language', 'make_list', 'list_to_paragraphs', 'move_element', 'delete_element']);
     expect(editTool.description).toMatch(/cannot change wording/i);
   });
   it('refuses bad arguments before any browser starts', async () => {

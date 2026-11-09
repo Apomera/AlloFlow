@@ -13,7 +13,7 @@ import { join, resolve } from 'node:path';
 vi.setConfig({ testTimeout: 300000, hookTimeout: 60000 });
 const requireCjs = createRequire(import.meta.url);
 const PDFLib = requireCjs(resolve(process.cwd(), 'desktop/mcp/vendor/pdf-lib.min.js'));
-const { fillFromScanReading, matchToOutline } = requireCjs('../desktop/mcp/pdf_annotations.cjs');
+const { fillFromScanReading, matchToOutline, matchImage } = requireCjs('../desktop/mcp/pdf_annotations.cjs');
 const SERVER = resolve(process.cwd(), 'desktop/mcp/alloflow-remediation-mcp-stdio.cjs');
 const tmp = mkdtempSync(join(tmpdir(), 'alloflow-annots-'));
 const sha = (b) => createHash('sha256').update(b).digest('hex');
@@ -222,5 +222,20 @@ describe('pdf_read_annotations', () => {
     const subtypes = [];
     for (const pg of d.getPages()) { const an = pg.node.Annots(); for (let i = 0; an && i < an.size(); i++) subtypes.push(String(d.context.lookup(an.get(i)).get(PDFName.of('Subtype')))); }
     expect(subtypes).toEqual(['/FreeText']);
+  }));
+
+  // 2026-11-09: a note on a picture points at the picture (figures record where they were cropped from the page).
+  it('a sticky note placed on a picture is matched to that picture, ready for set_alt_text', needsChromium(async () => {
+    expect(matchImage({ page: 1, rect: [204, 267, 224, 287], pageW: 612, pageH: 792 }, [{ id: 'e9', kind: 'image', alt: null, crop: { page: 1, x0: 0.1, y0: 0.5, x1: 0.6, y1: 0.8 } }])).toMatchObject({ id: 'e9', kind: 'image' });
+    expect(matchImage({ page: 2, rect: [204, 267, 224, 287], pageW: 612, pageH: 792 }, [{ id: 'e9', kind: 'image', crop: { page: 1, x0: 0.1, y0: 0.5, x1: 0.6, y1: 0.8 } }])).toBeNull();
+    const dir = join(tmp, 'pic'); mkdirSync(dir, { recursive: true });
+    const pdf = join(dir, 'guide.pdf');
+    await makeBornDigital(pdf, [{ dict: { Subtype: 'Text', Rect: [204, 267, 224, 287], Contents: text('This picture needs a description: rain over the hills'), T: text('Ms. Rivera') } }]);
+    const htmlPath = join(dir, 'guide-accessible.html');
+    writeFileSync(htmlPath, HTML.replace('</main>', '<figure data-allo-source-crop="1 0.1 0.5 0.6 0.8"><img src="data:image/png;base64,AAAA"></figure></main>'));
+    const sc = (await call('pdf_read_annotations', { file_path: pdf, html_path: htmlPath })).structuredContent;
+    expect(sc.annotations[0].element).toMatchObject({ kind: 'image', alt: null, match: 'the comment sits on this picture' });
+    const edit = (await call('edit_accessible_html', { file_path: htmlPath, dry_run: true, operations: [{ op: 'set_alt_text', id: sc.annotations[0].element.id, alt: 'Rain over the hills' }] })).structuredContent;
+    expect(edit.changes[0].summary).toBe('Set the image alternative text to "Rain over the hills"');
   }));
 });

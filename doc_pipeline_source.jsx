@@ -1890,6 +1890,55 @@ var _alloFigureCrop = function (img) {
 // stand for them. pdf.js text items whose centre lies in the figure's crop rectangle (_alloFigureCrop) on its page;
 // a crop covering 75% or more of its page is ignored, so a loose crop cannot claim the body text. Only figures with
 // a description (alt). Returns [{ page, items: [strings, drawing order] }].
+// Which page of a scan each tagged leaf belongs to (2026-11-09). Leaves were split across the text pages by COUNT, so a
+// short page followed by a long one put the long page's first paragraphs on the short page: tagged there, drawn there, and
+// (with word matching) placed "nearby" on a page that does not print them. Here each leaf goes to the page whose reading
+// holds its words, never moving backwards. Leaves of 4+ words anchor the walk; a shorter leaf (a heading, a table cell)
+// takes the page of its neighbours, and between two pages a heading goes with what follows it. Returns one index into
+// pageTexts per leaf, or null when under half of the longer leaves find their words on any page (the caller then keeps
+// the count split). Pure: unit-tested by tests/scan_leaf_pages.test.js.
+var _alloAssignLeavesToPages = function (leaves, pageTexts) {
+  if (!Array.isArray(leaves) || !Array.isArray(pageTexts) || pageTexts.length < 2 || !leaves.length) return null;
+  var keys = function (s) { return String(s || '').normalize('NFKC').toLowerCase().split(/\s+/).map(function (w) { return w.replace(/[^\p{L}\p{N}]+/gu, ''); }).filter(Boolean); };
+  var pageSets = pageTexts.map(function (t) { return new Set(keys(t)); });
+  var pageJoined = pageTexts.map(function (t) { return ' ' + keys(t).join(' ') + ' '; });
+  var toks = leaves.map(function (l) { return keys(l && l.text); });
+  var share = function (tk, p) { if (!tk.length) return 0; var n = 0; for (var i = 0; i < tk.length; i++) if (pageSets[p].has(tk[i])) n++; return n / tk.length; };
+  var out = new Array(leaves.length).fill(-1);
+  // Grouping elements (a Sect holds a whole section's text) never anchor the walk.
+  var isAnchor = leaves.map(function (l, i) { return toks[i].length >= 4 && !/^(?:Sect|Document|Art|Part|Div|NonStruct)$/.test(String((l && l.role) || '')); });
+  var cur = 0, anchors = 0, found = 0;
+  for (var i = 0; i < leaves.length; i++) {
+    if (!isAnchor[i]) continue;
+    anchors++;
+    var best = cur, bestShare = share(toks[i], cur);
+    for (var p = cur + 1; p < pageSets.length && p <= cur + 3; p++) { var s = share(toks[i], p); if (s > bestShare + 0.15) { best = p; bestShare = s; } }
+    if (bestShare >= 0.6) { found++; cur = best; }
+    out[i] = cur;
+  }
+  if (!anchors || found < anchors * 0.5) return null;
+  // Short leaves: the page of the anchors around them.
+  for (var j = 0; j < leaves.length; j++) {
+    if (out[j] >= 0) continue;
+    var prev = -1, next = -1, a;
+    for (a = j - 1; a >= 0; a--) if (isAnchor[a]) { prev = out[a]; break; }
+    for (a = j + 1; a < leaves.length; a++) if (isAnchor[a]) { next = out[a]; break; }
+    if (prev < 0) prev = 0;
+    if (next < 0) next = prev;
+    var pick = prev;
+    if (next !== prev && toks[j].length) {
+      var phrase = ' ' + toks[j].join(' ') + ' ';
+      var inPrev = pageJoined[prev].indexOf(phrase) !== -1, inNext = pageJoined[next].indexOf(phrase) !== -1;
+      var heading = /^H[1-6]?$/.test(String((leaves[j] && leaves[j].role) || ''));
+      if (inNext && (!inPrev || heading)) pick = next;
+    }
+    // never before an earlier short leaf already placed on a later page
+    if (j > 0 && out[j - 1] > pick) pick = out[j - 1];
+    out[j] = pick;
+  }
+  return out;
+};
+
 // PDF comments a person left on the original (2026-11-09; MCP pdf_read_annotations): highlights, underlines, strike-outs,
 // sticky notes, text boxes and drawn shapes, each with its comment, its author, and the printed words it marks (from the
 // text layer under its quad points; for a note or a shape, the printed line nearest to it). No model; plain data. A scan
@@ -20643,7 +20692,7 @@ var createDocPipeline = function(deps) {
         x += size * 0.55 * t.length + size * 0.3;
       }
       anchor = g.calls[g.calls.length - 1];
-      out.approximatedRuns++;
+      if (words.some((w) => key(w))) out.approximatedRuns++; // a bullet dot or a dash is not text the reader misses
     }
     return out;
   };
@@ -36797,7 +36846,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         try {
           const _folios = (typeof window !== 'undefined' && Array.isArray(window.__alloDetectedFolios)) ? window.__alloDetectedFolios : [];
           if (_folios.length) {
-            const _outPlainF = htmlToPlainText(_finalForIntegrity);
+            // (2026-11-09) Not in AlloFlow's own footer: "Original file: x.pdf (2 pages)" and its date matched folio 2 of a
+            // two-page scan, and the false leak withheld the tagged PDF (library club scan).
+            const _outPlainF = htmlToPlainText(String(_finalForIntegrity || '').replace(/<footer\b[^>]*\brole\s*=\s*["']contentinfo["'][^>]*>[\s\S]*?<\/footer>/gi, (m) => (/AlloFlow/.test(m) ? ' ' : m)));
             const _fnameNums = new Set(String(_fileName || '').match(/\d{1,4}/g) || []);
             const _leaked = _folios.filter((n) => !_fnameNums.has(n)
               && new RegExp('(^|[^0-9])' + n + '([^0-9]|$)').test(_outPlainF)
@@ -36969,7 +37020,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _sel = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];
         if (_sel.length) {
           const _selSample = _sel.slice(0, 4).map((l) => '"' + (String(l).length > 40 ? String(l).slice(0, 40) + '…' : l) + '"').join(', ');
-          _structuralFidelityNotes.push({ kind: 'pageEdge', msg: _sel.length + ' repeated page-edge line' + (_sel.length === 1 ? '' : 's') + ' (running heads / footers, e.g. ' + _selSample + (_sel.length > 4 ? ', …' : '') + ') ' + (_sel.length === 1 ? 'was' : 'were') + ' removed from the recovered text so ' + (_sel.length === 1 ? 'it doesn\'t' : 'they don\'t') + ' interrupt sentences mid-page. If one of these is a real heading, restore it from the Diff view.' });
+          // (2026-11-09) Only page numbers ("Page 2", "- 3 -", "iv") taken out is a caution, not a review item: the library club
+          // scan lost its tagged PDF over the removal of "Page 1" and "Page 2". A removed line with other words stays review.
+          const _selOnlyNumbers = _sel.every((l) => /^[\s\-–—|.·]*(?:(?:page|p[aá]gina|seite|p\.?)\s*)?(?:\d{1,4}|[ivxlc]{1,7})(?:\s*(?:of|de|von|\/)\s*\d{1,4})?[\s\-–—|.·]*$/i.test(String(l)));
+          _structuralFidelityNotes.push({ kind: 'pageEdge', ...(_selOnlyNumbers ? { caution: true } : {}), msg: _sel.length + ' repeated page-edge line' + (_sel.length === 1 ? '' : 's') + ' (running heads / footers, e.g. ' + _selSample + (_sel.length > 4 ? ', …' : '') + ') ' + (_sel.length === 1 ? 'was' : 'were') + ' removed from the recovered text so ' + (_sel.length === 1 ? 'it doesn\'t' : 'they don\'t') + ' interrupt sentences mid-page. If one of these is a real heading, restore it from the Diff view.' });
         }
       } catch (_) {}
       // (2026-11-07) Say what _alloStripPageFurniture took out, so a person can put back anything real.
@@ -40226,10 +40280,16 @@ tr { page-break-inside: avoid; }
         const _pageCount = _textPageIdx.length;
         const _leafCount = _unifiableLeafRefs.length;
         const _leavesPerPage = Math.max(1, Math.ceil(_leafCount / _pageCount));
+        // (2026-11-09) By content where the per-page reading allows it (_alloAssignLeavesToPages); by count otherwise.
+        let _leafPages = null;
+        if (_ocrMapPresent && _pageCount > 1) {
+          try { _leafPages = _alloAssignLeavesToPages(_unifiableLeafRefs, _textPageIdx.map((pi) => _ocrPageText(_ocrEntryFor(pi)))); } catch (_) { _leafPages = null; }
+          warnLog('[Tag-Tree Unify] leaves assigned to pages ' + (_leafPages ? 'by their words (page reading)' : 'by count (the page readings did not match the leaves)'));
+        }
         let _unifyPatched = 0;
         for (let i = 0; i < _leafCount; i++) {
           // Proportional assignment over the TEXT pages; clamp to the last one if rounding overshoots.
-          const _pageIdx = _textPageIdx[Math.min(Math.floor(i / _leavesPerPage), _pageCount - 1)];
+          const _pageIdx = _textPageIdx[_leafPages ? Math.min(Math.max(0, _leafPages[i]), _pageCount - 1) : Math.min(Math.floor(i / _leavesPerPage), _pageCount - 1)];
           const _pageRef = pages[_pageIdx].ref;
           const { ref, role, text } = _unifiableLeafRefs[i];
           try {

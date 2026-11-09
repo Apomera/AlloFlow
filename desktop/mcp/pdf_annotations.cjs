@@ -59,4 +59,21 @@ function matchToOutline(text, items) {
   };
 }
 
-module.exports = { fillFromScanReading, matchToOutline, keyWords };
+// A comment placed ON a picture: the image whose source crop (page fractions, origin top-left) holds the comment's centre
+// (PDF space, origin bottom-left). The smallest such crop wins. items carry { kind: 'image', crop } from the outline.
+function matchImage(a, items) {
+  if (!a || !Array.isArray(a.rect) || !(a.pageW > 0) || !(a.pageH > 0) || !Array.isArray(items)) return null;
+  const fx = ((a.rect[0] + a.rect[2]) / 2) / a.pageW, fy = 1 - ((a.rect[1] + a.rect[3]) / 2) / a.pageH;
+  let best = null;
+  for (const it of items) {
+    const c = it && it.kind === 'image' && it.crop;
+    if (!c || c.page !== a.page || fx < c.x0 || fx > c.x1 || fy < c.y0 || fy > c.y1) continue;
+    const area = (c.x1 - c.x0) * (c.y1 - c.y0);
+    if (!best || area < best.area) best = { area, it };
+  }
+  if (!best) return null;
+  const it = best.it;
+  return { id: it.id, kind: 'image', text: String(it.alt || it.caption || it.source || '').slice(0, 160), alt: it.alt === undefined ? null : it.alt, match: 'the comment sits on this picture' };
+}
+
+module.exports = { fillFromScanReading, matchToOutline, matchImage, keyWords };
