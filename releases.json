@@ -1,5 +1,12 @@
 [
   {
+    "id": "rel_20261109T133114Z_v1_17",
+    "version": "1.17",
+    "canvas_url": "https://share.gemini.google/fs05BnzzP64H",
+    "released": "2026-11-09T13:31:14.907Z",
+    "notes": "Canvas build with the 11-09 deploy: Word Sounds worksheets, lesson planner, Present and take-home refinements; Page Designer A4 paper and languages; scan and remediation improvements in the PDF tools."
+  },
+  {
     "id": "rel_20261108T134840Z_v1_16",
     "version": "1.16",
     "canvas_url": "https://share.gemini.google/cCXM7qWUkKWd",
