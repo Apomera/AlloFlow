@@ -32,9 +32,9 @@ const CLASS = () => [
   student('s1', 'Swift Falcon', {
     phonemeMastery: FALCON_MASTERY,
     history: [
-      { timestamp: at(2026, 10, 2, 9), phonemes: ['k', 'a', 't'] },
-      { timestamp: at(2026, 10, 14, 23), phonemes: ['K'] },
-      { timestamp: at(2026, 10, 7, 8), phonemes: [{ phoneme: 'sh' }, 'i', 'p'] },
+      { timestamp: at(2026, 10, 2, 9), phonemes: ['k', 'a', 't'], correct: true, firstTry: true },
+      { timestamp: at(2026, 10, 14, 23), phonemes: ['K'], correct: true, firstTry: false },
+      { timestamp: at(2026, 10, 7, 8), phonemes: [{ phoneme: 'sh' }, 'i', 'p'], correct: false, firstTry: false, wrong: ['s'] },
     ],
   }),
   student('s2', '=HYPERLINK("http://x.test","y")', { phonemeMastery: { k: { total: 3, correct: 1, independentAttempts: 10, independentAccuracy: null } }, history: [] }),
@@ -130,7 +130,8 @@ describe('Export Word Sounds results (CSV)', () => {
   it('writes one row per student and sound, with the dashboard name and a local last-practiced date', async () => {
     await studentData(CLASS());
     const { rows } = await exported('Export Word Sounds results (CSV)');
-    expect(rows[0]).toEqual(['Student', 'Sound', 'Attempts', 'Correct', 'Accuracy %', 'Mastered', 'Last practiced']);
+    // The first seven columns keep their names and order for spreadsheet imports; first-try columns follow.
+    expect(rows[0]).toEqual(['Student', 'Sound', 'Attempts', 'Correct', 'Accuracy %', 'Mastered', 'Last practiced', 'First-try items', 'First-try correct', 'First-try accuracy %']);
     expect(rows.slice(1).map((r) => [r[0], r[1]])).toEqual([
       ['Swift Falcon', 'a'], ['Swift Falcon', 'k'], ['Swift Falcon', 'sh'],
       ["'=HYPERLINK(\"http://x.test\",\"y\")", 'k'],
@@ -138,11 +139,12 @@ describe('Export Word Sounds results (CSV)', () => {
       ["'@Quiet Heron", 'a'],
     ]);
     const falcon = Object.fromEntries(rows.slice(1, 4).map((r) => [r[1], r.slice(2)]));
-    expect(falcon.k).toEqual(['6', '5', '83', 'Yes', '2026-10-14']);
-    expect(falcon.a).toEqual(['4', '4', '100', 'No', '2026-10-02']);
-    expect(falcon.sh).toEqual(['3', '1', '33', 'No', '2026-10-07']);
-    expect(rows[4].slice(2), 'no saved history row: blank date').toEqual(['3', '1', '33', 'No', '']);
-    expect(rows[5].slice(2)).toEqual(['10', '9', '90', 'Yes', '2026-09-30']);
+    // k: right first try once, right on the second try once. Correct and Accuracy % count both.
+    expect(falcon.k).toEqual(['6', '5', '83', 'Yes', '2026-10-14', '2', '1', '50']);
+    expect(falcon.a).toEqual(['4', '4', '100', 'No', '2026-10-02', '1', '1', '100']);
+    expect(falcon.sh).toEqual(['3', '1', '33', 'No', '2026-10-07', '1', '0', '0']);
+    expect(rows[4].slice(2), 'no saved history row: blank date, no first-try figure').toEqual(['3', '1', '33', 'No', '', '0', '0', '']);
+    expect(rows[5].slice(2), 'a row that does not say how many tries: no first-try figure').toEqual(['10', '9', '90', 'Yes', '2026-09-30', '0', '0', '']);
   });
 
   it('decides Mastered by the same rule as the student report', async () => {
@@ -239,7 +241,7 @@ describe('the export buttons', () => {
     const section = JSON.parse(readFileSync(DIR + '/ui_strings.js', 'utf8')).class_analytics || {};
     const keys = Object.fromEntries(Object.entries(section).map(([k, v]) => ['class_analytics.' + k, v]));
     const used = [...new Set(src.match(/class_analytics\.ws_[a-z_]+/g))];
-    expect(used.length).toBe(5);
+    expect(used.length).toBe(9);
     for (const k of used) expect(typeof keys[k], k).toBe('string');
   });
 });

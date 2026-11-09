@@ -3735,6 +3735,30 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         return { words, ttsAssets, ...(ttsAssetBanks.length ? { ttsAssetBanks } : {}) };
     }
 
+    // The names the setup list shows; the saved lesson summary uses the same ones.
+    const WS_SETUP_ACTIVITY_LABELS = {
+        isolation: 'Find Sounds', blending: 'Blending', segmentation: 'Break It Down', orthography: 'Sight & Spell', rhyming: 'Rhyme Time',
+        letter_tracing: 'Letter Tracing', counting: 'Sound Counting', mapping: 'Sound Mapping', sound_sort: 'Sound Sort', word_families: 'Word Families',
+        word_scramble: 'Word Scramble', manipulation: 'Sound Swap', syllable_counting: 'Syllable Counting', syllable_blending: 'Syllable Blending',
+        spelling_bee: 'Spelling Bee', missing_letter: 'Missing Letter', decoding: 'Read & Match', read_sentence: 'Finish the Sentence',
+        read_passage: 'Read the Story', sentence_match: 'Picture the Sentence',
+    };
+    // When only Word Count changes, the teacher's own picks stay: words they took out stay out, words they added stay in.
+    // The selection key is a JSON array that starts with the count. Returns null for any other change.
+    function keepWordSoundsManualPicks(control, nextKey, selected, pick) {
+        const rest = key => typeof key === 'string' && key.indexOf(',') > 0 ? key.slice(key.indexOf(',')) : null;
+        if (!control || !control.manual || rest(control.inputsKey) === null || rest(control.inputsKey) !== rest(nextKey)) return null;
+        let oldCount, newCount;
+        try { oldCount = JSON.parse(control.inputsKey)[0]; newCount = JSON.parse(nextKey)[0]; } catch (_) { return null; }
+        const before = pick(oldCount), after = pick(newCount);
+        const out = new Set([...(control.out || [])].filter(word => !selected.has(word)));
+        before.forEach(word => { if (!selected.has(word)) out.add(word); });
+        const added = new Set([...(control.added || [])].filter(word => selected.has(word)));
+        selected.forEach(word => { if (!before.has(word)) added.add(word); });
+        const next = new Set([...after].filter(word => !out.has(word)));
+        added.forEach(word => next.add(word));
+        return { next, out, added };
+    }
     function chooseWordSoundsPreviewWords(words, limit, bankWords, resolveWord, range) {
         const initial = words.slice(0, Math.max(0, limit));
         if (!bankWords) return new Set(initial);
@@ -4035,7 +4059,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
 
     // The lesson script's sound links open this editor on one sound.
     if (typeof window !== 'undefined' && typeof PhonemeVoicePackEditor !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.WordSoundsVoicePackEditor = PhonemeVoicePackEditor; }
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, preparedLessonPlan = null, syllableReviewSession, onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice: appVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = ''}) => {
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, currentUiLanguage, preloadedWords = [], preparedSessionConfig = {}, preparedLessonPlan = null, syllableReviewSession, onShowReview , onMinimize, onExpand, isTeacherMode = true, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice: appVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = '', initialCustomWords}) => {
         const localReviewSession = React.useRef({});
         const reviewSession = syllableReviewSession || localReviewSession.current;
         // Keep the complete setup with the host's authoring session, alongside
@@ -4112,6 +4136,18 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const [orthoSessionGoal, setOrthoSessionGoal] = useSetupState('orthoSessionGoal', () => 0);
     const includeOrthographic = orthoSessionGoal > 0;
         const [customText, setCustomText] = useSetupState('customText', () => '');
+        // Words the teacher typed in the sidebar before opening Word Sounds start the "My words" box,
+        // once per setup session and only while that box is empty and no words are chosen.
+        const sidebarWords = [...new Set((Array.isArray(initialCustomWords) ? initialCustomWords : [])
+            .map(word => typeof word === 'string' ? word.trim() : '').filter(Boolean))].slice(0, 200);
+        const sidebarWordsKey = sidebarWords.join('\n');
+        React.useEffect(() => {
+            if (!sidebarWords.length || setupDraft.sidebarWordsSeeded) return;
+            setupDraft.sidebarWordsSeeded = true;
+            if (String(setupDraft.customText || '').trim() || selectionControl.current.manual || preloadedWords.length) return;
+            setCustomText(sidebarWords.join(', '));
+            setIncludeCustom(true);
+        }, [sidebarWordsKey]);
         // Practice vs Assessment (probe). Reflects the host's isProbeMode when the
         // teacher arrived from an assessment launch; otherwise defaults to practice
         // and the teacher can flip it here. A probe is a single timed skill, so it
@@ -4274,6 +4310,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const aiSuggestions = useWordSoundsAiTopic({ enabled: includeAI, topic: aiTopic, language: wordSoundsLanguage, gradeLevel, syllableRange, callGemini, warnLog, authoringSession: setupDraft });
         const { terms: aiTerms, busy: isAiGenerating, generate: handleAiGenerate } = aiSuggestions;
         const [isProcessing, setIsProcessing] = React.useState(false);
+        // What the last preparation run managed, kept with the setup session so it is still here after Review.
+        const [lastRunSummary, setLastRunSummary] = useSetupState('lastRunSummary', () => null);
+        const [runNotice, setRunNotice] = React.useState('');
         const [isMinimized, setIsMinimized] = React.useState(false);
     React.useEffect(() => {
         if (typeof loadProbeBanks === 'function') {
@@ -4361,6 +4400,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             };
         }, [cancelGeneration]);
         // END WORD SOUNDS GENERATION OWNERSHIP
+        // Cancel beside the progress bars: the run is released at once, late provider results are ignored,
+        // and nothing reaches the lesson (onStartGame only runs for the active run).
+        const cancelPreparation = () => {
+            cancelGeneration();
+            setIsProcessing(false);
+            setRunNotice(tf('word_sounds.prepare_cancelled', 'Preparation stopped. Nothing was changed.'));
+            setTimeout(() => setupDialogRef.current?.querySelector('[data-ws-run-notice]')?.focus(), 0);
+        };
         const setupDialogRef = React.useRef(null);
         const setupPreviouslyFocusedRef = React.useRef(null);
         const generatorCloseRef = React.useRef(onClose);
@@ -4680,6 +4727,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             ? previewList.filter((word, i) => selectedIndices.has(i) && !WS_CORE.resolveSyllableTask(word, preparedSyllableFor(word), wordSoundsLanguage).supported) : [];
         const unreviewedSyllableCountWords = syllableCountingSelected
             ? previewList.filter((word, i) => selectedIndices.has(i) && !syllableCountFor(word).supported) : [];
+        // A lesson plan with no activity ticked has nothing to run.
+        const lessonPlanEmpty = sessionType !== 'assessment' && !!includeLessonPlan && !lessonPlanOrder.some(lessonPlanActivityOn);
+        // A reopened probe keeps its authored word list; a new assessment follows Word Count.
+        const assessmentKeepsAllWords = sessionType === 'assessment' && preloadedWords.length > 0
+            && (!!preparedSessionConfig.fixedForm || (Array.isArray(preparedSessionConfig.itemIds) && preparedSessionConfig.itemIds.length > 0)
+                || preloadedWords.some(item => item && (item.itemId != null || item.probeItemId != null)));
         const aiSyllableUsable = !!isTeacherMode && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
             ? !!window.__alloAiUsable('text', callGemini) : typeof callGemini === 'function');
         const aiSyllableWanted = aiSyllableUsable && syllableDictionaryState !== 'loading'
@@ -4706,10 +4759,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             }, 600);
             return () => { clearTimeout(timer); controller.abort(); };
         }, [aiSyllableWantedKey, wordSoundsLanguage]);
-        const startBlocked = !isProcessing && (selectedIndices.size === 0 || unsupportedSyllableWords.length > 0 || unreviewedSyllableCountWords.length > 0);
+        const startBlocked = !isProcessing && (selectedIndices.size === 0 || lessonPlanEmpty || unsupportedSyllableWords.length > 0 || unreviewedSyllableCountWords.length > 0);
+        const startDisabled = startBlocked || isProcessing;
+        const jumpToLessonActivities = () => setTimeout(() => { const list = setupDialogRef.current?.querySelector('[data-ws-lesson-activities]'); if (list) { list.scrollIntoView({ block: 'start', behavior: 'smooth' }); list.querySelector('input[type="checkbox"]')?.focus(); } }, 0);
+        const jumpToMyWords = () => { setIncludeCustom(true); setTimeout(() => { const box = setupDialogRef.current?.querySelector('[data-ws-my-words]'); if (box) { box.scrollIntoView({ block: 'center', behavior: 'smooth' }); box.focus(); } }, 0); };
         const jumpToCountReview = () => { setCountReviewOpen(true); setTimeout(() => { const region = countReviewRegion.current; if (region) { region.scrollIntoView({ block: 'start', behavior: 'smooth' }); (region.querySelector('[data-syllable-count-listen]') || region.querySelector('summary'))?.focus(); } }, 0); };
         const jumpToRecordings = () => { setRecordingReviewOpen(true); setTimeout(() => { const region = recordingReviewRegion.current; if (region) { region.scrollIntoView({ block: 'start', behavior: 'smooth' }); region.querySelector('summary')?.focus(); } }, 0); };
         const startBlockedReason = (className) => selectedIndices.size === 0 ? tf('word_sounds.start_blocked_words', 'Select at least one word.')
+            : lessonPlanEmpty ? <button type="button" className={className} onClick={jumpToLessonActivities} data-ws-start-blocked-plan="true">{tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')}</button>
             : unreviewedSyllableCountWords.length > 0 ? <button type="button" className={className} onClick={jumpToCountReview}>{tf(unreviewedSyllableCountWords.length === 1 ? 'word_sounds.start_blocked_counts_one' : 'word_sounds.start_blocked_counts', unreviewedSyllableCountWords.length === 1 ? 'Confirm 1 syllable count first' : 'Confirm {count} syllable counts first', { count: unreviewedSyllableCountWords.length })}</button>
             : <button type="button" className={className} onClick={jumpToRecordings}>{tf('word_sounds.start_blocked_recordings', 'Add syllable recordings for {count} word(s) first', { count: unsupportedSyllableWords.length })}</button>;
         const previewPreparedActivities = sessionType === 'assessment' ? [probeActivitySel]
@@ -4741,6 +4798,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const countBalanceKey = balanceCountBank ? JSON.stringify(previewList.map(word => {
             const result = syllableCountFor(word); return [word, result.supported ? result.count : null];
         })) : '';
+        // Returning to an authored assessment keeps its whole vocabulary, even past
+        // the auto-selection limit. A new assessment follows Word Count, like practice.
+        const autoPick = (limit) => chooseWordSoundsPreviewWords(previewList, typeof assessmentKeepsAllWords !== 'undefined' && assessmentKeepsAllWords ? previewList.length : limit, balanceCountBank ? WS_CORE.syllableCountWords() : null, syllableCountFor, syllableRange);
         React.useEffect(() => {
             if (selectionControl.current.inputsKey !== selectionInputsKey) {
                 // "Use this" chose the lesson words for exactly these inputs; any other change re-picks as before.
@@ -4751,12 +4811,17 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                     setSelectedWords(new Set(chosen.words));
                     return;
                 }
+                // A Word Count change alone keeps the teacher's own picks.
+                const kept = typeof keepWordSoundsManualPicks === 'function' ? keepWordSoundsManualPicks(selectionControl.current, selectionInputsKey, selectedWords, autoPick) : null;
+                if (kept) {
+                    selectionControl.current = { manual: true, inputsKey: selectionInputsKey, out: kept.out, added: kept.added };
+                    setSelectedWords(previous => previous.size === kept.next.size && [...previous].every(word => kept.next.has(word)) ? previous : kept.next);
+                    return;
+                }
                 selectionControl.current = { manual: false, inputsKey: selectionInputsKey };
             }
             if (selectionControl.current.manual) return;
-            // Returning to an authored assessment keeps its whole vocabulary,
-            // even when it exceeds the practice auto-selection limit.
-            const next = chooseWordSoundsPreviewWords(previewList, typeof sessionType !== 'undefined' && sessionType === 'assessment' ? previewList.length : wordCount, balanceCountBank ? WS_CORE.syllableCountWords() : null, syllableCountFor, syllableRange);
+            const next = autoPick(wordCount);
             setSelectedWords(previous => previous.size === next.size && [...previous].every(word => next.has(word)) ? previous : next);
         }, [previewWordsKey, selectionInputsKey, balanceCountBank, countBalanceKey, typeof sessionType === 'undefined' ? null : sessionType]);
         const toggleSelection = (index) => {
@@ -5185,7 +5250,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  selectedVocabulary, sessionType === 'assessment', preparedSessionConfig.itemIds);
              const preparedActivities = sessionType === 'assessment' ? [probeActivitySel]
                  : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonPlanActivityOn) : null;
-             if (preparedActivities && !preparedActivities.length) { setLessonPlanReorderStatus(tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')); return; }
+             if (lessonPlanEmpty || (preparedActivities && !preparedActivities.length)) { setLessonPlanReorderStatus(tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')); return; }
              if (!generationMountedRef.current || wordsToProcess.length === 0 || unsupportedSyllableWords.length || unreviewedSyllableCountWords.length || startRunRef.current) return;
              const unsavedEdits = findUnsavedSyllableEdits();
              if (unsavedEdits.length && options.useSavedSyllables !== true) { setPendingSyllableEdits(unsavedEdits); return; }
@@ -5239,6 +5304,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              startRunRef.current = true;
              try {
              setIsProcessing(true);
+             setRunNotice('');
+             setLastRunSummary(null);
              setGeneratedCount(0);
              setPrewarmCount(0);
              setPrewarmTotal(0);
@@ -5927,14 +5994,23 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                    (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
                  : (lessonPlanConfig
                      ? `Goal: ${lessonPlanConfig.masteryThreshold} in a row • ` +
-                       enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(' → ') +
+                       enabledActivities.map(a => `${WS_SETUP_ACTIVITY_LABELS[a.id] || a.id.replace(/_/g, ' ')} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(' → ') +
                        ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
                      : 'Quick Practice Mode');
              // The optional fifth and sixth arguments preserve compatibility with
              // older hosts while carrying assessment identity and visible setup
              // choices to current hosts.
+             // Say what the run could not make, on this screen, for when the teacher comes back from Review.
+             const picturesWanted = !isAssessment && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('images', callImagen) : typeof callImagen === 'function');
+             const runSummary = {
+                 words: processed.length,
+                 audioReady: processed.filter(item => !item._ttsFailed).length,
+                 pictures: picturesWanted,
+                 picturesReady: processed.filter(item => item.image || decodingAssets[normalizePackKey(item.targetWord || item.word || item.term)]).length,
+             };
              if (!isGenerationActive()) return;
              onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig);
+             setLastRunSummary(runSummary.audioReady < runSummary.words || (picturesWanted && runSummary.picturesReady < runSummary.words) ? runSummary : null);
              } catch (error) {
                  if (isGenerationActive()) throw error;
              } finally {
@@ -5953,7 +6029,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                          <div className="flex items-center gap-2">
                              <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin motion-reduce:animate-none' : ''}`} size={20} />
                              <span className="font-bold text-slate-700 text-sm">
-                                 {isProcessing ? tf('status.analyzing', 'Generating...') : tf('word_sounds.title', 'Word Sounds Studio')}
+                                 {isProcessing ? tf('word_sounds.preparing_heading', 'Getting the lesson ready...') : tf('word_sounds.title', 'Word Sounds Studio')}
                              </span>
                          </div>
                          <div className="flex items-center gap-1">
@@ -5969,7 +6045,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      {isProcessing && (
                          <div className="space-y-2" role="status" aria-live="polite" aria-busy="true">
                              <div className="flex justify-between text-xs font-bold text-violet-600">
-                                 <span>{tf('status.analyzing', 'Processing...')}</span>
+                                 <span>{tf('word_sounds.preparing_heading', 'Getting the lesson ready...')}</span>
                                  <span>{generatedCount} / {selectedIndices.size}</span>
                              </div>
                              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={selectedIndices.size} aria-valuenow={generatedCount}>
@@ -6009,7 +6085,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             includeGlossary && (glossaryTerms || []).length > 0 && sourceLabel('word_sounds.source_glossary', 'Glossary'),
             includeFamily && selectedFamily && sourceLabel('word_sounds.source_family', 'Word Family'),
             includeSightWords && selectedSightWordList && sourceLabel('word_sounds.source_sight_words', '📚 Sight Words'),
-            includeAI && aiTerms.length > 0 && sourceLabel('word_sounds.source_ai', 'AI Topic Gen'),
+            includeAI && aiTerms.length > 0 && sourceLabel('word_sounds.source_ai', 'Words about a topic (AI)'),
             includeSyllableWords && sourceLabel('word_sounds.blending_bank', 'Syllable blending word bank'),
             includeSyllableCountWords && sourceLabel('word_sounds.counting_bank', 'Syllable counting word bank'),
         ].filter(Boolean);
@@ -6083,6 +6159,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             };
         })();
         const goalSetupChanged = !!goalEffect && planner.draft.setupKey !== plannerSetupKey;
+        // Practice prepares the audio and pictures, then opens Review. A probe goes straight to the student.
+        const startLabel = isProcessing ? tf('status.generating', 'Generating...')
+            : teacherSpokenCountWords.length ? tf('word_sounds.start_teacher_led', 'Start teacher-led activity')
+            : sessionType === 'assessment' ? tf('word_sounds.start', 'Start Activity') : tf('word_sounds.prepare_lesson_button', 'Prepare lesson');
+        // AI the setup can use here. The planner card uses the same check for text.
+        const aiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable(kind, fn) : typeof fn === 'function';
+        const textAiHere = aiHere('text', callGemini), imageAiHere = aiHere('images', callImagen);
+        const isAssessmentSetup = sessionType === 'assessment';
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in">
                 <div ref={setupDialogRef} role="dialog" aria-modal="true" aria-label={tf('word_sounds.setup_dialog_label', 'Word Sounds setup')} tabIndex={-1} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-6xl max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-400 focus:outline-none">
@@ -6269,7 +6353,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     />
                                     <p className="text-xs text-slate-600 mt-2">{t('word_sounds.auto_select_hint', `Auto-selects ${wordCount} words`)}</p>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
+                                {isAssessmentSetup && <p className="text-xs text-slate-600 mt-2" data-ws-assessment-settings-note="true">{tf('word_sounds.assessment_settings_note', 'An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.')}</p>}
+                                {!isAssessmentSetup && <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{tf('word_sounds.phono_activity_length', 'Sound Activities per Session')}</span>
                                         <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
@@ -6281,8 +6366,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         className="w-full accent-emerald-600 cursor-pointer"
                                     />
                                     <p className="text-xs text-slate-600 mt-2">{tf('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
-                                </div>
-                                <div className="mt-3">
+                                </div>}
+                                {!isAssessmentSetup && <div className="mt-3">
                                     <div className={`p-4 rounded-xl border shadow-sm ${includeLessonPlan ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50' : orthoSessionGoal > 0 ? 'bg-white border-indigo-300 bg-indigo-50/30' : 'bg-white border-slate-200'}`}>
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-bold text-slate-700">{tf('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
@@ -6304,21 +6389,23 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                             }
                                         </p>
                                     </div>
-                                </div>
+                                </div>}
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{tf('word_sounds.image_theme', 'Image Style')}</span>
                                         <Palette size={18} className="text-pink-500" />
                                     </div>
+                                    {!imageAiHere && <p className="text-xs font-semibold text-amber-900 mb-2" data-ws-image-ai-off="true">{tf('word_sounds.image_ai_off_note', 'AI pictures are off here, so no new pictures will be made.')}</p>}
                                     <select
                                         aria-label="Image style source"
+                                        disabled={!imageAiHere}
                                         value={imageThemeMode}
                                         onChange={(e) => {
                                             const nextMode = e.target.value;
                                             setImageThemeMode(nextMode);
                                             if (nextMode === 'override' && !imageTheme.trim()) setImageTheme('Simple flat vector art');
                                         }}
-                                        className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                                        className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none disabled:opacity-60"
                                     >
                                         <option value="inherit">Use Universal style</option>
                                         <option value="override">Override for this resource</option>
@@ -6340,8 +6427,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         />
                                     )}
                                     <p className="text-xs text-slate-600 mt-2">Style changes apply to new Word Sounds images, not Glossary images.</p>
-                                    <label className="flex items-start gap-2 mt-3 cursor-pointer">
-                                        <input type="checkbox" checked={includeAacImages}
+                                    <label className={`flex items-start gap-2 mt-3 ${imageAiHere ? 'cursor-pointer' : 'opacity-60'}`}>
+                                        <input type="checkbox" checked={includeAacImages && imageAiHere} disabled={!imageAiHere}
                                             onChange={(e) => setIncludeAacImages(e.target.checked)}
                                             className="mt-0.5 accent-teal-600" />
                                         <span className="text-xs text-slate-600">
@@ -6359,7 +6446,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         </span>
                                     </label>
                                 </div>
-                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
+                                {!isAssessmentSetup && <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.image_display_mode')}</span>
                                         <ImageIcon size={18} className="text-violet-500" />
@@ -6376,7 +6463,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         <option value="afterCompletion">{tf('word_sounds.image_mode_after_completion', 'After it is solved')}</option>
                                     </select>
                                     <p className="text-xs text-slate-600 mt-2">{({ smart: tf('word_sounds.image_mode_smart_help', 'Each activity shows the picture when it helps most.'), alwaysOn: tf('word_sounds.image_mode_always_on_help', 'The picture shows from the start.'), progressive: tf('word_sounds.image_mode_progressive_help', 'The picture appears after the first answer.'), afterCompletion: tf('word_sounds.image_mode_after_completion_help', 'The picture appears after a right answer or a second try.') })[imageVisibilityMode] || tf('word_sounds.image_mode_smart_help', 'Each activity shows the picture when it helps most.')}</p>
-                                </div>
+                                </div>}
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{t('word_sounds.syllable_range')}</span>
@@ -6426,7 +6513,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                             </div>
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
-                                <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Active Sources')}</div>
+                                <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Word sources')}</div>
                                 {WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && <label className="block p-3 rounded-xl border-2 border-sky-200 bg-sky-50 cursor-pointer">
                                     <span className="flex items-center gap-2 font-bold text-sky-800"><input type="checkbox" checked={includeSyllableWords} onChange={e => setIncludeSyllableWords(e.target.checked)} />{tf('word_sounds.blending_bank', 'Syllable blending word bank')}</span>
                                     <span className="block text-xs text-slate-700 mt-1">{tf('word_sounds.blending_bank_help', '{count} compound words, such as sun + set and rain + coat. Each part has a reliable whole-word pronunciation.', { count: WS_CORE.syllableWords().length })}</span>
@@ -6435,7 +6522,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     <span className="flex items-center gap-2 font-bold text-sky-800"><input type="checkbox" checked={includeSyllableCountWords} onChange={e => setIncludeSyllableCountWords(e.target.checked)} />{tf('word_sounds.counting_bank', 'Syllable counting word bank')}</span>
                                     <span className="block text-xs text-slate-700 mt-1">{tf('word_sounds.counting_bank_help', '{count} familiar words for counting, including noncompound and longer words. Blending uses separate word-specific recordings.', { count: WS_CORE.syllableCountWords().length })}</span>
                                 </label>}
-                                <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
+                                {(glossaryTerms || []).length > 0 && <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
                                     <span className="flex items-center gap-3">
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}
@@ -6443,7 +6530,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         <BookOpen size={18} className="text-violet-600" />
                                         <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
                                     </span>
-                                </label>
+                                </label>}
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeFamily ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`}>
                                     <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-pink-600 focus-within:ring-offset-2" data-help-key="ws_gen_src_family"><input type="checkbox" checked={includeFamily} onChange={(e) => setIncludeFamily(e.target.checked)} className="sr-only" />
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? 'bg-pink-600 border-pink-600' : 'border-slate-300'}`}>
@@ -6463,7 +6550,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         </select>
                                         {selectedFamily && WORD_FAMILY_PRESETS[selectedFamily] && WORD_FAMILY_PRESETS[selectedFamily].filter(withinSyllableRange).length === 0 && (
                                             <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100">
-                                                ⚠️ No words match range ({syllableRange.min}-{syllableRange.max}). Adjust Syllables or range.
+                                                ⚠️ {tf('word_sounds.family_range_empty', 'No words in this family have {min} to {max} syllables. Change the syllable range or pick another family.', { min: syllableRange.min, max: syllableRange.max })}
                                             </p>
                                         )}
                                     </>)}
@@ -6474,7 +6561,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                             {includeCustom && <Check size={14} className="text-white" aria-hidden="true" />}
                                         </span>
                                         <Edit2 size={18} className="text-emerald-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_custom', 'Custom Manual')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_custom', 'My words')}</span>
                                     </label>
                                     {includeCustom && (<>
                                         <div className="mt-3 flex gap-2">
@@ -6510,7 +6597,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                 + Add
                                             </button>
                                         </div>
-                                        <textarea
+                                        <textarea data-ws-my-words="true"
                                             aria-label={tf('word_sounds.type_words', 'Type words here')}
                                             value={customText} onChange={(e) => setCustomText(e.target.value)}
                                             placeholder={tf('word_sounds.type_words', 'Type words here (space or comma separated)...')}
@@ -6540,14 +6627,15 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     )}
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeAI ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeAI} onChange={(e) => { aiSuggestions.cancel(); setIncludeAI(e.target.checked); }} className="sr-only" />
+                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeAI} disabled={typeof textAiHere !== 'undefined' && !textAiHere && !includeAI} aria-describedby={typeof textAiHere !== 'undefined' && !textAiHere ? 'ws-source-ai-off' : undefined} onChange={(e) => { aiSuggestions.cancel(); setIncludeAI(e.target.checked); }} className="sr-only" />
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeAI ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeAI && <Check size={14} className="text-white" aria-hidden="true" />}
                                         </span>
                                         <Sparkles size={18} className="text-violet-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_ai', 'AI Topic Gen')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_ai', 'Words about a topic (AI)')}</span>
                                     </label>
-                                    {includeAI && (
+                                    {typeof textAiHere !== 'undefined' && !textAiHere && <p id="ws-source-ai-off" className="mt-1 text-xs font-semibold text-amber-900" data-ws-source-ai-off="true">{tf('word_sounds.source_ai_off_note', 'AI is off here, so this cannot make new words.')}</p>}
+                                    {includeAI && (typeof textAiHere === 'undefined' || textAiHere) && (
                                         <div className="mt-3 flex gap-2">
                                             <input aria-label={t('common.e_g_space_ocean')}
                                                 value={aiTopic} onChange={(e) => { aiSuggestions.cancel(); setAiTopic(e.target.value); }}
@@ -6558,7 +6646,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                 onClick={handleAiGenerate} disabled={isAiGenerating}
                                                 className="bg-violet-600 text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50"
                                             >
-                                                {isAiGenerating ? '...' : 'Go'}
+                                                {isAiGenerating ? '...' : tf('word_sounds.ai_go', 'Go')}
                                             </button>
                                             {isAiGenerating && <button type="button" onClick={aiSuggestions.cancel} className="min-h-11 px-3 py-1 border border-violet-400 rounded-lg text-sm">
                                                 {tf('word_sounds.ai_cancel', 'Cancel generation')}
@@ -6569,7 +6657,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </div>
                             </div>
                             <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</label>
                                 {goalAiUsable && <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
                                     <label htmlFor="ws-goal-text" className="flex items-center gap-2 font-bold text-slate-800"><Sparkles size={18} className="text-indigo-700" aria-hidden="true" />{tf('word_sounds.goal_heading', 'Describe your goals')}</label>
                                     <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help', 'Ask AlloBot about this lesson, or ask for changes. It starts from your setup below. Nothing changes until you press Use this.')}</p>
@@ -6650,7 +6738,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         </span>
                                     </label>
                                     {includeLessonPlan && (
-                                        <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order">
+                                        <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order" data-ws-lesson-activities="true">
                                             <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
                                             <div className="flex flex-wrap items-center gap-2" data-ws-recommended-order="true">
                                                 <button type="button" onClick={applyRecommendedLessonOrder} disabled={lessonOrderIsRecommended}
@@ -6784,9 +6872,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 <button type="button"
                                     onClick={handleStart}
                                     aria-describedby={startBlocked ? 'ws-start-blocked' : undefined}
-                                    disabled={selectedIndices.size === 0 || unsupportedSyllableWords.length > 0 || unreviewedSyllableCountWords.length > 0 || isProcessing}
+                                    disabled={startDisabled}
                                     className={`px-8 py-4 rounded-2xl font-black text-xl shadow-xl transition-all flex items-center gap-3 ${
-                                        selectedIndices.size > 0 && unsupportedSyllableWords.length === 0 && unreviewedSyllableCountWords.length === 0 && !isProcessing
+                                        !startDisabled
                                             ? 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110'
                                             : isProcessing
                                                 ? 'bg-violet-600 text-white cursor-wait'
@@ -6794,7 +6882,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     }`}
                                 >
                                     {isProcessing ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : <PlayCircle fill="currentColor" className="text-white/20" size={28} />}
-                                    {isProcessing ? tf('status.generating', 'Generating...') : teacherSpokenCountWords.length ? tf('word_sounds.start_teacher_led', 'Start teacher-led activity') : tf('word_sounds.start', 'Start Activity')}
+                                    {startLabel}
                                 </button>
                                 {/* Why Start is unavailable, beside it; the link opens and scrolls to what needs attention. */}
                                 {startBlocked && <p id="ws-start-blocked" className="text-sm text-slate-700 text-end max-w-xs" data-ws-start-blocked="true">
@@ -6807,9 +6895,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                      <div className="flex items-center justify-between mb-3">
                                          <div className="flex items-center gap-3">
                                              <Loader2 className="animate-spin motion-reduce:animate-none text-violet-600" size={24} />
-                                             <span className="font-bold text-violet-800 text-lg">{tf('status.analyzing', 'Creating audio & analyzing words...')}</span>
+                                             <span className="font-bold text-violet-800 text-lg">{tf('word_sounds.preparing_heading', 'Getting the lesson ready...')}</span>
                                          </div>
-                                         <span className="text-violet-600 font-black text-xl">{generatedCount} / {selectedIndices.size}</span>
+                                         <div className="flex items-center gap-3">
+                                             <span className="text-violet-600 font-black text-xl whitespace-nowrap">{generatedCount} / {selectedIndices.size}</span>
+                                             <button type="button" onClick={cancelPreparation} data-ws-cancel-preparation="true" className="min-h-11 rounded-lg border border-violet-400 bg-white px-4 py-2 text-sm font-bold text-violet-900 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2">{tf('word_sounds.prepare_cancel', 'Cancel')}</button>
+                                         </div>
                                      </div>
                                      <div className="w-full h-4 bg-violet-200/50 rounded-full overflow-hidden" role="progressbar" aria-label="Preparing Word Sounds activity" aria-valuemin={0} aria-valuemax={selectedIndices.size} aria-valuenow={generatedCount}>
                                          <div
@@ -6819,8 +6910,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                      </div>
                                      <p className="text-violet-500 text-sm mt-2 text-center">
                                          {generatedCount < selectedIndices.size
-                                             ? `Building Audio: "${previewList[Array.from(selectedIndices)[generatedCount]] || '...'}"`
-                                             : 'Finishing up...'}
+                                             ? tf('word_sounds.preparing_word', 'Building audio: "{word}"', { word: previewList[Array.from(selectedIndices)[generatedCount]] || '...' })
+                                             : tf('word_sounds.preparing_finishing', 'Finishing up...')}
                                      </p>
                                      {prewarmTotal > 0 && (
                                          <div className="mt-3 pt-3 border-t border-violet-200/60">
@@ -6842,11 +6933,19 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                  </div>
                              )}
 
+                            {!isProcessing && runNotice && <p role="status" tabIndex={-1} data-ws-run-notice="true" className="mb-3 p-3 rounded-xl border border-slate-300 bg-slate-50 text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{runNotice}</p>}
+                            {!isProcessing && lastRunSummary && <div role="status" data-ws-run-summary="true" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">
+                                <p className="font-semibold">{tf('word_sounds.run_summary_audio', 'Audio ready for {ready} of {total} words.', { ready: lastRunSummary.audioReady, total: lastRunSummary.words })}{lastRunSummary.pictures ? ' ' + tf('word_sounds.run_summary_pictures', 'Pictures ready for {ready} of {total}.', { ready: lastRunSummary.picturesReady, total: lastRunSummary.words }) : ''}</p>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <button type="button" onClick={() => handleStart()} disabled={startDisabled} data-ws-run-retry="true" className="min-h-11 rounded-lg bg-amber-800 px-4 py-2 text-sm font-bold text-white hover:bg-amber-900 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2">{tf('word_sounds.run_summary_retry', 'Try again for the rest')}</button>
+                                    <button type="button" onClick={() => setLastRunSummary(null)} className="min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2">{tf('word_sounds.run_summary_dismiss', 'Hide this')}</button>
+                                </div>
+                            </div>}
                             {pendingSyllableEdits?.length > 0 && <div ref={unsavedSyllableNotice} className="mb-3">
                                 <WordSoundsSyllableDraftNotice words={pendingSyllableEdits.map(edit => edit.word)} translate={tf}
                                     onReview={reviewUnsavedSyllableEdits} onUseSaved={() => handleStart({ useSavedSyllables: true })} />
                             </div>}
-                            {unsupportedSyllableWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">Add and review syllable recordings below, use a word from the syllable bank, or deselect: {unsupportedSyllableWords.join(', ')}.</p>}
+                            {unsupportedSyllableWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">{tf('word_sounds.recordings_blocked', 'Add and review syllable recordings below, use a word from the syllable bank, or deselect: {words}.', { words: unsupportedSyllableWords.join(', ') })}</p>}
                             {unreviewedSyllableCountWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">{tf('word_sounds.count_review_blocked', 'Review the syllable count below or deselect: {words}.', { words: unreviewedSyllableCountWords.join(', ') })}</p>}
                             {teacherSpokenCountWords.length > 0 && <p role="status" className="mb-3 p-3 rounded-xl border border-violet-300 bg-violet-50 text-violet-900">{tf('word_sounds.count_teacher_led_notice', 'Teacher-led activity: say these words aloud for the learner: {words}. Their approved counts will be kept without generating whole-word audio. This activity needs a teacher present.', { words: teacherSpokenCountWords.join(', ') })}</p>}
                             {syllableCountingSelected && <details ref={countReviewRegion} open={countReviewOpen} onToggle={event => { if (event.target === event.currentTarget) setCountReviewOpen(event.currentTarget.open); }} className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
@@ -6914,6 +7013,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                      <Layers size={48} className="mb-4 opacity-50" />
                                      <p className="text-xl font-bold">{tf('word_sounds.no_words', 'No words selected')}</p>
                                      <p className="text-sm">{tf('word_sounds.choose_source_hint', 'Choose a source to begin')}</p>
+                                     <button type="button" onClick={jumpToMyWords} data-ws-empty-my-words="true" className="mt-4 mb-6 min-h-11 rounded-xl bg-emerald-700 px-5 py-2 text-sm font-bold text-white hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">{tf('word_sounds.empty_type_words', 'Type or paste my words')}</button>
                                  </div>
                              )}
                              <details className="bg-white border border-slate-300 rounded-xl p-4 mb-3">
@@ -6934,7 +7034,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                  <h3 className="mb-2 text-sm font-bold text-violet-900">{tf('word_sounds.share_menu_button', 'Print & share')}</h3>
                                  <button type="button" onClick={openWordPractice} disabled={wordPracticeStatus.busy} aria-busy={wordPracticeStatus.busy} aria-describedby="word-sounds-setup-presentation-help" className="min-h-11 rounded-lg border border-violet-300 bg-white px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-100 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{wordPracticeStatus.busy ? tf('word_sounds.practice_opening', 'Opening presentation tools…') : tf('word_sounds.practice_present_export', 'Present & Export')}</button>
                                  <p id="word-sounds-setup-presentation-help" className="mt-2 text-sm text-slate-600">{tf('word_sounds.practice_setup_help', 'Use selected words now, or paste a list. Project word practice or download HTML and PowerPoint. Audio is optional.')}</p>
-                                 <p className="mt-1 text-sm text-slate-600">{tf('word_sounds.share_setup_note', 'After you press Start, the Print & share menu in the activity also has word cards, sound boxes, a family letter and the take-home file.')}</p>
+                                 <p className="mt-1 text-sm text-slate-600">{tf('word_sounds.share_setup_note', 'After the lesson is prepared, the Print & share menu in the activity also has word cards, sound boxes, a family letter and the take-home file.')}</p>
                                  <p role="status" aria-live="polite" className="mt-1 text-sm text-amber-900">{wordPracticeStatus.notice}</p>
                              </div>}
                         </div>
@@ -6943,9 +7043,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                     <div className="lg:hidden flex items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3" data-ws-start-bar="true">
                         <p id="ws-start-blocked-bar" className="min-w-0 text-sm text-slate-700">{startBlocked ? startBlockedReason('font-semibold text-violet-800 underline underline-offset-2 min-h-11 text-start') : tf('word_sounds.words_selected_count', '{count} words selected', { count: selectedIndices.size })}</p>
                         <button type="button" onClick={handleStart} aria-describedby={startBlocked ? 'ws-start-blocked-bar' : undefined}
-                            disabled={selectedIndices.size === 0 || unsupportedSyllableWords.length > 0 || unreviewedSyllableCountWords.length > 0 || isProcessing}
+                            disabled={startDisabled}
                             className={`shrink-0 min-h-11 rounded-xl px-5 py-2 font-black transition-colors ${startBlocked ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : isProcessing ? 'bg-violet-600 text-white cursor-wait' : 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white'}`}>
-                            {isProcessing ? tf('status.generating', 'Generating...') : teacherSpokenCountWords.length ? tf('word_sounds.start_teacher_led', 'Start teacher-led activity') : tf('word_sounds.start', 'Start Activity')}
+                            {startLabel}
                         </button>
                     </div>
                 </div>

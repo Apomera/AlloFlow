@@ -182,7 +182,8 @@ describe('Word Sounds mastery evidence', () => {
   it('keeps word-level and counting judgments out of per-phoneme mastery', () => {
     const attribution = sliceBetween(
       'const _wordLevelActs = [',
-      'if (!isCorrect && answer && expectedAnswer)',
+      // Confusions moved above the retry branch on 2026-11-09 (every wrong pick is logged).
+      'updateDailyProgress(isCorrect);',
     );
 
     for (const activity of [

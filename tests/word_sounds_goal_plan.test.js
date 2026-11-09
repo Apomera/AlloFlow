@@ -283,7 +283,8 @@ describe('on the setup screen', () => {
 describe('placement (2026-11-08)', () => {
   it('sits at the top of the Lesson Plan section, after the word sources, since it turns lesson-plan activities on', () => {
     const src = readFileSync('word_sounds_setup_source.jsx', 'utf8');
-    const lessonPlan = src.indexOf('📋 Lesson Plan (Advanced)</label>');
+    const lessonPlan = src.indexOf("📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</label>");
+    expect(lessonPlan).toBeGreaterThan(0);
     const card = src.indexOf('data-ws-goal-plan="true"');
     const aiTopic = src.indexOf('<div className={`p-3 rounded-xl border-2 transition-all ${includeAI');
     const planToggle = src.indexOf('checked={includeLessonPlan}', lessonPlan);

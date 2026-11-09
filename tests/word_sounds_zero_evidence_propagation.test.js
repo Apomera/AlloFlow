@@ -65,7 +65,7 @@ describe('learner HTML and live progress use the graded evidence denominator',()
   const friendlyReport=data=>{
     const memory=downloadHarness();
     const report=new Function('t','_acWsSoundMastered','Blob','URL','document','setTimeout','addToast',
-      section(analytics,'const generateStudentFriendlyReport =','// WCAG 2.1.2 / 4.1.2: focus save+restore')+';return generateStudentFriendlyReport;')(
+      analytics.slice(analytics.indexOf('  function _acWsRowFirstTry(row) {'), analytics.indexOf('  // Per sound: when it was last practised'))+';'+analytics.slice(analytics.indexOf('  function _acWsText(t, key, fallback, params) {'), analytics.indexOf('  // RFC 4180 quoting'))+';'+section(analytics,'const generateStudentFriendlyReport =','// WCAG 2.1.2 / 4.1.2: focus save+restore')+';return generateStudentFriendlyReport;')(
       key=>key,()=>false,memory.Blob,memory.URL,memory.document,()=>{},null);
     report(data);return memory.files[0];
   };

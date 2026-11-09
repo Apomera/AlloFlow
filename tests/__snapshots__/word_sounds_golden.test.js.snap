@@ -1208,7 +1208,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Blending</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -1329,38 +1329,6 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -1422,7 +1390,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Counting</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -1543,38 +1511,6 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="flex items-center justify-center mb-4 flex-wrap">
 <h3 class="text-xl font-bold text-violet-700 mb-2">
@@ -1652,7 +1588,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Read &amp; Match</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -1773,38 +1709,6 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="mb-3 flex justify-center">
 <button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
 <span class="lucide-icon" data-icon="Volume2">
@@ -1855,7 +1759,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Isolation</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -1976,38 +1880,6 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="p-8 text-center animate-pulse motion-reduce:animate-none text-violet-700">Loading sounds...</div>
 </div>
 </div>
@@ -2049,7 +1921,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Letter Trace</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -2170,38 +2042,6 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -2280,7 +2120,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Sound Swap</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -2401,38 +2241,6 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="flex flex-col gap-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -2496,7 +2304,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Sound Mapping</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -2617,38 +2425,6 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -2720,7 +2496,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Sight &amp; Spell</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -2841,38 +2617,6 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -2962,7 +2706,7 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Read the Story</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -3083,38 +2827,6 @@ exports[`layer 2 — render behavior per activity > activity "read_passage" rend
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="mb-3 flex justify-center">
 <button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
 <span class="lucide-icon" data-icon="Volume2">
@@ -3166,7 +2878,7 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Finish the Sentence</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -3287,38 +2999,6 @@ exports[`layer 2 — render behavior per activity > activity "read_sentence" ren
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="mb-3 flex justify-center">
 <button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
 <span class="lucide-icon" data-icon="Volume2">
@@ -3370,7 +3050,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Rhyming</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -3491,38 +3171,6 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="flex flex-col gap-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -3589,7 +3237,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Segmentation</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -3710,38 +3358,6 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -3813,7 +3429,7 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Picture the Sentence</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -3934,38 +3550,6 @@ exports[`layer 2 — render behavior per activity > activity "sentence_match" re
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="mb-3 flex justify-center">
 <button type="button" data-ws-hear-instructions="true" class="flex min-h-11 items-center gap-2 rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">
 <span class="lucide-icon" data-icon="Volume2">
@@ -4015,7 +3599,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Sound Sort</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -4136,38 +3720,6 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-4">
 <div class="flex flex-col h-full">
 <div class="text-center mb-6 relative">
@@ -4246,7 +3798,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Spelling Bee</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -4396,9 +3948,9 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </button>
 </div>
 <div dir="ltr" class="flex gap-2 justify-center flex-wrap">
-<div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
-<div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
-<div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
+<div data-ws-spell-slot="true" class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
+<div data-ws-spell-slot="true" class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
+<div data-ws-spell-slot="true" class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
 </div>
 <input aria-label="common.enter_user_answer" type="text" inputMode="text" autoComplete="off" autoCorrect="off" autoCapitalize="none" spellcheck="false" placeholder="common.placeholder_type_the_word" maxLength="3" class="w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-600 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" autofocus="" value=""/>
 <div dir="ltr" role="group" aria-label="Letter keys" data-ws-letter-keys="true" class="flex max-w-md flex-wrap justify-center gap-1">
@@ -4477,7 +4029,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Syllable Blending</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -4598,38 +4150,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="flex flex-col gap-4">
 <p role="status" class="text-center text-slate-700 bg-sky-50 border border-sky-200 rounded-2xl p-6">This word needs checked syllable audio. Choose another word to keep practicing.</p>
 <button aria-label="common.voice_input" disabled="" class="mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors">
@@ -4676,7 +4196,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Syllable Claps</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -4797,38 +4317,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="flex flex-col gap-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -4891,7 +4379,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Word Families</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -5012,38 +4500,6 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-4">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -5139,7 +4595,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Blending</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -5260,38 +4716,6 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -5354,7 +4778,7 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </svg>
 <div>
 <h2 id="word-sounds-dialog-title" tabindex="-1" data-dialog-initial-focus="true" class="text-xl font-bold">🔤 Word Sounds Studio</h2>
-<p class="text-violet-200 text-sm">Choose an activity below to get started!</p>
+<p class="text-violet-200 text-sm" data-ws-header-subtitle="true">Blending</p>
 </div>
 </div>
 <button aria-label="common.minimize_to_background" class="p-2 hover:bg-white/20 rounded-full transition-colors mr-1" title="common.minimize_to_background">
@@ -5475,38 +4899,6 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </div>
 <div class="flex-1 overflow-y-auto p-6">
 <div tabindex="-1" class="animate-in fade-in slide-in-from-right-8 duration-500 ease-out fill-mode-both focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2">
-<div role="region" aria-label="Anchor card for the sound k, spelled c, like the word cat" class="mx-auto mb-4 max-w-2xl rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-md overflow-hidden transition-all">
-<div class="flex items-center justify-between px-4 py-1.5 bg-amber-100 border-b border-amber-200">
-<span class="text-[0.6875rem] font-bold text-amber-800 uppercase tracking-wider">Anchor</span>
-<div class="flex items-center gap-1">
-<button type="button" aria-label="Switch to compact anchor view" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-amber-700 hover:bg-amber-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">Compact</button>
-<button type="button" aria-label="Hide anchor" class="px-2 py-0.5 rounded text-[0.625rem] font-bold text-slate-700 hover:bg-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Hide</button>
-</div>
-</div>
-<div class="flex items-stretch gap-4 p-4">
-<div class="flex flex-col items-center justify-center px-4 py-3 rounded-xl bg-white border-2 border-amber-400 shadow-inner min-w-[88px]" aria-hidden="true">
-<div class="font-black text-4xl text-amber-700 leading-none">C</div>
-<div class="h-px w-8 bg-amber-300 my-1">
-</div>
-<div class="font-black text-4xl text-amber-700 leading-none">c</div>
-</div>
-<div class="flex-1 flex flex-col gap-2 min-w-0">
-<div class="flex items-center gap-2 flex-wrap">
-<span class="text-[0.6875rem] font-bold text-slate-700 uppercase">Key word:</span>
-<span class="text-base font-bold text-slate-800">cat</span>
-<button type="button" aria-label="Hear the sound k in the word cat" class="ml-1 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 hover:ring-2 hover:ring-amber-400 text-amber-800 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">🔊 <span class="font-mono">/k/</span>
-</button>
-</div>
-<p class="text-sm text-slate-700 leading-relaxed">A <strong class="px-1 py-0.5 rounded bg-amber-200 text-amber-900 font-black" aria-label="highlighted: c">c</strong>at sat on the mat.</p>
-<div class="text-[0.6875rem] text-slate-700 italic flex items-start gap-1">
-<span aria-hidden="true">📐</span>
-<span>Hard c (sounds like /k/) before a, o, u, or consonants.</span>
-</div>
-</div>
-</div>
-<div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[0.6875rem] text-slate-700">
-<span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
-</div>
 <div class="space-y-6">
 <div class="text-center mb-6 relative">
 <button aria-label="word_sounds.play_word" class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">

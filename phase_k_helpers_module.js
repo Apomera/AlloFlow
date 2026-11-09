@@ -1956,6 +1956,12 @@ const buildStudentProgressSummary = ({
     }
   };
 };
+const filterWordSoundsHistoryForLearner = (history, learnerIds) => {
+  const rows = Array.isArray(history) ? history : [];
+  const ids = (Array.isArray(learnerIds) ? learnerIds : [learnerIds]).map((value) => value == null ? "" : String(value).trim()).filter(Boolean);
+  if (!ids.length) return rows;
+  return rows.filter((row) => row && row.learnerId != null && ids.includes(String(row.learnerId).trim()));
+};
 const executeSaveFile = async (deps, interactionOptions = {}) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, adventureTypingPaceEnabled, adventureFluencyEnabled, adventureConsistentCharacters, isAdventureStoryMode, isSocialStoryMode, socialStoryFocus, adventureArtStyle, adventureCustomArtStyle, useLowQualityVisuals, enableFactionResources, factionResourceMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence: playSequence2, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers, conceptMasteryLocal, user } = deps;
   try {
@@ -2026,6 +2032,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
   const selToolData = typeof window !== "undefined" && window.__alloflowSelToolData || null;
   const selSnapshots = typeof window !== "undefined" && window.__alloflowSelSnapshots || null;
   const studentArtifacts = typeof window !== "undefined" && window.__alloflowStudentArtifacts || null;
+  const savedWordSoundsHistory = saveType === "teacher" ? wordSoundsHistory : filterWordSoundsHistoryForLearner(wordSoundsHistory, [user && user.uid, studentNickname]);
   const studentProgressSummary = buildStudentProgressSummary({
     history,
     studentResponses,
@@ -2035,7 +2042,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
     escapeRoomState,
     gameCompletions,
     labelChallengeResults,
-    wordSoundsHistory,
+    wordSoundsHistory: savedWordSoundsHistory,
     wordSoundsScore,
     wordSoundsBadges,
     wordSoundsDailyProgress,
@@ -2099,7 +2106,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
       // mastery, and confusion patterns on save→load. Same shape as the
       // student branch below; the load side restores it for both modes.
       wordSoundsState: {
-        history: wordSoundsHistory,
+        history: savedWordSoundsHistory,
         badges: wordSoundsBadges,
         phonemeMastery,
         dailyProgress: wordSoundsDailyProgress,
@@ -2206,7 +2213,7 @@ const executeSaveFile = async (deps, interactionOptions = {}) => {
         savedAt: (/* @__PURE__ */ new Date()).toISOString()
       } : null,
       wordSoundsState: {
-        history: wordSoundsHistory,
+        history: savedWordSoundsHistory,
         badges: wordSoundsBadges,
         phonemeMastery,
         dailyProgress: wordSoundsDailyProgress,
@@ -4229,6 +4236,7 @@ window.AlloModules.PhaseKHelpers = {
   resolvePersonaMessageVoice,
   syncProgressToFirestore,
   executeSaveFile,
+  filterWordSoundsHistoryForLearner,
   formatInlineText,
   autoConfigureSettings,
   translateResourceItem,

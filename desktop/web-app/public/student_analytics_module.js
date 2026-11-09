@@ -1006,8 +1006,19 @@ try {
           sessionScore: ws.sessionScore || null,
           history: Array.isArray(ws.history) ? ws.history.slice(-40) : [],
           phonemeMastery: ws.phonemeMastery || null,
-          badges: Array.isArray(ws.badges) ? ws.badges.slice(0, 24) : []
+          badges: Array.isArray(ws.badges) ? ws.badges.slice(0, 24) : [],
+          confusionPatterns: {}
         };
+        // The 50 most frequent "target->chosen" pairs.
+        var cp = ws.confusionPatterns && typeof ws.confusionPatterns === 'object' && !Array.isArray(ws.confusionPatterns) ? ws.confusionPatterns : {};
+        Object.keys(cp).filter(function(pair) { return Number(cp[pair]) > 0; })
+          .sort(function(a, b) { return Number(cp[b]) - Number(cp[a]) || a.localeCompare(b); })
+          .slice(0, 50)
+          .forEach(function(pair) { out.wordSoundsState.confusionPatterns[String(pair).slice(0, 80)] = Number(cp[pair]); });
+        // Read from every row before the 40-row cut, so dates and first-try
+        // counts by sound outlive the trimmed rows.
+        if (typeof _acWsSoundSummary === 'function') out.wordSoundsState.soundSummary = _acWsSoundSummary(ws);
+        else if (ws.soundSummary && typeof ws.soundSummary === 'object') out.wordSoundsState.soundSummary = ws.soundSummary;
       }
       if (data.gameCompletions && typeof data.gameCompletions === 'object') {
         out.gameCompletions = {};
@@ -1094,9 +1105,66 @@ try {
     });
     return out;
   }
+  // Was this saved Word Sounds row right on the first try? null when the row
+  // does not say (saved before the field existed). `wrong` lists the wrong
+  // answers picked, on newer rows.
+  function _acWsRowFirstTry(row) {
+    if (!row || typeof row !== 'object') return null;
+    var correct = typeof row.correct === 'boolean' ? row.correct : typeof row.isCorrect === 'boolean' ? row.isCorrect : null;
+    if (correct === null) return null;
+    var pickedWrong = Array.isArray(row.wrong) && row.wrong.length > 0;
+    var first = typeof row.firstTry === 'boolean' ? row.firstTry
+      : Array.isArray(row.wrong) ? !pickedWrong
+      : Number.isFinite(row.attempts) ? row.attempts <= 1 : null;
+    if (first === null) return null;
+    return correct && first && !pickedWrong;
+  }
+  // First-try accuracy over graded rows that say how many tries were used.
+  function _acWsFirstTryStats(history) {
+    var items = 0, right = 0;
+    (Array.isArray(history) ? history : []).forEach(function(row) {
+      if (!row || row.practiceOnly === true || row.activity === 'letter_tracing') return;
+      var first = _acWsRowFirstTry(row);
+      if (first === null) return;
+      items++;
+      if (first) right++;
+    });
+    return { items: items, correct: right, accuracy: items ? Math.round(right / items * 100) : null };
+  }
+  // Per sound: when it was last practised and its first-try counts. A summary
+  // saved with the student already counted the rows up to `through`; only
+  // newer rows are added to it, so saving again never counts a row twice.
+  function _acWsSoundSummary(ws) {
+    var sounds = {};
+    var prior = ws && ws.soundSummary && typeof ws.soundSummary === 'object' && ws.soundSummary.sounds && typeof ws.soundSummary.sounds === 'object' ? ws.soundSummary : null;
+    var through = prior ? Number(prior.through) || 0 : 0;
+    if (prior) Object.keys(prior.sounds).slice(0, 200).forEach(function(sound) {
+      var p = prior.sounds[sound];
+      if (p && typeof p === 'object') sounds[sound] = { last: Number(p.last) || 0, firstTryItems: Number(p.firstTryItems) || 0, firstTryCorrect: Number(p.firstTryCorrect) || 0 };
+    });
+    var newest = through;
+    (ws && Array.isArray(ws.history) ? ws.history : []).forEach(function(row) {
+      if (!row || typeof row !== 'object') return;
+      var when = new Date(row.timestamp || row.date).getTime();
+      if (!Number.isFinite(when)) when = 0;
+      if (prior && when <= through) return;
+      if (when > newest) newest = when;
+      var first = row.practiceOnly !== true && row.activity !== 'letter_tracing' ? _acWsRowFirstTry(row) : null;
+      var labels = Array.isArray(row.soundLabels) ? row.soundLabels : _acWsSoundLabels(row.phonemes);
+      labels.forEach(function(sound, index) {
+        if (typeof sound !== 'string' || !sound || labels.indexOf(sound) !== index) return;
+        var entry = sounds[sound] || (Object.keys(sounds).length < 200 ? (sounds[sound] = { last: 0, firstTryItems: 0, firstTryCorrect: 0 }) : null);
+        if (!entry) return;
+        if (when > entry.last) entry.last = when;
+        if (first !== null) { entry.firstTryItems++; if (first) entry.firstTryCorrect++; }
+      });
+    });
+    return { through: newest, sounds: sounds };
+  }
   // One row per student x sound from phonemeMastery, a per-sound summary, and
-  // how many students had no per-sound data. Last practiced comes from the
-  // saved history rows, so it is blank once those rows have been trimmed.
+  // how many students had no per-sound data. Last practiced and the first-try
+  // counts come from the saved history rows, or from the per-sound summary
+  // kept when older rows were trimmed.
   function _acWordSoundsResults(students) {
     var rows = [];
     var included = 0;
@@ -1105,21 +1173,19 @@ try {
     (Array.isArray(students) ? students : []).forEach(function(s) {
       var ws = s && s.data && s.data.wordSoundsState;
       var mastery = ws && ws.phonemeMastery && typeof ws.phonemeMastery === 'object' ? ws.phonemeMastery : {};
-      var last = {};
-      (ws && Array.isArray(ws.history) ? ws.history : []).forEach(function(h) {
-        var when = h ? new Date(h.timestamp || h.date).getTime() : NaN;
-        if (!Number.isFinite(when)) return;
-        (Array.isArray(h.soundLabels) ? h.soundLabels : _acWsSoundLabels(h.phonemes)).forEach(function(sound) { if (!(last[sound] >= when)) last[sound] = when; });
-      });
+      var bySound = _acWsSoundSummary(ws).sounds;
       var mine = [];
       Object.keys(mastery).sort(byLabel).forEach(function(sound) {
         var v = mastery[sound];
         var attempts = v && typeof v === 'object' ? Number(v.total) || 0 : 0;
         if (attempts <= 0) return;
         var correct = Math.max(0, Math.min(attempts, Number(v.correct) || 0));
+        var seen = bySound[sound] || {};
         mine.push({ student: String(s.name || s.nickname || ''), sound: sound, attempts: attempts, correct: correct,
           accuracy: Math.round(correct / attempts * 100), mastered: _acWsSoundMastered(v),
-          lastPracticed: last[sound] ? _acLocalDate(last[sound]) : '' });
+          firstTryItems: seen.firstTryItems || 0, firstTryCorrect: seen.firstTryCorrect || 0,
+          firstTryAccuracy: seen.firstTryItems ? Math.round(seen.firstTryCorrect / seen.firstTryItems * 100) : '',
+          lastPracticed: seen.last ? _acLocalDate(seen.last) : '' });
       });
       if (mine.length) { included++; rows = rows.concat(mine); } else leftOut++;
     });
@@ -1135,6 +1201,13 @@ try {
       return { sound: sound, students: g.students, meanAccuracy: Math.round(g.accuracy / g.students), mastered: g.mastered };
     });
     return { rows: rows, summary: summary, included: included, leftOut: leftOut };
+  }
+  // Translated text with an English fallback and {name} placeholders.
+  function _acWsText(t, key, fallback, params) {
+    var text = '';
+    try { text = typeof t === 'function' ? t(key, params) : ''; } catch (e) { text = ''; }
+    if (typeof text !== 'string' || !text || text === key) text = fallback;
+    return text.replace(/\{(\w+)\}/g, function(token, name) { return params && Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : token; });
   }
   // RFC 4180 quoting; text a spreadsheet would run as a formula stays text.
   function _acCsvCell(value) {
@@ -2161,6 +2234,8 @@ try {
         totalActivities: 0,
         wsWordsCompleted: 0,
         wsAccuracy: null,
+        wsFirstTryAccuracy: null,
+        wsFirstTryItems: 0,
         wsGradedAttempts: 0,
         wsBestStreak: 0,
         socraticMessageCount: 0,
@@ -2224,6 +2299,9 @@ try {
           row.activity !== 'letter_tracing' && (typeof row.correct === 'boolean' || typeof row.isCorrect === 'boolean'));
         stats.wsWordsCompleted = history.length;
         stats.wsGradedAttempts = graded.length;
+        const firstTry = _acWsFirstTryStats(history);
+        stats.wsFirstTryItems = firstTry.items;
+        stats.wsFirstTryAccuracy = firstTry.accuracy;
         if (graded.length) stats.wsAccuracy = Math.round(graded.filter(row =>
           typeof row.correct === 'boolean' ? row.correct : row.isCorrect).length / graded.length * 100);
         // Legacy files can contain only the aggregate score. An existing
@@ -2875,7 +2953,7 @@ try {
       if (part === 'summary') {
         _acDownloadCsv([['Sound', 'Students practicing', 'Mean accuracy %', 'Students mastered']].concat(result.summary.map(g => [g.sound, g.students, g.meanAccuracy, g.mastered])), 'word_sounds_summary_' + stamp + '.csv');
       } else {
-        _acDownloadCsv([['Student', 'Sound', 'Attempts', 'Correct', 'Accuracy %', 'Mastered', 'Last practiced']].concat(result.rows.map(r => [r.student, r.sound, r.attempts, r.correct, r.accuracy, r.mastered ? 'Yes' : 'No', r.lastPracticed])), 'word_sounds_results_' + stamp + '.csv');
+        _acDownloadCsv([['Student', 'Sound', 'Attempts', 'Correct', 'Accuracy %', 'Mastered', 'Last practiced', 'First-try items', 'First-try correct', 'First-try accuracy %']].concat(result.rows.map(r => [r.student, r.sound, r.attempts, r.correct, r.accuracy, r.mastered ? 'Yes' : 'No', r.lastPracticed, r.firstTryItems, r.firstTryCorrect, r.firstTryAccuracy])), 'word_sounds_results_' + stamp + '.csv');
       }
       const done = wsExportLabel('class_analytics.ws_export_done', 'Word Sounds results exported. Students included: {count}.', { count: result.included });
       addToast(result.leftOut ? done + ' ' + wsExportLabel('class_analytics.ws_export_left_out', 'Students left out because they have no Word Sounds results: {count}.', { count: result.leftOut }) : done, 'success');
@@ -6414,6 +6492,7 @@ try {
         (typeof h.correct === 'boolean' || typeof h.isCorrect === 'boolean'));
       const wsCorrect = wsGraded.filter(h => h.correct ?? h.isCorrect).length;
       const wsAccuracy = wsGraded.length > 0 ? Math.round(wsCorrect / wsGraded.length * 100) : null;
+      const wsFirstTryAccuracy = _acWsFirstTryStats(wsHistory).accuracy;
       const xp = sessionData?.globalPoints || 0;
       const level = sessionData?.globalLevel || 1;
       const badges = sessionData?.wordSoundsBadges || {};
@@ -6469,7 +6548,7 @@ try {
       const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">✅ ' + phoneme + '</span>').join('') + '</div></div>' : '';
       const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', snapshotWsAccuracy(first), snapshotWsAccuracy(latest), '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
       const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.word_sounds') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.quiz_avg') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.activities') + '</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
-      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', 'Word Accuracy', wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + '</div>' + growthHtml + historyHtml + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
+      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', _acWsText(t, 'class_analytics.ws_accuracy_with_retries', 'Word accuracy (with second tries)'), wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + (wsFirstTryAccuracy !== null ? statCard('\u{1F3AF}', _acWsText(t, 'class_analytics.ws_first_try_label', 'First try'), wsFirstTryAccuracy + '%', '#0e7490') : '') + '</div>' + growthHtml + historyHtml + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
       const blob = new Blob([html], {
         type: 'text/html'
       });
@@ -10537,7 +10616,14 @@ try {
       className: "text-lg font-bold text-emerald-600"
     }, selectedStudent.stats.wsAccuracy, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy")), selectedStudent.stats?.wsWordsCompleted > 0 && /*#__PURE__*/React.createElement("div", {
+    }, _acWsText(t, 'class_analytics.ws_accuracy_with_retries_short', 'Accuracy (with second tries)')), (function () {
+      var _stored = selectedStudent.stats.wsFirstTryAccuracy;
+      var _first = Number.isFinite(_stored) ? _stored : _acWsFirstTryStats(selectedStudent.data.wordSoundsState.history).accuracy;
+      return Number.isFinite(_first) ? /*#__PURE__*/React.createElement("div", {
+        "data-ws-first-try": _first,
+        className: "text-xs font-bold text-emerald-800 mt-0.5"
+      }, _acWsText(t, 'class_analytics.ws_first_try', 'First try: {percent}%', { percent: _first })) : null;
+    })()), selectedStudent.stats?.wsWordsCompleted > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-teal-600"

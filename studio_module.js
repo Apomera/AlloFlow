@@ -6329,7 +6329,7 @@
       });
       if (!ops.length) return;
       dispatchGesture(ops, 'user', 'Match object sizes');
-      stAnnounce(TT('studio.a11y_group_resized', 'Selected object sizes matched'));
+      stAnnounce(TT('studio.a11y_group_sizes_matched', 'Selected object sizes matched'));
     };
     var duplicateSelectedGroup = function () {
       if (selectedGroup.length < 2) return;
@@ -6513,7 +6513,7 @@
     var saveToPortfolio = function () {
       var result = stSavePortfolioArtifact(doc, { now: new Date().toISOString() });
       if (result.ok) {
-        stAnnounce(TT('studio.portfolio_saved_a11y', 'AlloStudio product saved to portfolio'));
+        stAnnounce(TT('studio.portfolio_saved_a11y', 'Page Designer product saved to portfolio'));
         addToast(TT('studio.portfolio_saved', 'Saved a read-only product card to AlloHaven Portfolio.'), 'success');
       } else {
         addToast(TT('studio.portfolio_unavailable', 'Portfolio save was not available in this browser.'), 'error');
@@ -6675,16 +6675,16 @@
       var allTemplates = stTemplates();
       var templateFavorites = templateFavoritesTick >= 0 ? stReadTemplateFavorites() : [];
       var shownTemplates = stFilterTemplates(allTemplates, { category: templateFilter, query: templateSearch, useCase: templateUseCase, favorites: templateFavorites });
-      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
+      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'Page Designer'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); requestClose(); } } },
         h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
-            h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
+            h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'Page Designer')),
             h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
             h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring in a PowerPoint or exported lesson deck. Supported text, pictures, alt text, and layout import; proprietary activities, tables, charts, and SmartArt are reported or left for review.') }, '📽️ ' + TT('studio.import_pptx', 'Import lesson deck (.pptx)')),
-            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: requestClose }, '✕')),
+            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close Page Designer'), onClick: requestClose }, '✕')),
           (function () {
             var saved = stReadAutosave();
             if (!saved) return null;
@@ -6702,7 +6702,7 @@
             if (seen) return null;
             return h('div', { style: { margin: '12px 18px 0', padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '11px', color: C.text } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' } },
-                h('strong', null, '👋 ' + TT('studio.welcome_title', 'Welcome to AlloStudio')),
+                h('strong', null, '👋 ' + TT('studio.welcome_title', 'Welcome to Page Designer')),
                 h('button', { style: Object.assign({}, S.tool, { padding: '2px 8px', minHeight: '22px', fontSize: '10px' }), onClick: function () { try { localStorage.setItem('alloStudioWelcome_v1', '1'); } catch (_) {} bump(); } }, TT('studio.welcome_got_it', 'Got it'))),
               h('ul', { style: { margin: '6px 0 0 16px', padding: 0, lineHeight: 1.5 } },
                 h('li', null, TT('studio.welcome_order', 'The reading-order list (right panel in the editor) is what screen readers and the tagged PDF follow — arrange it like you would read aloud.')),
@@ -6832,7 +6832,7 @@
                 h('input', { type: 'range', min: 0, max: maxSeq, value: at, style: { width: '100%' }, 'aria-valuetext': TT('studio.scrub_step', 'step') + ' ' + at + ' ' + TT('studio.of', 'of') + ' ' + maxSeq, onChange: function (e) { setScrubSeq(parseInt(e.target.value, 10)); } }))),
             h('div', { style: Object.assign({}, S.rpanel, { width: layout.stacked ? 'auto' : '300px' }) },
               h('div', { style: { padding: '10px', background: C.exportBg, border: '1px solid ' + C.exportBorder, borderRadius: '10px', fontSize: '12px', color: C.text, fontWeight: 700 } },
-                summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
+                summary.user + ' ' + (student ? TT('studio.ops_by_you', 'edits by you') : TT('studio.ops_by_student', 'edits by the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
                 h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
               h('p', { style: { fontSize: '11px', color: C.muted, margin: '2px 0 6px' } }, TT('studio.honesty_line', ST_HONESTY_LINE)),
               h('div', { role: 'group', 'aria-label': TT('studio.process_filter', 'Process filter'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
@@ -7085,7 +7085,7 @@
       dispatchGesture(result.patches.map(function (item) { return { type: 'object.update', target: item.id, patch: item.patch }; }), 'user', 'Replace text');
       setFindResultIndex(0);
       stAnnounce(TT('studio.replace_done', 'Text replaced') + ': ' + result.matchCount);
-      addToast(TT('studio.replace_done', 'Text replaced') + ': ' + result.matchCount + ' ' + TT('studio.find_matches', result.matchCount === 1 ? 'match' : 'matches') + (result.skippedLocked ? ' - ' + result.skippedLocked + ' ' + TT('studio.replace_locked_skipped', 'locked block skipped') : ''), 'success');
+      addToast(TT('studio.replace_done', 'Text replaced') + ': ' + result.matchCount + ' ' + (result.matchCount === 1 ? TT('studio.find_match_one', 'match') : TT('studio.find_matches', 'matches')) + (result.skippedLocked ? ' - ' + result.skippedLocked + ' ' + TT('studio.replace_locked_skipped', 'locked block skipped') : ''), 'success');
     };
     var replaceCurrentText = function () {
       if (activeFindIndex < 0 || !findMatches[activeFindIndex]) return;
@@ -7175,7 +7175,7 @@
             grp.colors.map(swatchBtn));
         }),
         h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: C.muted, marginTop: '2px' } }, TT('studio.swatch_custom', 'Custom'),
-          h('input', { type: 'color', value: cur || '#000000', 'aria-label': TT('studio.swatch_custom', 'Custom color'),
+          h('input', { type: 'color', value: cur || '#000000', 'aria-label': TT('studio.swatch_custom_color', 'Custom color'),
             style: { width: '36px', height: '24px', padding: '1px', border: '1px solid ' + C.border, borderRadius: '6px', background: C.inputBg, cursor: 'pointer' },
             onChange: function (e) { onPick(e.target.value); } })));
     };
@@ -7524,7 +7524,7 @@
           h('div', null,
             h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 900 } }, TT('studio.quick_actions', 'Quick actions')),
             h('div', { style: { fontSize: '10.5px', color: C.soft, marginTop: '2px' } }, modLabel + '+K')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: closeCommandPalette }, 'x')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close_panel', 'Close'), onClick: closeCommandPalette }, 'x')),
         h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + C.border } },
           h('input', { autoFocus: true, value: commandQuery, placeholder: TT('studio.command_search_placeholder', 'Search commands or objects'), 'aria-label': TT('studio.command_search', 'Search quick actions'), style: Object.assign({}, S.input, { fontSize: '13px' }),
             onChange: function (e) { setCommandQuery(e.target.value); setCommandIndex(0); },
@@ -7552,7 +7552,7 @@
       h('div', { style: { background: C.panel, color: C.text, border: '1px solid ' + C.border, borderRadius: '14px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', maxWidth: '460px', width: '100%', maxHeight: '82%', overflow: 'auto', padding: '18px 20px' } },
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
           h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 800 } }, '⌨ ' + TT('studio.shortcuts', 'Keyboard shortcuts')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: function () { setShortcutsOpen(false); } }, '✕')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close_panel', 'Close'), onClick: function () { setShortcutsOpen(false); } }, '✕')),
         h('div', { style: { display: 'grid', gap: '6px' } },
           stShortcutList().map(function (sc) {
             var keys = sc.mod ? (modLabel + '+' + sc.keys) : sc.keys;
@@ -7562,7 +7562,7 @@
           })),
         h('p', { style: { fontSize: '11px', color: C.soft, margin: '12px 0 0' } }, TT('studio.shortcuts_note', 'Shortcuts work while the editor is focused, not while typing in a text box.'))
       )) : null;
-    return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
+    return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'Page Designer'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
       commandPaletteOverlay,
       shortcutsOverlay,
       h('div', { ref: _shellRef, style: S.shell },
@@ -7572,14 +7572,14 @@
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { historyAction(false); }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
-          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { historyAction(true); }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
+          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { historyAction(true); }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions ({key}+K)').split('{key}').join(modLabel) }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
           h('span', { style: S.headerSpacer }),
           hasLinkedActivityWorksheet ? h('span', { role: 'status', style: { fontSize: '10px', color: linkedSaveState === 'conflict' ? '#b91c1c' : C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, linkedStatusLabel) : null,
           hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
           h('span', { role: 'status', 'aria-live': 'polite', style: { color: saveState === 'error' ? '#fca5a5' : C.headerText, fontSize: '11px', flex: layout.stacked ? '1 1 100px' : '0 1 150px' } }, saveState === 'error' ? TT('studio.recovery_failed', 'Could not save on this device') : saveState === 'saved' ? TT('studio.recovery_saved', 'Saved on this device') : saveState === 'saving' ? TT('studio.recovery_saving', 'Saving changes...') : TT('studio.recovery_ready', 'Ready')),
           !layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null,
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen, 'aria-busy': exportBusy }, (exportBusy ? '⏳ ' : '📤 ') + TT('studio.export', 'Export')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: requestClose }, '✕')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close Page Designer'), onClick: requestClose }, '✕')),
         preflightOpen ? h('section', { 'aria-label': TT('studio.accessibility_review', 'Accessibility review'), style: { maxHeight: layout.stacked ? '28dvh' : '38dvh', overflowY: 'auto', flexShrink: 0, padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: '1 1 100%' } }, h('strong', null, TT('studio.accessibility_review', 'Accessibility review')), h('button', { style: S.tool, onClick: function () { setPreflightOpen(false); if (headerMoreRef.current) headerMoreRef.current.querySelector('summary').focus(); }, 'aria-label': TT('studio.close_review', 'Close accessibility review') }, TT('studio.done', 'Done'))),
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
@@ -7768,7 +7768,7 @@
                       h('div', { style: { marginTop: '4px', fontSize: '9.5px', color: C.soft } }, info.kind + ' - ' + info.safety));
                   })) : null,
                 agentPlan.rejected && agentPlan.rejected.length ? h('details', { style: { marginTop: '6px', color: C.muted } },
-                  h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, TT('studio.agent_skipped_changes', 'Skipped') + ' ' + agentPlan.rejected.length),
+                  h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, TT('studio.agent_skipped_heading', 'Skipped') + ' ' + agentPlan.rejected.length),
                   h('ul', { style: { margin: '4px 0 0 16px', padding: 0 } }, agentPlan.rejected.slice(0, 8).map(function (msg, idx) { return h('li', { key: idx }, msg); }))) : null,
                 h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', width: '100%', marginTop: '6px', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: runPlanPreview, title: TT('studio.preview_hint', 'Renders the page before and after the selected changes — nothing is applied yet') }, aiBusy === 'plan-preview' ? '… ' + TT('studio.previewing', 'Rendering…') : '🖼 ' + TT('studio.preview_result', 'Preview result')),
                 agentPreview ? h('div', null,
@@ -7997,7 +7997,7 @@
               h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px', minWidth: '28px' }), onClick: function () { stepFindResult(1); }, title: TT('studio.find_next', 'Next text match'), 'aria-label': TT('studio.find_next', 'Next text match') }, '>'),
               h('button', { type: 'button', 'aria-expanded': replaceOpen, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }, replaceOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setReplaceOpen(!replaceOpen); }, title: TT('studio.replace_toggle', 'Show replace controls') }, TT('studio.replace', 'Replace'))),
             findQuery ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } },
-              findMatches.length ? findTotalMatches + ' ' + TT('studio.find_matches', findTotalMatches === 1 ? 'match' : 'matches') + ' in ' + findMatches.length + ' ' + TT('studio.find_text_blocks', findMatches.length === 1 ? 'text block' : 'text blocks') + ' - ' + (activeFindIndex + 1) + '/' + findMatches.length : TT('studio.find_no_matches', 'No text matches.')) : null,
+              findMatches.length ? findTotalMatches + ' ' + (findTotalMatches === 1 ? TT('studio.find_match_one', 'match') : TT('studio.find_matches', 'matches')) + ' in ' + findMatches.length + ' ' + (findMatches.length === 1 ? TT('studio.find_text_block_one', 'text block') : TT('studio.find_text_blocks', 'text blocks')) + ' - ' + (activeFindIndex + 1) + '/' + findMatches.length : TT('studio.find_no_matches', 'No text matches.')) : null,
             findMatches.length ? h('div', { role: 'listbox', 'aria-label': TT('studio.find_results', 'Text find results'), style: { display: 'grid', gap: '3px', maxHeight: '132px', overflow: 'auto', padding: '3px 0' } },
               findMatches.slice(0, 12).map(function (match, idx) {
                 var active = idx === activeFindIndex;

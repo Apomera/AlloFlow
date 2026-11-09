@@ -18167,6 +18167,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
 
   const [wsGeneratorMinimized, setWsGeneratorMinimized] = React.useState(false);
     const [wordSoundsCustomTerms, setWordSoundsCustomTerms] = React.useState([]);
+    const wordSoundsInitialCustomWords = React.useMemo(() => (Array.isArray(wordSoundsCustomTerms) ? wordSoundsCustomTerms : [])
+        .map(word => (typeof word === 'string' ? word.trim() : '')).filter(Boolean).slice(0, 60), [wordSoundsCustomTerms]);
     const [wordSoundsOracleData, setWordSoundsOracleData] = React.useState(null);
   const [dashboardData, setDashboardData] = useState([]);
   const [dashboardView, setDashboardView] = useState('list');
@@ -18670,6 +18672,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleGameScoreUpdate = useCallback((points, activity) => {
     handleScoreUpdate(points, activity, generatedContent?.id);
   }, [generatedContent?.id, handleScoreUpdate]);
+  const handleWordSoundsScoreUpdate = useCallback((points, activity) => {
+    const earned = Math.round(Number(points));
+    if (!(earned > 0)) return 0;
+    const name = typeof activity === 'string' && activity ? activity : 'word_sounds';
+    setGlobalPoints(prev => (Number(prev) || 0) + earned);
+    setPointHistory(prev => {
+      const rows = Array.isArray(prev) ? prev : [];
+      const top = rows[0];
+      if (top && top.wordSoundsRun === true && top.activity === name && Date.now() - Date.parse(top.timestamp) < 1800000) {
+        return [{ ...top, points: (Number(top.points) || 0) + earned }, ...rows.slice(1)];
+      }
+      return [{ id: Date.now() + Math.random(), activity: name, points: earned, timestamp: new Date().toISOString(), wordSoundsRun: true }, ...rows];
+    });
+    return earned;
+  }, []);
   // Live-session state must be initialized before the organizer completion
   // callback below reads it during hook registration. Keeping these declarations
   // later in the component placed both bindings in the temporal dead zone and
@@ -45935,7 +45952,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                             wordSoundsLanguage, setWordSoundsLanguage,
                             wordSoundsFeedback, setWordSoundsFeedback,
                             wordSoundsHistory, setWordSoundsHistory,
-                            onScoreUpdate: handleGameScoreUpdate,
+                            onScoreUpdate: handleWordSoundsScoreUpdate,
                             speakWord, callGemini, callTTS, callImagen, selectedVoice, t,
                             // Student QR devices play from the prepared pack only;
                             // the module nulls its AI seams when this is false.
@@ -46047,13 +46064,16 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     </ErrorBoundary>
                         );
                     }
+                    const wsLoadFailed = window.__alloModuleRegistry?.WordSoundsModal?.status === 'failed';
+                    const wsRetryLoad = () => { try { window.__alloRetryModule?.('WordSoundsModal'); } catch (_) {} };
                     return (
                         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center">
-                            <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
+                            <div role={wsLoadFailed ? 'alert' : 'status'} data-ws-load-failed={wsLoadFailed ? 'true' : undefined} className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl">
                                 <div className="text-4xl mb-3">⚙️</div>
-                                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...'}</p>
-                                <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
-                                <button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">{t('common.close') || 'Close'}</button>
+                                <p className="text-lg font-bold text-slate-700">{wsLoadFailed ? (t('word_sounds.load_failed') || 'Word Sounds could not load. Check the connection and try again.') : (t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...')}</p>
+                                {!wsLoadFailed && <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>}
+                                <div className="mt-4 flex flex-row-reverse flex-wrap justify-center gap-2"><button onClick={() => { setIsWordSoundsMode(false); setActiveView('input'); }} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300">{t('common.close') || 'Close'}</button>
+                                {wsLoadFailed && <button type="button" onClick={wsRetryLoad} className="px-4 py-2 bg-indigo-700 text-white font-bold rounded-lg text-sm hover:bg-indigo-800">{t('word_sounds.load_try_again') || 'Try again'}</button>}</div>
                             </div>
                         </div>
                     );
@@ -47019,6 +47039,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       {(activeView === 'word-sounds-generator' || wsGeneratorMinimized) && (
           <WordSoundsGenerator key={wordSoundsSetupReviewSession.key} syllableReviewSession={wordSoundsSetupReviewSession} isTeacherMode={isTeacherMode} isProbeMode={isProbeMode}
                currentUiLanguage={currentUiLanguage}
+               initialCustomWords={wordSoundsInitialCustomWords}
                probeActivity={probeActivity}
                onMinimize={() => { setWsGeneratorMinimized(true); setActiveView('output'); }}
                onExpand={() => { setWsGeneratorMinimized(false); setActiveView('word-sounds-generator'); }}

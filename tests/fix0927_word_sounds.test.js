@@ -97,7 +97,7 @@ describe('High: a rejected Word Families board never reaches play', () => {
 });
 
 describe('High: Sound Sort credits only the tested edge sound', () => {
-  const route = between('if (wordSoundsPhonemes?.phonemes) {', 'if (!isCorrect && answer && expectedAnswer)', checkAnswerStart);
+  const route = between('if (wordSoundsPhonemes?.phonemes) {', 'updateDailyProgress(isCorrect);', checkAnswerStart);
   const attribute = (activity, board, isCorrect = true, word = 'cat') => {
     const credited = [];
     new Function('wordSoundsPhonemes', 'wordSoundsActivity', 'isCorrect', '_masteryEvidence', 'updatePhonemeMastery',
@@ -170,15 +170,18 @@ describe('Medium: an unresolved word family is reported, never replaced by -at',
   });
 });
 
+// Module-scope spelling helpers (2026-11-09: apostrophe / hyphen / space are fixed slots), for the slices below.
+const spell = new Function(between('const wsSpellFixedChar =', 'const wsSpellAlign =') + ';return { wsSpellFixedChar, wsSpellLetters, wsSpellSame };')();
+
 describe('Medium: Missing Letter uses a prepared board only when it is consistent', () => {
   // The board validation moved above the microphone-answer block (79e3e5eae),
   // which needs correctLetter; the letter choices stay beside the scramble.
   const span = sliceBetween(source, 'const preparedMissingLetter = React.useMemo(', 'const correctLetter =', { label: 'Missing Letter board' }) +
     sliceBetween(source, 'const correctLetter =', '\n', { label: 'Missing Letter answer line' }) + '\n' +
     between('const letterOptions = React.useMemo(', 'const renderActivityContent = () => {');
-  const board = (prepared, word = 'cat') => new Function('React', 'packForCurrentWord', 'currentWordSoundsWord', 'wordSoundsPhonemes',
+  const board = (prepared, word = 'cat') => new Function('wsSpellFixedChar', 'React', 'packForCurrentWord', 'currentWordSoundsWord', 'wordSoundsPhonemes',
     span + ';return {hiddenIndex,correctLetter,letterOptions};')(
-    { useMemo: fn => fn(), useState: v => [v, () => {}] }, prepared ? { missing_letter: prepared } : null, word, {});
+    spell.wsSpellFixedChar, { useMemo: fn => fn(), useState: v => [v, () => {}] }, prepared ? { missing_letter: prepared } : null, word, {});
   const consistent = (r, word = 'cat') => Number.isInteger(r.hiddenIndex) && r.hiddenIndex >= 0 && r.hiddenIndex < word.length &&
     word[r.hiddenIndex] === r.correctLetter && r.letterOptions.length >= 2 && r.letterOptions.filter(o => o === r.correctLetter).length === 1;
   it('rejects hiddenIndex 99 with letter "x" and derives the board from the word', () => {
@@ -252,11 +255,12 @@ describe('Medium: delayed transitions and scoring belong to the activity that sc
     const env = { React: { useRef: v => ({ current: v }) }, isMountedRef: { current: true }, submissionLockRef: { current: false },
       useMicInput: false, wordSoundsActivity: activity, userAnswer: ' CAT ', advanceEpochRef: { current: 5 }, currentWordSoundsWord: 'cat',
       isProbeMode: false, recordSpellingSupport: () => {}, checkAnswer: (...a) => checks.push(a), setUserAnswer: () => {},
-      setWordSoundsFeedback: () => {}, setTimeout: fn => timers.push(fn) };
+      setWordSoundsFeedback: () => {}, setTimeout: fn => timers.push(fn), ...spell };
     const names = Object.keys(env);
     const submit = new Function(...names, construction + ';return submitConstructionAnswer;')(...names.map(n => env[n]));
     expect(submit('cat')).toBe(true);
-    expect(checks).toEqual([['correct', 'correct']]);
+    // The third argument carries what was typed, for the row's wrong-answer list.
+    expect(checks.map(c => c.slice(0, 2))).toEqual([['correct', 'correct']]);
     expect(timers).toEqual([]);
     expect(submit('cat')).toBe(false);
     env.advanceEpochRef.current++;

@@ -130,11 +130,19 @@ describe('no module-scope component renders raw i18n keys', () => {
   // showed literal "word_sounds.anchor_badge" text above most activities.
   it('the anchor strip renders English, not word_sounds.* keys', () => {
     const html = ReactDOMServer.renderToStaticMarkup(
-      React.createElement(WordSoundsModal, baseProps('isolation')),
+      // Since 2026-11-09 the strip shows before an answer only in Letter Trace,
+      // and never with the target word as its key word (d -> dog, word "dig").
+      React.createElement(WordSoundsModal, { ...baseProps('letter_tracing'), currentWordSoundsWord: 'dig' }),
     );
-    const leaked = [...new Set(html.match(/word_sounds\.[a-z_]+/g) || [])];
+    // The strip itself (Letter Trace's own play button passes a key through
+    // this harness's t(), which is not what this test is about).
+    const at = html.indexOf('role="region" aria-label="Anchor');
+    expect(at, 'the anchor strip is on screen').toBeGreaterThan(-1);
+    const strip = html.slice(at, html.indexOf('Key word:', at) + 400);
+    const leaked = [...new Set(strip.match(/word_sounds\.[a-z_]+/g) || [])];
     expect(leaked, `raw i18n keys reached the UI: ${leaked.join(', ')}`).toEqual([]);
-    expect(html).toContain('Anchor');
+    expect(strip).toContain('Anchor');
+    expect(strip).toContain('dog');
   });
 
   it('there is no module-scope `ts` binding to silently fall back to', () => {

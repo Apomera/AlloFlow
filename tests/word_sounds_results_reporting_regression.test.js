@@ -24,7 +24,9 @@ function initializer(source, name) {
   if (!found) throw Error('Missing source function ' + name);
   return found;
 }
-const statsFor = Function('return (' + initializer(analytics, 'calculateStudentStats') + ')')();
+// The stats function calls the module's first-try helpers, so the real ones are loaded beside it.
+const wsFirstTryHelpers = analytics.slice(analytics.indexOf('  function _acWsRowFirstTry(row) {'), analytics.indexOf('  // Per sound: when it was last practised'));
+const statsFor = Function(wsFirstTryHelpers + '; return (' + initializer(analytics, 'calculateStudentStats') + ')')();
 const classify = Function('rtiThresholds', 'return (' + initializer(analytics, 'classifyRTITier') + ')')(null);
 const rows = (correct = false, activity = 'counting') => Array.from({length: 10}, (_, i) => ({word: 'word' + i, activity, correct}));
 const dataFor = (history, score = {correct: 0, total: history.length}) => ({responses: {quiz: {score: 95}}, wordSoundsState: {

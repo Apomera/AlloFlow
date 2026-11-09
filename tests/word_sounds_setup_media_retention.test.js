@@ -94,7 +94,7 @@ describe('selected pack media survives complete preparation',()=>{
     await render({draft:lessonDraft()});
     const original=structuredClone(props.initialWords);
     await click(container.querySelector('button[aria-label="cat: selected"]'));
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     const saved=state.generatedContent.data;
     expect(saved.map(item=>item.word)).toEqual(['dog']);
     expect(saved[0].activityItems.blending.options.sort()).toEqual(['cat','dog','fog','log','map','sun']);
@@ -114,7 +114,7 @@ describe('selected pack media survives complete preparation',()=>{
     await render({draft:{...lessonDraft(),includeAacImages:true},approvedAudio:{'en:dog':approved}});
     await click(container.querySelector('button[aria-label="cat: selected"]'));
     await render({callTTS:provider,callImagen:imageProvider});
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     expect(state.generatedContent.data[0]._ttsAssets.dog).toEqual(approved);
     expect(provider.mock.calls.map(call=>call[0])).not.toContain('dog');
     expect(imageProvider).not.toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('selected pack media survives complete preparation',()=>{
     await render({initialWords,draft:lessonDraft()});
     await click(container.querySelector('button[aria-label="cat: selected"]'));
     await click(container.querySelector('button[aria-label="fox: selected"]'));
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     expect(state.generatedContent.data[0]._ttsAssets.dog).toEqual(latest);
     expect(state.generatedContent.data[0]._decodingAssets.dog).toBe('latest-dog-picture');
     expect(state.generatedContent.data[0]._aacAssets.dog).toBe('latest-dog-symbol');
@@ -143,7 +143,7 @@ describe('selected pack media survives complete preparation',()=>{
     await render({initialWords,draft:{...lessonDraft(),aacDefaultOn:false,
       lessonPlan:{counting:{enabled:true,count:2}},lessonPlanOrder:['counting']}});
     await click(container.querySelector('button[aria-label="cat: selected"]'));
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     const saved=state.generatedContent.data[0];
     expect(Object.keys(saved.activityItems)).toEqual(['counting']);
     expect(Object.keys(saved._ttsAssets).sort()).toEqual(['as in','dog']);
@@ -156,7 +156,7 @@ describe('selected pack media survives complete preparation',()=>{
     const initialWords=words();
     await render({initialWords,draft:{...lessonDraft(),lessonPlan:{decoding:{enabled:true,count:2}},lessonPlanOrder:['decoding']}});
     await click(container.querySelector('button[aria-label="cat: selected"]'));
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     const saved=state.generatedContent.data[0];
     expect(saved.activityItems.decoding.choices.length).toBeGreaterThan(1);
     for(const word of saved.activityItems.decoding.choices) {
@@ -207,7 +207,7 @@ describe('authoring configuration follows the current resource',()=>{
     const initialWords=words();initialWords.push({...initialWords[0],id:'cat-repeat'});
     await render({initialWords,draft:lessonDraft()});
     expect(container.querySelectorAll('button[aria-label="cat: selected"]')).toHaveLength(1);
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     expect(state.generatedContent.data.map(item=>item.word)).toEqual(['cat','dog']);
     expect(state.generatedContent.sessionConfig.fixedForm).toBe(false);
   });
@@ -227,7 +227,7 @@ describe('authoring configuration follows the current resource',()=>{
     expect(container.querySelector('[data-help-key="ws_gen_session_slider"]').value).toBe('15');
     expect(container.querySelector('textarea').value).toBe('customword');
     expect(state.session.setupDraft).toMatchObject({...draft,wordSoundsSessionGoal:15,includeCustom:true,customText:'customword'});
-    await click(byText('Start Activity'));
+    await click(byText('Prepare lesson'));
     const preparedSession=state.session;
     expect(preparedSession).toBe(session);
     await click(byText('Back to Setup'));

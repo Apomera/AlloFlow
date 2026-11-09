@@ -35,7 +35,7 @@ function saved() { return JSON.parse(localStorage.getItem('alloStudioAutosave_v1
 describe('Page Designer recovery and workspace improvements', () => {
   it('saves the latest edit before the close callback, without waiting for autosave', () => {
     const onClose = mount(); editTitle('The latest teacher edit');
-    act(() => host.querySelector('[aria-label="Close AlloStudio"]').click());
+    act(() => host.querySelector('[aria-label="Close Page Designer"]').click());
     expect(saved().doc.title).toBe('The latest teacher edit'); expect(onClose).toHaveBeenCalledOnce();
   });
   it('captures pending title text on pagehide', () => {
@@ -50,7 +50,7 @@ describe('Page Designer recovery and workspace improvements', () => {
   it('keeps work open after a storage failure and supports retry', () => {
     const onClose = mount(); editTitle('Still recoverable in the editor');
     const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Storage is full', 'QuotaExceededError'); });
-    act(() => host.querySelector('[aria-label="Close AlloStudio"]').click());
+    act(() => host.querySelector('[aria-label="Close Page Designer"]').click());
     expect(onClose).not.toHaveBeenCalled(); expect(host.textContent).toContain('Could not save on this device'); expect(button('Retry save')).toBeTruthy();
     write.mockRestore(); click('Retry save');
     expect(saved().doc.title).toBe('Still recoverable in the editor');
