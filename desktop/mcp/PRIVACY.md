@@ -65,6 +65,8 @@ agreements cover the provider and account used for the selected path — or scru
 - A run on a scanned PDF also writes `<name>-scan-reading.json` beside its other outputs: the machine reading of each page
   (its text and word positions), which holds the same text as the accessible HTML. It stays on your disk; it is what lets
   `pdf_finalize_edited_html` tag an edited version of the scan later without a model. Delete it with the other outputs.
+- `pdf_read_annotations` sends nothing anywhere: it reads the comments in a PDF on your disk (and, when given, the
+  accessible HTML and the run's scan reading) in a local headless browser page with no model, and writes no files.
 - `pdf_finalize_edited_html` sends nothing to any model: its page refuses every model call. It reads the original PDF
   and the edited accessible HTML from your disk, runs axe-core, IBM Equal Access, the PDF checks and veraPDF locally,
   and writes `<name>-reviewed-*` files beside the original. Like the other tagging tools it may fetch a public font

@@ -142,6 +142,8 @@ const WITHHOLD_EXPLANATIONS={
   distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
   // (2026-11-08) pdf_finalize_edited_html refuses these two before building anything; the tool also says so in plain words.
   finalize_source_text_unavailable:['The original PDF\'s text could not be read (it may be encrypted or damaged), so no tagged PDF was made from the edited version.','Share the edited accessible HTML, or open the original in Acrobat and save an unprotected copy.'],
+  // (2026-11-09) pdf_read_annotations: the page could not load the PDF reader.
+  annotations_reader_unavailable:['The comments in the PDF could not be read: the PDF reader did not load in the local page.','Run it again. If it repeats, keep this message for support; the comments are still in the PDF.'],
   finalize_scanned_needs_reading:['The original PDF is a scan, and the page-by-page reading a run saves beside its report was not supplied, so no tagged PDF was made from the edited version.','Pass report_path for the run of this same PDF. If that run is older than 2026-11-08 it saved no scan reading: run the document again, then edit its new accessible version.'],
   tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
   'createTaggedPdf returned no bytes':['The tagged PDF could not be built.','Use the accessible HTML, or run the document again.'],

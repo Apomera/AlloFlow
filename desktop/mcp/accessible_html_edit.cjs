@@ -99,6 +99,8 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
       if (!item) continue;
       if (el.hasAttribute('lang')) item.lang = el.getAttribute('lang');
       item = Object.assign({ id: idByEl.get(el) }, item);
+      // (2026-11-09) internal: the whole text, for matching a PDF comment to its element (pdf_read_annotations)
+      if (p.fullText === true) item.full = clip(textOf(el), 5000);
       counts[item.kind] = (counts[item.kind] || 0) + 1;
       if (!(wanted.has(item.kind) || (wanted.has('language') && item.lang))) continue;
       if (needle) {

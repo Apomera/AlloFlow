@@ -17,7 +17,7 @@ function startDisposableServer(root) {
     'alloflow-remediation-mcp-stdio.cjs',
     'remediation_headless_driver.cjs',
     'zip_writer.cjs',
-    'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs',
+    'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'pdf_annotations.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs',
     'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs',
     'connector_version.cjs',
   ]) copyFileSync(join(MCP_DIR, name), join(serverDir, name));

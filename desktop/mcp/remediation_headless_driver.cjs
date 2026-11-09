@@ -3790,6 +3790,26 @@ function createDriver(options) {
       }));
   }
 
+  // ── The comments a person left on the original PDF (2026-11-09; tool pdf_read_annotations) ───────────────
+  // Highlights, notes, text boxes and shapes with their comments and the printed words they mark. No model: the page
+  // refuses every model call, exactly as finalizeEdited's does.
+  async function readPdfAnnotations(opts) {
+    loadVendorBundle();
+    const o = opts || {};
+    const fileName = path.basename(String(o.filePath || ''));
+    if (!/\.pdf$/i.test(fileName)) throw new Error('annotations_require_a_pdf');
+    const b64 = readDocBase64(o.filePath);
+    const noModel = async () => { throw new Error('This step uses no AI model.'); };
+    return withRunPage(Object.assign({}, o, { fileName, modelBridge: noModel }), (page) =>
+      page.evaluate(async ({ b64 }) => {
+        const pipeline = window.__mcpPipeline;
+        if (!pipeline || typeof pipeline.readPdfAnnotations !== 'function') throw new Error('annotations_reader_unavailable');
+        const out = await pipeline.readPdfAnnotations(b64);
+        if (!out) throw new Error('annotations_reader_unavailable');
+        return out;
+      }, { b64 }));
+  }
+
   async function close() {
     if (activeRun) await cancelActiveRun();
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
@@ -3800,7 +3820,7 @@ function createDriver(options) {
     audit, remediate, validatePdfUa, validatePdfUaCli, selfTest, renderPdfToPageImages, exportAccessibleOffice,
     fixContrast, buildConformanceReport, generateResourcePack, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
-    auditWithBothEngines, htmlDerivatives, accessibleHtmlTool, exportAltFormat, auditHtml, finalizeEdited,
+    auditWithBothEngines, htmlDerivatives, accessibleHtmlTool, exportAltFormat, auditHtml, finalizeEdited, readPdfAnnotations,
     cancelActiveRun, close,
     takeLastRunDiagnostics: () => lastRunDiagnostics,
     // Test-only surfaces for the agent-bridge end-to-end test: the same scripted replies and

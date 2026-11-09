@@ -155,7 +155,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       'apply_form_fields', 'audit_html', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields', 'document_narrate_start', 'document_narration_preflight', 'document_narration_voices',
       'edit_accessible_html', 'export_accessible_office', 'export_alt_format',
       'extract_document_text', 'fix_contrast', 'generate_conformance_report', 'generate_resource_pack', 'outline_accessible_html',
-      'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_finalize_edited_html', 'pdf_release_held_tagged_pdf', 'pdf_remediate',
+      'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_finalize_edited_html', 'pdf_read_annotations', 'pdf_release_held_tagged_pdf', 'pdf_remediate',
       'pdf_remediate_agent_start',
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',
       'pdf_validate_ua',
@@ -242,7 +242,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.geminiRequiredToolNames).toContain('pdf_remediate');
     expect(cap.geminiRequiredToolNames).not.toContain('pdf_validate_ua');
     expect(cap.keylessToolNames).toContain('generate_resource_pack');
-    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(45);
+    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(46);
     // The agent-bridge lane is keyless by construction — the client's model is the engine —
     // and its description-level honesty (prompts surface to the client) rides the note field.
     expect(cap.keylessToolNames).toContain('pdf_remediate_agent_start');
@@ -262,8 +262,8 @@ describe('remediation MCP: protocol + tool registry', () => {
       cap.dataHandling.credentialCheckToolNames,
       cap.dataHandling.geminiDocumentEgressToolNames,
     ];
-    expect(new Set(privacyGroups.flat()).size).toBe(45);
-    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(45); // disjoint, not merely exhaustive
+    expect(new Set(privacyGroups.flat()).size).toBe(46);
+    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(46); // disjoint, not merely exhaustive
     // A key check contacts Gemini but sends no document content, so it must be in
     // neither the offline list nor the document-egress list.
     expect(cap.dataHandling.credentialCheckToolNames).toEqual(['remediation_verify_key']);
@@ -354,7 +354,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     const staged = join(tmp, 'clean-mcpb-layout');
     built.stageBundle(staged);
     const manifest = JSON.parse(readFileSync(join(staged, 'manifest.json'), 'utf8'));
-    expect(manifest.tools).toHaveLength(45);
+    expect(manifest.tools).toHaveLength(46);
     expect(readFileSync(join(staged, 'server', 'vendor', 'manifest.json'), 'utf8')).toContain('"schema": 1');
     expect(readFileSync(join(staged, 'server', 'vendor', 'THIRD_PARTY_NOTICES.md'), 'utf8')).toMatch(/axe-core/i);
 
@@ -395,7 +395,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'clean-stage', version: '1' } });
       expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
       const listed = await rpc(2, 'tools/list', {});
-      expect(listed.result.tools).toHaveLength(45);
+      expect(listed.result.tools).toHaveLength(46);
       const capabilities = await rpc(3, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
       const cleanCap = capabilities.result.structuredContent;
       expect(cleanCap.vendorAssets.present).toBe(true);

@@ -1892,6 +1892,79 @@ var _alloFigureCrop = function (img) {
 // stand for them. pdf.js text items whose centre lies in the figure's crop rectangle (_alloFigureCrop) on its page;
 // a crop covering 75% or more of its page is ignored, so a loose crop cannot claim the body text. Only figures with
 // a description (alt). Returns [{ page, items: [strings, drawing order] }].
+// PDF comments a person left on the original (2026-11-09; MCP pdf_read_annotations): highlights, underlines, strike-outs,
+// sticky notes, text boxes and drawn shapes, each with its comment, its author, and the printed words it marks (from the
+// text layer under its quad points; for a note or a shape, the printed line nearest to it). No model; plain data. A scan
+// has no text layer: markedText is then empty and the caller fills it from the run's saved scan reading (quads given).
+// Links, form fields and popups are not comments and are skipped. Returns { pages, annotations } or null.
+var _alloReadPdfAnnotations = async function (pdfjsLib, bytes, withTimeout) {
+  var KINDS = { Highlight: 'highlight', Underline: 'underline', StrikeOut: 'strikeout', Squiggly: 'squiggly', Text: 'note', FreeText: 'text-box', Caret: 'insert', Square: 'box', Circle: 'circle', Ink: 'drawing', Polygon: 'shape', PolyLine: 'shape', Line: 'line', Stamp: 'stamp' };
+  var MARKUP = { highlight: 1, underline: 1, strikeout: 1, squiggly: 1 };
+  var r2 = function (n) { return Math.round(n * 100) / 100; };
+  var str = function (o, s) { return String((o && typeof o.str === 'string' ? o.str : s) || '').replace(/\r\n?/g, '\n').trim(); };
+  var pdf = await withTimeout(pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise, 60000, 'pdf.js getDocument (annotations)');
+  var out = { pages: pdf.numPages, annotations: [] };
+  try {
+    for (var p = 1; p <= pdf.numPages && out.annotations.length < 2000; p++) {
+      var pg = await withTimeout(pdf.getPage(p), 30000, 'getPage (annotations) p' + p);
+      var anns = (await withTimeout(pg.getAnnotations({ intent: 'display' }), 30000, 'getAnnotations p' + p)) || [];
+      var marks = anns.filter(function (a) { return a && KINDS[a.subtype]; });
+      if (!marks.length) continue;
+      var vp = pg.getViewport({ scale: 1 });
+      var tc = await withTimeout(pg.getTextContent(), 30000, 'getTextContent (annotations) p' + p);
+      // Text items in PDF user space: baseline y, ascent above it, a little descent below.
+      var items = (tc.items || []).filter(function (it) { return it && typeof it.str === 'string' && it.str.trim() && it.transform; }).map(function (it) {
+        var h = Math.abs(it.height || it.transform[3] || 10), x = it.transform[4], y = it.transform[5];
+        return { s: it.str, x0: x, x1: x + Math.abs(it.width || 0), y0: y - h * 0.25, y1: y + h * 0.85 };
+      });
+      var quadsOf = function (a) {
+        var qs = [], q = a.quadPoints, i, xs, ys;
+        if (q && typeof q.length === 'number' && q.length >= 8 && typeof q[0] === 'number') {
+          for (i = 0; i + 7 < q.length; i += 8) { xs = [q[i], q[i + 2], q[i + 4], q[i + 6]]; ys = [q[i + 1], q[i + 3], q[i + 5], q[i + 7]]; qs.push([Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)]); }
+        } else if (Array.isArray(q)) {
+          q.forEach(function (pts) { if (Array.isArray(pts) && pts.length) { xs = pts.map(function (o) { return o.x; }); ys = pts.map(function (o) { return o.y; }); qs.push([Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)]); } });
+        }
+        return qs;
+      };
+      // The words of a text item inside one quad: characters spread evenly over the item's width, snapped to whole words.
+      var wordsIn = function (it, qd) {
+        var midY = (it.y0 + it.y1) / 2;
+        if (midY < qd[1] - 1 || midY > qd[3] + 1 || it.x1 < qd[0] || it.x0 > qd[2]) return '';
+        var n = it.s.length, w = Math.max(0.01, it.x1 - it.x0);
+        var a = Math.max(0, Math.floor(((qd[0] - it.x0) / w) * n)), b = Math.min(n, Math.ceil(((qd[2] - it.x0) / w) * n));
+        while (a > 0 && /\S/.test(it.s[a - 1]) && /\S/.test(it.s[a])) a--;
+        while (b < n && /\S/.test(it.s[b - 1] || '') && /\S/.test(it.s[b])) b++;
+        return it.s.slice(a, b).trim();
+      };
+      var lineNear = function (rc) {
+        var cy = (rc[1] + rc[3]) / 2, best = null;
+        items.forEach(function (it) { var d = Math.abs((it.y0 + it.y1) / 2 - cy); if (d <= 30 && (!best || d < best.d)) best = { d: d, y: (it.y0 + it.y1) / 2 }; });
+        if (!best) return '';
+        return items.filter(function (it) { return Math.abs((it.y0 + it.y1) / 2 - best.y) <= 2; }).sort(function (x, y) { return x.x0 - y.x0; }).map(function (it) { return it.s.trim(); }).join(' ').replace(/\s+/g, ' ').slice(0, 300);
+      };
+      marks.forEach(function (a) {
+        var kind = KINDS[a.subtype];
+        var rc = Array.isArray(a.rect) && a.rect.length === 4 ? [Math.min(a.rect[0], a.rect[2]), Math.min(a.rect[1], a.rect[3]), Math.max(a.rect[0], a.rect[2]), Math.max(a.rect[1], a.rect[3])] : null;
+        var qs = quadsOf(a);
+        if (!qs.length && rc && MARKUP[kind]) qs = [rc];
+        var marked = '';
+        if (MARKUP[kind]) {
+          var parts = [];
+          qs.forEach(function (qd) { items.forEach(function (it) { var t = wordsIn(it, qd); if (t) parts.push(t); }); });
+          marked = parts.join(' ').replace(/\s+/g, ' ').trim().slice(0, 1000);
+        }
+        out.annotations.push({
+          page: p, kind: kind, subtype: a.subtype, id: a.id || null, inReplyTo: a.inReplyTo || null,
+          comment: str(a.contentsObj, a.contents).slice(0, 4000), author: str(a.titleObj, a.title).slice(0, 200), date: a.modificationDate || null,
+          markedText: marked, nearText: MARKUP[kind] ? '' : (rc ? lineNear(rc) : ''),
+          quads: qs.map(function (qd) { return qd.map(r2); }), rect: rc ? rc.map(r2) : null, pageW: r2(vp.width), pageH: r2(vp.height),
+        });
+      });
+    }
+  } finally { try { pdf.destroy(); } catch (_) {} }
+  return out;
+};
+
 var _alloFigureRegionText = async function (pdfjsLib, bytes, html, withTimeout) {
   var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
   var crops = Array.from(doc.querySelectorAll('figure img')).filter(function (im) {
@@ -57487,6 +57560,11 @@ function projectStudentGuideData(data, mode) {
     figureRegionText: _wrapAsync(async (base64, html) => {
       await ensurePdfJsLoaded();
       return window.pdfjsLib ? await _alloFigureRegionText(window.pdfjsLib, _b64ToBytes(base64), html, _withTimeout) : [];
+    }),
+    // (2026-11-09) The comments a person left on the original PDF (pdf_read_annotations): plain data, no model.
+    readPdfAnnotations: _wrapAsync(async (base64) => {
+      await ensurePdfJsLoaded();
+      return window.pdfjsLib ? await _alloReadPdfAnnotations(window.pdfjsLib, _b64ToBytes(base64), _withTimeout) : null;
     }),
     // (2026-11-08) A person's corrections onto a scan's word boxes (pdf_finalize_edited_html), under the same guards that
     // put a second reading onto OCR boxes, so search and copy find the corrected spelling.

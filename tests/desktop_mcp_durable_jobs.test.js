@@ -59,7 +59,7 @@ function currentEngineDigest(env) {
   const files = [
     SERVER,
     DRIVER_PATH,
-    ...['remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'].map((name) => join(dirname(SERVER), name)),
+    ...['remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'pdf_annotations.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'].map((name) => join(dirname(SERVER), name)),
     ...Driver.MODULE_FILES.map((name) => join(Driver.ASSETS_ROOT, name)),
     ...['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js'].map((name) => join(Driver.ASSETS_ROOT, name)),
     vendorManifest,
