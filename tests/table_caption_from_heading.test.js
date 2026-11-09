@@ -22,6 +22,14 @@ describe('fixTableCaptionsFromHeadings — infers a caption from the adjacent he
     // caption is the table's FIRST child (before <thead>)
     expect(html).toMatch(/<table><caption class="sr-only">Quarterly Enrollment<\/caption><thead>/);
   });
+  // 2026-11-09, garden newsletter scan: an earlier heading of the same level made the match start THERE and run to the
+  // heading before the table, so the caption was "What we planted" plus that section's paragraph, cut at 180 characters.
+  it('uses the heading directly before the table, not an earlier heading of the same level', () => {
+    const { html, fixCount } = run('<h2>What we planted</h2><p>Students planted beans.</p><h2>How families can help</h2><ul><li>Bring cups.</li></ul> <h2 id="h">Harvest schedule</h2> <table><thead><tr><th>Crop</th></tr></thead></table>');
+    expect(fixCount).toBe(1);
+    expect(html).toContain('<table><caption class="sr-only">Harvest schedule</caption><thead>');
+    expect(html).not.toMatch(/<caption[^>]*>[^<]*What we planted/);
+  });
   it('works for any heading level and tolerates whitespace/newlines between heading and table', () => {
     const { html, fixCount } = run('<h3>Scores</h3>\n   <table>\n<tbody><tr><td>x</td></tr></tbody></table>');
     expect(fixCount).toBe(1);

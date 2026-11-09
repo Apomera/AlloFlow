@@ -2096,6 +2096,28 @@ var _alloJoinChunkSplitParagraphs = function (chunkBlockArrays) {
   return joined;
 };
 
+// Short documents (2026-11-09) get one structure pass, so there is no per-chunk page evidence and _alloStripPageFurniture
+// does not run: the garden newsletter scan kept its printed "Page 1" as the last paragraph. Only an explicit page label goes
+// here, a paragraph that is nothing but "Page 3" or "Page 3 of 5" (or Página, Pagina, Seite, Страница, صفحة, עמוד) whose
+// number is a page of this run. A bare number, or anything with more words, stays. Returns { blocks, removed, numbers }.
+var _alloStripPageLabels = function (blocks, firstPage, lastPage) {
+  var out = { blocks: blocks, removed: [], numbers: [] };
+  if (!Array.isArray(blocks) || !(firstPage >= 1) || !(lastPage >= firstPage)) return out;
+  var ascii = function (s) { return s.replace(/[٠-٩۰-۹०-९]/g, function (d) { var c = d.charCodeAt(0); return String(c - (c >= 0x966 ? 0x966 : c >= 0x6F0 ? 0x6F0 : 0x660)); }); };
+  var label = /^(?:page|p[aá]gina|seite|страница|صفحة|עמוד)\s*(\d{1,4})(?:\s*(?:of|de|di|von|из|من|מתוך|\/)\s*(\d{1,4}))?$/iu;
+  var keep = [];
+  blocks.forEach(function (b) {
+    var t = b && b.type === 'p' && typeof b.text === 'string' && !/<a\s/i.test(b.text)
+      ? ascii(b.text.replace(/<[^>]*>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/\s+/g, ' ').trim()) : '';
+    var m = t ? label.exec(t) : null;
+    var n = m ? Number(m[1]) : 0, total = m && m[2] ? Number(m[2]) : 0;
+    if (m && n >= firstPage && n <= lastPage && (!total || total >= n)) { out.removed.push({ kind: 'page number', text: t.slice(0, 300) }); out.numbers.push(String(n)); return; }
+    keep.push(b);
+  });
+  if (out.removed.length) out.blocks = keep;
+  return out;
+};
+
 // Printed page furniture the structure pass transcribed as paragraphs (2026-11-07). NCES (54 pp): ~100 running
 // footers "Report on the Condition of Education 2023 | 28" and the next page's running header "Postsecondary
 // Education"; Persian UDHR: page numbers ٢..١١ as paragraphs, 4 between the two halves of a sentence. The AI audit
@@ -28066,7 +28088,9 @@ HTML section ${chunkNum}/${chunks.length}:
       .slice(0, 180);                  // headings are short — cap pathological lengths
     // <hN>…</hN> [only whitespace] <table…>  where the table does NOT already open with a <caption>.
     const fixed = htmlContent.replace(
-      /(<h([1-6])\b[^>]*>)([\s\S]*?)(<\/h\2>)(\s*)(<table\b[^>]*>)(\s*)(?!<caption\b)/gi,
+      // The heading's inner text may not cross another heading tag (2026-11-09): "[\s\S]*?" alone ran from the FIRST same-level
+      // heading to the one before the table, and the garden scan's table got "What we planted" + that whole section as caption.
+      /(<h([1-6])\b[^>]*>)((?:(?!<\/?h[1-6]\b)[\s\S])*?)(<\/h\2>)(\s*)(<table\b[^>]*>)(\s*)(?!<caption\b)/gi,
       (full, hOpen, lvl, headingInner, hClose, ws1, tableOpen, ws2) => {
         const text = _capText(headingInner);
         if (!text) return full;        // empty heading → nothing useful to caption with
@@ -33830,7 +33854,7 @@ BLOCK TYPES:
 - {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
 - {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
 - {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
-- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row. Cell strings must be PLAIN TEXT — never HTML tags. When a single cell contains a bulleted list, write each item prefixed with "• " (e.g. "• first point • second point"); do not emit <ul>/<li> markup inside a cell string. Add "rowHeaders":true ONLY when the first cell of every body row is a label naming that row (a line number, item name or year), not data.
+- {"type":"table","caption":"The table's own printed title or caption, copied exactly, or \"\" when none is printed","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a header row. Cell strings must be PLAIN TEXT — never HTML tags. When a single cell contains a bulleted list, write each item prefixed with "• " (e.g. "• first point • second point"); do not emit <ul>/<li> markup inside a cell string. Add "rowHeaders":true ONLY when the first cell of every body row is a label naming that row (a line number, item name or year), not data.
 - {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
 - {"type":"hr"} — for section breaks between major content areas
@@ -33852,7 +33876,9 @@ ACCESSIBILITY RULES (WCAG 2.2 AA):
   GOOD: "Bar graph showing enrollment increased 45% from 2020 to 2024"
   GOOD: "Portrait of Dr. Maria Chen, lead researcher"
   If the image is decorative (borders, spacers), use: {"type":"image","alt":"","description":"decorative"}
-- For tables: ALWAYS include a caption that describes what data the table presents.
+- For tables: the caption is the table's OWN printed title or caption, copied exactly. When the document prints
+  none, leave "caption" empty (""): a heading printed just before the table becomes its caption later, and only a
+  table with neither gets a written description. Never write caption words the page does not print.
   Headers must be real column/row labels, not just the first row of data.
   For complex tables with merged cells, split into simpler tables if possible.
 - For LEGENDS, KEYS, color-coded chart references, infographics, and visual reference panels (any image whose purpose is to pair visual markers — colors, swatches, symbols, patterns — with their meanings):
@@ -33924,7 +33950,13 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               _legendRepairedBlocks = blocks;
             }
           }
-          try { window.__alloPageFurniture = null; } catch (_) {} // short documents: one structure pass, no per-chunk page evidence
+          // Short documents: one structure pass, no per-chunk page evidence, so only explicit page labels go (_alloStripPageLabels).
+          try {
+            const _sdFirst = (_pageRange && _pageRange[0]) ? Math.max(1, _pageRange[0]) : 1;
+            const _pl = _alloStripPageLabels(_legendRepairedBlocks, _sdFirst, _sdFirst + pageCount - 1);
+            window.__alloPageFurniture = _pl.removed.length ? { removed: _pl.removed, numbers: _pl.numbers, joined: 0 } : null;
+            if (_pl.removed.length) { _legendRepairedBlocks = _pl.blocks; warnLog('[PDF Fix] removed ' + _pl.removed.length + ' printed page label(s) transcribed as paragraphs'); }
+          } catch (_plErr) { try { window.__alloPageFurniture = null; } catch (_) {} }
           bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(_legendRepairedBlocks));
           warnLog(`[PDF Fix] JSON pipeline: ${_legendRepairedBlocks.length} blocks rendered (${_legendRepairedBlocks.length - blocks.length === 0 ? 'no legend repairs' : 'legend repair applied'})`);
         } catch(jsonErr) {
@@ -35784,15 +35816,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
 
           // Phase 5: Ground-truth verification — sample original sentences and verify they survived
-          const _finalHtmlText = accessibleHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          // Compared as words only (2026-11-09): a scan's text is the vision reading in markdown ("# Title", "## Heading",
+          // "* bullet", "| cell |"), so a sampled sentence spanning a heading never matched the HTML verbatim. The garden
+          // scan scored 1/5 on HTML that matched the page exactly, and the cleanup was reverted. Entities, quotes and
+          // punctuation differ the same way.
+          const _gtWords = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/&(?:[a-z]+|#\d+|#x[0-9a-f]+);/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+          const _finalHtmlText = _gtWords(accessibleHtml.replace(/<[^>]*>/g, ' '));
           const _origSentences = extractedText.split(/[.!?]\s+/).filter(s => s.length > 30 && s.length < 200);
           const _sampleSize = Math.min(15, _origSentences.length);
           const _step = Math.max(1, Math.floor(_origSentences.length / _sampleSize));
           let _matchCount = 0, _totalChecked = 0;
           for (let si = 0; si < _origSentences.length && _totalChecked < _sampleSize; si += _step) {
             _totalChecked++;
-            const _needle = _origSentences[si].toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 80);
-            if (_needle.length > 20 && _finalHtmlText.includes(_needle)) _matchCount++;
+            // the first ~80 characters, cut back to a whole word so a truncated last word cannot fail the match
+            const _gtSentence = _gtWords(_origSentences[si]);
+            const _needle = _gtSentence.length > 80 ? _gtSentence.slice(0, 80).replace(/\s+\S*$/, '') : _gtSentence;
+            if (_needle.length > 20 && (' ' + _finalHtmlText + ' ').includes(' ' + _needle + ' ')) _matchCount++;
           }
           const _matchRate = _totalChecked > 0 ? _matchCount / _totalChecked : 1;
           _pipeLog('Verify', 'Ground-truth: ' + _matchCount + '/' + _totalChecked + ' sentences (' + Math.round(_matchRate * 100) + '% match), ' + _additions.length + ' intentional additions preserved');
