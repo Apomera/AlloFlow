@@ -30907,6 +30907,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let bestEaFailures = Number.isFinite(_initialThreeEngine.knownFindings && _initialThreeEngine.knownFindings.equalAccessFailures)
         ? Math.max(0, _initialThreeEngine.knownFindings.equalAccessFailures) : null;
       let bestEaReviewFindings = equalAccessResults ? _alloEqualAccessReviewCount(equalAccessResults) : null;
+      // (2026-11-09) The AI findings of the best version, for the keep-best tie-break below.
+      let bestAiFindings = _initialAiUsable && Array.isArray(verification.issues) ? verification.issues.length : null;
       let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;
       let _throttlePaused = false;
       let _stormBudgetPaused = false;
@@ -30931,6 +30933,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         bestAxeViolations = null;
         bestEaFailures = null;
         bestEaReviewFindings = null;
+        bestAiFindings = null;
         _bestEvidenceComplete = false;
         _humanEditsAdopted++;
         warnLog('[Auto-fix] Adopted a human edit (' + where + '): rebasing onto the edited document and resetting keep-best so the edit cannot be reverted at ship time.');
@@ -31406,12 +31409,20 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             || (newEaFailures <= bestEaFailures && newEaReviewFindings <= bestEaReviewFindings);
           const _eaImproved = Number.isFinite(bestEaFailures)
             && (newEaFailures < bestEaFailures || newEaReviewFindings < bestEaReviewFindings);
+          // (2026-11-09) A tie on the AI score with FEWER AI findings, nothing else worse, is a better version: NCES pass 2
+          // fixed a section and scored 50 again, and the earlier version shipped without that fix.
+          const _newAiFindings = _reAiUsable && reVerify && Array.isArray(reVerify.issues) ? reVerify.issues.length : null;
+          const _aiTieFewerFindings = Number.isFinite(_newAiFindings) && Number.isFinite(bestAiFindings) && Number.isFinite(bestAiScore)
+            && Math.round(newAiScore) === Math.round(bestAiScore) && Number.isFinite(bestAxeViolations) && newAxeViolations <= bestAxeViolations
+            && _newAiFindings < bestAiFindings;
           const _passIsBest = _passEvidenceComplete && (!_bestEvidenceComplete
-            || (_eaNotWorse && (_eaImproved
+            || (_eaNotWorse && (_eaImproved || _aiTieFewerFindings
               || _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: false }))));
+          if (_passIsBest && _aiTieFewerFindings) warnLog(`[Auto-fix] Pass ${fixPass + 1}: same AI score with ${_newAiFindings} AI finding(s) instead of ${bestAiFindings} - keeping this version as the best`);
           if (_passIsBest) {
             bestHtml = accessibleHtml;
             bestAiScore = newAiScore;
+            bestAiFindings = _newAiFindings;
             bestAxeViolations = newAxeViolations;
             bestEaFailures = newEaFailures;
             bestEaReviewFindings = newEaReviewFindings;
@@ -31457,7 +31468,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // L4 (2026-07-03): reAxe null means axe did NOT run this pass — newAxeViolations then carries the
             // previous best (often 0), which is NOT "axe clean". Don't log/claim "axe-only clean" in that case.
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification ${_reAuditSkipped ? 'skipped this pass (no AI chunk applied)' : 'unavailable this pass (audit failed)'} — ${_reAxeUsable ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}, ${_reEaUsable ? 'Equal Access ' + newEaFailures + ' failure(s)' : 'Equal Access unavailable'}; not treating as three-engine clean`);
-            if (_reAxeUsable && newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
+            // (2026-11-09) A skipped re-audit is not an outage: the AI changed nothing this pass, so there was nothing to re-check.
+            if (_reAxeUsable && newAxeViolations === 0 && addToast) addToast(_reAuditSkipped
+              ? `Fix pass ${fixPass + 1}: the AI changed nothing to re-check; axe-core reports no problems, continuing`
+              : `⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
           } else if (!_reAxeUsable || !_reEaUsable) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: deterministic verification incomplete — ${_reAxeUsable ? 'axe ran' : 'axe unavailable'}, ${_reEaUsable ? 'Equal Access ran' : 'Equal Access unavailable'}; continuing without a verified-success claim`);
           } else if (_passEvidenceComplete && newAxeViolations === 0 && newEaFailures === 0 && newEaReviewFindings === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {

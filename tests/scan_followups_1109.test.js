@@ -73,3 +73,31 @@ describe('a finding a person reads is cut at a word', () => {
     expect(out.ai.issues[0].issue).toBe('Short.');
   });
 });
+
+// NCES rerun (2026-11-08): pass 2 fixed a section and scored 50 again, and keep-best shipped pass 1 without that fix.
+describe('keep-best: a tie on the AI score with fewer AI findings is the better version', () => {
+  const EXPR = sliceBetween(SRC, '          const _newAiFindings = ', '          const _passIsBest = ', FILE);
+  const tie = (o) => new Function('_reAiUsable', 'reVerify', 'bestAiFindings', 'bestAiScore', 'newAiScore', 'bestAxeViolations', 'newAxeViolations',
+    EXPR + '\nreturn _aiTieFewerFindings;')(o.usable !== false, { issues: Array(o.now).fill({}) }, o.best, o.bestScore ?? 50, o.score ?? 50, o.bestAxe ?? 0, o.axe ?? 0);
+  it('promotes the pass with fewer findings at the same score', () => { expect(tie({ now: 1, best: 2 })).toBe(true); });
+  it('not with as many findings, a lower score, more axe violations, or no usable audit', () => {
+    expect(tie({ now: 2, best: 2 })).toBe(false);
+    expect(tie({ now: 1, best: 2, score: 49 })).toBe(false);
+    expect(tie({ now: 1, best: 2, axe: 1 })).toBe(false);
+    expect(tie({ now: 1, best: 2, usable: false })).toBe(false);
+    expect(tie({ now: 1, best: null })).toBe(false);
+  });
+  it('is part of the promotion rule, still behind "Equal Access not worse"', () => {
+    expect(SRC).toContain('|| (_eaNotWorse && (_eaImproved || _aiTieFewerFindings');
+    expect(SRC).toContain('            bestAiFindings = _newAiFindings;');
+  });
+});
+
+// Garden scan (2026-11-08): "AI verification unavailable" was shown when the AI had simply changed nothing to re-check.
+describe('the fix-pass toast tells a skipped re-audit from a failed one', () => {
+  it('says the AI changed nothing to re-check when the re-audit was skipped', () => {
+    const block = sliceBetween(SRC, '            if (_reAxeUsable && newAxeViolations === 0 && addToast) addToast(_reAuditSkipped', "'info');", FILE);
+    expect(block).toContain('the AI changed nothing to re-check; axe-core reports no problems, continuing');
+    expect(block).toContain('AI verification unavailable');
+  });
+});
