@@ -3661,7 +3661,7 @@ function createDriver(options) {
         let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null, taggedPdfReadingNotes = [];
         let taggedPdfHeld = null, taggedPdfHeldUnavailable = null;
         const coverageHold = !!contentCoverage.reviewRequired;
-        let carried = null, ocrLayer = null;
+        let carried = null, ocrLayer = null, commentsRemoved = 0, markupKept = 0;
         try {
           if (activeDecision.error) throw new Error(activeDecision.error);
           if (failures.length) throw new Error('distribution_review_required');
@@ -3689,7 +3689,29 @@ function createDriver(options) {
             accessibleHtml: html, isScanned: scanned, groundTruthPages: tagPages, groundTruthMethod: scanned ? (scanReading.method || 'ocr') : null, sourceStructTree: null,
             sourceKind: 'pdf', finalText: pipeline.htmlToPlainText(html), ocrAccuracy: null,
           };
-          const tagged = await pipeline.createTaggedPdf(bytes, fixLike, tagOptions);
+          // (2026-11-09) A marked-up copy must not ship its reviewer comments: highlights, underlines, strike-outs, sticky
+          // notes, carets and their popups are taken out of the bytes that get tagged. Text boxes, shapes and stamps may be
+          // the document's own content (typed-in text, a signature stamp), so they stay and are counted for the person.
+          let tagBytes = bytes;
+          try {
+            const NS = window.PDFLib;
+            const d = await NS.PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true });
+            for (const pg of d.getPages()) {
+              const annots = pg.node.Annots && pg.node.Annots();
+              if (!annots) continue;
+              const keep = []; let dropped = 0;
+              for (let i = 0; i < annots.size(); i++) {
+                const ref = annots.get(i), a = d.context.lookup(ref);
+                const st = a && typeof a.get === 'function' ? String(a.get(NS.PDFName.of('Subtype')) || '') : '';
+                if (/^\/(?:Highlight|Underline|StrikeOut|Squiggly|Text|Caret)$/.test(st)) { dropped++; commentsRemoved++; }
+                else if (st === '/Popup') dropped++;
+                else { keep.push(ref); if (/^\/(?:FreeText|Square|Circle|Ink|Polygon|PolyLine|Line|Stamp)$/.test(st)) markupKept++; }
+              }
+              if (dropped) pg.node.set(NS.PDFName.of('Annots'), d.context.obj(keep));
+            }
+            if (commentsRemoved) tagBytes = await d.save({ useObjectStreams: false });
+          } catch (_) { tagBytes = bytes; commentsRemoved = 0; }
+          const tagged = await pipeline.createTaggedPdf(tagBytes, fixLike, tagOptions);
           ocrLayer = tagged && tagged.ocrTextLayer && typeof tagged.ocrTextLayer === 'object' ? tagged.ocrTextLayer : null;
           const outBytes = tagged && (tagged.bytes || tagged);
           const delivery = pipeline.taggedPdfDeliveryVerdict(tagged);
@@ -3759,6 +3781,12 @@ function createDriver(options) {
           fidelityNotes.push({ kind: 'scanEdit', caution: true, msg: scanMsg, pages: scanReading.pages.length,
             ...(ocrLayer ? { positionedPages: positioned, blockLayoutPages: blockPages.slice(0, 200), approximatedPassages: approxN } : {}),
             ...(cs ? { correctionsPlaced: cs.corrections.slice(0, 50), pagesNotLinedUp: cs.skipped.slice(0, 50) } : {}) });
+        }
+        if (commentsRemoved || markupKept) {
+          const cm = (commentsRemoved ? commentsRemoved + ' reviewer comment' + (commentsRemoved === 1 ? '' : 's') + ' (highlights, notes) ' + (commentsRemoved === 1 ? 'was' : 'were') + ' in the PDF given and ' + (commentsRemoved === 1 ? 'was' : 'were') + ' left out of the tagged PDF. ' : '')
+            + (markupKept ? markupKept + ' text box' + (markupKept === 1 ? '' : 'es') + ', shape' + (markupKept === 1 ? '' : 's') + ' or stamp' + (markupKept === 1 ? '' : 's') + ' in it ' + (markupKept === 1 ? 'was' : 'were') + ' kept, since ' + (markupKept === 1 ? 'it' : 'they') + ' may be part of the document: remove ' + (markupKept === 1 ? 'it' : 'them') + ' from the PDF first if ' + (markupKept === 1 ? 'it is a' : 'they are') + ' review mark' + (markupKept === 1 ? '' : 's') + '.' : '');
+          cautions.push(cm.trim());
+          fidelityNotes.push({ kind: 'reviewerComments', caution: true, msg: cm.trim(), removed: commentsRemoved, kept: markupKept });
         }
         const figureWords = (Array.isArray(figureText) ? figureText : []).reduce((n, f) => n + ((f && f.items && f.items.length) || 0), 0);
         if (figureWords) fidelityNotes.push({ kind: 'figureText', caution: true, msg: figureWords + ' word(s) and number(s) printed inside the charts and maps are carried by the figure descriptions: check that each description gives the values a reader needs.' });

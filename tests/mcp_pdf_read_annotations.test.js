@@ -65,14 +65,14 @@ const MARKUP = [
   { dict: { Subtype: 'Text', Rect: [480, 536, 500, 556], Contents: text('Hail is in the next unit; leave it.'), T: text('Mr. Osei') }, replyTo: 1 },
   { dict: { Subtype: 'Link', Rect: [72, 715, 200, 745], A: { S: 'URI', URI: PDFLib.PDFString.of('https://example.org') } } },
 ];
-async function makeBornDigital(file) {
+async function makeBornDigital(file, markup = MARKUP) {
   const doc = await PDFLib.PDFDocument.create();
   const regular = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
   const bold = await doc.embedFont(PDFLib.StandardFonts.HelveticaBold);
   const page = doc.addPage([612, 792]);
   let y = 720;
   for (const [t, size] of LINES) { page.drawText(t, { x: 72, y, size, font: size > 11 ? bold : regular }); y -= size + 14; }
-  addAnnots(doc, page, MARKUP);
+  if (markup.length) addAnnots(doc, page, markup);
   writeFileSync(file, await doc.save());
 }
 const HTML = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Water Cycle Guide</title></head><body><main>'
@@ -179,5 +179,48 @@ describe('pdf_read_annotations', () => {
     const sc = (await call('pdf_read_annotations', { file_path: pdf, report_path: report })).structuredContent;
     expect(sc.annotations[0]).toMatchObject({ kind: 'highlight', comment: 'Subheading, please', markedText: 'Precipitation', markedFrom: 'scan reading' });
     expect(sc.scanReading).toMatchObject({ file: 'scan-scan-reading.json', markedTextFilled: 1 });
+  }));
+
+  // 2026-11-09: adding comments changes the file, so a marked-up copy never has the hash the run recorded.
+  it('reads a scan that was marked up AFTER its run, and refuses a copy whose pages do not match', needsChromium(async () => {
+    const dir = join(tmp, 'scan2'); mkdirSync(dir, { recursive: true });
+    const png = new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64'));
+    const build = async (size, marked) => {
+      const doc = await PDFLib.PDFDocument.create(); const page = doc.addPage(size);
+      page.drawImage(await doc.embedPng(png), { x: 0, y: 0, width: size[0], height: size[1] });
+      if (marked) addAnnots(doc, page, [{ dict: { Subtype: 'Highlight', Rect: [70, 554, 180, 574], QuadPoints: quad([70, 554, 180, 574]), Contents: text('Subheading, please'), T: text('Ms. Rivera') } }]);
+      return doc.save();
+    };
+    const original = await build([612, 792], false);
+    const marked = join(dir, 'scan-marked.pdf'); writeFileSync(marked, await build([612, 792], true));
+    expect(sha(readFileSync(marked))).not.toBe(sha(original));
+    const readingPath = join(dir, 'scan-scan-reading.json');
+    writeFileSync(readingPath, JSON.stringify({ tool: 'alloflow-remediation', kind: 'scan-reading', version: 1, sourceSha256: sha(original), method: 'tesseract', sourceText: 'Precipitation', pages: [{ pageNum: 1, text: 'Precipitation', words: [{ t: 'Precipitation', x0: 72, y0: 220, x1: 176, y1: 236 }], pageW: 612, pageH: 792 }] }));
+    const report = join(dir, 'scan-remediation-report.json');
+    writeFileSync(report, JSON.stringify({ files: { scanReading: readingPath }, contentCoverage: { sourceSha256: sha(original) }, fidelityNotes: [] }));
+    const sc = (await call('pdf_read_annotations', { file_path: marked, report_path: report })).structuredContent;
+    expect(sc.markedUpCopy).toBe(true);
+    expect(sc.annotations[0]).toMatchObject({ markedText: 'Precipitation', markedFrom: 'scan reading' });
+    expect(sc.next).toMatch(/give pdf_finalize_edited_html the ORIGINAL PDF, not this copy/);
+    const other = join(dir, 'other.pdf'); writeFileSync(other, await build([500, 700], true));
+    expect(await refusal('pdf_read_annotations', { file_path: other, report_path: report })).toMatch(/page count or page sizes do not match/);
+  }));
+
+  it('finalize never ships reviewer comments: highlights and notes are left out, a text box is kept and named', needsChromium(async () => {
+    const dir = join(tmp, 'fin'); mkdirSync(dir, { recursive: true });
+    const pdf = join(dir, 'guide.pdf');
+    await makeBornDigital(pdf, MARKUP.slice(0, 3).concat([{ dict: { Subtype: 'FreeText', Rect: [300, 700, 500, 730], Contents: text('Typed-in note'), DA: PDFLib.PDFString.of('/Helv 10 Tf 0 g') } }]));
+    const htmlPath = join(dir, 'guide-accessible.html'); writeFileSync(htmlPath, HTML);
+    const sc = (await call('pdf_finalize_edited_html', { file_path: pdf, edited_html_path: htmlPath, confirmed_by: 'Ms. Rivera', validate_ua: false })).structuredContent;
+    const note = sc.fidelityNotes.find((x) => x.kind === 'reviewerComments');
+    expect(note).toMatchObject({ removed: 3, kept: 1, caution: true });
+    expect(note.msg.startsWith('3 reviewer comments (highlights, notes) were in the PDF given and were left out of the tagged PDF. 1 text box, shape or stamp in it was kept')).toBe(true);
+    expect(sc.verdictReasons.cautions.every((c) => c.length <= 300)).toBe(true);
+    const out = sc.files.taggedPdf;
+    expect(out).toBeTruthy();
+    const d = await PDFLib.PDFDocument.load(new Uint8Array(readFileSync(out)), { updateMetadata: false });
+    const subtypes = [];
+    for (const pg of d.getPages()) { const an = pg.node.Annots(); for (let i = 0; an && i < an.size(); i++) subtypes.push(String(d.context.lookup(an.get(i)).get(PDFName.of('Subtype')))); }
+    expect(subtypes).toEqual(['/FreeText']);
   }));
 });
