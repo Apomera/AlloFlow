@@ -1193,15 +1193,24 @@ function probeJavaRuntime(javaBin) {
 // (2026-11-08) The caution a run adds when a scan's hidden text fell to the tagger's block layout on some pages (ocrTextLayer),
 // so a PDF whose search and selection miss the printed words is not called ready. Self-contained: the run's page evaluates it.
 function scanLayerCaution(layer) {
-  if (!layer || layer.scanned !== true || !Array.isArray(layer.blockLayoutPages)) return null;
-  const pages = layer.blockLayoutPages.filter((n) => Number.isInteger(n) && n > 0);
-  if (!pages.length) return null;
-  const all = !(Number(layer.positionedPages) > 0);
-  const where = all
+  if (!layer || layer.scanned !== true) return null;
+  const list = (v) => (Array.isArray(v) ? v.filter((n) => Number.isInteger(n) && n > 0) : []);
+  const onPages = (pages, all) => (all
     ? (pages.length === 1 && !(Number(layer.pagesWithText) > 1) ? 'On this scan' : 'On every page of this scan')
-    : 'On page' + (pages.length === 1 ? ' ' : 's ') + pages.slice(0, 12).join(', ') + (pages.length > 12 ? ' and others' : '') + ' of this scan';
+    : 'On page' + (pages.length === 1 ? ' ' : 's ') + pages.slice(0, 12).join(', ') + (pages.length > 12 ? ' and others' : '') + ' of this scan');
+  const pages = list(layer.blockLayoutPages);
   // Kept under the report's 300-character limit for a caution, even with twelve page numbers listed.
-  return where + ', the hidden text could not be laid over the printed words (OCR word positions missing or not lining up), so search and selection highlight a column at the top of the page. Screen readers are not affected.';
+  if (pages.length) {
+    return onPages(pages, !(Number(layer.positionedPages) > 0)) + ', the hidden text could not be laid over the printed words (OCR word positions missing or not lining up), so search and selection highlight a column at the top of the page. Screen readers are not affected.';
+  }
+  // (2026-11-09) The boxes were matched to the text by their words, and some passages the OCR engine did not see (a table)
+  // were placed just after the text before them, not on their own printed words.
+  const approx = Number(layer.approximatedRuns) || 0;
+  const aligned = list(layer.alignedPages);
+  if (approx > 0 && aligned.length) {
+    return onPages(aligned, false) + ', ' + approx + (approx === 1 ? ' piece' : ' pieces') + ' of text the OCR engine did not see (for example table cells) ' + (approx === 1 ? 'sits near its' : 'sit near their') + ' printed place, not on it, so search lands close by. Screen readers are not affected.';
+  }
+  return null;
 }
 
 // (2026-11-08) A scanned PDF's machine reading, page by page (text and word boxes), as a run saves it beside its outputs
@@ -3735,16 +3744,20 @@ function createDriver(options) {
           else if (blockPages.length && !positioned) layerMsg = 'On ' + (scanReading.pages.length === 1 ? 'this page' : 'every page') + ' ' + offBoxes + '.';
           else if (blockPages.length) layerMsg = onBoxes + misread.slice(0, -1) + ', except on page' + (blockPages.length === 1 ? ' ' : 's ') + blockPages.slice(0, 12).join(', ') + (blockPages.length > 12 ? ' and others' : '') + ': there ' + offBoxes + '.';
           else layerMsg = onBoxes + misread;
+          // (2026-11-09) Passages the OCR engine did not see were placed next to the text before them (_alignCallsToRuns).
+          const approxN = ocrLayer && Number.isInteger(ocrLayer.approximatedRuns) ? ocrLayer.approximatedRuns : 0;
+          if (approxN && positioned) layerMsg += ' ' + approxN + (approxN === 1 ? ' piece' : ' pieces') + ' of text the OCR engine did not see (for example table cells) ' + (approxN === 1 ? 'sits near its' : 'sit near their') + ' printed place, not on it.';
           const scanMsg = 'The original is a scan. Each tagged paragraph carries the edited text, which is what a screen reader reads. ' + layerMsg
             + ' Compare the edited text with the page images before sharing.';
           // The verdict carries a short form (a report clips a caution at 300 characters); the note keeps the full wording.
           const shortLayer = !boxes ? 'search and copy find it, not placed over the printed words'
             : (blockPages.length && !positioned) ? 'search and copy find it in a column at the top of the page, not on the printed words'
               : 'search and copy find it on the printed words' + (blockPages.length ? ' except on page' + (blockPages.length === 1 ? ' ' : 's ') + blockPages.slice(0, 8).join(', ') + (blockPages.length > 8 ? ' and others' : '') : '')
-                + (placedN ? ' (' + placedN + ' correction' + (placedN === 1 ? '' : 's') + ' placed there)' : '');
+                + (placedN ? ' (' + placedN + ' correction' + (placedN === 1 ? '' : 's') + ' placed there)' : '')
+                + (approxN && positioned ? ', ' + approxN + (approxN === 1 ? ' piece' : ' pieces') + ' of text only nearby' : '');
           cautions.push('The original is a scan. Screen readers read the edited text; ' + shortLayer + '. Compare it with the page images before sharing.');
           fidelityNotes.push({ kind: 'scanEdit', caution: true, msg: scanMsg, pages: scanReading.pages.length,
-            ...(ocrLayer ? { positionedPages: positioned, blockLayoutPages: blockPages.slice(0, 200) } : {}),
+            ...(ocrLayer ? { positionedPages: positioned, blockLayoutPages: blockPages.slice(0, 200), approximatedPassages: approxN } : {}),
             ...(cs ? { correctionsPlaced: cs.corrections.slice(0, 50), pagesNotLinedUp: cs.skipped.slice(0, 50) } : {}) });
         }
         const figureWords = (Array.isArray(figureText) ? figureText : []).reduce((n, f) => n + ((f && f.items && f.items.length) || 0), 0);

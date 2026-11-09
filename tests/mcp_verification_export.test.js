@@ -40,7 +40,7 @@ describe('compactVerificationEvidence', () => {
       score: 95, issueCount: 2, reviewIssueCount: 1, passCount: 2, chunksAudited: 3, chunksRequested: 3, partial: false, scoreDegraded: false,
       issues: [
         { ruleId: 'region-landmarks', severity: 'moderate', wcag: '1.3.1', issue: 'The title banner is a plain div and no header landmark accompanies the main landmark.', location: 'document', requiresManualReview: false },
-        { ruleId: 'other', severity: 'moderate', wcag: '1.3.1', issue: 'x'.repeat(300), location: 'y'.repeat(120), requiresManualReview: true },
+        { ruleId: 'other', severity: 'moderate', wcag: '1.3.1', issue: 'x'.repeat(299) + '…', location: 'y'.repeat(119) + '…', requiresManualReview: true },
       ],
     });
     expect(v.axe).toEqual({ score: 100, totalViolations: 1, totalIncomplete: 2, violations: [{ id: 'color-contrast', impact: 'serious', nodes: 3, description: 'Elements must meet minimum color contrast ratio thresholds', wcag: 'wcag2aa, wcag143' }] });

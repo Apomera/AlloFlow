@@ -574,7 +574,8 @@ describe('the fix loop does not re-send a title finding the HTML already settled
   });
   it('is wired into the pass entries, and an empty pass skips the fixer', () => {
     // (2026-10-28) entries expand per merged instance after the same filter
-    expect(source.includes('.filter((i) => !_alloTitleIssueSettled(i, accessibleHtml))\n              .flatMap((i) =>'), 'entries filter').toBe(true);
+    // (2026-11-09) and a table-caption absence claim the HTML has settled (_alloCaptionIssueSettled)
+    expect(source.includes('.filter((i) => !_alloTitleIssueSettled(i, accessibleHtml) && !_alloCaptionIssueSettled(i, accessibleHtml))\n              .flatMap((i) =>'), 'entries filter').toBe(true);
     // (2026-10-28) also when only Equal Access reminders are left
     expect(source.includes('const fixedHtml = ((!_fixEntries.length && !_feedbackNow) || _remindersOnly) ? accessibleHtml : await aiFixChunked('), 'skip fixer').toBe(true);
     expect((source.match(/AI audit evidence was incomplete \(/g) || []).length, 'logged once').toBe(1);

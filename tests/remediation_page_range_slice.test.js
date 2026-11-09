@@ -122,7 +122,7 @@ describe('a figure caption is hidden from screen readers only when it repeats th
 });
 describe('a finding merged across audit sections reaches the fixer once per section', () => {
   const entriesCode = sliceBetween(PIPE, "          const _axeEntry = (v, line) =>", '          let violationInstructions = ', F);
-  const entries = (issues) => new Function('axeResults', 'equalAccessResults', 'verification', 'accessibleHtml', '_alloTitleIssueSettled', entriesCode + '\nreturn _fixEntries;')(null, null, { issues }, '<p>x</p>', () => false);
+  const entries = (issues) => new Function('axeResults', 'equalAccessResults', 'verification', 'accessibleHtml', '_alloTitleIssueSettled', '_alloCaptionIssueSettled', entriesCode + '\nreturn _fixEntries;')(null, null, { issues }, '<p>x</p>', () => false, () => false);
   it('each instance becomes its own entry with its own anchor', () => {
     const merged = { ruleId: 'alt-quality', issue: 'Figure 1 caption is aria-hidden', locator: { kind: 'exact', snippet: 'Figure 1' },
       instances: [{ issue: 'Figure 1 caption is aria-hidden', locator: { kind: 'exact', snippet: 'Figure 1' } }, { issue: 'Figure 5 caption is aria-hidden', locator: { kind: 'exact', snippet: 'Figure 5' } }, { issue: 'Figure 6 caption is aria-hidden', locator: { kind: 'chunk', chunks: [3] } }] };
@@ -222,8 +222,8 @@ describe('a slice audit is told the tag statistics cover the whole file', () => 
 describe('the fixer is skipped when only Equal Access reminders are left', () => {
   const entriesCode = sliceBetween(PIPE, "          const _axeEntry = (v, line) =>", '          let violationInstructions = ', F);
   const rule = sliceBetween(PIPE, 'const _remindersOnly = ', ';\n', { ...F, includeStart: true });
-  const decide = (axe, ea, issues) => new Function('axeResults', 'equalAccessResults', 'verification', 'accessibleHtml', '_alloTitleIssueSettled', '_feedbackNow',
-    entriesCode + '\n' + rule + ';\nreturn _remindersOnly;')(axe, ea, { issues }, '<p>x</p>', () => false, '');
+  const decide = (axe, ea, issues) => new Function('axeResults', 'equalAccessResults', 'verification', 'accessibleHtml', '_alloTitleIssueSettled', '_alloCaptionIssueSettled', '_feedbackNow',
+    entriesCode + '\n' + rule + ';\nreturn _remindersOnly;')(axe, ea, { issues }, '<p>x</p>', () => false, () => false, '');
   const ea = (o) => Object.assign({ fails: [], potentialFindings: [], manualFindings: [] }, o);
   it('potential and manual reminders only: skip', () => {
     expect(decide(null, ea({ potentialFindings: [{ id: 'text_sensory_misuse', description: 'Check words like below', nodes: 3 }], manualFindings: [{ id: 'style_color_misuse', nodes: 1 }] }), [])).toBe(true);

@@ -509,6 +509,20 @@ function _alloTitleIssueSettled(issue, html) {
   return !(cited && cited.toLowerCase().indexOf(title.toLowerCase()) !== -1);
 }
 
+// An AI "no caption" finding the HTML has since settled (2026-11-09): the audit ran before the deterministic step that
+// captions a table from the heading printed above it, so both fix passes of the garden newsletter scan were sent "the
+// table has no <caption>" for HTML that already had one, and paid for two UNCHANGED answers. Only the ABSENCE claim is
+// settled, and only when every table has a non-empty caption of its own; a complaint about a caption's wording stays.
+function _alloCaptionIssueSettled(issue, html) {
+  if (String((issue && issue.ruleId) || '').toLowerCase().trim() !== 'table-caption') return false;
+  if (String((issue && issue.claimKind) || '').toLowerCase().trim() !== 'absence') return false;
+  var s = String(html || '');
+  var tables = s.match(/<table\b[^>]*>/gi) || [];
+  if (!tables.length) return false;
+  var captioned = s.match(/<table\b[^>]*>\s*<caption\b[^>]*>\s*[^<\s][\s\S]*?<\/caption>/gi) || [];
+  return captioned.length === tables.length;
+}
+
 // The page title from the printed heading: the h1, plus a subtitle line printed right under it when that
 // line is a short label (no sentence punctuation, not a URL or address). agenda: "Maine School
 // Administrative District No. 35" + "Board of Directors – Regular Meeting Agenda"; a form whose next line is
@@ -13694,11 +13708,15 @@ var createDocPipeline = function(deps) {
     // (HTML grows more than text in legit remediation).
     const sizeCeiling = (opts && opts.sizeCeiling) || 1.40;
     const textCeiling = (opts && opts.textCeiling) || 1.25;
+    // (2026-11-09) An sr-only <caption> is the pipeline's own addition (from the heading above the table, or a merged-cell
+    // placeholder), never printed text: a caption the source prints renders visibly. The garden scan's wrong inferred
+    // caption could not be corrected because shortening it read as "removed visible text". Its words are not counted, in the size or the text checks.
+    const _noGeneratedCaptions = (h) => String(h).replace(/<caption\b(?=[^>]*\bclass\s*=\s*["'][^"']*\bsr-only\b)[^>]*>[\s\S]*?<\/caption\s*>/gi, '<caption></caption>');
     const sizeRatio = fixed.length / original.length;
     // Accessibility metadata has its own bounded budget: useful alt text can
     // double a tiny document without adding source prose. Only quoted attributes
     // on actual tags qualify; oversized metadata still meets the normal ceiling.
-    const withoutMetadata = markup => String(markup).replace(/<[a-z][\w:-]*\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi, tag =>
+    const withoutMetadata = markup => _noGeneratedCaptions(String(markup)).replace(/<[a-z][\w:-]*\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi, tag =>
       tag.replace(/\s(?:alt|aria-label|aria-labelledby|aria-describedby|scope|lang)\s*=\s*(?:"[^"]{0,2048}"|'[^']{0,2048}')/gi, ''));
     const baseSize = withoutMetadata(original).length, newSize = withoutMetadata(fixed).length;
     // (2026-10-28) Shortening over-long alt text shrinks the markup, not the content: NIST SP 800-63 slice, five
@@ -13715,8 +13733,8 @@ var createDocPipeline = function(deps) {
     if (sizeRatio > sizeCeiling && !metadataGrowthAllowed) {
       return { accepted: false, reason: 'size-growth-unexpected', sizeRatio: sizeRatio, sizeGained: fixed.length - original.length };
     }
-    const origText = textCharCount(original);
-    const fixedText = textCharCount(fixed);
+    const origText = textCharCount(_noGeneratedCaptions(original));
+    const fixedText = textCharCount(_noGeneratedCaptions(fixed));
     if (origText > 0 && fixedText < origText * textFloor) {
       return { accepted: false, reason: 'text-shrink', textRatio: fixedText / origText, textLost: origText - fixedText };
     }
@@ -14303,9 +14321,12 @@ var createDocPipeline = function(deps) {
           const a = Array.from(before.querySelectorAll(selector)), b = Array.from(after.querySelectorAll(selector));
           const caption = el => el && Array.from(domValue(el, 'children')).find(n => /^(FIGCAPTION|CAPTION)$/.test(n.tagName));
           const captionText = el => String(domValue(el, 'textContent') || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+          // (2026-11-09) Except an sr-only table caption: the pipeline wrote it (see _noGeneratedCaptions above), so the
+          // fixer may correct it; a caption the source prints renders visibly and stays protected.
+          const generated = el => !!(el && el.tagName === 'CAPTION' && /\bsr-only\b/.test(String(domValue(el, 'className') || '')));
           for (let i = 0; i < a.length; i++) {
             const ac = caption(a[i]), bc = caption(b[i]);
-            if (ac && (!bc || captionText(ac) !== captionText(bc))) {
+            if (ac && !generated(ac) && (!bc || captionText(ac) !== captionText(bc))) {
               return rejectAt(selector === 'figure' ? 'image-association-changed' : 'table-content-changed', (selector === 'figure' ? 'figure:' : 'table:') + (i + 1));
             }
             if (ac && bc && JSON.stringify(inlineScriptState(nodes(ac, 'sup,sub'), sourceLinks, ac)) !== JSON.stringify(inlineScriptState(nodes(bc, 'sup,sub'), outputLinks, bc)))
@@ -20477,6 +20498,10 @@ var createDocPipeline = function(deps) {
       out.mismatch = { leafWords: totalWc, boxes: _calls.length };
       return out;
     }
+    // (2026-11-09) Under 20% the counts may still differ, and then every word after the first gap shifts onto the
+    // wrong leaf (the garden scan's bullets and missing table put "Questions? Contact..." under the table cells). The
+    // caller matches by words instead (_alignCallsToRuns) whenever this is set.
+    if (totalWc !== _calls.length) out.countsDiffer = true;
     let ci = 0;
     for (let ri = 0; ri < out.length; ri++) {
       const wc = (String(out[ri].run && out[ri].run.text || '').trim().match(/\S+/g) || []).length;
@@ -20486,6 +20511,70 @@ var createDocPipeline = function(deps) {
     if (ci < _calls.length) out.overflow = _calls.slice(ci);
     return out;
   };
+
+  // (2026-11-09) When word COUNTS diverge (the M15 mismatch above), match the boxes to the runs by their WORDS instead, so
+  // a page whose OCR engine missed part of it keeps the rest of its search layer on the printed words. The garden
+  // newsletter scan's Tesseract boxes lacked its whole table (118 leaf words, 88 boxes) and the entire page fell to the
+  // block layout. LCS of word keys, in reading order: a matched box goes under its run; a box between two matched boxes
+  // of the same run joins it; any other box is overflow (/Artifact: searchable, not read). A run no box matched gets its
+  // own words placed just after the previous run's last box, in that box's size (approximate, and counted). Fewer than
+  // half the boxes matched means the boxes describe some other reading: mismatch, as before. Pure + deterministic.
+  const _alignCallsToRuns = (runs, calls) => {
+    const _runs = Array.isArray(runs) ? runs : [];
+    const _calls = Array.isArray(calls) ? calls : [];
+    const out = _runs.map((r) => ({ run: r, calls: [] }));
+    out.aligned = true; out.approximatedRuns = 0;
+    if (!out.length || !_calls.length) { out.mismatch = { leafWords: 0, boxes: _calls.length }; return out; }
+    const key = (t) => String(t || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+    const L = [];
+    _runs.forEach((r, ri) => { for (const w of String((r && r.text) || '').split(/\s+/)) { const k = key(w); if (k) L.push({ ri, k }); } });
+    const K = _calls.map((c) => key(c && c.text));
+    const n = L.length, m = K.length;
+    if (!n || (n + 1) * (m + 1) > 4e6) { out.mismatch = { leafWords: n, boxes: m }; return out; }
+    const W = m + 1, d = new Uint16Array((n + 1) * W);
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) d[i * W + j] = (K[j] && L[i].k === K[j]) ? d[(i + 1) * W + j + 1] + 1 : Math.max(d[(i + 1) * W + j], d[i * W + j + 1]);
+    const runOfCall = new Array(m).fill(-1);
+    let matched = 0;
+    for (let i = 0, j = 0; i < n && j < m;) {
+      if (K[j] && L[i].k === K[j] && d[i * W + j] === d[(i + 1) * W + j + 1] + 1) { runOfCall[j] = L[i].ri; matched++; i++; j++; }
+      else if (d[(i + 1) * W + j] >= d[i * W + j + 1]) i++; else j++;
+    }
+    if (matched < Math.max(3, m * 0.5)) { out.mismatch = { leafWords: n, boxes: m, matched }; return out; }
+    // Unmatched boxes: inside one run's matched stretch they belong to it; otherwise overflow.
+    const overflow = [];
+    let prevRun = -1;
+    for (let j = 0; j < m; j++) {
+      if (runOfCall[j] >= 0) { prevRun = runOfCall[j]; continue; }
+      let next = -1;
+      for (let k = j + 1; k < m; k++) if (runOfCall[k] >= 0) { next = runOfCall[k]; break; }
+      if (prevRun >= 0 && prevRun === next) runOfCall[j] = prevRun;
+    }
+    for (let j = 0; j < m; j++) { if (runOfCall[j] >= 0) out[runOfCall[j]].calls.push(_calls[j]); else overflow.push(_calls[j]); }
+    if (overflow.length) out.overflow = overflow;
+    // A run with no box: its own words, laid out from just below the previous placed box (or above the first one).
+    let anchor = null;
+    const xs = _calls.map((c) => c.x).filter((x) => isFinite(x));
+    const left = xs.length ? Math.min.apply(null, xs) : 36, right = xs.length ? Math.max.apply(null, xs) + 120 : 560;
+    const firstPlaced = out.find((g) => g.calls.length);
+    for (let ri = 0; ri < out.length; ri++) {
+      const g = out[ri];
+      if (g.calls.length) { anchor = g.calls[g.calls.length - 1]; continue; }
+      const words = String((g.run && g.run.text) || '').trim().split(/\s+/).filter(Boolean);
+      if (!words.length) continue;
+      const base = anchor || (firstPlaced && firstPlaced.calls[0]) || { x: left, y: 700, size: 10 };
+      const size = isFinite(base.size) && base.size > 0 ? base.size : 10;
+      let x = anchor ? left : base.x, y = anchor ? base.y - size * 1.5 : base.y + size * 1.5;
+      for (const t of words) {
+        if (x > right) { x = left; y -= size * 1.3; }
+        g.calls.push({ text: t, x, y: Math.max(8, y), size, w: 0, angle: 0, approximate: true });
+        x += size * 0.55 * t.length + size * 0.3;
+      }
+      anchor = g.calls[g.calls.length - 1];
+      out.approximatedRuns++;
+    }
+    return out;
+  };
+
 
   // OCR every page of a PDF with Tesseract. Renders each page at 2× to a canvas, recognises,
   // concatenates. Returns { fullText, pages: [{pageNum, text, words, pageW, pageH}], sourceCharCount }.
@@ -31002,7 +31091,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             .concat((equalAccessResults ? equalAccessResults.manualFindings || [] : []).map(v => _eaEntry(v, 'MANUAL REVIEW FINDING')))
             // (2026-10-28) A finding merged across audit sections carries each section's instance; each is its own
             // entry so it routes to the fragment that holds it (NSF: one of six figure findings reached the fixer).
-            .concat((verification && verification.issues ? verification.issues : []).filter((i) => !_alloTitleIssueSettled(i, accessibleHtml))
+            .concat((verification && verification.issues ? verification.issues : []).filter((i) => !_alloTitleIssueSettled(i, accessibleHtml) && !_alloCaptionIssueSettled(i, accessibleHtml))
               .flatMap((i) => (i && Array.isArray(i.instances) && i.instances.length > 1 ? i.instances : [i]).map((x) => ({
                 text: `AI-FLAGGED: ${(x && x.issue) || (i && i.issue) || i}`,
                 axeId: null, nodes: 0, nodeHtmls: [],
@@ -31448,7 +31537,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           + (_loopShipment.dropVerification ? ' Its last audit described other bytes, so the final audit governs.' : ''));
         if (_loopShipment.dropVerification) verification = null;
       } else if (_loopShipment.ship === 'best') {
-        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ', Equal Access ' + bestEaFailures + ') instead of the loop\'s last working state.');
+        warnLog('[Auto-fix] Shipping best verified version (when checked: AI score ' + bestAiScore + ', ' + bestAxeViolations + ' axe violation(s), ' + bestEaFailures + ' Equal Access failure(s); the final audit scores it again) instead of the loop\'s last working state.');
         accessibleHtml = bestHtml;
         // M8: the audit has to travel with the bytes it describes. If the promoted version has no
         // audit of its own, return NULL rather than the last pass's — fixAndVerifyPdf already fails
@@ -36767,6 +36856,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           _structuralFidelityNotes.push({ kind: 'ocrVisionAlignment', corrections: _vaAll, correctionCount: _vaCount, caution: _vaDigits === 0, msg: 'The scan\'s text recognition misread some words, and ' + _vaN + ' of them were corrected from a second reading of page' + (_va.length === 1 ? ' ' : 's ') + _vaPageList + ' (for example ' + _vaEx.join(', ') + '). Spot-check those words against the original.' });
         }
       } catch (_) {}
+      // 2026-11-09: disclose the pages where the two readings of a scan disagreed. The garden newsletter scan's OCR engine
+      // missed the whole table, the AI reading was used, and only the log and a toast said so: the report had no note.
+      // A differing number is a review item (the reading used may hold the wrong value); other differences a caution.
+      try {
+        const _od = (_ocrDisclosuresOn && typeof window !== 'undefined' && Array.isArray(window.__lastOcrDisagreements)) ? window.__lastOcrDisagreements.filter((d) => d && Number.isFinite(d.pageNum)) : [];
+        if (_od.length) {
+          const _odNumbers = _od.filter((d) => d.reason === 'value-conflict').length;
+          const _odShown = _od.slice(0, 8).map((d) => d.pageNum);
+          const _odPages = (_odShown.length === 1 ? 'page ' + _odShown[0] : 'pages ' + _odShown.slice(0, -1).join(', ') + ' and ' + _odShown[_odShown.length - 1]) + (_od.length > 8 ? ' (and ' + (_od.length - 8) + ' more)' : '');
+          const _odUsed = _od.every((d) => d.selectedSource === 'vision') ? 'the AI model\'s reading' : _od.every((d) => d.selectedSource === 'tesseract') ? 'the OCR engine\'s reading' : 'the more complete reading of each page';
+          _structuralFidelityNotes.push({
+            kind: 'ocrDisagreement', caution: _odNumbers === 0,
+            pages: _od.slice(0, 50).map((d) => ({ page: d.pageNum, reason: d.reason || null, used: d.selectedSource || null, ocrEngineChars: d.tesseractChars, aiReadingChars: d.visionChars })),
+            msg: 'The two readings of this scan (the OCR engine and the AI model) did not agree on ' + _odPages
+              + (_odNumbers ? ', and on ' + _odNumbers + ' of those pages a number differs' : '') + '. The text uses ' + _odUsed
+              + '. Compare ' + (_od.length === 1 ? 'that page' : 'those pages') + ' with the page images' + (_odNumbers ? ', numbers first' : '') + '.',
+          });
+        }
+      } catch (_) {}
       // H4 (2026-07-09): disclose the page-edge lines the running-head strip DELETED from the OCR
       // ground truth — the text itself was previously undisclosed (only its digits rode out via
       // detectedFolios). Same _heavyScanned staleness gate as the echo-collapse note above.
@@ -40297,6 +40405,8 @@ tr { page-break-inside: avoid; }
     // (2026-11-08) Per-leaf scanned pages: words drawn on the printed words' boxes, or the top-down block layout instead
     // (no boxes, a geometry mismatch, or leaf/box divergence). Search and copy land on the image only for the first kind.
     let _ocrPositionedPages = 0; const _ocrBlockLayoutPages = [];
+    // Pages whose boxes were matched to the leaves by their words (_alignCallsToRuns), and the leaves placed approximately.
+    const _ocrAlignedPages = []; let _ocrApproximatedRuns = 0;
 
     // Stage 4 pdf.js doc load. Born-digital PDFs use it for content-stream
     // tagging; scanned PDFs use it only for OCR geometry (viewport transform).
@@ -40705,16 +40815,23 @@ tr { page-break-inside: avoid; }
               // glyph coordinates change, which PAC/veraPDF don't check. Every run still emits its BDC/EMC so
               // its MCR stays backed. Fully fail-safe: no boxes / geometry mismatch / any throw → the top-down
               // block layout below (unchanged, still searchable + SR-readable in order) runs instead.
-              let _posDrew = false;
+              let _posDrew = false, _pageAligned = false, _pageApprox = 0;
               if (_perWord) {
                 try {
                   const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, _wordDrawOpts);
                   if (_posCalls.length) {
-                    const _dist = _distributeCallsToRuns(_runs, _posCalls);
+                    let _dist = _distributeCallsToRuns(_runs, _posCalls);
                     // M15: systematic leaf-word/box divergence — count-mapping would put words
                     // under the wrong leaves wholesale. Leave _posDrew false so the semantic block
                     // layout below draws this page instead (reading order right, alignment lost).
-                    if (_dist.mismatch) throw Object.assign(new Error('leaf/box divergence ' + _dist.mismatch.leafWords + ' leaf words vs ' + _dist.mismatch.boxes + ' boxes (>20%) — using block layout for this page'), { _m15Fallback: true });
+                    if (_dist.mismatch || _dist.countsDiffer) {
+                      // (2026-11-09) Counts differ: match the boxes to the leaves by their words (before giving the page up).
+                      const _al = _alignCallsToRuns(_runs, _posCalls);
+                      if (!_al.mismatch) {
+                        try { warnLog('[per-leaf exp] p' + (pi + 1) + ': word counts differ (' + _posCalls.length + ' boxes); matched boxes to leaves by their words' + (_al.approximatedRuns ? ', ' + _al.approximatedRuns + ' leaf/leaves with no box placed after the previous box' : '')); } catch (_) {}
+                        _dist = _al; _pageAligned = true; _pageApprox = _al.approximatedRuns;
+                      } else if (_dist.mismatch) throw Object.assign(new Error('leaf/box divergence ' + _dist.mismatch.leafWords + ' leaf words vs ' + _dist.mismatch.boxes + ' boxes (>20%) — using block layout for this page'), { _m15Fallback: true });
+                    }
                     // H1 (deep dive 2026-07-09): decide drawability BEFORE emitting any BDC. The old
                     // shape pushed one BDC/EMC pair per run and only then discovered every word folds
                     // to '' (non-Latin scan whose Unicode font failed to load) — _posDrew stayed false
@@ -40777,6 +40894,7 @@ tr { page-break-inside: avoid; }
                 } catch (_posErr) { try { warnLog('[per-leaf exp] positioned draw failed p' + (pi + 1) + (_posDrew ? ' after runs were emitted — keeping emitted runs (no re-emit)' : ' — falling back to block layout') + ': ' + (_posErr && _posErr.message)); } catch (_) {} }
               }
               if (_posDrew) _ocrPositionedPages++; else if (_ocrBlockLayoutPages.length < 500) _ocrBlockLayoutPages.push(pi + 1);
+              if (_posDrew && _pageAligned) { if (_ocrAlignedPages.length < 500) _ocrAlignedPages.push(pi + 1); _ocrApproximatedRuns += _pageApprox; }
               if (!_posDrew) {
                 // No word boxes (Vision-won / rotated / dim mismatch) OR the positioned draw produced
                 // nothing → the top-down block layout: still per-leaf MCID runs, just not pixel-aligned.
@@ -44548,7 +44666,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       try { warnLog('[createTaggedPdf] post-export validator threw (non-fatal): ' + (_pevErr && _pevErr.message)); } catch (_) {}
       _postExportValidator = { error: (_pevErr && _pevErr.message) || 'validator threw' };
     }
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty, positionedPages: _ocrPositionedPages, blockLayoutPages: _ocrBlockLayoutPages.slice() }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty, positionedPages: _ocrPositionedPages, blockLayoutPages: _ocrBlockLayoutPages.slice(), alignedPages: _ocrAlignedPages.slice(), approximatedRuns: _ocrApproximatedRuns }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
   };
 
   // ── Download Accessible PDF from HTML ──

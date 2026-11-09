@@ -59,7 +59,9 @@ describe('_distributeCallsToRuns — positioned words mapped onto per-leaf runs 
 
 describe('#H: per-leaf positioned draw wiring — source pins', () => {
   it('the per-leaf path draws POSITIONED words (real x/y) inside each run BDC/EMC when boxes exist', () => {
-    expect(src).toContain('const _dist = _distributeCallsToRuns(_runs, _posCalls);');
+    expect(src).toContain('let _dist = _distributeCallsToRuns(_runs, _posCalls);');
+    // (2026-11-09) when the word counts differ, the boxes are matched to the leaves by their words instead
+    expect(src).toContain('if (_dist.mismatch || _dist.countsDiffer) {');
     // H1 (2026-07-09): words are pre-folded into _grps before any operator is committed
     expect(src).toContain('try { _drawPositionedRunWord(_w.txt, _c); _pageDrewAny = true; }');
     expect(src).toContain('_PLx.setTextMatrix(a * cs, a * sn, -sn, cs, _c.x, _c.y)');
@@ -67,7 +69,7 @@ describe('#H: per-leaf positioned draw wiring — source pins', () => {
     expect(src).toContain("[PDFName.of(g.run.role || 'P'), context.obj({ MCID: PDFNumber.of(g.run.mcid) })]");
   });
   it('is fail-safe: gated on _perWord, and any failure / no-boxes falls back to the block layout', () => {
-    expect(src).toContain('let _posDrew = false;');
+    expect(src).toContain('let _posDrew = false, _pageAligned = false, _pageApprox = 0;');
     expect(src).toContain('if (_perWord) {');
     // H1 (2026-07-09): drawability is decided BEFORE emission (_anyDrawable); once BDC/EMC are
     // committed the catch KEEPS them — the old `_posDrew = false` reset made the block fallback

@@ -198,13 +198,30 @@ describe('pdf_finalize_edited_html on a scan (needs Chromium; veraPDF needs Java
     expect(note.msg).toMatch(/with 1 corrected word put in place of the machine's reading/);
   }));
 
-  // A real run (garden scan, 2026-11-08): OCR boxes that missed a whole table diverge from the edited version, the tagger
-  // falls back to its block layout, and the report must not claim the text sits on the printed words.
-  it('says so when the invisible text could not be laid over the printed words', needsChromium(async () => {
+  // 2026-11-09: the boxes are matched to the text by their WORDS (_alignCallsToRuns). Boxes that kept only the headings
+  // still place the headings exactly, and the paragraphs the OCR engine missed go next to them, said as such.
+  it('places the paragraphs the OCR boxes missed next to the text before them, and says so', needsChromium(async () => {
     const f = await runFolder();
     const r = JSON.parse(readFileSync(f.readingPath, 'utf8'));
     const keep = new Set(['Water', 'Cycle', 'Guide', 'Evaporatlon', 'Condensation', 'Precipitation']);
     r.pages[0].words = r.pages[0].words.filter((w) => keep.has(w.t)); // the boxes lost every paragraph
+    writeFileSync(f.readingPath, JSON.stringify(r));
+    const edited = join(f.dir, 'scan-accessible-edited.html'); writeFileSync(edited, HTML());
+    const sc = (await call('pdf_finalize_edited_html', { file_path: f.pdf, edited_html_path: edited, confirmed_by: 'Ms. Rivera', report_path: f.report, validate_ua: !!cap.javaAvailable })).structuredContent;
+    if (cap.javaAvailable) expect(sc.pdfUa.status).toBe('passed');
+    if (cap.javaAvailable) expect(sc.taggedPdfDelivery).toEqual({ ok: true, code: 'verified' });
+    const note = sc.fidelityNotes.find((x) => x.kind === 'scanEdit');
+    expect(note).toMatchObject({ positionedPages: 1, blockLayoutPages: [] });
+    expect(note.approximatedPassages).toBeGreaterThanOrEqual(3);
+    expect(note.msg).toMatch(/sits on the printed words.* pieces of text the OCR engine did not see \(for example table cells\) sit near their printed place, not on it\./);
+    expect(sc.verdictReasons.cautions.every((c) => c.length <= 300)).toBe(true);
+  }));
+
+  // Boxes that match none of the text (another reading altogether) still fall to the block layout, and the report says so.
+  it('says so when the invisible text could not be laid over the printed words', needsChromium(async () => {
+    const f = await runFolder();
+    const r = JSON.parse(readFileSync(f.readingPath, 'utf8'));
+    r.pages[0].words = r.pages[0].words.slice(0, 10).map((w, i) => Object.assign({}, w, { t: 'zq' + i })); // few boxes, none line up
     writeFileSync(f.readingPath, JSON.stringify(r));
     const edited = join(f.dir, 'scan-accessible-edited.html'); writeFileSync(edited, HTML());
     const sc = (await call('pdf_finalize_edited_html', { file_path: f.pdf, edited_html_path: edited, confirmed_by: 'Ms. Rivera', report_path: f.report, validate_ua: false })).structuredContent;

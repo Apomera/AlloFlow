@@ -203,3 +203,28 @@ describe('skip links bind by destination id, not by the text of the landmark the
     expect(decision.reason).toBe('link-destination-changed');
   });
 });
+
+// 2026-11-09, garden newsletter scan: the heading step wrote a wrong sr-only caption (an earlier section's heading and
+// paragraph), and the fixer's correction to "Harvest schedule" was refused twice: as removed visible text, and as a
+// changed table. An sr-only caption is the pipeline's own addition, never printed text, so the fixer may correct it.
+describe('a caption the pipeline wrote can be corrected; a printed caption and visible text stay protected', () => {
+  const WRONG = 'What we planted Students in grades three and four planted beans, lettuce, carrots and sunflowers in the raised beds behind the library. Each class keeps a watering chart';
+  const BODY = '<h2>Harvest schedule</h2><table><caption class="sr-only">' + WRONG + '</caption><thead><tr><th scope="col">Crop</th><th scope="col">Ready in</th></tr></thead><tbody><tr><td>Lettuce</td><td>May</td></tr></tbody></table><p>Questions? Contact Ms. Okafor in room 112.</p>';
+  const input = '<!DOCTYPE html><html lang="en"><body><main id="main-content"><h1>Maple Street School Garden</h1>' + BODY + '</main></body></html>';
+  it('accepts shortening a wrong sr-only caption to the heading it should have been', () => {
+    const h = harness(s => s);
+    const decision = h.acceptFixedHtmlDetailed(input.replace(WRONG, 'Harvest schedule'), input, { mode: 'faithful', strictContent: true });
+    expect(decision.accepted, JSON.stringify(decision)).toBe(true);
+  });
+  it('still refuses changing a caption the document prints (no sr-only class)', () => {
+    const h = harness(s => s);
+    const printed = input.replace('<caption class="sr-only">', '<caption>');
+    const decision = h.acceptFixedHtmlDetailed(printed.replace(WRONG, 'Harvest schedule'), printed, { mode: 'faithful', strictContent: true });
+    expect(decision.accepted).toBe(false);
+  });
+  it('still refuses removing visible text next to the caption', () => {
+    const h = harness(s => s);
+    const decision = h.acceptFixedHtmlDetailed(input.replace('<p>Questions? Contact Ms. Okafor in room 112.</p>', '').replace('<h1>Maple Street School Garden</h1>', '<h1>Garden</h1>'), input, { mode: 'faithful', strictContent: true });
+    expect(decision.accepted).toBe(false);
+  });
+});

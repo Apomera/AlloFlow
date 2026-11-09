@@ -514,6 +514,8 @@ function compactVerificationEvidence(source) {
   const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   const count = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
   const str = (v, n) => (v == null ? null : String(v).slice(0, n));
+  // (2026-11-09) Findings a person reads are cut at a word with an ellipsis, not mid-word ("...truncated pa").
+  const prose = (v, n) => { if (v == null) return null; const t = String(v); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : t; };
   const list = (v, n) => (Array.isArray(v) ? v.slice(0, n).filter((x) => x && typeof x === 'object') : []);
   const ai = o.ai !== undefined ? o.ai : o.verificationAudit;
   const axe = o.axe !== undefined ? o.axe : o.axeAudit;
@@ -532,7 +534,7 @@ function compactVerificationEvidence(source) {
       scoreDegraded: ai._scoreDegraded === true || ai.scoreDegraded === true,
       issues: list(issues, 50).map((i) => ({
         ruleId: str(i.ruleId, 60), severity: str(i.severity, 20), wcag: str(i.wcag, 24),
-        issue: str(i.issue != null ? i.issue : i.description, 300), location: str(i.location, 120),
+        issue: prose(i.issue != null ? i.issue : i.description, 300), location: prose(i.location, 120),
         requiresManualReview: i.requiresManualReview === true,
       })),
     };
