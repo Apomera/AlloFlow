@@ -33,6 +33,14 @@ describe('_alloAlignVisionOntoOcrWords', () => {
     expect(r.words[2]).toMatchObject({ t: 'statement', x0: 80, x1: 110, src: 'vision' });
     expect(r.stats.replaced).toBe(1);
   });
+  // Library club scan (2026-11-09): the box "Alibrary" became "library" and the "A" was lost from the search text.
+  it('one box holding two glued words takes both words', () => {
+    const w = line('Bring Alibrary card with your name', [95, 60, 95, 95, 95, 95]);
+    const r = align(w, 'Bring Alibrary card with your name', 'Bring A library card with your name');
+    expect(r.words[1]).toMatchObject({ t: 'A library', x0: 40, x1: 70 });
+    expect(r.text).toBe('Bring A library card with your name');
+    expect(r.stats.corrections).toEqual([expect.objectContaining({ from: 'Alibrary', to: 'A library' })]);
+  });
   it('a split misread on ONE line becomes one word over the combined box', () => {
     const w = line('Itemized Commi buioms to churches', [95, 40, 35, 95, 95]);
     const r = align(w, 'Itemized Commi buioms to churches', 'Itemized Contributions to churches');

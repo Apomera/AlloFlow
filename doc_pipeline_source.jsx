@@ -4136,9 +4136,15 @@ var _alloAlignVisionOntoOcrWords = function (words, ocrText, visionText) {
     var ti = 0, vi = 0;
     for (var f = 0; f <= fz.length; f++) {
       var tEnd = f < fz.length ? fz[f][0] : tg.length, vEnd = f < fz.length ? fz[f][1] : vg.length;
-      resolveRun(tg.slice(ti, tEnd), vg.slice(vi, vEnd));
+      // (2026-11-09) One box holding two printed words glued together ("Alibrary" for "A library"): the fuzzy pair took
+      // "library" and the "A" before it, with no box of its own, was dropped from the search text. When the box's letters
+      // are exactly the unmatched Vision words before the pair plus the paired word, the box takes them all.
+      var glued = null;
+      if (f < fz.length && tEnd === ti && vEnd > vi && vEnd - vi <= 3
+        && key(words[tg[fz[f][0]]].t) === vg.slice(vi, vEnd + 1).map(key).join('')) glued = vg.slice(vi, vEnd + 1).join(' ');
+      if (!glued) resolveRun(tg.slice(ti, tEnd), vg.slice(vi, vEnd));
       if (f < fz.length) {
-        var tw = tg[fz[f][0]], vw = vg[fz[f][1]];
+        var tw = tg[fz[f][0]], vw = glued || vg[fz[f][1]];
         paired[tw] = 1;
         var tKey = key(words[tw].t);
         // a fuzzy pair never turns a number into a different number unless Vision also reads digits there
@@ -31457,7 +31463,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: ${_shippedOriginalChunks} of ${Number(_fixPassEvidence && _fixPassEvidence.totalChunks) || '?'} fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.`);
           }
           if (!_alloAiAuditHasFullCoverage(verification) || !_alloAiAuditHasFullCoverage(reVerify)) {
-            _passIncompleteReasons.push('AI audit section coverage was incomplete');
+            // (2026-11-09) A re-audit skipped on purpose (the AI changed nothing) is not a coverage gap in an audit that ran.
+            _passIncompleteReasons.push(_reAuditSkipped && _alloAiAuditHasFullCoverage(verification)
+              ? 'the AI re-audit was skipped this pass (the AI changed nothing to re-check)'
+              : 'AI audit section coverage was incomplete');
           }
           if (!_reAxeUsable) _passIncompleteReasons.push('axe evidence was unavailable');
           if (!_reEaUsable) _passIncompleteReasons.push('Equal Access evidence was unavailable');

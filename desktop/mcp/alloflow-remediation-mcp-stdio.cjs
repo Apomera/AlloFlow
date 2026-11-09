@@ -2169,7 +2169,8 @@ function completionManifestPath(outDir, reportPath) {
 
 async function writeCompletionManifest(filePath, outDir, summary, compatibility, job) {
   const artifacts = [];
-  for (const role of ['accessibleHtml', 'taggedPdf', 'report']) {
+  // (2026-11-09) scanReading: the saved page reading of a scan is an output like the others, hashed and listed.
+  for (const role of ['accessibleHtml', 'taggedPdf', 'report', 'scanReading']) {
     const artifactPath = summary.files && summary.files[role];
     if (!artifactPath) continue;
     const resolved = path.resolve(artifactPath);
@@ -2491,7 +2492,7 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
     for (const artifact of manifest.artifacts) {
       if (
         !hasExactKeys(artifact, ['role', 'relativePath', 'sizeBytes', 'sha256']) ||
-        !['accessibleHtml', 'taggedPdf', 'report'].includes(artifact.role) ||
+        !['accessibleHtml', 'taggedPdf', 'report', 'scanReading'].includes(artifact.role) ||
         artifacts.has(artifact.role) ||
         typeof artifact.relativePath !== 'string' || !artifact.relativePath ||
         artifact.relativePath.includes('\\') ||
@@ -2531,6 +2532,8 @@ async function validateCompletionManifest(manifestPath, filePath, outDir, compat
       if (!!declared !== artifacts.has(role)) return null;
       if (declared && path.resolve(declared) !== artifacts.get(role)) return null;
     }
+    // A listed scan reading must be the one the report names (manifests written before it was listed have none).
+    if (artifacts.has('scanReading') && path.resolve(summary.files.scanReading || '') !== artifacts.get('scanReading')) return null;
     return { manifest, manifestPath: path.resolve(manifestPath), summary };
   } catch (_) {
     return null;
@@ -4205,7 +4208,12 @@ const OUTPUT_SCHEMAS = {
     inputSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
     inputBytes: S_NUM, validatedAt: S_STR, validationDurationMs: S_NUM, note: S_STR,
   }, ['compliant', 'inputSha256', 'inputBytes', 'validatedAt']),
-  pdf_finalize_edited_html: S_REMEDIATE,
+  // (2026-11-09) Same result as a run (see pdf_remediate's schema), declared compactly: the full schema was sent twice in
+  // every tool list (6 KB each).
+  pdf_finalize_edited_html: obj({
+    input: S_STR, files: {}, verdict: {}, verdictReasons: {}, contentCoverage: {}, fidelityNotes: { type: 'array' }, personEdit: {},
+    taggedPdfDelivery: {}, taggedPdfError: S_STR, pdfUa: {}, heldTaggedPdf: {}, coverageRelease: {}, deliveryExplanation: {},
+  }, ['input', 'files']),
   pdf_release_held_tagged_pdf: obj({
     released: S_BOOL, alreadyReleased: S_BOOL, code: S_STR, message: S_STR, taggedPdf: S_STR, report: S_STR,
     verdict: {}, deliveryStatus: S_STR, confirmedBy: S_STR, deliveryExplanation: {},
