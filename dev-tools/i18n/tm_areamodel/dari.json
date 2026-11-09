@@ -116,13 +116,13 @@
     "log": "📋 گزارش",
     "reset_2": "↺ بازنشانی",
     "hypothesis_when_does_area_rows_cols": "فرضیه: چه زمانی مساحت = سطرها + ستون‌ها؟",
-    "area_hypothesis": "?????? ?????? ?????",
+    "area_hypothesis": "فرضیهٔ رابطهٔ مساحت",
     "stuck_show_open_prompts": "🤔 گیر کردی — اعلان‌های باز را نشان بده",
     "find_sizes_where_area_perimeter_rare_i": "اندازه‌هایی را بیاب که مساحت = محیط (عددهای صحیح کمیاب).",
     "when_does_swapping_rows_cols_change_an": "چه زمانی جابه‌جایی سطرها/ستون‌ها چیزی را تغییر می‌دهد؟",
     "i_understand_explain_in_own_words": "می‌فهمم — با واژه‌های خودت توضیح بده",
     "explain_commutative_property_area_leng": "خاصیت جابه‌جایی + مساحت = طول × عرض را توضیح بده.",
-    "area_explanation": "?????? ???? ????? ?? ????? ????",
+    "area_explanation": "رابطهٔ مساحت و ضرب را توضیح بدهید",
     "design_note_discrete_4_state_classific": "یادداشت طراحی: طبقه‌بندی گسستهٔ 4‌حالته؛ بدون نمرهٔ امتحان مساحت؛ بدون افشا — به‌عمد."
   },
   "missing": {}

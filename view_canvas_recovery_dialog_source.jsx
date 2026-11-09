@@ -3,6 +3,8 @@
 // Extracted from AlloFlowANTI.txt (canvas-recovery-dialog).
 function CanvasRecoveryDialogView(props) {
   const { ALLO_WORKSPACE_RECOVERY, RefreshCw, _alloFormatWorkspaceBytes, alloModelStatus, approveAndRetryCanvasRecoveryStorage, canvasRecoveryBusyId, canvasRecoveryDecisionMade, canvasRecoveryDialogMode, canvasRecoveryDialogRef, canvasRecoveryEraseId, canvasRecoveryError, canvasRecoveryErrorCode, canvasRecoveryImportInputRef, canvasRecoveryRemoveMediaId, canvasRecoveryStore, canvasRecoveryStoreAuthoritative, canvasRecoveryVaultForm, canvasRecoveryVaultState, closeCanvasRecoveryDialog, continueWithoutCanvasRecovery, deleteCachedPdfRemediation, deleteCachedPdfRemediationEntry, downloadKokoroModel, downloadWhisperModel, eraseCanvasRecoverySnapshot, exportCanvasRecoverySnapshot, handleCanvasRecoveryImport, isCanvas, lastPdfAuditResultRef, openCachedPdfRemediation, openCanvasDocumentHubDraft, openCanvasRecoveryManager, pdfActiveRemediationStorageKey, pdfAuditResult, pdfFixResult, pdfRemediationCacheEntries, pdfRemediationDeleteConfirm, refreshStorageManagerInventory, removeCanvasRecoverySnapshotMedia, renderCanvasRecoveryLockedScreen, renderCanvasRecoveryProtectionSection, renderEducatorAccessCodeSection, requestCanvasRecoveryErase, restoreCachedPdfRemediation, restoreCanvasWorkspaceSnapshot, retryCanvasRecoveryStorage, setCanvasRecoveryDialogMode, setCanvasRecoveryEraseId, setCanvasRecoveryRemoveMediaId, setCanvasRecoverySnapshotPinned, setPdfRemediationDeleteConfirm, setStorageRetentionPolicy, startFreshCanvasWorkspace, storageManagerInventory, t } = props;
+  // A Deny is remembered for the visit, so a plain retry can no longer ask; offer the approval window.
+  const needsStorageApproval = canvasRecoveryErrorCode === 'allo/approval-required' || canvasRecoveryErrorCode === 'allo/approval-denied' || canvasRecoveryErrorCode === 'allo/consent-timeout';
   return (
 <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/75 p-4"
           role="presentation">
@@ -57,11 +59,11 @@ function CanvasRecoveryDialogView(props) {
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <button type="button" data-recovery-autofocus="true"
                     disabled={Boolean(canvasRecoveryBusyId)}
-                    onClick={canvasRecoveryErrorCode === 'allo/approval-required'
+                    onClick={needsStorageApproval
                       ? () => void approveAndRetryCanvasRecoveryStorage()
                       : retryCanvasRecoveryStorage}
                     className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
-                    {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : (canvasRecoveryErrorCode === 'allo/approval-required' ? 'Open device storage' : 'Retry device recovery')}
+                    {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : (needsStorageApproval ? 'Open device storage' : 'Retry device recovery')}
                   </button>
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                     onClick={continueWithoutCanvasRecovery}
@@ -70,7 +72,7 @@ function CanvasRecoveryDialogView(props) {
                   </button>
                 </div>
                 <p className="mt-4 text-xs leading-relaxed text-slate-600">
-                  {canvasRecoveryErrorCode === 'allo/approval-required'
+                  {needsStorageApproval
                     ? 'Gemini Canvas requires a brief device-storage approval window. Continuing leaves unknown saved data untouched and recovery saving paused.'
                     : 'Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.'}
                 </p>

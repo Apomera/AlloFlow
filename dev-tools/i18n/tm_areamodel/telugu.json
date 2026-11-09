@@ -116,13 +116,13 @@
     "log": "📋 లాగ్",
     "reset_2": "↺ రీసెట్",
     "hypothesis_when_does_area_rows_cols": "పరికల్పన: వైశాల్యం = వరుసలు + నిలువు వరుసలు ఎప్పుడు?",
-    "area_hypothesis": "??????? ????? ????????",
+    "area_hypothesis": "వైశాల్య సంబంధ పరికల్పన",
     "stuck_show_open_prompts": "🤔 ఇరుక్కున్నారా — తెరిచిన ప్రాంప్ట్‌లను చూపు",
     "find_sizes_where_area_perimeter_rare_i": "వైశాల్యం = చుట్టుకొలత ఉన్న పరిమాణాలను కనుగొనండి (అరుదైన పూర్ణాంకాలు).",
     "when_does_swapping_rows_cols_change_an": "వరుసలు/నిలువు వరుసలను మార్చడం ఎప్పుడు ఏదైనా మారుస్తుంది?",
     "i_understand_explain_in_own_words": "నాకు అర్థమైంది — స్వంత మాటలలో వివరించు",
     "explain_commutative_property_area_leng": "వినిమయ ధర్మం + వైశాల్యం = పొడవు × వెడల్పు వివరించండి.",
-    "area_explanation": "???????? ????? ??????? ???? ?????????? ??????????",
+    "area_explanation": "వైశాల్యం మరియు గుణకారం మధ్య సంబంధాన్ని వివరించండి",
     "design_note_discrete_4_state_classific": "డిజైన్ గమనిక: వివిక్త 4-స్థితి వర్గీకరణ; వైశాల్యం పరీక్ష స్కోర్ లేదు; బహిర్గతం లేదు — ఉద్దేశపూర్వకంగా."
   },
   "missing": {}

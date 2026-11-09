@@ -223,7 +223,7 @@ describe('fix 3: the seaweed result is read once', () => {
 describe('fix 4: dive selects have a 3:1 border (WCAG 1.4.11)', () => {
   it('the Dive detail select uses the control border colour', async () => {
     const t = await mount({ section: 'explore' });
-    const sel = [...t.host.querySelectorAll('select')].find((s) => s.closest('label') && /Dive detail/.test(s.closest('label').textContent));
+    const sel = [...t.host.querySelectorAll('select')].find((s) => s.closest('label') && /3D detail/.test(s.closest('label').textContent));
     expect(sel).toBeTruthy();
     const ctl = X.palette('light').ctlBorder;
     const hex = (c) => '#' + c.match(/\d+/g).slice(0, 3).map((v) => (+v).toString(16).padStart(2, '0')).join('');

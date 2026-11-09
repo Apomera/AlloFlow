@@ -476,7 +476,7 @@
     function updateContactShadows() {
       shadowBirds.forEach(function (bird, index) {
         var size = shadowSizes[index];
-        writeShadow(index, bird.root.position.x, bird.root.position.z, bird.root.rotation.y, size.halfWidth, size.halfLength, Math.max(0, bird.altitude || 0), .78);
+        writeShadow(index, bird.root.position.x, bird.root.position.z, bird.root.rotation.y, size.halfWidth, size.halfLength, Math.max(0, bird.altitude || 0), absent(bird) ? 0 : .78);
       });
       shadowGeometry.attributes.position.needsUpdate = true; shadowGeometry.attributes.blShadowAlpha.needsUpdate = true;
     }
@@ -508,7 +508,7 @@
     var songClock=0;
     function cueSong(id,notes,delay){
       var bird=sharedBirds.filter(function(entry){return entry.id===id;})[0];
-      if(disposed||!bird||id==='mourningDove'||!Array.isArray(notes))return false;
+      if(disposed||!bird||absent(bird)||id==='mourningDove'||!Array.isArray(notes))return false;
       var start=songClock+(Number.isFinite(delay)?Math.max(0,delay):0),list=[],end=start;
       notes.forEach(function(note){
         var on=Number(note&&note.on),dur=Number(note&&note.dur);
@@ -832,6 +832,43 @@
     // Birds that gang up on a perched hawk; the others keep their distance.
     var MOBBERS=['blueJay','chickadee','tuftedTitmouse','robin'];
     function setWeather(value){wet=value==='rain';}
+    // Seasons: a Maine winter without the towhee, which leaves for the southern
+    // states (robins, bluebirds and white-throated sparrows partly stay), and
+    // goldfinches in drab olive winter plumage, molting in autumn.
+    var SEASON_ABSENT={winter:{easternTowhee:true}},absentIds={},goldfinchDrab={value:0},drabReady=false;
+    function absent(bird){return !!absentIds[bird.id];}
+    function setSeason(value){
+      if(disposed||['summer','autumn','winter'].indexOf(value)<0)return;
+      absentIds=SEASON_ABSENT[value]||{};
+      birds.concat(sharedBirds).forEach(function(bird){bird.root.visible=!absent(bird);});
+      goldfinchDrab.value=value==='winter'?1:value==='autumn'?.55:0;
+      var finch=sharedBirds.filter(function(bird){return bird.id==='americanGoldfinch';})[0];
+      if(goldfinchDrab.value&&!drabReady&&finch){
+        drabReady=true;
+        finch.root.traverse(function(node){
+          var mat=node.material;if(!mat||!mat.vertexColors||mat.userData.blDrab)return;
+          mat.userData.blDrab=true;
+          var previous=mat.onBeforeCompile,previousKey=mat.customProgramCacheKey.call(mat);
+          mat.onBeforeCompile=function(shader,renderer){
+            previous.call(this,shader,renderer);
+            shader.uniforms.blDrab=goldfinchDrab;
+            var plumage=shader.fragmentShader.indexOf('awPlumageLocal')>=0;
+            shader.fragmentShader='uniform float blDrab;\n'+shader.fragmentShader.replace('#include <lights_physical_fragment>',[
+              '{vec3 c=diffuseColor.rgb;float yellow=smoothstep(.14,.34,min(c.r,c.g)-c.b)*smoothstep(.45,.62,c.g/max(c.r,.001));',
+              'diffuseColor.rgb=mix(c,vec3(.165,.14,.06)*(.7+dot(c,vec3(.3,.6,.1))*.5),blDrab*yellow*.92);',
+              // The male's black cap (painted a touch less blue than the wings)
+              // fades to olive-brown; the wings stay black with pale bars.
+              plumage?'#ifdef USE_COLOR\nif(vColor.b<.0114&&vColor.r<.0096&&vColor.g<.0106)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.10,.085,.04),blDrab*.9);\n#endif':
+                // The orange breeding bill turns dark grey.
+                'if(c.r>.6&&c.g>.28&&c.g<.48&&c.b>.12&&c.b<.27)diffuseColor.rgb=mix(c,vec3(.09,.085,.08),blDrab*.85);',
+              '}','#include <lights_physical_fragment>'].join('\n'));
+          };
+          mat.customProgramCacheKey=function(){return previousKey+'|birdlab-goldfinch-drab-v1';};
+          mat.needsUpdate=true;
+        });
+      }
+      updateContactShadows();
+    }
     // The engine reports the hawk while it is airborne in free roam, else null.
     // A perched report ({flying:false}) only counts once the hawk has just
     // landed, so the hawk already sitting there on arrival is not mobbed.
@@ -1150,6 +1187,7 @@
         });
       }
       residents.forEach(function(bird) {
+        if(absent(bird))return;
         var state=bird.free;state.cooldown=Math.max(0,state.cooldown-dt);
         var near=observerResponse(bird,observer,dt);
         // A hawk crossing low over the clearing: small birds freeze where they
@@ -1289,7 +1327,7 @@
           if(state.alertness>.30)bird.behavior='Watching the observer';
           else if(state.cooldown>0)bird.behavior='Settling after disturbance';
           else if(state.kind==='forage')bird.behavior='Searching for food';
-          else if(wet&&state.kind==='rest')bird.behavior='Sitting tight in the rain';
+          else if(wet&&state.kind==='rest')bird.behavior=absentIds===SEASON_ABSENT.winter?'Sitting tight in the snow':'Sitting tight in the rain';
           else if(state.kind==='freeze')bird.behavior='Freezing as the hawk passes';
           else if(state.kind==='mob')bird.behavior='Mobbing the perched hawk';
         }
@@ -1303,13 +1341,14 @@
       updateContactShadows();
     }
     function snapshot() {
-      return birds.concat(sharedBirds).map(function (bird) { return { id: bird.id, name: bird.name, scientificName: bird.scientificName,
+      return birds.concat(sharedBirds).filter(function (bird) { return !absent(bird); }).map(function (bird) { return { id: bird.id, name: bird.name, scientificName: bird.scientificName,
         behavior: bird.behavior, position: bird.root.position.toArray(), altitude: bird.altitude, heading:bird.root.rotation.y,
         alertness:mode==='free'?bird.free.alertness:0,recovering:mode==='free'&&bird.free.cooldown>0,
         food:mode==='free'&&feeding&&bird.free.food&&bird.free.kind==='forage'&&!bird.free.course.length?{kind:bird.free.food.kind,source:bird.free.food.id,label:bird.free.food.eat}:undefined,
         alarm:mode==='free'&&(bird.free.kind==='freeze'||bird.free.kind==='mob')&&bird.free.alarm?{at:bird.free.alarm.at,danger:bird.free.alarm.danger,mob:!!bird.free.alarm.mob}:undefined }; });
     }
     function getFocus(id, out) {
+      if (absentIds[id]) return null;
       for (var i = 0; i < birds.length; i++) if (birds[i].id === id) {
         root.updateMatrixWorld(true); return birds[i].body.getWorldPosition(out);
       }
@@ -1348,7 +1387,7 @@
       return spots;
     }
     return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, setExtraContactShadow: setExtraContactShadow,
-      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, setPredator: setPredator, mobbers: mobbers, guidedForageSpots: guidedForageSpots, dispose: dispose };
+      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, setSeason: setSeason, isPresent: function(id){return !absentIds[id];}, setPredator: setPredator, mobbers: mobbers, guidedForageSpots: guidedForageSpots, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
 }(window));

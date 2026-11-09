@@ -1816,6 +1816,7 @@
     function getAudio() {
       try {
         if (typeof window === 'undefined' || window._alloGlobalMute) return null;
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return null; } catch (e1) {}
         if (window.StemLab && typeof window.StemLab.audioContext === 'function') { var hc = window.StemLab.audioContext(); if (hc) return hc; }
         var Ctor = window.AudioContext || window.webkitAudioContext; if (!Ctor) return null;
         if (!audioRef.current || audioRef.current.ctx.state === 'closed') audioRef.current = { ctx: new Ctor(), own: true };

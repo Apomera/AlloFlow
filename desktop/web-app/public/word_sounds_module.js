@@ -6891,29 +6891,112 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       return items;
     };
     // "Present offline": a single page that needs nothing but a browser. The player is plain script.
-    const WS_PRESENT_OFFLINE_PLAYER = "(function () {\n  var data = JSON.parse(document.getElementById('ws-data').textContent);\n  var S = data.strings, acts = data.activities, clips = data.clips, pics = data.images;\n  var a = 0, i = 0, revealed = false, picked = [], finished = false, token = 0;\n  var $ = function (id) { return document.getElementById(id); };\n  var el = function (tag, attrs, kids) {\n    var n = document.createElement(tag);\n    Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') n.textContent = attrs[k]; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); });\n    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });\n    return n;\n  };\n  var fill = function (s, p) { return String(s).replace(/\\{\\{?(\\w+)\\}?\\}/g, function (m, k) { return p && p[k] != null ? p[k] : m; }); };\n  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };\n  var playOne = function (step) {\n    return new Promise(function (resolve) {\n      var src = step.clip && clips[step.clip];\n      if (src) { var au = new Audio(src); au.playbackRate = data.speed || 1; au.onended = resolve; au.onerror = resolve; au.play().catch(resolve); return; }\n      if (step.text && !/^\\/.*\\/$/.test(step.text) && window.speechSynthesis) {\n        var u = new SpeechSynthesisUtterance(step.text); u.lang = data.lang || 'en'; u.rate = data.speed || 1; u.onend = resolve; u.onerror = resolve;\n        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); return;\n      }\n      resolve();\n    });\n  };\n  var play = function (steps) {\n    var mine = ++token;\n    (steps || []).reduce(function (p, s, n) { return p.then(function () { if (mine !== token) return; return playOne(s).then(function () { if (n < steps.length - 1 && mine === token) return wait(data.gap * 1000); }); }); }, Promise.resolve());\n  };\n  var act = function () { return acts[a]; };\n  var item = function () { return act().items[Math.min(i, act().items.length - 1)]; };\n  var isRight = function (v) { return item().correct.some(function (c) { return c.toLowerCase() === String(v).toLowerCase(); }); };\n  var img = function (id, alt, cls) { return id && pics[id] ? el('img', { src: pics[id], alt: alt || '', class: cls || '' }) : null; };\n  var boxes = function (vals, count, plain) { return el('div', { class: 'row' }, Array.apply(null, Array(count)).map(function (_, k) { return el('span', { class: 'box', text: vals && vals[k] ? (plain ? vals[k] : '/' + vals[k] + '/') : '' }); })); };\n  var display = function (it) {\n    var d = it.display; if (!d) return null;\n    if (d.kind === 'sounds' || d.kind === 'parts') return el('div', { class: 'row' }, d.steps.map(function (s, k) { return el('button', { class: 'soft', onclick: function () { play([s]); }, text: fill(d.kind === 'sounds' ? S.sound : S.part, { n: k + 1 }) }); }));\n    if (d.kind === 'boxes') return boxes(revealed ? it.answer.sounds : null, d.count);\n    if (d.kind === 'letters') return boxes(revealed ? it.answer.letters : null, d.count, true);\n    if (d.kind === 'word') return el('p', { class: 'word', text: d.text });\n    if (d.kind === 'blank_word') return el('p', { class: 'word', text: d.letters.map(function (l, k) { return k === d.hidden && !revealed ? '_' : l; }).join('') });\n    if (d.kind === 'tiles') return el('div', { class: 'row' }, d.tiles.map(function (t) { return el('span', { class: 'box', text: t }); }));\n    if (d.kind === 'map') return el('div', { class: 'row' }, d.sounds.map(function (s, k) { return el('div', { class: 'col' }, [el('button', { class: 'soft', text: '/' + s + '/', onclick: function () { play([{ text: '/' + s + '/', clip: d.clips && d.clips[k] }]); } }), el('span', { class: 'box', text: revealed ? d.letters[k] : '' })]); }));\n    if (d.kind === 'text') return el('p', { class: 'text' }, d.parts.map(function (p) { return p.text != null ? document.createTextNode(p.text + ' ') : el('span', {}, [document.createTextNode(p.before + ' '), el('b', { class: revealed ? 'filled' : '', text: revealed ? (p.answer || it.word) : '______' }), document.createTextNode(' ' + p.after + ' ')]); }));\n    return null;\n  };\n  var paint = function () {\n    var stage = $('stage'); stage.innerHTML = '';\n    $('act').value = String(a);\n    var it = item(), n = Math.min(i, act().items.length - 1);\n    $('count').textContent = fill(S.itemOf, { n: n + 1, total: act().items.length });\n    $('reveal').disabled = finished; $('reveal').textContent = revealed ? S.playAnswer : S.reveal;\n    $('play').hidden = finished || !it.audio.length;\n    if (finished) {\n      var next = acts[a + 1];\n      stage.appendChild(el('h2', { text: fill(S.done, { activity: act().label }) }));\n      stage.appendChild(el('div', { class: 'row' }, [\n        next ? el('button', { class: 'accent big', text: fill(S.nextActivity, { activity: next.label }), onclick: function () { go2(a + 1); } }) : null,\n        el('button', { class: 'plain big', text: S.again, onclick: function () { finished = false; i = 0; fresh(); } })]));\n      $('status').textContent = fill(S.done, { activity: act().label });\n      return;\n    }\n    stage.appendChild(el('h2', { text: it.prompt }));\n    var shown = display(it); if (shown) stage.appendChild(shown);\n    if (it.choices.length) stage.appendChild(el('div', { class: 'row', role: 'group', 'aria-label': S.choices }, it.choices.map(function (c, ci) {\n      var right = revealed && isRight(c.value), on = picked.indexOf(c.value) >= 0;\n      return el('button', { class: 'choice' + (right ? ' right' : on ? ' picked' : ''), 'aria-pressed': String(on), 'data-k': 'c' + ci, onclick: function () {\n        picked = it.multi ? (on ? picked.filter(function (v) { return v !== c.value; }) : picked.concat(c.value)) : (on ? [] : [c.value]); render();\n      } }, [c.image ? img(c.image, c.label, 'pic') : document.createTextNode(c.label), right ? el('span', { text: ' ✓' }) : null]);\n    })));\n    if (revealed) {\n      var ans = el('div', { class: 'answer' }, [img(it.answer.image, fill(S.pictureOf, { word: /^[\\p{L}\\p{M}'’ -]+$/u.test(String(it.answer.label || '')) ? it.answer.label : it.word || it.answer.label }), 'apic'),\n        it.answer.sounds && (!it.display || it.display.kind !== 'boxes') ? boxes(it.answer.sounds, it.answer.sounds.length) : null,\n        el('p', { class: 'alabel', text: it.answer.label }), it.answer.parts && it.answer.parts.length ? el('p', { class: 'muted', text: it.answer.parts.join(' · ') }) : null]);\n      stage.appendChild(ans);\n    }\n  };\n  var render = function () {\n    var stage = $('stage'), had = document.activeElement, keep = had && had !== stage && stage.contains(had) ? had.getAttribute('data-k') || '-' : null;\n    paint();\n    if (keep == null) return;\n    var back = [].filter.call(stage.querySelectorAll('[data-k]'), function (b) { return b.getAttribute('data-k') === keep; })[0] || stage.querySelector('h2');\n    if (back) { if (back.tagName === 'H2') back.setAttribute('tabindex', '-1'); back.focus(); }\n  };\n  var fresh = function () { revealed = false; picked = []; render(); var it = item(); $('status').textContent = fill(S.itemOf, { n: i + 1, total: act().items.length }); if (!finished) play(it.audio); };\n  var go = function (d) {\n    if (finished) { if (d < 0) { finished = false; render(); } else if (acts[a + 1]) go2(a + 1); return; }\n    if (d > 0 && i >= act().items.length - 1) { finished = true; token++; render(); return; }\n    var t = Math.max(0, Math.min(act().items.length - 1, i + d)); if (t === i) return; i = t; fresh();\n  };\n  var go2 = function (k) { a = k; i = 0; finished = false; fresh(); };\n  var reveal = function () { if (finished) return; revealed = true; render(); $('status').textContent = fill(S.answerIs, { answer: item().answer.label }); play(item().answer.audio); };\n  acts.forEach(function (x, k) { $('act').appendChild(el('option', { value: String(k), text: x.label })); });\n  $('act').addEventListener('change', function (e) { go2(Number(e.target.value)); });\n  $('prev').addEventListener('click', function () { go(-1); });\n  $('next').addEventListener('click', function () { go(1); });\n  $('reveal').addEventListener('click', reveal);\n  $('play').addEventListener('click', function () { play(item().audio); });\n  document.addEventListener('keydown', function (e) {\n    var t = e.target; if (t && t.closest && t.closest('select, input, textarea')) return;\n    var space = e.key === ' ' || e.key === 'Spacebar';\n    if (t && t.closest && (space || e.key === 'Enter') && t.closest('button')) return;\n    if (e.key === 'ArrowRight' || e.key === 'PageDown' || space) { e.preventDefault(); go(1); }\n    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }\n    else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); reveal(); }\n  });\n  fresh();\n})();\n";
-    const wsPresentOfflineHtml = ({ title, lang, dir, palette, fontFamily, payload, chrome }) => {
+    const WS_PRESENT_OFFLINE_PLAYER = "(function () {\n  var data = JSON.parse(document.getElementById('ws-data').textContent);\n  var S = data.strings, acts = data.activities, clips = data.clips, pics = data.images;\n  var UI = data.ui || {};\n  var a = 0, i = 0, revealed = false, picked = [], finished = false, token = 0, begun = false;\n  // The order on screen: the file's order until Start again mixes it.\n  var view = acts.map(function (x) { return x.items; });\n  var $ = function (id) { return document.getElementById(id); };\n  var el = function (tag, attrs, kids) {\n    var n = document.createElement(tag);\n    Object.keys(attrs || {}).forEach(function (k) { if (attrs[k] == null) return; if (k === 'text') n.textContent = attrs[k]; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); });\n    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });\n    return n;\n  };\n  var ui = function (attrs) { attrs = attrs || {}; if (UI.lang) attrs.lang = UI.lang; if (UI.dir && attrs.dir == null) attrs.dir = UI.dir; return attrs; };\n  var fill = function (s, p) { return String(s).replace(/\\{\\{?(\\w+)\\}?\\}/g, function (m, k) { return p && p[k] != null ? p[k] : m; }); };\n  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };\n  var store = {\n    get: function (k) { try { return window.localStorage.getItem(k); } catch (_) { return null; } },\n    set: function (k, v) { try { window.localStorage.setItem(k, String(v)); } catch (_) {} }\n  };\n  // One audio element for every clip: iPads and iPhones unlock it once, on Begin.\n  var au = null;\n  var silent = function () {\n    var b = new Uint8Array(46), v = new DataView(b.buffer), tag = function (at, t) { for (var k = 0; k < t.length; k++) b[at + k] = t.charCodeAt(k); };\n    tag(0, 'RIFF'); v.setUint32(4, 38, true); tag(8, 'WAVE'); tag(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);\n    v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); tag(36, 'data'); v.setUint32(40, 2, true);\n    return 'data:audio/wav;base64,' + btoa(String.fromCharCode.apply(null, b));\n  };\n  var unlock = function () {\n    try { au = new Audio(); au.src = silent(); var p = au.play(); if (p && p.catch) p.catch(function () {}); } catch (_) { au = null; }\n    try { if (window.speechSynthesis && window.SpeechSynthesisUtterance) { var u = new SpeechSynthesisUtterance(' '); u.volume = 0; window.speechSynthesis.speak(u); } } catch (_) {}\n  };\n  var playOne = function (step) {\n    return new Promise(function (resolve) {\n      var src = step.clip && clips[step.clip];\n      if (src) {\n        try {\n          if (!au) au = new Audio();\n          au.onended = resolve; au.onerror = resolve; au.src = src; au.playbackRate = data.speed || 1;\n          var p = au.play(); if (p && p.catch) p.catch(resolve);\n        } catch (_) { resolve(); }\n        return;\n      }\n      if (step.text && !/^\\/.*\\/$/.test(step.text) && window.speechSynthesis) {\n        var u = new SpeechSynthesisUtterance(step.text); u.lang = data.lang || 'en'; u.rate = data.speed || 1; u.onend = resolve; u.onerror = resolve;\n        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); return;\n      }\n      resolve();\n    });\n  };\n  var play = function (steps) {\n    var mine = ++token;\n    return (steps || []).reduce(function (p, s, n) { return p.then(function () { if (mine !== token) return; return playOne(s).then(function () { if (n < steps.length - 1 && mine === token) return wait(data.gap * 1000); }); }); }, Promise.resolve())\n      .then(function () { return mine === token; });\n  };\n  var act = function () { return acts[a]; };\n  var list = function () { return view[a]; };\n  var item = function () { return list()[Math.min(i, list().length - 1)]; };\n  var isRight = function (v) { return item().correct.some(function (c) { return c.toLowerCase() === String(v).toLowerCase(); }); };\n  var img = function (id, alt, cls) { return id && pics[id] ? el('img', { src: pics[id], alt: alt || '', class: cls || '' }) : null; };\n  // Start again: a new order of the items and of each item's choices (number choices stay in order).\n  var mix = function (values) { var out = values.slice(); for (var k = out.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = out[k]; out[k] = out[j]; out[j] = t; } return out; };\n  var same = function (x, y) { return x.length === y.length && x.every(function (v, k) { return v === y[k]; }); };\n  var reshuffle = function (items, id) {\n    var order = mix(items);\n    if (order.length > 1 && same(order, items)) order = order.slice(1).concat(order[0]);\n    return order.map(function (it) {\n      var next = Object.assign({}, it);\n      if (it.choices.length > 1 && id !== 'counting' && id !== 'syllable_counting') next.choices = mix(it.choices);\n      var d = it.display;\n      if (d && d.kind === 'tiles' && d.tiles.length > 1) {\n        var tiles = mix(d.tiles);\n        if (tiles.join('').toLowerCase() === String(it.word || '').toLowerCase()) tiles = tiles.slice(1).concat(tiles[0]);\n        next.display = Object.assign({}, d, { tiles: tiles });\n      }\n      return next;\n    });\n  };\n  // Think time: counts down after the prompt has played.\n  var saved = store.get('allo_ws_offline_think'), think = saved == null || saved === '' ? NaN : Number(saved);\n  if ((data.think || []).indexOf(think) < 0) think = data.thinkDefault || 0;\n  var tick = null, left = 0;\n  var showTimer = function () { var t = $('timer'); t.hidden = false; t.textContent = String(left); t.setAttribute('aria-label', fill(S.thinkLeft, { n: left })); };\n  var stopThink = function () { if (tick) clearInterval(tick); tick = null; $('timer').hidden = true; };\n  var startThink = function () {\n    stopThink(); if (!think || revealed || finished) return;\n    left = think; showTimer();\n    tick = setInterval(function () { left = Math.max(0, left - 1); showTimer(); if (!left) { clearInterval(tick); tick = null; } }, 1000);\n  };\n  var playPrompt = function () { stopThink(); var it = item(); play(it.audio).then(function (done) { if (done && it === item()) startThink(); }); };\n  var boxes = function (vals, count, plain) { return el('div', { class: 'row' }, Array.apply(null, Array(count)).map(function (_, k) { return el('span', { class: 'box', text: vals && vals[k] ? (plain ? vals[k] : '/' + vals[k] + '/') : '' }); })); };\n  var display = function (it) {\n    var d = it.display; if (!d) return null;\n    if (d.kind === 'sounds' || d.kind === 'parts') return el('div', { class: 'row' }, d.steps.map(function (s, k) { return el('button', ui({ class: 'soft', onclick: function () { play([s]); }, text: fill(d.kind === 'sounds' ? S.sound : S.part, { n: k + 1 }) })); }));\n    if (d.kind === 'boxes') return boxes(revealed ? it.answer.sounds : null, d.count);\n    if (d.kind === 'letters') return boxes(revealed ? it.answer.letters : null, d.count, true);\n    if (d.kind === 'word') return el('p', { class: 'word', text: d.text });\n    if (d.kind === 'blank_word') return el('p', { class: 'word', text: d.letters.map(function (l, k) { return k === d.hidden && !revealed ? '_' : l; }).join('') });\n    if (d.kind === 'tiles') return el('div', { class: 'row' }, d.tiles.map(function (t) { return el('span', { class: 'box', text: t }); }));\n    if (d.kind === 'map') return el('div', { class: 'row' }, d.sounds.map(function (s, k) { return el('div', { class: 'col' }, [el('button', { class: 'soft', text: '/' + s + '/', onclick: function () { play([{ text: '/' + s + '/', clip: d.clips && d.clips[k] }]); } }), el('span', { class: 'box', text: revealed ? d.letters[k] : '' })]); }));\n    if (d.kind === 'text') return el('p', { class: 'text' }, d.parts.map(function (p) { return p.text != null ? document.createTextNode(p.text + ' ') : el('span', {}, [document.createTextNode(p.before + ' '), el('b', { class: revealed ? 'filled' : '', text: revealed ? (p.answer || it.word) : '______' }), document.createTextNode(' ' + p.after + ' ')]); }));\n    return null;\n  };\n  var paintBegin = function () {\n    var stage = $('stage'); stage.innerHTML = '';\n    $('act').value = String(a);\n    $('count').textContent = fill(S.itemOf, { n: 1, total: list().length });\n    stage.appendChild(el('div', ui({ class: 'begin' }), [\n      el('h1', { text: document.title }),\n      el('p', { class: 'big', text: act().label }),\n      el('button', { type: 'button', id: 'begin', class: 'accent huge', text: S.begin, onclick: begin }),\n      el('p', { class: 'muted', text: S.beginHelp })]));\n  };\n  var paint = function () {\n    var stage = $('stage'); stage.innerHTML = '';\n    $('act').value = String(a);\n    var it = item(), n = Math.min(i, list().length - 1);\n    $('count').textContent = fill(S.itemOf, { n: n + 1, total: list().length });\n    $('reveal').disabled = finished; $('reveal').textContent = revealed ? S.playAnswer : S.reveal;\n    $('play').hidden = finished || !it.audio.length;\n    if (finished) {\n      var next = acts[a + 1];\n      stage.appendChild(el('h2', ui({ text: fill(S.done, { activity: act().label }) })));\n      stage.appendChild(el('div', ui({ class: 'row' }), [\n        next ? el('button', { class: 'accent big', 'data-k': 'next-act', text: fill(S.nextActivity, { activity: next.label }), onclick: function () { go2(a + 1); } }) : null,\n        el('button', { class: 'plain big', 'data-k': 'again', 'data-again': 'true', text: S.again, onclick: again })]));\n      $('status').textContent = fill(S.done, { activity: act().label });\n      return;\n    }\n    stage.appendChild(el('h2', it.uiPrompt ? ui({ text: it.prompt, dir: 'auto' }) : { text: it.prompt, dir: 'auto' }));\n    var shown = display(it); if (shown) stage.appendChild(shown);\n    if (it.choices.length) stage.appendChild(el('div', { class: 'row', role: 'group', 'aria-label': S.choices }, it.choices.map(function (c, ci) {\n      var right = revealed && isRight(c.value), on = picked.indexOf(c.value) >= 0, pic = c.image && pics[c.image];\n      return el('button', { class: 'choice' + (right ? ' right' : on ? ' picked' : ''), 'aria-pressed': String(on), 'data-k': 'c' + ci, 'data-choice': c.value, onclick: function () { choose(c.value); } },\n        [pic ? img(c.image, c.label, 'pic') : document.createTextNode(c.label), right ? el('span', { text: ' ✓' }) : null]);\n    })));\n    if (revealed) {\n      var ans = el('div', { class: 'answer' }, [img(it.answer.image, fill(S.pictureOf, { word: /^[\\p{L}\\p{M}'’ -]+$/u.test(String(it.answer.label || '')) ? it.answer.label : it.word || it.answer.label }), 'apic'),\n        it.answer.sounds && (!it.display || it.display.kind !== 'boxes') ? boxes(it.answer.sounds, it.answer.sounds.length) : null,\n        el('p', { class: 'alabel', text: it.answer.label }), it.answer.parts && it.answer.parts.length ? el('p', { class: 'muted', text: it.answer.parts.join(' · ') }) : null]);\n      stage.appendChild(ans);\n    }\n  };\n  var render = function () {\n    var stage = $('stage'), had = document.activeElement, keep = had && had !== stage && stage.contains(had) ? had.getAttribute('data-k') || '-' : null;\n    paint();\n    if (keep == null) return;\n    var back = [].filter.call(stage.querySelectorAll('[data-k]'), function (b) { return b.getAttribute('data-k') === keep; })[0] || stage.querySelector('h2');\n    if (back) { if (back.tagName === 'H2') back.setAttribute('tabindex', '-1'); back.focus(); }\n  };\n  var choose = function (value) {\n    if (finished) return;\n    var it = item(), on = picked.indexOf(value) >= 0;\n    picked = it.multi ? (on ? picked.filter(function (v) { return v !== value; }) : picked.concat(value)) : (on ? [] : [value]);\n    render();\n  };\n  var fresh = function () { revealed = false; picked = []; render(); $('status').textContent = fill(S.itemOf, { n: i + 1, total: list().length }); if (!finished) playPrompt(); else stopThink(); };\n  var go = function (d) {\n    if (finished) { if (d < 0) { finished = false; render(); } else if (acts[a + 1]) go2(a + 1); return; }\n    if (d > 0 && i >= list().length - 1) { finished = true; token++; stopThink(); render(); return; }\n    var t = Math.max(0, Math.min(list().length - 1, i + d)); if (t === i) return; i = t; fresh();\n  };\n  var go2 = function (k) { a = k; i = 0; finished = false; view[k] = acts[k].items; if (!begun) { paintBegin(); return; } fresh(); };\n  var again = function () { view[a] = reshuffle(acts[a].items, acts[a].id); i = 0; finished = false; fresh(); var h = $('stage').querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus(); } };\n  var reveal = function () { if (finished) return; revealed = true; stopThink(); render(); $('status').textContent = fill(S.answerIs, { answer: item().answer.label }); play(item().answer.audio); };\n  var begin = function () {\n    if (begun) return;\n    begun = true; document.body.classList.remove('pre');\n    unlock();\n    fresh();\n    var h = $('stage').querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus(); }\n  };\n  acts.forEach(function (x, k) { $('act').appendChild(el('option', { value: String(k), text: x.label })); });\n  $('act').addEventListener('change', function (e) { go2(Number(e.target.value)); });\n  $('prev').addEventListener('click', function () { go(-1); });\n  $('next').addEventListener('click', function () { go(1); });\n  $('reveal').addEventListener('click', reveal);\n  $('play').addEventListener('click', playPrompt);\n  // Think time menu.\n  (data.think || []).forEach(function (s) { $('think').appendChild(el('option', { value: String(s), text: s ? fill(S.thinkSec, { n: s }) : S.thinkOff })); });\n  $('think').value = String(think);\n  $('think').addEventListener('change', function (e) { think = Number(e.target.value) || 0; store.set('allo_ws_offline_think', think); if (!think) stopThink(); });\n  // Text size, remembered on this device.\n  var SIZES = [0.75, 0.875, 1, 1.25, 1.5, 1.75, 2];\n  var size = SIZES.indexOf(Number(store.get('allo_ws_offline_ps'))); if (size < 0) size = 2;\n  var applySize = function () {\n    document.documentElement.style.setProperty('--ws-ps', String(SIZES[size]));\n    $('smaller').disabled = size === 0; $('larger').disabled = size === SIZES.length - 1;\n  };\n  $('smaller').addEventListener('click', function () { if (size > 0) { size--; store.set('allo_ws_offline_ps', SIZES[size]); applySize(); } });\n  $('larger').addEventListener('click', function () { if (size < SIZES.length - 1) { size++; store.set('allo_ws_offline_ps', SIZES[size]); applySize(); } });\n  applySize();\n  // Full screen where the browser allows it (not on iPhone).\n  var root = document.documentElement;\n  var canFull = !!(root.requestFullscreen || root.webkitRequestFullscreen) && document.fullscreenEnabled !== false && document.webkitFullscreenEnabled !== false;\n  var isFull = function () { return !!(document.fullscreenElement || document.webkitFullscreenElement); };\n  var fullLabel = function () { $('full').textContent = isFull() ? S.fullExit : S.full; };\n  if (canFull) {\n    $('full').hidden = false; fullLabel();\n    $('full').addEventListener('click', function () {\n      try {\n        if (isFull()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }\n        var p = (root.requestFullscreen || root.webkitRequestFullscreen).call(root); if (p && p.catch) p.catch(function () {});\n      } catch (_) {}\n    });\n    document.addEventListener('fullscreenchange', fullLabel); document.addEventListener('webkitfullscreenchange', fullLabel);\n  }\n  // Pick a student: numbers 1 to N, each once a round. Nothing about the class is in this file.\n  var count = Math.round(Number(store.get('allo_ws_present_picker_n')));\n  if (!(count >= 1 && count <= 99)) count = 20;\n  var pool = [];\n  var refill = function () { pool = []; for (var k = 1; k <= count; k++) pool.push(k); };\n  var pickLeft = function (note) { $('pickleft').textContent = note || (pool.length ? fill(S.pickLeft, { n: pool.length }) : S.pickRoundDone); };\n  refill();\n  $('pickn').value = String(count);\n  $('pickn').addEventListener('change', function (e) {\n    var n = Math.round(Number(e.target.value));\n    if (!(n >= 1 && n <= 99)) { e.target.value = String(count); return; }\n    count = n; store.set('allo_ws_present_picker_n', count); refill(); $('pickout').textContent = ''; pickLeft();\n  });\n  $('pick').addEventListener('click', function () {\n    if (!pool.length) refill();\n    var k = Math.floor(Math.random() * pool.length), n = pool.splice(k, 1)[0];\n    $('pickout').textContent = fill(S.pickNumber, { n: n });\n    pickLeft();\n  });\n  $('pickreset').addEventListener('click', function () { refill(); $('pickout').textContent = ''; pickLeft(); });\n  var openPicker = function (open) { if (open) { try { $('picker').style.top = Math.round(document.querySelector('header').getBoundingClientRect().bottom + 8) + 'px'; } catch (_) {} } $('picker').hidden = !open; $('pickbtn').setAttribute('aria-expanded', String(open)); if (open) $('pick').focus(); else $('pickbtn').focus(); };\n  $('pickbtn').addEventListener('click', function () { openPicker($('picker').hidden); });\n  $('pickclose').addEventListener('click', function () { openPicker(false); });\n  pickLeft();\n  document.addEventListener('keydown', function (e) {\n    var t = e.target;\n    if ((e.key === 'Escape' || e.key === 'Esc') && !$('picker').hidden) { openPicker(false); return; }\n    if (!begun) return;\n    if (t && t.closest && t.closest('select, input, textarea, [contenteditable]')) return;\n    if (e.altKey || e.ctrlKey || e.metaKey) return;\n    var space = e.key === ' ' || e.key === 'Spacebar';\n    if (t && t.closest && (space || e.key === 'Enter') && t.closest('button')) return;\n    var code = e.code || '', digit = /^(?:Digit|Numpad)([1-9])$/.exec(code), n = digit ? Number(digit[1]) : !code && /^[1-9]$/.test(e.key) ? Number(e.key) : 0;\n    if (e.key === 'ArrowRight' || e.key === 'PageDown' || space) { e.preventDefault(); go(1); }\n    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }\n    else if (n && !e.shiftKey) { var c = !finished && item().choices[n - 1]; if (c) { e.preventDefault(); choose(c.value); } }\n    else if (e.key === 'r' || e.key === 'R' || code === 'KeyR') { e.preventDefault(); reveal(); }\n    else if (e.key === 'p' || e.key === 'P' || code === 'KeyP') { e.preventDefault(); if (!finished) playPrompt(); }\n  });\n  paintBegin();\n  try { $('begin').focus(); } catch (_) {}\n})();\n";
+    const wsPresentOfflineHtml = ({ title, lang, dir, uiLang, uiDir, palette, fontFamily, fontCss, payload, chrome }) => {
       const esc = (value) => String(value == null ? "" : value).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
       const vars = Object.keys(palette).map((name) => "--" + name + ":" + palette[name]).join(";");
-      const css = ":root{" + vars + "}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:600 18px/1.4 " + (fontFamily || "system-ui,-apple-system,'Segoe UI',Arial,sans-serif") + "}" +
-        "header,footer{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px 16px;background:var(--panel);border-color:var(--line);border-style:solid;border-width:0}header{border-bottom-width:1px}footer{border-top-width:1px;justify-content:center}" +
-        "main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px 4vw;text-align:center}h2{margin:0;font-size:clamp(2rem,4.4vw,3.5rem);line-height:1.15;max-width:64rem}" +
-        "button,select{font:inherit;min-height:44px;border-radius:12px;padding:6px 16px;cursor:pointer}button:focus-visible,select:focus-visible{outline:4px solid var(--focus);outline-offset:2px}" +
-        ".plain,select{background:var(--panel);color:var(--text);border:2px solid var(--strongLine)}.accent{background:var(--accent);color:var(--onAccent);border:0}.good{background:var(--good);color:var(--onGood);border:0}.good:disabled{opacity:.5}" +
-        ".soft{background:var(--soft);color:var(--softText);border:4px solid var(--softLine);font-size:1.6rem}.big{font-size:1.5rem}.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}.col{display:flex;flex-direction:column;gap:8px;align-items:center}" +
-        ".choice{background:var(--card);color:var(--text);border:4px solid var(--line);font-size:clamp(1.25rem,3vw,2.75rem)}.choice.picked{background:var(--pickBg);border-color:var(--pick);box-shadow:0 0 0 4px var(--pickRing)}.choice.right{background:var(--goodSoft);border-color:var(--good);color:var(--goodText)}" +
-        ".box{min-width:clamp(3rem,6vw,6rem);min-height:clamp(3rem,6vw,6rem);display:inline-flex;align-items:center;justify-content:center;border:4px solid var(--boxLine);background:var(--card);border-radius:12px;font-size:clamp(1.25rem,3vw,2.75rem);font-weight:900}" +
-        ".word{margin:0;font-size:clamp(3rem,9vw,8rem);font-weight:900;line-height:1}.text{margin:0;font-size:clamp(1.25rem,3vw,2.75rem);max-width:64rem}.filled{background:var(--goodSoft);color:var(--goodText);border-radius:8px;padding:0 6px}" +
-        ".answer{display:flex;flex-direction:column;align-items:center;gap:8px}.alabel{margin:0;font-size:clamp(2rem,5vw,4.5rem);font-weight:900;color:var(--goodText)}.apic{max-height:20vh;max-width:14rem;object-fit:contain;border-radius:16px}" +
-        ".pic{width:clamp(4rem,10vw,9rem);height:clamp(4rem,10vw,9rem);object-fit:contain}.muted{color:var(--muted)}.small{font-size:.85rem}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}";
+      // Text sizes follow --ws-ps, the file's own text size buttons.
+      const ps = (size) => "calc(" + size + " * var(--ws-ps,1))";
+      const css = String(fontCss || "") + ":root{" + vars + "}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:600 18px/1.4 " + (fontFamily || "system-ui,-apple-system,'Segoe UI',Arial,sans-serif") + "}" +
+        "header,footer{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px 16px;background:var(--panel);border-color:var(--line);border-style:solid;border-width:0}header{border-bottom-width:1px}footer{border-top-width:1px;justify-content:center}.pre footer{display:none}" +
+        "main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:16px 4vw;text-align:center}h2{margin:0;font-size:" + ps("clamp(2rem,4.4vw,3.5rem)") + ";line-height:1.15;max-width:64rem}" +
+        "button,select,input{font:inherit;min-height:44px;border-radius:12px;padding:6px 16px;cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:4px solid var(--focus);outline-offset:2px}h2[tabindex]:focus{outline:none}button:disabled{opacity:.5;cursor:default}" +
+        ".plain,select,input{background:var(--panel);color:var(--text);border:2px solid var(--strongLine)}.accent{background:var(--accent);color:var(--onAccent);border:0}.good{background:var(--good);color:var(--onGood);border:0}" +
+        ".soft{background:var(--soft);color:var(--softText);border:4px solid var(--softLine);font-size:" + ps("1.6rem") + "}.big{font-size:" + ps("1.5rem") + "}.huge{font-size:" + ps("2.25rem") + ";padding:12px 48px;min-height:72px}.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}.col{display:flex;flex-direction:column;gap:8px;align-items:center}" +
+        ".choice{background:var(--card);color:var(--text);border:4px solid var(--line);font-size:" + ps("clamp(1.25rem,3vw,2.75rem)") + "}.choice.picked{background:var(--pickBg);border-color:var(--pick);box-shadow:0 0 0 4px var(--pickRing)}.choice.right{background:var(--goodSoft);border-color:var(--good);color:var(--goodText)}" +
+        ".box{min-width:" + ps("clamp(3rem,6vw,6rem)") + ";min-height:" + ps("clamp(3rem,6vw,6rem)") + ";display:inline-flex;align-items:center;justify-content:center;border:4px solid var(--boxLine);background:var(--card);border-radius:12px;font-size:" + ps("clamp(1.25rem,3vw,2.75rem)") + ";font-weight:900}" +
+        ".word{margin:0;font-size:" + ps("clamp(3rem,9vw,8rem)") + ";font-weight:900;line-height:1}.text{margin:0;font-size:" + ps("clamp(1.25rem,3vw,2.75rem)") + ";max-width:64rem}.filled{background:var(--goodSoft);color:var(--goodText);border-radius:8px;padding:0 6px}" +
+        ".answer{display:flex;flex-direction:column;align-items:center;gap:8px}.alabel{margin:0;font-size:" + ps("clamp(2rem,5vw,4.5rem)") + ";font-weight:900;color:var(--goodText)}.apic{max-height:20vh;max-width:14rem;object-fit:contain;border-radius:16px}" +
+        ".pic{width:" + ps("clamp(4rem,10vw,9rem)") + ";height:" + ps("clamp(4rem,10vw,9rem)") + ";object-fit:contain}.muted{color:var(--muted)}.small{font-size:.85rem}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}" +
+        ".grow{flex:1}.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tools label{display:flex;gap:8px;align-items:center}" +
+        ".begin{display:flex;flex-direction:column;align-items:center;gap:18px}.begin h1{margin:0;font-size:" + ps("clamp(1.75rem,4vw,3rem)") + ";line-height:1.15}.begin p{margin:0}" +
+        "#picker{position:fixed;top:72px;inset-inline-end:16px;z-index:5;width:min(22rem,calc(100vw - 32px));display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--panel);color:var(--text);border:2px solid var(--strongLine);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.25)}#picker[hidden]{display:none}#picker input{width:6rem}" +
+        ".pickout{margin:0;min-height:1.2em;font-size:" + ps("3rem") + ";font-weight:900;line-height:1.1;text-align:center}" +
+        "#timer{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;border:4px solid var(--accent);font-size:1.5rem;font-weight:900}#timer[hidden]{display:none}";
       const json = JSON.stringify(payload).replace(/</g, "\\u003c");
-      return "<!DOCTYPE html><html lang=\"" + esc(lang || "en") + "\" dir=\"" + esc(dir || "auto") + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + esc(title) + "</title><style>" + css + "</style></head><body>" +
-        "<header><label for=\"act\" class=\"sr\">" + esc(chrome.activity) + "</label><select id=\"act\"></select><span id=\"count\" class=\"muted\"></span></header>" +
-        "<main id=\"stage\"></main><p id=\"status\" role=\"status\" class=\"sr\"></p>" +
-        "<footer><button type=\"button\" id=\"prev\" class=\"plain\">" + esc(chrome.previous) + "</button><button type=\"button\" id=\"play\" class=\"accent\">" + esc(chrome.play) +
+      const ui = (uiLang ? " lang=\"" + esc(uiLang) + "\"" : "") + (uiDir ? " dir=\"" + esc(uiDir) + "\"" : "");
+      return "<!DOCTYPE html><html lang=\"" + esc(lang || "en") + "\" dir=\"" + esc(dir || "auto") + "\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>" + esc(title) + "</title><style>" + css.replace(/<\/style/gi, "<\\/style") + "</style></head><body class=\"pre\">" +
+        "<header" + ui + "><label for=\"act\" class=\"sr\">" + esc(chrome.activity) + "</label><select id=\"act\"></select><span id=\"count\" class=\"muted\"></span><span class=\"grow\"></span>" +
+        "<span class=\"tools\"><label>" + esc(chrome.think) + " <select id=\"think\"></select></label>" +
+        "<span role=\"group\" class=\"tools\" aria-label=\"" + esc(chrome.textSize) + "\"><button type=\"button\" id=\"smaller\" class=\"plain\" aria-label=\"" + esc(chrome.smaller) + "\" title=\"" + esc(chrome.smaller) + "\">A−</button>" +
+        "<button type=\"button\" id=\"larger\" class=\"plain\" aria-label=\"" + esc(chrome.larger) + "\" title=\"" + esc(chrome.larger) + "\">A+</button></span>" +
+        "<button type=\"button\" id=\"pickbtn\" class=\"plain\" aria-expanded=\"false\" aria-controls=\"picker\">" + esc(chrome.picker) + "</button>" +
+        "<button type=\"button\" id=\"full\" class=\"plain\" hidden>" + esc(chrome.full) + "</button></span></header>" +
+        "<div id=\"picker\" role=\"region\" aria-label=\"" + esc(chrome.picker) + "\" hidden" + ui + "><label>" + esc(chrome.pickCount) + " <input id=\"pickn\" type=\"number\" min=\"1\" max=\"99\" inputmode=\"numeric\"></label>" +
+        "<button type=\"button\" id=\"pick\" class=\"accent big\">" + esc(chrome.pick) + "</button><p id=\"pickout\" class=\"pickout\" aria-live=\"polite\"></p><p id=\"pickleft\" class=\"muted small\"></p>" +
+        "<span class=\"tools\"><button type=\"button\" id=\"pickreset\" class=\"plain\">" + esc(chrome.pickReset) + "</button><button type=\"button\" id=\"pickclose\" class=\"plain\">" + esc(chrome.close) + "</button></span></div>" +
+        "<main id=\"stage\"></main><p id=\"status\" role=\"status\" class=\"sr\"" + ui + "></p>" +
+        "<footer" + ui + "><button type=\"button\" id=\"prev\" class=\"plain\">" + esc(chrome.previous) + "</button><button type=\"button\" id=\"play\" class=\"accent\">" + esc(chrome.play) +
         "</button><button type=\"button\" id=\"reveal\" class=\"good\">" + esc(chrome.reveal) + "</button><button type=\"button\" id=\"next\" class=\"plain\">" + esc(chrome.next) +
-        "</button><span class=\"muted small\">" + esc(chrome.keys) + "</span></footer>" +
+        "</button><span id=\"timer\" role=\"timer\" hidden></span><span class=\"muted small\">" + esc(chrome.keys) + "</span></footer>" +
         "<script type=\"application/json\" id=\"ws-data\">" + json + "</script><script>" + WS_PRESENT_OFFLINE_PLAYER.replace(/<\/script/gi, "<\\/script") + "</script></body></html>";
+    };
+    // The offline file's font: the presenter's own choice, else the reader's font.
+    const wsPresentFontOption = (lookFont) => {
+      const all = typeof window !== "undefined" && Array.isArray(window.FONT_OPTIONS) ? window.FONT_OPTIONS : [];
+      let id = lookFont || "";
+      if (!id) {
+        try { const api = window.__alloReadingSettings; id = api && typeof api.get === "function" ? String(api.get().fontId || "") : ""; } catch (_) { id = ""; }
+      }
+      if (id === "andika-italic" || id === "andika-bold-italic") id = "andika";
+      return (id && all.find((f) => f && f.id === id && f.family)) || null;
+    };
+    // A blob: or web picture read into a data: URI for the offline file, or null (8 s, 1.5 MB at most).
+    const wsPresentImageData = (url) => new Promise((resolve) => {
+      let done = false, timer = null;
+      const finish = (value) => { if (done) return; done = true; if (timer) wsTimerHost.clearTimeout(timer); resolve(value); };
+      timer = wsTimerHost.setTimeout(() => finish(null), 8000);
+      try {
+        if (typeof fetch !== "function" || typeof FileReader === "undefined") { finish(null); return; }
+        Promise.resolve(fetch(url)).then((r) => (r && r.ok ? r.blob() : null)).then((blob) => {
+          if (!blob || !/^image\//i.test(blob.type || "") || blob.size > 1500000) { finish(null); return; }
+          const reader = new FileReader();
+          reader.onload = () => finish(typeof reader.result === "string" && /^data:image\/[a-z0-9.+-]+[;,]/i.test(reader.result) ? reader.result : null);
+          reader.onerror = () => finish(null);
+          reader.readAsDataURL(blob);
+        }).catch(() => finish(null));
+      } catch (_) { finish(null); }
+    });
+    // The font as embedded @font-face rules, for an offline file whose text is known: a web font is
+    // fetched with only the letters it shows (single-storey a and g for early readers). "" when it
+    // cannot be fetched or would add more than 600 KB.
+    const WS_PRESENT_FONT_MAX = 600 * 1024;
+    const wsPresentFontFace = async (option, text) => {
+      if (!option || typeof fetch !== "function") return "";
+      const clean = (css) => (typeof css === "string" && /url\(\s*['"]?data:/i.test(css) && !/url\(\s*(?!['"]?data:)/i.test(css) ? css : "");
+      try {
+        if (option.id === "opendyslexic") {
+          const lib = window.AlloModules && window.AlloModules.UIFontLibrary;
+          if (!lib || typeof lib.exportFontFaceCss !== "function") return "";
+          const face = await lib.exportFontFaceCss("opendyslexic", { embed: true, maxBytes: WS_PRESENT_FONT_MAX });
+          return clean(face && face.css);
+        }
+        if (!option.googleFont) return "";
+        const family = String(option.googleFont).split(":")[0];
+        const letters = [...new Set(Array.from(String(text || "") + "0123456789"))].filter((c) => c.trim() && !/[\u0000-\u001f]/.test(c)).sort().join("");
+        const res = await fetch("https://fonts.googleapis.com/css2?family=" + family + ":wght@400;700&display=swap&text=" + encodeURIComponent(letters));
+        if (!res.ok) return "";
+        let css = await res.text();
+        const urls = [...new Set([...css.matchAll(/url\((['"]?)([^'")]+)\1\)/g)].map((m) => m[2]))];
+        if (!urls.length) return "";
+        let used = 0;
+        for (const url of urls) {
+          const file = await fetch(url);
+          if (!file.ok) return "";
+          const buffer = await file.arrayBuffer();
+          used += buffer.byteLength;
+          if (used > WS_PRESENT_FONT_MAX) return "";
+          const bytes = new Uint8Array(buffer);
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+          const type = String(file.headers.get("content-type") || "").split(";")[0].trim();
+          const mime = /^font\/|^application\/font|woff/i.test(type) ? type : "font/woff2";
+          css = css.split(url).join("data:" + mime + ";base64," + btoa(bin));
+        }
+        return clean(css.replace(/\/\*[\s\S]*?\*\//g, ""));
+      } catch (_) {
+        return "";
+      }
     };
     // Clickers send arrows and Page keys. Keys typed into a field, or Space
     // and Enter on a focused control, keep their usual meaning.
@@ -6929,12 +7012,106 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       if (target && (space || event.key === "Enter") && target.closest('button, a[href], summary, [role="button"]')) return null;
       if (event.key === "ArrowRight" || event.key === "PageDown" || space) return "next";
       if (event.key === "ArrowLeft" || event.key === "PageUp") return "prev";
-      if (event.key === "r" || event.key === "R") return "reveal";
+      // 1-9 pick that choice, by key position so other keyboard layouts work too.
+      const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
+      const n = digit ? Number(digit[1]) : !event.code && /^[1-9]$/.test(event.key) ? Number(event.key) : 0;
+      if (n) return event.shiftKey ? null : "choice" + n;
+      if (event.key === "r" || event.key === "R" || event.code === "KeyR") return "reveal";
+      if (event.key === "p" || event.key === "P" || event.code === "KeyP") return "play";
       return null;
+    };
+    // Start again: a fresh order of the items, each item's choices and its tiles.
+    // Seed 0 is the first run, in the list's own order. Number choices stay in order.
+    const wsPresentReshuffle = (items, seed) => {
+      if (!seed || items.length < 1) return items;
+      let order = wsPresentShuffle(items, "run:" + seed);
+      if (order.length > 1 && order.every((item, i) => item === items[i])) order = [...order.slice(1), order[0]];
+      return order.map((item) => {
+        const salt = "run:" + seed + ":" + item.key;
+        const next = { ...item };
+        if (item.choices.length > 1 && item.activity !== "counting" && item.activity !== "syllable_counting") next.choices = wsPresentShuffle(item.choices, salt);
+        const d = item.display;
+        if (d && d.kind === "tiles" && Array.isArray(d.tiles) && d.tiles.length > 1) {
+          let tiles = wsPresentShuffle(d.tiles, salt + ":tiles");
+          if (tiles.join("").toLowerCase() === String(item.word || "").toLowerCase()) tiles = [...tiles.slice(1), tiles[0]];
+          next.display = { ...d, tiles };
+        }
+        return next;
+      });
+    };
+    // "Pick a student": numbers 1 to N (N kept on this device), or names pasted for
+    // this presentation only. Names live in this component's state: never saved,
+    // sent or put in a file. Nobody comes up twice until everyone has.
+    const WS_PRESENT_PICKER_KEY = "allo_ws_present_picker_n";
+    const wsPresentPickerCount = () => {
+      try {
+        const n = Math.round(Number(window.localStorage.getItem(WS_PRESENT_PICKER_KEY)));
+        if (n >= 1 && n <= 99) return n;
+      } catch (_) {}
+      return 20;
+    };
+    const wsPresentNames = (text) => [...new Set(String(text || "").split(/[\n\r,;]+/).map((s) => s.trim()).filter(Boolean))].slice(0, 99);
+    const WsPresentPicker = ({ open, tr, button, onClose }) => {
+      const h = React.createElement;
+      const [mode, setMode] = React.useState("numbers");
+      const [count, setCount] = React.useState(wsPresentPickerCount);
+      const [namesText, setNamesText] = React.useState("");
+      const [pool, setPool] = React.useState(null);
+      const [result, setResult] = React.useState("");
+      const names = React.useMemo(() => wsPresentNames(namesText), [namesText]);
+      const everyone = mode === "names" ? names : Array.from({ length: count }, (_, i) => String(i + 1));
+      const everyoneKey = mode + "|" + everyone.join("\u0000");
+      React.useEffect(() => { setPool(null); setResult(""); }, [everyoneKey]);
+      const left = pool == null ? everyone.length : pool.length;
+      const pick = () => {
+        let rest = pool == null || !pool.length ? everyone.slice() : pool;
+        if (!rest.length) return;
+        const at = Math.floor(Math.random() * rest.length);
+        const chosen = rest[at];
+        rest = rest.filter((_, i) => i !== at);
+        setPool(rest);
+        setResult(mode === "names" ? chosen : tr("word_sounds.present_picker_number", "Number {n}", { n: chosen }));
+      };
+      const pickRef = React.useRef(null);
+      React.useEffect(() => { if (open) { try { if (pickRef.current) pickRef.current.focus(); } catch (_) {} } }, [open]);
+      const field = "mt-1 block min-h-11 w-full rounded-xl border-2 border-slate-300 bg-white px-3 font-normal text-slate-900";
+      return h("div", { id: "ws-present-picker", hidden: !open, role: "region", "aria-label": tr("word_sounds.present_picker", "Pick a student"), "data-present-picker": "true",
+        className: "z-20 w-full max-w-sm overflow-y-auto rounded-2xl border-2 border-slate-300 bg-white p-4 text-start text-slate-900 shadow-2xl",
+        style: { display: open ? undefined : "none", position: "absolute", top: "0.5rem", insetInlineEnd: "0.5rem", maxHeight: "calc(100% - 1rem)", "--wsp-focus": "#4f46e5", "--wsp-bg": "#ffffff" },
+ },
+        h("div", { role: "group", "aria-label": tr("word_sounds.present_picker", "Pick a student"), className: "mb-3 flex gap-2" },
+          [["numbers", "word_sounds.present_picker_numbers", "Numbers"], ["names", "word_sounds.present_picker_names", "Names"]].map(([id, key, english]) => h("button", {
+            key: id, type: "button", "aria-pressed": mode === id, "data-present-picker-mode": id, onClick: () => setMode(id),
+            className: button + " border-2 " + (mode === id ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-800") }, tr(key, english)))),
+        mode === "numbers" ? h("label", { className: "mb-3 block text-sm font-semibold" }, tr("word_sounds.present_picker_count", "How many students"),
+          h("input", { type: "number", min: 1, max: 99, inputMode: "numeric", value: count, "data-present-picker-count": "true", className: field,
+            onChange: (event) => {
+              const n = Math.round(Number(event.target.value));
+              if (!(n >= 1 && n <= 99)) return;
+              setCount(n);
+              try { window.localStorage.setItem(WS_PRESENT_PICKER_KEY, String(n)); } catch (_) {}
+            } }))
+          : h("label", { className: "mb-1 block text-sm font-semibold" }, tr("word_sounds.present_picker_names_label", "Names, one on each line"),
+            h("textarea", { rows: 5, value: namesText, "data-present-picker-names": "true", autoComplete: "off", spellCheck: false, className: field + " py-2",
+              onChange: (event) => setNamesText(event.target.value) })),
+        mode === "names" ? h("p", { className: "mb-3 text-sm text-slate-700" }, tr("word_sounds.present_picker_names_note", "Names stay on this screen only. They are not saved or put in any file.")) : null,
+        h("button", { type: "button", ref: pickRef, onClick: pick, disabled: !everyone.length, "data-present-pick": "true",
+          className: button + " w-full bg-indigo-700 text-lg text-white disabled:opacity-50" }, tr("word_sounds.present_picker_pick", "Pick")),
+        h("p", { "aria-live": "polite", "data-present-picked": "true", className: "my-3 min-h-[1.2em] break-words text-center text-5xl font-black leading-tight" }, result),
+        h("p", { className: "text-sm text-slate-700", "data-present-picker-left": "true" }, everyone.length && !left
+          ? tr("word_sounds.present_picker_round_done", "Everyone has had a turn. The next pick starts a new round.")
+          : tr("word_sounds.present_picker_left", "{n} left this round", { n: left })),
+        h("div", { className: "mt-3 flex flex-wrap gap-2" },
+          h("button", { type: "button", onClick: () => { setPool(null); setResult(""); }, className: button + " border-2 border-slate-300 bg-white text-sm text-slate-800" },
+            tr("word_sounds.present_picker_reset", "Start a new round")),
+          h("button", { type: "button", onClick: onClose, className: button + " border-2 border-slate-300 bg-white text-sm text-slate-800" },
+            tr("word_sounds.present_picker_close", "Close"))));
     };
     const WordSoundsPresenter = ({ words, itemOptions, activities, initialActivity, startWord, ts, onPlay, onStop, onEnd,
       fullscreenBlocked, reducedMotion, contentLang, contentDir, diLines, drawer, plan, speed, onSpeed, onDownload }) => {
       const [offlineNote, setOfflineNote] = React.useState("");
+      const [offlineBusy, setOfflineBusy] = React.useState(false);
+      const pickerButtonRef = React.useRef(null);
       const h = React.createElement;
       const tr = React.useMemo(() => wsPresentTr(ts), [ts]);
       React.useLayoutEffect(wsPresentStyles, []);
@@ -6948,7 +7125,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         const next = (activities || []).find((a) => counts[a.id]);
         return next ? next.id : initialActivity;
       });
-      const items = React.useMemo(() => wsPresentItems(activity, words, itemOptions), [activity, words, itemOptions]);
+      // Start again mixes the order with a new seed; 0 is the list's own order.
+      const [runSeed, setRunSeed] = React.useState(0);
+      const [pickerOpen, setPickerOpen] = React.useState(false);
+      const items = React.useMemo(() => wsPresentReshuffle(wsPresentItems(activity, words, itemOptions), runSeed), [activity, words, itemOptions, runSeed]);
       const [index, setIndex] = React.useState(() => {
         const at = items.findIndex((it) => it.word.toLowerCase() === String(startWord || "").trim().toLowerCase());
         return at > 0 ? at : 0;
@@ -7085,7 +7265,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (onStop) onStop();
         playPrompt();
         return () => { playTokenRef.current++; };
-      }, [itemKey]);
+      }, [itemKey, runSeed]);
       React.useEffect(() => {
         if (!thinkLeft || revealed) return undefined;
         const id = wsTimerHost.setTimeout(() => setThinkLeft((n) => (n > 0 ? n - 1 : 0)), 1000);
@@ -7142,7 +7322,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         }, 180);
       };
       const actionsRef = React.useRef({});
-      actionsRef.current = { next: () => go(1), prev: () => go(-1), reveal, end: () => onEnd && onEnd() };
+      const closePicker = () => {
+        setPickerOpen(false);
+        try { if (pickerButtonRef.current) pickerButtonRef.current.focus(); } catch (_) {}
+      };
+      const chooseNth = (n) => { const option = item && !finished ? item.choices[n - 1] : null; if (option) toggle(option.value); };
+      actionsRef.current = { next: () => go(1), prev: () => go(-1), reveal, play: () => { if (item && !finished) playPrompt(); },
+        end: () => (pickerOpen ? closePicker() : onEnd && onEnd()) };
+      for (let n = 1; n <= 9; n++) actionsRef.current["choice" + n] = () => chooseNth(n);
       React.useEffect(() => {
         const onKey = (event) => {
           const action = wsPresentKeyAction(event);
@@ -7163,6 +7350,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         if (id === activity) return;
         cancelLeave();
         setActivity(id);
+        setRunSeed(0);
         setIndex(0);
       };
       const toggle = (value) => setSelected((prev) => (item && item.multi
@@ -7311,8 +7499,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           h(WsReadingSettingsButton, { ts, container: () => (typeof document !== "undefined" && document.fullscreenElement) || (rootRef.current && rootRef.current.parentElement),
             className: button + " ws-p-btn min-w-11 border-2" }),
           h("button", {
+            type: "button", ref: pickerButtonRef, "aria-expanded": pickerOpen, "aria-controls": "ws-present-picker", "data-present-picker-open": "true",
+            onClick: () => { setPickerOpen((open) => !open); setDrawerOpen(false); },
+            className: button + " ws-p-btn border-2",
+          }, tr("word_sounds.present_picker", "Pick a student")),
+          h("button", {
             type: "button", "aria-expanded": drawerOpen, "aria-controls": "ws-present-drawer",
-            onClick: () => setDrawerOpen((open) => !open),
+            onClick: () => { setDrawerOpen((open) => !open); setPickerOpen(false); },
             className: button + " ws-p-btn border-2",
           }, tr("word_sounds.present_teacher_controls", "Teacher controls")),
           h("button", { type: "button", onClick: () => onEnd && onEnd(), className: button + " ws-p-strong" },
@@ -7330,7 +7523,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               nextActivity ? h("button", { type: "button", "data-present-next-activity": nextActivity, onClick: () => chooseActivity(nextActivity), className: button + " ws-p-accent ws-present-big" },
                 tr("word_sounds.present_next_activity", "Next activity: {activity}", { activity: activityLabel(nextActivity) })) : null,
               h("button", { type: "button", "data-present-restart": "true", className: button + " ws-p-btn ws-present-big border-2",
-                onClick: () => { setFinished(false); setRevealed(false); setSelected([]); if (position === 0) playPrompt(); else setIndex(0); } }, tr("word_sounds.present_start_again", "Start again")),
+                onClick: () => { setFinished(false); setRevealed(false); setSelected([]); setIndex(0); setRunSeed(1 + Math.floor(Math.random() * 999999999)); } }, tr("word_sounds.present_start_again", "Start again")),
               h("button", { type: "button", "aria-controls": "ws-present-drawer", "aria-expanded": drawerOpen, onClick: () => setDrawerOpen(true), className: button + " ws-p-btn ws-present-big border-2" },
                 tr("word_sounds.present_choose_activity", "Choose activity"))))
           : item ? h("div", { key: itemKey, className: "ws-p-item" + (motion === "off" ? "" : leaving ? " ws-p-out" : " ws-p-in") },
@@ -7343,6 +7536,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               tr("word_sounds.present_no_items_activity", "No items are ready for this activity. Choose another activity in Teacher controls."))),
         cheer && look.mascot !== "off" && mascotReady ? h("div", { key: "cheer" + cheer, "aria-hidden": "true", "data-present-cheer": look.mascot,
           className: "ws-p-cheer" + (reduced ? " ws-p-cheer-still" : "") }, wsMascotGroup(look.mascot, "win", 140, "-ws-present")) : null,
+        // Kept mounted while presenting so pasted names last until the presentation ends.
+        h(WsPresentPicker, { open: pickerOpen, tr, button, onClose: closePicker }),
         drawerOpen ? h("div", {
           id: "ws-present-drawer", role: "region", "aria-label": tr("word_sounds.present_teacher_controls", "Teacher controls"),
           className: "z-10 w-full max-w-sm overflow-y-auto border-s border-slate-300 bg-white p-4 text-start text-slate-900 shadow-2xl",
@@ -7375,8 +7570,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               ];
             })()),
           typeof onDownload === "function" ? h("div", { className: "mb-4", "data-present-offline": "true" },
-            h("button", { type: "button", onClick: () => { const result = onDownload(look); setOfflineNote(result && result.message ? result.message : ""); },
-              className: button + " w-full border-2 border-slate-300 bg-white text-start text-slate-800" }, tr("word_sounds.present_offline_download", "Download for offline use")),
+            h("button", { type: "button", disabled: offlineBusy, "aria-busy": offlineBusy || undefined, onClick: () => {
+              if (offlineBusy) return;
+              setOfflineBusy(true);
+              Promise.resolve(onDownload(look, (note) => setOfflineNote(note || "")))
+                .then((result) => setOfflineNote(result && result.message ? result.message : ""), () => setOfflineNote(""))
+                .then(() => setOfflineBusy(false));
+            }, className: button + " w-full border-2 border-slate-300 bg-white text-start text-slate-800 disabled:opacity-60" }, tr("word_sounds.present_offline_download", "Download for offline use")),
             h("p", { className: "mt-1 text-sm text-slate-700" }, tr("word_sounds.present_offline_help", "One file with every ready activity and its sounds, in this look. It works without internet.")),
             offlineNote ? h("p", { role: "status", className: "mt-1 text-sm font-semibold text-slate-800" }, offlineNote) : null) : null,
           h("div", { role: "group", "aria-labelledby": "ws-present-sound-label", className: "mb-4", "data-present-sound": "true" },
@@ -7451,7 +7651,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           tr("word_sounds.present_next", "Next")),
         ring,
         h("p", { className: "ws-p-muted w-full text-center text-sm sm:w-auto" },
-          tr("word_sounds.present_keys_help", "→ or Space: next · ←: previous · R: reveal · Esc: end"))));
+          tr("word_sounds.present_keys_help", "→ or Space: next · ←: previous · R: reveal · Esc: end") + " · " +
+            tr("word_sounds.present_keys_choices", "1–9: pick a choice · P: play again"))));
     };
     // END WORD SOUNDS PRESENT MODE
 
@@ -7490,18 +7691,28 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".ws-print-words-dense{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px 16px;font-size:20px}",
       ".ws-print-letter ol{padding-inline-start:1.6em}.ws-print-letter ol li{margin:10px 0}",
       ".print-bar button[aria-pressed=true]{background:#000;color:#fff}",
-      // Activity worksheets.
+      // Activity worksheets. Type is in rem, so reading settings and Large print (html font-size) scale it.
       ".ws-ws-list{list-style:none;margin:16px 0 0;padding:0}.ws-ws-item{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #000;break-inside:avoid;page-break-inside:avoid}",
-      ".ws-ws-num{min-width:1.6em;font-size:22px;font-weight:800}.ws-ws-body{flex:1;min-width:0}.ws-ws-prompt{margin:0 0 8px;font-size:20px;font-weight:700}",
+      ".ws-ws-num{min-width:1.6em;font-size:1.375rem;font-weight:800}.ws-ws-body{flex:1;min-width:0}.ws-ws-prompt{margin:0 0 8px;font-size:1.25rem;font-weight:700}",
       ".ws-ws-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center}.ws-ws-cue img{max-width:1.2in;max-height:1in;object-fit:contain}.ws-ws-listen{font-weight:700}",
-      ".ws-ws-choices{display:flex;flex-wrap:wrap;gap:10px;list-style:none;margin:8px 0 0;padding:0}.ws-ws-choice{border:2px solid #000;border-radius:999px;padding:4px 14px;font-size:22px;font-weight:700}",
-      ".ws-ws-choice img{display:block;max-width:1in;max-height:0.8in;object-fit:contain}.ws-ws-big{font-size:40px;font-weight:800;letter-spacing:.06em;overflow-wrap:break-word}",
-      ".ws-ws-boxes{display:flex;max-width:6in}.ws-ws-box{width:0.7in;height:0.7in;flex:0 1 0.7in;min-width:0;box-sizing:border-box;border:3px solid #000}.ws-ws-box+.ws-ws-box{margin-inline-start:-3px}",
+      ".ws-ws-choices{display:flex;flex-wrap:wrap;gap:10px;list-style:none;margin:8px 0 0;padding:0}.ws-ws-choice{border:2px solid #000;border-radius:999px;padding:4px 14px;font-size:1.375rem;font-weight:700}",
+      ".ws-ws-choice img{display:block;max-width:1in;max-height:0.8in;object-fit:contain}.ws-ws-big{font-size:2.5rem;font-weight:800;letter-spacing:.06em;overflow-wrap:break-word}",
+      ".ws-ws-blank{display:inline-block;min-width:1.4em;height:1.15em;margin:0 .08em;box-sizing:border-box;border:3px solid #000;border-radius:6px;vertical-align:-.2em}",
+      ".ws-ws-boxes{display:flex;max-width:min(6in,100%)}.ws-ws-box{width:4.2rem;flex:0 1 4.2rem;aspect-ratio:1/1;min-width:0;box-sizing:border-box;border:3px solid #000}.ws-ws-box+.ws-ws-box{margin-inline-start:-3px}",
       ".ws-ws-map{display:flex;flex-wrap:wrap;gap:8px}.ws-ws-map div{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700}",
-      ".ws-ws-tiles{display:flex;flex-wrap:wrap;gap:8px}.ws-ws-tile{border:2px solid #000;border-radius:8px;padding:4px 12px;font-size:28px;font-weight:800}",
+      ".ws-ws-tiles{display:flex;flex-wrap:wrap;gap:8px}.ws-ws-tile{border:2px solid #000;border-radius:8px;padding:4px 12px;font-size:1.75rem;font-weight:800}",
       ".ws-ws-write{height:0.55in;border-top:1px dashed #000;border-bottom:2px solid #000;margin-top:10px;max-width:6in}",
-      ".ws-ws-trace{font-size:110px;line-height:1;font-weight:400;color:transparent;-webkit-text-stroke:2px #000;paint-order:stroke}",
-      ".ws-ws-key{break-before:page;page-break-before:always}.ws-ws-key li{margin:6px 0;font-size:18px}",
+      // Handwriting guides: top line at the cap height, dashed midline at the x-height, letters on the baseline
+      // (Arial metrics; Liberation Sans and Arimo match them). Other scripts get an even guide, letters centred.
+      ".ws-ws-guide{position:relative;display:flex;align-items:flex-end;gap:.22em;box-sizing:content-box;height:.716em;max-width:7in;margin:.25em 0 .4em;border-top:2px solid #000;border-bottom:2px solid #000;font:400 5.5rem/1 Arial,Helvetica,'Liberation Sans',Arimo,sans-serif}",
+      ".ws-ws-guide::before{content:'';position:absolute;inset-inline:0;top:.197em;border-top:2px dashed #000}",
+      ".ws-ws-guide-plain{height:1.1em;align-items:center;font-family:inherit}.ws-ws-guide-plain::before{top:50%}",
+      ".ws-ws-trace{line-height:1;margin-bottom:-.1535em;color:transparent;-webkit-text-stroke:2px #000;paint-order:stroke}.ws-ws-guide-plain .ws-ws-trace{margin-bottom:0}",
+      ".ws-ws-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}.ws-ws-form{font-size:1.125rem;font-weight:700;border:2px solid #000;border-radius:8px;padding:0 10px}",
+      ".ws-ws-section{margin-top:20px}.ws-ws-section h2{margin-bottom:2px}.ws-ws-blank-rows{margin-top:14px}.ws-ws-blank-rows .ws-ws-guide{font-size:3.25rem}",
+      ".ws-print-head .ws-print-word{border:4px solid #000;border-radius:14px;padding:6px 18px}.ws-print-kicker{margin:0;font-size:1.125rem;font-weight:700}.ws-print-pic img{max-height:85%}",
+      ".ws-ws-key{break-before:page;page-break-before:always}.ws-ws-key li{margin:6px 0;font-size:1.125rem}.ws-ws-key h3{margin:14px 0 4px}",
+      ".ws-ws-newpage{break-before:page;page-break-before:always}.ws-ws-teacher{margin-top:24px}.ws-ws-teacher li{margin:6px 0;font-size:1.125rem}",
       ".ws-editing [data-ws-edit]{outline:2px dashed #1d4ed8;outline-offset:2px;cursor:text}.ws-editing [data-ws-edit]:focus{outline-style:solid}",
       "@media print{.print-bar{display:none}body{padding:0}[data-ws-edit]{outline:none !important}}",
     ].join("");
@@ -7514,7 +7725,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".ws-print-words{font-size:min(1.875rem,48px);grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}",
       ".ws-print-words-dense{font-size:min(1.25rem,32px);grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}",
       ".ws-print-card .ws-print-word,.ws-print-cue .ws-print-cue-word{line-height:1.1 !important}",
+      // Worksheet type is in rem already; these caps keep a very large reader size on the page.
+      ".ws-ws-prompt{font-size:min(1.25rem,32px)}.ws-ws-choice,.ws-ws-num{font-size:min(1.375rem,34px)}.ws-ws-big{font-size:min(2.5rem,60px)}.ws-ws-tile{font-size:min(1.75rem,44px)}",
+      ".ws-ws-box{width:min(4.2rem,1.1in);flex-basis:min(4.2rem,1.1in)}.ws-ws-guide{font-size:min(5.5rem,112px)}",
     ].join("");
+    // "Large print": html font-size is set 1.5 times larger after these, so every rem grows.
+    const WS_PRINT_LARGE_CSS = ".ws-print-box{flex-basis:1.15in;width:1.15in}.ws-print-cue{flex-basis:1.8in;width:1.8in}.ws-print-cue img{max-width:1.7in;max-height:1.25in}" +
+      ".ws-ws-cue img{max-width:1.6in;max-height:1.3in}.ws-ws-choice img{max-width:1.3in;max-height:1in}";
     // A word's size in px: its default size times the reader's scale, no wider
     // than its box and no taller than the room left beside the picture. The
     // width is measured in the reader's font (loaded in the app), bold, plus
@@ -7599,7 +7816,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       "var els=document.querySelectorAll('[data-ws-edit]');for(var i=0;i<els.length;i++){if(on)els[i].setAttribute('contenteditable','true');else els[i].removeAttribute('contenteditable');}" +
       "if(on&&els[0])els[0].focus();}function wsFit(el){var max=parseFloat(el.getAttribute('data-ws-fit'));if(!(max>0))return;var box=el.parentNode,size=max,one=!/\\s/.test(el.textContent.trim());" +
       "el.style.whiteSpace=one?'nowrap':'';el.style.fontSize=size+'px';while(size>12&&(el.scrollWidth>el.clientWidth+1||box.scrollHeight>box.clientHeight+1)){size-=1;el.style.fontSize=size+'px';}el.style.whiteSpace='';}" +
-      "document.addEventListener('input',function(e){var t=e.target,el=t&&t.closest?t.closest('[data-ws-fit]'):null;if(el)wsFit(el);});</script>";
+      "document.addEventListener('input',function(e){var t=e.target,el=t&&t.closest?t.closest('[data-ws-fit]'):null;if(el)wsFit(el);});" +
+      // "As a separate printout": the key waits in a <template> and opens in a window of its own from this page's button.
+      "function wsOpenKey(){var t=document.getElementById('ws-key-doc'),m=document.getElementById('ws-key-blocked'),w=null;if(!t)return;try{w=window.open('','_blank');}catch(e){w=null;}" +
+      "if(!w){if(m)m.hidden=false;return;}if(m)m.hidden=true;var r=document.documentElement,a=function(n){var v=r.getAttribute(n);return v?' '+n+'=\"'+v.replace(/\"/g,'')+'\"':'';};" +
+      "w.document.open();w.document.write('<!DOCTYPE html><html'+a('lang')+a('dir')+'><head>'+document.head.innerHTML+'</head><body>'+t.innerHTML+'</body></html>');w.document.close();" +
+      "try{w.document.title=t.getAttribute('data-title')||'';}catch(e){}setTimeout(function(){try{w.focus();w.print();}catch(e){}},400);}</script>";
     const wsPrintCards = (entries, perPage, wordAttrs, fit) => {
       const base = perPage === 8 ? 52 : 64;
       // With fit: the card's text box is 323px wide (A4) and 276px or 199px
@@ -7610,9 +7832,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       };
       const pages = [];
       for (let i = 0; i < entries.length; i += perPage) pages.push(entries.slice(i, i + perPage));
+      // Sorting cards: e.head marks a group header card (e.kicker: its caption); e.pictureOnly prints the picture alone.
       return pages.map((page) => '<section class="ws-print-page ws-print-' + perPage + '">' + page.map((e) => {
+        if (e.pictureOnly && e.image) return '<div class="ws-print-card ws-print-pic"' + wordAttrs + ">" + wsPrintImg(e) + "</div>";
         const px = size(e);
-        return '<div class="ws-print-card"' + wordAttrs + ">" + wsPrintImg(e) + '<p class="ws-print-word" data-ws-edit spellcheck="false" data-ws-fit="' + px + '" style="font-size:' +
+        return '<div class="ws-print-card' + (e.head ? " ws-print-head" : "") + '"' + wordAttrs + ">" +
+          (e.kicker ? '<p class="ws-print-kicker" data-ws-edit>' + wsPrintEsc(e.kicker) + "</p>" : "") + wsPrintImg(e) + '<p class="ws-print-word" data-ws-edit spellcheck="false" data-ws-fit="' + px + '" style="font-size:' +
           px + 'px">' + wsPrintEsc(e.word) + "</p></div>";
       }).join("") +
         "</section>").join("");
@@ -7626,15 +7851,23 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     // A row with no picture gets a blank cue (a printed word would give the
     // sounds away), and a teacher page lists every word by row number. Long
     // words get smaller type, and more than six boxes shrink to share 5.4in.
+    // text.studentAttrs: dir/lang of the student's part when it is in the lesson's language, not the page's.
+    const wsPrintStudent = (attrs, html) => (attrs ? "<div" + attrs + ">" + html + "</div>" : html);
     const wsPrintBoxes =(entries, showWord, wordAttrs, text, fit) =>
-      "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1>" + wsPrintNameLine(text.name) + "<p data-ws-edit>" + wsPrintEsc(text.directions) + "</p>" +
+      wsPrintStudent(text.studentAttrs, "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1>" + wsPrintNameLine(text.name) + "<p data-ws-edit>" + wsPrintEsc(text.directions) + "</p>" +
       '<ol class="ws-print-rows">' + entries.map((e) =>
         '<li><div class="ws-print-row"' + wordAttrs + '><div class="ws-print-cue">' + wsPrintImg(e) +
         (showWord ? '<span class="ws-print-cue-word" data-ws-edit spellcheck="false" style="font-size:' + wsPrintCueSize(e.word, fit) +
           'px">' + wsPrintEsc(e.word) + "</span>" : e.image ? "" : '<span class="ws-print-cue-blank"></span>') +
-        '</div><div class="ws-print-boxes">' + '<span class="ws-print-box"></span>'.repeat(e.sounds) + "</div></div></li>").join("") + "</ol>" +
+        '</div><div class="ws-print-boxes">' + '<span class="ws-print-box"></span>'.repeat(e.sounds) + "</div></div></li>").join("") + "</ol>") +
       (showWord ? "" : '<section class="ws-ws-key ws-print-teacher"><h2 data-ws-edit>' + wsPrintEsc(text.keyTitle) + "</h2>" +
         (entries.some((e) => !e.image) ? "<p data-ws-edit>" + wsPrintEsc(text.keyNote) + "</p>" : "") + "<ol" + wordAttrs + ">" + entries.map((e) => "<li>" + wsPrintEsc(e.word) + (e.image ? "" : " *") + "</li>").join("") + "</ol></section>");
+    // Blank sheet for a teacher to fill in by hand: empty picture frames with sound boxes, then handwriting rows.
+    const wsPrintBlank = (boxes, text) =>
+      wsPrintStudent(text.studentAttrs, "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1>" + wsPrintNameLine(text.name) + "<p data-ws-edit>" + wsPrintEsc(text.directions) + "</p>" +
+        '<ol class="ws-print-rows">' + ('<li><div class="ws-print-row"><div class="ws-print-cue"><span class="ws-print-cue-blank"></span></div><div class="ws-print-boxes">' +
+          '<span class="ws-print-box"></span>'.repeat(boxes) + "</div></div></li>").repeat(5) + "</ol>" +
+        '<div class="ws-ws-blank-rows" aria-hidden="true">' + '<div class="ws-ws-guide ws-ws-guide-plain"></div>'.repeat(3) + "</div>");
     const wsPrintHome = (entries, wordAttrs, text) =>
       '<div class="ws-print-letter">' + wsPrintNameLine(text.name) + "<h1 data-ws-edit>" + wsPrintEsc(text.title) + "</h1><p data-ws-edit>" + wsPrintEsc(text.greeting) +
       "</p><p data-ws-edit>" + wsPrintEsc(text.intro) + '</p><ul class="ws-print-words' + (entries.length > 24 ? " ws-print-words-dense" : "") + '"' + wordAttrs + ">" +
@@ -7646,35 +7879,136 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     const WS_TAKE_HOME_ANSWER_HELP = ["wordShown", "spelling_first_letter", "spelling_vowels", "spelling_more_letters"];
     const wsTakeHomeHelped = (item) => !!(item && item.supports && WS_TAKE_HOME_ANSWER_HELP.some((name) => item.supports[name] > 0));
     const WS_WORKSHEET_CUE = ["isolation", "segmentation", "counting", "syllable_counting", "mapping", "spelling_bee", "missing_letter", "letter_tracing", "orthography", "word_scramble", "rhyming"];
-    const wsPrintWorksheet = (items, wordAttrs, text, picture, withKey) => {
+    // Listening items: the sheet does not show the word, so the teacher needs a list of what to say.
+    const WS_PRINT_SAY = ["isolation", "blending", "segmentation", "counting", "syllable_counting", "syllable_blending", "spelling_bee", "orthography"];
+    // The word is the answer here, so a picture's alt text must not spell it.
+    const WS_PRINT_NEUTRAL_ALT = ["isolation", "segmentation", "counting", "syllable_counting", "spelling_bee", "missing_letter", "orthography", "word_scramble"];
+    // Number choices stay in counting order in every version.
+    const WS_PRINT_ORDERED = ["counting", "syllable_counting"];
+    // What the teacher reads for a blending item: its sounds, or its syllables when known (recorded parts carry no text).
+    const wsPrintSayParts = (item) => {
+      if (item.activity !== "blending" && item.activity !== "syllable_blending") return [];
+      const texts = (item.audio || []).map((step) => String((step && step.text) || "").trim());
+      if (texts.length && texts.every(Boolean)) return texts;
+      const known = item.entry && Array.isArray(item.entry.syllables) ? item.entry.syllables.map((s) => String(s == null ? "" : s).trim()).filter(Boolean) : [];
+      return item.activity === "syllable_blending" && known.length > 1 && known.length === texts.length ? known : [];
+    };
+    // Version A keeps the Present order untouched. B, C and a new mix reorder the items, and each item's
+    // choices and tiles, from a seed; then How many, then Easier (the right answer plus one wrong choice).
+    // The answer key is always built from the objects this returns.
+    const wsPrintPrepare = (items, opts = {}) => {
+      const version = ["B", "C", "mix"].includes(opts.version) ? opts.version : "A";
+      const seed = version === "mix" ? "mix:" + opts.seed : version;
+      const letters = new Set();
+      // One tracing item per letter: cat, cup and can are all "c".
+      let out = (Array.isArray(items) ? items : []).filter((item) => {
+        if (item.activity !== "letter_tracing" || !item.display) return true;
+        const letter = String(item.display.text || "").normalize("NFC");
+        if (letters.has(letter)) return false;
+        letters.add(letter);
+        return true;
+      });
+      if (version !== "A") out = wsPresentShuffle(out, "form:" + seed).map((item) => {
+        const salt = seed + ":" + String(item.word || "").toLowerCase();
+        const next = { ...item };
+        if (item.choices.length > 1 && !WS_PRINT_ORDERED.includes(item.activity)) next.choices = wsPresentShuffle(item.choices, salt);
+        const d = item.display;
+        if (d && d.kind === "tiles" && Array.isArray(d.tiles) && d.tiles.length > 1) {
+          let tiles = wsPresentShuffle(d.tiles, salt + ":tiles");
+          if (tiles.join("").toLowerCase() === String(item.word || "").toLowerCase()) tiles = [...tiles.slice(1), tiles[0]];
+          next.display = { ...d, tiles };
+        }
+        return next;
+      });
+      const count = Number(opts.count) || 0;
+      if (count > 0) out = out.slice(0, count);
+      if (opts.easier) out = out.map((item) => {
+        const right = (c) => (item.correct || []).some((v) => String(v).toLowerCase() === String(c.value).toLowerCase());
+        const wrong = item.choices.find((c) => !right(c));
+        return item.choices.length > 2 && wrong && item.choices.some(right) ? { ...item, choices: item.choices.filter((c) => right(c) || c === wrong) } : item;
+      });
+      return out;
+    };
+    // One key line: the word, then its answer (a missing letter is the letter itself), the sounds when the
+    // answer is not already the sounds, and for blending what to say.
+    const wsPrintKeyLine = (item, text) => {
       const esc = wsPrintEsc;
+      const answer = item.activity === "missing_letter" && item.correct && item.correct[0] ? String(item.correct[0]) : String(item.answer.label == null ? "" : item.answer.label);
+      const sounds = Array.isArray(item.answer.sounds) ? item.answer.sounds.map((s) => "/" + s + "/").join(" ") : "";
+      const say = wsPrintSayParts(item);
+      return (item.word && String(item.word).toLowerCase() !== answer.toLowerCase() ? "<strong>" + esc(item.word) + "</strong> — " : "") + esc(answer) +
+        (sounds && sounds !== answer ? " (" + esc(sounds) + ")" : "") + (say.length ? " · " + esc(text.say) + " " + esc(say.join(" ")) : "");
+    };
+    const wsPrintSayLine = (item) => {
+      const say = wsPrintSayParts(item);
+      return say.length ? wsPrintEsc(say.join(" ")) + " (" + wsPrintEsc(item.word) + ")" : wsPrintEsc(item.word);
+    };
+    // sections: [{ heading, directions, items }]; a single section with no heading is a plain worksheet, more
+    // make a review sheet (numbers run on). key: "last" (or true) puts the answer key on the last page;
+    // "separate" keeps the key and the words to say in a <template> the page's own button prints; "none"
+    // (or false) leaves the key off. Unless the key is on the last page, a listening sheet ends with a
+    // teacher page of what to say for each number.
+    const wsPrintSheets = (sections, wordAttrs, text, picture, key) => {
+      const esc = wsPrintEsc;
+      const mode = key === true || key === "last" ? "last" : key === "separate" ? "separate" : "none";
+      const review = sections.length > 1 || !!(sections[0] && sections[0].heading);
+      let count = 0;
+      const numbered = sections.map((s) => ({ ...s, rows: s.items.map((item) => ({ item, n: ++count })) }));
       const choiceList = (item) => (item.choices.length ? '<ul class="ws-ws-choices"' + wordAttrs + ">" + item.choices.map((c) =>
-        '<li class="ws-ws-choice">' + (c.image ? '<img src="' + esc(c.image) + '" alt="' + esc(c.label) + '">' : esc(c.label)) + "</li>").join("") + "</ul>" : "");
-      const boxes = (count) => '<div class="ws-ws-boxes">' + '<span class="ws-ws-box"></span>'.repeat(Math.max(0, count)) + "</div>";
-      const body = (item) => {
+        (c.image ? '<li class="ws-ws-choice"><img src="' + esc(c.image) + '" alt="' + esc(c.label) + '">' : '<li class="ws-ws-choice" data-ws-edit spellcheck="false">' + esc(c.label)) + "</li>").join("") + "</ul>" : "");
+      const boxes = (n) => '<div class="ws-ws-boxes">' + '<span class="ws-ws-box"></span>'.repeat(Math.max(0, n)) + "</div>";
+      // Five outlined letters on a three-line guide, then an empty guide to write on. The x-height midline
+      // fits Latin, Greek and Cyrillic; any other script gets an even guide with the letters centred.
+      const guides = (letter) => {
+        const cls = "ws-ws-guide" + (/^[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}]/u.test(letter) ? "" : " ws-ws-guide-plain");
+        return '<div class="' + cls + '"' + wordAttrs + ">" + ('<span class="ws-ws-trace">' + esc(letter) + "</span>").repeat(5) + "</div>" +
+          '<div class="' + cls + '" aria-hidden="true"></div>';
+      };
+      const body = (item, n) => {
         const d = item.display || {};
-        const cue = WS_WORKSHEET_CUE.includes(item.activity) && picture(item.word) ? '<span class="ws-ws-cue"><img src="' + esc(picture(item.word)) + '" alt="' + esc(item.word) + '"></span>' : "";
+        const src = WS_WORKSHEET_CUE.includes(item.activity) ? picture(item.word) : null;
+        const alt = WS_PRINT_NEUTRAL_ALT.includes(item.activity) ? String(text.picture || "Picture {n}").replace(/\{n\}/g, n) : item.word;
+        const cue = src ? '<span class="ws-ws-cue"><img src="' + esc(src) + '" alt="' + esc(alt) + '"></span>' : "";
+        const tracing = item.activity === "letter_tracing" && d.kind === "word";
+        const edit = ' data-ws-edit spellcheck="false"';
         let shown = "";
         if (d.kind === "sounds" || d.kind === "parts") shown = '<span class="ws-ws-listen">' + esc(text.listen) + "</span>";
-        else if (d.kind === "boxes") shown = boxes(d.count);
-        else if (d.kind === "letters") shown = boxes(d.count);
-        else if (d.kind === "word" && item.activity === "letter_tracing") shown = '<span class="ws-ws-trace"' + wordAttrs + ">" + esc(d.text) + "</span>";
-        else if (d.kind === "word") shown = '<span class="ws-ws-big"' + wordAttrs + ">" + esc(d.text) + "</span>";
-        else if (d.kind === "blank_word") shown = '<span class="ws-ws-big"' + wordAttrs + ">" + d.letters.map((l, i) => (i === d.hidden ? "_" : esc(l))).join("") + "</span>";
-        else if (d.kind === "tiles") shown = '<div class="ws-ws-tiles"' + wordAttrs + ">" + d.tiles.map((t) => '<span class="ws-ws-tile">' + esc(t) + "</span>").join("") + "</div>";
+        else if (d.kind === "boxes" || d.kind === "letters") shown = boxes(d.count);
+        else if (tracing) shown = "";
+        else if (d.kind === "word") shown = '<span class="ws-ws-big"' + edit + wordAttrs + ">" + esc(d.text) + "</span>";
+        else if (d.kind === "blank_word") shown = '<span class="ws-ws-big"' + edit + wordAttrs + ">" + d.letters.map((l, i) => (i === d.hidden ? '<span class="ws-ws-blank"></span>' : esc(l))).join("") + "</span>";
+        else if (d.kind === "tiles") shown = '<div class="ws-ws-tiles"' + wordAttrs + ">" + d.tiles.map((t) => '<span class="ws-ws-tile"' + edit + ">" + esc(t) + "</span>").join("") + "</div>";
         else if (d.kind === "map") shown = '<div class="ws-ws-map"' + wordAttrs + ">" + d.sounds.map((s) => "<div>/" + esc(s) + '/<span class="ws-ws-box"></span></div>').join("") + "</div>";
         else if (d.kind === "text") shown = '<p class="ws-ws-prompt"' + wordAttrs + ">" + d.parts.map((p) => (p.text != null ? esc(p.text) : esc(p.before) + " ______ " + esc(p.after))).join(" ") + "</p>";
-        const write = item.activity === "word_scramble" || item.activity === "letter_tracing" ? '<div class="ws-ws-write"></div>' : "";
+        const write = item.activity === "word_scramble" ? '<div class="ws-ws-write"></div>' : "";
         return '<p class="ws-ws-prompt" data-ws-edit>' + esc(item.promptText) + (item.multi ? " " + esc(text.all) : "") + "</p>" +
-          '<div class="ws-ws-row">' + cue + shown + "</div>" + choiceList(item) + write;
+          '<div class="ws-ws-row">' + cue + shown + "</div>" + (tracing ? guides(String(d.text || "")) : "") + choiceList(item) + write;
       };
-      const say = (item) => (item.activity === "blending" || item.activity === "syllable_blending"
-        ? " · " + esc(text.say) + " " + item.audio.map((step) => esc(step.text || "")).filter(Boolean).join(" ") : "");
-      const key = withKey ? '<section class="ws-ws-key"><h2 data-ws-edit>' + esc(text.keyTitle) + "</h2><ol" + wordAttrs + ">" + items.map((item) =>
-        "<li>" + (item.word && String(item.word).toLowerCase() !== String(item.answer.label || "").toLowerCase() ? "<strong>" + esc(item.word) + "</strong> — " : "") + esc(item.answer.label) + (item.answer.sounds ? " (" + item.answer.sounds.map((s) => "/" + esc(s) + "/").join(" ") + ")" : "") + say(item) + "</li>").join("") + "</ol></section>" : "";
-      return "<h1 data-ws-edit>" + esc(text.title) + "</h1>" + wsPrintNameLine(text.name) + '<p data-ws-edit>' + esc(text.directions) + "</p>" +
-        '<ol class="ws-ws-list">' + items.map((item, i) => '<li class="ws-ws-item"><span class="ws-ws-num">' + (i + 1) + '.</span><div class="ws-ws-body">' + body(item) + "</div></li>").join("") + "</ol>" + key;
+      const list = (rows) => '<ol class="ws-ws-list">' + rows.map(({ item, n }) => '<li class="ws-ws-item"><span class="ws-ws-num">' + n + '.</span><div class="ws-ws-body">' + body(item, n) + "</div></li>").join("") + "</ol>";
+      const title = text.form ? '<div class="ws-ws-head"><h1 data-ws-edit>' + esc(text.title) + '</h1><span class="ws-ws-form">' + esc(text.form) + "</span></div>" : "<h1 data-ws-edit>" + esc(text.title) + "</h1>";
+      const sheet = title + wsPrintNameLine(text.name) + (text.directions ? "<p data-ws-edit>" + esc(text.directions) + "</p>" : "") + (review
+        ? numbered.map((s) => '<section class="ws-ws-section"><h2 data-ws-edit>' + esc(s.heading) + "</h2>" + (s.directions ? "<p data-ws-edit>" + esc(s.directions) + "</p>" : "") + list(s.rows) + "</section>").join("")
+        : list(numbered.length ? numbered[0].rows : []));
+      // Teacher pages, in the page's (interface) language: one list per section, numbered like the sheet.
+      const lists = (line, only) => {
+        const parts = numbered.filter((s) => s.rows.length && (!only || s.items.some(only)));
+        if (!review) return "<ol" + wordAttrs + ">" + (parts.length ? parts[0].rows.map(({ item }) => "<li>" + line(item) + "</li>").join("") : "") + "</ol>";
+        return parts.map((s) => "<h3>" + esc(s.heading) + '</h3><ol start="' + s.rows[0].n + '"' + wordAttrs + ">" + s.rows.map(({ item }) => "<li>" + line(item) + "</li>").join("") + "</ol>").join("");
+      };
+      const teacher = text.teacherAttrs || "";
+      const form = text.keyForm ? " · " + esc(text.keyForm) : "";
+      const keyPage = (cls) => '<section class="' + cls + '"' + teacher + "><h2 data-ws-edit>" + esc(text.keyTitle) + form + "</h2>" + lists((item) => wsPrintKeyLine(item, text)) + "</section>";
+      const listening = (item) => WS_PRINT_SAY.includes(item.activity);
+      const sayPage = (cls) => (numbered.some((s) => s.items.some(listening))
+        ? '<section class="' + cls + ' ws-ws-say"' + teacher + "><h2 data-ws-edit>" + esc(text.sayTitle) + form + "</h2><p data-ws-edit>" + esc(text.sayNote) + "</p>" + lists(wsPrintSayLine, listening) + "</section>" : "");
+      const student = wsPrintStudent(text.studentAttrs, sheet);
+      if (mode === "last") return student + keyPage("ws-ws-key");
+      if (mode === "none") return student + sayPage("ws-ws-teacher ws-ws-newpage");
+      return student + '<template id="ws-key-doc" data-title="' + esc(text.keyTitle) + form + '"><div class="print-bar"><button type="button" onclick="window.print()">' +
+        esc(text.print || "Print") + "</button></div><main>" + keyPage("ws-ws-teacher") + sayPage("ws-ws-teacher") + "</main></template>";
     };
+    // One activity's worksheet (key: see wsPrintSheets).
+    const wsPrintWorksheet = (items, wordAttrs, text, picture, key) => wsPrintSheets([{ items }], wordAttrs, text, picture, key);
     // head: a font <link> from the font library; css: reader rules after the print CSS.
     const wsPrintDocument = ({ title, docAttrs, bar, body, head, css }) =>
       "<!DOCTYPE html><html" + docAttrs + '><head><meta charset="utf-8"><title>' + wsPrintEsc(title) + "</title>" +
@@ -22184,24 +22518,34 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         try { return DI.presenterLines(activity, entry, { language: wordSoundsLanguage || "en", words: preloadedWords, voice: selectedVoice }); } catch (_) { return null; }
       }, [wordSoundsLanguage, preloadedWords, selectedVoice, presentDiReady]);
       // One file for a room with no internet or no AlloFlow: every ready activity, its clips and pictures.
-      const downloadPresentOffline = (lookOverride) => {
+      // onProgress gets a status line while sounds are converted.
+      const downloadPresentOffline = async (lookOverride, onProgress) => {
+        const progress = (text) => { if (typeof onProgress === "function") { try { onProgress(text); } catch (_) {} } };
         const look = lookOverride || wsPresentLoadLook();
         const palette = look.theme === "custom" && look.custom ? wsPresentCustomTheme(look.custom)
           : WS_PRESENT_THEMES[look.theme === "auto" ? "classic" : look.theme] || WS_PRESENT_THEMES.classic;
-        const fontOption = look.font ? wsPresentFonts().find((f) => f.id === look.font) : null;
+        const fontOption = wsPresentFontOption(look.font);
         const clips = {}, clipIds = new Map(), images = {}, imageIds = new Map();
         const bank = typeof window !== "undefined" ? window.__ALLO_PHONEME_AUDIO_BANK : null;
         const keep = (map, ids, prefix, value) => {
           if (!ids.has(value)) { const id = prefix + ids.size; ids.set(value, id); map[id] = value; }
           return ids.get(value);
         };
+        // A sound plays from the shared recordings under every name the game tries (/igh/ is "ie", /c/ is "k").
+        const bankClip = (sound) => {
+          if (!bank) return null;
+          for (const key of WS_CORE.phonemeBankCandidates(sound)) {
+            try { const value = bank[key]; if (typeof value === "string" && /^data:audio\//.test(value)) return value; } catch (_) {}
+          }
+          return null;
+        };
         const clipFor = (step) => {
           if (!step) return null;
           const text = step.text ? String(step.text) : "";
           let value = step.src || null;
           if (!value && text) {
-            const sound = /^\/.+\/$/.test(text) ? text.replace(/^\/+|\/+$/g, "").trim().toLowerCase() : "";
-            value = sound ? (bank && typeof bank[sound] === "string" ? bank[sound] : null) : portableTtsSrcFor(text);
+            const sound = /^\/.+\/$/.test(text) ? text.replace(/^\/+|\/+$/g, "").trim() : "";
+            value = sound ? bankClip(sound) : portableTtsSrcFor(text);
           }
           return typeof value === "string" && /^data:audio\//.test(value) ? keep(clips, clipIds, "c", value) : null;
         };
@@ -22214,12 +22558,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           return d;
         };
         const order = [...new Set([...(activitySequence || []), ...presentActivities.map((a) => a.id)])];
-        const activities = order.filter((id) => WS_PRESENT_ACTIVITIES.includes(id)).map((id) => ({ id, items: wsPresentItems(id, preloadedWords, presentItemOptions) }))
+        let activities = order.filter((id) => WS_PRESENT_ACTIVITIES.includes(id)).map((id) => ({ id, items: wsPresentItems(id, preloadedWords, presentItemOptions) }))
           .filter((a) => a.items.length).map((a) => ({
             id: a.id, label: (presentActivities.find((x) => x.id === a.id) || {}).label || a.id,
             items: a.items.map((it) => ({
               word: it.word, multi: !!it.multi, correct: it.correct,
               prompt: it.prompt.text != null ? it.prompt.text : presentTr(it.prompt.key, it.prompt.english, it.prompt.params),
+              // A prompt from the interface's strings is read in the interface language; a task's own instruction is lesson text.
+              uiPrompt: it.prompt.text == null,
               audio: steps(it.audio), display: displayOf(it.display),
               choices: it.choices.map((c) => ({ value: c.value, label: c.label, image: imageFor(c.image) })),
               answer: { label: it.answer.label, sounds: it.answer.sounds || null, letters: it.answer.letters || null, parts: it.answer.parts || null,
@@ -22227,20 +22573,83 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             })),
           }));
         if (!activities.length) return { ok: false, message: presentTr("word_sounds.present_offline_none", "No activity has ready items to download.") };
+        // Only data: pictures travel: a blob: picture ends with this tab and a web address fails offline.
+        // Those are copied in now when they can be read; the rest are left out.
+        let picturesLeftOut = 0;
+        for (const id of Object.keys(images)) {
+          const value = images[id];
+          const inline = /^data:image\/[a-z0-9.+-]+[;,]/i.test(value) ? value : /^(blob:|https?:)/i.test(value) ? await wsPresentImageData(value) : null;
+          if (inline) images[id] = inline;
+          else { delete images[id]; picturesLeftOut++; }
+        }
+        const pictured = (id) => !!(id && images[id]);
+        activities = activities.map((a) => ({ ...a, items: a.items.filter((it) => {
+          const shown = it.choices.filter((c) => c.image);
+          // A tray of pictures shows all of them or none: half a tray points at the ones that loaded.
+          if (shown.length && !shown.every((c) => pictured(c.image))) {
+            if (a.id === "sentence_match") return false;
+            it.choices = a.id === "decoding" ? [] : it.choices.map((c) => ({ ...c, image: null }));
+          }
+          if (!pictured(it.answer.image)) it.answer.image = null;
+          return true;
+        }) })).filter((a) => a.items.length);
+        if (!activities.length) return { ok: false, message: presentTr("word_sounds.present_offline_none", "No activity has ready items to download.") };
+        // Sounds go in as WAV, as in the take-home files, so they also play on iPads and older Safari.
+        let audioNote = "";
+        if (Object.keys(clips).length) {
+          let lib = null;
+          try { lib = await takeHomeLib(); } catch (_) { lib = null; }
+          if (lib && typeof lib.portableAudio === "function") {
+            progress(presentTr("word_sounds.take_home_audio_preparing", "Getting the sounds ready to play on every device..."));
+            try {
+              const audio = await lib.portableAudio({ audio: clips });
+              if (audio && Array.isArray(audio.failed) && audio.failed.length) audioNote = " " + presentTr("word_sounds.take_home_audio_not_converted", "{count} sound(s) could not be converted and may not play on iPads.", { count: audio.failed.length });
+            } catch (_) {}
+          }
+        }
         const words = preloadedWords.slice(0, 3).map((w) => wsPresentWord(w)).filter(Boolean);
         const title = presentTr("word_sounds.present_offline_title", "Word Sounds: {words}", { words: words.join(", ") });
+        // Labels follow the interface language; the lesson keeps its own (screen readers switch voice by lang).
+        let uiLang = "", uiDir = "";
+        try {
+          const docEl = document.documentElement;
+          if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/.test(docEl.lang || "")) uiLang = docEl.lang;
+          if (docEl.dir === "rtl" || docEl.dir === "ltr") uiDir = docEl.dir;
+        } catch (_) {}
+        const strings = {
+          itemOf: presentTr("word_sounds.present_item_n_of_m", "Item {n} of {total}"), reveal: presentTr("word_sounds.present_reveal", "Reveal"),
+          playAnswer: presentTr("word_sounds.present_play_answer", "Play answer"), done: presentTr("word_sounds.present_activity_done", "{activity} is done."),
+          nextActivity: presentTr("word_sounds.present_next_activity", "Next activity: {activity}"), again: presentTr("word_sounds.present_start_again", "Start again"),
+          choices: presentTr("word_sounds.present_choices", "Choices"), pictureOf: presentTr("word_sounds.decoding_choice_of", "Picture of {word}"),
+          answerIs: presentTr("word_sounds.present_answer_is", "Answer: {answer}"), sound: presentTr("word_sounds.sound_n", "Sound {n}"), part: presentTr("word_sounds.present_part_n", "Part {n}"),
+          begin: presentTr("word_sounds.present_offline_begin", "Begin"),
+          beginHelp: presentTr("word_sounds.present_offline_begin_help", "Sound starts when you press Begin."),
+          thinkLeft: presentTr("word_sounds.present_think_left", "Think time: {n} seconds left"), thinkSec: presentTr("word_sounds.present_think_seconds", "{n} sec"),
+          thinkOff: presentTr("word_sounds.present_think_off", "Off"),
+          full: presentTr("word_sounds.present_offline_fullscreen", "Full screen"), fullExit: presentTr("word_sounds.present_offline_fullscreen_exit", "Exit full screen"),
+          pickNumber: presentTr("word_sounds.present_picker_number", "Number {n}"), pickLeft: presentTr("word_sounds.present_picker_left", "{n} left this round"),
+          pickRoundDone: presentTr("word_sounds.present_picker_round_done", "Everyone has had a turn. The next pick starts a new round."),
+        };
+        const chrome = { activity: presentTr("word_sounds.present_activity", "Activity"), previous: presentTr("word_sounds.present_previous", "Previous"), play: presentTr("word_sounds.present_play", "Play"),
+          reveal: presentTr("word_sounds.present_reveal", "Reveal"), next: presentTr("word_sounds.present_next", "Next"),
+          keys: presentTr("word_sounds.present_offline_keys", "→ or Space: next · ←: previous · R: reveal") + " · " + presentTr("word_sounds.present_keys_choices", "1–9: pick a choice · P: play again"),
+          think: presentTr("word_sounds.present_think_time", "Think time"), textSize: presentTr("word_sounds.present_text_size", "Text size"),
+          smaller: presentTr("word_sounds.present_text_smaller", "Smaller text"), larger: presentTr("word_sounds.present_text_larger", "Larger text"),
+          picker: presentTr("word_sounds.present_picker", "Pick a student"), full: strings.full,
+          pickCount: presentTr("word_sounds.present_picker_count", "How many students"), pick: presentTr("word_sounds.present_picker_pick", "Pick"),
+          pickReset: presentTr("word_sounds.present_picker_reset", "Start a new round"), close: presentTr("word_sounds.present_picker_close", "Close") };
+        // The chosen font goes in the file (only the letters it uses), or the file says it uses a system font.
+        let fontCss = "", fontNote = "";
+        if (fontOption && (fontOption.googleFont || fontOption.id === "opendyslexic")) {
+          const used = JSON.stringify(activities) + JSON.stringify(strings) + JSON.stringify(chrome) + title + "A−+✓→←·";
+          fontCss = await wsPresentFontFace(fontOption, used);
+          if (!fontCss) fontNote = " " + presentTr("word_sounds.present_offline_font_system", "The file uses a system font, because {font} could not be added to it.", { font: fontOption.label || fontOption.id });
+        }
         const html = wsPresentOfflineHtml({
-          title, lang: presentContentLang || "en", dir: presentContentDir, palette, fontFamily: fontOption ? fontOption.family : "",
-          payload: { lang: presentContentLang || "en", speed: ttsSpeed || 1, gap: look.gap || 0.25, activities, clips, images, strings: {
-            itemOf: presentTr("word_sounds.present_item_n_of_m", "Item {n} of {total}"), reveal: presentTr("word_sounds.present_reveal", "Reveal"),
-            playAnswer: presentTr("word_sounds.present_play_answer", "Play answer"), done: presentTr("word_sounds.present_activity_done", "{activity} is done."),
-            nextActivity: presentTr("word_sounds.present_next_activity", "Next activity: {activity}"), again: presentTr("word_sounds.present_start_again", "Start again"),
-            choices: presentTr("word_sounds.present_choices", "Choices"), pictureOf: presentTr("word_sounds.decoding_choice_of", "Picture of {word}"),
-            answerIs: presentTr("word_sounds.present_answer_is", "Answer: {answer}"), sound: presentTr("word_sounds.sound_n", "Sound {n}"), part: presentTr("word_sounds.present_part_n", "Part {n}"),
-          } },
-          chrome: { activity: presentTr("word_sounds.present_activity", "Activity"), previous: presentTr("word_sounds.present_previous", "Previous"), play: presentTr("word_sounds.present_play", "Play"),
-            reveal: presentTr("word_sounds.present_reveal", "Reveal"), next: presentTr("word_sounds.present_next", "Next"),
-            keys: presentTr("word_sounds.present_offline_keys", "→ or Space: next · ←: previous · R: reveal") },
+          title, lang: presentContentLang || "en", dir: presentContentDir, uiLang, uiDir, palette, fontFamily: fontOption ? fontOption.family : "", fontCss,
+          payload: { lang: presentContentLang || "en", speed: ttsSpeed || 1, gap: look.gap || 0.25, ui: { lang: uiLang, dir: uiDir }, think: WS_PRESENT_THINK, thinkDefault: 5,
+            activities, clips, images, strings },
+          chrome,
         });
         const name = "word-sounds-present-" + (words.join("-").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lesson") + ".html";
         try {
@@ -22251,7 +22660,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           document.body.appendChild(link); link.click(); link.remove();
           setTimeout(() => URL.revokeObjectURL(url), 60000);
           const size = blob.size / (1024 * 1024);
-          return { ok: true, html, message: presentTr("word_sounds.present_offline_done", "Downloaded {file} ({size} MB). Open it in any browser; it works without internet.", { file: name, size: size < 0.1 ? "0.1" : size.toFixed(1) }) };
+          // Email and class sites often refuse files over about 10 MB.
+          const big = size > 10 ? " " + presentTr("word_sounds.present_offline_big", "That may be too big to email or upload. A shorter word list makes it smaller.") : "";
+          const left = picturesLeftOut ? " " + presentTr("word_sounds.present_offline_pictures_left_out", "Pictures left out because they could not be added: {count}. Those items show no picture.", { count: picturesLeftOut }) : "";
+          return { ok: true, html, message: presentTr("word_sounds.present_offline_done", "Downloaded {file} ({size} MB). Open it in any browser; it works without internet.", { file: name, size: size < 0.1 ? "0.1" : size.toFixed(1) }) + big + audioNote + left + fontNote };
         } catch (_) {
           return { ok: false, message: presentTr("word_sounds.present_offline_failed", "The file could not be downloaded here. Try again in a regular browser tab.") };
         }
@@ -22305,7 +22717,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // Off by default: a teacher usually prints for the whole class.
       const [printReader, setPrintReader] = React.useState(false);
       const [printActivity, setPrintActivity] = React.useState("");
-      const [printKey, setPrintKey] = React.useState(true);
+      // Worksheet options: answer key placement, version, how many, easier, and the extra printouts.
+      const [printKeyMode, setPrintKeyMode] = React.useState("last");
+      const [printVersion, setPrintVersion] = React.useState("A");
+      const [printCount, setPrintCount] = React.useState(0);
+      const [printEasier, setPrintEasier] = React.useState(false);
+      const [printLarge, setPrintLarge] = React.useState(false);
+      const [printReview, setPrintReview] = React.useState([]);
+      const [printBlankBoxes, setPrintBlankBoxes] = React.useState(3);
+      const [printSortWord, setPrintSortWord] = React.useState(true);
+      const [printSortActivity, setPrintSortActivity] = React.useState("");
       const printFaceRef = React.useRef(null);
       React.useEffect(() => {
         const lib = wsReadingLib();
@@ -22603,52 +23024,197 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       [printMenuOpen, presentActivities, preloadedWords, presentItemOptions]);
       const worksheetActivity = worksheetActivities.some((a) => a.id === printActivity) ? printActivity
         : (worksheetActivities.find((a) => a.id === wordSoundsActivity) || worksheetActivities[0] || {}).id || "";
+      const sortActivities = worksheetActivities.filter((a) => a.id === "sound_sort" || a.id === "word_families");
+      const sortActivity = sortActivities.some((a) => a.id === printSortActivity) ? printSortActivity : (sortActivities[0] || {}).id || "";
+      const reviewChosen = worksheetActivities.map((a) => a.id).filter((id) => printReview.includes(id));
+      // Student pages follow the lesson's language where this page has its text: an English lesson gets the
+      // English strings even in another interface language. Any other lesson language falls back to the
+      // interface language (no pack for a second language is loaded here). Teacher pages stay in the interface language.
+      const printLessonEnglish = (() => {
+        const lesson = String(presentContentLang || "").toLowerCase().split("-")[0];
+        const page = String((typeof document !== "undefined" && document.documentElement.lang) || "en").toLowerCase().split("-")[0];
+        return lesson === "en" && page !== "en";
+      })();
+      const lessonTr = printLessonEnglish ? wsPresentTr(null) : printTr;
+      // The items a worksheet or review sheet prints, in the chosen Version, How many and Easier.
+      // Edit in Page Designer builds from these same objects.
+      const printSheetItems = (activityId, mixSeed) => wsPrintPrepare(wsPresentItems(activityId, preloadedWords, presentItemOptions).map((item) => ({ ...item,
+        // On paper Letter Trace is traced and written, not written in the air.
+        promptText: item.activity === "letter_tracing"
+          ? lessonTr("word_sounds.print_worksheet_trace_guides", "Trace the letter {letter}. Then write it on the empty line.", { letter: item.display.text })
+          : item.prompt.text != null ? item.prompt.text : lessonTr(item.prompt.key, item.prompt.english, item.prompt.params) })),
+      { version: printVersion, seed: mixSeed, count: printCount, easier: printEasier });
+      const printReviewSections = (mixSeed) => reviewChosen.slice(0, 4).map((id) => ({ heading: (presentActivities.find((a) => a.id === id) || {}).label || id, items: printSheetItems(id, mixSeed),
+        directions: WS_PRINT_SAY.includes(id) ? lessonTr("word_sounds.print_review_listen", "Listen to your teacher. Then circle or write the answer.")
+          : id === "letter_tracing" ? lessonTr("word_sounds.print_review_trace", "Trace each letter. Then write it on the empty line.")
+          : lessonTr("word_sounds.print_review_read", "Read each one. Then circle or write the answer.") })).filter((s) => s.items.length);
+      // Edit in Page Designer: the host's Page Designer opens on a copy of the worksheet or review sheet
+      // (the same items, pictures, key and words to say as the printout). Teacher view, full app only.
+      const studioOpener = () => (typeof window !== "undefined" && typeof window.__alloOpenWordSoundsWorksheetInStudio === "function" ? window.__alloOpenWordSoundsWorksheetInStudio : null);
+      const studioResource = (kind) => {
+        const mixSeed = printVersion === "mix" ? 1000 + Math.floor(Math.random() * 9000) : 0;
+        const formText = (tr) => (printVersion === "B" || printVersion === "C" ? tr("word_sounds.print_form", "Form {form}", { form: printVersion })
+          : printVersion === "mix" ? tr("word_sounds.print_mix", "Mix {n}", { n: mixSeed }) : "");
+        let title = "", sections = [];
+        if (kind === "worksheet") {
+          const items = worksheetActivity ? printSheetItems(worksheetActivity, mixSeed) : [];
+          if (!items.length) return null;
+          title = lessonTr("word_sounds.print_worksheet_title", "{activity} worksheet", { activity: (presentActivities.find((a) => a.id === worksheetActivity) || {}).label || worksheetActivity });
+          sections = [{ directions: lessonTr("word_sounds.print_worksheet_directions", "Listen as your teacher reads each one. Circle the answer, or write it in the boxes."), items }];
+        } else {
+          sections = printReviewSections(mixSeed);
+          if (sections.length < 2) return null;
+          title = lessonTr("word_sounds.print_review_title", "Review sheet");
+        }
+        const pictures = Object.fromEntries(printEntries.map((e) => [e.word.toLowerCase(), e.image]));
+        const dataImage = (value) => (typeof value === "string" && /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(value) ? value : null);
+        // Key and say lines are the printed ones, as plain text.
+        const plain = (html) => String(html || "").replace(/<[^>]*>/g, "").replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[e]);
+        const all = lessonTr("word_sounds.print_worksheet_all", "Circle every one that fits.");
+        const say = printTr("word_sounds.print_worksheet_say", "Say:");
+        const key = [], words = [];
+        let n = 0;
+        const out = sections.map((section) => ({ ...(section.heading ? { heading: section.heading } : {}), ...(section.directions ? { directions: section.directions } : {}),
+          items: section.items.map((item) => {
+            n++;
+            const d = item.display || {};
+            const entry = { n, prompt: String(item.promptText || "") + (item.multi ? " " + all : "") };
+            if (d.kind === "sounds" || d.kind === "parts") entry.display = { kind: d.kind };
+            else if (d.kind === "boxes" || d.kind === "letters") entry.display = { kind: d.kind, count: d.count };
+            else if (d.kind === "word") entry.display = { kind: "word", text: String(d.text || "") };
+            else if (d.kind === "blank_word") entry.display = { kind: "blank_word", letters: d.letters.map(String), hidden: d.hidden };
+            else if (d.kind === "tiles") entry.display = { kind: "tiles", tiles: d.tiles.map(String) };
+            else if (d.kind === "map") entry.display = { kind: "map", sounds: d.sounds.map(String) };
+            else if (d.kind === "text") entry.display = { kind: "text", parts: d.parts.map((p) => (p.text != null ? { text: String(p.text) } : { before: String(p.before || ""), after: String(p.after || "") })) };
+            if (item.choices.length) entry.choices = item.choices.slice(0, 8).map((c) => (dataImage(c.image) ? { label: String(c.label), image: dataImage(c.image) } : { label: String(c.label) }));
+            // The picture cue the printed sheet shows, with its alt text (a neutral "Picture N" where the word is the answer).
+            const cue = WS_WORKSHEET_CUE.includes(item.activity) ? dataImage(pictures[String(item.word || "").toLowerCase()]) : null;
+            if (cue) {
+              entry.image = cue;
+              entry.imageAlt = WS_PRINT_NEUTRAL_ALT.includes(item.activity) ? lessonTr("word_sounds.print_picture_n", "Picture {n}", { n }) : String(item.word || "");
+            }
+            if (!WS_PRINT_NEUTRAL_ALT.includes(item.activity) && item.word) entry.word = String(item.word);
+            if (item.activity === "word_scramble" || item.activity === "letter_tracing") entry.writeIn = true;
+            key.push({ n, text: plain(wsPrintKeyLine(item, { say })) });
+            if (WS_PRINT_SAY.includes(item.activity)) words.push(n + ". " + plain(wsPrintSayLine(item)));
+            return entry;
+          }) }));
+        const form = formText(lessonTr), keyForm = formText(printTr);
+        let region = "";
+        try { region = String(new Intl.Locale((typeof navigator !== "undefined" && navigator.language) || "en").maximize().region || ""); } catch (_) {
+          region = (String((typeof navigator !== "undefined" && navigator.language) || "").split("-")[1] || "").toUpperCase();
+        }
+        const lang = presentContentLang || "";
+        return {
+          title: title + (form ? " · " + form : ""),
+          ...(lang ? { lang } : {}),
+          ...(presentContentDir === "rtl" || presentContentDir === "ltr" ? { dir: presentContentDir } : {}),
+          pageSize: ["US", "CA", "MX", "PH"].includes(region) ? "letter-portrait" : "a4-portrait",
+          keyTitle: title + ": " + printTr("word_sounds.print_worksheet_key", "Answer key") + (keyForm ? " · " + keyForm : ""),
+          sections: out,
+          key: printKeyMode === "none" ? [] : key,
+          // The printout has a page of words to say unless the key is on its last page.
+          ...(printKeyMode !== "last" && words.length ? { wordsToSay: words } : {}),
+        };
+      };
+      const handleEditInStudio = (kind) => {
+        const open = studioOpener();
+        if (!open) return;
+        const resource = studioResource(kind);
+        if (!resource) return;
+        let ok = false;
+        try { ok = open(resource) === true; } catch (_) { ok = false; }
+        if (ok) { setPrintStatus(printTr("word_sounds.print_designer_opened", "{name} opened in Page Designer.", { name: resource.title })); return; }
+        const busy = printTr("word_sounds.print_designer_busy", "Close Page Designer first, then try again.");
+        setPrintStatus(busy);
+        addToast?.(busy, "info");
+      };
       const handlePrintMaterial = (kind) => {
         const entries = kind === "boxes" ? printEntries.filter((e) => e.sounds > 0) : printEntries;
         if (!entries.length) return;
         const wordAttrs = wsPrintLangAttrs(wordSoundsLanguage || "en");
         const docAttrs = wsPrintLangAttrs((typeof document !== "undefined" && document.documentElement.lang) || "en");
-        const name = printTr("word_sounds.print_student_name", "Student name:");
+        const studentAttrs = printLessonEnglish ? wordAttrs : "";
+        const name = lessonTr("word_sounds.print_student_name", "Student name:");
         const lib = printReader ? wsReadingLib() : null;
         let reader = null;
         try { reader = lib ? window.__alloReadingSettings.get() : null; } catch (_) { reader = null; }
         const face = reader && printFaceRef.current && printFaceRef.current.fontId === reader.fontId ? printFaceRef.current.face || {} : {};
         const head = reader ? face.head || "" : "";
-        const css = reader ? (face.css || "") + WS_PRINT_READER_CSS + (typeof lib.readerExportCss === "function" ? lib.readerExportCss(reader) : "") : "";
-        const fit = reader ? wsPrintReaderFit(reader) : null;
+        let css = reader ? (face.css || "") + WS_PRINT_READER_CSS + (typeof lib.readerExportCss === "function" ? lib.readerExportCss(reader) : "") : "";
+        // Large print: 1.5 times the base text size (the reader's, with its settings on) on every printout.
+        const largeBase = printLarge ? Math.min(48, Math.round(1.5 * (reader ? Math.max(10, Math.min(48, Number(reader.baseFontSize) || 16)) : 16))) : 0;
+        if (largeBase) css += (reader ? "" : WS_PRINT_READER_CSS) + WS_PRINT_LARGE_CSS + "html{font-size:" + largeBase + "px}";
+        const fit = largeBase ? wsPrintReaderFit({ ...(reader || {}), baseFontSize: largeBase }) : reader ? wsPrintReaderFit(reader) : null;
+        const pictures = Object.fromEntries(printEntries.map((e) => [e.word.toLowerCase(), e.image]));
+        const pictureOf = (word) => pictures[String(word || "").toLowerCase()] || null;
+        const labelOf = (id) => (presentActivities.find((a) => a.id === id) || {}).label || id;
+        // New mix: a fresh seed for each print, shown on the sheet and its key so they can be matched.
+        const mixSeed = printVersion === "mix" ? 1000 + Math.floor(Math.random() * 9000) : 0;
+        const formText = (tr) => (printVersion === "B" || printVersion === "C" ? tr("word_sounds.print_form", "Form {form}", { form: printVersion })
+          : printVersion === "mix" ? tr("word_sounds.print_mix", "Mix {n}", { n: mixSeed }) : "");
+        const sheetItems = (activityId) => printSheetItems(activityId, mixSeed);
+        const sheetText = (sheetTitle) => ({
+          title: sheetTitle, name, studentAttrs, form: formText(lessonTr), keyForm: formText(printTr),
+          directions: lessonTr("word_sounds.print_worksheet_directions", "Listen as your teacher reads each one. Circle the answer, or write it in the boxes."),
+          listen: lessonTr("word_sounds.print_worksheet_listen", "Listen to your teacher."),
+          all: lessonTr("word_sounds.print_worksheet_all", "Circle every one that fits."),
+          picture: lessonTr("word_sounds.print_picture_n", "Picture {n}"),
+          keyTitle: printTr("word_sounds.print_worksheet_key", "Answer key"),
+          say: printTr("word_sounds.print_worksheet_say", "Say:"),
+          sayTitle: printTr("word_sounds.print_say_title", "For the teacher: what to say for each number"),
+          sayNote: printTr("word_sounds.print_say_note", "The students' sheet does not show these words. Read each one aloud for its number."),
+          print: printTr("word_sounds.di_script_print_button", "Print"),
+        });
         let title = "";
         let body = "";
         if (kind === "cards") {
           title = printTr("word_sounds.print_cards_heading", "Word cards");
           body = wsPrintCards(entries, printPerPage, wordAttrs, fit);
-        } else if (kind === "boxes") {
-          title = printTr("word_sounds.print_boxes_heading", "Sound boxes");
-          body = wsPrintBoxes(entries, printShowWord, wordAttrs, { title, name,
-            directions: printTr("word_sounds.print_boxes_directions", "Say the word slowly. Push one counter into a box for each sound you hear."),
+        } else if (kind === "boxes" || kind === "blank") {
+          title = lessonTr("word_sounds.print_boxes_heading", "Sound boxes");
+          const text = { title, name, studentAttrs,
+            directions: lessonTr("word_sounds.print_boxes_directions", "Say the word slowly. Push one counter into a box for each sound you hear."),
             keyTitle: printTr("word_sounds.print_boxes_key_title", "For the teacher: the words in row order"),
-            keyNote: printTr("word_sounds.print_boxes_key_note", "Rows marked * have no picture. Say those words aloud: the student hears them only from you.") }, fit);
+            keyNote: printTr("word_sounds.print_boxes_key_note", "Rows marked * have no picture. Say those words aloud: the student hears them only from you.") };
+          body = kind === "blank" ? wsPrintBlank(printBlankBoxes, text) : wsPrintBoxes(entries, printShowWord, wordAttrs, text, fit);
         } else if (kind === "worksheet") {
-          const activityId = worksheetActivity;
-          const items = activityId ? wsPresentItems(activityId, preloadedWords, presentItemOptions) : [];
+          const items = worksheetActivity ? sheetItems(worksheetActivity) : [];
           if (!items.length) return;
-          const pictures = Object.fromEntries(printEntries.map((e) => [e.word.toLowerCase(), e.image]));
-          const label = (presentActivities.find((a) => a.id === activityId) || {}).label || activityId;
-          title = printTr("word_sounds.print_worksheet_title", "{activity} worksheet", { activity: label });
-          // On paper Letter Trace is traced and written, not written in the air.
-          body = wsPrintWorksheet(items.map((item) => ({ ...item, promptText: item.activity === "letter_tracing"
-            ? printTr("word_sounds.print_worksheet_trace", "Trace the letter {letter}, then write it on the line.", { letter: item.display.text })
-            : item.prompt.text != null ? item.prompt.text : printTr(item.prompt.key, item.prompt.english, item.prompt.params) })), wordAttrs, {
-            title, name,
-            directions: printTr("word_sounds.print_worksheet_directions", "Listen as your teacher reads each one. Circle the answer, or write it in the boxes."),
-            listen: printTr("word_sounds.print_worksheet_listen", "Listen to your teacher."),
-            all: printTr("word_sounds.print_worksheet_all", "Circle every one that fits."),
-            keyTitle: printTr("word_sounds.print_worksheet_key", "Answer key"),
-            say: printTr("word_sounds.print_worksheet_say", "Say:"),
-          }, (word) => pictures[String(word || "").toLowerCase()] || null, printKey);
+          title = lessonTr("word_sounds.print_worksheet_title", "{activity} worksheet", { activity: labelOf(worksheetActivity) });
+          body = wsPrintWorksheet(items, wordAttrs, sheetText(title), pictureOf, printKeyMode);
+        } else if (kind === "review") {
+          const sections = printReviewSections(mixSeed);
+          if (sections.length < 2) return;
+          title = lessonTr("word_sounds.print_review_title", "Review sheet");
+          body = wsPrintSheets(sections, wordAttrs, { ...sheetText(title), directions: "" }, pictureOf, printKeyMode);
+        } else if (kind === "sort") {
+          // Header cards from the activity's prepared boards (a sound or a word family), then a card for
+          // every word on those boards, mixed so a cut sheet does not show the groups.
+          const groups = [], words = [];
+          (sortActivity ? wsPresentItems(sortActivity, preloadedWords, presentItemOptions) : []).forEach((item) => {
+            const last = item.activity === "sound_sort" && /sound_sort_last$/.test(String(item.prompt.key || ""));
+            const kicker = item.activity === "word_families" ? lessonTr("word_sounds.print_sort_family", "Word family")
+              : last ? lessonTr("word_sounds.print_sort_last", "Ends with") : lessonTr("word_sounds.print_sort_first", "Starts with");
+            const label = String((item.activity === "word_families" ? item.prompt.params.rime : item.prompt.params.sound) || "");
+            let group = groups.find((g) => g.label === label && g.kicker === kicker);
+            if (!group) groups.push(group = { label, kicker, members: new Set() });
+            item.correct.forEach((w) => group.members.add(String(w).toLowerCase()));
+            item.choices.forEach((c) => { if (!words.some((w) => w.toLowerCase() === String(c.value).toLowerCase())) words.push(String(c.value)); });
+          });
+          if (!groups.length) return;
+          const other = words.some((w) => !groups.some((g) => g.members.has(w.toLowerCase())));
+          const imageOf = (w) => pictureOf(w) || wsPrintImage({}, preparedImageLibrary, w.toLowerCase());
+          title = lessonTr("word_sounds.print_sort_title", "Sorting cards");
+          body = wsPrintCards([
+            ...groups.map((g) => ({ word: g.label, head: true, kicker: g.kicker, image: null })),
+            ...(other ? [{ word: lessonTr("word_sounds.print_sort_other", "Something else"), head: true, image: null }] : []),
+            ...wsPresentShuffle(words, "sort:" + sortActivity).map((w) => ({ word: w, image: imageOf(w), pictureOnly: !printSortWord })),
+          ], 8, wordAttrs, fit);
         } else {
           title = printTr("word_sounds.print_home_title", "Word Sounds practice at home");
           body = wsPrintHome(entries, wordAttrs, {
-            title, name,
+            title, name: printTr("word_sounds.print_student_name", "Student name:"),
             greeting: printTr("word_sounds.print_home_greeting", "Dear family,"),
             intro: printTr("word_sounds.print_home_intro", "This week your child is practicing the sounds in these words:"),
             tryHeading: printTr("word_sounds.print_home_try", "Try these at home. A few minutes a day is plenty."),
@@ -22660,18 +23226,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             thanks: printTr("word_sounds.print_home_thanks", "Thank you for practicing together!"),
           });
         }
+        const blocked = printTr("word_sounds.di_script_print_blocked", "Printing is blocked here. Allow pop-ups for this page, then press Print again.");
+        const separateKey = printKeyMode === "separate" && (kind === "worksheet" || kind === "review");
         const bar = '<div class="print-bar"><button type="button" onclick="window.print()">' + wsPrintEsc(printTr("word_sounds.di_script_print_button", "Print")) +
           "</button><span>" + wsPrintEsc(printTr("word_sounds.di_script_print_hint", "If the print dialog does not open, press Ctrl+P (or Cmd+P on a Mac).")) + "</span>" +
+          (separateKey ? '<button type="button" data-ws-open-key onclick="wsOpenKey()">' + wsPrintEsc(printTr("word_sounds.print_key_open", "Print the answer key")) +
+            '</button><span id="ws-key-blocked" role="status" hidden>' + wsPrintEsc(blocked) + "</span>" : "") +
           (kind === "boxes" && printSkipped ? "<span>" + wsPrintEsc(printSkippedNote) + "</span>" : "") + wsPrintEditTools({
             edit: printTr("word_sounds.print_edit_text", "Edit text"), done: printTr("word_sounds.print_edit_done", "Done editing"),
             hint: printTr("word_sounds.print_edit_hint_outlined", "Click outlined text to change it. Changes print, but they are not saved in the lesson, and the answer key does not change with them."),
             how: printTr("word_sounds.print_edit_how", "To change any text first, close the print dialog, choose Edit text, then Print."),
           }) + "</div>";
         if (wsPrintOpen(wsPrintDocument({ title, docAttrs, bar, body, head, css }), !!(head || face.css))) {
-          setPrintStatus(printTr("word_sounds.print_opened", "{name} opened in a new window.", { name: title }));
+          setPrintStatus(separateKey
+            ? printTr("word_sounds.print_key_separate_opened", "{name} opened in a new window. Print the answer key from the button at the top of that window.", { name: title })
+            : printTr("word_sounds.print_opened", "{name} opened in a new window.", { name: title }));
           return;
         }
-        const blocked = printTr("word_sounds.di_script_print_blocked", "Printing is blocked here. Allow pop-ups for this page, then press Print again.");
         setPrintStatus(blocked);
         addToast?.(blocked, "error");
       };
@@ -22798,7 +23369,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const action = "mt-3 min-h-11 rounded-xl bg-indigo-700 px-4 py-2 font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
         const section = "rounded-xl border-2 border-slate-200 p-4";
         const control = "mt-2 flex min-h-11 items-center gap-3 text-sm font-semibold";
+        const stacked = "mt-2 flex flex-col gap-1 text-sm font-semibold";
+        const select = "min-h-11 w-full rounded-lg border-2 border-slate-300 bg-white px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600";
+        const checkbox = "h-5 w-5 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600";
         const boxesReady = printEntries.length > printSkipped;
+        // Page Designer exists only in the full app (the host publishes the opener) and only for a teacher.
+        const studioReady = isTeacherMode && !!studioOpener();
         return h("div", {
             className: "fixed inset-0 z-[210] flex items-center justify-center bg-black/50 p-4",
             onClick: (event) => { if (event.target === event.currentTarget) closePrintMenu(); },
@@ -22855,24 +23431,89 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 worksheetActivities.length ? h(React.Fragment, null,
                   h("label", { className: control },
                     printTr("word_sounds.present_activity", "Activity"),
-                    h("select", { value: worksheetActivity, "data-ws-print-activity": "true", onChange: (event) => setPrintActivity(event.target.value),
-                      className: "min-h-11 rounded-lg border-2 border-slate-300 bg-white px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" },
+                    h("select", { value: worksheetActivity, "data-ws-print-activity": "true", onChange: (event) => setPrintActivity(event.target.value), className: select },
                       worksheetActivities.map((a) => h("option", { key: a.id, value: a.id }, a.label)))),
-                  h("label", { className: control },
-                    h("input", { type: "checkbox", checked: printKey, onChange: (event) => setPrintKey(event.target.checked), "data-ws-print-key": "true",
-                      className: "h-5 w-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
-                    printTr("word_sounds.print_worksheet_key_option", "Answer key on the last page")),
+                  // One group for the options both the worksheet and the review sheet use.
+                  h("fieldset", { className: "mt-3 rounded-lg bg-slate-50 p-3", "data-ws-print-options": "true" },
+                    h("legend", { className: "px-1 text-sm font-bold" }, printTr("word_sounds.print_options_legend", "Worksheet and review sheet options")),
+                    h("div", { className: "grid grid-cols-2 gap-x-3" },
+                      h("label", { className: stacked },
+                        printTr("word_sounds.print_version", "Version"),
+                        h("select", { value: printVersion, "data-ws-print-version": "true", onChange: (event) => setPrintVersion(event.target.value), className: select },
+                          h("option", { value: "A" }, printTr("word_sounds.print_version_a", "A (list order)")),
+                          h("option", { value: "B" }, "B"), h("option", { value: "C" }, "C"),
+                          h("option", { value: "mix" }, printTr("word_sounds.print_version_mix", "New mix")))),
+                      h("label", { className: stacked },
+                        printTr("word_sounds.print_how_many", "How many"),
+                        h("select", { value: String(printCount), "data-ws-print-count": "true", onChange: (event) => setPrintCount(Number(event.target.value) || 0), className: select },
+                          h("option", { value: "5" }, "5"), h("option", { value: "10" }, "10"), h("option", { value: "0" }, printTr("word_sounds.print_how_many_all", "All"))))),
+                    h("label", { className: stacked },
+                      printTr("word_sounds.print_key_label", "Answer key"),
+                      h("select", { value: printKeyMode, "data-ws-print-key": "true", onChange: (event) => setPrintKeyMode(event.target.value), className: select },
+                        h("option", { value: "last" }, printTr("word_sounds.print_key_last", "On the last page")),
+                        h("option", { value: "separate" }, printTr("word_sounds.print_key_separate", "As a separate printout")),
+                        h("option", { value: "none" }, printTr("word_sounds.print_key_none", "No key")))),
+                    h("label", { className: control },
+                      h("input", { type: "checkbox", checked: printEasier, onChange: (event) => setPrintEasier(event.target.checked), "data-ws-print-easier": "true", className: checkbox }),
+                      printTr("word_sounds.print_easier", "Easier: 2 choices")),
+                    h("p", { className: "mt-1 text-xs text-slate-600" }, printTr("word_sounds.print_options_help", "B, C and New mix change the order of the items and of their choices; the version is printed on the sheet and on its key. Without the key on the last page, a listening sheet ends with a teacher page of the words to say."))),
                   h("button", { type: "button", className: action, "data-ws-print": "worksheet", onClick: () => handlePrintMaterial("worksheet") },
-                    printTr("word_sounds.print_worksheet_action", "Print worksheet")))
-                  : h("p", { className: "mt-2 text-sm font-semibold text-amber-800" }, printTr("word_sounds.print_worksheet_none", "No activity has ready items in this word list yet.")))),
-            wsReadingLib() ? h("div", { className: "mt-3 " + section },
+                    printTr("word_sounds.print_worksheet_action", "Print worksheet")),
+                  studioReady ? h("button", { type: "button", "data-ws-studio": "worksheet", onClick: () => handleEditInStudio("worksheet"),
+                    className: "mt-3 ms-2 min-h-11 rounded-xl border-2 border-indigo-700 bg-white px-4 py-2 font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" },
+                    printTr("word_sounds.print_edit_in_designer", "Edit in Page Designer")) : null,
+                  h("fieldset", { className: "mt-4 border-t-2 border-slate-200 pt-3" },
+                    h("legend", { className: "font-bold" }, printTr("word_sounds.print_review_heading", "Review sheet")),
+                    h("p", { className: "text-sm text-slate-600" }, printTr("word_sounds.print_review_desc", "Choose 2 to 4 activities for one sheet. Each gets its own heading, the numbers run on, and one answer key covers them all.")),
+                    h("div", { className: "grid grid-cols-2 gap-x-3" },
+                      worksheetActivities.map((a) => h("label", { key: a.id, className: control },
+                        h("input", { type: "checkbox", checked: reviewChosen.includes(a.id), disabled: !reviewChosen.includes(a.id) && reviewChosen.length >= 4, "data-ws-print-review": a.id,
+                          onChange: (event) => { const on = event.target.checked; setPrintReview((prev) => (on ? [...prev.filter((id) => id !== a.id), a.id] : prev.filter((id) => id !== a.id))); },
+                          className: checkbox }),
+                        a.label))),
+                    h("button", { type: "button", className: action, "data-ws-print": "review", disabled: reviewChosen.length < 2, onClick: () => handlePrintMaterial("review") },
+                      printTr("word_sounds.print_review_action", "Print review sheet")),
+                    studioReady ? h("button", { type: "button", "data-ws-studio": "review", disabled: reviewChosen.length < 2, onClick: () => handleEditInStudio("review"),
+                    className: "mt-3 ms-2 min-h-11 rounded-xl border-2 border-indigo-700 bg-white px-4 py-2 font-bold text-indigo-800 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" },
+                    printTr("word_sounds.print_edit_in_designer", "Edit in Page Designer")) : null))
+                  : h("p", { className: "mt-2 text-sm font-semibold text-amber-800" }, printTr("word_sounds.print_worksheet_none", "No activity has ready items in this word list yet."))),
+              sortActivities.length ? h("section", { className: section, "aria-labelledby": "ws-print-sort-heading" },
+                h("h3", { id: "ws-print-sort-heading", className: "font-bold" }, printTr("word_sounds.print_sort_heading", "Sorting cards")),
+                h("p", { className: "text-sm text-slate-600" }, printTr("word_sounds.print_sort_desc", "Cards to cut apart and sort: a header card for each sound or word family, then one card for each word. A card with no picture always shows its word.")),
+                sortActivities.length > 1 ? h("label", { className: control },
+                  printTr("word_sounds.present_activity", "Activity"),
+                  h("select", { value: sortActivity, "data-ws-print-sort-activity": "true", onChange: (event) => setPrintSortActivity(event.target.value), className: select },
+                    sortActivities.map((a) => h("option", { key: a.id, value: a.id }, a.label)))) : null,
+                h("label", { className: control },
+                  h("input", { type: "checkbox", checked: printSortWord, onChange: (event) => setPrintSortWord(event.target.checked), "data-ws-print-sort-word": "true", className: checkbox }),
+                  printTr("word_sounds.print_sort_show_word", "Show the word under each picture")),
+                h("button", { type: "button", className: action, "data-ws-print": "sort", onClick: () => handlePrintMaterial("sort") },
+                  printTr("word_sounds.print_sort_action", "Print sorting cards"))) : null,
+              h("section", { className: section, "aria-labelledby": "ws-print-blank-heading" },
+                h("h3", { id: "ws-print-blank-heading", className: "font-bold" }, printTr("word_sounds.print_blank_heading", "Blank sheet")),
+                h("p", { className: "text-sm text-slate-600" }, printTr("word_sounds.print_blank_desc", "Empty picture frames with sound boxes, then handwriting lines, to fill in by hand.")),
+                h("label", { className: control },
+                  printTr("word_sounds.print_blank_boxes", "Boxes in each row"),
+                  h("select", { value: String(printBlankBoxes), "data-ws-print-blank-boxes": "true", onChange: (event) => setPrintBlankBoxes(Number(event.target.value) || 3), className: select },
+                    ["3", "4", "5"].map((n) => h("option", { key: n, value: n }, n)))),
+                h("button", { type: "button", className: action, "data-ws-print": "blank", onClick: () => handlePrintMaterial("blank") },
+                  printTr("word_sounds.print_blank_action", "Print blank sheet")))),
+            h("div", { className: "mt-3 " + section, role: "group", "aria-labelledby": "ws-print-all-heading" },
+              h("h3", { id: "ws-print-all-heading", className: "font-bold" }, printTr("word_sounds.print_all_heading", "For every printout")),
               h("label", { className: "flex min-h-11 items-center gap-3 text-sm font-semibold" },
-                h("input", { type: "checkbox", checked: printReader, onChange: (event) => setPrintReader(event.target.checked),
-                  "aria-describedby": "ws-print-reader-help", "data-ws-print-reader": "true",
-                  className: "h-5 w-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
-                printTr("reading_settings.use_mine", "Use my reading settings")),
-              h("p", { id: "ws-print-reader-help", className: "text-sm text-slate-600" },
-                printTr("reading_settings.use_mine_help", "Prints with your font, text size and spacing."))) : null,
+                h("input", { type: "checkbox", checked: printLarge, onChange: (event) => setPrintLarge(event.target.checked),
+                  "aria-describedby": "ws-print-large-help", "data-ws-print-large": "true", className: checkbox }),
+                printTr("word_sounds.print_large", "Large print")),
+              h("p", { id: "ws-print-large-help", className: "text-sm text-slate-600" },
+                printTr("word_sounds.print_large_help", "Text and boxes print 1.5 times larger. Your own reading settings stay as they are.")),
+              wsReadingLib() ? h(React.Fragment, null,
+                h("label", { className: "mt-2 flex min-h-11 items-center gap-3 text-sm font-semibold" },
+                  h("input", { type: "checkbox", checked: printReader, onChange: (event) => setPrintReader(event.target.checked),
+                    "aria-describedby": "ws-print-reader-help", "data-ws-print-reader": "true",
+                    className: "h-5 w-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
+                  printTr("reading_settings.use_mine", "Use my reading settings")),
+                h("p", { id: "ws-print-reader-help", className: "text-sm text-slate-600" },
+                  printTr("reading_settings.use_mine_help", "Prints with your font, text size and spacing."))) : null),
             h("p", { role: "status", className: "mt-3 min-h-[1.25rem] text-sm font-semibold text-slate-700" }, printStatus)));
       };
       const accuracy =
@@ -24261,7 +24902,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         run: () => { setTakeHomeStatus(""); setTakeHomeOpen(true); } },
                       { id: "present-offline", show: presentAllowed && isTeacherMode, attrs: { "data-ws-present-offline": "true" }, icon: "💾",
                         label: ts("word_sounds.share_present_offline") || "Present offline", hint: ts("word_sounds.share_present_offline_hint") || "One file with every activity and its sounds. Works without internet.",
-                        run: () => { const result = downloadPresentOffline(); if (result && result.message) addToast?.(result.message, result.ok ? "success" : "error"); } },
+                        run: () => { Promise.resolve(downloadPresentOffline()).then((result) => { if (result && result.message) addToast?.(result.message, result.ok ? "success" : "error"); }, () => {}); } },
                       { id: "word-practice", show: shareWordPracticeAllowed, attrs: { "data-ws-word-practice-open": "true" }, icon: "🃏",
                         label: ts("word_sounds.share_word_practice") || "Word Practice", hint: ts("word_sounds.share_word_practice_hint") || "Project the words, or download HTML or PowerPoint",
                         run: openWordPracticeFromLesson },

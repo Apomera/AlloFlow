@@ -191,18 +191,24 @@ describe('student AI off: device voice is never switched off for learners', () =
   });
   it('STEM ctx.callTTS falls back to the device voice instead of silence for a student-off learner', () => {
     const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    const s = stem.indexOf('      function _stemStudentDeviceVoice(text, rate) {');
-    const fnSrc = stem.slice(s, stem.indexOf('\n      }\n', s) + 8);
+    // Sliced from the mute helper (_stemGlobalMuted) through the device-voice function, which uses it.
+    const s = stem.indexOf('      function _stemGlobalMuted() {');
+    const d = stem.indexOf('      function _stemStudentDeviceVoice(text, rate) {', s);
+    const fnSrc = stem.slice(s, stem.indexOf('\n      }\n', d) + 8);
     const spoken = [];
     const win = { speechSynthesis: { cancel() {}, speak(u) { spoken.push(u); } } };
-    const run = w => new Function('window', 'SpeechSynthesisUtterance', fnSrc + '\nreturn _stemStudentDeviceVoice;')(w, function (t) { this.text = t; });
+    const ref = { current: { gen: 0, audios: [], ctls: [], utters: [], tool: null } };
+    const run = w => new Function('window', 'SpeechSynthesisUtterance', '_stemTtsRef', fnSrc + '\nreturn _stemStudentDeviceVoice;')(w, function (t) { this.text = t; }, ref);
     expect(run(win)('Velocity is 4 m/s', 1)).toBe(false);
     win.__alloStudentAiDisabled = true;
     expect(run(win)('Velocity is 4 m/s', 1)).toBe(true);
     expect(spoken.map(u => u.text)).toEqual(['Velocity is 4 m/s']);
-    win._alloGlobalMute = true;
+    win.__alloIsGlobalMuted = () => true; // the app's mute
     expect(run(win)('Muted', 1)).toBe(false);
-    expect(stem).toContain("if (url) { var a = new Audio(url); a.play().catch(function() {}); }\n                else _stemStudentDeviceVoice(text, speed);");
+    win.__alloIsGlobalMuted = () => false;
+    win._alloGlobalMute = true; // legacy flag
+    expect(run(win)('Muted', 1)).toBe(false);
+    expect(stem).toContain("if (url) _stemPlayTTSUrl(url);\n                else _stemStudentDeviceVoice(text, speed);");
   });
   it('host AI usability answers the tts kind as cloud-voice availability', () => {
     const s = anti.indexOf('function _alloAiUsable(kind, fn) {');

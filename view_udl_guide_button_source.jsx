@@ -36,7 +36,7 @@ function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle })
         </div>
         <div className="text-left">
           <div className="font-bold text-sm">{t('sidebar.ai_guide')}</div>
-          <div className={`text-xs ${showUDLGuide ? 'text-indigo-200' : 'text-slate-600'}`}>{subtitle || t('sidebar.ai_guide_sub')}</div>
+          <div className={`text-xs ${showUDLGuide ? 'text-indigo-200' : 'text-slate-600'}`}>{subtitle || t('sidebar.ai_guide_sub_plain')}</div>
         </div>
       </div>
       {showUDLGuide ? <ChevronDown size={20} aria-hidden="true"/> : <ArrowRight size={20} aria-hidden="true" className="opacity-50 group-hover:opacity-100 transition-opacity"/>}

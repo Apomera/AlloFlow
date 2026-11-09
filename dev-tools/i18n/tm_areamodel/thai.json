@@ -116,13 +116,13 @@
     "log": "📋 บันทึก",
     "reset_2": "↺ รีเซ็ต",
     "hypothesis_when_does_area_rows_cols": "สมมติฐาน: เมื่อใดพื้นที่ = แถว + คอลัมน์?",
-    "area_hypothesis": "??????????????????????????????",
+    "area_hypothesis": "สมมติฐานความสัมพันธ์ของพื้นที่",
     "stuck_show_open_prompts": "🤔 ติดขัด — แสดงคำถามปลายเปิด",
     "find_sizes_where_area_perimeter_rare_i": "หาขนาดที่พื้นที่ = เส้นรอบรูป (จำนวนเต็มที่หายาก)",
     "when_does_swapping_rows_cols_change_an": "เมื่อใดการสลับแถว/คอลัมน์เปลี่ยนแปลงอะไร?",
     "i_understand_explain_in_own_words": "ฉันเข้าใจแล้ว — อธิบายด้วยคำพูดของตัวเอง",
     "explain_commutative_property_area_leng": "อธิบายสมบัติการสลับที่ + พื้นที่ = ยาว × กว้าง",
-    "area_explanation": "?????????????????????????????????????????",
+    "area_explanation": "อธิบายความสัมพันธ์ระหว่างพื้นที่กับการคูณ",
     "design_note_discrete_4_state_classific": "หมายเหตุการออกแบบ: การจำแนกแบบไม่ต่อเนื่อง 4 สถานะ; ไม่มีคะแนนทดสอบพื้นที่; ไม่มีการเฉลย — โดยตั้งใจ"
   },
   "missing": {}

@@ -116,13 +116,13 @@
     "log": "📋 नोंद",
     "reset_2": "↺ रीसेट",
     "hypothesis_when_does_area_rows_cols": "गृहीतक: क्षेत्रफळ = ओळी + स्तंभ कधी होते?",
-    "area_hypothesis": "?????????????? ???????? ???????????",
+    "area_hypothesis": "क्षेत्रफळ संबंधाची परिकल्पना",
     "stuck_show_open_prompts": "🤔 अडकलात — खुले प्रॉम्प्ट दाखवा",
     "find_sizes_where_area_perimeter_rare_i": "क्षेत्रफळ = परिमिती असे आकार शोधा (दुर्मिळ पूर्णांक).",
     "when_does_swapping_rows_cols_change_an": "ओळी/स्तंभ अदलाबदल केव्हा काही बदलते?",
     "i_understand_explain_in_own_words": "मला समजले — स्वतःच्या शब्दांत समजावा",
     "explain_commutative_property_area_leng": "क्रमविनिमेय गुणधर्म + क्षेत्रफळ = लांबी × रुंदी समजावा.",
-    "area_explanation": "????????? ??? ??????? ????? ????? ?????? ???",
+    "area_explanation": "क्षेत्रफळ आणि गुणाकार यांच्यातील संबंध स्पष्ट करा",
     "design_note_discrete_4_state_classific": "डिझाइन टीप: विलग ४-स्थिती वर्गीकरण; क्षेत्रफळ चाचणी गुण नाही; उघड नाही — हेतुपुरस्सर."
   },
   "missing": {}

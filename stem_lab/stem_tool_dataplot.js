@@ -433,7 +433,7 @@ window.StemLab = window.StemLab || {
       try { audio.ctx = new Ctor(); } catch (e) { audio.ctx = null; }
       return audio.ctx;
     }
-    function isMuted() { return !!window._alloGlobalMute; }
+    function isMuted() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; }
     function isPlaying(key) { return !!audio.handle && (key == null || audio.handle.key === key); }
     function stop() { var hd = audio.handle; audio.handle = null; if (hd) hd.stop(); }
     // Call only from a click or key press. Returns { key, duration, stop } or null.
@@ -1211,7 +1211,7 @@ window.StemLab = window.StemLab || {
   var _audioCtx = null;
   function getAC() { if (!_audioCtx) try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} return _audioCtx; }
   function playTone(f, dur, type, vol) {
-    if (window._alloGlobalMute) return;
+    try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {} if (window._alloGlobalMute) return;
     var ac = getAC(); if (!ac) return;
     try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.12)); } catch(e) {}
   }

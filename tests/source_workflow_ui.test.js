@@ -132,12 +132,24 @@ describe('the setup wizard opens its text in the Source view', () => {
     return { fns, deps: new Proxy({ ...fns, t: (k) => k, addToast: noop, history: [], fileInputRef: { current: null }, safeSetItem: noop, ...extra }, { get: (target, prop) => (prop in target ? target[prop] : noop) }) };
   };
 
-  it('replaces an existing source from a link with Undo, and shows it', () => {
+  it('asks before a link replaces an existing source, and shows it', () => {
     const { fns, deps: d } = deps({ inputText: PASTED });
     wizard({ sourceMode: 'url', fetchedContent: PASSAGE, topic: 'plants' }, d);
-    expect(fns.setInputText).toHaveBeenCalledWith(PASSAGE);
-    expect(fns.setSourceReplacement).toHaveBeenCalledWith(expect.objectContaining({ status: 'replaced', previous: PASTED, text: PASSAGE }));
+    expect(fns.setInputText, 'the teacher text stays until they choose').not.toHaveBeenCalled();
+    expect(fns.setSourceReplacement).toHaveBeenCalledWith(expect.objectContaining({ status: 'review', reason: 'unconfirmed', previous: PASTED, text: PASSAGE }));
     expect(fns.openSourceView).toHaveBeenCalledWith({ focus: false });
+  });
+
+  it('puts the same text in again without asking', () => {
+    const { fns, deps: d } = deps({ inputText: PASSAGE });
+    wizard({ sourceMode: 'url', fetchedContent: PASSAGE, topic: 'plants' }, d);
+    expect(fns.setSourceReplacement).not.toHaveBeenCalled();
+  });
+
+  it('on a host without the review step, still fills the box', () => {
+    const { fns, deps: d } = deps({ inputText: PASTED, setSourceReplacement: undefined });
+    wizard({ sourceMode: 'paste', pastedText: PASSAGE }, d);
+    expect(fns.setInputText).toHaveBeenCalledWith(PASSAGE);
   });
 
   it('fills an empty source without an Undo offer, and shows it', () => {

@@ -83,7 +83,9 @@ function harness(data = fixture(), options = {}) {
       revokeObjectURL(url) { revoked.push(url); blobs.delete(url); } },
     fetch: vi.fn(async (url, settings) => {
       fetches.push({ url, settings });
-      const route = routes.get(url);
+      let route = routes.get(url);
+      // `uncached` stands in for what the network returns when a cached copy is bypassed.
+      if (route && route.uncached && settings && settings.cache === 'no-store') route = route.uncached;
       if (!route || route.networkError) throw new Error('fixture network unavailable');
       return createResponse(route);
     }), importModule,
@@ -115,16 +117,39 @@ describe('complete runtime graph verification before execution', () => {
     expect(f.importModule).not.toHaveBeenCalled(); expect(f.workers).toHaveLength(0); expect(f.blobs.size).toBe(0);
     gate.resolve(); await pending;
     expect(f.importModule).toHaveBeenCalledTimes(1);
-    expect(f.fetches.every(call => call.settings.credentials === 'omit' && call.settings.cache === 'no-store')).toBe(true);
+    // Cached copies may serve (every byte is verified); nothing failed, so nothing was refetched uncached.
+    expect(f.fetches.every(call => call.settings.credentials === 'omit' && call.settings.cache === 'default')).toBe(true);
   });
 
+  // A copy that fails verification (a stale or tampered cache entry, or a bad response) gets exactly ONE
+  // uncached refetch of the SAME approved URL, never a different, less-trusted source.
   it.each(['entry', 'worker', 'wasm', 'partB'])('rejects altered %s before importing or constructing any worker', async id => {
     const f = harness(), original = f.data.bodies.get(f.data.input.assets[id].path), changed = Buffer.from(original);
     changed[changed.length - 1] ^= 1;
     f.routes.set(f.path(id), { body: changed });
     await expect(f.policy.prepare('fixture')).rejects.toMatchObject({ code: 'ALLO_RUNTIME_INTEGRITY' });
     expect(f.importModule).not.toHaveBeenCalled(); expect(f.workers).toHaveLength(0); expect(f.blobs.size).toBe(0);
-    expect(f.fetches.filter(call => call.url.endsWith(f.data.input.assets[id].path))).toHaveLength(1);
+    const tries = f.fetches.filter(call => call.url.endsWith(f.data.input.assets[id].path));
+    expect(tries.map(call => [call.url, call.settings.cache])).toEqual([[f.path(id), 'default'], [f.path(id), 'no-store']]);
+  });
+
+  it.each(['entry', 'worker', 'wasm', 'partB'])('a stale cached %s is replaced by its uncached refetch and the graph runs', async id => {
+    const f = harness(), original = f.data.bodies.get(f.data.input.assets[id].path), changed = Buffer.from(original);
+    changed[changed.length - 1] ^= 1;
+    f.routes.set(f.path(id), { body: changed, uncached: { body: original } });
+    const session = await f.policy.prepare('fixture'); await session.load();
+    expect(f.importModule).toHaveBeenCalledTimes(1);
+    expect(f.fetches.filter(call => call.url.endsWith(f.data.input.assets[id].path)).map(call => call.settings.cache)).toEqual(['default', 'no-store']);
+    expect(f.fetches.filter(call => call.settings.cache === 'no-store')).toHaveLength(1);
+    session.dispose();
+  });
+
+  it('a network failure or timeout is not retried uncached (only a failed verification is)', async () => {
+    const f = harness();
+    f.routes.set(f.path('wasm'), { status: 503, body: Buffer.from('unavailable') });
+    for (const url of [new URL('/' + f.data.input.assets.wasm.path, 'https://school.example/app/').href, 'https://alloflow-cdn.pages.dev/' + f.data.input.assets.wasm.path]) f.routes.set(url, { networkError: true });
+    await expect(f.policy.prepare('fixture')).rejects.toMatchObject({ code: 'ALLO_RUNTIME_INTEGRITY' });
+    expect(f.fetches.filter(call => call.settings.cache === 'no-store')).toHaveLength(0);
   });
 
   it.each(['overflow', 'truncated'])('bounds the decoded %s body and never tries a less-trusted fallback', async mode => {
@@ -132,7 +157,8 @@ describe('complete runtime graph verification before execution', () => {
     f.routes.set(f.path('wasm'), { chunks: mode === 'overflow' ? [approved, Buffer.from([1])] : [approved.subarray(0, -1)] });
     await expect(f.policy.prepare('fixture')).rejects.toMatchObject({ code: 'ALLO_RUNTIME_INTEGRITY' });
     expect(f.readers.some(reader => reader.cancelled)).toBe(true);
-    expect(f.fetches.filter(call => call.url.endsWith('/wasm.wasm'))).toHaveLength(1);
+    // the same approved URL twice (cached, then uncached), and no other source
+    expect(f.fetches.filter(call => call.url.endsWith('/wasm.wasm')).map(call => [call.url, call.settings.cache])).toEqual([[f.path('wasm'), 'default'], [f.path('wasm'), 'no-store']]);
     expect(f.importModule).not.toHaveBeenCalled();
   });
 

@@ -39,7 +39,9 @@ compiler stops being an orphan (nothing else calls `compileTutorial`). No compos
 | `tts_engines.cjs` | `kokoro` (local, offline after first download, **English only**) or `sapi` (Windows dev fallback). |
 | `compile_tutorial.cjs` | The CLI and the adapters (Playwright capture / spotlight / actions, pre-synthesized narration, ffmpeg composite). |
 | `verify_compiled.cjs` | Checks the final MP4s with ffprobe/ffmpeg: codecs, clean decode, captions, narration placement, click-to-reaction sync. |
-| `compile_tutorial.test.mjs` | 24 unit tests (`node --test`); with `storyboard.test.mjs` that is 33. Some use the REAL guided-mode data and the REAL compiler module. |
+| `login_capture.cjs` | One-time, by hand: save a signed-in browser session for `--auth` (see **Logins and secrets**). |
+| `compile_tutorial.test.mjs` | 26 unit tests (`node --test`). Some use the REAL guided-mode data and the REAL compiler module. `storyboard.test.mjs` adds 12. |
+| `login_capture.test.mjs` | 4 browser tests of the login capture against a local site (needs Edge/Chrome; `SPIKE_BROWSER=chromium` to change). |
 
 ```
 npm install                                          # once; kokoro-js (Apache-2.0) lands in spike/node_modules
@@ -58,6 +60,27 @@ How the pieces stay honest:
   "official tutorial" does not: it sets React state directly, so it shows where things are, not how to operate them.
 
 **Demo or sandbox accounts only.** The recording captures everything on screen.
+
+## Logins and secrets (read this before pointing it at a real site)
+
+Workflow files are committed to git, so **no password, token or session may ever be written into one.** The tool enforces it:
+
+```
+node compile_tutorial.cjs --login=easycbm --url=https://the-site/     # once: a browser opens, YOU sign in (SSO, MFA, CAPTCHA all work), press Enter
+node compile_tutorial.cjs workflows/x.workflow.json --auth=easycbm     # or  "start": { "auth": "easycbm" }  in the workflow
+```
+
+- The saved session (cookies + local storage) goes to `auth/<name>.json`, which `.gitignore` excludes. **That file IS the login**: anyone with
+  it is signed in as that account until the session expires. Use a demo/sandbox account, never share the file, delete it when the tutorial is done.
+  `--login` refuses to write it anywhere git would not ignore it. A session that has expired shows up as a setup step that cannot find its page: run `--login` again.
+- If a secret really has to be typed, it comes from the environment, never the file:
+  `{ "kind": "type", "selector": "input[type=password]", "textFromEnv": "SITE_PASSWORD" }`. Validation rejects an inline `text` aimed at a
+  password-like selector, a missing variable stops the run before anything is synthesized or recorded, and the value is logged as `[redacted]`
+  (add `"secret": true` to redact any other typed text). The browser shows typed passwords as dots, but Edge adds a "reveal" eye to password fields: never click it in a workflow.
+- URLs are printed without their query or fragment (magic links carry one-time tokens).
+- What the tool cannot protect you from: the recording and the failure screenshot show whatever is on screen, so a real teacher's name,
+  a real student's name or a real score will be in the video. `compiled/` is git-ignored, but treat `_work/` (kept with `--keep`) as sensitive too.
+- Terms: a site's terms may restrict automated access or recording even when they do not mention it. For anything beyond internal staff PD, ask the vendor first.
 
 Two workflows ship: `demo_tracker` (a fictional page, fast, no network) and `alloflow_text_adaptation` (the REAL deployed app,
 https://alloflow-cdn.pages.dev/app/, the `source-input` + `simplified` steps of AlloFlow's own guided tour, real clicks and typing, no AI needed).

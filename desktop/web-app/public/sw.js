@@ -93,6 +93,31 @@ async function releaseResponse(assetUrl) {
     } catch (_) { return releaseUnavailable(); }
 }
 
+// Verified-runtime engine files (Kokoro, Piper, OCR, DuckDB: 2-80 MB each). The
+// page checks every byte against its SHA-384 record before running one, so a
+// cached copy is safe to serve: cache-first means a repeat visit skips the
+// download and an offline start works. A copy that fails the page's check is
+// refetched with cache 'no-store', which bypasses and REPLACES the entry here.
+// The cache write is not awaited: the body must stream to the page while it is
+// stored, or the page's 60 s no-data timer would fire on a slow link. For the
+// same reason this runs BEFORE the release-digest rule below (postbuild also
+// lists these files in PRECACHE_DIGESTS): releaseResponse() reads and hashes a
+// whole file before answering, so a 20 MB engine on a slow link sent the page
+// nothing for minutes. (Until 2026-11 that rule never saw these files at all:
+// the page asked with cache 'no-store', which passed straight to the network.)
+// The policy's first choice is under the app's own path (/app/runtime_assets/...).
+const RUNTIME_ASSET_PATH = /^\/(?:[A-Za-z0-9_-]+\/)?(?:runtime_assets|duckdb-assets)\//;
+async function runtimeAssetResponse(request) {
+    const cache = await caches.open(CACHE_NAME);
+    if (request.cache !== 'no-store') {
+        const stored = await cache.match(request.url);
+        if (cacheable(stored)) return stored;
+    }
+    const response = await fetch(request.url, { cache: request.cache === 'no-store' ? 'no-store' : 'no-cache', credentials: 'omit' });
+    if (response.status === 200 && cacheable(response)) cache.put(request.url, response.clone()).catch(() => {});
+    return response;
+}
+
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing:', CACHE_NAME);
     // Verify the complete boot set before writing any candidate cache entry.
@@ -142,6 +167,12 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     if (event.request.method !== 'GET') return;
     if (url.origin !== self.location.origin && event.request.mode !== 'navigate') return;
+
+    if (url.origin === self.location.origin && RUNTIME_ASSET_PATH.test(url.pathname) && !url.search
+        && event.request.mode !== 'navigate' && !event.request.headers.has('Authorization')) {
+        event.respondWith(runtimeAssetResponse(event.request));
+        return;
+    }
 
     // Classroom API responses and credential-bearing/private requests must
     // never enter an offline cache or use a cached substitute.

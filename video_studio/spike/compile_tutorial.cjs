@@ -20,7 +20,12 @@
  *   calibration, engine, warnings).
  *
  *   node compile_tutorial.cjs workflows/demo_tracker.workflow.json [--tts=kokoro|sapi] [--voice=af_heart]
- *        [--browser=msedge|chrome|chromium] [--out=DIR] [--keep]
+ *        [--browser=msedge|chrome|chromium] [--out=DIR] [--keep] [--auth=NAME]
+ *
+ * LOGINS: never put a password in a workflow (this folder is committed to git). Save a login once, by hand:
+ *   node compile_tutorial.cjs --login=NAME --url=https://the-site/        (see login_capture.cjs)
+ * then start a workflow signed in with --auth=NAME or "start": { "auth": "NAME" }. A secret that must be
+ * typed comes from the environment: { "kind": "type", "selector": ..., "textFromEnv": "SITE_PASSWORD" }.
  *
  * USE DEMO OR SANDBOX ACCOUNTS ONLY. The recording captures everything on screen.
  */
@@ -112,13 +117,28 @@ function sceneChanges(file) {
 }
 
 async function main() {
-  if (!positional[0]) { console.error('usage: node compile_tutorial.cjs <workflow.json> [--tts=kokoro|sapi] [--voice=af_heart] [--browser=msedge|chrome|chromium] [--out=DIR] [--keep]'); process.exit(2); }
+  if (arg('login', null) !== null) {
+    // one-time, by hand: save a signed-in session for --auth (no workflow needed)
+    await require('./login_capture.cjs').captureLogin({ url: arg('url', ''), name: arg('login', ''), spikeDir: SPIKE, chromium, browser: arg('browser', 'msedge') });
+    return;
+  }
+  if (!positional[0]) { console.error('usage: node compile_tutorial.cjs <workflow.json> [--tts=kokoro|sapi] [--voice=af_heart] [--browser=msedge|chrome|chromium] [--out=DIR] [--keep] [--auth=NAME]\n   or: node compile_tutorial.cjs --login=NAME --url=https://the-site/    (save a login first)'); process.exit(2); }
   const wfPath = path.resolve(positional[0]);
   let wf = JSON.parse(fs.readFileSync(wfPath, 'utf8'));
   // steps with "fromGuided" take their wording and anchor from AlloFlow's own guided-mode data, so the narration cannot drift from it
   if (Array.isArray(wf.steps) && wf.steps.some(s => s && s.fromGuided !== undefined)) wf = L.resolveGuidedRefs(wf, L.loadGuidedConfig(REPO));
   const v = L.validateWorkflow(wf);
   if (!v.ok) { console.error('Invalid workflow:\n - ' + v.errors.join('\n - ')); process.exit(2); }
+  // Secrets come from the environment: find out NOW, not after the voices are synthesized and the browser is open.
+  const missing = L.missingEnv(wf, process.env);
+  if (missing.length) { console.error('Set these environment variables first (they supply text the workflow types): ' + missing.join(', ')); process.exit(2); }
+  const authName = arg('auth', wf.start.auth || null);
+  let authFile = null;
+  if (authName) {
+    authFile = L.authStatePath(SPIKE, authName);
+    if (!fs.existsSync(authFile)) { console.error('No saved login "' + authName + '". Save one first (a browser opens; sign in by hand, then press Enter):\n  node compile_tutorial.cjs --login=' + authName + ' --url=' + L.redactUrl(wf.start.url)); process.exit(2); }
+    log('using saved login "' + authName + '" (saved ' + ((Date.now() - fs.statSync(authFile).mtimeMs) / 3600000).toFixed(1) + ' h ago; an expired session shows up as a setup step that cannot find its page)');
+  }
 
   const viewport = wf.viewport || { width: 1280, height: 720 };
   const slug = String(wf.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'tutorial';
@@ -211,7 +231,7 @@ async function main() {
     log: () => {},
     startCapture: async () => {
       browser = await chromium.launch(launchOpts);
-      const ctx = await browser.newContext({ viewport, recordVideo: { dir: path.join(work, 'rec'), size: viewport } });
+      const ctx = await browser.newContext(Object.assign({ viewport, recordVideo: { dir: path.join(work, 'rec'), size: viewport } }, authFile ? { storageState: authFile } : {}));
       await ctx.addInitScript(INIT_SCRIPT);
       page = await ctx.newPage();
       rec.pageCreatedWall = Date.now();
@@ -221,7 +241,7 @@ async function main() {
       for (const a of wf.start.setup || []) {
         const ts = performance.now();
         if (a.kind === 'click') await page.locator(a.selector).first().click({ timeout: 30000 });
-        else if (a.kind === 'type') { await page.locator(a.selector).first().click({ timeout: 30000 }); await page.keyboard.type(a.text, { delay: a.delayMs === undefined ? 20 : a.delayMs }); }
+        else if (a.kind === 'type') { await page.locator(a.selector).first().click({ timeout: 30000 }); await page.keyboard.type(L.resolveTypedText(a, process.env), { delay: a.delayMs === undefined ? 20 : a.delayMs }); }
         else if (a.kind === 'press') await page.keyboard.press(a.key);
         else if (a.kind === 'goto') await page.goto(a.url, { waitUntil: 'load', timeout: 60000 });
         else if (a.kind === 'wait') await sleep(a.ms);
@@ -258,8 +278,8 @@ async function main() {
         if (a.kind === 'click') await clickSelector(a.selector, 'click', step.id);
         else if (a.kind === 'type') {
           await clickSelector(a.selector, 'click', step.id);
-          rec.events.push({ kind: 'key', stepId: step.id, t: r3(sinceStart()), selector: a.selector, text: a.text });
-          await page.keyboard.type(a.text, { delay: a.delayMs === undefined ? 110 : a.delayMs });
+          rec.events.push({ kind: 'key', stepId: step.id, t: r3(sinceStart()), selector: a.selector, text: L.typedForLog(a) });
+          await page.keyboard.type(L.resolveTypedText(a, process.env), { delay: a.delayMs === undefined ? 110 : a.delayMs });
         } else if (a.kind === 'press') { rec.events.push({ kind: 'key', stepId: step.id, t: r3(sinceStart()), key: a.key }); await page.keyboard.press(a.key); }
         else if (a.kind === 'goto') await page.goto(a.url, { waitUntil: 'load', timeout: 60000 });
         else if (a.kind === 'wait') await sleep(a.ms);
@@ -329,7 +349,7 @@ async function main() {
 
     const stepsJson = {
       generator: 'compile_tutorial.cjs (spike)', workflow: path.basename(wfPath), title: wf.title,
-      engine: { tts: tts.name, voice: tts.voice, languages: tts.languages, browser: arg('browser', 'msedge') },
+      engine: { tts: tts.name, voice: tts.voice, languages: tts.languages, browser: arg('browser', 'msedge') }, savedLogin: authName || null,
       manifest, timeline: timeline.map((b, i) => ({ ...b, text: rec.clips[i].text, audioSec: r3(rec.clips[i].samples.length / rec.clips[i].sampleRate), clipOnsetSec: rec.clips[i].onsetSec === null ? null : r3(rec.clips[i].onsetSec) })),
       events: rec.events, calibration: { ...calibration, compileClockShiftSec: r3(shift) }, actualSeconds: r3(compiled.actualSeconds), videoSeconds: r3(videoSeconds), audioPeak: mix.peak, synth: synthLog,
       timingsMs: { composite: Math.round(performance.now() - t0), ffmpegEncodes: encodeMs }, warnings,

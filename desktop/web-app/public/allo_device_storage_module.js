@@ -1004,8 +1004,19 @@
     transport: null,
     bridgeUrl: DEFAULT_BRIDGE_URL,
     writeQueue: [],            // {op, params} queued while a bridge backend is disconnected
-    flushPromise: null
+    flushPromise: null,
+    // Set when the person presses Deny or leaves the prompt unanswered until it
+    // expires. Every save calls connect(), and each new frame would ask again
+    // (and take focus), so this lasts for the visit; only connectWithApproval()
+    // (an explicit "Open device storage") asks again.
+    declined: false,
+    declinedCode: ''
   };
+  var DENIED = 'allo/approval-denied';
+  var TIMED_OUT = 'allo/consent-timeout';
+  var DECLINE_MESSAGES = {};
+  DECLINE_MESSAGES[DENIED] = 'Device storage access was denied. AlloFlow will not ask again until you choose Open device storage.';
+  DECLINE_MESSAGES[TIMED_OUT] = 'Device storage was not approved in time. AlloFlow will not ask again until you choose Open device storage.';
 
   function activeBackend() {
     if (state.backendName === 'direct') return directBackend;
@@ -1097,13 +1108,25 @@
     connect: function () {
       if (state.backendName === 'direct' || state.backendName === 'memory') return Promise.resolve(api.status());
       if (state.backendName === 'unset') api.init({});
+      if (state.declined) {
+        var code = state.declinedCode || DENIED;
+        return Promise.reject(storageError(code, DECLINE_MESSAGES[code]));
+      }
       var kind = state.backendName === 'bridge-iframe' ? 'iframe' : 'popup';
       if (!state.transport || state.transport.kind !== kind || !state.transport.alive()) {
         if (state.transport) state.transport.teardown();
         state.transport = new BridgeTransport(kind);
       }
       return state.transport.connect(state.bridgeUrl).then(function () {
+        state.declined = false;
+        state.declinedCode = '';
         return flushQueue();
+      }, function (error) {
+        if (error && (error.code === DENIED || error.code === TIMED_OUT)) {
+          state.declined = true;
+          state.declinedCode = error.code;
+        }
+        throw error;
       }).then(function () { return api.status(); });
     },
     /**
@@ -1122,6 +1145,8 @@
       // document, which clears its in-session denial and re-raises the consent
       // prompt against the bucket that actually holds their work.
       if (state.backendName === 'unset') api.init({});
+      state.declined = false;  // the person asked to be asked again
+      state.declinedCode = '';
       return api.connect();
     },
     disconnect: function () {
@@ -1157,6 +1182,7 @@
       return {
         backend: state.backendName,
         connected: !!activeBackend(),
+        declined: state.declined,
         queuedWrites: state.writeQueue.length,
         bridgeUrl: state.bridgeUrl
       };

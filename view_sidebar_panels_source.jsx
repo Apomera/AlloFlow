@@ -668,6 +668,11 @@ function ToolCatalogControls(props) {
   const filterActive = !!String(query || '').trim() || (group && group !== 'all');
   const canHide = typeof onHide === 'function';
   const clearFilter = () => { onQueryChange(''); onGroupChange('all'); };
+  const groupLabel = translate('sidebar.tool_finder_group_' + group) || ((TOOL_CATALOG_PURPOSE_FILTERS.find(([id]) => id === group) || [])[1]) || '';
+  const filterNote = (String(query || '').trim()
+    ? (translate('sidebar.tool_finder_filtered_search') || 'Showing tools that match your search: {shown} of {total}.')
+    : (translate('sidebar.tool_finder_filtered_group') || '{filter}: showing {shown} of {total} tools.'))
+    .replace('{filter}', groupLabel).replace('{shown}', String(shownCount)).replace('{total}', String(totalCount || shownCount));
   return (
     <section id="tour-tool-finder" data-testid="tool-catalog-controls" aria-labelledby="tool-catalog-title" className={`rounded-2xl border border-slate-200 bg-white shadow-sm ${isExpanded ? 'p-3' : 'px-3 py-2'}`}>
       <div className="flex items-center justify-between gap-3">
@@ -699,9 +704,8 @@ function ToolCatalogControls(props) {
       {(filterActive || canHide) && (
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           {filterActive ? (
-            <p className="min-w-0 flex-1 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] font-semibold leading-snug text-amber-900">
-              {(translate('sidebar.tool_finder_filtered') || 'A filter is on: showing {shown} of {total} tools.')
-                .replace('{shown}', String(shownCount)).replace('{total}', String(totalCount || shownCount))}
+            <p className="min-w-0 flex-1 rounded-lg bg-slate-100 px-2 py-1.5 text-[11px] font-semibold leading-snug text-slate-700">
+              {filterNote}
             </p>
           ) : <span aria-hidden="true" />}
           {canHide && (
@@ -2974,7 +2978,7 @@ function SourceInputPanel(props) {
                 {sourceStatus === 'empty' ? (
                   <div data-source-ways-in id="tour-source-check" className="p-4">
                     <button type="button" data-source-paste onClick={() => openSource(true)} className="w-full min-h-11 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-800">{panelText('sidebar.source_paste_or_type', 'Paste or type your own text')}</button>
-                    <p className="m-0 mt-2 text-xs text-slate-600">{panelText('sidebar.source_ways_in_hint', 'Or start from Upload, Link, Books or Write with AI above. Your text opens in the source view.')}</p>
+                    <p className="m-0 mt-2 text-xs text-slate-600">{panelText('sidebar.source_ways_in_hint_named', 'Or start from Upload, Find online, Reading catalog or Write with AI above. Your text opens in the source view.')}</p>
                   </div>
                 ) : (
                   <div data-source-summary data-help-key="source_summary_card" data-source-status={sourceStatus} className="m-4 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800">
@@ -5446,6 +5450,7 @@ function SourceInputShellView(props) {
   const MoreSources = collapseSources ? 'details' : React.Fragment;
   const SourceOptions = collapseSources ? 'div' : React.Fragment;
   const sourceActionGrid = 'allo-source-action-grid';
+  const sourcePillClass = 'text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed';
   const moreSourcesProps = collapseSources ? { className: 'col-span-full min-w-0', 'data-help-key': 'source_more_options' } : {};
   // Reopens saved PDF Accessibility work. Shared by the Open PDF project button and,
   // through window.__alloOpenPdfProjectFile, the Educator tools Document accessibility card.
@@ -5631,7 +5636,7 @@ function SourceInputShellView(props) {
                          aria-label={t('common.upload_file') || 'Upload file'}
                         onClick={() => fileInputRef.current.click()}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm"
+                        className={sourcePillClass}
                         title={t('input.upload_tooltip')}
                      >
                         {isExtracting ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none"/> : <Upload size={12} />}
@@ -5641,7 +5646,7 @@ function SourceInputShellView(props) {
                      {collapseSources && <summary className="flex min-h-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white px-2 text-xs font-medium text-slate-700"><ChevronDown size={12} aria-hidden="true" />{t('input.actions.more_sources') || 'More sources'}</summary>}
                      <SourceOptions {...(collapseSources ? { className: 'mt-2 ' + sourceActionGrid } : {})}>
                      {/* Opens only PDF Accessibility work; lesson projects open from Class & Materials. */}
-                     <label data-source-open-pdf-project="true" className="text-xs flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none shadow-sm cursor-pointer" title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
+                     <label data-source-open-pdf-project="true" className={sourcePillClass + ' cursor-pointer'} title={t('input.open_pdf_project_tooltip') || 'Reopen PDF Accessibility work you saved earlier. Lesson projects open from Class & Materials.'}>
                         <FileDown size={12} /> {t('input.open_pdf_project') || 'Open PDF project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0];
@@ -5657,10 +5662,10 @@ function SourceInputShellView(props) {
                             setShowUrlInput(!showUrlInput);
                         }}
                         disabled={isExtracting || isGeneratingSource} aria-busy={isGeneratingSource}
-                        className="text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                        className={sourcePillClass}
                      >
                         <Link size={12} />
-                        {showUrlInput ? t('common.cancel') : t('common.link')}
+                        {showUrlInput ? t('common.cancel') : (t('input.find_online') || 'Find online')}
                      </button>
                      <button type="button"
                         data-help-key="source_generate_btn" onClick={() => {
@@ -5672,7 +5677,7 @@ function SourceInputShellView(props) {
                         disabled={isGeneratingSource || isExtracting} aria-busy={isGeneratingSource}
                         aria-expanded={!!showSourceGen}
                         title={headerText('input.actions.write_with_ai_hint', 'Write a new source passage with AI. It does not use your current source.')}
-                        className="text-xs flex items-center gap-1 bg-violet-50 border border-violet-300 text-violet-800 hover:bg-violet-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                        className={sourcePillClass}
                      >
                         <Sparkles size={12} aria-hidden="true" />
                         {showSourceGen ? t('common.cancel') : changeOpen ? headerText('input.actions.replace_with_ai', 'Replace with an AI-written passage') : headerText('input.actions.write_with_ai', 'Write with AI')}
@@ -5684,10 +5689,10 @@ function SourceInputShellView(props) {
                         onClick={() => setIsReadingLibraryOpen(true)}
                         disabled={isExtracting || isGeneratingSource}
                         title={t('input.actions.books_hint') || 'Open picture books — any book can become your source text'}
-                        className="text-xs flex items-center gap-1 bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none"
+                        className={sourcePillClass}
                      >
-                        <span aria-hidden="true">📖</span>
-                        {t('input.actions.books_short') || 'Books'}
+                        <BookOpen size={12} aria-hidden="true" />
+                        {t('input.reading_catalog') || 'Reading catalog'}
                      </button>
                      </SourceOptions>
                      </MoreSources>

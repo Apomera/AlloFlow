@@ -116,13 +116,13 @@
     "log": "📋 લોગ",
     "reset_2": "↺ રીસેટ",
     "hypothesis_when_does_area_rows_cols": "પૂર્વધારણા: ક્ષેત્રફળ = પંક્તિઓ + સ્તંભ ક્યારે થાય?",
-    "area_hypothesis": "??????????? ??????? ??????????",
+    "area_hypothesis": "ક્ષેત્રફળ સંબંધની પરિકલ્પના",
     "stuck_show_open_prompts": "🤔 અટકી — ખુલ્લા પ્રોમ્પ્ટ બતાવો",
     "find_sizes_where_area_perimeter_rare_i": "ક્ષેત્રફળ = પરિમિતિ હોય તેવા કદ શોધો (દુર્લભ પૂર્ણાંક).",
     "when_does_swapping_rows_cols_change_an": "પંક્તિઓ/સ્તંભ અદલાબદલી ક્યારે કંઈક બદલે છે?",
     "i_understand_explain_in_own_words": "હું સમજું છું — પોતાના શબ્દોમાં સમજાવો",
     "explain_commutative_property_area_leng": "ક્રમવિનિમય ગુણધર્મ + ક્ષેત્રફળ = લંબાઈ × પહોળાઈ સમજાવો.",
-    "area_explanation": "????????? ??? ????????? ????? ??????",
+    "area_explanation": "ક્ષેત્રફળ અને ગુણાકારનો સંબંધ સમજાવો",
     "design_note_discrete_4_state_classific": "ડિઝાઇન નોંધ: વિવિક્ત ૪-સ્થિતિ વર્ગીકરણ; કોઈ ક્ષેત્રફળ કસોટી સ્કોર નહીં; કોઈ ઉઘાડ નહીં — જાણીજોઈને."
   },
   "missing": {}

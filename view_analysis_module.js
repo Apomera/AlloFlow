@@ -126,6 +126,16 @@ function AnalysisView(props) {
   var handleAiRefineSource = props.handleAiRefineSource;
   var handleFormatText = props.handleFormatText;
   var handleAnalysisTextChange = props.handleAnalysisTextChange;
+  // Fix grammar, Refine with AI and a factual fix also rewrite the source box; offer one Undo for that.
+  var analysisSourceUndo = isTeacherMode && generatedContent && typeof props.getAnalysisSourceUndo === 'function' ? props.getAnalysisSourceUndo(generatedContent.id, generatedContent.data && generatedContent.data.originalText) : null;
+  var undoAnalysisSourceEdit = function () {
+    var result = typeof props.onUndoAnalysisSourceEdit === 'function' && generatedContent ? props.onUndoAnalysisSourceEdit(generatedContent.id) : null;
+    if (!result || !result.ok) {
+      addToast(analysisLabel('analysis.source_undo_unavailable', 'This change can no longer be undone here. Ctrl+Z may still bring back the earlier wording.'), 'warning');
+      return;
+    }
+    addToast(result.sourceRestored ? analysisLabel('analysis.source_undo_done', 'The earlier wording is back in the report and in your source box.') : analysisLabel('analysis.source_undo_report_only', 'The earlier wording is back in the report. Your source box had changed since, so it was left as it is.'), 'success');
+  };
   // Download-as-MP3 for the ORIGINAL source text — same AudioHelpers flow
   // the leveled-text view uses, so audio of the unleveled text is available
   // too (not just the simplified version).
@@ -1465,7 +1475,18 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
       role: "status",
       className: "mt-3 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded p-2"
     }, analysisLabel('analysis.grammar_unreadable', 'Some grammar notes could not be read. Run the analysis again to review them.')));
-  })()), /*#__PURE__*/React.createElement("div", {
+  })()), analysisSourceUndo && /*#__PURE__*/React.createElement("div", {
+    "data-analysis-source-undo": true,
+    className: "mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950"
+  }, /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "m-0 flex-1"
+  }, analysisLabel('analysis.source_updated_note', 'Your passage was updated in the source box too. The earlier wording is kept.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-analysis-source-undo-button": true,
+    onClick: undoAnalysisSourceEdit,
+    className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100"
+  }, analysisLabel('analysis.source_updated_undo', 'Undo this change'))), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3 flex-wrap gap-2"

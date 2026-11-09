@@ -270,7 +270,9 @@ for (const key of advertisedAlt) {
   // Alt+B is handled as 'Backspace' || 'b'; match either the letter or a named
   // key beginning with it.
   const handled = new RegExp("e\\.key === '" + key + "'|e\\.key === '" + key.toUpperCase() + "'", 'i').test(altBlock)
-    || new RegExp("e\\.key === '" + key + "[a-z]+'", 'i').test(altBlock);
+    || new RegExp("e\\.key === '" + key + "[a-z]+'", 'i').test(altBlock)
+    // A runtime block's own listener (Listen's Alt+R) tests altKey and the layout-free code on one line.
+    || new RegExp("e\\.altKey[^\\n]*e\\.code === 'Key" + key.toUpperCase() + "'").test(canonicalModule);
   if (!handled) {
     fail(MODULE_COPIES[0] + ' shortcut help advertises Alt+' + key.toUpperCase() + ' with no matching handler');
   }

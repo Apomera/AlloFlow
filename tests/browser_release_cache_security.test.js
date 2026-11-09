@@ -261,3 +261,59 @@ describe('approved browser release assets', () => {
     }
   }, 90000);
 });
+
+// Verified-runtime engine files (Kokoro, Piper, OCR, DuckDB) are checked byte-for-byte by the
+// page's runtime policy, so the worker may serve them cache-first: a repeat visit skips a
+// 20-80 MB download and an offline start works. The policy's retry after a failed check uses
+// cache 'no-store', which must bypass AND replace the stored copy.
+describe('verified-runtime engine files', () => {
+  const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+  const engine = (body, headers = {}) => new Response(body, { status: 200, headers: { 'Cache-Control': 'public, max-age=0, must-revalidate', ...headers } });
+  const stored = (h, relative) => h.stores.get(h.cacheName)?.get(new URL(relative, h.base).href);
+
+  it('serve cache-first, so a repeat request and an offline request never reach the network', async () => {
+    const h = harness(fixture()); let calls = 0;
+    h.setNetwork(() => { calls++; return engine('ENGINE-BYTES'); });
+    for (const relative of ['runtime_assets/engine/kokoro.wasm', '/runtime_assets/engine/kokoro.wasm', '/duckdb-assets/duckdb-mvp.wasm.part00']) {
+      calls = 0;
+      expect(await (await h.fetch(relative)).text()).toBe('ENGINE-BYTES'); await tick();
+      expect(calls).toBe(1);
+      expect(await (await h.fetch(relative)).text()).toBe('ENGINE-BYTES');
+      expect(calls).toBe(1);
+    }
+    h.setNetwork(() => { throw new TypeError('offline'); });
+    expect(await (await h.fetch('runtime_assets/engine/kokoro.wasm')).text()).toBe('ENGINE-BYTES');
+  });
+
+  it('a no-store request (the retry after a failed check) bypasses the stored copy and replaces it', async () => {
+    const h = harness(fixture());
+    await h.put(h.cacheName, 'runtime_assets/engine/kokoro.wasm', engine('STALE'));
+    h.setNetwork(() => engine('APPROVED'));
+    expect(await (await h.fetch('runtime_assets/engine/kokoro.wasm', { cache: 'no-store' })).text()).toBe('APPROVED');
+    expect(h.requests.at(-1).options.cache).toBe('no-store');
+    await tick();
+    expect(await stored(h, 'runtime_assets/engine/kokoro.wasm').clone().text()).toBe('APPROVED');
+    h.setNetwork(() => { throw new TypeError('offline'); });
+    expect(await (await h.fetch('runtime_assets/engine/kokoro.wasm')).text()).toBe('APPROVED');
+  });
+
+  it('stores nothing that is not a plain 200, cacheable, credential-free engine file', async () => {
+    const h = harness(fixture());
+    h.setNetwork(() => new Response('missing', { status: 404 }));
+    await h.fetch('runtime_assets/engine/gone.wasm'); await tick();
+    expect(stored(h, 'runtime_assets/engine/gone.wasm')).toBeUndefined();
+    h.setNetwork(() => engine('PRIVATE', { 'Cache-Control': 'private, no-store' }));
+    await h.fetch('runtime_assets/engine/private.wasm'); await tick();
+    expect(stored(h, 'runtime_assets/engine/private.wasm')).toBeUndefined();
+    // a credentialed request keeps the existing never-cache rule
+    h.setNetwork(() => engine('TOKEN'));
+    await h.fetch('runtime_assets/engine/auth.wasm', { headers: new Headers({ Authorization: 'Bearer x' }) }); await tick();
+    expect(stored(h, 'runtime_assets/engine/auth.wasm')).toBeUndefined();
+    // anything else requested no-store is still never cached (classroom API privacy rule)
+    await h.fetch('lesson_data.json', { cache: 'no-store' }); await tick();
+    expect(stored(h, 'lesson_data.json')).toBeUndefined();
+    // a deeper look-alike path is not an engine file
+    await h.fetch('/a/b/runtime_assets/x.wasm', { cache: 'no-store' }); await tick();
+    expect(stored(h, '/a/b/runtime_assets/x.wasm')).toBeUndefined();
+  });
+});

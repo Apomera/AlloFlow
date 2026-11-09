@@ -66,6 +66,8 @@ function CanvasRecoveryDialogView(props) {
     storageManagerInventory,
     t
   } = props;
+  // A Deny is remembered for the visit, so a plain retry can no longer ask; offer the approval window.
+  const needsStorageApproval = canvasRecoveryErrorCode === 'allo/approval-required' || canvasRecoveryErrorCode === 'allo/approval-denied' || canvasRecoveryErrorCode === 'allo/consent-timeout';
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/75 p-4",
     role: "presentation"
@@ -112,16 +114,16 @@ function CanvasRecoveryDialogView(props) {
     type: "button",
     "data-recovery-autofocus": "true",
     disabled: Boolean(canvasRecoveryBusyId),
-    onClick: canvasRecoveryErrorCode === 'allo/approval-required' ? () => void approveAndRetryCanvasRecoveryStorage() : retryCanvasRecoveryStorage,
+    onClick: needsStorageApproval ? () => void approveAndRetryCanvasRecoveryStorage() : retryCanvasRecoveryStorage,
     className: "min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60"
-  }, canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : canvasRecoveryErrorCode === 'allo/approval-required' ? 'Open device storage' : 'Retry device recovery'), /*#__PURE__*/React.createElement("button", {
+  }, canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : needsStorageApproval ? 'Open device storage' : 'Retry device recovery'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: Boolean(canvasRecoveryBusyId),
     onClick: continueWithoutCanvasRecovery,
     className: "min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60"
   }, t('storage.work_without_recovery') || 'Work without device recovery')), /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-xs leading-relaxed text-slate-600"
-  }, canvasRecoveryErrorCode === 'allo/approval-required' ? 'Gemini Canvas requires a brief device-storage approval window. Continuing leaves unknown saved data untouched and recovery saving paused.' : 'Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.')) : canvasRecoveryDialogMode === 'choice' ? (() => {
+  }, needsStorageApproval ? 'Gemini Canvas requires a brief device-storage approval window. Continuing leaves unknown saved data untouched and recovery saving paused.' : 'Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.')) : canvasRecoveryDialogMode === 'choice' ? (() => {
     const latest = canvasRecoveryStore.snapshots[0];
     if (!latest) return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
       className: "rounded-xl bg-slate-50 p-4 text-sm text-slate-700"

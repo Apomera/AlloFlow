@@ -181,7 +181,7 @@ function FabStack(props) {
         }
 
         .alloflow-fab-stack {
-          --alloflow-fab-bottom: max(calc(32px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px));
+          --alloflow-fab-bottom: max(calc(32px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px), var(--alloflow-host-corner-clear, 0px));
           bottom: var(--alloflow-fab-bottom) !important;
           transition-property: opacity, transform;
         }
@@ -260,7 +260,7 @@ function FabStack(props) {
 
         @media (max-width: 767px) {
           .alloflow-fab-stack {
-            --alloflow-fab-bottom: max(calc(14px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px));
+            --alloflow-fab-bottom: max(calc(14px + env(safe-area-inset-bottom, 0px)), var(--alloflow-fab-footer-clearance, 0px), var(--alloflow-host-corner-clear, 0px));
             right: calc(12px + env(safe-area-inset-right, 0px)) !important;
           }
           .alloflow-student-tools-panel {
@@ -274,7 +274,7 @@ function FabStack(props) {
             border-bottom: 0 !important;
             border-left: 0 !important;
             border-radius: 26px 26px 0 0 !important;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--alloflow-host-corner-clear, 0px));
             transform-origin: bottom center;
           }
           .alloflow-student-tools-handle {

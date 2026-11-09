@@ -860,8 +860,8 @@ function UDLGuideModal(props) {
         ref: guideRef,
         role: "dialog",
         "aria-labelledby": "udl-guide-title-collapsed",
-        style: { zIndex: showStemLab ? 10490 : void 0 },
-        className: `allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`
+        style: { zIndex: showStemLab ? 10490 : void 0, bottom: "calc(1rem + var(--alloflow-host-corner-clear, 0px))" },
+        className: `allo-docsuite fixed z-[100] right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`
       },
       /* @__PURE__ */ React.createElement("div", { className: `px-3 py-2 flex items-center gap-2 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { id: "udl-guide-title-collapsed", className: "font-bold text-sm" }, tx("chat_guide.header", "AI Guide & Assistant")), isChatProcessing && /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "motion-safe:animate-spin", "aria-hidden": "true" }), isChatProcessing && /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status" }, t("bot.mood_thinking")), /* @__PURE__ */ React.createElement(
         "button",
@@ -891,8 +891,8 @@ function UDLGuideModal(props) {
       ref: guideRef,
       role: "dialog",
       "aria-labelledby": "udl-guide-title",
-      style: { zIndex: showStemLab ? 10490 : void 0, maxWidth: isUDLGuideExpanded ? void 0 : "calc(100vw - 2rem)" },
-      className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}`
+      style: { zIndex: showStemLab ? 10490 : void 0, maxWidth: isUDLGuideExpanded ? void 0 : "calc(100vw - 2rem)", bottom: "calc(1rem + var(--alloflow-host-corner-clear, 0px))" },
+      className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}`
     },
     /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("h2", { id: "udl-guide-title", className: "flex items-center gap-2 font-bold text-base" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, "aria-hidden": "true" }), " ", tx("chat_guide.header", "AI Guide & Assistant")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
       "button",

@@ -437,7 +437,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       try { audio.ctx = new Ctor(); } catch (e) { audio.ctx = null; }
       return audio.ctx;
     }
-    function isMuted() { return !!window._alloGlobalMute; }
+    function isMuted() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; }
     function isPlaying(key) { return !!audio.handle && (key == null || audio.handle.key === key); }
     function stop() { var hd = audio.handle; audio.handle = null; if (hd) hd.stop(); }
     // Call only from a click or key press. Returns { key, duration, stop } or null.

@@ -116,13 +116,13 @@
     "log": "📋 Αρχείο",
     "reset_2": "↺ Επαναφορά",
     "hypothesis_when_does_area_rows_cols": "Υπόθεση: πότε εμβαδόν = γραμμές + στήλες;",
-    "area_hypothesis": "??????? ??? ?? ????? ??? ???????",
+    "area_hypothesis": "Υπόθεση για τη σχέση εμβαδού",
     "stuck_show_open_prompts": "🤔 Κόλλησες — δείξε ανοιχτές προτροπές",
     "find_sizes_where_area_perimeter_rare_i": "Βρες μεγέθη όπου εμβαδόν = περίμετρος (σπάνιοι ακέραιοι).",
     "when_does_swapping_rows_cols_change_an": "Πότε η εναλλαγή γραμμών/στηλών αλλάζει κάτι;",
     "i_understand_explain_in_own_words": "Καταλαβαίνω — εξήγησε με δικά σου λόγια",
     "explain_commutative_property_area_leng": "Εξήγησε την αντιμεταθετική ιδιότητα + εμβαδόν = μήκος × πλάτος.",
-    "area_explanation": "???????? ?? ????? ??????? ??? ???????????????",
+    "area_explanation": "Εξηγήστε τη σχέση εμβαδού και πολλαπλασιασμού",
     "design_note_discrete_4_state_classific": "Σημείωση σχεδίασης: διακριτή ταξινόμηση 4 καταστάσεων· χωρίς βαθμολογία τεστ εμβαδού· χωρίς αποκάλυψη — εσκεμμένα."
   },
   "missing": {}

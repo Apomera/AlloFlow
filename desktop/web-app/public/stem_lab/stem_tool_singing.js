@@ -1228,13 +1228,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
    * difficulty: 'easy' | 'medium' | 'hard'
    * Returns array of { midi, dur } objects.
    */
-  function generateSightReadExercise(difficulty) {
+  function generateSightReadExercise(difficulty, voice) {
     var config = {
       easy:   { min: 60, max: 72, count: [4, 8],  sharps: false, durs: [1] },
       medium: { min: 59, max: 79, count: [6, 12], sharps: true,  durs: [1, 2] },
       hard:   { min: 57, max: 81, count: [8, 16], sharps: true,  durs: [1, 2, 4] }
     };
     var cfg = config[difficulty] || config.easy;
+    if (voice && typeof VS !== 'undefined' && VS.fitWindow) { // keep the exercise inside the singer's comfortable range
+      var win = VS.fitWindow(cfg.min, cfg.max, voice);
+      cfg = Object.assign({}, cfg, { min: win.min, max: win.max });
+    }
     var count = cfg.count[0] + Math.floor(Math.random() * (cfg.count[1] - cfg.count[0] + 1));
     var notes = [];
     var current = cfg.min + Math.floor(Math.random() * (cfg.max - cfg.min));
@@ -1271,6 +1275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var dur = cfg.durs[Math.floor(Math.random() * cfg.durs.length)];
       notes.push({ midi: current, dur: dur });
     }
+    if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.srNotes = notes; // test seam (harness only)
     return notes;
   }
 
@@ -2087,6 +2092,502 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   // ═══════════════════════════════════════════
   var VS = (function () {
     'use strict';
+  var mod_transcribe = (function () {
+    // Sing it, see it written: one voice's pitch frames -> notes -> notes on a beat grid -> MusicXML.
+    // Framework-free (AlloFlow-portable). Times are in seconds; quantized positions and lengths are in
+    // sixteenth notes ("16ths"). Works for one voice singing one note at a time.
+    
+    const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const LETTER_PC = [0, 2, 4, 5, 7, 9, 11];
+    const SHARP_ORDER = [3, 0, 4, 1, 5, 2, 6]; // F C G D A E B
+    const FLAT_ORDER = [6, 2, 5, 1, 4, 0, 3]; // B E A D G C F
+    const mod = (n, m) => ((n % m) + m) % m;
+    const median = (a) => {
+      if (!a.length) return NaN;
+      const s = [...a].sort((x, y) => x - y);
+      const h = s.length >> 1;
+      return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2;
+    };
+    const keyAlter = (letter, fifths) =>
+      fifths > 0 && SHARP_ORDER.indexOf(letter) < fifths ? 1 : fifths < 0 && FLAT_ORDER.indexOf(letter) < -fifths ? -1 : 0;
+    const accName = (a) => (a > 0 ? '♯'.repeat(a) : '♭'.repeat(-a));
+    
+    const METERS = {
+      '4/4': { num: 4, den: 4, bar: 16, beat: 4 },
+      '3/4': { num: 3, den: 4, bar: 12, beat: 4 },
+      '2/4': { num: 2, den: 4, bar: 8, beat: 4 },
+      '6/8': { num: 6, den: 8, bar: 12, beat: 6 }, // two dotted-quarter beats
+    };
+    
+    // ---- 1. Frames -> notes ----------------------------------------------------------
+    
+    /**
+     * Split a pitch track into sung notes.
+     * frames: [{ t, midi (null when unvoiced), loud (0..1, optional) }] in time order, ~40 per second.
+     * Returns [{ start, end, pitch }] with pitch the note's median (fractional MIDI).
+     * Options: minNote (s) drops blips; gap (s) of silence ends a note; jump (semitones) a held change of
+     * pitch this big starts a new note; repeats: a dip in loudness inside a steady pitch also starts one
+     * (a repeated note sung on one breath). Loudness is the analyzer's (dB-linear: 1 = 45 dB), so dip
+     * (0.12, about 5 dB) is a difference, not a ratio.
+     */
+    function segmentNotes(frames, { minNote = 0.09, gap = 0.045, jump = 0.7, hold = 0.07, repeats = true, dipBy = 0.12 } = {}) {
+      const step = frames.length > 1 ? Math.max(0.005, median(frames.slice(1, 60).map((f, i) => f.t - frames[i].t))) : 0.025;
+      // Vibrato-averaged pitch (about 175 ms): a wide vibrato shouldn't look like a change of note. The window stops at
+      // a silence, so fast notes with a breath between them don't blur into a pitch in between (69, gap, 67 read as 68).
+      const voicedAt = (g) => g && g.midi !== null && g.midi !== undefined;
+      const smooth = frames.map((f, i) => {
+        if (!voicedAt(f)) return null;
+        const near = [f.midi];
+        for (const dir of [-1, 1]) {
+          for (let k = i + dir; Math.abs(k - i) <= 3; k += dir) {
+            const g = frames[k];
+            if (!voicedAt(g) || Math.abs(g.t - f.t) > 3.5 * step) break;
+            near.push(g.midi);
+          }
+        }
+        return near.reduce((a, b) => a + b, 0) / near.length;
+      });
+      const notes = [];
+      let cur = null; // { idx: [frame indices] }
+      let lastVoiced = -Infinity;
+      let dev = null; // frames that have moved away from the current note
+      let peak = 0;
+      let dip = null; // loudness valley inside the current note: { i, loud }
+      const close = (endIdx) => {
+        if (!cur) return;
+        const idx = cur.idx.filter((i) => i < endIdx);
+        cur = null;
+        if (!idx.length) return;
+        const start = frames[idx[0]].t;
+        const end = frames[idx[idx.length - 1]].t + step;
+        if (end - start < minNote) return;
+        // The note's pitch: the middle of it (skip the scoop in and the fall-off at the end).
+        const a = Math.floor(idx.length * 0.15);
+        const b = Math.max(a + 1, Math.ceil(idx.length * 0.9));
+        notes.push({ start, end, pitch: median(idx.slice(a, b).map((i) => frames[i].midi)) });
+      };
+      const open = (idx) => {
+        cur = { idx: [...idx] };
+        peak = Math.max(...idx.map((i) => frames[i].loud ?? 0));
+        dip = null;
+        dev = null;
+      };
+      for (let i = 0; i < frames.length; i++) {
+        const f = frames[i];
+        const voiced = smooth[i] !== null;
+        if (!voiced) {
+          if (cur && f.t - lastVoiced >= gap - 1e-6) close(Infinity); // (frame times are sums of floats)
+          continue;
+        }
+        lastVoiced = f.t;
+        if (!cur) {
+          open([i]);
+          continue;
+        }
+        const ref = median(cur.idx.slice(-12).map((k) => smooth[k]));
+        if (Math.abs(smooth[i] - ref) > jump) {
+          dev = dev ?? [];
+          dev.push(i);
+          const devPitch = median(dev.map((k) => smooth[k]));
+          const steady = dev.every((k) => Math.abs(smooth[k] - devPitch) <= jump);
+          if (!steady) dev = [i];
+          else if (frames[i].t - frames[dev[0]].t + step >= hold) {
+            const moved = dev;
+            close(moved[0]);
+            open(moved);
+          }
+          continue;
+        }
+        if (dev) {
+          cur.idx.push(...dev); // a wobble that came back: part of the same note
+          dev = null;
+        }
+        cur.idx.push(i);
+        // Re-sung note on the same pitch: loudness falls well below the note's peak, then comes back.
+        if (repeats && f.loud !== undefined) {
+          if (f.loud > peak) peak = f.loud;
+          if (dip && f.t - frames[dip.i].t > 0.4) dip = null; // a slow swell, not a new note
+          if (f.loud < peak - dipBy && (!dip || f.loud < dip.loud)) dip = { i, loud: f.loud };
+          if (dip && f.loud > Math.max(dip.loud + dipBy, peak - 0.06) && f.t - frames[dip.i].t >= 0.025) {
+            // Only when the part before the dip is a note in its own right (not the onset of this one).
+            if (frames[dip.i].t - frames[cur.idx[0]].t >= minNote) {
+              const after = cur.idx.filter((k) => k > dip.i);
+              close(dip.i);
+              open(after);
+            } else dip = null;
+          }
+        }
+      }
+      close(Infinity);
+      return notes;
+    }
+    
+    /**
+     * Ways of singing, for segmentNotes: what counts as a new note. "Balanced" is the default (it already copes
+     * with a wide vibrato: +-1.3 semitones tested); the others trade one kind of mistake for another (splitting a
+     * held note vs. joining two notes). Tested in scratchpad styles_test.mjs: each fixes a case Balanced gets wrong.
+     */
+    const STYLES = {
+      balanced: { label: 'Balanced (most singing, vibrato too)', opts: {} },
+      // Short, detached notes: a brief stop or a small dip in loudness starts a new note.
+      clear: { label: 'Clear, separate notes', opts: { gap: 0.025, jump: 0.6, hold: 0.055, dipBy: 0.09 } },
+      // Slurred lines: a breathy dropout or a swell inside a note doesn't split it.
+      legato: { label: 'Smooth and connected', opts: { gap: 0.11, jump: 0.75, hold: 0.09, dipBy: 0.2 } },
+    };
+    
+    /** The singer's overall tuning, in semitones (-0.5..0.5): a choir sings sharp, a tired voice flat. */
+    function tuningOffset(notes) {
+      if (!notes.length) return 0;
+      const offs = notes.map((n) => n.pitch - Math.round(n.pitch));
+      // Circular mean, so +0.45 and -0.45 average to 0.5, not 0.
+      const s = offs.reduce((a, o) => a + Math.sin(o * 2 * Math.PI), 0);
+      const c = offs.reduce((a, o) => a + Math.cos(o * 2 * Math.PI), 0);
+      return Math.atan2(s, c) / (2 * Math.PI);
+    }
+    
+    // ---- 2. Tempo -------------------------------------------------------------------
+    
+    /**
+     * A tempo (beats per minute) that puts the note starts on an eighth-note grid, for singing done without
+     * a click. Prefers moderate tempos: halving or doubling always fits a grid, so it's nudged toward 60-120.
+     */
+    function estimateTempo(notes, { lo = 50, hi = 160 } = {}) {
+      if (notes.length < 3) return { bpm: 90, beat0: notes[0]?.start ?? 0 };
+      const t0 = notes[0].start;
+      const onsets = notes.map((n) => n.start - t0);
+      let best = { score: Infinity, bpm: 90 };
+      for (let bpm = lo; bpm <= hi; bpm += 0.5) {
+        const g = 60 / bpm / 2;
+        let err = 0;
+        for (const o of onsets) {
+          const d = o / g - Math.round(o / g);
+          err += d * d;
+        }
+        const score = err / onsets.length + 0.04 * Math.abs(Math.log2(bpm / 88));
+        if (score < best.score) best = { score, bpm };
+      }
+      return { bpm: Math.round(best.bpm), beat0: t0 };
+    }
+    
+    // ---- 3. Notes -> a beat grid -------------------------------------------------------
+    
+    /**
+     * Snap notes to a grid. bpm counts the meter's beat (a dotted quarter in 6/8); beat0 is the time of
+     * the first downbeat; grid is the smallest step in 16ths (4 = quarter, 2 = eighth, 1 = sixteenth).
+     * restMin (s): a silence at least this long before the next note is written as a rest.
+     * Returns events [{ pos, len, midi }] in 16ths, in order, without overlaps. A note with `chord` (other pitches struck
+     * with it, e.g. from the piano) keeps them: the event's midi is the tune, chord the notes under it.
+     */
+    function quantize(notes, { bpm, beat0, meter = '4/4', grid = 2, offset = 0, restMin } = {}) {
+      const M = METERS[meter] || METERS['4/4'];
+      const unit = 60 / bpm / M.beat; // seconds per 16th
+      const snap = (t) => Math.max(0, Math.round((t - beat0) / unit / grid) * grid);
+      const restAfter = restMin ?? Math.max(0.12, unit * grid * 0.6);
+      const raw = notes
+        .map((n) => ({ pos: snap(n.start), end: snap(n.end), midi: Math.round(n.pitch - offset), chord: n.chord, dur: n.end - n.start, start: n.start, stop: n.end }))
+        .sort((a, b) => a.pos - b.pos || b.dur - a.dur);
+      // Two notes on one grid point: keep the longer one.
+      const kept = [];
+      for (const n of raw) {
+        const prev = kept[kept.length - 1];
+        if (prev && prev.pos === n.pos) {
+          if (n.dur > prev.dur) kept[kept.length - 1] = n;
+          continue;
+        }
+        kept.push(n);
+      }
+      return kept.map((n, i) => {
+        const next = kept[i + 1];
+        let len = Math.max(grid, n.end - n.pos);
+        if (next) {
+          const legato = next.start - n.stop < restAfter;
+          len = legato ? next.pos - n.pos : Math.min(len, next.pos - n.pos);
+        }
+        const ev = { pos: n.pos, len: Math.max(grid, len), midi: n.midi };
+        if (n.chord?.length) ev.chord = n.chord.map((c) => Math.round(c - offset));
+        return ev;
+      });
+    }
+    
+    // ---- 4. Key, clef and spelling ------------------------------------------------------
+    
+    // Krumhansl-Kessler key profiles.
+    const MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+    const MIN = [6.33, 2.68, 3.52, 5.38, 2.6, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+    const pcFifths = (pc) => {
+      const f = mod(pc * 7, 12);
+      return f > 6 ? f - 12 : f;
+    };
+    
+    /** The likeliest key for these notes (weighted by length): { fifths, minor, name }. */
+    function detectKey(events) {
+      const w = new Array(12).fill(0);
+      for (const e of events) w[mod(e.midi, 12)] += e.len;
+      // A little extra weight for the last note (melodies usually end on the tonic).
+      const last = events[events.length - 1];
+      if (last) w[mod(last.midi, 12)] += last.len * 0.5;
+      const corr = (prof, tonic) => {
+        const xs = w;
+        const ys = xs.map((_, pc) => prof[mod(pc - tonic, 12)]);
+        const mx = xs.reduce((a, b) => a + b, 0) / 12;
+        const my = ys.reduce((a, b) => a + b, 0) / 12;
+        let num = 0;
+        let dx = 0;
+        let dy = 0;
+        for (let k = 0; k < 12; k++) {
+          num += (xs[k] - mx) * (ys[k] - my);
+          dx += (xs[k] - mx) ** 2;
+          dy += (ys[k] - my) ** 2;
+        }
+        return dx && dy ? num / Math.sqrt(dx * dy) : 0;
+      };
+      let best = { r: -Infinity, fifths: 0, minor: false };
+      for (let tonic = 0; tonic < 12; tonic++) {
+        const rM = corr(MAJ, tonic);
+        if (rM > best.r) best = { r: rM, fifths: pcFifths(tonic), minor: false };
+        const rm = corr(MIN, tonic);
+        if (rm > best.r) best = { r: rm, fifths: pcFifths(tonic + 3), minor: true };
+      }
+      return { fifths: best.fifths, minor: best.minor, name: keyName(best.fifths, best.minor) };
+    }
+    
+    function keyName(fifths, minor) {
+      const letter = mod(4 * fifths + (minor ? 5 : 0), 7);
+      return `${LETTERS[letter]}${accName(keyAlter(letter, fifths))} ${minor ? 'minor' : 'major'}`;
+    }
+    
+    /** Every key for a menu: [{ fifths, minor, name }]. */
+    const KEYS = [false, true].flatMap((minor) => [0, 1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6].map((fifths) => ({ fifths, minor, name: keyName(fifths, minor) })));
+    
+    /** The clef that suits a melody: treble, treble8 (tenor: an octave lower than written) or bass. */
+    function chooseClef(events) {
+      const m = median(events.map((e) => e.midi));
+      return m >= 59 ? 'treble' : m >= 50 ? 'treble8' : 'bass';
+    }
+    
+    /** How a MIDI note is written in a key: { letter (0-6), alter, octave }. */
+    function spell(midi, { fifths = 0, minor = false } = {}) {
+      const pc = mod(midi, 12);
+      const pick = (letter, alter) => {
+        const octave = Math.round((midi - alter - LETTER_PC[letter]) / 12) - 1;
+        return { letter, alter, octave };
+      };
+      for (let L = 0; L < 7; L++) if (mod(LETTER_PC[L] + keyAlter(L, fifths), 12) === pc) return pick(L, keyAlter(L, fifths));
+      // Not in the key: a plain letter if there is one (E natural in F minor, F natural in G major);
+      // otherwise sharp keys (and minor keys' raised notes) use a sharp, flat keys a flat.
+      for (let L = 0; L < 7; L++) if (LETTER_PC[L] === pc) return pick(L, 0);
+      const preferSharp = fifths > 0 || (fifths === 0 && !minor) ? true : minor ? fifths >= -2 : false;
+      for (const a of preferSharp ? [1, -1] : [-1, 1]) {
+        for (let L = 0; L < 7; L++) if (mod(LETTER_PC[L] + a, 12) === pc) return pick(L, a);
+      }
+      return pick(0, pc);
+    }
+    
+    const spelledName = (midi, key) => {
+      const s = spell(midi, key);
+      return `${LETTERS[s.letter]}${accName(s.alter)}${s.octave}`;
+    };
+    
+    // ---- 5. MusicXML ------------------------------------------------------------------
+    
+    const VALUES = [
+      [16, 'whole', 0],
+      [12, 'half', 1],
+      [8, 'half', 0],
+      [6, 'quarter', 1],
+      [4, 'quarter', 0],
+      [3, 'eighth', 1],
+      [2, 'eighth', 0],
+      [1, '16th', 0],
+    ];
+    
+    // Split a length into written values, without crossing the beat where that keeps it readable.
+    function pieces(start, len, beat) {
+      const out = [];
+      let at = start;
+      let left = len;
+      while (left > 0) {
+        let v = VALUES.find(([d]) => d <= left)[0];
+        // Off the beat, don't let a note swallow the next beat unless it ends exactly on one.
+        const toBeat = beat - (at % beat);
+        if (at % beat !== 0 && v > toBeat && toBeat < left) v = VALUES.find(([d]) => d <= toBeat)[0];
+        out.push(v);
+        at += v;
+        left -= v;
+      }
+      return out;
+    }
+    
+    const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]);
+    
+    /** Events -> a MusicXML document: one staff, ties across bar lines, rests in the gaps. */
+    function eventsToMusicXML(events, { key = { fifths: 0, minor: false }, meter = '4/4', clef = 'treble', bpm = 90, title = 'My melody' } = {}) {
+      const M = METERS[meter] || METERS['4/4'];
+      const end = Math.max(M.bar, ...events.map((e) => e.pos + e.len));
+      const bars = Math.ceil(end / M.bar);
+      // Segments per bar: notes cut at bar lines (tied), rests filling the gaps.
+      const segs = Array.from({ length: bars }, () => []);
+      let at = 0;
+      const put = (pos, len, midi, tieIn, chord = []) => {
+        while (len > 0) {
+          const b = Math.floor(pos / M.bar);
+          const room = (b + 1) * M.bar - pos;
+          const l = Math.min(len, room);
+          segs[b].push({ pos, len: l, midi, chord, tieIn, tieOut: l < len });
+          tieIn = true;
+          pos += l;
+          len -= l;
+        }
+      };
+      for (const e of events) {
+        if (e.pos > at) put(at, e.pos - at, null, false);
+        put(e.pos, e.len, e.midi, false, e.chord || []);
+        at = e.pos + e.len;
+      }
+      if (at < bars * M.bar) put(at, bars * M.bar - at, null, false);
+      const clefXml =
+        clef === 'bass'
+          ? '<clef><sign>F</sign><line>4</line></clef>'
+          : clef === 'treble8'
+            ? '<clef><sign>G</sign><line>2</line><clef-octave-change>-1</clef-octave-change></clef>'
+            : '<clef><sign>G</sign><line>2</line></clef>';
+      const quarterBpm = M.beat === 6 ? bpm * 1.5 : bpm;
+      const measures = segs.map((bar, i) => {
+        const attrs =
+          i === 0
+            ? `<attributes><divisions>4</divisions><key><fifths>${key.fifths}</fifths><mode>${key.minor ? 'minor' : 'major'}</mode></key><time><beats>${M.num}</beats><beat-type>${M.den}</beat-type></time>${clefXml}</attributes>` +
+              `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit>${M.beat === 6 ? '<beat-unit-dot/>' : ''}<per-minute>${Math.round(bpm)}</per-minute></metronome></direction-type><sound tempo="${Math.round(quarterBpm * 100) / 100}"/></direction>`
+            : '';
+        const state = new Map(); // accidentals carry through the bar
+        let body = '';
+        if (bar.length === 1 && bar[0].midi === null && bar[0].len === M.bar) {
+          body = `<note><rest measure="yes"/><duration>${M.bar}</duration><voice>1</voice></note>`;
+        } else {
+          for (const s of bar) {
+            const parts = pieces(s.pos % M.bar, s.len, M.beat);
+            parts.forEach((d, k) => {
+              const [, type, dots] = VALUES.find(([v]) => v === d);
+              const dot = dots ? '<dot/>' : '';
+              if (s.midi === null) {
+                body += `<note><rest/><duration>${d}</duration><voice>1</voice><type>${type}</type>${dot}</note>`;
+                return;
+              }
+              const tin = k > 0 || s.tieIn;
+              const tout = k < parts.length - 1 || s.tieOut;
+              [s.midi, ...s.chord].forEach((m, ci) => {
+                const sp = spell(m, key);
+                const id = `${sp.letter}${sp.octave}`;
+                const current = state.has(id) ? state.get(id) : keyAlter(sp.letter, key.fifths);
+                let acc = '';
+                if (sp.alter !== current && !tin) {
+                  acc = `<accidental>${{ 2: 'double-sharp', 1: 'sharp', 0: 'natural', '-1': 'flat', '-2': 'flat-flat' }[sp.alter]}</accidental>`;
+                }
+                state.set(id, sp.alter);
+                const ties = `${tin ? '<tie type="stop"/>' : ''}${tout ? '<tie type="start"/>' : ''}`;
+                const tied = tin || tout ? `<notations>${tin ? '<tied type="stop"/>' : ''}${tout ? '<tied type="start"/>' : ''}</notations>` : '';
+                const alter = sp.alter ? `<alter>${sp.alter}</alter>` : '';
+                body += `<note>${ci ? '<chord/>' : ''}<pitch><step>${LETTERS[sp.letter]}</step>${alter}<octave>${sp.octave}</octave></pitch><duration>${d}</duration>${ties}<voice>1</voice><type>${type}</type>${dot}${acc}${tied}</note>`;
+              });
+            });
+          }
+        }
+        const endBar = i === bars - 1 ? '<barline location="right"><bar-style>light-heavy</bar-style></barline>' : '';
+        return `<measure number="${i + 1}">${attrs}${body}${endBar}</measure>`;
+      });
+      return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n' +
+        `<score-partwise version="4.0"><work><work-title>${esc(title)}</work-title></work>` +
+        '<identification><encoding><software>Rachel Pomeranz Practice Room</software></encoding></identification>' +
+        '<part-list><score-part id="P1"><part-name>Voice</part-name></score-part></part-list>' +
+        `<part id="P1">${measures.join('')}</part></score-partwise>\n`
+      );
+    }
+    
+    // ---- 6. Editing (each returns a new list; positions after an edit move with it) ----------
+    
+    const clone = (ev) => ev.map((e) => (e.chord ? { ...e, chord: [...e.chord] } : { ...e }));
+    const clamp = (m) => Math.max(21, Math.min(108, m));
+    const shiftFrom = (ev, i, by) => ev.forEach((e, k) => k >= i && (e.pos += by));
+    
+    const edit = {
+      /** Raise or lower a note by semitones. */
+      pitch(ev, i, semis) {
+        const out = clone(ev);
+        const by = clamp(out[i].midi + semis) - out[i].midi; // a chord moves with its top note
+        out[i].midi += by;
+        if (out[i].chord) out[i].chord = out[i].chord.map((m) => clamp(m + by));
+        return out;
+      },
+      /** Keep only the top note of a chord. */
+      unchord(ev, i) {
+        if (!ev[i]?.chord) return ev;
+        const out = clone(ev);
+        delete out[i].chord;
+        return out;
+      },
+      /** Make a note longer or shorter by `by` 16ths; everything after it moves along. */
+      length(ev, i, by, min = 1) {
+        const out = clone(ev);
+        const len = Math.max(min, out[i].len + by);
+        shiftFrom(out, i + 1, len - out[i].len);
+        out[i].len = len;
+        return out;
+      },
+      /** Remove a note and close up the time it took. */
+      remove(ev, i) {
+        const out = clone(ev);
+        const [gone] = out.splice(i, 1);
+        const next = out[i];
+        // Close up this note and any rest before the next note.
+        if (next) shiftFrom(out, i, -(next.pos - gone.pos));
+        return out;
+      },
+      /** Turn a note into a rest of the same length. */
+      toRest(ev, i) {
+        const out = clone(ev);
+        out.splice(i, 1);
+        return out;
+      },
+      /** Join a note with the next one (a held note that was heard as two). */
+      merge(ev, i) {
+        if (i >= ev.length - 1) return ev;
+        const out = clone(ev);
+        out[i].len = out[i + 1].pos + out[i + 1].len - out[i].pos;
+        out.splice(i + 1, 1);
+        return out;
+      },
+      /** Split a note into two of (about) half the length each. */
+      split(ev, i, grid = 1) {
+        const out = clone(ev);
+        const n = out[i];
+        if (n.len < 2 * grid) return ev;
+        const first = Math.max(grid, Math.round(n.len / 2 / grid) * grid);
+        out.splice(i + 1, 0, { pos: n.pos + first, len: n.len - first, midi: n.midi, ...(n.chord && { chord: [...(n.chord || [])] }) });
+        n.len = first;
+        return out;
+      },
+      /** Add a note of the same pitch right after this one; the rest move along. */
+      addAfter(ev, i, len) {
+        const out = clone(ev);
+        const n = out[i];
+        const l = len ?? n.len;
+        shiftFrom(out, i + 1, l);
+        out.splice(i + 1, 0, { pos: n.pos + n.len, len: l, midi: n.midi });
+        return out;
+      },
+      /** Add (by > 0) or take away (by < 0) rest before a note; everything from it on moves. */
+      restBefore(ev, i, by) {
+        const out = clone(ev);
+        const prevEnd = i > 0 ? out[i - 1].pos + out[i - 1].len : 0;
+        const room = out[i].pos - prevEnd;
+        shiftFrom(out, i, Math.max(-room, by));
+        return out;
+      },
+    };
+
+    return { LETTERS, keyAlter, METERS, segmentNotes, STYLES, tuningOffset, estimateTempo, quantize, detectKey, keyName, KEYS, chooseClef, spell, spelledName, VALUES, pieces, eventsToMusicXML, edit };
+  })();
   var mod_score_player = (function () {
     // Score player: renders a MusicXML (.musicxml or compressed .mxl) score with
     // OpenSheetMusicDisplay and plays the voice line and piano with the Web Audio API.
@@ -2475,6 +2976,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       /** Load a score: XML text, or the binary string of a compressed .mxl file. */
       async load(source) {
         this.stop();
+        this.headColors = new Map(); // a new score: no grade colours, new graphics
+        this.noteGfx = null;
+        this.voiceByVi = null;
         await this.osmd.load(source);
         if (this.OSMD.TransposeCalculator) this.osmd.TransposeCalculator = new this.OSMD.TransposeCalculator();
         this.osmd.Zoom = this.zoom; // OSMD spells it Zoom, and loading a score resets it
@@ -2488,6 +2992,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             this.verseLabels = null;
             this.shownVerse = undefined;
             this._markVerse();
+            // Graphics are new after a redraw: look them up again and put the grade colours back on the noteheads.
+            this.noteGfx = null;
+            this.voiceByVi = null;
+            if (this.headColors?.size && this.timeline) for (const [vi, color] of this.headColors) this._paintHead(vi, color);
             return r;
           };
           this.osmd.__versePatched = true;
@@ -2580,6 +3088,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         if (!this.playing) return null;
         const pos = this._now();
         const e = this.timeline.events.find((v) => v.part === 'voice' && v.sec <= pos && pos < v.sec + v.dur);
+        return e ? e.midi + this.transpose + 12 * this.melodyOctave : null;
+      }
+    
+      /** The pitch to sing at a score time (key and octave applied), or null in a rest. For judging a reading stamped with that time. */
+      voiceMidiAt(sec) {
+        const e = this.timeline?.events.find((v) => v.part === 'voice' && v.sec <= sec + 1e-6 && sec < v.sec + v.dur);
         return e ? e.midi + this.transpose + 12 * this.melodyOctave : null;
       }
     
@@ -3036,11 +3550,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
     
       _applyRoles() {
+        // Which events are "voice" may change (another part): the note indexes mean something else now, so drop the colours
+        // (under the old numbering) before renumbering.
+        if (this.headColors?.size) this.clearVoiceNoteColors();
         let vi = 0;
         for (const e of this.timeline.events) {
           e.part = !e.vocal ? 'piano' : e.pk === this.myPart && !e.sub ? 'voice' : 'choir';
           e.vi = e.part === 'voice' ? vi++ : -1; // index into voiceNotes()
         }
+        this.voiceByVi = null;
       }
     
       /**
@@ -3221,6 +3739,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.osmd.render();
         this.cursorStep = -1;
         this._showCursorAt(this.position);
+      }
+    
+      /**
+       * Where the melody note at the cursor sits on the page, for drawing feedback on the music: { x, y, space, parent,
+       * midi } or null (a rest, nothing drawn yet). x/y = the notehead's centre and `space` = one staff space, in pixels in
+       * `parent`'s coordinates (the element the cursor image lives in: append with position:absolute); midi = the pitch
+       * to sing there (key and octave applied).
+       */
+      voiceAnchor() {
+        const cur = this.osmd?.cursor;
+        const img = cur?.cursorElement;
+        const svg = this.container.querySelector('svg');
+        if (!this.timeline || !img?.parentElement || !svg || !cur.GNotesUnderCursor) return null;
+        const pos = this.scoreTime();
+        const e = this.timeline.events.find((v) => v.part === 'voice' && v.sec <= pos + 1e-6 && pos < v.sec + v.dur);
+        if (!e) return null;
+        const inst = (g) => g.sourceNote?.ParentStaffEntry?.ParentStaff?.ParentInstrument;
+        const mine = (cur.GNotesUnderCursor() || []).filter((g) => !g.sourceNote.isRest() && inst(g) === inst({ sourceNote: e.note }));
+        // The note itself; else (a tie runs on under the cursor) the same pitch or the nearest one in this part.
+        const g = mine.find((q) => q.sourceNote === e.note) || mine.find((q) => q.sourceNote.halfTone === e.note.halfTone) || mine[0];
+        if (!g) return null;
+        const sr = svg.getBoundingClientRect();
+        const parent = img.parentElement;
+        const pr = parent.getBoundingClientRect();
+        const scale = (sr.width / (svg.width?.baseVal?.value || sr.width)) * 10 * this.osmd.Zoom;
+        const a = g.PositionAndShape.AbsolutePosition;
+        return {
+          x: sr.left - pr.left + parent.scrollLeft + a.x * scale,
+          y: sr.top - pr.top + parent.scrollTop + a.y * scale,
+          space: scale,
+          parent,
+          midi: e.midi + this.transpose + 12 * this.melodyOctave,
+        };
+      }
+    
+      /**
+       * Colour one melody note's notehead in place (no redraw; vi indexes voiceNotes()); null puts it back. The colours are
+       * kept across redraws (resize, key change) until clearVoiceNoteColors().
+       */
+      colorVoiceNote(vi, color) {
+        this.headColors = this.headColors ?? new Map();
+        if (color) this.headColors.set(vi, color);
+        else this.headColors.delete(vi);
+        this._paintHead(vi, color || '');
+      }
+    
+      clearVoiceNoteColors() {
+        const was = this.headColors;
+        this.headColors = new Map();
+        if (was) for (const vi of was.keys()) this._paintHead(vi, '');
+      }
+    
+      _paintHead(vi, color) {
+        if (!this.noteGfx) {
+          this.noteGfx = new Map();
+          for (const staves of this.osmd.GraphicSheet?.MeasureList || [])
+            for (const gm of staves || [])
+              for (const se of gm?.staffEntries || [])
+                for (const gve of se.graphicalVoiceEntries || []) for (const gn of gve.notes || []) this.noteGfx.set(gn.sourceNote, gn);
+        }
+        this.voiceByVi = this.voiceByVi ?? new Map(this.timeline.events.filter((e) => e.part === 'voice').map((e) => [e.vi, e]));
+        const e = this.voiceByVi.get(vi);
+        const heads = e && this.noteGfx.get(e.note)?.getNoteheadSVGs?.();
+        for (const head of heads || []) {
+          head.style.fill = color;
+          for (const k of head.querySelectorAll('*')) k.style.fill = color;
+        }
       }
     
       setPart(part, on) {
@@ -4841,6 +5426,159 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     return { noteCredit, levelFor, gradingNotes, SingScore, troubleSpots };
   })();
+  var mod_pitch_feedback = (function () {
+    // Pitch feedback helpers: the numbers behind the accuracy band, the live "you are here" marker and the voice-range
+    // tint. Shared by the note lane (note-lane.js) and the pitch scope on the music (pitch-scope.js), so both agree with
+    // the score (sing-score.js) on what "spot on" means. Framework-free; no DOM.
+    //
+    //   liveReading(sungMidi, targetMidi)  -> { cents, level, folded } | null      level: 'tune' | 'near' | 'off' | 'wrong'
+    //   bandHeights(rowHeight)             -> heights of the +-30 / +-60 / +-100 cent corridors for a semitone row height
+    //   zoneOf(midi, voice)                -> 'comfort' | 'stretch' | 'beyond' | null   (voice = a makeProfile result)
+    //   wobble(points)                     -> { rate, extent } | null (vibrato in a short run of { t, cents })
+    //   new PitchTrace({ span })           -> the last few seconds of cents for a scope
+
+    var levelFor = mod_sing_score.levelFor;
+    /** Edges of the grading bands, in cents either side of the note (the same as the score's levels). */
+    const BAND_CENTS = { tune: 30, near: 60, off: 100 };
+
+    /** `midi` moved by whole octaves to the one nearest `target`: a lower voice singing the tune an octave down is still right. */
+    function foldToward(midi, target) {
+      return midi - 12 * Math.round((midi - target) / 12);
+    }
+
+    /** Signed cents of `midi` from `target` within an octave: positive = sharp, negative = flat. */
+    function centsFrom(midi, target) {
+      return (foldToward(midi, target) - target) * 100;
+    }
+
+    /** What to show for one sung pitch against the note being sung: { cents, level, folded } (folded = the pitch in the target's octave), or null. */
+    function liveReading(midi, target) {
+      if (!Number.isFinite(midi) || !Number.isFinite(target)) return null;
+      const cents = centsFrom(midi, target);
+      return { cents, level: levelFor(cents), folded: target + cents / 100 };
+    }
+
+    /**
+     * Whether two successive pitch readings (MIDI notes, in one octave) belong to one continuous line. A glide moves a little each
+     * frame (a 5-semitone scoop over 0.2 s is about 0.6 a frame); a jump between readings (a new note, a slip, a misread) does not,
+     * and drawing a stroke across it makes a tall spike that looks like a pitch the singer never sang.
+     */
+    function joins(a, b, maxStep = 1.2) {
+      return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= maxStep + 1e-9; // (61.2 - 60 is 1.2000000000000028)
+    }
+
+    /** Full heights of the three corridors around a note, for rows one semitone (100 cents) tall: true to scale. */
+    function bandHeights(rowH) {
+      return { tune: (rowH * 2 * BAND_CENTS.tune) / 100, near: (rowH * 2 * BAND_CENTS.near) / 100, off: (rowH * 2 * BAND_CENTS.off) / 100 };
+    }
+
+    /**
+     * Where a pitch sits in a singer's voice (voice: { low, high, stretchLow?, stretchHigh? } as made by makeProfile):
+     * 'comfort' (the comfortable range), 'stretch' (reachable with effort) or 'beyond'. A fractional pitch counts as its
+     * nearest note. Null when there is no voice to compare with.
+     */
+    function zoneOf(midi, voice) {
+      if (!voice || !Number.isFinite(midi) || !Number.isFinite(voice.low) || !Number.isFinite(voice.high)) return null;
+      const m = Math.round(midi);
+      if (m >= voice.low && m <= voice.high) return 'comfort';
+      const sl = Number.isFinite(voice.stretchLow) ? voice.stretchLow : voice.low;
+      const sh = Number.isFinite(voice.stretchHigh) ? voice.stretchHigh : voice.high;
+      return m >= sl && m <= sh ? 'stretch' : 'beyond';
+    }
+
+    /** -1 = below the comfortable range, 1 = above it, 0 = inside it (or no voice). */
+    function sideOf(midi, voice) {
+      if (!voice || !Number.isFinite(midi)) return 0;
+      const m = Math.round(midi);
+      return m < voice.low ? -1 : m > voice.high ? 1 : 0;
+    }
+
+    /**
+     * Vibrato in a short run of { t (seconds), cents }: { rate (per second), extent (+- cents) }, or null for a steady note,
+     * a slow drift or too little to judge. The pitch is judged about its own middle, so it works at any tuning.
+     */
+    function wobble(points) {
+      const p = points.filter((x) => x && Number.isFinite(x.cents));
+      if (p.length < 8) return null;
+      const span = p[p.length - 1].t - p[0].t;
+      if (span < 0.4) return null;
+      const mid = p.reduce((s, x) => s + x.cents, 0) / p.length;
+      const sorted = p.map((x) => x.cents - mid).sort((a, b) => a - b);
+      const q = (f) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(f * (sorted.length - 1))))];
+      const extent = (q(0.97) - q(0.03)) / 2;
+      if (extent < 12) return null;
+      // Count swings past +-h about the middle (hysteresis, so detector noise on the way through zero isn't a swing).
+      const h = Math.max(4, 0.35 * extent);
+      let state = 0;
+      let flips = 0;
+      let first = null;
+      let last = null;
+      for (const x of p) {
+        const v = x.cents - mid;
+        const s = v > h ? 1 : v < -h ? -1 : 0;
+        if (s === 0 || s === state) continue;
+        if (state !== 0) {
+          flips++;
+          first = first ?? x.t;
+          last = x.t;
+        }
+        state = s;
+      }
+      if (flips < 3 || last - first < 0.2) return null;
+      const rate = (flips - 1) / 2 / (last - first);
+      if (rate < 3.5 || rate > 9) return null;
+      return { rate, extent };
+    }
+
+    /** The last `span` seconds of a singer's pitch as { t, cents | null } (cents from the note; null = silence), for the scope. */
+    class PitchTrace {
+      constructor({ span = 1.4 } = {}) {
+        this.span = span;
+        this.pts = [];
+      }
+
+      push(t, cents) {
+        const a = this.pts;
+        if (a.length && t < a[a.length - 1].t - 0.05) a.length = 0; // time went backwards (a seek or a loop): a new run
+        a.push({ t, cents: Number.isFinite(cents) ? cents : null });
+        while (a.length && a[0].t < t - this.span) a.shift();
+      }
+
+      clear() {
+        this.pts.length = 0;
+      }
+
+      points() {
+        return this.pts;
+      }
+
+      /** The newest voiced reading; with `now` and `maxAge`, null if it is older than that. */
+      latest(now, maxAge) {
+        for (let i = this.pts.length - 1; i >= 0; i--) {
+          const p = this.pts[i];
+          if (p.cents === null) continue;
+          return now !== undefined && now - p.t > maxAge ? null : p;
+        }
+        return null;
+      }
+
+      /** The middle of the last `window` seconds (up to `upTo`, default the newest reading): what a listener hears through the vibrato. */
+      centre(window = 0.4, upTo) {
+        const end = upTo ?? this.pts[this.pts.length - 1]?.t;
+        if (end === undefined) return null;
+        let sum = 0;
+        let n = 0;
+        for (const p of this.pts) {
+          if (p.cents === null || p.t > end + 1e-9 || p.t <= end - window) continue;
+          sum += p.cents;
+          n++;
+        }
+        return n ? sum / n : null;
+      }
+    }
+
+    return { BAND_CENTS, foldToward, centsFrom, liveReading, joins, bandHeights, zoneOf, sideOf, wobble, PitchTrace };
+  })();
   var mod_voice_analyzer = (function () {
     // Voice analyzer: turns a microphone (or any Web Audio source) into live measurements for
     // singers and instrumentalists: pitch, cents, vibrato, steadiness, loudness, "ring",
@@ -5420,6 +6158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           gate, // the silence level in use (dB), for the room setting
           hz: heard !== null ? this.a4 * Math.pow(2, (heard - 69) / 12) : null,
           midi, // instantaneous: the visuals show the full vibrato shimmer
+          rawMidi: midi === null ? null : Math.abs(raw - midi) < 0.6 ? raw : midi, // the frame's own pitch with only octave slips removed: keeps the vibrato peaks the median clips
           heardMidi: heard,
           note: heard !== null ? noteName(heard) : null,
           cents: heard !== null ? (heard - Math.round(heard)) * 100 : null,
@@ -5434,6 +6173,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           phrase: { current: ph.current || 0, last: ph.last, longest: ph.longest },
           target,
           targetCents,
+          // How late this frame is being handled, in seconds on the audio clock (0 when the page keeps up): the sound it describes ended this long
+          // ago. A busy page delivers frames late and in bursts; a host that stamps readings with "now" should take this off (see the player).
+          lag: this.clock === 'audio' && typeof audioTime === 'number' ? Math.max(0, this.ctx.currentTime - audioTime) : 0,
         };
         for (const fn of this.listeners) fn(frame);
       }
@@ -5669,6 +6411,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             g.fillStyle = `rgba(${p.guide},${p.bold ? 0.9 : 0.45})`;
             g.fillText(`${NOTE[m % 12]}${Math.floor(m / 12) - 1}`, 6, yy);
           }
+        }
+    
+        // The singer's range, when given (vis.set({ range: { low, high, stretchLow, stretchHigh } })): a strip down the right
+        // edge (green = comfortable, amber = a stretch) and a faint green wash behind the comfortable rows, so you can see
+        // where your voice is in the picture. Not in free play, where nothing is judged.
+        const rg = this.range;
+        if (rg && !this.explore && Number.isFinite(rg.low) && Number.isFinite(rg.high)) {
+          const edge = (hiM, loM) => {
+            const y0 = Math.max(0, Math.min(h, this.y(hiM + 0.5)));
+            const y1 = Math.max(0, Math.min(h, this.y(loM - 0.5)));
+            return [y0, Math.max(0, y1 - y0)];
+          };
+          const [sy, sH] = edge(Number.isFinite(rg.stretchHigh) ? rg.stretchHigh : rg.high, Number.isFinite(rg.stretchLow) ? rg.stretchLow : rg.low);
+          const [cy, cH] = edge(rg.high, rg.low);
+          g.fillStyle = '#f59e0b';
+          g.globalAlpha = p.bold ? 0.55 : 0.35;
+          g.fillRect(w - 6, sy, 6, sH);
+          g.fillStyle = '#34d399';
+          g.globalAlpha = p.bold ? 0.95 : 0.7;
+          g.fillRect(w - 6, cy, 6, cH);
+          g.globalAlpha = p.bold ? 0.1 : 0.05;
+          g.fillRect(0, cy, w - 6, cH);
+          g.globalAlpha = 1;
         }
     
         // Sing-along: the song's notes as glowing pills. The current one pulses and lights up while you're
@@ -7068,12 +7833,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     //
     //   const lane = new NoteLane(canvas, { player, onSeek: (sec) => player.seek(sec) });
     //   lane.setGrade(i, 'tune');          // i indexes player.voiceNotes(); 'tune' | 'near' | 'off' | 'wrong' | 'missed'
-    //   lane.pushPitch(scoreSec, midi);    // the singer's pitch (or null) at a score time
+    //   lane.pushPitch(scoreSec, midi, rawMidi?); // the singer's pitch (or null) at a score time; rawMidi = the analyzer's unsmoothed reading (keeps vibrato peaks)
+    //   lane.setScoring(true);             // draw each note as its accuracy corridor (+-30 cents spot on, +-60 close)
+    //   lane.setVoice(voice);              // tint the rows by the singer's range: comfortable / stretch / beyond (null = off)
+    //   lane.onLive = (r) => ...;          // { note, cents, level, vibrato, zone, target } about 8 times a second, null when silent
     //   lane.destroy();
     
+    var levelFor = mod_sing_score.levelFor;
+    var measureVibrato = mod_voice_analyzer.measureVibrato;
+    var bandHeights = mod_pitch_feedback.bandHeights, wobble = mod_pitch_feedback.wobble, zoneOf = mod_pitch_feedback.zoneOf, foldToward = mod_pitch_feedback.foldToward, joins = mod_pitch_feedback.joins;
     const BEFORE = 2.8; // seconds of the past shown left of the play head
     const AFTER = 6; // and of the future to the right
     const HEAD = 0.3; // play head position, as a fraction of the width
+    const MIN_ROW = 10; // while scoring, a pitch row (a semitone) is at least this many pixels tall: the view pans when the part is wider
     
     const LANE_COLORS = {
       bg: ['#1b1014', '#24161a'],
@@ -7105,6 +7877,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.calm = calm ?? matchMedia('(prefers-reduced-motion: reduce)').matches;
         this.grades = new Map();
         this.trail = []; // { t (score sec), midi | null }
+        this.scoring = false; // notes drawn as accuracy corridors, the pitch marker and trail emphasised
+        this.voice = null; // { low, high, stretchLow, stretchHigh, label } for the range tint
+        this.onLive = null;
+        this.liveAt = 0;
         this.drag = null; // score time under the pointer while scrubbing
         this.dirty = true;
         this.last = '';
@@ -7146,11 +7922,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         this.wake();
       }
     
-      pushPitch(t, midi) {
+      /** On while the singer is being scored: each note shows its accuracy corridor and the pitch you sing is drawn into it. */
+      setScoring(on) {
+        on = !!on;
+        if (on === this.scoring) return;
+        this.scoring = on;
+        if (!on) this._liveOut(null, true);
+        this.dirty = true;
+        this.wake();
+      }
+    
+      /** The singer's range ({ low, high, stretchLow?, stretchHigh?, label? } in MIDI notes), or null: rows are tinted by where they sit in it. */
+      setVoice(v) {
+        this.voice = v && Number.isFinite(v.low) && Number.isFinite(v.high) ? { low: v.low, high: v.high, stretchLow: v.stretchLow, stretchHigh: v.stretchHigh, label: v.label || '' } : null;
+        this.dirty = true;
+        this.wake();
+      }
+    
+      // Tells the host what is being sung (about 8 times a second, and at once when it goes quiet).
+      _liveOut(r, force = false) {
+        const now = performance.now();
+        if (!this.onLive || (!force && r && now - this.liveAt < 120)) return;
+        if (!r && !this.liveWas && !force) return;
+        this.liveAt = now;
+        this.liveWas = !!r;
+        this.onLive(r);
+      }
+    
+      pushPitch(t, midi, raw) {
         const tr = this.trail;
         // A jump backwards (loop, seek) starts a new trail.
         if (tr.length && t < tr[tr.length - 1].t - 0.05) tr.length = 0;
-        tr.push({ t, midi });
+        tr.push({ t, midi, raw: raw ?? midi }); // (raw keeps the vibrato peaks the analyzer's median filter clips: the width is measured on it)
         while (tr.length && tr[0].t < t - BEFORE * 2.5 * this.player.tempo) tr.shift();
         this.dirty = true;
         this.wake();
@@ -7211,10 +8014,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       _draw(at) {
         const { g, w, h, c } = this;
         const p = this.player;
-        const [lo, hi] = this._range();
+        const [flo, fhi] = this._range();
         const top = 20; // room for bar numbers
         const bottom = 22; // room for the lowest note's lyric
+        const { notes, bars } = p.laneWindow(BEFORE + 0.5, AFTER + 0.5, at);
+        // While scoring, a part too wide to show with rows of a readable height (MIN_ROW px) is seen through a window that
+        // follows the notes about to be sung, so the corridors and the singer's vibrato stay big enough to see.
+        let lo = flo;
+        let hi = fhi;
+        const rowsFit = Math.max(8, Math.floor((h - top - bottom) / MIN_ROW));
+        if (this.scoring && fhi - flo + 1 > rowsFit) {
+          const next = notes.filter((n) => n.start > -0.6 && n.start < 2.5);
+          const half = (rowsFit - 1) / 2;
+          const want = next.length ? next.reduce((s, n) => s + n.midi, 0) / next.length : this.vc ?? (flo + fhi) / 2;
+          const goal = clamp(want, flo + half, fhi - half);
+          // Glide while playing; jump when stopped or after a long leap in the music (a seek).
+          this.vc = this.vc === undefined || !p.playing || Math.abs(goal - this.vc) > 12 ? goal : this.vc + (goal - this.vc) * 0.08;
+          lo = this.vc - half;
+          hi = this.vc + half;
+        } else {
+          this.vc = undefined;
+        }
         const rowH = (h - top - bottom) / (hi - lo + 1);
+        this.rowPx = rowH; // the height of a semitone row as last drawn (while scoring a wide part, rows are kept at least MIN_ROW tall)
         const y = (midi) => top + (hi - midi) * rowH; // top edge of a pitch row
         const headX = w * HEAD;
         const pps = (w - headX) / AFTER; // pixels per real second
@@ -7226,10 +8048,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         g.fillStyle = bg;
         g.fillRect(0, 0, w, h);
     
+        // The singer's range: rows inside the comfortable range glow green, the stretch rows amber, the rest dim, and a
+        // strip down the right edge keeps the zones readable under the notes.
+        const voice = this.voice;
+        if (voice) {
+          for (let m = Math.ceil(lo); m <= Math.floor(hi); m++) {
+            const zone = zoneOf(m, voice);
+            g.globalAlpha = zone === 'comfort' ? 0.085 : zone === 'stretch' ? 0.06 : 0.28;
+            g.fillStyle = zone === 'comfort' ? c.tune : zone === 'stretch' ? c.near : '#000';
+            g.fillRect(0, y(m), w, rowH);
+            if (zone !== 'beyond') {
+              g.globalAlpha = zone === 'comfort' ? 0.75 : 0.5;
+              g.fillRect(w - 5, y(m), 5, rowH);
+            }
+          }
+          g.globalAlpha = 1;
+          if (voice.label && voice.high >= lo && voice.low <= hi) {
+            g.font = '600 10px system-ui, sans-serif';
+            g.textBaseline = 'middle';
+            g.textAlign = 'right';
+            g.fillStyle = c.tune;
+            g.globalAlpha = 0.8;
+            g.fillText(voice.label, w - 10, Math.max(top + 6, y(Math.min(hi, voice.high)) + 7));
+            g.globalAlpha = 1;
+            g.textAlign = 'left';
+          }
+        }
+    
         // Pitch rows: a faint line per half step, a stronger one with a label at each C.
         g.font = '600 10px system-ui, sans-serif';
         g.textBaseline = 'middle';
-        for (let m = lo; m <= hi; m++) {
+        for (let m = Math.ceil(lo); m <= Math.floor(hi); m++) {
           const cy = y(m) + rowH / 2;
           const isC = ((m % 12) + 12) % 12 === 0;
           g.fillStyle = isC ? c.gridC : c.grid;
@@ -7239,8 +8088,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             g.fillText(`${NAMES[0]}${Math.floor(m / 12) - 1}`, 6, cy - 7);
           }
         }
-    
-        const { notes, bars } = p.laneWindow(BEFORE + 0.5, AFTER + 0.5, at);
     
         // Bar lines with measure numbers.
         g.textBaseline = 'top';
@@ -7255,7 +8102,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // Notes.
         // Bars a little taller than a row, so wide-ranged songs still read as solid notes.
         // Bars and words grow with a taller lane (e.g. the full-screen note lane view).
-        const barH = Math.max(8, Math.min(Math.max(18, h / 30), rowH * 1.5));
+        // While scoring, a note is drawn as its accuracy corridor (to scale: a row is a semitone = 100 cents, so spot on
+        // is 60 cents tall, close 120) around a thin core at the exact pitch; where the lane is too short for that to be
+        // seen, the corridors are drawn a little taller than true so they stay visible.
+        const scoring = this.scoring;
+        // Notes, words and the trail stay below the bar numbers when the window cuts through a note.
+        g.save();
+        g.beginPath();
+        g.rect(0, top - 2, w, h - top + 2);
+        g.clip();
+        const bandH = bandHeights(rowH);
+        const barH = scoring ? Math.max(5, Math.min(Math.max(18, h / 30), rowH * 0.5)) : Math.max(8, Math.min(Math.max(18, h / 30), rowH * 1.5));
+        const nearH = Math.max(bandH.near, barH + 6);
+        const tuneH = Math.max(bandH.tune, barH + 2);
         const fontPx = Math.round(Math.max(13, Math.min(22, h / 34)));
         const r = Math.min(barH / 2, 6);
         // The "now" zone: a soft column of light around the play head.
@@ -7277,6 +8136,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           where.set(n.i, { x: x1, y: cy });
           const base = grade ? c[grade] : c.note;
           g.save();
+          if (scoring && grade !== 'missed') {
+            // The corridor: close (+-60 cents) outside, spot on (+-30) inside. Notes already passed fade.
+            const fade = n.start + n.dur < 0 ? 0.55 : 1;
+            g.globalAlpha = 0.13 * fade;
+            g.fillStyle = c.near;
+            roundRect(g, x0, cy - nearH / 2, x1 - x0, nearH, Math.min(nearH / 2, 7));
+            g.fill();
+            g.globalAlpha = (now ? 0.3 : 0.2) * fade;
+            g.fillStyle = c.tune;
+            roundRect(g, x0, cy - tuneH / 2, x1 - x0, tuneH, Math.min(tuneH / 2, 6));
+            g.fill();
+            g.globalAlpha = 0.55 * fade;
+            g.strokeStyle = c.tune;
+            g.lineWidth = 1;
+            roundRect(g, x0 + 0.5, cy - tuneH / 2 + 0.5, x1 - x0 - 1, tuneH - 1, Math.min(tuneH / 2, 6));
+            g.stroke();
+          }
           // A halo behind the current note and the ones sung spot on.
           if ((now && !grade) || grade === 'tune') {
             g.globalAlpha = now ? 0.22 * pulse : 0.18;
@@ -7338,12 +8214,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           lastRight = x0 + tw;
           g.fillStyle = now ? c.glow : c.lyric;
           g.globalAlpha = n.start + n.dur < 0 ? 0.45 : 1;
-          g.fillText(n.lyric, x0, Math.min(h - fontPx - 4, y(n.midi) + rowH / 2 + barH / 2 + 3));
+          g.fillText(n.lyric, x0, Math.min(h - fontPx - 4, y(n.midi) + rowH / 2 + (scoring ? nearH : barH) / 2 + 3));
           g.globalAlpha = 1;
         }
     
         // The singer's pitch: folded to the octave of the note being sung, coloured by how close it is.
+        // While scoring it is the instantaneous pitch, so vibrato shows as a wave through the corridor, with a marker and
+        // the cents off at the play head.
         const tr = this.trail;
+        let reading = null;
         if (tr.length > 1) {
           const lane = p.laneWindow(BEFORE * 2.5, 0.1, at).notes;
           const targetAt = (t) => {
@@ -7351,10 +8230,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             const n = lane.find((v) => v.start <= rel && rel < v.start + v.dur);
             return n ? n.midi : null;
           };
-          g.lineWidth = 2.5;
+          g.lineWidth = scoring ? 3 : 2.5;
           g.lineCap = 'round';
-          g.globalAlpha = 0.85;
+          g.lineJoin = 'round';
+          g.globalAlpha = scoring ? 0.92 : 0.85;
           let prev = null;
+          let last = null; // the newest drawn reading
           for (const pt of tr) {
             const px = x((pt.t - at) / p.tempo);
             if (pt.midi === null || px > headX + 1) {
@@ -7362,22 +8243,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               continue;
             }
             const target = targetAt(pt.t);
-            let m = pt.midi;
-            if (target !== null) m -= 12 * Math.round((m - target) / 12);
-            else m -= 12 * Math.round((m - (lo + hi) / 2) / 12);
-            const py = y(m) + rowH / 2;
+            const m = foldToward(pt.midi, target !== null ? target : (lo + hi) / 2);
+            const py = clamp(y(m) + rowH / 2, top, h - bottom); // a pitch past the lane's edge runs along the edge
+            const level = target === null ? null : levelFor((m - target) * 100);
+            // A new note starts the line again inside its own corridor (no tall stroke joining one note's pitch to the next).
+            if (scoring && prev && prev.target !== target) prev = null;
+            // Nor across a jump between readings (a slip, a misread, a late entry): only a glide is joined up.
+            if (scoring && prev && !joins(prev.m, m)) prev = null;
             if (prev && px - prev.x < 30) {
-              const cents = target === null ? null : Math.abs(m - target) * 100;
-              g.strokeStyle = cents === null ? 'rgba(245, 236, 223, 0.55)' : cents <= 30 ? c.tune : cents <= 60 ? c.near : cents <= 100 ? c.off : c.wrong;
+              g.strokeStyle = level === null ? 'rgba(245, 236, 223, 0.55)' : c[level];
               g.beginPath();
               g.moveTo(prev.x, prev.y);
               g.lineTo(px, py);
               g.stroke();
             }
-            prev = { x: px, y: py };
+            prev = { x: px, y: py, target, m };
+            last = { px, py, pt, target };
           }
           g.globalAlpha = 1;
+          // Where the voice is now: the middle of the last 0.4 s (what a listener hears through the vibrato), and how
+          // wide the vibrato is. Not while scrubbing, and not once the last reading is old (silence).
+          if (scoring && last && this.drag === null && p.playing && (at - last.pt.t) / p.tempo < 0.35) {
+            const t1 = last.pt.t;
+            const near = tr.filter((q) => q.midi !== null && q.t > t1 - 0.7 * p.tempo && q.t <= t1 && targetAt(q.t) === last.target);
+            const recent = near.filter((q) => q.t > t1 - 0.4 * p.tempo);
+            const meanMidi = recent.reduce((s, q) => s + q.midi, 0) / recent.length;
+            const hasT = last.target !== null;
+            const cents = hasT ? recent.reduce((s, q) => s + (foldToward(q.midi, last.target) - last.target) * 100, 0) / recent.length : null;
+            // Vibrato: the analyzer's own measure (as in the Voice Mirror) on the raw pitch of this note, else a quick estimate for a short note.
+            const rawCents = hasT ? near.map((q) => ({ t: q.t / p.tempo, cents: (foldToward(q.raw ?? q.midi, last.target) - last.target) * 100 })) : [];
+            const vib = hasT ? measureVibrato(rawCents.map((q) => q.t), rawCents.map((q) => q.cents)) || wobble(rawCents) : null;
+            const level = cents === null ? null : levelFor(cents);
+            const col = level ? c[level] : c.glow;
+            g.fillStyle = col;
+            g.globalAlpha = 0.28;
+            g.beginPath();
+            g.arc(last.px, last.py, 11, 0, Math.PI * 2);
+            g.fill();
+            g.globalAlpha = 1;
+            g.beginPath();
+            g.arc(last.px, last.py, 5.5, 0, Math.PI * 2);
+            g.fill();
+            g.strokeStyle = '#fff6e6';
+            g.lineWidth = 1.5;
+            g.stroke();
+            if (cents !== null) {
+              const n = Math.abs(Math.round(cents));
+              const tag = n === 0 ? '0¢' : `${cents > 0 ? '♯' : '♭'}${n}¢`;
+              g.font = '700 11px system-ui, sans-serif';
+              g.textBaseline = 'middle';
+              const tw = g.measureText(tag).width;
+              const tx = Math.min(w - tw - 12, last.px + 14);
+              const ty = clamp(last.py, top + 8, h - bottom - 8);
+              g.fillStyle = 'rgba(20, 12, 15, 0.78)';
+              roundRect(g, tx - 4, ty - 8, tw + 8, 16, 5);
+              g.fill();
+              g.fillStyle = col;
+              g.fillText(tag, tx, ty + 0.5);
+            }
+            const rounded = Math.round(meanMidi);
+            reading = {
+              note: `${NAMES[((rounded % 12) + 12) % 12]}${Math.floor(rounded / 12) - 1}`,
+              midi: meanMidi,
+              target: last.target,
+              cents,
+              level,
+              vibrato: vib,
+              zone: zoneOf(meanMidi, this.voice),
+              below: this.voice ? meanMidi < this.voice.low - 0.5 : false,
+              above: this.voice ? meanMidi > this.voice.high + 0.5 : false,
+            };
+          }
         }
+        g.restore();
+        if (scoring) this._liveOut(reading);
     
         // Play head.
         const grad = g.createLinearGradient(0, 0, 0, h);
@@ -7455,6 +8394,254 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     }
 
     return { LANE_COLORS, NoteLane };
+  })();
+  var mod_pitch_scope = (function () {
+    // Pitch scope: a small live "tuner strip" that rides the cursor on the written music. Its middle line is the note
+    // being sung (it sits level with the notehead), the green / yellow / orange corridors are the same +-30 / +-60 /
+    // +-100 cents the score grades by, and the last second or so of your pitch is drawn through them, so vibrato shows as
+    // a wave and a flat or sharp note as a line off the middle. Framework-free; draws into a canvas it adds beside the
+    // cursor image, and ignores the pointer.
+    //
+    //   const scope = new PitchScope({ player, label: 'Your pitch against the written note' });
+    //   scope.push(scoreSec, midi);   // each reading, stamped like the lane's (or null for silence)
+    //   scope.setActive(true);        // on while the singer is being scored
+    //   scope.destroy();
+
+    var PitchTrace = mod_pitch_feedback.PitchTrace, centsFrom = mod_pitch_feedback.centsFrom, joins = mod_pitch_feedback.joins;
+    var levelFor = mod_sing_score.levelFor;
+    const COLORS = { tune: '#5cc58a', near: '#e6cf5a', off: '#f09a4f', wrong: '#ec6f86' };
+    const W = 132; // CSS px at the default staff size
+    const H = 62;
+    const SPAN = 1.3; // seconds of pitch on the strip
+    const RANGE = 140; // cents from the middle to the top and bottom edge
+
+    class PitchScope {
+      /** @param {{ player: any, colors?: object, label?: string }} opts */
+      constructor({ player, colors = {}, label = '' } = {}) {
+        this.player = player;
+        this.c = { ...COLORS, ...colors };
+        this.trace = new PitchTrace({ span: SPAN });
+        this.active = false;
+        this.canvas = null;
+        this.parent = null;
+        this.placed = '';
+        this.label = label;
+        this.loop = this.loop.bind(this);
+      }
+
+      setActive(on) {
+        on = !!on;
+        if (on === this.active) return;
+        this.active = on;
+        if (on) {
+          this.trace.clear();
+          this.raf = requestAnimationFrame(this.loop);
+        } else {
+          cancelAnimationFrame(this.raf);
+          this.raf = 0;
+          if (this.canvas) this.canvas.style.display = 'none';
+        }
+      }
+
+      /** One pitch reading (midi or null), stamped with the score time it describes. */
+      push(scoreSec, midi) {
+        const target = this.player.voiceMidiAt(scoreSec);
+        const cents = midi === null || midi === undefined || target === null ? null : centsFrom(midi, target);
+        this.trace.push(performance.now() / 1000, cents);
+      }
+
+      destroy() {
+        this.setActive(false);
+        this.canvas?.remove();
+        this.canvas = null;
+      }
+
+      loop() {
+        if (!this.active) return;
+        this.raf = requestAnimationFrame(this.loop);
+        this._frame();
+      }
+
+      _ensure(parent) {
+        if (this.canvas && this.parent === parent) return this.canvas;
+        this.canvas?.remove();
+        const cv = document.createElement('canvas');
+        cv.setAttribute('aria-hidden', 'true');
+        cv.dataset.pitchScope = '';
+        cv.style.cssText = 'position:absolute;pointer-events:none;z-index:6;display:none;border-radius:8px;';
+        parent.appendChild(cv);
+        this.canvas = cv;
+        this.parent = parent;
+        this.sized = '';
+        return cv;
+      }
+
+      _frame() {
+        const now = performance.now() / 1000;
+        const pts = this.trace.points();
+        const fresh = this.trace.latest(now, SPAN * 0.9);
+        const anchor = this.player.playing && fresh ? this.player.voiceAnchor() : null;
+        if (!anchor) {
+          if (this.canvas) this.canvas.style.display = 'none';
+          return;
+        }
+        const cv = this._ensure(anchor.parent);
+        const k = Math.max(0.7, Math.min(1.6, anchor.space / 10));
+        const w = Math.round(W * k);
+        const h = Math.round(H * k);
+        // Left of the cursor (past music is under it); on the right when there is no room on the left.
+        let left = anchor.x - 20 - w;
+        let side = 'left';
+        if (left < 2) {
+          left = anchor.x + 20;
+          side = 'right';
+        }
+        const top = anchor.y - h / 2;
+        const place = `${Math.round(left)}|${Math.round(top)}|${w}|${h}`;
+        if (place !== this.placed) {
+          this.placed = place;
+          cv.style.left = `${Math.round(left)}px`;
+          cv.style.top = `${Math.round(top)}px`;
+        }
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const size = `${w}x${h}x${dpr}`;
+        if (size !== this.sized) {
+          this.sized = size;
+          cv.style.width = `${w}px`;
+          cv.style.height = `${h}px`;
+          cv.width = Math.round(w * dpr);
+          cv.height = Math.round(h * dpr);
+        }
+        cv.style.display = 'block';
+        const g = cv.getContext('2d');
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        this._draw(g, w, h, k, now, pts, fresh, side);
+      }
+
+      _draw(g, w, h, k, now, pts, fresh, side) {
+        const c = this.c;
+        const mid = h / 2;
+        const ppc = (h / 2 - 3) / RANGE; // pixels per cent
+        const yOf = (cents) => mid - Math.max(-RANGE, Math.min(RANGE, cents)) * ppc;
+        g.clearRect(0, 0, w, h);
+        // The plate.
+        g.fillStyle = 'rgba(22, 14, 18, 0.84)';
+        rr(g, 0.5, 0.5, w - 1, h - 1, 8 * k);
+        g.fill();
+        g.strokeStyle = 'rgba(245, 236, 223, 0.28)';
+        g.lineWidth = 1;
+        g.stroke();
+        // The corridors, to scale: close (+-60) and a bit off (+-100) behind, spot on (+-30) in front.
+        g.save();
+        rr(g, 1, 1, w - 2, h - 2, 7 * k);
+        g.clip();
+        const band = (cents, color, alpha) => {
+          g.globalAlpha = alpha;
+          g.fillStyle = color;
+          g.fillRect(0, yOf(cents), w, yOf(-cents) - yOf(cents));
+        };
+        band(100, c.off, 0.1);
+        band(60, c.near, 0.16);
+        band(30, c.tune, 0.3);
+        g.globalAlpha = 0.9;
+        g.strokeStyle = c.tune;
+        g.lineWidth = 1;
+        for (const e of [30, -30]) {
+          g.beginPath();
+          g.moveTo(0, Math.round(yOf(e)) + 0.5);
+          g.lineTo(w, Math.round(yOf(e)) + 0.5);
+          g.stroke();
+        }
+        // The note itself: the middle line.
+        g.globalAlpha = 0.85;
+        g.strokeStyle = '#fff6e6';
+        g.setLineDash([4, 3]);
+        g.beginPath();
+        g.moveTo(0, Math.round(mid) + 0.5);
+        g.lineTo(w, Math.round(mid) + 0.5);
+        g.stroke();
+        g.setLineDash([]);
+        g.globalAlpha = 1;
+        // Your pitch through the last second, newest at the edge nearest the music.
+        const xOf = (t) => {
+          const f = (now - t) / SPAN; // 0 = now, 1 = oldest
+          const x = 8 + f * (w - 16);
+          return side === 'left' ? w - x : x;
+        };
+        g.lineWidth = 2.3 * Math.min(1.3, k);
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        let prev = null;
+        for (const p of pts) {
+          if (p.cents === null) {
+            prev = null;
+            continue;
+          }
+          const x = xOf(p.t);
+          const y = yOf(p.cents);
+          if (prev && Math.abs(x - prev.x) < w * 0.25 && joins(prev.cents / 100, p.cents / 100)) {
+            g.globalAlpha = 0.35 + 0.65 * (1 - (now - p.t) / SPAN);
+            g.strokeStyle = this.c[levelFor(p.cents)];
+            g.beginPath();
+            g.moveTo(prev.x, prev.y);
+            g.lineTo(x, y);
+            g.stroke();
+          }
+          prev = { x, y, cents: p.cents };
+        }
+        g.globalAlpha = 1;
+        // The voice now: a dot where the trail ends, coloured by band.
+        const level = levelFor(fresh.cents);
+        g.fillStyle = this.c[level];
+        g.beginPath();
+        g.arc(xOf(fresh.t), yOf(fresh.cents), 4 * Math.min(1.3, k), 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = '#fff6e6';
+        g.lineWidth = 1.2;
+        g.stroke();
+        g.restore();
+        // What a listener hears (the middle through the vibrato), as a number.
+        const centre = this.trace.centre(0.4);
+        if (centre !== null) {
+          const n = Math.abs(Math.round(centre));
+          const tag = n === 0 ? '0¢' : `${centre > 0 ? '♯' : '♭'}${n}¢`;
+          g.font = `700 ${Math.round(10 * Math.min(1.3, k))}px system-ui, sans-serif`;
+          g.textBaseline = 'top';
+          g.fillStyle = this.c[levelFor(centre)];
+          g.textAlign = side === 'left' ? 'left' : 'right';
+          g.fillText(tag, side === 'left' ? 6 : w - 6, 4);
+          g.textAlign = 'left';
+        }
+        // A pointer from the strip to the notehead.
+        g.fillStyle = '#fff6e6';
+        g.globalAlpha = 0.9;
+        g.beginPath();
+        if (side === 'left') {
+          g.moveTo(w - 1, mid - 4);
+          g.lineTo(w - 1, mid + 4);
+          g.lineTo(w - 6, mid);
+        } else {
+          g.moveTo(1, mid - 4);
+          g.lineTo(1, mid + 4);
+          g.lineTo(6, mid);
+        }
+        g.closePath();
+        g.fill();
+        g.globalAlpha = 1;
+      }
+    }
+
+    function rr(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+
+    return { PitchScope };
   })();
   var mod_warmups = (function () {
     // Warm-up patterns and the plan for playing one through a singer's range.
@@ -7735,7 +8922,1045 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     return { VOICE_LABELS, fitsVoice, voiceFits };
   })();
-    return Object.assign({}, mod_score_player, mod_common, mod_rhythm, mod_melody_gen, mod_intervals, mod_grade, mod_sing_score, mod_voice_analyzer, mod_voice_visuals, mod_note_lane, mod_warmups, mod_song_packs, mod_library);
+  var mod_voice_profile = (function () {
+    // One voice profile for every activity. A voice type (soprano ... bass) gives a comfortable practice range; a range the
+    // singer measured (the Vocal Range tool) can refine it. Every activity asks the profile for its pitches, so a melody, an
+    // interval or a warm-up never starts outside what this singer can comfortably sing, unless they change the settings.
+    // Framework-free; the profile can be handed straight to the melody generator (it has low, high and clef).
+    //
+    //   const profile = makeProfile({ type: 'tenor', source: 'measured' }, { low: 47, high: 70 });
+    //   generateMelody({ seed, level, voice: profile });
+    //   suggestFit(60, 79, profile);   // { key: 0, octave: -1, ... }: a treble-clef song, an octave down
+
+    var VOICE_TYPES = mod_common.VOICE_TYPES;
+    const VOICE_KEYS = Object.keys(VOICE_TYPES);
+    const MIN_SPAN = 12; // an octave: a narrower measured range is not usable
+    const PULL_IN = 3; // a measured range's extremes are not where a song should live: pull in a minor third each end
+    const MIN_COMFORT = 9; // never pull a measured range in below this many semitones
+
+    const usable = (m) => !!m && Number.isFinite(m.low) && Number.isFinite(m.high) && m.high - m.low >= MIN_SPAN;
+
+    /**
+     * Settings as stored { type, source: 'type' | 'measured', measured?: { low, high }, fit?: boolean } plus an optional measured
+     * range from elsewhere -> what activities use. Never throws; anything unknown falls back to a mezzo-soprano's own range.
+     * @returns {{ type, label, clef, low, high, stretchLow, stretchHigh, measured, source, fit }}
+     */
+    function makeProfile(raw, measuredRange) {
+      const r = raw && typeof raw === 'object' ? raw : {};
+      const type = VOICE_TYPES[r.type] ? r.type : 'mezzo';
+      const base = VOICE_TYPES[type];
+      const given = usable(measuredRange) ? measuredRange : usable(r.measured) ? r.measured : null;
+      const measured = given ? { low: Math.round(given.low), high: Math.round(given.high) } : null;
+      const useMeasured = r.source === 'measured' && !!measured;
+      let low = base.low;
+      let high = base.high;
+      let stretchLow = base.low - PULL_IN;
+      let stretchHigh = base.high + PULL_IN;
+      if (useMeasured) {
+        low = measured.low + PULL_IN;
+        high = measured.high - PULL_IN;
+        if (high - low < MIN_COMFORT) { low = measured.low; high = measured.high; }
+        stretchLow = measured.low;
+        stretchHigh = measured.high;
+      }
+      return { type, label: base.label, clef: base.clef, low, high, stretchLow, stretchHigh, measured, source: useMeasured ? 'measured' : 'type', fit: r.fit !== false };
+    }
+
+    /** The voice type a measured range suggests: the type whose comfortable range is centred nearest the middle of it. */
+    function suggestVoiceType(low, high) {
+      if (!Number.isFinite(low) || !Number.isFinite(high)) return 'mezzo';
+      const mid = (low + high) / 2;
+      let best = 'mezzo';
+      let bestGap = Infinity;
+      for (const k of VOICE_KEYS) {
+        const gap = Math.abs((VOICE_TYPES[k].low + VOICE_TYPES[k].high) / 2 - mid);
+        if (gap < bestGap) { best = k; bestGap = gap; }
+      }
+      return best;
+    }
+
+    /**
+     * A pitch window [min, max] (MIDI) for an exercise written for a typical range, fitted into the profile's comfortable range:
+     * unchanged when it already fits, trimmed to the overlap when that is still a useful size, otherwise the same size moved to
+     * the nearest place inside the voice (a bass given a treble exercise gets the same notes an octave-ish down). A window wider
+     * than the whole range becomes the whole range. Never throws.
+     * @returns {{ min: number, max: number }}
+     */
+    function fitWindow(min, max, profile) {
+      const lo = profile.low;
+      const hi = profile.high;
+      if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) return { min: lo, max: hi };
+      const span = max - min;
+      if (hi - lo <= span) return { min: lo, max: hi };
+      const a = Math.max(min, lo);
+      const b = Math.min(max, hi);
+      if (b - a >= Math.min(span, 9)) return { min: a, max: b };
+      const start = Math.min(Math.max(min, lo), hi - span);
+      return { min: start, max: start + span };
+    }
+
+    /**
+     * The key change (semitones) and octave that put a melody (lowest and highest MIDI as written) inside the profile's comfort
+     * range, changing as little as possible: nothing if it already fits, then key, then octave. When no change fits (a melody
+     * wider than the range) it is the placement with the least stretch beyond the range, and `fits` is false.
+     * @returns {{ key, octave, lo, hi, overshoot, fits, changed }}  lo/hi: the melody as sung after the change
+     */
+    function suggestFit(lo, hi, profile, { maxKey = 6 } = {}) {
+      const asWritten = { key: 0, octave: 0, lo, hi, overshoot: 0, fits: true, changed: false };
+      if (!Number.isFinite(lo) || !Number.isFinite(hi) || !profile) return asWritten;
+      let best = null;
+      for (const octave of [0, -1, 1]) {
+        for (let key = -maxKey; key <= maxKey; key++) {
+          const slo = lo + key + 12 * octave;
+          const shi = hi + key + 12 * octave;
+          const overshoot = Math.max(0, profile.low - slo) + Math.max(0, shi - profile.high);
+          const effort = Math.abs(key) + 5 * Math.abs(octave); // a key change up to a fifth is gentler than leaving the written octave
+          if (!best || overshoot < best.overshoot || (overshoot === best.overshoot && effort < best.effort)) best = { key, octave, lo: slo, hi: shi, overshoot, effort };
+        }
+      }
+      return { key: best.key, octave: best.octave, lo: best.lo, hi: best.hi, overshoot: best.overshoot, fits: best.overshoot === 0, changed: best.key !== 0 || best.octave !== 0 };
+    }
+
+    return { VOICE_KEYS, makeProfile, suggestVoiceType, fitWindow, suggestFit };
+  })();
+  var mod_phrases = (function () {
+    // Sung phrases of a score, for "echo" practice (hear a phrase, then sing it back). Framework-free.
+    //
+    //   findPhrases(player.timeline) -> [{ startIdx, endIdx, start, end }]
+    //
+    // startIdx/endIdx are performed-measure indexes (timeline.measures: repeats and verses included), so a phrase can be
+    // looped with the player's loop machinery; start/end are its first and last sung moments (score seconds).
+    // A phrase ends at a rest in the melody (a breath of at least ~half a beat); one longer than `maxBars` measures is
+    // split after its longest note (where a singer would breathe), and a phrase of a single short note joins the next.
+
+    function findPhrases({ events, measures, firstBeat }, { maxBars = 4 } = {}) {
+      const beat = firstBeat || 0.5;
+      // The melody, one note per moment (a sung chord counts once).
+      const notes = [];
+      for (const e of events) {
+        if (e.part !== 'voice') continue;
+        const last = notes[notes.length - 1];
+        if (last && Math.abs(last.sec - e.sec) < 1e-6) {
+          last.dur = Math.max(last.dur, e.dur);
+          continue;
+        }
+        notes.push({ sec: e.sec, dur: e.dur });
+      }
+      if (!notes.length || !measures?.length) return [];
+      const measureAt = (sec) => {
+        let lo = 0;
+        let hi = measures.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          if (measures[mid].start <= sec + 1e-6) lo = mid;
+          else hi = mid - 1;
+        }
+        return lo;
+      };
+      // Split at rests.
+      let groups = [];
+      let cur = [notes[0]];
+      for (let i = 1; i < notes.length; i++) {
+        const prev = notes[i - 1];
+        const gap = notes[i].sec - (prev.sec + prev.dur);
+        if (gap >= 0.45 * beat - 1e-6) {
+          groups.push(cur);
+          cur = [];
+        }
+        cur.push(notes[i]);
+      }
+      groups.push(cur);
+      // Too long to echo in one breath of memory: split after the longest note (not the last), until short enough.
+      const bars = (g) => measureAt(g[g.length - 1].sec + g[g.length - 1].dur - 1e-3) - measureAt(g[0].sec) + 1;
+      const split = (g) => {
+        if (g.length < 4 || bars(g) <= maxBars) return [g];
+        let k = 1;
+        let best = -1;
+        // Prefer a split near the middle: weigh each note's length by how central its end is.
+        for (let i = 1; i < g.length - 2; i++) {
+          const centre = 1 - Math.abs(i / (g.length - 1) - 0.5);
+          const w = g[i].dur * (0.5 + centre);
+          if (w > best) {
+            best = w;
+            k = i;
+          }
+        }
+        return [...split(g.slice(0, k + 1)), ...split(g.slice(k + 1))];
+      };
+      groups = groups.flatMap(split);
+      // A lone short note (a pickup sung on its own) joins the phrase after it.
+      for (let i = 0; i < groups.length - 1; i++) {
+        if (groups[i].length === 1 && groups[i][0].dur < 1.5 * beat) {
+          groups[i + 1] = [...groups[i], ...groups[i + 1]];
+          groups.splice(i, 1);
+          i--;
+        }
+      }
+      return groups.map((g) => {
+        const last = g[g.length - 1];
+        return { startIdx: measureAt(g[0].sec), endIdx: measureAt(last.sec + last.dur - 1e-3), start: g[0].sec, end: last.sec + last.dur };
+      });
+    }
+
+    return { findPhrases };
+  })();
+  var mod_take_recorder = (function () {
+    // Records a microphone on an AudioContext's own clock, so a take can be lined up with music scheduled on that clock
+    // exactly (MediaRecorder's "start" event came ~0.2 s after capture began, with no way to measure the gap).
+    // Framework-free; needs AudioWorklet.
+    //
+    //   const rec = new TakeRecorder(player.ctx);
+    //   await rec.start(micStream);          // capturing; rec.t0 = context time of the first sample (once it arrives)
+    //   const { buffer, t0 } = rec.stop();   // a mono AudioBuffer of everything since the first sample
+
+    const WORKLET = `
+    class RpTake extends AudioWorkletProcessor {
+      constructor() { super(); this.buf = new Float32Array(2048); this.n = 0; this.t = 0; }
+      process(inputs) {
+        const ch = inputs[0] && inputs[0][0];
+        if (ch) {
+          if (this.n === 0) this.t = currentTime;
+          this.buf.set(ch, this.n);
+          this.n += ch.length;
+          if (this.n + 128 > this.buf.length) {
+            this.port.postMessage({ t: this.t, data: this.buf.slice(0, this.n) });
+            this.n = 0;
+          }
+        }
+        return true;
+      }
+    }
+    registerProcessor('rp-take', RpTake);`;
+
+    const loaded = new WeakSet();
+
+    const canRecordTakes = () => typeof AudioWorkletNode !== 'undefined';
+
+    class TakeRecorder {
+      constructor(ctx) {
+        this.ctx = ctx;
+        this.chunks = [];
+        this.t0 = null;
+        this.onChunk = null; // (contextTime) => void, after each chunk: e.g. stop when the music jumps
+      }
+
+      async start(stream) {
+        const ctx = this.ctx;
+        if (!loaded.has(ctx)) {
+          const url = URL.createObjectURL(new Blob([WORKLET], { type: 'text/javascript' }));
+          try {
+            await ctx.audioWorklet.addModule(url);
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+          loaded.add(ctx);
+        }
+        this.src = ctx.createMediaStreamSource(stream);
+        this.node = new AudioWorkletNode(ctx, 'rp-take', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1, channelCountMode: 'explicit' });
+        // A silent path to the speakers keeps the node running in every browser.
+        this.mute = ctx.createGain();
+        this.mute.gain.value = 0;
+        this.node.port.onmessage = (e) => {
+          if (!this.node) return;
+          if (this.t0 === null) this.t0 = e.data.t;
+          this.chunks.push(e.data.data);
+          this.onChunk?.(e.data.t);
+        };
+        this.src.connect(this.node).connect(this.mute).connect(ctx.destination);
+      }
+
+      get seconds() {
+        return this.chunks.reduce((s, c) => s + c.length, 0) / this.ctx.sampleRate;
+      }
+
+      stop() {
+        if (this.node) {
+          this.node.port.onmessage = null;
+          this.src.disconnect();
+          this.node.disconnect();
+          this.mute.disconnect();
+          this.node = null;
+        }
+        const n = this.chunks.reduce((s, c) => s + c.length, 0);
+        if (!n || this.t0 === null) return null;
+        const buffer = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+        const out = buffer.getChannelData(0);
+        let at = 0;
+        for (const c of this.chunks) {
+          out.set(c, at);
+          at += c.length;
+        }
+        this.chunks = [];
+        return { buffer, t0: this.t0 };
+      }
+    }
+
+    /** A mono 16-bit WAV file of an AudioBuffer (to save a take). */
+    function wavBlob(buffer) {
+      const x = buffer.getChannelData(0);
+      const sr = buffer.sampleRate;
+      const data = new DataView(new ArrayBuffer(44 + x.length * 2));
+      const str = (o, s) => [...s].forEach((c, i) => data.setUint8(o + i, c.charCodeAt(0)));
+      str(0, 'RIFF');
+      data.setUint32(4, 36 + x.length * 2, true);
+      str(8, 'WAVE');
+      str(12, 'fmt ');
+      data.setUint32(16, 16, true);
+      data.setUint16(20, 1, true);
+      data.setUint16(22, 1, true);
+      data.setUint32(24, sr, true);
+      data.setUint32(28, sr * 2, true);
+      data.setUint16(32, 2, true);
+      data.setUint16(34, 16, true);
+      str(36, 'data');
+      data.setUint32(40, x.length * 2, true);
+      for (let i = 0; i < x.length; i++) data.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i])) * 0x7fff, true);
+      return new Blob([data], { type: 'audio/wav' });
+    }
+
+    return { canRecordTakes, TakeRecorder, wavBlob };
+  })();
+  var mod_find_note = (function () {
+    // "Find a note": a small keyboard that drops down from the practice player (framework-free).
+    // It spans the melody's range (in the current key and octave, at least two octaves), marks the starting note,
+    // shades the notes the song uses, and lights the melody note while the music plays. Keys sound while held;
+    // sliding across them plays each one.
+    //
+    //   const fn = new FindNote(panelEl, { player, tones, sound: () => 'piano' });
+    //   fn.open(); fn.close();
+    var playSound = mod_score_player.playSound;
+    const NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const SPOKEN = ['C', 'C sharp', 'D', 'E flat', 'E', 'F', 'F sharp', 'G', 'A flat', 'A', 'B flat', 'B'];
+    const BLACK = [1, 3, 6, 8, 10];
+    const nameOf = (m) => `${NAMES[m % 12]}${Math.floor(m / 12) - 1}`;
+    const spokenOf = (m) => `${SPOKEN[m % 12]} ${Math.floor(m / 12) - 1}`;
+
+    /** The keys to show for a melody: whole octaves from the C below its lowest note, 2 to 4 octaves. */
+    function keyRange(midis) {
+      if (!midis.length) return { lo: 48, hi: 83 };
+      let lo = Math.floor(Math.min(...midis) / 12) * 12;
+      let hi = Math.ceil((Math.max(...midis) + 1) / 12) * 12 - 1;
+      while (hi - lo + 1 < 24) {
+        // Grow toward the side with less room around the melody.
+        if (Math.min(...midis) - lo <= hi - Math.max(...midis)) lo -= 12;
+        else hi += 12;
+      }
+      if (hi - lo + 1 > 48) hi = lo + 47;
+      return { lo: Math.max(21, lo), hi: Math.min(108, hi) };
+    }
+
+    class FindNote {
+      constructor(panel, { player, tones, sound = () => 'piano' }) {
+        this.panel = panel;
+        this.player = player;
+        this.tones = tones;
+        this.sound = sound;
+        this.keysEl = panel.querySelector('[data-mp-keys]');
+        this.scroll = panel.querySelector('[data-mp-scroll]');
+        this.nowEl = panel.querySelector('[data-mp-now]');
+        this.keyEls = new Map();
+        this.voices = new Map(); // midi -> { g, nodes, by: Set }
+        this.pointers = new Map(); // pointerId -> midi
+        this.pressed = new Set(); // "midi|who" still held (a quick tap can let go before the audio is ready)
+        this.sig = '';
+        this.lit = null;
+        this.raf = 0;
+        this._bind();
+      }
+
+      get isOpen() {
+        return !this.panel.hidden;
+      }
+
+      open() {
+        this.panel.hidden = false;
+        this.tones.ready().catch(() => {}); // start the audio now (a tap), so the first key sounds at once
+
+        this.refresh(true);
+        const loop = () => {
+          this.raf = requestAnimationFrame(loop);
+          this._follow();
+        };
+        cancelAnimationFrame(this.raf);
+        loop();
+      }
+
+      close() {
+        this.panel.hidden = true;
+        cancelAnimationFrame(this.raf);
+        this.raf = 0;
+        for (const m of [...this.voices.keys()]) this._release(m);
+        this.pointers.clear();
+        this.pressed.clear();
+        this._light(null);
+      }
+
+      /** Rebuild when the melody moved (key, octave, part); keep the starting note in view. */
+      refresh(reveal = false) {
+        let notes = [];
+        try {
+          notes = this.player.voiceNotes().map((n) => n.midi);
+        } catch {}
+        const { lo, hi } = keyRange(notes);
+        const start = notes[0] ?? null;
+        const used = new Set(notes);
+        const sig = `${lo}|${hi}|${start}|${[...used].sort().join(',')}`;
+        if (sig !== this.sig) {
+          this.sig = sig;
+          this._build(lo, hi, start, used);
+          reveal = true;
+        }
+        if (reveal && start !== null) this._reveal(start, false);
+      }
+
+      _build(lo, hi, start, used) {
+        const focused = this.keysEl.contains(document.activeElement) ? Number(document.activeElement.dataset.midi) : null;
+        this.keysEl.innerHTML = '';
+        this.keyEls.clear();
+        let white = 0;
+        const els = [];
+        for (let m = lo; m <= hi; m++) {
+          const black = BLACK.includes(m % 12);
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = `pk ${black ? 'pk-black' : 'pk-white'}${used.has(m) ? ' mp-used' : ''}${m === start ? ' mp-start' : ''}`;
+          b.style.setProperty('--x', String(black ? white - 1 : white));
+          b.dataset.midi = String(m);
+          b.tabIndex = -1;
+          b.setAttribute('aria-label', `${spokenOf(m)}${m === 60 ? ', middle C' : ''}${m === start ? ', the starting note' : used.has(m) ? ', in the song' : ''}`);
+          if (!black && (m % 12 === 0 || m === start)) {
+            const s = document.createElement('span');
+            s.className = `pk-name${m % 12 === 0 ? ' pk-c' : ''}`;
+            s.textContent = nameOf(m);
+            b.append(s);
+          }
+          if (!black) white++;
+          els.push(b);
+          this.keyEls.set(m, b);
+        }
+        this.keysEl.style.setProperty('--whites', String(white));
+        this.keysEl.append(...els);
+        const home = this.keyEls.get(focused) || this.keyEls.get(start) || this.keyEls.get(lo);
+        home.tabIndex = 0;
+        if (focused !== null && this.keyEls.has(focused)) home.focus({ preventScroll: true });
+        this.lit = null;
+      }
+
+      _reveal(m, smooth = true) {
+        const el = this.keyEls.get(m);
+        if (!el || this.scroll.scrollWidth <= this.scroll.clientWidth) return;
+        const left = el.offsetLeft;
+        if (smooth && left > this.scroll.scrollLeft + 24 && left < this.scroll.scrollLeft + this.scroll.clientWidth - 48) return;
+        this.scroll.scrollTo({ left: left - this.scroll.clientWidth / 2, behavior: smooth ? 'smooth' : 'instant' });
+      }
+
+      // The melody note at the play head lights up; the range follows key/octave/part changes.
+      _follow() {
+        if (!this.player.timeline) return;
+        const m = this.player.currentVoiceMidi();
+        if (m !== this.lit) {
+          this._light(m);
+          if (m !== null) this._reveal(m);
+        }
+        if (!this.player.playing && performance.now() - (this.checked || 0) > 400) {
+          this.checked = performance.now();
+          this.refresh();
+        }
+      }
+
+      _light(m) {
+        if (this.lit !== null) this.keyEls.get(this.lit)?.classList.remove('mp-live');
+        this.lit = m;
+        if (m !== null) this.keyEls.get(m)?.classList.add('mp-live');
+      }
+
+      async _on(m, by, vel = 0.8) {
+        this.pressed.add(`${m}|${by}`);
+        // Show the key at once; the sound follows as soon as the audio is running.
+        this.keyEls.get(m)?.classList.add('is-down');
+        this.nowEl.textContent = `${nameOf(m)}${m === 60 ? ' · middle C' : ''}`;
+        const ctx = await this.tones.ready();
+        const v = this.voices.get(m);
+        if (v) this._release(m);
+        const g = ctx.createGain();
+        g.connect(this.tones.out);
+        const { nodes, stopAt } = playSound(ctx, g, this.sound(), m, ctx.currentTime + 0.005, 6, (0.35 + 0.65 * vel) * 1.6);
+        for (const n of nodes) n.stop(stopAt);
+        this.voices.set(m, { g, nodes, by });
+        this.keyEls.get(m)?.classList.add('is-down');
+        this.nowEl.textContent = `${nameOf(m)}${m === 60 ? ' · middle C' : ''}`;
+        if (!this.pressed.has(`${m}|${by}`)) setTimeout(() => this.voices.get(m)?.by === by && this._release(m), 140); // already let go: a short note
+      }
+
+      _off(m, by) {
+        this.pressed.delete(`${m}|${by}`);
+        const v = this.voices.get(m);
+        if (!v || v.by !== by) return;
+        this._release(m);
+      }
+
+      _release(m) {
+        const v = this.voices.get(m);
+        if (!v) return;
+        this.voices.delete(m);
+        const t = v.g.context.currentTime;
+        v.g.gain.cancelScheduledValues(t);
+        v.g.gain.setValueAtTime(v.g.gain.value, t);
+        v.g.gain.setTargetAtTime(0, t, 0.12);
+        for (const n of v.nodes) {
+          try {
+            n.stop(t + 0.8);
+          } catch {}
+        }
+        this.keyEls.get(m)?.classList.remove('is-down');
+      }
+
+      _bind() {
+        const keyAt = (x, y) => {
+          const el = document.elementFromPoint(x, y)?.closest?.('[data-midi]');
+          return el && this.keysEl.contains(el) ? Number(el.dataset.midi) : null;
+        };
+        const vel = (e, m) => {
+          const r = this.keyEls.get(m).getBoundingClientRect();
+          return 0.55 + 0.4 * Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+        };
+        this.keysEl.addEventListener('pointerdown', (e) => {
+          const m = keyAt(e.clientX, e.clientY);
+          if (m === null) return;
+          e.preventDefault();
+          this.keysEl.setPointerCapture(e.pointerId);
+          this.pointers.set(e.pointerId, m);
+          this._on(m, `p${e.pointerId}`, vel(e, m));
+        });
+        this.keysEl.addEventListener('pointermove', (e) => {
+          if (!this.pointers.has(e.pointerId)) return;
+          const m = keyAt(e.clientX, e.clientY);
+          const was = this.pointers.get(e.pointerId);
+          if (m === null || m === was) return;
+          this._off(was, `p${e.pointerId}`);
+          this.pointers.set(e.pointerId, m);
+          this._on(m, `p${e.pointerId}`, vel(e, m));
+        });
+        const up = (e) => {
+          const m = this.pointers.get(e.pointerId);
+          if (m === undefined) return;
+          this.pointers.delete(e.pointerId);
+          this._off(m, `p${e.pointerId}`);
+        };
+        this.keysEl.addEventListener('pointerup', up);
+        this.keysEl.addEventListener('pointercancel', up);
+        this.keysEl.addEventListener('lostpointercapture', up);
+
+        // Keys: arrows move between keys (not measures), Enter/Space plays, Home/End jump to the ends.
+        this.keysEl.addEventListener('keydown', (e) => {
+          const el = e.target.closest?.('[data-midi]');
+          if (!el) return;
+          const m = Number(el.dataset.midi);
+          const ms = [...this.keyEls.keys()];
+          const go = { ArrowRight: m + 1, ArrowLeft: m - 1, Home: ms[0], End: ms[ms.length - 1] }[e.key];
+          if (go !== undefined) {
+            e.preventDefault();
+            e.stopPropagation();
+            const next = this.keyEls.get(go);
+            if (!next) return;
+            el.tabIndex = -1;
+            next.tabIndex = 0;
+            next.focus();
+            this._reveal(go);
+          } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!e.repeat) this._on(m, 'k');
+          }
+        });
+        this.keysEl.addEventListener('keyup', (e) => {
+          const el = e.target.closest?.('[data-midi]');
+          if (el && (e.key === 'Enter' || e.key === ' ')) this._off(Number(el.dataset.midi), 'k');
+        });
+      }
+    }
+
+    return { keyRange, FindNote };
+  })();
+  var mod_midi = (function () {
+    // MIDI files -> MusicXML for the practice player (framework-free, AlloFlow-portable).
+    //
+    //   const midi = parseMidi(bytes);                 // tracks with notes, tempo, time and key signatures, lyrics
+    //   const tracks = describeTracks(midi);           // for a "which part do you sing?" menu; tracks[i].melody = best guess
+    //   const { xml, notes } = midiToMusicXML(midi, { melody: 2, others: [0, 1], title: 'Song' });
+    //
+    // Rhythm is rounded to sixteenths (triplets come out as the nearest sixteenths). The sung part is written as one
+    // line (the top note where notes overlap); the other tracks keep their chords and inner voices, and a wide
+    // keyboard part is split over two staves.
+    var LETTERS = mod_transcribe.LETTERS, VALUES = mod_transcribe.VALUES, keyAlter = mod_transcribe.keyAlter, pieces = mod_transcribe.pieces, spell = mod_transcribe.spell, detectKey = mod_transcribe.detectKey, chooseClef = mod_transcribe.chooseClef;
+    const VOICE_NAME = /voice|voix|voce|singstimme|stimme|soprano|mezzo|alto|tenor|bariton|bass|sopran|canto|gesang|choir|chor|vocal/i;
+    const MELODY_NAME = /melod|lead|vocal|voice|tune|solo|sing|soprano|canto/i;
+    const GM_FAMILY = ['Piano', 'Bells', 'Organ', 'Guitar', 'Bass guitar', 'Strings', 'Strings', 'Brass', 'Reeds', 'Flutes', 'Synth', 'Synth', 'Synth', 'Plucked', 'Percussion', 'Effects'];
+    const familyOf = (program) => (program >= 52 && program <= 54 ? 'Choir' : GM_FAMILY[(program ?? 0) >> 3]);
+    const NOTE_NAMES = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+    const nameOf = (m) => `${NOTE_NAMES[m % 12]}${Math.floor(m / 12) - 1}`;
+    const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]);
+    
+    const isMidi = (b) => b[0] === 0x4d && b[1] === 0x54 && b[2] === 0x68 && b[3] === 0x64; // "MThd"
+    
+    function decodeText(bytes) {
+      try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch {
+        return new TextDecoder('windows-1252').decode(bytes);
+      }
+    }
+    
+    /**
+     * Read a Standard MIDI File. Returns { ppq, tracks: [{ name, channel, program, notes: [{ tick, end, midi, vel }] }],
+     * tempos: [{ tick, bpm }], times: [{ tick, num, den }], keys: [{ tick, fifths, minor }], lyrics: [{ tick, text }],
+     * karaoke }. A track playing on several channels (type 0 files) becomes one track per channel; drums are left out.
+     */
+    function parseMidi(input) {
+      const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+      if (!isMidi(bytes)) throw new Error('not-midi');
+      const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const headLen = dv.getUint32(4);
+      const count = dv.getUint16(10);
+      const division = dv.getUint16(12);
+      if (division & 0x8000) throw new Error('smpte'); // timecode-based files (very rare for music)
+      const out = { ppq: division || 480, tracks: [], tempos: [], times: [], keys: [], lyrics: [], karaoke: false };
+      const texts = [];
+      let p = 8 + headLen;
+      for (let t = 0; t < count && p + 8 <= bytes.length; ) {
+        const id = String.fromCharCode(bytes[p], bytes[p + 1], bytes[p + 2], bytes[p + 3]);
+        const len = dv.getUint32(p + 4);
+        p += 8;
+        const end = Math.min(bytes.length, p + len);
+        if (id !== 'MTrk') {
+          p = end;
+          continue;
+        }
+        t++;
+        const vlq = () => {
+          let v = 0;
+          let b;
+          do {
+            b = bytes[p++];
+            v = v * 128 + (b & 0x7f);
+          } while (b & 0x80 && p < end);
+          return v;
+        };
+        let tick = 0;
+        let run = 0;
+        let name = '';
+        const programs = {};
+        const open = new Map(); // channel*128 + note -> [{ tick, vel }]
+        const notes = [];
+        const close = (key, at) => {
+          const list = open.get(key);
+          const on = list?.shift();
+          if (!on) return;
+          if (at > on.tick) notes.push({ tick: on.tick, end: at, midi: key % 128, vel: on.vel, channel: key >> 7 });
+        };
+        while (p < end) {
+          tick += vlq();
+          let status = bytes[p];
+          if (status & 0x80) {
+            p++;
+            if (status < 0xf0) run = status;
+          } else if (run) status = run; // running status
+          else break;
+          if (status === 0xff) {
+            const type = bytes[p++];
+            const l = vlq();
+            const d = bytes.subarray(p, p + l);
+            p += l;
+            if (type === 0x2f) break;
+            if (type === 0x03 && !name) name = decodeText(d).trim();
+            else if (type === 0x05) out.lyrics.push({ tick, text: decodeText(d) });
+            else if (type === 0x01) texts.push({ tick, text: decodeText(d) });
+            else if (type === 0x51 && l >= 3) out.tempos.push({ tick, bpm: 60e6 / ((d[0] << 16) | (d[1] << 8) | d[2]) });
+            else if (type === 0x58 && l >= 2) out.times.push({ tick, num: d[0], den: 2 ** d[1] });
+            else if (type === 0x59 && l >= 2) out.keys.push({ tick, fifths: (d[0] << 24) >> 24, minor: d[1] === 1 });
+          } else if (status === 0xf0 || status === 0xf7) {
+            p += vlq();
+          } else {
+            const type = status & 0xf0;
+            const ch = status & 0x0f;
+            if (p + (type === 0xc0 || type === 0xd0 ? 1 : 2) > end) break; // cut off mid-event
+            if (type === 0x90 || type === 0x80) {
+              const n = bytes[p++];
+              const v = bytes[p++];
+              const key = ch * 128 + n;
+              if (type === 0x90 && v > 0) {
+                if (open.get(key)?.length) close(key, tick); // struck again without letting go
+                if (!open.has(key)) open.set(key, []);
+                open.get(key).push({ tick, vel: v / 127 });
+              } else close(key, tick);
+            } else if (type === 0xc0) {
+              if (programs[ch] === undefined) programs[ch] = bytes[p];
+              p++;
+            } else if (type === 0xd0) p++;
+            else p += 2; // aftertouch, controllers, pitch bend
+          }
+        }
+        for (const key of open.keys()) while (open.get(key).length) close(key, tick);
+        p = end;
+        // One track per channel; channel 10 is drums.
+        const byCh = new Map();
+        for (const n of notes) {
+          if (n.channel === 9) continue;
+          if (!byCh.has(n.channel)) byCh.set(n.channel, []);
+          byCh.get(n.channel).push(n);
+        }
+        for (const [channel, list] of byCh) {
+          list.sort((a, b) => a.tick - b.tick || b.midi - a.midi);
+          const program = programs[channel] ?? 0;
+          const label = name && byCh.size > 1 ? `${name} (${familyOf(program)})` : name;
+          out.tracks.push({ name: label, channel, program, notes: list.map(({ tick, end, midi, vel }) => ({ tick, end, midi, vel })) });
+        }
+      }
+      // Karaoke (.kar) files keep their words in text events: "@" lines are headers, "/" and "\" start lines.
+      if (!out.lyrics.length) {
+        const words = texts.filter((x) => !/^[@%]/.test(x.text));
+        if (words.length > 8) {
+          out.lyrics = words;
+          out.karaoke = true;
+        }
+      }
+      out.tempos.sort((a, b) => a.tick - b.tick);
+      out.times.sort((a, b) => a.tick - b.tick);
+      out.lyrics.sort((a, b) => a.tick - b.tick);
+      return out;
+    }
+    
+    /** A tick's time in seconds, following the tempo changes. */
+    function tickToSec(midi, tick) {
+      let sec = 0;
+      let at = 0;
+      let bpm = 120;
+      for (const t of midi.tempos) {
+        if (t.tick >= tick) break;
+        sec += ((t.tick - at) / midi.ppq) * (60 / bpm);
+        at = t.tick;
+        bpm = t.bpm;
+      }
+      return sec + ((tick - at) / midi.ppq) * (60 / bpm);
+    }
+    
+    /** The tracks for a menu, with a guess at the tune: [{ index, label, count, range, poly, melody }]. */
+    function describeTracks(midi) {
+      const starts = midi.tracks.map((tr) => new Set(tr.notes.map((n) => n.tick)));
+      const hits = starts.map((st) => (midi.lyrics.length ? midi.lyrics.filter((l) => st.has(l.tick)).length / midi.lyrics.length : 0));
+      const mostHits = Math.max(...hits);
+      const list = midi.tracks.map((tr, index) => {
+        const ns = tr.notes;
+        let overlaps = 0;
+        for (let i = 1; i < ns.length; i++) if (ns[i].tick < ns[i - 1].end - midi.ppq / 16) overlaps++;
+        const poly = ns.length > 1 ? overlaps / (ns.length - 1) : 0;
+        const sorted = ns.map((n) => n.midi).sort((a, b) => a - b);
+        const mid = sorted[Math.floor(sorted.length / 2)] ?? 60;
+        // The words belong to the track they fit best (an accompaniment on the same beats fits too, but less often).
+        const lyricHits = hits[index];
+        const words = lyricHits > 0.5 && lyricHits === mostHits;
+        let score = (words ? 6 : 2) * lyricHits + (1 - poly) * 3;
+        if (MELODY_NAME.test(tr.name)) score += 4;
+        else if (VOICE_NAME.test(tr.name)) score += 2;
+        if (tr.program >= 52 && tr.program <= 54) score += 1.5;
+        if (tr.program >= 64 && tr.program <= 79) score += 1; // reeds and flutes often carry the tune
+        if (tr.program >= 32 && tr.program <= 39) score -= 3; // bass
+        if (mid >= 57 && mid <= 81) score += 1;
+        if (ns.length < 8) score -= 3;
+        const label = tr.name || `${familyOf(tr.program)} ${index + 1}`;
+        return { index, label, count: ns.length, range: ns.length ? `${nameOf(sorted[0])}–${nameOf(sorted[sorted.length - 1])}` : '', poly, lyricHits, words, score, melody: false };
+      });
+      const best = list.reduce((a, b) => (b.score > a.score ? b : a), list[0]);
+      if (best) best.melody = true;
+      return list;
+    }
+    
+    // ---- Bars: lengths in sixteenths from the time signatures --------------------------------------------
+    
+    function barPlan(midi, unit, endPos) {
+      const times = midi.times.length ? midi.times : [{ tick: 0, num: 4, den: 4 }];
+      const bars = [];
+      let pos = 0;
+      let ti = 0;
+      let ts = times[0];
+      while (pos < endPos || !bars.length) {
+        while (ti + 1 < times.length && Math.round(times[ti + 1].tick / unit) <= pos) ts = times[++ti];
+        let len = (ts.num * 16) / ts.den;
+        let { num, den } = ts;
+        if (!Number.isInteger(len) || len <= 0) [len, num, den] = [16, 4, 4]; // 32nd-note meters: fall back to 4/4
+        const beat = den === 8 && num % 3 === 0 && num > 3 ? 6 : 16 / den;
+        bars.push({ start: pos, len, num, den, beat: Math.max(1, beat) });
+        pos += len;
+      }
+      return bars;
+    }
+    const barIndex = (bars, pos) => {
+      let lo = 0;
+      let hi = bars.length - 1;
+      while (lo < hi) {
+        const m = (lo + hi + 1) >> 1;
+        if (bars[m].start <= pos) lo = m;
+        else hi = m - 1;
+      }
+      return lo;
+    };
+    
+    // ---- Lines: the tune as one line, other tracks as voices of chords ------------------------------------
+    
+    // The top note wherever notes overlap; each note ends where the next begins.
+    function melodyLine(notes) {
+      const byPos = new Map();
+      for (const n of notes) if (!byPos.has(n.pos) || byPos.get(n.pos).midis[0] < n.midi) byPos.set(n.pos, { pos: n.pos, len: n.len, midis: [n.midi], tick: n.tick });
+      const line = [...byPos.values()].sort((a, b) => a.pos - b.pos);
+      line.forEach((e, i) => line[i + 1] && e.pos + e.len > line[i + 1].pos && (e.len = line[i + 1].pos - e.pos));
+      return [line];
+    }
+    
+    // Notes that start and end together make a chord; chords are dealt to as few voices as will hold them (max 4).
+    function voiceLines(notes) {
+      const groups = new Map();
+      for (const n of notes) {
+        const k = `${n.pos}|${n.len}`;
+        if (!groups.has(k)) groups.set(k, { pos: n.pos, len: n.len, midis: [] });
+        if (!groups.get(k).midis.includes(n.midi)) groups.get(k).midis.push(n.midi);
+      }
+      const list = [...groups.values()].sort((a, b) => a.pos - b.pos || Math.max(...b.midis) - Math.max(...a.midis));
+      const voices = [];
+      for (const g of list) {
+        g.midis.sort((a, b) => a - b);
+        let v = voices.find((x) => x.end <= g.pos);
+        if (!v && voices.length < 4) voices.push((v = { end: 0, items: [] }));
+        if (!v) {
+          v = voices.reduce((a, b) => (b.end < a.end ? b : a));
+          const last = v.items[v.items.length - 1];
+          if (last.pos === g.pos) {
+            for (const m of g.midis) if (!last.midis.includes(m)) last.midis.push(m);
+            last.midis.sort((a, b) => a - b);
+            last.len = Math.min(last.len, g.len);
+            v.end = last.pos + last.len;
+            continue;
+          }
+          last.len = g.pos - last.pos;
+        }
+        v.items.push(g);
+        v.end = g.pos + g.len;
+      }
+      return voices.map((v) => v.items);
+    }
+    
+    /**
+     * Convert to MusicXML. melody: the track index that is sung (written first, named as a voice, with any lyrics);
+     * others: track indices played along. Returns { xml, notes (in the sung part), key, warnings }.
+     */
+    function midiToMusicXML(midi, { melody = 0, others = [], title = 'My music' } = {}) {
+      const unit = midi.ppq / 4; // ticks per sixteenth
+      const quant = (tr) =>
+        tr.notes.map((n) => {
+          const pos = Math.max(0, Math.round(n.tick / unit));
+          return { pos, len: Math.max(1, Math.round(n.end / unit) - pos), midi: n.midi, tick: n.tick };
+        });
+      const chosen = [melody, ...others.filter((i) => i !== melody)].filter((i) => midi.tracks[i]?.notes.length);
+      if (!chosen.length) throw new Error('no-notes');
+      const qs = new Map(chosen.map((i) => [i, quant(midi.tracks[i])]));
+      const endPos = Math.max(...[...qs.values()].flat().map((n) => n.pos + n.len));
+      if (endPos > 16 * 3000) throw new Error('too-long'); // over 3,000 bars: a damaged file, or not a song
+      const bars = barPlan(midi, unit, endPos);
+      const allNotes = [...qs.values()].flat();
+      const k0 = midi.keys[0];
+      const key = k0 && Math.abs(k0.fifths) <= 7 ? { fifths: k0.fifths, minor: k0.minor } : detectKey(allNotes.map((n) => ({ midi: n.midi, len: n.len })));
+    
+      // Rhythms that don't sit on sixteenths (triplets, swung or played-in timing).
+      const off = chosen.flatMap((i) => midi.tracks[i].notes).filter((n) => Math.abs(n.tick / unit - Math.round(n.tick / unit)) > 0.2).length;
+      const warnings = [];
+      if (off / Math.max(1, allNotes.length) > 0.08) warnings.push('Some rhythms (triplets, or timing played in by hand) were rounded to the nearest sixteenth note.');
+    
+      // Parts: staves of voices of items { pos, len, midis }.
+      const parts = chosen.map((i, n) => {
+        const tr = midi.tracks[i];
+        const notes = qs.get(i);
+        const sung = n === 0;
+        const mids = notes.map((x) => x.midi).sort((a, b) => a - b);
+        const lo = mids[Math.floor(mids.length * 0.05)];
+        const hi = mids[Math.floor(mids.length * 0.95)];
+        let staves;
+        if (sung) {
+          const line = melodyLine(notes);
+          staves = [{ clef: chooseClef(line[0].map((e) => ({ midi: e.midis[0] }))), voices: line }];
+        } else if (lo < 55 && hi > 64 && notes.length > 16) {
+          staves = [
+            { clef: 'treble', voices: voiceLines(notes.filter((x) => x.midi >= 60)) },
+            { clef: 'bass', voices: voiceLines(notes.filter((x) => x.midi < 60)) },
+          ];
+        } else staves = [{ clef: chooseClef(notes.map((x) => ({ midi: x.midi }))), voices: voiceLines(notes) }];
+        let name = tr.name || familyOf(tr.program);
+        if (sung && !VOICE_NAME.test(name)) name = 'Voice';
+        else if (!sung && VOICE_NAME.test(name) && tr.program >= 24 && tr.program <= 39) name = familyOf(tr.program); // "Bass" guitar isn't a singer
+        else if (!sung && !tr.name) name = familyOf(tr.program);
+        return { name, staves, sung };
+      });
+    
+      // Words for the sung part: lyric events on (or within a sixteenth of) its notes.
+      const lyricAt = new Map();
+      if (midi.lyrics.length) {
+        const line = parts[0].staves[0].voices[0];
+        const byPos = new Map(line.map((e) => [e.pos, e]));
+        const raw = midi.lyrics.map((l) => ({ pos: Math.round(l.tick / unit), text: l.text }));
+        raw.forEach((l, i) => {
+          let text = l.text.replace(/^[/\\]+/, '').replace(/\r|\n/g, '');
+          const next = raw[i + 1]?.text || '';
+          let cont = /-\s*$/.test(text);
+          if (midi.karaoke && !cont) cont = !/\s$/.test(text) && next && !/^[\s/\\]/.test(next);
+          text = text.replace(/-\s*$/, '').trim();
+          if (!text) return;
+          const e = byPos.get(l.pos) || byPos.get(l.pos - 1) || byPos.get(l.pos + 1);
+          if (e && !lyricAt.has(e)) lyricAt.set(e, { text, cont });
+        });
+        let prevCont = false;
+        for (const e of line) {
+          const w = lyricAt.get(e);
+          if (!w) continue;
+          w.syllabic = prevCont ? (w.cont ? 'middle' : 'end') : w.cont ? 'begin' : 'single';
+          prevCont = w.cont;
+        }
+      }
+    
+      // Tempo marks, at most one per bar.
+      const tempoAt = new Map();
+      const tempos = midi.tempos.length ? midi.tempos : [{ tick: 0, bpm: 120 }];
+      for (const t of tempos) {
+        const b = barIndex(bars, Math.round(t.tick / unit));
+        tempoAt.set(b, Math.round(t.bpm * 100) / 100);
+      }
+    
+      const clefXml = (clef, number) => {
+        const n = number ? ` number="${number}"` : '';
+        if (clef === 'bass') return `<clef${n}><sign>F</sign><line>4</line></clef>`;
+        if (clef === 'treble8') return `<clef${n}><sign>G</sign><line>2</line><clef-octave-change>-1</clef-octave-change></clef>`;
+        return `<clef${n}><sign>G</sign><line>2</line></clef>`;
+      };
+    
+      // One voice's items cut at bar lines (tied), with rests in the gaps: segs[bar] = [{ pos, len, midis, tieIn, tieOut, item }].
+      function cut(items, fill) {
+        const segs = bars.map(() => []);
+        const put = (pos, len, midis, item) => {
+          let tieIn = false;
+          while (len > 0) {
+            const b = barIndex(bars, pos);
+            const l = Math.min(len, bars[b].start + bars[b].len - pos);
+            segs[b].push({ pos, len: l, midis, tieIn, tieOut: l < len, item });
+            tieIn = true;
+            pos += l;
+            len -= l;
+          }
+        };
+        let at = 0;
+        for (const it of items) {
+          if (it.pos > at) put(at, it.pos - at, null, null);
+          put(it.pos, it.len, it.midis, it);
+          at = it.pos + it.len;
+        }
+        const total = bars[bars.length - 1].start + bars[bars.length - 1].len;
+        if (at < total) put(at, total - at, null, null);
+        // A voice that isn't the staff's first is only written in bars where it plays.
+        return segs.map((s) => (fill || s.some((x) => x.midis) ? s : null));
+      }
+    
+      const partXml = parts.map((part, pi) => {
+        const staves = part.staves.map((st) => ({ ...st, segs: st.voices.length ? st.voices.map((v, vi) => cut(v, vi === 0)) : [cut([], true)] }));
+        const measures = bars.map((bar, b) => {
+          let x = '';
+          const prev = bars[b - 1];
+          if (b === 0 || prev.num !== bar.num || prev.den !== bar.den) {
+            x += '<attributes>';
+            if (b === 0) x += `<divisions>4</divisions><key><fifths>${key.fifths}</fifths><mode>${key.minor ? 'minor' : 'major'}</mode></key>`;
+            x += `<time><beats>${bar.num}</beats><beat-type>${bar.den}</beat-type></time>`;
+            if (b === 0) {
+              if (staves.length > 1) x += `<staves>${staves.length}</staves>`;
+              x += staves.map((st, si) => clefXml(st.clef, staves.length > 1 ? si + 1 : 0)).join('');
+            }
+            x += '</attributes>';
+          }
+          if (pi === 0 && tempoAt.has(b)) {
+            const bpm = tempoAt.get(b);
+            x += `<direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>${Math.round(bpm)}</per-minute></metronome></direction-type><sound tempo="${bpm}"/></direction>`;
+          }
+          // Accidentals run through the bar on each staff, in time order across its voices.
+          const blocks = [];
+          staves.forEach((st, si) => {
+            const segs = st.segs.map((v) => v[b]).filter(Boolean);
+            const state = new Map();
+            const acc = new Map();
+            segs
+              .flat()
+              .filter((s) => s.midis)
+              .sort((a, b2) => a.pos - b2.pos)
+              .forEach((s) => {
+                for (const m of s.midis) {
+                  const sp = spell(m, key);
+                  const id = `${sp.letter}${sp.octave}`;
+                  const current = state.has(id) ? state.get(id) : keyAlter(sp.letter, key.fifths);
+                  if (sp.alter !== current && !s.tieIn) acc.set(`${s.pos}|${m}`, sp.alter);
+                  state.set(id, sp.alter);
+                }
+              });
+            st.segs.forEach((v, vi) => {
+              if (!v[b]) return;
+              blocks.push(voiceXml(v[b], bar, si * 4 + vi + 1, staves.length > 1 ? si + 1 : 0, acc));
+            });
+          });
+          x += blocks.join(`<backup><duration>${bar.len}</duration></backup>`);
+          if (b === bars.length - 1) x += '<barline location="right"><bar-style>light-heavy</bar-style></barline>';
+          return `<measure number="${b + 1}">${x}</measure>`;
+        });
+        return `<part id="P${pi + 1}">${measures.join('')}</part>`;
+      });
+    
+      function voiceXml(segs, bar, voice, staff, acc) {
+        const staffXml = staff ? `<staff>${staff}</staff>` : '';
+        if (segs.length === 1 && !segs[0].midis && segs[0].len === bar.len) {
+          return `<note><rest measure="yes"/><duration>${bar.len}</duration><voice>${voice}</voice>${staffXml}</note>`;
+        }
+        let x = '';
+        for (const s of segs) {
+          const ps = pieces(s.pos - bar.start, s.len, bar.beat);
+          ps.forEach((d, k) => {
+            const [, type, dots] = VALUES.find(([v]) => v === d);
+            const dot = dots ? '<dot/>' : '';
+            if (!s.midis) {
+              x += `<note><rest/><duration>${d}</duration><voice>${voice}</voice><type>${type}</type>${dot}${staffXml}</note>`;
+              return;
+            }
+            const tin = k > 0 || s.tieIn;
+            const tout = k < ps.length - 1 || s.tieOut;
+            const w = !tin && s.item ? lyricAt.get(s.item) : null;
+            s.midis.forEach((m, ci) => {
+              const sp = spell(m, key);
+              const a = k === 0 && acc.has(`${s.pos}|${m}`) ? acc.get(`${s.pos}|${m}`) : null;
+              const accXml = a === null ? '' : `<accidental>${{ 2: 'double-sharp', 1: 'sharp', 0: 'natural', '-1': 'flat', '-2': 'flat-flat' }[a]}</accidental>`;
+              const ties = `${tin ? '<tie type="stop"/>' : ''}${tout ? '<tie type="start"/>' : ''}`;
+              const tied = tin || tout ? `<notations>${tin ? '<tied type="stop"/>' : ''}${tout ? '<tied type="start"/>' : ''}</notations>` : '';
+              const alter = sp.alter ? `<alter>${sp.alter}</alter>` : '';
+              const lyric = w && ci === 0 ? `<lyric number="1"><syllabic>${w.syllabic}</syllabic><text>${esc(w.text)}</text></lyric>` : '';
+              x += `<note>${ci ? '<chord/>' : ''}<pitch><step>${LETTERS[sp.letter]}</step>${alter}<octave>${sp.octave}</octave></pitch><duration>${d}</duration>${ties}<voice>${voice}</voice><type>${type}</type>${dot}${accXml}${staffXml}${tied}${lyric}</note>`;
+            });
+          });
+        }
+        return x;
+      }
+    
+      const xml =
+        '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n' +
+        `<score-partwise version="4.0"><work><work-title>${esc(title)}</work-title></work>` +
+        '<identification><encoding><software>Rachel Pomeranz Practice Room (from MIDI)</software></encoding></identification>' +
+        `<part-list>${parts.map((p, i) => `<score-part id="P${i + 1}"><part-name>${esc(p.name)}</part-name></score-part>`).join('')}</part-list>` +
+        `${partXml.join('')}</score-partwise>\n`;
+      return { xml, key, warnings, notes: parts[0].staves[0].voices[0].length, lyrics: lyricAt.size };
+    }
+
+    return { isMidi, parseMidi, tickToSec, describeTracks, midiToMusicXML };
+  })();
+    return Object.assign({}, mod_transcribe, mod_score_player, mod_common, mod_rhythm, mod_melody_gen, mod_intervals, mod_grade, mod_sing_score, mod_pitch_feedback, mod_voice_analyzer, mod_voice_visuals, mod_note_lane, mod_pitch_scope, mod_warmups, mod_song_packs, mod_library, mod_voice_profile, mod_phrases, mod_take_recorder, mod_find_note, mod_midi);
   })();
   // ═══ End voice studio block ═══
 
@@ -7878,6 +10103,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (anRef.current) { anRef.current.setMode(prefs.mode); anRef.current.a4 = prefs.a4; }
     }, [prefs.palette, prefs.mode, prefs.calm, prefs.guides, prefs.scene, prefs.a4, prefs.explore, hint]);
 
+    // Where your voice sits in the picture: the visuals draw your comfortable range down the right edge.
+    React.useEffect(function () {
+      if (visRef.current) visRef.current.set({ range: prefs.mode === 'voice' && p.voice ? { low: p.voice.low, high: p.voice.high, stretchLow: p.voice.stretchLow, stretchHigh: p.voice.stretchHigh } : null });
+    }, [prefs.mode, p.voice.low, p.voice.high, p.voice.stretchLow, p.voice.stretchHigh]);
+
     function begin(kind, connect) {
       setErr('');
       setSummary(null);
@@ -7942,6 +10172,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           h('span', { className: valCls + ' tabular-nums' }, meter && meter.voiced ? pct(v) + '%' : '–')));
     };
     var f = meter;
+    // For the range bar: the pitch heard now (through the vibrato), which zone of your voice it is in, the vibrato.
+    var voiceReading = f && f.voiced && voice && p.voice ? {
+      note: f.note, midi: f.heardMidi, cents: null, level: null, vibrato: f.vibrato,
+      zone: VS.zoneOf(f.heardMidi, p.voice), below: f.heardMidi < p.voice.low - 0.5, above: f.heardMidi > p.voice.high + 0.5
+    } : null;
     var cents = f && f.voiced ? Math.round(f.cents || 0) : 0;
     var tune = !f || !f.voiced ? 'none' : Math.abs(cents) <= 15 ? 'good' : Math.abs(cents) <= 30 ? 'near' : 'off';
     var needleColor = tune === 'good' ? '#16a34a' : tune === 'near' ? '#d97706' : tune === 'off' ? '#e11d48' : (dark ? '#cbd5e1' : '#475569');
@@ -8017,13 +10252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('option', { value: 'aurora' }, t('stem.singing.vs_scene_aurora', 'Aurora')),
             h('option', { value: 'bloom' }, t('stem.singing.vs_scene_bloom', 'Bloom')),
             h('option', { value: 'constellation' }, t('stem.singing.vs_scene_constellation', 'Constellation')),
+            h('option', { value: 'silk' }, t('stem.singing.vs_scene_silk', 'Silk')),
             h('option', { value: 'ripples' }, t('stem.singing.vs_scene_ripples', 'Ripples')),
-            h('option', { value: 'paint' }, t('stem.singing.vs_scene_paint', 'Paint')))),
+            h('option', { value: 'paint' }, t('stem.singing.vs_scene_paint', 'Paint')),
+            h('option', { value: 'kaleido' }, t('stem.singing.vs_scene_kaleido', 'Kaleidoscope')))),
         h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700') }, t('stem.singing.vs_look', 'Look'),
           h('select', { className: selCls, value: prefs.palette, onChange: function (e) { set({ palette: e.target.value }); } },
             h('option', { value: 'opera' }, t('stem.singing.vs_pal_opera', 'Opera (burgundy & gold)')),
             h('option', { value: 'aurora' }, t('stem.singing.vs_pal_aurora', 'Northern lights')),
             h('option', { value: 'dusk' }, t('stem.singing.vs_pal_dusk', 'Dusk (rose & lilac)')),
+            h('option', { value: 'jewel' }, t('stem.singing.vs_pal_jewel', 'Jewel tones (sapphire & amethyst)')),
             h('option', { value: 'prism' }, t('stem.singing.vs_pal_prism', 'Prism (a color per note)')),
             h('option', { value: 'contrast' }, t('stem.singing.vs_pal_contrast', 'High contrast')))),
         !prefs.explore && check('meters', t('stem.singing.vs_meters', 'Meters')),
@@ -8049,6 +10287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('option', { value: '415' }, t('stem.singing.vs_baroque', 'A = 415 (Baroque)')))),
         running && h('button', { type: 'button', className: c.btnSecondary + ' ml-auto', onClick: stop },
           running === 'mic' ? t('stem.singing.vs_stop_mic', 'Stop microphone') : t('stem.singing.vs_stop_analyzing', 'Stop analyzing'))),
+      !prefs.explore && voice && h(VsRangeReadout, { React: React, t: t, dark: dark, voice: p.voice, reading: voiceReading, singing: !!running }),
       meters,
       summary && h('div', { className: c.cardClass, role: 'status' },
         h('h4', { className: c.headingClass + ' text-sm mb-2' }, t('stem.singing.vs_summary', 'Session summary')),
@@ -8073,9 +10312,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ level: 1, voice: 'mezzo', speed: 100, click: true, showNote: true, best: {} }, p.prefs || {});
+    var prefs = Object.assign({ level: 1, speed: 100, click: true, showNote: true, best: {} }, p.prefs || {});
     var prefsRef = React.useRef(prefs);
     prefsRef.current = prefs;
+    var voiceRef = React.useRef(p.voice); // the shared voice profile: melodies are written inside its comfortable range
+    voiceRef.current = p.voice;
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
     var codeS = React.useState(function () { return (p.prefs && p.prefs.code) || VS.newCode(); });
     var code = codeS[0]; var setCode = codeS[1];
@@ -8141,12 +10382,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       stopAll();
       var m;
       try {
-        m = VS.generateMelody({ seed: code, level: prefs.level, voice: VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo });
+        m = VS.generateMelody({ seed: code, level: prefs.level, voice: p.voice });
       } catch (e) {
         setErr(t('stem.singing.vs_write_failed', 'That melody could not be written. Try a new melody.'));
         return;
       }
       melRef.current = m;
+      if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.melody = m; // test seam (harness only)
       setErr('');
       setResult(null);
       player.load(m.xml).then(function () {
@@ -8154,7 +10396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         setMeta({ key: m.key, meter: m.meter, notes: m.notes.filter(function (n) { return !n.rest; }).length, first: VS.spelledName(m.notes.find(function (n) { return !n.rest; })) });
       });
       if ((p.prefs || {}).code !== code) set({ code: code });
-    }, [load, code, prefs.level, prefs.voice]);
+    }, [load, code, prefs.level, p.voice.type, p.voice.low, p.voice.high]);
 
     function ensureMic() {
       if (anRef.current) return Promise.resolve(anRef.current);
@@ -8268,7 +10510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       });
       player.markVoiceNotes(grades.map(function (g) { return VS_GRADE_COLORS[g.grade]; }));
       var pct = Math.round((100 * (count.tune + count.near * 0.75)) / notes.length);
-      var bestKey = prefsRef.current.level + ':' + prefsRef.current.voice + ':' + codeRef.current;
+      var bestKey = prefsRef.current.level + ':' + voiceRef.current.type + ':' + codeRef.current;
       var best = Math.max(pct, (prefsRef.current.best || {})[bestKey] || 0);
       if (pct >= ((prefsRef.current.best || {})[bestKey] || 0)) {
         var nb = Object.assign({}, prefsRef.current.best || {});
@@ -8294,7 +10536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); } },
               [1, 2, 3, 4, 5, 6].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
           h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
-            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); } },
+            h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); } },
               Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
           h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
             h('input', { type: 'range', min: 50, max: 130, step: 5, value: prefs.speed, className: 'accent-rose-600',
@@ -8309,7 +10551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { setCode('D' + VS.todayStamp()); } }, t('stem.singing.vs_today', 'Today’s melody')))),
       h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
         h('p', { className: c.headingClass + ' text-sm m-0' }, meta
-          ? [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: prefs.level }), vsKeyLabel(t, meta.key), meta.meter, voiceLabels[prefs.voice]].join(' · ')
+          ? [vsFmt(t('stem.singing.vs_level_n', 'Level {n}'), { n: prefs.level }), vsKeyLabel(t, meta.key), meta.meter, voiceLabels[p.voice.type]].join(' · ')
           : (load === 'error' ? '' : t('stem.singing.vs_loading_music', 'Loading the music display…'))),
         h('form', { className: 'flex items-center gap-2', onSubmit: function (e) {
           e.preventDefault();
@@ -8350,7 +10592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ level: 1, harmonic: false, voice: 'mezzo' }, p.prefs || {});
+    var prefs = Object.assign({ level: 1, harmonic: false }, p.prefs || {});
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
     var tonesRef = React.useRef(null);
     var qS = React.useState(null); var q = qS[0]; var setQ = qS[1];
@@ -8376,8 +10618,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       });
     }
     function next() {
-      var v = VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo;
+      var v = p.voice; // both notes are chosen inside the shared voice's comfortable range
       var nq = VS.makeIntervalQuestion(Math.random, { level: prefs.level, low: v.low, high: v.high, avoid: q && q.semis });
+      if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.question = nq; // test seam (harness only)
       setQ(nq);
       setAnswer(null);
       setTally(function (x) { return Object.assign({}, x, { asked: x.asked + 1 }); });
@@ -8416,7 +10659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('select', { className: selCls, value: String(prefs.level), onChange: function (e) { set({ level: Number(e.target.value) }); setQ(null); setAnswer(null); } },
               [1, 2, 3, 4].map(function (l) { return h('option', { key: l, value: String(l) }, levelNames[l]); }))),
           h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
-            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); setQ(null); setAnswer(null); } },
+            h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); setQ(null); setAnswer(null); } },
               Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
           h('label', { className: lab }, h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.harmonic, onChange: function (e) { set({ harmonic: e.target.checked }); } }), t('stem.singing.vs_together', 'Play both notes together')),
           h('button', { type: 'button', className: c.btnPrimary, onClick: function () { if (!q || answer) next(); else play(q); } },
@@ -8507,7 +10750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var h = React.createElement;
     var t = p.t;
     var c = p.classes;
-    var prefs = Object.assign({ voice: 'mezzo', speed: 100, dir: 'updown', stretch: 0 }, p.prefs || {});
+    var prefs = Object.assign({ speed: 100, dir: 'updown', stretch: 0 }, p.prefs || {});
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
     var texts = vsWarmupText(t);
     var voiceLabels = vsVoiceLabels(t);
@@ -8534,8 +10777,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (was === w.id) { setNowText(''); return; }
       if (!tonesRef.current) tonesRef.current = new VS.Tones();
       var tones = tonesRef.current;
-      var voice = VS.VOICE_TYPES[prefs.voice] || VS.VOICE_TYPES.mezzo;
+      var voice = p.voice; // the shared voice's comfortable range (plus any "stretch" the singer asks for)
       var plan = VS.planWarmup(w, { low: voice.low - prefs.stretch, high: voice.high + prefs.stretch, bpm: w.bpm * (prefs.speed / 100), dir: prefs.dir });
+      if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.plan = plan; // test seam (harness only)
       var name = (texts[w.id] || {}).name || w.name;
       tones.ready().then(function (ctx) {
         var t0 = ctx.currentTime + 0.15;
@@ -8588,7 +10832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_wu_intro', 'Pick your voice and press Start: the piano plays each pattern, moving up a half step at a time and back down again.')),
       h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
         h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
-          h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); } },
+          h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); } },
             Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
         h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed }),
           h('input', { type: 'range', min: 60, max: 140, step: 5, value: prefs.speed, className: 'accent-rose-600', onChange: function (e) { set({ speed: Number(e.target.value) }); } })),
@@ -8665,6 +10909,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     _vsLibPromise.catch(function () { _vsLibPromise = null; });
     return _vsLibPromise;
   }
+  // A link to a practice setup: ?song=<id>&key=-2&oct=-1&speed=80&loop=9-16&part=Alto. Read once per page load; anything
+  // that makes no sense (an unknown song, a key of 99) is ignored.
+  var _vsSetupUsed = false;
+  function vsReadSetup() {
+    if (_vsSetupUsed) return null;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var song = q.get('song');
+      if (!song) return null;
+      var num = function (k) { var v = q.get(k); return v !== null && v !== '' && isFinite(Number(v)) ? Number(v) : null; };
+      var loop = /^(\d+)-(\d+)$/.exec(q.get('loop') || '');
+      return { song: song, key: num('key'), oct: num('oct'), speed: num('speed'), loop: loop ? [Number(loop[1]), Number(loop[2])] : null, part: q.get('part') || '' };
+    } catch (e) { return null; }
+  }
   var _vsFoldMarks = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
   function vsFold(s) {
     return String(s || '').normalize('NFD').replace(_vsFoldMarks, '').toLowerCase().replace(/ß/g, 'ss');
@@ -8687,6 +10945,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     return Math.floor(sec / 60) + ':' + (sec % 60 < 10 ? '0' : '') + (sec % 60);
   }
 
+  // ───────────────────────── Your own music ─────────────────────────
+  // A MusicXML (.musicxml, .mxl, .xml) or MIDI (.mid, .kar) file from this device, opened in the same player as the library
+  // songs. Nothing is uploaded; the file is read here and forgotten when you leave. MIDI has no real notation, so you choose
+  // the part you sing and the rest play along (rhythm is rounded to sixteenths).
+  function VsOwnMusic(props) {
+    var p = props.p;
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var dark = p.isDark || p.isContrast;
+    var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
+    var midiS = React.useState(null); var pending = midiS[0]; var setPending = midiS[1]; // { name, midi, tracks, sing, along: {} }
+    var errCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
+    function fail(key, english) { setErr(t('stem.singing.' + key, english)); }
+    function toSource(bytes, name) {
+      if (bytes[0] === 0x50 && bytes[1] === 0x4b) return vsBinaryString(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); // a compressed .mxl stays binary
+      var utf16 = (bytes[0] === 0xff && bytes[1] === 0xfe) || (bytes[0] === 0xfe && bytes[1] === 0xff);
+      var text = new TextDecoder(utf16 ? (bytes[0] === 0xff ? 'utf-16le' : 'utf-16be') : 'utf-8').decode(bytes);
+      if (!/<score-(partwise|timewise)[\s>]/.test(text)) return null;
+      return text;
+    }
+    function onFile(e) {
+      var file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      setErr('');
+      setPending(null);
+      var name = file.name.replace(/\.(musicxml|mxl|xml|mid|midi|kar)$/i, '');
+      if (/\.(pdf|jpe?g|png|heic|heif|webp|gif|tiff?)$/i.test(file.name) || file.type === 'application/pdf' || (file.type || '').indexOf('image/') === 0) {
+        fail('vs_own_paper', 'PDFs and pictures cannot be played. Open the score in MuseScore (File, Import PDF) or a scanning app such as PlayScore 2, export MusicXML, then open that file here.');
+        return;
+      }
+      file.arrayBuffer().then(function (buf) {
+        var bytes = new Uint8Array(buf);
+        if (VS.isMidi(bytes)) return openMidi(bytes, name);
+        if (/\.(mid|midi|kar)$/i.test(file.name)) return fail('vs_own_not_midi', 'That file does not look like a MIDI file. Try exporting it again from the app that made it.');
+        var source = null;
+        try { source = toSource(bytes, name); } catch (x) { source = null; }
+        if (source === null) return fail('vs_own_not_xml', 'That file does not look like MusicXML. Choose a .musicxml, .mxl or .xml file exported from a notation app.');
+        props.onOpen({ name: name, source: source, note: '' });
+      }, function () { fail('vs_own_unreadable', 'That file could not be read.'); });
+    }
+    function openMidi(bytes, name) {
+      var midi;
+      try { midi = VS.parseMidi(bytes); } catch (x) {
+        return fail(x && x.message === 'smpte' ? 'vs_own_smpte' : 'vs_own_midi_bad', x && x.message === 'smpte' ? 'This MIDI file uses a timing format (SMPTE) that cannot be read here. Open it in MuseScore and export MusicXML.' : 'That MIDI file could not be read. It may be damaged; try exporting it again.');
+      }
+      if (!midi.tracks.length) return fail('vs_own_midi_empty', 'That MIDI file has no notes to sing (only drums, or nothing at all).');
+      var tracks = VS.describeTracks(midi);
+      if (tracks.length === 1) return convert(midi, name, 0, []);
+      var busiest = {};
+      tracks.slice().sort(function (a, b) { return b.count - a.count; }).slice(0, 6).forEach(function (x) { busiest[x.index] = true; }); // a huge score is slow to draw
+      var best = tracks.find(function (x) { return x.melody; }) || tracks[0];
+      setPending({ name: name, midi: midi, tracks: tracks, sing: best.index, along: busiest });
+    }
+    function convert(midi, name, sing, others) {
+      var out;
+      try { out = VS.midiToMusicXML(midi, { melody: sing, others: others, title: name }); } catch (x) {
+        return fail(x && x.message === 'too-long' ? 'vs_own_midi_long' : 'vs_own_midi_bad', x && x.message === 'too-long' ? 'That MIDI file is too long to be a song.' : 'That MIDI file could not be read. It may be damaged; try exporting it again.');
+      }
+      setPending(null);
+      props.onOpen({ name: name, source: out.xml, note: t('stem.singing.vs_own_midi_note', 'This is a MIDI file, which has no real notation: rhythms are rounded to sixteenth notes. For tidier music, open the file in MuseScore and export MusicXML.') });
+    }
+    var small = c.subTextClass + ' m-0';
+    var chosen = pending && pending.tracks.length ? pending : null;
+    return h('div', { className: c.cardClass + ' space-y-2', 'data-own-music': '' },
+      h('p', { className: c.headingClass + ' text-sm m-0' }, t('stem.singing.vs_own_title', 'Your own music')),
+      h('p', { className: small }, t('stem.singing.vs_own_intro', 'Practise any song you have as a MusicXML (.musicxml, .mxl, .xml) or MIDI (.mid) file, with the piano, the note lane and live pitch feedback. The file stays on this device.')),
+      !chosen && h('label', { className: c.btnSecondary + ' inline-block cursor-pointer' },
+        h('input', { type: 'file', accept: '.musicxml,.mxl,.xml,.mid,.midi,.kar,application/vnd.recordare.musicxml+xml,audio/midi', className: 'sr-only', 'data-own-file': '', onChange: onFile }),
+        t('stem.singing.vs_own_open', 'Open a file')),
+      err && h('p', { role: 'alert', className: errCls }, err),
+      chosen && h('div', { className: 'space-y-2' },
+        h('p', { className: 'text-sm font-bold m-0 ' + (dark ? 'text-slate-100' : 'text-slate-800') }, vsFmt(t('stem.singing.vs_own_pick_title', 'Which part do you sing? ({name}, {n} parts)'), { name: chosen.name, n: chosen.tracks.length })),
+        h('p', { className: small }, t('stem.singing.vs_own_pick_help', 'The part you sing is the melody guide and what you are scored on. The parts you tick play along.')),
+        h('ul', { className: 'list-none m-0 p-0 space-y-1' }, chosen.tracks.map(function (tr) {
+          var mine = tr.index === chosen.sing;
+          return h('li', { key: tr.index, className: 'flex flex-wrap items-center gap-x-4 gap-y-1' },
+            h('label', { className: 'inline-flex items-center gap-2 text-sm ' + (dark ? 'text-slate-100' : 'text-slate-800') },
+              h('input', { type: 'radio', name: 'vs-own-sing', checked: mine, className: 'accent-rose-600', onChange: function () { setPending(Object.assign({}, chosen, { sing: tr.index })); } }),
+              h('span', null, h('strong', null, tr.label), ' ', h('span', { className: 'text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, vsFmt(t('stem.singing.vs_own_notes', '{n} notes · {range}'), { n: tr.count, range: tr.range }) + (tr.words ? ' · ' + t('stem.singing.vs_own_words', 'has words') : '')))),
+            h('label', { className: 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+              h('input', { type: 'checkbox', disabled: mine, checked: mine || !!chosen.along[tr.index], className: 'w-4 h-4 accent-rose-600', onChange: function (e) { var a = Object.assign({}, chosen.along); a[tr.index] = e.target.checked; setPending(Object.assign({}, chosen, { along: a })); } }),
+              mine ? t('stem.singing.vs_own_your_part', 'Your part') : t('stem.singing.vs_own_along', 'Play along')));
+        })),
+        h('div', { className: 'flex flex-wrap gap-2' },
+          h('button', { type: 'button', className: c.btnPrimary, onClick: function () {
+            var others = chosen.tracks.map(function (x) { return x.index; }).filter(function (i) { return i !== chosen.sing && chosen.along[i]; });
+            convert(chosen.midi, chosen.name, chosen.sing, others);
+          } }, t('stem.singing.vs_own_go', 'Open it')),
+          h('button', { type: 'button', className: c.btnSecondary, onClick: function () { setPending(null); setErr(''); } }, t('stem.singing.vs_own_cancel', 'Choose another file')))));
+  }
+
   // ───────────────────────── Song Library: browse ─────────────────────────
   function VsSongLibrary(p) {
     var React = p.React;
@@ -8695,7 +11047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var c = p.classes;
     var dark = p.isDark || p.isContrast;
     var errCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
-    var prefs = Object.assign({ voice: 'mezzo', col: 'all', fits: false, best: {} }, p.prefs || {});
+    var prefs = Object.assign({ col: 'all', fits: false, best: {} }, p.prefs || {});
     var prefsRef = React.useRef(prefs);
     prefsRef.current = prefs;
     var set = function (patch) { p.savePrefs(Object.assign({}, p.prefs || {}, patch)); };
@@ -8703,6 +11055,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var songS = React.useState(null); var songId = songS[0]; var setSongId = songS[1];
     var qS = React.useState(''); var query = qS[0]; var setQuery = qS[1];
     var limS = React.useState(30); var limit = limS[0]; var setLimit = limS[1];
+    var ownS = React.useState(null); var own = ownS[0]; var setOwn = ownS[1]; // a file from this device: { name, source, note, song }
+    var setupS = React.useState(null); var setup = setupS[0]; var setSetup = setupS[1]; // from a shared link
+    React.useEffect(function () {
+      if (open.status !== 'ready') return;
+      var su = vsReadSetup();
+      if (su && open.index.songs.some(function (x) { return x.id === su.song; })) { _vsSetupUsed = true; setSetup(su); setSongId(su.song); }
+    }, [open.status]);
     var voiceLabels = vsVoiceLabels(t);
     var colLabels = {
       all: t('stem.singing.vs_lib_col_all', 'All songs'),
@@ -8735,12 +11094,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     var index = open.index;
     var songs = index.songs;
+    if (own) {
+      return h(VsSongPlayer, {
+        key: 'own-' + own.n, p: p, song: own.song, lib: open.lib, composer: '', own: own,
+        prefs: prefs, prefsRef: prefsRef, onBack: function () { setOwn(null); }
+      });
+    }
     if (songId) {
       var song = songs.find(function (s) { return s.id === songId; });
       if (song) {
         return h(VsSongPlayer, {
-          key: song.id, p: p, song: song, lib: open.lib, composer: (index.composers[song.cid] || {}).name || '',
-          prefs: prefs, prefsRef: prefsRef, onBack: function () { setSongId(null); }
+          key: song.id, p: p, song: song, lib: open.lib, composer: (index.composers[song.cid] || {}).name || '', setup: setup,
+          prefs: prefs, prefsRef: prefsRef, onBack: function () { setSongId(null); setSetup(null); }
         });
       }
     }
@@ -8750,7 +11115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     for (var i = 0; i < songs.length; i++) {
       var s = songs[i];
       if (prefs.col !== 'all' && s.col !== prefs.col) continue;
-      if (prefs.fits && !VS.fitsVoice(prefs.voice, s.lo, s.hi)) continue;
+      if (prefs.fits) { var fr = VS.suggestFit(s.lo, s.hi, p.voice); if (!(fr.fits && fr.key === 0)) continue; } // fits the shared voice, an octave shift allowed
       var hay = index._hay[i];
       if (words.every(function (w) { return hay.indexOf(w) >= 0; })) rows.push(s);
     }
@@ -8758,6 +11123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var last = prefs.last && songs.find(function (x) { return x.id === prefs.last; });
 
     return h('div', { className: 'space-y-3' },
+      h(VsOwnMusic, { p: p, onOpen: function (o) { setOwn(Object.assign({}, o, { n: Date.now(), song: { id: 'own', title: o.name, lo: 60, hi: 72, sec: 0, measures: 0, lang: '', col: 'own' } })); } }),
       h('div', { className: c.cardClass + ' space-y-3' },
         h('p', { className: c.subTextClass + ' m-0' }, vsFmt(t('stem.singing.vs_lib_intro', '{n} public-domain songs to sing with piano: art songs, folk songs, spirituals and choir pieces. Pick one, then press “Sing along”.'), { n: songs.length })),
         h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
@@ -8768,11 +11134,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             h('select', { className: selCls, value: prefs.col, onChange: function (e) { set({ col: e.target.value }); setLimit(30); } },
               ['all', 'essentials', 'choral', 'lieder'].map(function (k) { return h('option', { key: k, value: k }, colLabels[k]); }))),
           h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
-            h('select', { className: selCls, value: prefs.voice, onChange: function (e) { set({ voice: e.target.value }); setLimit(30); } },
+            h('select', { className: selCls, value: p.voice.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); setLimit(30); } },
               Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, voiceLabels[k]); }))),
           h('label', { className: lab },
             h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!prefs.fits, onChange: function (e) { set({ fits: e.target.checked }); setLimit(30); } }),
-            t('stem.singing.vs_lib_fits', 'Only songs that fit my voice as written'))),
+            t('stem.singing.vs_lib_fits_voice', 'Only songs that fit my voice (an octave shift is fine)'))),
         last && h('div', null,
           h('button', { type: 'button', className: c.btnSecondary, onClick: function () { setSongId(last.id); } },
             vsFmt(t('stem.singing.vs_lib_continue', 'Continue: {title}'), { title: last.title })))),
@@ -8784,6 +11150,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             var comp = (index.composers[s.cid] || {}).name || '';
             var best = (prefs.best || {})[s.id];
             var meta = [s.lang, VS.noteLabel(s.lo) + '–' + VS.noteLabel(s.hi), vsClock(s.sec), s.col === 'lieder' ? '' : s.group].filter(Boolean).join(' · ');
+            var rowFit = VS.suggestFit(s.lo, s.hi, p.voice);
+            var fitsYou = rowFit.fits && rowFit.key === 0;
             return h('li', { key: s.id },
               h('button', { type: 'button', onClick: function () { setSongId(s.id); },
                 className: 'w-full text-left rounded-xl border p-3 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 ' +
@@ -8791,6 +11159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('span', { className: 'block text-sm font-bold' }, s.title),
                 h('span', { className: 'block text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600') }, comp),
                 h('span', { className: 'block text-xs ' + (dark ? 'text-slate-400' : 'text-slate-500') }, meta),
+                fitsYou && h('span', { className: 'block text-xs font-bold ' + (dark ? 'text-emerald-300' : 'text-emerald-700') }, '✓ ' + t('stem.singing.vs_lib_fits_chip', 'Fits your voice')),
                 best && h('span', { className: 'block text-xs font-bold ' + (dark ? 'text-emerald-300' : 'text-emerald-700') }, vsFmt(t('stem.singing.vs_lib_best_chip', 'Your best: {pct}%'), { pct: best.best }))));
           })),
       rows.length > shown.length && h('div', null,
@@ -8801,6 +11170,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
   // ───────────────────────── Song Library: one song ─────────────────────────
   var VS_LANE_LEVELS = { tune: '#15803d', near: '#b45309', off: '#c2410c', wrong: '#be123c', missed: '#6b7280' };
+
+  // "Find a note": the keyboard the engine (find-note.js) builds inside the control bar. Its keys use these classes.
+  var VS_FINDNOTE_CSS = [
+    '.vs-mp{border-radius:12px;border:1px solid rgba(245,236,223,.14);background:linear-gradient(#2a1519,#1b1013);color:#f5ecdf;overflow:hidden}',
+    '.vs-mp[hidden]{display:none}',
+    '.vs-mp .mp-head{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1.2rem;padding:.5rem .6rem .5rem 1rem}',
+    '.vs-mp .mp-now{margin:0;min-width:7rem;font-size:1.3rem;font-weight:800;color:#f2d49b}',
+    '.vs-mp .mp-legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin:0;font-size:.82rem;color:#e0d2c2}',
+    '.vs-mp .mp-legend span{display:inline-flex;align-items:center;gap:.35rem}',
+    '.vs-mp .mp-chip{display:inline-block;width:.8rem;height:.8rem;border-radius:2px}',
+    '.vs-mp .mp-chip-start{border-radius:50%;background:#c58a12;box-shadow:0 0 6px rgba(242,212,155,.8)}',
+    '.vs-mp .mp-chip-used{background:#f1e2c4;box-shadow:inset 0 -3px 0 #d9b77e}',
+    '.vs-mp .mp-chip-now{background:#e2788f;box-shadow:0 0 6px rgba(226,120,143,.9)}',
+    '.vs-mp .mp-close{margin-left:auto;color:#f5ecdf;border:1px solid rgba(245,236,223,.35);background:transparent;border-radius:8px;min-width:2.4rem;font-size:1.2rem;line-height:1;padding:.2rem .5rem;cursor:pointer}',
+    '.vs-mp .mp-scroll{overflow-x:auto;overscroll-behavior-x:contain;padding:.6rem .6rem .7rem;background:linear-gradient(180deg,#7a1f33 0,#5a1828 .4rem,transparent .45rem)}',
+    '.vs-mp .mp-keys{position:relative;height:6.5rem;width:max(100%,calc(var(--whites) * 1.7rem));touch-action:none;user-select:none;-webkit-user-select:none}',
+    '.vs-mp .pk{position:absolute;top:0;padding:0;border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}',
+    '.vs-mp .pk-white{bottom:0;left:calc(var(--x) * 100% / var(--whites));width:calc(100% / var(--whites));display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(180deg,#e9dfcd 0,#fffdf7 12%,#fbf6ec 80%,#ece2cf 100%);border-right:1px solid #c9bba4;border-radius:0 0 5px 5px;box-shadow:inset 0 -6px 0 #e3d7c1,inset 0 -7px 0 #cdbfa6}',
+    '.vs-mp .pk-black{z-index:1;height:62%;left:calc((var(--x) + 1) * 100% / var(--whites) - 0.31 * 100% / var(--whites));width:calc(0.62 * 100% / var(--whites));background:linear-gradient(180deg,#120a0d 0,#2c1a1f 80%,#3a252b 92%,#1a0f12 100%);border-radius:0 0 4px 4px;box-shadow:inset 0 -5px 0 #3e2a30,0 3px 4px rgba(0,0,0,.45)}',
+    '.vs-mp .pk-white.is-down,.vs-mp .pk-white.is-play{background:linear-gradient(180deg,#e2d4bc 0,#f4ead8 30%,#f1dfba 100%);box-shadow:inset 0 -2px 0 #d8c7a8,inset 0 -18px 22px rgba(242,212,155,.75)}',
+    '.vs-mp .pk-black.is-down,.vs-mp .pk-black.is-play{background:linear-gradient(180deg,#24141a 0,#5a3a3f 70%,#8a5c3c 100%);box-shadow:inset 0 -2px 0 #3e2a30,0 0 12px rgba(242,212,155,.7)}',
+    '.vs-mp .pk:focus-visible{outline:3px solid #c58a12;outline-offset:-3px;z-index:3}',
+    '.vs-mp .pk-name{margin-bottom:.8rem;font-size:.68rem;font-weight:700;color:#7d6a5c;pointer-events:none}',
+    '.vs-mp .pk-name.pk-c{color:#7a1f33}',
+    '.vs-mp .pk-white.mp-used{background:linear-gradient(180deg,#e6d6b8 0,#fbf1dc 12%,#f6e8cb 80%,#e8d4ad 100%);box-shadow:inset 0 -6px 0 #d9b77e,inset 0 -7px 0 #c39a55}',
+    '.vs-mp .pk-black.mp-used{box-shadow:inset 0 -5px 0 #8a6a3c,0 3px 4px rgba(0,0,0,.45)}',
+    '.vs-mp .mp-start::before{content:"";position:absolute;left:50%;bottom:.3rem;width:.6rem;height:.6rem;margin-left:-.3rem;border-radius:50%;background:#c58a12;box-shadow:0 0 8px rgba(242,212,155,.95)}',
+    '.vs-mp .pk-black.mp-start::before{bottom:.45rem}',
+    '.vs-mp .pk.mp-live{z-index:2}',
+    '.vs-mp .pk-white.mp-live{background:linear-gradient(180deg,#f2c7d0 0,#f9dfe4 40%,#f1b5c2 100%);box-shadow:inset 0 -16px 20px rgba(226,120,143,.6),0 0 14px rgba(226,120,143,.7)}',
+    '.vs-mp .pk-black.mp-live{background:linear-gradient(180deg,#3a1a24 0,#8a3a50 70%,#c25a74 100%);box-shadow:0 0 14px rgba(226,120,143,.9)}',
+    '@media (max-width:700px){.vs-mp .mp-keys{width:max(100%,calc(var(--whites) * 2.2rem))}}'
+  ].join('');
+
+  // Where you are, in your voice and against the song: a range bar (your comfortable and stretch zones, the song's
+  // notes in this key, a marker for your pitch now) and, while singing, a plain-words line: the note, how far off it
+  // is, the vibrato, and which zone of your voice it is in. The live reading arrives on `bus` from the note lane, so
+  // only this small piece redraws about 8 times a second, not the whole player.
+  function VsRangeReadout(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var t = props.t;
+    var dark = props.dark;
+    var v = props.voice;
+    var rS = React.useState(null); var live = rS[0]; var setR = rS[1];
+    React.useEffect(function () {
+      if (!props.bus) return undefined;
+      props.bus.fn = function (x) { setR(x); };
+      return function () { props.bus.fn = null; };
+    }, []);
+    var r = props.bus ? live : props.reading; // from the lane's bus (song player), or handed in (Voice Mirror)
+    var hasSong = typeof props.lo === 'number';
+    var sl = isFinite(v.stretchLow) ? v.stretchLow : v.low;
+    var sh = isFinite(v.stretchHigh) ? v.stretchHigh : v.high;
+    var a = Math.min(sl, hasSong ? props.lo : sl) - 2;
+    var b = Math.max(sh, hasSong ? props.hi : sh) + 2;
+    var X0 = 14, XW = 572;
+    var x = function (m) { return X0 + (Math.max(a, Math.min(b, m)) - a) / (b - a) * XW; };
+    var muted = dark ? '#94a3b8' : '#64748b';
+    var levelText = { tune: t('stem.singing.vs_live_l_tune', 'spot on'), near: t('stem.singing.vs_live_l_near', 'close'), off: t('stem.singing.vs_live_l_off', 'a bit off'), wrong: t('stem.singing.vs_live_l_wrong', 'a different note') };
+    var line = null;
+    if (props.singing) {
+      if (!r) line = t('stem.singing.vs_live_listening', 'Listening… sing a note.');
+      else {
+        var parts = [vsFmt(t('stem.singing.vs_live_singing', 'Singing {note}'), { note: r.note })];
+        if (r.cents !== null) {
+          var n = Math.round(Math.abs(r.cents));
+          parts.push((n < 5 ? t('stem.singing.vs_live_exact', 'right on the note') : vsFmt(r.cents > 0 ? t('stem.singing.vs_live_sharp', '{n} cents sharp') : t('stem.singing.vs_live_flat', '{n} cents flat'), { n: n })) + ' (' + levelText[r.level] + ')');
+        }
+        if (r.vibrato) parts.push(vsFmt(t('stem.singing.vs_live_vibrato', 'vibrato ±{n} cents, {r} a second'), { n: Math.round(r.vibrato.extent), r: r.vibrato.rate.toFixed(1) }));
+        var zone = r.zone === 'comfort' ? t('stem.singing.vs_live_z_comfort', 'in your comfortable range')
+          : r.zone === 'stretch' ? (r.below ? t('stem.singing.vs_live_z_stretch_low', 'a low stretch for your voice') : t('stem.singing.vs_live_z_stretch_high', 'a high stretch for your voice'))
+          : r.zone === 'beyond' ? (r.below ? t('stem.singing.vs_live_z_beyond_low', 'below your range') : t('stem.singing.vs_live_z_beyond_high', 'above your range')) : '';
+        if (zone) parts.push(zone);
+        line = parts.join(' · ');
+      }
+    }
+    var ticks = [];
+    for (var m = Math.ceil(a); m <= Math.floor(b); m++) {
+      if (m % 12 === 0) ticks.push(h('g', { key: m },
+        h('line', { x1: x(m), x2: x(m), y1: 32, y2: 38, stroke: muted, strokeWidth: 1 }),
+        h('text', { x: x(m), y: 56, fontSize: 11, textAnchor: 'middle', fill: muted }, VS.noteLabel(m))));
+    }
+    var mark = r ? (r.level ? VS_LANE_LEVELS[r.level] : (dark ? '#f1f5f9' : '#0f172a')) : null;
+    var label = hasSong
+      ? vsFmt(t('stem.singing.vs_rb_aria', 'Your comfortable range {lo}–{hi}. This song in your key: {slo}–{shi}.'), { lo: VS.noteLabel(v.low), hi: VS.noteLabel(v.high), slo: VS.noteLabel(props.lo), shi: VS.noteLabel(props.hi) })
+      : vsFmt(t('stem.singing.vs_rb_aria_voice', 'Your comfortable range {lo}–{hi}.'), { lo: VS.noteLabel(v.low), hi: VS.noteLabel(v.high) });
+    var chip = function (color, text, bar) {
+      return h('span', { className: 'inline-flex items-center gap-1.5' },
+        h('span', { 'aria-hidden': 'true', className: 'inline-block ' + (bar ? 'w-4 h-1.5' : 'w-3 h-3') + ' rounded-sm', style: { background: color } }), text);
+    };
+    var small = 'text-xs ' + (dark ? 'text-slate-300' : 'text-slate-600');
+    return h('div', { className: 'space-y-1' },
+      h('svg', { viewBox: '0 0 600 62', role: 'img', 'aria-label': label, className: 'w-full', style: { maxHeight: 72 } },
+        h('rect', { x: X0, y: 14, width: XW, height: 16, rx: 8, fill: dark ? '#334155' : '#e2e8f0' }),
+        h('rect', { x: x(sl - 0.5), y: 14, width: Math.max(2, x(sh + 0.5) - x(sl - 0.5)), height: 16, rx: 8, fill: '#f59e0b', fillOpacity: 0.5 }),
+        h('rect', { x: x(v.low - 0.5), y: 14, width: Math.max(2, x(v.high + 0.5) - x(v.low - 0.5)), height: 16, rx: 8, fill: dark ? '#34d399' : '#22c55e', fillOpacity: 0.75 }),
+        hasSong && h('rect', { x: x(props.lo - 0.5), y: 42, width: Math.max(3, x(props.hi + 0.5) - x(props.lo - 0.5)), height: 6, rx: 3, fill: dark ? '#fb7185' : '#be123c' }),
+        ticks,
+        r && h('g', null,
+          h('line', { x1: x(r.midi), x2: x(r.midi), y1: 10, y2: 34, stroke: mark, strokeWidth: 2.5 }),
+          h('polygon', { points: (x(r.midi) - 7) + ',1 ' + (x(r.midi) + 7) + ',1 ' + x(r.midi) + ',12', fill: mark, stroke: dark ? '#0f172a' : '#fff', strokeWidth: 1 }))),
+      h('div', { className: 'flex flex-wrap gap-x-4 gap-y-1 ' + small, 'aria-hidden': 'true' },
+        chip(dark ? '#34d399' : '#22c55e', t('stem.singing.vs_rb_comfort', 'Comfortable')),
+        chip('#f59e0b', t('stem.singing.vs_rb_stretch', 'Stretch')),
+        hasSong && chip(dark ? '#fb7185' : '#be123c', t('stem.singing.vs_rb_song', 'This song'), true),
+        props.bands && chip(VS_LANE_LEVELS.tune, t('stem.singing.vs_band_tune', 'Spot on: within 30 cents')),
+        props.bands && chip(VS_LANE_LEVELS.near, t('stem.singing.vs_band_near', 'Close: within 60')),
+        props.bands && chip(VS_LANE_LEVELS.off, t('stem.singing.vs_band_off', 'A bit off: within a half step'))),
+      line && h('p', { className: 'text-sm font-bold m-0 ' + (dark ? 'text-slate-100' : 'text-slate-800'), 'aria-hidden': 'true' }, line));
+  }
 
   function VsSongPlayer(props) {
     var p = props.p;
@@ -8819,6 +11299,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var laneEl = React.useRef(null);
     var playerRef = React.useRef(null);
     var laneRef = React.useRef(null);
+    var scopeRef = React.useRef(null); // the live tuner strip drawn on the music
+    var rootEl = React.useRef(null);
+    var phrasesRef = React.useRef([]); // sung phrases of this song, for echo practice
+    var sayRef = React.useRef({ at: 0, text: '' }); // the last spoken cue (see sayLive)
+    var findEl = React.useRef(null); // the "Find a note" keyboard's panel
+    var findRef = React.useRef(null);
+    var findS = React.useState(false); var findOpen = findS[0]; var setFindOpen = findS[1];
+    var takeRef = React.useRef({ rec: null, url: '', hearing: false, melodyBefore: true });
+    var takeS = React.useState(null); var take = takeS[0]; var setTakeInfo = takeS[1]; // your last recording: { dur, from, speed, key, url }
+    var loopS = React.useState({ a: '1', b: '' }); var loopIn = loopS[0]; var setLoopIn = loopS[1];
+    var setupOnS = React.useState(!!props.setup && (props.setup.key !== null || props.setup.oct !== null || props.setup.speed !== null || !!props.setup.loop || !!props.setup.part)); var setupOn = setupOnS[0]; var setSetupOn = setupOnS[1]; // "set up from a shared link" note
+    var linkS = React.useState(''); var link = linkS[0]; var setLink = linkS[1]; // the link to this setup, once asked for
+    var visNoteS = React.useState(false); var visNote = visNoteS[0]; var setVisNote = visNoteS[1]; // the scene was switched off because the device struggled
+    var narrowS = React.useState(false); var narrow = narrowS[0]; var setNarrow = narrowS[1]; // a phone-width screen: a compact control bar
+    var moreS = React.useState(false); var more = moreS[0]; var setMore = moreS[1]; // ...with the secondary tools behind "More"
+    React.useEffect(function () {
+      if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+      var mq = window.matchMedia('(max-width: 700px)');
+      var on = function () { setNarrow(mq.matches); };
+      on();
+      if (mq.addEventListener) mq.addEventListener('change', on); else mq.addListener(on);
+      return function () { if (mq.removeEventListener) mq.removeEventListener('change', on); else mq.removeListener(on); };
+    }, []);
+    var visEl = React.useRef(null); // the scene canvas (Aurora, Bloom, Constellation, Silk) with this song's notes as targets
+    var visRef = React.useRef(null);
+    var fullS = React.useState(false); var full = fullS[0]; var setFull = fullS[1];
+    var viewS = React.useState('all'); var view = viewS[0]; var setView = viewS[1]; // all | music | lane | feedback
+    var busRef = React.useRef({ fn: null }); // lane -> VsRangeReadout: what is being sung now
     var singRef = React.useRef(null);
     var anRef = React.useRef(null);
     var modeRef = React.useRef(null);
@@ -8833,6 +11341,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var wordsS = React.useState(null); var words = wordsS[0]; var setWords = wordsS[1];
     var errS = React.useState(''); var err = errS[0]; var setErr = errS[1];
     var shiftS = React.useState(0); var shift = shiftS[0]; var setShift = shiftS[1];
+    var octS = React.useState(0); var octave = octS[0]; var setOctave = octS[1];
+    var voiceRef = React.useRef(p.voice); // the shared voice: songs are fitted into its comfortable range
+    voiceRef.current = p.voice;
+    var fitKeyRef = React.useRef('');
     var voiceLabels = vsVoiceLabels(t);
 
     // Score, player, lane and live score are made when the song is opened and torn down when it is left.
@@ -8840,7 +11352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var alive = true;
       var player = null;
       var lane = null;
-      Promise.all([vsLoadOSMD(), props.lib.get(song.id), vsPrintedVerses(props.lib, song.id)]).then(function (r) {
+      Promise.all([vsLoadOSMD(), props.own ? Promise.resolve(null) : props.lib.get(song.id), props.own ? Promise.resolve([]) : vsPrintedVerses(props.lib, song.id)]).then(function (r) {
         if (!alive || !scoreEl.current) return null;
         var narrow = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
         player = new VS.ScorePlayer({
@@ -8855,7 +11367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         });
         playerRef.current = player;
         if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.player = player; // test seam: only exists in the test harness
-        return player.load(vsBinaryString(r[1])).then(function (inf) {
+        return player.load(props.own ? props.own.source : vsBinaryString(r[1])).then(function (inf) {
           if (!alive) return;
           var pr = prefsRef.current;
           if (boxEl.current) player.setFollow(boxEl.current); // the cursor scrolls this box, not the page
@@ -8863,13 +11375,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           player.setClick(!!pr.click);
           player.setPart('voice', pr.guide !== false);
           player.setPart('piano', pr.piano !== false);
+          player.setSpeedUp(pr.speedUp || 0);
+          try { phrasesRef.current = VS.findPhrases(player.timeline); } catch (e) { phrasesRef.current = []; }
+          fitKeyRef.current = voiceKey(voiceRef.current);
+          if (props.own) { // a file from this device: its range is whatever the melody turns out to span
+            var ns = player.voiceNotes().map(function (n) { return n.midi; });
+            if (ns.length) { song.lo = Math.min.apply(null, ns); song.hi = Math.max.apply(null, ns); }
+            song.measures = inf.measures; song.sec = Math.round(inf.seconds);
+          }
+          applyFit(player);
+          if (props.setup) applySetup(player, props.setup, inf);
           lane = new VS.NoteLane(laneEl.current, { player: player, calm: !!p.reducedMotion, onSeek: function (sec) { stopAll(); player.seek(sec); } });
           laneRef.current = lane;
-          singRef.current = new VS.SingScore(player, { onGrade: function (i, level) { lane.setGrade(i, level); refreshLive(); } });
+          lane.onLive = function (x) { if (busRef.current.fn) busRef.current.fn(x); sayLive(x); };
+          if (findEl.current) findRef.current = new VS.FindNote(findEl.current, { player: player, tones: new VS.Tones(), sound: function () { return prefsRef.current.sound || 'piano'; } });
+          if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.findNote = findRef.current; // test seam (harness only)
+          lane.setVoice(laneVoice(voiceRef.current));
+          scopeRef.current = new VS.PitchScope({ player: player });
+          if (typeof window !== 'undefined' && window.__vsTest) { window.__vsTest.lane = lane; window.__vsTest.scope = scopeRef.current; } // test seam (harness only)
+          singRef.current = new VS.SingScore(player, { onGrade: function (i, level) { lane.setGrade(i, level); player.colorVoiceNote(i, VS_LANE_LEVELS[level]); refreshLive(); } });
           if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.score = singRef.current; // test seam (harness only)
           setInfo(inf);
           setLoad('ready');
-          set({ last: song.id });
+          if (!props.own) set({ last: song.id });
         });
       }).catch(function (e) {
         if (!alive) return;
@@ -8882,20 +11410,162 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         alive = false;
         modeRef.current = null;
         stopMic();
+        if (findRef.current) { findRef.current.close(); findRef.current = null; }
+        stopTake();
+        if (takeRef.current.url) URL.revokeObjectURL(takeRef.current.url);
+        takeRef.current.url = '';
+        if (scopeRef.current) scopeRef.current.destroy();
         if (laneRef.current) laneRef.current.destroy();
         if (playerRef.current) playerRef.current.destroy();
-        laneRef.current = null; playerRef.current = null; singRef.current = null;
+        laneRef.current = null; playerRef.current = null; singRef.current = null; scopeRef.current = null;
       };
     }, [song.id]);
+
+    // The lane tints its rows by the shared voice (comfortable / stretch / beyond).
+    function laneVoice(v) {
+      return { low: v.low, high: v.high, stretchLow: v.stretchLow, stretchHigh: v.stretchHigh };
+    }
+    React.useEffect(function () {
+      if (load === 'ready' && laneRef.current) laneRef.current.setVoice(laneVoice(p.voice));
+    }, [load, p.voice.low, p.voice.high, p.voice.stretchLow, p.voice.stretchHigh]);
+    // While you sing, the lane draws each note as its accuracy corridor and the music carries the pitch scope.
+    React.useEffect(function () {
+      var sing = mode === 'sing';
+      if (laneRef.current) laneRef.current.setScoring(sing);
+      if (scopeRef.current) scopeRef.current.setActive(sing && prefs.scope !== false);
+    }, [mode, load, prefs.scope]);
+
+    // A struggling device: the Visuals scene is the costly part, and the pitch feedback matters more. While singing with the scene on, watch
+    // how long frames take; averaging over ~90 ms for 2.5 s, switch the scene off (the setting stays off until you turn it back on).
+    React.useEffect(function () {
+      if (mode !== 'sing' || prefs.visuals !== true) return undefined;
+      var raf = 0;
+      var last = 0;
+      var ema = 16;
+      var slowSince = 0;
+      var tick = function (now) {
+        if (last) {
+          ema = ema * 0.9 + Math.min(1000, now - last) * 0.1;
+          if (ema > 90) {
+            if (!slowSince) slowSince = now;
+            else if (now - slowSince > 2500) { setVisNote(true); set({ visuals: false }); return; }
+          } else slowSince = 0;
+        }
+        last = now;
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      return function () { cancelAnimationFrame(raf); };
+    }, [mode, prefs.visuals]);
+
+    // The scene canvas (Aurora, Bloom, Constellation, Silk): this song's notes as targets, your range down the right edge.
+    function rangeOf(v) { return { low: v.low, high: v.high, stretchLow: v.stretchLow, stretchHigh: v.stretchHigh }; }
+    React.useEffect(function () {
+      var pr = prefsRef.current;
+      var vis = new VS.VoiceVisuals(visEl.current, { palette: pr.look || (p.isContrast ? 'contrast' : 'opera'), mode: 'voice', calm: !!p.reducedMotion, scene: pr.scene || 'aurora' });
+      vis.setTargets(function (before, after) { var pl = playerRef.current; return pl && pl.timeline ? pl.voiceWindow(before, after) : []; });
+      vis.set({ range: rangeOf(voiceRef.current) });
+      vis.start();
+      visRef.current = vis;
+      if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.vis = vis; // test seam (harness only)
+      return function () { vis.destroy(); visRef.current = null; };
+    }, []);
+    React.useEffect(function () {
+      if (visRef.current) visRef.current.set({ scene: prefs.scene || 'aurora', palette: prefs.look || (p.isContrast ? 'contrast' : 'opera'), calm: !!p.reducedMotion, range: rangeOf(p.voice) });
+    }, [prefs.scene, prefs.look, p.voice.low, p.voice.high, p.voice.stretchLow, p.voice.stretchHigh]);
+
+    // A shared link's settings, applied over the fit; they are not saved as your own preferences.
+    function applySetup(pl, su, inf) {
+      if (su.part && inf.voiceParts && inf.voiceParts.some(function (v) { return v.key === su.part; })) pl.setMyPart(su.part);
+      if (su.key !== null) { var k = Math.max(-6, Math.min(6, Math.round(su.key))); pl.setTranspose(k); setShift(k); }
+      if (su.oct !== null) { var o = Math.max(-1, Math.min(1, Math.round(su.oct))); pl.setMelodyOctave(o); setOctave(o); }
+      if (su.speed !== null) pl.setTempo(Math.max(50, Math.min(130, Math.round(su.speed / 5) * 5)) / 100);
+      if (su.loop) { var last = inf.measures; var a = Math.max(1, Math.min(last, su.loop[0])); var b = Math.max(a, Math.min(last, su.loop[1])); pl.setLoop(a - 1, b - 1); }
+    }
+    function backToUsual() {
+      var pl = playerRef.current;
+      if (!pl) return;
+      stopAll();
+      pl.setLoop(null);
+      pl.setTempo((prefsRef.current.speed || 100) / 100);
+      applyFit(pl);
+      resetScore();
+      setSetupOn(false);
+    }
+    // A link to this setup: the song and whatever is not at its usual value (key, octave, speed, loop, part).
+    function copyLink() {
+      var q = new URLSearchParams();
+      q.set('tool', 'singing'); q.set('tab', 'library'); q.set('song', song.id);
+      if (shift) q.set('key', String(shift));
+      if (octave) q.set('oct', String(octave));
+      if (speedNow !== 100) q.set('speed', String(speedNow));
+      if (ps && ps.loop) q.set('loop', (ps.loop.from + 1) + '-' + (ps.loop.to + 1));
+      if (info && info.voiceParts && info.voiceParts.length > 1 && ps && ps.myPart) q.set('part', ps.myPart);
+      var url = window.location.origin + window.location.pathname + '?' + q.toString();
+      setLink(url);
+      try { navigator.clipboard.writeText(url).then(function () { if (p.announce) p.announce(t('stem.singing.vs_lib_link_copied', 'Link copied.')); }, function () { /* the box shows it */ }); } catch (e) { /* the box shows it */ }
+    }
+
+    // An optional spoken cue for people who cannot see the lane (a setting, off by default): the verdict on what you are singing,
+    // only when it changes and at most every 2.5 s, so it never talks over the music; silence says nothing.
+    function sayLive(x) {
+      if (!x || !prefsRef.current.sayLive || !p.announce) return;
+      var sy = sayRef.current;
+      var text;
+      if (x.level === 'tune') text = t('stem.singing.vs_say_tune', 'Spot on');
+      else if (x.level === 'near') text = x.cents > 0 ? t('stem.singing.vs_say_sharp', 'A little sharp') : t('stem.singing.vs_say_flat', 'A little flat');
+      else if (x.level === 'off') text = x.cents > 0 ? t('stem.singing.vs_say_off_sharp', 'Too sharp') : t('stem.singing.vs_say_off_flat', 'Too flat');
+      else if (x.level === 'wrong') text = t('stem.singing.vs_say_wrong', 'Not the written note');
+      else return;
+      if (x.zone === 'stretch') text += ', ' + (x.below ? t('stem.singing.vs_live_z_stretch_low', 'a low stretch for your voice') : t('stem.singing.vs_live_z_stretch_high', 'a high stretch for your voice'));
+      else if (x.zone === 'beyond') text += ', ' + (x.below ? t('stem.singing.vs_live_z_beyond_low', 'below your range') : t('stem.singing.vs_live_z_beyond_high', 'above your range'));
+      var now = Date.now();
+      if (text === sy.text || now - sy.at < 2500) return;
+      sy.text = text;
+      sy.at = now;
+      p.announce(text);
+    }
+
+    // Opening a song brings its controls to the top of the screen (the list above it was a long page).
+    React.useEffect(function () {
+      var el = rootEl.current;
+      if (el && el.scrollIntoView) { try { el.scrollIntoView({ block: 'start' }); } catch (e) { /* stays where it is */ } }
+    }, []);
+
+    // Full screen: the browser's own, and where there is none (iPhone) the same window-filling layout without it.
+    var fullRef = React.useRef(false);
+    fullRef.current = full;
+    function exitFull() {
+      setFull(false); setView('all');
+      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* the window-filling layout goes with the state */ }
+    }
+    React.useEffect(function () {
+      var el = rootEl.current;
+      if (full) { try { if (el && el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(function () { /* the window-filling layout still applies */ }); } catch (e) { /* same */ } }
+      var tm = setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* the music re-lays itself out for its new width */ } }, 150);
+      return function () { clearTimeout(tm); };
+    }, [full]);
+    React.useEffect(function () {
+      function onFs() { if (!document.fullscreenElement && fullRef.current) { setFull(false); setView('all'); } }
+      document.addEventListener('fullscreenchange', onFs);
+      return function () { document.removeEventListener('fullscreenchange', onFs); try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* already out */ } };
+    }, []);
 
     function onPlayerChange(s) {
       var prev = stateRef.current;
       stateRef.current = s;
       var loopKey = function (x) { return x && x.loop ? x.loop.from + ':' + x.loop.to : ''; };
-      if (!prev || prev.playing !== s.playing || prev.measure !== s.measure || prev.myPart !== s.myPart || prev.transpose !== s.transpose || loopKey(prev) !== loopKey(s)) {
+      var echoKey = function (x) { return x && x.echo ? x.echo.phrase + ':' + (x.echo.turn ? 1 : 0) : ''; };
+      if (!prev || prev.playing !== s.playing || prev.measure !== s.measure || prev.myPart !== s.myPart || prev.transpose !== s.transpose || loopKey(prev) !== loopKey(s) || prev.lap !== s.lap || prev.tempo !== s.tempo || echoKey(prev) !== echoKey(s)) {
         setPs(s);
         if (!prev || prev.playing !== s.playing) { if (laneRef.current) laneRef.current.wake(); }
       }
+      // Speed-up loops change the speed by themselves: keep the slider's saved speed in step.
+      if (s.playing && prev && prev.tempo !== s.tempo && Math.round(s.tempo * 100) !== (prefsRef.current.speed || 100)) p.savePrefs(Object.assign({}, prefsRef.current, { speed: Math.round(s.tempo * 100) }));
+      // A recording of your singing follows the music: it starts when the music does, and ends when it stops or a loop comes round.
+      if (s.playing && (!prev || !prev.playing)) startTake();
+      if (!s.playing && prev && prev.playing) { stopTake(); endHearing(); }
+      if (s.playing && prev && prev.lap !== s.lap) stopTake();
       if (!s.playing && modeRef.current) finish();
     }
 
@@ -8920,6 +11590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     function resetScore() {
       if (singRef.current) singRef.current.reset();
       if (laneRef.current) laneRef.current.clearGrades();
+      if (playerRef.current) playerRef.current.clearVoiceNoteColors();
       setLive(null); setResult(null); setSpots([]);
     }
     function stopMic() {
@@ -8931,12 +11602,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       a.setIgnore(function () { return playerRef.current ? playerRef.current.sounding() : false; }); // the starting note is not the singer
       a.onFrame(function (f) {
         var pl = playerRef.current;
+        if (visRef.current && modeRef.current === 'sing') visRef.current.push(f);
         if (modeRef.current !== 'sing' || !pl || !pl.playing) return;
-        var tm = pl.scoreTime() - 0.06 * pl.tempo; // a reading describes sound from a moment earlier
+        if (pl.echo && !pl.echo.turn) return; // echo practice: the music is playing the phrase, not you
+        // A reading describes sound from a moment earlier; on a busy page the frame also arrives late (f.lag, audio-clock seconds beyond the
+        // usual ~20 ms), so credit it to when its sound was captured, not when this callback finally ran.
+        var tm = pl.scoreTime() - (0.06 + Math.max(0, (f.lag || 0) - 0.02)) * pl.tempo;
         if (tm < 0) return; // count-in
         var midi = f.voiced ? f.midi : null;
         if (singRef.current) singRef.current.push(tm, midi);
-        if (laneRef.current) laneRef.current.pushPitch(tm, midi);
+        if (laneRef.current) laneRef.current.pushPitch(tm, midi, f.rawMidi);
+        if (scopeRef.current) scopeRef.current.push(tm, midi);
       });
       return a.startMicrophone().then(function () { anRef.current = a; return a; });
     }
@@ -8946,8 +11622,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       modeRef.current = null;
       setMode(null);
       if (playerRef.current && playerRef.current.playing) playerRef.current.pause();
+      if (playerRef.current && playerRef.current.echo) playerRef.current.setEcho(null);
       if (was === 'sing') endRun();
       stopMic();
+    }
+    // On a phone the control bar slims down when the music starts and the lane sits below the key and octave rows: bring the lane
+    // into view under the bar, so the live feedback is what you see.
+    function revealLane() {
+      if (typeof window === 'undefined' || !window.matchMedia || !window.matchMedia('(max-width: 700px)').matches) return;
+      setTimeout(function () {
+        var lane = laneEl.current;
+        var bar = rootEl.current && rootEl.current.querySelector('[data-song-bar]');
+        if (!lane || !bar || !lane.offsetParent) return;
+        var lr = lane.getBoundingClientRect();
+        var br = bar.getBoundingClientRect();
+        var room = window.innerHeight - br.bottom;
+        if (lr.top >= br.bottom - 1 && lr.bottom <= window.innerHeight - 4) return; // already in view under the bar
+        // centre it in the space below the bar
+        var want = br.bottom + Math.max(0, (room - lr.height) / 2);
+        window.scrollBy({ top: lr.top - want, behavior: 'auto' });
+      }, 250);
+    }
+    // Echo practice (a setting): the music plays a phrase, then the same phrase without the melody for you to sing back.
+    function beginEcho(pl) {
+      if (prefsRef.current.echo && phrasesRef.current.length) pl.setEcho(phrasesRef.current, { from: 0 });
+      else if (pl.echo) pl.setEcho(null);
+    }
+    // Your take: with "Record my singing" on, the microphone is recorded on the player's own audio clock while you sing
+    // along, so it can be played back in time with the piano. It stays in this page (memory) unless you save it.
+    function takeShift() { return Number(prefsRef.current.takeShift) || 0; }
+    function startTake() {
+      var pl = playerRef.current; var an = anRef.current; var tk = takeRef.current;
+      if (!prefsRef.current.take || modeRef.current !== 'sing' || !an || !an.stream || tk.rec || !pl || !pl.ctx || !VS.canRecordTakes()) return;
+      var ctx = pl.ctx;
+      var run = { startCtx: pl.startCtx, startSec: pl.startSec, tempo: pl.tempo, transpose: pl.transpose };
+      var track = an.stream.getAudioTracks()[0];
+      var inLat = track && track.getSettings ? track.getSettings().latency : undefined;
+      // How late the voice lands in the recording: you hear the music late (output) and the microphone hands the voice over late (input).
+      var lag = Math.min(0.5, (ctx.outputLatency || 0) + (ctx.baseLatency || 0) + (typeof inLat === 'number' ? inLat : 0.01)) - takeShift() / 1000;
+      var rec = new VS.TakeRecorder(ctx);
+      tk.rec = rec;
+      rec.onChunk = function () { var q = playerRef.current; if (!q || q.startCtx !== run.startCtx || !q.playing) stopTake(); };
+      rec.finish = function () {
+        var got = null;
+        try { got = rec.stop(); } catch (e) { got = null; }
+        if (!got || got.buffer.duration < 1.5) return; // nothing, or a stray second: not a take
+        var q = playerRef.current;
+        if (!q) return;
+        var scoreStart = run.startSec + (got.t0 - run.startCtx) * run.tempo;
+        if (tk.url) URL.revokeObjectURL(tk.url);
+        tk.url = URL.createObjectURL(VS.wavBlob(got.buffer));
+        q.setTake({ buffer: got.buffer, scoreStart: scoreStart, lag: lag, tempo: run.tempo, transpose: run.transpose, on: false });
+        var ms = q.timeline.measures;
+        var k = 0;
+        while (k + 1 < ms.length && ms[k + 1].start <= Math.max(scoreStart, run.startSec) + 1e-6) k++; // the measure the music started in
+        setTakeInfo({ dur: got.buffer.duration, from: (ms[k] ? ms[k].m : 0) + 1, speed: Math.round(run.tempo * 100), key: run.transpose, url: tk.url });
+      };
+      rec.start(an.stream).catch(function () { if (tk.rec === rec) tk.rec = null; });
+    }
+    function stopTake() {
+      var tk = takeRef.current;
+      var rec = tk.rec;
+      if (!rec) return;
+      tk.rec = null;
+      if (rec.finish) rec.finish();
+    }
+    function endHearing() {
+      var tk = takeRef.current;
+      if (!tk.hearing) return;
+      tk.hearing = false;
+      var q = playerRef.current;
+      if (!q) return;
+      if (q.take) q.setTake(Object.assign({}, q.take, { on: false }));
+      q.setPart('voice', tk.melodyBefore);
+    }
+    function hearTake() {
+      var q = playerRef.current; var k = q && q.take; var tk = takeRef.current;
+      if (!k) return;
+      stopAll();
+      if (q.loop) q.setLoop(null);
+      if (Math.abs(q.tempo - k.tempo) > 1e-3) q.setTempo(k.tempo); // back to how it was sung: the same speed and key
+      if (q.transpose !== k.transpose) { q.setTranspose(k.transpose); setShift(k.transpose); }
+      tk.melodyBefore = q.parts.voice;
+      q.setPart('voice', false); // you, not the melody guide
+      tk.hearing = true;
+      // Each of these emits a not-playing state: do them before the mode is set, or they read as "the music ended".
+      q.setTake(Object.assign({}, k, { on: true }));
+      q.seek(k.scoreStart);
+      modeRef.current = 'hear';
+      setMode('hear');
+      q.play();
+    }
+    function nudgeTake(dir) { // "Later" = your voice should come later in the mix; a positive lag plays the take earlier
+      var q = playerRef.current;
+      var d = 20 * dir;
+      var next = Math.max(-400, Math.min(400, takeShift() + d));
+      set({ takeShift: next });
+      if (q && q.take) q.setTake(Object.assign({}, q.take, { lag: q.take.lag - d / 1000 }));
+    }
+    function dropTake() {
+      endHearing();
+      if (playerRef.current) playerRef.current.setTake(null);
+      if (takeRef.current.url) URL.revokeObjectURL(takeRef.current.url);
+      takeRef.current.url = '';
+      setTakeInfo(null);
     }
     function finish() { // the music reached its end (or was stopped from outside)
       var was = modeRef.current;
@@ -8961,9 +11739,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       if (mode === 'hear') { stopAll(); return; }
       stopAll();
       setErr('');
+      beginEcho(playerRef.current); // before the mode: this emits a not-playing state, which would read as "the music ended"
       modeRef.current = 'hear';
       setMode('hear');
       playerRef.current.play();
+      revealLane();
     }
     function singAlong() {
       if (mode === 'sing') { stopAll(); return; }
@@ -8972,11 +11752,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       ensureMic().then(function () {
         var pl = playerRef.current;
         if (!pl) { stopMic(); return; }
+        sayRef.current = { at: 0, text: '' };
+        beginEcho(pl); // before the mode, as in listen()
         modeRef.current = 'sing';
         setMode('sing');
         setResult(null);
         if (p.announce) p.announce(t('stem.singing.vs_sr_count_in', 'Count-in, then sing.'));
         pl.play({ countIn: !!prefsRef.current.countIn });
+        revealLane();
       }).catch(function (e) { setErr(vsMicError(t, e)); });
     }
     function restart() {
@@ -9006,7 +11789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       setSpots(VS.troubleSpots(sc.grades, measureOfNote));
       var best = prefsRef.current.best || {};
       var prev = best[song.id] || null;
-      var isBest = counts && (!prev || s.accuracy > prev.best);
+      var isBest = !props.own && counts && (!prev || s.accuracy > prev.best); // a file from this device has no fixed address to keep a best under
       if (isBest) {
         var nb = Object.assign({}, best);
         nb[song.id] = { best: s.accuracy, sung: s.sung, total: total, at: Date.now() };
@@ -9019,7 +11802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
       setResult({ s: s, total: total, counts: counts, isBest: isBest, prev: prev });
       if (p.announce) p.announce(vsFmt(t('stem.singing.vs_lib_sr_result', 'Pitch accuracy {pct}%. {tune} spot on, {near} close, {off} a bit off, {wrong} wrong, out of {n} notes sung.'), { pct: s.accuracy, tune: s.tune, near: s.near, off: s.off, wrong: s.wrong, n: s.sung }));
-      if (counts && s.accuracy >= 80 && (!prev || prev.best < 80) && p.awardXP) p.awardXP('singing_library', 10, 'Singing: ' + song.title);
+      if (!props.own && counts && s.accuracy >= 80 && (!prev || prev.best < 80) && p.awardXP) p.awardXP('singing_library', 10, 'Singing: ' + song.title);
     }
 
     function changeKey(n) {
@@ -9028,6 +11811,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       playerRef.current.setTranspose(n);
       resetScore();
     }
+    function changeOctave(n) {
+      stopAll();
+      setOctave(n);
+      playerRef.current.setMelodyOctave(n);
+      resetScore();
+    }
+    // The key and octave that put this song inside the shared voice's comfortable range (or as written when "fit" is off).
+    function applyFit(player) {
+      var v = voiceRef.current;
+      var f = v.fit ? VS.suggestFit(song.lo, song.hi, v) : { key: 0, octave: 0 };
+      if (f.key !== player.transpose) player.setTranspose(f.key);
+      if (f.octave !== player.melodyOctave) player.setMelodyOctave(f.octave);
+      setShift(f.key);
+      setOctave(f.octave);
+    }
+    function voiceKey(v) { return [v.type, v.low, v.high, v.fit].join('|'); }
+    // Changing the voice (here or in My voice) refits the open song; a hand-set key or octave stays until then.
+    React.useEffect(function () {
+      var pl = playerRef.current;
+      if (load !== 'ready' || !pl) return;
+      var key = voiceKey(p.voice);
+      if (fitKeyRef.current === key) return;
+      fitKeyRef.current = key;
+      stopAll();
+      applyFit(pl);
+      resetScore();
+    }, [load, p.voice.type, p.voice.low, p.voice.high, p.voice.fit]);
     function changePart(key) {
       stopAll();
       playerRef.current.setMyPart(key);
@@ -9047,56 +11857,165 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       return h('label', { className: lab },
         h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!on, onChange: function (e) { var v = e.target.checked; var patch = {}; patch[key] = v; set(patch); if (apply && playerRef.current) apply(v); } }), label);
     };
-    var fitsNow = VS.fitsVoice(prefs.voice, song.lo + shift, song.hi + shift);
+    var sungLo = song.lo + shift + 12 * octave;
+    var sungHi = song.hi + shift + 12 * octave;
+    var inRange = sungLo >= p.voice.low && sungHi <= p.voice.high;
+    var best = VS.suggestFit(song.lo, song.hi, p.voice);
+    var atFit = shift === best.key && octave === best.octave;
+    var octBtn = function (n, label) {
+      var on = octave === n;
+      return h('button', { key: n, type: 'button', disabled: !ready, 'aria-pressed': on ? 'true' : 'false', onClick: function () { changeOctave(n); },
+        className: 'px-2.5 py-1 text-xs font-bold ' + (on ? 'bg-rose-700 text-white' : (dark ? 'text-slate-200 bg-slate-800' : 'text-slate-700 bg-white')) }, label);
+    };
     var meta = [props.composer, song.lang, song.set && (song.no ? song.set + ', ' + song.no : song.set), VS.noteLabel(song.lo) + '–' + VS.noteLabel(song.hi), vsClock(song.sec)].filter(Boolean).join(' · ');
-    var credit = song.col === 'lieder'
+    var credit = props.own
+      ? t('stem.singing.vs_own_credit', 'Your own file. It stays on this device: nothing is uploaded.')
+      : song.col === 'lieder'
       ? t('stem.singing.vs_lib_credit_lieder', 'Score from the OpenScore Lieder Corpus (github.com/OpenScore/Lieder), transcribed by volunteers and dedicated to the public domain (CC0). Check notes and words against your own edition.')
       : vsFmt(t('stem.singing.vs_lib_credit_pdmx', 'Score shared on MuseScore by its transcriber and marked public domain or CC0, from the PDMX dataset (Long et al., 2024, CC BY 4.0). Community transcriptions can contain mistakes; check them against your own edition.{notice}'), { notice: song.notice ? ' ' + vsFmt(t('stem.singing.vs_lib_credit_notice', 'File notice: “{text}”.'), { text: String(song.notice).replace(/\s+/g, ' ').slice(0, 160) }) : '' });
 
-    return h('div', { className: 'space-y-3' },
-      h('div', { className: c.cardClass + ' space-y-3' },
-        h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
-          h('div', null,
-            h('h3', { className: c.headingClass + ' text-base m-0' }, song.title),
-            h('p', { className: c.subTextClass + ' m-0' }, meta)),
-          h('button', { type: 'button', className: c.btnSecondary, onClick: function () { stopAll(); props.onBack(); } }, '← ' + t('stem.singing.vs_lib_back', 'All songs'))),
-        h('div', { className: 'flex flex-wrap gap-2' },
-          h('button', { type: 'button', className: c.btnPrimary, disabled: !ready, onClick: singAlong }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : '🎤 ' + t('stem.singing.vs_lib_sing_along', 'Sing along')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: listen }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : '▶ ' + t('stem.singing.vs_lib_listen', 'Listen')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { stopAll(); playerRef.current.playStartingNote(); } }, t('stem.singing.vs_lib_start_note', 'Starting note')),
-          h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: restart }, t('stem.singing.vs_lib_restart', 'Start over'))),
-        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
-          h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: prefs.speed || 100 }),
-            h('input', { type: 'range', min: 50, max: 130, step: 5, value: prefs.speed || 100, className: 'accent-rose-600',
-              onChange: function (e) { var v = Number(e.target.value); stopAll(); set({ speed: v }); if (playerRef.current) playerRef.current.setTempo(v / 100); } })),
-          h('label', { className: lab }, t('stem.singing.vs_lib_key', 'Key'),
-            h('select', { className: selCls, value: String(shift), disabled: !ready, onChange: function (e) { changeKey(Number(e.target.value)); } },
-              [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('option', { key: n, value: String(n) }, n === 0 ? t('stem.singing.vs_lib_key_written', 'As written') : (n > 0 ? '+' : '') + n); }))),
-          info && info.voiceParts && info.voiceParts.length > 1 && h('label', { className: lab }, t('stem.singing.vs_lib_part', 'My part'),
-            h('select', { className: selCls, value: (ps && ps.myPart) || info.myPart || '', onChange: function (e) { changePart(e.target.value); } },
-              info.voiceParts.map(function (v) { return h('option', { key: v.key, value: v.key }, v.name); }))),
-          h('label', { className: lab }, t('stem.singing.vs_lib_sound', 'Sound'),
-            h('select', { className: selCls, value: prefs.sound || 'piano', onChange: function (e) { var v = e.target.value; set({ sound: v }); if (playerRef.current) playerRef.current.setSound(v); } },
-              Object.keys(VS.SOUNDS).map(function (k) { return h('option', { key: k, value: k }, VS.SOUNDS[k]); })))),
-        h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
-          chk(t('stem.singing.vs_lib_guide', 'Hear the melody'), 'guide', prefs.guide !== false, function (v) { stopAll(); playerRef.current.setPart('voice', v); }),
-          chk(t('stem.singing.vs_lib_piano', 'Piano'), 'piano', prefs.piano !== false, function (v) { stopAll(); playerRef.current.setPart('piano', v); }),
-          chk(t('stem.singing.vs_lib_count_in', 'Count-in'), 'countIn', prefs.countIn !== false, null),
-          chk(t('stem.singing.vs_lib_click', 'Click'), 'click', !!prefs.click, function (v) { playerRef.current.setClick(v); }),
-          chk(t('stem.singing.vs_lib_lane', 'Note lane'), 'lane', prefs.lane !== false, function () { if (laneRef.current) laneRef.current.wake(); }),
-          chk(t('stem.singing.vs_lib_words', 'Words'), 'words', prefs.words !== false, null)),
-        !fitsNow && h('p', { className: c.subTextClass + ' m-0' }, t('stem.singing.vs_lib_range_hint', 'This song may sit outside your voice as written. Use “Key” to move it into your range.')),
-        ps && h('p', { className: c.subTextClass + ' m-0' }, vsFmt(t('stem.singing.vs_lib_where', 'Measure {m} of {n}'), { m: ps.measure + 1, n: ps.measures }) +
-          (ps.loop ? ' · ' + (ps.loop.from === ps.loop.to ? vsFmt(t('stem.singing.vs_lib_loop_one', 'looping measure {a}'), { a: ps.loop.from + 1 }) : vsFmt(t('stem.singing.vs_lib_loop_many', 'looping measures {a}–{b}'), { a: ps.loop.from + 1, b: ps.loop.to + 1 })) : '')),
-        ps && ps.loop && h('div', null, h('button', { type: 'button', className: c.btnSecondary, onClick: function () { playerRef.current.setLoop(null); } }, t('stem.singing.vs_lib_clear_loop', 'Stop looping')))),
+    var show = function (what) { return view === 'all' || view === what; };
+    // Phones: while the music plays the bar keeps only the play controls and where you are; the secondary tools wait behind "More".
+    var slim = narrow && !!(ps && ps.playing) && !findOpen && !full;
+    var showMore = !narrow || (more && !slim);
+    var whereText = ps ? (ps.verses > 1
+      ? vsFmt(t('stem.singing.vs_lib_where_verse', 'Measure {m} of {n} · verse {v} of {vs}'), { m: ps.measure + 1, n: ps.measures, v: Math.min(ps.pass || 1, ps.verses), vs: ps.verses })
+      : vsFmt(t('stem.singing.vs_lib_where', 'Measure {m} of {n}'), { m: ps.measure + 1, n: ps.measures })) : '';
+    var loopText = ps && ps.loop ? (ps.loop.from === ps.loop.to ? vsFmt(t('stem.singing.vs_lib_loop_one', 'looping measure {a}'), { a: ps.loop.from + 1 }) : vsFmt(t('stem.singing.vs_lib_loop_many', 'looping measures {a}–{b}'), { a: ps.loop.from + 1, b: ps.loop.to + 1 })) : '';
+    var step = function (d) {
+      if (!playerRef.current || !ps) return;
+      stopAll();
+      playerRef.current.seekToPerformed((ps.performed || 0) + d);
+    };
+    var speedNow = ps ? Math.round(ps.tempo * 100) : (prefs.speed || 100);
+    var iconBtn = c.btnSecondary + ' !px-3.5 !py-1 text-sm';
+    var viewOpts = [['all', t('stem.singing.vs_view_all', 'Everything')], ['music', t('stem.singing.vs_view_music', 'Music only')], ['lane', t('stem.singing.vs_view_lane', 'Note lane only')], ['feedback', t('stem.singing.vs_view_feedback', 'Sing-along feedback only')]];
+    var scenes = [['aurora', t('stem.singing.vs_scene_aurora', 'Aurora')], ['bloom', t('stem.singing.vs_scene_bloom', 'Bloom')], ['constellation', t('stem.singing.vs_scene_constellation', 'Constellation')], ['silk', t('stem.singing.vs_scene_silk', 'Silk')]];
+    var looks = [['opera', t('stem.singing.vs_pal_opera', 'Opera (burgundy & gold)')], ['aurora', t('stem.singing.vs_pal_aurora', 'Northern lights')], ['dusk', t('stem.singing.vs_pal_dusk', 'Dusk (rose & lilac)')], ['jewel', t('stem.singing.vs_pal_jewel', 'Jewel tones (sapphire & amethyst)')], ['prism', t('stem.singing.vs_pal_prism', 'Prism (a color per note)')], ['contrast', t('stem.singing.vs_pal_contrast', 'High contrast')]];
+
+    return h('div', { ref: rootEl, className: 'space-y-3', style: full ? { position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 60, overflow: 'auto', padding: 12, background: dark ? '#0f172a' : '#f8fafc' } : undefined },
+      // The control bar stays in view while the music scrolls: play, sing, start over, where you are in the song.
+      h('div', { className: c.cardClass + ' space-y-2 sticky top-0 z-20 shadow-md', 'data-song-bar': '' },
+        h('div', { className: 'flex items-center justify-between gap-2' + (narrow ? '' : ' flex-wrap') },
+          h('div', { className: 'min-w-0' },
+            h('h3', { className: c.headingClass + ' text-base m-0' + (narrow ? ' truncate' : '') }, song.title),
+            !narrow && h('p', { className: c.subTextClass + ' m-0 text-xs' }, meta)),
+          h('button', { type: 'button', className: c.btnSecondary, 'aria-label': narrow ? t('stem.singing.vs_lib_back', 'All songs') : undefined, onClick: function () { stopAll(); if (full) exitFull(); props.onBack(); } }, narrow ? '←' : '← ' + t('stem.singing.vs_lib_back', 'All songs'))),
+        h('div', { className: 'flex flex-wrap items-center ' + (narrow ? 'gap-1.5' : 'gap-2') },
+          h('button', { type: 'button', className: c.btnPrimary + (narrow ? ' !px-3' : ''), disabled: !ready, onClick: singAlong }, mode === 'sing' ? t('stem.singing.vs_stop', 'Stop') : (narrow ? '' : '🎤 ') + t('stem.singing.vs_lib_sing_along', 'Sing along')),
+          h('button', { type: 'button', className: c.btnSecondary + (narrow ? ' !px-2.5' : ''), disabled: !ready, onClick: listen }, mode === 'hear' ? t('stem.singing.vs_stop', 'Stop') : '▶ ' + t('stem.singing.vs_lib_listen', 'Listen')),
+          h('button', { type: 'button', className: c.btnSecondary + (narrow ? ' !px-3' : ''), disabled: !ready, 'aria-label': narrow ? t('stem.singing.vs_lib_restart', 'Start over') : undefined, onClick: restart }, narrow ? '⏮' : '⏮ ' + t('stem.singing.vs_lib_restart', 'Start over')),
+          narrow && !slim && h('button', { type: 'button', className: c.btnSecondary + ' !px-3', 'aria-label': t('stem.singing.vs_lib_more_tools', 'More'), 'aria-expanded': more ? 'true' : 'false', onClick: function () { setMore(!more); } }, '⋯'),
+          showMore && h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { stopAll(); playerRef.current.playStartingNote(); } }, t('stem.singing.vs_lib_start_note', 'Starting note')),
+          showMore && h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, 'aria-pressed': findOpen ? 'true' : 'false', 'aria-controls': 'vs-find-note',
+            onClick: function () { var fn = findRef.current; if (!fn) return; if (fn.isOpen) { fn.close(); setFindOpen(false); } else { fn.open(); setFindOpen(true); } } }, '🎹 ' + t('stem.singing.vs_lib_find_note', 'Find a note')),
+          showMore && h('button', { type: 'button', className: c.btnSecondary, disabled: !ready, onClick: function () { if (full) exitFull(); else { setFull(true); } } }, full ? t('stem.singing.vs_lib_exit_full', 'Exit full screen') : '⛶ ' + t('stem.singing.vs_lib_full', 'Full screen')),
+          showMore && h('label', { className: lab }, t('stem.singing.vs_lib_view', 'View'),
+            h('select', { className: selCls, value: view, disabled: !ready, onChange: function (e) { var v = e.target.value; if (v === 'all') exitFull(); else { setView(v); setFull(true); } } },
+              viewOpts.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); })))),
+        h('div', { ref: findEl, id: 'vs-find-note', className: 'vs-mp', hidden: true },
+          h('style', null, VS_FINDNOTE_CSS),
+          h('div', { className: 'mp-head' },
+            h('p', { className: 'mp-now', 'data-mp-now': '', 'aria-live': 'polite' }, t('stem.singing.vs_fn_press', 'Press a key to hear it.')),
+            h('p', { className: 'mp-legend' },
+              h('span', null, h('i', { className: 'mp-chip mp-chip-start', 'aria-hidden': 'true' }), t('stem.singing.vs_fn_start', 'Starting note')),
+              h('span', null, h('i', { className: 'mp-chip mp-chip-used', 'aria-hidden': 'true' }), t('stem.singing.vs_fn_used', 'Notes in the song')),
+              h('span', null, h('i', { className: 'mp-chip mp-chip-now', 'aria-hidden': 'true' }), t('stem.singing.vs_fn_now', 'The melody now'))),
+            h('button', { type: 'button', className: 'mp-close', 'aria-label': t('stem.singing.vs_fn_close', 'Close the keyboard'), onClick: function () { if (findRef.current) findRef.current.close(); setFindOpen(false); } }, '×')),
+          h('div', { className: 'mp-scroll', 'data-mp-scroll': '' },
+            h('div', { className: 'mp-keys', 'data-mp-keys': '', role: 'group', 'aria-label': t('stem.singing.vs_fn_keys', 'Keyboard to find a note: arrow keys move, Enter plays') }))),
+        ps && h('div', { className: 'flex items-center gap-2' },
+          h('button', { type: 'button', className: iconBtn, disabled: !ready || ps.performed <= 0, 'aria-label': t('stem.singing.vs_lib_prev_measure', 'Previous measure'), onClick: function () { step(-1); } }, '‹'),
+          h('input', { type: 'range', min: 0, max: Math.max(0, (ps.performedCount || 1) - 1), step: 1, value: ps.performed || 0, disabled: !ready, className: 'flex-1 accent-rose-600', 'aria-label': t('stem.singing.vs_lib_measure_slider', 'Measure'), 'aria-valuetext': whereText,
+            onChange: function (e) { stopAll(); playerRef.current.seekToPerformed(Number(e.target.value)); } }),
+          h('button', { type: 'button', className: iconBtn, disabled: !ready || ps.performed >= (ps.performedCount || 1) - 1, 'aria-label': t('stem.singing.vs_lib_next_measure', 'Next measure'), onClick: function () { step(1); } }, '›')),
+        ps && h('p', { className: c.subTextClass + ' m-0 text-xs', role: 'status' }, whereText + (info && info.bpm ? ' · ' + vsFmt(t('stem.singing.vs_lib_bpm', '{n} beats per minute'), { n: Math.round(info.bpm * speedNow / 100) }) : '') + (loopText ? ' · ' + loopText : '')),
+        ps && ps.loop && !ps.echo && h('div', null, h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: function () { playerRef.current.setLoop(null); } }, t('stem.singing.vs_lib_clear_loop', 'Stop looping'))),
+        ps && ps.echo && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-lg px-3 py-1.5 ' + (dark ? 'bg-amber-900/40 text-amber-100' : 'bg-amber-100 text-amber-900'), 'data-echo-bar': '' },
+          h('span', { role: 'status', className: 'text-sm font-bold' }, vsFmt(t('stem.singing.vs_echo_where', 'Phrase {i} of {n}'), { i: ps.echo.phrase + 1, n: ps.echo.phrases }) + ' · ' + (ps.echo.turn ? t('stem.singing.vs_echo_turn', 'Your turn') : t('stem.singing.vs_echo_listen', 'Listen'))),
+          h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: function () { var q = playerRef.current; if (q) q.setEcho(phrasesRef.current, { from: ps.echo.phrase }); } }, t('stem.singing.vs_echo_again', 'Same phrase again')),
+          h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: stopAll }, t('stem.singing.vs_echo_stop', 'Stop echo'))),
+        h('details', { style: slim ? { display: 'none' } : undefined, className: 'rounded-lg border px-3 py-2 ' + (dark ? 'border-slate-600' : 'border-slate-300') },
+          h('summary', { className: 'cursor-pointer text-sm font-bold ' + (dark ? 'text-slate-100' : 'text-slate-800') },
+            t('stem.singing.vs_lib_settings', 'Practice settings'), !narrow && h('span', { className: 'font-normal ml-2 ' + (dark ? 'text-slate-300' : 'text-slate-600') }, t('stem.singing.vs_lib_settings_hint', 'speed, part, sound, click, words'))),
+          h('div', { className: 'space-y-3 pt-3' },
+            h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+              h('label', { className: lab }, vsFmt(t('stem.singing.vs_speed', 'Speed {n}%'), { n: speedNow }),
+                h('input', { type: 'range', min: 50, max: 130, step: 5, value: speedNow, className: 'accent-rose-600', 'data-speed': '',
+                  onChange: function (e) { var v = Number(e.target.value); stopAll(); set({ speed: v }); if (playerRef.current) playerRef.current.setTempo(v / 100); } })),
+              info && info.voiceParts && info.voiceParts.length > 1 && h('label', { className: lab }, t('stem.singing.vs_lib_part', 'My part'),
+                h('select', { className: selCls, value: (ps && ps.myPart) || info.myPart || '', onChange: function (e) { changePart(e.target.value); } },
+                  info.voiceParts.map(function (v) { return h('option', { key: v.key, value: v.key }, v.name); }))),
+              h('label', { className: lab }, t('stem.singing.vs_lib_sound', 'Sound'),
+                h('select', { className: selCls, value: prefs.sound || 'piano', onChange: function (e) { var v = e.target.value; set({ sound: v }); if (playerRef.current) playerRef.current.setSound(v); } },
+                  Object.keys(VS.SOUNDS).map(function (k) { return h('option', { key: k, value: k }, VS.SOUNDS[k]); })))),
+            h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+              chk(t('stem.singing.vs_lib_guide', 'Hear the melody'), 'guide', prefs.guide !== false, function (v) { stopAll(); playerRef.current.setPart('voice', v); }),
+              chk(t('stem.singing.vs_lib_piano', 'Piano'), 'piano', prefs.piano !== false, function (v) { stopAll(); playerRef.current.setPart('piano', v); }),
+              chk(t('stem.singing.vs_lib_count_in', 'Count-in'), 'countIn', prefs.countIn !== false, null),
+              chk(t('stem.singing.vs_lib_click', 'Click'), 'click', !!prefs.click, function (v) { playerRef.current.setClick(v); }),
+              chk(t('stem.singing.vs_lib_scope', 'Pitch scope on the music'), 'scope', prefs.scope !== false, null),
+              chk(t('stem.singing.vs_lib_words', 'Words'), 'words', prefs.words !== false, null)),
+            h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+              h('span', { className: lab }, t('stem.singing.vs_lib_loop_measures', 'Loop measures'),
+                h('input', { type: 'number', min: 1, max: ps ? ps.measures : 1, value: loopIn.a, className: selCls + ' w-16', 'aria-label': t('stem.singing.vs_lib_loop_from', 'Loop from measure'), onChange: function (e) { setLoopIn({ a: e.target.value, b: loopIn.b }); } }),
+                t('stem.singing.vs_lib_loop_to', 'to'),
+                h('input', { type: 'number', min: 1, max: ps ? ps.measures : 1, value: loopIn.b, placeholder: ps ? String(ps.measures) : '', className: selCls + ' w-16', 'aria-label': t('stem.singing.vs_lib_loop_until', 'Loop to measure'), onChange: function (e) { setLoopIn({ a: loopIn.a, b: e.target.value }); } })),
+              h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', disabled: !ready || !ps, onClick: function () {
+                var last = ps.measures;
+                var a = Math.max(1, Math.min(last, parseInt(loopIn.a, 10) || 1));
+                var b = Math.max(a, Math.min(last, parseInt(loopIn.b, 10) || last));
+                stopAll();
+                playerRef.current.setLoop(a - 1, b - 1);
+              } }, t('stem.singing.vs_lib_loop_go', 'Loop these measures')),
+              h('label', { className: lab }, t('stem.singing.vs_lib_speed_up', 'Each time round the loop'),
+                h('select', { className: selCls, value: String(prefs.speedUp || 0), disabled: !ready, onChange: function (e) { var v = Number(e.target.value); set({ speedUp: v }); if (playerRef.current) playerRef.current.setSpeedUp(v); } },
+                  h('option', { value: '0' }, t('stem.singing.vs_lib_su_same', 'the same speed')), h('option', { value: '0.05' }, t('stem.singing.vs_lib_su_5', '5% faster')), h('option', { value: '0.1' }, t('stem.singing.vs_lib_su_10', '10% faster'))))),
+            !props.own && h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', disabled: !ready, onClick: copyLink }, t('stem.singing.vs_lib_copy_link', 'Copy a link to this practice setup')),
+              link && h('input', { type: 'text', readOnly: true, value: link, 'aria-label': t('stem.singing.vs_lib_link_label', 'Link to this practice setup'), className: selCls + ' flex-1', style: { minWidth: '12rem' }, 'data-share-link': '', onFocus: function (e) { e.target.select(); } })),
+            h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+              chk(t('stem.singing.vs_lib_echo', 'Echo practice: hear a phrase, then sing it back'), 'echo', !!prefs.echo, function (v) { stopAll(); }),
+              chk(t('stem.singing.vs_lib_say', 'Say how I am doing while I sing (spoken, for screen readers)'), 'sayLive', !!prefs.sayLive, null),
+              VS.canRecordTakes() && chk(t('stem.singing.vs_lib_take', 'Record my singing, to hear it back with the piano'), 'take', !!prefs.take, null))))),
+      setupOn && h('p', { className: c.subTextClass + ' m-0 flex flex-wrap items-center gap-2', role: 'status', 'data-setup-note': '' }, '🔗 ' + t('stem.singing.vs_lib_setup_note', 'Set up from a shared link: the key, octave, speed and loop are the sender’s.'),
+        h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: backToUsual }, t('stem.singing.vs_lib_setup_back', 'Back to my usual settings'))),
+      // Key and octave: where this song sits in your voice. Always in view, because it decides whether the song is comfortable.
+      h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+        h('label', { className: lab }, t('stem.singing.vs_lib_key', 'Key'),
+          h('select', { className: selCls, value: String(shift), disabled: !ready, onChange: function (e) { changeKey(Number(e.target.value)); } },
+            [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('option', { key: n, value: String(n) }, n === 0 ? t('stem.singing.vs_lib_key_written', 'As written') : (n > 0 ? '+' : '') + n); }))),
+        h('span', { role: 'group', 'aria-label': t('stem.singing.vs_lib_octave', 'Octave'), className: 'inline-flex rounded-full overflow-hidden border ' + (dark ? 'border-slate-500' : 'border-rose-300') },
+          octBtn(-1, t('stem.singing.vs_lib_oct_lower', 'Octave lower')), octBtn(0, t('stem.singing.vs_lib_oct_written', 'As written')), octBtn(1, t('stem.singing.vs_lib_oct_higher', 'Octave higher'))),
+        h('button', { type: 'button', className: c.btnSecondary + ' !px-2 !py-1 text-xs', disabled: !ready || atFit, onClick: function () { stopAll(); applyFit(playerRef.current); resetScore(); } }, t('stem.singing.vs_lib_fit_me', 'Fit to my voice'))),
+      h('p', { className: c.subTextClass + ' m-0', role: 'status' },
+        vsFmt(t('stem.singing.vs_lib_your_notes', 'Your notes: {lo}–{hi}'), { lo: VS.noteLabel(sungLo), hi: VS.noteLabel(sungHi) }) + ' · ' + vsFmt(t('stem.singing.vs_lib_comfort', 'comfortable range {lo}–{hi}'), { lo: VS.noteLabel(p.voice.low), hi: VS.noteLabel(p.voice.high) }) +
+        (inRange ? ' ✓' : '')),
+      p.voice.fit && best.changed && atFit && h('p', { className: c.subTextClass + ' m-0' }, '🎯 ' + vsFmt(t('stem.singing.vs_lib_fitted', 'Fitted to your voice: {how}. Change Key or Octave any time.'), { how: [best.key ? vsFmt(best.key > 0 ? t('stem.singing.vs_lib_fit_up', 'key up {n}') : t('stem.singing.vs_lib_fit_down', 'key down {n}'), { n: Math.abs(best.key) }) : '', best.octave ? (best.octave < 0 ? t('stem.singing.vs_lib_fit_oct_down', 'an octave lower') : t('stem.singing.vs_lib_fit_oct_up', 'an octave higher')) : ''].filter(Boolean).join(', ') })),
+      !inRange && h('p', { className: c.subTextClass + ' m-0' }, atFit && p.voice.fit
+        ? t('stem.singing.vs_lib_wider', 'This song is wider than your comfortable range, so a few notes will be a stretch. The green zone on the note lane shows where you are comfortable.')
+        : t('stem.singing.vs_lib_out_of_range', 'Some notes are outside your comfortable range. Press “Fit to my voice”, or change Key or Octave.')),
       err && h('p', { role: 'alert', className: errCls }, err),
       load === 'loading' && h('p', { className: c.subTextClass + ' m-0', role: 'status' }, t('stem.singing.vs_loading_music', 'Loading the music display…')),
-      h('div', { style: { display: prefs.lane !== false && load !== 'error' ? 'block' : 'none' } },
-        h('canvas', { ref: laneEl, 'aria-hidden': 'true', style: { width: '100%', height: 170, display: 'block', borderRadius: 12, background: '#1b1014', touchAction: 'pan-y' } })),
-      live && (live.sung || live.missed) ? h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1' },
+      (show('lane') || show('feedback')) && h('div', { className: 'flex flex-wrap items-center gap-x-4 gap-y-2' },
+        chk(t('stem.singing.vs_lib_lane', 'Note lane'), 'lane', prefs.lane !== false, function () { if (laneRef.current) laneRef.current.wake(); }),
+        chk(t('stem.singing.vs_lib_visuals', 'Visuals'), 'visuals', prefs.visuals === true, function () { setVisNote(false); }),
+        prefs.visuals === true && h('label', { className: lab }, t('stem.singing.vs_scene', 'Scene'),
+          h('select', { className: selCls, value: prefs.scene || 'aurora', onChange: function (e) { set({ scene: e.target.value }); } },
+            scenes.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
+        prefs.visuals === true && h('label', { className: lab }, t('stem.singing.vs_look', 'Look'),
+          h('select', { className: selCls, value: prefs.look || (p.isContrast ? 'contrast' : 'opera'), onChange: function (e) { set({ look: e.target.value }); } },
+            looks.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); })))),
+      visNote && h('p', { className: c.subTextClass + ' m-0', role: 'status', 'data-visuals-off': '' }, t('stem.singing.vs_lib_visuals_off', 'The visuals were turned off because this device is struggling to keep up. Your pitch feedback is unaffected. Turn Visuals back on any time.')),
+      h('div', { style: { display: prefs.lane !== false && show('lane') && load !== 'error' ? 'block' : 'none' } },
+        h('canvas', { ref: laneEl, 'aria-hidden': 'true', style: { width: '100%', height: view === 'lane' ? 'calc(100vh - 240px)' : 230, display: 'block', borderRadius: 12, background: '#1b1014', touchAction: 'pan-y' } })),
+      h('div', { style: { display: prefs.visuals === true && show('feedback') && load !== 'error' ? 'block' : 'none' } },
+        h('canvas', { ref: visEl, 'aria-hidden': 'true', style: { width: '100%', height: view === 'feedback' ? 'calc(100vh - 300px)' : 'clamp(220px, 34vh, 360px)', display: 'block', borderRadius: 12, background: '#120a0d' } })),
+      show('feedback') && ready && h(VsRangeReadout, { React: React, t: t, dark: dark, voice: p.voice, lo: sungLo, hi: sungHi, bus: busRef.current, singing: mode === 'sing', bands: mode === 'sing' }),
+      show('feedback') && live && (live.sung || live.missed) ? h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1' },
         h('span', { className: c.headingClass + ' text-lg' }, live.accuracy === null ? '–' : live.accuracy + '%'),
         h('span', { className: c.subTextClass }, vsFmt(t('stem.singing.vs_lib_live', 'on pitch · {n} notes sung: {tune} spot on, {near} close, {off} a bit off, {wrong} wrong, {missed} not sung'), { n: live.sung, tune: live.tune, near: live.near, off: live.off, wrong: live.wrong, missed: live.missed }))) : null,
-      words && h('p', { className: 'text-base m-0 ' + (dark ? 'text-slate-100' : 'text-slate-800'), 'aria-hidden': 'true' },
+      show('music') && words && h('p', { className: 'text-base m-0 ' + (dark ? 'text-slate-100' : 'text-slate-800'), 'aria-hidden': 'true' },
         words.verses > 1 && h('span', { className: 'text-xs font-bold mr-2 ' + (dark ? 'text-slate-400' : 'text-slate-500') }, vsFmt(t('stem.singing.vs_lib_verse', 'Verse {v} of {n}'), { v: words.verse, n: words.verses })),
         words.printed
           ? h('span', { className: 'font-semibold' }, words.lines[words.line])
@@ -9105,8 +12024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           })),
       // The music scrolls inside its own box while it plays (setFollow), so the buttons above stay in view; the box is
       // a focusable region so the keyboard can scroll it.
-      h('div', { ref: boxEl, tabIndex: 0, role: 'region', 'aria-label': t('stem.singing.vs_lib_score_region', 'Sheet music (scrolls as the song plays)'),
-        className: 'rounded-xl border', style: { background: '#fff', borderColor: '#cbd5e1', maxHeight: '60vh', overflow: 'auto' } },
+      h('div', { ref: boxEl, tabIndex: show('music') ? 0 : -1, 'aria-hidden': show('music') ? undefined : 'true', role: 'region', 'aria-label': t('stem.singing.vs_lib_score_region', 'Sheet music (scrolls as the song plays)'),
+        // Hidden views keep the score's width (a zero-width OSMD would redraw badly) and only collapse its height.
+        className: 'rounded-xl border', style: show('music') ? { background: '#fff', borderColor: '#cbd5e1', maxHeight: full ? 'none' : '60vh', overflow: 'auto' } : { background: '#fff', borderColor: '#cbd5e1', height: 0, maxHeight: 0, overflow: 'hidden', borderWidth: 0 } },
         h('div', { ref: scoreEl, role: 'img', onClick: onScoreClick, style: { minHeight: 140, cursor: ready ? 'pointer' : 'default' },
           'aria-label': vsFmt(t('stem.singing.vs_lib_score_label', 'Sheet music for {title} by {composer}'), { title: song.title, composer: props.composer }) })),
       result && h('div', { className: c.cardClass + ' space-y-2', role: 'status' },
@@ -9127,8 +12047,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               'aria-label': vsFmt(t('stem.singing.vs_lib_loop_aria', 'Loop {where}, {pct}% pitch accuracy there'), { where: where, pct: sp.pct }),
               onClick: function () { stopAll(); playerRef.current.setLoop(sp.from, sp.to); } }, where + ' · ' + sp.pct + '%');
           })))),
+      take && h('div', { className: c.cardClass + ' space-y-2', 'data-take': '' },
+        h('p', { className: c.subTextClass + ' m-0', role: 'status' }, vsFmt(t('stem.singing.vs_take_info', 'Your take: {dur} from measure {m}{speed}{key}.'), { dur: vsClock(take.dur), m: take.from, speed: take.speed !== 100 ? ' · ' + take.speed + '%' : '', key: take.key ? ' · ' + vsFmt(take.key > 0 ? t('stem.singing.vs_lib_fit_up', 'key up {n}') : t('stem.singing.vs_lib_fit_down', 'key down {n}'), { n: Math.abs(take.key) }) : '' })),
+        h('div', { className: 'flex flex-wrap items-center gap-2' },
+          h('button', { type: 'button', className: c.btnPrimary, onClick: function () { if (mode === 'hear' && takeRef.current.hearing) stopAll(); else hearTake(); } }, mode === 'hear' && takeRef.current.hearing ? t('stem.singing.vs_stop', 'Stop') : '▶ ' + t('stem.singing.vs_take_hear', 'Hear my take with the piano')),
+          h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: function () { nudgeTake(-1); } }, t('stem.singing.vs_take_earlier', 'My voice earlier')),
+          h('span', { className: c.subTextClass + ' text-xs tabular-nums', 'aria-live': 'polite' }, ((Number(prefs.takeShift) || 0) > 0 ? '+' : '') + (Number(prefs.takeShift) || 0) + ' ms'),
+          h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: function () { nudgeTake(1); } }, t('stem.singing.vs_take_later', 'My voice later')),
+          h('a', { href: take.url, download: song.title + ' - my take.wav', className: c.btnSecondary + ' !py-1 text-xs' }, t('stem.singing.vs_take_save', 'Save (WAV)')),
+          h('button', { type: 'button', className: c.btnSecondary + ' !py-1 text-xs', onClick: dropTake }, t('stem.singing.vs_take_delete', 'Delete'))),
+        h('p', { className: c.subTextClass + ' m-0 text-xs' }, t('stem.singing.vs_take_note', 'The recording stays in this page only, and is gone when you leave unless you save it. If your voice sounds early or late against the piano, nudge it.'))),
       h('p', { className: c.subTextClass }, t('stem.singing.vs_lib_help', 'Sing along: the piano plays, notes scroll by, and each note is checked as it passes. Singing in another octave still counts. Click a measure in the music to jump there.')),
+      props.own && props.own.note && h('p', { className: c.subTextClass + ' text-xs' }, props.own.note),
       h('p', { className: c.subTextClass + ' text-xs' }, credit));
+  }
+
+  // ═══════════════════════════════════════════
+  // My voice: ONE voice profile for every activity in the lab. Pick a voice type (or measure your range in Vocal Range and
+  // use that) and Sight Reading, Intervals, Warm-ups and the Song Library all ask for pitches inside your comfortable range.
+  // The profile comes from VS.makeProfile (p.voice); p.setVoice(patch) saves a change; p.goTo(tab) switches tabs.
+  // ═══════════════════════════════════════════
+
+  function VsVoiceBar(p) {
+    var React = p.React;
+    var h = React.createElement;
+    var t = p.t;
+    var c = p.classes;
+    var v = p.voice;
+    var dark = p.isDark || p.isContrast;
+    var labels = vsVoiceLabels(t);
+    // The room: one choice for the whole lab (like the voice). A running microphone follows a change at once (the analyzer listens).
+    var roomS = React.useState(VS.loadRoom()); var room = roomS[0]; var setRoom = roomS[1];
+    React.useEffect(function () {
+      function sync(e) { setRoom((e && e.detail) || VS.loadRoom()); }
+      window.addEventListener('microom:change', sync);
+      return function () { window.removeEventListener('microom:change', sync); };
+    }, []);
+    var roomLabels = { auto: t('stem.singing.vs_room_auto', 'Automatic'), quiet: t('stem.singing.vs_room_quiet', 'Quiet room (very soft singing)'), noisy: t('stem.singing.vs_room_noisy', 'Noisy room') };
+    var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
+    var lab = 'inline-flex items-center gap-1.5 text-xs font-bold ' + (dark ? 'text-slate-200' : 'text-slate-700');
+    var note = function (m) { return VS.noteLabel(m); };
+    var m = v.measured;
+    var suggested = m ? VS.suggestVoiceType(m.low, m.high) : null;
+    // A thin keyboard-length strip: where this voice's comfortable range (and, paler, the stretch range) sits from C2 to E6.
+    var SC_LO = 36;
+    var SC_HI = 88;
+    var pct = function (x) { return Math.max(0, Math.min(100, ((x - SC_LO) / (SC_HI - SC_LO)) * 100)); };
+    var strip = h('div', { 'aria-hidden': 'true', className: 'relative rounded-full overflow-hidden', style: { width: 168, height: 10, background: dark ? '#334155' : '#e2e8f0' } },
+      h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: pct(v.stretchLow) + '%', width: (pct(v.stretchHigh) - pct(v.stretchLow)) + '%', background: dark ? '#9f1239' : '#fda4af', opacity: 0.55 } }),
+      h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: pct(v.low) + '%', width: (pct(v.high) - pct(v.low)) + '%', background: dark ? '#fb7185' : '#be123c' } }));
+    var btn = c.btnSecondary + ' !px-2 !py-1 text-xs';
+    return h('div', { role: 'group', 'aria-label': t('stem.singing.vs_myvoice', 'My voice'),
+      className: 'mt-2 rounded-xl border px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-2 ' + (dark ? 'bg-slate-900 border-slate-600' : 'bg-rose-50 border-rose-200') },
+      h('span', { className: c.headingClass + ' text-sm m-0' }, '🎤 ' + t('stem.singing.vs_myvoice', 'My voice')),
+      h('label', { className: lab }, t('stem.singing.vs_voice_type', 'Voice'),
+        h('select', { className: selCls, value: v.type, onChange: function (e) { p.setVoice({ type: e.target.value, source: 'type' }); } },
+          Object.keys(VS.VOICE_TYPES).map(function (k) { return h('option', { key: k, value: k }, labels[k]); }))),
+      h('span', { className: 'inline-flex items-center gap-2 text-xs ' + (dark ? 'text-slate-200' : 'text-slate-700') },
+        strip,
+        h('span', { className: 'font-bold tabular-nums' }, note(v.low) + '–' + note(v.high)),
+        h('span', null, v.source === 'measured' ? t('stem.singing.vs_range_measured', 'your measured range') : t('stem.singing.vs_range_typical', 'typical for this voice'))),
+      m && v.source !== 'measured' && h('button', { type: 'button', className: btn, onClick: function () { p.setVoice({ source: 'measured' }); } },
+        vsFmt(t('stem.singing.vs_use_measured', 'Use my measured range ({lo}–{hi})'), { lo: note(m.low), hi: note(m.high) })),
+      m && v.source === 'measured' && h('button', { type: 'button', className: btn, onClick: function () { p.setVoice({ source: 'type' }); } }, t('stem.singing.vs_use_typical', 'Use the typical range')),
+      m && suggested && suggested !== v.type && h('button', { type: 'button', className: btn, onClick: function () { p.setVoice({ type: suggested, source: 'measured' }); } },
+        vsFmt(t('stem.singing.vs_set_suggested', 'Set voice to {type} (matches your range)'), { type: labels[suggested] })),
+      !m && h('button', { type: 'button', className: btn, onClick: function () { p.goTo('range'); } }, t('stem.singing.vs_find_range', 'Find my range')),
+      h('label', { className: lab },
+        h('input', { type: 'checkbox', className: 'w-4 h-4 accent-rose-600', checked: !!v.fit, onChange: function (e) { p.setVoice({ fit: e.target.checked }); } }),
+        t('stem.singing.vs_fit_all', 'Fit songs and exercises to my voice')),
+      h('label', { className: lab, title: t('stem.singing.vs_room_hint', 'How much background noise there is where you sing') }, t('stem.singing.vs_room', 'Room'),
+        h('select', { className: selCls, value: room, onChange: function (e) { VS.saveRoom(e.target.value); setRoom(e.target.value); } },
+          Object.keys(VS.ROOMS).map(function (k) { return h('option', { key: k, value: k }, roomLabels[k] || VS.ROOMS[k].label); }))));
   }
 
   window.StemLab.registerTool('singing', {
@@ -9242,7 +12232,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           { id: 'resoHunt', label: t('stem.singing.resonance_lab', 'Resonance Lab'), icon: '\uD83C\uDF99\uFE0F' }
         ];
 
-        var tabState = React.useState('pitch');
+        // A link can open this lab on a given tab: .../app/?tool=singing&tab=library lands on the Song Library. Only for a
+        // link to this tool, and only a tab that exists; anything else starts on Pitch Detective, as before.
+        var tabState = React.useState(function () {
+          try {
+            var q = new URLSearchParams(window.location.search || '');
+            var linkTool = String(q.get('tool') || '').toLowerCase().replace(/[\s_-]+/g, '');
+            var wantTab = String(q.get('tab') || '').toLowerCase();
+            if (linkTool === 'singing' && wantTab) {
+              for (var ti = 0; ti < TABS.length; ti++) if (String(TABS[ti].id).toLowerCase() === wantTab) return TABS[ti].id;
+            }
+          } catch (e) { /* no window or no query string: the usual first tab */ }
+          return 'pitch';
+        });
         var activeTab = tabState[0];
         var setActiveTab = tabState[1];
 
@@ -9980,6 +12982,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         // Mic toggle button (shared across tabs)
         // ════════════════════════════════════════
 
+        // My voice: ONE voice profile for every activity (a voice type, optionally refined by the range measured in Vocal Range).
+        // Older versions kept a voice per panel: the first one found seeds the shared voice.
+        var vsVoiceRaw = d.vs_voice || { type: (d.vs_sight || {}).voice || (d.vs_library || {}).voice || (d.vs_warmups || {}).voice || (d.vs_intervalName || {}).voice };
+        var vsVoice = VS.makeProfile(vsVoiceRaw, (typeof d.rangeLow === 'number' && typeof d.rangeHigh === 'number') ? { low: d.rangeLow, high: d.rangeHigh } : null);
+        function vsSetVoice(patch) { upd('vs_voice', Object.assign({}, vsVoiceRaw, patch)); }
+        // Classic fixed-pitch patterns (warm-ups), moved by key and octave to sit inside the shared voice's comfortable range.
+        function vsFitNotes(notes) {
+          if (!vsVoice.fit || !notes || !notes.length) return notes;
+          var ms = notes.map(function (n) { return n.midi; });
+          var f = VS.suggestFit(Math.min.apply(null, ms), Math.max.apply(null, ms), vsVoice, { maxKey: 11 });
+          var by = f.key + 12 * f.octave;
+          return by ? notes.map(function (n) { return Object.assign({}, n, { midi: n.midi + by }); }) : notes;
+        }
         // Props for the voice-studio panels; each keeps its settings under its own toolData key.
         function vsProps(key) {
           return {
@@ -9991,6 +13006,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             classes: { cardClass: cardClass, headingClass: headingClass, subTextClass: subTextClass, btnPrimary: btnPrimary, btnSecondary: btnSecondary },
             prefs: d['vs_' + key],
             savePrefs: function (v) { upd('vs_' + key, v); },
+            voice: vsVoice,
+            setVoice: vsSetVoice,
+            goTo: setActiveTab,
             announce: announceToSR,
             awardXP: awardStemXP
           };
@@ -10154,7 +13172,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     return;
                   }
                   // Pick a random note in comfortable range
-                  var targetMidi = 55 + Math.floor(Math.random() * 20); // G3 to D5
+                  var targetMidi = vsVoice.low + 1 + Math.floor(Math.random() * Math.max(1, vsVoice.high - vsVoice.low - 1)); // inside the shared voice's comfortable range
+                  if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.target = targetMidi; // test seam (harness only)
                   setPitchMatchTarget(targetMidi);
                   setPitchMatchMode('playing');
                   setPitchMatchScore(null);
@@ -10215,6 +13234,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           return h('div', { className: 'space-y-4' },
             renderMicToggle(),
+
+            // Your saved range: one button makes it the voice every activity uses.
+            (rangeLow && rangeHigh) ? h('div', { className: cardClass + ' space-y-2' },
+              h('h3', { className: headingClass + ' text-sm flex items-center gap-2' }, '\uD83C\uDFA4', t('stem.singing.vs_saved_range_title', 'Your saved range')),
+              h('p', { className: subTextClass + ' m-0' },
+                __alloFmt('stem.singing.vs_range_best_match', 'Best match for your range: {type} (typical {lo}\u2013{hi})', { type: (VS.VOICE_TYPES[VS.suggestVoiceType(rangeLow, rangeHigh)] || {}).label, lo: VS.noteLabel(VS.VOICE_TYPES[VS.suggestVoiceType(rangeLow, rangeHigh)].low), hi: VS.noteLabel(VS.VOICE_TYPES[VS.suggestVoiceType(rangeLow, rangeHigh)].high) })),
+              h('div', { className: 'flex flex-wrap items-center gap-3' },
+                h('button', {
+                  className: btnPrimary,
+                  onClick: function() {
+                    vsSetVoice({ type: VS.suggestVoiceType(rangeLow, rangeHigh), source: 'measured' });
+                    if (announceToSR) announceToSR(t('stem.singing.vs_range_now_used', 'Every activity now uses your measured range.'));
+                  }
+                }, '\uD83C\uDFA4 ' + t('stem.singing.vs_use_range_everywhere', 'Use this range for all activities')),
+                (vsVoice.source === 'measured') && h('span', { className: subTextClass, role: 'status' }, '\u2713 ' + t('stem.singing.vs_range_now_used', 'Every activity now uses your measured range.')))
+            ) : null,
 
             // Range finder flow
             h('div', { className: cardClass },
@@ -10304,7 +13339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                       h('div', { className: headingClass + ' text-xl' },
                         span + ' semitones'))
                   ),
-                  voiceType && h('div', { className: 'mt-3' },
+                  voiceType && !(rangeLow && rangeHigh) && h('div', { className: 'mt-3' },
                     h('span', { className: subTextClass }, t('stem.singing.closest_range_template', 'Closest range template: ')),
                     h('span', {
                       className: 'font-bold text-sm',
@@ -10544,13 +13579,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Pick random interval from available
             var interval = availableIntervals[Math.floor(Math.random() * availableIntervals.length)];
             // Pick random starting note in comfortable range
-            var refMidi;
-            if (intervalDirection === 'up') {
-              refMidi = 55 + Math.floor(Math.random() * 12); // G3 to F#4
-            } else {
-              refMidi = 62 + Math.floor(Math.random() * 12); // D4 to C#5
-            }
             var semitones = interval.semitones;
+            // Both notes inside the shared voice's comfortable range (My voice), a semitone in from each edge.
+            var vLo = vsVoice.low + 1;
+            var vHi = vsVoice.high - 1;
+            var minRef = intervalDirection === 'up' ? vLo : vLo + semitones;
+            var maxRef = intervalDirection === 'up' ? vHi - semitones : vHi;
+            var refMidi = minRef + Math.floor(Math.random() * Math.max(1, maxRef - minRef + 1));
+            if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.interval = { ref: refMidi, target: intervalDirection === 'up' ? refMidi + semitones : refMidi - semitones }; // test seam (harness only)
             var targetMidi = intervalDirection === 'up' ? refMidi + semitones : refMidi - semitones;
 
             setIntervalActive({
@@ -11183,7 +14219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     key: ex.id,
                     className: 'text-left p-3 rounded-lg border transition-colors ' +
                       (isDark ? 'transition-colors border-slate-600 bg-slate-700 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors border-slate-200 bg-slate-50 hover:bg-slate-100 active:scale-[0.97]'),
-                    onClick: function() { startWarmup(ex); }
+                    onClick: function() { var fx = Object.assign({}, ex, { notes: vsFitNotes(ex.notes) }); if (typeof window !== 'undefined' && window.__vsTest) window.__vsTest.warmup = fx; startWarmup(fx); }
                   },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
                       h('span', { className: 'text-lg' }, ex.icon),
@@ -11342,7 +14378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               var mel = SIGHT_READ_MELODIES.find(function(m) { return m.id === srMelodyId; });
               notes = mel ? mel.notes.slice() : SIGHT_READ_MELODIES[0].notes.slice();
             } else {
-              notes = generateSightReadExercise(srDifficulty);
+              notes = generateSightReadExercise(srDifficulty, vsVoice.fit ? vsVoice : null);
             }
             setSrNotes(notes);
             setSrMode('idle');
@@ -11384,7 +14420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               } catch(e) {
                 console.warn('[Singing] AI exercise parse error:', e);
                 if (addToast) addToast(__alloT('stem.singing.could_not_parse_ai_response_using_rand', 'Could not parse AI response. Using random exercise.'), 'warning');
-                setSrNotes(generateSightReadExercise(srDifficulty));
+                setSrNotes(generateSightReadExercise(srDifficulty, vsVoice.fit ? vsVoice : null));
                 setSrMode('idle');
                 setSrCurrentIdx(-1);
                 setSrResults([]);
@@ -11393,7 +14429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             }).catch(function(err) {
               console.warn('[Singing] AI exercise error:', err);
               if (addToast) addToast(__alloT('stem.singing.ai_unavailable_using_random_exercise', 'AI unavailable. Using random exercise.'), 'warning');
-              setSrNotes(generateSightReadExercise(srDifficulty));
+              setSrNotes(generateSightReadExercise(srDifficulty, vsVoice.fit ? vsVoice : null));
               setSrMode('idle');
               setSrCurrentIdx(-1);
               setSrResults([]);
@@ -11890,6 +14926,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
           // Quest summary
           renderQuestSummary(),
+
+          h(VsVoiceBar, vsProps('voice_bar')),
 
           // Tab panels
           h('div', {

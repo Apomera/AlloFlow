@@ -37,7 +37,8 @@ describe('the header costs less space by default', () => {
     }
     expect(compact).toContain('data-help-key="header_session_start"');
     expect(compact).toContain('data-help-key="header_rerun_wizard"');
-    expect(compact).toContain("t('common.more_information') || 'More'");
+    // The button opens text, voice, theme, language and export, not "information".
+    expect(compact).toContain("t('header.more_settings') || 'Settings & more'");
   });
 
   it('on phones keeps the privacy reminder visible and the role/view line for screen readers only', () => {
@@ -98,7 +99,7 @@ describe('what collapsing may and may not hide', () => {
   it('NEVER hides the privacy notice', () => {
     // A privacy notice that disappears when the header is tidied is worse than
     // one that takes up room. It stays visible in both states.
-    const at = SRC.indexOf("t('header.pii_warning')");
+    const at = SRC.indexOf("t('header.pii_warning_plain')");
     expect(at).toBeGreaterThan(0);
     const before = SRC.slice(Math.max(0, at - 500), at);
     expect(before, 'privacy notice must not sit inside a collapse guard').not.toMatch(/\{!headerCollapsed && \($/);

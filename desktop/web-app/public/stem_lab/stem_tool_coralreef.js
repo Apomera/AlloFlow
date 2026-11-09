@@ -1229,7 +1229,7 @@
     return {
       recent: { name: __alloT('stem.coralreef.scn_recent', 'Recent pattern'), about: __alloT('stem.coralreef.scn_recent_about', 'A severe heatwave about every 6 years, the recent average across reefs worldwide, with some fishing and some runoff.') },
       reserve: { name: __alloT('stem.coralreef.scn_reserve', 'Protected reef'), about: __alloT('stem.coralreef.scn_reserve_about', 'The same heatwaves, but grazing fish are protected and runoff is low.') },
-      warmer: { name: __alloT('stem.coralreef.scn_warmer', 'Faster warming'), about: __alloT('stem.coralreef.scn_warmer_about', 'Heatwaves grow stronger and by year 30 arrive almost every year, as projected for most reefs if emissions stay high.') },
+      warmer: { name: __alloT('stem.coralreef.scn_warmer', 'Faster warming'), about: rl21Text(null, __alloT('stem.coralreef.scn_warmer_about', 'Heatwaves grow stronger and by year 30 arrive almost every year, as projected for most reefs if emissions stay high.'), __alloT('stem.coralreef.scn_warmer_about_simple', 'Heatwaves grow stronger. By year 30 they come almost every year. This is what is projected for most reefs if emissions, the gases that warm the planet, stay high.')) },
       cooler: { name: __alloT('stem.coralreef.scn_cooler', 'Optimistic what-if'), about: __alloT('stem.coralreef.scn_cooler_about', 'Heatwaves become rarer and weaker. Even fast cuts to emissions are not expected to bring this within 30 years; it shows what easing the heat would do.') },
       rubble: { name: __alloT('stem.coralreef.scn_rubble', 'Restore a rubble field'), about: __alloT('stem.coralreef.scn_rubble_about', 'Blast fishing left this reef as loose rubble that young corals cannot hold on to. People fix the rubble in place with Reef Stars and tie on coral fragments. The grey line shows the same reef with no help.') },
       custom: { name: __alloT('stem.coralreef.scn_custom', 'Your settings'), about: __alloT('stem.coralreef.scn_custom_about', 'Settings you changed by hand.') }
@@ -3170,6 +3170,83 @@
     return h('style', { ref: styleRef }, HS11_CSS + hs11ContrastCss());
   }
 
+  // ── Round 21 reading levels (rl21): "Simpler words" ─────────────────────
+  // A saved switch, d.simpleWords, swaps some long passages for a shorter version with the same facts.
+  // TO ADD A SIMPLE VERSION: wrap the passage's own call and add the simple text as a second call
+  // whose key is the same key plus _simple, all on one line, in exactly this shape:
+  //   rl21Text(env, __alloT('stem.coralreef.<key>', 'Full text.'), __alloT('stem.coralreef.<key>_simple', 'Simple text.'))
+  // In a text table that only gets __alloT (speciesText, helpCards, scienceCards ...), pass null for env:
+  //   rl21Text(null, __alloT(...), __alloT(...)) reads the switch of the lab being drawn (rl21Now).
+  // Both texts stay plain __alloT calls, so the i18n test, key registration and translation see them.
+  // tests/coralreef_rl21_levels.test.js finds every rl21Text pair in this file and checks that the simple
+  // text keeps every number, {placeholder}, capitalised name, species name and hedge ("about", "may",
+  // "simplified" ...) of the full text, adds no number, and reads at a lower grade. New pairs need no test edit.
+  // A useMemo that holds rl21Text output must list rl21On(env) in its deps.
+  // THE SWITCH: d.simpleWords true or false is the student's choice and always wins. Unset, it is on when
+  // the app's grade (ctx.gradeLevel: '5th Grade', 'Grade 4', 'K' ...) is grade 5 or lower, off otherwise,
+  // and off on a translated page, where a simple text could still be English until it is translated.
+  // THE TOGGLE: h(Rl21Toggle, { env: env, where: '<section>' }) above long reading. One saved value everywhere.
+  var RL21_GRADE_WORDS = { kindergarten: 0, kinder: 0, first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10, eleventh: 11, twelfth: 12 };
+  // A grade as a number (K = 0, pre-K = -1, college = 13), or null when it cannot be read. A range gives its top grade.
+  function rl21GradeNumber(g) {
+    if (typeof g === 'number') return isFinite(g) ? g : null;
+    if (typeof g !== 'string') return null;
+    var s = g.toLowerCase().replace(/[_\s]+/g, ' ').trim(), top = null, m, re = /\d+/g;
+    if (!s) return null;
+    if (/\bpre ?-?k\b|pre ?-?kindergarten|preschool|pre-school|nursery/.test(s)) return -1;
+    if (/college|university|graduate|adult|higher ed/.test(s)) return 13;
+    while ((m = re.exec(s))) { var n = parseInt(m[0], 10); if (n <= 12 && (top === null || n > top)) top = n; }
+    Object.keys(RL21_GRADE_WORDS).forEach(function (w) { if (new RegExp('\\b' + w + '\\b').test(s) && (top === null || RL21_GRADE_WORDS[w] > top)) top = RL21_GRADE_WORDS[w]; });
+    if (top === null && /(^|[^a-z])k([^a-z]|$)/.test(s)) top = 0;
+    if (top === null && /elementary|primary/.test(s)) top = 3;
+    if (top === null && /middle school/.test(s)) top = 7;
+    if (top === null && /high school|secondary/.test(s)) top = 10;
+    return top;
+  }
+  function rl21DefaultOn(ctx, t) {
+    try { if (typeof t === 'function' && hs11IsTranslated(t)) return false; } catch (e) { return false; }
+    var n = rl21GradeNumber(ctx && ctx.gradeLevel);
+    if (n === null && ctx && (ctx.gradeBand === 'k2' || ctx.gradeBand === 'g35')) return true;
+    return n !== null && n <= 5;
+  }
+  function rl21On(env) {
+    var d = (env && env.d) || {};
+    if (typeof d.simpleWords === 'boolean') return d.simpleWords;
+    return rl21DefaultOn(env && env.ctx, env && env.t);
+  }
+  var rl21Now = { on: false };
+  // sr23: shown text -> the other version, so guide search finds words in either one.
+  var sr23Other = new Map();
+  function rl21Text(env, full, simple) {
+    var on = env ? rl21On(env) : !!(rl21Now && rl21Now.on);
+    var useSimple = on && typeof simple === 'string' && simple;
+    if (typeof simple === 'string' && simple && typeof full === 'string' && full && simple !== full) {
+      if (sr23Other.size > 4000) sr23Other.clear();
+      sr23Other.set(useSimple ? simple : full, { text: useSimple ? full : simple, simple: !useSimple });
+    }
+    return useSimple ? simple : full;
+  }
+  function sr23OtherText(text) { return typeof text === 'string' ? sr23Other.get(text) || null : null; }
+  var RL21_CSS = '[data-coralreef-root] .rl21-toggle{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;margin:0 0 10px}' +
+    '[data-coralreef-root] .rl21-toggle label{display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-weight:600;color:var(--reef-text)}' +
+    '[data-coralreef-root] .rl21-toggle input{width:22px;height:22px;margin:0;flex:none;accent-color:var(--reef-accent);cursor:pointer}' +
+    '[data-coralreef-root] .rl21-note{font-size:14px;line-height:1.4;color:var(--reef-muted)}' +
+    '[data-coralreef-root] .rl21-toggle[data-rl21-toggle=guide]{margin:-6px 0 6px}' +
+    '[data-coralreef-root] .rl21-toggle[data-rl21-toggle=search]{margin:10px 0 0}' +
+    '[data-coralreef-root] .rl21-toggle[data-rl21-toggle=compare]{margin:-8px 0 14px}';
+  function Rl21Toggle(props) {
+    var env = props.env, React = env.React, h = env.h, __alloT = env.t, on = rl21On(env);
+    var noteId = 'rl21-note-' + React.useId().replace(/[^A-Za-z0-9]/g, '');
+    return h('div', { className: 'rl21-toggle', 'data-rl21-toggle': props.where || 'page' },
+      h('style', null, RL21_CSS),
+      h('label', null,
+        h('input', { type: 'checkbox', role: 'switch', checked: on, 'aria-describedby': noteId, 'data-rl21-switch': 'true',
+          onChange: function (e) { env.set({ simpleWords: !!e.target.checked }); } }),
+        __alloT('stem.coralreef.rl21_simple', 'Simpler words')),
+      h('span', { id: noteId, className: 'rl21-note' }, __alloT('stem.coralreef.rl21_simple_note', 'Shorter sentences in some long passages. Same facts.')));
+  }
+  if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefRl21 = { gradeNumber: rl21GradeNumber, defaultOn: rl21DefaultOn, on: rl21On, text: rl21Text, now: rl21Now };
+
   function CoralReefLab(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement;
     var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -3206,6 +3283,8 @@
       set({ section: id }); say(__alloFill(__alloT('stem.coralreef.sr_section_opened', '{name} opened.'), { name: names[id] }));
     }
     var env = { ctx: ctx, React: React, h: h, t: __alloT, fill: __alloFill, P: P, d: d, set: set, say: say, go: go, theme: theme, guideObservation:guideObservation };
+    pf19uPrefNow = pf19uPref(d); // lane pf19u: the guide's picture renderers read the shared 3D detail choice
+    rl21Now.on = rl21On(env); // lane rl21: text tables without env read the Simpler words switch from here
 
     var body;
     if (section === 'methods') body = h(MethodsSection, { env: env });
@@ -3542,6 +3621,376 @@
           h('li', null, __alloT('stem.coralreef.w2_hub_honest_4', 'The Reef science investigations use the same simplified rules as the reef future model. The studies behind each rule are listed under Sources on that page.')))));
   }
   if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefW2 = { PATH: W2_PATH, DIVE_GOAL: W2_DIVE_GOAL, progress: w2Progress, nextStep: w2NextStep, logGroups: w2LogGroups };
+
+  // ── Round 19 pedagogy (pd19) ─────────────────────────────────────────────
+  // Each major section opens with one "I can" goal, a short check on what earlier
+  // steps taught (spaced retrieval, with feedback that explains), and the key words
+  // with a picture each. Answers live in this component's state only: nothing is saved.
+  // Every number comes from the lab's own functions; the explanations reuse the lab's
+  // own words, so they say nothing the lab does not already say.
+  var PD19_WORDS = {
+    methods: ['transect', 'cover', 'belt', 'grazers', 'bleached'],
+    survey: ['transect', 'cover', 'belt', 'grazers', 'bleached'],
+    compare: ['cover', 'spread', 'grazers', 'bleached'],
+    science: ['bleached', 'dhw', 'grazers'],
+    model: ['bleached', 'dhw', 'grazers', 'cover']
+  };
+  var PD19_COVER_N = 14, PD19_HEAT = { deg: 3, weeks: 2 }, PD19_DHW_EXAMPLE = { deg: 2, weeks: 4 };
+  // The step of "Not sure? Ask in this order" (mt10AskCard) that ends on each code.
+  var PD19_ASK_STEP = { sand: 1, rubble: 1, hard_coral: 2, bleached_coral: 2, macroalgae: 3, recently_dead_coral: 4, rock: 4 };
+  var PD19_CSS = (function () {
+    var r = '[data-coralreef-root] ';
+    return r + '.pd19{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 16px;margin:0 0 18px;border:1px solid var(--reef-border);border-radius:14px;background:var(--reef-card)}' +
+      r + '.pd19-goal{flex:1 1 320px;min-width:0;display:flex;gap:8px;align-items:flex-start;margin:0;font-size:15px;line-height:1.45}' +
+      r + '.pd19-goal>svg{flex:none;margin-top:3px}' +
+      r + '.pd19-btns{display:flex;flex-wrap:wrap;gap:8px}' +
+      r + '.pd19-panel{flex:1 1 100%;min-width:0;padding-top:4px}' +
+      r + '.pd19-qs{list-style:none;margin:0;padding:0;display:grid;gap:10px}' +
+      r + '.pd19-q{min-width:0;padding:10px 12px;border:1px solid var(--reef-border);border-radius:10px;background:var(--reef-alt)}' +
+      r + '.pd19-q p{margin:0}' +
+      r + '.pd19-opts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}' +
+      r + '.pd19-fb{margin:8px 0 0!important;font-weight:700}' +
+      r + '.pd19-eq{font-weight:700;direction:ltr;unicode-bidi:isolate;white-space:nowrap}' +
+      r + '.pd19-words{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:8px}' +
+      r + '.pd19-word{min-width:0;display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-rows:auto 1fr;gap:2px 10px;align-items:start;align-content:start;padding:8px 10px;border:1px solid var(--reef-border);border-radius:10px;background:var(--reef-alt)}' +
+      r + '.pd19-word>svg{grid-row:1/span 2;width:88px;height:61px;display:block;border-radius:7px}' +
+      r + '.pd19-word strong{font-size:15px;line-height:1.3}' +
+      r + '.pd19-word p{margin:0;font-size:14px;line-height:1.4}' +
+      r + '.pd19-starters{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px}' +
+      r + '.pd19-starters>span{font-size:14px;font-weight:600}' +
+      '@media(max-width:640px){' + r + '.pd19{padding:12px}' + r + '.pd19-btns{flex:1 1 100%}' + r + '.pd19-btns>button{flex:1 1 140px}}';
+  })();
+  function pd19Goal(__alloT, sec) {
+    if (GL20_WORDS[sec]) return gl20Goal(__alloT, sec); // lane gl20: Dive and Species guide
+    return {
+      methods: __alloT('stem.coralreef.pd19_goal_methods', 'I can explain how divers measure a reef: points along a tape for the bottom, and a belt for the fish.'),
+      survey: __alloT('stem.coralreef.pd19_goal_survey', 'I can survey a reef and work out its percent cover and its fish per 100 square meters.'),
+      compare: __alloT('stem.coralreef.pd19_goal_compare', 'I can back a claim about two reefs with evidence from my own surveys.'),
+      science: __alloT('stem.coralreef.pd19_goal_science', 'I can explain why corals bleach, how a reef grows, and how seaweed can take over.'),
+      model: __alloT('stem.coralreef.pd19_goal_model', 'I can use a model to test what could happen to a reef, and say what the model leaves out.')
+    }[sec] || '';
+  }
+  // The questions for one section. Each option is { id, label }; the answer id stays
+  // in this list only, never in the markup, so nothing gives it away before a pick.
+  function pd19Questions(env, sec) {
+    if (GL20_WORDS[sec]) return gl20Questions(env, sec); // lane gl20
+    var __alloFill = env.fill, __alloT = env.t, CN = categoryNames(__alloT), CG = categoryGuides(__alloT), FN = fishNames(__alloT), FR = fishRoles(__alloT);
+    var yesNo = [{ id: 'yes', label: __alloT('stem.coralreef.mt10_ask_yes', 'Yes') }, { id: 'no', label: __alloT('stem.coralreef.mt10_ask_no', 'No') }];
+    function pick(ids, names) { return ids.map(function (id) { return { id: id, label: names[id] }; }); }
+    if (sec === 'methods') return [
+      { id: 'white', q: __alloT('stem.coralreef.pd19_q_white', 'A coral has turned bright white. Is it dead?'), options: yesNo, answer: 'no', explain: CG.bleached_coral }
+    ];
+    if (sec === 'survey') {
+      var recs = {};
+      for (var i = 0; i < POINT_COUNT; i++) recs[i] = i < PD19_COVER_N ? 'hard_coral' : 'sand';
+      var live = indicators(coverFromRecords(recs, POINT_COUNT)).liveCoral, rest = round1(100 - live);
+      return [
+        { id: 'code', q: __alloT('stem.coralreef.pd19_q_code', 'The line touches a coral that is bright white, and its tissue and polyps are still there. What do you record?'),
+          options: pick(['recently_dead_coral', 'hard_coral', 'bleached_coral'], CN), answer: 'bleached_coral', explain: CG.bleached_coral },
+        { id: 'cover', q: __alloFill(__alloT('stem.coralreef.pd19_q_cover', 'On a tape of {total} points, {n} points are live coral. What is the live coral cover?'), { total: POINT_COUNT, n: PD19_COVER_N }),
+          options: [{ id: 'count', label: PD19_COVER_N + '%' }, { id: 'right', label: live + '%' }, { id: 'rest', label: rest + '%' }], answer: 'right',
+          equation: PD19_COVER_N + ' ÷ ' + POINT_COUNT + ' × 100 = ' + live + '%' }
+      ];
+    }
+    if (sec === 'compare') {
+      var rep = w2RepeatPreview();
+      return [
+        { id: 'tapes', q: __alloFill(__alloT('stem.coralreef.pd19_q_tapes', 'Two tapes at the same reef read {a}% and {b}% live coral. Is one of them a mistake?'), { a: rep.min, b: rep.max }), options: yesNo, answer: 'no',
+          explain: __alloFill(__alloT('stem.coralreef.w2_m_repeat_2', 'The tapes span {min}% to {max}%. That is why the field survey asks you to lay a second tape at the same reef: if two reefs differ by less than the spread between tapes, the difference could be chance.'), { min: rep.min, max: rep.max }) },
+        { id: 'grazer', q: __alloT('stem.coralreef.pd19_q_grazer', 'Which of these fish is a grazer?'), options: pick(['parrotfish', 'butterflyfish', 'grouper'], FN), answer: 'parrotfish', explain: FR.parrotfish }
+      ];
+    }
+    if (sec === 'science') return [
+      { id: 'clear', q: __alloT('stem.coralreef.pd19_q_clear', 'Every transect at one reef has more live coral than every transect at another reef. Is the difference clear?'), options: yesNo, answer: 'yes',
+        explain: __alloT('stem.coralreef.srv_rule', 'Rule of thumb used here: two reefs are clearly different when every transect at one reef is higher than every transect at the other. When their ranges overlap, the gap could be chance.') },
+      { id: 'polyps', q: __alloT('stem.coralreef.pd19_q_polyps', 'Which of these fish eats living coral polyps?'), options: pick(['parrotfish', 'snapper', 'butterflyfish'], FN), answer: 'butterflyfish', explain: FR.butterflyfish }
+    ];
+    if (sec === 'model') {
+      var dhw = dhwFor(PD19_HEAT.deg, PD19_HEAT.weeks);
+      return [
+        { id: 'dhw', q: __alloFill(__alloT('stem.coralreef.pd19_q_dhw', 'The water is {deg} too warm for {weeks}. How many Degree Heating Weeks is that?'), { deg: sciLabDeg(__alloT, __alloFill, PD19_HEAT.deg), weeks: sciLabWeeksText(__alloT, __alloFill, PD19_HEAT.weeks) }),
+          options: [{ id: 'weeks', label: String(PD19_HEAT.weeks) }, { id: 'sum', label: String(PD19_HEAT.deg + PD19_HEAT.weeks) }, { id: 'right', label: String(dhw) }], answer: 'right',
+          explain: __alloT('stem.coralreef.dhw_intro', 'NOAA Coral Reef Watch compares the water with the usual warmest month of the year. Each week that is at least 1 degree C warmer than that adds its extra degrees, counted over the last 12 weeks. A reef 2 degrees C too warm for 4 weeks has 8 Degree Heating Weeks.') },
+        { id: 'cool', q: __alloT('stem.coralreef.pd19_q_cool', 'A coral bleached in a heatwave. Then the water cooled in time. What can happen?'),
+          options: [{ id: 'dies', label: __alloT('stem.coralreef.fig_bl_dies', 'Coral dies') }, { id: 'back', label: __alloT('stem.coralreef.fig_bl_recovers', 'Algae return') }], answer: 'back', explain: CG.bleached_coral }
+      ];
+    }
+    return [];
+  }
+  function pd19Words(env, sec) {
+    if (GL20_WORDS[sec]) return gl20Words(env, sec); // lane gl20
+    var __alloFill = env.fill, __alloT = env.t, CG = categoryGuides(__alloT);
+    var ex = PD19_DHW_EXAMPLE;
+    var all = {
+      transect: { term: __alloT('stem.coralreef.pd19_w_transect', 'Transect'), def: __alloT('stem.coralreef.pd19_wd_transect', 'A measuring tape laid along the reef. Divers record what is under it.') },
+      cover: { term: __alloT('stem.coralreef.r_cover_title', 'Percent cover'), def: __alloT('stem.coralreef.pd19_wd_cover', 'How much of the bottom one kind covers, out of 100.'),
+        equation: PG_COVER.hit + ' ÷ ' + PG_COVER.total + ' × 100 = ' + round1(PG_COVER.hit / PG_COVER.total * 100) + '%' },
+      belt: { term: __alloT('stem.coralreef.pd19_w_belt', 'Belt'), def: __alloT('stem.coralreef.pd19_wd_belt', 'The strip beside the tape where divers count fish and invertebrates.'),
+        equation: PG_BELT.long + ' m × ' + PG_BELT.wide + ' m = ' + (PG_BELT.long * PG_BELT.wide) + ' m²' },
+      grazers: { term: __alloT('stem.coralreef.c_col_grazers', 'Grazing fish'), def: __alloT('stem.coralreef.pd19_wd_grazers', 'Fish that eat seaweed and algae, such as parrotfish and surgeonfish. They keep space open for young corals.') },
+      bleached: { term: __alloT('stem.coralreef.fig_bl_bleached', 'Bleached'), def: CG.bleached_coral },
+      spread: { term: __alloT('stem.coralreef.pd19_w_spread', 'Spread'), def: __alloT('stem.coralreef.pd19_wd_spread', 'How far apart the transects at one reef are, from the lowest to the highest.') },
+      dhw: { term: __alloT('stem.coralreef.sciLab_fig_dhw', 'Heat stress (Degree Heating Weeks)'),
+        def: __alloFill(__alloT('stem.coralreef.pd19_wd_dhw', 'Extra degrees of warm water, added up week by week. {deg} too warm for {weeks} is {n}.'), { deg: sciLabDeg(__alloT, __alloFill, ex.deg), weeks: sciLabWeeksText(__alloT, __alloFill, ex.weeks), n: dhwFor(ex.deg, ex.weeks) }) }
+    };
+    return (PD19_WORDS[sec] || []).map(function (id) { return Object.assign({ id: id }, all[id]); });
+  }
+  // Small pictures for the words. Each says only what its words say; the cover dots
+  // and the belt size are the numbers in the words beside them.
+  function pd19WordPic(h, id) {
+    var C = FIG_CORAL, k = [h('rect', { key: 'bg', x: 0, y: 0, width: 72, height: 50, rx: 7, fill: C.water })];
+    var sand = h('path', { key: 'sand', d: 'M0 41Q18 37 36 40T72 39V50H0Z', fill: C.sand });
+    if (id === 'transect') {
+      var ticks = '';
+      for (var x = 8; x <= 64; x += 7) ticks += 'M' + x + ' 9v5';
+      k.push(sand, h('rect', { key: 'tape', x: 6, y: 8, width: 60, height: 5, rx: 1, fill: '#f2c14e', stroke: '#7a5a12', strokeWidth: 0.8 }),
+        h('path', { key: 't', d: ticks, stroke: '#7a5a12', strokeWidth: 0.8 }),
+        h('path', { key: 'drop', d: 'M36 13V37', stroke: '#f2c14e', strokeWidth: 1.6, strokeDasharray: '3 2' }),
+        h('circle', { key: 'ring', cx: 36, cy: 38, r: 3, fill: 'none', stroke: '#f2c14e', strokeWidth: 1.6 }));
+    } else if (id === 'cover') {
+      var on = '', off = '';
+      for (var i = 0; i < PG_COVER.total; i++) {
+        var cx = 9 + (i % 10) * 6 + (i % 10 >= 5 ? 2 : 0), cy = 10 + Math.floor(i / 10) * 10, dot = 'M' + (cx - 2.4) + ' ' + cy + 'a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0Z';
+        if (i < PG_COVER.hit) on += dot; else off += dot;
+      }
+      k.push(h('path', { key: 'on', 'data-pd19-dots': 'on', 'data-n': PG_COVER.hit, d: on, fill: C.live, stroke: '#f7f9f6', strokeWidth: 0.6 }),
+        h('path', { key: 'off', 'data-pd19-dots': 'off', 'data-n': PG_COVER.total - PG_COVER.hit, d: off, fill: 'none', stroke: '#cfe3ea', strokeWidth: 0.9 }));
+    } else if (id === 'belt') {
+      k.push(h('rect', { key: 'belt', x: 6, y: 13, width: 60, height: 24, fill: '#7fd3c4', fillOpacity: 0.28, stroke: '#7fd3c4', strokeWidth: 1.4 }),
+        h('path', { key: 'tape', d: 'M6 25H66', stroke: '#f2c14e', strokeWidth: 2 }),
+        h('g', { key: 'f1', transform: 'translate(22 19) scale(0.42)' }, fishShape(h, 'butterflyfish', 0, 0, 'a', false)),
+        h('g', { key: 'f2', transform: 'translate(46 31) scale(0.42)' }, fishShape(h, 'parrotfish', 0, 0, 'b', true)),
+        h('g', { key: 'f3', transform: 'translate(58 6) scale(0.36)', opacity: 0.6 }, fishShape(h, 'snapper', 0, 0, 'c', false)));
+    } else if (id === 'grazers') {
+      k.push(sand, h('path', { key: 'weed', d: 'M50 42q-3 -8 1 -16M55 42q2 -9 -2 -17M60 42q-1 -7 3 -13', fill: 'none', stroke: '#8fb04a', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('g', { key: 'p', transform: 'translate(22 18) scale(0.7)' }, fishShape(h, 'parrotfish', 0, 0, 'p', false)),
+        h('g', { key: 's', transform: 'translate(34 33) scale(0.55)' }, fishShape(h, 'surgeonfish', 0, 0, 's', false)));
+    } else if (id === 'bleached') {
+      k.push(sand, h('path', { key: 'c', d: 'M36 42V30M36 31L28 22M28 22L26 13M28 22L33 15M36 31L44 21M44 21L42 12M44 21L50 15M36 30V18', fill: 'none', stroke: C.white, strokeWidth: 3.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+        h('path', { key: 'p', d: 'M26 13h0M33 15h0M42 12h0M50 15h0M36 18h0', stroke: C.whiteInk, strokeWidth: 2, strokeLinecap: 'round' }));
+    } else if (id === 'spread') {
+      k.push(h('path', { key: 'ax', d: 'M6 32H66', stroke: '#cfe3ea', strokeWidth: 1.2 }),
+        h('rect', { key: 'band', x: 18, y: 28, width: 32, height: 8, rx: 4, fill: '#7fd3c4', fillOpacity: 0.55 }),
+        h('circle', { key: 'a', cx: 18, cy: 32, r: 4, fill: '#f7f9f6', stroke: C.water, strokeWidth: 1 }),
+        h('circle', { key: 'b', cx: 31, cy: 32, r: 4, fill: '#f7f9f6', stroke: C.water, strokeWidth: 1 }),
+        h('circle', { key: 'c', cx: 50, cy: 32, r: 4, fill: '#f7f9f6', stroke: C.water, strokeWidth: 1 }),
+        h('path', { key: 'arr', d: 'M18 18H50M18 15v6M50 15v6', stroke: '#f7f9f6', strokeWidth: 1.4 }));
+    } else if (id === 'dhw') {
+      k.push(h('rect', { key: 'stem', x: 18, y: 7, width: 8, height: 28, rx: 4, fill: '#f7f9f6', stroke: '#5f6b73', strokeWidth: 1 }),
+        h('rect', { key: 'lvl', x: 20, y: 15, width: 4, height: 22, rx: 2, fill: '#d9534f' }),
+        h('circle', { key: 'bulb', cx: 22, cy: 39, r: 6, fill: '#d9534f', stroke: '#5f6b73', strokeWidth: 1 }),
+        h('path', { key: 'heat', d: 'M40 36q-4 -5 0 -10t0 -10M50 36q-4 -5 0 -10t0 -10M60 36q-4 -5 0 -10t0 -10', fill: 'none', stroke: '#f2c14e', strokeWidth: 2, strokeLinecap: 'round' }));
+    }
+    return h('svg', { viewBox: '0 0 72 50', 'aria-hidden': 'true', focusable: 'false', 'data-pd19-pic': id }, k);
+  }
+  function Pd19Start(props) {
+    var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, sec = props.sec;
+    var st = React.useState({ open: null, picks: {} }), s = st[0], setS = st[1];
+    var uid = 'pd19' + React.useId().replace(/[^A-Za-z0-9]/g, '');
+    var qs = React.useMemo(function () { return pd19Questions(env, sec).map(function (q) { return Object.assign({}, q, { options: gl20Sorted(q.options) }); }); }, [sec, __alloT]); // gl20: word order, so the answer's place is no cue
+    var words = pd19Words(env, sec);
+    var goal = pd19Goal(__alloT, sec);
+    if (!goal) return null;
+    function toggle(id) { setS(function (p) { return { open: p.open === id ? null : id, picks: p.picks }; }); }
+    function choose(q, opt) {
+      if (s.picks[q.id]) return;
+      var next = Object.assign({}, s.picks); next[q.id] = opt.id;
+      setS({ open: s.open, picks: next });
+      var right = q.options.filter(function (o) { return o.id === q.answer; })[0];
+      env.say(opt.id === q.answer ? __alloT('stem.coralreef.m_practice_ok', 'Correct.') : __alloFill(__alloT('stem.coralreef.pd19_fb_wrong', 'Not quite. The answer is: {answer}.'), { answer: right ? right.label : '' }));
+    }
+    var checkLabel = __alloFill(__alloT('stem.coralreef.pd19_check', 'Check yourself ({n})'), { n: qs.length });
+    var wordsLabel = __alloT('stem.coralreef.pd19_words', 'Words to know');
+    var panel = null;
+    if (s.open === 'check') {
+      panel = h('div', { id: uid + '-check', className: 'pd19-panel', 'data-pd19-panel': 'check', role: 'region', 'aria-label': checkLabel },
+        h('ol', { className: 'pd19-qs' }, qs.map(function (q) {
+          var got = s.picks[q.id], ok = got === q.answer, right = q.options.filter(function (o) { return o.id === q.answer; })[0];
+          return h('li', { key: q.id, className: 'pd19-q', 'data-pd19-q': q.id, 'data-pd19-state': got ? (ok ? 'right' : 'wrong') : 'open' },
+            h('p', { id: uid + '-' + q.id }, q.q),
+            h('div', { className: 'pd19-opts', role: 'group', 'aria-labelledby': uid + '-' + q.id }, q.options.map(function (o, oi) {
+              var chosen = got === o.id, truth = !!got && o.id === q.answer;
+              // Keyed and marked by position only: an option's id would name the answer.
+              return h('button', { key: oi, type: 'button', 'data-pd19-opt': oi + 1, 'aria-pressed': chosen ? 'true' : 'false', 'aria-disabled': got ? 'true' : undefined,
+                style: btnStyle(P, chosen, { borderColor: truth ? P.good : chosen ? P.bad : P.ctlBorder, borderWidth: truth || chosen ? 2 : 1, cursor: got ? 'default' : 'pointer' }),
+                onClick: function () { choose(q, o); } }, o.label, truth || chosen ? h('span', { 'aria-hidden': 'true' }, truth ? ' ✓' : ' ✗') : null);
+            })),
+            got ? h('p', { className: 'pd19-fb', 'data-pd19-fb': ok ? 'right' : 'wrong', style: { color: ok ? P.good : P.bad } },
+              ok ? __alloT('stem.coralreef.m_practice_ok', 'Correct.') : __alloFill(__alloT('stem.coralreef.pd19_fb_wrong', 'Not quite. The answer is: {answer}.'), { answer: right ? right.label : '' })) : null,
+            got && q.equation ? h('p', { 'data-pd19-explain': q.id, style: { margin: '4px 0 0' } }, h('span', { className: 'pd19-eq' }, q.equation)) : null,
+            got && q.explain ? h('p', { 'data-pd19-explain': q.id, style: mutedStyle(P, { margin: '4px 0 0', color: P.text }) }, q.explain) : null);
+        })));
+    } else if (s.open === 'words') {
+      panel = h('div', { id: uid + '-words', className: 'pd19-panel', 'data-pd19-panel': 'words', role: 'region', 'aria-label': wordsLabel },
+        h('ul', { className: 'pd19-words' }, words.map(function (w) {
+          return h('li', { key: w.id, className: 'pd19-word', 'data-pd19-word': w.id },
+            w.pic || pd19WordPic(h, w.id),
+            h('strong', null, w.term),
+            h('p', null, w.def, w.equation ? ' ' : null, w.equation ? h('span', { className: 'pd19-eq' }, w.equation) : null));
+        })));
+    }
+    return h('section', { className: 'pd19', 'data-pd19': sec, 'aria-label': __alloT('stem.coralreef.w2_t_goal', 'Goal') },
+      h('style', null, PD19_CSS),
+      h('p', { className: 'pd19-goal', 'data-pd19-goal': sec, style: { color: P.text } }, tc10Icon(h, 'goal'), h('span', null, h('strong', null, __alloT('stem.coralreef.w2_t_goal', 'Goal'), ': '), goal)),
+      h('div', { className: 'pd19-btns' },
+        qs.length ? h('button', { type: 'button', 'data-pd19-open': 'check', 'aria-expanded': s.open === 'check' ? 'true' : 'false', 'aria-controls': uid + '-check', style: btnStyle(P, s.open === 'check'), onClick: function () { toggle('check'); } }, checkLabel) : null,
+        words.length ? h('button', { type: 'button', 'data-pd19-open': 'words', 'aria-expanded': s.open === 'words' ? 'true' : 'false', 'aria-controls': uid + '-words', style: btnStyle(P, s.open === 'words'), onClick: function () { toggle('words'); } }, wordsLabel) : null),
+      panel);
+  }
+  // Methods practice: after a wrong first answer, the step of the "ask in this order"
+  // card where the learner's path and the right one part ways.
+  function pd19PracticeNext(env, got, truth) {
+    var h = env.h, P = env.P, __alloT = env.t, a = PD19_ASK_STEP[got], b = PD19_ASK_STEP[truth];
+    if (!a || !b || got === truth) return null;
+    var n = Math.min(a, b);
+    var qs = [__alloT('stem.coralreef.mt10_ask_1', 'Is it loose?'), __alloT('stem.coralreef.mt10_ask_2', 'If not: is there living coral tissue, with polyps?'),
+      __alloT('stem.coralreef.mt10_ask_3', 'If not: is it fleshy seaweed taller than about 3 cm?'), __alloT('stem.coralreef.mt10_ask_4', 'If not: is the skeleton still white, or its small cups still clear?')];
+    return h('p', { 'data-pd19-ask-step': n, style: { margin: '6px 0 0', color: P.text } }, env.fill(__alloT('stem.coralreef.pd19_ask_next', 'Next time, use step {n} of "{title}": {q}'),
+      { n: n, title: __alloT('stem.coralreef.mt10_ask_title', 'Not sure? Ask in this order'), q: qs[n - 1] }));
+  }
+  // Claim builder: sentence starters add to the reasoning, which stays unsaved like any typing.
+  function pd19Starters(env, value, onChange, textId) {
+    var h = env.h, P = env.P, __alloT = env.t;
+    var list = [__alloT('stem.coralreef.pd19_start_1', 'My evidence shows that'), __alloT('stem.coralreef.pd19_start_2', 'This supports my claim because'), __alloT('stem.coralreef.pd19_start_3', 'This happens on reefs because')];
+    return h('div', { className: 'pd19-starters', role: 'group', 'aria-labelledby': textId + '-starters', 'data-pd19-starters': 'true' },
+      h('style', null, PD19_CSS),
+      h('span', { id: textId + '-starters' }, __alloT('stem.coralreef.pd19_start_label', 'Sentence starters:')),
+      list.map(function (t, i) {
+        return h('button', { key: i, type: 'button', 'data-pd19-starter': i + 1, 'aria-controls': textId, style: btnStyle(P, false, { fontWeight: 500, fontSize: 14, minHeight: 36, padding: '5px 10px' }),
+          onClick: function () {
+            var v = String(value || ''), sep = v && !/\s$/.test(v) ? (/[.!?]$/.test(v) ? ' ' : '. ') : '';
+            onChange(v + sep + t + ' ');
+            var el = typeof document !== 'undefined' ? document.getElementById(textId) : null;
+            if (el && typeof el.focus === 'function') setTimeout(function () { try { el.focus(); var n = el.value.length; el.setSelectionRange(n, n); } catch (e) { /* the field went away */ } }, 0);
+          } }, t, '…');
+      }));
+  }
+  // My reef report: a closing look back, and where this work happens for real.
+  // Typed words sit beside "questions" in myReport, which the host never keeps.
+  function pd19ReportField(env, uid, id, label, value, onChange) {
+    var h = env.h;
+    return h('div', { key: id, 'data-pd19-rep': id },
+      h('div', { 'data-rep-screen': 'true' },
+        h('label', { htmlFor: uid + '-pd19' + id, className: 'rep-q-label' }, label),
+        h('textarea', { id: uid + '-pd19' + id, className: 'rep-input', rows: 3, maxLength: REP_QUESTIONS_MAX, value: value, 'data-pd19-rep-input': id, onChange: function (e) { onChange(e.target.value.slice(0, REP_QUESTIONS_MAX)); } })),
+      h('div', { className: 'rep-only-print', 'data-pd19-rep-print': id },
+        h('p', { className: 'rep-q-label' }, label),
+        value.trim() ? repWords(h, value.trim(), 'w' + id) : pr4Lines(h, 2, 'l' + id)));
+  }
+  function pd19ReportLook(env, uid, block) {
+    var d = env.d, __alloT = env.t, mine = w2Obj(d.myReport);
+    function val(id) { return repStr(mine[id]).slice(0, REP_QUESTIONS_MAX); }
+    function put(id) { return function (v) { var patch = {}; patch[id] = v; env.set({ myReport: Object.assign({}, w2Obj(env.d.myReport), patch) }); }; }
+    return block('pd19look', __alloT('stem.coralreef.pd19_rep_look', 'Looking back'), [
+      pd19ReportField(env, uid, 'learned', __alloT('stem.coralreef.pd19_rep_learned', 'One thing I learned about reefs'), val('learned'), put('learned')),
+      pd19ReportField(env, uid, 'changed', __alloT('stem.coralreef.pd19_rep_changed', 'Something that changed my mind, and the evidence that changed it'), val('changed'), put('changed'))
+    ]);
+  }
+  function pd19ReportReal(env, block) {
+    var h = env.h, __alloT = env.t;
+    return block('pd19real', __alloT('stem.coralreef.pd19_rep_real', 'Reef monitoring for real'), [
+      h('p', { key: 'a' }, __alloT('stem.coralreef.hub_why_1', 'Coral reefs change from year to year. Volunteers and scientists check on them by swimming along a measuring tape and writing down what is underneath it and which fish swim nearby. Those numbers show whether a reef is healthy, bleaching, or being taken over by seaweed.')),
+      h('p', { key: 'b' }, __alloT('stem.coralreef.hub_honest_1', 'The survey methods follow the point-intercept and belt transect methods used by reef monitoring programs such as Reef Check.')),
+      h('p', { key: 'c' }, __alloT('stem.coralreef.pd19_rep_noaa', 'NOAA Coral Reef Watch adds up Degree Heating Weeks, the heat measure in Reef science, and puts out bleaching alerts.'))
+    ]);
+  }
+  if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefPd19 = { questions: pd19Questions, words: pd19Words, goal: pd19Goal, ASK_STEP: PD19_ASK_STEP, WORDS: PD19_WORDS };
+
+  // ── Round 20 goals (gl20): the pd19 card on Dive and explore and the Species guide ──
+  // Pd19Start draws it; these give its goal, checks and words. The dive card is the same on
+  // every site and never pairs a species picture with its name, so it cannot spoil an
+  // identification. Answers and explanations are the guide's own data and words.
+  var GL20_WORDS = { dive: ['marks', 'species', 'grazers', 'predator', 'filter'], guide: ['marks', 'looks', 'iucn', 'species'] };
+  var GL20_IUCN_ORDER = ['LC', 'NT', 'VU', 'EN', 'CR']; // IUCN's own order, lowest risk first
+  // Look-alike pairs from SPECIES_META: the question compares each one's shell mark (marks[2]).
+  var GL20_LOOKS_Q = ['hawksbill_turtle', 'green_turtle'], GL20_LOOKS_MARK = 2, GL20_RISK_Q = ['bumphead_parrotfish', 'humphead_wrasse'], GL20_LOOKS_PIC = ['moorish_idol', 'threadfin_butterflyfish'];
+  var GL20_CSS = '[data-coralreef-root] .pd19-word>.gl20-pics{grid-row:1/span 2;width:88px;height:61px;display:grid;grid-template-columns:1fr 1fr;gap:2px;border-radius:7px;overflow:hidden;background:#0b3a4d}' +
+    '[data-coralreef-root] .gl20-pics>span{min-width:0;display:grid;place-items:center;overflow:hidden;color:#cfe3ea}' +
+    '[data-coralreef-root] .gl20-pics img{width:100%;height:100%;object-fit:cover;display:block}';
+  function gl20Goal(__alloT, sec) {
+    return sec === 'dive' ? __alloT('stem.coralreef.gl20_goal_dive', 'I can identify reef animals by their field marks and say what they do on the reef.')
+      : sec === 'guide' ? __alloT('stem.coralreef.gl20_goal_guide', 'I can use field marks to tell look-alikes apart and read an IUCN Red List status.') : '';
+  }
+  function gl20WordText(env) {
+    var __alloFill = env.fill, __alloT = env.t, IU = iucnNames(__alloT);
+    function bare(s) { return String(s).replace(/\s*[:：]\s*$/, ''); }
+    return {
+      marks: { term: __alloT('stem.coralreef.g_marks', 'Field marks'), def: __alloT('stem.coralreef.gl20_wd_marks', 'Things you can see that help you name a species, such as a color pattern, a fin or a body shape.') },
+      looks: { term: bare(__alloT('stem.coralreef.g_lookalikes', 'Look-alikes:')), def: __alloT('stem.coralreef.gl20_wd_looks', 'Different species that look alike. Compare their field marks to tell them apart.') },
+      iucn: { term: bare(__alloT('stem.coralreef.g_status', 'IUCN Red List: ')),
+        def: __alloFill(__alloT('stem.coralreef.gl20_wd_iucn', 'How likely a species is to die out, as judged by IUCN scientists. From lowest to highest risk: {list}.'), { list: GL20_IUCN_ORDER.map(function (c) { return IU[c]; }).join(', ') }) },
+      species: { term: __alloT('stem.coralreef.gl20_w_species', 'Species'), def: __alloT('stem.coralreef.gl20_wd_species', 'One kind of living thing. Each species has a common name and a scientific name.') },
+      predator: { term: __alloT('stem.coralreef.gl20_w_predator', 'Predator'), def: __alloT('stem.coralreef.gl20_wd_predator', 'An animal that hunts and eats other animals, such as groupers and moray eels.') },
+      filter: { term: __alloT('stem.coralreef.gl20_w_filter', 'Filter feeder'), def: __alloT('stem.coralreef.gl20_wd_filter', 'An animal that strains tiny bits of food out of the water, such as giant clams, sponges and manta rays.') }
+    };
+  }
+  // Options are sorted by their words, so where the answer sits says nothing about it.
+  function gl20Sorted(list) { return list.slice().sort(function (a, b) { return a.label < b.label ? -1 : a.label > b.label ? 1 : 0; }); }
+  function gl20Questions(env, sec) {
+    var __alloFill = env.fill, __alloT = env.t, W = gl20WordText(env);
+    if (sec === 'dive') return [
+      { id: 'marks', q: __alloT('stem.coralreef.gl20_q_marks', 'Which of these is a field mark that helps you name an animal?'),
+        // Three options of one form and about one length: distance and view are what the dive's chips show, not field marks.
+        options: gl20Sorted([{ id: 'pattern', label: __alloT('stem.coralreef.gl20_o_pattern', 'Its color pattern') }, { id: 'away', label: __alloT('stem.coralreef.gl20_o_far', 'How far away it is') },
+          { id: 'view', label: __alloT('stem.coralreef.gl20_o_inview', 'Whether it is in view') }]), answer: 'pattern', explain: W.marks.def },
+      { id: 'role', q: __alloT('stem.coralreef.gl20_q_role', 'A sponge pumps seawater through its body and strains out tiny bits of food. What is its reef role?'),
+        options: gl20Sorted([{ id: 'grazer', label: __alloT('stem.coralreef.gl20_o_grazer', 'Grazer') }, { id: 'predator', label: W.predator.term }, { id: 'filter', label: W.filter.term }]), answer: 'filter', explain: W.filter.def }
+    ];
+    if (sec !== 'guide') return [];
+    var TX = speciesText(__alloT), IU = iucnNames(__alloT), a = GL20_LOOKS_Q[0], b = GL20_LOOKS_Q[1];
+    var na = guideShortName(TX[a].name), nb = guideShortName(TX[b].name), ma = TX[a].marks[GL20_LOOKS_MARK], mb = TX[b].marks[GL20_LOOKS_MARK];
+    var risk = GL20_RISK_Q.map(function (id) { return { id: id, rank: GL20_IUCN_ORDER.indexOf(speciesMeta(id).iucn), label: guideShortName(TX[id].name) + ' (' + IU[speciesMeta(id).iucn] + ')' }; });
+    return [
+      { id: 'looks', q: __alloFill(__alloT('stem.coralreef.gl20_q_looks', '{a} and {b} are look-alikes. Which field mark tells you it is a {b}?'), { a: na, b: nb }),
+        options: gl20Sorted([{ id: 'mine', label: mb }, { id: 'other', label: ma }]), answer: 'mine', explain: nb + ': ' + mb + '. ' + na + ': ' + ma + '.' },
+      { id: 'risk', q: __alloT('stem.coralreef.gl20_q_risk', 'By their IUCN Red List status, which of these look-alikes is more at risk of dying out?'),
+        options: gl20Sorted(risk.map(function (r) { return { id: r.id, label: r.label }; })), answer: risk[0].rank > risk[1].rank ? risk[0].id : risk[1].id, explain: W.iucn.def }
+    ];
+  }
+  function gl20Words(env, sec) {
+    var W = gl20WordText(env);
+    return (GL20_WORDS[sec] || []).map(function (id) {
+      if (id === 'grazers') return pd19Words(env, 'science').filter(function (w) { return w.id === 'grazers'; })[0];
+      return Object.assign({ id: id, pic: gl20WordPic(env, id) }, W[id]);
+    });
+  }
+  // Pictures in the pd19 tile style. Only the guide's look-alike tile uses real portraits (two
+  // look-alikes, unnamed); a dive tile never shows a species picture beside its name.
+  function gl20WordPic(env, id) {
+    var h = env.h, C = FIG_CORAL;
+    if (id === 'looks') return h('span', { className: 'gl20-pics', 'aria-hidden': 'true', 'data-pd19-pic': id }, GL20_LOOKS_PIC.map(function (sp) {
+      return h('span', { key: sp }, h(SpeciesPortrait, { env: env, id: sp, noDraw: true, iconSize: 22 }));
+    }));
+    var k = [h('rect', { key: 'bg', x: 0, y: 0, width: 72, height: 50, rx: 7, fill: C.water })];
+    var sand = h('path', { key: 'sand', d: 'M0 41Q18 37 36 40T72 39V50H0Z', fill: C.sand });
+    if (id === 'marks') {
+      // The butterflyfish's dark eye band, circled: a field mark.
+      k.push(h('g', { key: 'f', transform: 'translate(32 25) scale(1.7)' }, fishShape(h, 'butterflyfish', 0, 0, 'f', false)),
+        h('ellipse', { key: 'ring', cx: 39.9, cy: 25, rx: 5.6, ry: 14.5, fill: 'none', stroke: '#f7f9f6', strokeWidth: 1.8, strokeDasharray: '3 2' }));
+    } else if (id === 'species') {
+      k.push(h('g', { key: 'f', transform: 'translate(22 25) scale(1.15)' }, fishShape(h, 'snapper', 0, 0, 'f', false)),
+        h('path', { key: 'str', d: 'M36 24L43 22', stroke: '#f7f9f6', strokeWidth: 1, strokeDasharray: '2 1.5' }),
+        h('rect', { key: 'tag', x: 43, y: 13, width: 24, height: 22, rx: 3, fill: '#f7f9f6', stroke: '#5f6b73', strokeWidth: 0.8 }),
+        h('path', { key: 'name', d: 'M47 20H63', stroke: '#1f2937', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('path', { key: 'sci', d: 'M47 26H61M47 30H57', stroke: '#5f6b73', strokeWidth: 1.3, strokeLinecap: 'round' }));
+    } else if (id === 'predator') {
+      k.push(sand, h('path', { key: 'go', d: 'M2 22h6M1 27h7M2 32h6', stroke: '#cfe3ea', strokeWidth: 1.2, strokeLinecap: 'round' }),
+        h('g', { key: 'g', transform: 'translate(27 27) scale(1.15)' }, fishShape(h, 'grouper', 0, 0, 'g', false)),
+        h('g', { key: 's', transform: 'translate(59 21) scale(0.5)' }, fishShape(h, 'snapper', 0, 0, 's', false)));
+    } else if (id === 'filter') {
+      k.push(sand, h('path', { key: 'v', d: 'M25 43Q20 27 26 13H46Q52 27 47 43Z', fill: '#b9785a', stroke: '#5a3424', strokeWidth: 1 }),
+        h('ellipse', { key: 'top', cx: 36, cy: 13, rx: 10, ry: 2.4, fill: '#5a3424' }),
+        h('path', { key: 'in', d: 'M7 29h11M15 26l3 3-3 3M65 29h-11M57 26l-3 3 3 3M36 10V3M33 6l3-3 3 3', fill: 'none', stroke: '#f7f9f6', strokeWidth: 1.3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+        h('path', { key: 'bits', d: 'M5 23h0M10 34h0M13 21h0M62 22h0M67 34h0M59 35h0', stroke: '#f2c14e', strokeWidth: 2, strokeLinecap: 'round' }));
+    } else if (id === 'iucn') {
+      // Five steps of risk, in the colors of the guide's Red List chips.
+      ['#60c659', '#cce226', '#f9e814', '#fc7f3f', '#c81b04'].forEach(function (c, i) {
+        k.push(h('rect', { key: 'b' + i, x: 7 + i * 12, y: 43 - (8 + i * 7), width: 9, height: 8 + i * 7, rx: 1.5, fill: c, stroke: '#141414', strokeWidth: 0.6 }));
+      });
+    }
+    return h('svg', { viewBox: '0 0 72 50', 'aria-hidden': 'true', focusable: 'false', 'data-pd19-pic': id }, k);
+  }
+  if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefGl20 = { questions: gl20Questions, words: gl20Words, goal: gl20Goal, WORDS: GL20_WORDS, IUCN_ORDER: GL20_IUCN_ORDER, LOOKS_Q: GL20_LOOKS_Q, LOOKS_MARK: GL20_LOOKS_MARK, RISK_Q: GL20_RISK_Q };
 
   // ── Survey methods ───────────────────────────────────────────────────────
   // Practice points: the bleached / dead pair is the distinction that matters
@@ -3978,7 +4427,7 @@
         h('div', { className: 'pg-mfig' },
         h(MethodDiagram, { key: 'dg', h: h, P: P, t: __alloT, fill: __alloFill, belt: false, label: __alloT('stem.coralreef.m_pit_diagram_side', 'Diagram from the side: a 20 meter tape stretched over a reef, with a mark every half meter, 40 points in all. Weighted lines drop from some marks to the bottom. At 3 meters (A) one touches live hard coral; at 12.5 meters (B) one touches sand.') })),
         h('div', { className: 'pg-mside' }, pgCoverArt(h, P),
-        h('p', { key: 'p2', style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_pit_2', 'Percent cover is the share of points in each category: points in the category divided by 40, times 100. Eighteen points of live coral out of 40 is 45% live coral cover.')))),
+        h('p', { key: 'p2', style: { margin: '0 0 6px' } }, rl21Text(env, __alloT('stem.coralreef.m_pit_2', 'Percent cover is the share of points in each category: points in the category divided by 40, times 100. Eighteen points of live coral out of 40 is 45% live coral cover.'), __alloT('stem.coralreef.m_pit_2_simple', 'Percent cover is the share of points of each kind. Take the points of one kind, divide by 40, and multiply by 100. Eighteen points of live coral out of 40 is 45% live coral cover.'))))),
         h('div', { key: 'rep', 'data-w2-repeat': 'true', style: { margin: '14px 0 0', padding: 14, borderRadius: 12, background: P.cardAlt, border: '1px solid ' + P.border } },
           h('h4', { style: { margin: '0 0 6px', fontSize: 17 } }, __alloT('stem.coralreef.w2_m_repeat_title', 'One tape is a sample')),
           h('p', { style: { margin: '0 0 8px' } }, __alloFill(__alloT('stem.coralreef.w2_m_repeat_1', 'Five practice tapes laid on the same reef in this lab ({site}) read {list} live coral. The whole reef has {truth}%, a number a real diver can never know. Each tape crosses its own patches of coral, sand and rubble.'), { site: siteName, list: repList, truth: rep.truth })),
@@ -3986,7 +4435,7 @@
             __alloFill(__alloT('stem.coralreef.w2_m_repeat_whole', 'Whole reef {truth}%'), { truth: rep.truth })),
           h('p', { style: mutedStyle(P, { margin: '4px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.w2_m_repeat_key', 'Each dot is one tape, numbered in the order listed above.')),
           h('p', { style: { margin: '8px 0 0' } }, __alloFill(__alloT('stem.coralreef.w2_m_repeat_2', 'The tapes span {min}% to {max}%. That is why the field survey asks you to lay a second tape at the same reef: if two reefs differ by less than the spread between tapes, the difference could be chance.'), { min: rep.min, max: rep.max }))),
-        h('p', { key: 'p3', style: mutedStyle(P, { margin: '12px 0 0' }) }, __alloT('stem.coralreef.m_pit_3', 'Reef Check surveys four 20 m stretches like this one and averages them, and recommends surveying a reef three to five times. Forty points is a small sample: on a reef with 30% cover, one 20 m stretch can read about 14 percentage points higher or lower just by chance, and more when one colony spans several points.')),
+        h('p', { key: 'p3', style: mutedStyle(P, { margin: '12px 0 0' }) }, __alloT('stem.coralreef.m_pit_3', 'Reef Check surveys four 20 m stretches like this one and averages them. It also recommends surveying a reef three to five times. Forty points is a small sample. On a reef with 30% cover, one 20 m stretch can read about 14 percentage points higher or lower just by chance. It can be off by more when one colony covers several points.')),
         nextBar('bottom')
       ],
       fish: [
@@ -3994,10 +4443,10 @@
         h('p', { key: 'p1', style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_belt_1', 'Swim slowly along the same tape, stopping every 5 m, and count chosen indicator fish inside a belt 2.5 m to each side of it. The belt is 20 m long and 5 m wide, so it covers 100 square meters. Fish outside the belt do not count.')),
         h('div', { key: 'pgr', className: 'pg-mrow' },
         h('div', { className: 'pg-mfig' },
-        h(MethodDiagram, { key: 'dg', h: h, P: P, t: __alloT, fill: __alloFill, belt: true, label: __alloT('stem.coralreef.m_belt_diagram_above', 'Diagram from above: a diver swims along the 20 meter tape and counts fish inside a belt that reaches 2.5 meters to each side of it. Three fish swim inside the belt and are counted; two swim outside it and are not.') })),
+        h(MethodDiagram, { key: 'dg', h: h, P: P, t: __alloT, fill: __alloFill, belt: true, label: rl21Text(env, __alloT('stem.coralreef.m_belt_diagram_above', 'Diagram from above: a diver swims along the 20 meter tape and counts fish inside a belt that reaches 2.5 meters to each side of it. Three fish swim inside the belt and are counted; two swim outside it and are not.'), __alloT('stem.coralreef.m_belt_diagram_above_simple', 'Diagram from above: a diver swims along the 20 meter tape. The diver counts fish inside a belt that reaches 2.5 meters to each side of the tape. Three fish swim inside the belt and are counted. Two swim outside it and are not.')) })),
         h('div', { className: 'pg-mside' }, pgBeltArt(h, P),
-        h('p', { key: 'p2', style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.m_belt_2', 'Density is fish per 100 square meters: the count divided by the belt area, times 100. Because one belt covers exactly 100 square meters, the count and the density are the same number here.')))),
-        h('p', { key: 'p3', style: mutedStyle(P, { margin: '0 0 14px' }) }, __alloT('stem.coralreef.m_belt_3', 'Each program picks its own fish. Reef Check counts butterflyfish, snapper, groupers over 30 cm and parrotfish over 20 cm, among others; the AGRRA program also counts surgeonfish. This lab counts five families from those lists, and counts every size.')),
+        h('p', { key: 'p2', style: { margin: '0 0 6px' } }, rl21Text(env, __alloT('stem.coralreef.m_belt_2', 'Density is fish per 100 square meters: the count divided by the belt area, times 100. Because one belt covers exactly 100 square meters, the count and the density are the same number here.'), __alloT('stem.coralreef.m_belt_2_simple', 'Density is how many fish there are in 100 square meters. Divide the count by the belt area, then multiply by 100. Because one belt covers exactly 100 square meters, the count and the density are the same number here.'))))),
+        h('p', { key: 'p3', style: mutedStyle(P, { margin: '0 0 14px' }) }, rl21Text(env, __alloT('stem.coralreef.m_belt_3', 'Each program picks its own fish. Reef Check counts butterflyfish, snapper, groupers over 30 cm and parrotfish over 20 cm, among others; the AGRRA program also counts surgeonfish. This lab counts five families from those lists, and counts every size.'), __alloT('stem.coralreef.m_belt_3_simple', 'Each program picks its own fish. Reef Check counts butterflyfish, snapper, groupers over 30 cm and parrotfish over 20 cm, and some others. The AGRRA program also counts surgeonfish. This lab counts five fish families from those lists. It counts fish of every size.'))),
         h('h4', { key: 'fh', style: { margin: '0 0 8px', fontSize: 17 } }, __alloT('stem.coralreef.m_fish_title', 'Indicator fish and what they tell you')),
         h('div', { key: 'fl', className: 'mt10-cardbox' }, h('ul', { className: 'mt10-cards mt10-fish' }, FISH_FAMILIES.map(function (f) {
           return h('li', { key: f, className: 'mt10-card', 'data-mt10-fish': f },
@@ -4030,8 +4479,10 @@
       h('style', null, MT10_CSS),
       h('style', null, PG_CSS_METHODS),
       h('style', null, PF11_METHODS_CSS),
+      h(Pd19Start, { env: env, sec: 'methods' }),
       h('section', { style: cardStyle(P, { paddingBottom: 16 }) },
-        h('p', { style: { margin: '0 0 12px' } }, __alloT('stem.coralreef.inv_m_intro', 'Reef monitors use two methods along the same 20 m tape: a point every half meter for what covers the bottom, and a belt beside the tape for the fish and the invertebrates. Work through the four parts in order, or jump to any part.')),
+        h('p', { style: { margin: '0 0 12px' } }, rl21Text(env, __alloT('stem.coralreef.inv_m_intro', 'Reef monitors use two methods along the same 20 m tape: a point every half meter for what covers the bottom, and a belt beside the tape for the fish and the invertebrates. Work through the four parts in order, or jump to any part.'), __alloT('stem.coralreef.inv_m_intro_simple', 'Reef monitors use two methods along the same 20 m tape. They check a point every half meter to see what covers the bottom. They also count the fish and the invertebrates in a belt beside the tape. Work through the four parts in order, or jump to any part.'))),
+        h(Rl21Toggle, { env: env, where: 'methods' }),
         h('div', { role: 'tablist', 'aria-label': __alloT('stem.coralreef.w2_m_tabs', 'Parts of the survey methods'), className: 'w2-mtabs' }, W2_METHOD_PARTS.map(function (id, idx) {
           var on = id === part;
           var hint = id === 'practice' ? __alloFill(__alloT('stem.coralreef.w2_m_practice_tab', '{n} of {total} answered'), { n: answeredCount, total: PRACTICE_POINTS.length }) : PN[id].hint;
@@ -4094,6 +4545,7 @@
             answered ? h('p', { style: { margin: '10px 0 0', color: ok ? P.good : P.bad, fontWeight: 600 } },
               ok ? __alloT('stem.coralreef.m_practice_ok', 'Correct.') : __alloFill(__alloT('stem.coralreef.m_practice_fix', 'Not quite: this is {name}.'), { name: CN[pt.category] })) : null,
             answered ? h('p', { style: mutedStyle(P, { margin: '4px 0 0' }) }, CG[pt.category]) : null,
+            answered && !ok ? pd19PracticeNext(env, got, pt.category) : null,
             h('div', { className: 'w2-prow' },
               h('button', { type: 'button', 'data-w2-prev': 'true', disabled: n === 0, style: btnStyle(P, false, { opacity: n === 0 ? 0.5 : 1 }), onClick: function () { go(n - 1); } }, __alloT('stem.coralreef.w2_m_prev', 'Previous point')),
               n < total - 1 ? h('button', { type: 'button', 'data-w2-next-point': 'true', style: btnStyle(P, answered), onClick: function () { go(n + 1); } }, __alloT('stem.coralreef.w2_m_next', 'Next point')) : null)));
@@ -4179,6 +4631,114 @@
       h('p', { 'aria-hidden': 'true', style: { margin: '6px 0 0', fontWeight: 400, color: P.muted, fontSize: 14 } }, amount));
   }
 
+  // ── Lane pf19u: one 3D detail choice for every 3D view ───────────────────
+  // d.diveQuality ('auto' | 'low' | 'high') is the only saved part. The device
+  // profile, and Automatic stepping down on a slow device, stay in memory for
+  // this page visit. An engine without profileDevice, autoReason or slow is
+  // treated as today: no reason line, no step-down.
+  var pf19uPrefNow = 'auto', PF19U_DOWN = {}, PF19U_OFFER = {}, PF19U_PROFILES = {};
+  function pf19uPref(d) { var q = d && d.diveQuality; return q === 'low' || q === 'high' ? q : 'auto'; }
+  // What a view asks its engine for: once Automatic stepped a view down, it stays on Smoother.
+  function pf19uRequest(pref, view) { return pref === 'auto' && PF19U_DOWN[view] ? 'low' : pref; }
+  // The dive never switches while it runs (a remount would restart it). A slow dive under
+  // Automatic only marks the next dive start on this page visit to begin on Smoother.
+  var PF19U_LATER = {}, PF19U_TOLD = {};
+  function pf19uDiveStart(pref) {
+    if (pref === 'auto' && PF19U_LATER.dive) PF19U_DOWN.dive = true;
+    return pf19uRequest(pref, 'dive');
+  }
+  function pf19uProfile(name) {
+    if (Object.prototype.hasOwnProperty.call(PF19U_PROFILES, name)) return PF19U_PROFILES[name];
+    var engine = window[name], p = null;
+    try { p = engine && typeof engine.profileDevice === 'function' ? engine.profileDevice() : null; } catch (e) { p = null; }
+    if (!p || typeof p !== 'object' || (p.tier !== 'low' && p.tier !== 'high')) p = null;
+    if (engine) PF19U_PROFILES[name] = p;
+    return p;
+  }
+  // The specimen viewer and guide pictures have no engine of their own. Automatic
+  // follows a loaded engine's device profile, and stays Detailed (as before) without one.
+  function pf19uModelQuality(pref) {
+    if (pref === 'low' || pref === 'high') return pref;
+    var p = pf19uProfile('Reef3DExplore') || pf19uProfile('Reef3D');
+    return p && p.tier === 'low' ? 'low' : 'high';
+  }
+  function pf19uTierName(__alloT, tier) { return tier === 'low' ? __alloT('stem.coralreef.ex_quality_low', 'Smoother') : __alloT('stem.coralreef.ex_quality_high', 'Detailed'); }
+  function pf19uWhy(__alloT, fill, reason, tier, engineName) {
+    if (reason === 'cores' || reason === 'memory') {
+      var p = pf19uProfile(engineName), n = p ? (reason === 'cores' ? p.cores : p.memory) : null;
+      if (typeof n !== 'number' || !isFinite(n) || n <= 0) return null;
+      return reason === 'cores' ? fill(__alloT('stem.coralreef.pf19u_why_cores', 'this device has {n} processor cores'), { n: n })
+        : fill(__alloT('stem.coralreef.pf19u_why_memory', 'this device has about {n} GB of memory'), { n: n });
+    }
+    if (reason === 'software_gl') return __alloT('stem.coralreef.pf19u_why_gl', 'no graphics chip was found');
+    if (reason === 'small_touch') return __alloT('stem.coralreef.pf19u_why_touch', 'this is a small touch screen');
+    if (reason === 'save_data') return __alloT('stem.coralreef.pf19u_why_data', 'Data Saver is on');
+    if (reason === 'default' && tier === 'high') return __alloT('stem.coralreef.pf19u_why_default', 'nothing on this device called for Smoother');
+    if (reason === 'slow') return __alloT('stem.coralreef.pf19u_why_slow', '3D was running slowly');
+    return null;
+  }
+  function pf19uRestartNote(__alloT) { return __alloT('stem.coralreef.pf19u_restart_note', 'Switching starts the dive again. Your species log is kept.'); }
+  function pf19uChose(__alloT, fill, tier, why) { return fill(__alloT('stem.coralreef.pf19u_chose', 'Automatic chose {tier}: {why}.'), { tier: pf19uTierName(__alloT, tier), why: why }); }
+  function pf19uSelect(env, attrs) {
+    var h = env.h, P = env.P, __alloT = env.t;
+    return h('select', Object.assign({ value: pf19uPref(env.d), 'data-pf19u-select': 'true', style: { color: P.text, background: P.card, border: '1px solid ' + P.ctlBorder, borderRadius: 8, padding: '8px 12px', minHeight: 44 },
+      onChange: function (event) { env.set({ diveQuality: event.target.value }); } }, attrs || {}),
+      h('option', { value: 'auto' }, __alloT('stem.coralreef.ex_quality_auto', 'Automatic')),
+      h('option', { value: 'low' }, __alloT('stem.coralreef.ex_quality_low', 'Smoother')),
+      h('option', { value: 'high' }, __alloT('stem.coralreef.ex_quality_high', 'Detailed')));
+  }
+  // The choice with its label and a short help line that says it covers every 3D view.
+  function Pf19uDetail(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t;
+    var helpId = 'pf19u-help-' + props.view + '-' + env.React.useId().replace(/:/g, '');
+    return h('div', { 'data-pf19u-detail': props.view, style: Object.assign({ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 14px' }, props.style || {}) },
+      h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 10, fontWeight: 600, color: P.text } }, __alloT('stem.coralreef.pf19u_label', '3D detail'),
+        pf19uSelect(env, { 'aria-describedby': helpId })),
+      h('span', { id: helpId, style: { color: P.muted, fontSize: 14 } }, __alloT('stem.coralreef.pf19u_help', 'Used for every 3D view. Choose Smoother if 3D runs slowly.')));
+  }
+  // A view whose engine reports slow: Automatic on the high tier steps down once
+  // for this page visit; a student who chose Detailed is only offered Smoother.
+  // Either is said once. onStep runs before the view remounts, to keep focus.
+  function usePf19uSlow(env, view, snap, onStep) {
+    var React = env.React, __alloT = env.t, fill = env.fill, pref = pf19uPref(env.d);
+    var bumpState = React.useState(0), bump = bumpState[1];
+    var slowHigh = !!(snap && snap.slow === true && snap.quality === 'high');
+    React.useEffect(function () {
+      if (!slowHigh) return;
+      if (pref === 'auto' && !PF19U_DOWN[view]) {
+        if (onStep) onStep();
+        PF19U_DOWN[view] = true;
+        env.say(pf19uChose(__alloT, fill, 'low', pf19uWhy(__alloT, fill, 'slow')));
+        bump(function (n) { return n + 1; });
+      } else if (pref === 'high' && !PF19U_OFFER[view]) {
+        PF19U_OFFER[view] = true;
+        env.say(__alloT('stem.coralreef.pf19u_slow_offer', '3D is running slowly on this device.'));
+        bump(function (n) { return n + 1; });
+      }
+    }, [slowHigh, pref]);
+    return pf19uRequest(pref, view);
+  }
+  // What Automatic chose and why (one small muted line, not a live region), or the
+  // slow-device notice with its one button. Nothing when the engine says nothing.
+  function Pf19uStatus(props) {
+    var env = props.env, h = env.h, P = env.P, __alloT = env.t, fill = env.fill, pref = pf19uPref(env.d), view = props.view, snap = props.snap;
+    function notice(kind, text, label, value) {
+      return h('div', { 'data-pf19u-notice': kind, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 12px', margin: '8px 0', padding: '8px 12px', borderRadius: 10, border: '1px solid ' + P.border, borderLeft: '4px solid ' + P.accent, background: P.card, color: P.text } },
+        h('p', { style: { margin: 0, flex: '1 1 220px', fontSize: 14 } }, text),
+        h('button', { type: 'button', 'data-pf19u-action': value, style: btnStyle(P, false, { minHeight: 44, fontSize: 14 }), onClick: function () { if (props.onPick) props.onPick(value); else env.set({ diveQuality: value }); if (props.onChoose) props.onChoose(value); } }, label));
+    }
+    // The dive (props.offer given) offers only, for this dive, and says that switching restarts it.
+    var restart = props.offer !== undefined ? ' ' + pf19uRestartNote(__alloT) : '';
+    if (props.offer === true) return notice('offer', __alloT('stem.coralreef.pf19u_slow_offer', '3D is running slowly on this device.') + restart, __alloT('stem.coralreef.pf19u_use_low', 'Switch to Smoother'), 'low');
+    if (pref === 'auto' && PF19U_DOWN[view]) return notice('auto', pf19uChose(__alloT, fill, 'low', pf19uWhy(__alloT, fill, 'slow')) + restart, __alloT('stem.coralreef.pf19u_use_high', 'Use Detailed again'), 'high');
+    if (props.offer === undefined && pref === 'high' && PF19U_OFFER[view]) return notice('offer', __alloT('stem.coralreef.pf19u_slow_offer', '3D is running slowly on this device.'), __alloT('stem.coralreef.pf19u_use_low', 'Switch to Smoother'), 'low');
+    var reason = props.reason !== undefined ? props.reason : snap && snap.autoReason, tier = props.tier !== undefined ? props.tier : snap && snap.quality;
+    if (pref !== 'auto' || !reason || (tier !== 'low' && tier !== 'high')) return null;
+    var why = pf19uWhy(__alloT, fill, reason, tier, props.engine);
+    return why ? h('p', { 'data-pf19u-why': view, style: { margin: '4px 0 8px', fontSize: 13, lineHeight: 1.45, color: P.muted } }, pf19uChose(__alloT, fill, tier, why)) : null;
+  }
+  var PF19U_API = { useSlow: usePf19uSlow, Status: Pf19uStatus };
+
   function Dive3D(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill;
     var canvasRef = React.useRef(null), ctlRef = React.useRef(null), titleRef = React.useRef(null), controlsRef = React.useRef(null);
@@ -4195,6 +4755,18 @@
     var cm = React.useState('diver'), cameraMode = cm[0], setCameraMode = cm[1];
     var uid = 'cr-survey-' + React.useId().replace(/:/g, ''), cameraHelpId = uid + '-camera-help', motionHelpId = uid + '-motion-help';
     var layout = props.layout;
+    // Lane pf19u: the engine's tier, reason and slow flag, kept as one string so other reports do not re-render.
+    var pf19uKs = React.useState(''), pf19uKey = pf19uKs[0], setPf19uKey = pf19uKs[1], pf19uParts = pf19uKey.split('|');
+    var pf19uSnap = pf19uKey ? { slow: pf19uParts[0] === '1', quality: pf19uParts[1], autoReason: pf19uParts[2] || null } : null;
+    var pf19uMode = React.useRef('diver'), pf19uLastReq = React.useRef(null), pf19uRefocus = React.useRef(false);
+    pf19uMode.current = cameraMode;
+    // The survey passes the shared helpers in (props.pf19u); without them the view mounts as before.
+    var pf19uApi = props.pf19u || null;
+    var pf19uReq = !pf19uApi ? 'auto' : pf19uApi.useSlow(env, 'survey', status === 'ready' ? pf19uSnap : null, function () {
+      var active = document.activeElement;
+      if (active && active === canvasRef.current) pf19uRefocus.current = true;
+      else if (controlsRef.current && controlsRef.current.contains(active)) guideReveal(titleRef.current, titleRef.current, reduceRef.current);
+    });
     function focusTitle() { guideReveal(titleRef.current, titleRef.current, reduceRef.current); }
     React.useEffect(function () { if (props.focusOnMount !== false) focusTitle(); }, []);
     React.useEffect(function () {
@@ -4208,6 +4780,7 @@
       }
       function acceptState(snap) {
         if (!snap || cancelled) return;
+        if (snap.slow != null || snap.autoReason != null) setPf19uKey((snap.slow === true ? '1' : '0') + '|' + (snap.quality || '') + '|' + (typeof snap.autoReason === 'string' ? snap.autoReason : ''));
         if (snap.ready) setStatus('ready');
         if (snap.cameraMode === 'diver' || snap.cameraMode === 'overview') setCameraMode(snap.cameraMode);
         if (typeof snap.paused === 'boolean') setPaused(snap.paused || !!snap.reducedMotion);
@@ -4216,17 +4789,22 @@
         if (snap.pointIndex !== indexRef.current && onPointRef.current) onPointRef.current(snap.pointIndex);
       }
       syncedRef.current = false;
+      // Lane pf19u: a new detail level keeps the survey point (below) and the camera view.
+      var pf19uKeepMode = pf19uLastReq.current !== null && pf19uLastReq.current !== pf19uReq ? pf19uMode.current : null, pf19uFocus = pf19uRefocus.current;
+      pf19uLastReq.current = pf19uReq; pf19uRefocus.current = false; setPf19uKey('');
       setStatus('loading'); setProgress(0); setPaused(reduceRef.current); setCameraMode('diver');
       ensureReef3D().then(function (THREE) {
         if (cancelled || !canvasRef.current) return;
         try {
           // A staged mount builds over many short tasks; the view is ready when its first frame is drawn.
           ctlRef.current = window.Reef3D.mount(canvasRef.current, {
-            THREE: THREE, layout: layout, seed: layout.seed, reducedMotion: reduceRef.current, staged: true,
+            THREE: THREE, layout: layout, seed: layout.seed, reducedMotion: reduceRef.current, staged: true, quality: pf19uReq,
             onProgress: function (f) { if (!cancelled) setProgress(Math.round(f * 100)); },
             onState: acceptState, onError: failDive
           });
           ctlRef.current.goToPoint(indexRef.current || 0);
+          if (pf19uKeepMode === 'overview' && typeof ctlRef.current.setCameraMode === 'function') { ctlRef.current.setCameraMode('overview'); setCameraMode('overview'); }
+          if (pf19uFocus && canvasRef.current) { try { canvasRef.current.focus({ preventScroll: true }); } catch (e) { canvasRef.current.focus(); } }
           var now = ctlRef.current.getState ? ctlRef.current.getState() : null;
           acceptState(now);
           if (!now || now.ready !== false) setStatus('ready');
@@ -4236,7 +4814,7 @@
         cancelled = true;
         if (ctlRef.current) { try { ctlRef.current.dispose(); } catch (e) {} ctlRef.current = null; }
       };
-    }, [layout, attempt]);
+    }, [layout, attempt, pf19uReq]);
     React.useEffect(function () {
       var c = ctlRef.current;
       if (c && typeof c.setReducedMotion === 'function') {
@@ -4257,7 +4835,7 @@
     }
     return h('div', { 'data-survey-dive': 'true', style: { position: 'relative', marginBottom: 12 } },
       h('h4', { ref: titleRef, tabIndex: -1, 'data-survey-dive-title': 'true', style: { margin: '0 0 10px', fontSize: 18, color: P.text } }, __alloT('stem.coralreef.dive_title', '3D survey view')),
-      h('canvas', { ref: canvasRef, tabIndex: status === 'ready' ? 0 : -1, role: 'application', 'aria-busy': status === 'loading' ? 'true' : 'false',
+      h('canvas', { key: 'pf19u-' + pf19uReq, ref: canvasRef, tabIndex: status === 'ready' ? 0 : -1, role: 'application', 'aria-busy': status === 'loading' ? 'true' : 'false',
         'aria-label': __alloT('stem.coralreef.dive_canvas_label', '3D dive along the survey tape. Left and right arrow keys move between survey points; Page Up and Page Down jump 2 meters; Home and End go to the ends; Space pauses the fish.'),
         style: { width: '100%', height: 360, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
       status === 'loading' ? h(DiveLoading, { env: env, value: progress, label: __alloT('stem.coralreef.dive_loading', 'Loading the 3D reef...') }) : null,
@@ -4267,6 +4845,7 @@
       h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-survey-dive-status': 'true', style: { margin: '8px 0', color: P.text } }, status === 'ready' ? paused || reduce
         ? __alloT('stem.coralreef.dive_status_paused', 'Survey reef paused. You can still change points and use the camera controls.')
         : __alloT('stem.coralreef.dive_status_ready', 'Survey reef ready. Use Pause the reef to stop movement.') : ''),
+      pf19uApi && status !== 'error' ? h(pf19uApi.Status, { env: env, view: 'survey', snap: pf19uSnap, engine: 'Reef3D', onChoose: function () { focusTitle(); } }) : null,
       status === 'ready' ? h('div', { ref: controlsRef, 'data-survey-dive-controls': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
         ctlRef.current && typeof ctlRef.current.setCameraMode === 'function' ? h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.dive_view_group', 'Survey viewpoint'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
           [['diver', __alloT('stem.coralreef.dive_view_diver', 'Diver view')], ['overview', __alloT('stem.coralreef.dive_view_overview', 'Whole transect')]].map(function (item) {
@@ -4813,6 +5392,7 @@
       { id: 'results', label: __alloT('stem.coralreef.inv_stage_results', '4. Results') }
     ];
     return h('div', null,
+      h(Pd19Start, { env: env, sec: 'survey' }),
       h('section', { style: cardStyle(P) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.s_site_title', 'Choose a reef')),
         h('style', null, SV9_CSS),
@@ -4972,7 +5552,8 @@
           h('h3', { id: 'cr-point-title', ref: props.pointHeadingRef, tabIndex: -1, style: Object.assign(h3Style(P), { margin: 0 }) }, __alloFill(__alloT('stem.coralreef.p_point_title', 'Point {n} of 40, at {m} m'), { n: idx + 1, m: point.distanceM })),
           h('button', { type: 'button', 'aria-pressed': dive ? 'true' : 'false', style: btnStyle(P, dive), onClick: function () { diveOpened.current = !dive; env.set({ surveyView: dive ? '2d' : '3d' }); } },
             dive ? __alloT('stem.coralreef.p_view_2d', 'Back to close-up pictures') : __alloT('stem.coralreef.p_view_3d', 'Dive view (3D)'))),
-        dive ? h(Dive3D, { env: env, layout: layout, pointIndex: idx, focusOnMount: diveOpened.current, onPoint: function (i) { moveTo(i, false); } }) : null,
+        dive ? h(Pf19uDetail, { env: env, view: 'survey', style: { marginBottom: 12 } }) : null,
+        dive ? h(Dive3D, { env: env, layout: layout, pointIndex: idx, focusOnMount: diveOpened.current, pf19u: PF19U_API, onPoint: function (i) { moveTo(i, false); } }) : null,
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' } },
           dive ? null : h('div', { style: { flex: '1 1 320px', maxWidth: 560 } },
             mt10PlainArt(env.React, PointArt({ h: h, point: point, size: 560, idPrefix: 's', label: __alloFill(__alloT('stem.coralreef.point_art_label', 'Close-up under the point: {features}.'), { features: features }) }))),
@@ -6058,7 +6639,7 @@
       h('style', null, SV_CSS),
       h('h4', { style: { margin: '0 0 8px', fontSize: 17 } }, __alloT('stem.coralreef.inv_m_title', 'Then the invertebrates, in the same belt')),
       h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.inv_m_1', 'After the fish, divers swim the same belt again, slowly and in an S shape, and count indicator invertebrates. Some are animals people collect for food, for aquariums or as shells. Others warn of trouble when there are very many. Divers look into cracks and under ledges, but never move rocks or coral.')),
-      h('p', { style: mutedStyle(P, { margin: '0 0 10px' }) }, __alloT('stem.coralreef.inv_m_2', 'The belt is the same 100 square meters, so each count is also a density per 100 square meters. These are the nine indicators on the Reef Check form for the Indo-Pacific.')),
+      h('p', { style: mutedStyle(P, { margin: '0 0 10px' }) }, rl21Text(env, __alloT('stem.coralreef.inv_m_2', 'The belt is the same 100 square meters, so each count is also a density per 100 square meters. These are the nine indicators on the Reef Check form for the Indo-Pacific.'), __alloT('stem.coralreef.inv_m_2_simple', 'The belt is the same 100 square meters. So each count is also a density, the number of animals in 100 square meters. These are the nine indicators on the Reef Check form for the Indo-Pacific. Indicators are the animals the form asks divers to count.'))),
       h('div', { className: 'mt10-cardbox' }, h('ul', { className: 'mt10-cards mt10-inv' }, INV_IDS.map(function (id) {
         var gid = INV_GUIDE[id];
         return h('li', { key: id, 'data-inv-method': id, className: 'mt10-card' },
@@ -6244,6 +6825,7 @@
         h('style', null, LANE_CSS_B),
         h('style', null, SRV_CSS),
         h('style', null, CP9_CSS),
+        h(Pd19Start, { env: env, sec: 'compare' }),
         h('section', { className: 'cp9-welcome', style: cardStyle(P) },
           h('div', { className: 'cp9-welcome-go' },
             h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.c_empty_title', 'No surveys saved yet')),
@@ -6273,6 +6855,7 @@
       h('style', null, SRV_CSS),
       h('style', null, SV_CSS),
       h('style', null, CP9_CSS),
+      h(Pd19Start, { env: env, sec: 'compare' }),
       stepsDone ? null : h('section', { style: cardStyle(P) }, h(SrvSteps, { env: env, log: log, groups: groups, level: 3 }),
         // Start sends a student here to reach a second reef: the way to the survey has to be on this page.
         h('button', { type: 'button', 'data-jr11-to-survey': 'true', style: btnStyle(P, groups.length < 2), onClick: function () { env.go('survey'); } }, __alloT('stem.coralreef.m_to_survey', 'Start a field survey'))),
@@ -7051,6 +7634,7 @@
       h('label', { htmlFor: uid + '-why', style: { display: 'block', fontWeight: 700, marginBottom: 4 } }, __alloT('stem.coralreef.srv_why_label', '3. Your reasoning')),
       h('p', { id: uid + '-why-help', style: mutedStyle(P, { margin: '0 0 6px', fontSize: 14 }) }, __alloT('stem.coralreef.srv_why_help', 'Explain why your evidence backs your claim. What do you know about reefs that links them? For example: grazing fish eat seaweed, and seaweed can crowd out young corals.')),
       rd12TypedNote(env, uid + '-why-keep'),
+      pd19Starters(env, reason, function (v) { update({ reasoning: v.slice(0, 2000) }, true); }, uid + '-why'),
       h('textarea', { id: uid + '-why', rows: 4, 'aria-describedby': uid + '-why-help ' + uid + '-why-keep', value: reason, onChange: function (e) { update({ reasoning: e.target.value.slice(0, 2000) }, true); },
         style: { width: '100%', boxSizing: 'border-box', padding: 8, borderRadius: 8, border: '1px solid ' + P.ctlBorder, background: P.card, color: P.text, font: 'inherit' } })),
       h('div', { style: { margin: '10px 0 0' } },
@@ -7956,13 +8540,13 @@
     var g = round1(part('regrowth') * 100), k;
     if (Math.abs(c.change) < 0.005) return __alloFill(__alloT('stem.coralreef.mdl_cause_steady', 'Coral stayed about the same ({a}% to {b}%): regrowth ({g} points) balanced the losses.'), { a: a, b: b, g: g });
     if (c.change < 0) {
-      if (c.main === 'heat') return __alloFill(__alloT('stem.coralreef.mdl_cause_fell_heat', 'Coral fell from {a}% to {b}% mainly because of the heatwave: {dhw} Degree Heating Weeks killed {k} percentage points of coral.'), { a: a, b: b, dhw: c.dhw, k: round1(-part('heat') * 100) });
+      if (c.main === 'heat') return __alloFill(rl21Text(null, __alloT('stem.coralreef.mdl_cause_fell_heat', 'Coral fell from {a}% to {b}% mainly because of the heatwave: {dhw} Degree Heating Weeks killed {k} percentage points of coral.'), __alloT('stem.coralreef.mdl_cause_fell_heat_simple', 'Coral fell from {a}% to {b}% mainly because of the heatwave. It reached {dhw} Degree Heating Weeks, and that killed {k} percentage points of coral.')), { a: a, b: b, dhw: c.dhw, k: round1(-part('heat') * 100) });
       if (c.main === 'overgrowth') return __alloFill(__alloT('stem.coralreef.mdl_cause_fell_overgrowth', 'Coral fell from {a}% to {b}%, mostly because seaweed grew over it ({k} percentage points).'), { a: a, b: b, k: round1(-part('overgrowth') * 100) });
       k = round1((-part('background') - part('heat') - part('overgrowth')) * 100);
       return __alloFill(__alloT('stem.coralreef.mdl_cause_fell_other', 'Coral fell from {a}% to {b}%. Storms, disease, predators and heat took more coral ({k} points) than regrowth added ({g} points).'), { a: a, b: b, k: k, g: g });
     }
     if (c.main === 'planted') return __alloFill(__alloT('stem.coralreef.mdl_cause_rose_planted', 'Coral rose from {a}% to {b}%: people added {p} percentage points of coral, and regrowth added {g}.'), { a: a, b: b, p: round1(part('planted') * 100), g: g });
-    return __alloFill(__alloT('stem.coralreef.mdl_cause_rose', 'Coral rose from {a}% to {b}%: regrowth into open rock added {g} percentage points, more than storms, disease and heat took away.'), { a: a, b: b, g: g });
+    return __alloFill(rl21Text(null, __alloT('stem.coralreef.mdl_cause_rose', 'Coral rose from {a}% to {b}%: regrowth into open rock added {g} percentage points, more than storms, disease and heat took away.'), __alloT('stem.coralreef.mdl_cause_rose_simple', 'Coral rose from {a}% to {b}%. New coral grew on open rock and added {g} percentage points. That is more than storms, disease and heat took away.')), { a: a, b: b, g: g });
   }
   // Extra reasons, each shown only when the run's numbers say so.
   function mdlCauseFlags(c, settings, __alloT, __alloFill) {
@@ -8555,7 +9139,7 @@
             var on = sid === s.id;
             return h('button', { key: s.id, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-describedby': vigUid + '-f-' + s.id, 'data-scn': s.id, style: btnStyle(P, on, { padding: '6px 6px 9px' }), onClick: function () { pickScenario(s.id); } }, vigs[s.id].art, SC[s.id].name);
           })),
-        h('p', { style: mutedStyle(P, { margin: '6px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.vis_key', 'In each picture, the strip along the top is the 30 years, with a flame for each severe heatwave (a taller flame is a stronger one). Below it is the starting reef with its grazing fish, and a brown cloud where runoff from land is higher.')),
+        h('p', { style: mutedStyle(P, { margin: '6px 0 0', fontSize: 13 }) }, rl21Text(env, __alloT('stem.coralreef.vis_key', 'In each picture, the strip along the top is the 30 years, with a flame for each severe heatwave (a taller flame is a stronger one). Below it is the starting reef with its grazing fish, and a brown cloud where runoff from land is higher.'), __alloT('stem.coralreef.vis_key_simple', 'Each picture has a strip along the top for the 30 years. Each flame is a severe heatwave, and a taller flame is a stronger one. Below the strip is the starting reef with its grazing fish. A brown cloud means more runoff from land.'))),
         h('div', { style: SR_ONLY }, SCENARIOS.map(function (s) { return h('span', { key: s.id, id: vigUid + '-f-' + s.id }, scnFacts(__alloT, __alloFill, vigs[s.id].data, LV).join(' ')); })),
         h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, h('strong', null, SC[sid].name, ': '), SC[sid].about),
         h('ul', { className: 'crb-facts', 'data-scn-facts': sid, 'aria-label': __alloT('stem.coralreef.vis_facts_label', 'What this scenario sets') }, scnFacts(__alloT, __alloFill, scnVignetteData(settings), LV).map(function (t, i) { return h('li', { key: i }, t); })),
@@ -8890,8 +9474,8 @@
       worse: __alloFill(__alloT('stem.coralreef.rc_reason_worse', 'This plan ended with less coral than doing nothing. In the middle run seaweed covered {s}% of the bottom, against {t}% with no plan, and coral regrowth was {r} points against {n}.'), v),
       ground: __alloFill(__alloT('stem.coralreef.rc_reason_ground', 'Reef Stars turned loose rubble into solid ground ({g} points of new ground). With somewhere to grow, coral regrowth added {r} points over 30 years, against {n} points with no plan.'), v),
       seaweed: __alloFill(__alloT('stem.coralreef.rc_reason_seaweed', 'This plan kept seaweed off the rock. Seaweed blocked about {b} points of coral regrowth with no plan and {p} points with this one, so regrowth added {r} points instead of {n}.'), v),
-      regrowth: __alloFill(__alloT('stem.coralreef.rc_reason_regrowth', 'Compared with doing nothing, this plan gave coral a little more room: regrowth added {r} points over 30 years, against {n} points with no plan.'), v),
-      planted: __alloFill(__alloT('stem.coralreef.rc_reason_planted', 'Planting made the difference: people added {a} points of coral over 30 years, and regrowth added {r} points against {n} with no plan.'), v)
+      regrowth: __alloFill(rl21Text(null, __alloT('stem.coralreef.rc_reason_regrowth', 'Compared with doing nothing, this plan gave coral a little more room: regrowth added {r} points over 30 years, against {n} points with no plan.'), __alloT('stem.coralreef.rc_reason_regrowth_simple', 'Compared with doing nothing, this plan gave coral a little more room. Regrowth added {r} points over 30 years. With no plan, it added {n} points.')), v),
+      planted: __alloFill(rl21Text(null, __alloT('stem.coralreef.rc_reason_planted', 'Planting made the difference: people added {a} points of coral over 30 years, and regrowth added {r} points against {n} with no plan.'), __alloT('stem.coralreef.rc_reason_planted_simple', 'Planting made the difference. People added {a} points of coral over 30 years. Regrowth added {r} points, against {n} with no plan.')), v)
     }[ev.reason.id];
   }
   function rescueLossText(ev, __alloT, __alloFill) {
@@ -8911,7 +9495,7 @@
       : __alloFill(__alloT('stem.coralreef.rc_cer_claim_worse', 'Claim: On the {reef}, my plan ({list}; {c} of {b} points) does worse than doing nothing when judged by {crit}.'), v);
     var ev2 = __alloFill(__alloT('stem.coralreef.rc_cer_evidence', 'Evidence: I ran the plan {n} times in the Reef future model, changing only when the heatwaves came. In year {y}, the middle run had {m}% live coral (lowest {a}%, highest {z}%). With no plan, the middle run had {nm}% (lowest {na}%, highest {nz}%). The fish count was {f}, against {nf} with no plan. I predicted {p}%.'),
       { n: ev.stats.count, y: ev.stats.years, m: mdlPc(ev.stats.median), a: mdlPc(ev.stats.min), z: mdlPc(ev.stats.max), nm: mdlPc(ev.none.median), na: mdlPc(ev.none.min), nz: mdlPc(ev.none.max), f: Math.round(ev.stats.fish), nf: Math.round(ev.none.fish), p: saved.predict });
-    var reasoning = __alloFill(__alloT('stem.coralreef.rc_cer_reasoning', 'Reasoning: {reason} {loss} A local plan cannot stop heatwaves: if heat keeps rising, the same plan reaches {w}%, so cutting emissions matters most. This is a simplified teaching model, not a forecast for a real reef.'),
+    var reasoning = __alloFill(rl21Text(null, __alloT('stem.coralreef.rc_cer_reasoning', 'Reasoning: {reason} {loss} A local plan cannot stop heatwaves: if heat keeps rising, the same plan reaches {w}%, so cutting emissions matters most. This is a simplified teaching model, not a forecast for a real reef.'), __alloT('stem.coralreef.rc_cer_reasoning_simple', 'Reasoning: {reason} {loss} A local plan cannot stop heatwaves. If heat keeps rising, the same plan reaches {w}%. So cutting emissions matters most. This is a simplified teaching model, not a forecast for a real reef.')),
       { reason: rescueReasonText(ev, __alloT, __alloFill), loss: rescueLossText(ev, __alloT, __alloFill), w: mdlPc(ev.heat.warmer.median) });
     return claim + '\n\n' + ev2 + '\n\n' + reasoning;
   }
@@ -9188,10 +9772,10 @@
           h('p', { style: { margin: '8px 0 6px' } }, __alloT('stem.coralreef.rc_costs_intro', 'Points are a teaching simplification, not real prices. Real costs change a lot from place to place. Here is what the points are based on:')),
           h('ul', { style: { margin: 0, paddingLeft: 20 } },
             h('li', null, __alloT('stem.coralreef.rc_costs_structures', 'Reef structures cost the most. In one review of restoration projects, building an artificial reef was the top of the cost range, about US$4,000,000 per hectare. The middle project cost about US$400,000 (Bayraktarov et al. 2019).')),
-            h('li', null, __alloT('stem.coralreef.rc_costs_fish', 'A step of fish protection costs the least. At Komodo, Indonesia, patrols against blast fishing cost about 5 times less than repairing the reef with rock piles, for each square meter of coral gained (Haisfield et al. 2010). Patrols against blasting are only a rough match for protecting grazing fish.')),
+            h('li', null, rl21Text(env, __alloT('stem.coralreef.rc_costs_fish', 'A step of fish protection costs the least. At Komodo, Indonesia, patrols against blast fishing cost about 5 times less than repairing the reef with rock piles, for each square meter of coral gained (Haisfield et al. 2010). Patrols against blasting are only a rough match for protecting grazing fish.'), __alloT('stem.coralreef.rc_costs_fish_simple', 'A step of fish protection costs the least. At Komodo, Indonesia, people patrolled the reef to stop blast fishing. Blast fishing uses bombs to catch fish. The patrols cost about 5 times less than fixing the reef with rock piles (Haisfield et al. 2010). That is for each square meter of coral gained. Patrols against blasting are only a rough match for protecting grazing fish.'))),
             h('li', null, __alloT('stem.coralreef.rc_costs_garden', 'Coral gardening: the same review puts a coral nursery at the low end, about US$6,000 per hectare, but that does not include planting out. We set these points ourselves.')),
-            h('li', null, __alloT('stem.coralreef.rc_costs_made_up', 'Reef Stars and cutting runoff: we could not find a fair published comparison, so these points are made up for the game.')),
-            h('li', null, __alloT('stem.coralreef.rc_costs_bost', 'The restoration review this model uses for coral survival (Bostrom-Einarsson et al. 2020) reports how well methods worked, not what they cost.'))))),
+            h('li', null, rl21Text(env, __alloT('stem.coralreef.rc_costs_made_up', 'Reef Stars and cutting runoff: we could not find a fair published comparison, so these points are made up for the game.'), __alloT('stem.coralreef.rc_costs_made_up_simple', 'Reef Stars and cutting runoff: we could not find a fair study that compared them. So these points are made up for the game.'))),
+            h('li', null, rl21Text(env, __alloT('stem.coralreef.rc_costs_bost', 'The restoration review this model uses for coral survival (Bostrom-Einarsson et al. 2020) reports how well methods worked, not what they cost.'), __alloT('stem.coralreef.rc_costs_bost_simple', 'This model takes its numbers for coral survival from a review of restoration projects (Bostrom-Einarsson et al. 2020). That review reports how well the methods worked. It does not say what they cost.')))))),
       h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-rc-predict-title' },
         h('h3', { id: 'cr-rc-predict-title', style: h3Style(P) }, __alloT('stem.coralreef.rc_predict_title', 'Step 3: Predict, then test')),
         h('p', { style: { margin: '0 0 12px' } }, __alloFill(__alloT('stem.coralreef.rc_predict_plan', 'Your plan: {list}. It will be tested {n} times, because no one knows when the next heatwave will come.'), { list: T.words(draft), n: MDL_RUNS })),
@@ -9320,7 +9904,7 @@
             h('figcaption', null, h('strong', null, thisLabel), ' ', __alloFill(__alloT('stem.coralreef.rc_pic_nums', '{c}% live coral, {a}% seaweed'), { c: pc(s.midRow.coral), a: pc(s.midRow.algae) })))),
         h('h4', { className: 'rc-sub', style: { color: P.text } }, __alloT('stem.coralreef.rc_compare_title', 'Compare your plans')),
         h(RescueTable, { env: env, T: T, plans: onReef, start: plan.start, criterion: crit, currentId: saved.id, onShow: props.onShow, onRemove: props.onRemove }),
-        h('p', { style: mutedStyle(P, { margin: '8px 0 0', fontSize: 14 }) }, __alloFill(__alloT('stem.coralreef.rc_fair', 'Every plan here faced the same {n} heatwave timings, so the plans can be compared fairly. Fish counts follow the model\'s teaching rule: grazing fish and predators follow protection, and butterflyfish follow live coral.'), { n: s.count })),
+        h('p', { style: mutedStyle(P, { margin: '8px 0 0', fontSize: 14 }) }, __alloFill(rl21Text(env, __alloT('stem.coralreef.rc_fair', 'Every plan here faced the same {n} heatwave timings, so the plans can be compared fairly. Fish counts follow the model\'s teaching rule: grazing fish and predators follow protection, and butterflyfish follow live coral.'), __alloT('stem.coralreef.rc_fair_simple', 'Every plan here faced the same {n} heatwave timings. So the plans can be compared fairly. Fish counts follow the model\'s teaching rule. Grazing fish and predators rise and fall with protection. Butterflyfish rise and fall with live coral.')), { n: s.count })),
         h('div', { style: { marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
           h('button', { type: 'button', 'data-rc-again': 'true', style: btnStyle(P, true), onClick: props.onAgain }, __alloT('stem.coralreef.rc_again', 'Change this plan and test again')),
           h('span', { style: { color: P.muted, fontSize: 14.5, flex: '1 1 220px' } }, __alloT('stem.coralreef.rc_again_note', 'Engineers test, compare and try again. Change one thing and see what moves.')))),
@@ -9347,12 +9931,12 @@
           h('figure', null,
             h(RescueStrip, { env: env, kind: 'heat', rows: heatRows, top: top, start: s.start, startLabel: __alloFill(__alloT('stem.coralreef.rc_strip_today', 'Today {v}%'), { v: pc(s.start) }), label: heatStripLabel }),
             h(RescueKey, { env: env }),
-            h('figcaption', null, __alloT('stem.coralreef.rc_heat_note', 'Fewer, weaker heatwaves is an optimistic what-if, not a forecast. The other two are the Recent pattern and Warmer future scenarios.'))),
+            h('figcaption', null, rl21Text(env, __alloT('stem.coralreef.rc_heat_note', 'Fewer, weaker heatwaves is an optimistic what-if, not a forecast. The other two are the Recent pattern and Warmer future scenarios.'), __alloT('stem.coralreef.rc_heat_note_simple', 'Fewer, weaker heatwaves is a hopeful what-if. It is not a forecast. The other two are the Recent pattern and Warmer future scenarios.')))),
           h('div', { className: 'rc-hope', 'data-rc-hope': gain >= 1 ? 'gain' : 'flat' },
           h('p', { style: { fontWeight: 700 } }, gain >= 1
             ? __alloFill(__alloT('stem.coralreef.rc_hope_gain', 'What your plan does achieve: under the same heatwaves, the middle run has {d} more points of live coral than doing nothing.'), { d: gain })
             : __alloT('stem.coralreef.rc_hope_flat', 'This plan did not add coral yet, but that is what testing is for. Look at what is holding this reef back and try another choice.')),
-          h('p', null, __alloT('stem.coralreef.rc_hope_body', 'Local care and cutting emissions work together. Healthy local conditions let a reef regrow between heatwaves, and fewer heatwaves give it the time to do that.')))),
+          h('p', null, rl21Text(env, __alloT('stem.coralreef.rc_hope_body', 'Local care and cutting emissions work together. Healthy local conditions let a reef regrow between heatwaves, and fewer heatwaves give it the time to do that.'), __alloT('stem.coralreef.rc_hope_body_simple', 'Local care and cutting emissions work together. When local conditions are healthy, a reef can grow back between heatwaves. Fewer heatwaves give it the time to do that.'))))),
         usesLevers ? h('p', { style: mutedStyle(P, { margin: '10px 0 0', fontSize: 14 }), 'data-rc-limit-levers': 'true' }, __alloT('stem.coralreef.mo_limit_4', 'The grazing and runoff numbers are illustrative, and the switch to seaweed is sharper than on most real reefs.')) : null,
         h('p', { style: mutedStyle(P, { margin: usesLevers ? '4px 0 0' : '10px 0 0', fontSize: 14 }) }, __alloT('stem.coralreef.rc_limits_pointer', 'Every plan uses the typical reef\'s heat curve. See What this model leaves out, below.'))),
       h('section', { style: cardStyle(P), 'aria-labelledby': 'cr-rc-cer-title', 'data-rc-cer-card': 'true' },
@@ -9428,9 +10012,11 @@
     var env = props.env, h = env.h, P = env.P, __alloT = env.t, rescue = env.d.mdlView === 'rescue';
     function pick(next) { env.set({ mdlView: next }); }
     return h('div', null,
+      h(Pd19Start, { env: env, sec: 'model' }),
       h('div', { role: 'group', 'aria-label': __alloT('stem.coralreef.rc_views', 'Reef future views'), 'data-mdl-views': rescue ? 'rescue' : 'scenarios', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
         h('button', { type: 'button', 'aria-pressed': rescue ? 'false' : 'true', 'data-mdl-view': 'scenarios', style: btnStyle(P, !rescue), onClick: function () { pick('scenarios'); } }, __alloT('stem.coralreef.rc_view_scenarios', 'Scenarios')),
         h('button', { type: 'button', 'aria-pressed': rescue ? 'true' : 'false', 'data-mdl-view': 'rescue', style: btnStyle(P, rescue), onClick: function () { pick('rescue'); } }, __alloT('stem.coralreef.rc_rescue_title', 'Plan a reef rescue'))),
+      h(Rl21Toggle, { env: env, where: 'model' }),
       rescue ? h(RescueSection, { env: env }) : h(ModelSection, { env: env }));
   }
 
@@ -9477,24 +10063,24 @@
   function scienceCards(__alloT) {
     return [
       { id: 'symbiosis', title: __alloT('stem.coralreef.sc_sym_title', 'Corals and the algae inside them'),
-        body: [__alloT('stem.coralreef.sc_sym_1', 'Reef-building corals are animals. Tiny algae from the family Symbiodiniaceae live inside their tissue, use sunlight to make food and pass much of it to the coral; in bright light that can be most of the coral\'s energy. The algae also give corals most of their color.')] },
+        body: [rl21Text(null, __alloT('stem.coralreef.sc_sym_1', 'Reef-building corals are animals. Tiny algae from the family Symbiodiniaceae live inside their tissue, use sunlight to make food and pass much of it to the coral; in bright light that can be most of the coral\'s energy. The algae also give corals most of their color.'), __alloT('stem.coralreef.sc_sym_1_simple', 'Reef-building corals are animals. Tiny algae live inside their bodies. These algae are from the family Symbiodiniaceae. They use sunlight to make food, and they pass much of it to the coral. In bright light, that can be most of the coral\'s energy. The algae also give corals most of their color.'))] },
       { id: 'bleaching', title: __alloT('stem.coralreef.sc_bleach_title', 'Bleached is not dead'),
         body: [__alloT('stem.coralreef.sc_bleach_1', 'When the water stays too warm for too long, corals lose these algae and turn white. A bleached coral is still alive but starving, and if the water cools in time the algae can return.'),
-          __alloT('stem.coralreef.sc_bleach_2', 'How long and how hot matters. In the 2016 Great Barrier Reef heatwave, reefs with less than about 3 Degree Heating Weeks lost almost no coral, while reefs that reached 8 lost about two thirds of their coral within eight months.')] },
+          rl21Text(null, __alloT('stem.coralreef.sc_bleach_2', 'How long and how hot matters. In the 2016 Great Barrier Reef heatwave, reefs with less than about 3 Degree Heating Weeks lost almost no coral, while reefs that reached 8 lost about two thirds of their coral within eight months.'), __alloT('stem.coralreef.sc_bleach_2_simple', 'How long and how hot both matter. Degree Heating Weeks measure how much extra heat builds up over the weeks. In the 2016 heatwave on the Great Barrier Reef, some reefs had less than about 3 Degree Heating Weeks. They lost almost no coral. Other reefs reached 8. Within eight months, they lost about two thirds of their coral.'))] },
       { id: 'return', title: __alloT('stem.coralreef.sc_return_title', 'Heatwaves are coming back faster'),
-        body: [__alloT('stem.coralreef.sc_return_1', 'Across 100 reef locations worldwide, severe bleaching came back about once every 25 to 30 years in the early 1980s. By 2016 the typical gap was about 6 years. The fastest-growing corals usually need 10 to 15 years to recover, so many reefs are hit again before they have recovered.'),
-          __alloT('stem.coralreef.sc_return_2', 'In the fourth global bleaching event, from 2023 to 2025, about 84% of the world\'s reef area had heat stress at bleaching levels.')] },
+        body: [__alloT('stem.coralreef.sc_return_1', 'Scientists looked at reefs in 100 places around the world. In the early 1980s, severe bleaching came back about once every 25 to 30 years. By 2016, the typical gap was about 6 years. The fastest-growing corals usually need 10 to 15 years to recover. So many reefs are hit again before they have recovered.'),
+          rl21Text(null, __alloT('stem.coralreef.sc_return_2', 'In the fourth global bleaching event, from 2023 to 2025, about 84% of the world\'s reef area had heat stress at bleaching levels.'), __alloT('stem.coralreef.sc_return_2_simple', 'Bleaching hit reefs around the world for the fourth time from 2023 to 2025. In that event, about 84% of the world\'s reef area had enough heat stress to bleach corals. Bleached corals turn white.'))] },
       { id: 'grazers', title: __alloT('stem.coralreef.sc_graze_title', 'Grazers, seaweed and runoff'),
-        body: [__alloT('stem.coralreef.sc_graze_1', 'Parrotfish and surgeonfish graze algae and keep open space where young corals can settle. In a marine reserve in the Bahamas where parrotfish were protected, grazing doubled and seaweed cover fell to about a quarter.'),
-          __alloT('stem.coralreef.sc_graze_2', 'Losing grazers and adding nutrients from land can tip a damaged reef toward seaweed, as happened on Jamaica\'s reefs in the 1980s. Scientists still debate how often this happens: one large study found that few reefs were dominated by seaweed.')] },
+        body: [rl21Text(null, __alloT('stem.coralreef.sc_graze_1', 'Parrotfish and surgeonfish graze algae and keep open space where young corals can settle. In a marine reserve in the Bahamas where parrotfish were protected, grazing doubled and seaweed cover fell to about a quarter.'), __alloT('stem.coralreef.sc_graze_1_simple', 'Parrotfish and surgeonfish graze, which means they eat algae. This keeps open space where young corals can settle. In the Bahamas, parrotfish were protected in a marine reserve, a protected part of the sea. There, grazing doubled. Seaweed cover fell to about a quarter.')),
+          rl21Text(null, __alloT('stem.coralreef.sc_graze_2', 'Losing grazers and adding nutrients from land can tip a damaged reef toward seaweed, as happened on Jamaica\'s reefs in the 1980s. Scientists still debate how often this happens: one large study found that few reefs were dominated by seaweed.'), __alloT('stem.coralreef.sc_graze_2_simple', 'Grazers can be lost, and nutrients from land can wash in. Nutrients are food for plants and seaweed. Together these can tip a damaged reef toward seaweed. This happened on Jamaica\'s reefs in the 1980s. Scientists still argue about how often this happens. One large study found that few reefs were mostly covered by seaweed.'))] },
       { id: 'acid', title: __alloT('stem.coralreef.sc_acid_title', 'Ocean acidification'),
-        body: [__alloT('stem.coralreef.sc_acid_1', 'The ocean absorbs carbon dioxide, which leaves less of the carbonate corals use to build limestone. Scientists track this with the aragonite saturation state: about 4.2 in tropical waters before industry and about 3.5 by 2010. Above 1, corals can still build, but more slowly: roughly 15% slower for each 1 unit drop, with a wide spread between studies.')] },
+        body: [__alloT('stem.coralreef.sc_acid_1', 'The ocean takes in carbon dioxide. This leaves less of the carbonate that corals use to build limestone. Scientists track this with a number called the aragonite saturation state. It was about 4.2 in tropical waters before industry and about 3.5 by 2010. Above 1, corals can still build, but more slowly. They build roughly 15% slower for each 1 unit drop, and studies differ widely.')] },
       { id: 'forms', title: __alloT('stem.coralreef.sc_forms_title', 'Not all corals are equally tough'),
-        body: [__alloT('stem.coralreef.sc_forms_1', 'When reefs off Okinawa bleached in 1998, finely branched corals were hit hardest while many boulder and encrusting corals survived. These are tendencies: boulder corals can die too. A reef can keep some coral cover while losing many of its species.')] },
+        body: [rl21Text(null, __alloT('stem.coralreef.sc_forms_1', 'When reefs off Okinawa bleached in 1998, finely branched corals were hit hardest while many boulder and encrusting corals survived. These are tendencies: boulder corals can die too. A reef can keep some coral cover while losing many of its species.'), __alloT('stem.coralreef.sc_forms_1_simple', 'In 1998, reefs off Okinawa bleached, which means the corals turned white. Corals with thin, fine branches were hit hardest. Many boulder corals and encrusting corals survived. Encrusting corals grow flat, like a crust. These are tendencies, not rules: boulder corals can die too. A reef can keep some coral cover while losing many of its kinds of coral.'))] },
       { id: 'warming', title: __alloT('stem.coralreef.sc_warm_title', 'What more warming means'),
-        body: [__alloT('stem.coralreef.sc_warm_1', 'The IPCC projects that warm-water coral reefs will decline by a further 70 to 90% if global warming reaches 1.5 degrees C (high confidence), with larger losses of more than 99% at 2 degrees C (very high confidence).')] },
+        body: [__alloT('stem.coralreef.sc_warm_1', 'The IPCC made projections for warm-water coral reefs. If the world warms by 1.5 degrees C, they are projected to shrink by a further 70 to 90% (high confidence). At 2 degrees C, the losses are larger: more than 99% (very high confidence).')] },
       { id: 'restore', title: __alloT('stem.coralreef.sc_restore_title', 'What restoration can and cannot do'),
-        body: [__alloT('stem.coralreef.sc_restore_1', 'Coral gardening grows corals in nurseries and plants them back on the reef. A review of restoration projects found a typical one covers about 100 square meters, with 60 to 70% of the planted corals surviving. Its authors warn that restoration is not a replacement for action on climate change.')] }
+        body: [rl21Text(null, __alloT('stem.coralreef.sc_restore_1', 'Coral gardening grows corals in nurseries and plants them back on the reef. A review of restoration projects found a typical one covers about 100 square meters, with 60 to 70% of the planted corals surviving. Its authors warn that restoration is not a replacement for action on climate change.'), __alloT('stem.coralreef.sc_restore_1_simple', 'Coral gardening grows corals in nurseries. Then people plant them back on the reef. Scientists looked at the results of many restoration projects. A typical one covers about 100 square meters. And 60 to 70% of its planted corals survive. The scientists warn that restoration cannot take the place of action on climate change.'))] }
     ];
   }
   // Citations stay in their original language.
@@ -11269,13 +11855,13 @@
             : __alloT('stem.coralreef.sciLab_fate_none', 'All 10 corals died. The heat was too strong for too long, and they starved before the water cooled.');
         results.push(h('p', { key: 'fa', style: { margin: '0 0 6px' } }, fate));
       } else {
-        results.push(h('p', { key: 'no', style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.sciLab_no_heat', 'This water never got at least 1 degree C warmer than the usual warmest month, so it added no heat stress and the corals stayed healthy.')));
+        results.push(h('p', { key: 'no', style: { margin: '0 0 6px' } }, rl21Text(env, __alloT('stem.coralreef.sciLab_no_heat', 'This water never got at least 1 degree C warmer than the usual warmest month, so it added no heat stress and the corals stayed healthy.'), __alloT('stem.coralreef.sciLab_no_heat_simple', 'This water was never at least 1 degree C warmer than the usual warmest month. So it added no heat stress, and the corals stayed healthy.'))));
       }
       if (twin) results.push(h('p', { key: 'tw', style: { margin: '0 0 6px', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.sciLab_twin', 'Compare: {a} and {b} both added up to {dhw} Degree Heating Weeks, and they ended the same way. How long the heat lasts matters as much as how hot it gets.'), { a: describe(twin.anomaly, twin.weeks), b: describe(st.anomaly, st.weeks), dhw: run.peak })));
     }
     return h('section', { className: 'cr-scilab-inv', style: cardStyle(P), 'aria-labelledby': 'cr-scilab-bleach-title' },
       h('h3', { id: 'cr-scilab-bleach-title', style: h3Style(P) }, __alloT('stem.coralreef.sciLab_bleach_title', 'Investigate: inside a coral during a heatwave')),
-      h('p', { style: { margin: '0 0 12px' } }, __alloT('stem.coralreef.sciLab_bleach_intro', 'Set up a heatwave, predict what will happen to 10 corals on a reef, then watch week by week: the algae inside one coral, the food they make, and the heat stress adding up.')),
+      h('p', { style: { margin: '0 0 12px' } }, __alloT('stem.coralreef.sciLab_bleach_intro', 'Set up a heatwave and predict what will happen to 10 corals on a reef. Then watch week by week. You will see the algae inside one coral, the food they make, and the heat stress adding up.')),
       h('div', { className: 'cr-scilab-grid' },
         h('div', null,
           h('div', { role: 'group', 'aria-labelledby': 'cr-scilab-presets', style: { marginBottom: 10 } },
@@ -11334,7 +11920,7 @@
           h('tbody', null, run.rows.map(function (q) {
             return h('tr', { key: q.week }, h('td', null, String(q.week)), h('td', null, String(q.anomaly)), h('td', null, String(q.dhw)), h('td', null, q.living ? String(sciLabPct(q.algae)) : '0'), h('td', null, String(q.living)));
           }))))) : null,
-      h('p', { style: mutedStyle(P, { margin: '10px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.sciLab_bleach_honest', 'Simplified: coral deaths and paling follow this lab\'s Reef future curves (Hughes et al. 2018 and NOAA alert levels). How fast the algae grow back is a teaching assumption based on Rodrigues and Grottoli 2007.')));
+      h('p', { style: mutedStyle(P, { margin: '10px 0 0', fontSize: 13 }) }, rl21Text(env, __alloT('stem.coralreef.sciLab_bleach_honest', 'Simplified: coral deaths and paling follow this lab\'s Reef future curves (Hughes et al. 2018 and NOAA alert levels). How fast the algae grow back is a teaching assumption based on Rodrigues and Grottoli 2007.'), __alloT('stem.coralreef.sciLab_bleach_honest_simple', 'Simplified: corals die and turn pale here by the same curves as in Reef future. Those curves come from Hughes et al. 2018 and NOAA alert levels. How fast the algae grow back is a teaching assumption. It is a best guess based on Rodrigues and Grottoli 2007.'))));
   }
 
   // Investigation B: the carbonate budget.
@@ -11383,17 +11969,17 @@
           h('figure', { className: 'cr-scilab-fig', style: { margin: 0 } }, sciLabSvg(h, sciLabFigBudget(h, P, __alloT, __alloFill, b), 'budget')))) : null,
       revealed ? h('div', { 'aria-live': 'polite', style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid ' + P.border } },
         h('p', { style: { margin: '0 0 6px', fontWeight: 700, color: b.state === 'grow' ? P.good : b.state === 'shrink' ? P.bad : P.text } },
-          __alloFill(b.state === 'grow' ? __alloT('stem.coralreef.sciLab_b_res_grow', 'Corals add {a} kg and {r} kg is worn away, so the reef is growing: about {mm} mm higher each year, {cm} cm in 100 years.')
-            : b.state === 'shrink' ? __alloT('stem.coralreef.sciLab_b_res_shrink', 'Corals add {a} kg but {r} kg is worn away, so the reef is shrinking: about {mm} mm lower each year, {cm} cm in 100 years.')
+          __alloFill(b.state === 'grow' ? rl21Text(env, __alloT('stem.coralreef.sciLab_b_res_grow', 'Corals add {a} kg and {r} kg is worn away, so the reef is growing: about {mm} mm higher each year, {cm} cm in 100 years.'), __alloT('stem.coralreef.sciLab_b_res_grow_simple', 'Corals add {a} kg, and {r} kg is worn away, so the reef is growing. It gets about {mm} mm higher each year. That is {cm} cm in 100 years.'))
+            : b.state === 'shrink' ? rl21Text(env, __alloT('stem.coralreef.sciLab_b_res_shrink', 'Corals add {a} kg but {r} kg is worn away, so the reef is shrinking: about {mm} mm lower each year, {cm} cm in 100 years.'), __alloT('stem.coralreef.sciLab_b_res_shrink_simple', 'Corals add {a} kg, but {r} kg is worn away, so the reef is shrinking. It gets about {mm} mm lower each year. That is {cm} cm in 100 years.'))
               : __alloT('stem.coralreef.sciLab_b_res_even', 'Corals add {a} kg and {r} kg is worn away, so the reef is about even: it is hardly growing at all.'),
             { a: kg(b.added), r: kg(b.removed), mm: fr(Math.abs(b.mmPerYear)).toFixed(1), cm: Math.round(Math.abs(b.cmPerCentury)) })),
         h('p', { style: { margin: '0 0 6px' } }, __alloFill(__alloT('stem.coralreef.gr8_breakeven', 'With these grazers and this water, adding and wearing away balance at {c} live coral. To keep up with sea-level rise of about {mm} mm a year, the reef would need {k} live coral.'), { c: gr8AboutCover(b.breakEvenCover), k: gr8AboutCover(b.keepUpCover), mm: SCILAB_BUDGET.seaMm })),
         speed !== 100 ? h('p', { style: { margin: '0 0 6px' } }, __alloFill(__alloT('stem.coralreef.sciLab_b_speed', 'In this water corals build at {n}% of today\'s speed.'), { n: speed })) : null) : null,
       revealed ? h('ul', { className: 'cr-scilab-ideas', style: { margin: '10px 0 0', paddingLeft: 22 } },
-        h('li', null, __alloT('stem.coralreef.sciLab_b_idea_1', 'In surveys of 19 Caribbean reefs, reefs with less than about 10% live coral tended to shrink (Perry et al. 2013). Today\'s average Caribbean reef has about 20% (Perry et al. 2018).')),
+        h('li', null, rl21Text(env, __alloT('stem.coralreef.sciLab_b_idea_1', 'In surveys of 19 Caribbean reefs, reefs with less than about 10% live coral tended to shrink (Perry et al. 2013). Today\'s average Caribbean reef has about 20% (Perry et al. 2018).'), __alloT('stem.coralreef.sciLab_b_idea_1_simple', 'Scientists checked 19 reefs in the Caribbean. Reefs with less than about 10% live coral tended to shrink (Perry et al. 2013). Today, the average Caribbean reef has about 20% live coral (Perry et al. 2018).'))),
         h('li', null, __alloT('stem.coralreef.sciLab_b_idea_2', 'Parrotfish wear limestone away, but they also keep seaweed off so young corals can grow. Over years, the coral they protect can add far more than they scrape off. Try the seaweed investigation.')),
-        h('li', null, __alloT('stem.coralreef.sciLab_b_idea_3', 'Before a disease killed most long-spined sea urchins in 1983, they scraped away 3 to 5 kg on each square meter every year (Perry et al. 2014).'))) : null,
-      h('p', { style: mutedStyle(P, { margin: '10px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.sciLab_b_honest', 'Simplified: average rates from Caribbean reef surveys (Perry et al. 2013, 2014, 2018), one growth rate for all corals, and the lab\'s acidification rule. Real budgets also depend on coral types, depth and storms, and acidic water also speeds up erosion, which this budget leaves out.')));
+        h('li', null, __alloT('stem.coralreef.sciLab_b_idea_3', 'In 1983, a disease killed most long-spined sea urchins. Before that, they scraped away 3 to 5 kg on each square meter every year (Perry et al. 2014).'))) : null,
+      h('p', { style: mutedStyle(P, { margin: '10px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.sciLab_b_honest', 'Simplified: this lab uses average rates from Caribbean reef surveys (Perry et al. 2013, 2014, 2018). It uses one growth rate for all corals, and the lab\'s acidification rule. Real budgets also depend on coral types, depth and storms. Acidic water also speeds up erosion, and this budget leaves that out.')));
   }
 
   // Investigation C: seaweed versus grazers, a tipping point.
@@ -11472,8 +12058,8 @@
             { runoff: LV[s.nutrients], keep: sciLabPct(tip.thr.keep), recover: sciLabPct(tip.thr.recover) })),
           h('p', { style: { margin: '0 0 6px' } }, __alloT('stem.coralreef.sciLab_sw_why', 'Why? When seaweed covers most of the reef, the same fish have far more seaweed to get through, so each patch is grazed less and the seaweed keeps winning.')),
           h('p', { style: { margin: '0 0 6px' } }, __alloFill(__alloT('stem.coralreef.sciLab_sw_runoff_res', 'Runoff pushes the same way: to bring coral back takes about {lo}% grazing with low runoff and about {hi}% with high runoff.'), { lo: sciLabPct(tip.low.recover), hi: sciLabPct(tip.high.recover) })),
-          h('p', { style: { margin: 0, fontWeight: 600, color: P.good } }, __alloT('stem.coralreef.sciLab_sw_hope', 'Tipping points work both ways: protecting grazing fish before a heatwave keeps a reef on the safe side, and enough grazers can bring a seaweed reef back.')),
-          h('p', { style: mutedStyle(P, { margin: '8px 0 0', fontSize: 13 }) }, __alloT('stem.coralreef.sciLab_sw_honest', 'Scientists found this kind of tipping point in models of Caribbean reefs (Mumby et al. 2007). This simplified model shows how the pieces push on each other; real reefs have their own thresholds, and scientists still debate how often reefs flip to seaweed.'))),
+          h('p', { style: { margin: 0, fontWeight: 600, color: P.good } }, __alloT('stem.coralreef.sciLab_sw_hope', 'Tipping points work both ways. Protecting grazing fish before a heatwave keeps a reef on the safe side. And enough grazers can bring a seaweed reef back.')),
+          h('p', { style: mutedStyle(P, { margin: '8px 0 0', fontSize: 13 }) }, rl21Text(env, __alloT('stem.coralreef.sciLab_sw_honest', 'Scientists found this kind of tipping point in models of Caribbean reefs (Mumby et al. 2007). This simplified model shows how the pieces push on each other; real reefs have their own thresholds, and scientists still debate how often reefs flip to seaweed.'), __alloT('stem.coralreef.sciLab_sw_honest_simple', 'Scientists found this kind of tipping point in models of Caribbean reefs (Mumby et al. 2007). This simplified model shows how the parts push on each other. Real reefs each have their own tipping points. Scientists still argue about how often reefs flip to seaweed.')))),
         h('div', null, h('figure', { className: 'cr-scilab-fig', style: { margin: 0 } }, sciLabSvg(h, sciLabFigTipping(h, P, __alloT, __alloFill, tip.balance, tip.thr, s.path, tip.pict), 'tipping')))) : null);
   }
 
@@ -11486,7 +12072,7 @@
   // the other three, and the Start page promises three.
   var FW_ROWS = [
     { id: 'top', ids: ['whitetip_reef_shark', 'blacktip_reef_shark', 'peacock_grouper', 'leopard_coral_grouper', 'giant_moray', 'blackfin_barracuda', 'bluefin_trevally'] },
-    { id: 'mid', ids: ['humphead_wrasse', 'titan_triggerfish', 'clown_triggerfish', 'porcupinefish', 'giant_triton', 'harlequin_shrimp', 'blue_ringed_octopus', 'cleaner_wrasse', 'parasites'] },
+    { id: 'mid', ids: ['humphead_wrasse', 'titan_triggerfish', 'clown_triggerfish', 'porcupinefish', 'dash_and_dot_goatfish', 'giant_triton', 'harlequin_shrimp', 'blue_ringed_octopus', 'sixbar_wrasse', 'cleaner_wrasse', 'parasites'] },
     { id: 'grazers', ids: ['parrotfish', 'bumphead_parrotfish', 'foxface_rabbitfish', 'long_spined_urchin', 'green_turtle', 'dusky_farmerfish', 'crown_of_thorns', 'drupella_snail', 'pincushion_sea_star'] },
     { id: 'small', ids: ['anthias', 'blue_green_chromis', 'blue_tang', 'reef_manta', 'sea_cucumber', 'blue_sea_star', 'reef_fishes', 'small_animals'] },
     { id: 'base', ids: ['algae', 'farm_turf', 'plankton', 'polyps', 'detritus'] }
@@ -11495,7 +12081,7 @@
   var FW_EXTRA = ['algae', 'farm_turf', 'plankton', 'polyps', 'detritus', 'reef_fishes', 'small_animals', 'parasites'];
   // Sources for hunters often say "fishes". This box stands for them, and these
   // catalog species belong to it (a statement about the group, not one sighting).
-  var FW_GROUPS = { reef_fishes: ['anthias', 'blue_green_chromis', 'blue_tang', 'dusky_farmerfish', 'parrotfish'] };
+  var FW_GROUPS = { reef_fishes: ['anthias', 'blue_green_chromis', 'blue_tang', 'dusky_farmerfish', 'parrotfish', 'dash_and_dot_goatfish', 'sixbar_wrasse'] };
   // Plankton drifts in and detritus comes from everything that dies: the rule leaves them alone.
   var FW_NO_RULE = ['plankton', 'detritus'];
   // scope 'kind': the source names this kind of animal (sea urchins, surgeonfishes), not this species.
@@ -11539,6 +12125,10 @@
     fwLink('harlequin_shrimp', 'blue_sea_star', 'eats', ['dx-waikiki-harlequin_shrimp']),
     fwLink('harlequin_shrimp', 'crown_of_thorns', 'eats', ['dx-fw-cowan2017']),
     fwLink('blue_ringed_octopus', 'small_animals', 'eats', ['dx-am-blue_ringed_octopus'], { scope: 'kind' }),
+    // Round 18: sand sifter and small wrasse. Hunters reach them through the reef_fishes group.
+    fwLink('dash_and_dot_goatfish', 'small_animals', 'eats', ['dx-fishbase-dash_and_dot_goatfish', 'dx-foa-dash_and_dot_goatfish']),
+    fwLink('sixbar_wrasse', 'small_animals', 'eats', ['dx-fishbase-sixbar_wrasse', 'dx-foa-sixbar_wrasse']),
+    fwLink('sixbar_wrasse', 'plankton', 'eats', ['dx-fishbase-sixbar_wrasse']),
     fwLink('cleaner_wrasse', 'parasites', 'eats', ['dx-cleaner-rates-study', 'fishaus-labroides']),
     // Eaters of seaweed and coral
     fwLink('parrotfish', 'algae', 'eats', ['dx-foa-parrotfish']),
@@ -11786,7 +12376,7 @@
         strength: __alloT('stem.coralreef.fw_case_grazers_strength', 'Evidence: strong, with limits'),
         evidence: [
           __alloT('stem.coralreef.fw_case_grazers_ev1', 'This has really happened. On Jamaican reefs, overfishing had already removed most grazing fish. Then in 1983 a disease killed most urchins of a close Caribbean relative of this species. Coral fell from more than 50% of the reef to under 5%, and fleshy seaweed reached over 90% (Hughes 1994).'),
-          __alloT('stem.coralreef.fw_case_grazers_ev2', 'Hurricanes also played a part there, so grazers were not the only cause, and scientists still debate how often reefs flip to seaweed.')
+          rl21Text(null, __alloT('stem.coralreef.fw_case_grazers_ev2', 'Hurricanes also played a part there, so grazers were not the only cause, and scientists still debate how often reefs flip to seaweed.'), __alloT('stem.coralreef.fw_case_grazers_ev2_simple', 'Hurricanes also played a part there. So grazers were not the only cause. Scientists still argue about how often reefs flip to seaweed.'))
         ],
         helps: __alloT('stem.coralreef.fw_case_grazers_helps', 'Protecting grazers works. In a Bahamas reserve where parrotfish were protected, grazing doubled and seaweed cover fell to about a quarter (Mumby et al. 2006).')
       },
@@ -11795,7 +12385,7 @@
         story: __alloT('stem.coralreef.fw_case_triton_story', 'Imagine a reef with no giant tritons left. For decades, people collected these big snails for their beautiful shells.'),
         strength: __alloT('stem.coralreef.fw_case_triton_strength', 'Evidence: weak'),
         evidence: [
-          __alloT('stem.coralreef.fw_case_triton_ev1', 'The link is real: tritons do eat crown-of-thorns. But in caging experiments a triton ate only about 0.7 adult starfish a week, and it preferred other sea stars when it had a choice. Tritons are rare, and it is unlikely there were ever enough of them to stop outbreaks (Cowan et al. 2017).'),
+          rl21Text(null, __alloT('stem.coralreef.fw_case_triton_ev1', 'The link is real: tritons do eat crown-of-thorns. But in caging experiments a triton ate only about 0.7 adult starfish a week, and it preferred other sea stars when it had a choice. Tritons are rare, and it is unlikely there were ever enough of them to stop outbreaks (Cowan et al. 2017).'), __alloT('stem.coralreef.fw_case_triton_ev1_simple', 'The link is real: tritons do eat crown-of-thorns. But scientists tested this with tritons in cages. A triton ate only about 0.7 adult starfish a week. When it had a choice, it liked other sea stars better. Tritons are rare. It is unlikely there were ever enough of them to stop outbreaks, when huge numbers of the starfish appear (Cowan et al. 2017).')),
           __alloT('stem.coralreef.fw_case_triton_ev2', 'Scientists say the triton\'s role is still not settled. About 80 reef species are reported to eat this starfish at some life stage, and no single species seems to have an outsized role. So treat the rule\'s answer here with care: it counts a link, not how much that link matters.')
         ],
         helps: __alloT('stem.coralreef.fw_case_triton_helps', 'The reef does not need one hero. Many animals eat this starfish, so keeping the whole mix of reef life helps. On the Great Barrier Reef, outbreaks were less common on reefs closed to fishing (Sweatman 2008), though scientists are still working out why.')
@@ -11805,17 +12395,17 @@
         story: __alloT('stem.coralreef.fw_case_sharks_story', 'Imagine a reef where fishing has removed the whitetip and blacktip reef sharks.'),
         strength: __alloT('stem.coralreef.fw_case_sharks_strength', 'Evidence: disputed'),
         evidence: [
-          __alloT('stem.coralreef.fw_case_sharks_ev1', 'Scientists disagree here. Long-term surveys at two remote atoll systems off northwest Australia fit the idea that losing sharks changes the fish below them (Ruppert et al. 2013). But across the northern Great Barrier Reef, a fourfold difference in reef sharks made no difference to other fish (Desbiens et al. 2021).'),
-          __alloT('stem.coralreef.fw_case_sharks_ev2', 'A review called the evidence that sharks protect corals this way weak and equivocal (Roff et al. 2016). Studies of stomachs and body tissue suggest reef sharks feed at about the same level as large reef fish (Frisch et al. 2016), so other hunters share their prey.')
+          rl21Text(null, __alloT('stem.coralreef.fw_case_sharks_ev1', 'Scientists disagree here. Long-term surveys at two remote atoll systems off northwest Australia fit the idea that losing sharks changes the fish below them (Ruppert et al. 2013). But across the northern Great Barrier Reef, a fourfold difference in reef sharks made no difference to other fish (Desbiens et al. 2021).'), __alloT('stem.coralreef.fw_case_sharks_ev1_simple', 'Scientists disagree here. Off northwest Australia, scientists surveyed two far-away groups of atolls for many years. Atolls are rings of reef in the open ocean. Those surveys fit the idea that losing sharks changes the fish below them in the food web (Ruppert et al. 2013). But on the northern Great Barrier Reef, some reefs had fourfold as many reef sharks as others. The other fish were no different (Desbiens et al. 2021).')),
+          rl21Text(null, __alloT('stem.coralreef.fw_case_sharks_ev2', 'A review called the evidence that sharks protect corals this way weak and equivocal (Roff et al. 2016). Studies of stomachs and body tissue suggest reef sharks feed at about the same level as large reef fish (Frisch et al. 2016), so other hunters share their prey.'), __alloT('stem.coralreef.fw_case_sharks_ev2_simple', 'A review looked at the evidence that sharks protect corals this way. It called that evidence weak and unclear (Roff et al. 2016). Scientists also studied what is in sharks\' stomachs and bodies. This suggests reef sharks feed at about the same level as large reef fish (Frisch et al. 2016). So other hunters share their prey.'))
         ],
-        helps: __alloT('stem.coralreef.fw_case_sharks_helps', 'Reef sharks are worth protecting, and protection works. Across 371 reefs in 58 nations, sharks were much more common where there were shark sanctuaries, closed areas and catch limits, and where gillnets and longlines were not used (MacNeil et al. 2020).')
+        helps: rl21Text(null, __alloT('stem.coralreef.fw_case_sharks_helps', 'Reef sharks are worth protecting, and protection works. Across 371 reefs in 58 nations, sharks were much more common where there were shark sanctuaries, closed areas and catch limits, and where gillnets and longlines were not used (MacNeil et al. 2020).'), __alloT('stem.coralreef.fw_case_sharks_helps_simple', 'Reef sharks are worth protecting, and protection works. Scientists studied 371 reefs in 58 nations. Sharks were much more common where there were shark sanctuaries, closed areas and catch limits. These are places and rules that protect sharks and fish. Sharks were also more common where people did not fish with gillnets and longlines (MacNeil et al. 2020).'))
       },
       cleaner: {
         name: __alloT('stem.coralreef.fw_case_cleaner', 'Cleaner wrasse'),
         story: __alloT('stem.coralreef.fw_case_cleaner_story', 'Imagine a small reef where every bluestreak cleaner wrasse has gone. This fish eats no one bigger than a parasite. Its link to other fish is cleaning, not hunting.'),
         strength: __alloT('stem.coralreef.fw_case_cleaner_strength', 'Evidence: strong for reef fish, untested for their hunters'),
         evidence: [
-          __alloT('stem.coralreef.fw_case_cleaner_ev1', 'Scientists tested this directly at Lizard Island in Australia by keeping cleaners off small patch reefs. After 18 months, those reefs had half the kinds of fish and a quarter as many fish (Grutter et al. 2003). After 8.5 years, resident fish were 37% fewer, visiting fish 23% fewer and visiting surgeonfishes 66% fewer (Waldie et al. 2011).'),
+          rl21Text(null, __alloT('stem.coralreef.fw_case_cleaner_ev1', 'Scientists tested this directly at Lizard Island in Australia by keeping cleaners off small patch reefs. After 18 months, those reefs had half the kinds of fish and a quarter as many fish (Grutter et al. 2003). After 8.5 years, resident fish were 37% fewer, visiting fish 23% fewer and visiting surgeonfishes 66% fewer (Waldie et al. 2011).'), __alloT('stem.coralreef.fw_case_cleaner_ev1_simple', 'To test this, scientists kept cleaner fish off small patch reefs at Lizard Island in Australia. After 18 months, those reefs had half the kinds of fish. They had only a quarter as many fish (Grutter et al. 2003). After 8.5 years, fish that live on the reef were 37% fewer. Fish that only visit were 23% fewer, and visiting surgeonfishes were 66% fewer (Waldie et al. 2011).')),
           __alloT('stem.coralreef.fw_case_cleaner_ev2', 'These were small reefs in one place. Nobody measured what happened to hunters such as barracuda, so that part is only the rule\'s guess.')
         ],
         helps: __alloT('stem.coralreef.fw_case_cleaner_helps', 'You can help just by giving cleaners room. On a much-dived reef in Honduras, cleaning fell by more than half while divers watched (Titus et al. 2015), so divers who keep their distance leave the service running.')
@@ -12311,7 +12901,7 @@
   function SciLabWeb(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, d = env.d, __alloT = env.t;
     var s = fwState(d.sciWeb), names = fwUseNames(env, env.t);
-    var profiles = React.useMemo(function () { return marineProfiles(__alloT); }, [__alloT('stem.coralreef.fw_node_algae', 'Algae and seaweed')]);
+    var profiles = React.useMemo(function () { return marineProfiles(__alloT); }, [__alloT('stem.coralreef.fw_node_algae', 'Algae and seaweed'), rl21On(env)]);
     var library = React.useMemo(function () {
       var all = [], map = {};
       FW_LINKS.forEach(function (l) { all = all.concat(l.sources); });
@@ -12393,7 +12983,7 @@
         topic === 'heat' ? h(SciLabBleach, { key: 'inv', env: env }) : null,
         behind('heat'),
         SCILAB_TOPIC_CARDS.heat.map(function (id) { return card(byId[id]); }),
-        sciLabHelps(env, __alloT('stem.coralreef.sciLab_helps_heat', 'Corals can recover between heatwaves. Reefs with cleaner water recovered faster after damage, and protected grazing fish keep seaweed off while corals regrow. Cutting the warming itself is what makes heatwaves rarer.'),
+        sciLabHelps(env, rl21Text(env, __alloT('stem.coralreef.sciLab_helps_heat', 'Corals can recover between heatwaves. Reefs with cleaner water recovered faster after damage, and protected grazing fish keep seaweed off while corals regrow. Cutting the warming itself is what makes heatwaves rarer.'), __alloT('stem.coralreef.sciLab_helps_heat_simple', 'Corals can recover between heatwaves. Reefs with cleaner water recovered faster after damage. Protected grazing fish keep seaweed off while the corals grow back. To make heatwaves come less often, we have to cut the warming itself.')),
           [{ key: 'd', dive: 'heatwave', label: __alloT('stem.coralreef.sciLab_link_dive_heat', 'Dive a reef in a heatwave') }, { key: 'm', model: 'recent', label: __alloT('stem.coralreef.sciLab_link_model_recent', 'Model a heatwave every 6 years') },
             { key: 't', topic: 'help', label: __alloT('stem.coralreef.sciLab_link_help', 'See what helps reefs') }], goTopic)
       ],
@@ -12418,7 +13008,7 @@
       future: [
         h('p', { key: 'intro', className: 'pg13-lead', style: { margin: '0 0 14px', padding: '2px 0 2px 12px', borderLeft: '4px solid ' + P.accent, fontSize: 17, lineHeight: 1.45, fontWeight: 600 } }, __alloT('stem.coralreef.sciLab_future_intro', 'Some corals cope with heat better than others, and how much warmer the world gets decides how many reefs we keep.')),
         SCILAB_TOPIC_CARDS.future.map(function (id) { return card(byId[id]); }),
-        sciLabHelps(env, __alloT('stem.coralreef.sciLab_helps_future', 'Every bit of warming avoided matters. At 1.5 degrees C of warming, 10 to 30% of today\'s warm-water reefs are projected to remain; at 2 degrees C, less than 1%.'),
+        sciLabHelps(env, rl21Text(env, __alloT('stem.coralreef.sciLab_helps_future', 'Every bit of warming avoided matters. At 1.5 degrees C of warming, 10 to 30% of today\'s warm-water reefs are projected to remain; at 2 degrees C, less than 1%.'), __alloT('stem.coralreef.sciLab_helps_future_simple', 'Every bit of warming avoided matters. If the world warms by 1.5 degrees C, 10 to 30% of today\'s warm-water reefs are projected to remain. If it warms by 2 degrees C, less than 1% are projected to remain.')),
           [{ key: 'w', model: 'warmer', label: __alloT('stem.coralreef.sciLab_link_model_warmer', 'Model faster warming') }, { key: 'c', model: 'cooler', label: __alloT('stem.coralreef.sciLab_link_model_cooler', 'Model easing the heat') },
             { key: 't', topic: 'help', label: __alloT('stem.coralreef.sciLab_link_help', 'See what helps reefs') }], goTopic, nv8Keep(env))
       ],
@@ -12444,9 +13034,11 @@
       h('style', null, PG_CSS_CARDS),
       h('style', null, SC16_CSS),
       h('style', null, NV8_CSS),
+      h(Pd19Start, { env: env, sec: 'science' }),
       h('section', { style: cardStyle(P, { paddingBottom: 14 }) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.sciLab_title', 'Reef science lab')),
         h('p', { style: { margin: '0 0 12px' } }, __alloT('stem.coralreef.sciLab_intro', 'Pick a topic. Each one has a hands-on investigation or close look, the science behind it, and what helps.')),
+        h(Rl21Toggle, { env: env, where: 'science' }),
         h('div', { role: 'tablist', 'aria-label': __alloT('stem.coralreef.sciLab_tabs', 'Science topics'), className: 'cr-scilab-tabs nv8-tabs' }, SCILAB_TOPICS.map(function (id, i) {
           var on = id === topic, helpTab = id === 'help';
           return h('button', { key: id, id: 'cr-scilab-tab-' + id, role: 'tab', type: 'button', 'aria-selected': on ? 'true' : 'false', 'aria-controls': 'cr-scilab-panel-' + id, tabIndex: on ? 0 : -1,
@@ -14089,7 +14681,7 @@
     var prog = w2Progress(d), S = prog.steps;
     var extra = React.useMemo(function () { return repExtraWork(d, __alloT, __alloFill); }, [d.sciWeb, d.mdlRescue]);
     function setMine(patch) {
-      if ('questions' in patch) env.set({ myReport: { questions: patch.questions } });
+      if ('questions' in patch) env.set({ myReport: Object.assign({}, w2Obj(d.myReport), { questions: patch.questions }) });
       else who[1](Object.assign({}, who[0], patch));
     }
     function goTo(id) { return function () { if (id === 'model') env.set({ mdlView: 'scenarios' }); env.go(id); }; }
@@ -14273,7 +14865,7 @@
       labItems.push(h('li', { key: 'h' + i, 'data-rep-lab': 'heat', 'data-rep-state': 'ran', 'data-rep-outcome': r.run.outcome },
         h('p', { className: 'rep-name' }, SCI.heat.name, ': ', heatName(r.setup)),
         h('p', null, r.pred ? __alloFill(__alloT('stem.coralreef.rep_vs_lab', 'I predicted: {pred}. What happened: {out}.'), { pred: OUT[r.pred], out: OUT[r.run.outcome] }) : __alloFill(__alloT('stem.coralreef.rep_no_pred', 'No prediction was saved for this one. It showed: {out}.'), { out: OUT[r.run.outcome] })),
-        h('p', null, r.run.peak > 0 ? __alloFill(__alloT('stem.coralreef.rep_heat_fate', 'Heat stress peaked at {dhw} Degree Heating Weeks. A year later, {alive} of the {total} corals were alive.'), { dhw: r.run.peak, alive: r.run.survivors, total: SCILAB_CORALS }) : __alloT('stem.coralreef.sciLab_no_heat', 'This water never got at least 1 degree C warmer than the usual warmest month, so it added no heat stress and the corals stayed healthy.')),
+        h('p', null, r.run.peak > 0 ? __alloFill(__alloT('stem.coralreef.rep_heat_fate', 'Heat stress peaked at {dhw} Degree Heating Weeks. A year later, {alive} of the {total} corals were alive.'), { dhw: r.run.peak, alive: r.run.survivors, total: SCILAB_CORALS }) : rl21Text(env, __alloT('stem.coralreef.sciLab_no_heat', 'This water never got at least 1 degree C warmer than the usual warmest month, so it added no heat stress and the corals stayed healthy.'), __alloT('stem.coralreef.sciLab_no_heat_simple', 'This water was never at least 1 degree C warmer than the usual warmest month. So it added no heat stress, and the corals stayed healthy.'))),
         r.pred ? framing(r.pred, r.run.outcome) : null));
     });
     if (labs.heat.pending) labItems.push(h('li', { key: 'hp', 'data-rep-lab': 'heat', 'data-rep-state': 'pending' }, h('p', { className: 'rep-name' }, SCI.heat.name, ': ', heatName(labs.heat.pending.setup)), pendingLine(OUT[labs.heat.pending.pred]), link(__alloT('stem.coralreef.rep_go_lab', 'Run it in Reef science'), goSci('heat'), 'go')));
@@ -14283,7 +14875,7 @@
         h('p', null, labs.seaweed.pred ? __alloFill(__alloT('stem.coralreef.rep_vs_model', 'I predicted: {pred}. The model showed: {out}.'), { pred: PR[labs.seaweed.pred], out: PR[labs.seaweed.outcome] }) : __alloFill(__alloT('stem.coralreef.rep_no_pred', 'No prediction was saved for this one. It showed: {out}.'), { out: PR[labs.seaweed.outcome] })),
         h('p', null, __alloFill(__alloT('stem.coralreef.sciLab_sw_thr', 'With runoff set to {runoff}, a healthy reef keeps its coral down to about {keep}% grazing. Once seaweed has taken over, the coral only comes back above about {recover}% grazing, and it can take decades.'), { runoff: LV[labs.seaweed.nutrients], keep: sciLabPct(labs.seaweed.thr.keep), recover: sciLabPct(labs.seaweed.thr.recover) })),
         labs.seaweed.pred ? framing(labs.seaweed.pred, labs.seaweed.outcome) : null,
-        h('p', { className: 'rep-note' }, __alloT('stem.coralreef.sciLab_sw_hope', 'Tipping points work both ways: protecting grazing fish before a heatwave keeps a reef on the safe side, and enough grazers can bring a seaweed reef back.')))
+        h('p', { className: 'rep-note' }, __alloT('stem.coralreef.sciLab_sw_hope', 'Tipping points work both ways. Protecting grazing fish before a heatwave keeps a reef on the safe side. And enough grazers can bring a seaweed reef back.')))
         : h('li', { key: 's', 'data-rep-lab': 'seaweed', 'data-rep-state': 'pending' }, h('p', { className: 'rep-name' }, SCI.seaweed.name), pendingLine(labs.seaweed.pred ? PR[labs.seaweed.pred] : null), link(__alloT('stem.coralreef.rep_go_lab', 'Run it in Reef science'), goSci('seaweed'), 'go')));
     }
     if (labs.build) {
@@ -14400,12 +14992,14 @@
           block('surveys', __alloT('stem.coralreef.rep_survey_title', 'What I measured'), surveyKids),
           block('predictions', __alloT('stem.coralreef.rep_pred_title', 'What I predicted and what happened'), predKids),
           block('claim', __alloT('stem.coralreef.rep_claim_title', 'My claim, evidence and reasoning'), claimKids),
+          pd19ReportLook(env, uid, block),
           block('questions', __alloT('stem.coralreef.rep_q_title', 'Questions I still have'), [
             h('div', { key: 's', 'data-rep-screen': 'true' },
               h('label', { htmlFor: uid + '-q', className: 'rep-q-label' }, __alloT('stem.coralreef.rep_q_label', 'What do you still want to find out? (optional)')),
               h('textarea', { id: uid + '-q', className: 'rep-input', rows: 4, maxLength: REP_QUESTIONS_MAX, value: mine.questions, 'data-rep-questions': 'true', onChange: function (e) { setMine({ questions: e.target.value.slice(0, REP_QUESTIONS_MAX) }); } })),
             h('div', { key: 'p', className: 'rep-only-print', 'data-rep-printed-questions': 'true' }, mine.questions.trim() ? repWords(h, mine.questions.trim(), 'q') : pr4Lines(h, 3, 'q'))
           ]),
+          pd19ReportReal(env, block),
           h('p', { className: 'pr4-foot' }, __alloT('stem.coralreef.rep_honest', 'The reefs in this lab are fictional teaching sites, so these results describe the lab, not a real reef.')))));
   }
   if (window.__RR_TEST_EXPORTS__) window.__RR_TEST_EXPORTS__.coralReefDataVisuals = { stripLayout: rcStripLayout, RescueStrip: RescueStrip, MdlSpreadStrip: MdlSpreadStrip, fwRouteAll: fwRouteAll, tapeRuns: tapeRuns, coverParts: repCoverParts };
@@ -14538,14 +15132,14 @@
           __alloT('stem.coralreef.sp_fire_coral_mark2', 'Mustard-yellow to light brown, with pale, almost white growing edges'),
           __alloT('stem.coralreef.sp_fire_coral_mark3', 'The smooth surface is dotted with tiny pinholes instead of coral cups'),
           __alloT('stem.coralreef.sp_fire_coral_mark4', 'It stings: brushing against it causes a burning pain, so look and never touch')],
-        role: __alloT('stem.coralreef.sp_fire_coral_role', 'A reef builder with a hard limestone skeleton and algae partners in its tissue. It is a hydrozoan, related to jellyfish, not a true stony coral.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_fire_coral_role', 'A reef builder with a hard limestone skeleton and algae partners in its tissue. It is a hydrozoan, related to jellyfish, not a true stony coral.'), __alloT('stem.coralreef.sp_fire_coral_role_simple', 'It helps build the reef. It has a hard skeleton made of limestone, a kind of rock. Algae live in its tissue as partners. It is a hydrozoan, related to jellyfish, not a true stony coral. Hydrozoans are a group of animals that live in water.')),
         fact: __alloT('stem.coralreef.sp_fire_coral_fact', 'In the 1998 heatwave on the Great Barrier Reef, fire corals were the group hit hardest: 85% of the fire coral colonies in one study died. Most colonies of the other corals there survived.') },
       blue_coral: { name: __alloT('stem.coralreef.sp_blue_coral_name', 'Blue coral'),
         marks: [__alloT('stem.coralreef.sp_blue_coral_mark1', 'Thick, flattened lobes and columns rise from one solid base'),
           __alloT('stem.coralreef.sp_blue_coral_mark2', 'The living surface is grey-brown, often with paler tips'),
           __alloT('stem.coralreef.sp_blue_coral_mark3', 'Where a piece has broken off, the skeleton inside is bright blue'),
           __alloT('stem.coralreef.sp_blue_coral_mark4', 'Tiny whitish polyps with eight tentacles poke out of fine pores')],
-        role: __alloT('stem.coralreef.sp_blue_coral_role', 'A reef builder, even though it is an octocoral, a relative of soft corals and sea fans. It is the only octocoral known to build a massive skeleton like a stony coral.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blue_coral_role', 'A reef builder, even though it is an octocoral, a relative of soft corals and sea fans. It is the only octocoral known to build a massive skeleton like a stony coral.'), __alloT('stem.coralreef.sp_blue_coral_role_simple', 'It is a reef builder, which means it helps build reefs. It does this even though it is an octocoral. Octocorals are relatives of soft corals and sea fans. It is the only octocoral known to build a massive skeleton like a stony coral. Massive means big and solid.')),
         fact: __alloT('stem.coralreef.sp_blue_coral_fact', 'The blue comes from iron salts the coral builds into its skeleton. When it bleaches, it turns pale blue instead of white, because the blue skeleton shows through its clear tissue.') },
       pipe_organ_coral: { name: __alloT('stem.coralreef.sp_pipe_organ_coral_name', 'Organ pipe coral (pipe organ coral)'),
         marks: [__alloT('stem.coralreef.sp_pipe_organ_coral_mark1', 'A mound of many thin, parallel tubes, like the pipes of an organ'),
@@ -14553,7 +15147,7 @@
           __alloT('stem.coralreef.sp_pipe_organ_coral_mark3', 'Feathery polyps, cream to green, each with eight tentacles, can hide the red'),
           __alloT('stem.coralreef.sp_pipe_organ_coral_mark4', 'Usually a rounded clump up to about 50 cm across')],
         role: __alloT('stem.coralreef.sp_pipe_organ_coral_role', 'A reef builder with a hard red skeleton. It is an octocoral, a relative of soft corals and sea fans, not a stony coral. Its polyps hold algae partners.'),
-        fact: __alloT('stem.coralreef.sp_pipe_organ_coral_fact', 'Scientists long treated organ pipe coral as one species. A 2026 study of 136 colonies found 15 separate lineages, each found in only one region, so it may really be many species.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_pipe_organ_coral_fact', 'Scientists long treated organ pipe coral as one species. A 2026 study of 136 colonies found 15 separate lineages, each found in only one region, so it may really be many species.'), __alloT('stem.coralreef.sp_pipe_organ_coral_fact_simple', 'For a long time, scientists treated organ pipe coral as one species. A 2026 study of 136 colonies found 15 separate lineages. A lineage is a family line of related corals. Each lineage was found in only one region. So organ pipe coral may really be many species.')) },
       birdsnest_coral: { name: __alloT('stem.coralreef.sp_birdsnest_coral_name', 'Birdsnest coral'),
         marks: [__alloT('stem.coralreef.sp_birdsnest_coral_mark1', "A dense, bushy clump of thin branches, like a bird's nest"),
           __alloT('stem.coralreef.sp_birdsnest_coral_mark2', 'Branches are only a few millimetres thick and taper to sharp, needle-like points'),
@@ -14581,7 +15175,7 @@
           __alloT('stem.coralreef.sp_galaxy_coral_mark3', 'Thin blades called septa reach the centre of each cup and stick up above its rim, like a star'),
           __alloT('stem.coralreef.sp_galaxy_coral_mark4', 'Green, grey, red or brown, often with white tentacle tips or septa of another colour')],
         role: __alloT('stem.coralreef.sp_galaxy_coral_role', 'A stony coral and reef builder with algae partners in its tissue. Its tentacles are usually out during the day.'),
-        fact: __alloT('stem.coralreef.sp_galaxy_coral_fact', 'Corals fight for space. When another coral touches it, a galaxy coral can grow sweeper tentacles, up to 30 times longer than its feeding tentacles, that sting and damage the neighbour.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_galaxy_coral_fact', 'Corals fight for space. When another coral touches it, a galaxy coral can grow sweeper tentacles, up to 30 times longer than its feeding tentacles, that sting and damage the neighbour.'), __alloT('stem.coralreef.sp_galaxy_coral_fact_simple', 'Corals fight for space. When another coral touches it, a galaxy coral can grow special tentacles. Tentacles are soft parts like arms. These are sweeper tentacles, up to 30 times longer than its feeding tentacles. They sting and hurt the coral next to it.')) },
       finger_coral: { name: __alloT('stem.coralreef.sp_finger_coral_name', 'Finger coral (yellow finger coral)'),
         marks: [__alloT('stem.coralreef.sp_finger_coral_mark1', 'Smooth, round, finger-like branches, sometimes rising from a crust at the base'),
           __alloT('stem.coralreef.sp_finger_coral_mark2', 'The polyp cups are tiny, less than 2 mm, and so shallow that the branches look smooth'),
@@ -14594,7 +15188,7 @@
           __alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark2', 'Two separate openings, called siphons, project from the top and side'),
           __alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark3', 'Yellow-orange lining contrasts with the darker inner openings'),
           __alloT('stem.coralreef.sp_goldmouth_sea_squirt_mark4', 'The pale, leathery outer tunic carries irregular purple and yellow markings')],
-        role: __alloT('stem.coralreef.sp_goldmouth_sea_squirt_role', 'An attached filter feeder that takes tiny food particles from passing seawater.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_goldmouth_sea_squirt_role', 'An attached filter feeder that takes tiny food particles from passing seawater.'), __alloT('stem.coralreef.sp_goldmouth_sea_squirt_role_simple', 'It stays attached to one spot. It is a filter feeder. It takes tiny bits of food out of the seawater that passes by.')),
         fact: __alloT('stem.coralreef.sp_goldmouth_sea_squirt_fact', 'This is a tunicate, an animal in the same major group as fishes: the chordates. Its swimming larva has a supporting rod called a notochord, but the attached adult has no backbone.') },
       feather_duster_worm: { name: __alloT('stem.coralreef.sp_feather_duster_worm_name', 'Feather-duster worm'),
         marks: [__alloT('stem.coralreef.sp_feather_duster_worm_mark1', 'A broad feeding crown opens into two fan-like lobes'),
@@ -14629,56 +15223,56 @@
           __alloT('stem.coralreef.sp_banded_coral_shrimp_mark2', 'The third pair of legs is long and enlarged, with big banded claws'),
           __alloT('stem.coralreef.sp_banded_coral_shrimp_mark3', 'Two pairs of long, white, hair-like antennae, longer than the body'),
           __alloT('stem.coralreef.sp_banded_coral_shrimp_mark4', 'Often seen as a pair near the mouth of a cave or under a ledge')],
-        role: __alloT('stem.coralreef.sp_banded_coral_shrimp_role', 'A cleaner that picks parasites, injured tissue and leftover food off visiting fish.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_banded_coral_shrimp_role', 'A cleaner that picks parasites, injured tissue and leftover food off visiting fish.'), __alloT('stem.coralreef.sp_banded_coral_shrimp_role_simple', 'A cleaner. Fish come to visit it. It picks parasites, bits of injured tissue and leftover food off them. Parasites are small living things that feed on another animal.')),
         fact: __alloT('stem.coralreef.sp_banded_coral_shrimp_fact', 'A male and a female pair off and may stay together for years. If a claw breaks off, the shrimp can grow it back, sometimes smaller than the other one.') },
       clownfish: { name: __alloT('stem.coralreef.sp_clownfish_name', 'Clown anemonefish (ocellaris clownfish)'),
         marks: [__alloT('stem.coralreef.sp_clownfish_mark1', 'Bright orange body with three white bands: behind the eye, mid-body and near the tail'),
           __alloT('stem.coralreef.sp_clownfish_mark2', 'White bands have little or no black edging'),
           __alloT('stem.coralreef.sp_clownfish_mark3', 'Usually 11 spines in the front part of the back fin (orange clownfish usually has 10)'),
           __alloT('stem.coralreef.sp_clownfish_mark4', 'Stays inside the tentacles of a large sea anemone')],
-        role: __alloT('stem.coralreef.sp_clownfish_role', 'Lives among the stinging tentacles of a host anemone (here the magnificent anemone, giant carpet anemone or Merten\'s carpet anemone), which shelters it from predators.'),
-        fact: __alloT('stem.coralreef.sp_clownfish_fact', 'Clownfish live in small groups ranked by size, with the biggest fish a female. If she disappears, her male partner changes sex to become the breeding female, and the largest non-breeder becomes the new breeding male.') },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_clownfish_role', 'Lives among the stinging tentacles of a host anemone (here the magnificent anemone, giant carpet anemone or Merten\'s carpet anemone), which shelters it from predators.'), __alloT('stem.coralreef.sp_clownfish_role_simple', 'It lives among the stinging tentacles of a host anemone. Its hosts are the magnificent anemone, giant carpet anemone or Merten\'s carpet anemone. The anemone keeps it safe from predators, the animals that hunt it.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_clownfish_fact', 'Clownfish live in small groups ranked by size, with the biggest fish a female. If she disappears, her male partner changes sex to become the breeding female, and the largest non-breeder becomes the new breeding male.'), __alloT('stem.coralreef.sp_clownfish_fact_simple', 'Clownfish live in small groups. The fish in a group are ranked by size. The biggest fish is a female. If she disappears, her male partner changes sex. He becomes the breeding female. Breeding means making young. And the largest fish that was not breeding becomes the new breeding male.')) },
       blue_tang: { name: __alloT('stem.coralreef.sp_blue_tang_name', 'Palette surgeonfish (blue tang)'),
         marks: [__alloT('stem.coralreef.sp_blue_tang_mark1', 'Royal-blue oval body'),
           __alloT('stem.coralreef.sp_blue_tang_mark2', 'Black \'artist\'s palette\' pattern along the side'),
           __alloT('stem.coralreef.sp_blue_tang_mark3', 'Yellow tail with a black stripe along its upper and lower edges'),
           __alloT('stem.coralreef.sp_blue_tang_mark4', 'Sharp blade on each side of the tail base')],
-        role: __alloT('stem.coralreef.sp_blue_tang_role', 'Eats zooplankton and sometimes algae.'),
-        fact: __alloT('stem.coralreef.sp_blue_tang_fact', 'Young palette surgeonfish gather around isolated cauliflower-coral (Pocillopora) heads. When scared, they wedge themselves tightly between the branches.') },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blue_tang_role', 'Eats zooplankton and sometimes algae.'), __alloT('stem.coralreef.sp_blue_tang_role_simple', 'It eats zooplankton, tiny animals that drift in the water. It sometimes eats algae too.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_blue_tang_fact', 'Young palette surgeonfish gather around isolated cauliflower-coral (Pocillopora) heads. When scared, they wedge themselves tightly between the branches.'), __alloT('stem.coralreef.sp_blue_tang_fact_simple', 'Young palette surgeonfish gather around cauliflower coral (Pocillopora). These are coral heads that stand alone. If they get scared, they squeeze in tight between the branches.')) },
       parrotfish: { name: __alloT('stem.coralreef.sp_parrotfish_name', 'Bleeker\'s parrotfish'),
         marks: [__alloT('stem.coralreef.sp_parrotfish_mark1', 'Beak-like front teeth used to scrape rock'),
           __alloT('stem.coralreef.sp_parrotfish_mark2', 'Swims by flapping its side (pectoral) fins'),
           __alloT('stem.coralreef.sp_parrotfish_mark3', 'Males: green with pink scale edges and a large whitish rectangle on the cheek'),
           __alloT('stem.coralreef.sp_parrotfish_mark4', 'Females: dark brown with 3-4 broad pale bars')],
         role: __alloT('stem.coralreef.sp_parrotfish_role', 'Grazes algae off dead coral and rock, helping keep seaweed from taking over space young corals need.'),
-        fact: __alloT('stem.coralreef.sp_parrotfish_fact', "Parrotfish help make coral sand. At one reef in the Maldives, researchers estimated that the local parrotfish community produced over 85% of new sand-grade sediment on the outer reef flat. That finding covers several parrotfish species, rather than this species alone.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_parrotfish_fact', 'Parrotfish help make coral sand. At one reef in the Maldives, researchers estimated that the local parrotfish community produced over 85% of new sand-grade sediment on the outer reef flat. That finding covers several parrotfish species, rather than this species alone.'), __alloT('stem.coralreef.sp_parrotfish_fact_simple', 'Parrotfish help make coral sand. Researchers studied the outer reef flat at one reef in the Maldives. A reef flat is the flat, shallow top of a reef. They estimated that the local parrotfish community made over 85% of the new sand there. The community means all the parrotfish that live in that place. That finding covers several parrotfish species, not this species alone.')) },
       bumphead_parrotfish: { name: __alloT('stem.coralreef.sp_bumphead_parrotfish_name', 'Bumphead parrotfish (green humphead parrotfish)'),
         marks: [__alloT('stem.coralreef.sp_bumphead_parrotfish_mark1', 'The largest parrotfish: a huge blue-green to grey fish'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark2', 'Big bulging bump on the forehead'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark3', 'Usually seen feeding in schools'),
           __alloT('stem.coralreef.sp_bumphead_parrotfish_mark4', 'Exposed beak-like teeth')],
         role: __alloT('stem.coralreef.sp_bumphead_parrotfish_role', 'Bites off chunks of live coral, dead coral and algae, and grinds them up. This recycles reef rock into sand.'),
-        fact: __alloT('stem.coralreef.sp_bumphead_parrotfish_fact', "A large bumphead parrotfish may consume as much as 5 tonnes of reef material in a year. It eats both living coral and algae; that estimate is not a yearly amount for every individual.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bumphead_parrotfish_fact', 'A large bumphead parrotfish may consume as much as 5 tonnes of reef material in a year. It eats both living coral and algae; that estimate is not a yearly amount for every individual.'), __alloT('stem.coralreef.sp_bumphead_parrotfish_fact_simple', 'A large bumphead parrotfish may consume as much as 5 tonnes of reef material in a year. To consume means to eat. It eats both living coral and algae. That 5 tonnes is an estimate. It is not how much every fish eats each year.')) },
       moorish_idol: { name: __alloT('stem.coralreef.sp_moorish_idol_name', 'Moorish idol'),
         marks: [__alloT('stem.coralreef.sp_moorish_idol_mark1', 'Long tube-shaped snout with a yellow-orange saddle on top'),
           __alloT('stem.coralreef.sp_moorish_idol_mark2', 'Two broad black vertical bands on a white and yellow body'),
           __alloT('stem.coralreef.sp_moorish_idol_mark3', 'Very long white streamer trailing from the top fin'),
           __alloT('stem.coralreef.sp_moorish_idol_mark4', "Black tail with a pale outer edge; adults have two small bony projections above the eyes")],
-        role: __alloT('stem.coralreef.sp_moorish_idol_role', 'Feeds mostly on encrusting sponges, plus coral polyps and tunicates.'),
-        fact: __alloT('stem.coralreef.sp_moorish_idol_fact', "The Moorish idol is the only living species in the family Zanclidae. Adults develop small bony projections above their eyes; the name cornutus refers to these horns. Its long streamer does not make it a bannerfish, which belongs to the butterflyfish family.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_moorish_idol_role', 'Feeds mostly on encrusting sponges, plus coral polyps and tunicates.'), __alloT('stem.coralreef.sp_moorish_idol_role_simple', 'It feeds mostly on sponges that grow as a flat crust. It also eats coral polyps and tunicates. Polyps are the small, soft animals that make up a coral. Tunicates are soft animals also called sea squirts.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_moorish_idol_fact', 'The Moorish idol is the only living species in the family Zanclidae. Adults develop small bony projections above their eyes; the name cornutus refers to these horns. Its long streamer does not make it a bannerfish, which belongs to the butterflyfish family.'), __alloT('stem.coralreef.sp_moorish_idol_fact_simple', 'The Moorish idol is the only living species in the family Zanclidae. A family is a group of close relatives. Adults develop small bony projections above their eyes. They are like little horns, and the name cornutus refers to them. It has a long streamer, a thin fin that trails behind. But that does not make it a bannerfish. Bannerfish belong to the butterflyfish family.')) },
       threadfin_butterflyfish: { name: __alloT('stem.coralreef.sp_threadfin_butterflyfish_name', 'Threadfin butterflyfish'),
         marks: [__alloT('stem.coralreef.sp_threadfin_butterflyfish_mark1', 'White body with thin dark lines meeting at an angle in a chevron pattern'),
           __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark2', 'Black band running down through the eye'),
           __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark3', 'Rear of body and fins yellow'),
           __alloT('stem.coralreef.sp_threadfin_butterflyfish_mark4', "Adults have a thin dorsal-fin filament; the illustrated form also has a black spot on the rear dorsal fin")],
-        role: __alloT('stem.coralreef.sp_threadfin_butterflyfish_role', 'Picks at the reef, tearing bits off polychaete worms, anemones, coral polyps and algae.'),
-        fact: __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact', "The dorsal filament develops in adults. The black spot near the rear of the dorsal fin is a colour marking, separate from the real eye in the dark head band. Red Sea individuals lack the conspicuous rear spot, so identification should use several features.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_threadfin_butterflyfish_role', 'Picks at the reef, tearing bits off polychaete worms, anemones, coral polyps and algae.'), __alloT('stem.coralreef.sp_threadfin_butterflyfish_role_simple', 'It picks at the reef. It tears bits off polychaete worms, anemones, coral polyps and algae. Polychaete worms are worms with bristles. Polyps are the small, soft animals that make up a coral.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact', 'The dorsal filament develops in adults. The black spot near the rear of the dorsal fin is a colour marking, separate from the real eye in the dark head band. Red Sea individuals lack the conspicuous rear spot, so identification should use several features.'), __alloT('stem.coralreef.sp_threadfin_butterflyfish_fact_simple', 'The dorsal filament is a long thread on the fin on its back. It grows in adults. There is a black spot near the back of that fin. It is a colour mark, not the real eye. The real eye is in the dark band on its head. Red Sea individuals lack the bold rear spot. So use several features to tell which fish it is.')) },
       emperor_angelfish: { name: __alloT('stem.coralreef.sp_emperor_angelfish_name', 'Emperor angelfish'),
         marks: [__alloT('stem.coralreef.sp_emperor_angelfish_mark1', 'Adults: many thin diagonal yellow and blue-purple stripes'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark2', 'Black mask across the eyes with a blue edge'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark3', 'Large black patch behind the head and gills'),
           __alloT('stem.coralreef.sp_emperor_angelfish_mark4', 'Juveniles: dark blue with white and blue rings')],
-        role: __alloT('stem.coralreef.sp_emperor_angelfish_role', 'Feeds mainly on sponges and other encrusting animals, plus tunicates.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_emperor_angelfish_role', 'Feeds mainly on sponges and other encrusting animals, plus tunicates.'), __alloT('stem.coralreef.sp_emperor_angelfish_role_simple', 'It mainly eats sponges and other animals that grow as a flat crust. It also eats tunicates, soft animals also called sea squirts.')),
         fact: __alloT('stem.coralreef.sp_emperor_angelfish_fact', "The striped model represents an adult. Juveniles are dark blue-black with a white ring toward the rear, surrounded by partial blue-and-white circles. The pattern changes as the fish grows; the ringed juvenile and striped adult are the same species.") },
       anthias: { name: __alloT('stem.coralreef.sp_anthias_name', 'Sea goldie (scalefin anthias)'),
         marks: [__alloT('stem.coralreef.sp_anthias_mark1', 'Small fish hovering in large orange clouds just above the reef'),
@@ -14691,62 +15285,62 @@
         marks: [__alloT('stem.coralreef.sp_blue_green_chromis_mark1', 'Small pale apple-green to blue-green fish'),
           __alloT('stem.coralreef.sp_blue_green_chromis_mark2', 'Hovers in big groups above branching Acropora coral and drops into the branches for shelter'),
           __alloT('stem.coralreef.sp_blue_green_chromis_mark3', 'No black spot at the base of the side fin (the black-axil chromis has one)')],
-        role: __alloT('stem.coralreef.sp_blue_green_chromis_role', 'Picks tiny plankton from the water above the coral, and shelters in branching coral.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blue_green_chromis_role', 'Picks tiny plankton from the water above the coral, and shelters in branching coral.'), __alloT('stem.coralreef.sp_blue_green_chromis_role_simple', 'It picks tiny plankton from the water above the coral. Plankton are tiny living things that drift in the water. It takes shelter in branching coral.')),
         fact: __alloT('stem.coralreef.sp_blue_green_chromis_fact', 'Males build nests on sand and rubble and spawn with several females. They guard the eggs and fan them with their tails until the eggs hatch 2-3 days later.') },
       lionfish: { name: __alloT('stem.coralreef.sp_lionfish_name', 'Red lionfish'),
         marks: [__alloT('stem.coralreef.sp_lionfish_mark1', 'Bold red-brown and white vertical stripes'),
           __alloT('stem.coralreef.sp_lionfish_mark2', 'Huge fan-like side fins'),
           __alloT('stem.coralreef.sp_lionfish_mark3', 'Long, separate spines along the back (venomous)')],
         role: __alloT('stem.coralreef.sp_lionfish_role', "Predator of small fishes, shrimps and crabs. It spreads its large pectoral fins while stalking and cornering prey, then captures food with a rapid snap of its jaws."),
-        fact: __alloT('stem.coralreef.sp_lionfish_fact', "The red lionfish is native to the Indo-Pacific represented here and introduced in the western Atlantic. Venom is delivered through spines in its dorsal, anal and pelvic fins. The broad pectoral fins help with hunting; they are not the venom-delivery spines.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_lionfish_fact', 'The red lionfish is native to the Indo-Pacific represented here and introduced in the western Atlantic. Venom is delivered through spines in its dorsal, anal and pelvic fins. The broad pectoral fins help with hunting; they are not the venom-delivery spines.'), __alloT('stem.coralreef.sp_lionfish_fact_simple', 'The red lionfish is native to the Indo-Pacific, the area shown here. Native means it belongs there naturally. It was introduced in the western Atlantic, where it is not native. Its venom, a kind of poison, comes through spines in its dorsal, anal and pelvic fins. These are fins on its back, under its tail end and on its belly. Its broad pectoral fins, on its sides, help it hunt. They are not the spines that deliver venom.')) },
       peacock_grouper: { name: __alloT('stem.coralreef.sp_peacock_grouper_name', 'Peacock grouper (peacock hind)'),
         marks: [__alloT('stem.coralreef.sp_peacock_grouper_mark1', "Dark brown head, body and fins carry small black-edged blue spots"),
           __alloT('stem.coralreef.sp_peacock_grouper_mark2', 'Often 5-6 pale bars on the rear half of the body'),
           __alloT('stem.coralreef.sp_peacock_grouper_mark3', 'Large pale area over the chest'),
           __alloT('stem.coralreef.sp_peacock_grouper_mark4', 'Rests on the bottom with a big mouth and protruding lower jaw')],
-        role: __alloT('stem.coralreef.sp_peacock_grouper_role', "An ambush predator that feeds mainly on smaller fishes, with crustaceans also taken. Diet proportions depend on the population and study, so a single percentage is not a fixed rule for every reef."),
-        fact: __alloT('stem.coralreef.sp_peacock_grouper_fact', "In a 1991 Gulf of Aqaba study, peacock groupers occupied territories of up to 2,000 square metres, subdivided among females and patrolled by a dominant male. That describes the study population, not a fixed territory size or group size for every reef.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_peacock_grouper_role', 'An ambush predator that feeds mainly on smaller fishes, with crustaceans also taken. Diet proportions depend on the population and study, so a single percentage is not a fixed rule for every reef.'), __alloT('stem.coralreef.sp_peacock_grouper_role_simple', 'A hunter that hides and waits, then attacks by surprise. It mainly eats smaller fishes. It also takes crustaceans, animals like crabs and shrimp. How much of each food it eats depends on the group of fish and on the study. So one single percentage is not a fixed rule for every reef.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_peacock_grouper_fact', 'In a 1991 Gulf of Aqaba study, peacock groupers occupied territories of up to 2,000 square metres, subdivided among females and patrolled by a dominant male. That describes the study population, not a fixed territory size or group size for every reef.'), __alloT('stem.coralreef.sp_peacock_grouper_fact_simple', 'In a 1991 Gulf of Aqaba study, each group of peacock groupers held a territory of up to 2,000 square metres. A territory is an area that animals guard. The area was split into parts for the females. One male in charge swam around all of it to guard it. That is what the study found. It is not a fixed territory size or group size for every reef.')) },
       humphead_wrasse: { name: __alloT('stem.coralreef.sp_humphead_wrasse_name', 'Humphead wrasse (Napoleon wrasse)'),
         marks: [__alloT('stem.coralreef.sp_humphead_wrasse_mark1', 'Huge greenish-blue fish, swimming slowly by flapping its side fins'),
           __alloT('stem.coralreef.sp_humphead_wrasse_mark2', 'Bulging hump on the forehead of large adults'),
           __alloT('stem.coralreef.sp_humphead_wrasse_mark3', 'Thick lips'),
           __alloT('stem.coralreef.sp_humphead_wrasse_mark4', "Two dark lines trail behind each eye, with fine wavy markings over the face and chest")],
-        role: __alloT('stem.coralreef.sp_humphead_wrasse_role', 'Eats molluscs, fishes, sea urchins, crustaceans and other invertebrates. It is one of the few predators of toxic animals such as sea hares, boxfishes and crown-of-thorns starfish.'),
-        fact: __alloT('stem.coralreef.sp_humphead_wrasse_fact', "The name undulatus refers to its wavy markings. The forehead hump becomes prominent in large adults; young fish have a different outline and colour pattern.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_humphead_wrasse_role', 'Eats molluscs, fishes, sea urchins, crustaceans and other invertebrates. It is one of the few predators of toxic animals such as sea hares, boxfishes and crown-of-thorns starfish.'), __alloT('stem.coralreef.sp_humphead_wrasse_role_simple', 'It eats molluscs, like snails and clams. It also eats fishes, sea urchins and crustaceans, like crabs and shrimp. And it eats other invertebrates, animals with no backbone. It is one of the few predators that eat toxic animals. Toxic means poisonous. It eats sea hares, boxfishes and crown-of-thorns starfish.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_humphead_wrasse_fact', 'The name undulatus refers to its wavy markings. The forehead hump becomes prominent in large adults; young fish have a different outline and colour pattern.'), __alloT('stem.coralreef.sp_humphead_wrasse_fact_simple', 'The name undulatus refers to its wavy markings. The hump on its forehead gets easy to see in large adults. Young fish have a different outline. They have a different colour pattern too.')) },
       cleaner_wrasse: { name: __alloT('stem.coralreef.sp_cleaner_wrasse_name', 'Bluestreak cleaner wrasse'),
         marks: [__alloT('stem.coralreef.sp_cleaner_wrasse_mark1', 'Small, slim fish with a black stripe from snout to tail that widens toward the tail'),
           __alloT('stem.coralreef.sp_cleaner_wrasse_mark2', 'Pale front half, bright blue rear half'),
           __alloT('stem.coralreef.sp_cleaner_wrasse_mark3', 'Bobs up and down in a \'dance\' at a cleaning station while bigger fish wait')],
-        role: __alloT('stem.coralreef.sp_cleaner_wrasse_role', 'Runs cleaning stations where it eats parasites (mostly tiny gnathiid isopods) and mucus off visiting fish.'),
-        fact: __alloT('stem.coralreef.sp_cleaner_wrasse_fact', "A study at Lizard Island on the Great Barrier Reef estimated that each cleaner wrasse inspected about 2,300 clients and ate about 1,200 parasites per day on average. These are study estimates, not a fixed daily rate everywhere.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_cleaner_wrasse_role', 'Runs cleaning stations where it eats parasites (mostly tiny gnathiid isopods) and mucus off visiting fish.'), __alloT('stem.coralreef.sp_cleaner_wrasse_role_simple', 'It runs cleaning stations. These are places where other fish come to be cleaned. It eats parasites and slime (mucus) off the visiting fish. The parasites are mostly tiny gnathiid isopods, small relatives of crabs.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_cleaner_wrasse_fact', 'A study at Lizard Island on the Great Barrier Reef estimated that each cleaner wrasse inspected about 2,300 clients and ate about 1,200 parasites per day on average. These are study estimates, not a fixed daily rate everywhere.'), __alloT('stem.coralreef.sp_cleaner_wrasse_fact_simple', 'A study at Lizard Island on the Great Barrier Reef estimated what each cleaner wrasse did. On average, one wrasse checked about 2,300 clients (animals that came to be cleaned) per day. It also ate about 1,200 parasites per day. These are study estimates, not a fixed daily rate everywhere.')) },
       clown_triggerfish: { name: __alloT('stem.coralreef.sp_clown_triggerfish_name', 'Clown triggerfish'),
         marks: [__alloT('stem.coralreef.sp_clown_triggerfish_mark1', 'Black body with large white spots on the belly'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark2', 'Yellow net-like pattern on the back'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark3', 'Yellow-orange mouth and a pale band across the snout in front of the eyes'),
           __alloT('stem.coralreef.sp_clown_triggerfish_mark4', 'Broad white band across the tail')],
-        role: __alloT('stem.coralreef.sp_clown_triggerfish_role', 'Eats sea urchins, crabs and other crustaceans, molluscs and tunicates.'),
-        fact: __alloT('stem.coralreef.sp_clown_triggerfish_fact', "The large first dorsal spine can be locked upright by the second spine, helping the fish brace itself in a crevice. The first dorsal fin has three spines; the study model shows their raised external form, without simulating the internal locking mechanism.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_clown_triggerfish_role', 'Eats sea urchins, crabs and other crustaceans, molluscs and tunicates.'), __alloT('stem.coralreef.sp_clown_triggerfish_role_simple', 'It eats sea urchins and crabs. It also eats other crustaceans, molluscs and tunicates. Crustaceans are animals like crabs and shrimp. Molluscs are soft animals like snails and clams. Tunicates are soft animals also called sea squirts.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_clown_triggerfish_fact', 'The large first dorsal spine can be locked upright by the second spine, helping the fish brace itself in a crevice. The first dorsal fin has three spines; the study model shows their raised external form, without simulating the internal locking mechanism.'), __alloT('stem.coralreef.sp_clown_triggerfish_fact_simple', 'The big first spine on its back fin can be locked standing up by the second spine. This helps the fish hold itself tight in a crack. The front fin on its back has three spines. The study model shows them raised up, without simulating the internal locking mechanism. That means the model does not show how the lock inside works.')) },
       porcupinefish: { name: __alloT('stem.coralreef.sp_porcupinefish_name', 'Spotted porcupinefish'),
         marks: [__alloT('stem.coralreef.sp_porcupinefish_mark1', 'Pale body covered in small black spots, including on the fins'),
           __alloT('stem.coralreef.sp_porcupinefish_mark2', 'Long spines lying flat against the body'),
           __alloT('stem.coralreef.sp_porcupinefish_mark3', 'Large eyes and a beak-like mouth'),
           __alloT('stem.coralreef.sp_porcupinefish_mark4', 'Puffs up into a spiky ball when threatened')],
-        role: __alloT('stem.coralreef.sp_porcupinefish_role', 'Solitary night hunter of hard-shelled animals such as sea urchins, snails and hermit crabs, which it crushes with fused, beak-like teeth.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_porcupinefish_role', 'Solitary night hunter of hard-shelled animals such as sea urchins, snails and hermit crabs, which it crushes with fused, beak-like teeth.'), __alloT('stem.coralreef.sp_porcupinefish_role_simple', 'It hunts alone at night. It eats animals with hard shells, such as sea urchins, snails and hermit crabs. It crushes them with its teeth. The teeth are joined together, like a beak.')),
         fact: __alloT('stem.coralreef.sp_porcupinefish_fact', "Its teeth are fused into one continuous beak-like plate in each jaw. The upper and lower plates work together to crush hard-shelled prey. Each plate lacks a central split into left and right halves.") },
       yellow_boxfish: { name: __alloT('stem.coralreef.sp_yellow_boxfish_name', 'Yellow boxfish'),
         marks: [__alloT('stem.coralreef.sp_yellow_boxfish_mark1', 'Box-shaped body inside a hard bony shell'),
           __alloT('stem.coralreef.sp_yellow_boxfish_mark2', 'Juveniles: bright yellow with black spots'),
           __alloT('stem.coralreef.sp_yellow_boxfish_mark3', 'Adults: dull mustard to bluish, with fewer, smaller spots and yellowish seams between the plates'),
           __alloT('stem.coralreef.sp_yellow_boxfish_mark4', "Small terminal mouth and short gill openings beside the head; small fins steer the rigid body")],
-        role: __alloT('stem.coralreef.sp_yellow_boxfish_role', 'Eats algae, microorganisms and small animals such as sponges, molluscs, worms and crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_yellow_boxfish_fact', "The bright yellow, black-spotted model represents a juvenile. Adults can become much duller and differently patterned. WoRMS lists the species as Ostracion cubicum; the spelling Ostracion cubicus remains common in older field guides and studies.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_yellow_boxfish_role', 'Eats algae, microorganisms and small animals such as sponges, molluscs, worms and crustaceans.'), __alloT('stem.coralreef.sp_yellow_boxfish_role_simple', 'It eats algae and microorganisms. Microorganisms are living things too small to see. It also eats small animals, such as sponges, molluscs, worms and crustaceans. Molluscs are animals like snails and clams. Crustaceans are animals like crabs and shrimp.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_yellow_boxfish_fact', 'The bright yellow, black-spotted model represents a juvenile. Adults can become much duller and differently patterned. WoRMS lists the species as Ostracion cubicum; the spelling Ostracion cubicus remains common in older field guides and studies.'), __alloT('stem.coralreef.sp_yellow_boxfish_fact_simple', 'The bright yellow model with black spots represents a juvenile, a young fish. Adults can get much duller and have a different pattern. WoRMS is a big list of names for sea life. It lists the species as Ostracion cubicum. The spelling Ostracion cubicus is still common in older field guides and studies.')) },
       giant_moray: { name: __alloT('stem.coralreef.sp_giant_moray_name', 'Giant moray'),
         marks: [__alloT('stem.coralreef.sp_giant_moray_mark1', 'Very large, thick eel with its head out of a hole'),
           __alloT('stem.coralreef.sp_giant_moray_mark2', 'Opens and closes its mouth as it breathes'),
           __alloT('stem.coralreef.sp_giant_moray_mark3', 'Leopard-like dark spots behind the head'),
           __alloT('stem.coralreef.sp_giant_moray_mark4', 'Black patch around the gill opening')],
         role: __alloT('stem.coralreef.sp_giant_moray_role', 'Top predator that eats mainly fish and some crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_giant_moray_fact', "Researchers in the Red Sea observed giant morays hunting with roving coral groupers. A grouper could recruit a moray with head shakes. Their hunting methods complement each other: a moray enters narrow reef spaces while a grouper pursues fish in open water.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_giant_moray_fact', 'Researchers in the Red Sea observed giant morays hunting with roving coral groupers. A grouper could recruit a moray with head shakes. Their hunting methods complement each other: a moray enters narrow reef spaces while a grouper pursues fish in open water.'), __alloT('stem.coralreef.sp_giant_moray_fact_simple', 'Scientists in the Red Sea saw giant morays hunting with roving coral groupers. A grouper could get a moray to join it by shaking its head. Each fish hunts in a way that helps the other. A moray goes into narrow spaces in the reef. A grouper chases fish in open water.')) },
       whitetip_reef_shark: { name: __alloT('stem.coralreef.sp_whitetip_reef_shark_name', 'Whitetip reef shark'),
         marks: [__alloT('stem.coralreef.sp_whitetip_reef_shark_mark1', 'Slim grey shark with bright white tips on the first back fin and the upper tail'),
           __alloT('stem.coralreef.sp_whitetip_reef_shark_mark2', 'Often lies still on sand or in caves during the day'),
@@ -14758,14 +15352,14 @@
           __alloT('stem.coralreef.sp_bluespotted_stingray_mark2', 'Pair of blue stripes running along the tail'),
           __alloT('stem.coralreef.sp_bluespotted_stingray_mark3', 'Venomous sting set farther back along the tail than in most stingrays')],
         role: __alloT('stem.coralreef.sp_bluespotted_stingray_role', 'Moves onto shallow sand on the rising tide to feed on molluscs, worms, shrimps and crabs.'),
-        fact: __alloT('stem.coralreef.sp_bluespotted_stingray_fact', 'In 2016 scientists described a look-alike from Melanesia, the Oceania fantail ray (Taeniura lessoni), which has no blue stripes on its tail. Checking the tail tells the two apart.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bluespotted_stingray_fact', 'In 2016 scientists described a look-alike from Melanesia, the Oceania fantail ray (Taeniura lessoni), which has no blue stripes on its tail. Checking the tail tells the two apart.'), __alloT('stem.coralreef.sp_bluespotted_stingray_fact_simple', 'In 2016, scientists described a look-alike from Melanesia. It is the Oceania fantail ray (Taeniura lessoni). This ray has no blue stripes on its tail. So check the tail to tell the two apart.')) },
       bluestripe_snapper: { name: __alloT('stem.coralreef.sp_bluestripe_snapper_name', 'Common bluestripe snapper'),
         marks: [__alloT('stem.coralreef.sp_bluestripe_snapper_mark1', 'Bright yellow body with four narrow, brilliant blue stripes'),
           __alloT('stem.coralreef.sp_bluestripe_snapper_mark2', 'Pale underside'),
           __alloT('stem.coralreef.sp_bluestripe_snapper_mark3', 'Forms large schools by day around coral heads, caves and wrecks'),
           __alloT('stem.coralreef.sp_bluestripe_snapper_mark4', 'Thin lips and a gently sloping forehead (sweetlips have thick lips)')],
         role: __alloT('stem.coralreef.sp_bluestripe_snapper_role', 'Eats fishes, shrimps, crabs, mantis shrimps, squid and octopus, and planktonic crustaceans.'),
-        fact: __alloT('stem.coralreef.sp_bluestripe_snapper_fact', 'In 1958, 2,435 bluestripe snappers were shipped from the Marquesas Islands and released off O\'ahu, Hawai\'i, to start a fishery, and the species spread through the Hawaiian Islands.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bluestripe_snapper_fact', 'In 1958, 2,435 bluestripe snappers were shipped from the Marquesas Islands and released off O\'ahu, Hawai\'i, to start a fishery, and the species spread through the Hawaiian Islands.'), __alloT('stem.coralreef.sp_bluestripe_snapper_fact_simple', 'In 1958, people shipped 2,435 bluestripe snappers from the Marquesas Islands. They let them go in the sea off O\'ahu, Hawai\'i, to start a fishery. Then the species spread through the Hawaiian Islands.')) },
       oriental_sweetlips: { name: __alloT('stem.coralreef.sp_oriental_sweetlips_name', 'Oriental sweetlips'),
         marks: [__alloT('stem.coralreef.sp_oriental_sweetlips_mark1', 'Black and white horizontal stripes (black stripes wider on the back)'),
           __alloT('stem.coralreef.sp_oriental_sweetlips_mark2', 'Yellow fins, snout and forehead'),
@@ -14777,46 +15371,46 @@
         marks: [__alloT('stem.coralreef.sp_reef_manta_mark1', 'Huge diamond-shaped ray with two flaps (head fins) beside a wide mouth at the front of the head'),
           __alloT('stem.coralreef.sp_reef_manta_mark2', 'Black back with pale shoulder patches that blur into a \'V\' shape (oceanic mantas have a sharp \'T\')'),
           __alloT('stem.coralreef.sp_reef_manta_mark3', 'White belly with dark spots, often between the gill slits')],
-        role: __alloT('stem.coralreef.sp_reef_manta_role', 'Filter-feeds on zooplankton and probably small fishes, often near coral reefs.'),
-        fact: __alloT('stem.coralreef.sp_reef_manta_fact', 'Every reef manta has its own pattern of spots on its belly. Scientists photograph the belly to identify individuals, like a fingerprint.') },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_reef_manta_role', 'Filter-feeds on zooplankton and probably small fishes, often near coral reefs.'), __alloT('stem.coralreef.sp_reef_manta_role_simple', 'It filter-feeds, which means it strains food out of the water. It eats zooplankton, tiny animals that drift in the water. It probably eats small fishes too. It often feeds near coral reefs.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_reef_manta_fact', 'Every reef manta has its own pattern of spots on its belly. Scientists photograph the belly to identify individuals, like a fingerprint.'), __alloT('stem.coralreef.sp_reef_manta_fact_simple', 'Every reef manta has its own pattern of spots on its belly. Scientists take photos of the belly. The spots help them tell one manta from another, like a fingerprint.')) },
       green_turtle: { name: __alloT('stem.coralreef.sp_green_turtle_name', 'Green turtle'),
         marks: [__alloT('stem.coralreef.sp_green_turtle_mark1', "One pair of large prefrontal scales on top of the snout, between and in front of the eyes (hawksbill has two pairs)"),
           __alloT('stem.coralreef.sp_green_turtle_mark2', 'Rounded head with a short, blunt beak (no hawk-like point)'),
           __alloT('stem.coralreef.sp_green_turtle_mark3', 'Smooth, dark brown to olive shell with plates that do not overlap; pale yellow-white underside')],
-        role: __alloT('stem.coralreef.sp_green_turtle_role', 'Adults are mainly plant-eaters, grazing seagrass and algae.'),
-        fact: __alloT('stem.coralreef.sp_green_turtle_fact', "Its name refers to the green colour of its fat. The IUCN global assessment published in 2025 lists green turtles as Least Concern after a recovery in numbers. Some regional populations remain threatened, and the global listing does not remove local threats or legal protections.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_green_turtle_role', 'Adults are mainly plant-eaters, grazing seagrass and algae.'), __alloT('stem.coralreef.sp_green_turtle_role_simple', 'Adults mainly eat plants. They graze, or nibble, on seagrass and algae.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_green_turtle_fact', 'Its name refers to the green colour of its fat. The IUCN global assessment published in 2025 lists green turtles as Least Concern after a recovery in numbers. Some regional populations remain threatened, and the global listing does not remove local threats or legal protections.'), __alloT('stem.coralreef.sp_green_turtle_fact_simple', 'Its name comes from the green colour of its fat. The IUCN keeps a list of how at risk animals are. The IUCN global assessment published in 2025 lists green turtles as Least Concern. That means they are at low risk overall. This came after their numbers grew back. Some regional populations remain threatened. These are groups in certain parts of the world. The global listing does not take away local threats. It does not take away the laws that protect them either.')) },
       hawksbill_turtle: { name: __alloT('stem.coralreef.sp_hawksbill_turtle_name', 'Hawksbill turtle'),
         marks: [__alloT('stem.coralreef.sp_hawksbill_turtle_mark1', 'Narrow head with a sharp, hawk-like pointed beak'),
           __alloT('stem.coralreef.sp_hawksbill_turtle_mark2', "Two pairs of prefrontal scales on top of the snout, between and in front of the eyes"),
           __alloT('stem.coralreef.sp_hawksbill_turtle_mark3', 'Shell mottled amber, orange, red, yellow, black and brown, with overlapping plates and a jagged (serrated) rear edge')],
-        role: __alloT('stem.coralreef.sp_hawksbill_turtle_role', 'Specialist predator of sponges; it also eats algae, corals, molluscs and other animals.'),
-        fact: __alloT('stem.coralreef.sp_hawksbill_turtle_fact', "Hawksbills can feed mainly on sponges, including sponges with tiny glassy skeletal pieces. Diet varies by place: NOAA reports that Hawaiian hawksbills take a wider mixture of animals and algae.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_hawksbill_turtle_role', 'Specialist predator of sponges; it also eats algae, corals, molluscs and other animals.'), __alloT('stem.coralreef.sp_hawksbill_turtle_role_simple', 'It is a hunter that is expert at eating sponges. It also eats algae, corals, molluscs and other animals.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_hawksbill_turtle_fact', 'Hawksbills can feed mainly on sponges, including sponges with tiny glassy skeletal pieces. Diet varies by place: NOAA reports that Hawaiian hawksbills take a wider mixture of animals and algae.'), __alloT('stem.coralreef.sp_hawksbill_turtle_fact_simple', 'Hawksbills can feed mainly on sponges. Some of these sponges have tiny glassy pieces in their skeletons. Their diet varies by place. NOAA reports that Hawaiian hawksbills eat a wider mix of animals and algae.')) },
       magnificent_anemone: { name: __alloT('stem.coralreef.sp_magnificent_anemone_name', 'Magnificent sea anemone'),
         marks: [__alloT('stem.coralreef.sp_magnificent_anemone_mark1', 'Big anemone sitting on top of exposed rock or coral'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark2', 'Column (the \'stalk\') often bright red to purple and fully visible'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark3', 'Dense finger-like tentacles (up to about 7.5 cm) with rounded, often brightly coloured tips'),
           __alloT('stem.coralreef.sp_magnificent_anemone_mark4', 'When disturbed it pulls into a ball rather than vanishing into the reef')],
         role: __alloT('stem.coralreef.sp_magnificent_anemone_role', 'Home base for clownfish, which shelter among its stinging tentacles. It also carries symbiotic algae in its tissues that make food from sunlight.'),
-        fact: __alloT('stem.coralreef.sp_magnificent_anemone_fact', "A magnificent anemone is one animal polyp; a branching soft coral is a colony of many polyps. The anemone's algal partners live inside its tissues, while anemonefish shelter among its tentacles. These are two different partnerships.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_magnificent_anemone_fact', 'A magnificent anemone is one animal polyp; a branching soft coral is a colony of many polyps. The anemone\'s algal partners live inside its tissues, while anemonefish shelter among its tentacles. These are two different partnerships.'), __alloT('stem.coralreef.sp_magnificent_anemone_fact_simple', 'A magnificent anemone is one single animal, called a polyp. A branching soft coral is a colony made of many polyps. Tiny algae live inside the anemone\'s body as its partners. Anemonefish hide among its tentacles. These are two different partnerships.')) },
       giant_clam: { name: __alloT('stem.coralreef.sp_giant_clam_name', 'Elongate giant clam (maxima clam)'),
         marks: [__alloT('stem.coralreef.sp_giant_clam_mark1', 'Brightly patterned mantle (blue, green, brown or gold) fills the wavy gap between the two shell halves'),
           __alloT('stem.coralreef.sp_giant_clam_mark2', 'Shell often partly sunk into rock or coral'),
           __alloT('stem.coralreef.sp_giant_clam_mark3', 'Shell ridges carry rows of short, close-set scales (the fluted giant clam has big leaf-like scales)')],
-        role: __alloT('stem.coralreef.sp_giant_clam_role', 'Filter-feeds on plankton and also \'farms\' symbiotic algae in its colourful mantle, which make food from sunlight.'),
-        fact: __alloT('stem.coralreef.sp_giant_clam_fact', "Several hundred small pinhole eyes lie on the exposed mantle. In a 2003 study of Tridacna maxima, moving dark patterns could trigger withdrawal even without shading the whole animal. The model shows a sample of these tiny eyes, not the complete count.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_giant_clam_role', 'Filter-feeds on plankton and also \'farms\' symbiotic algae in its colourful mantle, which make food from sunlight.'), __alloT('stem.coralreef.sp_giant_clam_role_simple', 'It filters plankton out of the water to eat. Plankton are tiny living things that drift. It also \'farms\' algae partners in its colourful mantle. The mantle is the soft body layer that lines its shell. These algae make food from sunlight.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_giant_clam_fact', 'Several hundred small pinhole eyes lie on the exposed mantle. In a 2003 study of Tridacna maxima, moving dark patterns could trigger withdrawal even without shading the whole animal. The model shows a sample of these tiny eyes, not the complete count.'), __alloT('stem.coralreef.sp_giant_clam_fact_simple', 'Several hundred small pinhole eyes sit on the open mantle. The mantle is a soft layer of its body. In a 2003 study of Tridacna maxima, moving dark patterns could make the clam pull back in. This could happen even when the whole animal was not shaded. The model shows only some of these tiny eyes, not all of them.')) },
       crown_of_thorns: { name: __alloT('stem.coralreef.sp_crown_of_thorns_name', 'Crown-of-thorns starfish'),
         marks: [__alloT('stem.coralreef.sp_crown_of_thorns_mark1', 'Large sea star with many arms (up to 21) covered in long, sharp spines'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark2', 'Colour varies: grey, purple, reddish or blue-green'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark3', 'By day often tucked under plate corals or inside branching thickets'),
           __alloT('stem.coralreef.sp_crown_of_thorns_mark4', 'Fresh, bright-white patches of bare coral skeleton nearby (feeding scars, often over 15 cm)')],
-        role: __alloT('stem.coralreef.sp_crown_of_thorns_role', "A native Indo-Pacific predator of living coral. Adults often feed on branching and plate-forming corals. At outbreak densities, feeding can remove living coral faster than it regrows."),
-        fact: __alloT('stem.coralreef.sp_crown_of_thorns_fact', "A female can release millions of eggs. Egg production alone does not explain an outbreak: food for larvae, water conditions, predators and the survival of young starfish also matter.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_crown_of_thorns_role', 'A native Indo-Pacific predator of living coral. Adults often feed on branching and plate-forming corals. At outbreak densities, feeding can remove living coral faster than it regrows.'), __alloT('stem.coralreef.sp_crown_of_thorns_role_simple', 'A native Indo-Pacific animal that hunts and eats living coral. Native means it belongs there naturally. Adults often feed on corals that grow as branches or flat plates. In an outbreak, their numbers get very high. Then their feeding can remove living coral faster than it grows back.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_crown_of_thorns_fact', 'A female can release millions of eggs. Egg production alone does not explain an outbreak: food for larvae, water conditions, predators and the survival of young starfish also matter.'), __alloT('stem.coralreef.sp_crown_of_thorns_fact_simple', 'A female can let out millions of eggs. But lots of eggs alone does not explain an outbreak. An outbreak is when their numbers suddenly grow very large. Other things also matter. These are food for the larvae (babies), water conditions, predators and how many young starfish survive.')) },
       blue_sea_star: { name: __alloT('stem.coralreef.sp_blue_sea_star_name', 'Blue sea star (blue linckia)'),
         marks: [__alloT('stem.coralreef.sp_blue_sea_star_mark1', 'Bright blue sea star (sometimes pale blue or purplish)'),
           __alloT('stem.coralreef.sp_blue_sea_star_mark2', 'Five long, smooth, tube-shaped arms with blunt tips'),
           __alloT('stem.coralreef.sp_blue_sea_star_mark3', 'Often sits out in the open on rock, rubble or dead coral')],
         role: __alloT('stem.coralreef.sp_blue_sea_star_role', 'Feeds on detritus and the thin film of organic matter on rock and dead coral.'),
-        fact: __alloT('stem.coralreef.sp_blue_sea_star_fact', "A tiny compound eye sits near the tip of each arm. Experiments with blue sea stars showed that these low-resolution eyes help them navigate back toward nearby reef habitat.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_blue_sea_star_fact', 'A tiny compound eye sits near the tip of each arm. Experiments with blue sea stars showed that these low-resolution eyes help them navigate back toward nearby reef habitat.'), __alloT('stem.coralreef.sp_blue_sea_star_fact_simple', 'A tiny eye sits near the tip of each arm. It is a compound eye, made of many small parts. These eyes do not see fine detail. Scientists did experiments with blue sea stars. They showed that the eyes help the sea stars find their way back toward a reef nearby.')) },
       long_spined_urchin: { name: __alloT('stem.coralreef.sp_long_spined_urchin_name', 'Long-spined sea urchin (black diadema urchin)'),
         marks: [__alloT('stem.coralreef.sp_long_spined_urchin_mark1', 'Black ball bristling with very long, thin, needle-sharp spines'),
           __alloT('stem.coralreef.sp_long_spined_urchin_mark2', 'Bright orange (sometimes red) ring around the raised cone on top'),
@@ -14829,51 +15423,51 @@
           __alloT('stem.coralreef.sp_nudibranch_mark3', 'Orange-yellow feathery gills on the back and two orange-yellow \'horns\' (rhinophores)'),
           __alloT('stem.coralreef.sp_nudibranch_mark4', 'Orange-yellow border around the edge of the body')],
         role: __alloT('stem.coralreef.sp_nudibranch_role', 'Grazes on sponges.'),
-        fact: __alloT('stem.coralreef.sp_nudibranch_fact', "A 2016 study found the sponge-derived chemical latrunculin A in Anna's chromodoris and four related Chromodoris species. The compound was stored in mantle tissue, supporting a role in chemical defence. This does not mean all nudibranchs use the same chemical.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_nudibranch_fact', 'A 2016 study found the sponge-derived chemical latrunculin A in Anna\'s chromodoris and four related Chromodoris species. The compound was stored in mantle tissue, supporting a role in chemical defence. This does not mean all nudibranchs use the same chemical.'), __alloT('stem.coralreef.sp_nudibranch_fact_simple', 'A 2016 study looked at Anna\'s chromodoris and four related Chromodoris species. It found a chemical called latrunculin A inside them. The chemical comes from sponges. It was stored in the mantle, the soft outer part of the body. This supports the idea that it helps them defend themselves. This does not mean all nudibranchs use the same chemical.')) },
       cleaner_shrimp: { name: __alloT('stem.coralreef.sp_cleaner_shrimp_name', 'Pacific cleaner shrimp (skunk cleaner shrimp)'),
         marks: [__alloT('stem.coralreef.sp_cleaner_shrimp_mark1', 'A white stripe down the middle of the back'),
           __alloT('stem.coralreef.sp_cleaner_shrimp_mark2', 'Wider bright red bands on either side of the white stripe'),
           __alloT('stem.coralreef.sp_cleaner_shrimp_mark3', 'Long white antennae'),
           __alloT('stem.coralreef.sp_cleaner_shrimp_mark4', "Small claws on the first two leg pairs; a short toothed rostrum projects between the eyes")],
         role: __alloT('stem.coralreef.sp_cleaner_shrimp_role', 'Picks parasites and dead tissue off fish that visit its cleaning station.'),
-        fact: __alloT('stem.coralreef.sp_cleaner_shrimp_fact', "Its first reproductive phase is male. After further molts, a mature shrimp can function as both male and female when mating with another shrimp. This is called protandric simultaneous hermaphroditism.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_cleaner_shrimp_fact', 'Its first reproductive phase is male. After further molts, a mature shrimp can function as both male and female when mating with another shrimp. This is called protandric simultaneous hermaphroditism.'), __alloT('stem.coralreef.sp_cleaner_shrimp_fact_simple', 'Its first reproductive phase is male. So when it is first able to breed, it is male. A shrimp grows by shedding its shell, which is called molting. After more molts, a grown shrimp can act as both male and female. It can do this when it mates with another shrimp. This is called protandric simultaneous hermaphroditism. The long name means male first, then both male and female at the same time.')) },
       christmas_tree_worm: { name: __alloT('stem.coralreef.sp_christmas_tree_worm_name', 'Christmas tree worm'),
         marks: [__alloT('stem.coralreef.sp_christmas_tree_worm_mark1', "Two colourful spiral crowns belonging to one worm, emerging together from its tube"),
           __alloT('stem.coralreef.sp_christmas_tree_worm_mark2', 'Many colours: red, orange, yellow, blue or white'),
           __alloT('stem.coralreef.sp_christmas_tree_worm_mark3', 'Vanishes into its tube in a flash when startled, and plugs it with a lid (operculum)')],
         role: __alloT('stem.coralreef.sp_christmas_tree_worm_role', 'Filter-feeds: its feathery crowns catch plankton and also act as gills. It lives in a hard tube embedded in living coral, often boulder coral (Porites).'),
-        fact: __alloT('stem.coralreef.sp_christmas_tree_worm_fact', "In a 1996 study of worms in Porites corals at Okinawa, researchers indirectly estimated some ages above 40 years using annual growth bands in the host coral. The paper called the worms Spirobranchus giganteus. This is a result from that study, not the lifespan of every Christmas tree worm.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_christmas_tree_worm_fact', 'In a 1996 study of worms in Porites corals at Okinawa, researchers indirectly estimated some ages above 40 years using annual growth bands in the host coral. The paper called the worms Spirobranchus giganteus. This is a result from that study, not the lifespan of every Christmas tree worm.'), __alloT('stem.coralreef.sp_christmas_tree_worm_fact_simple', 'In a 1996 study of worms in Porites corals at Okinawa, researchers estimated that some worms were over 40 years old. They could not measure the worms\' ages directly. So they used the yearly growth bands in the host coral. The paper called the worms Spirobranchus giganteus. This is a result from that study, not the lifespan of every Christmas tree worm.')) },
       day_octopus: { name: __alloT('stem.coralreef.sp_day_octopus_name', 'Day octopus (big blue octopus)'),
         marks: [__alloT('stem.coralreef.sp_day_octopus_mark1', 'Octopus out hunting in daylight, often near a den in rubble or coral'),
           __alloT('stem.coralreef.sp_day_octopus_mark2', 'Changes colour and skin texture constantly, from smooth to bumpy'),
           __alloT('stem.coralreef.sp_day_octopus_mark3', 'Often trailed by fish such as goatfish and groupers while it hunts')],
         role: __alloT('stem.coralreef.sp_day_octopus_role', 'Daytime hunter of crabs, clams and snails, which it finds by feeling into holes with its arms.'),
-        fact: __alloT('stem.coralreef.sp_day_octopus_fact', "In a Red Sea study, day octopuses foraged with groups of fish. Goatfish helped determine where to search, while the octopus strongly influenced group movement. Researchers also observed octopuses displacing fish with arm strikes; this does not mean every octopus hunts in a team.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_day_octopus_fact', 'In a Red Sea study, day octopuses foraged with groups of fish. Goatfish helped determine where to search, while the octopus strongly influenced group movement. Researchers also observed octopuses displacing fish with arm strikes; this does not mean every octopus hunts in a team.'), __alloT('stem.coralreef.sp_day_octopus_fact_simple', 'In a Red Sea study, day octopuses searched for food with groups of fish. The goatfish helped decide where to search. The octopus had a strong effect on where the group moved. Researchers also saw octopuses push fish away with arm strikes. This does not mean every octopus hunts in a team.')) },
       sea_cucumber: { name: __alloT('stem.coralreef.sp_sea_cucumber_name', 'Pinkfish (pink sea cucumber)'),
         marks: [__alloT('stem.coralreef.sp_sea_cucumber_mark1', 'Dark (black to reddish-black) on top, pink underneath'),
           __alloT('stem.coralreef.sp_sea_cucumber_mark2', "Pliable skin with small scattered bumps; short tube feet underneath"),
           __alloT('stem.coralreef.sp_sea_cucumber_mark3', "Elongated, roughly cylindrical body, reaching about 30 cm"),
           __alloT('stem.coralreef.sp_sea_cucumber_mark4', 'Lies on sand between coral patches')],
-        role: __alloT('stem.coralreef.sp_sea_cucumber_role', 'Swallows sand and digests the organic matter and microbes coating the grains, recycling nutrients on the reef floor.'),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_sea_cucumber_role', 'Swallows sand and digests the organic matter and microbes coating the grains, recycling nutrients on the reef floor.'), __alloT('stem.coralreef.sp_sea_cucumber_role_simple', 'It swallows sand. It digests the bits of matter from living things and the microbes that coat each grain. Microbes are living things too small to see. This puts nutrients back into use on the reef floor. Nutrients are what living things need to grow.')),
         fact: __alloT('stem.coralreef.sp_sea_cucumber_fact', "This sea cucumber takes in sediment and digests organic material coating the grains. As it feeds and passes the grains out again, it mixes the surface sediment.") },
       sea_fan: { name: __alloT('stem.coralreef.sp_sea_fan_name', 'Giant sea fan (gorgonian)'),
         marks: [__alloT('stem.coralreef.sp_sea_fan_mark1', 'A big, flat fan made of a fine mesh of branches, like a net'),
           __alloT('stem.coralreef.sp_sea_fan_mark2', 'Stands upright, broadside to the current'),
           __alloT('stem.coralreef.sp_sea_fan_mark3', "Living tissue covers the connected branches; its small polyps each have eight feathery tentacles")],
         role: __alloT('stem.coralreef.sp_sea_fan_role', 'Thousands of tiny polyps on the fan strain plankton from the passing current. The fan is also home to tiny animals such as pygmy seahorses.'),
-        fact: __alloT('stem.coralreef.sp_sea_fan_fact', "Researchers have recorded Denise's pygmy seahorse on Annella mollis and other Annella sea fans. The seahorse resembles its host's colours and polyp pattern. A suitable fan does not necessarily have a seahorse living on it.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_sea_fan_fact', 'Researchers have recorded Denise\'s pygmy seahorse on Annella mollis and other Annella sea fans. The seahorse resembles its host\'s colours and polyp pattern. A suitable fan does not necessarily have a seahorse living on it.'), __alloT('stem.coralreef.sp_sea_fan_fact_simple', 'Researchers have found Denise\'s pygmy seahorse on Annella mollis and other Annella sea fans. The seahorse looks like its host, the fan it lives on. It matches the fan\'s colours and the pattern of its polyps. Polyps are the small, soft animals that make up the fan. A fan that would suit a seahorse does not always have one living on it.')) },
       barrel_sponge: { name: __alloT('stem.coralreef.sp_barrel_sponge_name', 'Giant barrel sponge'),
         marks: [__alloT('stem.coralreef.sp_barrel_sponge_mark1', 'Huge barrel- or vase-shaped sponge with a wide opening at the top'),
           __alloT('stem.coralreef.sp_barrel_sponge_mark2', 'Thick walls with a rough, ridged outer surface'),
           __alloT('stem.coralreef.sp_barrel_sponge_mark3', "Outer growth can be ridged, finger-like or comparatively smooth; appearance varies")],
-        role: __alloT('stem.coralreef.sp_barrel_sponge_role', 'Filter-feeds by pumping seawater through its body and straining out bacteria and tiny particles.'),
-        fact: __alloT('stem.coralreef.sp_barrel_sponge_fact', "A 2013 study at Lembeh Island, Indonesia, compared sponge shapes and DNA. Sponges identified as Xestospongia testudinaria included genetic groups consistent with at least two reproductively isolated lineages. A large, conspicuous animal can still conceal diversity that appearance alone does not resolve.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_barrel_sponge_role', 'Filter-feeds by pumping seawater through its body and straining out bacteria and tiny particles.'), __alloT('stem.coralreef.sp_barrel_sponge_role_simple', 'It is a filter feeder. It pumps seawater through its body. Then it strains out bacteria and tiny bits from the water.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_barrel_sponge_fact', 'A 2013 study at Lembeh Island, Indonesia, compared sponge shapes and DNA. Sponges identified as Xestospongia testudinaria included genetic groups consistent with at least two reproductively isolated lineages. A large, conspicuous animal can still conceal diversity that appearance alone does not resolve.'), __alloT('stem.coralreef.sp_barrel_sponge_fact_simple', 'A 2013 study at Lembeh Island, Indonesia, compared the shapes and DNA of sponges. The sponges were all named Xestospongia testudinaria. But their DNA fit with at least two separate groups that do not breed with each other. So a big animal that is easy to see can still hide differences. Its looks alone cannot show them.')) },
       soft_coral: { name: __alloT('stem.coralreef.sp_soft_coral_name', 'Tree soft coral (carnation coral)'),
         marks: [__alloT('stem.coralreef.sp_soft_coral_mark1', "A colourful branching colony with clusters of small polyps, each with eight feathery tentacles"),
           __alloT('stem.coralreef.sp_soft_coral_mark2', "Soft tissue contains tiny calcareous pieces called sclerites, rather than a continuous stony skeleton"),
           __alloT('stem.coralreef.sp_soft_coral_mark3', "Can expand or deflate; its branch posture changes with its state and water flow")],
         role: __alloT('stem.coralreef.sp_soft_coral_role', 'Catches drifting food with its polyps. Unlike reef-building corals, it has no symbiotic algae, so it relies entirely on what it catches.'),
-        fact: __alloT('stem.coralreef.sp_soft_coral_fact', "This entry represents Dendronephthya, a genus containing many species. Each colony is made of numerous animal polyps. Colony shape and colour alone may not identify the species; specialists examine features such as the arrangement and shape of its sclerites.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_soft_coral_fact', 'This entry represents Dendronephthya, a genus containing many species. Each colony is made of numerous animal polyps. Colony shape and colour alone may not identify the species; specialists examine features such as the arrangement and shape of its sclerites.'), __alloT('stem.coralreef.sp_soft_coral_fact_simple', 'This entry shows Dendronephthya, a genus containing many species. A genus is a group of close relatives. Each colony is made of many small animals called polyps. Its shape and colour alone may not tell you the species. Experts look at its sclerites, tiny hard pieces inside its body. They check how the sclerites are shaped and arranged.')) },
       brain_coral: { name: __alloT('stem.coralreef.sp_brain_coral_name', 'Brain coral (maze coral)'),
         marks: [__alloT('stem.coralreef.sp_brain_coral_mark1', 'Rounded boulder covered in winding, maze-like valleys and ridges'),
           __alloT('stem.coralreef.sp_brain_coral_mark2', 'Valleys separated by thick walls'),
@@ -14885,7 +15479,7 @@
           __alloT('stem.coralreef.sp_staghorn_coral_mark2', 'Each branch ends in one slightly larger tip polyp'),
           __alloT('stem.coralreef.sp_staghorn_coral_mark3', 'Small schooling fish (like chromis) often hover over and dive into the branches')],
         role: __alloT('stem.coralreef.sp_staghorn_coral_role', 'Fast-growing reef builder. Its thickets shelter small fish, and it is a favourite food of crown-of-thorns starfish.'),
-        fact: __alloT('stem.coralreef.sp_staghorn_coral_fact', 'On the Great Barrier Reef, Acropora muricata branches grew about 5-13 cm a year. Fast-growing branching and plate corals like this drove the reef\'s recent record recovery, but they are also easily killed by heatwaves, storms and crown-of-thorns starfish.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_staghorn_coral_fact', 'On the Great Barrier Reef, Acropora muricata branches grew about 5-13 cm a year. Fast-growing branching and plate corals like this drove the reef\'s recent record recovery, but they are also easily killed by heatwaves, storms and crown-of-thorns starfish.'), __alloT('stem.coralreef.sp_staghorn_coral_fact_simple', 'On the Great Barrier Reef, Acropora muricata branches grew about 5 to 13 cm a year. Branching corals and plate corals like this one grow fast. They led the reef\'s recent record recovery. But heatwaves, storms and crown-of-thorns starfish also kill them easily.')) },
       table_coral: { name: __alloT('stem.coralreef.sp_table_coral_name', 'Table coral (brush coral)'),
         marks: [__alloT('stem.coralreef.sp_table_coral_mark1', 'Flat, table-like plate held up on a central stalk'),
           __alloT('stem.coralreef.sp_table_coral_mark2', 'Top surface made of fine upturned branchlets, like a brush'),
@@ -14903,65 +15497,65 @@
           __alloT('stem.coralreef.sp_boulder_coral_mark2', 'Tiny polyp cups, only about 1-1.5 mm across'),
           __alloT('stem.coralreef.sp_boulder_coral_mark3', 'Often green, brown or blue')],
         role: __alloT('stem.coralreef.sp_boulder_coral_role', 'Slow-growing, long-lived reef builder that forms much of the reef\'s framework. Christmas tree worms often live in it.'),
-        fact: __alloT('stem.coralreef.sp_boulder_coral_fact', 'Boulder corals grow about 1 cm a year and lay down yearly bands like tree rings, which record past ocean conditions. \'Big Momma\', a Porites colony in American Samoa, is more than 500 years old, over 6 m high and 41 m around.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_boulder_coral_fact', 'Boulder corals grow about 1 cm a year and lay down yearly bands like tree rings, which record past ocean conditions. \'Big Momma\', a Porites colony in American Samoa, is more than 500 years old, over 6 m high and 41 m around.'), __alloT('stem.coralreef.sp_boulder_coral_fact_simple', 'Boulder corals grow about 1 cm a year. Each year they add a band, like the rings in a tree. The bands record what the ocean was like in the past. \'Big Momma\' is a Porites colony in American Samoa. It is more than 500 years old, over 6 m high and 41 m around.')) },
       cauliflower_coral: { name: __alloT('stem.coralreef.sp_cauliflower_coral_name', 'Cauliflower coral (rasp coral)'),
         marks: [__alloT('stem.coralreef.sp_cauliflower_coral_mark1', 'Compact rounded colony of stout upright branches'),
           __alloT('stem.coralreef.sp_cauliflower_coral_mark2', 'Irregular raised knobs cover the branches, giving them a rasp-like surface'),
           __alloT('stem.coralreef.sp_cauliflower_coral_mark3', 'Usually cream, brown or pink, with paler branch tips')],
         role: __alloT('stem.coralreef.sp_cauliflower_coral_role', 'A stony reef builder whose closely packed branches add small sheltered spaces to the reef.'),
-        fact: __alloT('stem.coralreef.sp_cauliflower_coral_fact', 'Its growth form responds to the water around it: colonies in exposed water have thick, compact branches, while sheltered colonies can be more open and slender.') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_cauliflower_coral_fact', 'Its growth form responds to the water around it: colonies in exposed water have thick, compact branches, while sheltered colonies can be more open and slender.'), __alloT('stem.coralreef.sp_cauliflower_coral_fact_simple', 'Its shape changes with the water around it. In exposed water with strong waves, colonies have thick, compact branches packed close together. In calm, sheltered water, colonies can be more open, with thin branches.')) },
       foliose_coral: { name: __alloT('stem.coralreef.sp_foliose_coral_name', 'Foliose coral (leafy Montipora)'),
         marks: [__alloT('stem.coralreef.sp_foliose_coral_mark1', 'Thin overlapping plates form tiers or curling whorls'),
           __alloT('stem.coralreef.sp_foliose_coral_mark2', 'Fine ridges run toward the pale growing margins'),
           __alloT('stem.coralreef.sp_foliose_coral_mark3', 'Tiny polyp cups lie in rows between the ridges')],
-        role: __alloT('stem.coralreef.sp_foliose_coral_role', 'A reef-building hard coral that adds layers and sheltered undersides to protected upper reef slopes.'),
-        fact: __alloT('stem.coralreef.sp_foliose_coral_fact', 'This coral may look like a leafy plant, but its thin plates are a shared stony skeleton covered by tiny coral animals. The rows of cups and raised ridges help distinguish it from similar Montipora.') },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_foliose_coral_role', 'A reef-building hard coral that adds layers and sheltered undersides to protected upper reef slopes.'), __alloT('stem.coralreef.sp_foliose_coral_role_simple', 'A hard coral that helps build the reef. It adds layers to protected upper reef slopes. The layers have sheltered spaces underneath.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_foliose_coral_fact', 'This coral may look like a leafy plant, but its thin plates are a shared stony skeleton covered by tiny coral animals. The rows of cups and raised ridges help distinguish it from similar Montipora.'), __alloT('stem.coralreef.sp_foliose_coral_fact_simple', 'This coral may look like a plant with leaves. But its thin plates are a hard, stony skeleton. Tiny coral animals cover it and share it. Look for the rows of cups and the raised ridges. They help tell it apart from other Montipora that look like it.')) },
       reef_star: { name: __alloT('stem.coralreef.sp_reef_star_name', 'Reef Star'),
         marks: [__alloT('stem.coralreef.sp_reef_star_mark1', 'A six-sided steel frame'),
           __alloT('stem.coralreef.sp_reef_star_mark2', 'Coated in sand so it blends into the reef'),
           __alloT('stem.coralreef.sp_reef_star_mark3', 'Linked to its neighbours in a web over loose rubble'),
           __alloT('stem.coralreef.sp_reef_star_mark4', 'Small coral pieces tied onto the frame')],
         role: __alloT('stem.coralreef.sp_reef_star_role', 'Holds loose rubble still, so the corals tied onto it and new coral larvae can settle and grow.'),
-        fact: __alloT('stem.coralreef.sp_reef_star_fact', 'On reefs blasted into rubble in Spermonde, Indonesia, coral cover on Reef Star sites rose from about 17% to about 56% in four years, and the reef was building new limestone as fast as healthy reefs nearby (Lange et al. 2024).') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_reef_star_fact', 'On reefs blasted into rubble in Spermonde, Indonesia, coral cover on Reef Star sites rose from about 17% to about 56% in four years, and the reef was building new limestone as fast as healthy reefs nearby (Lange et al. 2024).'), __alloT('stem.coralreef.sp_reef_star_fact_simple', 'In Spermonde, Indonesia, some reefs had been blasted into rubble. On Reef Star sites there, coral cover rose from about 17% to about 56% in four years. The reef was also building new limestone as fast as healthy reefs nearby (Lange et al. 2024).')) },
       reef_ball: { name: __alloT('stem.coralreef.sp_reef_ball_name', 'Reef Ball'),
         marks: [__alloT('stem.coralreef.sp_reef_ball_mark1', 'A hollow concrete dome'),
           __alloT('stem.coralreef.sp_reef_ball_mark2', 'Round holes all over it'),
           __alloT('stem.coralreef.sp_reef_ball_mark3', 'Set on sand or rubble')],
         role: __alloT('stem.coralreef.sp_reef_ball_role', 'Gives fish shelter and a hard surface where corals and sponges can settle.'),
-        fact: __alloT('stem.coralreef.sp_reef_ball_fact', 'Fish gather around Reef Balls quickly, but studies so far have not found that they help young corals survive or grow better (Hylkema et al. 2023).') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_reef_ball_fact', 'Fish gather around Reef Balls quickly, but studies so far have not found that they help young corals survive or grow better (Hylkema et al. 2023).'), __alloT('stem.coralreef.sp_reef_ball_fact_simple', 'Fish quickly gather around Reef Balls. But studies have not yet found that the balls help young corals survive or grow better (Hylkema et al. 2023).')) },
       coral_tree_nursery: { name: __alloT('stem.coralreef.sp_coral_tree_nursery_name', 'Coral tree nursery'),
         marks: [__alloT('stem.coralreef.sp_coral_tree_nursery_mark1', 'A pole with crossbars, like a bare tree'),
           __alloT('stem.coralreef.sp_coral_tree_nursery_mark2', 'Coral pieces hanging from lines'),
           __alloT('stem.coralreef.sp_coral_tree_nursery_mark3', 'Held up off the bottom, away from sand')],
         role: __alloT('stem.coralreef.sp_coral_tree_nursery_role', 'Grows small coral pieces safely until they are big enough to plant back on a damaged reef.'),
-        fact: __alloT('stem.coralreef.sp_coral_tree_nursery_fact', 'In a review of 362 restoration projects, about two out of three planted corals survived, and a typical project covered about 100 square meters (Bostrom-Einarsson et al. 2020).') },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_coral_tree_nursery_fact', 'In a review of 362 restoration projects, about two out of three planted corals survived, and a typical project covered about 100 square meters (Bostrom-Einarsson et al. 2020).'), __alloT('stem.coralreef.sp_coral_tree_nursery_fact_simple', 'A review looked at 362 projects that tried to restore (repair) reefs. About two out of three planted corals stayed alive. A typical project covered about 100 square meters (Bostrom-Einarsson et al. 2020).')) },
       firefish: { name: __alloT("stem.coralreef.sp_firefish_name", "Firefish (red firegoby)"),
         marks: [__alloT("stem.coralreef.sp_firefish_mark1", "Very slender body, pale at the head and turning orange-red toward the tail"),
           __alloT("stem.coralreef.sp_firefish_mark2", "An exceptionally long first dorsal fin rises like a narrow pennant"),
           __alloT("stem.coralreef.sp_firefish_mark3", "The tail fin is rounded rather than deeply forked"),
           __alloT("stem.coralreef.sp_firefish_mark4", "Red rear dorsal and anal fins have darker outer areas")],
-        role: __alloT("stem.coralreef.sp_firefish_role", "Feeds on tiny drifting animals above the reef, facing into the current to catch zooplankton."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_firefish_role', 'Feeds on tiny drifting animals above the reef, facing into the current to catch zooplankton.'), __alloT('stem.coralreef.sp_firefish_role_simple', 'It eats tiny animals that drift above the reef. These are called zooplankton. It faces into the current to catch them. A current is moving water.')),
         fact: __alloT("stem.coralreef.sp_firefish_fact", "A firefish usually stays close to its burrow and can dart inside when disturbed. Its spectacular pennant is the raised front part of its first dorsal fin.") },
       copperband_butterflyfish: { name: __alloT("stem.coralreef.sp_copperband_butterflyfish_name", "Copperband butterflyfish (beaked coralfish)"),
         marks: [__alloT("stem.coralreef.sp_copperband_butterflyfish_mark1", "Deep, flattened white body crossed by orange-copper bars"),
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark2", "A very long, narrow snout projects in front of the face"),
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark3", "A dark-edged orange bar passes through the real eye"),
           __alloT("stem.coralreef.sp_copperband_butterflyfish_mark4", "A black false eyespot sits near the rear of the dorsal fin")],
-        role: __alloT("stem.coralreef.sp_copperband_butterflyfish_role", "Picks small bottom-dwelling invertebrates from reef crevices with its narrow snout."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_copperband_butterflyfish_role', 'Picks small bottom-dwelling invertebrates from reef crevices with its narrow snout.'), __alloT('stem.coralreef.sp_copperband_butterflyfish_role_simple', 'It uses its narrow snout to pick small animals from cracks in the reef. These animals live on the bottom and have no backbones. They are called invertebrates.')),
         fact: __alloT("stem.coralreef.sp_copperband_butterflyfish_fact", "The very long snout develops after the larval fish settles on the reef. A young fish can therefore have a much shorter face than the adult shown in the study model.") },
       spotted_garden_eel: { name: __alloT("stem.coralreef.sp_spotted_garden_eel_name", "Spotted garden eel"),
         marks: [__alloT("stem.coralreef.sp_spotted_garden_eel_mark1", "Extremely slender, straw-like body rather than a broad fish silhouette"),
           __alloT("stem.coralreef.sp_spotted_garden_eel_mark2", "Pale adult body densely sprinkled with small dark spots"),
           __alloT("stem.coralreef.sp_spotted_garden_eel_mark3", "Larger dark patches interrupt the fine spots, including one around the gill opening"),
           __alloT("stem.coralreef.sp_spotted_garden_eel_mark4", "Only part of the upright, curved body emerges from its sandy burrow")],
-        role: __alloT("stem.coralreef.sp_spotted_garden_eel_role", "Takes drifting zooplankton from the current while remaining anchored in a sand burrow."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_spotted_garden_eel_role', 'Takes drifting zooplankton from the current while remaining anchored in a sand burrow.'), __alloT('stem.coralreef.sp_spotted_garden_eel_role_simple', 'It catches zooplankton drifting by in the current. Zooplankton are tiny animals that drift in the water. While it feeds, it stays anchored in a burrow in the sand. A burrow is a hole or tunnel.')),
         fact: __alloT("stem.coralreef.sp_spotted_garden_eel_fact", "Its tail digs the burrow, and mucus helps bind the sand walls. The eel can withdraw tail-first when alarmed.") },
       banded_pipefish: { name: __alloT("stem.coralreef.sp_banded_pipefish_name", "Banded pipefish (ringed pipefish)"),
         marks: [__alloT("stem.coralreef.sp_banded_pipefish_mark1", "Very slender, elongated body with a long, narrow tubular snout"),
           __alloT("stem.coralreef.sp_banded_pipefish_mark2", "Alternating pale and red-to-black bands cross the head and body"),
           __alloT("stem.coralreef.sp_banded_pipefish_mark3", "A distinct reddish tail fin ends the thin body"),
           __alloT("stem.coralreef.sp_banded_pipefish_mark4", "White margins line the tail fin above and below, with one or more pale spots near its centre")],
-        role: __alloT("stem.coralreef.sp_banded_pipefish_role", "Thought to prey on tiny crustaceans in sheltered reef habitats; its detailed wild feeding role is poorly documented."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_banded_pipefish_role', 'Thought to prey on tiny crustaceans in sheltered reef habitats; its detailed wild feeding role is poorly documented.'), __alloT('stem.coralreef.sp_banded_pipefish_role_simple', 'Scientists think it hunts tiny crustaceans in calm, sheltered parts of the reef. But not much is written down about how it feeds in the wild.')),
         fact: __alloT("stem.coralreef.sp_banded_pipefish_fact", "In this relative of seahorses, the male broods the developing eggs.") },
       yellow_longnose_butterflyfish: { name: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_name", "Yellow longnose butterflyfish (forceps fish)"),
         marks: [__alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark1", "Deep, flattened body with a bright yellow colour"),
@@ -14969,112 +15563,112 @@
           __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark3", "Upper head black; lower head and chest silvery white"),
           __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_mark4", "A small black spot sits on the rear anal fin, just below the tail base")],
         role: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_role", "Probes reef crevices for small animals and nips pieces from larger invertebrates."),
-        fact: __alloT("stem.coralreef.sp_yellow_longnose_butterflyfish_fact", "Its genus name, Forcipiger, means forceps-bearing, a reference to the elongated jaws.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_yellow_longnose_butterflyfish_fact', 'Its genus name, Forcipiger, means forceps-bearing, a reference to the elongated jaws.'), __alloT('stem.coralreef.sp_yellow_longnose_butterflyfish_fact_simple', 'Its genus name is Forcipiger. A genus is a group of close relatives. Forcipiger means forceps-bearing. Forceps are a tool like long tweezers. The name points to its long jaws.')) },
       pajama_cardinalfish: { name: __alloT("stem.coralreef.sp_pajama_cardinalfish_name", "Pajama cardinalfish"),
         marks: [__alloT("stem.coralreef.sp_pajama_cardinalfish_mark1", "Yellowish head with a red bar passing through the iris"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark2", "A broad, dark vertical bar crosses the middle of the body"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark3", "Rounded purple-to-brown spots scatter across the pale rear body"),
           __alloT("stem.coralreef.sp_pajama_cardinalfish_mark4", "Two separate dorsal fins, with the front dorsal fin and pelvic fins dark")],
-        role: __alloT("stem.coralreef.sp_pajama_cardinalfish_role", "Feeds on small crustaceans and zooplankton around sheltered coral reefs."),
-        fact: __alloT("stem.coralreef.sp_pajama_cardinalfish_fact", "The male protects developing eggs by carrying them inside his mouth until they hatch.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_pajama_cardinalfish_role', 'Feeds on small crustaceans and zooplankton around sheltered coral reefs.'), __alloT('stem.coralreef.sp_pajama_cardinalfish_role_simple', 'It eats small crustaceans. These are animals like crabs and shrimp. It also eats zooplankton, tiny animals that drift in the water. It feeds around sheltered coral reefs. These reefs are safe from rough water.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_pajama_cardinalfish_fact', 'The male protects developing eggs by carrying them inside his mouth until they hatch.'), __alloT('stem.coralreef.sp_pajama_cardinalfish_fact_simple', 'The male keeps the growing eggs safe. He carries them inside his mouth until they hatch.')) },
       banggai_cardinalfish: { name: __alloT("stem.coralreef.sp_banggai_cardinalfish_name", "Banggai cardinalfish"),
         marks: [__alloT("stem.coralreef.sp_banggai_cardinalfish_mark1", "Silvery body crossed by three bold, black vertical bars"),
           __alloT("stem.coralreef.sp_banggai_cardinalfish_mark2", "Small white spots decorate the body and most fins"),
           __alloT("stem.coralreef.sp_banggai_cardinalfish_mark3", "Two separate dorsal fins: a tasseled front fin and a long, tapering second fin"),
           __alloT("stem.coralreef.sp_banggai_cardinalfish_mark4", "A deeply forked tail and elongated lower anal fin create a pointed outline")],
-        role: __alloT("stem.coralreef.sp_banggai_cardinalfish_role", "Feeds on tiny crustaceans and other plankton around shallow reef and seagrass habitats."),
-        fact: __alloT("stem.coralreef.sp_banggai_cardinalfish_fact", "The father broods eggs and developing young in his mouth, then releases fully formed juveniles. This species has no pelagic larval phase: its young do not disperse as drifting larvae.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_banggai_cardinalfish_role', 'Feeds on tiny crustaceans and other plankton around shallow reef and seagrass habitats.'), __alloT('stem.coralreef.sp_banggai_cardinalfish_role_simple', 'It eats tiny crustaceans, small animals related to crabs and shrimp. It also eats other plankton, tiny living things that drift in the water. It feeds around shallow reefs and seagrass beds.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_banggai_cardinalfish_fact', 'The father broods eggs and developing young in his mouth, then releases fully formed juveniles. This species has no pelagic larval phase: its young do not disperse as drifting larvae.'), __alloT('stem.coralreef.sp_banggai_cardinalfish_fact_simple', 'The father broods the eggs and growing young. That means he keeps them safe in his mouth. Then he lets out fully formed juveniles, or young fish. This species has no pelagic larval phase. In that phase, young animals called larvae drift in the open sea. Its young do not spread out as drifting larvae.')) },
       giant_triton: { name: __alloT("stem.coralreef.sp_giant_triton_name", "Giant triton (Triton’s trumpet)"),
         marks: [__alloT("stem.coralreef.sp_giant_triton_mark1", "Large spiral shell with a tall, pointed spire and a swollen final whorl"),
           __alloT("stem.coralreef.sp_giant_triton_mark2", "Cream-coloured shell patterned with brown markings and spiral ridges"),
           __alloT("stem.coralreef.sp_giant_triton_mark3", "A broad, orange shell opening with a light-and-dark striped inner edge"),
           __alloT("stem.coralreef.sp_giant_triton_mark4", "The flared outer lip has small teeth along its inner edge")],
-        role: __alloT("stem.coralreef.sp_giant_triton_role", "Predator of sea stars and other echinoderms. Its feeding alone is not enough to control crown-of-thorns outbreaks."),
-        fact: __alloT("stem.coralreef.sp_giant_triton_fact", "AIMS researchers observed crown-of-thorns starfish moving away from water that had held a giant triton. This is evidence of a response to a chemical cue, not proof that adding snails will control a reef-wide outbreak.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_giant_triton_role', 'Predator of sea stars and other echinoderms. Its feeding alone is not enough to control crown-of-thorns outbreaks.'), __alloT('stem.coralreef.sp_giant_triton_role_simple', 'It hunts sea stars. It also hunts other echinoderms, the group that sea stars belong to. But its feeding alone is not enough to control crown-of-thorns outbreaks. In an outbreak, their numbers grow very large, very fast.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_giant_triton_fact', 'AIMS researchers observed crown-of-thorns starfish moving away from water that had held a giant triton. This is evidence of a response to a chemical cue, not proof that adding snails will control a reef-wide outbreak.'), __alloT('stem.coralreef.sp_giant_triton_fact_simple', 'Scientists at AIMS saw crown-of-thorns starfish move away from water that had held a giant triton. A giant triton is a big sea snail. This is evidence that the starfish respond to a chemical cue. A chemical cue is a signal carried by chemicals, a bit like a smell. But it is not proof that adding snails will control an outbreak across a whole reef. An outbreak is when their numbers suddenly grow very large.')) },
       blue_velvet_headshield_slug: { name: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_name", "Blue velvet headshield slug"),
         marks: [__alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark1", "Deep black body outlined by thin, vivid blue lines"),
           __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark2", "A broad headshield with a blue line along its centre"),
           __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark3", "Raised side flaps, called parapodia, partly wrap around the body"),
           __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_mark4", "Two tapering, tail-like lobes extend behind the body and are unequal in length")],
-        role: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_role", "Small predator that specializes in free-living flatworms around reef-associated sediment."),
-        fact: __alloT("stem.coralreef.sp_blue_velvet_headshield_slug_fact", "Although sometimes called a blue velvet nudibranch, it is a headshield slug in a different sea-slug group.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blue_velvet_headshield_slug_role', 'Small predator that specializes in free-living flatworms around reef-associated sediment.'), __alloT('stem.coralreef.sp_blue_velvet_headshield_slug_role_simple', 'A small predator, an animal that hunts other animals. Its special food is flatworms that live free, not inside another animal. It finds them in the sand and mud around reefs.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_blue_velvet_headshield_slug_fact', 'Although sometimes called a blue velvet nudibranch, it is a headshield slug in a different sea-slug group.'), __alloT('stem.coralreef.sp_blue_velvet_headshield_slug_fact_simple', 'People sometimes call it a blue velvet nudibranch. But it is not a nudibranch. It is a headshield slug, in a different sea-slug group.')) },
       regal_angelfish: { name: __alloT("stem.coralreef.sp_regal_angelfish_name", "Regal angelfish"),
         marks: [__alloT("stem.coralreef.sp_regal_angelfish_mark1", "Pale, dark-edged vertical bars cross a yellow-orange body"),
           __alloT("stem.coralreef.sp_regal_angelfish_mark2", "The soft rear dorsal fin is blue with fine dark scribbles"),
           __alloT("stem.coralreef.sp_regal_angelfish_mark3", "The anal fin carries curved yellow and blue stripes"),
           __alloT("stem.coralreef.sp_regal_angelfish_mark4", "A yellow tail contrasts with the blue-grey chest of this Pacific adult")],
-        role: __alloT("stem.coralreef.sp_regal_angelfish_role", "Predator of sponges and tunicates, linking these reef invertebrates to the fish food web."),
-        fact: __alloT("stem.coralreef.sp_regal_angelfish_fact", "Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest. Juveniles also differ from this adult: they have fewer body bars and a large false eyespot toward the rear of the dorsal fin.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_regal_angelfish_role', 'Predator of sponges and tunicates, linking these reef invertebrates to the fish food web.'), __alloT('stem.coralreef.sp_regal_angelfish_role_simple', 'It eats sponges and tunicates. Tunicates are soft animals also called sea squirts. Sponges and tunicates are invertebrates, animals with no backbones. By eating them, it links them to the fish food web.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_regal_angelfish_fact', 'Colour varies geographically: Indian Ocean and Red Sea fish have yellow chests, while the Pacific form shown here has a blue-grey chest. Juveniles also differ from this adult: they have fewer body bars and a large false eyespot toward the rear of the dorsal fin.'), __alloT('stem.coralreef.sp_regal_angelfish_fact_simple', 'Its colour depends on where it lives. Fish from the Indian Ocean and Red Sea have yellow chests. The Pacific kind shown here has a blue-grey chest. Young fish also look different from this adult. They have fewer bars on the body. They also have a large false eyespot near the back of the dorsal fin, the fin on its back. An eyespot is a spot that looks like an eye.')) },
       mandarin_dragonet: { name: __alloT("stem.coralreef.sp_mandarin_dragonet_name", "Mandarin dragonet"),
         marks: [__alloT("stem.coralreef.sp_mandarin_dragonet_mark1", "Winding blue-green and orange bands cover the body"),
           __alloT("stem.coralreef.sp_mandarin_dragonet_mark2", "A broad head leads into a smooth, scaleless body"),
           __alloT("stem.coralreef.sp_mandarin_dragonet_mark3", "The first dorsal fin has an extended spine in this adult male"),
           __alloT("stem.coralreef.sp_mandarin_dragonet_mark4", "A fan-shaped orange-red tail has a bright blue edge")],
-        role: __alloT("stem.coralreef.sp_mandarin_dragonet_role", "Small predator of bottom-dwelling invertebrates among reef rubble and coral crevices."),
-        fact: __alloT("stem.coralreef.sp_mandarin_dragonet_fact", "Its blue colour comes from pigment-containing cells called cyanophores, an unusual way for a fish to produce blue.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_mandarin_dragonet_role', 'Small predator of bottom-dwelling invertebrates among reef rubble and coral crevices.'), __alloT('stem.coralreef.sp_mandarin_dragonet_role_simple', 'A small predator, an animal that hunts. It hunts animals without backbones that live on the bottom. It finds them in reef rubble, which is broken bits of coral, and in cracks in the coral.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_mandarin_dragonet_fact', 'Its blue colour comes from pigment-containing cells called cyanophores, an unusual way for a fish to produce blue.'), __alloT('stem.coralreef.sp_mandarin_dragonet_fact_simple', 'Its blue colour comes from cells that hold pigment, or colour. These cells are called cyanophores. This is not a common way for a fish to make blue.')) },
       harlequin_shrimp: { name: __alloT("stem.coralreef.sp_harlequin_shrimp_name", "Harlequin shrimp"),
         marks: [__alloT("stem.coralreef.sp_harlequin_shrimp_mark1", "Cream-white body with large wine-purple and blue blotches"),
           __alloT("stem.coralreef.sp_harlequin_shrimp_mark2", "Two broad, flattened paddle-like claws held in front"),
           __alloT("stem.coralreef.sp_harlequin_shrimp_mark3", "Petal-like sensory antennules spread above the head"),
           __alloT("stem.coralreef.sp_harlequin_shrimp_mark4", "A curved, segmented abdomen ends in a small tail fan")],
         role: __alloT("stem.coralreef.sp_harlequin_shrimp_role", "Specialist predator of sea stars in reef food webs."),
-        fact: __alloT("stem.coralreef.sp_harlequin_shrimp_fact", "Experiments found that males can recognize and prefer the scent of their usual partner.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_harlequin_shrimp_fact', 'Experiments found that males can recognize and prefer the scent of their usual partner.'), __alloT('stem.coralreef.sp_harlequin_shrimp_fact_simple', 'Scientists did experiments with these shrimp. They found that males can recognize, or know, the scent of their usual partner. A scent is a smell. The males also like that scent more than others.')) },
       spotted_seahorse: { name: __alloT("stem.coralreef.sp_spotted_seahorse_name", "Spotted seahorse"),
         marks: [__alloT("stem.coralreef.sp_spotted_seahorse_mark1", "Deep, upright body with a horse-like head and thick tubular snout"),
           __alloT("stem.coralreef.sp_spotted_seahorse_mark2", "A low, rounded crown bends toward the back of the head"),
           __alloT("stem.coralreef.sp_spotted_seahorse_mark3", "Armoured body rings bear low, rounded tubercles (bumps), rather than long sharp spines"),
           __alloT("stem.coralreef.sp_spotted_seahorse_mark4", "A long gripping tail can coil around a holdfast and has no tail fin")],
-        role: __alloT("stem.coralreef.sp_spotted_seahorse_role", "Small predator of planktonic crustaceans in coastal food webs."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_spotted_seahorse_role', 'Small predator of planktonic crustaceans in coastal food webs.'), __alloT('stem.coralreef.sp_spotted_seahorse_role_simple', 'It is a small predator, an animal that hunts others. It eats crustaceans that drift as plankton. Crustaceans are animals related to crabs and shrimp. It is part of food webs near the coast.')),
         fact: __alloT("stem.coralreef.sp_spotted_seahorse_fact", "Adult males have a brood pouch that carries the developing young and releases them as tiny seahorses. Pregnancy and birth are not animated in this study model.") },
       bennetts_feather_star: { name: __alloT("stem.coralreef.sp_bennetts_feather_star_name", "Bennett’s feather star"),
         marks: [__alloT("stem.coralreef.sp_bennetts_feather_star_mark1", "Dozens of long arms spread upward and outward into a feeding crown"),
           __alloT("stem.coralreef.sp_bennetts_feather_star_mark2", "Fine side branches called pinnules give each arm a feather-like outline"),
           __alloT("stem.coralreef.sp_bennetts_feather_star_mark3", "The small central body has no long adult stalk"),
           __alloT("stem.coralreef.sp_bennetts_feather_star_mark4", "Strong, jointed gripping appendages called cirri cluster beneath the body")],
-        role: __alloT("stem.coralreef.sp_bennetts_feather_star_role", "Suspension feeder that gathers tiny food particles from flowing reef water."),
-        fact: __alloT("stem.coralreef.sp_bennetts_feather_star_fact", "Its plant-like crown belongs to an animal: a feather star is an echinoderm, related to sea stars and sea urchins.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_bennetts_feather_star_role', 'Suspension feeder that gathers tiny food particles from flowing reef water.'), __alloT('stem.coralreef.sp_bennetts_feather_star_role_simple', 'It catches food that floats in the water. It gathers tiny bits of food from reef water as the water flows past.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bennetts_feather_star_fact', 'Its plant-like crown belongs to an animal: a feather star is an echinoderm, related to sea stars and sea urchins.'), __alloT('stem.coralreef.sp_bennetts_feather_star_fact_simple', 'Its crown looks like a plant, but it belongs to an animal. A feather star is an echinoderm, a group whose name means spiny skin. It is related to sea stars and sea urchins.')) },
       peacock_mantis_shrimp: { name: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_name", "Peacock mantis shrimp"),
         marks: [__alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark1", "Large stalked compound eyes sit high above the head"),
           __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark2", "Club-bearing striking limbs fold beneath the front of the body"),
           __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark3", "Pale-edged dark spots mark the front sides of the carapace"),
           __alloT("stem.coralreef.sp_peacock_mantis_shrimp_mark4", "The segmented abdomen ends in a broad fan of telson and paired uropods")],
-        role: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_role", "Predator of hard-shelled invertebrates in reef food webs."),
-        fact: __alloT("stem.coralreef.sp_peacock_mantis_shrimp_fact", "A strike can create cavitation bubbles; their collapse adds another brief force pulse after the club’s impact.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_peacock_mantis_shrimp_role', 'Predator of hard-shelled invertebrates in reef food webs.'), __alloT('stem.coralreef.sp_peacock_mantis_shrimp_role_simple', 'It is a predator, or hunter, in reef food webs. It hunts invertebrates with hard shells. Invertebrates are animals with no backbones.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_peacock_mantis_shrimp_fact', 'A strike can create cavitation bubbles; their collapse adds another brief force pulse after the club’s impact.'), __alloT('stem.coralreef.sp_peacock_mantis_shrimp_fact_simple', 'When it strikes, it can make cavitation bubbles. These are bubbles that form in the water. When the bubbles collapse, they add another short push of force. This push comes after its club hits.')) },
       ribbon_eel: { name: __alloT("stem.coralreef.sp_ribbon_eel_name", "Ribbon eel"),
         marks: [__alloT("stem.coralreef.sp_ribbon_eel_mark1", "Two tubular nostrils widen into conspicuous fan-shaped flaps"),
           __alloT("stem.coralreef.sp_ribbon_eel_mark2", "The exposed body is extremely slender and flattened from side to side"),
           __alloT("stem.coralreef.sp_ribbon_eel_mark3", "A ribbon-like back fin begins near the head and follows the body"),
           __alloT("stem.coralreef.sp_ribbon_eel_mark4", "Small fleshy projections extend from the snout tip and the front of the lower jaw")],
-        role: __alloT("stem.coralreef.sp_ribbon_eel_role", "Small-fish predator associated with reef burrows."),
-        fact: __alloT("stem.coralreef.sp_ribbon_eel_fact", "Colour alone is an unreliable sex label: a captive breeding study found that body colour did not consistently match sex or sexual maturity.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_ribbon_eel_role', 'Small-fish predator associated with reef burrows.'), __alloT('stem.coralreef.sp_ribbon_eel_role_simple', 'It hunts small fish. It is tied to burrows in the reef. A burrow is a hole or tunnel.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_ribbon_eel_fact', 'Colour alone is an unreliable sex label: a captive breeding study found that body colour did not consistently match sex or sexual maturity.'), __alloT('stem.coralreef.sp_ribbon_eel_fact_simple', 'Colour alone is an unreliable sex label. That means colour cannot be trusted to show if an eel is male or female. In one study, people kept and bred these eels. Body colour did not always match an eel’s sex. It also did not always match whether an eel was grown up and ready to breed.')) },
       leaf_scorpionfish: { name: __alloT("stem.coralreef.sp_leaf_scorpionfish_name", "Leaf scorpionfish"),
         marks: [__alloT("stem.coralreef.sp_leaf_scorpionfish_mark1", "A deep body is flattened strongly from side to side"),
           __alloT("stem.coralreef.sp_leaf_scorpionfish_mark2", "A tall sail-like back fin runs almost continuously into the rounded tail"),
           __alloT("stem.coralreef.sp_leaf_scorpionfish_mark3", "Small skin fringes surround the mouth and rise above the eyes"),
           __alloT("stem.coralreef.sp_leaf_scorpionfish_mark4", "Broad fan-shaped side fins support a mottled, rough-skinned body")],
-        role: __alloT("stem.coralreef.sp_leaf_scorpionfish_role", "A small bottom-dwelling ambush predator of fishes and crustaceans."),
-        fact: __alloT("stem.coralreef.sp_leaf_scorpionfish_fact", "It periodically sheds its outer skin. Individuals can be white, pink, red or green, so colour alone is a poor guide to identification.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_leaf_scorpionfish_role', 'A small bottom-dwelling ambush predator of fishes and crustaceans.'), __alloT('stem.coralreef.sp_leaf_scorpionfish_role_simple', 'A small hunter that lives on the bottom. It hides and waits, then grabs fishes and crustaceans. Crustaceans are animals like crabs and shrimp.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_leaf_scorpionfish_fact', 'It periodically sheds its outer skin. Individuals can be white, pink, red or green, so colour alone is a poor guide to identification.'), __alloT('stem.coralreef.sp_leaf_scorpionfish_fact_simple', 'From time to time, it sheds its outer skin. Each fish can be white, pink, red or green. So colour alone is a poor guide when you try to tell what fish it is.')) },
       longnose_hawkfish: { name: __alloT("stem.coralreef.sp_longnose_hawkfish_name", "Longnose hawkfish"),
         marks: [__alloT("stem.coralreef.sp_longnose_hawkfish_mark1", "A very long pointed snout extends from a slender body"),
           __alloT("stem.coralreef.sp_longnose_hawkfish_mark2", "Red lengthwise lines cross red bars to form a grid on a pale body"),
           __alloT("stem.coralreef.sp_longnose_hawkfish_mark3", "Tiny tassels rise near the tips of the back-fin spines"),
           __alloT("stem.coralreef.sp_longnose_hawkfish_mark4", "Thick lower side-fin rays form sturdy little supports")],
-        role: __alloT("stem.coralreef.sp_longnose_hawkfish_role", "A reef-perching predator that eats tiny crustaceans from the water and the bottom."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_longnose_hawkfish_role', 'A reef-perching predator that eats tiny crustaceans from the water and the bottom.'), __alloT('stem.coralreef.sp_longnose_hawkfish_role_simple', 'A hunter that perches on the reef. It eats tiny crustaceans from the water and from the bottom. Crustaceans are animals like crabs and shrimp.')),
         fact: __alloT("stem.coralreef.sp_longnose_hawkfish_fact", "The small tassels on its back-fin spines are called cirri. Its strong lower side-fin rays help it perch among coral branches.") },
       chocolate_chip_sea_star: { name: __alloT("stem.coralreef.sp_chocolate_chip_sea_star_name", "Chocolate chip sea star"),
         marks: [__alloT("stem.coralreef.sp_chocolate_chip_sea_star_mark1", "Five broad, tapering arms join a thick central disc"),
           __alloT("stem.coralreef.sp_chocolate_chip_sea_star_mark2", "Large dark cone-shaped knobs stand above the upper surface"),
           __alloT("stem.coralreef.sp_chocolate_chip_sea_star_mark3", "The robust body can be beige, orange or pinkish"),
           __alloT("stem.coralreef.sp_chocolate_chip_sea_star_mark4", "Small tube feet line grooves on the underside of the arms")],
-        role: __alloT("stem.coralreef.sp_chocolate_chip_sea_star_role", "A seafloor consumer that feeds on surface films and tiny organisms among sand and seagrass."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_chocolate_chip_sea_star_role', 'A seafloor consumer that feeds on surface films and tiny organisms among sand and seagrass.'), __alloT('stem.coralreef.sp_chocolate_chip_sea_star_role_simple', 'It feeds on the seafloor. It eats thin films that coat surfaces, and tiny living things. It finds them among sand and seagrass. Seagrass is a plant that grows under water.')),
         fact: __alloT("stem.coralreef.sp_chocolate_chip_sea_star_fact", "Hundreds of tiny tube feet beneath the arms work together to move this sea star. The dark knobs on top are part of its body.") },
       porcelain_anemone_crab: { name: __alloT("stem.coralreef.sp_porcelain_anemone_crab_name", "Porcelain anemone crab"),
         marks: [__alloT("stem.coralreef.sp_porcelain_anemone_crab_mark1", "A smooth pale shell and broad claws carry red or purplish spots"),
           __alloT("stem.coralreef.sp_porcelain_anemone_crab_mark2", "Two large flattened claws sit in front of a compact body"),
           __alloT("stem.coralreef.sp_porcelain_anemone_crab_mark3", "Three pairs of walking legs spread from the sides, with long thin antennae ahead"),
           __alloT("stem.coralreef.sp_porcelain_anemone_crab_mark4", "Feathery feeding fans extend beside the mouth")],
-        role: __alloT("stem.coralreef.sp_porcelain_anemone_crab_role", "A small suspension feeder that gathers plankton while living around large sea anemones."),
-        fact: __alloT("stem.coralreef.sp_porcelain_anemone_crab_fact", "Its delicate feeding fans are bristly mouthparts. They gather tiny food particles from the water, while the much larger claws serve other roles. The stalked compound eyes contain many small visual units called ommatidia.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_porcelain_anemone_crab_role', 'A small suspension feeder that gathers plankton while living around large sea anemones.'), __alloT('stem.coralreef.sp_porcelain_anemone_crab_role_simple', 'A small animal that catches food floating in the water. It gathers plankton, tiny living things that drift. It lives around large sea anemones.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_porcelain_anemone_crab_fact', 'Its delicate feeding fans are bristly mouthparts. They gather tiny food particles from the water, while the much larger claws serve other roles. The stalked compound eyes contain many small visual units called ommatidia.'), __alloT('stem.coralreef.sp_porcelain_anemone_crab_fact_simple', 'Its delicate feeding fans are bristly mouthparts. That means they are mouth parts with stiff hairs. They gather tiny bits of food from the water. Its claws are much larger, and they have other jobs. It has compound eyes on stalks. Each eye has many small parts that see. These parts are called ommatidia.')) },
       varicose_phyllidia: { name: __alloT("stem.coralreef.sp_varicose_phyllidia_name", "Varicose phyllidia"),
         marks: [__alloT("stem.coralreef.sp_varicose_phyllidia_mark1", "Blue-grey ridges with yellow-tipped knobs run lengthwise over a dark body"),
           __alloT("stem.coralreef.sp_varicose_phyllidia_mark2", "Two yellow, finely layered rhinophores stand near the front"),
@@ -15088,15 +15682,15 @@
           __alloT("stem.coralreef.sp_broadclub_cuttlefish_mark3", "Eight short arms surround the mouth; two longer feeding tentacles tuck into pockets"),
           __alloT("stem.coralreef.sp_broadclub_cuttlefish_mark4", "Pale bands edge the arms, while cream and brown mottling varies across the body")],
         role: __alloT("stem.coralreef.sp_broadclub_cuttlefish_role", "A reef predator that catches small fish and crustaceans."),
-        fact: __alloT("stem.coralreef.sp_broadclub_cuttlefish_fact", "Its appearance can change quickly. Colour cells and raised skin bumps help create different patterns and textures, so a single colour pattern is not a reliable identity check.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_broadclub_cuttlefish_fact', 'Its appearance can change quickly. Colour cells and raised skin bumps help create different patterns and textures, so a single colour pattern is not a reliable identity check.'), __alloT('stem.coralreef.sp_broadclub_cuttlefish_fact_simple', 'The way it looks can change quickly. Colour cells and raised bumps on its skin help make different patterns. They also help make different textures, or ways its skin looks. So a single colour pattern is not a reliable identity check. One pattern cannot tell you for sure which animal it is.')) },
       blackspotted_puffer: { name: __alloT("stem.coralreef.sp_blackspotted_puffer_name", "Blackspotted puffer (dogface puffer)"),
         marks: [__alloT("stem.coralreef.sp_blackspotted_puffer_mark1", "Rounded body with a blunt, doglike snout and small mouth"), __alloT("stem.coralreef.sp_blackspotted_puffer_mark2", "Irregular black spots scatter across the body; dark patches surround the eyes and snout"), __alloT("stem.coralreef.sp_blackspotted_puffer_mark3", "Small side fins and short fins near the back of the body propel a mostly steady body"), __alloT("stem.coralreef.sp_blackspotted_puffer_mark4", "Fine prickles cover the skin rather than long, obvious spines")],
-        role: __alloT("stem.coralreef.sp_blackspotted_puffer_role", "Feeds on reef invertebrates, including corals, sponges, molluscs and tunicates, as well as algae."),
-        fact: __alloT("stem.coralreef.sp_blackspotted_puffer_fact", "Individuals may be grey, brown or partly yellow. Look for several field marks together: body colour alone cannot identify this puffer.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blackspotted_puffer_role', 'Feeds on reef invertebrates, including corals, sponges, molluscs and tunicates, as well as algae.'), __alloT('stem.coralreef.sp_blackspotted_puffer_role_simple', 'It eats reef animals that have no backbones. These include corals, sponges, molluscs and tunicates. Molluscs are animals like snails and clams. Tunicates are soft animals also called sea squirts. It eats algae too.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_blackspotted_puffer_fact', 'Individuals may be grey, brown or partly yellow. Look for several field marks together: body colour alone cannot identify this puffer.'), __alloT('stem.coralreef.sp_blackspotted_puffer_fact_simple', 'Each fish may be grey, brown or partly yellow. Look for several field marks together. Body colour alone cannot tell you it is this puffer.')) },
       ocellated_eagle_ray: { name: __alloT("stem.coralreef.sp_ocellated_eagle_ray_name", "Ocellated eagle ray (whitespotted eagle ray)"),
         marks: [__alloT("stem.coralreef.sp_ocellated_eagle_ray_mark1", "Broad diamond-shaped disc with pointed, winglike pectoral fins"), __alloT("stem.coralreef.sp_ocellated_eagle_ray_mark2", "Pale spots cover the dark grey-green back; the underside is white"), __alloT("stem.coralreef.sp_ocellated_eagle_ray_mark3", "A projecting, flattened snout forms a single duckbill shape"), __alloT("stem.coralreef.sp_ocellated_eagle_ray_mark4", "A thin whip tail trails far behind the disc, with small spines near its base")],
-        role: __alloT("stem.coralreef.sp_ocellated_eagle_ray_role", "A bottom-feeding predator of molluscs and crustaceans that searches sandy areas near reefs."),
-        fact: __alloT("stem.coralreef.sp_ocellated_eagle_ray_fact", "This Indo-Pacific species was once grouped with Aetobatus narinari. That name now refers to an Atlantic species, so location matters when reading older eagle-ray accounts.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_ocellated_eagle_ray_role', 'A bottom-feeding predator of molluscs and crustaceans that searches sandy areas near reefs.'), __alloT('stem.coralreef.sp_ocellated_eagle_ray_role_simple', 'A hunter that feeds on the sea floor. It eats molluscs and crustaceans. Molluscs include clams and snails, and crustaceans include crabs and shrimp. It searches sandy areas near reefs.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_ocellated_eagle_ray_fact', 'This Indo-Pacific species was once grouped with Aetobatus narinari. That name now refers to an Atlantic species, so location matters when reading older eagle-ray accounts.'), __alloT('stem.coralreef.sp_ocellated_eagle_ray_fact_simple', 'Scientists once put this Indo-Pacific ray in the same species as Aetobatus narinari. Now that name means a species from the Atlantic. So when you read older writing about eagle rays, check where the ray lived.')) },
       textile_cone: { name: __alloT("stem.coralreef.sp_textile_cone_name", "Textile cone"),
         marks: [__alloT("stem.coralreef.sp_textile_cone_mark1", "Smooth, tapered shell with a pointed spire at the broad end"), __alloT("stem.coralreef.sp_textile_cone_mark2", "Brown lines form a fine net around many pale triangular patches"), __alloT("stem.coralreef.sp_textile_cone_mark3", "One long, narrow opening runs along the side of the shell"), __alloT("stem.coralreef.sp_textile_cone_mark4", "A pale muscular foot with brown mottling extends beneath the shell")],
         role: __alloT("stem.coralreef.sp_textile_cone_role", "A predator of other marine snails that searches sand, rubble and reef surfaces for prey."),
@@ -15104,7 +15698,7 @@
       orange_cup_coral: { name: __alloT("stem.coralreef.sp_orange_cup_coral_name", "Orange cup coral (sun coral)"),
         marks: [__alloT("stem.coralreef.sp_orange_cup_coral_mark1", "A cluster of tube-shaped cups rises from a shared hard base"), __alloT("stem.coralreef.sp_orange_cup_coral_mark2", "Red or orange tissue covers the cups"), __alloT("stem.coralreef.sp_orange_cup_coral_mark3", "Fine yellow tentacles form a ring around each central mouth"), __alloT("stem.coralreef.sp_orange_cup_coral_mark4", "Many small polyps make a rounded mound rather than long branches")],
         role: __alloT("stem.coralreef.sp_orange_cup_coral_role", "A colony of small predators that catches drifting animal plankton. It grows on hard surfaces without building a large reef framework."),
-        fact: __alloT("stem.coralreef.sp_orange_cup_coral_fact", "It has no photosynthetic algae living in its tissues, so it can feed and grow in shaded places. Introduced populations can compete with native corals in the Atlantic.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_orange_cup_coral_fact', 'It has no photosynthetic algae living in its tissues, so it can feed and grow in shaded places. Introduced populations can compete with native corals in the Atlantic.'), __alloT('stem.coralreef.sp_orange_cup_coral_fact_simple', 'It has no photosynthetic algae living in its tissues. These are algae that make food from sunlight. Without them, it can feed and grow in shady places. In the Atlantic it was introduced, so it is not native there. These groups can compete with the native corals.')) },
       bubble_coral: { name: __alloT("stem.coralreef.sp_bubble_coral_name", "Bubble coral"),
         marks: [__alloT("stem.coralreef.sp_bubble_coral_mark1", "By day, grape-sized, water-filled vesicles cover the colony"), __alloT("stem.coralreef.sp_bubble_coral_mark2", "The vesicles are pale cream or bluish grey"), __alloT("stem.coralreef.sp_bubble_coral_mark3", "Vesicles on shaded parts of the colony are often larger than those in bright light"), __alloT("stem.coralreef.sp_bubble_coral_mark4", "At night the vesicles shrink and many small tentacles spread out between them")],
         role: __alloT("stem.coralreef.sp_bubble_coral_role", "A stony reef coral. Algae partners in its vesicles supply much of its food, and its night tentacles catch drifting animal plankton."),
@@ -15123,12 +15717,12 @@
         fact: __alloT("stem.coralreef.sp_banded_sea_krait_fact", "Its life links land and sea: it hunts underwater and comes ashore to rest and shed its skin. Females lay eggs in sheltered places on land.") },
       white_spotted_hermit_crab: { name: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_name", "White-spotted hermit crab"),
         marks: [__alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark1", "Orange-red legs and claws carry pale spots edged with dark rings"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark2", "The left claw is larger than the right claw"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark3", "Reddish bristles fringe the legs, and long pale antennae extend forward"), __alloT("stem.coralreef.sp_white_spotted_hermit_crab_mark4", "The front body emerges from the opening of a carried spiral shell")],
-        role: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_role", "A bottom-dwelling predator and scavenger that feeds on a variety of animals."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_white_spotted_hermit_crab_role', 'A bottom-dwelling predator and scavenger that feeds on a variety of animals.'), __alloT('stem.coralreef.sp_white_spotted_hermit_crab_role_simple', 'It lives on the sea floor. It hunts animals, and it also eats dead ones it finds. It feeds on many kinds of animals.')),
         fact: __alloT("stem.coralreef.sp_white_spotted_hermit_crab_fact", "The shell is borrowed from a sea snail. It protects the soft abdomen, while the legs and claws reach out through the opening. Each stalk carries a compound eye containing many small visual units.") },
       longfin_bannerfish: { name: __alloT("stem.coralreef.sp_longfin_bannerfish_name", "Longfin bannerfish"),
         marks: [__alloT("stem.coralreef.sp_longfin_bannerfish_mark1", "A deep, flattened white body carries two broad, slanting black bands"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark2", "A very long, tapering white filament trails from the front of the back fin"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark3", "The tail and the soft rear part of the back fin are bright yellow"), __alloT("stem.coralreef.sp_longfin_bannerfish_mark4", "The rear black band continues past the corner of the pointed anal fin")],
         role: __alloT("stem.coralreef.sp_longfin_bannerfish_role", "Feeds on drifting zooplankton and small animals living on the reef bottom."),
-        fact: __alloT("stem.coralreef.sp_longfin_bannerfish_fact", "This bannerfish belongs to the butterflyfish family, Chaetodontidae. In Heniochus acuminatus, the second black band reaches beyond the corner of the anal fin. Check that band and body shape when comparing it with the similar schooling bannerfish; a long streamer alone is insufficient.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_longfin_bannerfish_fact', 'This bannerfish belongs to the butterflyfish family, Chaetodontidae. In Heniochus acuminatus, the second black band reaches beyond the corner of the anal fin. Check that band and body shape when comparing it with the similar schooling bannerfish; a long streamer alone is insufficient.'), __alloT('stem.coralreef.sp_longfin_bannerfish_fact_simple', 'This bannerfish belongs to the butterflyfish family, Chaetodontidae. In Heniochus acuminatus, the second black band reaches beyond the corner of the anal fin (the fin underneath, near the tail). Look at that band and the body shape to tell it from the schooling bannerfish, which looks much the same. A long streamer on the back fin is not enough by itself.')) },
       blackfin_barracuda: { name: __alloT("stem.coralreef.sp_blackfin_barracuda_name", "Blackfin barracuda"),
         marks: [__alloT("stem.coralreef.sp_blackfin_barracuda_mark1", "A long, silvery, torpedo-shaped body with a pointed head and a jutting lower jaw"), __alloT("stem.coralreef.sp_blackfin_barracuda_mark2", "About 20 dark bars: slanted above the side line and almost upright below it"), __alloT("stem.coralreef.sp_blackfin_barracuda_mark3", "A forked tail fin that is mostly black"), __alloT("stem.coralreef.sp_blackfin_barracuda_mark4", "By day, large schools hang almost still in one place")],
         role: __alloT("stem.coralreef.sp_blackfin_barracuda_role", "A hunter of other fishes. Schools rest by day and probably spread out to feed at night."),
@@ -15140,35 +15734,35 @@
       bluefin_trevally: { name: __alloT("stem.coralreef.sp_bluefin_trevally_name", "Bluefin trevally"),
         marks: [__alloT("stem.coralreef.sp_bluefin_trevally_mark1", "Electric blue second back fin, fin under the tail and tail fin"), __alloT("stem.coralreef.sp_bluefin_trevally_mark2", "Small blue-black spots on a brassy, blue-tinted upper body"), __alloT("stem.coralreef.sp_bluefin_trevally_mark3", "A row of strong, hard scales called scutes along the rear of the side line"), __alloT("stem.coralreef.sp_bluefin_trevally_mark4", "A pointed head with a tapered snout")],
         role: __alloT("stem.coralreef.sp_bluefin_trevally_role", "Hunts mainly other fishes, alone or in small groups, and also eats crustaceans."),
-        fact: __alloT("stem.coralreef.sp_bluefin_trevally_fact", "Bluefin trevally sometimes follow other hunters and catch prey the hunter has disturbed. At Malpelo Island, Colombia, scientists saw them following a hunting moray eel, and other fish sometimes followed the trevally.") },
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bluefin_trevally_fact', 'Bluefin trevally sometimes follow other hunters and catch prey the hunter has disturbed. At Malpelo Island, Colombia, scientists saw them following a hunting moray eel, and other fish sometimes followed the trevally.'), __alloT('stem.coralreef.sp_bluefin_trevally_fact_simple', 'Bluefin trevally sometimes follow other hunters. When the hunter stirs up prey, the trevally catch it. At Malpelo Island, Colombia, scientists saw them follow a moray eel while it hunted. Other fish sometimes followed the trevally too.')) },
       blacktip_reef_shark: { name: __alloT("stem.coralreef.sp_blacktip_reef_shark_name", "Blacktip reef shark"),
         marks: [__alloT("stem.coralreef.sp_blacktip_reef_shark_mark1", "A bold black tip on the first back fin, with a pale band just below the black"), __alloT("stem.coralreef.sp_blacktip_reef_shark_mark2", "A black tip on the lower lobe of the tail fin, and dark tips on the other fins"), __alloT("stem.coralreef.sp_blacktip_reef_shark_mark3", "Light brownish grey above and white below, with a pale band along each side"), __alloT("stem.coralreef.sp_blacktip_reef_shark_mark4", "A short, rounded snout; in very shallow water its back fin often sticks out of the sea")],
-        role: __alloT("stem.coralreef.sp_blacktip_reef_shark_role", "A reef predator that hunts small fishes, crustaceans, octopuses, squids and other molluscs."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_blacktip_reef_shark_role', 'A reef predator that hunts small fishes, crustaceans, octopuses, squids and other molluscs.'), __alloT('stem.coralreef.sp_blacktip_reef_shark_role_simple', 'A predator, or hunter, on the reef. It hunts small fishes, crustaceans, octopuses, squids and other molluscs. Crustaceans are animals like crabs and shrimp. Molluscs are soft animals like snails and clams.')),
         fact: __alloT("stem.coralreef.sp_blacktip_reef_shark_fact", "Young blacktips grow up on very shallow reef flats. At Orpheus Island, Australia, tracked young sharks stayed in water less than 1 m deep, moved in and out with the tides and sheltered among flooded mangroves at high tide.") },
       dusky_farmerfish: { name: __alloT("stem.coralreef.sp_dusky_farmerfish_name", "Dusky farmerfish (dusky gregory)"),
         marks: [__alloT("stem.coralreef.sp_dusky_farmerfish_mark1", "A small brown damselfish, darker on top of the head and the nape, fading to tan on the lower head and chest"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark2", "A darker patch on the body under the rear of the back fin"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark3", "A male courting or guarding eggs shows a broad white bar across the middle of the body"), __alloT("stem.coralreef.sp_dusky_farmerfish_mark4", "Young fish are yellowish to orange brown")],
-        role: __alloT("stem.coralreef.sp_dusky_farmerfish_role", "A farmer: it guards a patch of turf algae on dead branching coral, weeds out algae it cannot digest and chases away fish that come to graze."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_dusky_farmerfish_role', 'A farmer: it guards a patch of turf algae on dead branching coral, weeds out algae it cannot digest and chases away fish that come to graze.'), __alloT('stem.coralreef.sp_dusky_farmerfish_role_simple', 'It is a farmer. It guards a patch of turf algae on dead coral with branches. Turf algae is short algae that grows like a lawn. It weeds out algae it cannot digest and chases away fish that come to graze.')),
         fact: __alloT("stem.coralreef.sp_dusky_farmerfish_fact", "A fish about the size of your hand can decide which seaweed grows. In Okinawa, Japan, one kind of red alga grew only inside these farms. When scientists kept the farmers out, other algae took over the patch within about two weeks.") },
       foxface_rabbitfish: { name: __alloT("stem.coralreef.sp_foxface_rabbitfish_name", "Foxface rabbitfish"),
         marks: [__alloT("stem.coralreef.sp_foxface_rabbitfish_mark1", "A bright yellow body, with a white head and a white front part of the body"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark2", "A black band runs from the mouth through the eye up to the start of the back fin"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark3", "A black patch on the chest narrows as it runs up to just above the side fin"), __alloT("stem.coralreef.sp_foxface_rabbitfish_mark4", "Stout, sharp spines stand in the back fin and the fin under the tail, and they are venomous")],
-        role: __alloT("stem.coralreef.sp_foxface_rabbitfish_role", "A grazer that picks a mix of algae, cyanobacteria and detritus from crevices and dead coral."),
+        role: rl21Text(null, __alloT('stem.coralreef.sp_foxface_rabbitfish_role', 'A grazer that picks a mix of algae, cyanobacteria and detritus from crevices and dead coral.'), __alloT('stem.coralreef.sp_foxface_rabbitfish_role_simple', 'It is a grazer, an animal that nibbles its food bit by bit. It picks a mix of algae, cyanobacteria and detritus. Cyanobacteria are tiny living things that make food from sunlight. Detritus is bits of dead matter. It finds this food in cracks and on dead coral.')),
         fact: __alloT("stem.coralreef.sp_foxface_rabbitfish_fact", "Foxface rabbitfish usually live in pairs, and the partners take turns standing guard. While one feeds head down in a crevice, the other hangs head up in the water above it and watches for danger. Then they swap.") },
       leopard_coral_grouper: { name: __alloT("stem.coralreef.sp_leopard_coral_grouper_name", "Leopard coral grouper (common coral trout)"),
         marks: [__alloT("stem.coralreef.sp_leopard_coral_grouper_mark1", "A red, orange, olive or brown body covered in many small, round, bright blue spots"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark2", "The blue spots on the head are small and round, not long dashes"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark3", "A blue ring around the eye, which may be broken into pieces"), __alloT("stem.coralreef.sp_leopard_coral_grouper_mark4", "A long body and a square-cut tail fin with a narrow white rear edge")],
-        role: __alloT("stem.coralreef.sp_leopard_coral_grouper_role", "A top predator: adults hunt mainly other fish, and young ones also eat crustaceans and squid."),
-        fact: __alloT("stem.coralreef.sp_leopard_coral_grouper_fact", "On the Great Barrier Reef this is the most important fish for fishing boats. About ten years after more of the reef was closed to fishing, scientists found more and bigger coral trout on the protected reefs than on fished reefs, and the fished reefs had not lost theirs.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_leopard_coral_grouper_role', 'A top predator: adults hunt mainly other fish, and young ones also eat crustaceans and squid.'), __alloT('stem.coralreef.sp_leopard_coral_grouper_role_simple', 'It is a top predator, a hunter at the top of the food web. Adults hunt mainly other fish. Young ones also eat crustaceans and squid. Crustaceans are animals like crabs and shrimp.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_leopard_coral_grouper_fact', 'On the Great Barrier Reef this is the most important fish for fishing boats. About ten years after more of the reef was closed to fishing, scientists found more and bigger coral trout on the protected reefs than on fished reefs, and the fished reefs had not lost theirs.'), __alloT('stem.coralreef.sp_leopard_coral_grouper_fact_simple', 'On the Great Barrier Reef, this is the most important fish for fishing boats. More of the reef was closed to fishing. About ten years after that, scientists compared reefs. They found more and bigger coral trout on the protected reefs than on fished reefs. And the fished reefs had not lost their coral trout.')) },
       dash_and_dot_goatfish: { name: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_name", "Dash-and-dot goatfish"),
         marks: [__alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark1", "A pale, whitish body with a dark stripe from the mouth through the eye along the upper side"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark2", "A large black spot, bigger than the eye, at the base of the tail"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark3", "Yellowish above the dark stripe"), __alloT("stem.coralreef.sp_dash_and_dot_goatfish_mark4", "Two long feelers called barbels under the chin, tucked away when not in use")],
         role: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_role", "A sand sifter: it pushes its chin barbels into sand and rubble to find buried worms, crabs, shrimps and small clams."),
         fact: __alloT("stem.coralreef.sp_dash_and_dot_goatfish_fact", "It finds food it cannot see. The two barbels under its chin carry chemical sense organs, which work a little like taste and smell, so the fish can sweep them through the sand and find buried animals.") },
       sixbar_wrasse: { name: __alloT("stem.coralreef.sp_sixbar_wrasse_name", "Sixbar wrasse"),
         marks: [__alloT("stem.coralreef.sp_sixbar_wrasse_mark1", "Six dark, wedge-shaped bars on the upper side, each shorter than the one in front"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark2", "A pale green body"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark3", "Broad pink bands spread out from the eye across the head"), __alloT("stem.coralreef.sp_sixbar_wrasse_mark4", "Long, pointed side fins that it flaps like wings to swim")],
-        role: __alloT("stem.coralreef.sp_sixbar_wrasse_role", "A small, busy predator that picks crustaceans, fish eggs, small fishes and tiny shelled foraminiferans from the reef and the open water."),
-        fact: __alloT("stem.coralreef.sp_sixbar_wrasse_fact", "Wrasses in its group, Thalassoma, swim mostly by flapping their side fins like wings. Winged fins are good for fast swimming in moving water, and on the most wave-swept reef edges Thalassoma wrasses can be up to 15 times more common than any other wrasse.") },
+        role: rl21Text(null, __alloT('stem.coralreef.sp_sixbar_wrasse_role', 'A small, busy predator that picks crustaceans, fish eggs, small fishes and tiny shelled foraminiferans from the reef and the open water.'), __alloT('stem.coralreef.sp_sixbar_wrasse_role_simple', 'A small, busy predator, an animal that hunts others. It picks its food from the reef and the open water. It eats crustaceans, fish eggs and small fishes. It also eats foraminiferans, tiny living things with shells.')),
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_sixbar_wrasse_fact', 'Wrasses in its group, Thalassoma, swim mostly by flapping their side fins like wings. Winged fins are good for fast swimming in moving water, and on the most wave-swept reef edges Thalassoma wrasses can be up to 15 times more common than any other wrasse.'), __alloT('stem.coralreef.sp_sixbar_wrasse_fact_simple', 'Its group of wrasses is called Thalassoma. These wrasses swim mostly by flapping their side fins like wings. Fins shaped like wings are good for fast swimming in moving water. Some reef edges are hit by the most waves. There, Thalassoma wrasses can be up to 15 times more common than any other wrasse.')) },
       bigfin_reef_squid: { name: __alloT("stem.coralreef.sp_bigfin_reef_squid_name", "Bigfin reef squid"),
         marks: [__alloT("stem.coralreef.sp_bigfin_reef_squid_mark1", "A long, muscular mantle tapers toward the rear of the body"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark2", "Broad, rounded side fins run almost the full mantle length and are widest toward the rear"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark3", "Eight arms surround the mouth, with two longer feeding tentacles ending in wider clubs"), __alloT("stem.coralreef.sp_bigfin_reef_squid_mark4", "Large eyes sit beside the head; skin markings can shift from dark bands to nearly transparent")],
         role: __alloT("stem.coralreef.sp_bigfin_reef_squid_role", "An active coastal predator that catches fish, prawns and other small crustaceans."),
-        fact: __alloT("stem.coralreef.sp_bigfin_reef_squid_fact", "The name covers a species complex: very similar-looking animals can belong to different genetic lineages. A model or photograph cannot resolve all of those boundaries.") }
+        fact: rl21Text(null, __alloT('stem.coralreef.sp_bigfin_reef_squid_fact', 'The name covers a species complex: very similar-looking animals can belong to different genetic lineages. A model or photograph cannot resolve all of those boundaries.'), __alloT('stem.coralreef.sp_bigfin_reef_squid_fact_simple', 'The name covers a group of species that look almost the same. Animals that look very alike can belong to different family lines in their DNA. A model or photo cannot show all of those differences.')) }
     };
   }
   // @@SPECIES_DATA_END
@@ -16511,6 +17105,24 @@
     var view = cameraOn || d.diveView === 'first' ? 'first' : 'third';
     var siteKey = siteId + ':' + (siteId === 'restoration' ? years : '') + ':' + (baseSite && baseSite.modelYear != null ? baseSite.modelYear : '');
     var started = status !== 'idle';
+    // Lane pf19u: the dive asks for the shared 3D detail choice when it starts. It never
+    // switches by itself while running (the dive cannot keep the diver's spot): a slow dive
+    // offers Smoother once, and only the student's click starts it again at the new level.
+    var pf19uOs = React.useState(false), pf19uOffer = pf19uOs[0], setPf19uOffer = pf19uOs[1];
+    var pf19uSlowHigh = !!(status === 'ready' && snap && snap.slow === true && snap.quality === 'high');
+    React.useEffect(function () { setPf19uOffer(false); }, [started ? siteKey : 'off', attempt]);
+    React.useEffect(function () {
+      if (!pf19uSlowHigh || pf19uOffer) return;
+      setPf19uOffer(true);
+      if (quality === 'auto') PF19U_LATER.dive = true;
+      if (!PF19U_TOLD.dive) { PF19U_TOLD.dive = true; env.say(__alloT('stem.coralreef.pf19u_slow_offer', '3D is running slowly on this device.') + ' ' + pf19uRestartNote(__alloT)); }
+    }, [pf19uSlowHigh]);
+    var pf19uLastPref = React.useRef(quality);
+    React.useEffect(function () {
+      if (pf19uLastPref.current === quality) return;
+      pf19uLastPref.current = quality;
+      if (started && status !== 'error') setAttempt(function (n) { return n + 1; });
+    }, [quality]);
     function syncMotionPreference() {
       var c = ctlRef.current;
       if (!c) return;
@@ -16558,7 +17170,7 @@
         try {
           // A staged mount builds the reef over many short tasks; the dive is ready when its first frame is drawn.
           ctlRef.current = window.Reef3DExplore.mount(canvasRef.current, {
-            THREE: THREE, reducedMotion: motionRef.current, view: view, vision: vision, quality: quality, staged: true,
+            THREE: THREE, reducedMotion: motionRef.current, view: view, vision: vision, quality: pf19uDiveStart(quality), staged: true,
             site: { seed: site.seed, depthM: site.depthM, health: site.health, population: populationFor(site),
               restoration: site.restoration ? { kind: site.restoration.kind, units: site.restoration.units, yearsSince: siteId === 'restoration' ? years : 6 } : null },
             onProgress: function (f) { if (!cancelled) setProgress(Math.round(f * 100)); },
@@ -16673,20 +17285,17 @@
         }));
     }, [env]);
     var logCard = React.useMemo(function () { return h(SpeciesLogCard, { env: env, log: log, TX: TX, diving: started }); }, [env, started]);
+    // Lane gl20: the goal card; the same element across the dive's frequent updates.
+    var gl20Card = React.useMemo(function () { return h(Pd19Start, { env: env, sec: 'dive' }); }, [env]);
     return h('div', { className: 'crf-explore' },
       h('style', null, LANE_CSS_F3), h('style', null, LANE_CSS_H3),
+      h('style', null, GL20_CSS), gl20Card,
       h('section', { style: cardStyle(P) },
         h('h3', { style: h3Style(P) }, __alloT('stem.coralreef.ex_title', 'Dive a coral reef')),
         h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_intro', 'You are a scuba diver on an Indo-Pacific reef in the Coral Triangle. Swim around, look closely, and identify the animals and corals you meet. Each one you identify goes into your species log.')),
         siteGrid,
         h('p', { style: mutedStyle(P, { margin: '8px 0 0' }) }, ST[siteId].about),
-        !started || status === 'error' ? h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 14px', marginTop: 14 } },
-          h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 10, fontWeight: 600 } }, __alloT('stem.coralreef.ex_quality_label', 'Dive detail'),
-            h('select', { value: quality, style: { color: P.text, background: P.card, border: '1px solid ' + P.ctlBorder, borderRadius: 8, padding: '8px 12px', minHeight: 44 }, onChange: function (event) { env.set({ diveQuality: event.target.value }); } },
-              h('option', { value: 'auto' }, __alloT('stem.coralreef.ex_quality_auto', 'Automatic')),
-              h('option', { value: 'low' }, __alloT('stem.coralreef.ex_quality_low', 'Smoother')),
-              h('option', { value: 'high' }, __alloT('stem.coralreef.ex_quality_high', 'Detailed')))),
-          h('span', { style: { color: P.muted, fontSize: 14 } }, __alloT('stem.coralreef.ex_quality_help', 'Choose Smoother if the dive runs slowly. Your species log is kept.'))) : null,
+        !started || status === 'error' ? h(Pf19uDetail, { env: env, view: 'dive', style: { marginTop: 14 } }) : null,
         siteId === 'restoration' ? h(RangeControl, { h: h, P: P, label: __alloT('stem.coralreef.ex_years', 'Years since the Reef Stars were put in'), min: 0, max: 8, value: years,
           valueText: __alloFill(__alloT('stem.coralreef.ex_years_value', '{n} years'), { n: years }), onChange: function (v) { env.set({ diveYears: v }); } }) : null,
         h('p', { style: { margin: '8px 0 0', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.ex_log_count', 'Species log: {n} of {total} found.'), { n: found, total: total }), ' ',
@@ -16726,6 +17335,9 @@
         h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-dive-status': 'true', style: { margin: '8px 0 0', minHeight: started ? '1.5em' : 0, color: P.text } },
           status === 'ready' ? snap && snap.paused ? __alloT('stem.coralreef.ex_status_paused', 'Reef paused. You can still look around with the camera controls.')
             : __alloT('stem.coralreef.ex_status_ready', 'Dive ready. Use Pause the reef to stop movement.') : ''),
+        started && status !== 'error' ? h(Pf19uStatus, { env: env, view: 'dive', snap: snap, engine: 'Reef3DExplore', offer: pf19uOffer && !!(snap && snap.quality === 'high'), onChoose: function () { focusDiveTitle(); },
+          // Under Automatic, Smoother is for this page visit only: the saved choice stays Automatic.
+          onPick: function (value) { if (value === 'low' && quality === 'auto') { PF19U_DOWN.dive = true; setAttempt(function (n) { return n + 1; }); } else env.set({ diveQuality: value }); } }) : null,
         status === 'ready' ? h('div', { ref: diveControlsRef, className: 'cr-dive-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 12 } },
           h('style', null, LANE_CSS_G1),
           h(MovePad, { React: React, h: h, P: P, ctl: ctl, labels: moveLabels }),
@@ -17427,7 +18039,7 @@
           if (!id) { finish(); return; }
           if (!THUMBS[id]) {
             try {
-              var info = (window.Reef3DSpecies.info && window.Reef3DSpecies.info(id)) || {}, model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
+              var info = (window.Reef3DSpecies.info && window.Reef3DSpecies.info(id)) || {}, model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: pf19uModelQuality(pf19uPrefNow), reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
               var r = Math.max(0.05, model.radius || 0.3), sessile = info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile';
               scene.add(model.root);
               // Bottom dwellers get a soft shadow on the sand under their footprint.
@@ -17547,7 +18159,7 @@
             try {
               var info = (window.Reef3DSpecies.info && window.Reef3DSpecies.info(sid)) || {};
               if ((info.healthStates || []).indexOf(state) < 0) throw new Error('No ' + state + ' model for ' + sid);
-              model = window.Reef3DSpecies.create(THREE, sid, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: state });
+              model = window.Reef3DSpecies.create(THREE, sid, { seed: 7, quality: pf19uModelQuality(pf19uPrefNow), reducedMotion: true, derivatives: derivatives, growth: 1, health: state });
               scene.add(model.root);
               if (typeof model.update === 'function') model.update(0, 1.1);
               model.root.updateMatrixWorld(true);
@@ -17848,93 +18460,93 @@
       acropora_humilis: acroporaLife('humilis',__alloT),
       acropora_millepora: acroporaLife('millepora',__alloT),
       fire_coral: {
-        habitat: __alloT('stem.coralreef.dx_fire_coral_habitat', 'Indo-Pacific reefs from the Red Sea to Japan and the Marquesas Islands. SeaLifeBase lists records from about 3 to 6 m deep. Colonies are often 2 to 3 m across.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_fire_coral_habitat', 'Indo-Pacific reefs from the Red Sea to Japan and the Marquesas Islands. SeaLifeBase lists records from about 3 to 6 m deep. Colonies are often 2 to 3 m across.'), __alloT('stem.coralreef.dx_fire_coral_habitat_simple', 'It lives on reefs in the Indo-Pacific. These reefs reach from the Red Sea to Japan and the Marquesas Islands. SeaLifeBase is a website with facts about sea life. It lists records from about 3 to 6 m deep. Colonies are often 2 to 3 m across.')),
         diet: __alloT('stem.coralreef.dx_fire_coral_diet', 'Algae partners in its tissue share food they make from sunlight. Its tiny stinging polyps also catch drifting plankton.'),
         behavior: __alloT('stem.coralreef.dx_fire_coral_behavior', 'A hydrozoan, related to jellyfish, that lays down a hard limestone skeleton like a coral. Its stinging cells defend it: touching it causes a painful, burning sting. In the 1998 Great Barrier Reef heatwave, fire corals were the most affected group.'),
         observe: __alloT('stem.coralreef.dx_fire_coral_observe', 'Look for thin upright plates joined into boxes, with pale growing edges and a surface of pinholes. Reef Check counts fire coral as hard coral (HC) because it builds reef, so a survey point on it is recorded as HC. On a real dive, keep hands and fins away: it stings.'),
         sources: ['dx-worms-fire_coral', 'dx-iucn-fire_coral', 'dx-slb-fire_coral', 'dx-hooper-fire_coral', 'dx-bleaching-taxa-2000', 'dx-reefcheck-hc-builders'] },
       blue_coral: {
         habitat: __alloT('stem.coralreef.dx_blue_coral_habitat', 'Shallow Indo-West Pacific reefs from the Red Sea to Japan, Samoa and New Caledonia. It is most common in water less than 2 m deep, on reef flats and wave-exposed reefs.'),
-        diet: __alloT('stem.coralreef.dx_blue_coral_diet', 'Algae partners in its thin living tissue make food from sunlight, and its small polyps can also catch drifting food.'),
-        behavior: __alloT('stem.coralreef.dx_blue_coral_behavior', 'The living tissue is only a thin layer over the skeleton. In a 2024 heatwave in the Lakshadweep Islands, 65% of the blue coral colonies studied bleached completely and 30% bleached in part.'),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_blue_coral_diet', 'Algae partners in its thin living tissue make food from sunlight, and its small polyps can also catch drifting food.'), __alloT('stem.coralreef.dx_blue_coral_diet_simple', 'Algae live as partners in its thin living tissue. They make food from sunlight. Its small polyps can also catch food that drifts by. Polyps are the tiny, soft animals that make up a coral.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_blue_coral_behavior', 'The living tissue is only a thin layer over the skeleton. In a 2024 heatwave in the Lakshadweep Islands, 65% of the blue coral colonies studied bleached completely and 30% bleached in part.'), __alloT('stem.coralreef.dx_blue_coral_behavior_simple', 'Its living tissue is only a thin layer over its skeleton. In 2024 there was a heatwave in the Lakshadweep Islands. Scientists studied blue coral colonies there. Of these, 65% bleached completely and 30% bleached in part. When a coral bleaches, it turns pale.')),
         observe: __alloT('stem.coralreef.dx_blue_coral_observe', 'Find the bright blue on the broken lobe tops: that is the skeleton showing. A bleached blue coral looks pale blue, not white. Reef Check counts blue coral as hard coral (HC) in the Indo-Pacific because it builds reef, even though it is an octocoral.'),
         sources: ['dx-worms-blue_coral', 'dx-iucn-blue_coral', 'dx-slb-blue_coral', 'dx-lof-blue_coral', 'dx-bleaching-blue_coral-2026', 'dx-reefcheck-hc-builders'] },
       pipe_organ_coral: {
-        habitat: __alloT('stem.coralreef.dx_pipe_organ_coral_habitat', 'Indo-West Pacific reefs from the Red Sea to Japan, Vanuatu and Australia, from reef flats to middle depths. SeaLifeBase lists records from about 3 to 15 m deep.'),
-        diet: __alloT('stem.coralreef.dx_pipe_organ_coral_diet', 'Its polyps hold algae partners that make food from sunlight, and the feathery tentacles can catch tiny drifting food.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_pipe_organ_coral_habitat', 'Indo-West Pacific reefs from the Red Sea to Japan, Vanuatu and Australia, from reef flats to middle depths. SeaLifeBase lists records from about 3 to 15 m deep.'), __alloT('stem.coralreef.dx_pipe_organ_coral_habitat_simple', 'It lives on reefs in the Indo-West Pacific. Its range goes from the Red Sea to Japan, Vanuatu and Australia. It lives from reef flats down to middle depths. A reef flat is the flat, shallow top of a reef. SeaLifeBase lists records from about 3 to 15 m deep.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_pipe_organ_coral_diet', 'Its polyps hold algae partners that make food from sunlight, and the feathery tentacles can catch tiny drifting food.'), __alloT('stem.coralreef.dx_pipe_organ_coral_diet_simple', 'Its polyps are its small, soft animal parts. They hold algae partners. The algae make food from sunlight. The polyps\' feathery tentacles can also catch tiny bits of food that drift by.')),
         behavior: __alloT('stem.coralreef.dx_pipe_organ_coral_behavior', 'Each tube is the home of one polyp and is only about 2 mm wide. Flat platforms join the tubes every few centimetres. Octocorals with algae partners can bleach in a heatwave, losing their algae, while the red skeleton keeps its color.'),
         observe: __alloT('stem.coralreef.dx_pipe_organ_coral_observe', 'The model draws the tubes about ten times wider than real ones, so you can see them. Find the red pipes on the side and the feathery, eight-tentacle polyps on top. Reef Check counts organ pipe coral as hard coral (HC) in the Indo-Pacific because it builds reef.'),
         sources: ['dx-worms-pipe_organ_coral', 'dx-iucn-pipe_organ_coral', 'dx-slb-pipe_organ_coral', 'dx-naturalis-tubipora', 'dx-lof-pipe_organ_coral', 'dx-tubipora-lineages-2026', 'dx-octocoral-heat-2013', 'dx-reefcheck-hc-builders'] },
       birdsnest_coral: {
-        habitat: __alloT('stem.coralreef.dx_birdsnest_coral_habitat', 'Indo-West Pacific reefs, especially shallow reef flats. SeaLifeBase notes dense thickets at about 6 to 20 m deep.'),
-        diet: __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_birdsnest_coral_habitat', 'Indo-West Pacific reefs, especially shallow reef flats. SeaLifeBase notes dense thickets at about 6 to 20 m deep.'), __alloT('stem.coralreef.dx_birdsnest_coral_habitat_simple', 'Reefs in the Indo-West Pacific, especially shallow reef flats. A reef flat is the flat, shallow top of a reef. SeaLifeBase notes thick, crowded patches of it at about 6 to 20 m deep.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_staghorn_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
         behavior: __alloT('stem.coralreef.dx_birdsnest_coral_behavior', 'Colonies grow up to about 30 cm across. The branches are only 2 to 5 mm thick; they fork often and sometimes fuse together, and they break easily.'),
         observe: __alloT('stem.coralreef.dx_birdsnest_coral_observe', 'Compare the needle-sharp branch tips with the blunt, knobbly branches of cauliflower coral. A bleached colony turns white. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
         sources: ['dx-worms-birdsnest_coral', 'dx-iucn-birdsnest_coral', 'dx-cotw-birdsnest_coral', 'dx-slb-birdsnest_coral', 'dx-bleaching-taxa-2000', 'dx-noaa-coral-algae'] },
       blue_ringed_octopus: {
-        habitat: __alloT('stem.coralreef.dx_blue_ringed_octopus_habitat', 'Shallow Indo-West Pacific seas, on the bottom from the shore to about 20 m deep (SeaLifeBase).'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_blue_ringed_octopus_habitat', 'Shallow Indo-West Pacific seas, on the bottom from the shore to about 20 m deep (SeaLifeBase).'), __alloT('stem.coralreef.dx_blue_ringed_octopus_habitat_simple', 'Shallow seas of the Indo-West Pacific. It lives on the bottom, from the shore down to about 20 m deep (SeaLifeBase).')),
         diet: __alloT('stem.coralreef.dx_blue_ringed_octopus_diet', 'Blue-ringed octopuses use their venom to kill prey such as crabs and small fishes. The toxin is strongest in the salivary glands.'),
         behavior: __alloT('stem.coralreef.dx_blue_ringed_octopus_behavior', 'When disturbed, it flashes about 60 blue rings as a warning. Each ring holds layers that reflect blue-green light, with dark pigment around it; muscles uncover the rings in a quick flash. In this species, the toxin was found in the salivary glands, the body and the ink, but not in the arms.'),
         observe: __alloT('stem.coralreef.dx_blue_ringed_octopus_observe', 'Count a few rings and find the dark border round each one. In the model the rings brighten now and then, as a disturbed octopus flashes them. Compare the day octopus: it is many times bigger and changes colour to blend in, not to warn. On a real dive, never touch an octopus.'),
         sources: ['dx-worms-blue_ringed_octopus', 'dx-iucn-blue_ringed_octopus', 'dx-slb-blue_ringed_octopus', 'dx-mathger-blue_ringed_octopus', 'dx-ttx-blue_ringed_octopus', 'dx-am-blue_ringed_octopus'] },
       bedfords_flatworm: {
-        habitat: __alloT('stem.coralreef.dx_bedfords_flatworm_habitat', 'Indo-West Pacific reefs, lagoons and bays, among rocks and crevices. Sightings include the Great Barrier Reef, Papua New Guinea, Indonesia and Guam.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_bedfords_flatworm_habitat', 'Indo-West Pacific reefs, lagoons and bays, among rocks and crevices. Sightings include the Great Barrier Reef, Papua New Guinea, Indonesia and Guam.'), __alloT('stem.coralreef.dx_bedfords_flatworm_habitat_simple', 'It lives on reefs and in lagoons and bays in the Indo-West Pacific. A lagoon is calm water inside a reef. It lives among rocks and in crevices, or narrow cracks. People have seen it at the Great Barrier Reef, Papua New Guinea, Indonesia and Guam.')),
         diet: __alloT('stem.coralreef.dx_bedfords_flatworm_diet', 'Mainly sea squirts, plus small crustaceans. It glides over its food and pushes out its throat, called a pharynx, which releases digestive juices.'),
         behavior: __alloT('stem.coralreef.dx_bedfords_flatworm_behavior', 'Mostly active at night, hiding in dark crevices by day. It glides along the bottom on tiny hairs called cilia, and can swim by rippling its ruffled edges.'),
         observe: __alloT('stem.coralreef.dx_bedfords_flatworm_observe', "Look at the two 'horns' at the front: they are rolled-up edges of the body, not rhinophores. Then look for gills. Compare the nudibranch and the Spanish dancer, which both carry gills on the back. Colour alone can fool you, because many flatworms look like sea slugs."),
         sources: ['dx-worms-bedfords_flatworm', 'dx-adw-bedfords_flatworm', 'dx-ssf-flatworms', 'dx-calacademy-flatworm', 'dx-slb-bedfords_flatworm'] },
       galaxy_coral: {
-        habitat: __alloT('stem.coralreef.dx_galaxy_coral_habitat', 'Indo-Pacific reefs from Egypt to Japan, Australia and Tahiti, about 3 to 25 m deep, in places sheltered from strong waves. It can dominate reefs close to shore.'),
-        diet: __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
-        behavior: __alloT('stem.coralreef.dx_galaxy_coral_behavior', 'It has two kinds of tentacles. Short catch tentacles take food; sweeper tentacles grow over days to weeks after another coral touches it, carry different stinging cells and venom, and damage the rival coral.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_galaxy_coral_habitat', 'Indo-Pacific reefs from Egypt to Japan, Australia and Tahiti, about 3 to 25 m deep, in places sheltered from strong waves. It can dominate reefs close to shore.'), __alloT('stem.coralreef.dx_galaxy_coral_habitat_simple', 'It lives on reefs in the Indo-Pacific, from Egypt to Japan, Australia and Tahiti. It lives about 3 to 25 m deep. It grows in places sheltered from strong waves. It can be the main coral on reefs close to shore.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_staghorn_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_galaxy_coral_behavior', 'It has two kinds of tentacles. Short catch tentacles take food; sweeper tentacles grow over days to weeks after another coral touches it, carry different stinging cells and venom, and damage the rival coral.'), __alloT('stem.coralreef.dx_galaxy_coral_behavior_simple', 'It has two kinds of tentacles. Short catch tentacles take food. Sweeper tentacles grow after another coral touches it. They take days to weeks to grow. They carry different stinging cells and venom, a kind of poison. They damage the rival coral.')),
         observe: __alloT('stem.coralreef.dx_galaxy_coral_observe', 'The model draws the cups about twice their real size. Pick one cup and find the blade-like septa standing above its rim. Compare the boulder coral, whose tiny cups sit flat in a smooth surface. A bleached colony turns white. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
         sources: ['dx-worms-galaxy_coral', 'dx-iucn-galaxy_coral', 'dx-cotw-galaxy_coral', 'dx-slb-galaxy_coral', 'dx-clode-galaxy_coral', 'dx-sweeper-galaxy_coral', 'dx-noaa-coral-algae', 'dx-reefcheck-hc-builders'] },
       finger_coral: {
         habitat: __alloT('stem.coralreef.dx_finger_coral_habitat', 'Western Central Pacific reefs, from the surface to about 48 m deep. It is common and can be the main coral in lagoons and on back reef margins.'),
-        diet: __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_staghorn_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
         behavior: __alloT('stem.coralreef.dx_finger_coral_behavior', 'Its polyps are less than 2 mm across and packed tightly together. Some colonies are both male and female; they release eggs and sperm through the mouth, and the larvae drift before they settle.'),
         observe: __alloT('stem.coralreef.dx_finger_coral_observe', 'Compare the smooth fingers with the knobbly branches of cauliflower coral and the antler-like branches of staghorn coral. Then compare its tiny cups with the boulder coral, a relative in the same genus. As a stony coral, it is recorded as hard coral (HC) on a Reef Check survey.'),
         sources: ['dx-worms-finger_coral', 'dx-iucn-finger_coral', 'dx-cotw-finger_coral', 'dx-slb-finger_coral', 'dx-naturalis-porites', 'dx-noaa-coral-algae', 'dx-reefcheck-hc-builders'] },
       goldmouth_sea_squirt: {
-        habitat: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_habitat', 'Indo-West Pacific reefs, fixed to hard surfaces. SeaLifeBase lists records from about 3 to 20 m deep; this is a reported range, not a strict boundary.'),
-        diet: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_diet', 'Tiny plankton and suspended organic particles. Water enters one siphon, food is trapped inside the filtering pharynx, and water leaves through the other.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_goldmouth_sea_squirt_habitat', 'Indo-West Pacific reefs, fixed to hard surfaces. SeaLifeBase lists records from about 3 to 20 m deep; this is a reported range, not a strict boundary.'), __alloT('stem.coralreef.dx_goldmouth_sea_squirt_habitat_simple', 'Reefs in the Indo-West Pacific. It is fixed to hard surfaces. SeaLifeBase lists records from about 3 to 20 m deep. This is the range people have reported. It is not a strict limit.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_goldmouth_sea_squirt_diet', 'Tiny plankton and suspended organic particles. Water enters one siphon, food is trapped inside the filtering pharynx, and water leaves through the other.'), __alloT('stem.coralreef.dx_goldmouth_sea_squirt_diet_simple', 'It eats tiny plankton. It also eats small bits from living things that float in the water. Water goes in through one siphon, a kind of tube. Food is trapped inside the filtering pharynx, a part of its body that strains the water. Then the water goes out through the other siphon.')),
         behavior: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_behavior', "The adult remains attached. Water enters the oral siphon, passes through the filtering pharynx, then leaves through the atrial siphon. These openings carry different water routes through one animal; they are not a pair of mouths."),
         observe: __alloT('stem.coralreef.dx_goldmouth_sea_squirt_observe', "Choose Above to inspect the upper oral siphon, then rotate toward Side to find the projecting atrial siphon. Follow the orange lips into their darker throats. Compare this single animal with the barrel sponge and with the separate polyps of orange cup coral. The colours shown are one illustrative appearance."),
         sources: ['dx-worms-goldmouth_sea_squirt', 'dx-hawaii-tunicates', 'dx-morph-goldmouth_sea_squirt', 'dx-slb-goldmouth_sea_squirt'] },
       feather_duster_worm: {
-        habitat: __alloT('stem.coralreef.dx_feather_duster_worm_habitat', 'Indo-Pacific reef crevices and sandy reef surfaces. Researchers recorded Indonesian specimens along reef flats and coral heads at 3 to 16 m; those collection depths do not define its full range.'),
-        diet: __alloT('stem.coralreef.dx_feather_duster_worm_diet', 'Suspended plankton and organic particles. Tiny beating hairs, called cilia, move captured food along mucus-lined grooves toward the mouth.'),
-        behavior: __alloT('stem.coralreef.dx_feather_duster_worm_behavior', "Spreads its two-lobed crown to collect suspended food and exchange gases. Fan worms can withdraw the crown into their tube when disturbed; the study model shows an extended crown. The gentle sway illustrates exposure to water movement, not the microscopic beating of feeding cilia."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_feather_duster_worm_habitat', 'Indo-Pacific reef crevices and sandy reef surfaces. Researchers recorded Indonesian specimens along reef flats and coral heads at 3 to 16 m; those collection depths do not define its full range.'), __alloT('stem.coralreef.dx_feather_duster_worm_habitat_simple', 'Cracks in Indo-Pacific reefs, and sandy reef surfaces. Researchers recorded Indonesian worms on reef flats and coral heads at 3 to 16 m deep. A reef flat is the flat, shallow top of a reef. Those depths are where the worms were collected. They do not set the limits of where it lives.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_feather_duster_worm_diet', 'Suspended plankton and organic particles. Tiny beating hairs, called cilia, move captured food along mucus-lined grooves toward the mouth.'), __alloT('stem.coralreef.dx_feather_duster_worm_diet_simple', 'It eats plankton and small bits from living things that float in the water. It has tiny beating hairs, called cilia. They move the food it catches along grooves toward its mouth. The grooves are lined with mucus, a kind of slime.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_feather_duster_worm_behavior', 'Spreads its two-lobed crown to collect suspended food and exchange gases. Fan worms can withdraw the crown into their tube when disturbed; the study model shows an extended crown. The gentle sway illustrates exposure to water movement, not the microscopic beating of feeding cilia.'), __alloT('stem.coralreef.dx_feather_duster_worm_behavior_simple', 'It spreads out its crown, which has two lobes, or parts. The crown collects bits of food floating in the water. It is also used to exchange gases, which means taking gases in and giving them off. Fan worms can pull the crown back into their tube when something disturbs them. The study model shows an extended crown, one that is spread out. The model sways gently. This shows that the worm is in moving water. The sway is not the microscopic beating of feeding cilia. Cilia are tiny hairs, too small to see, that help it feed.')),
         observe: __alloT('stem.coralreef.dx_feather_duster_worm_observe', "Choose Above to follow the radioles around both fan-like lobes, then Side to find the sand-coated tube below them. Fine side branches, called pinnules, give each radiole its feathery edge. Compare this broad crown with the Christmas tree worm’s spiralling crowns and tube-closing plug; this feather-duster has no such plug. Bennett’s feather star has arms and gripping cirri. This illustrated specimen is not a complete identification key."),
         sources: ['dx-worms-feather_duster_worm', 'dx-peerj-feather_duster_worm', 'dx-museum-fanworms', 'dx-qatar-feather_duster_worm'] },
       drupella_snail: {
-        habitat: __alloT('stem.coralreef.dx_drupella_snail_habitat', 'Indo-Pacific coral reefs from East Africa to Southeast and Northeast Asia, from the shallows to about 75 m. It is common on branching Acropora corals and on Montipora corals.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_drupella_snail_habitat', 'Indo-Pacific coral reefs from East Africa to Southeast and Northeast Asia, from the shallows to about 75 m. It is common on branching Acropora corals and on Montipora corals.'), __alloT('stem.coralreef.dx_drupella_snail_habitat_simple', 'Coral reefs in the Indo-Pacific, from East Africa to Southeast and Northeast Asia. It lives from shallow water down to about 75 m. It is common on branching Acropora corals. It is also common on Montipora corals.')),
         diet: __alloT('stem.coralreef.dx_drupella_snail_diet', 'Only living coral. It strips the soft coral tissue from the skeleton. One snail can eat about 2.6 square centimetres of branching coral in a day.'),
-        behavior: __alloT('stem.coralreef.dx_drupella_snail_behavior', 'Snails are drawn to each other and gather on larger corals. In an outbreak, huge numbers can strip large areas: off Ningaloo Reef in Western Australia, live coral cover fell by up to 75 percent along parts of the reef. Scientists are still working out what starts outbreaks, and the years between them may depend on how fast the coral grows back.'),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_drupella_snail_behavior', 'Snails are drawn to each other and gather on larger corals. In an outbreak, huge numbers can strip large areas: off Ningaloo Reef in Western Australia, live coral cover fell by up to 75 percent along parts of the reef. Scientists are still working out what starts outbreaks, and the years between them may depend on how fast the coral grows back.'), __alloT('stem.coralreef.dx_drupella_snail_behavior_simple', 'These snails are drawn to each other. They gather on larger corals. An outbreak is when their numbers suddenly grow very large. In an outbreak, huge numbers can strip large areas. Off Ningaloo Reef in Western Australia, live coral cover fell by up to 75 percent. This was along parts of the reef. Scientists are still working out what starts outbreaks. The years between them may depend on how fast the coral grows back.')),
         observe: __alloT('stem.coralreef.dx_drupella_snail_observe', 'Compare it with the giant triton: both are reef snails with knobbly shells, but the triton is far larger and hunts sea stars, while these small snails sit in a group on coral and eat it. Choose Side to find the line where brown living tissue ends and the white scar begins. Snails crusted with algae can be hard to spot.'),
         sources: ['dx-worms-drupella_snail', 'dx-slb-drupella_snail', 'dx-hku-drupella_snail', 'dx-frontiers-drupella_snail'] },
       pincushion_sea_star: {
-        habitat: __alloT('stem.coralreef.dx_pincushion_sea_star_habitat', 'Coral reefs, reef flats and rubble bottoms of the tropical Indo-Pacific, usually among live hard corals, from the shallows to about 30 m.'),
-        diet: __alloT('stem.coralreef.dx_pincushion_sea_star_diet', 'Living coral such as Acropora, Pocillopora and Porites, plus sea urchins and the film of microbes on the bottom. In a study in Hawaii it chose Pocillopora corals over Porites and preferred small colonies.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_pincushion_sea_star_habitat', 'Coral reefs, reef flats and rubble bottoms of the tropical Indo-Pacific, usually among live hard corals, from the shallows to about 30 m.'), __alloT('stem.coralreef.dx_pincushion_sea_star_habitat_simple', 'Coral reefs, reef flats and rubble bottoms in the warm Indo-Pacific. Rubble is broken bits of coral and rock. It is usually found among live hard corals. It lives from shallow water down to about 30 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_pincushion_sea_star_diet', 'Living coral such as Acropora, Pocillopora and Porites, plus sea urchins and the film of microbes on the bottom. In a study in Hawaii it chose Pocillopora corals over Porites and preferred small colonies.'), __alloT('stem.coralreef.dx_pincushion_sea_star_diet_simple', 'Living coral such as Acropora, Pocillopora and Porites. It also eats sea urchins and the thin film of microbes (tiny living things) on the bottom. A study in Hawaii found that it chose Pocillopora corals over Porites. It also liked small colonies best.')),
         behavior: __alloT('stem.coralreef.dx_pincushion_sea_star_behavior', 'It feeds mostly at night by pushing its stomach out over the coral to digest the tissue. By day it may rest in plain sight or wedge itself into a crevice. In the Hawaii study, the coral killed by this sea star was only about one fifth of the amount killed by a crown-of-thorns starfish.'),
         observe: __alloT('stem.coralreef.dx_pincushion_sea_star_observe', 'Compare it with the crown-of-thorns starfish: both eat living coral, but the crown-of-thorns has many long arms covered in sharp spines, while this sea star is a puffy body with arms you can barely see. Choose Below to find the five grooves of tube feet around the central mouth. Colour alone is not enough, because patterns vary a lot between animals.'),
         sources: ['dx-worms-pincushion_sea_star', 'dx-wam-pincushion_sea_star', 'dx-wildsg-pincushion_sea_star', 'dx-glynn-pincushion_sea_star', 'dx-rsg-pincushion_sea_star', 'dx-slb-pincushion_sea_star'] },
       spanish_dancer: {
-        habitat: __alloT('stem.coralreef.dx_spanish_dancer_habitat', 'Coral and rocky reefs of the tropical Indo-Pacific, from East Africa and the Red Sea to French Polynesia. It has been recorded from 1 to 50 m, usually at 10 to 20 m, and is most often seen on night dives.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_spanish_dancer_habitat', 'Coral and rocky reefs of the tropical Indo-Pacific, from East Africa and the Red Sea to French Polynesia. It has been recorded from 1 to 50 m, usually at 10 to 20 m, and is most often seen on night dives.'), __alloT('stem.coralreef.dx_spanish_dancer_habitat_simple', 'Coral reefs and rocky reefs in the warm Indo-Pacific. Its range goes from East Africa and the Red Sea to French Polynesia. It has been recorded from 1 to 50 m deep. It is usually at 10 to 20 m. People most often see it on night dives.')),
         diet: __alloT('stem.coralreef.dx_spanish_dancer_diet', 'Sponges. A strong chemical defence comes from a Halichondria sponge that it eats.'),
         behavior: __alloT('stem.coralreef.dx_spanish_dancer_behavior', 'Its gills cannot be pulled back into a pocket, and each gill joins the body separately. When disturbed it can swim with sweeping up-and-down flexes of its body and wide mantle. A small emperor shrimp often rides on its back.'),
         observe: __alloT('stem.coralreef.dx_spanish_dancer_observe', 'Compare it with Anna\'s chromodoris: both are sea slugs that eat sponges, but that one is small and blue with one tuft of gills, while this slug can grow longer than 40 cm and has six separate gills. Choose Above to count the gills at the rear. Scientists recently found that this name covers several similar species, so the colours here are one example.'),
         sources: ['dx-worms-spanish_dancer', 'dx-ssf-spanish_dancer', 'dx-ssw-spanish_dancer', 'dx-slb-spanish_dancer', 'dx-pmc-spanish_dancer', 'dx-split-spanish_dancer', 'dx-surg-spanish_dancer'] },
       banded_coral_shrimp: {
-        habitat: __alloT('stem.coralreef.dx_banded_coral_shrimp_habitat', 'Tropical reefs around the world, in the Indo-Pacific and the western Atlantic. It lives in crevices and under coral and rock ledges, usually in 2 to 4 m of water, though it has been seen as deep as 210 m.'),
-        diet: __alloT('stem.coralreef.dx_banded_coral_shrimp_diet', 'Parasites, injured tissue and leftover food picked from the fish it cleans, plus tiny drifting animals, worms and other small invertebrates.'),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_banded_coral_shrimp_habitat', 'Tropical reefs around the world, in the Indo-Pacific and the western Atlantic. It lives in crevices and under coral and rock ledges, usually in 2 to 4 m of water, though it has been seen as deep as 210 m.'), __alloT('stem.coralreef.dx_banded_coral_shrimp_habitat_simple', 'Warm reefs around the world, in the Indo-Pacific and the western Atlantic. It lives in crevices, or narrow cracks. It also lives under coral and rock ledges. It is usually in 2 to 4 m of water. But it has been seen as deep as 210 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_banded_coral_shrimp_diet', 'Parasites, injured tissue and leftover food picked from the fish it cleans, plus tiny drifting animals, worms and other small invertebrates.'), __alloT('stem.coralreef.dx_banded_coral_shrimp_diet_simple', 'It picks food off the fish it cleans. It takes parasites, bits of hurt tissue and leftover food. Parasites are pests that live on other animals. It also eats tiny drifting animals, worms and other small animals without backbones.')),
         behavior: __alloT('stem.coralreef.dx_banded_coral_shrimp_behavior', 'It perches near the opening of a cave or ledge and waves its long white antennae, which helps attract fish to be cleaned. Morays, tangs, groupers and other fish visit.'),
         observe: __alloT('stem.coralreef.dx_banded_coral_shrimp_observe', 'Compare it with the Pacific cleaner shrimp: both clean fish and have long white antennae, but that shrimp has a white stripe down its red back, while this one has red and white bands across its body and much longer claws. Choose Side to see that the big claws are on the third pair of legs, not the first.'),
         sources: ['dx-worms-banded_coral_shrimp', 'dx-adw-banded_coral_shrimp', 'dx-slb-banded_coral_shrimp'] },
       clownfish: {
-        habitat: __alloT("stem.coralreef.dx_clownfish_habitat", "Coral and rocky reef areas with a suitable host sea anemone. Documented natural hosts include the magnificent anemone and the carpet anemones Stichodactyla gigantea and Stichodactyla mertensii."),
-        diet: __alloT("stem.coralreef.dx_clownfish_diet", "Small drifting animals and algae; its host anemone provides a protected feeding base."),
-        behavior: __alloT("stem.coralreef.dx_clownfish_behavior", "The fish associates with particular host anemones. Acclimation and its protective mucous coating help it live among the stinging tentacles. Host associations are specific, and the fish and anemone remain separate animals."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_clownfish_habitat', 'Coral and rocky reef areas with a suitable host sea anemone. Documented natural hosts include the magnificent anemone and the carpet anemones Stichodactyla gigantea and Stichodactyla mertensii.'), __alloT('stem.coralreef.dx_clownfish_habitat_simple', 'Coral and rocky reef areas. It needs a good host sea anemone to live in. Its known hosts in the wild include the magnificent anemone. They also include the carpet anemones Stichodactyla gigantea and Stichodactyla mertensii.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_clownfish_diet', 'Small drifting animals and algae; its host anemone provides a protected feeding base.'), __alloT('stem.coralreef.dx_clownfish_diet_simple', 'Small animals that drift in the water, and algae. Its host anemone gives it a safe base to feed from.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_clownfish_behavior', 'The fish associates with particular host anemones. Acclimation and its protective mucous coating help it live among the stinging tentacles. Host associations are specific, and the fish and anemone remain separate animals.'), __alloT('stem.coralreef.dx_clownfish_behavior_simple', 'The fish lives with certain kinds of host anemones. It slowly gets used to its anemone. It also has a slimy, protective coat of mucus. These help it live among the stinging tentacles. Each fish uses only certain hosts. The fish and the anemone stay separate animals.')),
         observe: __alloT("stem.coralreef.dx_clownfish_observe", "Count the three white bands, then watch how closely the fish stays beside its host's tentacles."),
         sources: ["dx-foa-clownfish","dx-adw-clownfish","trnski2020","dx-flm-ocellaris-hosts"]
       },
@@ -17948,69 +18560,69 @@
       parrotfish: {
         habitat: __alloT("stem.coralreef.dx_parrotfish_habitat", "Coral reefs with exposed rock and dead coral surfaces for grazing."),
         diet: __alloT("stem.coralreef.dx_parrotfish_diet", "Grazes algae and associated material from reef surfaces with fused, beak-like teeth."),
-        behavior: __alloT("stem.coralreef.dx_parrotfish_behavior", "Biting and grinding reef material contributes to the production of coral sand."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_parrotfish_behavior', 'Biting and grinding reef material contributes to the production of coral sand.'), __alloT('stem.coralreef.dx_parrotfish_behavior_simple', 'It bites off reef material and grinds it up. This helps to make coral sand.')),
         observe: __alloT("stem.coralreef.dx_parrotfish_observe", "Watch its side fins move, then look for pale grazing scars or a small sand puff."),
         sources: ["dx-foa-parrotfish","dx-parrotfish-sediment-study"]
       },
       bumphead_parrotfish: {
         habitat: __alloT("stem.coralreef.dx_bumphead_parrotfish_habitat", "Outer lagoons, seaward reefs and reef flats, often with other large parrotfish."),
-        diet: __alloT("stem.coralreef.dx_bumphead_parrotfish_diet", "Bites living coral and also consumes algae, using powerful jaws and fused teeth."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_bumphead_parrotfish_diet', 'Bites living coral and also consumes algae, using powerful jaws and fused teeth.'), __alloT('stem.coralreef.dx_bumphead_parrotfish_diet_simple', 'It bites living coral. It also eats algae. To do this, it uses its strong jaws and its fused teeth. Fused means the teeth are joined together.')),
         behavior: __alloT("stem.coralreef.dx_bumphead_parrotfish_behavior", "Groups move across feeding grounds; large adults reshape reef surfaces as they graze."),
         observe: __alloT("stem.coralreef.dx_bumphead_parrotfish_observe", "Look for the steep forehead and exposed beak, then compare its heavy build with a wrasse."),
         sources: ["dx-foa-bumphead_parrotfish"]
       },
       moorish_idol: {
-        habitat: __alloT("stem.coralreef.dx_moorish_idol_habitat", "Coastal and offshore coral and rocky reefs, including reef lagoons."),
-        diet: __alloT("stem.coralreef.dx_moorish_idol_diet", "Picks mainly at encrusting sponges, with coral polyps, tunicates and other small attached animals."),
-        behavior: __alloT("stem.coralreef.dx_moorish_idol_behavior", "Often travels as a pair, although larger gatherings also occur."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_moorish_idol_habitat', 'Coastal and offshore coral and rocky reefs, including reef lagoons.'), __alloT('stem.coralreef.dx_moorish_idol_habitat_simple', 'Coral reefs and rocky reefs, both near the coast and farther out at sea. This includes reef lagoons, the calm water inside a reef.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_moorish_idol_diet', 'Picks mainly at encrusting sponges, with coral polyps, tunicates and other small attached animals.'), __alloT('stem.coralreef.dx_moorish_idol_diet_simple', 'It mainly picks at sponges that grow as a thin, flat crust. It also eats coral polyps, the small soft animals that make up a coral. It eats tunicates too, which are soft animals like sea squirts. And it eats other small animals that stay stuck in one place.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_moorish_idol_behavior', 'Often travels as a pair, although larger gatherings also occur.'), __alloT('stem.coralreef.dx_moorish_idol_behavior_simple', 'It often travels as a pair, with one partner. Bigger groups are also seen.')),
         observe: __alloT("stem.coralreef.dx_moorish_idol_observe", "Use Front and Studio light to look for the two short projections above the eyes of this adult. Then compare its tubular snout, yellow saddle and black tail with the longfin bannerfish's shorter snout and yellow tail."),
         sources: ["dx-foa-moorish_idol"]
       },
       threadfin_butterflyfish: {
-        habitat: __alloT("stem.coralreef.dx_threadfin_butterflyfish_habitat", "Coral reef habitats across the tropical Indo-Pacific, from sheltered reef areas to outer reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_threadfin_butterflyfish_habitat', 'Coral reef habitats across the tropical Indo-Pacific, from sheltered reef areas to outer reefs.'), __alloT('stem.coralreef.dx_threadfin_butterflyfish_habitat_simple', 'Coral reefs across the warm Indo-Pacific. It lives in sheltered reef areas, safe from big waves. It also lives on outer reefs, which face the open sea.')),
         diet: __alloT("stem.coralreef.dx_threadfin_butterflyfish_diet", "Uses its small mouth to pick worms, anemones, coral polyps and algae from the reef."),
-        behavior: __alloT("stem.coralreef.dx_threadfin_butterflyfish_behavior", "The trailing back-fin filament becomes a useful clue on adults; regional markings can vary."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_threadfin_butterflyfish_behavior', 'The trailing back-fin filament becomes a useful clue on adults; regional markings can vary.'), __alloT('stem.coralreef.dx_threadfin_butterflyfish_behavior_simple', 'On adults, the long thread that trails from the back fin is a useful clue. The markings can be different from one area to another.')),
         observe: __alloT("stem.coralreef.dx_threadfin_butterflyfish_observe", "Find the real eye inside the black head band, then follow the fine chevrons, yellow rear body and adult dorsal filament. The illustrated form has a rear dorsal eyespot; Red Sea fish lack that conspicuous mark."),
         sources: ["dx-foa-threadfin_butterflyfish","dx-threadfin-adult-filament"]
       },
       emperor_angelfish: {
         habitat: __alloT("stem.coralreef.dx_emperor_angelfish_habitat", "Clear lagoons, reef channels and seaward reefs with rich coral growth and ledges."),
         diet: __alloT("stem.coralreef.dx_emperor_angelfish_diet", "Feeds mainly on attached sponges and tunicates among the reef's crevices."),
-        behavior: __alloT("stem.coralreef.dx_emperor_angelfish_behavior", "Juveniles have blue-and-white rings that change into the adult's yellow-and-blue stripes."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_emperor_angelfish_behavior', 'Juveniles have blue-and-white rings that change into the adult\'s yellow-and-blue stripes.'), __alloT('stem.coralreef.dx_emperor_angelfish_behavior_simple', 'The young fish have blue and white rings. As they grow, the rings change into the adult\'s yellow and blue stripes.')),
         observe: __alloT("stem.coralreef.dx_emperor_angelfish_observe", "Use Side to follow the adult's yellow-and-blue stripes and dark eye band. Compare these features with the ringed juvenile described in the entry, keeping the life stage in mind when identifying a fish."),
         sources: ["dx-foa-emperor_angelfish","dx-am-emperor-growth"]
       },
       anthias: {
-        habitat: __alloT("stem.coralreef.dx_anthias_habitat", "Water just above reef outcrops, where a current delivers plankton."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_anthias_habitat', 'Water just above reef outcrops, where a current delivers plankton.'), __alloT('stem.coralreef.dx_anthias_habitat_simple', 'Water just above outcrops on the reef. An outcrop is a part of the reef that sticks up. There, a current brings plankton. Plankton are tiny living things that drift in the water.')),
         diet: __alloT("stem.coralreef.dx_anthias_diet", "Picks small drifting animals from the water rather than grazing the reef surface."),
         behavior: __alloT("stem.coralreef.dx_anthias_behavior", "A group is mainly females with a few males, and individuals can change sex."),
         observe: __alloT("stem.coralreef.dx_anthias_observe", "Notice the orange cloud's position above the coral and look for differently colored males."),
         sources: ["dx-foa-anthias"]
       },
       blue_green_chromis: {
-        habitat: __alloT("stem.coralreef.dx_blue_green_chromis_habitat", "Branching coral patches with open water immediately above the branches."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_blue_green_chromis_habitat', 'Branching coral patches with open water immediately above the branches.'), __alloT('stem.coralreef.dx_blue_green_chromis_habitat_simple', 'Patches of branching coral, which grows in shapes like little trees. There is open water just above the branches.')),
         diet: __alloT("stem.coralreef.dx_blue_green_chromis_diet", "Takes tiny plankton from the current, using the coral below as shelter."),
         behavior: __alloT("stem.coralreef.dx_blue_green_chromis_behavior", "Males tend nests on sand or rubble and fan their eggs."),
         observe: __alloT("stem.coralreef.dx_blue_green_chromis_observe", "Watch a group hover over one coral head, then check for the absence of a black fin-base spot."),
         sources: ["dx-foa-blue_green_chromis"]
       },
       lionfish: {
-        habitat: __alloT("stem.coralreef.dx_lionfish_habitat", "Coral reefs and rocky reef shelter, with crevices available between feeding trips."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_lionfish_habitat', 'Coral reefs and rocky reef shelter, with crevices available between feeding trips.'), __alloT('stem.coralreef.dx_lionfish_habitat_simple', 'Coral reefs, and rocky reefs that give it shelter. Crevices, or narrow cracks, are there for it to use between feeding trips.')),
         diet: __alloT("stem.coralreef.dx_lionfish_diet", "Swallows small fishes and crustaceans after cornering them with its spread fins."),
-        behavior: __alloT("stem.coralreef.dx_lionfish_behavior", "Often shelters during the day, but feeding can occur in daylight as well as at night. Its activity varies; it is not an exclusively nocturnal hunter."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_lionfish_behavior', 'Often shelters during the day, but feeding can occur in daylight as well as at night. Its activity varies; it is not an exclusively nocturnal hunter.'), __alloT('stem.coralreef.dx_lionfish_behavior_simple', 'It often takes cover during the day. But it can feed in daylight as well as at night. How active it is varies. It is not an exclusively nocturnal hunter, so it does not hunt only at night.')),
         observe: __alloT("stem.coralreef.dx_lionfish_observe", "Distinguish the broad pectoral fans at the sides from the long spines along the back. Check body stripes and fin details together: similar Pterois species occur. The study model is red lionfish, not every striped lionfish."),
         sources: ["dx-foa-lionfish","dx-flm-lionfish-anatomy"]
       },
       peacock_grouper: {
-        habitat: __alloT("stem.coralreef.dx_peacock_grouper_habitat", "Reef slopes and coral-rich shelter; younger fish often remain among dense shallow coral."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_peacock_grouper_habitat', 'Reef slopes and coral-rich shelter; younger fish often remain among dense shallow coral.'), __alloT('stem.coralreef.dx_peacock_grouper_habitat_simple', 'Reef slopes, and places with lots of coral to shelter in. Younger fish often stay among shallow coral that grows thick and close together.')),
         diet: __alloT("stem.coralreef.dx_peacock_grouper_diet", "An ambush hunter of fishes and crustaceans, using a large mouth to take prey."),
         behavior: __alloT("stem.coralreef.dx_peacock_grouper_behavior", "Adults can live in social groups within a defended area of reef."),
         observe: __alloT("stem.coralreef.dx_peacock_grouper_observe", "Choose Side and zoom to inspect the dark rims around blue spots on the body and fins. Rotate to check both faces of the tail and paired pectoral fins, then find the pale chest patch. Five or six pale bars may show on the rear body, but can be faint or absent; use several features together."),
         sources: ["dx-foa-peacock_grouper","dx-grouper-territory-study","dx-grouper-diet-context","dx-stri-grouper-spots"]
       },
       humphead_wrasse: {
-        habitat: __alloT("stem.coralreef.dx_humphead_wrasse_habitat", "Indo-Pacific reefs, with large individuals moving among coral formations and reef slopes."),
-        diet: __alloT("stem.coralreef.dx_humphead_wrasse_diet", "Eats hard-bodied invertebrates and fishes, including some animals avoided by many other predators."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_humphead_wrasse_habitat', 'Indo-Pacific reefs, with large individuals moving among coral formations and reef slopes.'), __alloT('stem.coralreef.dx_humphead_wrasse_habitat_simple', 'Reefs in the Indo-Pacific. Large fish move among coral structures and along reef slopes.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_humphead_wrasse_diet', 'Eats hard-bodied invertebrates and fishes, including some animals avoided by many other predators.'), __alloT('stem.coralreef.dx_humphead_wrasse_diet_simple', 'It eats fishes. It also eats animals with hard bodies and no backbone. Some of its food is animals that many other predators stay away from. Predators are animals that hunt.')),
         behavior: __alloT("stem.coralreef.dx_humphead_wrasse_behavior", "The study model shows a large adult. Smaller fish have a less developed forehead hump and can differ in colour. Large individuals roam reef slopes and shelter around caves and ledges."),
         observe: __alloT("stem.coralreef.dx_humphead_wrasse_observe", "Use Side to compare the fine wavy lines on the face and chest with the short dark marks on the large body scales. Check both thick lips and the rounded tail, then compare the face with a bumphead parrotfish."),
         sources: ["dx-foa-humphead_wrasse","dx-am-humphead-form","dx-wa-humphead-scales"]
@@ -18023,8 +18635,8 @@
         sources: ["fishaus-labroides","bansemer2002","titus2015","dx-cleaner-rates-study","dx-rls-cleaner-mouth","dx-randall-cleaner-fins"]
       },
       clown_triggerfish: {
-        habitat: __alloT("stem.coralreef.dx_clown_triggerfish_habitat", "Tropical coral reefs with holes and crevices that provide secure shelter."),
-        diet: __alloT("stem.coralreef.dx_clown_triggerfish_diet", "Feeds on sea urchins, crustaceans, molluscs and other bottom-dwelling animals."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_clown_triggerfish_habitat', 'Tropical coral reefs with holes and crevices that provide secure shelter.'), __alloT('stem.coralreef.dx_clown_triggerfish_habitat_simple', 'Warm coral reefs with holes and narrow cracks, called crevices. These give it a safe place to shelter.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_clown_triggerfish_diet', 'Feeds on sea urchins, crustaceans, molluscs and other bottom-dwelling animals.'), __alloT('stem.coralreef.dx_clown_triggerfish_diet_simple', 'It eats sea urchins, crustaceans and molluscs. Crustaceans are animals like crabs and shrimp. Molluscs are animals like snails and clams. It also eats other animals that live on the sea floor.')),
         behavior: __alloT("stem.coralreef.dx_clown_triggerfish_behavior", "Its locking dorsal spine helps it brace itself inside a reef crevice."),
         observe: __alloT("stem.coralreef.dx_clown_triggerfish_observe", "Choose Side to trace the stout first dorsal spine and the two shorter spines behind it, ahead of the soft dorsal fin. Then check the white belly spots, patterned back and orange-yellow lips together."),
         sources: ["dx-foa-clown_triggerfish","dx-trigger-dorsal-family"]
@@ -18037,14 +18649,14 @@
         sources: ["dx-foa-porcupinefish","dx-diodontid-jaws","dx-flm-porcupine-identification"]
       },
       yellow_boxfish: {
-        habitat: __alloT("stem.coralreef.dx_yellow_boxfish_habitat", "Relatively sheltered coastal and offshore reefs with places to hover and forage."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_yellow_boxfish_habitat', 'Relatively sheltered coastal and offshore reefs with places to hover and forage.'), __alloT('stem.coralreef.dx_yellow_boxfish_habitat_simple', 'Reefs near the coast and farther out at sea. These reefs are fairly safe from rough water. They have places where it can hover and search for food.')),
         diet: __alloT("stem.coralreef.dx_yellow_boxfish_diet", "Takes algae and a variety of small animals living on or near the bottom."),
         behavior: __alloT("stem.coralreef.dx_yellow_boxfish_behavior", "The rigid, plated body changes color and shape with age, while small fins provide control."),
         observe: __alloT("stem.coralreef.dx_yellow_boxfish_observe", "Choose Front and zoom to inspect the small recessed mouth. From Side, find the short gill slit just ahead of the pectoral fin, then compare the rounded black spots across the shell. This is the bright yellow juvenile pattern; body shape and markings change with growth. The accepted name and older spelling refer to the same entry."),
         sources: ["dx-foa-yellow_boxfish","dx-worms-boxfish-name","dx-am-boxfish-growth","dx-nmns-boxfish-form"]
       },
       giant_moray: {
-        habitat: __alloT("stem.coralreef.dx_giant_moray_habitat", "Reef holes and crevices that conceal its long body while the head remains visible."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_giant_moray_habitat', 'Reef holes and crevices that conceal its long body while the head remains visible.'), __alloT('stem.coralreef.dx_giant_moray_habitat_simple', 'Holes and crevices, or narrow cracks, in the reef. They hide its long body. But its head can still be seen.')),
         diet: __alloT("stem.coralreef.dx_giant_moray_diet", "Feeds mostly on fishes, with some crustaceans also taken."),
         behavior: __alloT("stem.coralreef.dx_giant_moray_behavior", "A resting moray opens and closes its mouth to move water over its gills. The model illustrates this repeated motion. Its nostrils sample scents in the water, separately from the mouth-and-gill route used for breathing."),
         observe: __alloT("stem.coralreef.dx_giant_moray_observe", "Choose Front and zoom to inspect the short pair of tubular nostrils near the snout tip. From Side, find the eye and the black patch surrounding the separate gill opening farther back. The front tubes shown here are nostrils."),
@@ -18067,62 +18679,62 @@
       bluestripe_snapper: {
         habitat: __alloT("stem.coralreef.dx_bluestripe_snapper_habitat", "Reef lagoons and outer slopes; daytime schools gather around coral heads and caves."),
         diet: __alloT("stem.coralreef.dx_bluestripe_snapper_diet", "Feeds mainly on fishes and also takes a range of crustaceans."),
-        behavior: __alloT("stem.coralreef.dx_bluestripe_snapper_behavior", "Often forms conspicuous daytime schools that move together around reef structure."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_bluestripe_snapper_behavior', 'Often forms conspicuous daytime schools that move together around reef structure.'), __alloT('stem.coralreef.dx_bluestripe_snapper_behavior_simple', 'In the daytime, it often swims in schools that are easy to spot. A school is a group of fish. The fish in a school move together around the reef.')),
         observe: __alloT("stem.coralreef.dx_bluestripe_snapper_observe", "Count four blue stripes on the yellow side and compare the thin lips with a sweetlips."),
         sources: ["dx-foa-bluestripe_snapper"]
       },
       oriental_sweetlips: {
         habitat: __alloT("stem.coralreef.dx_oriental_sweetlips_habitat", "Coral reef shelter, often beneath ledges where adults rest during the day."),
         diet: __alloT("stem.coralreef.dx_oriental_sweetlips_diet", "A night-time carnivore that searches for animal prey after its daytime rest."),
-        behavior: __alloT("stem.coralreef.dx_oriental_sweetlips_behavior", "Adults may rest alone or in small groups; juveniles have a very different, irregular pattern."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_oriental_sweetlips_behavior', 'Adults may rest alone or in small groups; juveniles have a very different, irregular pattern.'), __alloT('stem.coralreef.dx_oriental_sweetlips_behavior_simple', 'Adults may rest alone or in small groups. The young fish have a very different pattern. It is irregular, with no even shape to it.')),
         observe: __alloT("stem.coralreef.dx_oriental_sweetlips_observe", "Use Side to compare the adult stripes and thick lips, then inspect the separate dark dots on the yellow dorsal, anal and tail fins. The adult pectoral fins are plain yellow. Keep this adult pattern separate from the blotched juvenile described in the entry."),
         sources: ["dx-foa-oriental_sweetlips","dx-nmns-sweetlips-adult"]
       },
       reef_manta: {
-        habitat: __alloT("stem.coralreef.dx_reef_manta_habitat", "Reef-associated waters with plankton-rich feeding areas and established cleaning stations."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_reef_manta_habitat', 'Reef-associated waters with plankton-rich feeding areas and established cleaning stations.'), __alloT('stem.coralreef.dx_reef_manta_habitat_simple', 'Waters near reefs. They have feeding areas rich in plankton, the tiny living things that drift in the sea. They also have long-used cleaning stations. A cleaning station is a spot where small animals clean bigger ones.')),
         diet: __alloT("stem.coralreef.dx_reef_manta_diet", "Filters tiny drifting animals from the water as it swims with its mouth open."),
         behavior: __alloT("stem.coralreef.dx_reef_manta_behavior", "May gather to feed and circle slowly over a cleaning station."),
         observe: __alloT("stem.coralreef.dx_reef_manta_observe", "Observe its shoulder markings and belly spots during a natural pass, leaving its route open."),
         sources: ["dx-foa-reef_manta","armstrong2021"]
       },
       green_turtle: {
-        habitat: __alloT("stem.coralreef.dx_green_turtle_habitat", "Coastal feeding grounds, including shallow seagrass and algal habitats near reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_green_turtle_habitat', 'Coastal feeding grounds, including shallow seagrass and algal habitats near reefs.'), __alloT('stem.coralreef.dx_green_turtle_habitat_simple', 'Feeding places near the coast. These include shallow seagrass beds and areas with algae near reefs.')),
         diet: __alloT("stem.coralreef.dx_green_turtle_diet", "Adults mainly graze seagrasses and algae; diet can vary with life stage and location."),
-        behavior: __alloT("stem.coralreef.dx_green_turtle_behavior", "Breathes air and alternates underwater activity with visits to the surface."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_green_turtle_behavior', 'Breathes air and alternates underwater activity with visits to the surface.'), __alloT('stem.coralreef.dx_green_turtle_behavior_simple', 'It breathes air. It takes turns between being busy underwater and visiting the surface.')),
         observe: __alloT("stem.coralreef.dx_green_turtle_observe", "Choose Above and zoom toward the head to find one pair of prefrontal scales. Compare the blunt beak and smooth, non-overlapping shell plates with the hawksbill. Both turtles breathe air; in the wild, leave a clear path to the surface."),
         sources: ["dx-noaa-green_turtle","swot2024","dx-green-turtle-global-2025","dx-widecast-head-scales"]
       },
       hawksbill_turtle: {
-        habitat: __alloT("stem.coralreef.dx_hawksbill_turtle_habitat", "Coral reefs and other coastal feeding grounds with sponge-rich crevices and resting ledges."),
-        diet: __alloT("stem.coralreef.dx_hawksbill_turtle_diet", "Sponges are preferred food in many reef habitats, but diet varies by place. It also eats other invertebrates and algae; Hawaiian hawksbills take a wider mixture where sponges are limited."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_hawksbill_turtle_habitat', 'Coral reefs and other coastal feeding grounds with sponge-rich crevices and resting ledges.'), __alloT('stem.coralreef.dx_hawksbill_turtle_habitat_simple', 'Coral reefs and other feeding places near the coast. These places have crevices, or narrow cracks, with lots of sponges. They also have ledges where it can rest.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_hawksbill_turtle_diet', 'Sponges are preferred food in many reef habitats, but diet varies by place. It also eats other invertebrates and algae; Hawaiian hawksbills take a wider mixture where sponges are limited.'), __alloT('stem.coralreef.dx_hawksbill_turtle_diet_simple', 'In many reef habitats, sponges are the food it likes best. But its diet varies by place. It also eats algae and other invertebrates, animals with no backbone. Where there are not many sponges, Hawaiian hawksbills eat a wider mix of foods.')),
         behavior: __alloT("stem.coralreef.dx_hawksbill_turtle_behavior", "Its narrow pointed beak helps it reach food in small reef openings."),
         observe: __alloT("stem.coralreef.dx_hawksbill_turtle_observe", "Choose Above and zoom toward the head to find two pairs of prefrontal scales. From Side, compare the pointed beak, overlapping shell plates and serrated rear edge with the green turtle. Use these features together, rather than shell colour alone."),
         sources: ["dx-noaa-hawksbill_turtle","swot2024","dx-widecast-head-scales"]
       },
       magnificent_anemone: {
-        habitat: __alloT("stem.coralreef.dx_magnificent_anemone_habitat", "Clear tropical reef water, usually anchored to exposed rock where currents reach its tentacles."),
-        diet: __alloT("stem.coralreef.dx_magnificent_anemone_diet", "Receives energy from symbiotic algae and captures small animals with stinging tentacles."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_magnificent_anemone_habitat', 'Clear tropical reef water, usually anchored to exposed rock where currents reach its tentacles.'), __alloT('stem.coralreef.dx_magnificent_anemone_habitat_simple', 'It lives in clear, warm reef water. It usually holds on tight to rock that is out in the open. There, currents reach its tentacles. Currents are moving water.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_magnificent_anemone_diet', 'Receives energy from symbiotic algae and captures small animals with stinging tentacles.'), __alloT('stem.coralreef.dx_magnificent_anemone_diet_simple', 'It gets energy from symbiotic algae. These are tiny partners that live inside its body. It also catches small animals with its stinging tentacles.')),
         behavior: __alloT("stem.coralreef.dx_magnificent_anemone_behavior", "A basal pedal disc attaches this single polyp to rock. Tentacles surround one central mouth on the oral disc. Food enters and undigested material leaves through that same opening; there is no separate anus."),
         observe: __alloT("stem.coralreef.dx_magnificent_anemone_observe", "Choose Above to find the narrow central mouth between the tentacles, then Below to study the basal attachment disc. The coloured column, oral disc and tentacles are parts of one animal. Tiny column folds are surface detail, not separate polyps."),
         sources: ["dx-adw-anemone","beldade2017","dx-worms-magnificent-anemone","dx-anthozoan-opening"]
       },
       giant_clam: {
         habitat: __alloT("stem.coralreef.dx_giant_clam_habitat", "Shallow reefs and lagoons, often with part of the heavy shell embedded in reef material."),
-        diet: __alloT("stem.coralreef.dx_giant_clam_diet", "Symbiotic algae supply energy; the clam also filters particles from the water."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_giant_clam_diet', 'Symbiotic algae supply energy; the clam also filters particles from the water.'), __alloT('stem.coralreef.dx_giant_clam_diet_simple', 'Algae partners that live with the clam give it energy. The clam also filters tiny bits from the water.')),
         behavior: __alloT("stem.coralreef.dx_giant_clam_behavior", "Small mantle eyes help detect approaching dark objects and dimming. The soft mantle and siphons can withdraw toward the protective shell. These simple eyes do not provide the detailed vision of a fish."),
         observe: __alloT("stem.coralreef.dx_giant_clam_observe", "Choose Above and zoom in to find small dark-centred eyes along the living mantle margins. They are separate from the larger water openings: the long inhalant slit and the raised exhalant siphon. The model includes only a sample of the real eye count."),
         sources: ["dx-oca-giant_clam","brahmi2021","dx-clam-eyes-study"]
       },
       crown_of_thorns: {
-        habitat: __alloT("stem.coralreef.dx_crown_of_thorns_habitat", "Coral-rich reef areas, often sheltered within branches or beneath plates during the day."),
-        diet: __alloT("stem.coralreef.dx_crown_of_thorns_diet", "Adults digest living coral tissue by spreading an everted stomach over it. Early juveniles commonly feed on coralline algae before switching to coral; the illustrated animal is an adult."),
-        behavior: __alloT("stem.coralreef.dx_crown_of_thorns_behavior", "Moves using small tube feet underneath its arms. Feeding removes coral tissue and leaves pale scars of exposed skeleton. Its ecological effect depends on abundance and reef conditions."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_crown_of_thorns_habitat', 'Coral-rich reef areas, often sheltered within branches or beneath plates during the day.'), __alloT('stem.coralreef.dx_crown_of_thorns_habitat_simple', 'It lives on parts of the reef with lots of coral. During the day, it often hides in among coral branches. Or it hides under flat coral plates.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_crown_of_thorns_diet', 'Adults digest living coral tissue by spreading an everted stomach over it. Early juveniles commonly feed on coralline algae before switching to coral; the illustrated animal is an adult.'), __alloT('stem.coralreef.dx_crown_of_thorns_diet_simple', 'Adults push their stomach out of the body and spread it over living coral. The stomach digests the coral\'s soft tissue. Very young sea stars commonly eat coralline algae, a hard, crusty kind of algae, before they switch to coral. The animal in the picture is an adult.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_crown_of_thorns_behavior', 'Moves using small tube feet underneath its arms. Feeding removes coral tissue and leaves pale scars of exposed skeleton. Its ecological effect depends on abundance and reef conditions.'), __alloT('stem.coralreef.dx_crown_of_thorns_behavior_simple', 'It moves on small tube feet under its arms. Tube feet are tiny feet that sea stars have. When it feeds, it removes the living tissue of the coral. This leaves pale scars where the bare skeleton shows. Its effect on the reef depends on how many there are. It also depends on the state of the reef.')),
         observe: __alloT("stem.coralreef.dx_crown_of_thorns_observe", "Compare Above with Below in the study viewer: the long defensive spines are on the back, while paired tube feet lie under the arms. The central oral surface is shown at rest, with the stomach inside the body."),
         sources: ["nps-cots","dx-cots-outbreaks","dx-cots-life-stages","dx-noaa-star-tube-feet"]
       },
       blue_sea_star: {
-        habitat: __alloT("stem.coralreef.dx_blue_sea_star_habitat", "Reef surfaces, including rock, rubble and dead coral skeletons."),
-        diet: __alloT("stem.coralreef.dx_blue_sea_star_diet", "Grazes organic films and detritus on reef surfaces; feeding can be difficult to see directly."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_blue_sea_star_habitat', 'Reef surfaces, including rock, rubble and dead coral skeletons.'), __alloT('stem.coralreef.dx_blue_sea_star_habitat_simple', 'It lives on the surface of the reef. It is found on rock, on rubble, and on the skeletons of dead coral. Rubble is broken bits of coral and rock. A skeleton is the hard part of a coral.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_blue_sea_star_diet', 'Grazes organic films and detritus on reef surfaces; feeding can be difficult to see directly.'), __alloT('stem.coralreef.dx_blue_sea_star_diet_simple', 'It grazes, or nibbles, on thin films and detritus on reef surfaces. The films are made of living matter. Detritus is bits of dead matter. Its feeding can be hard to see directly.')),
         behavior: __alloT("stem.coralreef.dx_blue_sea_star_behavior", "Moves slowly over the bottom; eyes near its arm tips help it find nearby reef habitat."),
         observe: __alloT("stem.coralreef.dx_blue_sea_star_observe", "Count the five long, rounded arms. In the study viewer, use Below to look for paired tube feet and the tiny sensory structures at the arm tips. The eyes are close-inspection features, not large face-like eyes."),
         sources: ["dx-linckia-study"]
@@ -18137,19 +18749,19 @@
       nudibranch: {
         habitat: __alloT("stem.coralreef.dx_nudibranch_habitat", "Reef surfaces where its sponge food grows, often easy to miss among small reef organisms."),
         diet: __alloT("stem.coralreef.dx_nudibranch_diet", "Feeds on sponges, taking its food from attached growth on the reef."),
-        behavior: __alloT("stem.coralreef.dx_nudibranch_behavior", "Crawls on a muscular foot beneath the overhanging mantle. The paired rhinophores near the head sample chemicals in the water; the feathery rear gill crown serves a different function, breathing."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_nudibranch_behavior', 'Crawls on a muscular foot beneath the overhanging mantle. The paired rhinophores near the head sample chemicals in the water; the feathery rear gill crown serves a different function, breathing.'), __alloT('stem.coralreef.dx_nudibranch_behavior_simple', 'It crawls on a muscular foot. The mantle, the soft top layer of its body, hangs over the foot. Near its head is a pair of rhinophores, which are feelers. They test the water for chemicals. The feathery crown of gills at its back has a different job. It is used for breathing.')),
         observe: __alloT("stem.coralreef.dx_nudibranch_observe", "Use Rear to find the short foot tail projecting beyond the mantle, with a yellow-orange margin, then Below to inspect the pale sole. Compare the front rhinophores with the rear gill crown. The fine speckles in the blue areas, black lines and mantle border remain important identification clues."),
         sources: ["dx-museum-nudibranch","dx-chromodoris-chemical-defence","dx-slug-foot-pattern","dx-slug-chemical-senses"]
       },
       cleaner_shrimp: {
         habitat: __alloT("stem.coralreef.dx_cleaner_shrimp_habitat", "Reef crevices and ledges that serve as cleaning stations for visiting fishes."),
         diet: __alloT("stem.coralreef.dx_cleaner_shrimp_diet", "An omnivore that eats parasites and dead tissue from fish, as well as other available food. Cleaning is one way it obtains a meal."),
-        behavior: __alloT("stem.coralreef.dx_cleaner_shrimp_behavior", "Long white antennae advertise the station and explore the space around its body."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_cleaner_shrimp_behavior', 'Long white antennae advertise the station and explore the space around its body.'), __alloT('stem.coralreef.dx_cleaner_shrimp_behavior_simple', 'It has long white antennae, or feelers. They show fish where its cleaning station is. That is the spot where fish come to be cleaned. The feelers also feel the space around its body.')),
         observe: __alloT("stem.coralreef.dx_cleaner_shrimp_observe", "In the study viewer, compare Front and Below to find the stalked eyes, short rostrum and tiny claws. Follow the white back stripe between the red bands, then compare it with the long white antennae."),
         sources: ["dx-aop-cleaner_shrimp","dx-oca-cleaner-shrimp-anatomy"]
       },
       christmas_tree_worm: {
-        habitat: __alloT("stem.coralreef.dx_christmas_tree_worm_habitat", "A hard calcium-carbonate tube usually embedded in a living coral colony. The worm secretes its tube, and the growing host coral surrounds it, leaving the entrance exposed."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_christmas_tree_worm_habitat', 'A hard calcium-carbonate tube usually embedded in a living coral colony. The worm secretes its tube, and the growing host coral surrounds it, leaving the entrance exposed.'), __alloT('stem.coralreef.dx_christmas_tree_worm_habitat_simple', 'It lives in a hard tube made of calcium carbonate, a chalky material. The tube is usually set into a living coral colony. That coral is called its host. The worm makes its own tube. The growing host coral surrounds it. Only the opening of the tube is left showing.')),
         diet: __alloT("stem.coralreef.dx_christmas_tree_worm_diet", "The twin spiral crowns trap drifting plankton and also exchange gases for breathing."),
         behavior: __alloT("stem.coralreef.dx_christmas_tree_worm_behavior", "Can withdraw its crowns rapidly into the tube and close the entrance with a protective lid."),
         observe: __alloT("stem.coralreef.dx_christmas_tree_worm_observe", "Find the two spiral crowns sharing one tube entrance. In the study viewer, use Above to look for the pale tube rim and its small spiny plug, called an operculum. Colour alone does not identify the exact species."),
@@ -18164,7 +18776,7 @@
       },
       sea_cucumber: {
         habitat: __alloT("stem.coralreef.dx_sea_cucumber_habitat", "Shallow tropical reef sand and rubble, with shelter beneath stones or coral slabs."),
-        diet: __alloT("stem.coralreef.dx_sea_cucumber_diet", "Swallows sediment to digest organic films and other material coating its grains."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_sea_cucumber_diet', 'Swallows sediment to digest organic films and other material coating its grains.'), __alloT('stem.coralreef.dx_sea_cucumber_diet_simple', 'It swallows sediment, the sand and mud on the sea floor. It digests the thin films of living matter on the grains. It also digests other material that coats the grains.')),
         behavior: __alloT("stem.coralreef.dx_sea_cucumber_behavior", "Its oral tentacles collect sediment from the bottom. Each ends in a small lobed feeding pad, a shape called peltate. The separate tube feet help it move. The model shows extended tentacles and gentle body movement; collecting sediment and bringing it to the mouth are not animated."),
         observe: __alloT("stem.coralreef.dx_sea_cucumber_observe", "Compare the dark back with the pink underside. Use Below and zoom toward the front mouth to find twenty short tentacles ending in lobed pads. Follow the underside rearward to the smaller tube feet, which serve movement rather than feeding. The model shows the tentacles extended."),
         sources: ["dx-wa-sea_cucumber","dx-fao-sea-cucumber","dx-slb-sea-cucumber"]
@@ -18177,271 +18789,271 @@
         sources: ["vanoppen2005","dx-seahorse-fan-hosts","dx-gorgonian-polyp-anatomy"]
       },
       barrel_sponge: {
-        habitat: __alloT("stem.coralreef.dx_barrel_sponge_habitat", "Attached to reef substrate, with its wide opening projecting into the surrounding water."),
-        diet: __alloT("stem.coralreef.dx_barrel_sponge_diet", "Pumps water through its porous body, taking dissolved organic matter, detritus and microscopic food."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_barrel_sponge_habitat', 'Attached to reef substrate, with its wide opening projecting into the surrounding water.'), __alloT('stem.coralreef.dx_barrel_sponge_habitat_simple', 'It is attached to the reef surface it grows on. Its wide opening sticks out into the water around it.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_barrel_sponge_diet', 'Pumps water through its porous body, taking dissolved organic matter, detritus and microscopic food.'), __alloT('stem.coralreef.dx_barrel_sponge_diet_simple', 'It pumps water through its body, which is full of tiny holes. From the water it takes food too small to see. It also takes detritus, which is bits of dead stuff. And it takes in matter from living things that has dissolved in the water.')),
         behavior: __alloT("stem.coralreef.dx_barrel_sponge_behavior", "Water exits through the large opening; the barrel is one living sponge, not an empty pot."),
         observe: __alloT("stem.coralreef.dx_barrel_sponge_observe", "Use Above to look into the wide water outlet, called an osculum, then compare the rough outer wall with the inner cavity. Water is drawn through small pores and leaves through the outlet; the opening is not a mouth."),
         sources: ["dx-sponge-feeding","dx-barrel-lineages"]
       },
       soft_coral: {
         habitat: __alloT("stem.coralreef.dx_soft_coral_habitat", "Reef places with flowing water that carries suspended food to its branching crown."),
-        diet: __alloT("stem.coralreef.dx_soft_coral_diet", "Captures drifting food with its polyps; Dendronephthya lacks sunlight-feeding algal partners."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_soft_coral_diet', 'Captures drifting food with its polyps; Dendronephthya lacks sunlight-feeding algal partners.'), __alloT('stem.coralreef.dx_soft_coral_diet_simple', 'It catches drifting food with its polyps, the small animals that make up the coral. Dendronephthya does not have algae partners that make food from sunlight.')),
         behavior: __alloT("stem.coralreef.dx_soft_coral_behavior", "Many polyps form one connected colony. Water pressure helps support the branches, while tiny sclerites reinforce the tissues. The colony can change its degree of inflation."),
         observe: __alloT("stem.coralreef.dx_soft_coral_observe", "Zoom in on a polyp to trace its eight tentacles. High detail also shows small side branches, called pinnules, that give the tentacles their feather-like shape. Compare this living colony with the flatter net of a sea fan."),
         sources: ["fabricius1995","dx-soft-coral-herbivory","dx-dendronephthya-anatomy","dx-am-octocoral-tentacles"]
       },
       brain_coral: {
-        habitat: __alloT("stem.coralreef.dx_brain_coral_habitat", "A variety of reef settings, with Platygyra daedalea especially common near back-reef margins."),
-        diet: __alloT("stem.coralreef.dx_brain_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
-        behavior: __alloT("stem.coralreef.dx_brain_coral_behavior", "Many connected polyps build a shared limestone colony with winding walls and valleys."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_brain_coral_habitat', 'A variety of reef settings, with Platygyra daedalea especially common near back-reef margins.'), __alloT('stem.coralreef.dx_brain_coral_habitat_simple', 'Many kinds of places on a reef. Platygyra daedalea is especially common near back-reef margins. These are the edges of the back reef, the calm side of a reef that faces land.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_brain_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_brain_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_brain_coral_behavior', 'Many connected polyps build a shared limestone colony with winding walls and valleys.'), __alloT('stem.coralreef.dx_brain_coral_behavior_simple', 'Many polyps, the small soft animals that make up a coral, are joined together. They build one shared colony out of limestone, a kind of rock. The colony has winding walls and valleys.')),
         observe: __alloT("stem.coralreef.dx_brain_coral_observe", "Trace one valley and inspect the ragged wall ridges; a boulder coral has much smaller separate cups."),
         sources: ["dx-cotw-brain_coral","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       staghorn_coral: {
-        habitat: __alloT("stem.coralreef.dx_staghorn_coral_habitat", "Reef slopes and lagoons where branching Acropora forms thickets with sheltered spaces between branches."),
-        diet: __alloT("stem.coralreef.dx_staghorn_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_habitat', 'Reef slopes and lagoons where branching Acropora forms thickets with sheltered spaces between branches.'), __alloT('stem.coralreef.dx_staghorn_coral_habitat_simple', 'Reef slopes and lagoons. A lagoon is calm water inside a reef. There, branching Acropora forms thickets. A thicket is a thick clump of branches. It has sheltered spaces between the branches.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_staghorn_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
         behavior: __alloT("stem.coralreef.dx_staghorn_coral_behavior", "Growing branches extend the colony and create shelter for small reef fishes."),
         observe: __alloT("stem.coralreef.dx_staghorn_coral_observe", "Look for a larger cup at each branch tip and many smaller cups along the sides."),
         sources: ["dx-cotw-staghorn_coral","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       table_coral: {
         habitat: __alloT("stem.coralreef.dx_table_coral_habitat", "Upper reef slopes and outer reef flats, where flat branching colonies form broad tables."),
-        diet: __alloT("stem.coralreef.dx_table_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_table_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_table_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
         behavior: __alloT("stem.coralreef.dx_table_coral_behavior", "Fine upward branchlets form a living canopy that shades the water beneath it."),
         observe: __alloT("stem.coralreef.dx_table_coral_observe", "Examine the brush-like upper surface and central support before comparing it with a layered foliose coral."),
         sources: ["dx-cotw-table_coral","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       mushroom_coral: {
         habitat: __alloT("stem.coralreef.dx_mushroom_coral_habitat", "Reef slopes and lagoons, on sand or rubble where the adult lies loose on the bottom."),
-        diet: __alloT("stem.coralreef.dx_mushroom_coral_diet", "Algal partners supply energy, and the animal polyp also captures tiny drifting food."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_mushroom_coral_diet', 'Algal partners supply energy, and the animal polyp also captures tiny drifting food.'), __alloT('stem.coralreef.dx_mushroom_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyp is its soft animal part. The polyp also catches tiny bits of food that drift by.')),
         behavior: __alloT("stem.coralreef.dx_mushroom_coral_behavior", "A single large polyp forms the disc; adults are not permanently cemented to the reef."),
         observe: __alloT("stem.coralreef.dx_mushroom_coral_observe", "Follow the radiating ridges toward the central slit-shaped mouth while leaving the disc undisturbed."),
         sources: ["dx-cotw-mushroom_coral","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       boulder_coral: {
-        habitat: __alloT("stem.coralreef.dx_boulder_coral_habitat", "Back-reef margins, lagoons and fringing reefs, where massive Porites builds rounded colonies."),
-        diet: __alloT("stem.coralreef.dx_boulder_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
-        behavior: __alloT("stem.coralreef.dx_boulder_coral_behavior", "A large colony grows slowly as many small polyps add to a shared limestone framework."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_boulder_coral_habitat', 'Back-reef margins, lagoons and fringing reefs, where massive Porites builds rounded colonies.'), __alloT('stem.coralreef.dx_boulder_coral_habitat_simple', 'It lives at the edges of the back reef, the side away from the open sea. It also lives in lagoons, which are calm water inside a reef. And it lives on fringing reefs, which grow close to the shore. There, massive Porites builds rounded colonies. Massive means it grows as a solid lump.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_boulder_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_boulder_coral_diet_simple', 'Its algae partners give it energy. Its polyps, the small animals that make up the coral, also catch tiny drifting food.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_boulder_coral_behavior', 'A large colony grows slowly as many small polyps add to a shared limestone framework.'), __alloT('stem.coralreef.dx_boulder_coral_behavior_simple', 'A large colony grows slowly. It is made of many small polyps. Polyps are small, soft animals. Together they add to a shared frame made of limestone. Limestone is a hard, rocky material.')),
         observe: __alloT("stem.coralreef.dx_boulder_coral_observe", "Look for tiny close-packed cups on a smooth lumpy surface and search for embedded Christmas tree worms."),
         sources: ["dx-cotw-boulder_coral","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       cauliflower_coral: {
-        habitat: __alloT("stem.coralreef.dx_cauliflower_coral_habitat", "Shallow reef environments where water movement helps shape its compact branching form."),
-        diet: __alloT("stem.coralreef.dx_cauliflower_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
-        behavior: __alloT("stem.coralreef.dx_cauliflower_coral_behavior", "Exposed colonies tend to have thicker, more compact branches than colonies in sheltered places."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_cauliflower_coral_habitat', 'Shallow reef environments where water movement helps shape its compact branching form.'), __alloT('stem.coralreef.dx_cauliflower_coral_habitat_simple', 'It lives in shallow parts of the reef. There, moving water helps give it a compact shape, a tight clump of branches.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_cauliflower_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_cauliflower_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_cauliflower_coral_behavior', 'Exposed colonies tend to have thicker, more compact branches than colonies in sheltered places.'), __alloT('stem.coralreef.dx_cauliflower_coral_behavior_simple', 'Some colonies grow in exposed, open places. They tend to have thicker branches than colonies in sheltered places. Sheltered places are safe from rough water. Their branches also tend to be more compact, or packed closer together.')),
         observe: __alloT("stem.coralreef.dx_cauliflower_coral_observe", "Check for raised irregular knobs covering stout branches, not just smooth antler-like forks."),
         sources: ["cotw-pocillopora","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       foliose_coral: {
         habitat: __alloT("stem.coralreef.dx_foliose_coral_habitat", "Protected upper reef slopes, where thin plates can form overlapping tiers or curling whorls."),
-        diet: __alloT("stem.coralreef.dx_foliose_coral_diet", "Algal partners supply energy, and the animal polyps also capture tiny drifting food."),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_foliose_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_foliose_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
         behavior: __alloT("stem.coralreef.dx_foliose_coral_behavior", "A shared stony skeleton grows outward in thin sheets with paler growing margins."),
         observe: __alloT("stem.coralreef.dx_foliose_coral_observe", "Look along a plate for radial ridges and rows of tiny cups between them."),
         sources: ["cotw-montipora","dx-noaa-corals","dx-noaa-coral-algae"]
       },
       reef_star: {
-        habitat: __alloT("stem.coralreef.dx_reef_star_habitat", "Restoration areas with unstable coral rubble, where linked frames can hold the bottom steady."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_reef_star_habitat', 'Restoration areas with unstable coral rubble, where linked frames can hold the bottom steady.'), __alloT('stem.coralreef.dx_reef_star_habitat_simple', 'Restoration areas, where people help a reef grow back. The bottom there is unstable coral rubble. That means loose, broken bits of coral that move. Linked frames can hold the bottom steady.')),
         diet: __alloT("stem.coralreef.dx_reef_star_diet", "This is restoration equipment. Corals attached to it feed and grow as living animals."),
         behavior: __alloT("stem.coralreef.dx_reef_star_behavior", "The frame supports planted fragments and gives settling coral larvae a more stable surface."),
         observe: __alloT("stem.coralreef.dx_reef_star_observe", "Find the six-sided coated frame and the small coral fragments tied along its bars."),
         sources: ["lange","williams"]
       },
       reef_ball: {
-        habitat: __alloT("stem.coralreef.dx_reef_ball_habitat", "Prepared reef or restoration areas, placed on the seafloor as a hollow shelter structure."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_reef_ball_habitat', 'Prepared reef or restoration areas, placed on the seafloor as a hollow shelter structure.'), __alloT('stem.coralreef.dx_reef_ball_habitat_simple', 'It is placed on the seafloor in prepared reef areas or restoration areas. In restoration areas, people help a reef grow back. It sits there as a hollow structure that gives shelter.')),
         diet: __alloT("stem.coralreef.dx_reef_ball_diet", "This concrete structure does not feed. Attached organisms obtain food from the surrounding water."),
-        behavior: __alloT("stem.coralreef.dx_reef_ball_behavior", "Holes and a hollow interior provide shelter while the outer surface can be colonized."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_reef_ball_behavior', 'Holes and a hollow interior provide shelter while the outer surface can be colonized.'), __alloT('stem.coralreef.dx_reef_ball_behavior_simple', 'Its holes and its hollow middle give shelter, a safe place to hide. Sea life can also settle and grow on its outer surface.')),
         observe: __alloT("stem.coralreef.dx_reef_ball_observe", "Look for the rounded dome and repeated openings, then notice which animals are actually using them."),
         sources: ["hylkema"]
       },
       coral_tree_nursery: {
-        habitat: __alloT("stem.coralreef.dx_coral_tree_nursery_habitat", "In-water coral nurseries, where fragments can be grown above the seabed before outplanting."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_coral_tree_nursery_habitat', 'In-water coral nurseries, where fragments can be grown above the seabed before outplanting.'), __alloT('stem.coralreef.dx_coral_tree_nursery_habitat_simple', 'Coral nurseries in the water. Small pieces of coral can be grown there, above the seabed. Then they are moved out and planted on a reef. This is called outplanting.')),
         diet: __alloT("stem.coralreef.dx_coral_tree_nursery_diet", "The frame does not feed. Its suspended living corals use sunlight and capture food."),
         behavior: __alloT("stem.coralreef.dx_coral_tree_nursery_behavior", "Hanging fragments are kept off the bottom while they grow to a size suitable for planting."),
         observe: __alloT("stem.coralreef.dx_coral_tree_nursery_observe", "Identify the central pole, crossbars and hanging lines, then distinguish nursery fragments from reef-attached colonies."),
         sources: ["bost"]
       },
       firefish: {
-        habitat: __alloT("stem.coralreef.dx_firefish_habitat", "Sandy patches and burrows on the upper parts of outer reef slopes in the Indo-Pacific."),
-        diet: __alloT("stem.coralreef.dx_firefish_diet", "Zooplankton carried by the current, including copepods and crustacean larvae."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_firefish_habitat', 'Sandy patches and burrows on the upper parts of outer reef slopes in the Indo-Pacific.'), __alloT('stem.coralreef.dx_firefish_habitat_simple', 'It lives in sandy patches and burrows in the Indo-Pacific. A burrow is a hole or tunnel. These are high up on the outer slopes of the reef.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_firefish_diet', 'Zooplankton carried by the current, including copepods and crustacean larvae.'), __alloT('stem.coralreef.dx_firefish_diet_simple', 'It eats zooplankton, tiny animals that the current carries along. These include copepods and crustacean larvae. Larvae are babies. Here they are the babies of shrimp, crabs and their kind.')),
         behavior: __alloT("stem.coralreef.dx_firefish_behavior", "Individuals or pairs hover above the bottom, facing into the current to take drifting prey. They stay near a burrow and dart back inside when disturbed."),
         observe: __alloT("stem.coralreef.dx_firefish_observe", "Compare the tall pennant with its slim body, then check the rounded tail and pale-to-red color change."),
         sources: ["dx-foa-firefish","dx-fao-firefish","dx-cas-firefish"]
       },
       copperband_butterflyfish: {
-        habitat: __alloT("stem.coralreef.dx_copperband_butterflyfish_habitat", "Shallow coastal reefs, rocky shores, bays and estuaries in the Indo-West Pacific, often in sheltered or silty water."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_copperband_butterflyfish_habitat', 'Shallow coastal reefs, rocky shores, bays and estuaries in the Indo-West Pacific, often in sheltered or silty water.'), __alloT('stem.coralreef.dx_copperband_butterflyfish_habitat_simple', 'Shallow reefs near the coast, rocky shores, bays and estuaries in the Indo-West Pacific. An estuary is where a river meets the sea. It is often in calm or muddy water.')),
         diet: __alloT("stem.coralreef.dx_copperband_butterflyfish_diet", "Small animals living on the bottom, reached by probing cracks and holes in the reef."),
         behavior: __alloT("stem.coralreef.dx_copperband_butterflyfish_behavior", "Encountered singly or in pairs; adults form pairs during breeding."),
         observe: __alloT("stem.coralreef.dx_copperband_butterflyfish_observe", "Use Side to find the real eye within its dark-edged orange bar. Follow the body toward the tail to find the black false eyespot on the soft part of the dorsal fin. That eyespot is a colour marking."),
         sources: ["dx-foa-copperband_butterflyfish","dx-am-copperband_butterflyfish","dx-cas-copperband_butterflyfish","dx-ga-copperband_butterflyfish"]
       },
       spotted_garden_eel: {
-        habitat: __alloT("stem.coralreef.dx_spotted_garden_eel_habitat", "Sandy flats and slopes bordering tropical Indo-Pacific coral reefs, often in colonies."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_spotted_garden_eel_habitat', 'Sandy flats and slopes bordering tropical Indo-Pacific coral reefs, often in colonies.'), __alloT('stem.coralreef.dx_spotted_garden_eel_habitat_simple', 'Flat and sloping sand next to warm coral reefs in the Indo-Pacific. It often lives in colonies, groups that live close together.')),
         diet: __alloT("stem.coralreef.dx_spotted_garden_eel_diet", "Zooplankton carried past its burrow by the current."),
-        behavior: __alloT("stem.coralreef.dx_spotted_garden_eel_behavior", "Rises partway from its burrow to take food carried by the current, often alongside neighbouring eels. In the wild it can retreat rapidly when threatened. The model illustrates gentle current bending while its attachment remains fixed; a full retreat into sand is not animated."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_spotted_garden_eel_behavior', 'Rises partway from its burrow to take food carried by the current, often alongside neighbouring eels. In the wild it can retreat rapidly when threatened. The model illustrates gentle current bending while its attachment remains fixed; a full retreat into sand is not animated.'), __alloT('stem.coralreef.dx_spotted_garden_eel_behavior_simple', 'It rises part of the way out of its burrow. Then it takes food carried by the current. It often does this next to nearby eels. In the wild, it can retreat, or pull back, quickly when it is in danger. The model shows gentle current bending, while its attachment remains fixed. The eel bends in the water. But the place where it is held does not move. A full retreat into the sand is not animated.')),
         observe: __alloT("stem.coralreef.dx_spotted_garden_eel_observe", "Choose Side and zoom toward the curved head to inspect the eyes and narrow mouth. Follow the fine spots down to the larger dark patch around the gill opening. Compare this plankton-feeding burrow dweller with the heavier, fish-eating giant moray; only part of the garden eel is above the sand."),
         sources: ["dx-am-spotted_garden_eel","dx-cas-spotted_garden_eel","dx-foa-spotted_garden_eel","dx-ga-spotted_garden_eel"]
       },
       banded_pipefish: {
-        habitat: __alloT("stem.coralreef.dx_banded_pipefish_habitat", "Sheltered tropical western Pacific reefs and lagoons, especially caves, crevices and spaces beneath ledges."),
-        diet: __alloT("stem.coralreef.dx_banded_pipefish_diet", "Its detailed wild diet is poorly documented; it is thought to take tiny crustaceans, like other pipefishes."),
-        behavior: __alloT("stem.coralreef.dx_banded_pipefish_behavior", "Often found as a pair near shelter, though individuals and small groups also occur. Males brood eggs attached to their trunk without an enclosing pouch; this study specimen does not show a male carrying eggs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_banded_pipefish_habitat', 'Sheltered tropical western Pacific reefs and lagoons, especially caves, crevices and spaces beneath ledges.'), __alloT('stem.coralreef.dx_banded_pipefish_habitat_simple', 'Calm, sheltered reefs and lagoons in the warm western Pacific. It lives most of all in caves, cracks and spaces under rock ledges.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_banded_pipefish_diet', 'Its detailed wild diet is poorly documented; it is thought to take tiny crustaceans, like other pipefishes.'), __alloT('stem.coralreef.dx_banded_pipefish_diet_simple', 'Not much is written down about what it eats in the wild. Scientists think it eats tiny crustaceans, like other pipefishes do. Crustaceans are animals like crabs and shrimp.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_banded_pipefish_behavior', 'Often found as a pair near shelter, though individuals and small groups also occur. Males brood eggs attached to their trunk without an enclosing pouch; this study specimen does not show a male carrying eggs.'), __alloT('stem.coralreef.dx_banded_pipefish_behavior_simple', 'It is often found as a pair near shelter. But single fish and small groups are also seen. The males brood, or carry and guard, the eggs. The eggs stick to the male\'s trunk, the main part of his body. No pouch covers them. This study specimen does not show a male carrying eggs.')),
         observe: __alloT("stem.coralreef.dx_banded_pipefish_observe", "Choose Side and zoom to the small mouth at the end of the long tubular snout. Trace the fine armour rings separately from the broader colour bands, then inspect the tail fin’s pale upper and lower margins and central spots. Compare this fin with the spotted seahorse’s curled gripping tail, which has no tail fin. Ring detail is illustrative, not an identification count."),
         sources: ["dx-am-banded_pipefish","dx-foa-banded_pipefish","dx-lkc-banded_pipefish","dx-ea-banded_pipefish","dx-wa-pipefish-anatomy"]
       },
       yellow_longnose_butterflyfish: {
-        habitat: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_habitat", "Reef flats, crests, slopes and sheltered ledges across the tropical Indo-Pacific and into the eastern Pacific."),
-        diet: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_diet", "Small crustaceans, hydroids, worm tentacles and echinoderm tube feet; also fish eggs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_yellow_longnose_butterflyfish_habitat', 'Reef flats, crests, slopes and sheltered ledges across the tropical Indo-Pacific and into the eastern Pacific.'), __alloT('stem.coralreef.dx_yellow_longnose_butterflyfish_habitat_simple', 'Reef flats, reef crests, slopes and calm ledges. A reef crest is the high edge where waves break. It lives across the warm Indo-Pacific and into the eastern Pacific.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_yellow_longnose_butterflyfish_diet', 'Small crustaceans, hydroids, worm tentacles and echinoderm tube feet; also fish eggs.'), __alloT('stem.coralreef.dx_yellow_longnose_butterflyfish_diet_simple', 'Small crustaceans, animals related to crabs and shrimp. It also eats hydroids, small animals related to jellyfish. It eats worm tentacles too. It also eats tube feet, the tiny feet of echinoderms. Echinoderms are the animal group that includes sea stars. It eats fish eggs as well.')),
         behavior: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_behavior", "Often encountered in pairs, with single fish and small groups also reported."),
         observe: __alloT("stem.coralreef.dx_yellow_longnose_butterflyfish_observe", "Look for the black spot on the rear anal fin, below the tail base. The eye is about midway between the snout tip and pectoral-fin base. The similar Forcipiger longirostris has a longer snout and usually rows of small dark spots on the chest."),
         sources: ["dx-am-yellow_longnose_butterflyfish","dx-foa-yellow_longnose_butterflyfish","dx-wa-yellow_longnose_butterflyfish","dx-iucn-yellow_longnose_butterflyfish"]
       },
       pajama_cardinalfish: {
-        habitat: __alloT("stem.coralreef.dx_pajama_cardinalfish_habitat", "Sheltered bays, lagoons and coastal reefs in the eastern Indian Ocean and western Pacific, near branching live corals."),
-        diet: __alloT("stem.coralreef.dx_pajama_cardinalfish_diet", "Small shrimps, crabs and other crustaceans; also zooplankton."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_pajama_cardinalfish_habitat', 'Sheltered bays, lagoons and coastal reefs in the eastern Indian Ocean and western Pacific, near branching live corals.'), __alloT('stem.coralreef.dx_pajama_cardinalfish_habitat_simple', 'Bays that are sheltered from rough water, lagoons and reefs near the coast. A lagoon is calm water behind a reef. It lives in the eastern Indian Ocean and western Pacific. It stays near live corals that grow as branches.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_pajama_cardinalfish_diet', 'Small shrimps, crabs and other crustaceans; also zooplankton.'), __alloT('stem.coralreef.dx_pajama_cardinalfish_diet_simple', 'It eats small shrimps and crabs. It also eats other crustaceans, the group that shrimps and crabs belong to. It eats zooplankton too. These are tiny animals that drift in the water.')),
         behavior: __alloT("stem.coralreef.dx_pajama_cardinalfish_behavior", "Groups hover close to branching corals by day; fish leave that shelter at night to feed near the bottom."),
         observe: __alloT("stem.coralreef.dx_pajama_cardinalfish_observe", "Use Side and zoom to look for the red bar through the iris, around the dark pupil. Then compare the yellow head, broad dark body bar and spotted rear body. Rotate the specimen to see the two separate dorsal fins."),
         sources: ["dx-foa-pajama_cardinalfish","dx-oregon-pajama_cardinalfish","dx-ga-pajama_cardinalfish","dx-fao-pajama_cardinalfish","dx-iucn-pajama_cardinalfish"]
       },
       banggai_cardinalfish: {
-        habitat: __alloT("stem.coralreef.dx_banggai_cardinalfish_habitat", "Calm, shallow reefs and seagrass beds native to Indonesia’s Banggai Archipelago; introduced populations also occur outside that natural range."),
-        diet: __alloT("stem.coralreef.dx_banggai_cardinalfish_diet", "Mainly copepods, with other small plankton and bottom-dwelling crustaceans also taken."),
-        behavior: __alloT("stem.coralreef.dx_banggai_cardinalfish_behavior", "Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles. A brooding male carries developing young inside an enlarged mouth cavity; brooding is not animated in this study model."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_banggai_cardinalfish_habitat', 'Calm, shallow reefs and seagrass beds native to Indonesia’s Banggai Archipelago; introduced populations also occur outside that natural range.'), __alloT('stem.coralreef.dx_banggai_cardinalfish_habitat_simple', 'Calm, shallow reefs and seagrass beds. It is native to Indonesia’s Banggai Archipelago, a group of islands. Native means it lives there naturally. Groups that were brought in also live outside that home area.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_banggai_cardinalfish_diet', 'Mainly copepods, with other small plankton and bottom-dwelling crustaceans also taken.'), __alloT('stem.coralreef.dx_banggai_cardinalfish_diet_simple', 'It mainly eats copepods. These are tiny animals related to shrimp. It also eats other small plankton, tiny living things that drift in the water. And it eats crustaceans that live on the bottom. Crustaceans have a hard outer shell, like shrimp and crabs.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_banggai_cardinalfish_behavior', 'Often hovers in groups near shelter. Young fish can hide among long-spined sea urchins or anemone tentacles. A brooding male carries developing young inside an enlarged mouth cavity; brooding is not animated in this study model.'), __alloT('stem.coralreef.dx_banggai_cardinalfish_behavior_simple', 'It often hovers in groups near a place to hide. Young fish can hide among long-spined sea urchins or among anemone tentacles. Tentacles are soft parts like arms. The male carries the growing young inside his mouth. This is called brooding. The space inside his mouth is enlarged, or made bigger. In this study model, brooding is not animated.')),
         observe: __alloT("stem.coralreef.dx_banggai_cardinalfish_observe", "Use Side to compare the three dark bars and long fin tips, then turn the fish to inspect white dots on the soft dorsal, anal, pelvic and tail fins. Dot patterns vary between individual fish; this study specimen uses a simplified illustrative pattern."),
         sources: ["dx-noaa-banggai_cardinalfish","dx-na-banggai_cardinalfish","dx-ga-banggai_cardinalfish","dx-iucn-banggai_cardinalfish","dx-fao-banggai-development"]
       },
       giant_triton: {
-        habitat: __alloT("stem.coralreef.dx_giant_triton_habitat", "Hard and sandy bottoms around coral reefs across the tropical Indo-Pacific."),
-        diet: __alloT("stem.coralreef.dx_giant_triton_diet", "Sea stars, including crown-of-thorns, and other echinoderms such as sea cucumbers."),
-        behavior: __alloT("stem.coralreef.dx_giant_triton_behavior", "Crawls on a broad muscular foot and uses chemical cues to locate prey such as sea stars. AIMS also studied how crown-of-thorns respond to the snail’s scent; those experiments do not by themselves demonstrate effective outbreak control."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_giant_triton_habitat', 'Hard and sandy bottoms around coral reefs across the tropical Indo-Pacific.'), __alloT('stem.coralreef.dx_giant_triton_habitat_simple', 'It lives on hard bottoms and sandy bottoms around coral reefs. It is found across the warm Indo-Pacific.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_giant_triton_diet', 'Sea stars, including crown-of-thorns, and other echinoderms such as sea cucumbers.'), __alloT('stem.coralreef.dx_giant_triton_diet_simple', 'Sea stars, including the crown-of-thorns. It also eats other echinoderms, such as sea cucumbers. Echinoderm is a group name that means spiny skin.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_giant_triton_behavior', 'Crawls on a broad muscular foot and uses chemical cues to locate prey such as sea stars. AIMS also studied how crown-of-thorns respond to the snail’s scent; those experiments do not by themselves demonstrate effective outbreak control.'), __alloT('stem.coralreef.dx_giant_triton_behavior_simple', 'It crawls on a broad foot made of muscle. It uses chemical cues, like smells, to find prey such as sea stars. Prey are animals it hunts. Scientists at AIMS also studied how crown-of-thorns react to the snail\'s scent. On their own, those tests do not prove a good way to control outbreaks.')),
         observe: __alloT("stem.coralreef.dx_giant_triton_observe", "Choose Side to follow the spiral ridges toward the pointed spire, then rotate toward Below to inspect the orange shell aperture, striped edge and small lip teeth. Beneath the shell, find the head, muscular foot and short feeding tube, or proboscis. The mouth is at the proboscis tip; the large shell aperture is a different opening. Compare its broad opening with the textile cone’s long narrow aperture. The model shows a relaxed illustrative pose, without feeding or internal mouth structures."),
         sources: ["dx-aims-giant_triton","dx-wa-giant_triton","dx-fao-giant_triton","dx-noaa-giant_triton","dx-csiro-giant_triton","dx-bose-giant_triton"]
       },
       blue_velvet_headshield_slug: {
-        habitat: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_habitat", "Sand around reefs and sandy reef slopes across the tropical Indo-West Pacific."),
-        diet: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_diet", "Small flatworms, including acoels documented in feeding records. It is a specialist predator, rather than an algae grazer."),
-        behavior: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_behavior", "Crawls across the bottom. Individuals may follow another slug’s mucus trail, sometimes before mating."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_habitat', 'Sand around reefs and sandy reef slopes across the tropical Indo-West Pacific.'), __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_habitat_simple', 'It lives on sand around reefs and on sandy reef slopes. Its home is the warm Indo-West Pacific.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_diet', 'Small flatworms, including acoels documented in feeding records. It is a specialist predator, rather than an algae grazer.'), __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_diet_simple', 'Small flatworms. Feeding records show that these include acoels, a kind of small flatworm. It is a hunter that eats only certain prey. It is not an animal that grazes on algae.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_behavior', 'Crawls across the bottom. Individuals may follow another slug’s mucus trail, sometimes before mating.'), __alloT('stem.coralreef.dx_blue_velvet_headshield_slug_behavior_simple', 'It crawls across the bottom. One slug may follow the trail of mucus, or slime, that another slug leaves. Sometimes this happens before they mate.')),
         observe: __alloT("stem.coralreef.dx_blue_velvet_headshield_slug_observe", "Trace the blue outlines, folded side flaps and unequal tail lobes. Compare these with the exposed gill plume and rhinophores on Anna’s chromodoris."),
         sources: ["dx-am-blue_velvet_headshield_slug","dx-lifg-blue_velvet_headshield_slug","dx-wam-blue_velvet_headshield_slug","dx-diet-blue_velvet_headshield_slug","dx-yonow-blue_velvet_headshield_slug"]
       },
       regal_angelfish: {
-        habitat: __alloT("stem.coralreef.dx_regal_angelfish_habitat", "Coral-rich lagoons and seaward reefs, often around caves and ledges. The species ranges from East Africa and the Red Sea across the tropical Indo-Pacific to the Tuamotu region."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_regal_angelfish_habitat', 'Coral-rich lagoons and seaward reefs, often around caves and ledges. The species ranges from East Africa and the Red Sea across the tropical Indo-Pacific to the Tuamotu region.'), __alloT('stem.coralreef.dx_regal_angelfish_habitat_simple', 'Lagoons with lots of coral, and reefs on the side that faces the open sea. A lagoon is calm water inside a reef. It is often found around caves and ledges. Its range starts in East Africa and the Red Sea. It goes across the warm Indo-Pacific to the Tuamotu region.')),
         diet: __alloT("stem.coralreef.dx_regal_angelfish_diet", "Feeds on sponges and tunicates, including sea squirts."),
         behavior: __alloT("stem.coralreef.dx_regal_angelfish_behavior", "Usually encountered alone or in pairs, occasionally in small groups. Young fish shelter in coral cracks and crevices."),
         observe: __alloT("stem.coralreef.dx_regal_angelfish_observe", "Choose Side to follow the adult’s dark-edged pale bars, blue rear dorsal pattern and yellow tail. Compare the emperor angelfish’s finer, mostly horizontal adult stripes. This model has adult markings; the juvenile dorsal eyespot described in the entry is a different life stage."),
         sources: ["dx-am-regal_angelfish","dx-foa-regal_angelfish","dx-phylogeography-regal_angelfish","dx-iucn-regal_angelfish","dx-usgs-emperor-regal_angelfish"]
       },
       mandarin_dragonet: {
-        habitat: __alloT("stem.coralreef.dx_mandarin_dragonet_habitat", "Sheltered reefs and lagoons around the western Pacific, from southern Japan through Southeast Asia to northern Australia and nearby island groups. Often close to coral rubble and other shelter."),
-        diet: __alloT("stem.coralreef.dx_mandarin_dragonet_diet", "Tiny bottom-dwelling invertebrates, including copepods and other small crustaceans picked from sediment and reef crevices."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_mandarin_dragonet_habitat', 'Sheltered reefs and lagoons around the western Pacific, from southern Japan through Southeast Asia to northern Australia and nearby island groups. Often close to coral rubble and other shelter.'), __alloT('stem.coralreef.dx_mandarin_dragonet_habitat_simple', 'It lives on sheltered reefs and in lagoons around the western Pacific. Sheltered means safe from big waves. A lagoon is calm water inside a reef. Its home stretches from southern Japan through Southeast Asia to northern Australia. It also lives around nearby island groups. It is often close to coral rubble and other shelter. Rubble is broken bits of coral and rock.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_mandarin_dragonet_diet', 'Tiny bottom-dwelling invertebrates, including copepods and other small crustaceans picked from sediment and reef crevices.'), __alloT('stem.coralreef.dx_mandarin_dragonet_diet_simple', 'Tiny animals without backbones that live on the bottom. These include copepods and other small crustaceans. Crustaceans have a hard outer shell, like shrimp. It picks them from sand and mud and from cracks in the reef.')),
         behavior: __alloT("stem.coralreef.dx_mandarin_dragonet_behavior", "Usually stays close to the bottom, sometimes in pairs or loose local groups. At dusk, courting pairs may rise together into the water to spawn."),
         observe: __alloT("stem.coralreef.dx_mandarin_dragonet_observe", "Choose Side and follow the winding colour bands across the scaleless skin, then inspect the broad head and blue-edged fan tail. Find the tall first dorsal fin separately from the shorter second dorsal fin. The long first dorsal spine belongs to the adult male shown here; females have a shorter first dorsal fin."),
         sources: ["dx-georgia-mandarin_dragonet","dx-dallas-mandarin_dragonet","dx-field-mandarin_dragonet","dx-smithsonian-mandarin_dragonet","dx-oregon-mandarin_dragonet","dx-iucn-mandarin_dragonet"]
       },
       harlequin_shrimp: {
-        habitat: __alloT("stem.coralreef.dx_harlequin_shrimp_habitat", "Sheltered holes and crevices in tropical coral reefs across the Indian and Pacific oceans, including Hawai‘i and documented eastern Pacific reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_harlequin_shrimp_habitat', 'Sheltered holes and crevices in tropical coral reefs across the Indian and Pacific oceans, including Hawai‘i and documented eastern Pacific reefs.'), __alloT('stem.coralreef.dx_harlequin_shrimp_habitat_simple', 'Sheltered holes and cracks in warm coral reefs. It lives across the Indian and Pacific oceans. This includes Hawai‘i. It has also been recorded on reefs in the eastern Pacific.')),
         diet: __alloT("stem.coralreef.dx_harlequin_shrimp_diet", "Specializes in sea stars, including Linckia species. It eats tube feet and other soft tissue using specialised feeding limbs."),
         behavior: __alloT("stem.coralreef.dx_harlequin_shrimp_behavior", "Often found in pairs near a reef shelter. The petal-like antennules move as the shrimp samples chemical cues from the water."),
         observe: __alloT("stem.coralreef.dx_harlequin_shrimp_observe", "Compare the broad paddles and large blotches with the cleaner shrimp’s long white antennae and striped back. Trace the separate head structures, jointed limbs and curved abdomen rather than relying on colour alone."),
         sources: ["dx-waikiki-harlequin_shrimp","dx-field-harlequin_shrimp","dx-seibt-harlequin_shrimp","dx-worms-harlequin_shrimp","dx-sealifebase-harlequin_shrimp"]
       },
       spotted_seahorse: {
-        habitat: __alloT("stem.coralreef.dx_spotted_seahorse_habitat", "Indo-West Pacific coastal habitats, including Singapore estuaries with seagrass and macroalgae over silty sand. It also occurs around sheltered sandy and reef habitats."),
-        diet: __alloT("stem.coralreef.dx_spotted_seahorse_diet", "Tiny crustaceans and other zooplankton, drawn through the tubular snout by suction."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_spotted_seahorse_habitat', 'Indo-West Pacific coastal habitats, including Singapore estuaries with seagrass and macroalgae over silty sand. It also occurs around sheltered sandy and reef habitats.'), __alloT('stem.coralreef.dx_spotted_seahorse_habitat_simple', 'Places near the coast in the Indo-West Pacific. These include estuaries in Singapore, where a river meets the sea. They have seagrass and seaweed over silty sand, sand mixed with fine mud. It also lives around sheltered sandy places and reefs.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_spotted_seahorse_diet', 'Tiny crustaceans and other zooplankton, drawn through the tubular snout by suction.'), __alloT('stem.coralreef.dx_spotted_seahorse_diet_simple', 'Tiny crustaceans, animals related to crabs and shrimp. It also eats other zooplankton, tiny animals that drift in the water. It sucks them in through its snout, which is shaped like a tube.')),
         behavior: __alloT("stem.coralreef.dx_spotted_seahorse_behavior", "Often grips vegetation or another support with its prehensile tail. Small dorsal and pectoral fins help it move and steer; it can leave its holdfast to swim."),
         observe: __alloT("stem.coralreef.dx_spotted_seahorse_observe", "Choose Side and zoom to inspect the armoured rings and low rounded bumps, then the crown and thick snout. Compare its curled, finless gripping tail with the banded pipefish’s distinct tail fin. Yellow is only one appearance: Singapore adults also occur in greenish brown with dark dots."),
         sources: ["dx-nus-spotted_seahorse","dx-guide-spotted_seahorse","dx-waikikiguide-spotted_seahorse","dx-iucnsg-spotted_seahorse","dx-fishbase-spotted_seahorse","dx-cas-spotted_seahorse","dx-camins-spotted_seahorse","dx-cmfri-spotted-seahorse"]
       },
       bennetts_feather_star: {
-        habitat: __alloT("stem.coralreef.dx_bennetts_feather_star_habitat", "Tropical Indo-West Pacific reefs and sponge gardens, often perched above the surrounding bottom where water flows past exposed coral heads or sponges."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_bennetts_feather_star_habitat', 'Tropical Indo-West Pacific reefs and sponge gardens, often perched above the surrounding bottom where water flows past exposed coral heads or sponges.'), __alloT('stem.coralreef.dx_bennetts_feather_star_habitat_simple', 'Warm reefs and sponge gardens in the Indo-West Pacific. A sponge garden is a place with lots of sponges. It often sits perched up above the bottom around it. There, water flows past coral heads or sponges that stand out in the open.')),
         diet: __alloT("stem.coralreef.dx_bennetts_feather_star_diet", "Suspended plankton and fine organic particles. Tiny tube feet along the arms and pinnules capture food and pass it toward the mouth."),
-        behavior: __alloT("stem.coralreef.dx_bennetts_feather_star_behavior", "Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night. Captured food travels along grooves toward the mouth on the upper disc; microscopic ciliary transport is not animated."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_bennetts_feather_star_behavior', 'Spreads its arms into flowing water while gripping a perch with its cirri. It is often conspicuous in the open by day as well as at night. Captured food travels along grooves toward the mouth on the upper disc; microscopic ciliary transport is not animated.'), __alloT('stem.coralreef.dx_bennetts_feather_star_behavior_simple', 'It spreads its arms into flowing water. At the same time, it holds on to a perch with its cirri. Cirri are small parts under its body that grip. It is often easy to see in the open, by day as well as at night. Food it catches moves along grooves toward the mouth on the upper disc. The upper disc is the top of its body. Cilia, tiny hairs too small to see, move the food. This is not animated.')),
         observe: __alloT("stem.coralreef.dx_bennetts_feather_star_observe", "Follow one main arm into its fine pinnules. Choose Above and zoom toward the small mouth on the upper disc, then Below for the thicker gripping cirri. Compare the chocolate chip sea star’s mouth on its underside and the Christmas tree worm’s paired spiral crowns: they are unrelated forms. Yellow and brown are only one appearance; colour alone does not identify this feather star."),
         sources: ["dx-wam-bennetts_feather_star","dx-lifg-bennetts_feather_star","dx-kogo-bennetts_feather_star","dx-messing-bennetts_feather_star","dx-morphology-bennetts_feather_star","dx-worms-bennetts_feather_star","dx-sealifebase-bennetts_feather_star","dx-umich-bennetts_feather_star"]
       },
       peacock_mantis_shrimp: {
-        habitat: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_habitat", "Indo-West Pacific coral and rocky reefs, with shelters among rubble or adjoining sand and gravel. It often occupies burrows near the base of reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_peacock_mantis_shrimp_habitat', 'Indo-West Pacific coral and rocky reefs, with shelters among rubble or adjoining sand and gravel. It often occupies burrows near the base of reefs.'), __alloT('stem.coralreef.dx_peacock_mantis_shrimp_habitat_simple', 'It lives on coral reefs and rocky reefs in the Indo-West Pacific. It shelters among rubble, broken bits of coral and rock. It also shelters in sand and gravel nearby. It often lives in burrows, which are holes or tunnels. They are near the base, or bottom, of reefs.')),
         diet: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_diet", "Crabs, snails and other mollusks. Club-like striking limbs help it break hard shells rather than grasp prey with ordinary pincers."),
-        behavior: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_behavior", "Often shelters in a burrow and emerges to forage. Its eyes can move independently while the striking limbs remain folded beneath the body between strikes."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_peacock_mantis_shrimp_behavior', 'Often shelters in a burrow and emerges to forage. Its eyes can move independently while the striking limbs remain folded beneath the body between strikes.'), __alloT('stem.coralreef.dx_peacock_mantis_shrimp_behavior_simple', 'It often hides in a burrow, a hole or tunnel. It comes out to look for food. Each eye can move on its own. Between strikes, it keeps its striking limbs folded under its body. Its eyes can still move then.')),
         observe: __alloT("stem.coralreef.dx_peacock_mantis_shrimp_observe", "Compare its folded clubs, prominent stalked eyes and broad tail fan with the harlequin shrimp’s flattened paddle-like claws. Look for pale-edged spots on the carapace sides. Green, red and gold are one appearance; body colour varies, so use several structures together."),
         sources: ["dx-lifg-peacock_mantis_shrimp","dx-ahyong-peacock_mantis_shrimp","dx-brokensha-peacock_mantis_shrimp","dx-eyes-peacock_mantis_shrimp","dx-patek-peacock_mantis_shrimp","dx-georgia-peacock_mantis_shrimp","dx-worms-peacock_mantis_shrimp","dx-sealifebase-peacock_mantis_shrimp"]
       },
       ribbon_eel: {
-        habitat: __alloT("stem.coralreef.dx_ribbon_eel_habitat", "Tropical Indo-West Pacific lagoon and seaward reefs, using burrows in sand or rubble beside coral reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_ribbon_eel_habitat', 'Tropical Indo-West Pacific lagoon and seaward reefs, using burrows in sand or rubble beside coral reefs.'), __alloT('stem.coralreef.dx_ribbon_eel_habitat_simple', 'Warm lagoons and outer reefs in the tropical Indo-West Pacific. A lagoon is calm water inside a reef. It lives in burrows (holes) in sand or broken rock and coral, next to coral reefs.')),
         diet: __alloT("stem.coralreef.dx_ribbon_eel_diet", "Small fishes. It is a predator rather than a plankton-feeding garden eel."),
-        behavior: __alloT("stem.coralreef.dx_ribbon_eel_behavior", "Usually shelters with its head or part of its slender body protruding from a burrow. This resting view shows an exposed forebody; much of the animal remains concealed."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_ribbon_eel_behavior', 'Usually shelters with its head or part of its slender body protruding from a burrow. This resting view shows an exposed forebody; much of the animal remains concealed.'), __alloT('stem.coralreef.dx_ribbon_eel_behavior_simple', 'It usually shelters in a burrow, a hole or tunnel. Its head or part of its thin body sticks out. This view shows it resting. You can see the front of its body. Much of the animal stays hidden.')),
         observe: __alloT("stem.coralreef.dx_ribbon_eel_observe", "Choose Front to inspect the two flared nostrils, then Side to follow the thin dorsal and anal fin margins. The nostrils detect scents; breathing uses the mouth and gills. Compare its fins with the finless sea krait and its narrow body with the heavier giant moray. Black, blue-and-yellow and largely yellow appearances are reported, so combine shape and colour."),
         sources: ["dx-am-ribbon_eel","dx-foa-ribbon_eel","dx-shen-ribbon_eel","dx-preininger-ribbon_eel","dx-fishbase-ribbon_eel","dx-iucn-ribbon_eel","dx-eschmeyer-ribbon_eel","dx-fish-smell-route"]
       },
       leaf_scorpionfish: {
-        habitat: __alloT("stem.coralreef.dx_leaf_scorpionfish_habitat", "Tropical Indo-Pacific reef bottoms, including sand, rock, coral and algae-covered areas."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_leaf_scorpionfish_habitat', 'Tropical Indo-Pacific reef bottoms, including sand, rock, coral and algae-covered areas.'), __alloT('stem.coralreef.dx_leaf_scorpionfish_habitat_simple', 'The bottom of warm reefs in the Indo-Pacific. It lives on sand, rock and coral. It also lives in places covered with algae.')),
         diet: __alloT("stem.coralreef.dx_leaf_scorpionfish_diet", "Small fishes and crustaceans caught by ambush."),
         behavior: __alloT("stem.coralreef.dx_leaf_scorpionfish_behavior", "Often stays in place and rocks with water movement, resembling a loose leaf. The gentle sway here illustrates that camouflage."),
         observe: __alloT("stem.coralreef.dx_leaf_scorpionfish_observe", "Use Side to compare the flattened, leaf-like outline, tall back fin and small facial fringes with the red lionfish's separate long spines. This study specimen shows one mottled appearance; other individuals may look very different in colour. Observe without touching its venomous spines."),
         sources: ["dx-foa-leaf_scorpionfish","dx-stri-leaf_scorpionfish","dx-am-leaf_scorpionfish","dx-iucn-leaf_scorpionfish","dx-csiro-leaf_scorpionfish"]
       },
       longnose_hawkfish: {
-        habitat: __alloT("stem.coralreef.dx_longnose_hawkfish_habitat", "Tropical Indo-Pacific and eastern Pacific reefs, especially steep outer slopes with sea fans or black corals. Often found deeper than 25 m."),
-        diet: __alloT("stem.coralreef.dx_longnose_hawkfish_diet", "Small planktonic and bottom-dwelling crustaceans."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_longnose_hawkfish_habitat', 'Tropical Indo-Pacific and eastern Pacific reefs, especially steep outer slopes with sea fans or black corals. Often found deeper than 25 m.'), __alloT('stem.coralreef.dx_longnose_hawkfish_habitat_simple', 'Reefs in the warm Indo-Pacific and eastern Pacific. It is found especially on steep outer reef slopes that have sea fans or black corals. It is often found deeper than 25 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_longnose_hawkfish_diet', 'Small planktonic and bottom-dwelling crustaceans.'), __alloT('stem.coralreef.dx_longnose_hawkfish_diet_simple', 'It eats small crustaceans. These are animals with a hard outer shell, like tiny shrimp. Some are planktonic crustaceans that drift in the water. Others live on the bottom.')),
         behavior: __alloT("stem.coralreef.dx_longnose_hawkfish_behavior", "Often rests among branches of gorgonian sea fans and black corals. This specimen shows a perched pose with gentle fin movement; its support is an illustrative branch."),
         observe: __alloT("stem.coralreef.dx_longnose_hawkfish_observe", "Use Side to trace the red net-like pattern and long snout. Turn toward Front or Below to inspect the thick lower pectoral-fin rays used for perching, then check the small cirri at the dorsal-spine tips. Compare its slender body with the deeper yellow body of the yellow longnose butterflyfish: a long snout alone is not enough to identify either fish."),
         sources: ["dx-am-longnose_hawkfish","dx-foa-longnose_hawkfish","dx-stri-longnose_hawkfish","dx-catalog-longnose_hawkfish","dx-fishbase-longnose_hawkfish","dx-iucn-longnose_hawkfish"]
       },
       chocolate_chip_sea_star: {
-        habitat: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_habitat", "Shallow sand flats and seagrass habitats in the western Pacific region, including sheltered areas near reefs."),
-        diet: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_diet", "Microbial and algal films, detritus and tiny organisms on sediment and seagrass surfaces."),
-        behavior: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_behavior", "Moves over the seafloor using many tube feet on its underside and feeds along sediment and seagrass surfaces. The water vascular system operates the feet. The study view shows small foot probes while the body stays in place; it does not animate full crawling."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_chocolate_chip_sea_star_habitat', 'Shallow sand flats and seagrass habitats in the western Pacific region, including sheltered areas near reefs.'), __alloT('stem.coralreef.dx_chocolate_chip_sea_star_habitat_simple', 'Shallow, flat sandy areas and seagrass beds in the western Pacific. This includes calm, sheltered places near reefs.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_chocolate_chip_sea_star_diet', 'Microbial and algal films, detritus and tiny organisms on sediment and seagrass surfaces.'), __alloT('stem.coralreef.dx_chocolate_chip_sea_star_diet_simple', 'Thin microbe and algae films, detritus and tiny organisms. Microbes are living things too small to see. Detritus is bits of dead matter. It finds this food on sand, mud and seagrass.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_chocolate_chip_sea_star_behavior', 'Moves over the seafloor using many tube feet on its underside and feeds along sediment and seagrass surfaces. The water vascular system operates the feet. The study view shows small foot probes while the body stays in place; it does not animate full crawling.'), __alloT('stem.coralreef.dx_chocolate_chip_sea_star_behavior_simple', 'It moves over the seafloor using many tube feet on its underside. It feeds along the top of sediment and seagrass. Sediment is sand and mud. The feet are worked by its water vascular system. This is a set of tubes inside its body filled with water. The study view shows small foot probes, where the feet reach out a little. The body stays in place. It does not animate full crawling.')),
         observe: __alloT("stem.coralreef.dx_chocolate_chip_sea_star_observe", "Compare the thick arms and raised knobs with the longer, smoother arms of the blue sea star. Choose Above and zoom toward the small pale grooved plate beside the centre. This madreporite connects with the water vascular system; it is separate from the mouth. Choose Below to find the central mouth and tube feet in five grooves. The fine pore openings are not resolved here; colour alone is not enough for identification."),
         sources: ["dx-nparks-chocolate_chip_sea_star","dx-worms-chocolate_chip_sea_star","dx-range-chocolate_chip_sea_star","dx-feeding-chocolate_chip_sea_star","dx-motion-chocolate_chip_sea_star","dx-slb-chocolate_chip_sea_star","dx-local-chocolate_chip_sea_star","dx-seastar-water-vascular"]
       },
       porcelain_anemone_crab: {
-        habitat: __alloT("stem.coralreef.dx_porcelain_anemone_crab_habitat", "Shallow coral and rocky reefs across the Indo-West Pacific, living on or around large sea anemones."),
-        diet: __alloT("stem.coralreef.dx_porcelain_anemone_crab_diet", "Tiny suspended organisms, including planktonic algae and small crustaceans, caught with bristles on the mouthparts."),
-        behavior: __alloT("stem.coralreef.dx_porcelain_anemone_crab_behavior", "Shelters among anemone tentacles and extends its feathery mouthparts into the water to collect food. Spot size and colour vary between individuals. The study view shows gentle feeding-fan movement; the host anemone is not shown."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_porcelain_anemone_crab_habitat', 'Shallow coral and rocky reefs across the Indo-West Pacific, living on or around large sea anemones.'), __alloT('stem.coralreef.dx_porcelain_anemone_crab_habitat_simple', 'Shallow coral reefs and rocky reefs across the Indo-West Pacific. It lives on or around large sea anemones.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_porcelain_anemone_crab_diet', 'Tiny suspended organisms, including planktonic algae and small crustaceans, caught with bristles on the mouthparts.'), __alloT('stem.coralreef.dx_porcelain_anemone_crab_diet_simple', 'Tiny living things that float in the water. These include planktonic algae and small crustaceans. It catches them with bristles, like little hairs, on its mouthparts.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_porcelain_anemone_crab_behavior', 'Shelters among anemone tentacles and extends its feathery mouthparts into the water to collect food. Spot size and colour vary between individuals. The study view shows gentle feeding-fan movement; the host anemone is not shown.'), __alloT('stem.coralreef.dx_porcelain_anemone_crab_behavior_simple', 'It hides among the tentacles of an anemone. It reaches its feathery mouthparts out into the water to collect food. Spot size and colour vary from one crab to the next. The study view shows its feeding fans moving gently. The host anemone, where it hides, is not shown.')),
         observe: __alloT("stem.coralreef.dx_porcelain_anemone_crab_observe", "Choose Front and zoom toward the short stalked eyes, then compare them with the long antennae and much finer feeding fans between the broad claws. Count the three visible walking-leg pairs. The eye surface suggests many small optical units; its illustrated pattern is not a species-identification clue. Compare its compact, spotted body with the cleaner shrimp’s slender striped body and the shell-carrying white-spotted hermit crab."),
         sources: ["dx-worms-porcelain_anemone_crab","dx-wam-porcelain_anemone_crab","dx-osawa-porcelain_anemone_crab","dx-haig-porcelain_anemone_crab","dx-hkbm-porcelain_anemone_crab","dx-slb-porcelain_anemone_crab","dx-guide-porcelain_anemone_crab","dx-crustacean-compound-eye"]
       },
       varicose_phyllidia: {
-        habitat: __alloT("stem.coralreef.dx_varicose_phyllidia_habitat", "Tropical coral reefs across the Indo-West Pacific, including the Red Sea and central Pacific."),
-        diet: __alloT("stem.coralreef.dx_varicose_phyllidia_diet", "Sponge tissue. Feeding on Axinyssa cf. aculeata has been observed on Indonesian coral reefs."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_varicose_phyllidia_habitat', 'Tropical coral reefs across the Indo-West Pacific, including the Red Sea and central Pacific.'), __alloT('stem.coralreef.dx_varicose_phyllidia_habitat_simple', 'Warm coral reefs across the Indo-West Pacific. This includes the Red Sea and the central Pacific.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_varicose_phyllidia_diet', 'Sponge tissue. Feeding on Axinyssa cf. aculeata has been observed on Indonesian coral reefs.'), __alloT('stem.coralreef.dx_varicose_phyllidia_diet_simple', 'It eats sponge tissue, the soft body of a sponge. It has been seen eating a sponge called Axinyssa cf. aculeata. This was seen on Indonesian coral reefs.')),
         behavior: __alloT("stem.coralreef.dx_varicose_phyllidia_behavior", "Glides on its broad foot and can draw its rhinophores into pockets. Feeding observations show the body contracting as it takes food from a sponge."),
         observe: __alloT("stem.coralreef.dx_varicose_phyllidia_observe", "Follow the raised central ridge, then compare the tucked-away gills with the feathery back gills of Anna’s chromodoris. In an underside view, look for the dark line along the foot."),
         sources: ["dx-worms-varicose_phyllidia","dx-am-varicose_phyllidia","dx-gills-varicose_phyllidia","dx-papu-varicose_phyllidia","dx-yasman-varicose_phyllidia","dx-cas-varicose_phyllidia","dx-slb-varicose_phyllidia"]
       },
       broadclub_cuttlefish: {
-        habitat: __alloT("stem.coralreef.dx_broadclub_cuttlefish_habitat", "Shallow tropical coral reefs across the Indo-Pacific, from eastern Africa to the western Pacific and northern Australia."),
+        habitat: rl21Text(null, __alloT('stem.coralreef.dx_broadclub_cuttlefish_habitat', 'Shallow tropical coral reefs across the Indo-Pacific, from eastern Africa to the western Pacific and northern Australia.'), __alloT('stem.coralreef.dx_broadclub_cuttlefish_habitat_simple', 'Shallow, warm coral reefs in the Indo-Pacific. Its home stretches from eastern Africa to the western Pacific. It reaches northern Australia too.')),
         diet: __alloT("stem.coralreef.dx_broadclub_cuttlefish_diet", "Small fish, shrimps and crabs."),
         behavior: __alloT("stem.coralreef.dx_broadclub_cuttlefish_behavior", "Ripples its narrow fins to hover and move slowly. When catching prey, two longer tentacles reach out, then the eight arms hold and move the food toward the mouth."),
         observe: __alloT("stem.coralreef.dx_broadclub_cuttlefish_observe", "Trace the fin skirt around the mantle and look closely at a pupil. Compare the body outline with the day octopus, then use an underside view to find the rows of arm suckers."),
         sources: ["dx-worms-broadclub_cuttlefish","dx-fao-broadclub_cuttlefish","dx-doris-broadclub_cuttlefish","dx-mba-broadclub_cuttlefish","dx-omura-broadclub_cuttlefish","dx-how-broadclub_cuttlefish","dx-slb-broadclub_cuttlefish"]
       },
-      blackspotted_puffer: { habitat: __alloT("stem.coralreef.dx_blackspotted_puffer_habitat", "Coastal and outer reefs across the Indo-Pacific, especially areas rich in attached invertebrates. Fishes of Australia lists a 3 to 25 m depth range."),
-        diet: __alloT("stem.coralreef.dx_blackspotted_puffer_diet", "Coral tissue, sponges, molluscs, tunicates and algae."),
+      blackspotted_puffer: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_blackspotted_puffer_habitat', 'Coastal and outer reefs across the Indo-Pacific, especially areas rich in attached invertebrates. Fishes of Australia lists a 3 to 25 m depth range.'), __alloT('stem.coralreef.dx_blackspotted_puffer_habitat_simple', 'Reefs near the coast and outer reefs, across the Indo-Pacific. It is found especially where many animals live attached to the reef. These animals have no backbone. Fishes of Australia lists its depth range as 3 to 25 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_blackspotted_puffer_diet', 'Coral tissue, sponges, molluscs, tunicates and algae.'), __alloT('stem.coralreef.dx_blackspotted_puffer_diet_simple', 'It eats coral tissue, the soft living part of a coral. It also eats sponges, molluscs, tunicates and algae. Molluscs are animals like snails and clams. Tunicates are soft animals also called sea squirts.')),
         behavior: __alloT("stem.coralreef.dx_blackspotted_puffer_behavior", "Small side, back and belly fins work together during steady swimming. The tail contributes more during faster bursts."),
         observe: __alloT("stem.coralreef.dx_blackspotted_puffer_observe", "Check the pale bar across the snout, then compare its fine skin prickles with the porcupinefish's longer spines. Watch the fins while the rounded body stays comparatively still."),
         sources: ["dx-foa-blackspotted_puffer","dx-am-blackspotted_puffer","dx-catalog-blackspotted_puffer","dx-swim-blackspotted_puffer"] },
-      ocellated_eagle_ray: { habitat: __alloT("stem.coralreef.dx_ocellated_eagle_ray_habitat", "Coastal and offshore Indo-Pacific waters, often near coral reefs, lagoons and sandy feeding grounds. Australian fisheries accounts record it from the surface to about 40 m."),
-        diet: __alloT("stem.coralreef.dx_ocellated_eagle_ray_diet", "Mostly hard-shelled molluscs and crabs, with other small bottom-dwelling animals."),
+      ocellated_eagle_ray: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_ocellated_eagle_ray_habitat', 'Coastal and offshore Indo-Pacific waters, often near coral reefs, lagoons and sandy feeding grounds. Australian fisheries accounts record it from the surface to about 40 m.'), __alloT('stem.coralreef.dx_ocellated_eagle_ray_habitat_simple', 'Indo-Pacific waters, both near the coast and farther out at sea. It is often near coral reefs, lagoons and sandy places where it feeds. A lagoon is calm water behind a reef. Australian fishing reports record it from the surface down to about 40 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_ocellated_eagle_ray_diet', 'Mostly hard-shelled molluscs and crabs, with other small bottom-dwelling animals.'), __alloT('stem.coralreef.dx_ocellated_eagle_ray_diet_simple', 'Mostly hard-shelled molluscs and crabs. Molluscs are the animal group that includes clams and snails. It also eats other small animals that live on the sea floor.')),
         behavior: __alloT("stem.coralreef.dx_ocellated_eagle_ray_behavior", "Cruises alone or in groups and digs in sand for food. Researchers have also documented occasional resting and visits from cleaner fishes."),
         observe: __alloT("stem.coralreef.dx_ocellated_eagle_ray_observe", "Compare the pointed wings and single duckbill snout with the manta's paired head lobes. Use an underside view to find the mouth and five gill slits on each side."),
         sources: ["dx-foa-ocellated_eagle_ray","dx-behavior-ocellated_eagle_ray","dx-iucn-ocellated_eagle_ray","dx-safs-ocellated_eagle_ray"] },
-      textile_cone: { habitat: __alloT("stem.coralreef.dx_textile_cone_habitat", "Indo-Pacific reefs, sandy areas and coral rubble, often beneath rocks. The Conus Biodiversity Website records it from the intertidal zone to about 50 m deep."),
+      textile_cone: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_textile_cone_habitat', 'Indo-Pacific reefs, sandy areas and coral rubble, often beneath rocks. The Conus Biodiversity Website records it from the intertidal zone to about 50 m deep.'), __alloT('stem.coralreef.dx_textile_cone_habitat_simple', 'Indo-Pacific reefs, sandy areas and broken coral (rubble). It often hides under rocks. The Conus Biodiversity Website records it from the intertidal zone down to about 50 m deep. That zone is the shore between high and low tide.')),
         diet: __alloT("stem.coralreef.dx_textile_cone_diet", "Mainly other sea snails, including cowries and other cone snails."),
-        behavior: __alloT("stem.coralreef.dx_textile_cone_behavior", "Moves on a muscular foot, usually sheltering by day and hunting at night. The flexible siphon draws water into the mantle cavity for respiration. The venom-delivering feeding proboscis is a separate structure; feeding is not animated in this model."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_textile_cone_behavior', 'Moves on a muscular foot, usually sheltering by day and hunting at night. The flexible siphon draws water into the mantle cavity for respiration. The venom-delivering feeding proboscis is a separate structure; feeding is not animated in this model.'), __alloT('stem.coralreef.dx_textile_cone_behavior_simple', 'It moves on a strong, muscular foot. It usually hides by day and hunts at night. The siphon is a bendy tube. It pulls water into a space inside the shell, the mantle cavity, for respiration (breathing). The proboscis is a separate structure, a feeding tube that delivers venom. Feeding is not animated in this model.')),
         observe: __alloT("stem.coralreef.dx_textile_cone_observe", "Choose Front and zoom toward the red-tipped siphon to inspect its small opening. Rotate to find the shell’s long aperture and the pale mottled foot, then compare the short spire with the giant triton’s taller spiral. The visible siphon is a water-intake tube. Observe living cone snails without handling them."),
         sources: ["dx-worms-textile_cone","dx-ummz-textile_cone","dx-qm-textile_cone","dx-qatar-textile_cone","dx-aims-cone-siphon"] },
-      orange_cup_coral: { habitat: __alloT("stem.coralreef.dx_orange_cup_coral_habitat", "Shaded rock, overhangs and artificial surfaces. Native to the Indo-Pacific and eastern Pacific; introduced in parts of the Atlantic. Smithsonian reports it at depths down to 60 m."),
-        diet: __alloT("stem.coralreef.dx_orange_cup_coral_diet", "Tiny drifting animals, called zooplankton, caught by the tentacles."),
+      orange_cup_coral: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_orange_cup_coral_habitat', 'Shaded rock, overhangs and artificial surfaces. Native to the Indo-Pacific and eastern Pacific; introduced in parts of the Atlantic. Smithsonian reports it at depths down to 60 m.'), __alloT('stem.coralreef.dx_orange_cup_coral_habitat_simple', 'It grows on shaded rock, under overhangs and on artificial surfaces. An overhang is rock that sticks out above. Artificial surfaces are things people made. It is native to the Indo-Pacific and the eastern Pacific. Native means it belongs there naturally. It was introduced in parts of the Atlantic, where it is not native. The Smithsonian reports it at depths down to 60 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_orange_cup_coral_diet', 'Tiny drifting animals, called zooplankton, caught by the tentacles.'), __alloT('stem.coralreef.dx_orange_cup_coral_diet_simple', 'Tiny animals that drift in the water, called zooplankton. The coral\'s tentacles, soft parts like arms, catch them.')),
         behavior: __alloT("stem.coralreef.dx_orange_cup_coral_behavior", "Polyps often extend their tentacles at night to feed, then draw them back into their hard cups. New polyps can bud from the colony."),
         observe: __alloT("stem.coralreef.dx_orange_cup_coral_observe", "Look for a separate mouth and ring of tentacles in each cup. Compare this colony with the magnificent anemone's single large oral disc and the cauliflower coral's knobbly branches."),
         sources: ["dx-worms-orange_cup_coral","dx-smithsonian-orange_cup_coral","dx-usgs-orange_cup_coral","dx-aquarium-orange_cup_coral","dx-sealifebase-orange_cup_coral"] },
-      bubble_coral: { habitat: __alloT("stem.coralreef.dx_bubble_coral_habitat", "Protected Indo-Pacific reefs, often in murky water and shaded spots. SeaLifeBase lists depths from 0 to 40 m."),
+      bubble_coral: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_bubble_coral_habitat', 'Protected Indo-Pacific reefs, often in murky water and shaded spots. SeaLifeBase lists depths from 0 to 40 m.'), __alloT('stem.coralreef.dx_bubble_coral_habitat_simple', 'It lives on protected reefs in the Indo-Pacific. It is often in cloudy water and in shady spots. SeaLifeBase is a website about sea life. It lists depths from 0 to 40 m.')),
         diet: __alloT("stem.coralreef.dx_bubble_coral_diet", "Algae partners in the vesicles make food from sunlight. At night, tentacles armed with many stinging cells catch drifting animal plankton."),
         behavior: __alloT("stem.coralreef.dx_bubble_coral_behavior", "Light runs a daily cycle. In daylight the vesicles inflate and the tentacles stay hidden. At dusk the vesicles shrink, and three tentacles open at the base of each one."),
         observe: __alloT("stem.coralreef.dx_bubble_coral_observe", "This model shows the daytime form. Look for the packed, grape-sized vesicles. Compare the hammer coral, whose tentacles end in T-shaped tips, and the magnificent anemone, a single animal with one central mouth."),
         sources: ["dx-worms-bubble_coral","dx-cotw-bubble_coral","dx-meps-bubble_coral","dx-slb-bubble_coral","dx-iucn-bubble_coral"] },
-      hammer_coral: { habitat: __alloT("stem.coralreef.dx_hammer_coral_habitat", "Indo-West Pacific reefs: shallow water with moderate waves, reef slopes and rocky outcrops. SeaLifeBase lists depths from 0 to 40 m."),
+      hammer_coral: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_hammer_coral_habitat', 'Indo-West Pacific reefs: shallow water with moderate waves, reef slopes and rocky outcrops. SeaLifeBase lists depths from 0 to 40 m.'), __alloT('stem.coralreef.dx_hammer_coral_habitat_simple', 'It lives on reefs in the Indo-West Pacific. It is found in shallow water with medium waves. It is also found on reef slopes and on rocky outcrops, rocks that stick up. SeaLifeBase lists depths from 0 to 40 m.')),
         diet: __alloT("stem.coralreef.dx_hammer_coral_diet", "Algae partners in the tissue supply most of its food. Like other corals, its tentacles carry stinging cells, and it can also take in small food particles."),
-        behavior: __alloT("stem.coralreef.dx_hammer_coral_behavior", "The fleshy tentacles stay out by day and by night and cannot pull all the way into the skeleton. Each colony is male or female, and colonies spawn by releasing eggs or sperm into the water."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_hammer_coral_behavior', 'The fleshy tentacles stay out by day and by night and cannot pull all the way into the skeleton. Each colony is male or female, and colonies spawn by releasing eggs or sperm into the water.'), __alloT('stem.coralreef.dx_hammer_coral_behavior_simple', 'Its fleshy tentacles stay out by day and by night. Tentacles are soft parts like arms. They cannot pull all the way back into the skeleton. The skeleton is the hard part of the coral. Each colony is male or female. Colonies spawn, which means they release eggs or sperm into the water.')),
         observe: __alloT("stem.coralreef.dx_hammer_coral_observe", "Follow one tentacle up to its tip and look for the T or anchor shape. Compare the round vesicles of the bubble coral and the many small flower-like polyps of the flowerpot coral."),
         sources: ["dx-worms-hammer_coral","dx-cotw-hammer_coral","dx-slb-hammer_coral","dx-oca-hammer_coral","dx-peerj-hammer_coral","dx-iucn-hammer_coral","dx-noaa-corals"] },
       flowerpot_coral: { habitat: __alloT("stem.coralreef.dx_flowerpot_coral_habitat", "Indo-Pacific reefs, often in murky water, where it can form large stands of a single species. SeaLifeBase lists depths from 2 to 18 m."),
@@ -18449,69 +19061,69 @@
         behavior: __alloT("stem.coralreef.dx_flowerpot_coral_behavior", "The polyps stretch out during the day. When something disturbs them they pull back, and the short columns of the colony become easier to see."),
         observe: __alloT("stem.coralreef.dx_flowerpot_coral_observe", "Pick one polyp and count its tentacles: the model gives every polyp 24, as on the real coral. Compare the orange cup coral, whose cups hold a ring of fine yellow tentacles, and the hammer coral's T-shaped tips."),
         sources: ["dx-worms-flowerpot_coral","dx-cotw-flowerpot_coral","dx-slb-flowerpot_coral","dx-naturalis-flowerpot_coral","dx-iucn-flowerpot_coral","dx-noaa-corals","dx-noaa-coral-algae"] },
-      banded_sea_krait: { habitat: __alloT("stem.coralreef.dx_banded_sea_krait_habitat", "Tropical Indo-Pacific coral reefs, rocky shores and nearby islands. Often found in shallow water; the New Zealand Herpetological Society reports hunting dives to 60 m."),
+      banded_sea_krait: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_banded_sea_krait_habitat', 'Tropical Indo-Pacific coral reefs, rocky shores and nearby islands. Often found in shallow water; the New Zealand Herpetological Society reports hunting dives to 60 m.'), __alloT('stem.coralreef.dx_banded_sea_krait_habitat_simple', 'Coral reefs, rocky shores and nearby islands in warm, tropical parts of the Indo-Pacific. It is often found in shallow water. The New Zealand Herpetological Society is a group that studies reptiles. It reports that this sea krait dives to 60 m to hunt.')),
         diet: __alloT("stem.coralreef.dx_banded_sea_krait_diet", "Mostly eels, with some other small fish. Larger females can take larger prey than males."),
         behavior: __alloT("stem.coralreef.dx_banded_sea_krait_behavior", "Usually searches for prey alone, bending its body through reef gaps. It returns to sheltered places on land between trips to sea."),
         observe: __alloT("stem.coralreef.dx_banded_sea_krait_observe", "Choose Below and zoom to compare the broad belly plates with the smaller scales along the sides. From Side, find the vertical paddle tail. Unlike the giant moray and ribbon eel, this snake has no fin edging its body. In the wild, watch from a distance without touching this venomous animal."),
         sources: ["dx-worms-banded_sea_krait","dx-auckland-banded_sea_krait","dx-nparks-banded_sea_krait","dx-nzhs-banded_sea_krait","dx-reptiledb-banded_sea_krait"] },
-      white_spotted_hermit_crab: { habitat: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_habitat", "Indo-Pacific reef flats, rocky slopes, seagrass beds and mangrove areas. A Raffles Bulletin of Zoology survey gives a depth range from the intertidal zone to about 50 m."),
-        diet: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_diet", "Small animals such as worms and molluscs, plus carrion. A 2023 study also documented predation on juvenile sandfish sea cucumbers."),
-        behavior: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_behavior", "In nature it walks across the seabed while carrying its shell, handles food with its claws and can pull back inside the shell when disturbed. The study view illustrates gentle antenna and limb movement; walking and retreat into the shell are not animated there."),
+      white_spotted_hermit_crab: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_white_spotted_hermit_crab_habitat', 'Indo-Pacific reef flats, rocky slopes, seagrass beds and mangrove areas. A Raffles Bulletin of Zoology survey gives a depth range from the intertidal zone to about 50 m.'), __alloT('stem.coralreef.dx_white_spotted_hermit_crab_habitat_simple', 'Reef flats, rocky slopes, seagrass beds and mangrove areas in the Indo-Pacific. A reef flat is the flat, shallow top of a reef. Mangroves are trees that grow in salty water near the shore. A survey in the Raffles Bulletin of Zoology gives its depth range. It goes from the intertidal zone down to about 50 m. The intertidal zone is the shore between high and low tide.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_white_spotted_hermit_crab_diet', 'Small animals such as worms and molluscs, plus carrion. A 2023 study also documented predation on juvenile sandfish sea cucumbers.'), __alloT('stem.coralreef.dx_white_spotted_hermit_crab_diet_simple', 'It eats small animals, such as worms and molluscs. Molluscs are animals like snails and clams. It also eats carrion, the meat of dead animals. A 2023 study also recorded it hunting and eating young sandfish sea cucumbers.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_white_spotted_hermit_crab_behavior', 'In nature it walks across the seabed while carrying its shell, handles food with its claws and can pull back inside the shell when disturbed. The study view illustrates gentle antenna and limb movement; walking and retreat into the shell are not animated there.'), __alloT('stem.coralreef.dx_white_spotted_hermit_crab_behavior_simple', 'In nature, it walks across the seabed while it carries its shell. It handles food with its claws. When something disturbs it, it can pull back inside the shell. The study view shows gentle movement of its antennae, or feelers, and its limbs. Its walking and retreat into the shell are not animated there.')),
         observe: __alloT("stem.coralreef.dx_white_spotted_hermit_crab_observe", "Choose Front and zoom toward the brown-green eyes above their red stalks. Compare the eyes with the long pale antennae, then find the larger left claw and four exposed walking legs. Follow the black-rimmed pale spots and fine bristles. Compare the porcelain anemone crab’s feeding fans; shell shape alone cannot identify the hermit occupant."),
         sources: ["dx-worms-white_spotted_hermit_crab","dx-raffles-white_spotted_hermit_crab","dx-doris-white_spotted_hermit_crab","dx-predation-white_spotted_hermit_crab","dx-spc-white_spotted_hermit_crab","dx-crustacean-compound-eye"] },
-      longfin_bannerfish: { habitat: __alloT("stem.coralreef.dx_longfin_bannerfish_habitat", "Sheltered bays, lagoons, channels and coral reef slopes across the tropical Indo-West and Central Pacific. Usually found between about 2 and 75 m deep."),
-        diet: __alloT("stem.coralreef.dx_longfin_bannerfish_diet", "Zooplankton and bottom-dwelling invertebrates. Juveniles sometimes remove parasites from other fish."),
+      longfin_bannerfish: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_longfin_bannerfish_habitat', 'Sheltered bays, lagoons, channels and coral reef slopes across the tropical Indo-West and Central Pacific. Usually found between about 2 and 75 m deep.'), __alloT('stem.coralreef.dx_longfin_bannerfish_habitat_simple', 'Bays that are safe from rough water, lagoons, channels and the slopes of coral reefs. A lagoon is calm water inside a reef. It lives across the warm Indo-West and Central Pacific. It is usually found about 2 to 75 m deep.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_longfin_bannerfish_diet', 'Zooplankton and bottom-dwelling invertebrates. Juveniles sometimes remove parasites from other fish.'), __alloT('stem.coralreef.dx_longfin_bannerfish_diet_simple', 'It eats zooplankton, tiny animals that drift in the water. It also eats animals without backbones that live on the bottom. Young fish sometimes pick parasites off other fish. Parasites are pests that live on other animals.')),
         behavior: __alloT("stem.coralreef.dx_longfin_bannerfish_behavior", "Adults often swim as pairs near the reef; young fish are frequently solitary. Small groups also occur."),
         observe: __alloT("stem.coralreef.dx_longfin_bannerfish_observe", "Compare its yellow tail and shorter snout with the adult Moorish idol's black tail, yellow snout saddle and small forehead projections. For similar Heniochus species, also check where the second black band meets the anal fin."),
         sources: ["dx-csiro-longfin_bannerfish","dx-am-longfin_bannerfish","dx-foa-longfin_bannerfish","dx-fishbase-longfin_bannerfish"] },
-      blackfin_barracuda: { habitat: __alloT("stem.coralreef.dx_blackfin_barracuda_habitat", "Indo-Pacific coral reefs, near current-swept lagoons and seaward reef slopes, from about 1 to 100 m deep."),
+      blackfin_barracuda: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_blackfin_barracuda_habitat', 'Indo-Pacific coral reefs, near current-swept lagoons and seaward reef slopes, from about 1 to 100 m deep.'), __alloT('stem.coralreef.dx_blackfin_barracuda_habitat_simple', 'Coral reefs in the Indo-Pacific. It lives near lagoons where currents rush through, and near outer reef slopes that face the sea. It is found from about 1 to 100 m deep.')),
         diet: __alloT("stem.coralreef.dx_blackfin_barracuda_diet", "Feeds on fishes. Most feeding probably happens at night, after the daytime schools spread out."),
         behavior: __alloT("stem.coralreef.dx_blackfin_barracuda_behavior", "By day it forms large, slow-moving schools that may stay at the same site for months or years. This dive shows one modest school circling slowly in mid-water; real schools can be much larger."),
         observe: __alloT("stem.coralreef.dx_blackfin_barracuda_observe", "Use Side to follow the bars: each one slants above the side line and runs almost straight down below it. Then check the forked, mostly black tail. A bluefin trevally has a deeper body and electric blue fins. Other barred barracudas look very similar, so use several marks together."),
         sources: ["dx-worms-blackfin_barracuda","dx-foa-blackfin_barracuda","dx-am-blackfin_barracuda","dx-fishbase-blackfin_barracuda"] },
-      titan_triggerfish: { habitat: __alloT("stem.coralreef.dx_titan_triggerfish_habitat", "Lagoons, outer reef slopes and sheltered inner slopes across the Indo-Pacific, usually from about 1 to 50 m deep. Young fish stay near coral clumps or rubble on sandy, sheltered bottoms."),
+      titan_triggerfish: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_titan_triggerfish_habitat', 'Lagoons, outer reef slopes and sheltered inner slopes across the Indo-Pacific, usually from about 1 to 50 m deep. Young fish stay near coral clumps or rubble on sandy, sheltered bottoms.'), __alloT('stem.coralreef.dx_titan_triggerfish_habitat_simple', 'Lagoons, outer reef slopes, and inner slopes that are safe from rough water. A lagoon is calm water inside a reef. It lives across the Indo-Pacific, usually from about 1 to 50 m deep. Young fish stay near clumps of coral or rubble. Rubble is broken bits of coral and rock. These are on sandy bottoms that are safe from rough water.')),
         diet: __alloT("stem.coralreef.dx_titan_triggerfish_diet", "Sea urchins, coral, crabs and other crustaceans, molluscs and tube worms. It flips rocks, stirs up sand and bites off pieces of coral to reach food."),
         behavior: __alloT("stem.coralreef.dx_titan_triggerfish_behavior", "Adults live alone or in pairs and are usually shy. In the breeding season a female guarding her eggs can become very aggressive. Nests are on the sea floor, often a pit in sand or rubble, and the defended space is a cone that reaches up from the nest toward the surface."),
         observe: __alloT("stem.coralreef.dx_titan_triggerfish_observe", "Use Side to find the black band with yellow spots across the eye and the dark moustache above the pale lips, then trace the black edges of the soft back and bottom fins. The clown triggerfish is black with large white belly spots. On a real dive, if a triggerfish charges, swim away sideways out of its cone, not straight up."),
         sources: ["dx-worms-titan_triggerfish","dx-am-titan_triggerfish","dx-foa-titan_triggerfish","dx-fishbase-titan_triggerfish","dx-bite-titan_triggerfish","dx-reefsmart-titan_triggerfish","dx-nest-titan_triggerfish"] },
-      bluefin_trevally: { habitat: __alloT("stem.coralreef.dx_bluefin_trevally_habitat", "Coral reefs, deeper lagoons and outer reefs of the Indo-Pacific and eastern Pacific, from near the surface to about 190 m. It enters channels and shallower water to feed."),
+      bluefin_trevally: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_bluefin_trevally_habitat', 'Coral reefs, deeper lagoons and outer reefs of the Indo-Pacific and eastern Pacific, from near the surface to about 190 m. It enters channels and shallower water to feed.'), __alloT('stem.coralreef.dx_bluefin_trevally_habitat_simple', 'Coral reefs, deeper lagoons and outer reefs. A lagoon is calm water inside a reef. It lives in the Indo-Pacific and eastern Pacific. It is found from near the surface down to about 190 m. It comes into channels and shallower water to feed.')),
         diet: __alloT("stem.coralreef.dx_bluefin_trevally_diet", "Mostly other fishes, plus crustaceans."),
         behavior: __alloT("stem.coralreef.dx_bluefin_trevally_behavior", "Usually hunts alone or in small groups and uses reef features to hide its approach. It may follow other hunters, such as a moray eel, and grab prey they disturb."),
         observe: __alloT("stem.coralreef.dx_bluefin_trevally_observe", "Use Side to spot the electric blue fins and the small dark spots on the upper body. Follow the side line back to the row of hard scutes near the tail. Compare its deep body with the long, barred body of the blackfin barracuda."),
         sources: ["dx-worms-bluefin_trevally","dx-foa-bluefin_trevally","dx-fishbase-bluefin_trevally","dx-hunting-bluefin_trevally","dx-followers-bluefin_trevally","dx-malpelo-bluefin_trevally"] },
-      blacktip_reef_shark: { habitat: __alloT("stem.coralreef.dx_blacktip_reef_shark_habitat", "Shallow, clear water on coral reefs and sand flats across the tropical Indo-Pacific, from the surface to about 75 m but usually above 40 m. It often swims over reef flats only 30 cm deep, and young sharks grow up in shallow lagoons and along mangrove edges."),
-        diet: __alloT("stem.coralreef.dx_blacktip_reef_shark_diet", "Mostly small fishes, plus crustaceans, octopuses, squids and other molluscs."),
-        behavior: __alloT("stem.coralreef.dx_blacktip_reef_shark_behavior", "An active, strong swimmer that lives alone or in small groups, and usually stays around the same reef or island. It is generally timid when divers come close, but it may nip the feet or legs of people wading in shallow water."),
+      blacktip_reef_shark: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_blacktip_reef_shark_habitat', 'Shallow, clear water on coral reefs and sand flats across the tropical Indo-Pacific, from the surface to about 75 m but usually above 40 m. It often swims over reef flats only 30 cm deep, and young sharks grow up in shallow lagoons and along mangrove edges.'), __alloT('stem.coralreef.dx_blacktip_reef_shark_habitat_simple', 'Shallow, clear water on coral reefs and sand flats across the tropical Indo-Pacific. It swims from the surface down to about 75 m, but it usually stays above 40 m. It often swims over reef flats only 30 cm deep. Young sharks grow up in shallow lagoons and along the edges of mangroves.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_blacktip_reef_shark_diet', 'Mostly small fishes, plus crustaceans, octopuses, squids and other molluscs.'), __alloT('stem.coralreef.dx_blacktip_reef_shark_diet_simple', 'It mostly eats small fishes. It also eats crustaceans, octopuses, squids and other molluscs. Crustaceans are animals like crabs and shrimp. Molluscs are soft animals like snails and clams.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_blacktip_reef_shark_behavior', 'An active, strong swimmer that lives alone or in small groups, and usually stays around the same reef or island. It is generally timid when divers come close, but it may nip the feet or legs of people wading in shallow water.'), __alloT('stem.coralreef.dx_blacktip_reef_shark_behavior_simple', 'It is an active, strong swimmer. It lives alone or in small groups. It usually stays around the same reef or island. It is usually shy when divers come close. But it may nip the feet or legs of people who walk in shallow water.')),
         observe: __alloT("stem.coralreef.dx_blacktip_reef_shark_observe", "Use Side to check the black tip on the first back fin, with its pale band below, then the black tip on the lower tail lobe. Compare the whitetip reef shark: white fin tips, a slimmer body and a broad, blunt snout, and it often rests still on the bottom by day. On this dive the blacktip keeps swimming along the shallow reef flat and keeps its distance from you."),
         sources: ["dx-worms-blacktip_reef_shark","dx-foa-blacktip_reef_shark","dx-fishbase-blacktip_reef_shark","dx-sotw-blacktip_reef_shark","dx-flmnh-blacktip_reef_shark","dx-nursery-blacktip_reef_shark","dx-foa-whitetip_reef_shark"] },
-      dusky_farmerfish: { habitat: __alloT("stem.coralreef.dx_dusky_farmerfish_habitat", "Reef flats and lagoon reefs of the tropical Indo-Pacific, about 1 to 12 m deep. It often lives in colonies among live or dead branching staghorn coral."),
-        diet: __alloT("stem.coralreef.dx_dusky_farmerfish_diet", "Feeds in its own farm: on detritus trapped in the turf, on fine red algae and on small invertebrates such as worms and tiny crustaceans."),
-        behavior: __alloT("stem.coralreef.dx_dusky_farmerfish_behavior", "Each fish defends a small territory of turf algae. It weeds out tough algae it cannot digest and chases off fishes that come near, including grazers and coral-eating butterflyfishes. Its crop grows better inside the farm, and corals growing inside the territory are protected from fish that would bite them."),
+      dusky_farmerfish: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_dusky_farmerfish_habitat', 'Reef flats and lagoon reefs of the tropical Indo-Pacific, about 1 to 12 m deep. It often lives in colonies among live or dead branching staghorn coral.'), __alloT('stem.coralreef.dx_dusky_farmerfish_habitat_simple', 'It lives on reef flats and lagoon reefs in the warm Indo-Pacific. A reef flat is the flat, shallow top of a reef. A lagoon is calm water inside a reef. It is found about 1 to 12 m deep. It often lives in colonies, or groups. They live among live or dead branching staghorn coral.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_dusky_farmerfish_diet', 'Feeds in its own farm: on detritus trapped in the turf, on fine red algae and on small invertebrates such as worms and tiny crustaceans.'), __alloT('stem.coralreef.dx_dusky_farmerfish_diet_simple', 'It feeds in its own farm, a patch of short algae called turf. It eats detritus, bits of dead matter caught in the turf. It eats fine red algae. It also eats small invertebrates, animals without a backbone, such as worms and tiny crustaceans.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_dusky_farmerfish_behavior', 'Each fish defends a small territory of turf algae. It weeds out tough algae it cannot digest and chases off fishes that come near, including grazers and coral-eating butterflyfishes. Its crop grows better inside the farm, and corals growing inside the territory are protected from fish that would bite them.'), __alloT('stem.coralreef.dx_dusky_farmerfish_behavior_simple', 'Each fish defends a small territory, an area it keeps for itself. The territory is a patch of turf algae, short algae like a lawn. The fish weeds out tough algae it cannot digest. It chases off fishes that come near. These include grazers, fish that nibble algae, and butterflyfishes that eat coral. Its crop grows better inside the farm. And corals growing inside the territory are protected from fish that would bite them.')),
         observe: __alloT("stem.coralreef.dx_dusky_farmerfish_observe", "Watch one patch of rock for a while. The farmerfish stays low over its turf and darts out at a grazing fish that comes near, then swims back home. Compare the blue-green chromis, another damselfish, which hovers in groups above branching coral and picks plankton from the water."),
         sources: ["dx-worms-dusky_farmerfish","dx-foa-dusky_farmerfish","dx-fishbase-dusky_farmerfish","dx-weeding-dusky_farmerfish","dx-exclusion-dusky_farmerfish","dx-mutualism-dusky_farmerfish","dx-geography-dusky_farmerfish","dx-defence-dusky_farmerfish"] },
-      foxface_rabbitfish: { habitat: __alloT("stem.coralreef.dx_foxface_rabbitfish_habitat", "Lagoons and seaward reefs with rich coral growth in the tropical western Pacific, from the Philippines and Indonesia to the Great Barrier Reef and east to Kiribati, about 1 to 30 m deep. It often lives among staghorn corals."),
-        diet: __alloT("stem.coralreef.dx_foxface_rabbitfish_diet", "A mixed grazer. On the northern Great Barrier Reef its gut held many kinds of algae, cyanobacteria, detritus and sediment, and a study at Lizard Island found it eats mostly cyanobacteria. Young fish graze algae growing at the bases of dead coral branches."),
-        behavior: __alloT("stem.coralreef.dx_foxface_rabbitfish_behavior", "Adults live alone or, more often, in pairs: at Lizard Island about 80 out of every 100 adults were in pairs. Partners take turns: one keeps watch, head up in the water, while the other feeds in a crevice, and fish in pairs reach deeper into crevices than fish alone. Young fish sometimes gather in large schools among Acropora corals. Its stout fin spines are venomous and can give a very painful sting."),
+      foxface_rabbitfish: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_foxface_rabbitfish_habitat', 'Lagoons and seaward reefs with rich coral growth in the tropical western Pacific, from the Philippines and Indonesia to the Great Barrier Reef and east to Kiribati, about 1 to 30 m deep. It often lives among staghorn corals.'), __alloT('stem.coralreef.dx_foxface_rabbitfish_habitat_simple', 'Lagoons and the outer sides of reefs where lots of coral grows. It lives in the tropical western Pacific, from the Philippines and Indonesia to the Great Barrier Reef and east to Kiribati. It is found about 1 to 30 m deep. It often lives among staghorn corals.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_foxface_rabbitfish_diet', 'A mixed grazer. On the northern Great Barrier Reef its gut held many kinds of algae, cyanobacteria, detritus and sediment, and a study at Lizard Island found it eats mostly cyanobacteria. Young fish graze algae growing at the bases of dead coral branches.'), __alloT('stem.coralreef.dx_foxface_rabbitfish_diet_simple', 'It grazes, or nibbles, on many kinds of food. On the northern Great Barrier Reef, its gut held many kinds of algae. It also held cyanobacteria, detritus and sediment. Cyanobacteria are tiny living things that make food from sunlight. Detritus is bits of dead matter. Sediment is sand and mud. A study at Lizard Island found it eats mostly cyanobacteria. Young fish graze on algae. These algae grow at the bases of dead coral branches.')),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_foxface_rabbitfish_behavior', 'Adults live alone or, more often, in pairs: at Lizard Island about 80 out of every 100 adults were in pairs. Partners take turns: one keeps watch, head up in the water, while the other feeds in a crevice, and fish in pairs reach deeper into crevices than fish alone. Young fish sometimes gather in large schools among Acropora corals. Its stout fin spines are venomous and can give a very painful sting.'), __alloT('stem.coralreef.dx_foxface_rabbitfish_behavior_simple', 'Adults live alone or, more often, in pairs. At Lizard Island, about 80 out of every 100 adults were in pairs. Partners take turns. One keeps watch, with its head up in the water. The other feeds in a crevice, a narrow crack. Fish in pairs reach deeper into crevices than fish alone. Young fish sometimes gather in large schools among Acropora corals. Its thick fin spines are venomous, which means they hold a poison. They can give a very painful sting.')),
         observe: __alloT("stem.coralreef.dx_foxface_rabbitfish_observe", "Look among branching coral for two yellow fish together. Use Side to follow the black band from the mouth through the eye, then find the black chest patch and the row of stout spines along the back. On a real reef, watch a pair for a while: one often hangs head up above the reef while the other feeds, then they swap. Never touch one: the fin spines sting."),
         sources: ["dx-worms-foxface_rabbitfish","dx-foa-foxface_rabbitfish","dx-fishbase-foxface_rabbitfish","dx-diet-foxface_rabbitfish","dx-vigilance-foxface_rabbitfish"] },
-      leopard_coral_grouper: { habitat: __alloT("stem.coralreef.dx_leopard_coral_grouper_habitat", "Coral-rich lagoon reefs and mid-shelf reefs of the western Pacific, from Western Australia to Fiji and north to southern Japan, about 3 to 100 m deep. Young fish live on shallow reefs, often around coral rubble."),
+      leopard_coral_grouper: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_leopard_coral_grouper_habitat', 'Coral-rich lagoon reefs and mid-shelf reefs of the western Pacific, from Western Australia to Fiji and north to southern Japan, about 3 to 100 m deep. Young fish live on shallow reefs, often around coral rubble.'), __alloT('stem.coralreef.dx_leopard_coral_grouper_habitat_simple', 'It lives on lagoon reefs with lots of coral and on mid-shelf reefs in the western Pacific. A lagoon is calm water inside a reef. Mid-shelf reefs sit partway out from the coast. Its home stretches from Western Australia to Fiji and north to southern Japan. It lives about 3 to 100 m deep. Young fish live on shallow reefs, often around coral rubble. Rubble is broken bits of coral and rock.')),
         diet: __alloT("stem.coralreef.dx_leopard_coral_grouper_diet", "Adults eat mainly fish. Young fish eat small fishes, crustaceans and squid."),
         behavior: __alloT("stem.coralreef.dx_leopard_coral_grouper_behavior", "Usually alone. It swims slowly near schools of small fish or rests still on coral heads and under ledges, and it is inactive at night. It can change colour quickly and often looks blotchy when hunting. Around the new moon many gather at spawning sites on a reef, and their eggs float just under the surface."),
         observe: __alloT("stem.coralreef.dx_leopard_coral_grouper_observe", "Look beside coral heads for a long red fish dotted with blue. Use Side to check that the spots on the head are small and round, then find the blue ring around the eye and the white edge of the tail. Compare the peacock grouper: a darker brown body with dark-edged blue spots, often with pale bars near the tail."),
         sources: ["dx-worms-leopard_coral_grouper","dx-foa-leopard_coral_grouper","dx-fishbase-leopard_coral_grouper","dx-reserves-leopard_coral_grouper","dx-foa-peacock_grouper","dx-stri-grouper-spots"] },
-      dash_and_dot_goatfish: { habitat: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_habitat", "Large patches of sand, and sand and rubble on reef flats, lagoons and seaward reefs, across the tropical Indo-Pacific from East Africa to the central Pacific, from about 1 m down to 100 m. Young fish gather in small groups, often with other kinds of fish, over sparse seagrass."),
+      dash_and_dot_goatfish: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_dash_and_dot_goatfish_habitat', 'Large patches of sand, and sand and rubble on reef flats, lagoons and seaward reefs, across the tropical Indo-Pacific from East Africa to the central Pacific, from about 1 m down to 100 m. Young fish gather in small groups, often with other kinds of fish, over sparse seagrass.'), __alloT('stem.coralreef.dx_dash_and_dot_goatfish_habitat_simple', 'Large patches of sand, and sand and rubble on reef flats, in lagoons and on the outer sides of reefs. It lives across the tropical Indo-Pacific, from East Africa to the central Pacific. It is found from about 1 m down to 100 m deep. Young fish gather in small groups over thin patches of seagrass. They often swim with other kinds of fish.')),
         diet: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_diet", "Animals that live in the sand. In one study of stomachs, crabs made up the most food, then polychaete worms, then small clams, shrimps and other small invertebrates. It feeds by day."),
         behavior: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_behavior", "By day it forages alone or in small groups, probing sand and rubble with its barbels. At night it rests alone on the bottom. When the barbels are not in use, it tucks them away under its gill covers."),
         observe: __alloT("stem.coralreef.dx_dash_and_dot_goatfish_observe", "Scan open sand beside the reef for a pale fish swimming slowly near the bottom. Use Side to find the two barbels under the chin, the dark stripe through the eye and the separate black spot at the base of the tail: the dash and the dot."),
         sources: ["dx-worms-dash_and_dot_goatfish","dx-foa-dash_and_dot_goatfish","dx-fishbase-dash_and_dot_goatfish","dx-am-dash_and_dot_goatfish"] },
-      sixbar_wrasse: { habitat: __alloT("stem.coralreef.dx_sixbar_wrasse_habitat", "Shallow lagoons and seaward reefs, slopes and drop-offs across the tropical Indo-Pacific, from East Africa to the central Pacific, down to about 15 m."),
-        diet: __alloT("stem.coralreef.dx_sixbar_wrasse_diet", "Crustaceans from the reef and from the plankton, fish eggs, small fishes and foraminiferans, tiny single-celled living things with shells."),
+      sixbar_wrasse: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_sixbar_wrasse_habitat', 'Shallow lagoons and seaward reefs, slopes and drop-offs across the tropical Indo-Pacific, from East Africa to the central Pacific, down to about 15 m.'), __alloT('stem.coralreef.dx_sixbar_wrasse_habitat_simple', 'Shallow lagoons and reefs that face the sea. A lagoon is calm water behind a reef. It also lives on reef slopes and drop-offs, where the reef falls away steeply. It is found across the warm Indo-Pacific, from East Africa to the central Pacific. It swims down to about 15 m.')),
+        diet: rl21Text(null, __alloT('stem.coralreef.dx_sixbar_wrasse_diet', 'Crustaceans from the reef and from the plankton, fish eggs, small fishes and foraminiferans, tiny single-celled living things with shells.'), __alloT('stem.coralreef.dx_sixbar_wrasse_diet_simple', 'Crustaceans from the reef and from the plankton, the tiny life that drifts in the water. It also eats fish eggs and small fishes. And it eats foraminiferans, tiny single-celled living things with shells.')),
         behavior: __alloT("stem.coralreef.dx_sixbar_wrasse_behavior", "Lives alone or in small, loose groups and keeps on the move. It starts life as a female, and some females later change into males, which are brighter. Fish pair off to spawn."),
         observe: __alloT("stem.coralreef.dx_sixbar_wrasse_observe", "Watch its side fins: they beat up and down like wings, while the body stays fairly straight. Use Side to count the dark bars along its back, each one shorter than the one in front, and find the pink bands around the eye."),
         sources: ["dx-worms-sixbar_wrasse","dx-foa-sixbar_wrasse","dx-fishbase-sixbar_wrasse","dx-swim-sixbar_wrasse","dx-waves-sixbar_wrasse"] },
-      bigfin_reef_squid: { habitat: __alloT("stem.coralreef.dx_bigfin_reef_squid_habitat", "Warm coastal waters across the Indo-Pacific, including coral reefs, seagrass meadows and sandy areas, from the surface to about 100 m. Introduced populations also occur in the Mediterranean."),
+      bigfin_reef_squid: { habitat: rl21Text(null, __alloT('stem.coralreef.dx_bigfin_reef_squid_habitat', 'Warm coastal waters across the Indo-Pacific, including coral reefs, seagrass meadows and sandy areas, from the surface to about 100 m. Introduced populations also occur in the Mediterranean.'), __alloT('stem.coralreef.dx_bigfin_reef_squid_habitat_simple', 'Warm waters near the coast across the Indo-Pacific. It lives on coral reefs, in seagrass meadows and over sandy areas. It swims from the surface down to about 100 m. It is not native to the Mediterranean, but groups of it now live there too.')),
         diet: __alloT("stem.coralreef.dx_bigfin_reef_squid_diet", "Mainly fish and prawns, with other crustaceans such as crabs and mantis shrimps."),
-        behavior: __alloT("stem.coralreef.dx_bigfin_reef_squid_behavior", "Can gather in groups of similar-sized animals. Rippling fins and gentle water jets help it hover; stronger mantle contractions drive rapid jet swimming."),
+        behavior: rl21Text(null, __alloT('stem.coralreef.dx_bigfin_reef_squid_behavior', 'Can gather in groups of similar-sized animals. Rippling fins and gentle water jets help it hover; stronger mantle contractions drive rapid jet swimming.'), __alloT('stem.coralreef.dx_bigfin_reef_squid_behavior_simple', 'It can gather in groups. The squids in a group are close in size. Its fins ripple, or move in waves. The rippling fins and soft jets of water help it hover in one place. Its mantle is the main part of its body. When the mantle squeezes harder, it drives fast jet swimming.')),
         observe: __alloT("stem.coralreef.dx_bigfin_reef_squid_observe", "Choose Above to follow the broad side fins along the mantle, then Below to find the funnel beneath the head. Water expelled through this funnel provides jet propulsion; it is separate from the mouth surrounded by arms and feeding tentacles. Compare the long mantle with the broadclub cuttlefish and the finless day octopus. Colour alone cannot identify it."),
         sources: ["dx-worms-bigfin_reef_squid","dx-am-bigfin_reef_squid","dx-fao-bigfin_reef_squid","dx-slb-bigfin_reef_squid","dx-genetics-bigfin_reef_squid","dx-motion-bigfin_reef_squid"] }
     };
@@ -20856,7 +21468,7 @@
 
   // A static specimen with demand rendering and an optional slow camera turntable.
   // Closing its owner cancels rotation and disposes the shared-resource Kit.
-  function createMarineSpecimenController(THREE, canvas, id, onFailure, onTurntable, onScaleGuide) {
+  function createMarineSpecimenController(THREE, canvas, id, onFailure, onTurntable, onScaleGuide, pf19uQuality) {
     var renderer = null, model = null, look = null, observer = null, dead = false;
     var turning = false, turnFrame = null, turnTime = null, captureResolve = null;
     var motionQuery = null, motionListenerMode = null;
@@ -21076,11 +21688,12 @@
     }
     try {
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+      // Lane pf19u: Smoother draws at one pixel per CSS pixel with the model's low tier; Detailed is unchanged.
+      renderer.setPixelRatio(pf19uQuality === 'low' ? 1 : Math.min(1.5, window.devicePixelRatio || 1));
       if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
       if (THREE.NoToneMapping != null) renderer.toneMapping = THREE.NoToneMapping;
       var derivatives = !!((renderer.capabilities && renderer.capabilities.isWebGL2) || (renderer.extensions && renderer.extensions.has && renderer.extensions.has('OES_standard_derivatives')));
-      model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
+      model = window.Reef3DSpecies.create(THREE, id, { seed: 7, quality: pf19uQuality === 'low' ? 'low' : 'high', reducedMotion: true, derivatives: derivatives, growth: 1, health: 'healthy' });
       bounds = marineSpecimenBounds(THREE, model); look = thumbLook(THREE);
       scene = new THREE.Scene(); scene.background = look.backdrop || new THREE.Color(0x103e4b); scene.add(model.root);
       hemisphere = new THREE.HemisphereLight(0xdff6ff, 0x3a5f6a, 1.1); scene.add(hemisphere);
@@ -21191,10 +21804,18 @@
     var captureState = React.useState('idle'), captureMessage = captureState[0], setCaptureMessage = captureState[1], captureLife = React.useRef(null);
     var scaleState = React.useState(null), scaleGuide = scaleState[0], setScaleGuide = scaleState[1], scaleVisibleState = React.useState(false), scaleVisible = scaleVisibleState[0], setScaleVisible = scaleVisibleState[1];
     var memoryState = React.useState(null), remembered = memoryState[0], setRemembered = memoryState[1], memoryStatus = React.useState('empty'), memoryMessage = memoryStatus[0], setMemoryMessage = memoryStatus[1];
+    // Lane pf19u: the shared 3D detail choice. Changing it rebuilds the model on a fresh canvas
+    // and keeps the student's angle, zoom, lighting, remembered view and display options.
+    var pf19uPrefV = pf19uPref(env.d), pf19uQ = pf19uModelQuality(pf19uPrefV), pf19uLast = React.useRef(null), pf19uHold = React.useRef(null);
+    pf19uHold.current = { view: view, remembered: remembered, memory: memoryMessage, fine: fine, scaleVisible: scaleVisible };
+    var pf19uProf = pf19uPrefV === 'auto' ? pf19uProfile('Reef3DExplore') || pf19uProfile('Reef3D') : null, pf19uEngine = pf19uProfile('Reef3DExplore') ? 'Reef3DExplore' : 'Reef3D';
     React.useEffect(function () {
       var alive = true, owned = null, failureReported = false, captureSession = { active: true, busy: false, downloads: [] };
+      var pf19uKeep = pf19uLast.current && pf19uLast.current.id === props.id && pf19uLast.current.q !== pf19uQ ? pf19uHold.current : null;
+      pf19uLast.current = { id: props.id, q: pf19uQ };
       captureLife.current = captureSession; setCaptureMessage('idle');
       setRemembered(null); setMemoryMessage('empty'); setFine(false); setTurning(false); setTurntableStarted(false); setScaleVisible(false); setScaleGuide(null);
+      if (pf19uKeep) { setRemembered(pf19uKeep.remembered); setMemoryMessage(pf19uKeep.memory); setFine(pf19uKeep.fine); setScaleVisible(pf19uKeep.scaleVisible); }
       function failed() {
         if (!alive || failureReported) return; failureReported = true; closeCaptures(captureSession); controller.current = null; cancelGesture(); setTurning(false); setScaleVisible(false); setScaleGuide(null); setStatus('error');
         latest.current.onStatus('error', !!(interactive.current && interactive.current.contains(document.activeElement)));
@@ -21210,13 +21831,14 @@
           owned = createMarineSpecimenController(THREE, canvas.current, props.id, failed, function (active, current) {
             if (!alive) return;
             setTurning(active); if (active) setTurntableStarted(true); setView(current);
-          }, function (measurement) { if (alive) setScaleGuide(measurement); });
+          }, function (measurement) { if (alive) setScaleGuide(measurement); }, pf19uQ);
           if (!alive) { owned.dispose(); return; }
+          if (pf19uKeep && pf19uKeep.view) { try { owned.restoreView(pf19uKeep.view); } catch (e) {} }
           controller.current = owned; setView(owned.getView()); setStatus('ready'); latest.current.onStatus('ready');
         } catch (error) { failed(); }
       }).catch(failed);
       return function () { alive = false; closeCaptures(captureSession); if (captureLife.current === captureSession) captureLife.current = null; cancelGesture(); controller.current = null; if (owned) owned.dispose(); };
-    }, [props.id]);
+    }, [props.id, pf19uQ]);
     React.useEffect(function () { if (env.ctx.reduceMotion && controller.current) controller.current.setTurntable(false); }, [!!env.ctx.reduceMotion]);
     function releaseDownload(download) {
       if (download.timer != null) window.clearTimeout(download.timer); download.timer = null;
@@ -21375,8 +21997,13 @@
               t('stem.coralreef.sv_appearance', 'Appearance'),
               h('select', { id: uid + '-appearance', 'data-specimen-appearance-select': 'true', value: view.appearance, 'aria-describedby': uid + '-appearance-help', style: { boxSizing: 'border-box', minHeight: 44, width: '100%', minWidth: 0, border: '1px solid ' + P.ctlBorder, borderRadius: 10, padding: '8px 10px', font: 'inherit', background: P.card, color: P.text }, onChange: function (event) { appearance(event.target.value); } },
                 h('option', { value: 'natural' }, t('stem.coralreef.sv_appearance_natural', 'Natural color')),
-                h('option', { value: 'silhouette' }, t('stem.coralreef.sv_appearance_silhouette', 'Silhouette')))))),
-        h('canvas', { id: uid + '-canvas', ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details ' + uid + '-pinch-help',
+                h('option', { value: 'silhouette' }, t('stem.coralreef.sv_appearance_silhouette', 'Silhouette')))),
+            h('label', { htmlFor: uid + '-pf19u', 'data-pf19u-detail': 'specimen', style: { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, fontSize: 13, fontWeight: 600, color: P.text } },
+              t('stem.coralreef.pf19u_label', '3D detail'),
+              pf19uSelect(env, { id: uid + '-pf19u', 'aria-describedby': uid + '-pf19u-help', style: { boxSizing: 'border-box', minHeight: 44, width: '100%', minWidth: 0, border: '1px solid ' + P.ctlBorder, borderRadius: 10, padding: '8px 10px', font: 'inherit', background: P.card, color: P.text } })))),
+        h('p', { id: uid + '-pf19u-help', style: { margin: '0 0 2px', fontSize: 13, lineHeight: 1.45, color: P.muted } }, t('stem.coralreef.pf19u_help', 'Used for every 3D view. Choose Smoother if 3D runs slowly.')),
+        pf19uProf ? h(Pf19uStatus, { env: env, view: 'specimen', reason: pf19uProf.reason, tier: pf19uProf.tier, engine: pf19uEngine }) : null,
+        h('canvas', { key: 'pf19u-' + pf19uQ, id: uid + '-canvas', ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details ' + uid + '-pinch-help',
           onPointerDown: pointerStart, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: pointerEnd, onLostPointerCapture: pointerEnd,
           onKeyDown: function (event) {
             if (!ready || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -21810,7 +22437,7 @@
     var sources = ['dx-acropora-'+species,'dx-noaa-corals','dx-noaa-coral-algae','dx-iucn-acropora-'+species];
     if (plate.markSource) sources.push('dx-acropora-marks-'+species);
     var words = acroporaWords(species, __alloT);
-    return {habitat:words.habitat,diet:__alloT('stem.coralreef.dx_staghorn_coral_diet','Algal partners supply energy, and the animal polyps also capture tiny drifting food.'),
+    return {habitat:words.habitat,diet:rl21Text(null, __alloT('stem.coralreef.dx_staghorn_coral_diet', 'Algal partners supply energy, and the animal polyps also capture tiny drifting food.'), __alloT('stem.coralreef.dx_staghorn_coral_diet_simple', 'Algae partners give the coral energy. The coral\'s polyps are its small, soft animals. The polyps also catch tiny bits of food that drift by.')),
       behavior:words.behavior,observe:words.observe,sources:sources};
   }
 
@@ -22043,6 +22670,8 @@
             h('ul', { className:'crdx-badges' }, h('li', null, groups[meta.group]),
               found ? h('li', { style:{borderColor:P.good,color:P.good} }, __alloT('stem.coralreef.dx_identified_badge', 'Identified on a dive')) : null,
               iucnChip(h, meta, status, __alloT, 'li')),
+            // ui27: above the role, so the text it changes is below it and the switch stays under the finger.
+            h(Rl21Toggle, { env: env, where: 'guide' }),
             h('p', { 'data-profile-reading':'role', tabIndex:-1, style:{margin:'0 0 18px',fontSize:16} }, tx.role),
             h('div', { className:'crdx-actions' },
               h('button', { type:'button','data-save-profile':meta.id,'aria-pressed':saved?'true':'false',style:btnStyle(P,saved),onClick:toggleSave }, saved ? __alloT('stem.coralreef.dx_saved', 'Saved to your field guide') : __alloT('stem.coralreef.dx_save', 'Save this species')),
@@ -22173,6 +22802,7 @@
         h('p', null, __alloT('stem.coralreef.cx_intro', 'Put two organisms side by side. Start with shape and markings, then compare their lives on the reef.')),
         props.onPractice && pair.every(function (id) { return speciesMeta(id).group !== 'structure'; }) ? h('div', { className:'crdx-actions', style:{marginTop:16} },
           h('button', { type:'button', 'data-practice-comparison-pair':'true', style:btnStyle(P,true), onClick:function(){props.onPractice(pair.slice());} }, __alloT("stem.coralreef.cx_practice_pair", "Practice telling these apart"))) : null),
+      h(Rl21Toggle, { env: env, where: 'compare' }),
       connections.map(function(link){return h('section',{key:link.id,className:'crcmp-connection','data-comparison-connection':link.id,'aria-labelledby':uid+'-connection-'+link.id},
         h('h4',{id:uid+'-connection-'+link.id},link.kind),h('p',null,link.text),
         h('p',{className:'crrc-source'},h('a',{href:link.source.url,target:'_blank',rel:'noopener noreferrer',style:{color:P.accent}},link.source.title)));}),
@@ -22250,6 +22880,7 @@
       if (!connection || typeof connection !== 'object' || Array.isArray(connection)) return;
       ['partnerName', 'text'].forEach(function (key) { if (typeof connection[key] === 'string') text.push(connection[key]); });
     });
+    text.slice().forEach(function (s) { var other = sr23OtherText(s); if (other) text.push(other.text); });
     var hay = guideKey(text.join(' '));
     return q.split(' ').every(function (word) { return hay.indexOf(word) >= 0; });
   }
@@ -22276,7 +22907,13 @@
       if (typeof text !== 'string' || !text.trim()) return;
       var key = guideKey(text);
       var matches = words.filter(function (word) { return key.indexOf(word) >= 0; });
-      if (matches.length) candidates.push({ field: field, text: text, words: matches });
+      // sr23: a word found only in the other reading level gets that version, marked by `alt`.
+      var other = sr23OtherText(text), otherKey = other ? guideKey(other.text) : '';
+      var otherMatches = other ? words.filter(function (word) { return otherKey.indexOf(word) >= 0; }) : [];
+      var extra = otherMatches.filter(function (word) { return matches.indexOf(word) < 0; });
+      var covers = extra.length && matches.every(function (word) { return otherMatches.indexOf(word) >= 0; });
+      if (matches.length && !covers) candidates.push({ field: field, text: text, words: matches });
+      if (extra.length) candidates.push({ field: field, text: other.text, words: covers ? otherMatches : extra, alt: other.simple ? 'simple' : 'full' });
     }
     if (Array.isArray(tx.marks)) tx.marks.forEach(function (mark) { add('marks', mark); });
     add('role', tx.role);
@@ -22298,7 +22935,7 @@
       });
       if (best < 0) break;
       var item = candidates.splice(best, 1)[0];
-      chosen.push({ field: item.field, text: item.text });
+      chosen.push(item.alt ? { field: item.field, text: item.text, alt: item.alt } : { field: item.field, text: item.text });
       remaining = remaining.filter(function (word) { return item.words.indexOf(word) < 0; });
     }
     return chosen;
@@ -22828,9 +23465,12 @@
     if (activeRole) filtersOn.push(activeRole.label);
     if (filter !== 'all') filtersOn.push(collectionChoices.filter(function (f) { return f[0] === filter; })[0][1]);
     var foldOpen = foldChoice === null ? filtersOn.length > 0 : foldChoice;
+    // ui27: the switch the search hints name, beside the results it changes.
+    var levelToggle = h(Rl21Toggle, { env: env, where: 'search' });
     return h('div', {className:'cr-guide crds-guide','data-guide-compact':compact?'true':undefined,'data-gd10-narrow':narrow?'true':undefined,'data-gd10-grid':browseGrid?'true':undefined},
       h('style',null,LANE_CSS_C + MARINE_DISCOVERY_CSS),
       h('style',null,GD10_CSS),
+      h('style', null, GL20_CSS), h(Pd19Start, { env: env, sec: 'guide' }),
       h('section', { className:'crdx-hero' },
         h(GuideStrip, {env:env}),
         h('div', {className:'crds-hero-layout'},
@@ -22852,6 +23492,7 @@
       narrow
         ? h('section', {className:'crds-controls','aria-label':__alloT('stem.coralreef.ds_explore', 'Explore the field guide')},
           h('div', {className:'crds-search-grid'}, searchField),
+          levelToggle,
           resultRow,
           h('details', {className:'gd10-more','data-gd10-more':'true',open:foldOpen,onToggle:function(event){var isOpen=!!event.currentTarget.open;if(isOpen!==foldOpen)setFoldChoice(isOpen);}},
             h('summary', null, __alloT('stem.coralreef.gd10_more','More search and filter options'),
@@ -22863,6 +23504,7 @@
           h('div', {className:'crds-search-grid'}, searchField, modeField, groupField),
           searchHelp, searchIdeas, roleRow,
           h('div', {className:'crds-filter-row'}, collectionButtons, viewButtons),
+          levelToggle,
           resultRow),
       plateMatches.length ? h(AcroporaShelf,{env:env,plates:plateMatches,search:!!q,restorePlate:target && target.plate,
         onStudy:function(id){openPlate(id,'study');},onObserve:function(id){openPlate(id,'observe');}}) : null,
@@ -22896,11 +23538,12 @@
           h('span', { className: 'crds-group-icon', 'aria-hidden': 'true' }, reefIcon(h, g === 'structure' ? 'frame' : groupIconKind(g), 22)),
           h('h3', { ref: function (el) { groupEls.current[g] = el; }, tabIndex: -1 }, GN[g]),
           stats.filter(function (s) { return s.id === g; }).map(function (s) { return h('p', { key: g, className: 'crds-group-count' }, __alloFill(__alloT('stem.coralreef.g_group_found', '{found} of {n} found'), { found: s.found, n: s.n })); }),
-          h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: browseGrid ? 'repeat(auto-fill, minmax(min(100%, 124px), 1fr))' : compact ? 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))' : 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: browseGrid ? 8 : 12 } },
+          h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: browseGrid ? 'repeat(auto-fill, minmax(min(100%, 124px), 1fr))' : compact ? 'repeat(auto-fill, minmax(min(100%, 230px), 1fr))' : 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: browseGrid ? 8 : 12 } },
             items.map(function (m) {
               var tx = TX[m.id] || {}, isFound = !!log[m.id], pic = THUMBS[m.id];
               var evidence = q && mode === 'description' ? marineGuideSearchEvidence(q,tx,m,profiles[m.id],learningContext[m.id]) : [];
               var matchedDiet = activeRole && evidence.some(function(item){return item.field === 'diet';});
+              var dietAlt = activeRole ? evidence.filter(function (item) { return item.field === 'diet' && item.alt; })[0] : null;
               if (activeRole) evidence = evidence.filter(function (item) { return item.field !== 'diet'; });
               var looks = (m.lookalikes || []).filter(function (x) { return x !== m.id && speciesMeta(x); });
               var fileNumber = SPECIES_META.findIndex(function (entry) { return entry.id === m.id; }) + 1;
@@ -22930,10 +23573,13 @@
                 m.scientific ? h('p', {className:'crds-scientific',style:{margin:'0 0 2px',fontStyle:'italic',color:P.muted}},m.scientific) : null,
                 iucnChip(h, m, guideIU, __alloT),
                 hasFieldNotes(m.id) ? h('p', { 'data-guide-note-indicator': m.id, style: { margin: '0 0 6px', fontSize: 12, fontWeight: 650, color: P.accent } }, __alloT('stem.coralreef.fn_card_badge', 'Field notes added')) : null,
-                evidence.length ? h('div',{className:'crds-evidence','data-guide-match':m.id},evidence.map(function(item,i){return h('div',{key:i,'data-guide-match-field':item.field},h('p',null,h('strong',null,evidenceLabels[item.field]+': '),item.text),
-                  h('button',{type:'button','data-read-match':item.field,'data-read-match-index':i,ref:function(el){matchButtons.current[m.id+':'+item.field+':'+i]=el;},style:btnStyle(P,false,{minHeight:44,fontSize:13}),onClick:function(){openProfile(m.id,false,null,item.field,item.field+':'+i);},'aria-label':__alloFill(__alloT('stem.coralreef.ds_read_match_named','Read matching section: {section}, {name}'),{section:evidenceLabels[item.field],name:guideShortName(tx.name)})},__alloT('stem.coralreef.ds_read_match','Read matching section')));})):null,
+                evidence.length ? h('div',{className:'crds-evidence','data-guide-match':m.id},evidence.map(function(item,i){return h('div',{key:i,'data-guide-match-field':item.field,'data-guide-match-alt':item.alt},h('p',null,h('strong',null,(item.alt ? __alloFill(item.alt === 'full' ? __alloT('stem.coralreef.sr23_in_full','{section}, in the full text') : __alloT('stem.coralreef.sr23_in_simple','{section}, in simpler words'),{section:evidenceLabels[item.field]}) : evidenceLabels[item.field])+': '),item.text),
+                  item.alt ? h('p',{id:uid+'-hn24-'+m.id+'-'+i,'data-guide-match-hint':item.alt,style:{color:P.muted}},__alloFill(item.alt === 'full' ? __alloT('stem.coralreef.hn24_turn_off','Turn off {toggle} to read it there.') : __alloT('stem.coralreef.hn24_turn_on','Turn on {toggle} to read it there.'),{toggle:__alloT('stem.coralreef.rl21_simple','Simpler words')})) : null,
+                  h('button',{type:'button','data-read-match':item.field,'data-read-match-index':i,'aria-describedby':item.alt ? uid+'-hn24-'+m.id+'-'+i : undefined,ref:function(el){matchButtons.current[m.id+':'+item.field+':'+i]=el;},style:btnStyle(P,false,{minHeight:44,fontSize:13}),onClick:function(){openProfile(m.id,false,null,item.field,item.field+':'+i);},'aria-label':__alloFill(__alloT('stem.coralreef.ds_read_match_named','Read matching section: {section}, {name}'),{section:evidenceLabels[item.field],name:guideShortName(tx.name)})},__alloT('stem.coralreef.ds_read_match','Read matching section')));})):null,
                 roleNote ? h('div', { className: 'crds-evidence', 'data-guide-role-note': m.id }, h('p', null, h('strong', null, __alloT('stem.coralreef.dx_diet', 'What it eats'), ': '), profiles[m.id].diet),
-                  matchedDiet ? h('button',{type:'button','data-read-match':'diet',ref:function(el){matchButtons.current[m.id+':diet']=el;},style:btnStyle(P,false,{minHeight:44,fontSize:13}),onClick:function(){openProfile(m.id,false,null,'diet');},'aria-label':__alloFill(__alloT('stem.coralreef.ds_read_match_named','Read matching section: {section}, {name}'),{section:evidenceLabels.diet,name:guideShortName(tx.name)})},__alloT('stem.coralreef.ds_read_match','Read matching section')) : null) : null,
+                  dietAlt ? h('p',{'data-guide-match-alt':dietAlt.alt},h('strong',null,__alloFill(dietAlt.alt === 'full' ? __alloT('stem.coralreef.sr23_in_full','{section}, in the full text') : __alloT('stem.coralreef.sr23_in_simple','{section}, in simpler words'),{section:evidenceLabels.diet})+': '),dietAlt.text) : null,
+                  dietAlt ? h('p',{id:uid+'-hn24-'+m.id+'-diet','data-guide-match-hint':dietAlt.alt,style:{color:P.muted}},__alloFill(dietAlt.alt === 'full' ? __alloT('stem.coralreef.hn24_turn_off','Turn off {toggle} to read it there.') : __alloT('stem.coralreef.hn24_turn_on','Turn on {toggle} to read it there.'),{toggle:__alloT('stem.coralreef.rl21_simple','Simpler words')})) : null,
+                  matchedDiet ? h('button',{type:'button','data-read-match':'diet','aria-describedby':dietAlt ? uid+'-hn24-'+m.id+'-diet' : undefined,ref:function(el){matchButtons.current[m.id+':diet']=el;},style:btnStyle(P,false,{minHeight:44,fontSize:13}),onClick:function(){openProfile(m.id,false,null,'diet');},'aria-label':__alloFill(__alloT('stem.coralreef.ds_read_match_named','Read matching section: {section}, {name}'),{section:evidenceLabels.diet,name:guideShortName(tx.name)})},__alloT('stem.coralreef.ds_read_match','Read matching section')) : null) : null,
                 browseGrid && (marksBlock || looksBlock)
                   ? h('details', { className: 'gd10-marks', 'data-gd10-marks': m.id, open: !!marksOpen[m.id], onToggle: function (event) { toggleMarks(m.id, event); } },
                     h('summary', { style: { borderColor: P.ctlBorder, background: P.cardAlt, color: P.text } }, __alloT('stem.coralreef.g_marks', 'Field marks')), marksBlock, looksBlock)
@@ -23014,22 +23660,22 @@
   function helpCards(__alloT) {
     return [
       { id: 'stars', title: __alloT('stem.coralreef.help_stars_title', 'Reef Stars: fixing rubble in place'),
-        body: [__alloT('stem.coralreef.help_stars_1', 'Blast fishing leaves reefs as loose rubble that rolls around and buries young corals, so it rarely recovers on its own: untreated rubble at Komodo stayed near 3% coral for 17 years. Divers pin the rubble under webs of sand-coated steel Reef Stars and tie small corals onto them.'),
-          __alloT('stem.coralreef.help_stars_2', 'In one large project in Indonesia, coral cover on the frames rose from about 17% to about 56% in four years, and the reef built new limestone as fast as nearby healthy reefs. Scientists caution that these new reefs are mostly branching corals that bleach easily.')] },
+        body: [__alloT('stem.coralreef.help_stars_1', 'Blast fishing leaves reefs as loose rubble. The rubble rolls around and buries young corals, so it rarely recovers on its own. At Komodo, rubble that was left alone stayed near 3% coral for 17 years. Divers pin the rubble under webs of sand-coated steel Reef Stars. Then they tie small corals onto them.'),
+          rl21Text(null, __alloT('stem.coralreef.help_stars_2', 'In one large project in Indonesia, coral cover on the frames rose from about 17% to about 56% in four years, and the reef built new limestone as fast as nearby healthy reefs. Scientists caution that these new reefs are mostly branching corals that bleach easily.'), __alloT('stem.coralreef.help_stars_2_simple', 'In one large project in Indonesia, coral cover on the frames rose from about 17% to about 56% in four years. The reef also built new limestone as fast as nearby healthy reefs. But scientists caution that these new reefs are mostly branching corals. Those corals bleach easily.'))] },
       { id: 'garden', title: __alloT('stem.coralreef.help_garden_title', 'Coral gardening'),
-        body: [__alloT('stem.coralreef.help_garden_1', 'Like gardeners growing seedlings, divers grow small pieces of coral in underwater nurseries and plant them on damaged reefs. About two out of three planted corals survive in a typical project, and some plots have become dense coral thickets within a few years. Most projects cover an area about the size of a classroom or two, so gardening helps specific spots.')] },
+        body: [rl21Text(null, __alloT('stem.coralreef.help_garden_1', 'Like gardeners growing seedlings, divers grow small pieces of coral in underwater nurseries and plant them on damaged reefs. About two out of three planted corals survive in a typical project, and some plots have become dense coral thickets within a few years. Most projects cover an area about the size of a classroom or two, so gardening helps specific spots.'), __alloT('stem.coralreef.help_garden_1_simple', 'Divers grow coral the way gardeners grow seedlings. They grow small pieces of coral in underwater nurseries. Then they plant them on damaged reefs. In a typical project, about two out of three planted corals survive. Some plots have become thick patches of coral within a few years. Most projects cover an area about the size of a classroom or two. So gardening helps just those spots.'))] },
       { id: 'reserves', title: __alloT('stem.coralreef.help_reserves_title', 'No-take reserves'),
         body: [__alloT('stem.coralreef.help_reserves_1', 'When fishing stops in a well-guarded reserve, fish come back, though big predators can take decades. Large, old, well-enforced no-take reserves held about five times the biomass of large fish found in fished areas. More grazing fish keep seaweed down so young corals can grow. Reserves cannot stop bleaching, but they can help reefs bounce back afterwards.')] },
       { id: 'water', title: __alloT('stem.coralreef.help_water_title', 'Cleaner water and starfish control'),
-        body: [__alloT('stem.coralreef.help_water_1', 'On the Great Barrier Reef, reefs in cleaner water recovered faster after damage, and where divers removed coral-eating crown-of-thorns starfish early and thoroughly, coral cover rose instead of falling.')] },
+        body: [__alloT('stem.coralreef.help_water_1', 'On the Great Barrier Reef, reefs in cleaner water recovered faster after damage. In some places, divers removed crown-of-thorns starfish, which eat coral. Where they did this early and thoroughly, coral cover rose instead of falling.')] },
       { id: 'larvae', title: __alloT('stem.coralreef.help_larvae_title', 'Reseeding with coral larvae'),
-        body: [__alloT('stem.coralreef.help_larvae_1', 'Scientists collected millions of coral larvae on a spawning night and released them under net tents on a damaged Philippine reef. Most died, as wild coral babies do, but about 220 grew into corals big enough to spawn within two to three years, starting a new breeding group.')] },
+        body: [__alloT('stem.coralreef.help_larvae_1', 'On a spawning night, scientists collected millions of coral larvae. They released them under net tents on a damaged Philippine reef. Most died, as wild coral babies do. But about 220 grew into corals big enough to spawn within two to three years, and they started a new breeding group.')] },
       { id: 'structures', title: __alloT('stem.coralreef.help_structures_title', 'Reef Balls and shipwrecks: more fish, not always more coral'),
         body: [__alloT('stem.coralreef.help_structures_1', 'Fish quickly gather around Reef Balls, shipwrecks and other artificial reefs. Scientists are still working out whether these structures create new fish or mostly gather fish that already lived nearby. Studies of Reef Balls have not found that they help young corals survive or grow better.')] },
       { id: 'biorock', title: __alloT('stem.coralreef.help_biorock_title', 'A claim to check: Biorock'),
-        body: [__alloT('stem.coralreef.help_biorock_1', 'Biorock frames run a gentle electric current through steel so rock-like minerals coat them. The inventors report that corals grow faster and survive heat better. Careful tests with fair comparisons in Australia, Kenya and the Philippines mostly found no lasting benefit, and in one case found harm. Good science means checking big claims with fair tests.')] },
+        body: [rl21Text(null, __alloT('stem.coralreef.help_biorock_1', 'Biorock frames run a gentle electric current through steel so rock-like minerals coat them. The inventors report that corals grow faster and survive heat better. Careful tests with fair comparisons in Australia, Kenya and the Philippines mostly found no lasting benefit, and in one case found harm. Good science means checking big claims with fair tests.'), __alloT('stem.coralreef.help_biorock_1_simple', 'Biorock frames send a gentle electric current through steel. This makes rock-like minerals coat the steel. The inventors say that corals grow faster and survive heat better. But careful, fair tests in Australia, Kenya and the Philippines mostly found no lasting benefit. In one case they found harm. Good science means checking big claims with fair tests.'))] },
       { id: 'fragile', title: __alloT('stem.coralreef.help_fragile_title', 'Fast but fragile'),
-        body: [__alloT('stem.coralreef.help_fragile_1', 'In 2022 parts of the Great Barrier Reef had their highest coral cover in 36 years, much of it fast-growing branching and table corals. Heat, cyclones and starfish in 2024 then caused the largest one-year drops on record. Recovery is real, and it lasts longest when heatwaves ease.')] }
+        body: [rl21Text(null, __alloT('stem.coralreef.help_fragile_1', 'In 2022 parts of the Great Barrier Reef had their highest coral cover in 36 years, much of it fast-growing branching and table corals. Heat, cyclones and starfish in 2024 then caused the largest one-year drops on record. Recovery is real, and it lasts longest when heatwaves ease.'), __alloT('stem.coralreef.help_fragile_1_simple', 'In 2022, parts of the Great Barrier Reef had their highest coral cover in 36 years. Much of it was fast-growing branching and table corals. Then in 2024, heat, cyclones and starfish caused the largest one-year drops on record. Cyclones are huge storms. Recovery is real. It lasts longest when heatwaves ease.'))] }
     ];
   }
   // @@HOPE_END

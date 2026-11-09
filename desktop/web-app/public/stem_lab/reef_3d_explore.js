@@ -67,16 +67,95 @@
   function fwdZ(b) { return -Math.cos(b); }
   function bearingTo(dx, dz) { return Math.atan2(dx, -dz); }
   function yawFor(b) { return Math.PI / 2 - b; } // models face +X
+  // ---- Device profile and the slow signal (same block in reef_3d_engine.js) ----
+  // A software WebGL renderer draws on the CPU: far too slow for the detailed tier.
+  var SOFT_GL = /swiftshader|llvmpipe|softpipe|software rasterizer|microsoft basic render|mesa offscreen/i;
+  // The unmasked GPU name from one tiny throwaway context, released at once; null
+  // without WebGL (jsdom), with the extension blocked, or on any error.
+  function probeRenderer() {
+    var doc = null, gl = null, name = null;
+    try {
+      doc = global.document;
+      if (!doc || typeof doc.createElement !== 'function' || typeof global.WebGLRenderingContext === 'undefined') return null;
+      var c = doc.createElement('canvas'); c.width = 1; c.height = 1;
+      var attrs = { alpha: false, antialias: false, depth: false, stencil: false, failIfMajorPerformanceCaveat: false };
+      gl = c.getContext('webgl', attrs) || c.getContext('experimental-webgl', attrs);
+      var ext = gl && typeof gl.getExtension === 'function' ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+      var v = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null;
+      if (typeof v === 'string' && v) name = v.slice(0, 160);
+    } catch (ignore) { name = null; }
+    try { var lose = gl && typeof gl.getExtension === 'function' ? gl.getExtension('WEBGL_lose_context') : null; if (lose && typeof lose.loseContext === 'function') lose.loseContext(); } catch (ignore) {}
+    return name;
+  }
+  // Rules in order; the first that matches names the reason. The old selectQuality
+  // rules keep their order (cores, memory, then a small screen without a fine
+  // pointer); software GL goes first, as no CPU makes it fast, and Save-Data before
+  // the screen rule. Cached for the page (shared by both engines), never throws.
+  function profileDevice(opts) {
+    var KEY = '_reefDeviceProfile', p = null;
+    try { p = global[KEY]; } catch (ignore) {}
+    if (!p || (opts && opts.refresh)) {
+      var nav = null, cores = null, memory = null, saveData = false, wide = true, fine = false, n;
+      try { nav = global.navigator || null; } catch (ignore) {}
+      try { n = nav ? Number(nav.hardwareConcurrency) : 0; cores = n > 0 ? n : null; } catch (ignore) {}
+      try { n = nav ? Number(nav.deviceMemory) : 0; memory = n > 0 ? n : null; } catch (ignore) {}
+      try { saveData = !!(nav && nav.connection && nav.connection.saveData); } catch (ignore) {}
+      try { wide = !(global.innerWidth < 640); } catch (ignore) {}
+      try { fine = !wide && typeof global.matchMedia === 'function' && !!global.matchMedia('(pointer: fine)').matches; } catch (ignore) {}
+      var renderer = probeRenderer(), reason = 'default';
+      // School Chromebooks report 4 or fewer cores and little memory.
+      if (renderer && SOFT_GL.test(renderer)) reason = 'software_gl';
+      else if (cores && cores <= 4) reason = 'cores';
+      else if (memory && memory <= 4) reason = 'memory';
+      else if (saveData) reason = 'save_data';
+      else if (!wide && !fine) reason = 'small_touch';
+      p = { tier: reason === 'default' ? 'high' : 'low', reason: reason, cores: cores, memory: memory, renderer: renderer };
+      try { Object.defineProperty(global, KEY, { value: p, configurable: true, writable: true, enumerable: false }); } catch (ignore) {}
+    }
+    return { tier: p.tier, reason: p.reason, cores: p.cores, memory: p.memory, renderer: p.renderer };
+  }
   function selectQuality(requested) {
     if (requested === 'low' || requested === 'high') return requested;
-    var nav = global.navigator || {};
-    // School Chromebooks report 4 or fewer cores and little memory.
-    if ((nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) || (nav.deviceMemory && nav.deviceMemory <= 4)) return 'low';
-    if (!(global.innerWidth < 640)) return 'high';
-    var fine = false;
-    try { fine = typeof global.matchMedia === 'function' && global.matchMedia('(pointer: fine)').matches; } catch (ignore) {}
-    return fine ? 'high' : 'low';
+    return profileDevice().tier;
   }
+  // slow: the frame stays over 40 ms (under 25 fps) for 5 s of counted frames once
+  // the runtime reductions are spent; it clears after 3 s under 34 ms. Counted
+  // frames are unpaused, visible, full-motion ones after 3 s of them (shaders and
+  // uploads settle). A gap counts at most 1 s, so a lone hitch cannot fill the hold
+  // (the next quick frames reset it) while a device under 1 fps is still judged.
+  // 40 ms leaves a 30 fps cap (battery saver, low power mode) alone.
+  var SLOW = { ms: 40, okMs: 34, hold: 5, okHold: 3, grace: 3, stall: 1000 };
+  function slowWatch() { return { slow: false, live: 0, over: 0, ok: 0 }; }
+  // One frame: dtMs its interval, avgMs the smoothed frame time. True when w.slow changed.
+  function slowStep(w, dtMs, avgMs, spent, counting) {
+    var was = w.slow;
+    if (!counting) { w.live = w.over = w.ok = 0; w.slow = false; return was; }
+    if (!(dtMs > 0)) return false;
+    var s = Math.min(dtMs, SLOW.stall) / 1000; w.live += s;
+    if (w.live < SLOW.grace) return false;
+    if (!w.slow) { w.over = spent && avgMs > SLOW.ms ? w.over + s : 0; if (w.over >= SLOW.hold) { w.slow = true; w.ok = 0; } }
+    else { w.ok = avgMs < SLOW.okMs ? w.ok + s : 0; if (w.ok >= SLOW.okHold) { w.slow = false; w.over = 0; } }
+    return w.slow !== was;
+  }
+  // Governor pacing on the clock: a check every 10 frames, or sooner once 400 ms of
+  // frames have passed, so a device under 25 fps is helped within seconds; at 25 fps
+  // and up the 10 frames come first and nothing changes. A frame counts as the median
+  // of the last 5 intervals (each at most 1 s), so one long gap never fills a check;
+  // a check's steps scale with its time, at most 3 checks' worth.
+  var PACE = { ms: 400, every: 10, wMax: 3, skipMs: 2400, crawlMs: 50 };
+  function paceWatch() { return { raw: [], typ: 0, win: 0, seenMs: 0 }; }
+  function paceSample(p, rawMs) {
+    if (rawMs > 0) {
+      p.raw.push(Math.min(rawMs, SLOW.stall)); if (p.raw.length > 5) p.raw.shift();
+      var s = p.raw.slice().sort(function (a, b) { return a - b; }); p.typ = s[s.length >> 1];
+    }
+    return p.typ;
+  }
+  // Smoothing of the frame average: 0.1 at 20 fps and up (as before), more per frame when
+  // frames are longer so it follows sooner, at most 0.25 (8 fps and under) so a burst of
+  // quick frames on a GPU-bound device cannot swing it. Script time keeps 0.1: noisier, it
+  // would cross the 22 ms line and restart the slow hold.
+  function paceAlpha(typ) { return 0.1 * Math.min(2.5, Math.max(1, typ / PACE.crawlMs)); }
   function monotone(knots) {
     var n = knots.length, xs = [], ys = [], d = [], m = [], i;
     for (i = 0; i < n; i++) { xs.push(knots[i][0]); ys.push(knots[i][1]); }
@@ -198,17 +277,17 @@
     blue_sea_star: 'flat', sea_cucumber: 'sand', bluespotted_stingray: 'channel', long_spined_urchin: 'reef', crown_of_thorns: 'garden', nudibranch: 'reef',
     mushroom_coral: 'garden', brain_coral: 'garden', staghorn_coral: 'garden', boulder_coral: 'garden', table_coral: 'crest', cauliflower_coral: 'crest', foliose_coral: 'slope',
     acropora_humilis:'rockShoulder', acropora_millepora:'rockShoulder', acropora_clathrata:'rockShoulder',
-    fire_coral: 'crest', blue_coral: 'flat', pipe_organ_coral: 'slope', birdsnest_coral: 'bommie',
+    fire_coral: 'crest', blue_coral: 'flat', pipe_organ_coral: 'slope', birdsnest_coral: 'rockShoulder',
     reef_star: 'rubble', reef_ball: 'rubble', coral_tree_nursery: 'rubble', lionfish: 'bommieSide', peacock_grouper: 'bommieSide',
     porcupinefish: 'bommieSide', day_octopus: 'rubbleEdge', anthias: 'bommieAbove', blue_green_chromis: 'bommieAbove', yellow_boxfish: 'garden',
     firefish: 'bommieAbove', copperband_butterflyfish: 'garden', spotted_garden_eel: 'sand', banded_pipefish: 'bommieSide', yellow_longnose_butterflyfish: 'garden', pajama_cardinalfish: 'bommieAbove', banggai_cardinalfish: 'bommieAbove', giant_triton: 'rubbleEdge', blue_velvet_headshield_slug: 'sand', regal_angelfish: 'garden', mandarin_dragonet: 'rubbleEdge', harlequin_shrimp: 'rubbleEdge', spotted_seahorse: 'rubbleEdge', bennetts_feather_star: 'bommie', peacock_mantis_shrimp: 'rubble', ribbon_eel: 'sand', leaf_scorpionfish: 'rubble', longnose_hawkfish: 'slope', chocolate_chip_sea_star: 'sand',
     porcelain_anemone_crab: 'anemone', varicose_phyllidia: 'reef', broadclub_cuttlefish: 'rubbleEdge', blackspotted_puffer: 'garden',
-    ocellated_eagle_ray: 'channel', textile_cone: 'rubbleEdge', orange_cup_coral: 'shadedRock', banded_sea_krait: 'bommieSide',
+    ocellated_eagle_ray: 'channel', textile_cone: 'rubbleEdge', orange_cup_coral: 'shadedShoulder', banded_sea_krait: 'bommieSide',
     bubble_coral: 'garden', hammer_coral: 'slope', flowerpot_coral: 'garden',
     white_spotted_hermit_crab: 'rubble', longfin_bannerfish: 'slope', bigfin_reef_squid: 'channel',
     blackfin_barracuda: 'channel', titan_triggerfish: 'rubbleEdge', bluefin_trevally: 'slope',
     drupella_snail: 'garden', pincushion_sea_star: 'garden', spanish_dancer: 'reef', banded_coral_shrimp: 'bommieSide',
-    blue_ringed_octopus: 'rubbleEdge', bedfords_flatworm: 'reef', galaxy_coral: 'garden', finger_coral: 'flat',
+    blue_ringed_octopus: 'rubbleEdge', bedfords_flatworm: 'rockShoulder', galaxy_coral: 'garden', finger_coral: 'flat',
     blacktip_reef_shark: 'flat', dusky_farmerfish: 'bommie',
     foxface_rabbitfish: 'garden', leopard_coral_grouper: 'bommieSide', dash_and_dot_goatfish: 'sand', sixbar_wrasse: 'crest',
     goldmouth_sea_squirt: 'shadedShoulder', feather_duster_worm: 'rockShoulder'
@@ -1630,6 +1709,9 @@
     // distances, then thins the planktivore crowd, then refreshes the shadows less often;
     // the frame's script time slices more work and thins the crowd too (perfGovern).
     var gov = { scale: 1, frames: 0, level: 0, cpu: 0, cpuMs: 0, frameMs: 0, seen: 0, up: 0, down: 0, slice: 1, crowd: 1, shadowEvery: 1, t0: null }, TRI_BUDGET = high ? 860000 : 330000, CALL_BUDGET = high ? 400 : 170;
+    // autoReason: why 'auto' chose this tier (null when the student chose); slowW: the slow signal.
+    var autoReason = options.quality === 'low' || options.quality === 'high' ? null : profileDevice().reason, slowW = slowWatch();
+    var govPace = paceWatch();
     var floorMesh = null, bommieMesh = null, orgRoot = null, diver = null, bubbles = null, focusRing = null, mask = null, backdrop = null, surface = null, motes = null, sun = null, hemi = null;
     var shafts = [], U = null, snowU = null, plantMotions = [], fogNear = new T.Color(), fogFar = new T.Color(), topNear = new T.Color(), topFar = new T.Color(), lastWaterDepth = -1;
     var diverPos = new T.Vector3(), bearing = 0, speed = 0, vy = 0, turnRate = 0, bodyPitch = 0, bodyRoll = 0, kick = 0, swimEffort = 0, autopilot = null;
@@ -3765,7 +3847,7 @@
       return rock && (!floor || rock.point.y > floor.point.y + 0.15) ? rock : null;
     }
     function matchSmallSubstrate(o) {
-      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm' && o.speciesId !== 'banded_coral_shrimp' && o.speciesId !== 'drupella_snail' && o.speciesId !== 'blue_ringed_octopus' && o.speciesId !== 'bedfords_flatworm')) return;
+      if (o.substrateMatched || (o.speciesId !== 'nudibranch' && o.speciesId !== 'cleaner_shrimp' && o.speciesId !== 'harlequin_shrimp' && o.speciesId !== 'goldmouth_sea_squirt' && o.speciesId !== 'feather_duster_worm' && o.speciesId !== 'banded_coral_shrimp' && o.speciesId !== 'drupella_snail' && o.speciesId !== 'blue_ringed_octopus' && o.speciesId !== 'bedfords_flatworm' && o.speciesId !== 'finger_coral' && o.speciesId !== 'birdsnest_coral' && o.speciesId !== 'galaxy_coral' && o.speciesId !== 'hammer_coral')) return;
       // The rock's rendered triangles can lie centimetres above its smooth
       // analytic placement surface. Match these centimetre-sized animals to
       // the actual supporting face once, so their feet and bodies remain above
@@ -6215,7 +6297,7 @@
       if (!paused) perfFrame++;
       gov.t0 = now();
       // The frame interval, smoothed: the size budget only trims a frame that is slow.
-      if (!paused && dt > 0) gov.frameMs = gov.frameMs > 0 ? gov.frameMs + (dt * 1000 - gov.frameMs) * 0.1 : dt * 1000;
+      if (!paused && dt > 0) gov.frameMs = gov.frameMs > 0 ? gov.frameMs + (dt * 1000 - gov.frameMs) * paceAlpha(govPace.typ) : dt * 1000;
       if (!perfFwd) perfFwd = new T.Vector3();
       camera.getWorldDirection(perfFwd);
       perfCos = Math.cos(Math.min(Math.PI * 0.95, Math.atan(Math.tan(camera.fov * Math.PI / 360) * Math.hypot(1, camera.aspect)) + 0.25));
@@ -6445,11 +6527,12 @@
         navigation: autopilot ? { uid: autopilot.o.uid } : null,
         buoyancy: buoyancyState(),
         moments: loaded ? momentList(eye) : [],
-        frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
+        frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0,
+        autoReason: autoReason, slow: slowW.slow
       };
     }
     function stateKey(s) {
-      return [s.ready, s.paused, s.view, s.quality, s.light, s.vision, s.magnification, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
+      return [s.ready, s.paused, s.view, s.quality, s.slow, s.light, s.vision, s.magnification, s.focused ? s.focused.uid + ':' + Math.round(s.focused.distanceM * 2) + ':' + cueKey(s.focused) : '-', s.nearby.map(function (n) { return n.uid + (n.inView ? '+' : '-') + cueKey(n); }).join(','),
         momentKey(s.moments), s.navigation ? s.navigation.uid : '-',
         Math.round(s.diver.x), Math.round(s.diver.z), Math.round(s.diver.depthM * 2), Math.round(s.diver.headingDeg / 15), buoyancyKey(s.buoyancy)].join('|');
     }
@@ -6480,18 +6563,21 @@
       raf = 0;
     }
     function refresh() { requestFrame(); }
-    function govern() {
+    function govern(rawMs) {
       // Pausing preserves the scene while a diver studies it or compares views.
       // Settling frames are not evidence of interactive performance pressure.
       if (paused) { gov.t0 = null; return; }
       var info = renderer && renderer.info && renderer.info.render;
       if (!info) return;
+      var typ = paceSample(govPace, rawMs);
       // Script time of this frame (world update and draw, from perfBegin), smoothed; the
-      // first second is skipped, while late uploads and programs still settle.
-      if (gov.t0 !== null) { if (++gov.seen > 60) gov.cpuMs += (Math.max(0, now() - gov.t0) - gov.cpuMs) * 0.1; gov.t0 = null; }
-      if (++gov.frames < 10) return;
-      gov.frames = 0;
-      perfGovern(Math.max((info.triangles || 0) / TRI_BUDGET, (info.calls || 0) / CALL_BUDGET), gov.cpuMs);
+      // first 60 frames or 2.4 s are skipped, while late uploads and programs still settle.
+      if (gov.t0 !== null) { govPace.seenMs += typ; if (++gov.seen > 60 || govPace.seenMs >= PACE.skipMs) gov.cpuMs += (Math.max(0, now() - gov.t0) - gov.cpuMs) * 0.1; gov.t0 = null; }
+      govPace.win += typ;
+      if (++gov.frames < PACE.every && govPace.win < PACE.ms) return;
+      var w = clamp(govPace.win / PACE.ms, 1, PACE.wMax);
+      gov.frames = 0; govPace.win = 0;
+      perfGovern(Math.max((info.triangles || 0) / TRI_BUDGET, (info.calls || 0) / CALL_BUDGET), gov.cpuMs, w);
     }
     // Two pressures: the frame's size against the budgets (level 0..3) and its script
     // time (cpu 0..3). Level spends itself in stages: mobile animals' reach
@@ -6504,28 +6590,44 @@
     // A short peak never trims: a
     // mild overrun must last two checks, and what was trimmed comes back once the frame
     // is well inside the budget or fast again.
-    function perfGovern(over, cpuMs) {
-      var slow = gov.frameMs > 20;
+    // w: how many checks' worth of time this check covers (1 at 25 fps and up). Under
+    // 20 fps (crawl) a lasting mild overrun climbs as fast as a big one.
+    function perfGovern(over, cpuMs, w) {
+      var slow = gov.frameMs > 20, k = w > 1 ? w : 1, crawl = gov.frameMs > PACE.crawlMs;
       gov.up = over > 1 && slow ? gov.up + 1 : 0; gov.down = over < 0.9 || gov.frameMs < 18 ? gov.down + 1 : 0;
-      var level = gov.level + (over > 1.3 && slow ? 0.2 : gov.up >= 2 ? 0.08 : gov.down >= 2 ? -0.1 : 0);
-      var cpu = gov.cpu + (cpuMs > 22 ? 0.25 : cpuMs < 16 ? -0.1 : 0);
+      var level = gov.level + k * (over > 1.3 && slow ? 0.2 : gov.up >= 2 ? (crawl ? 0.2 : 0.08) : gov.down >= 2 ? -0.1 : 0);
+      var cpu = gov.cpu + k * (cpuMs > 22 ? 0.25 : cpuMs < 16 ? -0.1 : 0);
       gov.level = clamp(level, 0, 3); gov.cpu = clamp(cpu, 0, 3);
       gov.crowd = 1 - 0.5 * Math.max(clamp(gov.level - 1, 0, 1), clamp(gov.cpu - 1, 0, 1));
       gov.shadowEvery = gov.level > 2.5 ? 3 : gov.level > 2 ? 2 : 1;
       gov.slice = gov.cpu > 0.5 ? 2 : 1;
       var scale = r2(Math.min(1 - 0.55 * clamp(gov.level, 0, 1), 1 - 0.4 * clamp(gov.cpu - 2, 0, 1)));
       if (scale !== gov.scale) { gov.scale = scale; refreshDecor(true); }
+      // Spent: each pressure is at its last stage, or has nothing left to act on (a frame
+      // inside the draw budget, script time under the line), so the governor will cut no more.
+      gov.spent = (gov.level >= 3 || over <= 1) && (gov.cpu >= 3 || cpuMs <= 22);
+      perfReport(over);
     }
+    function perfReport(over) {
+      if (typeof options.onPerf !== 'function') return;
+      try { options.onPerf({ level: r2(gov.level), cpu: r2(gov.cpu), over: over === undefined ? null : r2(over), scale: gov.scale, crowd: r2(gov.crowd), shadowEvery: gov.shadowEvery, slice: gov.slice, frameMs: r1(gov.frameMs), cpuMs: r1(gov.cpuMs), spent: !!gov.spent, slow: slowW.slow }); } catch (ignore) {}
+    }
+    // The slow signal, once per drawn frame (rawMs: the real frame interval).
+    function perfSlow(rawMs) {
+      if (slowStep(slowW, rawMs, gov.frameMs, !!gov.spent, !paused && !reducedMotion && !hidden())) { perfReport(); notify(true); }
+    }
+    function perfSlowReset() { var changed = slowStep(slowW, 0, 0, false, false); if (changed) perfReport(); return changed; }
     function tick(stamp) {
       raf = 0;
       if (disposed || contextLost || hidden()) return;
       try {
+        var rawMs = lastStamp === null ? 0 : stamp - lastStamp;
         var dt = lastStamp === null ? 0 : clamp((stamp - lastStamp) / 1000, 0, 0.1); lastStamp = stamp;
         if (!paused) { worldTime += dt * (reducedMotion ? 0.45 : 1); visualTime += dt; updateDiver(dt); }
         animateDiver(dt); if (!paused) updateBubbles(dt);
         updateCamera(Math.max(dt, 0.016), false); updateWater(); updateWorld(dt);
         renderer.render(scene, camera); frames++;
-        govern(); notify(false);
+        govern(rawMs); perfSlow(rawMs); notify(false);
         settle = paused ? settle + 1 : 0;
         if (!paused || settle < 40 || dragging) requestFrame();
       } catch (error) { stopLoop(); paused = true; reportError(error); }
@@ -6676,10 +6778,10 @@
       view = v; diver.visible = v === 'third'; mask.visible = v === 'first' && !photoMode; look.pitch = 0;
       updateLens(); animateDiver(0); updateCamera(0, true); notify(true); refresh();
     }
-    function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; settle = 0; notify(true); refresh(); }
+    function setPaused(value) { if (disposed) return; paused = !!value; lastStamp = null; settle = 0; perfSlowReset(); notify(true); refresh(); }
     function setReducedMotion(value) {
       if (disposed || reducedMotion === !!value) return;
-      reducedMotion = !!value;
+      reducedMotion = !!value; perfSlowReset();
       // A changed preference stops the current dive without rebuilding its reef.
       // Disabling the preference leaves the learner in control of resuming.
       if (reducedMotion) paused = true;
@@ -6940,7 +7042,7 @@
       reportError(new Error('The 3D reef dive lost its graphics context. Reopen the dive or use the 2D survey.'));
       notify(true);
     });
-    listen(doc, 'visibilitychange', function () { lastStamp = null; if (hidden()) { stopLoop(); clearKeys(); } else refresh(); });
+    listen(doc, 'visibilitychange', function () { lastStamp = null; var was = perfSlowReset(); if (hidden()) { stopLoop(); clearKeys(); if (was) notify(true); } else refresh(); });
     if (typeof global.ResizeObserver === 'function') { resizeObserver = new global.ResizeObserver(function () { resize(); }); resizeObserver.observe(canvas); }
     else listen(global, 'resize', resize);
 
@@ -6951,5 +7053,5 @@
     return controller;
   }
 
-  global.Reef3DExplore = { version: '1.0.0', mount: mount };
+  global.Reef3DExplore = { version: '1.0.0', mount: mount, profileDevice: profileDevice };
 })(window);

@@ -116,13 +116,13 @@
     "log": "📋 লগ",
     "reset_2": "↺ রিসেট",
     "hypothesis_when_does_area_rows_cols": "অনুমান: ক্ষেত্রফল = সারি + কলাম কখন হয়?",
-    "area_hypothesis": "??????????? ????????? ??????",
+    "area_hypothesis": "ক্ষেত্রফলের সম্পর্ক নিয়ে অনুমান",
     "stuck_show_open_prompts": "🤔 আটকে — খোলা প্রম্পট দেখান",
     "find_sizes_where_area_perimeter_rare_i": "এমন মাপ খুঁজে বের করো যেখানে ক্ষেত্রফল = পরিসীমা (বিরল পূর্ণসংখ্যা)।",
     "when_does_swapping_rows_cols_change_an": "সারি/কলাম অদলবদল কখন কিছু বদলায়?",
     "i_understand_explain_in_own_words": "আমি বুঝি — নিজের ভাষায় ব্যাখ্যা করুন",
     "explain_commutative_property_area_leng": "বিনিময় ধর্ম + ক্ষেত্রফল = দৈর্ঘ্য × প্রস্থ ব্যাখ্যা করো।",
-    "area_explanation": "??????????? ????? ??????? ???????? ????",
+    "area_explanation": "ক্ষেত্রফল ও গুণের সম্পর্ক ব্যাখ্যা করুন",
     "design_note_discrete_4_state_classific": "ডিজাইন নোট: বিচ্ছিন্ন ৪-অবস্থা শ্রেণিবিভাগ; কোনো ক্ষেত্রফল পরীক্ষার স্কোর নেই; কোনো প্রকাশ নেই — ইচ্ছাকৃতভাবে।"
   },
   "missing": {}

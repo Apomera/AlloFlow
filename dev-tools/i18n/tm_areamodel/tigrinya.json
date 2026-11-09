@@ -116,13 +116,13 @@
     "log": "📋 መዝገብ",
     "reset_2": "↺ ዳግም ኣቐምጥ",
     "hypothesis_when_does_area_rows_cols": "ግምት፦ ስፍሓት = መስርዓት + ዓምድታት መዓስ እዩ?",
-    "area_hypothesis": "?? ???? ??? ???",
+    "area_hypothesis": "መላምት ርክብ ስፍሓት",
     "stuck_show_open_prompts": "🤔 ተሓዚእካ — ክፉታት ሕቶታት ኣርኢ",
     "find_sizes_where_area_perimeter_rare_i": "ስፍሓት = ዙርያ ዝኾኑ መጠናት ድለ (ዘይተለምዱ ምሉእ ቁጽርታት)።",
     "when_does_swapping_rows_cols_change_an": "መስርዓት/ዓምድታት ምልውዋጥ መዓስ ገለ ይቕይር?",
     "i_understand_explain_in_own_words": "ተረዲኡኒ — ብቓላትካ ግለጽ",
     "explain_commutative_property_area_leng": "ናይ ምልውዋጥ ባህሪ + ስፍሓት = ንውሓት × ስፍሓት ግለጽ።",
-    "area_explanation": "?? ??? ????? ????? ?? ??? ???",
+    "area_explanation": "ኣብ መንጎ ስፍሓትን ምርባሕን ዘሎ ርክብ ግለጽ",
     "design_note_discrete_4_state_classific": "ናይ ንድፊ መዘኻኸሪ፦ ፍሉይ ናይ 4-ኩነታት ምድብ፤ ናይ ስፍሓት ፈተና ነጥቢ የለን፤ ምግላጽ የለን — ብተገዳስነት።"
   },
   "missing": {}

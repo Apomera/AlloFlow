@@ -5,3 +5,6 @@ fixtures_report.json
 node_modules/
 package-lock.json
 compiled/
+
+# A saved login (cookies + storage) IS the login: never commit it. login_capture.cjs also refuses to write one that git would not ignore.
+auth/

@@ -1274,7 +1274,7 @@ const QuickStartWizard = React.memo(({
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-sky-800 text-lg"
-  }, pick(t('wizard.paste_text'), 'Paste or type text')), /*#__PURE__*/React.createElement("span", {
+  }, pick(t('sidebar.source_paste_or_type'), 'Paste or type your own text')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
   }, pick(t('wizard.paste_desc'), 'Use your own passage, article, or notes'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1314,9 +1314,9 @@ const QuickStartWizard = React.memo(({
     className: "text-teal-600"
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700 text-lg"
-  }, wt('wizard.find_web', 'Find on the Web')), /*#__PURE__*/React.createElement("span", {
+  }, wt('input.find_online', 'Find online')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
-  }, wt('wizard.find_web_desc', 'Paste a link or let AI search for you'))), /*#__PURE__*/React.createElement("button", {
+  }, wt('input.qs_find_sub', 'Paste a link or let AI search'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "wizard_storybook_source",
     onClick: () => {
@@ -1334,9 +1334,9 @@ const QuickStartWizard = React.memo(({
     "aria-hidden": "true"
   }, "📖")), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-amber-700 text-lg"
-  }, wt('wizard.storybooks', 'Reading Catalog')), /*#__PURE__*/React.createElement("span", {
+  }, wt('input.reading_catalog', 'Reading catalog')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
-  }, wt('wizard.storybooks_desc', 'Books, articles, and primary sources'))), AiNotice && /*#__PURE__*/React.createElement("div", {
+  }, wt('input.qs_book_sub', 'Books, articles & primary sources'))), AiNotice && /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
   }, /*#__PURE__*/React.createElement(AiNotice, {
     t: t
@@ -1364,7 +1364,7 @@ const QuickStartWizard = React.memo(({
     className: "text-purple-600 fill-current"
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-purple-700 text-lg"
-  }, t('wizard.generate_scratch')), /*#__PURE__*/React.createElement("span", {
+  }, wt('input.actions.write_with_ai', 'Write with AI')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
   }, t('wizard.generate_desc')))))), step === 3 && /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300"
@@ -1420,7 +1420,7 @@ const QuickStartWizard = React.memo(({
     size: 18
   })))), localData.sourceMode === 'search' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-lg font-bold text-slate-700 mb-2"
-  }, wt('wizard.find_web', 'Find on the Web')), /*#__PURE__*/React.createElement("p", {
+  }, wt('input.find_online', 'Find online')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-4 text-sm"
   }, wt('wizard.find_web_helper', 'Paste a link to import that page, or describe what you need and AI will find options.')), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-6"
@@ -1584,7 +1584,7 @@ const QuickStartWizard = React.memo(({
     size: 18
   }))))), localData.sourceMode === 'generate' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-lg font-bold text-slate-700 mb-2"
-  }, t('wizard.generate_scratch_title')), /*#__PURE__*/React.createElement("p", {
+  }, wt('input.actions.write_with_ai', 'Write with AI')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-6 text-sm"
   }, t('wizard.generate_scratch_helper')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"

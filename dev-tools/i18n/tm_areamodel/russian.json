@@ -116,13 +116,13 @@
     "log": "📋 Журнал",
     "reset_2": "↺ Сброс",
     "hypothesis_when_does_area_rows_cols": "Гипотеза: когда площадь = строки + столбцы?",
-    "area_hypothesis": "???????? ? ????? ???????",
+    "area_hypothesis": "Гипотеза о связи площади и умножения",
     "stuck_show_open_prompts": "🤔 Застрял — показать открытые подсказки",
     "find_sizes_where_area_perimeter_rare_i": "Найди размеры, где площадь = периметр (редкие целые).",
     "when_does_swapping_rows_cols_change_an": "Когда перестановка строк/столбцов что-то меняет?",
     "i_understand_explain_in_own_words": "Я понимаю — объяснить своими словами",
     "explain_commutative_property_area_leng": "Объясни переместительное свойство + площадь = длина × ширина.",
-    "area_explanation": "????????? ????? ??????? ? ?????????",
+    "area_explanation": "Объясните связь между площадью и умножением",
     "design_note_discrete_4_state_classific": "Примечание по дизайну: дискретная классификация из 4 состояний; без оценки теста площади; без раскрытия — намеренно."
   },
   "missing": {}

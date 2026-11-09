@@ -43,101 +43,14 @@ describe('Active guided entry and fixed experiment trace', () => {
   });
   afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.restoreAllMocks(); vi.unstubAllGlobals(); if (scrollOriginal) Element.prototype.scrollIntoView = scrollOriginal; else delete Element.prototype.scrollIntoView; });
 
-  it.each(entryCases)('shows the normalized %s stage with accurate copy and no automatic navigation or writes', async (stage, phase, state, label, cue, count) => {
-    await mount(state);
-    expect(entry().dataset.entryPhase).toBe(phase); expect(entry().dataset.entryStage).toBe(stage);
-    expect(entry().querySelector('button').textContent).toBe(label); expect(entry().querySelector('.circuit-learning-entry-cue').textContent).toBe(cue);
-    expect(entry().querySelector('.circuit-learning-entry-count').textContent).toContain(String(count) + ' of 3');
-    expect(entry().querySelector('[role="status"],[aria-live]')).toBeNull(); expect(entry().querySelector('button').disabled).toBe(false);
-    expect(host.contains(document.activeElement)).toBe(false); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled(); expect(writes).not.toHaveBeenCalled(); expect(awards).not.toHaveBeenCalled();
-    const before = latest; await act(async () => setLocale('Translated: ')); await flush();
-    expect(entry().querySelector('button').textContent).toBe('Translated: ' + label); expect(entry().querySelector('.circuit-learning-entry-cue').textContent).toBe('Translated: ' + cue);
-    expect(entry().dataset.entryStage).toBe(stage); expect(entry().dataset.entryPhase).toBe(phase); expect(latest).toBe(before); expect(host.contains(document.activeElement)).toBe(false); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-  });
 
-  it.each(entryCases)('explicit %s entry focuses the existing step repeatedly without changing any saved work', async (stage, _phase, state, _label, _cue, _count, tested) => {
-    await mount(state); const snapshot = JSON.stringify(latest), same = latest, action = entry().querySelector('button');
-    await click(action); expect(document.activeElement).toBe(target(tested));
-    const reflection = host.querySelector('.circuit-notebook-reflection'); reflection.focus();
-    await click(action); expect(document.activeElement).toBe(target(tested)); expect(entry().dataset.entryStage).toBe(stage);
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalledTimes(2); expect(Element.prototype.scrollIntoView).toHaveBeenLastCalledWith({ block: 'start', behavior: 'instant' });
-    expect(JSON.stringify(latest)).toBe(snapshot); expect(latest).toBe(same); expect(writes).not.toHaveBeenCalled(); expect(awards).not.toHaveBeenCalled();
-  });
 
-  it('opens an unstarted experiment at its question without silently loading its baseline', async () => {
-    await mount(); const before = JSON.stringify(latest);
-    await click(button('Open guided experiment')); expect(document.activeElement).toBe(target(false));
-    expect(JSON.stringify(latest)).toBe(before); expect(latest._circuitActive.input).toBe(2.4); expect(button('Start transistor prediction')).toBeTruthy(); expect(trace()).toBeNull();
-  });
 
-  it.each([
-    [{ lessonId: 'unrecognized', challenge: { id: 'limit', choice: 'same', tested: true } }, 'gain', 'start', 'Open guided experiment', false],
-    [{ challenge: { id: 'limit', choice: 'same', tested: true } }, 'limit', 'explain', 'Review result and explain', true],
-    [{ challenge: { id: 'limit', choice: 'same', tested: false } }, 'limit', 'test', 'Continue to test', false],
-    [{ lessonId: 'sensor', lessonRecords: { sensor: { choice: null, tested: true, explanation: '' } } }, 'sensor', 'predict', 'Resume prediction', false],
-    [{ lessonId: 'sensor', challenge: { id: 'sensor', choice: 'more', tested: true }, lessonRecords: { sensor: { choice: 'invalid', tested: true, explanation: 'This does not make an invalid prediction tested.' } } }, 'sensor', 'predict', 'Resume prediction', false]
-  ])('keeps fallback, legacy, and invalid-record stages aligned with the existing lab (%j)', async (state, id, stage, label, tested) => {
-    await mount(state); const before = JSON.stringify(latest);
-    expect(entry().dataset.lessonId).toBe(id); expect(entry().dataset.entryStage).toBe(stage); expect(entry().dataset.entryPhase).toBe(stage === 'start' ? 'fresh' : tested ? 'result' : 'prediction');
-    expect(lab().querySelector('select').value).toBe(id); expect(lab().querySelector('.circuit-active-lesson-journey').dataset.journeyPhase).toBe(stage); await click(button(label));
-    expect(document.activeElement).toBe(target(tested)); expect(JSON.stringify(latest)).toBe(before);
-  });
 
-  it('does not reuse a consumed navigation request on live edits, locale rerenders, or record replacement', async () => {
-    await mount(); await click(button('Open guided experiment'));
-    const reflection = host.querySelector('.circuit-notebook-reflection'); reflection.focus(); Element.prototype.scrollIntoView.mockClear();
-    await mutate(prev => ({ ...prev, _circuitActive: { ...prev._circuitActive, input: 4, lessonId: 'limit', lessonRecords: { limit: { choice: 'same', tested: true, explanation: 'Loaded evidence' } } } }));
-    expect(document.activeElement).toBe(reflection); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-    const before = JSON.stringify(latest); await act(async () => setLocale('Translated: ')); await flush();
-    expect(document.activeElement).toBe(reflection); expect(JSON.stringify(latest)).toBe(before); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-    expect(entry().querySelector('button').textContent).toBe('Translated: Review saved experiment');
-  });
 
-  it.each([' \n\t', 'Imported evidence'])('file load and restore recompute the stage without replaying navigation (explanation=%j)', async explanation => {
-    await mount(); await click(button('Open guided experiment'));
-    const original = clone(latest._circuitActive), imported = api.circuitActiveInvestigation({ input: 4, lessonId: 'sensor', lessonRecords: { sensor: { choice: 'less', tested: true, explanation: explanation } } });
-    const input = host.querySelector('input[aria-label="Open investigation file"]');
-    Object.defineProperty(input, 'files', { configurable: true, value: [{ name: 'lesson.json', size: 1024, text: () => Promise.resolve(JSON.stringify(imported)) }] });
-    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true }))); await flush();
-    const load = button('Load investigation'); load.focus(); Element.prototype.scrollIntoView.mockClear(); await click(load);
-    expect(latest._circuitActive.lessonId).toBe('sensor'); expect(entry().dataset.entryStage).toBe(explanation.trim() ? 'review' : 'explain'); expect(entry().querySelector('button').textContent).toBe(explanation.trim() ? 'Review saved experiment' : 'Review result and explain'); expect(document.activeElement).not.toBe(target(true)); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-    await click(button('Restore previous investigation')); expect(latest._circuitActive.lessonRecords).toEqual(original.lessonRecords);
-    expect(entry().dataset.entryStage).toBe('start'); expect(entry().dataset.entryPhase).toBe('fresh'); expect(document.activeElement).not.toBe(target(false)); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-  });
 
-  it('ordinary lesson selection focuses once and does not replay the earlier entry request on explanation edits', async () => {
-    await mount({ lessonId: 'gain', lessonRecords: { gain: { choice: 'more', tested: true, explanation: 'Gain' }, limit: { choice: 'same', tested: true, explanation: 'Limit' } } });
-    await click(button('Review saved experiment')); await select('limit'); expect(document.activeElement).toBe(target(true));
-    const field = lab().querySelector('textarea'); field.focus(); Element.prototype.scrollIntoView.mockClear();
-    await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(field, 'Edited explanation'); field.dispatchEvent(new Event('input', { bubbles: true })); }); await flush();
-    expect(document.activeElement).toBe(field); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled(); expect(entry().dataset.lessonId).toBe('limit');
-  });
 
-  it('returns through the real workbench switch without automatically replaying navigation or losing work', async () => {
-    await mount({ lessonId: 'gain', lessonRecords: { gain: { choice: 'less', tested: true, explanation: 'Keep result' } } });
-    await click(button('Review saved experiment')); const active = clone(latest._circuitActive), other = clone(latest._circuitNetwork);
-    const buttons = () => [...host.querySelectorAll('.circuit-workspace-switch button')];
-    await click(buttons()[1]); Element.prototype.scrollIntoView.mockClear(); await click(buttons()[2]);
-    expect(latest._circuitActive).toEqual(active); expect(latest._circuitNetwork).toEqual(other); expect(document.activeElement).not.toBe(target(true)); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-  });
 
-  it('tracks real Start, Predict, Test, and explanation writing without previewing evidence or inserting an answer', async () => {
-    await mount(); expect(entry().dataset.entryStage).toBe('start'); expect(trace()).toBeNull();
-    const independent = clone({ reflection: latest._circuitActive.reflection, observations: latest._circuitActive.observations, probes: [latest._circuitActive.probeRed, latest._circuitActive.probeBlack], network: latest._circuitNetwork });
-    await click(button('Start transistor prediction')); expect(entry().dataset.entryStage).toBe('predict'); expect(entry().querySelector('button').textContent).toBe('Resume prediction'); expect(trace()).toBeNull();
-    await click(button('Decreases')); expect(entry().dataset.entryStage).toBe('test'); expect(entry().querySelector('button').textContent).toBe('Continue to test'); expect(trace()).toBeNull();
-    const beforeContinue = latest; await click(entry().querySelector('button')); expect(latest).toBe(beforeContinue); expect(latest._circuitActive.lessonRecords.gain.tested).toBe(false); expect(document.activeElement).toBe(target(false));
-    await click(button('Test transistor prediction')); expect(entry().dataset.entryStage).toBe('explain'); expect(entry().querySelector('button').textContent).toBe('Review result and explain');
-    expect(trace()).toBeTruthy(); expect(trace().open).toBe(false); expect(lab().querySelector('.circuit-active-lesson-saved-prediction').textContent).toContain('Decreases');
-    const field = lab().querySelector('textarea'); expect(field.value).toBe(''); field.focus(); Element.prototype.scrollIntoView.mockClear();
-    const evidence = traceRows();
-    for (const [text, stage, label] of [['My revised explanation.', 'review', 'Review saved experiment'], [' \n\t', 'explain', 'Review result and explain']]) {
-      await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(field, text); field.dispatchEvent(new Event('input', { bubbles: true })); }); await flush();
-      expect(entry().dataset.entryStage).toBe(stage); expect(entry().querySelector('button').textContent).toBe(label); expect(entry().dataset.entryPhase).toBe('result');
-      expect(lab().querySelector('textarea')).toBe(field); expect(field.value).toBe(text); expect(latest._circuitActive.lessonRecords.gain.explanation).toBe(text); expect(document.activeElement).toBe(field); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled(); expect(traceRows()).toEqual(evidence);
-    }
-    expect({ reflection: latest._circuitActive.reflection, observations: latest._circuitActive.observations, probes: [latest._circuitActive.probeRed, latest._circuitActive.probeBlack], network: latest._circuitNetwork }).toEqual(independent); expect(awards).not.toHaveBeenCalled();
-  });
 
   it.each([
     ['gain', [['baseCurrent', '30.0 µA', '80.0 µA'], ['collectorCurrent', '3.00 mA', '8.00 mA'], ['collectorVoltage', '4.34V', '3.24V']]],

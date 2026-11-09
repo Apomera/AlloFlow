@@ -808,7 +808,7 @@ function HeaderBar(props) {
       });
     }
   };
-  const piiWarningText = t('header.pii_warning');
+  const piiWarningText = t('header.pii_warning_plain');
   const compactRoleLabel = isTeacherMode && isSpecialistMode
     ? homeToolsText('launch_pad.door_specialist', 'Specialist')
     : isIndependentMode
@@ -1060,11 +1060,12 @@ function HeaderBar(props) {
                 {isTeacherMode && !isIndependentMode && !isParentMode && (
                   <button type="button"
                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
-                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50'}`}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-600' : 'bg-white/10 text-white border-white/60 hover:bg-white/20'}`}
                     data-help-key="header_session_start"
                     title={t('session.start_tooltip')}
                     aria-label={activeSessionCode ? (t('header.live_session_code', { code: activeSessionCode }) || `Live: ${activeSessionCode}`) : (t('session.start') || t('common.connect'))}
                   >
+                    <span data-live-lamp={activeSessionCode ? 'on' : 'off'} aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${activeSessionCode ? 'bg-white animate-pulse motion-reduce:animate-none' : 'border-2 border-white/80'}`} />
                     <Wifi size={16} aria-hidden="true" />
                     <span className="hidden lg:inline">{activeSessionCode ? (t('header.live_session_code', { code: activeSessionCode }) || `Live: ${activeSessionCode}`) : t('session.start')}</span>
                   </button>
@@ -1180,7 +1181,7 @@ function HeaderBar(props) {
                   aria-expanded={!headerCollapsed}
                   className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                 >
-                  <span>{t('common.more_information') || 'More'}</span>
+                  <span>{t('header.more_settings') || 'Settings & more'}</span>
                   <ChevronDown size={14} aria-hidden="true" />
                 </button>
               </div>

@@ -116,13 +116,13 @@
     "log": "📋 Журнал",
     "reset_2": "↺ Скинути",
     "hypothesis_when_does_area_rows_cols": "Гіпотеза: коли площа = рядки + стовпці?",
-    "area_hypothesis": "???????? ??? ??????? ?????",
+    "area_hypothesis": "Гіпотеза про зв’язок площі та множення",
     "stuck_show_open_prompts": "🤔 Застряг — показати відкриті підказки",
     "find_sizes_where_area_perimeter_rare_i": "Знайди розміри, де площа = периметр (рідкісні цілі).",
     "when_does_swapping_rows_cols_change_an": "Коли переставлення рядків/стовпців щось змінює?",
     "i_understand_explain_in_own_words": "Я розумію — пояснити своїми словами",
     "explain_commutative_property_area_leng": "Поясни переставну властивість + площа = довжина × ширина.",
-    "area_explanation": "???????? ??????? ??? ?????? ?? ?????????",
+    "area_explanation": "Поясніть зв’язок між площею та множенням",
     "design_note_discrete_4_state_classific": "Примітка щодо дизайну: дискретна класифікація з 4 станів; без оцінки тесту площі; без розкриття — навмисно."
   },
   "missing": {}

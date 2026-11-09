@@ -590,7 +590,7 @@ function UDLGuideModal(props) {
   if (isCollapsed) {
       return (
         <div ref={guideRef} role="dialog" aria-labelledby="udl-guide-title-collapsed"
-          style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`}>
+          style={{ zIndex: showStemLab ? 10490 : undefined, bottom: 'calc(1rem + var(--alloflow-host-corner-clear, 0px))' }} className={`allo-docsuite fixed z-[100] right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`}>
           <div className={`px-3 py-2 flex items-center gap-2 ${chatStyles.header}`}>
               <HelpCircle size={16} aria-hidden="true" />
               <h2 id="udl-guide-title-collapsed" className="font-bold text-sm">{tx('chat_guide.header', 'AI Guide & Assistant')}</h2>
@@ -621,7 +621,7 @@ function UDLGuideModal(props) {
   }
   return (
         <div ref={guideRef} role="dialog" aria-labelledby="udl-guide-title"
-          style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
+          style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)', bottom: 'calc(1rem + var(--alloflow-host-corner-clear, 0px))' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
             {/* A real heading, not a bold div: it names the dialog (4.1.2) and
                 gives screen-reader users a landmark to jump to (2.4.6). */}

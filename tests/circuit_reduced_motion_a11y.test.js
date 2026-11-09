@@ -29,7 +29,8 @@ describe('Circuit Lab reduced-motion accessibility', () => {
   });
 
   it('retains JavaScript gates for electron and spark animation loops', () => {
-    expect(source).toContain('if (current > 0.001 && !isShort && !_prefersReducedMotion)');
+    // Flow dots move by SVG animateMotion; reduced motion renders them static.
+    expect(source).toContain("if (_prefersReducedMotion) return h('circle', Object.assign(style, { cx: dot.x, cy: dot.y }));");
     expect(source).toContain('if (!sparkActive || sparkRaf || _prefersReducedMotion || isCircuitSparkHidden()) return;');
     expect(source).toContain("var reduced = _prefersReducedMotion;");
     expect(source).toContain("className: reduced ? '' : 'circ-signal-pulse'");

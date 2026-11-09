@@ -116,13 +116,13 @@
     "log": "📋 ログ",
     "reset_2": "↺ リセット",
     "hypothesis_when_does_area_rows_cols": "仮説：面積 = 行 + 列 になるのはいつ？",
-    "area_hypothesis": "????????",
+    "area_hypothesis": "面積の関係についての仮説",
     "stuck_show_open_prompts": "🤔 行き詰まった——開かれたプロンプトを見せて",
     "find_sizes_where_area_perimeter_rare_i": "面積 = 周りの長さ になる大きさを見つけよう（まれな整数）。",
     "when_does_swapping_rows_cols_change_an": "行と列を入れ替えると何かが変わるのはいつ？",
     "i_understand_explain_in_own_words": "わかった——自分の言葉で説明する",
     "explain_commutative_property_area_leng": "交換法則 + 面積 = 縦 × 横 を説明する。",
-    "area_explanation": "????????????",
+    "area_explanation": "面積とかけ算の関係を説明しましょう",
     "design_note_discrete_4_state_classific": "設計メモ：離散的な4状態の分類；面積テストの点数なし；答えの表示なし — 意図的に。"
   },
   "missing": {}

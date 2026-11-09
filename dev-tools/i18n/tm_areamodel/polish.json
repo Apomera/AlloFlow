@@ -116,13 +116,13 @@
     "log": "📋 Dziennik",
     "reset_2": "↺ Resetuj",
     "hypothesis_when_does_area_rows_cols": "Hipoteza: kiedy pole = wiersze + kolumny?",
-    "area_hypothesis": "Hipoteza dotycz?ca zale?no?ci pola",
+    "area_hypothesis": "Hipoteza dotycząca zależności pola",
     "stuck_show_open_prompts": "🤔 Utknąłeś — pokaż otwarte zachęty",
     "find_sizes_where_area_perimeter_rare_i": "Znajdź rozmiary, gdzie pole = obwód (rzadkie liczby całkowite).",
     "when_does_swapping_rows_cols_change_an": "Kiedy zamiana wierszy/kolumn coś zmienia?",
     "i_understand_explain_in_own_words": "Rozumiem — wyjaśnij własnymi słowami",
     "explain_commutative_property_area_leng": "Wyjaśnij przemienność + pole = długość × szerokość.",
-    "area_explanation": "Wyja?nij zale?no?? mi?dzy polem a mno?eniem",
+    "area_explanation": "Wyjaśnij zależność między polem a mnożeniem",
     "design_note_discrete_4_state_classific": "Uwaga projektowa: dyskretna klasyfikacja 4-stanowa; bez wyniku testu pola; bez ujawniania — celowo."
   },
   "missing": {}

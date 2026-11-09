@@ -116,13 +116,13 @@
     "log": "📋 السجل",
     "reset_2": "↺ إعادة تعيين",
     "hypothesis_when_does_area_rows_cols": "فرضية: متى تكون المساحة = الصفوف + الأعمدة؟",
-    "area_hypothesis": "????? ??????? ??? ???????",
+    "area_hypothesis": "فرضية علاقة المساحة",
     "stuck_show_open_prompts": "🤔 عالق — أظهر المطالبات المفتوحة",
     "find_sizes_where_area_perimeter_rare_i": "جد أحجامًا حيث المساحة = المحيط (أعداد صحيحة نادرة).",
     "when_does_swapping_rows_cols_change_an": "متى يغيّر تبديل الصفوف/الأعمدة شيئًا؟",
     "i_understand_explain_in_own_words": "أفهم — اشرح بكلماتك الخاصة",
     "explain_commutative_property_area_leng": "اشرح خاصية الإبدال + المساحة = الطول × العرض.",
-    "area_explanation": "???? ????? ??? ???????",
+    "area_explanation": "اشرح العلاقة بين المساحة والضرب",
     "design_note_discrete_4_state_classific": "ملاحظة تصميمية: تصنيف منفصل بـ4 حالات؛ بلا درجة اختبار مساحة؛ بلا كشف — عن قصد."
   },
   "missing": {}

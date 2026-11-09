@@ -116,13 +116,13 @@
     "log": "📋 لاگ",
     "reset_2": "↺ ری سیٹ",
     "hypothesis_when_does_area_rows_cols": "مفروضہ: رقبہ کب = قطاریں + کالم؟",
-    "area_hypothesis": "???? ?? ???? ?? ??????",
+    "area_hypothesis": "رقبے اور ضرب کے تعلق کا مفروضہ",
     "stuck_show_open_prompts": "🤔 پھنس گئے — کھلے اشارے دکھاؤ",
     "find_sizes_where_area_perimeter_rare_i": "ایسی جسامتیں ڈھونڈو جہاں رقبہ = احاطہ (نادر صحیح اعداد)۔",
     "when_does_swapping_rows_cols_change_an": "قطاریں/کالم بدلنا کب کچھ بدلتا ہے؟",
     "i_understand_explain_in_own_words": "میں سمجھتا ہوں — اپنے الفاظ میں سمجھاؤ",
     "explain_commutative_property_area_leng": "تبادلی خاصیت + رقبہ = لمبائی × چوڑائی سمجھاؤ۔",
-    "area_explanation": "???? ??? ??? ?? ???? ?? ????? ????",
+    "area_explanation": "رقبے اور ضرب کے تعلق کی وضاحت کریں",
     "design_note_discrete_4_state_classific": "ڈیزائن نوٹ: علیحدہ 4 حالتی درجہ بندی؛ کوئی خام رقبہ ٹیسٹ اسکور نہیں؛ کوئی انکشاف نہیں — جان بوجھ کر۔"
   },
   "missing": {}

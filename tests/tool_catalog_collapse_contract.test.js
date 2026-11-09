@@ -141,7 +141,12 @@ describe('Create a resource catalog collapse contract', () => {
   });
 
   it('states the active filter both inside the panel and from outside it', () => {
-    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_filtered')");
+    // The note names the filter ("Recommended: showing 7 of 23 tools") in a neutral
+    // style; a search says it is a search. Both still say how many are shown.
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_filtered_group')");
+    expect(catalogMarkup).toContain("translate('sidebar.tool_finder_filtered_search')");
+    expect(catalogMarkup).toContain(".replace('{filter}', groupLabel).replace('{shown}', String(shownCount)).replace('{total}', String(totalCount || shownCount))");
+    expect(catalogMarkup).not.toContain('bg-amber-50 px-2 py-1.5 text-[11px] font-semibold leading-snug text-amber-900');
     expect(catalogBridge).toContain('isToolCatalogHidden');
     expect(catalogBridge).toContain("t('sidebar.tool_finder_hidden_filtered')");
     expect(catalogStateBlock).toContain('const [isToolCatalogHidden, setIsToolCatalogHidden] = useState(false);');

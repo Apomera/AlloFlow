@@ -474,13 +474,19 @@ const handleWizardComplete = (data, deps) => {
     if (finalData.format) {
         setTextFormat(finalData.format);
     }
-    // Text from the wizard opens in the Source view like every other way in;
-    // text that replaces an existing source can be undone there.
+    // Text from the wizard opens in the Source view like every other way in.
+    // An existing source is never replaced silently: the new text waits in the
+    // Source view's review ("Replace with the new passage" / "Keep my text"),
+    // the same step a generated passage takes.
     const showSource = () => { if (typeof deps.openSourceView === 'function') deps.openSourceView({ focus: false }); };
     const putSourceText = (text) => {
       const previous = typeof inputText === 'string' ? inputText : '';
-      setInputText(text);
-      if (previous.trim() && previous !== text && typeof deps.setSourceReplacement === 'function') deps.setSourceReplacement({ status: 'replaced', previous, text, topic: '', at: Date.now() });
+      const replacing = previous.trim() && previous !== text;
+      if (replacing && typeof deps.setSourceReplacement === 'function') {
+        deps.setSourceReplacement({ status: 'review', reason: 'unconfirmed', previous, text, topic: '', at: Date.now() });
+      } else {
+        setInputText(text);
+      }
       showSource();
     };
     if (finalData.sourceMode === 'generate') {

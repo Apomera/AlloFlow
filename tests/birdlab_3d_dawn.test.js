@@ -1,6 +1,6 @@
 // BirdLab 3D dawn: a third woodland palette with a low sun opposite the
 // golden-hour sun, denser haze and ground mist; daylight and golden hour keep
-// their established values, and the woodland calls more often at dawn.
+// their established values (golden-hour haze thinned 11-09 so the woodland reads), and the woodland calls more often at dawn.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
@@ -49,7 +49,7 @@ describe('BirdLab 3D dawn lighting', () => {
     try {
       test.controller.setLighting('golden');
       expect(test.lights()).toEqual({ hemi: ['c1d1e1', '6d5138', .64], sun: ['ffd19a', 2.3, [-30, 16, 25]], rim: ['d3dae7', .38],
-        fog: ['d7cbb3', .022], exposure: 1.03, sky: ['7594ad', 'ffe0ad', 'f6dec1', 'aeb4bd'] });
+        fog: ['d7cbb3', .0155], exposure: 1.03, sky: ['7594ad', 'ffe0ad', 'f6dec1', 'aeb4bd'] });
       test.controller.setLighting('daylight');
       expect(test.lights()).toEqual({ hemi: ['d5e8f4', '4c5938', .6], sun: ['fff0d7', 2.05, [-18, 31, 14]], rim: ['c5ddec', .34],
         fog: ['bac9c6', .0165], exposure: 1, sky: ['749bb4', 'fff1d6', 'f5f5ec', 'b4c6d0'] });

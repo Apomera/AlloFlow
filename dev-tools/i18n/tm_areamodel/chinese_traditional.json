@@ -116,13 +116,13 @@
     "log": "📋 日誌",
     "reset_2": "↺ 重置",
     "hypothesis_when_does_area_rows_cols": "假設：何時面積 = 列 + 欄？",
-    "area_hypothesis": "??????",
+    "area_hypothesis": "面積關係假設",
     "stuck_show_open_prompts": "🤔 卡住了——顯示開放式提示",
     "find_sizes_where_area_perimeter_rare_i": "找出面積 = 周長的尺寸（罕見的整數）。",
     "when_does_swapping_rows_cols_change_an": "何時交換列/欄會改變什麼？",
     "i_understand_explain_in_own_words": "我懂了——用自己的話解釋",
     "explain_commutative_property_area_leng": "解釋交換律 + 面積 = 長 × 寬。",
-    "area_explanation": "??????????",
+    "area_explanation": "解釋面積與乘法的關係",
     "design_note_discrete_4_state_classific": "設計說明：離散的4狀態分類；無面積測驗分數；無揭示——刻意為之。"
   },
   "missing": {}

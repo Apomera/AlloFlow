@@ -445,7 +445,7 @@
       try { audio.ctx = new Ctor(); } catch (e) { audio.ctx = null; }
       return audio.ctx;
     }
-    function isMuted() { return !!window._alloGlobalMute; }
+    function isMuted() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; }
     function isPlaying(key) { return !!audio.handle && (key == null || audio.handle.key === key); }
     function stop() { var hd = audio.handle; audio.handle = null; if (hd) hd.stop(); }
     // Call only from a click or key press. Returns { key, duration, stop } or null.
@@ -1275,7 +1275,14 @@
     return _audioCtx;
   }
 
+  // The app's mute is __alloIsGlobalMuted(); _alloGlobalMute is the legacy flag.
+  function gcAppMuted() {
+    try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+    return !!window._alloGlobalMute;
+  }
+
   function playTone(freq, dur, type, vol) {
+    if (gcAppMuted()) return;
     var ac = getAudioCtx();
     if (!ac) return;
     try {
@@ -1618,10 +1625,15 @@
      TTS Helper
      ═══════════════════════════════════════════════════════════ */
   function speakText(text, callTTS) {
+    if (gcAppMuted()) return;
     SOUNDS.tts();
     if (callTTS) { try { callTTS(text); return; } catch (e) {} }
     if (window._kokoroTTS && window._kokoroTTS.speak) {
-      window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+      window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&!gcAppMuted()){var a=new Audio(url);a.playbackRate=0.95;
+        // The app cancels speechSynthesis on mute but not this Audio: stop it here.
+        var onMute=function(ev){if(ev&&ev.detail&&ev.detail.muted){try{a.pause();}catch(e){}window.removeEventListener('alloflow-mute-changed',onMute);}};
+        window.addEventListener('alloflow-mute-changed',onMute);a.onended=function(){window.removeEventListener('alloflow-mute-changed',onMute);};
+        a.play();}}).catch(function(){});
       return;
     }
     if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utter); }

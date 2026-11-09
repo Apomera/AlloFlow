@@ -14,7 +14,7 @@ const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js'
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
 const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'checkFrame', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setPhotoMode', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
-const STATE_KEYS = ['buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'photoMode', 'quality', 'ready', 'reducedMotion', 'triangles', 'view', 'vision'];
+const STATE_KEYS = ['autoReason', 'buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'photoMode', 'quality', 'ready', 'reducedMotion', 'slow', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
   { id: 'staghorn_coral', count: 4 }, { id: 'giant_moray', count: 1 }, { id: 'green_turtle', count: 2 }, { id: 'reef_manta', count: 1 },
@@ -195,7 +195,7 @@ describe('Reef3DExplore contract', () => {
     const bare = {};
     new Function('window', SOURCE)(bare);
     expect(Object.keys(bare)).toEqual(['Reef3DExplore']);
-    expect(Object.keys(bare.Reef3DExplore).sort()).toEqual(['mount', 'version']);
+    expect(Object.keys(bare.Reef3DExplore).sort()).toEqual(['mount', 'profileDevice', 'version']);
     expect(bare.Reef3DExplore.version).toBe('1.0.0');
     expect(() => bare.Reef3DExplore.mount(document.createElement('canvas'), { site: site() })).toThrow(/THREE/);
     expect(() => bare.Reef3DExplore.mount(null, { THREE })).toThrow(/canvas/);

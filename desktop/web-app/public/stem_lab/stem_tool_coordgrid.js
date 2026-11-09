@@ -460,7 +460,7 @@ window.StemLab = window.StemLab || {
       try { audio.ctx = new Ctor(); } catch (e) { audio.ctx = null; }
       return audio.ctx;
     }
-    function isMuted() { return !!window._alloGlobalMute; }
+    function isMuted() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; }
     function isPlaying(key) { return !!audio.handle && (key == null || audio.handle.key === key); }
     function stop() { var hd = audio.handle; audio.handle = null; if (hd) hd.stop(); }
     // Call only from a click or key press. Returns { key, duration, stop } or null.
@@ -2613,6 +2613,8 @@ window.StemLab = window.StemLab || {
       };
       var playTone = function(freq, dur, type, vol) {
         if (muted) return;
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
+        if (window._alloGlobalMute) return;
         var ac = getAudio(); if (!ac) return;
         try {
           var osc = ac.createOscillator();

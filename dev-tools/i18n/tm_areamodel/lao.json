@@ -116,13 +116,13 @@
     "log": "📋 ບັນທຶກ",
     "reset_2": "↺ ຕັ້ງໃໝ່",
     "hypothesis_when_does_area_rows_cols": "ສົມມຸດຕິຖານ: ເມື່ອໃດເນື້ອທີ່ = ແຖວ + ຖັນ?",
-    "area_hypothesis": "???????????????????????????????",
+    "area_hypothesis": "ສົມມຸດຕິຖານກ່ຽວກັບຄວາມສຳພັນຂອງເນື້ອທີ່",
     "stuck_show_open_prompts": "🤔 ຕິດຂັດ — ສະແດງຄຳຖາມປາຍເປີດ",
     "find_sizes_where_area_perimeter_rare_i": "ຊອກຫາຂະໜາດທີ່ເນື້ອທີ່ = ເສັ້ນຮອບຮູບ (ຈຳນວນເຕັມທີ່ຫາຍາກ).",
     "when_does_swapping_rows_cols_change_an": "ເມື່ອໃດການສະຫຼັບແຖວ/ຖັນປ່ຽນແປງບາງສິ່ງ?",
     "i_understand_explain_in_own_words": "ຂ້ອຍເຂົ້າໃຈແລ້ວ — ອະທິບາຍດ້ວຍຄຳຂອງຕົນເອງ",
     "explain_commutative_property_area_leng": "ອະທິບາຍຄຸນສົມບັດການສະຫຼັບ + ເນື້ອທີ່ = ຄວາມຍາວ × ຄວາມກວ້າງ.",
-    "area_explanation": "????????????????????????????????????????",
+    "area_explanation": "ອະທິບາຍຄວາມສຳພັນລະຫວ່າງເນື້ອທີ່ ແລະ ການຄູນ",
     "design_note_discrete_4_state_classific": "ໝາຍເຫດການອອກແບບ: ການຈັດປະເພດແຍກ 4 ສະຖານະ; ບໍ່ມີຄະແນນທົດສອບເນື້ອທີ່; ບໍ່ມີການເປີດເຜີຍ — ໂດຍເຈດຕະນາ."
   },
   "missing": {}

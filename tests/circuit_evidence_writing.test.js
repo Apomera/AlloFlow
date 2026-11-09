@@ -118,7 +118,8 @@ describe('Evidence-writing interaction', () => {
     function Harness() { const [toolData, setToolData] = React.useState({ _circuit: { activeWorkbench: true }, _circuitActive: fixture(extra) }); latest = toolData._circuitActive; update = setToolData; return config.render(makeCtx({ toolData, setToolData })); }
     await act(async () => root.render(React.createElement(Harness)));
   }
-  const button = label => [...host.querySelectorAll('button')].find(el => el.textContent === label);
+  // The guided lesson above reuses some labels (for example Review explanation); these tests drive the notebook's.
+const button = label => { const all = [...host.querySelectorAll('button')].filter(el => el.textContent === label); return all.find(el => !el.closest('.circuit-active-lesson-lab')) || all[0]; };
   const writer = () => host.querySelector('.circuit-comparison-writing');
   const reflection = () => host.querySelector('textarea.circuit-notebook-reflection');
   const callback = (el, event = 'onClick') => el[Object.keys(el).find(key => key.startsWith('__reactProps$'))][event];

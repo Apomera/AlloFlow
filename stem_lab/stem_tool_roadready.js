@@ -9084,6 +9084,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // behavior: dedup only the SAME text within 2s; different lines pass
       // through and the underlying TTS layer handles queuing/interrupt.
       var _lastSpokenRef = useRef({ text: null, at: 0, anyAt: 0, byCategory: {} });
+      // Instructor voice switch: d.instructorVoice (unset = on), saved like the other
+      // settings. A ref so the drive loop's speak() sees a mid-drive change at once.
+      var instructorVoiceRef = useRef(d.instructorVoice !== false);
+      var instructorAbortRef = useRef(null);
+      useEffect(function() { instructorVoiceRef.current = d.instructorVoice !== false; }, [d.instructorVoice]);
+      // Tells the host the instructor talks while header narration is unset, so its button shows
+      // narration on and one press turns it off.
+      useEffect(function() {
+        if (!ctx || typeof ctx.setToolVoice !== 'function') return;
+        ctx.setToolVoice(d.instructorVoice !== false);
+        return function() { ctx.setToolVoice(false); };
+      }, [d.instructorVoice]);
+      // The header narration switch (localStorage 'alloflow_canvas_narrate') starts off and
+      // stays unset until someone presses it. force (speak past it) is sent only while it
+      // is unset, so the instructor still talks by default but goes quiet once a student
+      // or teacher turns narration off ('off'). The signal lets the switch cancel lines
+      // still being made.
+      var instructorTTSOpts = function() {
+        var opts = {};
+        var narration = null;
+        try { narration = localStorage.getItem('alloflow_canvas_narrate'); } catch (e) {}
+        if (narration == null) opts.force = true;
+        try {
+          if (!instructorAbortRef.current && typeof AbortController !== 'undefined') instructorAbortRef.current = new AbortController();
+          if (instructorAbortRef.current) opts.signal = instructorAbortRef.current.signal;
+        } catch (e) {}
+        return opts;
+      };
+      // Cancels lines still being made, and the device voice (used when student AI is off).
+      // A line already playing is the host's Audio: ctx.stopTTS stops it (older hosts lack it).
+      var stopInstructorVoice = function() {
+        var ctl = instructorAbortRef.current;
+        instructorAbortRef.current = null;
+        if (ctl) { try { ctl.abort(); } catch (e) {} }
+        if (ctx && typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} }
+        if (window.__alloStudentAiDisabled === true && Date.now() - (_lastSpokenRef.current.anyAt || 0) < 20000) {
+          try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        }
+      };
+      var setInstructorVoice = function(on) {
+        instructorVoiceRef.current = !!on;
+        if (!on) stopInstructorVoice();
+        upd('instructorVoice', !!on);
+      };
+      useEffect(function() {
+        var onMute = function(e) { if (e && e.detail && e.detail.muted) stopInstructorVoice(); };
+        window.addEventListener('alloflow-mute-changed', onMute);
+        return function() {
+          window.removeEventListener('alloflow-mute-changed', onMute);
+          var ctl = instructorAbortRef.current;
+          instructorAbortRef.current = null;
+          if (ctl) { try { ctl.abort(); } catch (e) {} }
+        };
+      }, []);
       // speak(text, category, priority?)
       //   text: the phrase to speak
       //   category: optional bucket key for per-category cooldown (e.g. 'navigation',
@@ -9098,7 +9152,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       //   - Same category within its window: skip (default 6s; navigation/coach 8s; radio 25s)
       var CAT_WINDOW = { navigation: 8000, coach: 8000, radio: 25000, hazard: 4000, _default: 6000 };
       var speak = function(text, category, priority) {
-        if (!callTTS || !text) return;
+        if (!callTTS || !text || !instructorVoiceRef.current) return;
+        // Global mute: the host's device-voice fallback does not check it.
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
         var now = Date.now();
         var last = _lastSpokenRef.current;
         var isCritical = priority === 'critical';
@@ -9119,7 +9175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         last.at = now;
         last.anyAt = now;
         if (category) last.byCategory[category] = now;
-        callTTS(text, null, 1.0, { force: true }).catch(function() {});
+        callTTS(text, null, 1.0, instructorTTSOpts()).catch(function() {});
       };
       // Centralized achievement-unlock announcer. Combines the visible toast
       // with a screen-reader live-region call so a11y users hear the unlock at
@@ -30319,6 +30375,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', null, __alloT('stem.roadready.calm_drive', 'Calm Drive')),
               h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '11px' } }, __alloT('stem.roadready.quieter_engine_and_ambient_layers_no', '— quieter engine/ambient layers; no celebration bursts; safety cues stay on'))
             ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginBottom: '8px' } },
+              h('input', { type: 'checkbox', checked: d.instructorVoice !== false, 'data-rr-instructor-voice': 'true',
+                onChange: function(e) { setInstructorVoice(!!e.target.checked); }
+              }),
+              h('span', null, __alloT('stem.roadready.instructor_voice', '🗣️ Instructor voice')),
+              h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '11px' } }, __alloT('stem.roadready.instructor_voice_hint', '— reads driving tips and warnings aloud; the on-screen messages stay'))
+            ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px', flexWrap: 'wrap' } },
               h('span', { style: { minWidth: '86px', fontWeight: 800 } }, 'Driving HUD'),
               h('select', { value: d.hudPreset || (d.calmDrive ? 'calm' : 'driver'), onChange: function(e) { upd('hudPreset', e.target.value); }, style: { flex: '1 1 150px', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', minHeight: '34px', borderRadius: '7px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '4px 7px', fontSize: '12px' } },
@@ -30383,6 +30446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     hudTextScale: d.hudTextScale || 1,
                     realMirrors: d.realMirrors !== false,
                     rideAlong: !!d.rideAlong,
+                    instructorVoice: d.instructorVoice !== false,
                     lastJournal: d.lastJournal || null,
                     completedTrips: d.completedTrips || {},
                     bestGhosts: d.bestGhosts || {},
@@ -30502,6 +30566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         if (typeof parsed.hudTextScale === 'number') toApply.hudTextScale = Math.max(1, Math.min(1.35, parsed.hudTextScale));
                         if (typeof parsed.realMirrors === 'boolean') toApply.realMirrors = parsed.realMirrors;
                         if (typeof parsed.rideAlong === 'boolean') toApply.rideAlong = parsed.rideAlong;
+                        if (typeof parsed.instructorVoice === 'boolean') toApply.instructorVoice = parsed.instructorVoice;
                         if (parsed.lastJournal) toApply.lastJournal = parsed.lastJournal;
                         if (parsed.completedTrips) toApply.completedTrips = parsed.completedTrips;
                         if (parsed.bestGhosts) toApply.bestGhosts = parsed.bestGhosts;
@@ -31006,6 +31071,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('button', { onClick: function() { cycleCameraMode(true); }, 'aria-label': 'Cycle camera view. Current: ' + cameraModeUi, 'aria-keyshortcuts': 'C', 'data-rr-focusable': 'true', style: dockButton }, 'Camera: ' + cameraModeUi.charAt(0).toUpperCase() + cameraModeUi.slice(1)),
                   h('button', { onClick: function() { upd('highBeams', !d.highBeams); }, 'aria-pressed': !!d.highBeams, 'aria-keyshortcuts': 'L', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { borderColor: d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.28)' }) }, d.highBeams ? 'High beams' : 'Low beams'),
                   h('button', { onClick: takePhoto, 'aria-keyshortcuts': 'K', 'data-rr-focusable': 'true', style: dockButton }, 'Photo'),
+                  h('button', { onClick: function() { setInstructorVoice(!instructorVoiceRef.current); }, 'data-rr-instructor-voice': 'true', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { borderColor: d.instructorVoice !== false ? '#86efac' : 'rgba(255,255,255,0.28)' }) },
+                    d.instructorVoice !== false ? __alloT('stem.roadready.instructor_voice_on', 'Instructor voice: On') : __alloT('stem.roadready.instructor_voice_off', 'Instructor voice: Off')),
                   d.freeExplore ? h('button', { onClick: function() { setWorldControlsOpen(!worldControlsOpen); }, 'aria-expanded': !!worldControlsOpen, 'aria-controls': 'rr-world-controls', 'data-rr-focusable': 'true', style: dockButton }, worldControlsOpen ? 'Hide world' : 'World settings') : null
                 ),
                 h('div', { style: { fontSize: '11px', lineHeight: 1.55, color: '#cbd5e1' } },

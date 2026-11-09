@@ -59,7 +59,8 @@ describe('Voltage explorer and writing-space interactions', () => {
     await act(async () => root.render(React.createElement(Harness)));
   }
   const explorer = () => host.querySelector('.circuit-voltage-explorer');
-  const button = label => [...host.querySelectorAll('button')].find(el => el.textContent === label);
+  // The guided lesson above has its own writing-space toggle; these tests drive the notebook's.
+  const button = label => { const all = [...host.querySelectorAll('button')].filter(el => el.textContent === label); return all.find(el => el.closest('.circuit-active-notebook')) || all[0]; };
   const click = async label => { const el = button(label); expect(el).toBeTruthy(); await act(async () => el.click()); };
   const measureState = state => clone(Object.fromEntries(Object.entries(state).filter(([key]) => !['probeRed', 'probeBlack'].includes(key))));
   const geometry = () => [...explorer().querySelectorAll('[data-voltage-segment]')].map(el => ({ id: el.dataset.voltageSegment, percent: parseFloat(el.style.height) }));

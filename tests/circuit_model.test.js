@@ -87,7 +87,7 @@ describe('circuit bench learning and view contract', () => {
   });
   it('offers prediction, reversible edits, and progressive explanations', () => {
     const html=renderTool('circuit',{_circuit:{components:[R(100)]}});
-    for(const text of ['My prediction and reason','Save baseline','Record comparison','Undo','Redo','Pause motion','What this simulation models','03 / EXPLAIN']) expect(html).toContain(text);
+    for(const text of ['My prediction and reason','Save baseline','Record comparison','Undo','Redo','Pause motion','What this simulation models','02 / EXPLAIN','03 / ACTIVITIES']) expect(html).toContain(text);
   });
 });
 

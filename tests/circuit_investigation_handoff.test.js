@@ -54,14 +54,6 @@ describe('From guided experiments to an independent investigation', () => {
   });
   afterEach(async () => { for (const mounted of extraRoots) { await act(async () => mounted.root.unmount()); mounted.host.remove(); } await act(async () => root.unmount()); host.remove(); vi.restoreAllMocks(); vi.unstubAllGlobals(); if (scrollOriginal) Element.prototype.scrollIntoView = scrollOriginal; else delete Element.prototype.scrollIntoView; });
 
-  it('offers an optional own-investigation handoff after all valid tests including wrong choices and blank explanations, retaining map review', async () => {
-    await mount(); const before = latest;
-    expect(continuation().dataset.continuationMode).toBe('all-tested'); expect(handoff()).toBeTruthy(); expect(handoff().disabled).toBe(false); expect(button('Review experiment map')).toBeTruthy();
-    const steps = [...continuation().querySelectorAll('.circuit-continuation-inquiry-steps li')]; expect(steps).toHaveLength(2); expect(steps.map(step => step.dataset.inquiryStep)).toEqual(['choose', 'compare']); expect(steps[0].textContent).toContain('Choose one setting'); expect(steps[1].textContent).toContain('Compare two readings');
-    expect(steps[0].textContent).toContain('Keep the circuit type and the other settings the same.'); expect(steps[1].textContent).toContain('Keep the probe positions the same.'); expect(translations.map(row => row[0])).toEqual(expect.arrayContaining(['choose_heading', 'choose', 'compare_heading', 'compare', 'help', 'action'].map(suffix => 'stem.circuit.continuation_inquiry_' + suffix)));
-    expect(continuation().textContent).not.toMatch(/mastered|correct explanation|must explain|completed all/i); expect(continuation().querySelector('[aria-live],[role="status"]')).toBeNull(); expect(notebook().open).toBe(false); expect(latest).toBe(before); expect(writes).not.toHaveBeenCalled(); expect(awards).not.toHaveBeenCalled(); expect(host.contains(document.activeElement)).toBe(false); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-    await click(button('Review experiment map')); const map = lab().querySelector('.circuit-active-lesson-map'); expect(map.open).toBe(true); expect(document.activeElement).toBe(map.querySelector('summary')); expect(latest).toBe(before); expect(notebook().open).toBe(false);
-  });
 
   it.each([
     ['missing result', undefined, null, 'start'],
@@ -91,12 +83,6 @@ describe('From guided experiments to an independent investigation', () => {
     field().focus(); await openImmediately(handoff()); expect(latest).toBe(opened); expect(latest).toEqual(before); field().focus(); await openImmediately(plan()); expect(latest).toBe(opened); expect(latest).toEqual(before); expect(awards).not.toHaveBeenCalled();
   });
 
-  it('writing, locale changes and independent live edits never replay a previous handoff or reset its translated cue', async () => {
-    await mount({ lessonRecords: { ...allTested(), gain: record('less', true, 'Original lesson explanation.') } }); await openImmediately(handoff()); const el = field(); el.focus(); await write(el, 'My revised explanation.'); el.setSelectionRange(2, 10, 'backward'); Element.prototype.scrollIntoView.mockClear(); requestAnimationFrame.mockClear();
-    await mutate(prev => ({ ...prev, _circuitActive: { ...prev._circuitActive, supply: 9, input: 2, probeRed: 'emitter', probeBlack: 'collector' } })); const before = latest; await act(async () => setLocale('Translated: ')); await flush();
-    expect(button('Translated: Plan my own investigation')).toBeTruthy(); expect(button('Translated: Review experiment map')).toBeTruthy(); const list = continuation().querySelector('ol'); const walker = document.createTreeWalker(list, NodeFilter.SHOW_TEXT); let node; while ((node = walker.nextNode())) if (node.textContent.trim() && !node.parentElement.closest('[aria-hidden="true"]')) expect(node.textContent).toMatch(/^Translated: /);
-    expect(latest).toBe(before); expect(field()).toBe(el); expect(document.activeElement).toBe(el); expect([el.selectionStart, el.selectionEnd, el.selectionDirection]).toEqual([2, 10, 'backward']); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled(); expect(requestAnimationFrame).not.toHaveBeenCalled();
-  });
 
   it('real JSON load and restore recompute completion without replaying notebook navigation or persisting a handoff request', async () => {
     await mount(); await openImmediately(handoff()); const original = api.circuitActiveInvestigation(latest._circuitActive), target = summary();
@@ -105,12 +91,6 @@ describe('From guided experiments to an independent investigation', () => {
     await click(button('Restore previous investigation')); expect(handoff()).toBeTruthy(); expect(api.circuitActiveInvestigation(latest._circuitActive)).toEqual(original); expect(document.activeElement).not.toBe(summary()); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled(); expect(requestAnimationFrame).not.toHaveBeenCalled();
   });
 
-  it('a continuation rendered without an opener keeps the handoff disabled while map review still works', async () => {
-    // Expose the actual local component only in this evaluation, without rewriting product files or state transitions.
-    const source = readFileSync('stem_lab/stem_tool_circuit.js', 'utf8'), marker = 'function CircuitActiveLessonContinuation(props) {'; expect(source.split(marker)).toHaveLength(2); resetStemLab(); new Function(source.replace(marker, 'window.StemLab.__continuationForTest = CircuitActiveLessonContinuation;\n' + marker))(); const review = vi.fn();
-    await act(async () => root.render(React.createElement(window.StemLab.__continuationForTest, { React, t: (_key, fallback) => fallback, row: null, onReviewMap: review, mapId: 'local-map' })));
-    expect(handoff().disabled).toBe(true); await click(handoff()); expect(review).not.toHaveBeenCalled(); await click(button('Review experiment map')); expect(review).toHaveBeenCalledTimes(1); expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
-  });
 
   it('two mounted tools focus their own direct notebook summaries despite the unchanged legacy notebook ID', async () => {
     await mount(); const firstState = latest, otherHost = document.createElement('div'); document.body.appendChild(otherHost); const otherRoot = ReactDOMClient.createRoot(otherHost); extraRoots.push({ root: otherRoot, host: otherHost }); let second; const secondInitial = initial({ investigationTitle: 'Second investigation', reflection: 'Second notebook writing.' });

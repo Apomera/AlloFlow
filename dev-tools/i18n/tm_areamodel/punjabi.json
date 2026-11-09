@@ -116,13 +116,13 @@
     "log": "📋 ਲੌਗ",
     "reset_2": "↺ ਰੀਸੈੱਟ",
     "hypothesis_when_does_area_rows_cols": "ਪਰਿਕਲਪਨਾ: ਖੇਤਰਫਲ = ਕਤਾਰਾਂ + ਕਾਲਮ ਕਦੋਂ ਹੁੰਦਾ ਹੈ?",
-    "area_hypothesis": "?????? ?????? ????????",
+    "area_hypothesis": "ਖੇਤਰਫਲ ਸਬੰਧ ਦੀ ਪਰਿਕਲਪਨਾ",
     "stuck_show_open_prompts": "🤔 ਫਸ ਗਏ — ਖੁੱਲ੍ਹੇ ਪ੍ਰੌਂਪਟ ਦਿਖਾਓ",
     "find_sizes_where_area_perimeter_rare_i": "ਅਜਿਹੇ ਆਕਾਰ ਲੱਭੋ ਜਿੱਥੇ ਖੇਤਰਫਲ = ਘੇਰਾ (ਦੁਰਲੱਭ ਪੂਰਨ ਅੰਕ)।",
     "when_does_swapping_rows_cols_change_an": "ਕਤਾਰਾਂ/ਕਾਲਮ ਅਦਲਾ-ਬਦਲੀ ਕਦੋਂ ਕੁਝ ਬਦਲਦੀ ਹੈ?",
     "i_understand_explain_in_own_words": "ਮੈਂ ਸਮਝਦਾ ਹਾਂ — ਆਪਣੇ ਸ਼ਬਦਾਂ ਵਿੱਚ ਸਮਝਾਓ",
     "explain_commutative_property_area_leng": "ਕ੍ਰਮ-ਵਟਾਂਦਰਾ ਗੁਣ + ਖੇਤਰਫਲ = ਲੰਬਾਈ × ਚੌੜਾਈ ਸਮਝਾਓ।",
-    "area_explanation": "?????? ??? ???? ?? ????? ?? ?????? ???",
+    "area_explanation": "ਖੇਤਰਫਲ ਅਤੇ ਗੁਣਾ ਦੇ ਸਬੰਧ ਨੂੰ ਸਮਝਾਓ",
     "design_note_discrete_4_state_classific": "ਡਿਜ਼ਾਈਨ ਨੋਟ: ਵੱਖਰਾ ੪-ਅਵਸਥਾ ਵਰਗੀਕਰਨ; ਕੋਈ ਖੇਤਰਫਲ ਟੈਸਟ ਸਕੋਰ ਨਹੀਂ; ਕੋਈ ਖੁਲਾਸਾ ਨਹੀਂ — ਜਾਣਬੁੱਝ ਕੇ।"
   },
   "missing": {}

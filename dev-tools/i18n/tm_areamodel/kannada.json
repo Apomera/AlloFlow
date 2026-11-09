@@ -116,13 +116,13 @@
     "log": "📋 ಲಾಗ್",
     "reset_2": "↺ ಮರುಹೊಂದಿಸಿ",
     "hypothesis_when_does_area_rows_cols": "ಕಲ್ಪನೆ: ವಿಸ್ತೀರ್ಣ = ಸಾಲುಗಳು + ಕಾಲಮ್‌ಗಳು ಯಾವಾಗ?",
-    "area_hypothesis": "????????? ?????? ???",
+    "area_hypothesis": "ವಿಸ್ತೀರ್ಣ ಸಂಬಂಧದ ಊಹೆ",
     "stuck_show_open_prompts": "🤔 ಸಿಲುಕಿಕೊಂಡಿದ್ದೀರಾ — ತೆರೆದ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ತೋರಿಸಿ",
     "find_sizes_where_area_perimeter_rare_i": "ವಿಸ್ತೀರ್ಣ = ಸುತ್ತಳತೆ ಇರುವ ಗಾತ್ರಗಳನ್ನು ಹುಡುಕಿ (ಅಪರೂಪದ ಪೂರ್ಣಾಂಕಗಳು).",
     "when_does_swapping_rows_cols_change_an": "ಸಾಲುಗಳು/ಕಾಲಮ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುವುದು ಯಾವಾಗ ಏನನ್ನಾದರೂ ಬದಲಾಯಿಸುತ್ತದೆ?",
     "i_understand_explain_in_own_words": "ನನಗೆ ಅರ್ಥವಾಯಿತು — ಸ್ವಂತ ಪದಗಳಲ್ಲಿ ವಿವರಿಸಿ",
     "explain_commutative_property_area_leng": "ವಿನಿಮಯ ಗುಣ + ವಿಸ್ತೀರ್ಣ = ಉದ್ದ × ಅಗಲ ವಿವರಿಸಿ.",
-    "area_explanation": "????????? ????? ???????? ?????????? ???????",
+    "area_explanation": "ವಿಸ್ತೀರ್ಣ ಮತ್ತು ಗುಣಾಕಾರದ ನಡುವಿನ ಸಂಬಂಧವನ್ನು ವಿವರಿಸಿ",
     "design_note_discrete_4_state_classific": "ವಿನ್ಯಾಸ ಟಿಪ್ಪಣಿ: ಪ್ರತ್ಯೇಕ 4-ಸ್ಥಿತಿ ವರ್ಗೀಕರಣ; ವಿಸ್ತೀರ್ಣ ಪರೀಕ್ಷೆ ಸ್ಕೋರ್ ಇಲ್ಲ; ಬಹಿರಂಗ ಇಲ್ಲ — ಉದ್ದೇಶಪೂರ್ವಕವಾಗಿ."
   },
   "missing": {}

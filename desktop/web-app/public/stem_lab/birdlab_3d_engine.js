@@ -663,7 +663,7 @@
     if(canvas._birdlab3d) canvas._birdlab3d.dispose();
     var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(40,1,.03,240), renderer;
     var disposed=false, contextLost=false, raf=0, lastStamp=null, time=0, wingPhase=0, frames=0;
-    var paused=!!options.reducedMotion, speed=1, cameraMode='orbit', lighting='daylight', stateStamp=-1, dirty=true, repeatFlights=false;
+    var paused=!!options.reducedMotion, speed=1, cameraMode='orbit', lighting='daylight', season='summer', stateStamp=-1, dirty=true, repeatFlights=false;
     var studyOverlay=false, flightStudy=null, wingbeatStudy=null;
     var wingtipPaths=false,wingtipTrace=null;
     var wingtipPinned=null,wingbeatView='free';
@@ -796,7 +796,7 @@
         beat={start:wingbeatStudy.start,end:wingbeatStudy.end,cycle:wingbeatStudy.cycle,progress:progress,
           stroke:progress<.00001||progress>.99999?'top':Math.abs(progress-.42)<.00001?'bottom':progress<.42?'downstroke':'upstroke'};
       }
-      return {ready:!disposed&&!contextLost,canSelectBird:canSelectSceneBird(),canMeasureSurfaces:canUseSurfaceRuler(),surfaceRuler:surfaceRuler,surfaceMeasurement:surfaceSnapshot(),phase:phase.phase,label:phase.label,paused:paused,speed:speed,camera:cameraMode,time:time,lighting:lighting,weather:raining?'rain':'clear',lightingDirectionCustom:lightingDirectionCustom,lightStudy:lightStudy,lightInvestigation:lightSnapshot(),perspectiveStudy:perspectiveStudy,perspectiveInvestigation:perspectiveSnapshot(),anatomyStudy:anatomyStudy,anatomyInvestigation:anatomySnapshot(),repeatFlights:repeatFlights,studyOverlay:studyOverlay,studyOverlayVisible:!!(flightStudy&&flightStudy.root.visible),courseLens:courseLens,courseStudy:courseSnapshot(),attitudeLens:attitudeLens,attitudeStudy:attitudeSnapshot(),
+      return {ready:!disposed&&!contextLost,canSelectBird:canSelectSceneBird(),canMeasureSurfaces:canUseSurfaceRuler(),surfaceRuler:surfaceRuler,surfaceMeasurement:surfaceSnapshot(),phase:phase.phase,label:phase.label,paused:paused,speed:speed,camera:cameraMode,time:time,lighting:lighting,weather:raining?'rain':'clear',season:season,lightingDirectionCustom:lightingDirectionCustom,lightStudy:lightStudy,lightInvestigation:lightSnapshot(),perspectiveStudy:perspectiveStudy,perspectiveInvestigation:perspectiveSnapshot(),anatomyStudy:anatomyStudy,anatomyInvestigation:anatomySnapshot(),repeatFlights:repeatFlights,studyOverlay:studyOverlay,studyOverlayVisible:!!(flightStudy&&flightStudy.root.visible),courseLens:courseLens,courseStudy:courseSnapshot(),attitudeLens:attitudeLens,attitudeStudy:attitudeSnapshot(),
         wingbeatStudy:beat,wingtipPaths:wingtipPaths,wingtipPathsVisible:!!(wingtipTrace&&wingtipTrace.root.visible),wingtipStudy:beat&&wingtipTrace?{paths:wingtipTrace.sides.map(function(side){return Array.from(side.line.geometry.attributes.position.array);}),current:wingtipTrace.sides.map(function(side){return side.marker.position.toArray();}),pinned:wingtipPinned?{progress:wingtipPinned.progress,points:wingtipPinned.points.map(function(point){return point.slice();})}:null,radius:wingtipTrace.radius}:null,wingbeatView:beat?wingbeatView:'free',canInspectWingbeat:mode==='guided'&&!isResidentCamera(cameraMode)&&!!sampleWingbeatWindow(time),
         mode:mode,binoculars:binoculars,crouching:observer.crouching,fieldVisitTime:fieldVisitTime,observation:fieldObserver?fieldObserver.getObservation():null,sightings:sightings.map(function(entry){return Object.assign({},entry);}),observerPosition:observer.position.toArray(),observerSpeed:observer.speed,fieldOfView:camera.fov,pointerLocked:document.pointerLockElement===canvas,
         altitude:bird.root.position.y-terrain(bird.root.position.x,bird.root.position.z),
@@ -1587,6 +1587,7 @@
     }
     function setCamera(mode) {
       if(cameraMode==='walk'||(['orbit','follow','wide'].indexOf(mode)===-1&&!isResidentCamera(mode)))return;
+      if(isResidentCamera(mode)&&wildlife.isPresent&&!wildlife.isPresent(mode))return;
       if(mode!==cameraMode)resetResidentLens();
       var wasPerspective=perspectiveVisible(),wasAnatomy=anatomyVisible();if(mode==='follow'||mode==='wide'){leavePerspective();leaveAnatomy();}
       wingbeatView='free';
@@ -1632,12 +1633,12 @@
     // the opposite side of the clearing from the golden-hour sun.
     var LIGHTING={
       daylight:{hemi:['#d5e8f4','#4c5938',.60],sun:['#fff0d7',2.05,[-18,31,14]],rim:['#c5ddec',.34],fog:['#bac9c6',.0165],top:'#749bb4',sunTint:'#fff1d6',cloudLight:'#f5f5ec',cloudShade:'#b4c6d0',exposure:1.0},
-      golden:{hemi:['#c1d1e1','#6d5138',.64],sun:['#ffd19a',2.3,[-30,16,25]],rim:['#d3dae7',.38],fog:['#d7cbb3',.022],top:'#7594ad',sunTint:'#ffe0ad',cloudLight:'#f6dec1',cloudShade:'#aeb4bd',exposure:1.03},
-      dawn:{hemi:['#bcc4dc','#575049',.62],sun:['#ffb98f',1.75,[30,11,-22]],rim:['#c8cdea',.42],fog:['#cfc4c8',.027],top:'#6a82a6',sunTint:'#ffc6a2',cloudLight:'#f6d0c6',cloudShade:'#a3a8bd',exposure:1.04}
+      golden:{hemi:['#c1d1e1','#6d5138',.64],sun:['#ffd19a',2.3,[-30,16,25]],rim:['#d3dae7',.38],fog:['#d7cbb3',.0155],top:'#7594ad',sunTint:'#ffe0ad',cloudLight:'#f6dec1',cloudShade:'#aeb4bd',exposure:1.03},
+      dawn:{hemi:['#bcc4dc','#575049',.62],sun:['#ffb98f',1.75,[30,11,-22]],rim:['#c8cdea',.42],fog:['#cfc4c8',.0205],top:'#6a82a6',sunTint:'#ffc6a2',cloudLight:'#f6d0c6',cloudShade:'#a3a8bd',exposure:1.04}
     };
     // Light rain is weather, not a palette: it greys whichever light is chosen
     // and leaves the palette itself untouched for when the shower passes.
-    var raining=false,RAIN_GREY=new THREE.Color('#9ba5aa');
+    var raining=false,RAIN_GREY=new THREE.Color('#9ba5aa'),SNOW_BOUNCE=new THREE.Color('#d6dde4');
     function applyLighting(){
       var palette=LIGHTING[lighting];
       // Keep enough sky fill to read the shaded underside, while letting the
@@ -1667,6 +1668,7 @@
       scene.background.copy(scene.fog.color);
       uniforms.bottom.value.copy(scene.fog.color);
       uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();
+      if(season==='winter'){hemi.groundColor.lerp(SNOW_BOUNCE,.6);hemi.intensity*=1.08;}
       if(habitat.setMist)habitat.setMist(lighting==='dawn');
       if(habitat.setRain)habitat.setRain(raining);
     }
@@ -1682,12 +1684,23 @@
       if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;}
       notify(true);refresh();
     }
+    // Seasons change the woodland and who lives in it; the hawk's flight,
+    // the light palette and the weather choice are kept.
+    function setSeason(value){
+      if(disposed||['summer','autumn','winter'].indexOf(value)<0||value===season||!habitat.setSeason)return;
+      season=value;habitat.setSeason(value);if(wildlife.setSeason)wildlife.setSeason(value);
+      if(isResidentCamera(cameraMode)&&wildlife.isPresent&&!wildlife.isPresent(cameraMode))setCamera('orbit');
+      if(fieldObserver){fieldObserver.reset();observationKey='';}
+      var custom=lightingDirectionCustom,direction=sun.position.clone();applyLighting();
+      if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();lightingDirectionCustom=true;}
+      notify(true);refresh();
+    }
     function restart() {if(mode==='free')return;leaveSurfaceRuler();wingbeatStudy=null;coursePin=null;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
     var controller={inspectWingbeat:inspectWingbeat,seekWingbeat:seekWingbeat,closeWingbeat:closeWingbeat,pinWingtipPose:pinWingtipPose,clearWingtipPose:clearWingtipPose,setWingbeatView:setWingbeatView,setStudyOverlay:setStudyOverlay,setMode:setMode,setBinoculars:setBinoculars,setCrouching:setCrouching,recordSighting:recordSighting,setMove:setMove,stepMove:stepMove,lockPointer:lockPointer,setPaused:setPaused,setSpeed:setSpeed,setCamera:setCamera,setLighting:setLighting,setRepeatFlights:setRepeatFlights,seek:seek,resetView:resetView,restart:restart,dispose:dispose,getState:snapshot};
     controller.setResidentStudio=setResidentStudio;controller.setResidentExplore=setResidentExplore;
     controller.setResidentPart=setResidentPart;controller.setResidentView=setResidentView;controller.setResidentAngle=setResidentAngle;
     controller.pinResidentShape=pinResidentShape;controller.clearResidentShape=clearResidentShape;controller.setResidentFrozenSurface=setResidentFrozenSurface;controller.setResidentFrozenOpacity=setResidentFrozenOpacity;
-    controller.setWingtipPaths=setWingtipPaths;controller.setFeedingStudy=setFeedingStudy;controller.cueSong=cueSong;controller.setWeather=setWeather;
+    controller.setWingtipPaths=setWingtipPaths;controller.setFeedingStudy=setFeedingStudy;controller.cueSong=cueSong;controller.setWeather=setWeather;controller.setSeason=setSeason;
     controller.setSurfaceRuler=setSurfaceRuler;controller.setSurfaceMeasureMode=setSurfaceMeasureMode;controller.clearSurfaceRuler=clearSurfaceRuler;controller.undoSurfacePoint=undoSurfacePoint;controller.placeSurfaceCenter=placeSurfaceCenter;
     controller.setAnatomyFrozenSurface=setAnatomyFrozenSurface;controller.setAnatomyFrozenOpacity=setAnatomyFrozenOpacity;
     controller.setCourseLens=setCourseLens;controller.pinCourseStation=pinCourseStation;controller.clearCourseStation=clearCourseStation;

@@ -49,8 +49,13 @@ describe('offline Present file: focus after a choice', () => {
   const boot = () => {
     document.body.innerHTML = '<select id="act"></select><span id="count"></span><main id="stage"></main><p id="status"></p>' +
       '<button id="prev"></button><button id="play"></button><button id="reveal"></button><button id="next"></button>' +
+      // Controls added 2026-11-09 (think time, text size, full screen, number picker, timer).
+      '<select id="think"></select><button id="smaller"></button><button id="larger"></button><button id="full" hidden></button><span id="timer" hidden></span>' +
+      '<button id="pickbtn"></button><div id="picker" hidden><input id="pickn"><button id="pick"></button><p id="pickout"></p><p id="pickleft"></p><button id="pickreset"></button><button id="pickclose"></button></div>' +
       '<script type="application/json" id="ws-data">' + JSON.stringify(payload) + '</script>';
     new Function(player())();
+    // The file opens on a Begin screen (sound may only start after a tap).
+    document.getElementById('begin').click();
   };
   const choices = () => [...document.querySelectorAll('#stage .choice')];
   it('keeps focus on the picked choice', () => {

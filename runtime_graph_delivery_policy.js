@@ -141,7 +141,14 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
     if (actual !== expected.sha384) throw failure('executable digest differs');
     return bytes;
   };
+  // Cache first; a failed check refetches once, no-store.
   var fetchSelected = async function (expected) {
+    try { return await fetchOnce(expected, 'default'); } catch (error) {
+      if (error.runtimeTimeout === true || !/digest differs|length differs|approved bound/.test(error.message || '')) throw error;
+      return fetchOnce(expected, 'no-store');
+    }
+  };
+  var fetchOnce = async function (expected, cacheMode) {
     if (typeof nativeFetch !== 'function') throw failure('verified fetch unavailable');
     var controller = typeof env.AbortController === 'function' ? new env.AbortController() : null;
     var timer = null, response, reader, closed = false, aborted = false, cancelled, released;
@@ -155,30 +162,32 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       var body = reader || response && response.body;
       if (body && cancelled !== body && typeof body.cancel === 'function') {
         cancelled = body;
-        // Cleanup must not let a rejected response hold the runtime open. In
-        // particular, a stream's underlying cancellation may never settle.
+        // A cancel that may never settle must not hold the runtime open.
         try { Promise.resolve(body.cancel()).catch(function () {}); } catch (_) {}
       }
       releaseReader();
     };
     var timeoutFailure = function () { var error = failure('executable fetch timed out'); error.runtimeTimeout = true; return error; };
     var assertActive = function () { if (closed) throw timeoutFailure(); };
+    // Ends at 60 s idle, or 30 s + file at 0.25 Mbps (min 60 s).
+    var limit = Math.max(60000, 30000 + Math.ceil(expected.bytes / 31)), expire, idle = null;
     var deadline = typeof schedule === 'function' ? new Promise(function (_, reject) {
-      timer = schedule(function () {
-        closed = true; stopTransport(); reject(timeoutFailure());
-      }, 60000);
+      expire = function () { closed = true; stopTransport(); reject(timeoutFailure()); };
+      timer = schedule(expire, limit);
     }) : null;
+    var stopIdle = function () { if (idle !== null && typeof cancel === 'function') { cancel(idle); idle = null; } };
+    var pulse = function () { if (deadline) { stopIdle(); idle = schedule(expire, 60000); } };
     var operation = (async function () {
-      assertActive();
-      response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: 'no-store', signal: controller && controller.signal });
+      assertActive(); pulse();
+      response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: cacheMode, signal: controller && controller.signal });
       if (closed) { stopTransport(); assertActive(); }
       if (!response || response.status !== 200 || !response.body || !response.body.getReader) throw failure('executable response unavailable');
       reader = response.body.getReader();
       var bytes = new Uint8Array(expected.bytes), offset = 0;
       for (;;) {
-        var chunk = await reader.read(); assertActive(); if (chunk.done) break;
+        var chunk = await reader.read(); assertActive(); if (chunk.done) { stopIdle(); break; }
         if (offset + chunk.value.byteLength > expected.bytes) throw failure('executable exceeds approved bound');
-        bytes.set(chunk.value, offset); offset += chunk.value.byteLength;
+        bytes.set(chunk.value, offset); offset += chunk.value.byteLength; pulse();
       }
       if (offset !== expected.bytes) throw failure('executable length differs');
       var verified = await verify(bytes, expected);
@@ -192,12 +201,11 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       throw failure('executable fetch failed: ' + (error && error.message || 'network error'));
     } finally {
       if (timer !== null && typeof cancel === 'function') cancel(timer);
-      releaseReader();
+      stopIdle(); releaseReader();
     }
   };
-  // This function's source is embedded into an already-verified module/worker.
-  // It maps executable operations to this session's immutable Blob URLs. Model
-  // and document data remain ordinary data fetches; they cannot select JS/WASM.
+  // Stringified into modules/workers: JS/WASM ops map to session Blob URLs (data
+  // fetches stay ordinary). webpackIgnore: webpack's import() is undefined there.
   function runtimeCapabilities(table, types, original, workerMode, depth) {
     'use strict';
     Object.freeze(table); Object.freeze(types);
@@ -218,7 +226,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
         return nativeFetch(value, options);
       }
     };
-    var imported = function (value) { return import(resolve(value, ['module'])); };
+    var imported = function (value) { return import(/* webpackIgnore: true */ resolve(value, ['module'])); };
     var scripts = function () {
       if (!nativeScripts) throw new Error('Classic worker imports unavailable');
       return nativeScripts.apply(null, Array.from(arguments, function (value) { return resolve(value, ['script', 'worker']); }));

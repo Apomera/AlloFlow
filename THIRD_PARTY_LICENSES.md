@@ -235,6 +235,22 @@ uses an open range.
 | [lamejs](https://github.com/zhuker/lamejs) | MP3 audio encoding | LGPL-3.0 | Copyright (c) 2013 Zhuker; based on LAME © the LAME developers |
 | [DragDropTouch](https://github.com/Bernardo-Castilho/dragdroptouch) | touch drag-and-drop on tablets | MIT | Copyright (c) 2016-present Bernardo Castilho |
 
+### Music & singing
+The sheet-music display is vendored in [`vendor/opensheetmusicdisplay-2.2.1/`](./vendor/opensheetmusicdisplay-2.2.1/): its own
+[`LICENSE`](./vendor/opensheetmusicdisplay-2.2.1/LICENSE) and the verbatim notices of every library it bundles
+([`opensheetmusicdisplay.min.js.LICENSE.txt`](./vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js.LICENSE.txt),
+the file the bundle's header points at) ship beside it. The Song Library's scores are served as packs from `song_library/`.
+| Library | Used for | License | Copyright |
+|---|---|---|---|
+| [OpenSheetMusicDisplay](https://opensheetmusicdisplay.org) | draws the sheet music in the Singing Lab and Song Library | BSD-3-Clause | Copyright 2019 PhonicScore |
+| [VexFlow](https://www.vexflow.com) | music-notation engine inside OpenSheetMusicDisplay | MIT | Copyright (c) 2010 Mohit Muthanna Cheppudira |
+| [loglevel](https://github.com/pimterry/loglevel) | logging inside OpenSheetMusicDisplay | MIT | Copyright (c) 2013 Tim Perry |
+| [typescript-collections](https://github.com/basarat/typescript-collections) | data structures inside OpenSheetMusicDisplay | MIT | Copyright (c) 2010-2017 Tomasz Ciborski |
+| [OpenScore Lieder Corpus](https://github.com/OpenScore/Lieder) | art-song scores in the Song Library | CC0 1.0 | Public domain (CC0): transcribed by OpenScore volunteers; the songs are public-domain works |
+| [PDMX](https://zenodo.org/records/15571083) | folk songs, spirituals and choir pieces in the Song Library | CC BY 4.0 | © Phillip Long, Zachary Novack, Taylor Berg-Kirkpatrick and Julian McAuley (2024), PDMX: A Large-Scale Public Domain MusicXML Dataset for Symbolic Music Processing. Each score is marked public domain or CC0 by its uploader; its own notice is shown on its song page |
+
+(JSZip and pako, which OpenSheetMusicDisplay also bundles, are listed under Documents above.)
+
 ### Fonts
 All fonts are loaded at runtime from Google Fonts or the vendor's site (not
 redistributed from this repository); the OFL text is bundled for reference.

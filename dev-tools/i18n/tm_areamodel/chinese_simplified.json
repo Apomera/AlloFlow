@@ -116,13 +116,13 @@
     "log": "📋 日志",
     "reset_2": "↺ 重置",
     "hypothesis_when_does_area_rows_cols": "假设：何时面积 = 行 + 列？",
-    "area_hypothesis": "??????",
+    "area_hypothesis": "面积关系假设",
     "stuck_show_open_prompts": "🤔 卡住了——显示开放式提示",
     "find_sizes_where_area_perimeter_rare_i": "找出面积 = 周长的尺寸（罕见的整数）。",
     "when_does_swapping_rows_cols_change_an": "何时交换行/列会改变什么？",
     "i_understand_explain_in_own_words": "我懂了——用自己的话解释",
     "explain_commutative_property_area_leng": "解释交换律 + 面积 = 长 × 宽。",
-    "area_explanation": "??????????",
+    "area_explanation": "解释面积与乘法的关系",
     "design_note_discrete_4_state_classific": "设计说明：离散的4状态分类；无面积测验分数；无揭示——刻意为之。"
   },
   "missing": {}

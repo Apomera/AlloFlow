@@ -453,6 +453,378 @@
 })();
 // STEM_INPUT_RUNTIME_END
 
+// STEM_LISTEN_RUNTIME_BEGIN
+// Listen mode: with the header toggle on, clicking text in the open tool, selecting
+// text, or Alt+R (selection, else the focused item) reads it aloud. Alt+R again or
+// Esc stops. Tool text only: input, textarea, select and contenteditable values are
+// never collected, so typed work never reaches a voice. The preference is per device.
+(function () {
+  if (typeof window === 'undefined' || window.StemListen) return;
+  var KEY = 'alloflow_stem_listen', MARK = 'data-stem-listen-reading', MAX = 2000;
+  var BLOCK = /^(P|LI|H[1-6]|FIGCAPTION|DD|DT|TD|TH|LABEL|BLOCKQUOTE|SUMMARY|CAPTION|LEGEND)$/;
+  var INLINE = /^(SPAN|B|STRONG|EM|I|U|S|SMALL|MARK|CODE|KBD|SAMP|VAR|ABBR|CITE|Q|SUB|SUP|TIME|DATA|BDI|BDO|FONT|IMG|BR)$/;
+  var CONTROL_TAG = /^(BUTTON|INPUT|SELECT|TEXTAREA|OPTION|OPTGROUP|CANVAS|VIDEO|AUDIO|IFRAME|EMBED|OBJECT)$/;
+  var CONTROL_ROLE = /^(button|link|checkbox|radio|switch|tab|menuitem|menuitemcheckbox|menuitemradio|option|slider|spinbutton|combobox|textbox|searchbox|scrollbar|treeitem)$/;
+  var SKIP = 'input,textarea,select,option,script,style,noscript,template,canvas,svg,iframe,[contenteditable]:not([contenteditable="false"]),[aria-hidden="true"],[hidden],[data-stem-listen-skip],.sr-only';
+  var EMOJI = /(?:\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF])|[\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u200D\u20E3]/g;
+  var bound = null, token = 0, speaking = false, marked = null, audio = null, owns = false, aborter = null;
+  var pointerDown = false, selPending = false, selTimer = null, lastSel = '';
+
+  (function css() {
+    if (!document.head || document.getElementById('allo-stem-listen-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-listen-css';
+    // Outline + shadow never move layout; two tones stay visible on light or dark panels. No animation.
+    // The repeated attribute outranks tool and modal outline resets (e.g. :focus:not(:focus-visible)).
+    var m = '[' + MARK + ']', sel = m + m + m + m;
+    st.textContent = sel + '{outline:3px solid #1d4ed8!important;outline-offset:2px!important;box-shadow:0 0 0 2px #fff,0 0 0 5px #1d4ed8!important}' +
+      ':is([data-stem-theme=contrast],.theme-contrast) ' + sel + '{outline-color:#fbbf24!important;box-shadow:0 0 0 2px #000,0 0 0 5px #fbbf24!important}' +
+      '@media (forced-colors:active){' + sel + '{outline-color:Highlight!important}}';
+    document.head.appendChild(st);
+  })();
+
+  function isOn() { try { return localStorage.getItem(KEY) === 'on'; } catch (e) { return false; } }
+  function setOn(on) {
+    try { localStorage.setItem(KEY, on ? 'on' : 'off'); } catch (e) {}
+    if (!on) stop();
+  }
+  function muted() {
+    try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+    return !!window._alloGlobalMute;
+  }
+  function matches(el, sel) {
+    var f = el.matches || el.msMatchesSelector || el.webkitMatchesSelector;
+    try { return !!(f && f.call(el, sel)); } catch (e) { return false; }
+  }
+  function editable(el) {
+    var v = el.getAttribute && el.getAttribute('contenteditable');
+    return v != null && v !== 'false';
+  }
+  function hiddenByStyle(el) {
+    try { var cs = window.getComputedStyle(el); return cs.display === 'none' || cs.visibility === 'hidden'; } catch (e) { return false; }
+  }
+  // The body of a closed <details> is not on screen; its summary is.
+  function closedBody(child) {
+    var d = child.parentNode;
+    return !!(d && d.tagName === 'DETAILS' && !d.open && child.tagName !== 'SUMMARY');
+  }
+  function skip(el) { return matches(el, SKIP) || closedBody(el) || hiddenByStyle(el); }
+  function clean(s) {
+    s = String(s == null ? '' : s).replace(EMOJI, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    if (s.length > MAX) { var cut = s.slice(0, MAX), end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! ')); s = end > MAX / 2 ? cut.slice(0, end + 1) : cut; }
+    return s;
+  }
+  // Visible text of a block. Fields, hidden and decorative content are left out.
+  function textOf(el) {
+    var out = [];
+    (function walk(n) {
+      if (n.nodeType === 3) { if (!closedBody(n)) out.push(n.nodeValue); return; }
+      if (n.nodeType !== 1 || (n !== el && skip(n))) return;
+      if (n.tagName === 'IMG') { out.push(' ' + (n.getAttribute('alt') || '') + ' '); return; }
+      var gap = !INLINE.test(n.tagName);
+      if (gap) out.push(' ');
+      for (var c = n.firstChild; c; c = c.nextSibling) walk(c);
+      if (gap) out.push(' ');
+    })(el);
+    return clean(out.join(''));
+  }
+  function reactHandler(el) {
+    var keys = Object.keys(el);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].indexOf('__reactProps$') === 0) {
+        var p = el[keys[i]] || {};
+        return !!(p.onClick || p.onMouseDown || p.onMouseUp || p.onPointerDown || p.onPointerUp || p.onTouchStart || p.onDoubleClick);
+      }
+    }
+    return false;
+  }
+  // A control anywhere above the click; a tabbable or click-handled element only
+  // between the click and the text block (a clickable panel around text is not one).
+  function isControl(el, root, block) {
+    var below = true;
+    for (var n = el; n && n !== root && n.nodeType === 1; n = n.parentNode) {
+      if (CONTROL_TAG.test(n.tagName) || (n.tagName === 'A' && n.hasAttribute('href')) || editable(n)) return true;
+      if (CONTROL_ROLE.test(String(n.getAttribute('role') || '').toLowerCase())) return true;
+      if (below && ((n.hasAttribute('tabindex') && n.tabIndex >= 0) || reactHandler(n))) return true;
+      if (n === block) below = false;
+    }
+    return false;
+  }
+  function ownText(el) {
+    for (var c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 3 && /\S/.test(c.nodeValue)) return true;
+    return false;
+  }
+  function blockFor(el, root) {
+    var n;
+    for (n = el; n && n !== root; n = n.parentNode) {
+      if (n.nodeType !== 1) continue;
+      if (String(n.tagName).toLowerCase() === 'svg') return null;
+      if (BLOCK.test(n.tagName)) return n;
+    }
+    // Text in a plain div: the nearest non-inline element, if it holds the text itself.
+    var climbed = false;
+    for (n = el; n && n !== root && n.nodeType === 1; n = n.parentNode) {
+      if (INLINE.test(n.tagName)) { climbed = true; continue; }
+      return (climbed || ownText(n)) && textOf(n).length <= 1200 ? n : null;
+    }
+    return null;
+  }
+  function accessibleText(el) {
+    if (!el || el.nodeType !== 1) return '';
+    var ids = el.getAttribute('aria-labelledby'), al = el.getAttribute('aria-label') || '', tag = el.tagName, s = '';
+    if (ids) {
+      ids.split(/\s+/).forEach(function (id) { var r = id && document.getElementById(id); if (r) s += ' ' + textOf(r); });
+      if (clean(s)) return clean(s);
+    }
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || editable(el)) {
+      // The label, never the value a student typed.
+      s = al;
+      if (!s && el.labels && el.labels.length) Array.prototype.forEach.call(el.labels, function (l) { s += ' ' + textOf(l); });
+      if (!clean(s)) s = el.getAttribute('placeholder') || el.getAttribute('title') || '';
+      if (tag === 'INPUT' && /^(button|submit|reset)$/i.test(el.type)) s = s || el.value;
+      if (tag === 'SELECT' && el.selectedIndex >= 0 && el.options[el.selectedIndex]) s += '. ' + el.options[el.selectedIndex].text;
+      return clean(s);
+    }
+    return clean(al) || textOf(el) || clean(el.getAttribute('title') || el.getAttribute('alt') || '');
+  }
+  function elementOf(node) { return node && (node.nodeType === 1 ? node : node.parentNode); }
+  function inField(node) {
+    for (var n = elementOf(node); n && n.nodeType === 1; n = n.parentNode) {
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(n.tagName) || editable(n)) return true;
+    }
+    return false;
+  }
+  function excludedText(node, root) {
+    if (closedBody(node)) return true;
+    for (var n = node.parentNode; n && n !== root && n.nodeType === 1; n = n.parentNode) if (skip(n)) return true;
+    return false;
+  }
+  // The selected tool text inside root. A selection in a field reads nothing.
+  function selectionText(root) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || sel.isCollapsed || !sel.rangeCount || !root) return '';
+    var ae = document.activeElement;
+    if (ae && ae !== document.body && inField(ae) && root.contains(ae)) return '';
+    var range = sel.getRangeAt(0), common = range.commonAncestorContainer;
+    if (!root.contains(common) || inField(range.startContainer) || inField(range.endContainer)) return '';
+    var out = [];
+    function take(t) {
+      if (excludedText(t, root)) return;
+      var v = t.nodeValue, s = t === range.startContainer ? range.startOffset : 0, e = t === range.endContainer ? range.endOffset : v.length;
+      out.push(v.slice(s, e));
+    }
+    if (common.nodeType === 3) take(common);
+    else {
+      var w = document.createTreeWalker(common, 4, null, false), t;
+      while ((t = w.nextNode())) { if (range.intersectsNode(t)) take(t); if (out.length > 2000) break; }
+    }
+    return clean(out.join(' '));
+  }
+  function langOf(node) {
+    var el = elementOf(node), l = '';
+    try { var h = el && el.closest ? el.closest('[lang]') : null; l = h ? h.getAttribute('lang') : ''; } catch (e) {}
+    return String(l || document.documentElement.lang || 'en').replace(/_/g, '-').toLowerCase();
+  }
+  function languageName(code) {
+    var p = String(code || 'en').split('-')[0];
+    try {
+      if (typeof Intl !== 'undefined' && Intl.DisplayNames) {
+        var n = new Intl.DisplayNames(['en'], { type: 'language' }).of(p);
+        if (n && n.toLowerCase() !== p) return n;
+      }
+    } catch (e) {}
+    return p === 'en' ? 'English' : undefined;
+  }
+  // A device voice for the language: exact region, then on-device, then any.
+  function pickVoice(voices, code) {
+    var want = String(code || 'en').toLowerCase(), p = want.split('-')[0], best = null, score = -1;
+    (voices || []).forEach(function (v) {
+      var l = String(v.lang || '').replace(/_/g, '-').toLowerCase();
+      if (l.split('-')[0] !== p) return;
+      var s = (l === want ? 4 : 0) + (v.localService ? 2 : 0) + (v['default'] ? 1 : 0);
+      if (s > score) { score = s; best = v; }
+    });
+    return best;
+  }
+  function chunks(text) {
+    var parts = text.match(/[^.!?\u3002\uFF01\uFF1F]+[.!?\u3002\uFF01\uFF1F]*\s*/g) || [text], out = [], cur = '';
+    parts.forEach(function (s) { if (cur && (cur + s).length > 220) { out.push(cur); cur = ''; } cur += s; });
+    if (clean(cur)) out.push(cur);
+    return out;
+  }
+  function deps() { return bound && bound.getDeps ? (bound.getDeps() || {}) : {}; }
+  function mark(el) { if (el && el.setAttribute) { el.setAttribute(MARK, 'true'); marked = el; } }
+  function unmark() { if (marked) { try { marked.removeAttribute(MARK); } catch (e) {} } marked = null; }
+  function finish() { speaking = false; audio = null; owns = false; aborter = null; unmark(); }
+  function stop() {
+    token++;
+    if (aborter) { try { aborter.abort(); } catch (e) {} }
+    if (audio) { try { audio.pause(); } catch (e) {} }
+    if (owns) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+    finish();
+  }
+  function noVoice() {
+    if (window.__alloStemListenNoVoiceShown) return;
+    window.__alloStemListenNoVoiceShown = true;
+    var d = deps();
+    if (typeof d.noVoice === 'function') { try { d.noVoice(); } catch (e) {} }
+  }
+  function rate() { var r = window.__alloPlaybackRate; return typeof r === 'number' && r > 0 ? Math.max(0.5, Math.min(2, r)) : 1; }
+  function volume() { var v = window.__alloVoiceVolume; return typeof v === 'number' && v >= 0 && v <= 1 ? v : 1; }
+  function withVoices(synth, cb) {
+    var v = [];
+    try { v = synth.getVoices() || []; } catch (e) {}
+    if (v.length || typeof synth.addEventListener !== 'function') { cb(v); return; }
+    var done = false;
+    function go() { if (done) return; done = true; try { synth.removeEventListener('voiceschanged', go); } catch (e) {} var w = []; try { w = synth.getVoices() || []; } catch (e) {} cb(w); }
+    synth.addEventListener('voiceschanged', go);
+    setTimeout(go, 1200);
+  }
+  function deviceSpeak(text, code, my) {
+    var synth = window.speechSynthesis;
+    if (my !== token) return;
+    if (muted()) { finish(); return; }
+    if (!synth || typeof SpeechSynthesisUtterance === 'undefined') { noVoice(); finish(); return; }
+    withVoices(synth, function (voices) {
+      if (my !== token) return;
+      var voice = pickVoice(voices, code);
+      // No voice for this language: one notice, never a wrong-language voice.
+      if (!voice) { noVoice(); finish(); return; }
+      try { if (synth.speaking || synth.pending) synth.cancel(); } catch (e) {}
+      owns = true;
+      var list = chunks(text);
+      list.forEach(function (part, i) {
+        var u = new SpeechSynthesisUtterance(part);
+        u.voice = voice; u.lang = voice.lang; u.rate = rate(); u.volume = volume();
+        if (i === list.length - 1) { u.onend = function () { if (my === token) finish(); }; }
+        u.onerror = function () { if (my === token) finish(); };
+        synth.speak(u);
+      });
+    });
+  }
+  function playUrl(url, my, fallback) {
+    var a;
+    try { a = new Audio(url); } catch (e) { fallback(); return; }
+    audio = a;
+    try { a.volume = volume(); a.playbackRate = rate(); } catch (e) {}
+    function fail() { if (my === token && audio === a) { audio = null; fallback(); } }
+    a.onended = function () { if (my === token && audio === a) finish(); };
+    a.onerror = fail;
+    var p;
+    try { p = a.play(); } catch (e) { fail(); return; }
+    if (p && typeof p.then === 'function') p.then(null, fail);
+  }
+  // Cloud voice first, in the language of the text; the device voice on no URL,
+  // an error, or 15 s of waiting. A newer read or stop() invalidates this one.
+  function speak(text, el, code) {
+    stop();
+    text = clean(text);
+    if (!text || muted()) return false;
+    var my = token, d = deps(), settled = false, timer = null;
+    code = code || langOf(el);
+    speaking = true;
+    mark(el);
+    function device() { deviceSpeak(text, code, my); }
+    function settle(url) {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      if (my !== token) return;
+      aborter = null;
+      if (url && !muted()) playUrl(url, my, device); else device();
+    }
+    if (typeof d.callTTS !== 'function') { settle(null); return true; }
+    aborter = typeof AbortController === 'function' ? new AbortController() : null;
+    timer = setTimeout(function () { if (aborter) { try { aborter.abort(); } catch (e) {} } settle(null); }, 15000);
+    try {
+      Promise.resolve(d.callTTS(text, undefined, 1, { language: languageName(code), priority: 'interactive', reason: 'stem-listen', maxRetries: 1, signal: aborter ? aborter.signal : undefined }))
+        .then(function (url) { settle(typeof url === 'string' ? url : null); }, function () { settle(null); });
+    } catch (e) { settle(null); }
+    return true;
+  }
+  function readSelection() {
+    var s = bound && selectionText(bound.root);
+    if (!s || s === lastSel) return;
+    lastSel = s;
+    var sel = window.getSelection();
+    speak(s, null, langOf(sel && sel.anchorNode));
+  }
+  function onSelection() {
+    if (!bound) return;
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || sel.isCollapsed) { lastSel = ''; return; }
+    if (selTimer) clearTimeout(selTimer);
+    selTimer = setTimeout(function () { selTimer = null; if (pointerDown) selPending = true; else readSelection(); }, 600);
+  }
+  function onDown() { pointerDown = true; }
+  function onUp() {
+    pointerDown = false;
+    if (selPending) { selPending = false; setTimeout(readSelection, 0); }
+  }
+  function onClick(e) {
+    if (!bound || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    var root = bound.root, el = elementOf(e.target);
+    if (!el || !root.contains(el)) return;
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (sel && !sel.isCollapsed && root.contains(sel.anchorNode)) return;
+    var block = blockFor(el, root);
+    if (!block || isControl(el, root, block)) return;
+    // A second click on the block being read stops it (touch has no Esc key).
+    if (speaking && marked === block) { stop(); return; }
+    var text = textOf(block);
+    if (text) speak(text, block);
+  }
+  function onKey(e) {
+    if (!bound) return;
+    if ((e.key === 'Escape' || e.key === 'Esc') && speaking) {
+      e.preventDefault(); e.stopPropagation(); stop(); return;
+    }
+    if (!e.altKey || e.ctrlKey || e.metaKey || !(e.code === 'KeyR' || String(e.key).toLowerCase() === 'r')) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (speaking) { stop(); return; }
+    var s = selectionText(bound.root);
+    if (s) { var sel = window.getSelection(); lastSel = s; speak(s, null, langOf(sel && sel.anchorNode)); return; }
+    var f = document.activeElement;
+    if (f && bound.root.contains(f)) speak(accessibleText(f), f);
+  }
+  function onMute(e) { if (e && e.detail && e.detail.muted) stop(); }
+  function detach() {
+    stop();
+    if (selTimer) { clearTimeout(selTimer); selTimer = null; }
+    if (!bound) return;
+    var b = bound;
+    bound = null;
+    b.root.removeEventListener('click', onClick, true);
+    document.removeEventListener('selectionchange', onSelection);
+    window.removeEventListener('keydown', onKey, true);
+    window.removeEventListener('pointerdown', onDown, true);
+    window.removeEventListener('pointerup', onUp, true);
+    window.removeEventListener('pointercancel', onUp, true);
+    window.removeEventListener('alloflow-mute-changed', onMute);
+  }
+  function attach(root, getDeps) {
+    detach();
+    if (!root) return function () {};
+    bound = { root: root, getDeps: getDeps };
+    lastSel = ''; pointerDown = false; selPending = false;
+    root.addEventListener('click', onClick, true);
+    document.addEventListener('selectionchange', onSelection);
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onDown, true);
+    window.addEventListener('pointerup', onUp, true);
+    window.addEventListener('pointercancel', onUp, true);
+    window.addEventListener('alloflow-mute-changed', onMute);
+    return detach;
+  }
+  window.StemListen = {
+    KEY: KEY, isOn: isOn, setOn: setOn, attach: attach, detach: detach, speak: speak, stop: stop,
+    isSpeaking: function () { return speaking; }, textOf: textOf, blockFor: blockFor, isControl: isControl,
+    accessibleText: accessibleText, selectionText: selectionText, pickVoice: pickVoice, languageName: languageName, langOf: langOf
+  };
+})();
+// STEM_LISTEN_RUNTIME_END
+
 // Readable controls for Math Fundamentals. Geometric pieces and table cells keep their dimensions.
 (function () {
   if (document.getElementById("allo-basic-math-controls-css")) return;
@@ -3558,7 +3930,7 @@
     // ids, numbers and flags. Never what a student typed, which the next student
     // on a shared device could read. A string with a space is dropped at any depth,
     // so a text box added later cannot reach storage through these fields.
-    var _CORAL_REEF_SAVED = ['section', 'w2MethodsPart', 'practice', 'autoAdvance', 'surveySiteId', 'surveySeed', 'surveyTransect', 'surveyStage', 'surveyView', 'pointIndex', 'records', 'surveySaved', 'fishCounts', 'srvFishDone', 'fishView', 'invCounts', 'srvInvDone', 'invView', 'surveyLog', 'modelSite', 'modelSurveyYear', 'srvClaim', 'srvSpreadMetric', 'srvEffortMetric', 'speciesLog', 'lastDive', 'diveMoments', 'momentLog', 'diveSiteId', 'diveModelSite', 'diveYears', 'diveQuality', 'diveLight', 'diveLightTipSeen', 'diveView', 'reefSound', 'reefSoundVolume', 'photoLog', 'photoListMode', 'photoListRound', 'speciesPractice', 'speciesBookmarks', 'guideCompact', 'sciTopic', 'sciBleach', 'sciBudget', 'sciSeaweed', 'sciWeb', 'model', 'modelSeed', 'modelPredictions', 'modelRevealed', 'modelRevealedFor', 'mdlView', 'mdlCompare', 'mdlSpread', 'mdlStartKey', 'mdlRescue'];
+    var _CORAL_REEF_SAVED = ['section', 'w2MethodsPart', 'practice', 'autoAdvance', 'surveySiteId', 'surveySeed', 'surveyTransect', 'surveyStage', 'surveyView', 'pointIndex', 'records', 'surveySaved', 'fishCounts', 'srvFishDone', 'fishView', 'invCounts', 'srvInvDone', 'invView', 'surveyLog', 'modelSite', 'modelSurveyYear', 'srvClaim', 'srvSpreadMetric', 'srvEffortMetric', 'speciesLog', 'lastDive', 'diveMoments', 'momentLog', 'diveSiteId', 'diveModelSite', 'diveYears', 'diveQuality', 'diveLight', 'diveLightTipSeen', 'diveView', 'reefSound', 'reefSoundVolume', 'photoLog', 'photoListMode', 'photoListRound', 'speciesPractice', 'speciesBookmarks', 'guideCompact', 'sciTopic', 'sciBleach', 'sciBudget', 'sciSeaweed', 'sciWeb', 'model', 'modelSeed', 'modelPredictions', 'modelRevealed', 'modelRevealedFor', 'mdlView', 'mdlCompare', 'mdlSpread', 'mdlStartKey', 'mdlRescue', 'simpleWords'];
     var _CORAL_REEF_TYPED = ['own', 'reasoning', 'reason', 'questions', 'notes', 'note', 'text', 'name', 'date'];
     function _crValue(v, depth) {
       if (v === null || typeof v === 'boolean') return v;
@@ -3994,6 +4366,9 @@
       // The hub's own helper was missed by that sweep. The fallback keeps stub
       // harnesses that do not define the getter working.
       function stemBeep(freq, dur, vol) {
+        // Inline, not _stemGlobalMuted(): tests run this function on its own. Covers stemCelebrate + XP chime.
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
+        if (window._alloGlobalMute) return;
         try {
           var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
             ? window.StemLab.audioContext()
@@ -4120,7 +4495,7 @@
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: nowrap; max-width: 240px; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
@@ -4585,9 +4960,32 @@
       },[stemLabTool,stemLabTab]);
 
       // ── Canvas Narration Toggle (mirrors localStorage so the header button re-renders) ──
-      var [_narrationOn, _setNarrationOn] = React.useState(function () {
-        try { return localStorage.getItem('alloflow_canvas_narrate') === 'on'; } catch (e) { return false; }
+      // Kept as 'on' / 'off' / null: null = never pressed on this device.
+      var [_narrationPref, _setNarrationPref] = React.useState(function () {
+        try { return localStorage.getItem('alloflow_canvas_narrate'); } catch (e) { return null; }
       });
+      // Tool id whose own voice speaks while the switch is unset (ctx.setToolVoice); the header shows it.
+      var [_toolVoice, _setToolVoice] = React.useState(null);
+      var _narrationOn = _narrationPref === 'on' || (_narrationPref == null && !!stemLabTool && _toolVoice === stemLabTool);
+      // Speech the host starts (ctx.callTTS, canvasNarrate): ctx.stopTTS, mute and tool close end only these.
+      var _stemTtsRef = React.useRef(null);
+      if (!_stemTtsRef.current) _stemTtsRef.current = { gen: 0, audios: [], ctls: [], utters: [] };
+      _stemTtsRef.current.tool = stemLabTool || null;
+      // ── Listen (read text aloud on request; STEM_LISTEN_RUNTIME). Separate from narration. ──
+      var [_listenOn, _setListenOn] = React.useState(function () { return !!(window.StemListen && window.StemListen.isOn()); });
+      var _listenDepsRef = React.useRef(null);
+      function _stemTxt(v, k, fb) { return (v && v !== k) ? v : fb; }
+      var _listenLabel = _stemTxt(t('stem.listen.button'), 'stem.listen.button', 'Listen');
+      var _listenHint = _stemTxt(t('stem.listen.hint'), 'stem.listen.hint', 'Listen: click or tap text in a tool to hear it. Alt+R reads the selection or the focused item. Press Alt+R again or Esc to stop.')
+        + ' ' + _stemTxt(t('stem.listen.sr_note'), 'stem.listen.sr_note', 'Using a screen reader? Leave Listen off.');
+      _listenDepsRef.current = {
+        callTTS: typeof callTTS === 'function' ? callTTS : null,
+        noVoice: function () {
+          var m = _stemTxt(t('stem.listen.no_voice'), 'stem.listen.no_voice', 'No voice for this language on this device');
+          if (typeof addToast === 'function') addToast(m, 'info');
+          announceToSR(m);
+        }
+      };
 
       // ── Station Builder State ──
       var [_showStationBuilder, _setShowStationBuilder] = React.useState(false);
@@ -5263,6 +5661,24 @@
         return function () { document.removeEventListener('keydown', handleKeyDown); };
       }, [stemLabTool, stemLabTab, _showKeyHelp]);
 
+      // Listen binds to the open tool's area only; off, another tool, or closing stops speech.
+      React.useEffect(function () {
+        var L = window.StemListen;
+        if (!L || !_listenOn || !stemLabTool) return;
+        var dialog = _stemDialogRef.current;
+        var area = dialog ? dialog.querySelector('[data-stem-scroll-region]') : null;
+        if (!area) return;
+        return L.attach(area, function () { return _listenDepsRef.current; });
+      }, [_listenOn, stemLabTool]);
+      // Tool speech ends when the tool closes or changes, and on global mute (the app only cancels speechSynthesis).
+      React.useEffect(function () { return function () { _stemStopTTS(true); }; }, [stemLabTool]);
+      React.useEffect(function () { return function () { _stemTtsRef.current.tool = null; _stemStopTTS(true); }; }, []);
+      React.useEffect(function () {
+        var onMute = function (e) { if (e && e.detail && e.detail.muted) _stemStopTTS(); };
+        window.addEventListener('alloflow-mute-changed', onMute);
+        return function () { window.removeEventListener('alloflow-mute-changed', onMute); };
+      }, []);
+
       // Accessibility semantics belong to the React source. The report-only
       // scanner below surfaces gaps without rewriting React-owned DOM.
 
@@ -5452,9 +5868,41 @@
 
       // Canvas narration TTS — OFF by default, must be explicitly enabled
       // The aria-live channel still works for screen readers (independent of TTS)
+      // The app's real mute is __alloIsGlobalMuted(); _alloGlobalMute is a legacy flag nothing sets now.
+      function _stemGlobalMuted() {
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+        return !!window._alloGlobalMute;
+      }
+      // Entries are { x, tool }: x = Audio, AbortController or utterance; tool = the open tool when it started.
+      function _stemTrack(list, x) { var e = { x: x, tool: _stemTtsRef.current.tool }; list.push(e); return function() { var i = list.indexOf(e); if (i >= 0) list.splice(i, 1); }; }
+      function _stemPlayTTSUrl(url) {
+        var a;
+        try { a = new Audio(url); } catch (e) { return; }
+        var untrack = _stemTrack(_stemTtsRef.current.audios, a);
+        a.onended = a.onerror = untrack;
+        try { var p = a.play(); if (p && typeof p.catch === 'function') p.catch(untrack); } catch (e) { untrack(); }
+      }
+      // Pauses the host's audio, aborts relayed requests, drops answers still coming, and cancels the
+      // device voice only while one of the host's own utterances is queued (cancel is global).
+      // leftTool: only what a tool that is no longer open started (tool close / switch).
+      function _stemStopTTS(leftTool) {
+        var T = _stemTtsRef.current, utter = false;
+        if (leftTool !== true) T.gen++;
+        function pick(list, stop) {
+          for (var i = list.length - 1; i >= 0; i--) {
+            if (leftTool === true && list[i].tool === T.tool) continue;
+            try { stop(list[i].x); } catch (e) {}
+            list.splice(i, 1);
+          }
+        }
+        pick(T.ctls, function(c) { c.abort(); });
+        pick(T.audios, function(a) { a.pause(); });
+        pick(T.utters, function() { utter = true; });
+        if (utter) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+      }
       function _canvasNarrateTTSEnabled() {
         // Global mute always wins
-        if (window._alloGlobalMute) return false;
+        if (_stemGlobalMuted()) return false;
         // URL override: ?a11y=tts (for testing)
         try { if (new URLSearchParams(window.location.search).get('a11y') === 'tts') return true; } catch(e) {}
         // User explicitly enabled it via toggle button
@@ -5463,13 +5911,15 @@
       }
       // Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
       function _stemStudentDeviceVoice(text, rate) {
-        if (window.__alloStudentAiDisabled !== true || window._alloGlobalMute) return false;
+        if (window.__alloStudentAiDisabled !== true || _stemGlobalMuted()) return false;
         var synth = window.speechSynthesis;
         if (!synth || typeof SpeechSynthesisUtterance === 'undefined' || !String(text || '').trim()) return false;
         try {
           var u = new SpeechSynthesisUtterance(String(text));
           if (typeof rate === 'number' && rate > 0) u.rate = Math.max(0.5, Math.min(2, rate));
           synth.cancel();
+          _stemTtsRef.current.utters.length = 0;
+          u.onend = u.onerror = _stemTrack(_stemTtsRef.current.utters, u);
           synth.speak(u);
           return true;
         } catch (e) { return false; }
@@ -5527,8 +5977,9 @@
 
         // Channel 2: AlloFlow TTS (only if Smart Detection says yes)
         var speakAloud = options.speak != null ? options.speak : _canvasNarrateTTSEnabled();
-        if (speakAloud && callTTS) {
-          try { callTTS(msg).then(function(url) { if (url) { var a = new Audio(url); a.play().catch(function() {}); } else _stemStudentDeviceVoice(msg); }).catch(function() {}); } catch(e) {}
+        if (speakAloud && callTTS && !_stemGlobalMuted()) {
+          var T = _stemTtsRef.current, gen = T.gen, tool = T.tool;
+          try { callTTS(msg).then(function(url) { if (gen !== T.gen || tool !== T.tool || _stemGlobalMuted()) return; if (url) _stemPlayTTSUrl(url); else _stemStudentDeviceVoice(msg); }).catch(function() {}); } catch(e) {}
         }
       }
 
@@ -6621,7 +7072,7 @@
       ),
         React.createElement("div", {
           className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white", style: { background: 'rgba(0, 0, 0, 0.25)' },
-          title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
+          title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Alt+R = read aloud (Listen on), Tab = navigate, Arrow keys = orbit 3D views"
         }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-brand-icon bg-white/20 p-2 rounded-lg"
@@ -6650,17 +7101,39 @@
           title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
         }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
         /*#__PURE__*/React.createElement("button", {
+          // _narrationOn also counts a tool voice that speaks while unset (Road Ready), so one press off silences it.
           onClick: () => {
             var next = !_narrationOn;
             try { localStorage.setItem('alloflow_canvas_narrate', next ? 'on' : 'off'); } catch(e) {}
-            _setNarrationOn(next);
+            _setNarrationPref(next ? 'on' : 'off');
+            if (!next) _stemStopTTS();
             if (typeof addToast === 'function') addToast(next ? '🔊 Canvas narration ON — tools will speak descriptions' : '🔇 Canvas narration OFF', 'info');
           },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-pressed": _narrationOn,
           "aria-label": "Toggle canvas narration TTS",
-          title: _narrationOn ? 'Canvas narration ON — click to disable' : 'Canvas narration OFF — click to enable spoken descriptions'
+          title: !_narrationOn ? 'Canvas narration OFF — click to enable spoken descriptions'
+            : _narrationPref === 'on' ? 'Canvas narration ON — click to disable'
+            : _stemTxt(t('stem.narration.tool_voice_title'), 'stem.narration.tool_voice_title', 'This tool reads aloud by default — click to turn narration off')
         }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
+        // Listen toggle: per-device preference. Filled when on, outlined when off.
+        React.createElement("button", {
+          type: "button",
+          onClick: function () {
+            var next = !_listenOn;
+            if (window.StemListen) window.StemListen.setOn(next);
+            _setListenOn(next);
+            if (next) { if (typeof addToast === 'function') addToast(_listenHint, 'info'); announceToSR(_listenHint); }
+          },
+          className: "stem-listen-toggle p-1.5 rounded-lg transition-colors flex items-center justify-center gap-1" + (_listenOn ? "" : " hover:bg-white/20"),
+          "aria-pressed": _listenOn,
+          "aria-label": _listenLabel,
+          title: _listenHint,
+          "data-stem-listen-toggle": "true",
+          style: Object.assign({ minWidth: 44, minHeight: 44, boxSizing: 'border-box', border: '2px solid ' + (isContrast ? '#fbbf24' : 'rgba(255,255,255,0.85)') },
+            _listenOn ? { background: isContrast ? '#fbbf24' : '#ffffff', color: isContrast ? '#000000' : '#3730a3', boxShadow: 'inset 0 0 0 2px currentColor' } : { color: '#ffffff' })
+          // The check mark carries "on" where a theme forces button colours (and on phones, where labels hide).
+        }, _listenOn ? '\uD83D\uDDE3\uFE0F\u2713' : '\uD83D\uDDE3\uFE0F', React.createElement("span", { className: "text-xs font-bold" }, _listenLabel)),
         // ✨ AI-extras pill (W7): when no AI backend is reachable, the hints
         // toggle below would be a dead control, so it is replaced by one quiet
         // indicator. Neutral wording on purpose — the sims are fully functional
@@ -6715,10 +7188,11 @@
         }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => _setShowControls(v => !v),
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors text-xs font-bold",
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": "Controls settings",
           title: "Controls settings"
-        }, "Controls"),
+          // Gear in an <i>, not a span: the 640px rule hides every button span, so phones show the gear alone.
+        }, React.createElement("i", { "aria-hidden": "true", style: { fontStyle: 'normal' } }, '\u2699\uFE0F'), React.createElement("span", { className: "text-xs font-bold" }, "Controls")),
         /*#__PURE__*/React.createElement("button", {
           onClick: () => setShowStemLab(false),
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
@@ -6971,6 +7445,8 @@
 
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+B"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Back to tool grid"),
+            React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+R"),
+            React.createElement("span", { style: { color: _pal.textMuted } }, _listenHint),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Tab"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Move between controls"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "?"),
@@ -10029,13 +10505,35 @@
               // Header mute button is the master gate. Tools can pass { force: true }
               // to bypass it for explicit user-initiated speak actions.
               opts = opts || {};
+              if (_stemGlobalMuted()) return Promise.resolve(null);
               if (!opts.force && !_canvasNarrateTTSEnabled()) return Promise.resolve(null);
-              return callTTS(text, voice, speed, opts).then(function(url) {
-                if (url) { var a = new Audio(url); a.play().catch(function() {}); }
+              // Not forwarded: the TTS module reads force as "skip the cache", so every replay was a new cloud request.
+              var ttsOpts = opts, T = _stemTtsRef.current, gen = T.gen, tool = T.tool, untrack = null;
+              if (typeof opts === 'object' && ('force' in opts || opts.signal)) { ttsOpts = Object.assign({}, opts); delete ttsOpts.force; }
+              // A tool's signal is relayed through one ctx.stopTTS can abort. None is added otherwise:
+              // a signalled request cannot join an identical one in flight. stopTTS still drops its answer.
+              if (opts.signal && typeof AbortController !== 'undefined') {
+                try {
+                  var ctl = new AbortController();
+                  if (opts.signal.aborted) ctl.abort(); else opts.signal.addEventListener('abort', function() { ctl.abort(); }, { once: true });
+                  ttsOpts.signal = ctl.signal;
+                  untrack = _stemTrack(T.ctls, ctl);
+                } catch (e) { ttsOpts.signal = opts.signal; }
+              }
+              var live = function() { return gen === T.gen && tool === T.tool; };
+              return callTTS(text, voice, speed, ttsOpts).then(function(url) {
+                if (untrack) untrack();
+                if (!live() || _stemGlobalMuted()) return null;
+                if (url) _stemPlayTTSUrl(url);
                 else _stemStudentDeviceVoice(text, speed);
                 return url;
-              }).catch(function(e) { console.warn('[STEM TTS]', e && e.message); return null; });
+              }).catch(function(e) { if (untrack) untrack(); if (live()) console.warn('[STEM TTS]', e && e.message); return null; });
             } : null,
+            // Stops speech the host started for this tool (see _stemStopTTS). Safe to call any time.
+            stopTTS: function() { _stemStopTTS(); },
+            // A tool whose own voice speaks while the narration switch is unset reports it here,
+            // so the header shows narration as on and one press turns it off.
+            setToolVoice: (function(id) { return _deferSafe(function(on) { _setToolVoice(function(p) { return on ? id : (p === id ? null : p); }); }); })(stemLabTool),
             callImagen: _stemAiImages ? callImagen : null,
             callGeminiVision: _stemAiVision ? callGeminiVision : null,
             callGeminiImageEdit: _stemAiImageEdit ? callGeminiImageEdit : null,

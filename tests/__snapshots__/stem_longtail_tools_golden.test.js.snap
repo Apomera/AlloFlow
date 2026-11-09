@@ -162,10 +162,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for singing 1`] = `
 {
-  "buttons": 32,
-  "inputs": 0,
-  "lengthBucket": 66,
-  "sha": "f68202587b89e1e4",
+  "buttons": 33,
+  "inputs": 1,
+  "lengthBucket": 77,
+  "sha": "e9e44ef1b0886bf3",
   "svgs": 0,
 }
 `;

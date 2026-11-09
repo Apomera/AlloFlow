@@ -60,7 +60,8 @@ describe('Quick Start: paste or type your own text', () => {
   it('offers it on the source step, then carries the text to Finish', async () => {
     const completed = await mount();
     const card = host.querySelector('[data-help-key="wizard_paste_source"]');
-    expect(card.textContent).toContain('Paste or type text');
+    // Same name as the Create screen's paste button.
+    expect(card.textContent).toContain('Paste or type your own text');
     click(card);
     const box = host.querySelector('#wizard-paste-text');
     expect(box).toBeTruthy();
@@ -108,7 +109,7 @@ describe('Quick Start: word length presets plus a custom number', () => {
 });
 
 describe('finishing Quick Start with pasted text', () => {
-  it('puts the text in the Source view, and makes replacing an existing source undoable', () => {
+  it('puts the text in the Source view, and asks before replacing an existing source', () => {
     loadAlloModule('phase_o_misc_handlers_module.js');
     const handlers = window.AlloModules.PhaseOHandlers;
     expect(typeof handlers.handleWizardComplete).toBe('function');
@@ -125,7 +126,9 @@ describe('finishing Quick Start with pasted text', () => {
     expect(fresh.setShowWizard).toHaveBeenCalledWith(false);
     expect(fresh.setSourceReplacement).not.toHaveBeenCalled();
     const replacing = run('An older passage.');
-    expect(replacing.setSourceReplacement).toHaveBeenCalledWith(expect.objectContaining({ status: 'replaced', previous: 'An older passage.', text: 'Our class garden.' }));
-    expect(replacing.setInputText).toHaveBeenCalledTimes(1);
+    // The older passage stays until the teacher picks "Replace with the new passage".
+    expect(replacing.setSourceReplacement).toHaveBeenCalledWith(expect.objectContaining({ status: 'review', reason: 'unconfirmed', previous: 'An older passage.', text: 'Our class garden.' }));
+    expect(replacing.setInputText).not.toHaveBeenCalled();
+    expect(replacing.openSourceView).toHaveBeenCalled();
   });
 });

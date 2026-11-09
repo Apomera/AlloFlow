@@ -967,7 +967,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-sky-50 p-4 rounded-full shadow-sm mb-3 group-hover:bg-white">
                                     <FileText size={32} className="text-sky-700" aria-hidden="true"/>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-sky-800 text-lg">{pick(t('wizard.paste_text'), 'Paste or type text')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-sky-800 text-lg">{pick(t('sidebar.source_paste_or_type'), 'Paste or type your own text')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{pick(t('wizard.paste_desc'), 'Use your own passage, article, or notes')}</span>
                               </button>
                               <button type="button" data-help-key="wizard_upload_source"
@@ -993,8 +993,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <Globe size={32} className="text-teal-600"/>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{wt('wizard.find_web', 'Find on the Web')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.find_web_desc', 'Paste a link or let AI search for you')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{wt('input.find_online', 'Find online')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('input.qs_find_sub', 'Paste a link or let AI search')}</span>
                               </button>
                               <button type="button" data-help-key="wizard_storybook_source"
                                 onClick={() => {
@@ -1006,8 +1006,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-amber-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <span className="text-[32px] leading-none" aria-hidden="true">📖</span>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('wizard.storybooks', 'Reading Catalog')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Books, articles, and primary sources')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('input.reading_catalog', 'Reading catalog')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('input.qs_book_sub', 'Books, articles & primary sources')}</span>
                               </button>
                               {AiNotice && <div className="sm:col-span-2"><AiNotice t={t} /></div>}
                               <button type="button" data-help-key="wizard_generate_source" disabled={aiOff} title={aiTitle} style={aiOff ? { opacity: 0.55, cursor: 'not-allowed' } : undefined}
@@ -1020,7 +1020,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-purple-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 motion-reduce:hover:scale-100 transition-transform motion-reduce:transition-none group-hover:bg-white">
                                     <Sparkles size={32} className="text-purple-600 fill-current"/>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-purple-700 text-lg">{t('wizard.generate_scratch')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-purple-700 text-lg">{wt('input.actions.write_with_ai', 'Write with AI')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{t('wizard.generate_desc')}</span>
                               </button>
                           </div>
@@ -1079,7 +1079,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       )}
                       {localData.sourceMode === 'search' && (
                           <div>
-                              <label className="block text-lg font-bold text-slate-700 mb-2">{wt('wizard.find_web', 'Find on the Web')}</label>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{wt('input.find_online', 'Find online')}</label>
                               <p className="text-slate-600 mb-4 text-sm">{wt('wizard.find_web_helper', 'Paste a link to import that page, or describe what you need and AI will find options.')}</p>
                               <div className="flex gap-2 mb-6">
                                   <input dir="auto" aria-label={t('common.enter_local_data')}
@@ -1221,7 +1221,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       )}
                       {localData.sourceMode === 'generate' && (
                           <div>
-                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.generate_scratch_title')}</label>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{wt('input.actions.write_with_ai', 'Write with AI')}</label>
                               <p className="text-slate-600 mb-6 text-sm">{t('wizard.generate_scratch_helper')}</p>
                               <div className="space-y-4">
                                   <div>

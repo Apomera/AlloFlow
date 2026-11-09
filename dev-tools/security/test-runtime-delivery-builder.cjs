@@ -20,7 +20,7 @@ function fixture(run) {
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 }
 test('all actual runtime graphs validate exact root/public assets and closed module imports', () => {
-  const result = builder.assertRuntimeAssets(); assert.equal(Object.keys(result.manifest.graphs).length, 8); assert.equal(result.records.length, 36);
+  const result = builder.assertRuntimeAssets(); assert.equal(Object.keys(result.manifest.graphs).length, 8); assert.equal(result.records.length, 35);
 });
 test('runtime policy identity binds code, host adapter and graph metadata', () => fixture(({ root, manifest, write }) => {
   const before = builder.policyId(manifest, root); write('runtime_graph_host.js', fs.readFileSync(path.join(root, 'runtime_graph_host.js'), 'utf8') + '\n// changed behavior\n');

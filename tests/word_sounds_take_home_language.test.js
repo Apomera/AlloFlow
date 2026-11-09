@@ -28,6 +28,8 @@ const ES = ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', 'sexto', 'sépt
 const questionText = (labels) => {
   const html = TH.buildHtml(TH.lessonFromPack(PACK, { core, banks: BANKS }).lesson, { core, labels });
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
+  // A name, so the start is not held by the "Add your name" prompt (2026-11-09).
+  dom.window.document.getElementById('learner-name').value = 'A';
   const start = [...dom.window.document.querySelectorAll('button')].find((b) => /start|empez/i.test(b.textContent));
   if (start) start.click();
   return dom.window.document.getElementById('app').textContent;

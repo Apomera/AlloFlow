@@ -16,12 +16,53 @@ const RESERVED_IDS = ['__intro', '__outro'];
 const ID_RE = /^[a-z0-9][a-z0-9_-]{0,40}$/;
 const isEvenInt = n => Number.isInteger(n) && n > 0 && n % 2 === 0;
 
+// ---- secrets: workflow files are DATA and this folder is committed to git ---------------------
+// A password must never be written into a workflow. Typing it goes through `textFromEnv` (read from the
+// environment at run time) or, better, a saved login (--login / --auth) that never types it at all.
+const AUTH_NAME_RE = /^[a-z0-9][a-z0-9_-]{0,39}$/;
+const ENV_NAME_RE = /^[A-Z][A-Z0-9_]{0,63}$/;
+const SECRET_SELECTOR_RE = /passw(?:or)?d|passwd|passcode|\bpwd\b|\bpin\b|secret|token|type\s*=\s*["']?password/i;
+const authStatePath = (spikeDir, name) => {
+  if (typeof name !== 'string' || !AUTH_NAME_RE.test(name)) throw new Error('A saved-login name is lowercase letters, digits, "-" or "_" (up to 40), e.g. "easycbm". Got: ' + JSON.stringify(name));
+  return path.join(spikeDir, 'auth', name + '.json');
+};
+// What a log or steps.json may say about a typed value.
+const typedForLog = a => (a && (a.secret === true || a.textFromEnv) ? '[redacted]' : String(a && a.text !== undefined ? a.text : ''));
+// What to actually type. An unset variable fails loudly, naming the VARIABLE and never a value.
+const resolveTypedText = (a, env) => {
+  if (a && a.textFromEnv) {
+    const v = (env || {})[a.textFromEnv];
+    if (typeof v !== 'string' || v === '') throw new Error('Environment variable ' + a.textFromEnv + ' is not set (it supplies the text to type into ' + a.selector + ').');
+    return v;
+  }
+  return String(a.text);
+};
+// Every typed value a workflow will enter, setup and steps alike.
+const typeActions = w => {
+  const out = [];
+  ((w && w.start && w.start.setup) || []).forEach(a => { if (a && a.kind === 'type') out.push(a); });
+  ((w && w.steps) || []).forEach(s => { [].concat(s && s.action ? s.action : []).forEach(a => { if (a && a.kind === 'type') out.push(a); }); });
+  return out;
+};
+// Names of environment variables the workflow needs but the environment does not have (checked BEFORE anything is recorded).
+const missingEnv = (w, env) => [...new Set(typeActions(w).filter(a => a.textFromEnv && !(typeof (env || {})[a.textFromEnv] === 'string' && env[a.textFromEnv] !== '')).map(a => a.textFromEnv))];
+// Query strings and fragments can carry one-time tokens (magic links): keep them out of anything printed or saved.
+const redactUrl = u => { try { const x = new URL(u); return x.origin + x.pathname + (x.search || x.hash ? '?…' : ''); } catch (_) { return '[unparseable url]'; } };
+
 function validateAction(a, at, err, allowed) {
   const kinds = allowed || ACTION_KINDS;
   if (!a || typeof a !== 'object') { err(at + ' must be an object'); return; }
   if (!kinds.includes(a.kind)) { err(at + '.kind "' + a.kind + '" is not one of ' + kinds.join(', ')); return; }
   if (['click', 'type', 'press', 'waitFor'].includes(a.kind) && !String(a.selector || '').trim()) err(at + '.selector is required for ' + a.kind);
-  if (a.kind === 'type' && typeof a.text !== 'string') err(at + '.text is required for type');
+  if (a.kind === 'type') {
+    const hasText = a.text !== undefined, hasEnv = a.textFromEnv !== undefined;
+    if (hasText && hasEnv) err(at + ' has both text and textFromEnv; use one');
+    else if (!hasText && !hasEnv) err(at + '.text is required for type (or textFromEnv for a secret)');
+    else if (hasText && typeof a.text !== 'string') err(at + '.text is required for type');
+    if (hasEnv && !(typeof a.textFromEnv === 'string' && ENV_NAME_RE.test(a.textFromEnv))) err(at + '.textFromEnv must be an environment variable name like EASYCBM_PASSWORD');
+    if (a.secret !== undefined && typeof a.secret !== 'boolean') err(at + '.secret must be true or false');
+    if (hasText && typeof a.text === 'string' && SECRET_SELECTOR_RE.test(String(a.selector || ''))) err(at + ' types into what looks like a password or secret field (' + a.selector + ') with an inline value. Workflow files are committed to git: use textFromEnv, or save a login with --login and use --auth.');
+  }
   if (a.kind === 'type' && a.delayMs !== undefined && !(typeof a.delayMs === 'number' && a.delayMs >= 0 && a.delayMs <= 300)) err(at + '.delayMs must be 0..300');
   if (a.kind === 'press' && !String(a.key || '').trim()) err(at + '.key is required for press');
   if (a.kind === 'goto' && !String(a.url || '').trim()) err(at + '.url is required for goto');
@@ -43,6 +84,7 @@ function validateWorkflow(w) {
   const vp = w.viewport || { width: 1280, height: 720 };
   if (!isEvenInt(vp.width) || !isEvenInt(vp.height)) err('viewport width and height must be even positive integers');
   if (!w.start || !String(w.start.url || '').trim()) err('start.url is required');
+  if (w.start && w.start.auth !== undefined && !(typeof w.start.auth === 'string' && AUTH_NAME_RE.test(w.start.auth))) err('start.auth must be a saved-login name (lowercase letters, digits, - or _), e.g. "easycbm"');
   // setup runs BEFORE recording starts (dismiss a launcher, wait for lazy modules): none of it appears in the video
   if (w.start && w.start.setup !== undefined) {
     if (!Array.isArray(w.start.setup)) err('start.setup must be a list of actions');
@@ -339,4 +381,4 @@ function transcriptMarkdown(workflow, manifest) {
   return lines.join('\n');
 }
 
-module.exports = { WORKFLOW_VERSION, ACTION_KINDS, validateWorkflow, toGuidedSteps, loadGuidedConfig, resolveGuidedRefs, loadCompiler, resampleLinear, mixNarration, firstOnsetSec, trimSilence, writeWavPcm16, readWav, wrapCaption, splitCaption, cuesFromTimeline, srtFromCues, vttFromCues, transcriptMarkdown };
+module.exports = { WORKFLOW_VERSION, typeActions, missingEnv, AUTH_NAME_RE, ENV_NAME_RE, authStatePath, typedForLog, resolveTypedText, redactUrl, ACTION_KINDS, validateWorkflow, toGuidedSteps, loadGuidedConfig, resolveGuidedRefs, loadCompiler, resampleLinear, mixNarration, firstOnsetSec, trimSilence, writeWavPcm16, readWav, wrapCaption, splitCaption, cuesFromTimeline, srtFromCues, vttFromCues, transcriptMarkdown };

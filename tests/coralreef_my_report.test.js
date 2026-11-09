@@ -545,7 +545,7 @@ describe('printing reuses the Printables path', () => {
     expect(doc.querySelectorAll('button,input,textarea,select,a,[data-rep-screen]')).toHaveLength(0);
     expect(page.querySelector('.pr4-bar #pr4-print').textContent).toBe('Print my report');
     expect(page.querySelectorAll('h1')).toHaveLength(1);
-    expect([...page.querySelectorAll('h2')].map((x) => x.textContent)).toEqual(['What I found on my dives', 'What I measured', 'What I predicted and what happened', 'My claim, evidence and reasoning', 'Questions I still have']);
+    expect([...page.querySelectorAll('h2')].map((x) => x.textContent)).toEqual(['What I found on my dives', 'What I measured', 'What I predicted and what happened', 'My claim, evidence and reasoning', 'Looking back', 'Questions I still have', 'Reef monitoring for real']);
     expect(doc.querySelector('h4,h5,h6') === null || doc.querySelector('h3')).toBeTruthy();
     expect(doc.querySelector('.rep-only-print')).toBeNull();
     expect(doc.querySelector('[data-rep-privacy]')).toBeNull();

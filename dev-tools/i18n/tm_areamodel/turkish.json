@@ -116,13 +116,13 @@
     "log": "📋 Günlük",
     "reset_2": "↺ Sıfırla",
     "hypothesis_when_does_area_rows_cols": "Hipotez: alan ne zaman = satırlar + sütunlar?",
-    "area_hypothesis": "Alan ili?kisi varsay?m?",
+    "area_hypothesis": "Alan ilişkisi varsayımı",
     "stuck_show_open_prompts": "🤔 Takıldın — açık istemleri göster",
     "find_sizes_where_area_perimeter_rare_i": "Alanın = çevre olduğu boyutları bul (nadir tam sayılar).",
     "when_does_swapping_rows_cols_change_an": "Satır/sütun değiştirmek ne zaman bir şey değiştirir?",
     "i_understand_explain_in_own_words": "Anlıyorum — kendi kelimelerinle açıkla",
     "explain_commutative_property_area_leng": "Değişme özelliğini + alan = uzunluk × genişlik açıkla.",
-    "area_explanation": "Alan ile ?arpma aras?ndaki ili?kiyi a??klay?n",
+    "area_explanation": "Alan ile çarpma arasındaki ilişkiyi açıklayın",
     "design_note_discrete_4_state_classific": "Tasarım notu: ayrık 4 durumlu sınıflandırma; alan testi puanı yok; açıklama yok — kasıtlı."
   },
   "missing": {}

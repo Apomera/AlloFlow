@@ -116,13 +116,13 @@
     "log": "📋 יומן",
     "reset_2": "↺ איפוס",
     "hypothesis_when_does_area_rows_cols": "השערה: מתי שטח = שורות + עמודות?",
-    "area_hypothesis": "????? ???? ??? ????",
+    "area_hypothesis": "השערה על הקשר בין השטחים",
     "stuck_show_open_prompts": "🤔 תקועים — הצג שאלות פתוחות",
     "find_sizes_where_area_perimeter_rare_i": "מצא גדלים שבהם שטח = היקף (מספרים שלמים נדירים).",
     "when_does_swapping_rows_cols_change_an": "מתי החלפת שורות/עמודות משנה משהו?",
     "i_understand_explain_in_own_words": "אני מבין — הסבר במילים שלי",
     "explain_commutative_property_area_leng": "הסבר את חוק החילוף + שטח = אורך × רוחב.",
-    "area_explanation": "?????? ?? ???? ??? ??? ????",
+    "area_explanation": "הסבירו את הקשר בין שטח לכפל",
     "design_note_discrete_4_state_classific": "הערת עיצוב: סיווג בדיד ב-4 מצבים; בלי ציון מבחן שטח; בלי חשיפה — בכוונה."
   },
   "missing": {}

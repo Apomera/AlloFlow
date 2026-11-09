@@ -6120,7 +6120,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
       // ══ Stage D (P5-2): hearing and describing temperature ══
       var isTeacher = ctx.isTeacherMode === true;
-      function htMuted() { try { return !!window._alloGlobalMute; } catch (e) { return false; } }
+      function htMuted() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} try { return !!window._alloGlobalMute; } catch (e2) { return false; } }
       // The host's shared AudioContext when it exists; otherwise one of our
       // own, held in a ref and closed on unmount. Never stored in toolData.
       function htAudio() {

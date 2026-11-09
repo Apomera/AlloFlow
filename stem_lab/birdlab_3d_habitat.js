@@ -1307,6 +1307,21 @@
       };
       mat.customProgramCacheKey = function () { return previousKey + (grass ? '|birdlab-thin-grass-v1' : '|birdlab-thin-leaf-v1'); };
     }
+    // A low resident lens can sit inside the understory. Blades, fronds and
+    // herb leaves within about half a metre of the camera dissolve in a fine
+    // dither instead of filling the frame; their shadows are unchanged.
+    function applyNearFade(mat) {
+      var previous = mat.onBeforeCompile, previousKey = mat.customProgramCacheKey.call(mat);
+      mat.onBeforeCompile = function (shader, renderer) {
+        previous.call(this, shader, renderer);
+        shader.fragmentShader = shader.fragmentShader.replace('#include <alphatest_fragment>', [
+          '#include <alphatest_fragment>',
+          'float blNearFade=smoothstep(.16,.52,length(vViewPosition));',
+          'if(blNearFade<1.&&blNearFade<fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715)))))discard;'
+        ].join('\n'));
+      };
+      mat.customProgramCacheKey = function () { return previousKey + '|birdlab-near-fade-v1'; };
+    }
     leaves.forEach(function (batch, kind) {
       if (!batch.length) return;
       var cards = cardGeometry(kind === 0), leafTextures = canopyTexture(kind === 1), leafMap = leafTextures.color;
@@ -1784,6 +1799,7 @@
       details.frustumCulled = false; details.receiveShadow = true; root.add(details);
     }
     groundDetail(false); groundDetail(true);
+    ['fine-meadow-grasses', 'woodland-fern-fronds', 'clustered-woodland-ground-leaves'].forEach(function (name) { applyNearFade(root.getObjectByName(name).material); });
 
     // A few leaves tumble down from the canopy on the shared clock: the vertex
     // shader places each one from its seed, so seeking replays the same fall
@@ -2183,9 +2199,133 @@
         rings.instanceMatrix.needsUpdate = true; rings.visible = !options.reducedMotion;
         rain = new THREE.Group(); rain.name = 'rain-shower'; rain.userData.motion = motion; rain.add(lines, rings); root.add(rain);
       }
-      if (rain) rain.visible = !!value;
+      if (rain) rain.visible = !!value && season !== 'winter';
+      wetWeather = !!value; syncSnowfall();
     }
-    return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight,
+
+    // ── Seasons (opt-in). Summer is the woodland as built. Autumn turns the
+    // broadleaf crowns, grasses and ferns; winter drops the broadleaf leaves,
+    // lays snow on the ground and on upward-facing bark and stone, and turns a
+    // shower into light snow. Shader additions are attached on first use, so
+    // the default scene keeps its exact programs, and they read two shared
+    // uniforms, so changing season never recompiles twice.
+    var season = 'summer', wetWeather = false, snowfall = null, seasonReady = false;
+    var seasonUniforms = { blAutumn: { value: 0 }, blSnow: { value: 0 } };
+    var SEASON_PARTS = {
+      'individual-leaf-sprays': 'leaf', 'falling-woodland-leaves': 'leaf', 'airy-needle-boughs': 'needles',
+      'fine-meadow-grasses': 'grass', 'woodland-fern-fronds': 'fern', 'clustered-woodland-ground-leaves': 'herb',
+      'continuous-woodland-ground': 'ground', 'distant-connected-woodland-ridge': 'ridge',
+      'distant-woodland-broadleaf-crowns': 'farLeaf', 'distant-woodland-conifer-crowns': 'farPine',
+      'branching-woodland-trunks': 'wood', 'weathered-landing-limb': 'wood', 'weathered-wood-broken-end-grain': 'wood',
+      'weathered-clearing-stones': 'wood'
+    };
+    // Parts a snow cover hides; the summer understory is under the snow.
+    var WINTER_HIDDEN = ['individual-leaf-sprays', 'falling-woodland-leaves', 'fine-meadow-grasses', 'woodland-fern-fronds',
+      'clustered-woodland-ground-leaves', 'curled-fallen-leaf-drifts', 'drifting-clearing-motes'];
+    var SEASON_GLSL = {
+      // Each crown patch takes one autumn colour: maple red, orange, birch
+      // yellow or oak russet, with a few sprays still green.
+      leaf: 'vec2 blCell=floor(blSeasonOrigin.xz/4.5);float blPick=blSeasonHash(blCell),blOwn=blSeasonHash(blSeasonOrigin.xz*3.7);' +
+        'vec3 blTurn=blPick<.30?vec3(.62,.075,.03):blPick<.56?vec3(.80,.30,.035):blPick<.86?vec3(.74,.55,.055):vec3(.40,.19,.065);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,blTurn*(.35+blLuma*5.2),blAutumn*(blOwn<.10?.35:.93));',
+      grass: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.58,.46,.24)*(.25+blLuma*4.),blAutumn*.62);',
+      fern: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.56,.30,.10)*(.25+blLuma*4.5),blAutumn*.86);',
+      herb: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.66,.52,.12)*(.25+blLuma*4.5),blAutumn*.65);',
+      needles: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.58,.63),blSnow*.62*smoothstep(.15,.75,blSeasonN.y));',
+      ground: 'diffuseColor.rgb*=mix(vec3(1.),vec3(1.08,.97,.84),blAutumn*.7);' +
+        'float blDrift=blSeasonNoise(blSeasonWorld.xz*.35)*.6+blSeasonNoise(blSeasonWorld.xz*1.9)*.4;' +
+        'float blCover=blSnow*smoothstep(.08,.42,blDrift+blSeasonN.y-.62);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.58,.63)*(.94+blDrift*.08),blCover*.96);',
+      ridge: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.34,.24,.12)*(.3+blLuma*3.),blAutumn*.55);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.27,.24,.23)*(.4+blLuma*2.),blSnow*.75);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.52,.55,.60),blSnow*.42*smoothstep(.55,.95,blSeasonN.y));',
+      farLeaf: 'float blFar=blSeasonHash(floor(blSeasonOrigin.xz/9.));' +
+        'vec3 blFarTurn=blFar<.22?vec3(.42,.11,.05):blFar<.55?vec3(.54,.27,.07):blFar<.80?vec3(.50,.40,.11):vec3(.24,.27,.13);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,blFarTurn*(.25+blLuma*3.),blAutumn*.72);' +
+        // Bare winter crowns read as a grey-brown haze of twigs.
+        'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.26,.25)*(.45+blLuma*2.),blSnow*.88);',
+      farPine: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.50,.53,.58),blSnow*.38*smoothstep(.25,.9,blSeasonN.y));',
+      wood: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.58,.63),blSnow*.95*smoothstep(.42,.78,blSeasonN.y));'
+    };
+    function seasonShader(mat, kind) {
+      if (!mat || mat.userData.blSeason) return;
+      mat.userData.blSeason = kind;
+      var previous = mat.onBeforeCompile, previousKey = mat.customProgramCacheKey.call(mat);
+      mat.onBeforeCompile = function (shader, renderer) {
+        previous.call(this, shader, renderer);
+        shader.uniforms.blAutumn = seasonUniforms.blAutumn; shader.uniforms.blSnow = seasonUniforms.blSnow;
+        shader.vertexShader = 'varying vec3 blSeasonWorld;\nvarying vec3 blSeasonOrigin;\n' + shader.vertexShader.replace('#include <fog_vertex>', [
+          '#include <fog_vertex>',
+          '#ifdef USE_INSTANCING',
+          'blSeasonWorld=(modelMatrix*instanceMatrix*vec4(transformed,1.)).xyz;blSeasonOrigin=(modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz;',
+          '#else',
+          'blSeasonWorld=(modelMatrix*vec4(transformed,1.)).xyz;blSeasonOrigin=(modelMatrix*vec4(0.,0.,0.,1.)).xyz;',
+          '#endif'
+        ].join('\n'));
+        shader.fragmentShader = [
+          'uniform float blAutumn;uniform float blSnow;varying vec3 blSeasonWorld;varying vec3 blSeasonOrigin;',
+          'float blSeasonHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
+          'float blSeasonNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);',
+          'return mix(mix(blSeasonHash(i),blSeasonHash(i+vec2(1.,0.)),f.x),mix(blSeasonHash(i+vec2(0.,1.)),blSeasonHash(i+vec2(1.,1.)),f.x),f.y);}'
+        ].join('\n') + '\n' + shader.fragmentShader.replace('#include <lights_physical_fragment>', [
+          '{vec3 blSeasonN=inverseTransformDirection(normal,viewMatrix);float blLuma=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722));',
+          SEASON_GLSL[kind], '}',
+          '#include <lights_physical_fragment>'
+        ].join('\n'));
+      };
+      mat.customProgramCacheKey = function () { return previousKey + '|birdlab-season-v1-' + kind; };
+      mat.needsUpdate = true;
+    }
+    function syncSnowfall() {
+      var falling = season === 'winter' && wetWeather;
+      if (falling && !snowfall) {
+        // Flakes drift down slowly and sway; the same clock as the rain.
+        var count = detailed ? 2600 : 1100, flakes = new Float32Array(count * 3), seeds = new Float32Array(count);
+        for (var i = 0; i < count; i++) {
+          flakes[i * 3] = (hash(i, 1061) - .5) * 26; flakes[i * 3 + 1] = hash(i + 5, 1063) * 10; flakes[i * 3 + 2] = (hash(i + 3, 1067) - .5) * 26;
+          seeds[i] = hash(i + 7, 1069);
+        }
+        var flakeCanvas = canvas(32), flakeCtx = flakeCanvas.getContext('2d'), glow = flakeCtx.createRadialGradient(16, 16, 0, 16, 16, 15);
+        glow.addColorStop(0, 'rgba(255,255,255,1)'); glow.addColorStop(.55, 'rgba(255,255,255,.75)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+        flakeCtx.fillStyle = glow; flakeCtx.fillRect(0, 0, 32, 32);
+        var flakeGeo = geometry(new THREE.BufferGeometry());
+        flakeGeo.setAttribute('position', new THREE.BufferAttribute(flakes, 3));
+        flakeGeo.setAttribute('blFlake', new THREE.BufferAttribute(seeds, 1));
+        var motion = { value: options.reducedMotion ? 0 : 1 };
+        var flakeMat = keep(new THREE.PointsMaterial({ color: 0xf4f7fa, size: .075, map: texture(flakeCanvas, 1), sizeAttenuation: true, transparent: true, opacity: .9, depthWrite: false }));
+        flakeMat.onBeforeCompile = function (shader) {
+          shader.uniforms.blSnowClock = clock; shader.uniforms.blSnowMotion = motion;
+          shader.vertexShader = 'uniform float blSnowClock;\nuniform float blSnowMotion;\nattribute float blFlake;\n' + shader.vertexShader.replace('#include <begin_vertex>', [
+            '#include <begin_vertex>',
+            'float blT = blSnowMotion * blSnowClock;',
+            'transformed.y = mod(position.y - blT * (.55 + blFlake * .45), 10.0) - 1.0;',
+            'transformed.x += sin(blT * (.6 + blFlake) + blFlake * 40.) * .35;',
+            'transformed.z += cos(blT * (.5 + blFlake * .8) + blFlake * 23.) * .3;'
+          ].join('\n'));
+        };
+        flakeMat.customProgramCacheKey = function () { return 'birdlab-snowfall-v1'; };
+        snowfall = new THREE.Points(flakeGeo, flakeMat); snowfall.name = 'winter-snowfall'; snowfall.frustumCulled = false;
+        snowfall.userData.motion = motion; root.add(snowfall);
+      }
+      if (snowfall) snowfall.visible = falling;
+    }
+    function setSeason(value) {
+      if (['summer', 'autumn', 'winter'].indexOf(value) < 0 || disposed) return;
+      if (value !== 'summer' && !seasonReady) {
+        seasonReady = true;
+        Object.keys(SEASON_PARTS).forEach(function (name) {
+          var part = root.getObjectByName(name);
+          if (part) seasonShader(part.material, SEASON_PARTS[name]);
+        });
+      }
+      season = value;
+      seasonUniforms.blAutumn.value = value === 'autumn' ? 1 : 0;
+      seasonUniforms.blSnow.value = value === 'winter' ? 1 : 0;
+      WINTER_HIDDEN.forEach(function (name) { var part = root.getObjectByName(name); if (part) part.visible = value !== 'winter'; });
+      if (rain) rain.visible = wetWeather && value !== 'winter';
+      syncSnowfall();
+    }
+    return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight, setSeason: setSeason,
       groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose,
       getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood, setMist: setMist, setRain: setRain };
   }

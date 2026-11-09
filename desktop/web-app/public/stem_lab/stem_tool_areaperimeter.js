@@ -1029,6 +1029,7 @@
   function playTonePlan(plan) {
     stopTones();
     if (!plan || !plan.tones || !plan.tones.length || global._alloGlobalMute) return null;
+    try { if (typeof global.__alloIsGlobalMuted === 'function' && global.__alloIsGlobalMuted()) return null; } catch (e) {}
     var ac = apAudioCtx();
     if (!ac || typeof ac.createOscillator !== 'function' || typeof ac.createGain !== 'function') return null;
     var nodes = [];

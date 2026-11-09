@@ -23,15 +23,75 @@
   function hashString(s) { var h = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
   function wrapAngle(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
 
+  // ---- Device profile and the slow signal (same block in reef_3d_explore.js) ----
+  // A software WebGL renderer draws on the CPU: far too slow for the detailed tier.
+  var SOFT_GL = /swiftshader|llvmpipe|softpipe|software rasterizer|microsoft basic render|mesa offscreen/i;
+  // The unmasked GPU name from one tiny throwaway context, released at once; null
+  // without WebGL (jsdom), with the extension blocked, or on any error.
+  function probeRenderer() {
+    var doc = null, gl = null, name = null;
+    try {
+      doc = global.document;
+      if (!doc || typeof doc.createElement !== 'function' || typeof global.WebGLRenderingContext === 'undefined') return null;
+      var c = doc.createElement('canvas'); c.width = 1; c.height = 1;
+      var attrs = { alpha: false, antialias: false, depth: false, stencil: false, failIfMajorPerformanceCaveat: false };
+      gl = c.getContext('webgl', attrs) || c.getContext('experimental-webgl', attrs);
+      var ext = gl && typeof gl.getExtension === 'function' ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+      var v = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : null;
+      if (typeof v === 'string' && v) name = v.slice(0, 160);
+    } catch (ignore) { name = null; }
+    try { var lose = gl && typeof gl.getExtension === 'function' ? gl.getExtension('WEBGL_lose_context') : null; if (lose && typeof lose.loseContext === 'function') lose.loseContext(); } catch (ignore) {}
+    return name;
+  }
+  // Rules in order; the first that matches names the reason. The old selectQuality
+  // rules keep their order (cores, memory, then a small screen without a fine
+  // pointer); software GL goes first, as no CPU makes it fast, and Save-Data before
+  // the screen rule. Cached for the page (shared by both engines), never throws.
+  function profileDevice(opts) {
+    var KEY = '_reefDeviceProfile', p = null;
+    try { p = global[KEY]; } catch (ignore) {}
+    if (!p || (opts && opts.refresh)) {
+      var nav = null, cores = null, memory = null, saveData = false, wide = true, fine = false, n;
+      try { nav = global.navigator || null; } catch (ignore) {}
+      try { n = nav ? Number(nav.hardwareConcurrency) : 0; cores = n > 0 ? n : null; } catch (ignore) {}
+      try { n = nav ? Number(nav.deviceMemory) : 0; memory = n > 0 ? n : null; } catch (ignore) {}
+      try { saveData = !!(nav && nav.connection && nav.connection.saveData); } catch (ignore) {}
+      try { wide = !(global.innerWidth < 640); } catch (ignore) {}
+      try { fine = !wide && typeof global.matchMedia === 'function' && !!global.matchMedia('(pointer: fine)').matches; } catch (ignore) {}
+      var renderer = probeRenderer(), reason = 'default';
+      // School Chromebooks report 4 or fewer cores and little memory.
+      if (renderer && SOFT_GL.test(renderer)) reason = 'software_gl';
+      else if (cores && cores <= 4) reason = 'cores';
+      else if (memory && memory <= 4) reason = 'memory';
+      else if (saveData) reason = 'save_data';
+      else if (!wide && !fine) reason = 'small_touch';
+      p = { tier: reason === 'default' ? 'high' : 'low', reason: reason, cores: cores, memory: memory, renderer: renderer };
+      try { Object.defineProperty(global, KEY, { value: p, configurable: true, writable: true, enumerable: false }); } catch (ignore) {}
+    }
+    return { tier: p.tier, reason: p.reason, cores: p.cores, memory: p.memory, renderer: p.renderer };
+  }
   function selectQuality(requested) {
     if (requested === 'low' || requested === 'high') return requested;
-    var nav = global.navigator || {};
-    // School Chromebooks report 4 or fewer cores and little memory.
-    if ((nav.hardwareConcurrency && nav.hardwareConcurrency <= 4) || (nav.deviceMemory && nav.deviceMemory <= 4)) return 'low';
-    if (!(global.innerWidth < 640)) return 'high';
-    var fine = false;
-    try { fine = typeof global.matchMedia === 'function' && global.matchMedia('(pointer: fine)').matches; } catch (ignore) {}
-    return fine ? 'high' : 'low';
+    return profileDevice().tier;
+  }
+  // slow: the frame stays over 40 ms (under 25 fps) for 5 s of counted frames once
+  // the runtime reductions are spent; it clears after 3 s under 34 ms. Counted
+  // frames are unpaused, visible, full-motion ones after 3 s of them (shaders and
+  // uploads settle). A gap counts at most 1 s, so a lone hitch cannot fill the hold
+  // (the next quick frames reset it) while a device under 1 fps is still judged.
+  // 40 ms leaves a 30 fps cap (battery saver, low power mode) alone.
+  var SLOW = { ms: 40, okMs: 34, hold: 5, okHold: 3, grace: 3, stall: 1000 };
+  function slowWatch() { return { slow: false, live: 0, over: 0, ok: 0 }; }
+  // One frame: dtMs its interval, avgMs the smoothed frame time. True when w.slow changed.
+  function slowStep(w, dtMs, avgMs, spent, counting) {
+    var was = w.slow;
+    if (!counting) { w.live = w.over = w.ok = 0; w.slow = false; return was; }
+    if (!(dtMs > 0)) return false;
+    var s = Math.min(dtMs, SLOW.stall) / 1000; w.live += s;
+    if (w.live < SLOW.grace) return false;
+    if (!w.slow) { w.over = spent && avgMs > SLOW.ms ? w.over + s : 0; if (w.over >= SLOW.hold) { w.slow = true; w.ok = 0; } }
+    else { w.ok = avgMs < SLOW.okMs ? w.ok + s : 0; if (w.ok >= SLOW.okHold) { w.slow = false; w.over = 0; } }
+    return w.slow !== was;
   }
 
   // ---- Fish -------------------------------------------------------------------
@@ -369,6 +429,11 @@
     var highlight = null, ringThin = null, ringThick = null, plumb = null, bob = null;
     // Staged loading (options.staged): the build runs as a queue of short steps; see "Loading" below.
     var staged = options.staged === true, loaded = false, loadQueue = [], loadAt = 0, loadInsert = 0, loadTimer = 0, loadRaf = 0, loadShown = -1, warm = null, uploads = null;
+    // autoReason: why 'auto' chose this tier (null when the student chose); slowW: the slow signal.
+    // gov: a light runtime governor (see "Governor" below); it changes how sharp the
+    // picture is and how often fish shadows redraw, never what is in the scene.
+    var autoReason = options.quality === 'low' || options.quality === 'high' ? null : profileDevice().reason, slowW = slowWatch();
+    var gov = { level: 0, steps: [], ratio: 1, shadowEvery: 1, frameMs: 0, t: 0, up: 0, down: 0, downNeed: 5, stepped: false };
     function own(resource) { owned.push(resource); return resource; }
     function listen(target, type, fn, opts) {
       if (!target || typeof target.addEventListener !== 'function') return;
@@ -427,6 +492,7 @@
     try {
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: high, alpha: false, powerPreference: high ? 'high-performance' : 'low-power' });
       renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, high ? 1.75 : 1));
+      govLadder();
       renderer.outputEncoding = THREE.sRGBEncoding;
       // A touch under the dive's exposure: the survey camera is close to pale sand.
       renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.84;
@@ -684,10 +750,11 @@
         pointIndex: p ? pointIndex : -1, distanceM: p ? p.distanceM : null, category: p ? p.category : null, coralForm: p ? p.coralForm : null,
         cameraMode: cameraMode, paused: paused, quality: quality, fishVisible: disposed ? [] : visibleFish(),
         highlightIndex: highlightIndex, pointCount: points.length, reducedMotion: reducedMotion, ready: !disposed && !contextLost && loaded,
-        frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0
+        frames: frames, drawCalls: info ? info.calls : 0, triangles: info ? info.triangles : 0,
+        autoReason: autoReason, slow: slowW.slow
       };
     }
-    function stateKey(s) { return [s.pointIndex, s.highlightIndex, s.cameraMode, s.paused, s.reducedMotion, s.ready, s.fishVisible.map(function (f) { return f.fishId; }).join(',')].join('|'); }
+    function stateKey(s) { return [s.pointIndex, s.highlightIndex, s.cameraMode, s.paused, s.reducedMotion, s.ready, s.slow, s.fishVisible.map(function (f) { return f.fishId; }).join(',')].join('|'); }
     function emit(s, t) {
       pendingNotify = false; lastNotify = t; lastKey = stateKey(s);
       try { options.onState(s); } catch (error) { reportError(error); }
@@ -721,10 +788,52 @@
       raf = 0;
     }
     function refresh() { requestFrame(); }
+    // ---- Governor -----------------------------------------------------------------
+    // Measured over animating frames only, every 0.5 s once the first 3 s have passed.
+    // A frame over 24 ms (under about 42 fps) for 1 s takes one step: the pixel ratio
+    // 1.75 to 1.25, then to 1 (only steps that change something on this screen), then
+    // the shadow map, on the detailed tier, redraws every 3rd frame. Under 18 ms for
+    // 5 s gives one step back; a step taken again after a step back doubles that wait
+    // (up to 60 s), so a device on the edge settles instead of flickering. The low
+    // tier (ratio 1, no shadows) has no steps. Points, colonies, fish and the tape
+    // never change: what lies under a survey point does not depend on the governor.
+    function govLadder() {
+      var dpr = global.devicePixelRatio || 1, last = Math.min(dpr, high ? 1.75 : 1);
+      gov.ratio = last; gov.steps = [];
+      [1.25, 1].forEach(function (r) { var v = Math.min(dpr, r); if (v < last) { gov.steps.push({ ratio: v }); last = v; } });
+      if (high) gov.steps.push({ shadowEvery: 3 });
+    }
+    function govApply() {
+      var ratio = Math.min(global.devicePixelRatio || 1, high ? 1.75 : 1), every = 1;
+      for (var i = 0; i < gov.level; i++) { if (gov.steps[i].ratio) ratio = gov.steps[i].ratio; if (gov.steps[i].shadowEvery) every = gov.steps[i].shadowEvery; }
+      if (ratio !== gov.ratio) { gov.ratio = ratio; renderer.setPixelRatio(ratio); }
+      gov.shadowEvery = every;
+      if (renderer.shadowMap && renderer.shadowMap.enabled) renderer.shadowMap.autoUpdate = every <= 1;
+    }
+    function govReport() {
+      if (typeof options.onPerf !== 'function') return;
+      try { options.onPerf({ level: gov.level, steps: gov.steps.length, pixelRatio: gov.ratio, shadowEvery: gov.shadowEvery, frameMs: Math.round(gov.frameMs * 10) / 10, spent: gov.level >= gov.steps.length, slow: slowW.slow }); } catch (ignore) {}
+    }
+    function govern(rawMs, dt, counting) {
+      if (counting && dt > 0) gov.frameMs = gov.frameMs > 0 ? gov.frameMs + (dt * 1000 - gov.frameMs) * 0.1 : dt * 1000;
+      if (counting && dt > 0 && slowW.live >= SLOW.grace && (gov.t += Math.min(rawMs, SLOW.stall) / 1000) >= 0.5) {
+        gov.t = 0;
+        var level = gov.level;
+        if (gov.frameMs > 24) { gov.down = 0; if (++gov.up >= 2 && gov.level < gov.steps.length) { gov.level++; gov.up = 0; if (gov.stepped) gov.downNeed = Math.min(60, gov.downNeed * 2); gov.stepped = false; } }
+        else if (gov.frameMs < 18) { gov.up = 0; gov.down += 0.5; if (gov.down >= gov.downNeed && gov.level > 0) { gov.level--; gov.down = 0; gov.stepped = true; } }
+        else { gov.up = 0; gov.down = 0; }
+        if (gov.level !== level) govApply();
+        govReport();
+      }
+      if (gov.shadowEvery > 1 && renderer.shadowMap && renderer.shadowMap.enabled && frames % gov.shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
+      if (slowStep(slowW, rawMs, gov.frameMs, gov.level >= gov.steps.length, counting)) { govReport(); notify(true); }
+    }
+    function slowReset() { var changed = slowStep(slowW, 0, 0, false, false); if (changed) govReport(); return changed; }
     function tick(stamp) {
       raf = 0;
       if (disposed || contextLost || hidden()) return;
       try {
+        var rawMs = lastStamp === null ? 0 : stamp - lastStamp;
         var dt = lastStamp === null ? 0 : clamp((stamp - lastStamp) / 1000, 0, 0.1); lastStamp = stamp;
         var animating = !paused && !reducedMotion;
         if (animating) { elapsed += dt; updateFish(elapsed); habitat.update(dt, elapsed); }
@@ -733,6 +842,7 @@
           var pulse = 0.68 + 0.27 * Math.sin(elapsed * 3);
           ringThin.material.opacity = pulse;
         }
+        govern(rawMs, dt, animating);
         renderer.render(scene, camera); frames++;
         notify(false);
         if (animating || moving) requestFrame();
@@ -834,10 +944,10 @@
       setGoal(); placeHighlight(); if (reducedMotion) applyCamera(0, true);
       notify(true); refresh();
     }
-    function setPaused(value) { if (disposed) return; paused = reducedMotion || !!value; lastStamp = null; notify(true); refresh(); }
+    function setPaused(value) { if (disposed) return; paused = reducedMotion || !!value; lastStamp = null; slowReset(); notify(true); refresh(); }
     function setReducedMotion(value) {
       if (disposed || reducedMotion === !!value) return;
-      reducedMotion = !!value;
+      reducedMotion = !!value; slowReset();
       if (reducedMotion) { paused = true; if (loaded) applyCamera(0, true); }
       lastStamp = null; notify(true); refresh();
     }
@@ -924,7 +1034,7 @@
       reportError(new Error('The 3D reef view lost its graphics context. Reopen the 3D view or use the 2D survey.'));
       notify(true);
     });
-    listen(doc, 'visibilitychange', function () { lastStamp = null; if (hidden()) stopLoop(); else refresh(); });
+    listen(doc, 'visibilitychange', function () { lastStamp = null; var was = slowReset(); if (hidden()) { stopLoop(); if (was) notify(true); } else refresh(); });
     if (typeof global.ResizeObserver === 'function') { resizeObserver = new global.ResizeObserver(function () { resize(); }); resizeObserver.observe(canvas); }
     else listen(global, 'resize', resize);
 
@@ -935,5 +1045,5 @@
     return controller;
   }
 
-  global.Reef3D = { version: '1.0.0', mount: mount, selectQuality: selectQuality, fishFamilies: FAMILIES.slice() };
+  global.Reef3D = { version: '1.0.0', mount: mount, selectQuality: selectQuality, profileDevice: profileDevice, fishFamilies: FAMILIES.slice() };
 })(window);

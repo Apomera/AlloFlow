@@ -103,11 +103,14 @@ async function mountAtSourceStep(extra = {}) {
 }
 
 describe('source-material step (step 2)', () => {
-  it('shows merged Find-on-the-Web card and the Reading Catalog card, not the old pair', async () => {
+  it('shows merged Find online card and the Reading catalog card, not the old pair', async () => {
     await mountAtSourceStep();
     const labels = Array.from(host.querySelectorAll('button')).map((b) => b.textContent || '');
-    expect(labels.some((l) => l.includes('Find on the Web'))).toBe(true);
-    expect(labels.some((l) => l.includes('Reading Catalog'))).toBe(true);
+    // Same five names as the Create screen: paste, upload, find online, reading catalog, write with AI.
+    expect(labels.some((l) => l.includes('Find online'))).toBe(true);
+    expect(labels.some((l) => l.includes('Reading catalog'))).toBe(true);
+    expect(labels.some((l) => l.includes('Write with AI'))).toBe(true);
+    expect(labels.some((l) => l.includes('Find on the Web') || l.includes('Reading Catalog') || l.includes('Generate from Scratch'))).toBe(false);
     // the old separate cards are gone (their t-keys would echo raw)
     expect(labels.some((l) => l.includes('wizard.paste_url'))).toBe(false);
     expect(labels.some((l) => l.includes('wizard.ai_search'))).toBe(false);
@@ -156,7 +159,7 @@ describe('own-document imports in Quick Start', () => {
 describe('reading-catalog flow', () => {
   it('preselects the reading level from the chosen grade, then loads a book as source content', async () => {
     await mountAtSourceStep(); // wizard grade defaults to '5th Grade'
-    clickByText('Reading Catalog');
+    clickByText('Reading catalog');
     await flush();
     // two selects now: level (first) + language (second)
     const selects = host.querySelectorAll('select');
@@ -186,7 +189,7 @@ describe('reading-catalog flow', () => {
 
   it('carries the picked book as a resource ref (storybookRef) through to completion', async () => {
     const calls = await mountAtSourceStep();
-    clickByText('Reading Catalog');
+    clickByText('Reading catalog');
     await flush();
     const lvl4 = index.books.filter((b) => String(b.level) === '4')[0];
     clickByText(lvl4.title);
@@ -210,7 +213,7 @@ describe('reading-catalog flow', () => {
 
   it('clearing the level filter to All levels widens the grid', async () => {
     await mountAtSourceStep();
-    clickByText('Reading Catalog');
+    clickByText('Reading catalog');
     await flush();
     const levelSelect = host.querySelectorAll('select')[0];
     expect(levelSelect.value).toBe('4');

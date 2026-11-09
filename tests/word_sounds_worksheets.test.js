@@ -39,7 +39,8 @@ describe('the worksheet option', () => {
     const ids = [...select.options].map((o) => o.value);
     expect(ids).toEqual(expect.arrayContaining(['rhyming', 'isolation', 'spelling_bee', 'word_scramble', 'mapping', 'letter_tracing']));
     expect(ids).not.toContain('sentence_match');
-    expect(d.querySelector('[data-ws-print-key]').checked).toBe(true);
+    // 2026-11-09: the key is a choice (last page / separate printout / none), on the last page by default.
+    expect(d.querySelector('[data-ws-print-key]').value).toBe('last');
   });
 });
 
@@ -66,22 +67,27 @@ describe('the printed sheet', () => {
   it('writing activities get boxes, blanks, tiles and lines', async () => {
     expect((await printSheet('spelling_bee')).querySelector('.ws-ws-item').querySelectorAll('.ws-ws-box')).toHaveLength(3);
     expect((await printSheet('segmentation')).querySelector('.ws-ws-boxes').children).toHaveLength(3);
-    expect((await printSheet('missing_letter')).querySelector('.ws-ws-big').textContent).toBe('c_t');
+    // 2026-11-09: the blank is a box to write in, not an underscore.
+    const blank = (await printSheet('missing_letter')).querySelector('.ws-ws-big');
+    expect(blank.textContent).toBe('ct');
+    expect(blank.children[0].className).toBe('ws-ws-blank');
     const scramble = await printSheet('word_scramble');
     expect([...scramble.querySelectorAll('.ws-ws-tile')].map((t) => t.textContent).join('')).not.toBe('cat');
     expect(scramble.querySelector('.ws-ws-write')).toBeTruthy();
     const trace = await printSheet('letter_tracing');
     expect(trace.querySelector('.ws-ws-trace').textContent).toBe('c');
-    expect(trace.querySelector('.ws-ws-prompt').textContent).toBe('Trace the letter c, then write it on the line.');
+    expect(trace.querySelector('.ws-ws-prompt').textContent).toBe('Trace the letter c. Then write it on the empty line.');
     const map = await printSheet('mapping');
     expect(map.querySelector('.ws-ws-item').querySelectorAll('.ws-ws-map > div')).toHaveLength(3);
     expect(map.querySelector('.ws-ws-map').textContent).toBe('/k//a//t/');
   });
   it('the answer key can be left off', async () => {
     const d = await dialog();
-    await click(d.querySelector('[data-ws-print-key]'));
+    await choose(d.querySelector('[data-ws-print-key]'), 'none');
     await choose(d.querySelector('[data-ws-print-activity]'), 'isolation');
     await click(d.querySelector('[data-ws-print="worksheet"]'));
     expect(lastDoc().querySelector('.ws-ws-key')).toBeNull();
+    // 2026-11-09: a listening sheet without its key still ends with a teacher page of the words to say.
+    expect([...lastDoc().querySelectorAll('.ws-ws-say li')].map((li) => li.textContent)).toEqual(['cat', 'hat']);
   });
 });

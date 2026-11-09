@@ -425,7 +425,14 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
     if (actual !== expected.sha384) throw failure('executable digest differs');
     return bytes;
   };
+  // Cache first; a failed check refetches once, no-store.
   var fetchSelected = async function (expected) {
+    try { return await fetchOnce(expected, 'default'); } catch (error) {
+      if (error.runtimeTimeout === true || !/digest differs|length differs|approved bound/.test(error.message || '')) throw error;
+      return fetchOnce(expected, 'no-store');
+    }
+  };
+  var fetchOnce = async function (expected, cacheMode) {
     if (typeof nativeFetch !== 'function') throw failure('verified fetch unavailable');
     var controller = typeof env.AbortController === 'function' ? new env.AbortController() : null;
     var timer = null, response, reader, closed = false, aborted = false, cancelled, released;
@@ -439,30 +446,32 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       var body = reader || response && response.body;
       if (body && cancelled !== body && typeof body.cancel === 'function') {
         cancelled = body;
-        // Cleanup must not let a rejected response hold the runtime open. In
-        // particular, a stream's underlying cancellation may never settle.
+        // A cancel that may never settle must not hold the runtime open.
         try { Promise.resolve(body.cancel()).catch(function () {}); } catch (_) {}
       }
       releaseReader();
     };
     var timeoutFailure = function () { var error = failure('executable fetch timed out'); error.runtimeTimeout = true; return error; };
     var assertActive = function () { if (closed) throw timeoutFailure(); };
+    // Ends at 60 s idle, or 30 s + file at 0.25 Mbps (min 60 s).
+    var limit = Math.max(60000, 30000 + Math.ceil(expected.bytes / 31)), expire, idle = null;
     var deadline = typeof schedule === 'function' ? new Promise(function (_, reject) {
-      timer = schedule(function () {
-        closed = true; stopTransport(); reject(timeoutFailure());
-      }, 60000);
+      expire = function () { closed = true; stopTransport(); reject(timeoutFailure()); };
+      timer = schedule(expire, limit);
     }) : null;
+    var stopIdle = function () { if (idle !== null && typeof cancel === 'function') { cancel(idle); idle = null; } };
+    var pulse = function () { if (deadline) { stopIdle(); idle = schedule(expire, 60000); } };
     var operation = (async function () {
-      assertActive();
-      response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: 'no-store', signal: controller && controller.signal });
+      assertActive(); pulse();
+      response = await nativeFetch(expected.url, { credentials: 'omit', mode: 'cors', cache: cacheMode, signal: controller && controller.signal });
       if (closed) { stopTransport(); assertActive(); }
       if (!response || response.status !== 200 || !response.body || !response.body.getReader) throw failure('executable response unavailable');
       reader = response.body.getReader();
       var bytes = new Uint8Array(expected.bytes), offset = 0;
       for (;;) {
-        var chunk = await reader.read(); assertActive(); if (chunk.done) break;
+        var chunk = await reader.read(); assertActive(); if (chunk.done) { stopIdle(); break; }
         if (offset + chunk.value.byteLength > expected.bytes) throw failure('executable exceeds approved bound');
-        bytes.set(chunk.value, offset); offset += chunk.value.byteLength;
+        bytes.set(chunk.value, offset); offset += chunk.value.byteLength; pulse();
       }
       if (offset !== expected.bytes) throw failure('executable length differs');
       var verified = await verify(bytes, expected);
@@ -476,12 +485,11 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       throw failure('executable fetch failed: ' + (error && error.message || 'network error'));
     } finally {
       if (timer !== null && typeof cancel === 'function') cancel(timer);
-      releaseReader();
+      stopIdle(); releaseReader();
     }
   };
-  // This function's source is embedded into an already-verified module/worker.
-  // It maps executable operations to this session's immutable Blob URLs. Model
-  // and document data remain ordinary data fetches; they cannot select JS/WASM.
+  // Stringified into modules/workers: JS/WASM ops map to session Blob URLs (data
+  // fetches stay ordinary). webpackIgnore: webpack's import() is undefined there.
   function runtimeCapabilities(table, types, original, workerMode, depth) {
     'use strict';
     Object.freeze(table); Object.freeze(types);
@@ -502,7 +510,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
         return nativeFetch(value, options);
       }
     };
-    var imported = function (value) { return import(resolve(value, ['module'])); };
+    var imported = function (value) { return import(/* webpackIgnore: true */ resolve(value, ['module'])); };
     var scripts = function () {
       if (!nativeScripts) throw new Error('Classic worker imports unavailable');
       return nativeScripts.apply(null, Array.from(arguments, function (value) { return resolve(value, ['script', 'worker']); }));
@@ -794,7 +802,7 @@ function _alloInstallRuntimeGraphHost(manifest, target) {
   });
   return policy;
 }
-const _alloRuntimeGraphDeliveryId = '5d0017e9f15edfcd1f2b8cf6559461a7d3f453373d17a4e16df0f95134b1dbc1';
+const _alloRuntimeGraphDeliveryId = '3c2119346d58196ce93eb7b8076d3df7052b82d041a06dc9a03e973ec2af5760';
 const _alloRuntimeGraphManifest = {"assets":{"axe-core":{"aliases":["https://alloflow-cdn.pages.dev/axe-core/4.12.1/axe.min.js"],"bytes":572599,"closed":true,"kind":"script","mirrors":[{"bytes":572599,"sha384":"2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179","url":"https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js"},{"bytes":572599,"sha384":"2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179","url":"https://unpkg.com/axe-core@4.12.1/axe.min.js"}],"path":"runtime_assets/document/axe-core-4.12.1/axe.min.js","sha384":"2507a0457aba1214e25a818f1439aa6c936c0e8c390684ac1a19da783cc6a7eab23850ae319676e2a6367f3dc5c59179"},"dompurify":{"aliases":["https://alloflow-cdn.pages.dev/dompurify/3.4.17/purify.min.js"],"bytes":29828,"closed":true,"kind":"script","mirrors":[{"bytes":29828,"sha384":"3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1","url":"https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js"},{"bytes":29828,"sha384":"3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1","url":"https://unpkg.com/dompurify@3.4.17/dist/purify.min.js"},{"bytes":29828,"sha384":"3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1","url":"https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.17/purify.min.js"}],"path":"runtime_assets/document/dompurify-3.4.17/purify.min.js","sha384":"3f424d9de41ff351ce97d5703572bbe9c43d54c0fa35fb277a9c5bd1c08e83cf94cc477380f1c03d5e30550aef6104b1"},"duckdb.module":{"bytes":227439,"closed":true,"kind":"module","mirrors":[],"path":"runtime_assets/data-kernel/duckdb.closed.ca0eb68da49aad8f4bec27d7.mjs","sha384":"ca0eb68da49aad8f4bec27d7d9c4b024e7acbfa7937cbabc3a5f33dbed494a1822a93d34f4f509fcc6e99785d167f0df"},"duckdb.part0":{"bytes":16777216,"kind":"part","mirrors":[],"path":"duckdb-assets/duckdb-mvp.wasm.part00","sha384":"84902b9ca2761ddef705ed707f469caa4fded6fea7d558afd4697b31918d0775807f59fa9fcec9e33d710a73843d8253"},"duckdb.part1":{"bytes":16777216,"kind":"part","mirrors":[],"path":"duckdb-assets/duckdb-mvp.wasm.part01","sha384":"132a7037c5eb8e930e441c42d7dc17e3b4c72c8dc5dd7be618d5cb7e3b87f75fd1921ae7a51c6bf09b65c5ebc52fda4a"},"duckdb.part2":{"bytes":5808219,"kind":"part","mirrors":[],"path":"duckdb-assets/duckdb-mvp.wasm.part02","sha384":"ea9defaf2fe7a7589d2fd72f53d75b00b3aea77007601adb09d2a764cef7816d338cf3ecea0c1cc77b6d648adbe2c066"},"duckdb.wasm":{"bytes":39362651,"kind":"wasm","mirrors":[],"parts":["duckdb.part0","duckdb.part1","duckdb.part2"],"path":null,"sha384":"68fc439ada2f350c8c4f2f12ef3a25354887a1036fb642c639625d3ed4295b54f9d8342ea9e1aeb6611d6f4c9c06836c"},"duckdb.worker":{"bytes":844644,"closed":true,"kind":"worker","mirrors":[],"path":"duckdb-assets/duckdb-browser-mvp.worker.js","sha384":"001078405814a10a9f88c46fe0499edb4442a3eacefff38110e25f8946e26450511ffe13e31cbc55cbb884b5e03f1434"},"fontkit":{"bytes":758440,"closed":true,"kind":"script","mirrors":[{"bytes":758440,"sha384":"da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7","url":"https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"},{"bytes":758440,"sha384":"da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7","url":"https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"}],"path":"runtime_assets/document/fontkit-1.1.1/fontkit.umd.min.js","sha384":"da9e94fb59a6a85d745127a115e462c86d84486f45c08a8dfa3c542e7e70f638d02228529fd3edd777550a7fc76b08e7"},"ibm-ace":{"aliases":["https://alloflow-cdn.pages.dev/accessibility-checker-engine/3.1.83/ace.js"],"bytes":583961,"closed":true,"kind":"script","mirrors":[{"bytes":583961,"sha384":"7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13","url":"https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js"},{"bytes":583961,"sha384":"7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13","url":"https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js"}],"path":"runtime_assets/document/ibm-ace-3.1.83/ace.js","sha384":"7ae24d8fbd31f0348624243da5fc2585b130bf52d8a0b72cc4765708df13adc97bc246ee573dceae2a31c02accab2a13"},"jszip":{"aliases":["https://alloflow-cdn.pages.dev/jszip/3.10.1/jszip.min.js"],"bytes":97630,"closed":true,"kind":"script","mirrors":[{"bytes":97630,"sha384":"fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6","url":"https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"},{"bytes":97630,"sha384":"fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6","url":"https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"}],"path":"runtime_assets/document/jszip-3.10.1/jszip.min.js","sha384":"fa66d5d88635664fd7d69fe75a5946c9225250df2e32cfa0500375d0eafde54047d1fa63e867ca80f9a00b911789e5c6"},"kokoro.module":{"aliases":["https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm"],"bytes":2267244,"closed":true,"dependencies":["kokoro.ort.wasm"],"kind":"module","mirrors":[],"path":"runtime_assets/engine/kokoro.closed.8c3835d7a2e9eadf077cd154.mjs","sha384":"8c3835d7a2e9eadf077cd1543dbc91047aadf6ee5a3488271ec9dc4ff9ca0e12e6b514ef6a35248bc79903f2ddf330b5"},"kokoro.ort.wasm":{"aliases":["https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1/dist/ort-wasm-simd-threaded.jsep.wasm"],"bytes":21596019,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/kokoro-transformers-3.5.1.bbf6c3b31dfd73ec2dd0b6c7.wasm","sha384":"bbf6c3b31dfd73ec2dd0b6c798e0b2771b787f28a2837d75f214203937cebeb7e481270ce21468d88c13b65c72a08d36"},"mammoth":{"aliases":["https://alloflow-cdn.pages.dev/mammoth/1.6.0/mammoth.browser.min.js"],"bytes":642759,"closed":true,"kind":"script","mirrors":[{"bytes":642759,"sha384":"9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3","url":"https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"},{"bytes":642759,"sha384":"9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3","url":"https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"}],"path":"runtime_assets/document/mammoth-1.6.0/mammoth.browser.min.js","sha384":"9c5a128d92281f7082a7c5badfd8c9c9092e3c78a72763477bba27d71be5500ed2b867c901fbcc95daeca00566e840b3"},"ort121.module":{"aliases":["https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs"],"bytes":402386,"closed":true,"dependencies":["ort121.wasm"],"kind":"module","mirrors":[],"path":"runtime_assets/engine/ort.closed.8986603e90c3ccac4973ca1b.mjs","sha384":"8986603e90c3ccac4973ca1bfaa0aca78a4ba73b4329f65be23fea82571e8d6e92317ae14449dde9a09654403307e3ea"},"ort121.wasm":{"aliases":["https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort-wasm-simd-threaded.jsep.wasm"],"bytes":23914392,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/ort-1.21.0.65bfb71e22a47917da2a906e.wasm","sha384":"65bfb71e22a47917da2a906e8d625b82800541d24fd2ef3aedfd08fc21b609ef76b987c6689edcfd98b494a51856b3c7"},"pako":{"bytes":46859,"closed":true,"kind":"script","mirrors":[{"bytes":46859,"sha384":"acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23","url":"https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"},{"bytes":46859,"sha384":"acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23","url":"https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"},{"bytes":46859,"sha384":"acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23","url":"https://unpkg.com/pako@2.1.0/dist/pako.min.js"}],"path":"runtime_assets/document/pako-2.1.0/pako.min.js","sha384":"acd95a1397ecf5d1888e6c560c02d087f44101a191613e4286bcc7a3ab517e0ad9dfa8911408aab8fe60e3526cbfed23"},"pdf-lib":{"aliases":["https://alloflow-cdn.pages.dev/pdf-lib/1.17.1/pdf-lib.min.js"],"bytes":525099,"closed":true,"kind":"script","mirrors":[{"bytes":525099,"sha384":"c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008","url":"https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"},{"bytes":525099,"sha384":"c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008","url":"https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"},{"bytes":525099,"sha384":"c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008","url":"https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"}],"path":"runtime_assets/document/pdf-lib-1.17.1/pdf-lib.min.js","sha384":"c1e300070ae5b40ea3591f030def49a796e593eb59421eee8290ac177270480e7759933dff5e0f8d2e4b009347363008"},"pdfjs.main":{"aliases":["https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js"],"bytes":320004,"closed":true,"dependencies":["pdfjs.worker"],"kind":"script","mirrors":[{"bytes":320004,"sha384":"ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e","url":"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"},{"bytes":320004,"sha384":"ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e","url":"https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"},{"bytes":320004,"sha384":"ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e","url":"https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"}],"path":"runtime_assets/document/pdfjs-3.11.174/pdf.min.js","sha384":"ff5a940921b04eeafdbe37ffcfd966bbf7825186e93938128e6a5b310675fc2b57daffd670020aa91bfe5350d4086e9e"},"pdfjs.worker":{"aliases":["https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.worker.min.js"],"bytes":1087212,"closed":true,"kind":"worker","mirrors":[{"bytes":1087212,"sha384":"4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76","url":"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"},{"bytes":1087212,"sha384":"4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76","url":"https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"},{"bytes":1087212,"sha384":"4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76","url":"https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js"}],"path":"runtime_assets/document/pdfjs-3.11.174/pdf.worker.min.js","sha384":"4a7ccea1ba5130b5d9e76889bd99bf0b47d8c343907a64d7cd38c8b1db1f31cac2b4211ef6a833c537774529253b9c76"},"piper.module":{"aliases":["https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm"],"bytes":788566,"closed":true,"dependencies":["piper.ort.simd","piper.ort.plain","piper.phonemizer.wasm","piper.phonemizer.data"],"kind":"module","mirrors":[],"path":"runtime_assets/engine/piper.closed.f1884b1c5218340ee886929c.mjs","sha384":"f1884b1c5218340ee886929c37f341b013f4bd3837bf232020b090c92dfbb36dd2877237f0a29361708e5f7e59559f0d"},"piper.ort.plain":{"aliases":["https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm.wasm"],"bytes":9758086,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/piper-ort.927679b038ae4e2b05831065.wasm","sha384":"927679b038ae4e2b05831065c18dedc10107f10960b21ba94c8158d92b31d9fcf8d73a62bfc67868a16b77ddd6a2c030"},"piper.ort.simd":{"aliases":["https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort-wasm-simd.wasm"],"bytes":10595041,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/piper-ort-simd.7d168b18f233bc5da98465b8.wasm","sha384":"7d168b18f233bc5da98465b888eb689d36acfe1ffe822e699ee45b6081431cc018eb097c3e306239de369555290da35d"},"piper.phonemizer.data":{"aliases":["https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.data"],"bytes":18077249,"kind":"data","mirrors":[],"path":"runtime_assets/engine/piper-phonemizer.e9787705f887f97edee0ccb5.data","sha384":"e9787705f887f97edee0ccb5d64ebabc3a7b5945909a7e487e6b31e19075c20f2f03dfa598e52e72e9ea26936c354b9f"},"piper.phonemizer.wasm":{"aliases":["https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm"],"bytes":635212,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/piper-phonemizer.a7ba79de91cc749fc2ceae6b.wasm","sha384":"a7ba79de91cc749fc2ceae6bf22d1c5d65602c0f8279711e922d4d1b234dd0129f3452c87717a0d11d3ee52ccd4a8a77"},"sheetjs.0.20.3":{"aliases":["https://alloflow-cdn.pages.dev/runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js"],"bytes":951904,"closed":true,"kind":"script","mirrors":[{"bytes":951904,"sha384":"127c98d3f1921d0192c5280cc1a20fcd21126eaa0e2d27b17e748c37600ffb7f429269fddacb700016729ead49cb3753","url":"https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"}],"path":"runtime_assets/document/sheetjs-0.20.3/xlsx.full.min.js","sha384":"127c98d3f1921d0192c5280cc1a20fcd21126eaa0e2d27b17e748c37600ffb7f429269fddacb700016729ead49cb3753"},"temml":{"aliases":["https://alloflow-cdn.pages.dev/temml/temml.min.js"],"bytes":158417,"closed":true,"kind":"script","mirrors":[{"bytes":158208,"sha384":"21254a17061824038a3dc7e46210551e351560b222bb0084a3ffb27ee0ec7adbb728d6af4a6c392447a569a20422d2e3","url":"https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js"},{"bytes":158208,"sha384":"21254a17061824038a3dc7e46210551e351560b222bb0084a3ffb27ee0ec7adbb728d6af4a6c392447a569a20422d2e3","url":"https://unpkg.com/temml@0.10.34/dist/temml.min.js"}],"path":"runtime_assets/document/temml-0.10.34/temml.min.js","sha384":"69cb9e20399c836df9f2012744197313cd41fbfef3726dd6051a32d64ef63d65e8c2ec7bde888cf4e055421da143e895"},"tess.bootstrap":{"bytes":1788,"closed":true,"dependencies":["tess.worker","tess.core-lstm","tess.core-simd-lstm","tess.wasm-lstm","tess.wasm-simd-lstm"],"kind":"worker","mirrors":[],"path":"runtime_assets/document/tesseract-5.1.1/bootstrap.js","sha384":"568f4a7fbdf70f8a6484d278a0729de79242ab569f9cfab6b9e696b072f79a4234c426ef0671ff573541a18bdd2da6aa"},"tess.core-lstm":{"bytes":3938277,"closed":true,"dependencies":["tess.wasm-lstm"],"kind":"script","mirrors":[{"bytes":3938277,"sha384":"10a598e490f0a61428cb186f614ede68273243411d57a7d92b72f6bf37d972fda272145d35dea94a7c963cdbfa7ccb91","url":"https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-lstm.wasm.js"}],"path":"runtime_assets/document/tesseract-core-5.1.1/tesseract-core-lstm.wasm.js","sha384":"10a598e490f0a61428cb186f614ede68273243411d57a7d92b72f6bf37d972fda272145d35dea94a7c963cdbfa7ccb91"},"tess.core-simd-lstm":{"bytes":3938657,"closed":true,"dependencies":["tess.wasm-simd-lstm"],"kind":"script","mirrors":[{"bytes":3938657,"sha384":"60cd46fb3696632f554913f60b5d352c283387b9f71ea6fa3849bda83a196200800ec9e2de79c40ac902dd689a95007b","url":"https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-simd-lstm.wasm.js"}],"path":"runtime_assets/document/tesseract-core-5.1.1/tesseract-core-simd-lstm.wasm.js","sha384":"60cd46fb3696632f554913f60b5d352c283387b9f71ea6fa3849bda83a196200800ec9e2de79c40ac902dd689a95007b"},"tess.wasm-lstm":{"bytes":2859424,"closed":true,"kind":"wasm","mirrors":[{"bytes":2859424,"sha384":"df7a35a910bc1c52d19df7b7aadbeef5c232465e76b64b27cfcf13c96f6617e497b990c685c5faa479c42257990c1f12","url":"https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-lstm.wasm"}],"path":"runtime_assets/document/tesseract-core-5.1.1/tesseract-core-lstm.wasm","sha384":"df7a35a910bc1c52d19df7b7aadbeef5c232465e76b64b27cfcf13c96f6617e497b990c685c5faa479c42257990c1f12"},"tess.wasm-simd-lstm":{"bytes":2859709,"closed":true,"kind":"wasm","mirrors":[{"bytes":2859709,"sha384":"bd16ffe830758737202a5e52c1753073184f237a437155acf30d395ea45e69c898d9397686f9a5aad467fd13be916eb1","url":"https://cdn.jsdelivr.net/npm/tesseract.js-core@v5.1.1/tesseract-core-simd-lstm.wasm"}],"path":"runtime_assets/document/tesseract-core-5.1.1/tesseract-core-simd-lstm.wasm","sha384":"bd16ffe830758737202a5e52c1753073184f237a437155acf30d395ea45e69c898d9397686f9a5aad467fd13be916eb1"},"tess.worker":{"bytes":123724,"closed":true,"dependencies":["tess.core-lstm","tess.core-simd-lstm"],"kind":"worker","mirrors":[{"bytes":123724,"sha384":"cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b","url":"https://cdn.jsdelivr.net/npm/tesseract.js@v5.1.1/dist/worker.min.js"},{"bytes":123724,"sha384":"cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b","url":"https://unpkg.com/tesseract.js@5.1.1/dist/worker.min.js"}],"path":"runtime_assets/document/tesseract-5.1.1/worker.min.js","sha384":"cf19fe56aa1f1735e91fdf5d51bddf6b8cb0a1205024fcbaffaa046891cf95b9595ebe776b4835265ebbdb4be04b307b"},"tesseract.main":{"bytes":66695,"closed":true,"dependencies":["tess.bootstrap"],"kind":"script","mirrors":[{"bytes":66695,"sha384":"189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45","url":"https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"},{"bytes":66695,"sha384":"189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45","url":"https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js"}],"path":"runtime_assets/document/tesseract-5.1.1/tesseract.min.js","sha384":"189a92bbbbee790f6a37413dc8b3dbdd6b6977b3ab80af0a998cc2f13d48cac1b56dcbf1bc83b8aad611fc3dc0f7dd45"},"transformers331.module":{"aliases":["https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm","https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1"],"bytes":925973,"closed":true,"dependencies":["transformers331.ort.wasm"],"kind":"module","mirrors":[],"path":"runtime_assets/engine/transformers.closed.9c5887e102e3838a3aeaf0b0.mjs","sha384":"9c5887e102e3838a3aeaf0b0550cbf2bb75cd7d922e5f9adbabed81e73f406c953c79c9e0ce3038c0a240a8ac96f7526"},"transformers331.ort.wasm":{"aliases":["https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/dist/ort-wasm-simd-threaded.jsep.wasm"],"bytes":22792576,"kind":"wasm","mirrors":[],"path":"runtime_assets/engine/transformers-3.3.1.98f95211528ba8b53becd02b.wasm","sha384":"98f95211528ba8b53becd02bbd4fac7064b0d9905d81f2ad1b98bc420ac9d4e4997c43bb9950d13f022c25fc96dd4282"}},"graphs":{"duckdb":{"assets":["duckdb.module","duckdb.worker","duckdb.part0","duckdb.part1","duckdb.part2","duckdb.wasm"],"bindings":{"wasm":"duckdb.wasm","worker":"duckdb.worker"},"entry":"duckdb.module"},"kokoro":{"assets":["kokoro.ort.wasm","kokoro.module"],"bindings":{"kokoro.ort.wasm":"kokoro.ort.wasm"},"configureExport":"__alloflowConfigureRuntime","entry":"kokoro.module"},"ort121":{"assets":["ort121.wasm","ort121.module"],"bindings":{"ort121.wasm":"ort121.wasm"},"configureExport":"__alloflowConfigureRuntime","entry":"ort121.module"},"pdfjs":{"assets":["pdfjs.main","pdfjs.worker"],"bindings":{"worker":"pdfjs.worker"}},"pdfjs-raster":{"assets":["pdfjs.main","pdfjs.worker"],"bindings":{"worker":"pdfjs.worker"},"scripts":["pdfjs.main","pdfjs.worker"]},"piper":{"assets":["piper.ort.simd","piper.ort.plain","piper.phonemizer.wasm","piper.phonemizer.data","piper.module"],"bindings":{"piper.ort.plain":"piper.ort.plain","piper.ort.simd":"piper.ort.simd","piper.phonemizer.data":"piper.phonemizer.data","piper.phonemizer.wasm":"piper.phonemizer.wasm"},"configureExport":"__alloflowConfigureRuntime","entry":"piper.module"},"tesseract":{"assets":["tesseract.main","tess.worker","tess.core-lstm","tess.core-simd-lstm","tess.wasm-lstm","tess.wasm-simd-lstm","tess.bootstrap"],"bindings":{"lstmWasm":"tess.wasm-lstm","simdLstmWasm":"tess.wasm-simd-lstm","worker":"tess.bootstrap"}},"transformers331":{"assets":["transformers331.ort.wasm","transformers331.module"],"bindings":{"transformers331.ort.wasm":"transformers331.ort.wasm"},"configureExport":"__alloflowConfigureRuntime","entry":"transformers331.module"}},"schemaVersion":1};
 const _alloRuntimeGraphPolicy = typeof window !== 'undefined' && typeof document !== 'undefined' ? _alloInstallRuntimeGraphHost(_alloRuntimeGraphManifest, window) : null;
 if (_alloRuntimeGraphPolicy && typeof document !== 'undefined' && document && document.documentElement && typeof document.documentElement.setAttribute === 'function') {
@@ -6329,6 +6337,7 @@ const GEMINI_MODELS = {
 if (typeof window !== 'undefined') {
     window.apiKey = apiKey;
     window._isCanvasEnv = _isCanvasEnv;
+    if (_isCanvasEnv && document.documentElement) document.documentElement.style.setProperty('--alloflow-host-corner-clear', '6rem');
     window._isIOSCanvasEnv = _isIOSCanvasEnv;
     window._isDesktopBundledApp = _isDesktopBundledApp;
     window.GEMINI_MODELS = GEMINI_MODELS;
@@ -9765,7 +9774,7 @@ const _alloGetCanvasDeviceStorage = async () => {
     window.__alloDeviceStoragePromise = window.alloDeviceStorage
       ? Promise.resolve(window.alloDeviceStorage)
       : _alloLoadScriptGlobal(
-          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=1037903efd4d',
+          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=3311434cf831',
           () => window.alloDeviceStorage,
           { label: 'Device storage module', timeoutMs: ALLO_STORAGE_SCRIPT_TIMEOUT_MS }
         );
@@ -15287,6 +15296,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [alloStudioInitialFile, setAlloStudioInitialFile] = useState(null);
   const [alloStudioInitialArtwork, setAlloStudioInitialArtwork] = useState(null);
   const [alloStudioInitialResource, setAlloStudioInitialResource] = useState(null);
+  React.useEffect(() => {
+    window.__alloOpenWordSoundsWorksheetInStudio = (resource) => {
+      if (isAlloStudioOpen || !resource || typeof resource !== 'object' || !Array.isArray(resource.sections)) return false;
+      setAlloStudioInitialFile(null);
+      setAlloStudioInitialArtwork(null);
+      setAlloStudioInitialResource(resource);
+      setAlloStudioInitialAction('worksheet-from-word-sounds');
+      setIsAlloStudioOpen(true);
+      return true;
+    };
+    return () => { try { delete window.__alloOpenWordSoundsWorksheetInStudio; } catch (_) {} };
+  }, [isAlloStudioOpen, setIsAlloStudioOpen]);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
   // Lazy-load AlloHaven host module + arcade-mode plugins on first open.
   // The host module is the largest single file in the bundle (~1.1 MB), so
@@ -16432,7 +16453,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=5248c674'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=e3a72be4'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=09af63b3'); }; })();
-    window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=caf6d483'); }; })();
+    window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=3ffd5664'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=dc11720b'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
     window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=bf5abc41ca12742f93a7b086e93d79d3a42934b0'); }; })();
@@ -43644,6 +43665,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
   const handleRegenerateWithRigor = async (...__a) => _alloHostHandlers().handleRegenerateWithRigor(...__a);
   const handleAnalysisTextChange = (...__a) => _alloHostHandlers().handleAnalysisTextChange(...__a);
   const onCorrectAnalysisText = (...__a) => _alloHostHandlers().onCorrectAnalysisText(...__a);
+  const getAnalysisSourceUndo = (...__a) => { const h = _alloHostHandlers(); return h !== _alloHostHandlersPending && typeof h.getAnalysisSourceUndo === 'function' ? h.getAnalysisSourceUndo(...__a) : null; };
+  const onUndoAnalysisSourceEdit = (...__a) => { const h = _alloHostHandlers(); return typeof h.onUndoAnalysisSourceEdit === 'function' ? h.onUndoAnalysisSourceEdit(...__a) : { ok: false }; };
   // ── Global text undo/redo (2026-07-02) ─────────────────────────────
   // One chronological stack across the three editable text surfaces:
   //   'input'      → the source textarea (inputText): typing, paste, AI
@@ -44513,7 +44536,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
               {/* The count ticks down every few hundred ms; keep it out of the
                   live region's accessible text so screen readers hear
                   "Loading tools" once rather than every decrement. */}
-              <span aria-hidden="true" style={{ display: 'inline-block', minWidth: '8ch', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{moduleLoadInfo.pending.length + (moduleLoadInfo.queued || []).length} left</span>
+              <span aria-hidden="true" style={{ display: 'inline-block', minWidth: '8ch', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{(t('mailbox.loading_tools_left') || '{n} left').replace('{n}', String(moduleLoadInfo.pending.length + (moduleLoadInfo.queued || []).length))}</span>
             </span>
           )}
           {moduleLoadInfo.failed.length > 0 && (
@@ -45694,7 +45717,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     ? (t('input.empty_student_explore_eyebrow') || 'On your own')
                     : !isTeacherMode && !isIndependentMode
                     ? (t('input.empty_student_eyebrow') || 'Connected')
-                    : (t('common.ready') || 'Workspace ready')}
+                    : (t('input.empty_eyebrow') || 'Start here')}
                 </p>
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{
                   _alloStudentExploring
@@ -45712,7 +45735,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                     ? (isStudentLinkMode
                         ? (t('input.empty_desc_student_homework') || 'Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.')
                         : (t('input.empty_desc_student_live') || 'You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.'))
-                    : (isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc'))
+                    : (isIndependentMode ? t('input.empty_desc_independent') : isParentMode ? t('input.empty_desc_family') : t('input.empty_desc_teacher'))
                 }</p>
                 {_alloStudentExploring && (
                   <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -45734,15 +45757,15 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                       className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-indigo-600/20 transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                     >
                       <FileText size={18} aria-hidden="true" />
-                      {t('tools.source') || 'Source Material'}
+                      {t('sidebar.source_paste_or_type') || 'Paste or type your own text'}
                     </button>
                     <p className="mb-3 mt-7 border-t border-slate-200 pt-6 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">{t('input.quickstart_heading') || 'Or choose a starting point'}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       {[
-                        { key: 'book', emoji: '📖', label: t('input.qs_book') || 'Open reading catalog', sub: t('input.qs_book_sub') || 'Books, articles & primary sources', onClick: () => setIsReadingLibraryOpen(true) },
+                        { key: 'book', emoji: '📖', label: t('input.reading_catalog') || 'Reading catalog', sub: t('input.qs_book_sub') || 'Books, articles & primary sources', onClick: () => setIsReadingLibraryOpen(true) },
                         { key: 'write', emoji: '📝', label: t('input.qs_write') || 'Write or paste text', sub: t('input.qs_write_sub') || 'Use your own material', onClick: () => { setActiveSidebarTab('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); const field = panel.querySelector('textarea, [contenteditable="true"], input[type="text"]'); if (field && field.focus) field.focus(); } }, 150); } },
-                        { key: 'find', emoji: '🔎', label: t('input.qs_find') || 'Find a resource online', sub: t('input.qs_find_sub') || 'Paste a link or let AI search', onClick: () => { setActiveSidebarTab('create'); setWorkspacePane('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setShowUrlInput(true); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: disableAnimations ? 'auto' : 'smooth', block: 'center' }); const field = panel.querySelector('input[type="url"], input[type="text"], input'); if (field && field.focus) field.focus(); } }, 200); } },
-                        { key: 'generate', emoji: '✨', label: t('input.qs_generate') || 'Generate from a topic', sub: t('input.qs_generate_sub') || 'AI writes it for you', onClick: () => { setActiveSidebarTab('create'); setWorkspacePane('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); } },
+                        { key: 'find', emoji: '🔎', label: t('input.find_online') || 'Find online', sub: t('input.qs_find_sub') || 'Paste a link or let AI search', onClick: () => { setActiveSidebarTab('create'); setWorkspacePane('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setShowUrlInput(true); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: disableAnimations ? 'auto' : 'smooth', block: 'center' }); const field = panel.querySelector('input[type="url"], input[type="text"], input'); if (field && field.focus) field.focus(); } }, 200); } },
+                        { key: 'generate', emoji: '✨', label: t('input.actions.write_with_ai') || 'Write with AI', sub: t('input.qs_generate_sub') || 'AI writes it for you', onClick: () => { setActiveSidebarTab('create'); setWorkspacePane('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); } },
                       ].filter(a => a.key !== 'write').map((a) => {
                         const ActionIcon = a.key === 'book' ? BookOpen : a.key === 'find' ? Search : Sparkles;
                         return (
@@ -45832,7 +45855,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                   </div>
                 )}
                 {activeView === 'analysis' && window.AlloModules && window.AlloModules.AnalysisView && React.createElement(window.AlloModules.AnalysisView, {
-                    onUpdateResource, onCorrectAnalysisText, onReadOriginal: handleReadOriginal,
+                    onUpdateResource, onCorrectAnalysisText, getAnalysisSourceUndo, onUndoAnalysisSourceEdit, onReadOriginal: handleReadOriginal,
                     currentUiLanguage, selectedLanguages, outputLanguage: leveledTextLanguage,
                     onTranslatePassage: isTeacherMode ? (item, language) => translateResourceItem(item, language, { companionOnly: true }) : null,
                     onCheckSourceLevel: handleCheckLevel, isCheckingLevel, calculateReadability, currentAnalysisTargets: { grade: gradeLevel, dok: dokLevel },
@@ -48941,9 +48964,9 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 // reading-order HTML rides the SAME typeset tagged-PDF path the
                 // remediation pipeline uses. Returns false on failure so the studio
                 // can toast honestly.
-                onExportTaggedPdf: async (html, title) => {
+                onExportTaggedPdf: async (html, title, _stOpts) => {
                     try {
-                        const _result = await createTypesetTaggedPdf({ accessibleHtml: html }, { title: title || 'Page Designer document', lang: 'en', subject: 'Created in Page Designer (AlloStudio) and tagged for accessibility by AlloFlow' });
+                        const _result = await createTypesetTaggedPdf({ accessibleHtml: html }, { title: title || 'Page Designer document', lang: (_stOpts && _stOpts.lang) || 'en', subject: 'Created in Page Designer (AlloStudio) and tagged for accessibility by AlloFlow' });
                         const _bytes = _result && _result.bytes ? _result.bytes : _result;
                         if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes') || 'Tagged PDF generation returned no bytes.', 'error'); return false; }
                         const _rt = (_result && _result.roundTrip) || null;
@@ -49173,7 +49196,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 onClick={() => setIsDynamicAssessmentOpen(true)}
                 title={t('dynamic_assessment.return_title') || 'This resource was generated by Dynamic Assessment. Click to reopen the DA module.'}
                 aria-label={t('dynamic_assessment.return_aria') || 'Return to Dynamic Assessment'}
-                className="fixed bottom-4 right-4 z-[1000] bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-violet-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 animate-in slide-in-from-bottom-2 duration-300"
+                style={{ bottom: 'calc(1rem + var(--alloflow-host-corner-clear, 0px))' }}
+                className="fixed right-4 z-[1000] bg-violet-600 hover:bg-violet-700 text-white px-4 py-2.5 rounded-full shadow-2xl border-2 border-violet-300 flex items-center gap-2 text-sm font-bold transition-all hover:scale-105 animate-in slide-in-from-bottom-2 duration-300"
             >
                 <span className="text-base">🔬</span>
                 <span>{t('dynamic_assessment.return_label') || 'Return to Dynamic Assessment'}</span>
@@ -49184,7 +49208,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
         )}
         {/* Reopen the cached pdfFixResult when pdfAuditResult closes. Stack above DA. Keep dismiss on the left and inset from Canvas's toolbar; hiding applies only to this cached result, which Manage Local Storage can resume or delete. */}
         {(pdfFixResult || lastPdfAuditResultRef.current) && !pdfAuditResult && !pdfAuditLoading && !pdfFixLoading && !pdfAutoContinueRunning && !pdfReturnPillDismissed && (
-            <div className={`fixed ${(generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen) ? 'bottom-20' : 'bottom-4'} right-3 sm:right-24 z-[1000] flex max-w-[calc(100vw-1.5rem)] items-stretch gap-px animate-in slide-in-from-bottom-2 duration-300`}>
+            <div style={{ bottom: `calc(${(generatedContent && generatedContent.fromDA && !isDynamicAssessmentOpen) ? '5rem' : '1rem'} + var(--alloflow-host-corner-clear, 0px))` }} className={`fixed right-3 sm:right-24 z-[1000] flex max-w-[calc(100vw-1.5rem)] items-stretch gap-px animate-in slide-in-from-bottom-2 duration-300`}>
             <button
                 type="button"
                 onClick={dismissCachedPdfRemediationShortcut}

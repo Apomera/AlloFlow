@@ -87610,7 +87610,7 @@
       "later": "Later",
       "legacy": "🌍 Why it matters",
       "legacy_body": "The station is the most expensive object ever built (well over $100 billion) and arguably the most ambitious peacetime engineering partnership in history: 15 nations keeping hardware and crews alive together for a quarter century, through every political storm on the ground below. Its deepest lesson is not any single experiment — it is proof that humans can build and operate a permanent home off Earth. Everything learned aboard, from water recycling to bone loss, is a down payment on the Moon and Mars.",
-      "map_intro": "A schematic (not to scale) 3-D map of the real station, with a Dragon docked at Harmony and a Progress freighter on Zvezda’s aft port. Drag or use the arrow keys to orbit the camera, pinch or use plus and minus to zoom, and press F to center the selected module. Focus the canvas to use the scroll wheel for zoom. Home returns to the overview. Camera movement preserves the station’s attitude and lighting. The module buttons provide an equivalent non-canvas inspection path.",
+      "map_intro": "A schematic (not to scale) 3-D map of the real station, showing an illustrative Dragon at Harmony, Progress at Zvezda and Cygnus berthed at Unity. This is a historical teaching arrangement, not a live visitor manifest. Drag or use the arrow keys to orbit the camera. Choose Pan to slide the view with one finger or the mouse, or hold Shift while dragging or using arrow keys. Pinch or use plus and minus to zoom, and press F to center the selected module. Focus the canvas to use the scroll wheel for zoom. Home returns to the overview. Camera movement preserves the station’s attitude and lighting. The module buttons provide an equivalent non-canvas inspection path.",
       "mission_dock": "Mission 1 — Dock the cargo capsule",
       "mission_eva": "Mission 2 — Spacewalk: replace the failed pump",
       "mission_report": "Mission report: ",
@@ -87660,7 +87660,7 @@
       "tradeoff": "Trade-off report: ",
       "why": "Why: ",
       "why1": "Low enough for cargo and crew rockets to carry useful mass, and below the worst radiation zones.",
-      "why2": "High enough that drag only costs ~50-100 m/day — manageable with periodic reboosts.",
+      "why2": "High enough to reduce atmospheric drag; periodic reboosts replace lost orbital energy as conditions change.",
       "why3": "The 51.6° orbit tilt was chosen so Russian launches from Baikonur can reach it — the orbit itself encodes the partnership.",
       "why_400": "🎯 Why ~400 km?"
     },

@@ -116,13 +116,13 @@
     "log": "📋 កំណត់ត្រា",
     "reset_2": "↺ កំណត់ឡើងវិញ",
     "hypothesis_when_does_area_rows_cols": "សម្មតិកម្ម៖ តើផ្ទៃក្រឡា = ជួរដេក + ជួរឈរ ពេលណា?",
-    "area_hypothesis": "?????????????????????????????????",
+    "area_hypothesis": "សម្មតិកម្មអំពីទំនាក់ទំនងផ្ទៃក្រឡា",
     "stuck_show_open_prompts": "🤔 ជាប់គាំង — បង្ហាញចំណោទបើកចំហ",
     "find_sizes_where_area_perimeter_rare_i": "រកទំហំដែលផ្ទៃក្រឡា = បរិមាត្រ (ចំនួនគត់កម្រ)។",
     "when_does_swapping_rows_cols_change_an": "តើការប្តូរជួរដេក/ជួរឈរផ្លាស់ប្តូរអ្វីមួយពេលណា?",
     "i_understand_explain_in_own_words": "ខ្ញុំយល់ហើយ — ពន្យល់ដោយពាក្យរបស់ខ្លួន",
     "explain_commutative_property_area_leng": "ពន្យល់លក្ខណៈប្តូរ + ផ្ទៃក្រឡា = ប្រវែង × ទទឹង។",
-    "area_explanation": "????????????????????????????? ?????????",
+    "area_explanation": "ពន្យល់ពីទំនាក់ទំនងរវាងផ្ទៃក្រឡា និងការគុណ",
     "design_note_discrete_4_state_classific": "កំណត់ចំណាំការរចនា៖ ការចាត់ថ្នាក់ដាច់ដោយឡែក ៤ ស្ថានភាព; គ្មានពិន្ទុតេស្តផ្ទៃក្រឡា; គ្មានការបង្ហាញ — ដោយចេតនា។"
   },
   "missing": {}

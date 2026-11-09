@@ -151,7 +151,9 @@ describe('sp17i on the dive', () => {
 describe('sp17i food web', () => {
   it('puts the blue-ringed octopus in the middle of the web, eating small animals, cited at the level its source supports', () => {
     const src = readFileSync(SOURCE, 'utf8');
-    expect(src.includes("{ id: 'mid', ids: ['humphead_wrasse', 'titan_triggerfish', 'clown_triggerfish', 'porcupinefish', 'giant_triton', 'harlequin_shrimp', 'blue_ringed_octopus', 'cleaner_wrasse', 'parasites'] }")).toBe(true);
+    // The middle row gains other animals over time; what matters is that the octopus is in it, once.
+    const midRow = (src.match(/\{ id: 'mid', ids: \[([^\]]*)\] \}/) || [])[1] || '';
+    expect(midRow.split(',').map((s) => s.trim()).filter((s) => s === "'blue_ringed_octopus'")).toHaveLength(1);
     expect(src.includes("fwLink('blue_ringed_octopus', 'small_animals', 'eats', ['dx-am-blue_ringed_octopus'], { scope: 'kind' })")).toBe(true);
     const am = X.marineProfileSources().find((s) => s.id === 'dx-am-blue_ringed_octopus');
     expect(am.text).toMatch(/crabs and small fishes/);

@@ -115,7 +115,7 @@
     "log": "📋 Journal",
     "reset_2": "↺ Réinitialiser",
     "hypothesis_when_does_area_rows_cols": "Hypothèse : quand l'aire = lignes + colonnes ?",
-    "area_hypothesis": "Hypoth?se sur la relation de l?aire",
+    "area_hypothesis": "Hypothèse sur la relation de l’aire",
     "stuck_show_open_prompts": "🤔 Bloqué — afficher les amorces ouvertes",
     "find_sizes_where_area_perimeter_rare_i": "Trouve des tailles où l'aire = périmètre (entiers rares).",
     "when_does_swapping_rows_cols_change_an": "Quand permuter lignes/colonnes change-t-il quelque chose ?",

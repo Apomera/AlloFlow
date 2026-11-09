@@ -74,7 +74,7 @@ async function start(t) { await click(button(t.host, 'Start the dive')); return 
 function detailSelect(t) {
   return [...t.host.querySelectorAll('select')].find(node => {
     const labels = [...(node.labels || [])].map(label => label.textContent).join(' ');
-    return (labels + ' ' + node.getAttribute('aria-label')).includes('Dive detail');
+    return (labels + ' ' + node.getAttribute('aria-label')).includes('3D detail');
   });
 }
 

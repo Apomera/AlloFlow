@@ -116,13 +116,13 @@
     "log": "📋 لاګ",
     "reset_2": "↺ بیا تنظیم",
     "hypothesis_when_does_area_rows_cols": "فرضیه: مساحت کله = کتارونه + ستونونه؟",
-    "area_hypothesis": "? ????? ? ????? ?????",
+    "area_hypothesis": "د مساحت او ضرب د اړیکې فرضیه",
     "stuck_show_open_prompts": "🤔 بند شوی — خلاص هڅونې وښیه",
     "find_sizes_where_area_perimeter_rare_i": "هغه اندازې ومومئ چې مساحت = محیط (نادر بشپړ عددونه).",
     "when_does_swapping_rows_cols_change_an": "د کتارونو/ستونونو بدلول کله یو څه بدلوي؟",
     "i_understand_explain_in_own_words": "زه پوهیږم — په خپلو کلمو تشریح کړه",
     "explain_commutative_property_area_leng": "د تبادلې ځانګړتیا + مساحت = اوږدوالی × سور تشریح کړئ.",
-    "area_explanation": "? ????? ?? ??? ????? ????? ???",
+    "area_explanation": "د مساحت او ضرب ترمنځ اړیکه تشریح کړئ",
     "design_note_discrete_4_state_classific": "د ډیزاین یادونه: جلا د 4-حالت طبقه بندي؛ د مساحت ازموینې نمره نشته؛ هیڅ افشا نشته — په قصدي توګه."
   },
   "missing": {}

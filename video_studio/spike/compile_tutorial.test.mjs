@@ -302,3 +302,62 @@ test('wrapCaption prefers a break after punctuation when it is nearly as balance
   const lines = L.wrapCaption(L.splitCaption(p, 80)[0], 42).split('\n');
   assert.ok(lines.length <= 2);
 });
+
+// ---- logins and secrets ---------------------------------------------------------------------
+test('a password can never be written into a workflow: inline text for a password-like field is rejected, textFromEnv is accepted', () => {
+  const typeInto = (selector, extra) => { const w = demo(); w.steps[1].action = Object.assign({ kind: 'type', selector }, extra); return w; };
+  assert.match(errs(typeInto('input[type=password]', { text: 'hunter2' })), /password or secret field.*textFromEnv/);
+  assert.match(errs(typeInto('#user-password', { text: 'x' })), /password or secret field/);
+  assert.match(errs(typeInto('input[name=api_token]', { text: 'x' })), /password or secret field/);
+  assert.match(errs(typeInto('input[type="password"]', { text: 'x' })), /password or secret field/);
+  assert.equal(errs(typeInto('input[type=password]', { textFromEnv: 'EASYCBM_PASSWORD' })), '');
+  assert.equal(errs(typeInto('#student-name', { text: 'Demo Student A' })), ''); // ordinary text is still fine
+  assert.match(errs(typeInto('#student-name', { text: 'a', textFromEnv: 'SOME_VAR' })), /both text and textFromEnv/);
+  assert.match(errs(typeInto('#student-name', {})), /text is required for type/);
+  assert.match(errs(typeInto('#student-name', { textFromEnv: 'lower_case' })), /environment variable name/);
+  assert.match(errs(typeInto('#student-name', { textFromEnv: 'OK_VAR', secret: 'yes' })), /secret must be true or false/);
+  // the same rule holds for the silent setup that runs before recording, where logins naturally go
+  const w = demo(); w.start.setup = [{ kind: 'type', selector: 'input[type=password]', text: 'hunter2' }];
+  assert.match(errs(w), /start\.setup\[0\].*password or secret field/);
+});
+
+test('typed secrets are redacted from logs, read from the environment, and a missing variable is named without a value', () => {
+  assert.equal(L.typedForLog({ kind: 'type', text: 'Demo Student A' }), 'Demo Student A');
+  assert.equal(L.typedForLog({ kind: 'type', text: 'Demo Student A', secret: true }), '[redacted]');
+  assert.equal(L.typedForLog({ kind: 'type', textFromEnv: 'SITE_PASSWORD' }), '[redacted]');
+  assert.equal(L.resolveTypedText({ kind: 'type', textFromEnv: 'SITE_PASSWORD', selector: '#p' }, { SITE_PASSWORD: 's3cret!' }), 's3cret!');
+  assert.equal(L.resolveTypedText({ kind: 'type', text: 'abc' }, {}), 'abc');
+  assert.throws(() => L.resolveTypedText({ kind: 'type', textFromEnv: 'SITE_PASSWORD', selector: '#p' }, {}), /SITE_PASSWORD is not set.*#p/);
+  assert.throws(() => L.resolveTypedText({ kind: 'type', textFromEnv: 'SITE_PASSWORD', selector: '#p' }, { SITE_PASSWORD: '' }), /not set/);
+  const w = demo(); w.start.setup = [{ kind: 'type', selector: '#u', textFromEnv: 'SITE_USER' }, { kind: 'type', selector: 'input[type=password]', textFromEnv: 'SITE_PASSWORD' }];
+  assert.deepEqual(L.missingEnv(w, { SITE_USER: 'demo' }), ['SITE_PASSWORD']);
+  assert.deepEqual(L.missingEnv(w, { SITE_USER: 'demo', SITE_PASSWORD: 'x' }), []);
+  assert.deepEqual(L.missingEnv(demo(), {}), []);
+  assert.equal(L.typeActions(w).length, 2 + L.typeActions(demo()).length);
+});
+
+test('saved-login names cannot escape the auth folder, and start.auth is validated', () => {
+  const dir = path.join(here, 'auth');
+  assert.equal(L.authStatePath(here, 'easycbm'), path.join(dir, 'easycbm.json'));
+  assert.equal(L.authStatePath(here, 'a_b-2'), path.join(dir, 'a_b-2.json'));
+  for (const bad of ['', '../x', 'a/b', 'a\b', 'A', 'has space', '-lead', '.hidden', 'x'.repeat(41), undefined, 5, null]) {
+    assert.throws(() => L.authStatePath(here, bad), /saved-login name/, JSON.stringify(bad));
+  }
+  const w = demo(); w.start.auth = 'easycbm'; assert.equal(errs(w), '');
+  w.start.auth = '../etc/passwd'; assert.match(errs(w), /start\.auth/);
+  w.start.auth = 7; assert.match(errs(w), /start\.auth/);
+});
+
+test('URLs are logged without their query or fragment (magic links carry one-time tokens)', () => {
+  assert.equal(L.redactUrl('https://app.example.org/login?token=abc123#frag'), 'https://app.example.org/login?…');
+  assert.equal(L.redactUrl('https://app.example.org/home'), 'https://app.example.org/home');
+  assert.equal(L.redactUrl('not a url'), '[unparseable url]');
+  assert.ok(!L.redactUrl('https://x.org/?token=SECRET').includes('SECRET'));
+});
+
+test('git really does ignore a saved login, so it cannot be committed from this folder', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync('git', ['check-ignore', '-q', '--', path.join(here, 'auth', 'easycbm.json')], { cwd: here });
+  assert.equal(r.status, 0, 'auth/*.json must be git-ignored');
+  assert.match(fs.readFileSync(path.join(here, '.gitignore'), 'utf8'), /^auth\/$/m);
+});

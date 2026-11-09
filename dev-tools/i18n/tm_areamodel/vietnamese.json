@@ -116,13 +116,13 @@
     "log": "📋 Nhật ký",
     "reset_2": "↺ Đặt lại",
     "hypothesis_when_does_area_rows_cols": "Giả thuyết: khi nào diện tích = hàng + cột?",
-    "area_hypothesis": "Gi? thuy?t v? m?i quan h? di?n t?ch",
+    "area_hypothesis": "Giả thuyết về mối quan hệ diện tích",
     "stuck_show_open_prompts": "🤔 Bí — hiện các gợi ý mở",
     "find_sizes_where_area_perimeter_rare_i": "Tìm các kích thước mà diện tích = chu vi (số nguyên hiếm).",
     "when_does_swapping_rows_cols_change_an": "Khi nào hoán đổi hàng/cột thay đổi điều gì?",
     "i_understand_explain_in_own_words": "Tôi hiểu — giải thích bằng lời của mình",
     "explain_commutative_property_area_leng": "Giải thích tính giao hoán + diện tích = chiều dài × chiều rộng.",
-    "area_explanation": "Gi?i th?ch m?i quan h? gi?a di?n t?ch v? ph?p nh?n",
+    "area_explanation": "Giải thích mối quan hệ giữa diện tích và phép nhân",
     "design_note_discrete_4_state_classific": "Ghi chú thiết kế: phân loại rời rạc 4 trạng thái; không điểm bài kiểm tra diện tích; không tiết lộ — có chủ đích."
   },
   "missing": {}

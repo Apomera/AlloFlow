@@ -769,7 +769,7 @@ function HeaderBar(props) {
       });
     }
   };
-  const piiWarningText = t("header.pii_warning");
+  const piiWarningText = t("header.pii_warning_plain");
   const compactRoleLabel = isTeacherMode && isSpecialistMode ? homeToolsText("launch_pad.door_specialist", "Specialist") : isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
   const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isIndependentMode ? t("common.progress") || "My Learning Progress" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
@@ -915,11 +915,12 @@ function HeaderBar(props) {
     {
       type: "button",
       onClick: () => activeSessionCode ? setShowSessionModal(true) : startClassSession(),
-      className: `inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? "bg-emerald-700 text-white border-emerald-300" : "bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50"}`,
+      className: `inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? "bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-600" : "bg-white/10 text-white border-white/60 hover:bg-white/20"}`,
       "data-help-key": "header_session_start",
       title: t("session.start_tooltip"),
       "aria-label": activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start") || t("common.connect")
     },
+    /* @__PURE__ */ React.createElement("span", { "data-live-lamp": activeSessionCode ? "on" : "off", "aria-hidden": "true", className: `h-2.5 w-2.5 shrink-0 rounded-full ${activeSessionCode ? "bg-white animate-pulse motion-reduce:animate-none" : "border-2 border-white/80"}` }),
     /* @__PURE__ */ React.createElement(Wifi, { size: 16, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start"))
   ), !isTeacherMode && !activeSessionCode && /* @__PURE__ */ React.createElement(
@@ -996,7 +997,7 @@ function HeaderBar(props) {
       "aria-expanded": !headerCollapsed,
       className: "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
     },
-    /* @__PURE__ */ React.createElement("span", null, t("common.more_information") || "More"),
+    /* @__PURE__ */ React.createElement("span", null, t("header.more_settings") || "Settings & more"),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" })
   )), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
     "button",

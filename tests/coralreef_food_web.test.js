@@ -75,7 +75,8 @@ describe('the feeding table', () => {
     for (const id of catalog) expect(ids.has(id), id).toBe(true);
     for (const id of W.EXTRA) { expect(ids.has(id), id).toBe(false); expect(all).toContain(id); }
     expect(catalog.length).toBeGreaterThanOrEqual(20);
-    expect(catalog.length).toBeLessThanOrEqual(30);
+    // Round 18 measured 32 boxes in a real browser (no arrow over a name or a box, touch targets kept); measure again before raising.
+    expect(catalog.length).toBeLessThanOrEqual(32);
     for (const m of X.SPECIES_META.filter((x) => catalog.includes(x.id))) expect(m.group).not.toBe('structure');
     for (const [g, members] of Object.entries(W.GROUPS)) {
       expect(W.EXTRA).toContain(g);

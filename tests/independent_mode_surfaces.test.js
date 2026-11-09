@@ -59,8 +59,21 @@ describe('orchestrator', () => {
   });
 
   it('shows learner-facing empty-panel copy and a study-coach guide subtitle', () => {
-    expect(anti).toContain("isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc')");
+    expect(anti).toContain("isIndependentMode ? t('input.empty_desc_independent') : isParentMode ? t('input.empty_desc_family') : t('input.empty_desc_teacher')");
     expect(anti).toContain("subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined}");
+  });
+
+  it('the teacher and family empty-panel copy and the guide subtitle use plain language', () => {
+    for (const strings of [ui, uiMirror]) {
+      expect(strings.input.empty_desc_teacher).not.toMatch(/curriculum|entry points|configure/i);
+      expect(strings.input.empty_desc_family).not.toMatch(/curriculum|entry points|configure|student/i);
+      expect(strings.input.empty_eyebrow).toBe('Start here');
+      expect(strings.sidebar.ai_guide_sub_plain).not.toMatch(/pedagogy|auto-setup/i);
+      expect(strings.header.pii_warning_plain).toMatch(/PII/);
+      expect(strings.header.pii_warning_plain).not.toMatch(/Personally Identifiable|input/i);
+      expect(strings.header.more_settings).toBe('Settings & more');
+      expect(strings.mailbox.loading_tools_left).toBe('{n} left');
+    }
   });
 
   it('lifts the untouched K-12 grade default for self-study, without overriding a chosen grade', () => {
@@ -73,8 +86,8 @@ describe('orchestrator', () => {
 
 describe('guide button and strings', () => {
   it('accepts a subtitle override and falls back to the teacher line', () => {
-    expect(guideSource).toContain("{subtitle || t('sidebar.ai_guide_sub')}");
-    expect(guideModule).toContain('subtitle || t("sidebar.ai_guide_sub")');
+    expect(guideSource).toContain("{subtitle || t('sidebar.ai_guide_sub_plain')}");
+    expect(guideModule).toContain('subtitle || t("sidebar.ai_guide_sub_plain")');
     expect(guideMirror).toBe(guideModule);
   });
 

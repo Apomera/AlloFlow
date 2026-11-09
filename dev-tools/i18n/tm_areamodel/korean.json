@@ -116,13 +116,13 @@
     "log": "📋 로그",
     "reset_2": "↺ 재설정",
     "hypothesis_when_does_area_rows_cols": "가설: 넓이 = 행 + 열은 언제인가?",
-    "area_hypothesis": "?? ?? ??",
+    "area_hypothesis": "넓이 관계에 대한 가설",
     "stuck_show_open_prompts": "🤔 막혔음——열린 프롬프트 보이기",
     "find_sizes_where_area_perimeter_rare_i": "넓이 = 둘레인 크기를 찾으세요 (드문 정수).",
     "when_does_swapping_rows_cols_change_an": "행/열을 바꾸면 언제 무언가 바뀌나요?",
     "i_understand_explain_in_own_words": "이해했어요——내 말로 설명하기",
     "explain_commutative_property_area_leng": "교환법칙 + 넓이 = 가로 × 세로를 설명하세요.",
-    "area_explanation": "??? ??? ?? ??",
+    "area_explanation": "넓이와 곱셈의 관계를 설명하세요",
     "design_note_discrete_4_state_classific": "설계 노트: 이산적인 4상태 분류; 넓이 시험 점수 없음; 공개 없음 — 의도적으로."
   },
   "missing": {}

@@ -281,6 +281,17 @@ const OSS_CREDITS = [
     ]
   },
   {
+    group: "Music & singing",
+    items: [
+      { name: "OpenSheetMusicDisplay", use: "drawing the sheet music (Singing Lab, Song Library)", license: "BSD-3-Clause", url: "https://opensheetmusicdisplay.org" },
+      { name: "VexFlow", use: "music notation (inside OpenSheetMusicDisplay)", license: "MIT", url: "https://www.vexflow.com" },
+      { name: "loglevel", use: "logging (inside OpenSheetMusicDisplay)", license: "MIT", url: "https://github.com/pimterry/loglevel" },
+      { name: "typescript-collections", use: "data structures (inside OpenSheetMusicDisplay)", license: "MIT", url: "https://github.com/basarat/typescript-collections" },
+      { name: "OpenScore Lieder Corpus", use: "art-song scores in the Song Library", license: "CC0 1.0", url: "https://github.com/OpenScore/Lieder" },
+      { name: "PDMX", use: "folk songs, spirituals and choir pieces in the Song Library \u2014 Long, Novack, Berg-Kirkpatrick & McAuley", license: "CC BY 4.0", url: "https://zenodo.org/records/15571083" }
+    ]
+  },
+  {
     group: "Fonts",
     items: [
       { name: "OpenDyslexic", use: "dyslexia-friendly reading font", license: "SIL OFL-1.1", url: "https://opendyslexic.org" },

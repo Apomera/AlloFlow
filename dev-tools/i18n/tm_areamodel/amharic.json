@@ -116,13 +116,13 @@
     "log": "📋 መዝገብ",
     "reset_2": "↺ ዳግም አስጀምር",
     "hypothesis_when_does_area_rows_cols": "መላምት፦ ስፋት = ረድፎች + አምዶች መቼ ነው?",
-    "area_hypothesis": "???? ????? ????",
+    "area_hypothesis": "የስፋት ግንኙነት መላምት",
     "stuck_show_open_prompts": "🤔 ተጣብቀሃል — ክፍት ጥያቄዎች አሳይ",
     "find_sizes_where_area_perimeter_rare_i": "ስፋት = ዙሪያ የሆኑ መጠኖችን ፈልግ (ያልተለመዱ ሙሉ ቁጥሮች)።",
     "when_does_swapping_rows_cols_change_an": "ረድፎችን/አምዶችን መለዋወጥ መቼ ነገር ይቀይራል?",
     "i_understand_explain_in_own_words": "ገባኝ — በራስህ ቃላት አብራራ",
     "explain_commutative_property_area_leng": "የመለዋወጥ ባህሪ + ስፋት = ርዝመት × ስፋት አብራራ።",
-    "area_explanation": "???? ????? ?????? ????",
+    "area_explanation": "በስፋትና በብዜት መካከል ያለውን ግንኙነት አብራራ",
     "design_note_discrete_4_state_classific": "የንድፍ ማስታወሻ፦ የተለየ የ4-ሁኔታ ምድብ፤ የስፋት ፈተና ነጥብ የለም፤ ይፋ ማድረግ የለም — ሆን ተብሎ።"
   },
   "missing": {}

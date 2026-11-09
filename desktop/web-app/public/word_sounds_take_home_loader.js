@@ -67,6 +67,14 @@
     send_note: 'Sending goes only to your teacher\'s school mailbox.',
     send_closed: 'Sending closed on {date}. Save your work as a file and give it to your teacher.',
     practice_again: 'Practice again',
+    practice_again_confirm: 'Your results have not been sent or saved as a file yet. If you start over, they will be lost.',
+    keep_results: 'Keep my results',
+    name_prompt: 'Add your name so your teacher knows these are yours.',
+    name_prompt_add: 'Add my name',
+    name_prompt_skip: 'Continue without a name',
+    copy_results: 'This browser cannot save files. Copy all of this text and send it to your teacher.',
+    // Shown only when the file is opened somewhere that does not run it (a Drive or Files preview).
+    no_script: 'If the practice does not start, download this file and open it in Chrome, Edge or Safari.',
     audio_missing: 'This sound could not play.',
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'],
   };
@@ -3480,6 +3488,7 @@
     var state = null;
     var audioEl = null;
     var screenId = 0;
+    var namePrompted = false;
     var items = [];
     lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
     var fmt = function (template, params) {
@@ -3511,36 +3520,77 @@
       } catch (_) { storeOk = false; }
       return null;
     };
-    var stop = function () { if (audioEl) { try { audioEl.pause(); } catch (_) {} audioEl = null; } };
+    // ONE audio element for every clip: iPad/iPhone Safari lets an element play
+    // without a tap only after a tap has played it once, so a new element per
+    // clip could stay silent after the first clip of a sequence. A clip cut off
+    // by another (playToken moved on) never settles.
+    var playToken = 0;
+    var stop = function () { playToken++; if (audioEl) { try { audioEl.pause(); } catch (_) {} } };
     // rate: optional playback speed (e.g. 0.5 for "Hear it slowly").
     var play = function (id, rate) {
       stop();
       var src = id && lesson.audio[id];
       if (!src) return Promise.resolve(false);
-      var a = new win.Audio(src);
-      if (rate > 0 && rate !== 1) { try { a.playbackRate = rate; } catch (_) {} }
-      audioEl = a;
+      var mine = playToken;
+      if (!audioEl) { try { audioEl = new win.Audio(); } catch (_) { return Promise.resolve(false); } }
+      var a = audioEl;
       return new Promise(function (resolve) {
-        var settle = function (ok) { a.onended = a.onerror = null; resolve(ok); };
+        var settle = function (ok) { if (mine !== playToken) return; a.onended = a.onerror = null; resolve(ok); };
         a.onended = function () { settle(true); };
         a.onerror = function () { settle(false); };
-        var p = a.play();
+        var speed = rate > 0 ? rate : 1;
+        var p;
+        try {
+          a.src = src;
+          try { a.defaultPlaybackRate = speed; a.playbackRate = speed; } catch (_) {}
+          p = a.play();
+        } catch (_) { settle(false); return; }
         if (p && p.catch) p.catch(function () { settle(false); });
       }).then(function (ok) {
-        if (!ok && audioEl === a) announce(L.audio_missing);
+        if (!ok && mine === playToken) announce(L.audio_missing);
         return ok;
       });
     };
     // A sequence belongs to the screen that started it: moving on cancels it.
+    // Its first clip starts at once, inside the tap that asked for it (Safari).
     var playAll = function (ids) {
       var mine = screenId;
-      return (ids || []).reduce(function (chain, id) {
-        return chain.then(function () { return mine === screenId && id ? play(id) : false; });
-      }, Promise.resolve(true));
+      var step = function (id) { return mine === screenId && id ? play(id) : false; };
+      var list = ids || [];
+      if (!list.length) return Promise.resolve(true);
+      return list.slice(1).reduce(function (chain, id) {
+        return chain.then(function () { return step(id); });
+      }, Promise.resolve(step(list[0])));
     };
+    var keyItem = null;
+    // Keyboard on an item screen: 1-9 picks that answer choice (the answer
+    // button of the nth li.choice the adapter drew), R plays the question again.
+    // Never while typing in a field, and never with Ctrl/Alt/Cmd.
+    doc.addEventListener('keydown', function (e) {
+      if (!keyItem || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      var t = e.target, tag = t && t.tagName ? String(t.tagName).toUpperCase() : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+      var key = String(e.key || ''), code = String(e.code || '');
+      var digit = /^[1-9]$/.test(key) ? key : (/^(?:Digit|Numpad)([1-9])$/.exec(code) || [])[1];
+      if (digit) {
+        var box = keyItem.area.querySelectorAll('li.choice')[Number(digit) - 1];
+        var button = box && (box.querySelector('button.primary') || box.querySelector('button'));
+        if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+        e.preventDefault();
+        button.click();
+      } else if (key === 'r' || key === 'R' || (code === 'KeyR' && !/^[a-z]$/i.test(key))) {
+        var it = keyItem.item;
+        var ids = it.introAudio && it.introAudio.length ? it.introAudio : [it.promptAudio || it.prompt];
+        if (!ids.filter(Boolean).length) return;
+        e.preventDefault();
+        keyItem.replay();
+        playAll(ids);
+      }
+    });
     var screen = function (heading, nodes, hideHeading) {
       screenId++;
       stop();
+      keyItem = null;
       main.textContent = '';
       // hideHeading: the page title already shows it; screen readers still hear it.
       var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
@@ -3555,9 +3605,25 @@
       var prior = load();
       var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
       var resumable = prior && prior.index > 0 && !prior.finishedAt;
+      // No name: ask once (per opening of the file), gently; a name stays optional.
+      var promptKeep = false;
+      var promptText = el('p', { id: 'name-prompt-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.name_prompt });
+      var namePrompt = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'name-prompt-text', hidden: true, 'data-name-prompt': '' }, [
+        promptText,
+        el('div', { class: 'row' }, [
+          el('button', { type: 'button', 'data-name-prompt-add': '', on: { click: function () { namePrompt.hidden = true; nameInput.focus(); } }, text: L.name_prompt_add }),
+          el('button', { type: 'button', 'data-name-prompt-skip': '', on: { click: function () { begin(promptKeep); } }, text: L.name_prompt_skip }),
+        ]),
+      ]);
       var begin = function (keep) {
+        var typed = String(nameInput.value || (keep && prior ? prior.name : '') || '').trim();
+        if (!typed && !namePrompted) {
+          namePrompted = true; promptKeep = keep;
+          namePrompt.hidden = false; promptText.focus();
+          return;
+        }
         state = keep && prior ? prior : fresh();
-        state.name = String(nameInput.value || (keep && prior ? prior.name : '') || '').trim().slice(0, 60);
+        state.name = typed.slice(0, 60);
         if (!state.startedAt) state.startedAt = new Date().toISOString();
         save();
         renderItem();
@@ -3568,7 +3634,7 @@
       screen(lesson.title, [
         el('div', { class: 'card' }, [
           el('p', { text: L.intro }),
-          el('label', { for: 'learner-name', text: L.name_label }), nameInput,
+          el('label', { for: 'learner-name', text: L.name_label }), nameInput, namePrompt,
           el('div', { class: 'row', style: 'margin-top:16px' }, buttons),
         ]),
       ], true);
@@ -3646,6 +3712,7 @@
       screen(fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
         el('div', { class: 'card' }, [area, feedback, nextButton]),
       ]);
+      keyItem = { area: area, item: item, replay: function () { ctx.support('questionReplays'); } };
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
       // Reopened on an answered item: show its outcome, do not ask again.
       if (rec.done) { if (rec.practice) finishPractice(); else finishItem(rec.correct); }
@@ -3707,12 +3774,28 @@
       var s = summarize();
       var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : state.savedFile ? fmt(L.saved_file, { file: state.savedFile }) : (storeOk ? L.saved_device : L.saved_device_off),
         state.sent || state.savedFile ? 'ok' : (storeOk ? '' : 'warn'));
-      var safe = function (v) { return String(v || '').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
+      var notName = /[^a-z0-9]+/gi;
+      try { notName = new RegExp('[^\\p{L}\\p{M}\\p{N}]+', 'gu'); } catch (_) {}
+      var safe = function (v) { return String(v || '').replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
+      // Older iPad Safari (before iOS 13) cannot download: show the results as
+      // text to copy instead of a button that does nothing.
+      var copyBox = el('div', { hidden: true, 'data-results-text': '' });
       var saveButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', on: { click: function () {
-        var name = ['word-sounds', safe(lesson.title), safe(state.name) || 'results', 'results'].filter(Boolean).join('-') + '.json';
-        var blob = new win.Blob([JSON.stringify(resultFile(), null, 2)], { type: 'application/json' });
-        var url = win.URL.createObjectURL(blob);
-        var a = el('a', { href: url, download: name });
+        var name = ['word-sounds', safe(lesson.title), safe(state.name), 'results'].filter(Boolean).join('-') + '.json';
+        var json = JSON.stringify(resultFile(), null, 2);
+        var a = el('a', { download: name });
+        if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) {
+          var text = el('textarea', { id: 'results-text', readonly: true, rows: '8', style: 'width:100%;font:inherit;font-size:.8rem;border-radius:10px', on: { focus: function () { try { text.select(); } catch (_) {} } } });
+          text.value = json;
+          copyBox.textContent = '';
+          copyBox.appendChild(el('label', { for: 'results-text', text: L.copy_results }));
+          copyBox.appendChild(text);
+          copyBox.hidden = false;
+          text.focus();
+          return;
+        }
+        var url = win.URL.createObjectURL(new win.Blob([json], { type: 'application/json' }));
+        a.setAttribute('href', url);
         doc.body.appendChild(a); a.click(); a.remove();
         win.setTimeout(function () { win.URL.revokeObjectURL(url); }, 60000);
         state.savedFile = name; save();
@@ -3744,15 +3827,32 @@
         } }, text: L.send });
         if (state.sent) sendButton.setAttribute('aria-disabled', 'true');
       }
+      var startOver = function () {
+        try { win.localStorage.removeItem(storageKey); } catch (_) {}
+        state = null; renderStart();
+      };
+      // Practice again throws this attempt away: ask first unless it was sent
+      // or saved as a file. An in-page panel (window.confirm is unreliable in
+      // iPad Safari and in file previews).
+      var confirmText = el('p', { id: 'practice-again-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.practice_again_confirm });
+      var keepButton = el('button', { type: 'button', class: 'primary', 'data-practice-keep': '', on: { click: function () { confirmBox.hidden = true; againButton.focus(); } }, text: L.keep_results });
+      var confirmBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'practice-again-text', hidden: true, 'data-practice-confirm': '',
+        on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); keepButton.click(); } } } }, [
+        confirmText,
+        el('div', { class: 'row' }, [keepButton, el('button', { type: 'button', 'data-practice-start-over': '', on: { click: startOver }, text: L.start_over })]),
+      ]);
+      var againButton = el('button', { type: 'button', 'data-practice-again': '', on: { click: function () {
+        if (state.sent || state.savedFile) { startOver(); return; }
+        confirmBox.hidden = false; confirmText.focus();
+      } }, text: L.practice_again });
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
           s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
-          el('div', { class: 'row' }, [sendButton, saveButton, el('button', { type: 'button', on: { click: function () {
-            try { win.localStorage.removeItem(storageKey); } catch (_) {}
-            state = null; renderStart();
-          } }, text: L.practice_again })]),
+          el('div', { class: 'row' }, [sendButton, saveButton, againButton]),
+          confirmBox,
           fileStatus,
+          copyBox,
           el('p', { class: 'muted', text: closedNote || (sendButton ? L.send_note : L.not_sent) }),
         ]),
       ]);
@@ -3781,7 +3881,9 @@
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'
       + '<title>' + escapeHtml(lesson.title) + '</title><style>' + CSS + '</style></head>'
-      + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"></div><p id="live" class="sr" aria-live="polite"></p></main>'
+      // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
+      // the player replaces it as soon as it starts.
+      + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p></div><p id="live" class="sr" aria-live="polite"></p></main>'
       + '<script>\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + core.soundAnswerMatches.toString()
       + ';\nvar renders=' + renders + ';\n(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders);\n})();\n</script></body></html>';
   }

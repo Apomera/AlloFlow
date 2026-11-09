@@ -114,13 +114,13 @@
     "log": "📋 Registro",
     "reset_2": "↺ Reiniciar",
     "hypothesis_when_does_area_rows_cols": "Hipótesis: ¿Cuándo es el área = filas + columnas?",
-    "area_hypothesis": "Hip?tesis sobre la relaci?n del ?rea",
+    "area_hypothesis": "Hipótesis sobre la relación del área",
     "stuck_show_open_prompts": "🤔 Atascado — mostrar consignas abiertas",
     "find_sizes_where_area_perimeter_rare_i": "Encuentra tamaños donde el área = perímetro (enteros poco comunes).",
     "when_does_swapping_rows_cols_change_an": "¿Cuándo cambia algo intercambiar filas/columnas?",
     "i_understand_explain_in_own_words": "Entiendo — explicar con mis propias palabras",
     "explain_commutative_property_area_leng": "Explica la propiedad conmutativa + área = largo × ancho.",
-    "area_explanation": "Explica la relaci?n entre el ?rea y la multiplicaci?n",
+    "area_explanation": "Explica la relación entre el área y la multiplicación",
     "design_note_discrete_4_state_classific": "Nota de diseño: clasificación discreta de 4 estados; sin puntuación de prueba de área; sin revelar, por diseño."
   },
   "missing": {

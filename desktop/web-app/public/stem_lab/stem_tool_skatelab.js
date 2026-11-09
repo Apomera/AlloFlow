@@ -6983,6 +6983,10 @@ window.StemLab = window.StemLab || {
       var setSonifyPlaying = sonifyPlayingState[1];
       var spokenPhaseRef = React.useRef(null);
       var lastSpeechRef = React.useRef(0);
+      // A stop bumps speechGen so a late browser fallback is dropped; ownUtter =
+      // this tool's own browser utterance { u, narration }, cancelled only while ours.
+      var speechGenRef = React.useRef(0);
+      var ownUtterRef = React.useRef(null);
       var shellRef = React.useRef(null);
       var keyHandlerRef = React.useRef(null);
 
@@ -7468,36 +7472,65 @@ window.StemLab = window.StemLab || {
       }
 
       // ---- Stage C P5-1 speech and sound ----
+      // The app's mute is __alloIsGlobalMuted(); _alloGlobalMute is the legacy flag.
       function globalMuted() {
+        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (err) {}
         try { return !!(typeof window !== 'undefined' && window._alloGlobalMute); } catch (err) { return false; }
       }
-      function speakWithBrowser(text) {
+      // STEAM Lab header narration switch: 'off' silences the Narrate phases
+      // ("Read the result aloud" still speaks); unset or unreadable = not off.
+      function headerNarrationOff() {
+        try { return window.localStorage.getItem('alloflow_canvas_narrate') === 'off'; } catch (err) { return false; }
+      }
+      function speakWithBrowser(text, narration) {
         try {
           if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+            var u = new window.SpeechSynthesisUtterance(String(text));
             window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(String(text)));
+            window.speechSynthesis.speak(u);
+            ownUtterRef.current = { u: u, narration: !!narration };
+            u.onend = u.onerror = function() { if (ownUtterRef.current && ownUtterRef.current.u === u) ownUtterRef.current = null; };
             return true;
           }
         } catch (err) {}
         return false;
       }
+      function stopOwnSpeech(narrationOnly) {
+        var own = ownUtterRef.current;
+        if (!own || (narrationOnly && !own.narration)) return;
+        ownUtterRef.current = null;
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (err) {}
+      }
+      // Narrate switched off: drop lines still coming, stop the host's audio
+      // (ctx.stopTTS; older hosts lack it) and this tool's own browser voice.
+      function stopNarration() {
+        speechGenRef.current++;
+        if (typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (err) {} }
+        stopOwnSpeech(false);
+      }
       // Speaks through the host voice (ctx.callTTS) or the browser voice.
       // Automatic narration is throttled so phases do not talk over each other.
-      function speak(text, userInitiated) {
-        if (!text || globalMuted()) return false;
+      // narration: a Narrate line, which the header switch 'off' silences.
+      function speak(text, userInitiated, narration) {
+        if (!text || globalMuted() || (narration && headerNarrationOff())) return false;
         var now = Date.now();
         if (!userInitiated && now - lastSpeechRef.current < 1200) return false;
         lastSpeechRef.current = now;
+        var gen = speechGenRef.current;
+        function fallback() {
+          if (gen !== speechGenRef.current || globalMuted() || (narration && headerNarrationOff())) return;
+          speakWithBrowser(text, narration);
+        }
         if (typeof ctx.callTTS === 'function') {
           try {
             var pending = ctx.callTTS(String(text), undefined, undefined, { force: true });
             if (pending && typeof pending.then === 'function') {
-              pending.then(function(url) { if (!url) speakWithBrowser(text); }, function() { speakWithBrowser(text); });
+              pending.then(function(url) { if (!url) fallback(); }, fallback);
             }
             return true;
           } catch (err) {}
         }
-        return speakWithBrowser(text);
+        return speakWithBrowser(text, narration);
       }
       function audioContextForSound() {
         try {
@@ -7546,11 +7579,21 @@ window.StemLab = window.StemLab || {
         var sample = sampleModel(model, progress);
         if (spokenPhaseRef.current === sample.phase) return;
         spokenPhaseRef.current = sample.phase;
-        speak(narrationText(model, sample), false);
+        speak(narrationText(model, sample), false, true);
       }
+      // Narrate on = this tool talks by itself while the header switch is unset:
+      // tell the host so its narration button shows on (older hosts lack it).
+      React.useEffect(function() {
+        if (typeof ctx.setToolVoice !== 'function') return undefined;
+        ctx.setToolVoice(d.narrate === true);
+        return function() { ctx.setToolVoice(false); };
+      }, [d.narrate]);
+      // Header switch pressed to 'off' (the host stops its own audio): stop ours too.
+      React.useEffect(function() { if (headerNarrationOff()) stopOwnSpeech(true); });
 
       React.useEffect(function() {
         return function() {
+          speechGenRef.current++;
           var handle = sonifyHandleRef.current;
           sonifyHandleRef.current = null;
           if (handle) { try { handle.stop(); } catch (err) {} }
@@ -10201,7 +10244,7 @@ window.StemLab = window.StemLab || {
         inspectPlayhead(clamp(phaseEvents[index].progress, 0, 1), true);
         var description = phaseStepDescription(index);
         announce(description);
-        if (d.narrate) speak(description, true);
+        if (d.narrate) speak(description, true, true);
       }
       var stepPanel = stepModeOn && h('div', { className: 'sk-step-panel', role: 'group', 'aria-label': __alloT('stem.skatelab.step_group', 'Step through the run') },
         h('div', { className: 'sk-step-buttons' },
@@ -10252,6 +10295,8 @@ window.StemLab = window.StemLab || {
         { keys: '← →', text: __alloT('stem.skatelab.key_arrows_text', 'Move the time cursor (hold Shift for bigger steps)') },
         { keys: 'P', text: __alloT('stem.skatelab.key_p_text', 'Go to the prediction') }
       ];
+      var narrateHeaderOffText = __alloT('stem.skatelab.narrate_header_off', 'Narration is turned off in the STEAM Lab header, so the phases are not spoken. Use the header narration button to turn it back on.');
+      var narrateHeaderOff = d.narrate === true && headerNarrationOff();
       var accessPanel = h('div', { className: 'sk-access', 'data-skatelab-access': 'true' },
         h('div', { className: 'sk-access-row' },
           h('label', { className: 'sk-check', htmlFor: 'sk-narrate' },
@@ -10259,7 +10304,13 @@ window.StemLab = window.StemLab || {
               id: 'sk-narrate',
               type: 'checkbox',
               checked: d.narrate === true,
-              onChange: function(event) { upd({ narrate: event.target.checked }); }
+              'aria-describedby': narrateHeaderOff ? 'sk-narrate-header-off' : undefined,
+              onChange: function(event) {
+                var on = event.target.checked;
+                if (!on) stopNarration();
+                else if (headerNarrationOff()) announce(narrateHeaderOffText);
+                upd({ narrate: on });
+              }
             }),
             h('span', null, __alloT('stem.skatelab.narrate_toggle', 'Speak each phase aloud'))),
           h('label', { className: 'sk-check', htmlFor: 'sk-sonify' },
@@ -10286,6 +10337,7 @@ window.StemLab = window.StemLab || {
           motionReducedNow && h('span', { id: 'sk-step-reduced-note', className: 'sk-sr-only' },
             __alloT('stem.skatelab.step_reduced_note', 'Step-through is on because reduced motion is set.'))
         ),
+        narrateHeaderOff && h('p', { id: 'sk-narrate-header-off', className: 'sk-help' }, narrateHeaderOffText),
         !predictionLocked && h('div', { className: 'sk-access-row' },
           h('button', {
             type: 'button',

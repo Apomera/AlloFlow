@@ -209,25 +209,47 @@ describe('sound boxes', () => {
     expect(appPrint).not.toHaveBeenCalled();
   });
 
-  it('shows the picture alone by default, the word when there is no picture, and every word with Show the word on', async () => {
+  // 2026-11-08: a row with no picture printed its word even with Show the word off, which gave the
+  // sounds away in a listening task. It now gets a blank cue, and a teacher page lists the words by row.
+  it('shows the picture alone by default, a blank cue plus a teacher list when there is no picture, and every word with Show the word on', async () => {
     const { host, dialog } = await openChooser();
     await click(printButton(dialog, 'boxes'));
-    let rows = [...lastDoc().querySelectorAll('.ws-print-row')];
+    let doc = lastDoc();
+    let rows = [...doc.querySelectorAll('.ws-print-row')];
     expect(rows[0].querySelector('img').getAttribute('alt')).toBe('cat');
-    expect(rows.map((row) => row.querySelector('.ws-print-cue-word')?.textContent || '')).toEqual(['', '', 'fish', 'stamp', 'ship']);
+    expect(rows.map((row) => row.querySelector('.ws-print-cue-word')?.textContent || '')).toEqual(['', '', '', '', '']);
+    expect(rows.map((row) => !!row.querySelector('.ws-print-cue-blank'))).toEqual([false, false, true, true, true]);
+    const teacher = doc.querySelector('.ws-print-teacher');
+    expect(teacher.querySelector('h2').textContent).toBe('For the teacher: the words in row order');
+    expect(teacher.querySelector('p').textContent).toContain('Rows marked * have no picture');
+    expect([...teacher.querySelectorAll('li')].map((li) => li.textContent)).toEqual(['cat', 'hat', 'fish *', 'stamp *', 'ship *']);
+    expect(teacher.classList.contains('ws-ws-key'), 'the list starts a new page').toBe(true);
     const toggle = dialogOf(host).querySelector('input[type="checkbox"]');
     expect(toggle.closest('label').textContent).toBe('Show the word');
     await click(toggle);
     await click(printButton(dialogOf(host), 'boxes'));
-    rows = [...lastDoc().querySelectorAll('.ws-print-row')];
+    doc = lastDoc();
+    rows = [...doc.querySelectorAll('.ws-print-row')];
     expect(rows.map((row) => row.querySelector('.ws-print-cue-word')?.textContent || '')).toEqual(['cat', 'hat', 'fish', 'stamp', 'ship']);
+    expect(doc.querySelector('.ws-print-cue-blank')).toBeNull();
+    expect(doc.querySelector('.ws-print-teacher')).toBeNull();
+  });
+
+  it('leaves out the no-picture note when every row has a picture', async () => {
+    const { dialog } = await openChooser({ words: [makePackItem(), makeHatItem()] });
+    await click(printButton(dialog, 'boxes'));
+    const teacher = lastDoc().querySelector('.ws-print-teacher');
+    expect([...teacher.querySelectorAll('li')].map((li) => li.textContent)).toEqual(['cat', 'hat']);
+    expect(teacher.querySelector('p')).toBeNull();
   });
 
   // Checked in Chromium at the 7.5in print width: nothing overflows the page.
   it('shrinks the type for a long word and the boxes for more than six sounds', async () => {
     const long = plain('photosynthesis', ['f', 'o', 't', 'o', 's', 'i', 'n', 'th', 'e', 's', 'i', 's']);
-    const { dialog } = await openChooser({ words: [long, plain('elephant', ['e', 'l', 'e', 'f', 'a', 'n', 't']), plain('cot', ['k', 'o', 't'])] });
-    await click(printButton(dialog, 'boxes'));
+    const { host, dialog } = await openChooser({ words: [long, plain('elephant', ['e', 'l', 'e', 'f', 'a', 'n', 't']), plain('cot', ['k', 'o', 't'])] });
+    // These words have no picture: the word prints only with Show the word on.
+    await click(dialog.querySelector('[data-ws-print-show-word]'));
+    await click(printButton(dialogOf(host), 'boxes'));
     const [big, seven, short] = [...lastDoc().querySelectorAll('.ws-print-row')];
     expect(big.querySelectorAll('.ws-print-box').length).toBe(12);
     // 2026-11-07: boxes share the room beside the picture by CSS (fixed inline widths still wrapped
@@ -450,7 +472,7 @@ describe('string registration', () => {
     for (const k of used) {
       const entry = alloData.match(new RegExp("'" + k.replace('.', '\\.') + "': '((?:[^'\\\\]|\\\\.)*)',"));
       expect(entry, k + ' in allo_data').toBeTruthy();
-      expect(keys[k], k + ' in ui_strings.js').toBe(entry[1].replace(/\{\{(\w+)\}\}/g, '{$1}'));
+      expect(keys[k], k + ' in ui_strings.js').toBe(entry[1].replace(/\\(.)/g, '$1').replace(/\{\{(\w+)\}\}/g, '{$1}'));
     }
     const english = JSON.parse(readFileSync(REPO + '/ui_strings.js', 'utf8')).word_sounds;
     for (const reused of ['di_script_print_button', 'di_script_print_hint', 'di_script_print_blocked']) expect(english[reused], reused).toBeTruthy();

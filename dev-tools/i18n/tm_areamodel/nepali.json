@@ -116,13 +116,13 @@
     "log": "📋 लग",
     "reset_2": "↺ रिसेट",
     "hypothesis_when_does_area_rows_cols": "परिकल्पना: क्षेत्रफल = पङ्क्ति + स्तम्भ कहिले हुन्छ?",
-    "area_hypothesis": "????????? ???????? ?????????",
+    "area_hypothesis": "क्षेत्रफल सम्बन्धको परिकल्पना",
     "stuck_show_open_prompts": "🤔 अल्झिनुभयो — खुला प्रोम्प्टहरू देखाउनुहोस्",
     "find_sizes_where_area_perimeter_rare_i": "क्षेत्रफल = परिमिति हुने आकारहरू खोज्नुहोस् (दुर्लभ पूर्णाङ्क)।",
     "when_does_swapping_rows_cols_change_an": "पङ्क्ति/स्तम्भ साटासाट कहिले केही बदल्छ?",
     "i_understand_explain_in_own_words": "मैले बुझेँ — आफ्नै शब्दमा व्याख्या गर्नुहोस्",
     "explain_commutative_property_area_leng": "क्रमविनिमेय गुण + क्षेत्रफल = लम्बाइ × चौडाइ व्याख्या गर्नुहोस्।",
-    "area_explanation": "????????? ? ?????? ??????? ???????? ?????????",
+    "area_explanation": "क्षेत्रफल र गुणनबीचको सम्बन्ध व्याख्या गर्नुहोस्",
     "design_note_discrete_4_state_classific": "डिजाइन नोट: पृथक् ४-अवस्था वर्गीकरण; कुनै क्षेत्रफल परीक्षण स्कोर छैन; कुनै खुलासा छैन — जानाजानी।"
   },
   "missing": {}

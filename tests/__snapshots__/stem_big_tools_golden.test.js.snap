@@ -113,10 +113,10 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for roadReady 1`] = `
 {
   "buttons": 76,
-  "inputs": 5,
-  "lengthBucket": 373,
+  "inputs": 6,
+  "lengthBucket": 375,
   "selects": 2,
-  "sha": "d71116fb27f11489",
+  "sha": "30aeeb93ac0522bc",
   "svgs": 1,
 }
 `;

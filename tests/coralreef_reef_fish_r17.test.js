@@ -114,7 +114,8 @@ describe('round 17 reef fish: guide data', () => {
     for (const id of IDS) {
       const keys = ['name', 'mark1', 'mark2', 'mark3', 'mark4', 'role', 'fact'].map(k => 'sp_' + id + '_' + k).concat(['habitat', 'diet', 'behavior', 'observe'].map(k => 'dx_' + id + '_' + k));
       for (const key of keys) {
-        const all = SOURCE.split('"stem.coralreef.' + key + '"').length - 1, twoArg = (SOURCE.match(new RegExp('__alloT\\("stem\\.coralreef\\.' + key + '", "')) || []).length;
+        // Either quote style: round 21 re-quoted some calls in single quotes for its reading-level pairs.
+        const all = (SOURCE.match(new RegExp('(["\'])stem\\.coralreef\\.' + key + '\\1', 'g')) || []).length, twoArg = (SOURCE.match(new RegExp('__alloT\\((["\'])stem\\.coralreef\\.' + key + '\\1, (["\'])', 'g')) || []).length;
         expect(all, key).toBe(1); expect(twoArg, key).toBe(1);
       }
     }

@@ -31,7 +31,9 @@
 //            onSuggestAlt(dataUrl) -> Promise<string>,       // optional (Milestone B AI)
 //            onAgentEdit(request) -> Promise<plan|jsonText>, // optional (agent plan; TEACHER-ONLY UI)
 //            onEditImage(src, instruction) -> Promise<dataUrl>, // optional (whole-image AI edit; teacher-only)
-//            onDesignFeedback(pngDataUrl, context) -> Promise<string> } // optional (vision critique; teacher-only)
+//            onDesignFeedback(pngDataUrl, context) -> Promise<string>, // optional (vision critique; teacher-only)
+//            documentLanguage, documentDirection } // optional; else <html lang dir>, else en/ltr
+//   onExportTaggedPdf also receives a third argument { lang, dir, pageSize: 'letter' | 'a4' }.
 //   The two AI props are optional: their buttons only render when wired, and
 //   every AI result enters the ledger as actor 'ai' (provenance by construction).
 //   Pure helpers attached for tests (the [ST_PURE_BEGIN]…[ST_PURE_END] block):
@@ -93,7 +95,67 @@
     // LAYOUT_16x9 maps to at 96 DPI (13.333in x 7.5in), so slide coordinates
     // convert to inches by a single divide with no letterboxing.
     'slide-16x9': { w: 1280, h: 720 },
+    // A4 (210 x 297 mm) at 96 dpi. Letter stays the default everywhere.
+    'a4-portrait': { w: 794, h: 1123 },
+    'a4-landscape': { w: 1123, h: 794 },
   };
+  // A4 by preset, or by size for a custom canvas of the same dimensions.
+  function stA4Kind(canvas) {
+    var p = canvas && canvas.preset;
+    if (p === 'a4-portrait' || p === 'a4-landscape') return p;
+    var w = Math.round(Number(canvas && canvas.w)), hh = Math.round(Number(canvas && canvas.h));
+    if (w === 794 && hh === 1123) return 'a4-portrait';
+    if (w === 1123 && hh === 794) return 'a4-landscape';
+    return '';
+  }
+  // Document language (BCP-47) and direction: optional doc-level fields kept
+  // OUTSIDE the scene and the ledger, so every older save loads unchanged and
+  // replay never needs to know about them. Text objects may carry their own
+  // `lang` for mixed-language pages.
+  function stSafeLang(v) {
+    var s = String(v == null ? '' : v).trim().replace(/_/g, '-');
+    return s.length <= 35 && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8}){0,4}$/.test(s) ? s : '';
+  }
+  function stSafeDir(v) { return v === 'rtl' || v === 'ltr' ? v : ''; }
+  function stLangDir(lang) {
+    var parts = String(lang || '').split('-');
+    var script = parts.slice(1).filter(function (p) { return /^[A-Za-z]{4}$/.test(p); })[0];
+    if (script) return /^(Arab|Hebr|Thaa|Nkoo|Adlm|Rohg|Syrc|Samr|Mand)$/i.test(script) ? 'rtl' : 'ltr';
+    return /^(ar|arc|he|iw|fa|prs|ur|ps|ku|ckb|sd|ug|yi|dv|syr|nqo)$/i.test(parts[0]) ? 'rtl' : 'ltr';
+  }
+  // Effective {lang, dir}: the document's own fields, else the host's UI
+  // language (`fallback`), else English left-to-right.
+  function stDocLanguage(doc, fallback) {
+    var fb = fallback && typeof fallback === 'object' ? fallback : {};
+    var docLang = stSafeLang(doc && doc.lang);
+    var lang = docLang || stSafeLang(fb.lang) || 'en';
+    var dir = stSafeDir(doc && doc.dir) || (docLang ? stLangDir(docLang) : (stSafeDir(fb.dir) || stLangDir(lang)));
+    return { lang: lang, dir: dir };
+  }
+  // Export language: an explicit opts.lang wins as given (escaped at output);
+  // otherwise the document's, then opts.fallback (the host UI language).
+  function stExportLanguage(doc, opts) {
+    var o = opts || {};
+    if (o.lang == null || o.lang === '') {
+      var base = stDocLanguage(doc, o.fallback);
+      return { lang: base.lang, dir: stSafeDir(o.dir) || base.dir };
+    }
+    var explicit = String(o.lang);
+    return { lang: explicit, dir: stSafeDir(o.dir) || stLangDir(stSafeLang(explicit)) };
+  }
+  // ` lang="…"` (+ ` dir` when it differs from the page) for a per-object language.
+  function stLangAttrs(lang, docDir) {
+    var l = stSafeLang(lang);
+    if (!l) return '';
+    var d = stLangDir(l);
+    return ' lang="' + l + '"' + (d !== (docDir || 'ltr') ? ' dir="' + d + '"' : '');
+  }
+  // Optional outline on a shape: { color, width (px), dash: 'solid' | 'dashed' }.
+  function stSafeStroke(stroke) {
+    if (!stroke || typeof stroke !== 'object') return null;
+    var width = Math.max(1, Math.min(12, Math.round(stFiniteNumber(stroke.width, 2))));
+    return { color: stSafeCssColor(stroke.color, '#111827'), width: width, dash: stroke.dash === 'dashed' ? 'dashed' : 'solid' };
+  }
   // PPTX stores ONE slide size for the whole presentation (<p:sldSz> is a
   // presentation-level element, not a per-slide one), so every page in a
   // document shares doc.canvas. Multi-page is therefore a page COUNT plus a
@@ -250,6 +312,15 @@
   function stPrintCss(canvas) {
     var w = Math.max(ST_MIN_SIZE, stFiniteNumber(canvas && canvas.w, 816));
     var h = Math.max(ST_MIN_SIZE, stFiniteNumber(canvas && canvas.h, 1056));
+    // A4 prints on the named paper size; 1123 px is a hair over 297 mm, so the
+    // page box is pinned to the paper to avoid a spill-over blank page.
+    var a4 = stA4Kind(canvas);
+    if (a4) {
+      var land = a4 === 'a4-landscape';
+      return '@page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 0; }\n' +
+        'html, body { margin: 0; padding: 0; background: #ffffff; }\n' +
+        '.st-page { margin: 0 !important; box-shadow: none !important; width: ' + (land ? '297mm' : '210mm') + ' !important; height: ' + (land ? '210mm' : '297mm') + ' !important; }';
+    }
     return '@page { size: ' + (w / 96) + 'in ' + (h / 96) + 'in; margin: 0; }\n' +
       'html, body { margin: 0; padding: 0; background: #ffffff; }\n' +
       '.st-page { margin: 0 !important; box-shadow: none !important; }';
@@ -739,6 +810,7 @@
       if (!stFrameIsFinite(o.frame) || o.frame.w <= 0 || o.frame.h <= 0) errs.push(label + ' has an invalid frame');
       // `page` absent === page 0 (v1 saves). Present means it must be a real index.
       if (o.page != null && (!Number.isInteger(o.page) || o.page < 0 || o.page >= ST_MAX_PAGES)) errs.push(label + ' has an invalid page index');
+      if (o.lang != null && !stSafeLang(o.lang)) errs.push(label + ' has an invalid language');
       if (o.type === 'text') {
         if (!Array.isArray(o.runs) || !o.runs[0] || typeof o.runs[0].text !== 'string') errs.push(label + ' has invalid text');
       } else if (o.type === 'image') {
@@ -748,8 +820,12 @@
         if (o.fit != null && o.fit !== 'cover' && o.fit !== 'contain') errs.push(label + ' has an invalid image fit');
       } else if (o.type === 'shape') {
         if (o.shape !== 'rect' && o.shape !== 'ellipse') errs.push(label + ' has an unknown shape');
+        if (o.stroke != null && (typeof o.stroke !== 'object' || Array.isArray(o.stroke))) errs.push(label + ' has an invalid outline');
       }
     }
+    // lang/dir absent (every save before 2026-11-09) = the app's language at export.
+    if (doc.lang != null && !stSafeLang(doc.lang)) errs.push('Invalid document language');
+    if (doc.dir != null && !stSafeDir(doc.dir)) errs.push('Invalid text direction');
 
     // pageCount absent === 1 (v1 saves). Present means it must be a real count,
     // and it must cover every page an object claims to be on.
@@ -952,12 +1028,15 @@
       if (!o || o.type !== 'text') return;
       var text = stWorksheetObjectText(o).trim();
       if (!text) return;
-      if (o.role === 'heading1') out.title = text;
+      var objLang = stSafeLang(o.lang);
+      if (o.role === 'heading1') { out.title = text; if (objLang) out.titleLang = objLang; }
       else if (o.role === 'heading2' && /^\d+[\.)]\s*/.test(text)) {
         current = { prompt: text.replace(/^\d+[\.)]\s*/, ''), supportText: '' };
+        if (objLang) current.lang = objLang;
         out.questions.push(current);
       } else if (!out.instructions) {
         out.instructions = text;
+        if (objLang) out.instructionsLang = objLang;
       } else if (current) {
         current.supportText = current.supportText ? current.supportText + '\n' + text : text;
       }
@@ -1038,26 +1117,258 @@
     return doc;
   }
 
+  // Word Sounds worksheet -> editable document (2026-11-09). Items sit in a
+  // two-column grid that paginates by whole rows, so an item never splits
+  // across pages. Layout is computed left-to-right and mirrored for RTL.
+  // Pictures must be data: URIs; any other picture becomes a dashed empty
+  // frame. The answer key gets its own final page with a "made before your
+  // edits" note, because the key is not recomputed when items change.
+  function stWordSoundsWorksheetDocFromItems(resource, options) {
+    resource = resource && typeof resource === 'object' ? resource : {};
+    options = options || {};
+    var str = Object.assign({
+      name: 'Name', answerKey: 'Answer key', listen: 'Listen.', wordsToSay: 'Words to say', worksheet: 'Worksheet',
+      keyNote: 'This key was made before your edits. Check it if you change the items.'
+    }, options.strings || {});
+    var now = Number(options.now) || Date.now();
+    var title = stCleanText(resource.title || str.worksheet, 160) || 'Worksheet';
+    var doc = stCreateDoc(resource.pageSize === 'a4-portrait' ? 'a4-portrait' : 'letter-portrait', title, now);
+    if (stSafeLang(resource.lang)) doc.lang = stSafeLang(resource.lang);
+    if (stSafeDir(resource.dir)) doc.dir = stSafeDir(resource.dir);
+    var rtl = stDocLanguage(doc, options.fallback).dir === 'rtl';
+    var align = rtl ? 'right' : 'left';
+    stAppend(doc, { type: 'doc.template', template: 'word-sounds-worksheet' }, 'import', now);
+    var W = doc.canvas.w, H = doc.canvas.h, M = 48, TOP = 44, BOTTOM = 52;
+    var contentW = W - 2 * M;
+    var page = 0, y = TOP;
+    var add = function (obj) {
+      if (doc.objects.length >= ST_MAX_OBJECTS - 4) return null;
+      var f = obj.frame;
+      obj.frame = rtl ? { x: W - f.x - f.w, y: f.y, w: f.w, h: f.h } : f;
+      if (page > 0) obj.page = page;
+      stAppend(doc, { type: 'object.add', object: obj }, 'import', now);
+      return obj;
+    };
+    var newPage = function () {
+      if (page >= ST_MAX_PAGES - 1) return false;
+      stAppend(doc, { type: 'page.add' }, 'import', now);
+      page++; y = TOP;
+      return true;
+    };
+    var ensure = function (need) { if (y + need > H - BOTTOM && y > TOP) newPage(); };
+    var textH = function (value, size, width) {
+      var per = Math.max(4, Math.floor(width / (size * 0.56)));
+      var lines = String(value).split('\n').reduce(function (n, para) { return n + Math.max(1, Math.ceil(para.length / per)); }, 0);
+      return Math.ceil(lines * size * 1.25) + 6;
+    };
+    // Pieces are laid out relative to a cell, then placed by emit().
+    var P = {
+      text: function (role, value, frame, size, extra) {
+        var v = String(value == null ? '' : value).trim();
+        return v ? { kind: 'text', role: role, value: v, frame: frame, size: size, align: (extra && extra.align) || align, bold: extra && extra.bold, color: extra && extra.color } : null;
+      },
+      box: function (frame, dash) { return { kind: 'box', frame: frame, dash: dash }; },
+      pic: function (src, alt, frame) {
+        var safe = stSafeDataImage(src, ST_MAX_IMAGE_SRC_LENGTH);
+        return safe ? { kind: 'pic', src: safe, alt: stCleanText(alt, 300), frame: frame } : P.box(frame, 'dashed');
+      }
+    };
+    var emit = function (piece, ox, oy) {
+      if (!piece) return;
+      var f = { x: ox + piece.frame.x, y: oy + piece.frame.y, w: piece.frame.w, h: piece.frame.h };
+      if (piece.kind === 'text') {
+        var o = stMakeText(piece.role, piece.value, f, { size: piece.size, align: piece.align, color: piece.color });
+        if (piece.bold != null) o.runs[0].style.bold = !!piece.bold;
+        add(o);
+      } else if (piece.kind === 'box') {
+        var s = stMakeShape('rect', f, '#ffffff');
+        s.stroke = piece.dash === 'dashed' ? { color: '#64748b', width: 2, dash: 'dashed' } : { color: '#334155', width: 2, dash: 'solid' };
+        add(s);
+      } else if (piece.kind === 'pic') {
+        var im = stMakeImage(piece.src, piece.alt, f, 'word-sounds');
+        im.fit = 'contain';
+        add(im);
+      }
+    };
+    // Chips (tiles, choices, sound-map columns) flow in rows inside `width`.
+    var flow = function (pieces, chips, ox, oy, width, gap) {
+      var x = 0, rowTop = 0, rowH = 0;
+      chips.forEach(function (chip) {
+        if (x > 0 && x + chip.w > width) { x = 0; rowTop += rowH + gap; rowH = 0; }
+        chip.parts.forEach(function (part) {
+          if (!part) return;
+          part.frame = { x: ox + x + part.frame.x, y: oy + rowTop + part.frame.y, w: part.frame.w, h: part.frame.h };
+          pieces.push(part);
+        });
+        x += Math.min(chip.w, width) + gap;
+        rowH = Math.max(rowH, chip.h);
+      });
+      return chips.length ? rowTop + rowH : 0;
+    };
+    var labelChip = function (label, size) {
+      var w = Math.max(48, Math.min(260, String(label).length * Math.round(size * 0.62) + 26)), hgt = size + 24;
+      return { w: w, h: hgt, parts: [P.box({ x: 0, y: 0, w: w, h: hgt }), P.text('body', label, { x: 4, y: 10, w: w - 8, h: hgt - 16 }, size, { align: 'center' })] };
+    };
+    var layoutDisplay = function (d, ox, oy, width, pieces) {
+      d = d && typeof d === 'object' ? d : {};
+      var kind = String(d.kind || '');
+      if (kind === 'boxes' || kind === 'letters') {
+        var count = Math.max(0, Math.min(12, Math.round(stFiniteNumber(d.count, 0))));
+        if (!count) return 0;
+        var size = Math.max(20, Math.min(44, Math.floor((width - (count - 1) * 6) / count)));
+        for (var bi = 0; bi < count; bi++) pieces.push(P.box({ x: ox + bi * (size + 6), y: oy, w: size, h: size }));
+        return size;
+      }
+      if (kind === 'word' || kind === 'blank_word') {
+        var word = kind === 'word' ? stCleanText(d.text, 80)
+          : (Array.isArray(d.letters) ? d.letters : []).map(function (l, li) { return li === Number(d.hidden) ? '_' : stCleanText(l, 8); }).join('');
+        if (!word) return 0;
+        var wh = textH(word, 30, width);
+        pieces.push(P.text('body', word, { x: ox, y: oy, w: width, h: wh }, 30, { bold: true }));
+        return wh;
+      }
+      if (kind === 'tiles') {
+        return flow(pieces, (Array.isArray(d.tiles) ? d.tiles : []).slice(0, 16).map(function (tile) { return labelChip(stCleanText(tile, 20), 20); }).filter(function (c) { return c.parts[1]; }), ox, oy, width, 8);
+      }
+      if (kind === 'map') {
+        return flow(pieces, (Array.isArray(d.sounds) ? d.sounds : []).slice(0, 12).map(function (snd) {
+          return { w: 56, h: 74, parts: [P.text('body', '/' + stCleanText(snd, 12) + '/', { x: 0, y: 0, w: 56, h: 26 }, 16, { align: 'center' }), P.box({ x: 6, y: 30, w: 44, h: 44 })] };
+        }), ox, oy, width, 8);
+      }
+      if (kind === 'text') {
+        var sentence = (Array.isArray(d.parts) ? d.parts : []).map(function (p) {
+          p = p || {};
+          return p.text != null ? stCleanText(p.text, 300) : stCleanText(p.before, 200) + ' ______ ' + stCleanText(p.after, 200);
+        }).join(' ').trim();
+        if (!sentence) return 0;
+        var sh = textH(sentence, 18, width);
+        pieces.push(P.text('body', sentence, { x: ox, y: oy, w: width, h: sh }, 18));
+        return sh;
+      }
+      if (kind === 'sounds' || kind === 'parts') {
+        pieces.push(P.text('body', str.listen, { x: ox, y: oy, w: width, h: 26 }, 16));
+        return 26;
+      }
+      return 0;
+    };
+    var layoutItem = function (item, n, cw) {
+      var pieces = [];
+      var head = n + '. ' + stCleanText(item.prompt, 400);
+      var hh = textH(head, 16, cw);
+      pieces.push(P.text('heading2', head.trim(), { x: 0, y: 0, w: cw, h: hh }, 16));
+      var cy = hh + 6;
+      var rowX = 0, rowH = 0;
+      if (item.image) { pieces.push(P.pic(item.image, item.imageAlt || item.word || '', { x: 0, y: cy, w: 88, h: 88 })); rowX = 100; rowH = 88; }
+      rowH = Math.max(rowH, layoutDisplay(item.display, rowX, cy, cw - rowX, pieces));
+      if (rowH) cy += rowH + 10;
+      var choices = (Array.isArray(item.choices) ? item.choices : []).slice(0, 8).map(function (c) {
+        c = c && typeof c === 'object' ? c : { label: c };
+        var label = stCleanText(c.label, 60);
+        if (c.image && stSafeDataImage(c.image, ST_MAX_IMAGE_SRC_LENGTH)) {
+          return { w: 96, h: 96, parts: [P.box({ x: 0, y: 0, w: 96, h: 96 }), P.pic(c.image, label, { x: 8, y: 8, w: 80, h: 80 })] };
+        }
+        return label ? labelChip(label, 18) : null;
+      }).filter(Boolean);
+      var chH = flow(pieces, choices, 0, cy, cw, 10);
+      if (chH) cy += chH + 10;
+      if (item.writeIn === true || (item.display && item.display.kind === 'tiles')) { pieces.push(P.box({ x: 0, y: cy, w: cw, h: 48 })); cy += 58; }
+      return { h: cy, pieces: pieces };
+    };
+
+    emit(P.text('heading1', title, { x: 0, y: 0, w: contentW, h: textH(title, 28, contentW) }, 28), M, y);
+    y += textH(title, 28, contentW) + 10;
+    emit(P.text('body', str.name, { x: 0, y: 0, w: 96, h: 30 }, 16, { bold: true }), M, y);
+    emit(P.box({ x: 104, y: 0, w: Math.min(340, contentW - 104), h: 32 }), M, y);
+    y += 52;
+
+    var cols = contentW >= 600 ? 2 : 1, gap = 18;
+    var cellW = Math.floor((contentW - gap * (cols - 1)) / cols);
+    var counter = 0, itemCount = 0;
+    var sections = (Array.isArray(resource.sections) ? resource.sections : []).filter(function (s) { return s && typeof s === 'object'; });
+    sections.forEach(function (section) {
+      var heading = stCleanText(section.heading, 160);
+      var directions = stCleanText(section.directions, 600);
+      var items = (Array.isArray(section.items) ? section.items : []).filter(function (it) { return it && typeof it === 'object'; });
+      var laid = items.map(function (item) {
+        counter++;
+        var n = item.n != null && stCleanText(item.n, 12) ? stCleanText(item.n, 12) : String(counter);
+        return layoutItem(item, n, cellW);
+      });
+      itemCount += laid.length;
+      var headH = heading ? textH(heading, 20, contentW) : 0;
+      var dirH = directions ? textH(directions, 15, contentW) : 0;
+      // Keep the heading and directions with the first row of items.
+      ensure(headH + dirH + 16 + (laid[0] ? laid[0].h : 0));
+      if (heading) { emit(P.text('heading2', heading, { x: 0, y: 0, w: contentW, h: headH }, 20), M, y); y += headH + 4; }
+      if (directions) { emit(P.text('body', directions, { x: 0, y: 0, w: contentW, h: dirH }, 15), M, y); y += dirH + 8; }
+      for (var r = 0; r < laid.length; r += cols) {
+        var row = laid.slice(r, r + cols);
+        var rowH = row.reduce(function (m, cell) { return Math.max(m, cell.h); }, 0);
+        ensure(rowH);
+        row.forEach(function (cell, ci) { cell.pieces.forEach(function (piece) { emit(piece, M + ci * (cellW + gap), y); }); });
+        y += rowH + 22;
+      }
+      y += 6;
+    });
+
+    var key = (Array.isArray(resource.key) ? resource.key : []).filter(function (k) { return k && typeof k === 'object' && stCleanText(k.text, 400); });
+    var words = (Array.isArray(resource.wordsToSay) ? resource.wordsToSay : []).map(function (w) { return stCleanText(w, 60); }).filter(Boolean);
+    if (key.length || words.length) {
+      newPage();
+      var keyTitle = stCleanText(resource.keyTitle, 160) || (title + ': ' + str.answerKey);
+      var kth = textH(keyTitle, 26, contentW);
+      emit(P.text('heading1', keyTitle, { x: 0, y: 0, w: contentW, h: kth }, 26), M, y); y += kth + 6;
+      var noteH = textH(str.keyNote, 15, contentW);
+      emit(P.text('body', str.keyNote, { x: 0, y: 0, w: contentW, h: noteH }, 15, { bold: true, color: '#7c2d12' }), M, y); y += noteH + 12;
+      key.forEach(function (k, ki) {
+        var line = (k.n != null && stCleanText(k.n, 12) ? stCleanText(k.n, 12) : String(ki + 1)) + '. ' + stCleanText(k.text, 400);
+        var lh = textH(line, 16, contentW);
+        ensure(lh);
+        emit(P.text('body', line, { x: 0, y: 0, w: contentW, h: lh }, 16), M, y); y += lh + 4;
+      });
+      if (words.length) {
+        var wordsLine = words.join(', ');
+        var wlh = textH(wordsLine, 16, contentW);
+        ensure(34 + wlh);
+        y += 10;
+        emit(P.text('heading2', str.wordsToSay, { x: 0, y: 0, w: contentW, h: 30 }, 20), M, y); y += 34;
+        emit(P.text('body', wordsLine, { x: 0, y: 0, w: contentW, h: wlh }, 16), M, y); y += wlh;
+      }
+    }
+    doc.provenance = {
+      origin: 'word-sounds-worksheet',
+      sourceType: 'word-sounds',
+      sourceTitle: title,
+      sectionCount: sections.length,
+      itemCount: itemCount,
+      keyMadeAt: now
+    };
+    return doc;
+  }
+
   // Worksheet BRIDGE (doc §11): turn the VISUAL worksheet into a LINEAR,
   // semantically-structured worksheet document — real <ol>/<li> questions with
   // labeled answer regions — so it flows through the same accessible export
   // pipeline (tagged PDF / HTML) as a proper worksheet, not just a page picture.
   // Distinct from stExportHtml (the pixel-faithful design snapshot).
   function stExportWorksheetHtml(doc, opts) {
-    var lang = (opts && opts.lang) || 'en';
+    var langInfo = stExportLanguage(doc, opts);
+    var lang = langInfo.lang;
     var data = stExportWorksheetData(doc);
-    var parts = ['<h1>' + stEscapeHtml(data.title) + '</h1>'];
-    if (data.instructions) parts.push('<p class="st-ws-instructions">' + stEscapeHtml(data.instructions) + '</p>');
+    var la = function (l) { return stLangAttrs(l, langInfo.dir); };
+    var parts = ['<h1' + la(data.titleLang) + '>' + stEscapeHtml(data.title) + '</h1>'];
+    if (data.instructions) parts.push('<p class="st-ws-instructions"' + la(data.instructionsLang) + '>' + stEscapeHtml(data.instructions) + '</p>');
     if (data.questions.length) {
       parts.push('<ol class="st-ws-questions">');
       data.questions.forEach(function (q) {
-        parts.push('<li><p class="st-ws-prompt">' + stEscapeHtml(q.prompt) + '</p>'
+        parts.push('<li' + la(q.lang) + '><p class="st-ws-prompt">' + stEscapeHtml(q.prompt) + '</p>'
           + (q.supportText ? '<p class="st-ws-support">' + stEscapeHtml(q.supportText).replace(/\n/g, '<br>') + '</p>' : '')
           + '<div class="st-ws-answer" role="group" aria-label="Answer space"></div></li>');
       });
       parts.push('</ol>');
     }
-    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(data.title) + '</title>\n<style>\n  body { font-family: system-ui, sans-serif; color: #111827; max-width: 720px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }\n  h1 { font-size: 28px; }\n  .st-ws-instructions { background: #fef9c3; padding: 10px 12px; border-radius: 8px; }\n  .st-ws-questions { padding-left: 28px; }\n  .st-ws-questions > li { margin: 18px 0; }\n  .st-ws-prompt { font-weight: 600; margin: 0 0 6px; }\n  .st-ws-support { color: #374151; margin: 0 0 8px; }\n  .st-ws-answer { min-height: 96px; border: 1px solid #cbd5e1; border-radius: 8px; }\n  @media print { .st-ws-answer { min-height: 120px; } }\n</style>\n</head>\n<body>\n<main>\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
+    var a4 = stA4Kind(doc && doc.canvas);
+    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '"' + (langInfo.dir === 'rtl' ? ' dir="rtl"' : '') + '>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(data.title) + '</title>\n<style>\n' + (a4 ? '  @page { size: A4 ' + (a4 === 'a4-landscape' ? 'landscape' : 'portrait') + '; }\n' : '') + (langInfo.dir === 'rtl' ? '  html[dir="rtl"] .st-ws-questions { padding-left: 0; padding-right: 28px; }\n' : '') + '  body { font-family: system-ui, sans-serif; color: #111827; max-width: 720px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }\n  h1 { font-size: 28px; }\n  .st-ws-instructions { background: #fef9c3; padding: 10px 12px; border-radius: 8px; }\n  .st-ws-questions { padding-left: 28px; }\n  .st-ws-questions > li { margin: 18px 0; }\n  .st-ws-prompt { font-weight: 600; margin: 0 0 6px; }\n  .st-ws-support { color: #374151; margin: 0 0 8px; }\n  .st-ws-answer { min-height: 96px; border: 1px solid #cbd5e1; border-radius: 8px; }\n  @media print { .st-ws-answer { min-height: 120px; } }\n</style>\n</head>\n<body>\n<main>\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
   }
 
   function stBuildResourceCues(history, options) {
@@ -3582,7 +3893,8 @@
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
   function stExportHtml(doc, opts) {
-    var lang = (opts && opts.lang) || 'en';
+    var langInfo = stExportLanguage(doc, opts);
+    var lang = langInfo.lang;
     var parts = [];
     var canvas = {
       w: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.w, ST_CANVAS_PRESETS['letter-portrait'].w)),
@@ -3610,7 +3922,7 @@
         var tag = role === 'heading1' ? 'h1' : role === 'heading2' ? 'h2' : role === 'heading3' ? 'h3' : 'p';
         var size = Math.max(8, Math.min(160, stFiniteNumber(s.size, 16)));
         var style = pos + 'font-size:' + size + 'px;color:' + stSafeCssColor(s.color, '#111827') + ';font-weight:' + (s.bold ? '700' : '400') + ';text-align:' + stSafeAlign(s.align) + ';white-space:pre-wrap;line-height:1.25;font-family:' + stSafeFontFamily(s.font) + ';overflow-wrap:break-word;';
-        parts.push('<' + tag + ' style="' + style + '">' + stEscapeHtml(run.text) + '</' + tag + '>');
+        parts.push('<' + tag + stLangAttrs(o.lang, langInfo.dir) + ' style="' + style + '">' + stEscapeHtml(run.text) + '</' + tag + '>');
       } else if (o.type === 'image') {
         var safeImageSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
         if (!safeImageSrc) continue; // empty or unsafe frame - nothing to show or request
@@ -3622,7 +3934,9 @@
         }
       } else if (o.type === 'shape') {
         var radius = stSafeShape(o.shape) === 'ellipse' ? 'border-radius:50%;' : 'border-radius:8px;';
-        parts.push('<div aria-hidden="true" style="' + pos + 'background:' + stSafeCssColor(o.fill, '#e2e8f0') + ';' + radius + '"></div>');
+        var outline = stSafeStroke(o.stroke);
+        var border = outline ? 'box-sizing:border-box;border:' + outline.width + 'px ' + outline.dash + ' ' + outline.color + ';' : '';
+        parts.push('<div aria-hidden="true" style="' + pos + 'background:' + stSafeCssColor(o.fill, '#e2e8f0') + ';' + radius + border + '"></div>');
       }
     }
     stPageBlocks.push(parts.join('\n'));
@@ -3633,7 +3947,8 @@
           var label = (doc && doc.canvas && doc.canvas.preset === 'slide-16x9' ? 'Slide ' : 'Page ') + (pi + 1) + ' of ' + stPageTotal;
           return '<section class="st-page" aria-label="' + stEscapeHtml(label) + '">\n' + block + '\n</section>';
         }).join('\n') + '\n</main>';
-    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n' + stBody + '\n</body>\n</html>';
+    var a4 = stA4Kind(doc && doc.canvas);
+    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '"' + (langInfo.dir === 'rtl' ? ' dir="rtl"' : '') + '>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n' + (a4 ? '  @page { size: A4 ' + (a4 === 'a4-landscape' ? 'landscape' : 'portrait') + '; margin: 0; }\n' : '') + '  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n' + stBody + '\n</body>\n</html>';
   }
 
   // ── PPTX export ─────────────────────────────────────────────────────────────
@@ -3648,6 +3963,10 @@
   // 16:9 still exports — it just defines a custom layout of the same dimensions
   // rather than being letterboxed into a shape it was not designed for.
   function stPptxLayout(canvas) {
+    var a4 = stA4Kind(canvas);
+    if (a4) return a4 === 'a4-landscape'
+      ? { name: 'ALLOFLOW_A4_LANDSCAPE', width: 11.69, height: 8.27, standard: false }
+      : { name: 'ALLOFLOW_A4', width: 8.27, height: 11.69, standard: false };
     var w = stPptxInches(canvas && canvas.w);
     var h = stPptxInches(canvas && canvas.h);
     var isWide = Math.abs(w - 13.333) < 0.01 && Math.abs(h - 7.5) < 0.01;
@@ -3656,7 +3975,9 @@
 
   function stExportPptxSpec(doc, opts) {
     var options = opts || {};
+    var langInfo = stExportLanguage(doc, options);
     var canvas = {
+      preset: doc && doc.canvas && doc.canvas.preset,
       w: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.w, ST_CANVAS_PRESETS['slide-16x9'].w)),
       h: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.h, ST_CANVAS_PRESETS['slide-16x9'].h)),
       background: { fill: stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff') },
@@ -3677,10 +3998,13 @@
           var run = (o.runs && o.runs[0]) || { text: '', style: {} };
           var s = run.style || {};
           var role = stSafeTextRole(o.role);
+          var textLang = stSafeLang(o.lang) || stSafeLang(langInfo.lang);
+          var textDir = stSafeLang(o.lang) ? stLangDir(o.lang) : langInfo.dir;
           shapes.push({
             kind: 'text',
             text: String(run.text == null ? '' : run.text),
             role: role,
+            lang: textLang,
             // PptxGenJS wants hex WITHOUT the leading '#'.
             options: Object.assign({}, box, {
               fontSize: Math.max(8, Math.min(160, stFiniteNumber(s.size, 16))) * 0.75, // px -> pt
@@ -3690,7 +4014,7 @@
               valign: 'top',
               fontFace: stPptxFontFace(s.font),
               isTextBox: true,
-            }),
+            }, textLang ? { lang: textLang } : null, textDir === 'rtl' ? { rtlMode: true } : null),
           });
           // The first heading on a slide becomes its title in the notes, which
           // is what most screen readers announce when navigating a deck.
@@ -3712,10 +4036,12 @@
             }),
           });
         } else if (o.type === 'shape') {
+          var pptxStroke = stSafeStroke(o.stroke);
           shapes.push({
             kind: 'shape',
             shape: stSafeShape(o.shape) === 'ellipse' ? 'ellipse' : 'rect',
-            options: Object.assign({}, box, { fill: { color: stSafeCssColor(o.fill, '#e2e8f0').replace('#', '') } }),
+            options: Object.assign({}, box, { fill: { color: stSafeCssColor(o.fill, '#e2e8f0').replace('#', '') } },
+              pptxStroke ? { line: { color: pptxStroke.color.replace('#', ''), width: pptxStroke.width * 0.75, dashType: pptxStroke.dash === 'dashed' ? 'dash' : 'solid' } } : null),
           });
         }
       }
@@ -3731,7 +4057,8 @@
     return {
       title: String((doc && doc.title) || 'Untitled'),
       author: 'AlloFlow',
-      lang: String(options.lang || 'en'),
+      lang: String(langInfo.lang),
+      dir: langInfo.dir,
       layout: stPptxLayout(canvas),
       slideCount: slides.length,
       slides: slides,
@@ -3756,6 +4083,7 @@
     deck.title = spec.title;
     deck.author = spec.author;
     if (deck.company !== undefined) deck.company = 'AlloFlow';
+    if (spec.dir === 'rtl') deck.rtlMode = true;
     spec.slides.forEach(function (s) {
       var slide = deck.addSlide();
       slide.background = s.background;
@@ -4372,6 +4700,15 @@
               g.fillStyle = stSafeCssColor(o.fill, '#e2e8f0');
               if (stSafeShape(o.shape) === 'ellipse') { g.beginPath(); g.ellipse(f2.x + f2.w / 2, f2.y + f2.h / 2, f2.w / 2, f2.h / 2, 0, 0, Math.PI * 2); g.fill(); }
               else { g.fillRect(f2.x, f2.y, f2.w, f2.h); }
+              var pngStroke = stSafeStroke(o.stroke);
+              if (pngStroke) {
+                g.save(); g.strokeStyle = pngStroke.color; g.lineWidth = pngStroke.width;
+                if (pngStroke.dash === 'dashed' && g.setLineDash) g.setLineDash([pngStroke.width * 3, pngStroke.width * 2]);
+                var inset = pngStroke.width / 2;
+                if (stSafeShape(o.shape) === 'ellipse') { g.beginPath(); g.ellipse(f2.x + f2.w / 2, f2.y + f2.h / 2, Math.max(1, f2.w / 2 - inset), Math.max(1, f2.h / 2 - inset), 0, 0, Math.PI * 2); g.stroke(); }
+                else g.strokeRect(f2.x + inset, f2.y + inset, f2.w - pngStroke.width, f2.h - pngStroke.width);
+                g.restore();
+              }
             } else if (o.type === 'text') {
               var run2 = (o.runs && o.runs[0]) || { text: '', style: {} };
               var s2 = run2.style || {};
@@ -4379,6 +4716,8 @@
               g.fillStyle = stSafeCssColor(s2.color, '#111827');
               g.font = (s2.bold ? '700 ' : '400 ') + size2 + 'px ' + stSafeFontFamily(s2.font);
               g.textBaseline = 'top';
+              // Right-to-left runs shape correctly; x stays the measured left edge.
+              try { g.direction = stSafeLang(o.lang) ? stLangDir(o.lang) : stDocLanguage(doc).dir; g.textAlign = 'left'; } catch (_) {}
               var lineH2 = Math.round(size2 * 1.25);
               var y2 = f2.y;
               String(run2.text || '').split('\n').forEach(function (para) {
@@ -4495,7 +4834,9 @@
     var t = props.t || function () { return ''; };
     var TT = function (k, fb) { try { var s = t(k); return s && s !== k ? s : fb; } catch (_) { return fb; } };
     var addToast = props.addToast || function () {};
-    var hasLinkedActivityWorksheet = !!(props.initialResource && typeof props.onSaveGeneratedArtifact === 'function');
+    // A Word Sounds worksheet also arrives as initialResource but has no Activity to save back to.
+    var isWordSoundsHandoff = props.initialAction === 'worksheet-from-word-sounds';
+    var hasLinkedActivityWorksheet = !!(props.initialResource && !isWordSoundsHandoff && typeof props.onSaveGeneratedArtifact === 'function');
     var _linkedSave = React.useState(hasLinkedActivityWorksheet ? 'linked' : 'unlinked');
     var linkedSaveState = _linkedSave[0], setLinkedSaveState = _linkedSave[1];
     var linkedStatusLabel = linkedSaveState === 'saved'
@@ -4509,7 +4850,7 @@
       ? String(props.initialResource.sourceRevision)
       : null);
     React.useEffect(function () {
-      if (!props.initialResource) {
+      if (!props.initialResource || isWordSoundsHandoff) {
         linkedRevisionRef.current = null;
         setLinkedSaveState('unlinked');
         return;
@@ -4522,7 +4863,8 @@
       props.initialResource && props.initialResource.parentResourceId,
       props.initialResource && props.initialResource.activityIndex,
       props.initialResource && props.initialResource.artifactId,
-      props.initialResource && props.initialResource.sourceRevision
+      props.initialResource && props.initialResource.sourceRevision,
+      isWordSoundsHandoff
     ]);
 
     var _docRef = React.useRef(null);
@@ -4749,6 +5091,16 @@
     var statusTone = function (tone) { return stUiStatusTone(themeName, tone); };
 
     var doc = _docRef.current;
+    // Host UI language: explicit props first, else the app's <html lang dir>.
+    var hostLanguage = (function () {
+      var root = typeof document !== 'undefined' && document.documentElement;
+      return {
+        lang: stSafeLang(props.documentLanguage) || stSafeLang(root && root.lang) || 'en',
+        dir: stSafeDir(props.documentDirection) || stSafeDir(root && root.dir) || ''
+      };
+    })();
+    var docLanguage = stDocLanguage(doc, hostLanguage);
+    var exportLangOpts = function (d) { var info = stDocLanguage(d, hostLanguage); return { lang: info.lang, dir: info.dir }; };
     var studioPageCount = doc ? stScenePageCount(doc) : 1;
     var activePageIndex = doc ? Math.max(0, Math.min(pageIndex, studioPageCount - 1)) : 0;
     var pageObjects = doc ? stObjectsOnPage(doc.objects, activePageIndex) : [];
@@ -4833,6 +5185,24 @@
         return applied;
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'grouped edit failed'), 'error'); }
       return [];
+    };
+    // Language/direction are document settings, not scene edits: they change
+    // no object, so they stay out of the ledger (and out of undo).
+    var setDocLanguageField = function (field, value) {
+      var d = _docRef.current;
+      if (!d) return false;
+      var raw = String(value == null ? '' : value).trim();
+      var next = field === 'lang' ? stSafeLang(raw) : stSafeDir(raw);
+      if (raw && !next) {
+        addToast(TT('studio.doc_language_invalid', 'Use a language code such as en, es or ar.'), 'error');
+        return false;
+      }
+      if ((d[field] || '') === next) return true;
+      if (next) d[field] = next; else delete d[field];
+      if (hasLinkedActivityWorksheet) setLinkedSaveState('dirty');
+      bump();
+      stAnnounce(TT('studio.a11y_doc_language', 'Document language updated'));
+      return true;
     };
     var historyAction = function (redo) {
       commitFocusedField();
@@ -5043,6 +5413,32 @@
       setView('edit'); clearSelection(); bump();
       addToast('Worksheet opened as editable Page Designer text objects.', 'success');
       stAnnounce('Activity worksheet opened in Page Designer');
+    };
+    var buildWordSoundsWorksheet = function () {
+      var built = null;
+      try {
+        built = stWordSoundsWorksheetDocFromItems(props.initialResource, {
+          now: Date.now(),
+          fallback: hostLanguage,
+          strings: {
+            name: TT('studio.ws_name', 'Name'),
+            answerKey: TT('studio.ws_answer_key', 'Answer key'),
+            keyNote: TT('studio.ws_key_note', 'This key was made before your edits. Check it if you change the items.'),
+            listen: TT('studio.ws_listen', 'Listen.'),
+            wordsToSay: TT('studio.ws_words_to_say', 'Words to say'),
+            worksheet: TT('studio.ws_worksheet', 'Worksheet')
+          }
+        });
+      } catch (_) { built = null; }
+      if (!built) {
+        addToast(TT('studio.ws_open_failed', 'The Word Sounds worksheet could not be opened.'), 'error');
+        return;
+      }
+      _docRef.current = built;
+      setPageIndex(0);
+      setView('edit'); clearSelection(); bump();
+      addToast(TT('studio.ws_opened', 'Worksheet opened. Every item is editable.'), 'success');
+      stAnnounce(TT('studio.a11y_ws_opened', 'Word Sounds worksheet opened in Page Designer'));
     };
     var insertArtworkFromTool = function (artwork) {
       var source = artwork && stSafeDataImage(artwork.src, ST_MAX_IMAGE_SRC_LENGTH);
@@ -6003,13 +6399,13 @@
       });
     };
     var exportHtml = gateOr(function () {
-      download(new Blob([stExportHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.html');
+      download(new Blob([stExportHtml(doc, exportLangOpts(doc))], { type: 'text/html' }), safeName() + '.html');
       addToast(TT('studio.exported_html', '📄 Accessible HTML downloaded — reading order and alt text ride along.'), 'success');
     });
     var exportPng = gateOr(function () {
       var page = activePageIndex;
       return runExportJob('png', 'PNG', function (snapshot) {
-        return stRenderPng(snapshot, 1.5, page).then(function (blob) {
+        return stRenderPng(Object.assign({}, snapshot, exportLangOpts(snapshot)), 1.5, page).then(function (blob) {
           if (!blob) throw new Error(TT('studio.export_png_failed', 'PNG export failed.'));
           var suffix = stScenePageCount(snapshot) > 1 ? '-' + (snapshot.canvas.preset === 'slide-16x9' ? 'slide' : 'page') + (page + 1) : '';
           download(blob, safeName(snapshot) + suffix + '.png');
@@ -6019,14 +6415,14 @@
     var exportTagged = gateOr(function () {
       return runExportJob('tagged-pdf', TT('studio.tagged_pdf_label', 'Tagged PDF'), function (snapshot) {
         if (typeof props.onExportTaggedPdf !== 'function') throw new Error(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'));
-        return props.onExportTaggedPdf(stExportHtml(snapshot, { lang: 'en' }), snapshot.title || 'AlloStudio document');
+        return props.onExportTaggedPdf(stExportHtml(snapshot, exportLangOpts(snapshot)), snapshot.title || 'AlloStudio document', Object.assign(exportLangOpts(snapshot), { pageSize: stA4Kind(snapshot.canvas) ? 'a4' : 'letter' }));
       });
     });
     // Visual print/PDF: the positioned page, pixel-faithful, via a hidden
     // iframe (window.open is unreliable inside the Canvas iframe sandbox).
     // The TAGGED PDF remains the accessible artifact — the toast says so.
     var exportPrint = gateOr(function () {
-      var html = stExportHtml(doc, { lang: 'en' }).replace('</head>', '<style>' + stPrintCss(doc.canvas) + '</style>\n</head>');
+      var html = stExportHtml(doc, exportLangOpts(doc)).replace('</head>', '<style>' + stPrintCss(doc.canvas) + '</style>\n</head>');
       var frame = document.createElement('iframe');
       frame.setAttribute('data-allo-studio-print', '1');
       frame.setAttribute('aria-hidden', 'true');
@@ -6045,7 +6441,7 @@
       return runExportJob('pptx', TT('studio.powerpoint_label', 'PowerPoint'), function (snapshot) {
         var Pptx = typeof window !== 'undefined' ? window.PptxGenJS : null;
         if (typeof Pptx !== 'function') throw new Error(TT('studio.pptx_unavailable', 'The PowerPoint library is still loading — try again in a moment, or open Page Designer from the main app.'));
-        var builtDeck = stRenderPptx(stExportPptxSpec(snapshot, { lang: 'en' }), Pptx);
+        var builtDeck = stRenderPptx(stExportPptxSpec(snapshot, exportLangOpts(snapshot)), Pptx);
         return builtDeck.writeFile({ fileName: safeName(snapshot) + '.pptx' });
       });
     });
@@ -6056,13 +6452,13 @@
     };
     var exportWorksheetHtml = function () {
       commitFocusedField();
-      download(new Blob([stExportWorksheetHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.worksheet.html');
+      download(new Blob([stExportWorksheetHtml(doc, exportLangOpts(doc))], { type: 'text/html' }), safeName() + '.worksheet.html');
       addToast(TT('studio.exported_worksheet_html', '📝 Structured worksheet HTML downloaded — real questions and answer spaces.'), 'success');
     };
     var exportWorksheetPdf = function () {
       return runExportJob('worksheet-pdf', TT('studio.worksheet_pdf_label', 'Worksheet PDF'), function (snapshot) {
         if (typeof props.onExportTaggedPdf !== 'function') throw new Error(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open Page Designer from the main app.'));
-        return props.onExportTaggedPdf(stExportWorksheetHtml(snapshot, { lang: 'en' }), (snapshot.title || 'Worksheet') + ' (worksheet)');
+        return props.onExportTaggedPdf(stExportWorksheetHtml(snapshot, exportLangOpts(snapshot)), (snapshot.title || 'Worksheet') + ' (worksheet)', Object.assign(exportLangOpts(snapshot), { pageSize: stA4Kind(snapshot.canvas) ? 'a4' : 'letter' }));
       });
     };
     var exportProcess = function () {
@@ -6183,6 +6579,9 @@
       } else if (props.initialAction === 'worksheet-from-activity' && props.initialResource) {
         initialActionRef.current = true;
         buildActivityWorksheet();
+      } else if (props.initialAction === 'worksheet-from-word-sounds' && props.initialResource) {
+        initialActionRef.current = true;
+        buildWordSoundsWorksheet();
       } else if ((props.initialAction === 'insert-visual-asset' || props.initialAction === 'insert-artstudio-artwork') && props.initialArtwork) {
         initialActionRef.current = true;
         insertArtworkFromTool(props.initialArtwork);
@@ -6254,7 +6653,7 @@
           stOrderedObjects(stObjectsOnPage(previewDoc.objects, 0)).slice(0, 18).map(function (o) {
             var f = stClampFrame(o.frame, previewDoc.canvas);
             var base = { position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px', width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1, boxSizing: 'border-box' };
-            if (o.type === 'shape') return h('div', { key: o.id, style: Object.assign({}, base, { background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '2px' }) });
+            if (o.type === 'shape') return h('div', { key: o.id, style: Object.assign({}, base, { background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '2px', border: o.stroke ? '1px solid ' + stSafeStroke(o.stroke).color : undefined }) });
             if (o.type === 'image') return h('div', { key: o.id, style: Object.assign({}, base, { border: '1px dashed #94a3b8', background: '#f8fafc' }) });
             var run = (o.runs && o.runs[0]) || { text: '', style: {} };
             return h('div', { key: o.id, style: Object.assign({}, base, { color: (run.style && run.style.color) || '#111827', fontWeight: run.style && run.style.bold ? 800 : 500, fontSize: Math.max(2, ((run.style && run.style.size) || 16) * scale) + 'px', lineHeight: 1.1, overflow: 'hidden', textAlign: (run.style && run.style.align) || 'left' }) }, run.text);
@@ -6345,6 +6744,8 @@
                 onChange: function (e) { setComposePreset(e.target.value); } },
                 h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait')),
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape')),
+                h('option', { value: 'a4-portrait' }, TT('studio.orient_a4_portrait', 'A4 portrait')),
+                h('option', { value: 'a4-landscape' }, TT('studio.orient_a4_landscape', 'A4 landscape')),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 h('option', { value: 'slide-16x9' }, TT('studio.orient_slide', 'Slide deck (16:9)'))),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', border: '1px solid #1e3a8a', flex: 1, textAlign: 'center', opacity: (aiBusy === 'agent' || !String(composePrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(composePrompt).trim(), onClick: startWithAi }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '✨ ' + TT('studio.compose_go', 'Draft my page')))) : null,
@@ -6535,7 +6936,8 @@
       if (o.type === 'text') {
         var run = (o.runs && o.runs[0]) || { text: '', style: {} };
         var s = run.style || {};
-        inner = hh('div', { style: { fontSize: (s.size || 16) * scale + 'px', color: s.color || '#111827', fontWeight: s.bold ? 700 : 400, textAlign: s.align || 'left', whiteSpace: 'pre-wrap', lineHeight: 1.25, overflow: 'hidden', width: '100%', height: '100%', overflowWrap: 'break-word', fontFamily: stSafeFontFamily(s.font) } }, run.text);
+        var objLang = stSafeLang(o.lang);
+        inner = hh('div', { lang: objLang || undefined, dir: objLang ? stLangDir(objLang) : undefined, style: { fontSize: (s.size || 16) * scale + 'px', color: s.color || '#111827', fontWeight: s.bold ? 700 : 400, textAlign: s.align || 'left', whiteSpace: 'pre-wrap', lineHeight: 1.25, overflow: 'hidden', width: '100%', height: '100%', overflowWrap: 'break-word', fontFamily: stSafeFontFamily(s.font) } }, run.text);
       } else if (o.type === 'image') {
         var safeRenderSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
         if (safeRenderSrc) {
@@ -6547,7 +6949,8 @@
             hh('span', { style: { fontSize: Math.max(8, 9 * scale) + 'px', fontWeight: 600, lineHeight: 1.2, opacity: 0.9 } }, frameState.message));
         }
       } else if (o.type === 'shape') {
-        inner = hh('div', { style: { width: '100%', height: '100%', background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '8px', pointerEvents: 'none' } });
+        var editStroke = stSafeStroke(o.stroke);
+        inner = hh('div', { style: { width: '100%', height: '100%', boxSizing: 'border-box', background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '8px', border: editStroke ? Math.max(1, editStroke.width * scale) + 'px ' + editStroke.dash + ' ' + editStroke.color : undefined, pointerEvents: 'none' } });
       }
       if (!interactivity) return hh('div', { key: o.id, style: base, 'aria-hidden': true }, inner);
       var labelText = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || 'text').slice(0, 40) : o.type === 'image' ? (frameState && !o.src ? frameState.label : (o.alt || TT('studio.image_no_alt', 'image without alt text'))) : (o.shape || 'shape');
@@ -7447,9 +7850,21 @@
                 onChange: function (e) { var pk = e.target.value; if (!ST_CANVAS_PRESETS[pk]) return; dispatch({ type: 'canvas.resize', preset: pk }, 'user'); stAnnounce(TT('studio.a11y_resized', 'Page size changed — objects re-fit to the page')); } },
                 h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait') + ' (8.5×11)'),
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11×8.5)'),
+                h('option', { value: 'a4-portrait' }, TT('studio.orient_a4_portrait', 'A4 portrait') + ' (210×297 mm)'),
+                h('option', { value: 'a4-landscape' }, TT('studio.orient_a4_landscape', 'A4 landscape') + ' (297×210 mm)'),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 h('option', { value: 'slide-16x9' }, TT('studio.orient_slide', 'Slide deck (16:9)')),
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
+            h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.doc_language', 'Document language'),
+              h('input', { key: 'doc-lang-' + (doc.lang || ''), defaultValue: doc.lang || '', placeholder: docLanguage.lang, spellCheck: false, autoComplete: 'off', style: S.input, 'aria-label': TT('studio.doc_language', 'Document language'), 'aria-describedby': 'st-doc-language-hint',
+                onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Enter') e.target.blur(); },
+                onBlur: function (e) { if (!setDocLanguageField('lang', e.target.value)) e.target.value = (_docRef.current && _docRef.current.lang) || ''; } })),
+            h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.doc_direction', 'Text direction'),
+              h('select', { value: doc.dir || '', style: S.input, 'aria-label': TT('studio.doc_direction', 'Text direction'), onChange: function (e) { setDocLanguageField('dir', e.target.value); } },
+                h('option', { value: '' }, TT('studio.dir_auto', 'Match the language')),
+                h('option', { value: 'ltr' }, TT('studio.dir_ltr', 'Left to right')),
+                h('option', { value: 'rtl' }, TT('studio.dir_rtl', 'Right to left')))),
+            h('p', { id: 'st-doc-language-hint', style: { fontSize: '10px', color: C.soft, margin: 0 } }, TT('studio.doc_language_hint', 'A code such as en, es or ar. Exports use it so screen readers choose the right voice.')),
             colorField(TT('studio.background', 'Background'), (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', function (hex) { dispatch({ type: 'canvas.background', fill: hex }, 'user'); }),
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
@@ -7496,7 +7911,7 @@
               h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap')),
               h('button', { style: Object.assign({}, S.hBtn, reviewOverlays ? { background: C.selectedBg, color: C.text } : null), 'aria-pressed': reviewOverlays, onClick: function () { setReviewOverlays(!reviewOverlays); }, title: TT('studio.review_overlays_hint', 'Show or hide reading-order numbers without changing the document') }, TT('studio.review_overlays', 'Order numbers'))),
             h('div', { 'data-st-canvas-viewport': true, ref: canvasViewportRef, style: S.canvasViewport, onPointerDown: clearSelection },
-              h('div', { style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
+              h('div', { lang: docLanguage.lang, dir: docLanguage.dir, style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
                 onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
                 onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel },
                 !pageObjects.length ? h('div', { 'data-st-empty-page': true, style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '16px', textAlign: 'center', color: C.text, background: C.panel }, onPointerDown: function (e) { e.stopPropagation(); } },
@@ -7789,6 +8204,12 @@
   AlloStudio.stEmuPx = stEmuPx;
   AlloStudio.stPptxInches = stPptxInches;
   AlloStudio.stPptxLayout = stPptxLayout;
+  AlloStudio.stA4Kind = stA4Kind;
+  AlloStudio.stSafeLang = stSafeLang;
+  AlloStudio.stLangDir = stLangDir;
+  AlloStudio.stDocLanguage = stDocLanguage;
+  AlloStudio.stSafeStroke = stSafeStroke;
+  AlloStudio.stWordSoundsWorksheetDocFromItems = stWordSoundsWorksheetDocFromItems;
   AlloStudio.stObjectPage = stObjectPage;
   AlloStudio.stScenePageCount = stScenePageCount;
   AlloStudio.stObjectsOnPage = stObjectsOnPage;

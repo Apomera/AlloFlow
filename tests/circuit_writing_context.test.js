@@ -36,7 +36,8 @@ describe('Review the investigation plan while writing a circuit explanation', ()
   async function click(el) { expect(el).toBeTruthy(); await act(async () => el.click()); await flush(); }
   async function patch(value) { await act(async () => stores[0].update(prev => ({ ...prev, _circuitActive: { ...prev._circuitActive, ...value } }))); await flush(); }
   async function write(el, value) { await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(el, value); el.dispatchEvent(new Event('input', { bubbles: true })); }); await flush(); }
-  const button = name => [...scope().querySelectorAll('button')].find(el => el.textContent === name);
+  // The guided lesson above has its own writing-space toggle; these tests drive the notebook's.
+const button = name => { const all = [...scope().querySelectorAll('button')].filter(el => el.textContent === name); return all.find(el => el.closest('.circuit-active-notebook')) || all[0]; };
   beforeEach(() => {
     resetStemLab(); config = loadTool('stem_lab/stem_tool_circuit.js', 'circuit'); api = window.StemLab; stores = []; writes = vi.fn(); frames = [];
     vi.stubGlobal('requestAnimationFrame', fn => { frames.push(fn); return frames.length; }); host = document.createElement('div'); document.body.appendChild(host); root = ReactDOMClient.createRoot(host);

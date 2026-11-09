@@ -107,6 +107,10 @@ const VENDORED = [
   'pdfjs-dist/3.11.174/pdf.min.js',
   'pdfjs-dist/3.11.174/pdf.worker.min.js',
   'pdf-lib/1.17.1/pdf-lib.min.js',
+  // (2026-11-08) Sheet-music display for the Singing Lab's Song Library. Its bundle's header only points at the .LICENSE.txt
+  // beside it (which holds every bundled library's notice, VexFlow, JSZip and others), so guard those two files.
+  'vendor/opensheetmusicdisplay-2.2.1/LICENSE',
+  'vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js.LICENSE.txt',
 ];
 for (const rel of VENDORED) {
   const p = path.join(ROOT, rel);

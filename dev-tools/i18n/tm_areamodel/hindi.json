@@ -116,13 +116,13 @@
     "log": "📋 लॉग",
     "reset_2": "↺ रीसेट",
     "hypothesis_when_does_area_rows_cols": "परिकल्पना: क्षेत्रफल = पंक्तियाँ + स्तंभ कब होता है?",
-    "area_hypothesis": "????????? ????? ?????????",
+    "area_hypothesis": "क्षेत्रफल संबंध की परिकल्पना",
     "stuck_show_open_prompts": "🤔 अटके — खुले संकेत दिखाएँ",
     "find_sizes_where_area_perimeter_rare_i": "ऐसे आकार खोजें जहाँ क्षेत्रफल = परिमाप (दुर्लभ पूर्णांक)।",
     "when_does_swapping_rows_cols_change_an": "पंक्तियों/स्तंभों की अदला-बदली कब कुछ बदलती है?",
     "i_understand_explain_in_own_words": "मैं समझता हूँ — अपने शब्दों में समझाएँ",
     "explain_commutative_property_area_leng": "क्रमविनिमेय गुणधर्म + क्षेत्रफल = लंबाई × चौड़ाई समझाएँ।",
-    "area_explanation": "????????? ?? ???? ?? ????? ?? ??????",
+    "area_explanation": "क्षेत्रफल और गुणा के बीच का संबंध समझाएँ",
     "design_note_discrete_4_state_classific": "डिज़ाइन नोट: असतत 4-अवस्था वर्गीकरण; कोई क्षेत्रफल परीक्षण स्कोर नहीं; कोई खुलासा नहीं — जानबूझकर।"
   },
   "missing": {}

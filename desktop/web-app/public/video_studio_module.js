@@ -3768,6 +3768,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     'allostudio-resource-cues-request',
     'allostudio-transcript',
     'allostudio-tts-request',
+    'allostudio-voices-request',
+    'allostudio-kokoro-prepare-request',
     'allostudio-open-cinematic',
     'allostudio-ai-cancel'
   ];
@@ -3792,6 +3794,121 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function vsAiForgetRequest(id) {
     var key = String(id || '');
     if (key) vsAiAbortControllers.delete(key);
+  }
+
+  // Device-voice fallback for allostudio-tts-request. Narration called Gemini
+  // only, so with no key, AI off or a 403 it failed even when the English Kokoro
+  // voice was saved on this computer. Same map as kokoro_tts_loader.js (a test
+  // pins them together).
+  var VS_GEMINI_TO_KOKORO = { puck: 'am_adam', charon: 'am_michael', kore: 'af_heart', fenrir: 'am_michael', aoede: 'af_nova', leda: 'af_bella', orus: 'am_adam', zephyr: 'af_sky', achelous: 'bm_george' };
+  function vsKokoroVoiceFor(voice) {
+    var v = String(voice || '').trim();
+    if (/^(af_|am_|bf_|bm_)[a-z]+$/i.test(v)) return v.toLowerCase();
+    return VS_GEMINI_TO_KOKORO[v.toLowerCase()] || 'af_heart';
+  }
+  // Kokoro returns a blob: URL of a 16-bit mono WAV; the studio popup wants raw PCM.
+  function vsWavToPcm(buf) {
+    var view = new DataView(buf);
+    if (buf.byteLength < 44 || view.getUint32(0, false) !== 0x52494646 || view.getUint32(8, false) !== 0x57415645) throw new Error('The device voice did not return a WAV file');
+    var rate = 0, pcm16 = false, off = 12;
+    while (off + 8 <= buf.byteLength) {
+      var id = view.getUint32(off, false), size = view.getUint32(off + 4, true), body = off + 8;
+      if (id === 0x666d7420) {
+        pcm16 = view.getUint16(body, true) === 1 && view.getUint16(body + 2, true) === 1 && view.getUint16(body + 14, true) === 16;
+        rate = view.getUint32(body + 4, true);
+      } else if (id === 0x64617461) {
+        if (!pcm16 || !rate) throw new Error('The device voice is not 16-bit mono audio');
+        var len = (Math.min(buf.byteLength, body + size) - body) & ~1;
+        if (len <= 0) throw new Error('The device voice returned no audio');
+        return { pcm: new Uint8Array(buf.slice(body, body + len)), sampleRate: rate };
+      }
+      off = body + size + (size & 1);
+    }
+    throw new Error('The device voice returned no audio');
+  }
+  function vsDeviceVoicePcm(text, voice, language, signal) {
+    if (!/^english/i.test(String(language || 'English'))) return Promise.reject(new Error('The device voice speaks English only'));
+    var speak = (typeof window !== 'undefined') ? window.callTTS : null;
+    if (typeof speak !== 'function') return Promise.reject(new Error('The device voice is unavailable'));
+    return Promise.resolve().then(function () {
+      // Kokoro-only: the app never starts the 88 MB download for this; a saved model is woken.
+      return speak(text, vsKokoroVoiceFor(voice), 1, { allowProviderFallback: false, language: 'English', signal: signal });
+    }).then(function (url) {
+      if (typeof url !== 'string' || url.indexOf('blob:') !== 0) throw new Error('The device voice is not downloaded on this computer');
+      return fetch(url).then(function (r) { return r.arrayBuffer(); }).then(vsWavToPcm);
+    });
+  }
+
+  // The popup's voice pickers show what AlloFlow's own "Spoken-output voice" picker
+  // (view_header) shows: the same Gemini and Kokoro catalogs, the same Canvas trim to
+  // 15 cloud voices, the same "88 MB download" state. The browser "Device voice" is
+  // left out: speechSynthesis cannot be captured as audio for a video.
+  function vsIsCanvasHost() {
+    try {
+      if (window.location.href.indexOf('blob:') === 0) return true;
+      return /googleusercontent|scf\.usercontent|code-server|idx\.google|run\.app/.test(window.location.hostname);
+    } catch (_) { return false; }
+  }
+  function vsVoiceList(name) {
+    var list = window[name];
+    if (!Array.isArray(list) || !list.length) {
+      var cfg = window.AlloModules && window.AlloModules.VoiceConfig;
+      list = cfg && Array.isArray(cfg[name]) ? cfg[name] : [];
+    }
+    return list.filter(function (v) { return v && typeof v.id === 'string' && v.id; }).map(function (v) { return { id: v.id, label: String(v.label || v.id) }; });
+  }
+  function vsKokoroCapable() { return typeof window.Worker === 'function' && typeof window.WebAssembly === 'object'; }
+  function vsVoiceCatalog() {
+    var gemini = vsVoiceList('GEMINI_VOICES');
+    if (vsIsCanvasHost()) gemini = gemini.slice(0, 15);
+    var cache = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+    return Promise.resolve().then(function () {
+      return cache && typeof cache.hasKokoro === 'function' ? cache.hasKokoro() : false;
+    }).then(Boolean, function () { return false; }).then(function (onDevice) {
+      var selected = String(window.__alloSelectedVoice || '');
+      return {
+        gemini: gemini,
+        kokoro: vsVoiceList('KOKORO_VOICES'),
+        selected: selected === 'browser' ? '' : selected,
+        kokoroCapable: vsKokoroCapable(),
+        kokoroReady: !!(window._kokoroTTS && window._kokoroTTS.ready),
+        kokoroSaved: !!onDevice,
+        kokoroDownloading: !!window.__kokoroTTSDownloading
+      };
+    });
+  }
+  // Choosing a Kokoro voice IS the consent to the 88 MB download, exactly as in the
+  // header picker; nothing else in the studio starts it.
+  function vsPrepareKokoro() {
+    var w = window;
+    var isReady = function () { return !!(w._kokoroTTS && w._kokoroTTS.ready); };
+    if (isReady()) return Promise.resolve({ ready: true });
+    if (!vsKokoroCapable() || typeof w.__loadKokoroTTS !== 'function') return Promise.resolve({ ready: false, error: 'This browser cannot run on-device voices.' });
+    if (w.__kokoroTTSDownloading) {
+      return new Promise(function (resolve) {
+        var startedAt = Date.now();
+        var tick = setInterval(function () {
+          if (isReady() || !w.__kokoroTTSDownloading || Date.now() - startedAt > 900000) { clearInterval(tick); resolve({ ready: isReady() }); }
+        }, 250);
+      });
+    }
+    w.__kokoroTTSDownloading = true;
+    w.__kokoroLoadUserInitiated = true;
+    var ua = '';
+    try { ua = String(w.navigator && w.navigator.userAgent || ''); } catch (_) {}
+    var ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && w.navigator && typeof w.navigator.maxTouchPoints === 'number' && w.navigator.maxTouchPoints > 1);
+    vsHostToast(ios
+      ? vsHostT('header.voice_kokoro_downloading_ios', 'Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused.')
+      : vsHostT('header.voice_kokoro_downloading', 'Getting the on-device voice (88 MB, one time). You can keep working.'), 'info');
+    var done = function (ready) {
+      w.__kokoroTTSDownloading = false;
+      w.__kokoroLoadUserInitiated = false;
+      vsHostToast(ready
+        ? vsHostT('header.voice_kokoro_ready_toast', 'On-device voice ready. It is saved on this device.')
+        : vsHostT('header.voice_kokoro_failed_toast', 'The on-device voice could not be prepared. Retry the download or select another spoken-output voice.'), ready ? 'success' : 'error');
+      return { ready: ready };
+    };
+    return Promise.resolve().then(function () { return w.__loadKokoroTTS(); }).then(function () { return done(isReady()); }, function () { return done(false); });
   }
 
   // A sender is ours if it is one of the windows WE opened and still hold a
@@ -4384,8 +4501,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           } catch (_) { txDone(false); }
         }
       } else if (ev.data.type === 'allostudio-tts-request') {
-        // Text → spoken audio through the app's existing Gemini TTS path.
-        // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
+        // Text → spoken audio: the app's Gemini TTS first, then the on-device
+        // Kokoro voice (English) when Gemini is unavailable. A Kokoro voice picked
+        // by name skips the cloud. Returns raw PCM; the popup wraps it into WAV clips.
         var treq = ev.data;
         var tAbort = vsAiBeginRequest(treq.id);
         var tReplyTo = studioWinRef.current;
@@ -4395,13 +4513,50 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           postToStudio(tReplyTo, Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload));
         };
         var ttsFn = (typeof window !== 'undefined') ? window.fetchTTSBytes : null;
-        if (typeof ttsFn !== 'function') { tRespond({ error: 'tts-unavailable' }); return; }
-        Promise.resolve().then(function () { return ttsFn(String(treq.text || '').slice(0, 600), treq.voice || 'Puck', 1, treq.language || 'English', { signal: tAbort.signal }); }).then(function (r) {
-          if (r && r.bytes && r.bytes.length) tRespond({ pcm: r.bytes, sampleRate: 24000 });
-          else tRespond({ error: 'no audio returned' });
-        }).catch(function (e) {
-          if (tAbort.signal.aborted || (e && e.name === 'AbortError')) { vsAiForgetRequest(treq.id); return; }
-          tRespond({ error: String((e && e.message) || e).slice(0, 200) });
+        var ttsText = String(treq.text || '').slice(0, 600);
+        var ttsLang = treq.language || 'English';
+        // A Kokoro voice cannot pronounce another language: like callTTS, speak that line
+        // with the default cloud voice instead of failing.
+        var ttsKokoroVoice = /^(af_|am_|bf_|bm_)/i.test(String(treq.voice || ''));
+        var ttsDeviceOnly = ttsKokoroVoice && /^english/i.test(String(ttsLang));
+        var ttsAborted = function (e) { return tAbort.signal.aborted || (e && e.name === 'AbortError'); };
+        var ttsWhy = function (e) { return String((e && e.message) || e); };
+        var ttsCloud = function () {
+          if (typeof ttsFn !== 'function') return Promise.reject(new Error('tts-unavailable'));
+          return Promise.resolve().then(function () { return ttsFn(ttsText, ttsKokoroVoice ? 'Kore' : (treq.voice || 'Puck'), 1, ttsLang, { signal: tAbort.signal }); }).then(function (r) {
+            if (r && r.bytes && r.bytes.length) return { pcm: r.bytes, sampleRate: 24000 };
+            throw new Error('no audio returned');
+          });
+        };
+        var ttsDevice = function () {
+          return vsDeviceVoicePcm(ttsText, treq.voice, ttsLang, tAbort.signal).then(function (d) { return { pcm: d.pcm, sampleRate: d.sampleRate, engine: 'device' }; });
+        };
+        (ttsDeviceOnly ? ttsDevice() : ttsCloud().catch(function (cloudError) {
+          if (ttsAborted(cloudError)) throw cloudError;
+          return ttsDevice().catch(function (deviceError) {
+            if (ttsAborted(deviceError)) throw deviceError;
+            throw new Error(ttsWhy(cloudError) + ' / ' + ttsWhy(deviceError));
+          });
+        })).then(tRespond, function (e) {
+          if (ttsAborted(e)) { vsAiForgetRequest(treq.id); return; }
+          tRespond({ error: ttsWhy(e).slice(0, 200) });
+        });
+      } else if (ev.data.type === 'allostudio-voices-request') {
+        // The popup's pickers mirror the app's own voice picker: same catalogs, same
+        // state. The popup cannot read them, so the app sends them.
+        var vreq = ev.data;
+        var vReplyTo = studioWinRef.current;
+        vsVoiceCatalog().then(function (catalog) {
+          postToStudio(vReplyTo, Object.assign({ type: 'allostudio-voices-response', id: vreq.id }, catalog));
+        }, function () {
+          postToStudio(vReplyTo, { type: 'allostudio-voices-response', id: vreq.id, error: 'voices-unavailable' });
+        });
+      } else if (ev.data.type === 'allostudio-kokoro-prepare-request') {
+        // Picking a Kokoro voice in the studio is the same consent as picking it in the app.
+        var kreq = ev.data;
+        var kReplyTo = studioWinRef.current;
+        vsPrepareKokoro().then(function (result) {
+          postToStudio(kReplyTo, Object.assign({ type: 'allostudio-kokoro-prepare-response', id: kreq.id }, result));
         });
       } else if (ev.data.type === 'allostudio-open-cinematic') {
         if (propsRef.current.onOpenCinematicStudio) {

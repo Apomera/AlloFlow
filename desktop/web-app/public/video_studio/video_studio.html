@@ -8442,6 +8442,160 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   var AI_NARR_VOICES = ['Puck', 'Kore', 'Charon', 'Aoede', 'Leda'];
 
+  // -- Narration voices: the same catalog, groups and download step as AlloFlow's own
+  // "Spoken-output voice" picker. The AlloFlow window sends the catalog, so this list
+  // cannot drift from the app's. Until it answers (or with no AlloFlow window) the five
+  // built-in names above stay. The browser "Device voice" is not offered: it cannot be
+  // captured as audio for a video.
+  var voiceCatalog = null, voiceCatalogPending = null, kokoroPreparing = null;
+  var VOICE_KOKORO_RE = /^(af_|am_|bf_|bm_)[a-z]+$/i;
+  var VOICE_ID_RE = /^[A-Za-z][A-Za-z0-9_-]{0,39}$/;
+  function voiceIsKokoro(id) { return VOICE_KOKORO_RE.test(String(id || '')); }
+  function voiceEntries() {
+    return voiceCatalog ? voiceCatalog.gemini.concat(voiceCatalog.kokoro) : AI_NARR_VOICES.map(function (name) { return { id: name, label: name }; });
+  }
+  function voiceIsKnown(id) { return !!id && voiceEntries().some(function (v) { return v.id === id; }); }
+  function cleanVoiceList(list) {
+    return (Array.isArray(list) ? list : []).filter(function (v) { return v && typeof v.id === 'string' && VOICE_ID_RE.test(v.id); })
+      .slice(0, 80).map(function (v) { return { id: v.id, label: String(v.label || v.id).slice(0, 120) }; });
+  }
+  function voiceOption(value, text, disabled) {
+    var option = document.createElement('option');
+    option.value = value; option.textContent = text; if (disabled) option.disabled = true;
+    return option;
+  }
+  // Fills one <select> from the catalog. spec: valueFor(id), labelFor(entry), lead/tail
+  // ([{value,label}] kept around the voices), kokoroOff (reason string: Kokoro shown but disabled).
+  function fillVoiceSelect(select, spec) {
+    if (!select) return;
+    var keep = select.value;
+    // The page's own default, read from the markup before any saved value is applied; a restored
+    // template or draft must not be mistaken for it.
+    if (!select.dataset.vpDefault) {
+      var marked = Array.prototype.filter.call(select.options, function (o) { return o.defaultSelected; })[0] || select.options[0];
+      select.dataset.vpDefault = marked ? marked.value : keep;
+    }
+    select.textContent = '';
+    (spec.lead || []).forEach(function (o) { select.appendChild(voiceOption(o.value, o.label, false)); });
+    var cat = voiceCatalog;
+    if (!cat) {
+      AI_NARR_VOICES.forEach(function (name) { select.appendChild(voiceOption(spec.valueFor(name), spec.labelFor({ id: name, label: name }), false)); });
+    } else {
+      var cloud = document.createElement('optgroup');
+      cloud.label = '✨ Cloud voice (Gemini): most natural, needs the internet';
+      cat.gemini.forEach(function (v) { cloud.appendChild(voiceOption(spec.valueFor(v.id), spec.labelFor(v), false)); });
+      if (cat.gemini.length) select.appendChild(cloud);
+      if (cat.kokoro.length) {
+        var local = document.createElement('optgroup');
+        if (!cat.kokoroCapable) {
+          local.label = '🎤 On-device voice (Kokoro) (this browser cannot run on-device voices)';
+          local.appendChild(voiceOption('__kokoro_unavailable', 'Cannot run on this device', true));
+        } else if (spec.kokoroOff) {
+          local.label = '🎤 On-device voice (Kokoro) (' + spec.kokoroOff + ')';
+          cat.kokoro.forEach(function (v) { local.appendChild(voiceOption(spec.valueFor(v.id), spec.labelFor(v), true)); });
+        } else {
+          local.label = '🎤 ' + (cat.kokoroReady ? 'On-device voice (Kokoro): ready, works offline' : 'On-device voice (Kokoro): 88 MB download, then works offline');
+          cat.kokoro.forEach(function (v) { local.appendChild(voiceOption(spec.valueFor(v.id), spec.labelFor(v) + (cat.kokoroReady ? '' : ' ⬇'), false)); });
+        }
+        select.appendChild(local);
+      }
+    }
+    (spec.tail || []).forEach(function (o) { select.appendChild(voiceOption(o.value, o.label, false)); });
+    var usable = function (value) {
+      return Array.prototype.some.call(select.options, function (o) { return o.value === value && !o.disabled; });
+    };
+    var want = keep;
+    // Start from the app's own voice until the person chooses one here. Never overrides a
+    // choice, a restored template, or a saved draft.
+    var appVoiceUsable = cat && cat.selected && (!voiceIsKokoro(cat.selected) || cat.kokoroReady || cat.kokoroSaved);
+    if (!spec.noPreference && appVoiceUsable && !select.dataset.vpTouched && keep === select.dataset.vpDefault && usable(spec.valueFor(cat.selected))) want = spec.valueFor(cat.selected);
+    if (!usable(want) && keep && !Array.prototype.some.call(select.options, function (o) { return o.value === keep; })) {
+      select.appendChild(voiceOption(keep, keep, false)); // a saved value the catalog trimmed or renamed
+      want = keep;
+    }
+    if (!usable(want)) want = spec.fallbackValue;
+    if (usable(want)) select.value = want;
+  }
+  function narrationLanguageIsEnglish() {
+    var lang = ($('localizeLang') && localizeTargetLanguage()) || '';
+    return !lang || /^english/i.test(lang);
+  }
+  function refreshVoicePickers() {
+    var id = function (x) { return x; }, plain = function (e) { return e.label; };
+    fillVoiceSelect($('ttsVoice'), { valueFor: id, labelFor: plain, fallbackValue: 'Puck' });
+    fillVoiceSelect($('localizeVoice'), { valueFor: id, labelFor: plain, fallbackValue: 'Puck', kokoroOff: narrationLanguageIsEnglish() ? '' : 'English only' });
+    fillVoiceSelect($('demoAudioMode'), {
+      valueFor: function (x) { return 'auto-' + x; }, labelFor: function (e) { return 'Automatic voice: ' + e.label; }, fallbackValue: 'auto-Kore',
+      tail: [{ value: 'mic', label: 'My microphone' }, { value: 'captions', label: 'Captions only' }]
+    });
+    if (typeof renderAiNarr === 'function' && aiNarrSegments && aiNarrSegments.length) renderAiNarr();
+  }
+  function loadVoiceCatalog() {
+    if (voiceCatalog) return Promise.resolve(voiceCatalog);
+    if (voiceCatalogPending) return voiceCatalogPending;
+    // Generous on purpose: a slow machine can keep the AlloFlow window from answering for several
+    // seconds while this page starts, and an answer that arrives after a timeout is thrown away.
+    voiceCatalogPending = bridgeRequest('allostudio-voices-request', {}, 20000).then(function (r) {
+      voiceCatalogPending = null;
+      if (!r || r.error) return null;
+      var gemini = cleanVoiceList(r.gemini), kokoro = cleanVoiceList(r.kokoro);
+      if (!gemini.length && !kokoro.length) return null;
+      voiceCatalog = {
+        gemini: gemini, kokoro: kokoro, selected: VOICE_ID_RE.test(String(r.selected || '')) ? String(r.selected) : '',
+        kokoroCapable: r.kokoroCapable !== false, kokoroReady: !!r.kokoroReady, kokoroSaved: !!r.kokoroSaved
+      };
+      refreshVoicePickers();
+      return voiceCatalog;
+    });
+    return voiceCatalogPending;
+  }
+  // Choosing a Kokoro voice is the consent to download it, as in the app. One download at a
+  // time is shared by every picker.
+  function prepareKokoroVoice(statusEl) {
+    if (!voiceCatalog || !voiceCatalog.kokoroCapable || voiceCatalog.kokoroReady) return Promise.resolve(!!(voiceCatalog && voiceCatalog.kokoroReady));
+    if (kokoroPreparing) return kokoroPreparing;
+    if (statusEl) setStatus(statusEl, 'Getting the on-device voice (88 MB, one time). You can keep working.', '');
+    announce('Getting the on-device voice');
+    var finish = function (ready) {
+      kokoroPreparing = null;
+      if (voiceCatalog) { voiceCatalog.kokoroReady = !!ready; refreshVoicePickers(); }
+      if (statusEl) setStatus(statusEl, ready ? 'On-device voice ready. It is saved on this device.' : 'The on-device voice could not be prepared. Retry the download or select another voice.', ready ? 'ok' : 'warn');
+      announce(ready ? 'On-device voice ready' : 'On-device voice could not be prepared');
+      return !!ready;
+    };
+    kokoroPreparing = bridgeRequest('allostudio-kokoro-prepare-request', {}, 15 * 60 * 1000).then(function (r) { return finish(!!(r && r.ready)); });
+    return kokoroPreparing;
+  }
+  // A saved template or draft can name an automatic voice the picker has not been built with yet
+  // (the catalog arrives after the studio opens); keep it selectable instead of dropping it.
+  function ensureAutoVoiceOption(value) {
+    var select = $('demoAudioMode'), v = String(value || '');
+    if (!select || !/^auto-[A-Za-z][A-Za-z0-9_-]{0,34}$/.test(v)) return;
+    if (Array.prototype.some.call(select.options, function (o) { return o.value === v; })) return;
+    select.insertBefore(voiceOption(v, 'Automatic voice: ' + v.slice(5), false), select.querySelector('option[value="mic"]'));
+  }
+  function bindVoicePicker(select, statusId, idOf) {
+    if (!select) return;
+    select.addEventListener('change', function () {
+      select.dataset.vpTouched = '1';
+      if (voiceIsKokoro(idOf(select.value))) prepareKokoroVoice($(statusId));
+    });
+    select.addEventListener('focus', function () { if (!voiceCatalog) loadVoiceCatalog(); });
+  }
+  function initVoicePickers() {
+    var same = function (v) { return v; }, autoId = function (v) { return String(v || '').indexOf('auto-') === 0 ? v.slice(5) : ''; };
+    bindVoicePicker($('ttsVoice'), 'aiNarrStatus', same);
+    bindVoicePicker($('localizeVoice'), 'localizeStatus', same);
+    bindVoicePicker($('demoAudioMode'), 'demoStatus', autoId);
+    $('localizeLang').addEventListener('change', refreshVoicePickers);
+    $('localizeCustomLang').addEventListener('change', refreshVoicePickers);
+    // The AlloFlow window may not be listening yet when the studio opens: ask again a few times.
+    var tries = 0;
+    (function attempt() {
+      loadVoiceCatalog().then(function (catalog) { if (!catalog && ++tries < 4) setTimeout(attempt, 5000); });
+    })();
+  }
+
   function redistributeAiNarrationTiming() {
     var t = currentTake();
     if (!t || !aiNarrSegments.length) return false;
@@ -8559,12 +8713,13 @@ function buildContactSheet(t, count, shouldCancel) {
       txt.addEventListener('change', function () { s.text = String(txt.value || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220); txt.value = s.text; });
       var voice = document.createElement('select');
       voice.setAttribute('aria-label', 'Voice for narration line ' + (idx + 1));
-      voice.style.cssText = 'max-width:120px';
-      [''].concat(AI_NARR_VOICES).forEach(function (name) {
-        var option = document.createElement('option'); option.value = name; option.textContent = name || 'Default voice'; voice.appendChild(option);
+      voice.style.cssText = 'max-width:150px';
+      fillVoiceSelect(voice, { valueFor: function (x) { return x; }, labelFor: function (e) { return e.label; }, lead: [{ value: '', label: 'Default voice' }], fallbackValue: '', noPreference: true });
+      voice.value = voiceIsKnown(s.voice) ? s.voice : '';
+      voice.addEventListener('change', function () {
+        s.voice = voice.value;
+        if (voiceIsKokoro(voice.value)) prepareKokoroVoice($('aiNarrStatus'));
       });
-      voice.value = AI_NARR_VOICES.indexOf(s.voice) >= 0 ? s.voice : '';
-      voice.addEventListener('change', function () { s.voice = voice.value; });
       var rewrite = document.createElement('button'); rewrite.className = 'quiet'; rewrite.textContent = 'Rewrite';
       rewrite.setAttribute('aria-label', 'Rewrite narration line ' + (idx + 1));
       rewrite.addEventListener('click', function () { rewriteAiNarrationLine(idx, rewrite); });
@@ -13149,6 +13304,7 @@ function buildContactSheet(t, count, shouldCancel) {
     demoState.steps = template.steps.map(prepareDemoStep);
     demoState.originalSteps = template.steps.map(cleanDemoDraftStep);
     $('demoGoal').value = template.goal;
+    ensureAutoVoiceOption(template.audioMode);
     if (Array.prototype.some.call($('demoAudioMode').options, function (option) { return option.value === template.audioMode; })) $('demoAudioMode').value = template.audioMode;
     applyDemoPolish(template.polish);
     $('demoTemplateName').value = template.name;
@@ -13308,6 +13464,7 @@ function buildContactSheet(t, count, shouldCancel) {
     if (!steps.length) { clearDemoDraft(false); return false; }
     demoState.restoringDraft = true;
     $('demoGoal').value = String(data.goal || '').slice(0, 300);
+    ensureAutoVoiceOption(data.audioMode);
     if (Array.prototype.some.call($('demoAudioMode').options, function (option) { return option.value === data.audioMode; })) $('demoAudioMode').value = data.audioMode;
     applyDemoPolish(data.polish);
     demoState.officialId = null;
@@ -17015,6 +17172,7 @@ function buildContactSheet(t, count, shouldCancel) {
   loadDrafts();
   loadRecordingCheckpoint();
   renderTakes();
+  initVoicePickers();
   refreshProjectShelf();
 })();
 </script>
