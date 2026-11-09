@@ -2144,11 +2144,28 @@ var _alloStripPageFurniture = function (blocks, opts) {
   };
   var drop = new Map(); // index -> kind
   var groups = new Map(), bare = [];
+  // A front-matter page number in roman numerals (NCES: "Report on the Condition of Education 2023 | iii" .. "| viii" on pages
+  // 4-9, one page behind, then "| 1" from page 10): its OWN group, with its own page offset. i-xxxix, strictly.
+  var romanValue = function (w) {
+    var m = /^(x{0,3})(ix|iv|v?i{0,3})$/i.exec(w);
+    if (!m || !w) return 0;
+    var x = m[1].length * 10, r = m[2].toLowerCase();
+    return x + (r === 'ix' ? 9 : r === 'iv' ? 4 : (r.indexOf('v') === 0 ? 5 : 0) + (r.match(/i/g) || []).length);
+  };
   blocks.forEach(function (b, i) {
     if (!candidate(b, i)) return;
     var t = ascii(plain(b));
     if (/^\d{1,4}$/.test(t)) { bare.push({ i: i, n: Number(t) }); return; }
     if (t.split(' ').length > 14 || /[.!?]$/.test(t)) return;
+    var words = t.split(' '), rv = words.length > 2 ? romanValue(words[words.length - 1]) : 0;
+    if (rv) {
+      var rkey = words.slice(0, -1).join(' ').toLowerCase().replace(/\d{1,4}/g, '#').replace(/[^\p{L}#]+/gu, ' ').trim();
+      if (rkey.replace(/[#\s]/g, '').length < 4) return;
+      rkey += ' (roman)';
+      if (!groups.has(rkey)) groups.set(rkey, []);
+      groups.get(rkey).push({ i: i, n: rv });
+      return;
+    }
     var nums = t.match(/\d{1,4}/g);
     if (!nums) return;
     var key = t.toLowerCase().replace(/\d{1,4}/g, '#').replace(/[^\p{L}#]+/gu, ' ').trim();
@@ -2166,7 +2183,9 @@ var _alloStripPageFurniture = function (blocks, opts) {
     [near(i, 1), near(i, -1)].forEach(function (j) {
       if (j < 0 || drop.has(j) || !candidate(blocks[j], j)) return;
       var t = plain(blocks[j]);
-      if (t.split(' ').length > 14 || /[.!?]$/.test(t)) return;
+      // 20 words: NCES prints "Spotlights: Teacher Openings During the Coronavirus Pandemic and Challenges and Strategies
+      // Recovering From the Pandemic" (16) at the top of its spotlight pages, and it split a bulleted list.
+      if (t.split(' ').length > 20 || /[.!?]$/.test(t)) return;
       var k = t.toLowerCase();
       if (!heads.has(k)) heads.set(k, new Set());
       heads.get(k).add(j);
@@ -2176,7 +2195,8 @@ var _alloStripPageFurniture = function (blocks, opts) {
   // Remove, joining a sentence a removed run split in two.
   var kept = [];
   for (var i = 0; i < blocks.length; i++) {
-    if (drop.has(i)) { out.removed.push({ kind: drop.get(i), text: plain(blocks[i]).slice(0, 120) }); continue; }
+    // The whole text, not a clipped copy: the connector's word check drops these exact words from the source side.
+    if (drop.has(i)) { out.removed.push({ kind: drop.get(i), text: plain(blocks[i]).slice(0, 300) }); continue; }
     var b = blocks[i];
     if (b && b.type === 'p' && typeof b.text === 'string' && i > 0 && drop.has(near(i, -1))) {
       var k2 = kept.length - 1;
@@ -8693,7 +8713,44 @@ function _alloSalvageFixCandidate(candidate, input, accept, opts) {
     try { d = accept(build(trial)); } catch (_) { d = null; }
     if (d && d.accepted) kept = trial;
   }
+  // (2026-11-08) The split is before OPENING tags, so a wrapper's opening and closing tags fall in different runs, and
+  // the gate judges text only: NCES kept "<nav aria-label=\"Contents\">" and lost its "</nav>", and two unclosed
+  // landmarks swallowed every chapter after them. The kept runs must not leave any container more open or more closed than
+  // the input; runs that change a container's balance stay only when, together, they net to zero for it.
+  if (kept.length) {
+    var base = _alloTagBalance(input);
+    var deltaOf = function (hk) {
+      var bb = _alloTagBalance(build([hk])), dl = {}, any = false;
+      for (var t in bb) if (bb[t] !== base[t]) { dl[t] = bb[t] - base[t]; any = true; }
+      return any ? dl : null;
+    };
+    var deltas = kept.map(deltaOf);
+    for (var guard = 0; guard <= kept.length; guard++) {
+      var net = {};
+      deltas.forEach(function (dl) { if (dl) for (var t in dl) net[t] = (net[t] || 0) + dl[t]; });
+      var bad = Object.keys(net).filter(function (t) { return net[t] !== 0; });
+      if (!bad.length) break;
+      var idxs = [];
+      kept.forEach(function (_, ix) { if (!(deltas[ix] && bad.some(function (t) { return deltas[ix][t]; }))) idxs.push(ix); });
+      kept = idxs.map(function (ix) { return kept[ix]; });
+      deltas = idxs.map(function (ix) { return deltas[ix]; });
+    }
+    if (kept.length) {
+      var again = null;
+      try { again = accept(build(kept)); } catch (_) { again = null; }
+      if (!again || !again.accepted) kept = [];
+    }
+  }
   return kept.length ? { html: build(kept), kept: kept.length, total: hunks.length } : null;
+}
+// Opening minus closing tags of the containers whose closing tag is never optional, so "unclosed" is countable (2026-11-08).
+var _ALLO_BALANCE_TAGS = ['nav', 'main', 'header', 'footer', 'aside', 'section', 'article', 'div', 'ul', 'ol', 'dl', 'table', 'figure', 'figcaption', 'blockquote', 'details', 'form', 'fieldset'];
+function _alloTagBalance(html) {
+  var s = String(html == null ? '' : html).replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, ''), out = {};
+  _ALLO_BALANCE_TAGS.forEach(function (t) {
+    out[t] = (s.match(new RegExp('<' + t + '(?=[\\s>/])', 'gi')) || []).length - (s.match(new RegExp('</' + t + '\\s*>', 'gi')) || []).length;
+  });
+  return out;
 }
 
 // What the next fix pass is told about edits the content gate refused (2026-10-19): without it the
@@ -40200,6 +40257,9 @@ tr { page-break-inside: avoid; }
     // many came through with NO OCR text at all (OCR failed / blank). A page that has text but
     // drew nothing (e.g. per-word path threw for every word) gets a guaranteed last-resort block.
     let _ocrPagesWithText = 0, _ocrPagesDrew = 0, _ocrPagesEmpty = 0;
+    // (2026-11-08) Per-leaf scanned pages: words drawn on the printed words' boxes, or the top-down block layout instead
+    // (no boxes, a geometry mismatch, or leaf/box divergence). Search and copy land on the image only for the first kind.
+    let _ocrPositionedPages = 0; const _ocrBlockLayoutPages = [];
 
     // Stage 4 pdf.js doc load. Born-digital PDFs use it for content-stream
     // tagging; scanned PDFs use it only for OCR geometry (viewport transform).
@@ -40679,6 +40739,7 @@ tr { page-break-inside: avoid; }
                   }
                 } catch (_posErr) { try { warnLog('[per-leaf exp] positioned draw failed p' + (pi + 1) + (_posDrew ? ' after runs were emitted — keeping emitted runs (no re-emit)' : ' — falling back to block layout') + ': ' + (_posErr && _posErr.message)); } catch (_) {} }
               }
+              if (_posDrew) _ocrPositionedPages++; else if (_ocrBlockLayoutPages.length < 500) _ocrBlockLayoutPages.push(pi + 1);
               if (!_posDrew) {
                 // No word boxes (Vision-won / rotated / dim mismatch) OR the positioned draw produced
                 // nothing → the top-down block layout: still per-leaf MCID runs, just not pixel-aligned.
@@ -44450,7 +44511,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       try { warnLog('[createTaggedPdf] post-export validator threw (non-fatal): ' + (_pevErr && _pevErr.message)); } catch (_) {}
       _postExportValidator = { error: (_pevErr && _pevErr.message) || 'validator threw' };
     }
-    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
+    return { bytes: _bytes, summary: _summary, pdfUa1Checks: _pdfUa1Checks, metadataStamped: { producer: _producerStamped, xmp: _xmpStamped }, ocrTextLayer: { scanned: !!isScanned, coveragePct: _ocrCoveragePct, nonLatinDropped: _ocrLayerNonLatinDropped, droppedChars: _ocrDroppedChars, pagesWithText: _ocrPagesWithText, pagesCovered: _ocrPagesDrew, pagesIncomplete: _ocrPagesIncomplete, pagesEmpty: _ocrPagesEmpty, positionedPages: _ocrPositionedPages, blockLayoutPages: _ocrBlockLayoutPages.slice() }, roundTrip: _roundTrip, postExportValidator: _postExportValidator };
   };
 
   // ── Download Accessible PDF from HTML ──
@@ -57242,6 +57303,23 @@ function projectStudentGuideData(data, mode) {
     visionAltSpotCheck: _visionAltSpotCheck, // sampled alt-vs-image ground truth (fail-soft; 2026-07-13)
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     executableActiveContentFindings: _alloExecutableActiveContentFindings,
+    // (2026-11-08) For a tagged PDF built from a person-edited accessible version (pdf_finalize_edited_html), which has no
+    // audit run to carry these: the Document Safety scan of the source PDF (same scan the audit makes), and the words the
+    // source prints inside the HTML's described figures. Neither calls a model.
+    scanSourceActiveContent: _wrapAsync(async (base64) => {
+      await ensurePdfLibLoaded();
+      const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
+      if (!NS || !NS.PDFDocument) return null;
+      const doc = await NS.PDFDocument.load(_auditB64ToBytes(base64), { ignoreEncryption: true, updateMetadata: false });
+      return _alloScanActiveContent(doc, NS);
+    }),
+    figureRegionText: _wrapAsync(async (base64, html) => {
+      await ensurePdfJsLoaded();
+      return window.pdfjsLib ? await _alloFigureRegionText(window.pdfjsLib, _b64ToBytes(base64), html, _withTimeout) : [];
+    }),
+    // (2026-11-08) A person's corrections onto a scan's word boxes (pdf_finalize_edited_html), under the same guards that
+    // put a second reading onto OCR boxes, so search and copy find the corrected spelling.
+    alignReadingOntoOcrWords: (words, ocrText, text) => _alloAlignVisionOntoOcrWords(words, ocrText, text),
     taggedPdfDeliveryVerdict: _alloTaggedPdfDeliveryVerdict,
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),

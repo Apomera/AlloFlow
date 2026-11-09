@@ -56,6 +56,18 @@ describe('deliveryExplanation', () => {
     expect(DRIVER).toContain("'; page text read timed out'");
   });
 
+  // 2026-11-08: a PDF built from a person's edit says whose edit it was, and how many changes the edit tool logged.
+  it('says how many changes the edit tool logged, or that its log does not match the file', () => {
+    const base = { files: { taggedPdf: 'x.pdf' }, taggedPdfDelivery: { ok: true, code: 'verified' }, verificationState: 'complete-for-tested-scope' };
+    const head = (editedWith) => Verification.explainDelivery({ ...base, personEdit: { confirmedBy: 'Ms. Rivera', ...(editedWith ? { editedWith } : {}) } }).headline;
+    expect(head()).toMatch(/^Built from the accessible version Ms\. Rivera edited and approved \(the AI review was not repeated on the edits\)\. /);
+    expect(head()).not.toMatch(/edit tool/);
+    expect(head({ logMatchesFile: true, changeCount: 1 })).toMatch(/edits\)\. 1 change made with the edit tool is listed in the report\. /);
+    expect(head({ logMatchesFile: true, changeCount: 3 })).toMatch(/3 changes made with the edit tool are listed in the report\. /);
+    expect(head({ logMatchesFile: false })).toMatch(/The edit log beside the file does not match it, so changes made outside the edit tool are not listed\. /);
+    expect(head({ logMatchesFile: true, changeCount: 0 })).not.toMatch(/edit tool/);
+  });
+
   it('names a run that did not request veraPDF as not-requested, not unavailable', () => {
     const s = withPdf();
     Verification.applyPdfDeliveryEvidence(s, Verification.pdfUaEvidence(null, { hasPdf: true, requested: false }));

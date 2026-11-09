@@ -141,7 +141,7 @@ function kokoroVoiceIds(assetsRoot) {
 }
 // Runs in the existing remediation browser. This is a conservative lexical
 // retention check, not a semantic equivalence or accessibility certificate.
-function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange,figureText}) {
+function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange,figureText,furniture}) {
   // (2026-11-07) Arabic vowel and tanween marks are optional and their order around a letter varies: the Portland letter
   // prints "مذهلاً", the HTML has "مذهلًا" (same on the page), but as word breaks the marks split them differently and the
   // word was listed as missing. Compare without them.
@@ -161,6 +161,16 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
         if(k>=2){figureWordsCredited+=k;i+=k;continue;}
         for(const w of it[i].split(/\s+/))if(fDrop(w))figureWordsCredited++;
         i++;}}}
+  // (2026-11-08) Printed page numbers, running headers and footers the pipeline took out of the text on purpose
+  // (furniture: the removed paragraphs' texts, one entry per paragraph). NCES: "Report on the Condition of Education 2023 | 28"
+  // on every page left the HTML and about 230 of 291 words were "missing". One source copy of each goes, as a whole run of
+  // words; a footer the source prints differently simply stays missing. Counted in furnitureWordsCredited.
+  let furnitureWordsCredited=0;
+  if(Array.isArray(furniture)&&furniture.length){sourceText=String(sourceText||'');
+    const uEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    for(const raw of furniture.slice(0,2000)){const w=String(raw||'').normalize('NFKC').split(/\s+/).filter(Boolean);if(!w.length||w.length>30)continue;
+      const re=new RegExp('(^|\\s)'+w.map(uEsc).join('\\s+')+'(?=\\s|$)','u');
+      if(re.test(sourceText)){sourceText=sourceText.replace(re,(m,s)=>s+' ');furnitureWordsCredited+=w.length;}}}
   // An OCR transcript is markdown: table cell pipes and divider rows are layout, not printed text, and
   // never reach the HTML (284 of 292 "missing" tokens on the 1954 scan, 2026-10-20). Born-digital text is untouched.
   if(/ocr|tesseract/i.test(String(method||'')))sourceText=String(sourceText||'').replace(/^[ \t]*\|?[ \t]*:?-{3,}:?(?:[ \t]*\|[ \t]*:?-{3,}:?)*[ \t]*\|?[ \t]*$/gm,' ').replace(/\|/g,' ');
@@ -518,6 +528,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     }
   }
   doc.querySelectorAll('ol,ul').forEach(node=>node.insertBefore(doc.createTextNode(' '),node.firstChild));
+  // (2026-11-08) And before a block's first word: minified HTML ("</a><main><h1>Water") glued the skip link's last word to the heading's first
+  // ("contentwater") and one source word read as missing. Only whitespace is added, at block starts.
+  doc.querySelectorAll('main,nav,header,footer,aside,article,section,div,p,h1,h2,h3,h4,h5,h6,table,figure,blockquote,form,li,td,th,caption,figcaption').forEach(node=>node.insertBefore(doc.createTextNode(' '),node.firstChild));
   doc.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,td,th,caption,figcaption,div,section,br').forEach(node=>node.appendChild(doc.createTextNode(' ')));
   // HTML whitespace is not a printed line end: "Nay-</em></p>\n<h2>Election" was joined as "nayelection" by the
   // source's hyphen-wrap rule (agenda, 2026-10-27), so the output's whitespace is collapsed first.
@@ -579,6 +592,6 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   const pageIds=items=>Array.isArray(items)?items.slice(0,100).map(item=>typeof item==='number'?item:item?.pageNum??item?.page??null).filter(value=>Number.isSafeInteger(value)&&value>0):[];
   const extraction={method:method||'unknown',pagesExamined:pageList?pageList.length:null,emptyPageCandidates:pageList?pageList.filter(page=>!String(page?.text||'').trim()).length:null,pageErrorCount:Array.isArray(pageErrors)?pageErrors.length:null,lowConfidencePageCount:Array.isArray(lowConfidencePages)?lowConfidencePages.length:null,errorPages:pageIds(pageErrors),lowConfidencePages:pageIds(lowConfidencePages)};
   const reviewRequired=!source.length||missingTokens>0||(extraction.pageErrorCount||0)>0||(extraction.lowConfidencePageCount||0)>0;
-  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),...(figureWordsCredited?{figureWordsCredited}:{}),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
+  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),missingWords:[...missingWordCounts].map(([word,count])=>({word,count})),...(figureWordsCredited?{figureWordsCredited}:{}),...(furnitureWordsCredited?{furnitureWordsCredited}:{}),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
 }
 module.exports={assessSourceCoverage,LABELS,normalizeLanguage,voiceCatalog,selectVoice,planDocument,routePlan,kokoroVoiceIds};

@@ -140,6 +140,9 @@ const WITHHOLD_EXPLANATIONS={
   // (2026-11-02) "then run again" looped: the held findings are deterministic, so a re-run holds the PDF again (trust run).
   distribution_review_required:['The accessible HTML still has findings a person must check, so the tagged PDF was held back.','Check the findings listed in this report. If they are fine as they are, share the accessible HTML; running again gives the same result.'],
   distribution_verdict_unavailable:['AlloFlow could not reach a final verdict for this document, so the tagged PDF was held back.','Run the document again. If it repeats, keep this report for support.'],
+  // (2026-11-08) pdf_finalize_edited_html refuses these two before building anything; the tool also says so in plain words.
+  finalize_source_text_unavailable:['The original PDF\'s text could not be read (it may be encrypted or damaged), so no tagged PDF was made from the edited version.','Share the edited accessible HTML, or open the original in Acrobat and save an unprotected copy.'],
+  finalize_scanned_needs_reading:['The original PDF is a scan, and the page-by-page reading a run saves beside its report was not supplied, so no tagged PDF was made from the edited version.','Pass report_path for the run of this same PDF. If that run is older than 2026-11-08 it saved no scan reading: run the document again, then edit its new accessible version.'],
   tagged_pdf_delivery_unverified:['A tagged PDF was built but failed AlloFlow\'s own structure check after saving.','Use the accessible HTML. Run again once; if it repeats, keep this report for support.'],
   'createTaggedPdf returned no bytes':['The tagged PDF could not be built.','Use the accessible HTML, or run the document again.'],
   'validator-failed':['The independent veraPDF check found PDF/UA problems in the tagged PDF (see pdfUa.failedRules).','Use the accessible HTML, or fix the listed problems in Acrobat before sharing the PDF.'],
@@ -364,6 +367,16 @@ function explainDelivery(summary){
   if(pdfNotes.length)explained.headline+=' The tagged PDF also has reading-order notes to check, listed with the quick checks.';
   const confirmed=s.contentCoverage&&s.contentCoverage.personConfirmation;
   if(confirmed&&confirmed.confirmedBy)explained.headline+=' The tagged PDF was released on the word of '+confirmed.confirmedBy+', who confirmed '+(confirmed.corrections&&confirmed.corrections.length?(confirmed.missingTokens>0?'the unmatched words and the scan corrections':'the scan corrections'):'the words the check could not match are not lost')+'.';
+  // (2026-11-08) A tagged PDF built from an accessible version a person edited (pdf_finalize_edited_html): say whose edit it
+  // was and that no AI review followed it, so a missing "ready" is explained, not mysterious.
+  if(s.personEdit&&typeof s.personEdit.confirmedBy==='string'&&s.personEdit.confirmedBy){
+    const who=s.personEdit.confirmedBy.slice(0,200);
+    // (2026-11-08) When edit_accessible_html made the changes, say how many are listed; when its log does not match the file, say that.
+    const ew=s.personEdit.editedWith,nChanges=ew&&ew.logMatchesFile===true&&Number.isInteger(ew.changeCount)?ew.changeCount:0;
+    const editNote=nChanges>0?nChanges+(nChanges===1?' change made with the edit tool is':' changes made with the edit tool are')+' listed in the report. ':(ew&&ew.logMatchesFile===false?'The edit log beside the file does not match it, so changes made outside the edit tool are not listed. ':'');
+    explained.headline='Built from the accessible version '+who+' edited and approved (the AI review was not repeated on the edits). '+editNote
+      +(!items.length&&!needs.length&&!quickChecks.length?'The automated checks that ran found nothing to fix; a person should still read the PDF once before sharing.':explained.headline);
+  }
   return explained;
 }
 // (2026-11-05, Aaron) A coverage hold is deterministic: running again holds again, so "nothing is lost" needs a way out.

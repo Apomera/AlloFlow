@@ -59,7 +59,7 @@ function currentEngineDigest(env) {
   const files = [
     SERVER,
     DRIVER_PATH,
-    ...['remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'].map((name) => join(dirname(SERVER), name)),
+    ...['remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_ace_worker.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_browser.cjs'].map((name) => join(dirname(SERVER), name)),
     ...Driver.MODULE_FILES.map((name) => join(Driver.ASSETS_ROOT, name)),
     ...['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js'].map((name) => join(Driver.ASSETS_ROOT, name)),
     vendorManifest,
@@ -466,12 +466,16 @@ describe('desktop MCP durable-job source contracts', () => {
     const remediate = section('async function remediateOneFile(', 'async function runnerForStoredJob(job)');
     expect(remediate).toContain('durability.job.abortController.signal');
     expect(remediate).toContain('Object.assign({ filePath, onLog, signal }, opts)');
-    expectInOrder(remediate, [
+    // (2026-11-08) What a run writes after the driver returns moved into writeRunArtifacts (shared with pdf_finalize_edited_html).
+    // remediateOneFile must still hand it the job and the cancellation signal, and the PDF/UA slot lives in the body.
+    expect(remediate).toContain('return writeRunArtifacts({ filePath, outDir, opts, out, compatibility, job, signal, onLog });');
+    const written = section('const stem = stemOverride ||', 'async function remediateOneFile(');
+    expectInOrder(written, [
       'const v = await withPdfUaSlot(',
       'signal,',
       '() => validatePdfUaLocally(files.taggedPdf, onLog, signal)',
     ]);
-    expect(remediate).toContain('if (signal && signal.aborted) throw e;');
+    expect(written).toContain('if (signal && signal.aborted) throw e;');
 
     const syncHandler = section('async pdf_remediate(args, ctx)', 'pdf_remediate_start(args)');
     expect(syncHandler).toContain('{ signal: ctx && ctx.signal }');

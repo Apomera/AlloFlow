@@ -59,6 +59,17 @@ agreements cover the provider and account used for the selected path — or scru
   selected PDF. Its result binds to that copy's SHA-256 and byte count. The legacy browser-based
   validator downloads CheerpJ/pdf-lib and is disabled unless a direct driver integration explicitly
   opts in with `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1`; the MCP tool does not silently enable it.
+- `outline_accessible_html` and `edit_accessible_html` send nothing anywhere. They read an accessible HTML file from your disk,
+  parse it in a local headless browser page that loads no network resource and runs no model, and `edit_accessible_html` writes
+  a new `<name>-edited.html` and a small `-edits.json` log beside it. They never change the input file.
+- A run on a scanned PDF also writes `<name>-scan-reading.json` beside its other outputs: the machine reading of each page
+  (its text and word positions), which holds the same text as the accessible HTML. It stays on your disk; it is what lets
+  `pdf_finalize_edited_html` tag an edited version of the scan later without a model. Delete it with the other outputs.
+- `pdf_finalize_edited_html` sends nothing to any model: its page refuses every model call. It reads the original PDF
+  and the edited accessible HTML from your disk, runs axe-core, IBM Equal Access, the PDF checks and veraPDF locally,
+  and writes `<name>-reviewed-*` files beside the original. Like the other tagging tools it may fetch a public font
+  file for a script the bundled fonts do not cover; no document text is sent. The report records the name you gave as
+  the person who edited and approved the version, as stated to AlloFlow and not verified by it.
 
 ## Optional HTTP transport
 

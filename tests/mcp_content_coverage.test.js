@@ -177,3 +177,10 @@ it('credits Word\'s second-level "o" bullet only where "o" is never a word in th
  expect(P.assessSourceCoverage({sourceText:'Elija uno o dos libros\no Primer libro',outputHtml:'<p>Elija uno o dos libros</p><ul><li>Primer libro</li></ul>',method:'text'}).missingTokens).toBe(1);
  expect(P.assessSourceCoverage({sourceText:'Elija uno o dos libros\no Primer libro',outputHtml:'<p>Elija uno dos libros</p><ul><li>Primer libro</li></ul>',method:'text'}).missingTokens).toBe(1); // one credited as the item's bullet, the dropped word still counted
 });
+it('does not glue the skip link to the first heading of minified HTML (2026-11-08, a person-edited file)',()=>{
+ const src='Water Cycle Guide\nEvaporation\nHeat from the sun turns liquid water into vapor.';
+ const minified='<html><body><a href="#m" class="sr-only">Skip to main content</a><main id="m"><h1>Water Cycle Guide</h1><h2>Evaporation</h2><p>Heat from the sun turns liquid water into vapor.</p></main></body></html>';
+ expect(P.assessSourceCoverage({sourceText:src,outputHtml:minified,method:'text'})).toMatchObject({status:'matched',missingTokens:0});
+ // a word that is really gone is still found
+ expect(P.assessSourceCoverage({sourceText:src+' It then rises.',outputHtml:minified,method:'text'}).missingTokens).toBeGreaterThan(0);
+});

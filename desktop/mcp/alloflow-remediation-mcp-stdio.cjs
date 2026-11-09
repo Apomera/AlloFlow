@@ -90,6 +90,7 @@ const zlib = require('zlib');
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
 const Narration = require('./remediation_narration.cjs');
 const Verification = require('./remediation_verification.cjs');
+const AccessibleHtmlEdit = require('./accessible_html_edit.cjs');
 const EpubValidation = require('./remediation_epub_validation.cjs');
 
 const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: require('./connector_version.cjs') };
@@ -650,7 +651,7 @@ function atomicWriteJson(finalPath, value, mode = 0o600, documentPath = false) {
 }
 
 function checkpointEngineFiles() {
-  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
+  const files = [__filename, path.join(__dirname, 'remediation_headless_driver.cjs'), path.join(__dirname,'remediation_narration_plan.cjs'), path.join(__dirname,'accessible_html_edit.cjs'), path.join(__dirname,'scan_reading_corrections.cjs'), path.join(__dirname,'remediation_verification.cjs'), path.join(__dirname,'remediation_epub_validation.cjs'), path.join(__dirname,'remediation_ace_worker.cjs'), path.join(__dirname,'remediation_epub_archive.cjs'), path.join(__dirname,'remediation_ace_browser.cjs')];
   for (const name of Driver.MODULE_FILES) files.push(path.join(Driver.ASSETS_ROOT, name));
   for (const name of ['document_runtime_integrity.json', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js']) {
     files.push(path.join(Driver.ASSETS_ROOT, name));
@@ -2857,53 +2858,102 @@ function safeAuditCoverage(value) {
   };
 }
 
-async function remediateOneFile(filePath, outDir, opts, onLog, durability = null) {
-  const signal = durability && (durability.signal
-    || (durability.job && durability.job.abortController
-      && durability.job.abortController.signal));
-  const compatibility = durability && durability.compatibility
-    ? durability.compatibility
-    : {
-      inputSha256: await sha256File(filePath),
-      optionsSha256: checkpointOptionsDigest(opts),
-      engineSha256: checkpointEngineDigest(),
-    };
-  // The checkpoint's document binding compares against the pipeline's own digest
-  // (base64-derived), which the caller cannot know; compute it from the file we
-  // are about to remediate so a checkpoint can never be restored onto a
-  // different document. Batch callers share one compatibility object per file,
-  // so this is set per call rather than baked into it upstream.
-  if (compatibility && !compatibility.documentDigest) {
-    try { compatibility.documentDigest = await documentDigestForFile(filePath); } catch (_) {}
+// An accessible HTML file for the outline and edit tools: UTF-8 text of at most 25 MB, and the sha-256 that ties the ids
+// an outline hands out to this exact file. The hash is taken over the decoded text, the same way pdf_finalize_edited_html does.
+const ACCESSIBLE_HTML_MAX_BYTES = 25 * 1024 * 1024;
+function readAccessibleHtmlFile(htmlPath) {
+  const st = fs.statSync(htmlPath);
+  if (st.size > ACCESSIBLE_HTML_MAX_BYTES) throw invalidParams('arguments.file_path is larger than 25 MB (' + Math.round(st.size / 1024 / 1024) + ' MB)');
+  const html = authorizedReadFileSync(htmlPath, 'utf8');
+  return { html, sha256: sha256Bytes(Buffer.from(html, 'utf8')), bytes: st.size };
+}
+
+// The page-by-page machine reading a run saved for a scanned PDF (<name>-scan-reading.json, 2026-11-08). It is a plain file, so
+// it is used only when it names this exact PDF, and its pages are re-checked field by field before the tagger sees them.
+// Returns null when there is no file, { error } when there is one that cannot be used.
+function loadScanReading(readingPath, sourceSha256) {
+  let st;
+  try { st = fs.statSync(readingPath); } catch (_) { return null; }
+  if (!st.isFile() || st.size > SCAN_READING_MAX_BYTES) return { error: 'it is not a file under 100 MB' };
+  let raw, j;
+  try { raw = authorizedReadFileSync(readingPath, 'utf8'); j = JSON.parse(raw); } catch (_) { return { error: 'it could not be read as JSON' }; }
+  if (!isPlainObject(j) || j.kind !== 'scan-reading' || j.version !== 1 || !Array.isArray(j.pages) || !j.pages.length || j.pages.length > 5000) return { error: 'it is not a scan reading AlloFlow wrote' };
+  if (j.sourceSha256 !== sourceSha256) return { error: 'it belongs to a different PDF than file_path' };
+  const num = (v) => typeof v === 'number' && Number.isFinite(v);
+  const pages = j.pages.filter(isPlainObject).map((p, i) => {
+    const e = { pageNum: Number.isSafeInteger(p.pageNum) && p.pageNum > 0 ? p.pageNum : i + 1, text: typeof p.text === 'string' ? p.text : '' };
+    if (Array.isArray(p.words)) e.words = p.words.filter((w) => isPlainObject(w) && typeof w.t === 'string' && w.t.length <= 200 && num(w.x0) && num(w.y0) && num(w.x1) && num(w.y1))
+      .map((w) => ({ t: w.t, x0: w.x0, y0: w.y0, x1: w.x1, y1: w.y1, c: num(w.c) ? w.c : null }));
+    if (num(p.pageW) && p.pageW > 0) e.pageW = p.pageW;
+    if (num(p.pageH) && p.pageH > 0) e.pageH = p.pageH;
+    if (Array.isArray(p.viewportTransform) && p.viewportTransform.length === 6 && p.viewportTransform.every(num)) e.viewportTransform = p.viewportTransform.slice();
+    return e;
+  });
+  if (!pages.some((p) => p.text.trim())) return { error: 'it holds no text for any page' };
+  return {
+    reading: { method: typeof j.method === 'string' ? j.method.slice(0, 80) : null, sourceText: typeof j.sourceText === 'string' ? j.sourceText : null, pages },
+    file: readingPath, sha256: sha256Bytes(Buffer.from(raw, 'utf8')),
+  };
+}
+
+// What edit_accessible_html recorded about the file a person is approving, for the report (pdf_finalize_edited_html).
+// The log is a plain file, so it is trusted only as far as it matches: its result hash has to be this file's hash, and each
+// earlier round has to end where the next began.
+function loadEditHistory(htmlPath, htmlSha256, runHtmlSha256) {
+  const logFor = (p) => p.replace(/\.html?$/i, '') + '-edits.json';
+  const readLog = (p) => {
+    try {
+      const j = JSON.parse(authorizedReadFileSync(p, 'utf8'));
+      return j && j.tool === 'edit_accessible_html' && Array.isArray(j.changes) ? j : null;
+    } catch (_) { return null; }
+  };
+  const last = readLog(logFor(htmlPath));
+  if (!last) return null;
+  if (last.resultSha256 !== htmlSha256) {
+    return { tool: 'edit_accessible_html', logMatchesFile: false, note: 'An edit log sits beside this file but does not match it, so the file was changed after the edit tool wrote it. Changes made outside the tool are not listed.' };
   }
-  const job = durability && durability.job;
-  const driverOptions = Object.assign({ filePath, onLog, signal }, opts);
-  if (job) {
-    job.currentFile = {
-      file: filePath,
-      inputSha256: compatibility.inputSha256,
-      optionsSha256: compatibility.optionsSha256,
-      engineSha256: compatibility.engineSha256,
-    };
-    job.runStage = 'remediating';
-    persistJob(job, { required: true });
-    const envelope = loadLocalCheckpoint(job, compatibility);
-    if (envelope) {
-      driverOptions.resumeCheckpoint = envelope.snapshot;
-      if (onLog) onLog('checkpoint: resuming ' + envelope.stage + ' sequence ' + envelope.sequence);
-    }
-    driverOptions.onCheckpoint = (snapshot) => saveLocalCheckpoint(job, snapshot, compatibility);
+  const rounds = [];
+  let cur = last;
+  for (let n = 0; cur && n < 20; n++) {
+    rounds.unshift(cur);
+    if (!cur.previousLog) break;
+    const prev = readLog(path.join(path.dirname(htmlPath), path.basename(String(cur.previousLog))));
+    if (!prev || prev.resultSha256 !== cur.baseSha256) break;
+    cur = prev;
   }
-  const out = await getDriver().remediate(driverOptions);
-  if (job) {
-    job.runStage = 'writing-artifacts';
-    persistJob(job, { required: true });
-  }
-  const stem = path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
+  const changes = [];
+  for (const r of rounds) for (const c of r.changes) if (c && c.changed !== false && typeof c.summary === 'string') changes.push(c.summary.slice(0, 300));
+  return {
+    tool: 'edit_accessible_html', logMatchesFile: true, rounds: rounds.length, changeCount: changes.length, changes: changes.slice(0, 100),
+    ...(changes.length > 100 ? { changesTruncated: true } : {}),
+    ...(runHtmlSha256 ? { startedFromRunVersion: rounds[0].baseSha256 === runHtmlSha256 } : {}),
+    basis: 'Listed from the edit log the tool wrote beside the file; checked only against the file\'s hash.',
+  };
+}
+
+// Everything a run writes once the driver has returned: HTML, tagged PDF (or its held copy), the independent PDF/UA check, the
+// report and the completion manifest. Shared by remediateOneFile and pdf_finalize_edited_html (2026-11-08).
+const SCAN_READING_MAX_BYTES = 100 * 1024 * 1024;
+async function writeRunArtifacts({ filePath, outDir, opts, out, compatibility, job, signal, onLog, stemOverride, personEdit }) {
+  const stem = stemOverride || path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
   const files = {};
   if (out.accessibleHtml) {
     files.accessibleHtml = claimOutputPath(outDir, stem + '-accessible.html');
     atomicWriteBytes(files.accessibleHtml, Buffer.from(out.accessibleHtml, 'utf8'), 0o600, true);
+  }
+  // (2026-11-08) A scan's machine reading, page by page with word boxes, so pdf_finalize_edited_html can rebuild a scan's
+  // hidden text from a person's edit. Local only, beside the HTML, which holds the same text.
+  if (out.scanReading && Array.isArray(out.scanReading.pages) && out.scanReading.pages.length && /\.pdf$/i.test(filePath)) {
+    const reading = Buffer.from(JSON.stringify({
+      tool: 'alloflow-remediation', kind: 'scan-reading', version: 1, sourceSha256: compatibility.inputSha256,
+      method: typeof out.scanReading.method === 'string' ? out.scanReading.method : null,
+      sourceText: typeof out.scanReading.sourceText === 'string' ? out.scanReading.sourceText : null,
+      pages: out.scanReading.pages,
+    }), 'utf8');
+    if (reading.length <= SCAN_READING_MAX_BYTES) {
+      files.scanReading = claimOutputPath(outDir, stem + '-scan-reading.json');
+      atomicWriteBytes(files.scanReading, reading, 0o600, true);
+    }
   }
   if (out.taggedPdfB64) {
     files.taggedPdf = claimOutputPath(outDir, stem + '-tagged.pdf');
@@ -3008,6 +3058,8 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
       if (cues.length) summary.colourMeaningCues = cues;
     }
   } catch (_) {}
+  // A tagged PDF built from a person-edited version says so in the report itself (pdf_finalize_edited_html).
+  if (personEdit) summary.personEdit = personEdit;
   Verification.applyPdfDeliveryEvidence(summary, pdfEvidence);
   if (Verification.isPersonReleasableHold(out.taggedPdfError)) {
     if (heldTaggedPdf) summary.heldTaggedPdf = heldTaggedPdf;
@@ -3029,6 +3081,51 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   if (publishedResources && publishedResources.length) summary.resources = publishedResources;
   if (job) clearLocalCheckpoint(job, true);
   return summary;
+}
+
+async function remediateOneFile(filePath, outDir, opts, onLog, durability = null) {
+  const signal = durability && (durability.signal
+    || (durability.job && durability.job.abortController
+      && durability.job.abortController.signal));
+  const compatibility = durability && durability.compatibility
+    ? durability.compatibility
+    : {
+      inputSha256: await sha256File(filePath),
+      optionsSha256: checkpointOptionsDigest(opts),
+      engineSha256: checkpointEngineDigest(),
+    };
+  // The checkpoint's document binding compares against the pipeline's own digest
+  // (base64-derived), which the caller cannot know; compute it from the file we
+  // are about to remediate so a checkpoint can never be restored onto a
+  // different document. Batch callers share one compatibility object per file,
+  // so this is set per call rather than baked into it upstream.
+  if (compatibility && !compatibility.documentDigest) {
+    try { compatibility.documentDigest = await documentDigestForFile(filePath); } catch (_) {}
+  }
+  const job = durability && durability.job;
+  const driverOptions = Object.assign({ filePath, onLog, signal }, opts);
+  if (job) {
+    job.currentFile = {
+      file: filePath,
+      inputSha256: compatibility.inputSha256,
+      optionsSha256: compatibility.optionsSha256,
+      engineSha256: compatibility.engineSha256,
+    };
+    job.runStage = 'remediating';
+    persistJob(job, { required: true });
+    const envelope = loadLocalCheckpoint(job, compatibility);
+    if (envelope) {
+      driverOptions.resumeCheckpoint = envelope.snapshot;
+      if (onLog) onLog('checkpoint: resuming ' + envelope.stage + ' sequence ' + envelope.sequence);
+    }
+    driverOptions.onCheckpoint = (snapshot) => saveLocalCheckpoint(job, snapshot, compatibility);
+  }
+  const out = await getDriver().remediate(driverOptions);
+  if (job) {
+    job.runStage = 'writing-artifacts';
+    persistJob(job, { required: true });
+  }
+  return writeRunArtifacts({ filePath, outDir, opts, out, compatibility, job, signal, onLog });
 }
 
 async function runnerForStoredJob(job) {
@@ -3411,7 +3508,82 @@ const TOOLS = [
     },
     annotations: { title: 'Release a tagged PDF a person has confirmed', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
-  (() => {
+  {
+    name: 'outline_accessible_html',
+    title: 'List the structure of an accessible HTML document',
+    description: "Read an accessible HTML file (usually the <name>-accessible.html a run wrote) and list its structure with an id for every item, so a person can say \"make that an H3\" and edit_accessible_html can act on it: headings with their levels (and any skipped level), images with their alternative text (null = missing, \"\" = marked decorative), tables with whether the first row and first column are headers, landmarks, and, on request, paragraphs, list items and language changes. Use text_contains to find a paragraph by its words (a leftover page number or footer). Ids belong to THIS file: the result carries its sha-256, and every edit writes a new file, so outline the newest file before editing it. It reads the file locally in a headless browser page that loads nothing: no AI model, no key, nothing leaves the machine. Writes no files.",
+    inputSchema: {
+      type: 'object',
+      required: ['file_path'],
+      properties: {
+        file_path: { type: 'string', description: 'Absolute path to a local .html file (max 25MB)' },
+        kinds: { type: 'array', minItems: 1, maxItems: 7, items: { type: 'string', enum: AccessibleHtmlEdit.OUTLINE_KINDS.slice() }, description: 'What to list. Default: heading, image, table, landmark. Add paragraph or list-item to see body text, and language for elements that carry a lang attribute.' },
+        text_contains: { type: 'string', maxLength: 200, description: 'Only items whose text (or alternative text, caption or first table row) contains this, ignoring case. Also searches headings, paragraphs and list items.' },
+        max_items: { type: 'integer', minimum: 1, maximum: 2000, description: 'Most items to return (default 300). The result says when there are more.' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'List the structure of an accessible HTML document', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+  },
+  {
+    name: 'edit_accessible_html',
+    title: 'Edit the structure of an accessible HTML document',
+    description: "Apply the structure edits a person asked for to an accessible HTML file, and write the result as a NEW file (<name>-edited.html; the input is never changed and every round gets its own numbered file, so an earlier round is never lost). Operations, with ids from outline_accessible_html: set_heading_level (a heading or paragraph becomes h1 to h6), make_paragraph (a heading becomes a paragraph), set_alt_text (alt, or decorative: true), set_table_header (first_row and/or first_column as headers, with scope), set_language (the whole document, or one element), move_element (before_id or after_id: reading order), delete_element (a leftover page number or footer). It cannot change wording: there is no text edit, because a born-digital PDF's printed words cannot change and a reworded paragraph stops the tagged PDF from being built. All-or-nothing: if any operation is refused nothing is written and each refusal says why. Deterministic: no AI model, no key, nothing leaves the machine. It writes an edit log beside the result (<name>-edited-edits.json) that pdf_finalize_edited_html reads, so the report lists exactly what changed. Make only the changes the person asked for, then SHOW them the changes this returns and let them look at the file: the approval pdf_finalize_edited_html records must be theirs, never yours. dry_run checks the operations and writes nothing.",
+    inputSchema: {
+      type: 'object',
+      required: ['file_path', 'operations'],
+      properties: {
+        file_path: { type: 'string', description: 'Absolute path to the .html file to edit (max 25MB): the run\'s <name>-accessible.html, or the latest <name>-edited.html from an earlier round' },
+        operations: {
+          type: 'array', minItems: 1, maxItems: 100,
+          description: 'Applied in order. Ids refer to the file as it is on disk now, and still work after an earlier operation in the same call changed that element.',
+          items: {
+            type: 'object',
+            required: ['op'],
+            properties: {
+              op: { type: 'string', enum: AccessibleHtmlEdit.OPERATION_NAMES.slice() },
+              id: { type: 'string', pattern: '^e\\d+$', description: 'The element, from outline_accessible_html (for example "e12"). Optional only for set_language of the whole document.' },
+              level: { type: 'integer', minimum: 1, maximum: 6, description: 'set_heading_level: 1 to 6' },
+              alt: { type: 'string', maxLength: 500, description: 'set_alt_text: the description. Short is better; use decorative for a picture that needs none.' },
+              decorative: { type: 'boolean', description: 'set_alt_text: true marks an <img> as decorative (empty alternative text)' },
+              first_row: { type: 'boolean', description: 'set_table_header: true makes the first row column headers, false makes them ordinary cells' },
+              first_column: { type: 'boolean', description: 'set_table_header: true makes the first column row headers, false makes them ordinary cells' },
+              lang: { type: 'string', maxLength: 20, description: 'set_language: a language code such as "en", "es" or "pt-BR"' },
+              before_id: { type: 'string', pattern: '^e\\d+$', description: 'move_element: put the element just before this one' },
+              after_id: { type: 'string', pattern: '^e\\d+$', description: 'move_element: put the element just after this one' },
+              allow_large: { type: 'boolean', description: 'delete_element: needed to delete an element of more than 400 words' },
+            },
+            additionalProperties: false,
+          },
+        },
+        output_path: { type: 'string', description: 'Where to write the edited file (default: <name>-edited.html beside the input, numbered if that exists). Never the input file.' },
+        expect_sha256: { type: 'string', pattern: '^[0-9a-f]{64}$', description: 'The htmlSha256 from outline_accessible_html. If the file has changed since, the ids may point at different elements, so nothing is written.' },
+        dry_run: { type: 'boolean', description: 'Check the operations and report the changes without writing any file' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Edit the structure of an accessible HTML document', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  {
+    name: 'pdf_finalize_edited_html',
+    title: 'Build the tagged PDF from an accessible version a person edited',
+    description: "Build the tagged PDF from the ORIGINAL PDF and an accessible HTML version that a real person has edited and approved, usually the <name>-accessible.html a run wrote. No AI model is used and no key is needed. Use it when a person wants to fix structure themselves (heading levels, reading order, table headers, alt text, language, a page number or footer the run left in) and then get the PDF. It re-checks the edited version with axe-core and IBM Equal Access, the original for scripts and attachments, and the words of the original against the edited text, builds the tagged PDF with the same byte checks as a run, and runs veraPDF unless validate_ua is false. Call it ONLY with the name of the person who made and approved the edit, as they gave it; never your own name or a model name, and never to make a run look finished. Wording of a born-digital PDF cannot change: a paragraph the person ADDS that is not on the page stays in the HTML and is left out of the PDF's tag tree, but a printed paragraph that is reworded or shortened can no longer be linked to its page text, so the PDF fails its own byte check and no PDF is delivered (the result says why in heldTaggedPdfUnavailable; put the printed wording back, or fix the source and run again). A scanned PDF works when report_path names the run of that same PDF: the run saved its page-by-page machine reading beside the report (<name>-scan-reading.json, from 2026-11-08), which places the hidden text and is what the edit is checked against; on a scan the person MAY correct misread words (each correction is listed for them to confirm before the PDF is released). Without that reading a scan is refused. The outputs are named <name>-reviewed-* so the original run's files are never overwritten; the report records who approved the edit and that the AI review was not repeated, so the result is marked for review, never ready. If words of the original are missing from the edit, the PDF is held (<name>-reviewed-tagged-held-for-review.pdf) and pdf_release_held_tagged_pdf, with the word list, completes it. If the edited file was made with edit_accessible_html, the edit log beside it is read and the report lists exactly what changed.",
+    inputSchema: {
+      type: 'object',
+      required: ['file_path', 'edited_html_path', 'confirmed_by'],
+      properties: {
+        file_path: { type: 'string', description: 'Absolute path to the ORIGINAL .pdf (max 200MB), the same file the run used' },
+        edited_html_path: { type: 'string', description: 'Absolute path to the edited accessible .html file (max 25MB)' },
+        confirmed_by: { type: 'string', minLength: 2, maxLength: 200, description: 'Name or role of the person who edited and approved the accessible version, as they gave it. Never your own name or a model name.' },
+        note: { type: 'string', maxLength: 1000, description: 'Optional: what the person changed or said about the edit.' },
+        output_dir: { type: 'string', description: 'Directory for output files (default: alongside the original)' },
+        report_path: { type: 'string', description: 'Optional: absolute path to the earlier run\'s <name>-remediation-report.json for this same PDF. Lets the result credit the page numbers and running headers or footers that run took out on purpose, so they do not show up as missing words. REQUIRED for a scanned PDF: the scan reading saved beside it is found through it.' },
+        validate_ua: { type: 'boolean', description: 'Run the independent veraPDF PDF/UA check on the result (default true, about a minute)' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Build the tagged PDF from an accessible version a person edited', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  },  (() => {
     const REMEDIATE_OPTION_PROPS = {
       effort: { type: 'string', enum: ['standard', 'thorough'], description: 'Thorough enables 3 fix passes, 1 polish pass, bounded auto-continue and independent PDF/UA validation. Explicit options override the preset.' },
       output_dir: { type: 'string', description: 'Directory for output files (default: alongside the input)' },
@@ -3680,6 +3852,7 @@ const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES = Object.freeze([
   'document_narrate_start',
   'pdf_remediate_agent_start',
   'remediation_agent_resume',
+  'pdf_finalize_edited_html',
 ]);
 const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET = new Set(PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES);
 
@@ -3905,6 +4078,13 @@ const OUTPUT_SCHEMAS = {
     headingSkips: { type: 'number', description: 'Skipped levels (h2 -> h4) are a WCAG 1.3.1 failure' },
     headingIssue: {}, note: S_STR,
   }, ['input', 'characters']),
+  outline_accessible_html: obj({
+    input: S_STR, htmlSha256: S_STR, bytes: S_NUM, document: {}, items: { type: 'array' }, matching: S_NUM, truncated: S_BOOL, note: S_STR,
+  }, ['input', 'htmlSha256', 'items']),
+  edit_accessible_html: obj({
+    input: S_STR, inputSha256: S_STR, output: S_STR, editLog: S_STR, htmlSha256: S_STR, bytes: S_NUM, applied: S_NUM, changes: { type: 'array' },
+    words: {}, headingSkips: { type: 'array' }, warnings: { type: 'array' }, dryRun: S_BOOL, note: S_STR, next: S_STR,
+  }, ['input', 'applied', 'changes']),
   redact_document: obj({
     input: S_STR, output: S_STR, redactionCount: S_NUM, redacted: {},
     clean: { type: 'boolean', description: 'The pipeline re-scanned its own output; false means targets survived' },
@@ -3968,6 +4148,7 @@ const OUTPUT_SCHEMAS = {
     inputSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
     inputBytes: S_NUM, validatedAt: S_STR, validationDurationMs: S_NUM, note: S_STR,
   }, ['compliant', 'inputSha256', 'inputBytes', 'validatedAt']),
+  pdf_finalize_edited_html: S_REMEDIATE,
   pdf_release_held_tagged_pdf: obj({
     released: S_BOOL, alreadyReleased: S_BOOL, code: S_STR, message: S_STR, taggedPdf: S_STR, report: S_STR,
     verdict: {}, deliveryStatus: S_STR, confirmedBy: S_STR, deliveryExplanation: {},
@@ -4727,6 +4908,84 @@ const TOOL_HANDLERS = {
     };
   },
 
+  async outline_accessible_html(args, ctx) {
+    assertAllowedKeys(args, ['file_path', 'kinds', 'text_contains', 'max_items'], 'arguments');
+    const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
+    if (args.kinds !== undefined) {
+      if (!Array.isArray(args.kinds) || !args.kinds.length || args.kinds.length > 7 || args.kinds.some((k) => !AccessibleHtmlEdit.OUTLINE_KINDS.includes(k))) {
+        throw invalidParams('arguments.kinds must be a list drawn from: ' + AccessibleHtmlEdit.OUTLINE_KINDS.join(', '));
+      }
+    }
+    if (args.text_contains !== undefined && (typeof args.text_contains !== 'string' || args.text_contains.length > 200)) throw invalidParams('arguments.text_contains must be a string of at most 200 characters');
+    if (args.max_items !== undefined && (!Number.isInteger(args.max_items) || args.max_items < 1 || args.max_items > 2000)) throw invalidParams('arguments.max_items must be a whole number from 1 to 2000');
+    const { html, sha256, bytes } = readAccessibleHtmlFile(htmlPath);
+    const out = await withSingleFlight('outline_accessible_html', () => getDriver().accessibleHtmlTool({
+      mode: 'outline', html, payload: { kinds: args.kinds, textContains: args.text_contains, maxItems: args.max_items },
+    }));
+    const skips = out.document && Array.isArray(out.document.headingSkips) ? out.document.headingSkips.length : 0;
+    return {
+      input: htmlPath, htmlSha256: sha256, bytes, ...out,
+      note: 'These ids belong to the file with sha-256 ' + sha256.slice(0, 12) + '. Pass htmlSha256 as expect_sha256 to edit_accessible_html so a changed file cannot be edited by stale ids.'
+        + (skips ? ' ' + skips + ' skipped heading level(s) (for example h2 to h4) are a WCAG 1.3.1 failure; a person decides what the right levels are.' : ''),
+    };
+  },
+
+  async edit_accessible_html(args, ctx) {
+    assertAllowedKeys(args, ['file_path', 'operations', 'output_path', 'expect_sha256', 'dry_run'], 'arguments');
+    const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
+    const ops = args.operations;
+    if (!Array.isArray(ops) || ops.length < 1 || ops.length > 100) throw invalidParams('arguments.operations must be a list of 1 to 100 operations');
+    ops.forEach((op, i) => {
+      if (!op || typeof op !== 'object' || Array.isArray(op)) throw invalidParams('arguments.operations[' + i + '] must be an object');
+      if (!AccessibleHtmlEdit.OPERATION_NAMES.includes(op.op)) throw invalidParams('arguments.operations[' + i + '].op must be one of: ' + AccessibleHtmlEdit.OPERATION_NAMES.join(', ') + '. There is no operation that rewords text.');
+      assertAllowedKeys(op, AccessibleHtmlEdit.OPERATION_KEYS[op.op], 'arguments.operations[' + i + ']');
+    });
+    if (args.expect_sha256 !== undefined && !/^[0-9a-f]{64}$/.test(String(args.expect_sha256))) throw invalidParams('arguments.expect_sha256 must be the 64-character htmlSha256 from outline_accessible_html');
+    if (args.dry_run !== undefined && typeof args.dry_run !== 'boolean') throw invalidParams('arguments.dry_run must be true or false');
+    if (args.output_path !== undefined && !/\.html?$/i.test(String(args.output_path))) throw invalidParams('arguments.output_path must end in .html');
+    const { html, sha256 } = readAccessibleHtmlFile(htmlPath);
+    if (args.expect_sha256 !== undefined && args.expect_sha256 !== sha256) {
+      throw invalidParams('arguments.expect_sha256 does not match this file: it has changed since it was outlined, so the ids may now point at different elements. Nothing was written. Run outline_accessible_html on it again.');
+    }
+    const out = await withSingleFlight('edit_accessible_html', () => getDriver().accessibleHtmlTool({ mode: 'edit', html, payload: { operations: ops } }));
+    if (!out.ok) {
+      const lines = out.results.filter((r) => !r.ok).slice(0, 10).map((r) => 'operation ' + r.index + (r.op ? ' (' + r.op + (r.id ? ' ' + r.id : '') + ')' : '') + ': ' + r.error);
+      throw invalidParams('Nothing was written: ' + out.failed + ' of ' + out.results.length + ' operation(s) could not be applied. ' + lines.join(' | '));
+    }
+    const changes = out.results.map(({ index, op, id, summary, changed }) => ({ index, op, id, summary, changed }));
+    const common = { input: htmlPath, inputSha256: sha256, applied: out.applied, changes, words: out.words, headingSkips: out.headingSkips, warnings: out.warnings };
+    if (args.dry_run === true) return { ...common, dryRun: true, note: 'Dry run: nothing was written. These operations apply cleanly.' };
+    if (out.applied === 0) return { ...common, note: 'Nothing needed changing, so nothing was written.' };
+    let dest;
+    if (args.output_path !== undefined) dest = _htmlOutputPath(args, htmlPath, '-edited.html');
+    else {
+      // Round two edits "x-edited.html" and writes "x-edited-2.html": the stem is "x" every time.
+      const stem = path.basename(htmlPath).replace(/\.html?$/i, '').replace(/-edited(-\d+)?$/i, '');
+      dest = claimOutputPath(path.dirname(htmlPath), stem + '-edited.html');
+    }
+    const samePath = (a, b) => (process.platform === 'win32' ? path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase() : path.resolve(a) === path.resolve(b));
+    if (samePath(dest, htmlPath)) throw invalidParams('arguments.output_path must not be the input file: an edit always writes a new file');
+    const logFor = (p) => p.replace(/\.html?$/i, '') + '-edits.json';
+    let previousLog = null;
+    try {
+      const prev = JSON.parse(authorizedReadFileSync(logFor(htmlPath), 'utf8'));
+      if (prev && prev.tool === 'edit_accessible_html' && prev.resultSha256 === sha256) previousLog = path.basename(logFor(htmlPath));
+    } catch (_) { /* no earlier round, or it does not describe this file */ }
+    authorizedWriteFileSync(dest, out.html, 'utf8');
+    const newSha = sha256Bytes(Buffer.from(out.html, 'utf8'));
+    const logPath = logFor(dest);
+    authorizedWriteFileSync(logPath, JSON.stringify({
+      tool: 'edit_accessible_html', version: 1, at: new Date().toISOString(),
+      baseFile: path.basename(htmlPath), baseSha256: sha256, resultFile: path.basename(dest), resultSha256: newSha, previousLog,
+      changes, words: out.words,
+    }, null, 1), 'utf8');
+    return {
+      ...common, output: dest, editLog: logPath, htmlSha256: newSha, bytes: Buffer.byteLength(out.html),
+      note: 'The original ' + path.basename(htmlPath) + ' is unchanged. Edits never change wording' + (out.words.removed ? ' except the ' + out.words.removed + ' word(s) removed on purpose' : '') + '.',
+      next: 'Show the person the changes above' + (out.warnings.length || out.headingSkips.length ? ' and the warnings' : '') + ', and let them look at ' + path.basename(dest) + '. Make more changes with this tool on that file if they ask. When THEY approve it, call pdf_finalize_edited_html with the original PDF, edited_html_path set to the output and their own name as confirmed_by.',
+    };
+  },
+
   async remediation_setup(args) {
     assertAllowedKeys(args, [], 'arguments');
     const before = Driver.resolveChromium();
@@ -4830,6 +5089,90 @@ const TOOL_HANDLERS = {
     return { released: true, alreadyReleased: false, taggedPdf: pdfPath, report: reportPath, confirmedBy, ...status(released) };
   },
 
+  async pdf_finalize_edited_html(args, ctx) {
+    assertAllowedKeys(args, ['file_path', 'edited_html_path', 'confirmed_by', 'note', 'output_dir', 'report_path', 'validate_ua'], 'arguments');
+    const filePath = requirePdfPath(args);
+    const confirmedBy = typeof args.confirmed_by === 'string' ? args.confirmed_by.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim() : '';
+    if (confirmedBy.length < 2 || confirmedBy.length > 200) throw invalidParams('arguments.confirmed_by must name the person who edited and approved the accessible version (2-200 characters)');
+    const note = typeof args.note === 'string' ? args.note.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 1000) : '';
+    if (args.validate_ua !== undefined && typeof args.validate_ua !== 'boolean') throw invalidParams('arguments.validate_ua must be a boolean');
+    if (typeof args.edited_html_path !== 'string' || !path.isAbsolute(args.edited_html_path) || !/\.html?$/i.test(args.edited_html_path)) {
+      throw invalidParams('arguments.edited_html_path must be the absolute path of an .html file');
+    }
+    const htmlPath = enforceAllowedRoot(path.resolve(args.edited_html_path), 'arguments.edited_html_path');
+    let htmlStat;
+    try { htmlStat = fs.statSync(htmlPath); } catch (_) { throw invalidParams('No file at ' + htmlPath); }
+    if (!htmlStat.isFile() || htmlStat.size < 20 || htmlStat.size > 25 * 1024 * 1024) throw invalidParams('arguments.edited_html_path must be a non-empty HTML file under 25MB');
+    const html = authorizedReadFileSync(htmlPath, 'utf8');
+    if (!/<(?:html|body|main)[\s>]/i.test(html)) throw invalidParams('That file does not look like an HTML document (no <html>, <body> or <main>).');
+    const outDir = resolveOutputDir(args, filePath);
+    const sourceSha256 = await sha256File(filePath);
+    // An earlier run's report for THIS PDF lets the result credit what that run took out on purpose.
+    let furnitureTexts = null, derivedFrom = null, scanReading = null;
+    if (args.report_path !== undefined) {
+      if (typeof args.report_path !== 'string' || !path.isAbsolute(args.report_path) || !/-remediation-report(-\d+)?\.json$/i.test(args.report_path)) {
+        throw invalidParams('arguments.report_path must be the absolute path of a <name>-remediation-report.json');
+      }
+      const reportPath = enforceAllowedRoot(path.resolve(args.report_path), 'arguments.report_path');
+      let report = null;
+      try { if (fs.statSync(reportPath).size <= 8 * 1024 * 1024) report = JSON.parse(authorizedReadFileSync(reportPath, 'utf8')); } catch (_) { report = null; }
+      if (!isPlainObject(report)) throw invalidParams('That report could not be read: ' + reportPath);
+      if (!report.contentCoverage || report.contentCoverage.sourceSha256 !== sourceSha256) {
+        throw invalidParams('That report belongs to a different PDF than file_path (the original does not match what the run read).');
+      }
+      const furnitureNote = (Array.isArray(report.fidelityNotes) ? report.fidelityNotes : []).find((n) => n && n.kind === 'pageFurniture' && Array.isArray(n.removed));
+      furnitureTexts = furnitureNote ? furnitureNote.removed.map((x) => (x && typeof x.text === 'string' ? x.text : '')).filter(Boolean).slice(0, 2000) : null;
+      derivedFrom = { report: reportPath, accessibleHtmlSha256: typeof report.contentCoverage.htmlSha256 === 'string' ? report.contentCoverage.htmlSha256 : null };
+      // A scan's saved page reading sits beside the report (the run names it in files.scanReading).
+      const named = isPlainObject(report.files) && typeof report.files.scanReading === 'string' ? path.join(path.dirname(reportPath), path.basename(report.files.scanReading)) : null;
+      const sibling = reportPath.replace(/-remediation-report(-\d+)?\.json$/i, '-scan-reading$1.json');
+      for (const candidate of [named, sibling]) {
+        if (!candidate || scanReading) continue;
+        const got = loadScanReading(enforceAllowedRoot(candidate, 'scan reading'), sourceSha256);
+        if (got && got.error) throw invalidParams('The scan reading beside that report cannot be used: ' + got.error + ' (' + candidate + ').');
+        if (got) scanReading = got;
+      }
+    }
+    const htmlSha256 = sha256Bytes(Buffer.from(html, 'utf8'));
+    // When edit_accessible_html made this file, its log says what changed (and the report carries that list).
+    const editHistory = loadEditHistory(htmlPath, htmlSha256, derivedFrom && derivedFrom.accessibleHtmlSha256);
+    const validateUa = args.validate_ua !== false;
+    // A distinct options digest keeps this result from ever being taken for the completion of a remediation of the same PDF.
+    const compatibility = {
+      inputSha256: sourceSha256,
+      optionsSha256: jsonSha256({ kind: 'finalize-edited-html', htmlSha256, validateUa, scanReadingSha256: scanReading ? scanReading.sha256 : null }),
+      engineSha256: checkpointEngineDigest(),
+    };
+    return withSingleFlight('pdf_finalize_edited_html', async () => {
+      const onLog = (ctx && ctx.onProgress) || null;
+      const signal = ctx && ctx.signal;
+      let out;
+      try {
+        out = await getDriver().finalizeEdited({ filePath, editedHtml: html, furnitureTexts, reviewer: confirmedBy, scanReading: scanReading ? scanReading.reading : null, onLog, signal });
+      } catch (e) {
+        // Say what these two refusals mean, keeping the code first for a program reading the message.
+        const msg = String((e && e.message) || e);
+        if (/finalize_scanned_needs_reading/.test(msg)) {
+          throw new Error('finalize_scanned_needs_reading: this PDF is a scan. Its hidden text is rebuilt from the page-by-page reading a run saves beside its report (<name>-scan-reading.json; runs save it from 2026-11-08 on). Pass report_path for the run of this same PDF. If that run is older and has no scan reading, run the document again.');
+        }
+        if (/finalize_source_text_unavailable/.test(msg)) {
+          throw new Error('finalize_source_text_unavailable: the original PDF\'s text could not be read (it may be encrypted or damaged).');
+        }
+        throw e;
+      }
+      const personEdit = {
+        confirmedBy, ...(note ? { note } : {}), at: new Date().toISOString(),
+        editedHtmlFile: path.basename(htmlPath), editedHtmlSha256: htmlSha256,
+        ...(derivedFrom ? { derivedFrom } : {}),
+        ...(editHistory ? { editedWith: editHistory } : {}),
+        ...(scanReading && Array.isArray(out.fidelityNotes) && out.fidelityNotes.some((n) => n && n.kind === 'scanEdit')
+          ? { scanReading: { file: path.basename(scanReading.file), sha256: scanReading.sha256, pages: scanReading.reading.pages.length, method: scanReading.reading.method } } : {}),
+        basis: 'As stated to AlloFlow; not verified by it. The AI review was not repeated on the edits.',
+      };
+      const stem = path.basename(filePath).replace(/\.pdf$/i, '') + '-reviewed';
+      return writeRunArtifacts({ filePath, outDir, opts: { validateUa }, out, compatibility, job: null, signal, onLog, stemOverride: stem, personEdit });
+    });
+  },
   async pdf_remediate(args, ctx) {
     assertAllowedKeys(args, ['file_path', 'effort', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);

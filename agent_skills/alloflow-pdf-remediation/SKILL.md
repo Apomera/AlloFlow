@@ -118,6 +118,27 @@ installed connector's local tools.
    `pdf_release_held_tagged_pdf` with their name and
    `coverageRelease.fingerprint`. Never decide this yourself, and never call it
    to make a run look finished: a changed score or date must be fixed instead.
+8. If a person would rather fix the structure themselves (a heading level, reading
+   order, a table header, alt text, a page number the run left in) than accept the
+   run's version, they can edit the `<name>-accessible.html` themselves, or tell you what to change
+   and you do it with `outline_accessible_html` (ids for headings, images, tables, and any paragraph
+   found with `text_contains`) and `edit_accessible_html` (set a heading level, alt text or
+   decorative, table headers, language, reading order, or delete a leftover page number; it
+   cannot reword). Make only the changes they ask for, show them the changes the tool lists, and
+   let them open the `-edited.html` file; if they ask for more, edit that newest file again. When
+   THEY say it is right, you call
+   `pdf_finalize_edited_html` with the original PDF, the edited file and the
+   name of the person who edited and approved it (`report_path` is optional and
+   credits the page furniture the run took out). No AI model is used. Never call it
+   with your own edits and your own name: the person makes and approves the edit.
+   For a scanned PDF always pass `report_path`: the page reading the run saved beside it
+   (`<name>-scan-reading.json`) is required, and a person may correct misread words; each
+   correction then shows as a word of the reading to confirm before release.
+   Wording of a born-digital PDF cannot change: a paragraph the person adds is left
+   out of the PDF's tags, and reworded or shortened printed text makes the PDF fail
+   its own check, so none is delivered (put the printed wording back). Scans are
+   refused, and the result is always marked for review (the AI review is not repeated
+   on the edits). If the person does not approve, do not call `pdf_finalize_edited_html` at all.
 
 ## Agent-bridge flow (no Gemini key: YOU are the model)
 

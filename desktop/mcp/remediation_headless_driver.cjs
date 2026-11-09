@@ -36,6 +36,8 @@ const crypto = require('crypto');
 const { Worker } = require('worker_threads'); // background vendor hashing at boot
 const NarrationPlanner = require('./remediation_narration_plan.cjs');
 const Verification = require('./remediation_verification.cjs');
+const AccessibleHtmlEdit = require('./accessible_html_edit.cjs');
+const ScanCorrections = require('./scan_reading_corrections.cjs');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 // Kept beside the renderer's own constant and asserted equal in
@@ -1188,6 +1190,67 @@ function probeJavaRuntime(javaBin) {
   catch (_) { return { present: true, version: null, error: null, unprobed: true }; }
 }
 
+// (2026-11-08) The caution a run adds when a scan's hidden text fell to the tagger's block layout on some pages (ocrTextLayer),
+// so a PDF whose search and selection miss the printed words is not called ready. Self-contained: the run's page evaluates it.
+function scanLayerCaution(layer) {
+  if (!layer || layer.scanned !== true || !Array.isArray(layer.blockLayoutPages)) return null;
+  const pages = layer.blockLayoutPages.filter((n) => Number.isInteger(n) && n > 0);
+  if (!pages.length) return null;
+  const all = !(Number(layer.positionedPages) > 0);
+  const where = all
+    ? (pages.length === 1 && !(Number(layer.pagesWithText) > 1) ? 'On this scan' : 'On every page of this scan')
+    : 'On page' + (pages.length === 1 ? ' ' : 's ') + pages.slice(0, 12).join(', ') + (pages.length > 12 ? ' and others' : '') + ' of this scan';
+  // Kept under the report's 300-character limit for a caution, even with twelve page numbers listed.
+  return where + ', the hidden text could not be laid over the printed words (OCR word positions missing or not lining up), so search and selection highlight a column at the top of the page. Screen readers are not affected.';
+}
+
+// (2026-11-08) A scanned PDF's machine reading, page by page (text and word boxes), as a run saves it beside its outputs
+// (<name>-scan-reading.json) so pdf_finalize_edited_html can later tag a person's edit of that scan without a model. Self-contained:
+// the run's page evaluates its source. null for a born-digital file or a run without a page map.
+function scanReadingForRun(cur, fileName, fallbackPages) {
+  try {
+    const scanned = !!(cur && (cur.isScanned === true || /tesseract|vision|ocr/i.test(String(cur.groundTruthMethod || ''))));
+    if (!scanned || !/\.pdf$/i.test(String(fileName || ''))) return null;
+    const pages = (Array.isArray(cur.groundTruthPages) && cur.groundTruthPages.length && cur.groundTruthPages) || fallbackPages || null;
+    if (!Array.isArray(pages) || !pages.length) return null;
+    const num = (v) => typeof v === 'number' && isFinite(v);
+    return {
+      method: cur.groundTruthMethod || null,
+      sourceText: typeof cur.sourceText === 'string' ? cur.sourceText : null,
+      pages: pages.filter((pg) => pg && typeof pg === 'object').map((pg, i) => {
+        const e = { pageNum: num(pg.pageNum) ? pg.pageNum : (num(pg.page) ? pg.page : (num(pg.pageIndex) ? pg.pageIndex + 1 : i + 1)), text: String(pg.text || pg.content || pg.fullText || '') };
+        if (Array.isArray(pg.words)) e.words = pg.words.filter((w) => w && typeof w.t === 'string' && num(w.x0) && num(w.y0) && num(w.x1) && num(w.y1)).map((w) => ({ t: w.t, x0: w.x0, y0: w.y0, x1: w.x1, y1: w.y1, c: num(w.c) ? w.c : null }));
+        if (num(pg.pageW)) e.pageW = pg.pageW;
+        if (num(pg.pageH)) e.pageH = pg.pageH;
+        if (Array.isArray(pg.viewportTransform) && pg.viewportTransform.length === 6 && pg.viewportTransform.every(num)) e.viewportTransform = pg.viewportTransform.slice();
+        return e;
+      }),
+    };
+  } catch (_) { return null; }
+}
+
+// The Document Safety decision for a source PDF's scan (2026-11-08), as plain data. The same rules `remediate` applies to
+// its run result, written once here for the tag-only path (pdf_finalize_edited_html); sent into the page as source text.
+// error: null | 'active_content_requires_review' | 'active_content_scan_unavailable'.
+function activeContentDecision(activeScan) {
+  const activeTypes = ['open-action', 'javascript', 'launch', 'embedded-files', 'additional-actions', 'other-actions', 'multimedia'];
+  const findings = activeScan && activeScan.findings;
+  const findingsValid = Array.isArray(findings) && findings.every((finding) =>
+    finding && typeof finding === 'object' && activeTypes.indexOf(finding.type) !== -1
+    && Number.isSafeInteger(finding.count) && finding.count > 0 && typeof finding.label === 'string');
+  if (activeScan && activeScan.schema === 1 && activeScan.any === true && findingsValid && findings.length > 0) {
+    return { error: 'active_content_requires_review', detected: true, verified: false };
+  }
+  if (!activeScan || activeScan.schema !== 1 || activeScan.complete !== true
+    || activeScan.pageScanFailures !== 0 || typeof activeScan.any !== 'boolean'
+    || activeScan.unexaminedStructures !== 0
+    || !findingsValid || activeScan.any !== (findings.length > 0)
+    || !Number.isSafeInteger(activeScan.externalLinks) || activeScan.externalLinks < 0) {
+    return { error: 'active_content_scan_unavailable', detected: false, verified: false };
+  }
+  return { error: activeScan.any ? 'active_content_requires_review' : null, detected: activeScan.any, verified: true };
+}
+
 function createDriver(options) {
   const o = options || {};
   const readExternalInputFile = typeof o.readInputFile === 'function' ? o.readInputFile : (file, encoding) => fs.readFileSync(file, encoding);
@@ -1830,7 +1893,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema, verificationEvidenceFn }) => {
+      page.evaluate(async ({ b64: _rawB64, scanReadingFn, scanLayerCautionFn, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema, verificationEvidenceFn }) => {
         const pipeline = window.__mcpPipeline;
         // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
         let b64 = _rawB64;
@@ -2178,8 +2241,9 @@ function createDriver(options) {
         }
         const coverageExtraction = cur?._sourceCoverageExtraction || sourceCoverageExtraction();
         // figureText (2026-11-07): words printed inside described charts and maps, which the figures stand for.
-        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:coverageExtraction.pageErrors,lowConfidencePages:coverageExtraction.lowConfidencePages,pageRange,figureText:Array.isArray(window.__alloFigureText)?window.__alloFigureText:null});
+        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:coverageExtraction.pageErrors,lowConfidencePages:coverageExtraction.lowConfidencePages,pageRange,figureText:Array.isArray(window.__alloFigureText)?window.__alloFigureText:null,furniture:window.__alloPageFurniture&&Array.isArray(window.__alloPageFurniture.removed)?window.__alloPageFurniture.removed.map(x=>x&&x.text):null});
         let verdict = null;
+        let textLayerCaution = null; // set after tagging a scan (scanLayerCaution); read when the verdict is final
         let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null, taggedPdfReadingNotes = [];
         // (2026-11-05, Aaron) A coverage hold still builds the PDF, kept aside: every other gate below still applies, and
         // only a person's confirmation can release it (pdf_release_held_tagged_pdf), with no costly re-run.
@@ -2274,6 +2338,7 @@ function createDriver(options) {
               subject: 'Prepared with AlloFlow accessibility tools; not a certification of conformance',
             };
             const tagged = await pipeline.createTaggedPdf(bytes, cur, tagOptions);
+            textLayerCaution = (0, eval)('(' + scanLayerCautionFn + ')')(tagged && tagged.ocrTextLayer);
             const outBytes = tagged && (tagged.bytes || tagged);
             const delivery = pipeline.taggedPdfDeliveryVerdict(tagged);
             taggedPdfDelivery = delivery && typeof delivery === 'object'
@@ -2309,6 +2374,8 @@ function createDriver(options) {
         }
         if (!verdict) { try { verdict = pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { verdict = null; } }
         if(contentCoverage.reviewRequired)verdict={...(verdict||{}),level:'review',review:[...(verdict?.review||[]),'Source content coverage requires review'],cautions:verdict?.cautions||[]};
+        // (2026-11-08) A scan whose hidden text fell to the block layout is not "ready": search and selection miss the printed words.
+        if(textLayerCaution&&verdict)verdict={...verdict,level:verdict.level==='ready'?'caution':verdict.level,cautions:[...(verdict.cautions||[]),textLayerCaution]};
         const stats = (() => { try { return pipeline.getPipelineStats(); } catch (_) { return null; } })();
         return {
           beforeScore: audit && typeof audit.score === 'number' ? audit.score : null,
@@ -2339,7 +2406,9 @@ function createDriver(options) {
             })),
           } : null,
           // caution and the correction list travel too (2026-11-05, trust): the report cannot offer a release without them.
-          fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400), ...(n.caution === true ? { caution: true } : {}), ...(Array.isArray(n.corrections) ? { corrections: n.corrections.slice(0, 300), correctionCount: n.correctionCount } : {}) })),
+          // removed (2026-11-08): the page numbers and running headers/footers taken out of the text, so "glance at the list" has a
+          // list and an edited version finalized later (pdf_finalize_edited_html) can credit exactly them.
+          fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400), ...(n.caution === true ? { caution: true } : {}), ...(Array.isArray(n.corrections) ? { corrections: n.corrections.slice(0, 300), correctionCount: n.correctionCount } : {}), ...(n.kind === 'pageFurniture' && Array.isArray(n.removed) ? { removed: n.removed.slice(0, 200).map((x) => ({ kind: String((x && x.kind) || '').slice(0, 20), text: String((x && x.text) || '').slice(0, 300) })) } : {}) })),
           // (2026-10-28) How to decide each judgment call this run leaves to a person (remediation_decision_guides.js,
           // shipped inside the pipeline module): plain data, so the Node side and MCP clients can show it.
           decisionGuides: (() => {
@@ -2393,6 +2462,9 @@ function createDriver(options) {
             sliced: !!(audit && audit._slicedAudit),
           },
           accessibleHtml: (cur && cur.accessibleHtml) || null,
+          // (2026-11-08) A scanned PDF's machine reading per page (text and word boxes), saved beside the outputs so a
+          // person's edit can be tagged later without the model (pdf_finalize_edited_html). Nothing for a born-digital file.
+          scanReading: (0, eval)('(' + scanReadingFn + ')')(cur, fileName, window.__lastGroundTruthPageMap || null),
           taggedPdfB64, taggedPdfError, taggedPdfDelivery, taggedPdfExportMode, taggedPdfReadingNotes,
           taggedPdfHeld, taggedPdfHeldUnavailable,
           activeContentScanVerified, activeContentDetected,
@@ -2400,6 +2472,8 @@ function createDriver(options) {
         };
       }, {
         b64, fileName, sourceCoverageFn:NarrationPlanner.assessSourceCoverage.toString(),
+        scanReadingFn: scanReadingForRun.toString(),
+        scanLayerCautionFn: scanLayerCaution.toString(),
         candidateRejectionFn: Verification.normalizeCandidateRejectionEvidence.toString(),
         candidateRejectionSchema: Verification.CANDIDATE_REJECTION_SCHEMA,
         verificationEvidenceFn: Verification.compactVerificationEvidence.toString(),
@@ -3446,6 +3520,20 @@ function createDriver(options) {
     }, {html:o.html,checksSource:Verification.auditChecks.toString()}), o);
   }
 
+  // Outline and structure edits of an accessible HTML document (2026-11-08; tools outline_accessible_html / edit_accessible_html).
+  // Pure DOM work in a bare browser page: no pipeline module, no model, no network. The function that does it is one
+  // self-contained source text (accessible_html_edit.cjs), also run against jsdom by its unit tests.
+  async function accessibleHtmlTool(opts) {
+    const o = opts || {};
+    if (o.mode !== 'outline' && o.mode !== 'edit') throw new Error('accessible_html_mode_unknown');
+    const b = await getBrowser();
+    const context = await b.newContext();
+    try {
+      const page = await context.newPage();
+      return await page.evaluate(({ src, args }) => (0, eval)('(' + src + ')')(...args), { src: AccessibleHtmlEdit.accessibleHtmlTool.toString(), args: [String(o.html || ''), o.mode, o.payload || {}] });
+    } finally { try { await context.close(); } catch (_) {} }
+  }
+
   // Plain text and heading-structure check. Both synchronous in the pipeline; useful on their own
   // (a plain-text alternative is a legitimate accessible format) and as cheap sanity checks.
   async function htmlDerivatives(opts) {
@@ -3498,6 +3586,197 @@ function createDriver(options) {
       },{html:String(o.html||''),fileName:o.fileName||'document.html',checksSource:Verification.auditChecks.toString(),includeAi}),Object.assign({fileName:o.fileName||'document.html'},o));
   }
 
+  // ── Tag a person-edited accessible version (2026-11-08; tool pdf_finalize_edited_html) ───────
+  // The PDF is rebuilt from the original and the edited HTML by the same createTaggedPdf and the same byte checks as a
+  // run. NO model is used (the page's model bridge refuses every call), so there is no AI review of the edits: the
+  // evidence is the two deterministic engines on the edited HTML, the active-content scan and word coverage of the
+  // original, plus the person who made and approved the edit. Born-digital PDFs only: a scan's hidden text layer is
+  // drawn from page texts this path does not have. The result has the shape `remediate` returns, so one writer
+  // serves both and the held-PDF release tool works on its output unchanged.
+  async function finalizeEdited(opts) {
+    loadVendorBundle();
+    const o = opts || {};
+    const fileName = path.basename(String(o.filePath || ''));
+    if (!/\.pdf$/i.test(fileName)) throw new Error('finalize_requires_a_pdf');
+    const html = String(o.editedHtml || '');
+    if (!html.trim()) throw new Error('finalize_requires_html');
+    const b64 = readDocBase64(o.filePath);
+    (o.onLog || log)('finalize: ' + fileName + ' from a person-edited accessible version (' + Math.round(html.length / 1024) + ' KB); no AI model is used');
+    const noModel = async () => { throw new Error('This step uses no AI model.'); };
+    return withRunPage(Object.assign({}, o, { fileName, modelBridge: noModel }), (page) =>
+      page.evaluate(async ({ b64, fileName, html, furniture, reviewer, scanReading, carryFn, pdfLibCdn, sourceCoverageFn, verificationEvidenceFn, activeContentFn }) => {
+        const pipeline = window.__mcpPipeline;
+        const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        if (!(window.PDFLib && window.PDFLib.PDFDocument)) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = pdfLibCdn; s.onload = res; s.onerror = () => rej(new Error('pdf-lib local asset load failed'));
+            document.head.appendChild(s);
+          });
+        }
+        // 1. The original's own text (and the link/table/form telemetry the tagger reads), and the safety scan.
+        progress('read', 'reading the original PDF text');
+        const det = await pipeline.extractPdfTextDeterministic(b64);
+        if (!det || det.error) throw new Error('finalize_source_text_unavailable');
+        // No usable text layer is a scan. Its hidden text and its word check come from the machine reading the run saved
+        // (<name>-scan-reading.json, 2026-11-08); without that reading there is nothing to place the text on, so stop.
+        const scanned = !!(det.isScanned || !det.fullText);
+        if (scanned && !(scanReading && Array.isArray(scanReading.pages) && scanReading.pages.length)) throw new Error('finalize_scanned_needs_reading');
+        const readingText = scanned ? (scanReading.sourceText || scanReading.pages.map((p) => String((p && p.text) || '')).join('\n\n')) : '';
+        progress('safety', 'scanning the original for scripts and attachments');
+        const activeDecision = (0, eval)('(' + activeContentFn + ')')(await pipeline.scanSourceActiveContent(b64));
+        // 2. The two deterministic engines on the edited version.
+        progress('check', 'running axe-core and IBM Equal Access on the edited version');
+        const attempt = async (fn) => { try { return await fn(); } catch (_) { return null; } };
+        const [axe, equalAccess] = await Promise.all([attempt(() => pipeline.runAxeAudit(html)), attempt(() => pipeline.runEqualAccessAudit(html))]);
+        const derived = window.AlloModules.VerificationPolicy.deriveVerificationState({ ai: null, axe, equalAccess, verificationScope: 'static-source' });
+        const cur = { accessibleHtml: html, verificationAudit: null, axeAudit: axe, secondEngineAudit: equalAccess, verificationState: derived.verificationState };
+        // 3. Word coverage of the original, crediting what the pipeline took out or a figure carries on purpose.
+        let figureText = [];
+        if (!scanned) { try { figureText = (await pipeline.figureRegionText(b64, html)) || []; } catch (_) { figureText = []; } }
+        const contentCoverage = (0, eval)('(' + sourceCoverageFn + ')')({
+          sourceText: scanned ? readingText : det.fullText, outputHtml: html, pages: scanned ? scanReading.pages : null, method: scanned ? (scanReading.method || 'ocr') : 'pdf-text-layer',
+          pageErrors: [], lowConfidencePages: [], pageRange: null, figureText, furniture,
+        });
+        // 4. Gates, in the order a run applies them.
+        const axeCount = axe && Number.isSafeInteger(axe.totalViolations) ? axe.totalViolations : null;
+        const eaCount = equalAccess && Number.isSafeInteger(equalAccess.failViolations) ? equalAccess.failViolations : null;
+        const failures = [];
+        if (!axe) failures.push('axe-core could not run on the edited version');
+        else if (axeCount > 0) failures.push('axe-core found ' + axeCount + ' violation(s) in the edited version' + (Array.isArray(axe.violations) && axe.violations.length ? ' (' + axe.violations.slice(0, 5).map((v) => String((v && v.id) || '')).filter(Boolean).join(', ') + ')' : ''));
+        if (!equalAccess) failures.push('IBM Equal Access could not run on the edited version');
+        else if (eaCount > 0) failures.push('IBM Equal Access found ' + eaCount + ' failure(s) in the edited version');
+        let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null, taggedPdfReadingNotes = [];
+        let taggedPdfHeld = null, taggedPdfHeldUnavailable = null;
+        const coverageHold = !!contentCoverage.reviewRequired;
+        let carried = null, ocrLayer = null;
+        try {
+          if (activeDecision.error) throw new Error(activeDecision.error);
+          if (failures.length) throw new Error('distribution_review_required');
+          taggedPdfExportMode = 'original_layout';
+          progress('tag', 'building tagged PDF');
+          let htmlTitle = '', srcTitle = '', htmlLang = '';
+          try {
+            const parsed = new DOMParser().parseFromString(html, 'text/html');
+            htmlTitle = String(parsed.title || '').replace(/\s+/g, ' ').trim();
+            htmlLang = String((parsed.documentElement && parsed.documentElement.getAttribute('lang')) || '').trim();
+          } catch (_) {}
+          try { srcTitle = String((await window.PDFLib.PDFDocument.load(bytes, { updateMetadata: false, ignoreEncryption: true })).getTitle() || '').replace(/\s+/g, ' ').trim(); } catch (_) {}
+          const tagOptions = {
+            title: (htmlTitle && !/^Accessible Document\b/i.test(htmlTitle)) ? htmlTitle : (srcTitle || fileName.replace(/\.pdf$/i, '')),
+            lang: htmlLang || 'en',
+            subject: 'Prepared with AlloFlow accessibility tools; not a certification of conformance',
+          };
+          // A scan: the person's corrections go onto the reading's word boxes too, so search and copy find them. The word check
+          // above used the reading as the run saved it, so each correction is still listed for the person to confirm.
+          let tagPages = scanned ? scanReading.pages : null;
+          if (scanned && typeof pipeline.alignReadingOntoOcrWords === 'function') {
+            try { carried = (0, eval)('(' + carryFn + ')')(scanReading.pages, pipeline.htmlToPlainText(html) || '', pipeline.alignReadingOntoOcrWords); tagPages = carried.pages; } catch (_) { carried = null; }
+          }
+          const fixLike = {
+            accessibleHtml: html, isScanned: scanned, groundTruthPages: tagPages, groundTruthMethod: scanned ? (scanReading.method || 'ocr') : null, sourceStructTree: null,
+            sourceKind: 'pdf', finalText: pipeline.htmlToPlainText(html), ocrAccuracy: null,
+          };
+          const tagged = await pipeline.createTaggedPdf(bytes, fixLike, tagOptions);
+          ocrLayer = tagged && tagged.ocrTextLayer && typeof tagged.ocrTextLayer === 'object' ? tagged.ocrTextLayer : null;
+          const outBytes = tagged && (tagged.bytes || tagged);
+          const delivery = pipeline.taggedPdfDeliveryVerdict(tagged);
+          taggedPdfDelivery = delivery && typeof delivery === 'object'
+            ? { ok: delivery.ok === true, code: String(delivery.code || '') }
+            : { ok: false, code: 'delivery-verdict-unavailable' };
+          if (outBytes && outBytes.length && taggedPdfDelivery.ok) {
+            let ob = ''; const CH = 0x8000;
+            for (let i = 0; i < outBytes.length; i += CH) ob += String.fromCharCode.apply(null, Array.from(outBytes.subarray(i, i + CH)));
+            taggedPdfB64 = btoa(ob);
+            const rn = tagged && tagged.postExportValidator && tagged.postExportValidator.readingNotes;
+            if (Array.isArray(rn)) taggedPdfReadingNotes = rn.map((n) => String((n && n.detail) || '')).filter(Boolean);
+            if (coverageHold) {
+              taggedPdfHeld = { b64: taggedPdfB64, exportMode: taggedPdfExportMode, delivery: taggedPdfDelivery, readingNotes: taggedPdfReadingNotes };
+              taggedPdfB64 = null; taggedPdfReadingNotes = [];
+            }
+          } else {
+            // The edit is why the PDF failed its own byte checks most often: say which check.
+            const why = delivery && delivery.reason ? String(delivery.reason).replace(/\s+/g, ' ').slice(0, 400) : '';
+            taggedPdfError = outBytes && outBytes.length
+              ? 'tagged_pdf_delivery_unverified' + (taggedPdfDelivery.code ? ' (' + taggedPdfDelivery.code + (why ? ': ' + why : '') + ')' : '')
+              : 'createTaggedPdf returned no bytes';
+          }
+        } catch (e) { taggedPdfError = (e && e.message) || String(e); }
+        if (coverageHold) {
+          if (!taggedPdfHeld) taggedPdfHeldUnavailable = taggedPdfError || 'no tagged PDF was built';
+          taggedPdfError = 'content_coverage_requires_review'; taggedPdfDelivery = null; taggedPdfExportMode = null;
+        }
+        // 5. The verdict: never "ready" (no AI review of the edits); "review" when anything above failed.
+        const review = failures.slice();
+        if (coverageHold) review.push('Source content coverage requires review');
+        if (activeDecision.error) review.push(activeDecision.error === 'active_content_requires_review' ? 'The original PDF contains scripts, launch actions or embedded files' : 'The original PDF could not be fully scanned for scripts and attachments');
+        const cautions = ['Built from an accessible version that ' + reviewer + ' edited and approved. The AI review was not repeated on the edits; axe-core, IBM Equal Access, word coverage of ' + (scanned ? 'the run\'s reading of the scan' : 'the original') + ' and the PDF checks were.'];
+        const verdict = { level: review.length ? 'review' : 'caution', review, cautions };
+        const fidelityNotes = [{ kind: 'personEdit', caution: true, msg: cautions[0] }];
+        // A scan's printed words are only as good as a reading of them: the person's text is what the tags carry, the run's
+        // machine reading is where the invisible words sit. Say both, so nobody takes the PDF for a checked transcription.
+        if (scanned) {
+          const cs = carried && carried.stats;
+          const boxes = scanReading.pages.some((p) => p && Array.isArray(p.words) && p.words.length);
+          const placedN = cs ? cs.wordsReplaced : 0;
+          // What the tagger actually drew (2026-11-08, ocrTextLayer): on the printed words' boxes, or the top-down block layout
+          // when the boxes and the edited version diverge too far (for example OCR boxes that missed a whole table).
+          const blockPages = ocrLayer && Array.isArray(ocrLayer.blockLayoutPages) ? ocrLayer.blockLayoutPages : [];
+          const positioned = ocrLayer && Number.isInteger(ocrLayer.positionedPages) ? ocrLayer.positionedPages : (boxes ? null : 0);
+          const onBoxes = 'The invisible text that search and copy use sits on the printed words, from the run\'s machine reading'
+            + (placedN ? ', with ' + placedN + ' corrected word' + (placedN === 1 ? '' : 's') + ' put in place of the machine\'s reading' : '');
+          const misread = '; a correction that could not be lined up with its printed word is still found there in its misread form.';
+          const offBoxes = 'search and copy find the edited text, but in a column at the top of the page, not on the printed words (the machine reading\'s word positions did not line up with the edited version)';
+          let layerMsg;
+          if (!boxes) layerMsg = 'The invisible text that search and copy use is the edited text, not placed over the printed words.';
+          else if (blockPages.length && !positioned) layerMsg = 'On ' + (scanReading.pages.length === 1 ? 'this page' : 'every page') + ' ' + offBoxes + '.';
+          else if (blockPages.length) layerMsg = onBoxes + misread.slice(0, -1) + ', except on page' + (blockPages.length === 1 ? ' ' : 's ') + blockPages.slice(0, 12).join(', ') + (blockPages.length > 12 ? ' and others' : '') + ': there ' + offBoxes + '.';
+          else layerMsg = onBoxes + misread;
+          const scanMsg = 'The original is a scan. Each tagged paragraph carries the edited text, which is what a screen reader reads. ' + layerMsg
+            + ' Compare the edited text with the page images before sharing.';
+          // The verdict carries a short form (a report clips a caution at 300 characters); the note keeps the full wording.
+          const shortLayer = !boxes ? 'search and copy find it, not placed over the printed words'
+            : (blockPages.length && !positioned) ? 'search and copy find it in a column at the top of the page, not on the printed words'
+              : 'search and copy find it on the printed words' + (blockPages.length ? ' except on page' + (blockPages.length === 1 ? ' ' : 's ') + blockPages.slice(0, 8).join(', ') + (blockPages.length > 8 ? ' and others' : '') : '')
+                + (placedN ? ' (' + placedN + ' correction' + (placedN === 1 ? '' : 's') + ' placed there)' : '');
+          cautions.push('The original is a scan. Screen readers read the edited text; ' + shortLayer + '. Compare it with the page images before sharing.');
+          fidelityNotes.push({ kind: 'scanEdit', caution: true, msg: scanMsg, pages: scanReading.pages.length,
+            ...(ocrLayer ? { positionedPages: positioned, blockLayoutPages: blockPages.slice(0, 200) } : {}),
+            ...(cs ? { correctionsPlaced: cs.corrections.slice(0, 50), pagesNotLinedUp: cs.skipped.slice(0, 50) } : {}) });
+        }
+        const figureWords = (Array.isArray(figureText) ? figureText : []).reduce((n, f) => n + ((f && f.items && f.items.length) || 0), 0);
+        if (figureWords) fidelityNotes.push({ kind: 'figureText', caution: true, msg: figureWords + ' word(s) and number(s) printed inside the charts and maps are carried by the figure descriptions: check that each description gives the values a reader needs.' });
+        return {
+          beforeScore: null, afterScore: null, verdict, aiVerificationIncomplete: true, scoreSource: null, estimatedMinimumScore: null,
+          contentCoverage, integrityCoverage: null, integrityWarning: null,
+          candidateRejectionCount: 0, candidateRejections: [],
+          verification: (0, eval)('(' + verificationEvidenceFn + ')')(cur),
+          reviewTriage: null, fidelityNotes, decisionGuides: [],
+          verificationState: derived.verificationState || null, verificationHtmlBound: false,
+          remainingAxeViolations: axeCount, remainingEqualAccessFailures: eaCount,
+          runId: 'finalize-' + ((window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : String(Date.now())),
+          auditCoverage: { configuredAuditorCap: 0, requestedAuditors: 0, completedAuditors: 0, sliced: false },
+          accessibleHtml: html,
+          taggedPdfB64, taggedPdfError, taggedPdfDelivery, taggedPdfExportMode, taggedPdfReadingNotes, taggedPdfHeld, taggedPdfHeldUnavailable,
+          activeContentScanVerified: activeDecision.verified, activeContentDetected: activeDecision.detected,
+          stats: null,
+        };
+      }, {
+        b64, fileName, html,
+        furniture: Array.isArray(o.furnitureTexts) ? o.furnitureTexts.filter((t) => typeof t === 'string').slice(0, 2000) : null,
+        reviewer: String(o.reviewer || 'a person').slice(0, 200),
+        scanReading: o.scanReading && Array.isArray(o.scanReading.pages) ? { method: o.scanReading.method || null, sourceText: typeof o.scanReading.sourceText === 'string' ? o.scanReading.sourceText : null, pages: o.scanReading.pages } : null,
+        pdfLibCdn: vendorAssetUrl('pdf-lib.min.js'),
+        sourceCoverageFn: NarrationPlanner.assessSourceCoverage.toString(),
+        verificationEvidenceFn: Verification.compactVerificationEvidence.toString(),
+        activeContentFn: activeContentDecision.toString(),
+        carryFn: ScanCorrections.carryCorrectionsOntoReading.toString(),
+      }));
+  }
+
   async function close() {
     if (activeRun) await cancelActiveRun();
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
@@ -3508,7 +3787,7 @@ function createDriver(options) {
     audit, remediate, validatePdfUa, validatePdfUaCli, selfTest, renderPdfToPageImages, exportAccessibleOffice,
     fixContrast, buildConformanceReport, generateResourcePack, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
-    auditWithBothEngines, htmlDerivatives, exportAltFormat, auditHtml,
+    auditWithBothEngines, htmlDerivatives, accessibleHtmlTool, exportAltFormat, auditHtml, finalizeEdited,
     cancelActiveRun, close,
     takeLastRunDiagnostics: () => lastRunDiagnostics,
     // Test-only surfaces for the agent-bridge end-to-end test: the same scripted replies and
@@ -3568,9 +3847,12 @@ async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
 module.exports = {
   bundledTesseractLanguages,
   createDriver,
+  activeContentDecision,
   isRtlLanguage,
   compactTerminalCheckpointSnapshot,
   terminalCheckpointRemediationCapsule,
+  scanReadingForRun,
+  scanLayerCaution,
   TERMINAL_CHECKPOINT_CAPSULE_SCHEMA,
   TERMINAL_CHECKPOINT_REMEDIATION_FIELDS,
   checkpointSourceCoverageExtraction,

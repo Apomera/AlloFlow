@@ -46,7 +46,7 @@ const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_worker.cjs', 'remediation_ace_browser.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'remediation_narration.cjs', 'remediation_narration_plan.cjs', 'accessible_html_edit.cjs', 'scan_reading_corrections.cjs', 'remediation_verification.cjs', 'remediation_epub_validation.cjs', 'remediation_epub_archive.cjs', 'remediation_ace_worker.cjs', 'remediation_ace_browser.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
 // The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
 // Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
 const SERVER_DIRS = ['vendor'];
@@ -108,6 +108,9 @@ function buildManifest() {
     { name: 'pdf_audit', description: 'Accessibility audit of a local PDF/DOCX/PPTX: score, issues, scanned detection, language.' },
     { name: 'pdf_validate_ua', description: 'Independent PDF/UA-1 (ISO 14289-1) validation via veraPDF. Needs no API key.' },
     { name: 'pdf_release_held_tagged_pdf', description: 'Release a held tagged PDF after a real person has checked every listed word. Needs no API key.' },
+    { name: 'outline_accessible_html', description: 'List the headings, images, tables and landmarks of an accessible HTML file with ids, so a person can say what to change. No API key.' },
+    { name: 'edit_accessible_html', description: 'Change heading levels, alt text, table headers, language, reading order or delete a leftover page number, as the person asked. Never rewords. No API key.' },
+    { name: 'pdf_finalize_edited_html', description: 'Build the tagged PDF from the original and an accessible version a person edited and approved. Needs no API key.' },
     { name: 'pdf_remediate', description: 'Full remediation (synchronous): accessible HTML + tagged PDF + honesty-checked verdict.' },
     { name: 'pdf_remediate_start', description: 'Start a remediation as a background job; returns a job id immediately.' },
     { name: 'pdf_batch_audit_start', description: 'Background job auditing a whole folder into one triage scoreboard (JSON + CSV). The cheap pass before remediating.' },

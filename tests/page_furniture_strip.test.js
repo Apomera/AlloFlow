@@ -45,6 +45,31 @@ describe('page furniture in the structure blocks', () => {
     expect(r.numbers).toEqual(['1', '2', '3', '4', '5', '6', '7']);
   });
 
+  // 2026-11-08, NCES rerun: front matter prints "| iii" .. "| viii" on pages 4-9 (one page behind), arabic "| 1" from page 10.
+  // The roman footers survived, kept the AI's critical reading-order finding alive, and a 16-word running header with them.
+  it('removes roman-numeral footers as their own run, with their own page offset, and a long running header beside them', () => {
+    const F = (n) => p('Report on the Condition of Education 2023 | ' + n);
+    const H = p('Spotlights: Teacher Openings During the Coronavirus Pandemic and Challenges and Strategies Recovering From the Pandemic');
+    const r = run([
+      [p('Cover text of the report.')],
+      [p('Front matter one.'), F('iii'), p('Front matter two.'), F('iv'), H, p('Front matter three.'), F('v')],
+      [p('Front matter four.'), F('vi'), H, p('Front matter five.'), F('vii'), p('Front matter six.'), F('viii')],
+      [p('Chapter text one.'), F('1'), p('Chapter text two.'), F('2'), p('Chapter text three.'), F('3')],
+      [p('Chapter text four.'), F('4'), p('Chapter text five.'), F('5'), p('Chapter text six.'), F('6')],
+    ], 15);
+    expect(texts(r)).toEqual(['Cover text of the report.', 'Front matter one.', 'Front matter two.', 'Front matter three.', 'Front matter four.', 'Front matter five.', 'Front matter six.', 'Chapter text one.', 'Chapter text two.', 'Chapter text three.', 'Chapter text four.', 'Chapter text five.', 'Chapter text six.']);
+    expect(r.removed.filter((x) => x.kind === 'footer')).toHaveLength(12);
+    expect(r.removed.filter((x) => x.kind === 'running header')).toHaveLength(2);
+    // the whole text is kept, for the connector's word check
+    expect(r.removed.find((x) => x.text.startsWith('Spotlights')).text).toMatch(/Recovering From the Pandemic$/);
+    expect(r.removed.map((x) => x.text)).toContain('Report on the Condition of Education 2023 | viii');
+  });
+  it('does not take a roman-looking last word for a page number without page evidence', () => {
+    // "Chapter mix" and "Section VI" at random places, a footer-shaped line that never follows the pages
+    const r = run([[p('Notes on the chapter VI'), p('Intro text here.')], [p('Notes on the chapter ii'), p('More text here.')], [p('Notes on the chapter xi'), p('Closing text here.')]]);
+    expect(r.removed).toEqual([]);
+  });
+
   it('removes bare page numbers in any digit script and joins the sentences they split (Persian)', () => {
     const r = run([
       [p('و در محیطی آزاد تر وضع'), p('٢'), p('زندگی بهتری بوجود آورند .'), p('٣')],
@@ -88,6 +113,30 @@ describe('page furniture in the structure blocks', () => {
     expect(PIPE.includes("if (kinds.pageFurniture) cautions.push(")).toBe(true);
     expect(PIPE.split("window.__lastGroundTruthPageMap : null) + ' ' + _alloFurnitureNumbers()").length - 1).toBe(2);
     expect(PIPE.includes('window.__alloPageFurniture = null; // page numbers / running heads removed from the structure blocks, fresh each run')).toBe(true);
+  });
+});
+
+describe('content coverage: furniture the pipeline took out on purpose', () => {
+  const body = ['The first chapter reports enrollment.', 'The second chapter reports completion.', 'The third chapter reports spending.'];
+  const foot = (n) => 'Report on the Condition of Education 2023 | ' + n;
+  const html = body.map((t) => '<p>' + t + '</p>').join('');
+  const src = body.map((t, i) => t + '\n' + foot(i + 1)).join('\n');
+  const removed = [1, 2, 3].map((n) => foot(n));
+  it('credits each removed footer once, so what was taken out is not "missing"', () => {
+    const r = P.assessSourceCoverage({ sourceText: src, outputHtml: html, method: 'pdfjs', furniture: removed });
+    expect(r).toMatchObject({ status: 'matched', missingTokens: 0, furnitureWordsCredited: 27 }); // 3 footers x 9 words
+  });
+  it('without the list the same footers are missing words', () => {
+    expect(P.assessSourceCoverage({ sourceText: src, outputHtml: html, method: 'pdfjs' }).missingTokens).toBeGreaterThan(0);
+  });
+  it('credits only what was removed: a footer that was not listed stays missing, and so does a footer in other words', () => {
+    const some = P.assessSourceCoverage({ sourceText: src, outputHtml: html, method: 'pdfjs', furniture: removed.slice(0, 2) });
+    expect(some.missingTokens).toBe(9); // the third footer's 9 words
+    const other = P.assessSourceCoverage({ sourceText: src, outputHtml: html, method: 'pdfjs', furniture: ['Annual Report 2023 | 1'] });
+    expect(other.missingTokens).toBeGreaterThan(0);
+  });
+  it('the driver passes the removed texts, and the pipeline records them whole', () => {
+    expect(readFileSync(resolve(process.cwd(), 'desktop/mcp/remediation_headless_driver.cjs'), 'utf8').includes('furniture:window.__alloPageFurniture&&Array.isArray(window.__alloPageFurniture.removed)?window.__alloPageFurniture.removed.map(x=>x&&x.text):null')).toBe(true);
   });
 });
 
